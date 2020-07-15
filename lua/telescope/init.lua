@@ -2,6 +2,8 @@ package.loaded['popup'] = nil
 package.loaded['popup.border'] = nil
 package.loaded['popup.init'] = nil
 
+-- TODO: Debounce preview window maybe
+
 local a = vim.api
 
 local popup = require('popup')
@@ -17,6 +19,16 @@ Finder.__index = Finder
 function Finder:new(fn_command)
   -- TODO: Add config for:
   --        - cwd
+
+  -- TODO:
+  -- - `types`
+  --    job
+  --    pipe
+  --        vim.loop.new_pipe (stdin / stdout). stdout => filter pipe
+  --        rg huge_search | fzf --filter prompt_is > buffer. buffer could do stuff do w/ preview callback
+  --    string
+  --    list
+  --    ...
   return setmetatable({
     fn_command = fn_command,
     job_id = -1,
@@ -282,6 +294,7 @@ function __TelescopeMapping(prompt_bufnr, results_bufnr, characters)
   end
 end
 
+-- TODO: Probably could attach this with nvim_buf_attach, and then I don't have to do the ugly global function stuff
 function __TelescopeOnChange(bufnr, prompt, results_bufnr, results_win)
   local line = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)[1]
   local prompt_input = string.sub(line, #prompt + 1)
