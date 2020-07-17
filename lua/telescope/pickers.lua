@@ -3,6 +3,7 @@ local popup = require('popup')
 
 local mappings = require('telescope.mappings')
 local state = require('telescope.state')
+local utils = require('telescope.utils')
 
 local pickers = {}
 
@@ -19,8 +20,15 @@ function Picker:new(opts)
 end
 
 
-function Picker:find(finder)
-  local prompt_string = 'Find File'
+function Picker:find(opts)
+  opts = opts or {}
+
+  local finder = opts.finder
+  assert(finder, "Finder is required to do picking")
+
+  local sorter = opts.sorter
+
+  local prompt_string = opts.prompt
   -- Create three windows:
   -- 1. Prompt window
   -- 2. Options window
@@ -75,26 +83,71 @@ function Picker:find(finder)
   -- a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
   -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_string)
 
-  vim.api.nvim_buf_attach(prompt_bufnr, true, {
-    on_lines = vim.schedule_wrap(function(_, _, _, first_line, last_line)
-      local line = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]
+  local on_lines = function(_, _, _, first_line, last_line)
+    local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]
 
-      vim.api.nvim_buf_set_lines(results_bufnr, 0, -1, false, {})
-      local results = finder:get_results(results_win, results_bufnr, line)
-    end),
+    vim.api.nvim_buf_set_lines(results_bufnr, 0, -1, false, {})
+
+    -- Create a closure that has all the data we need
+    -- We pass a function called "newResult" to get_results
+    --    get_results calles "newResult" every time it gets a new result
+    --    picker then (if available) calls sorter
+    --    and then appropriately places new result in the buffer.
+
+    local line_scores = {}
+
+    -- TODO: We need to fix the sorting
+    -- TODO: We should provide a simple fuzzy matcher in Lua for people
+    -- TODO: We should get all the stuff on the bottom line directly, not floating around
+    -- TODO: We need to handle huge lists in a good way, cause currently we'll just put too much stuff in the buffer
+    -- TODO: Stop having things crash if we have an error.
+    finder(prompt, function(line)
+      if sorter then
+        local sort_score = sorter:score(prompt, line)
+        if sort_score == -1 then
+          return
+        end
+
+        -- { 7, 3, 1, 1 }
+        -- 2
+        for row, row_score in utils.reversed_ipairs(line_scores) do
+          if row_score > sort_score then
+            -- Insert line at row
+            vim.api.nvim_buf_set_lines(results_bufnr, row, row, false, {
+              string.format("%s // %s %s", line, sort_score, row)
+            })
+
+            -- Insert current score in the table
+            table.insert(line_scores, row + 1, sort_score)
+
+            -- All done :)
+            return
+          end
+        end
+
+        -- Worst score so far, so add to end
+        vim.api.nvim_buf_set_lines(results_bufnr, -1, -1, false, {line})
+        table.insert(line_scores, sort_score)
+      else
+        -- Just always append to the end of the buffer if this is all you got.
+        vim.api.nvim_buf_set_lines(results_bufnr, -1, -1, false, {line})
+      end
+    end)
+    -- local results = finder:get_results(results_win, results_bufnr, line)
+  end
+
+  -- Call this once to pre-populate if it makes sense
+  vim.schedule_wrap(on_lines(nil, nil, nil, 0, 1))
+
+  -- Register attach
+  vim.api.nvim_buf_attach(prompt_bufnr, true, {
+    on_lines = vim.schedule_wrap(on_lines),
 
     on_detach = function(...)
       -- print("DETACH:", ...)
     end,
   })
 
-  -- -- TODO: Please use the cool autocmds once you get off your lazy bottom and finish the PR ;)
-  -- local autocmd_string = string.format(
-  --   [[  autocmd TextChanged,TextChangedI <buffer> :lua __TelescopeOnChange(%s, "%s", %s, %s)]],
-  --   prompt_bufnr,
-  --   '',
-  --   results_bufnr,
-  --   results_win)
 
   -- TODO: Use WinLeave as well?
   local on_buf_leave = string.format(

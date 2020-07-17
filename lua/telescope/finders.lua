@@ -2,8 +2,11 @@ local a = vim.api
 
 local finders = {}
 
+---@class Finder
 local Finder = {}
+
 Finder.__index = Finder
+Finder.__call = function(t, ... ) return t:_find(...) end
 
 --- Create a new finder command
 ---
@@ -26,52 +29,37 @@ function Finder:new(opts)
   return setmetatable({
     fn_command = opts.fn_command,
     responsive = opts.responsive,
+    state = {},
     job_id = -1,
   }, Finder)
 end
 
-function Finder:get_results(win, bufnr, prompt)
-  if self.job_id > 0 then
-    -- Make sure we kill old jobs.
+-- Probably should use the word apply here, since we're apply the callback passed to us by
+--  the picker... But I'm not sure how we want to say that.
+
+-- find_incremental
+-- find_prompt
+-- process_prompt
+-- process_search
+-- do_your_job
+-- process_plz
+function Finder:_find(prompt, process_result)
+  if (self.state.job_id or 0) > 0 then
     vim.fn.jobstop(self.job_id)
   end
 
-  self.job_id = vim.fn.jobstart(self.fn_command(prompt), {
-    -- TODO: Decide if we want this or don't want this.
+  -- TODO: How to just literally pass a list...
+  -- TODO: How to configure what should happen here
+  -- TODO: How to run this over and over?
+  self.job_id = vim.fn.jobstart(self:fn_command(prompt), {
     stdout_buffered = true,
 
     on_stdout = function(_, data, _)
-      a.nvim_buf_set_lines(bufnr, -1, -1, false, data)
-    end,
-
-    on_exit = function()
-      -- TODO: Add possibility to easily highlight prompt within buffer
-      -- without having to do weird stuff and with it actually working...
-      if false then
-        vim.fn.matchadd("Type", "\\<" .. prompt .. "\\>", 1, -1, {window = win})
+      for _, line in ipairs(data) do
+        process_result(line)
       end
-    end,
+    end
   })
-
-  --[[
-  local function get_rg_results(bufnr, search_string)
-    local start_time = vim.fn.reltime()
-
-    vim.fn.jobstart(string.format('rg %s', search_string), {
-      cwd = '/home/tj/build/neovim',
-
-      on_stdout = function(job_id, data, event)
-        vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, data)
-      end,
-
-      on_exit = function()
-        print("Finished in: ", vim.fn.reltimestr(vim.fn.reltime(start_time)))
-      end,
-
-      stdout_buffer = true,
-    })
-  end
-  --]]
 end
 
 --- Return a new Finder
@@ -80,5 +68,7 @@ end
 finders.new = function(...)
   return Finder:new(...)
 end
+
+finders.Finder = Finder
 
 return finders
