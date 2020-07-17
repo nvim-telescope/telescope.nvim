@@ -49,7 +49,7 @@ local function update_current_selection(prompt_bufnr, results_bufnr, row)
   if status.previewer then
     vim.g.got_here = true
 
-    status.previewer.fn(
+    status.previewer:preview(
       status.preview_win,
       status.preview_bufnr,
       status.results_bufnr,
