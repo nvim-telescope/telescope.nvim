@@ -1,10 +1,10 @@
 
 echo "hello"
 sleep 1
-echo "cool"
+echo "help"
 sleep 1
-echo "world"
+echo "hi"
 sleep 1
-echo "x"
+echo "husband"
 sleep 1
-echo "y"
+echo "helper"
