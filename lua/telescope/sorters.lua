@@ -29,4 +29,6 @@ function sorters.new(...)
   return Sorter:new(...)
 end
 
+sorters.Sorter = Sorter
+
 return sorters

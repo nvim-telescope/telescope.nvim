@@ -10,7 +10,8 @@ Finder.__call = function(t, ... ) return t:_find(...) end
 
 --- Create a new finder command
 ---
---@param fn_command function The function to call
+---@param opts table Keys:
+--     fn_command function The function to call
 function Finder:new(opts)
   opts = opts or {}
 

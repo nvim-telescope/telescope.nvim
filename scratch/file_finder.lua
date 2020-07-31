@@ -1,3 +1,4 @@
+package.loaded['telescope.pickers'] = nil
 local telescope = require('telescope')
 
 -- Goals:
@@ -61,14 +62,14 @@ local file_sorter = telescope.sorters.new {
     if prompt == '' then return 0 end
     if not line then return -1 end
 
-    local dist = string_distance(prompt, line)
-    -- if dist > (0.75 * #line) and #prompt > 3 then
-    --   return -1
-    -- end
-
-    return dist
+    return tonumber(vim.fn.systemlist(string.format(
+      "echo '%s' | ~/tmp/fuzzy_test/target/debug/fuzzy_test '%s'",
+      line,
+      prompt
+    ))[1])
   end
 }
+
 
 local file_previewer = telescope.previewers.vim_buffer
 

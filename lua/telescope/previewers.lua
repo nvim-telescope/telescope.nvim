@@ -38,10 +38,13 @@ previewers.vim_buffer = previewers.new {
     vim.api.nvim_win_set_buf(preview_win, bufnr)
     vim.api.nvim_win_set_option(preview_win, 'wrap', false)
     vim.api.nvim_win_set_option(preview_win, 'winhl', 'Normal:Normal')
-    vim.api.nvim_win_set_option(preview_win, 'winblend', 20)
+    -- vim.api.nvim_win_set_option(preview_win, 'winblend', 20)
     vim.api.nvim_win_set_option(preview_win, 'signcolumn', 'no')
     vim.api.nvim_win_set_option(preview_win, 'foldlevel', 100)
   end,
 }
+
+
+previewers.Previewer = Previewer
 
 return previewers

@@ -10,8 +10,21 @@ local pickers = {}
 local Picker = {}
 Picker.__index = Picker
 
+
+local Sorter = require('telescope.sorters').Sorter
+local Previewer = require('telescope.previewers').Previewer
+
+assert(Sorter)
+assert(Previewer)
+
+---@class PickOpts
+---@field filter Sorter
+---@field maps table
+---@field unseen string
+
+--- Create new picker
+--- @param opts PickOpts
 function Picker:new(opts)
-  opts = opts or {}
   return setmetatable({
     filter = opts.filter,
     previewer = opts.previewer,
@@ -19,6 +32,56 @@ function Picker:new(opts)
   }, Picker)
 end
 
+function Picker._get_window_options(max_columns, max_lines, prompt_title)
+  local preview = {
+    border = {},
+    enter = false,
+    highlight = false
+  }
+  local results = {
+    border = {},
+    enter = false,
+  }
+  local prompt = {
+    title = prompt_title,
+    border = {},
+    enter = true
+  }
+
+  local width_padding = 10
+  if max_columns < 200 then
+    preview.width = 80
+  else
+    preview.width = 120
+  end
+
+  local other_width = max_columns - preview.width - (2 * width_padding)
+  results.width = other_width
+  prompt.width = other_width
+
+  results.height = 25
+  results.minheight = results.height
+  prompt.height = 1
+  prompt.minheight = prompt.height
+
+  preview.height = results.height + prompt.height + 2
+  preview.minheight = preview.height
+
+  results.col = width_padding
+  prompt.col = width_padding
+  preview.col = results.col + results.width + 2
+
+  local height_padding = math.floor(0.95 * max_lines)
+  results.line = max_lines - height_padding
+  prompt.line = results.line + results.height + 2
+  preview.line = results.line
+
+  return {
+    preview = preview,
+    results = results,
+    prompt = prompt,
+  }
+end
 
 function Picker:find(opts)
   opts = opts or {}
@@ -29,64 +92,41 @@ function Picker:find(opts)
   local sorter = opts.sorter
 
   local prompt_string = opts.prompt
+
   -- Create three windows:
   -- 1. Prompt window
   -- 2. Options window
   -- 3. Preview window
-
-  local width = 100
-  local col = 10
-  local prompt_line = 50
-
-  local result_height = 25
-  local prompt_height = 1
+  local popup_opts = Picker._get_window_options(vim.o.columns, vim.o.lines, prompt_string)
 
   -- TODO: Add back the borders after fixing some stuff in popup.nvim
-  local results_win, results_opts = popup.create('', {
-    height = result_height,
-    minheight = result_height,
-    width = width,
-    line = prompt_line - 2 - result_height,
-    col = col,
-    border = {},
-    enter = false,
-  })
+  local results_win, results_opts = popup.create('', popup_opts.results)
   local results_bufnr = a.nvim_win_get_buf(results_win)
 
-  local preview_win, preview_opts = popup.create('', {
-    height = result_height + prompt_height + 2,
-    minheight = result_height + prompt_height + 2,
-    width = 100,
-    line = prompt_line - 2 - result_height,
-    col = col + width + 2,
-    border = {},
-    enter = false,
-    highlight = false,
-  })
+  local preview_win, preview_opts = popup.create('', popup_opts.preview)
   local preview_bufnr = a.nvim_win_get_buf(preview_win)
 
   -- TODO: For some reason, highlighting is kind of weird on these windows.
   --        It may actually be my colorscheme tho...
   a.nvim_win_set_option(preview_win, 'winhl', 'Normal:Normal')
+  a.nvim_win_set_option(preview_win, 'winblend', 1)
 
   -- TODO: We need to center this and make it prettier...
-  local prompt_win, prompt_opts = popup.create('', {
-    height = prompt_height,
-    width = width,
-    line = prompt_line,
-    col = col,
-    border = {},
-    title = prompt_string
-  })
+  local prompt_win, prompt_opts = popup.create('', popup_opts.prompt)
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
 
   -- a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
   -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_string)
 
+  -- First thing we want to do is set all the lines to blank.
+  local max_results = popup_opts.results.height
+  local initial_lines = {}
+  for _ = 1, max_results do table.insert(initial_lines, "") end
+  vim.api.nvim_buf_set_lines(results_bufnr, 0, max_results, false, initial_lines)
+
   local on_lines = function(_, _, _, first_line, last_line)
     local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]
 
-    vim.api.nvim_buf_set_lines(results_bufnr, 0, -1, false, {})
 
     -- Create a closure that has all the data we need
     -- We pass a function called "newResult" to get_results
@@ -94,13 +134,21 @@ function Picker:find(opts)
     --    picker then (if available) calls sorter
     --    and then appropriately places new result in the buffer.
 
-    local line_scores = {}
+
+    -- Sorted table by scores.
+    --  Lowest score gets lowest index.
+    self.line_scores = {}
 
     -- TODO: We need to fix the sorting
     -- TODO: We should provide a simple fuzzy matcher in Lua for people
     -- TODO: We should get all the stuff on the bottom line directly, not floating around
     -- TODO: We need to handle huge lists in a good way, cause currently we'll just put too much stuff in the buffer
     -- TODO: Stop having things crash if we have an error.
+
+    local replace_line = function(row, line)
+      vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {line})
+    end
+
     finder(prompt, function(line)
       if sorter then
         local sort_score = sorter:score(prompt, line)
@@ -110,24 +158,30 @@ function Picker:find(opts)
 
         -- { 7, 3, 1, 1 }
         -- 2
-        for row, row_score in utils.reversed_ipairs(line_scores) do
+        for row, row_score in utils.reversed_ipairs(self.line_scores) do
           if row_score > sort_score then
             -- Insert line at row
-            vim.api.nvim_buf_set_lines(results_bufnr, row, row, false, {
-              string.format("%s // %s %s", line, sort_score, row)
-            })
+            replace_line(max_results - row, line)
 
             -- Insert current score in the table
-            table.insert(line_scores, row + 1, sort_score)
+            table.insert(self.line_scores, row + 1, sort_score)
 
             -- All done :)
+            return
+          end
+
+          -- Don't keep inserting stuff
+          if row > max_results then
             return
           end
         end
 
         -- Worst score so far, so add to end
-        vim.api.nvim_buf_set_lines(results_bufnr, -1, -1, false, {line})
-        table.insert(line_scores, sort_score)
+
+        -- example: 5 max results, 8
+        local worst_line = max_results - #self.line_scores
+        replace_line(worst_line, line)
+        table.insert(self.line_scores, sort_score)
       else
         -- Just always append to the end of the buffer if this is all you got.
         vim.api.nvim_buf_set_lines(results_bufnr, -1, -1, false, {line})
@@ -158,6 +212,8 @@ function Picker:find(opts)
   vim.cmd([[  au!]])
   vim.cmd(    on_buf_leave)
   vim.cmd([[augroup END]])
+
+  self.prompt_bufnr = prompt_bufnr
 
   state.set_status(prompt_bufnr, {
     prompt_bufnr = prompt_bufnr,
@@ -196,12 +252,12 @@ function Picker:close_windows(status)
   local preview_border_win = status.preview_border_win
 
   local function del_win(name, win_id, force)
-    local file = io.open("/home/tj/test.txt", "a")
-    file:write(string.format("Closing.... %s %s\n", name, win_id))
+    -- local file = io.open("/home/tj/test.txt", "a")
+    -- file:write(string.format("Closing.... %s %s\n", name, win_id))
     local ok = pcall(vim.api.nvim_win_close, win_id, force)
-    file:write(string.format("OK: %s\n", ok))
-    file:write("...Done\n\n")
-    file:close()
+    -- file:write(string.format("OK: %s\n", ok))
+    -- file:write("...Done\n\n")
+    -- file:close()
   end
 
   del_win("prompt_win", prompt_win, true)
@@ -224,7 +280,44 @@ function Picker:close_windows(status)
   state.clear_status(status.prompt_bufnr)
 end
 
+local ns_telescope_selection = a.nvim_create_namespace('telescope_selection')
 
+function Picker:get_selection()
+  return self.selection or #(self.line_scores or {})
+end
+
+function Picker:move_selection(change)
+  self:set_selection(self:get_selection() + change)
+end
+
+function Picker:set_selection(row)
+  local status = state.get_status(self.prompt_bufnr)
+
+  a.nvim_buf_clear_namespace(status.results_bufnr, ns_telescope_selection, 0, -1)
+  a.nvim_buf_add_highlight(
+    status.results_bufnr,
+    ns_telescope_selection,
+    'Error',
+    row,
+    0,
+    -1
+  )
+
+  -- TODO: Don't let you go over / under the buffer limits
+  -- TODO: Make sure you start exactly at the bottom selected
+
+  -- TODO: Get row & text in the same obj
+  self.selection = row
+
+  if self.previewer then
+    self.previewer:preview(
+      status.preview_win,
+      status.preview_bufnr,
+      status.results_bufnr,
+      row
+    )
+  end
+end
 
 pickers.new = function(...)
   return Picker:new(...)
