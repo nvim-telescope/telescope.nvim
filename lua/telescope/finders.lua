@@ -1,4 +1,5 @@
 local a = vim.api
+local log = require('telescope.log')
 
 local finders = {}
 
@@ -29,7 +30,7 @@ function Finder:new(opts)
   --    ...
   return setmetatable({
     fn_command = opts.fn_command,
-    responsive = opts.responsive,
+    static = opts.static,
     state = {},
     job_id = -1,
   }, Finder)
@@ -44,10 +45,27 @@ end
 -- process_search
 -- do_your_job
 -- process_plz
-function Finder:_find(prompt, process_result)
+function Finder:_find(prompt, process_result, process_complete)
   if (self.state.job_id or 0) > 0 then
     vim.fn.jobstop(self.job_id)
   end
+
+  log.info("Finding...")
+  if self.static and self.done then
+    log.info("Using previous results")
+    for _, v in ipairs(self._cached_lines) do
+      process_result(v)
+    end
+
+    process_complete()
+    return
+  end
+
+  if self.static then
+    self._cached_lines = {}
+  end
+
+  self.done = false
 
   -- TODO: How to just literally pass a list...
   -- TODO: How to configure what should happen here
@@ -57,9 +75,21 @@ function Finder:_find(prompt, process_result)
 
     on_stdout = function(_, data, _)
       for _, line in ipairs(data) do
-        process_result(line)
+        if vim.trim(line) ~= "" then
+          process_result(line)
+
+          if self.static then
+            table.insert(self._cached_lines, line)
+          end
+        end
       end
-    end
+    end,
+
+    on_exit = function()
+      self.done = true
+
+      process_complete()
+    end,
   })
 end
 

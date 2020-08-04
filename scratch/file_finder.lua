@@ -1,4 +1,3 @@
-package.loaded['telescope.pickers'] = nil
 local telescope = require('telescope')
 
 -- Goals:
@@ -40,38 +39,34 @@ fzf_job.stdin = ls_files_job.stdout
 
 --]]
 
-local string_distance = require('telescope.algos.string_distance')
 
 local file_finder = telescope.finders.new {
-  fn_command = function(self, prompt)
-    -- todo figure out how to cache this later
-    if false then
-      if self[prompt] == nil then
-        self[prompt] = nil
-      end
+  static = true,
 
-      return self[prompt]
-    else
-      return 'git ls-files'
-    end
+  -- self, prompt
+  fn_command = function()
+    return 'git ls-files'
   end,
 }
 
-local file_sorter = telescope.sorters.new {
-  scoring_function = function(self, prompt, line)
-    if prompt == '' then return 0 end
-    if not line then return -1 end
+local file_sorter = telescope.sorters.get_ngram_sorter()
 
-    return tonumber(vim.fn.systemlist(string.format(
-      "echo '%s' | ~/tmp/fuzzy_test/target/debug/fuzzy_test '%s'",
-      line,
-      prompt
-    ))[1])
-  end
-}
+-- local string_distance = require('telescope.algos.string_distance')
+-- new {
+--   scoring_function = function(self, prompt, line)
+--     if prompt == '' then return 0 end
+--     if not line then return -1 end
+
+--     return tonumber(vim.fn.systemlist(string.format(
+--       "echo '%s' | ~/tmp/fuzzy_test/target/debug/fuzzy_test '%s'",
+--       line,
+--       prompt
+--     ))[1])
+--   end
+-- }
 
 
-local file_previewer = telescope.previewers.vim_buffer
+local file_previewer = telescope.previewers.vim_buffer_or_bat
 
 local file_picker = telescope.pickers.new {
   previewer = file_previewer

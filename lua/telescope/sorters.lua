@@ -1,3 +1,5 @@
+local util = require('telescope.utils')
+
 local sorters = {}
 
 
@@ -30,5 +32,31 @@ function sorters.new(...)
 end
 
 sorters.Sorter = Sorter
+
+sorters.get_ngram_sorter = function()
+  return Sorter:new {
+    scoring_function = function(_, prompt, line)
+      if prompt == "" or prompt == nil then
+        return 1
+      end
+
+      local ok, result = pcall(function()
+        local ngram = util.new_ngram { N = 4 }
+        ngram:add(line)
+
+        local score = ngram:score(prompt)
+        if score == 0 then
+          return -1
+        end
+
+        -- return math.pow(math.max(score, 0.0001), -1)
+        return score
+      end)
+
+      print(prompt, line, result)
+      return ok and result or 1
+    end
+  }
+end
 
 return sorters
