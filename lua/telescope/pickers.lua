@@ -1,6 +1,12 @@
 local a = vim.api
+local fun = require('fun')
 local popup = require('popup')
 
+
+local zip = fun.zip
+local tomap = fun.tomap
+
+local log = require('telescope.log')
 local mappings = require('telescope.mappings')
 local state = require('telescope.state')
 local utils = require('telescope.utils')
@@ -119,10 +125,10 @@ function Picker:find(opts)
   -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_string)
 
   -- First thing we want to do is set all the lines to blank.
-  local max_results = popup_opts.results.height
+  self.max_results = popup_opts.results.height - 1
   local initial_lines = {}
-  for _ = 1, max_results do table.insert(initial_lines, "") end
-  vim.api.nvim_buf_set_lines(results_bufnr, 0, max_results, false, initial_lines)
+  for _ = 1, self.max_results do table.insert(initial_lines, "") end
+  vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, initial_lines)
 
   local on_lines = function(_, _, _, first_line, last_line)
     local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]
@@ -145,11 +151,22 @@ function Picker:find(opts)
     -- TODO: We need to handle huge lists in a good way, cause currently we'll just put too much stuff in the buffer
     -- TODO: Stop having things crash if we have an error.
 
-    local replace_line = function(row, line)
+    local replace_line = function(score, row, line)
+      log.trace("Replacing @ %s w/ text '%s' (%s)", row, line, score)
       vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {line})
     end
 
-    finder(prompt, function(line)
+    local insert_line = function(score, row, line)
+      log.trace("Inserting @ %s w/ text '%s' (%s)", row, line, score)
+      vim.api.nvim_buf_set_lines(results_bufnr, row, row, false, {line})
+    end
+
+
+    local process_result = function(line)
+      if vim.trim(line) == "" then
+        return
+      end
+
       if sorter then
         local sort_score = sorter:score(prompt, line)
         if sort_score == -1 then
@@ -161,7 +178,7 @@ function Picker:find(opts)
         for row, row_score in utils.reversed_ipairs(self.line_scores) do
           if row_score > sort_score then
             -- Insert line at row
-            replace_line(max_results - row, line)
+            insert_line(sort_score, self.max_results - row, line)
 
             -- Insert current score in the table
             table.insert(self.line_scores, row + 1, sort_score)
@@ -171,7 +188,7 @@ function Picker:find(opts)
           end
 
           -- Don't keep inserting stuff
-          if row > max_results then
+          if row > self.max_results then
             return
           end
         end
@@ -179,19 +196,35 @@ function Picker:find(opts)
         -- Worst score so far, so add to end
 
         -- example: 5 max results, 8
-        local worst_line = max_results - #self.line_scores
-        replace_line(worst_line, line)
+        local worst_line = self.max_results - #self.line_scores
+        replace_line(sort_score, worst_line, line)
         table.insert(self.line_scores, sort_score)
       else
         -- Just always append to the end of the buffer if this is all you got.
         vim.api.nvim_buf_set_lines(results_bufnr, -1, -1, false, {line})
       end
+    end
+
+    local process_complete = function()
+      local worst_line = self.max_results - #self.line_scores
+      local empty_lines = {}
+      for _ = 1, worst_line do table.insert(empty_lines, "") end
+      vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line, false, empty_lines)
+
+      log.info("Worst Line after process_complete: %s", worst_line)
+      log.trace("%s", tomap(zip(
+        a.nvim_buf_get_lines(results_bufnr, worst_line, self.max_results, false),
+        self.line_scores
+      )))
+    end
+
+    pcall(function()
+      return finder(prompt, process_result, process_complete)
     end)
-    -- local results = finder:get_results(results_win, results_bufnr, line)
   end
 
   -- Call this once to pre-populate if it makes sense
-  vim.schedule_wrap(on_lines(nil, nil, nil, 0, 1))
+  -- vim.schedule_wrap(on_lines(nil, nil, nil, 0, 1))
 
   -- Register attach
   vim.api.nvim_buf_attach(prompt_bufnr, true, {
@@ -233,16 +266,12 @@ function Picker:find(opts)
     finder = finder,
   })
 
-  -- print(vim.inspect(state.get_status(prompt_bufnr)))
   mappings.set_keymap(prompt_bufnr, results_bufnr)
 
   vim.cmd [[startinsert]]
 end
 
 function Picker:close_windows(status)
-  -- vim.fn['popup#close_win'](state.prompt_win)
-  -- vim.fn['popup#close_win'](state.results_win)
-  -- vim.fn['popup#close_win'](state.preview_win)
   local prompt_win = status.prompt_win
   local results_win = status.results_win
   local preview_win = status.preview_win
@@ -252,12 +281,13 @@ function Picker:close_windows(status)
   local preview_border_win = status.preview_border_win
 
   local function del_win(name, win_id, force)
-    -- local file = io.open("/home/tj/test.txt", "a")
-    -- file:write(string.format("Closing.... %s %s\n", name, win_id))
-    local ok = pcall(vim.api.nvim_win_close, win_id, force)
-    -- file:write(string.format("OK: %s\n", ok))
-    -- file:write("...Done\n\n")
-    -- file:close()
+    if not vim.api.nvim_win_is_valid(win_id) then
+      return
+    end
+
+    if not pcall(vim.api.nvim_win_close, win_id, force) then
+      log.trace("Unable to close window: %s/%s", name, win_id)
+    end
   end
 
   del_win("prompt_win", prompt_win, true)
@@ -283,7 +313,7 @@ end
 local ns_telescope_selection = a.nvim_create_namespace('telescope_selection')
 
 function Picker:get_selection()
-  return self.selection or #(self.line_scores or {})
+  return self.selection or self.max_results
 end
 
 function Picker:move_selection(change)
@@ -291,6 +321,12 @@ function Picker:move_selection(change)
 end
 
 function Picker:set_selection(row)
+  if row > self.max_results then
+    row = self.max_results
+  elseif row < 1 then
+    row = 1
+  end
+
   local status = state.get_status(self.prompt_bufnr)
 
   a.nvim_buf_clear_namespace(status.results_bufnr, ns_telescope_selection, 0, -1)
