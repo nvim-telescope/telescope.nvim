@@ -1,3 +1,4 @@
+local log = require('telescope.log')
 local util = require('telescope.utils')
 
 local sorters = {}
@@ -12,7 +13,7 @@ Sorter.__index = Sorter
 ---
 --- Lower number is better (because it's like a closer match)
 --- But, any number below 0 means you want that line filtered out.
---- @param scoring_function function Function that has the interface:
+--- @field scoring_function function Function that has the interface:
 --      (sorter, prompt, line): number
 function Sorter:new(opts)
   opts = opts or {}
@@ -55,6 +56,16 @@ sorters.get_ngram_sorter = function()
 
       print(prompt, line, result)
       return ok and result or 1
+    end
+  }
+end
+
+sorters.get_levenshtein_sorter = function()
+  return Sorter:new {
+    scoring_function = function(_, prompt, line)
+      local result = require('telescope.algos.string_distance')(prompt, line)
+      log.info("Sorting result for", prompt, line, " = ", result)
+      return result
     end
   }
 end

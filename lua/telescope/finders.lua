@@ -29,6 +29,7 @@ function Finder:new(opts)
   --    list
   --    ...
   return setmetatable({
+    results = opts.results,
     fn_command = opts.fn_command,
     static = opts.static,
     state = {},
@@ -46,6 +47,16 @@ end
 -- do_your_job
 -- process_plz
 function Finder:_find(prompt, process_result, process_complete)
+  if self.results then
+    assert(type(self.results) == 'table', "self.results must be a table")
+    for _, v in ipairs(self.results) do
+      process_result(v)
+    end
+
+    process_complete()
+    return
+  end
+
   if (self.state.job_id or 0) > 0 then
     vim.fn.jobstop(self.job_id)
   end
