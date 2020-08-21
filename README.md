@@ -4,6 +4,13 @@ Gaze deeply into unknown regions using the power of the moon.
 
 ![Example](./media/simple_rg_v1.gif)
 
+## Installation
+
+```vim
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-lua/telescope.nvim'
+```
+
 ## Goals
 
 
@@ -25,6 +32,9 @@ Gaze deeply into unknown regions using the power of the moon.
 "previewer":
 - sometimes built-in
 - sometimes a lua callback
+
+
+As an example, you could pipe your inputs into fzf, and then it can sort them for you.
 
 fzf:
 - have a list of inputs

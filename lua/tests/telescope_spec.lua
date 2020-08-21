@@ -1,5 +1,6 @@
 require('plenary.test_harness'):setup_busted()
 
+local pickers = require('telescope.pickers')
 local utils = require('telescope.utils')
 
 --[[
@@ -11,6 +12,81 @@ describe('Picker', function()
     it('', function()
       assert(true)
     end)
+  end)
+
+  describe('process_result', function()
+    it('works with one entry', function()
+      local lines_manager = pickers.line_manager(5, nil)
+
+      lines_manager:add_result(1, "hello")
+
+      assert.are.same(1, lines_manager:_get_state()[1].score)
+    end)
+
+    it('works with two entries', function()
+      local lines_manager = pickers.line_manager(5, nil)
+
+      lines_manager:add_result(1, "hello")
+      lines_manager:add_result(2, "later")
+
+      assert.are.same("hello", lines_manager:_get_state()[1].line)
+      assert.are.same("later", lines_manager:_get_state()[2].line)
+    end)
+
+    it('calls functions when inserting', function()
+      local called_count = 0
+      local lines_manager = pickers.line_manager(5, function() called_count = called_count + 1 end)
+
+      assert(called_count == 0)
+      lines_manager:add_result(1, "hello")
+      assert(called_count == 1)
+    end)
+
+    it('calls functions when inserting twice', function()
+      local called_count = 0
+      local lines_manager = pickers.line_manager(5, function() called_count = called_count + 1 end)
+
+      assert(called_count == 0)
+      lines_manager:add_result(1, "hello")
+      lines_manager:add_result(2, "world")
+      assert(called_count == 2)
+    end)
+
+    it('correctly sorts lower scores', function()
+      local called_count = 0
+      local lines_manager = pickers.line_manager(5, function() called_count = called_count + 1 end)
+      lines_manager:add_result(5, "worse result")
+      lines_manager:add_result(2, "better result")
+
+      assert.are.same("better result", lines_manager:_get_state()[1].line)
+      assert.are.same("worse result", lines_manager:_get_state()[2].line)
+
+      -- once to insert "worse"
+      -- once to insert "better"
+      -- and then to move "worse"
+      assert.are.same(3, called_count)
+    end)
+
+    it('respects max results', function()
+      local called_count = 0
+      local lines_manager = pickers.line_manager(1, function() called_count = called_count + 1 end)
+      lines_manager:add_result(2, "better result")
+      lines_manager:add_result(5, "worse result")
+
+      assert.are.same("better result", lines_manager:_get_state()[1].line)
+
+      -- once to insert "worse"
+      -- once to insert "better"
+      -- and then to move "worse"
+      assert.are.same(1, called_count)
+    end)
+
+    -- TODO: We should decide if we want to add this or not.
+    -- it('should handle no scores', function()
+    --   local lines_manager = pickers.line_manager(5, nil)
+
+    --   lines_manager:add_result(nil, 
+    -- end)
   end)
 
   describe('ngrams', function()

@@ -29,7 +29,7 @@ previewers.vim_buffer = previewers.new {
     end
     local file_name = vim.split(line, ":")[1]
 
-    log.info("Previewing File: %s", file_name)
+    log.trace("Previewing File: %s", file_name)
 
     -- vim.fn.termopen(
     --   string.format("bat --color=always --style=grid %s"),

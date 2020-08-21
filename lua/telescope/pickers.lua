@@ -1,10 +1,6 @@
 local a = vim.api
-local fun = require('fun')
 local popup = require('popup')
 
-
-local zip = fun.zip
-local tomap = fun.tomap
 
 local log = require('telescope.log')
 local mappings = require('telescope.mappings')
@@ -13,6 +9,8 @@ local utils = require('telescope.utils')
 
 local pickers = {}
 
+--- Picker is the main UI that shows up to interact w/ your results.
+-- Takes a filter & a previewr
 local Picker = {}
 Picker.__index = Picker
 
@@ -133,17 +131,11 @@ function Picker:find(opts)
   local on_lines = function(_, _, _, first_line, last_line)
     local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]
 
-
     -- Create a closure that has all the data we need
     -- We pass a function called "newResult" to get_results
     --    get_results calles "newResult" every time it gets a new result
     --    picker then (if available) calls sorter
     --    and then appropriately places new result in the buffer.
-
-
-    -- Sorted table by scores.
-    --  Lowest score gets lowest index.
-    self.line_scores = {}
 
     -- TODO: We need to fix the sorting
     -- TODO: We should provide a simple fuzzy matcher in Lua for people
@@ -151,80 +143,65 @@ function Picker:find(opts)
     -- TODO: We need to handle huge lists in a good way, cause currently we'll just put too much stuff in the buffer
     -- TODO: Stop having things crash if we have an error.
 
-    local replace_line = function(score, row, line)
-      log.trace("Replacing @ %s w/ text '%s' (%s)", row, line, score)
-      vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {line})
-    end
+    local line_manager = pickers.line_manager(
+      self.max_results,
+      function(index, line)
+        local row = self.max_results - index + 1
 
-    local insert_line = function(score, row, line)
-      log.trace("Inserting @ %s w/ text '%s' (%s)", row, line, score)
-      vim.api.nvim_buf_set_lines(results_bufnr, row, row, false, {line})
-    end
-
+        log.trace("Setting row", row, "with value", line)
+        vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {line})
+      end
+    )
 
     local process_result = function(line)
       if vim.trim(line) == "" then
         return
       end
 
+      log.trace("Processing result... ", line)
+
+      local sort_score = 0
       if sorter then
-        local sort_score = sorter:score(prompt, line)
+        sort_score = sorter:score(prompt, line)
         if sort_score == -1 then
+          log.trace("Filtering out result: ", line)
           return
         end
-
-        -- { 7, 3, 1, 1 }
-        -- 2
-        for row, row_score in utils.reversed_ipairs(self.line_scores) do
-          if row_score > sort_score then
-            -- Insert line at row
-            insert_line(sort_score, self.max_results - row, line)
-
-            -- Insert current score in the table
-            table.insert(self.line_scores, row + 1, sort_score)
-
-            -- All done :)
-            return
-          end
-
-          -- Don't keep inserting stuff
-          if row > self.max_results then
-            return
-          end
-        end
-
-        -- Worst score so far, so add to end
-
-        -- example: 5 max results, 8
-        local worst_line = self.max_results - #self.line_scores
-        replace_line(sort_score, worst_line, line)
-        table.insert(self.line_scores, sort_score)
-      else
-        -- Just always append to the end of the buffer if this is all you got.
-        vim.api.nvim_buf_set_lines(results_bufnr, -1, -1, false, {line})
       end
+
+      line_manager:add_result(sort_score, line)
     end
 
     local process_complete = function()
-      local worst_line = self.max_results - #self.line_scores
-      local empty_lines = {}
-      for _ = 1, worst_line do table.insert(empty_lines, "") end
-      vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line, false, empty_lines)
+      local worst_line = self.max_results - line_manager.num_results()
+      local empty_lines = utils.repeated_table(worst_line, "")
+      -- vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line + 1, false, empty_lines)
 
-      log.info("Worst Line after process_complete: %s", worst_line)
-      log.trace("%s", tomap(zip(
-        a.nvim_buf_get_lines(results_bufnr, worst_line, self.max_results, false),
-        self.line_scores
-      )))
+      log.debug("Worst Line after process_complete: %s", worst_line, results_bufnr)
+
+      -- local fun = require('fun')
+      -- local zip = fun.zip
+      -- local tomap = fun.tomap
+
+      -- log.trace("%s", tomap(zip(
+      --   a.nvim_buf_get_lines(results_bufnr, worst_line, self.max_results, false),
+      --   self.line_scores
+      -- )))
     end
 
-    pcall(function()
+    local ok, msg = pcall(function()
       return finder(prompt, process_result, process_complete)
     end)
+
+    if not ok then
+      log.warn("Failed with msg: ", msg)
+    end
   end
 
-  -- Call this once to pre-populate if it makes sense
-  -- vim.schedule_wrap(on_lines(nil, nil, nil, 0, 1))
+  -- TODO: Uncomment
+  vim.schedule(function()
+    on_lines(nil, nil, nil, 0, 1)
+  end)
 
   -- Register attach
   vim.api.nvim_buf_attach(prompt_bufnr, true, {
@@ -358,5 +335,83 @@ end
 pickers.new = function(...)
   return Picker:new(...)
 end
+
+-- TODO: We should consider adding `process_bulk` or `bulk_line_manager` for things
+-- that we always know the items and can score quickly, so as to avoid drawing so much.
+pickers.line_manager = function(max_results, set_line)
+  log.debug("Creating line_manager...")
+
+  -- state contains list of
+  --    {
+  --        score = ...
+  --        line = ...
+  --        metadata ? ...
+  --    }
+  local state = {}
+
+  set_line = set_line or function() end
+
+  return setmetatable({
+    add_result = function(self, score, line)
+      score = score or 0
+
+      for index, item in ipairs(state) do
+        if item.score > score then
+          return self:insert(index, {
+            score = score,
+            line = line,
+          })
+        end
+
+        -- Don't add results that are too bad.
+        if index >= max_results then
+          return self
+        end
+      end
+
+      return self:insert({
+        score = score,
+        line = line,
+      })
+    end,
+
+    insert = function(self, index, item)
+      if item == nil then
+        item = index
+        index = #state + 1
+      end
+
+      -- To insert something, we place at the next available index (or specified index)
+      -- and then shift all the corresponding items one place.
+      local next_item
+      repeat
+        next_item = state[index]
+
+        set_line(index, item.line)
+        state[index] = item
+
+        index = index + 1
+        item = next_item
+      until not next_item
+    end,
+
+    num_results = function()
+      return #state
+    end,
+
+    _get_state = function()
+      return state
+    end,
+  }, {
+    -- insert =
+
+    -- __index = function(_, line)
+    -- end,
+
+    -- __newindex = function(_, index, line)
+    -- end,
+  })
+end
+
 
 return pickers
