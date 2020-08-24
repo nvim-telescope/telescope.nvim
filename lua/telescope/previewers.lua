@@ -81,7 +81,6 @@ previewers.vim_buffer_or_bat = previewers.new {
   end,
 }
 
-
 previewers.Previewer = Previewer
 
 return previewers

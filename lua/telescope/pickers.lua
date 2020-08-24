@@ -148,6 +148,11 @@ function Picker:find(opts)
       function(index, line)
         local row = self.max_results - index + 1
 
+        -- If it's less than 0, then we don't need to show it at all.
+        if row < 0 then
+          return
+        end
+
         log.trace("Setting row", row, "with value", line)
         vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {line})
       end
@@ -161,8 +166,17 @@ function Picker:find(opts)
       log.trace("Processing result... ", line)
 
       local sort_score = 0
+      local sort_ok
       if sorter then
-        sort_score = sorter:score(prompt, line)
+        sort_ok, sort_score = pcall(function ()
+          return sorter:score(prompt, line)
+        end)
+
+        if not sort_ok then
+          log.warn("Sorting failed with:", prompt, line, sort_score)
+          return
+        end
+
         if sort_score == -1 then
           log.trace("Filtering out result: ", line)
           return
@@ -347,7 +361,7 @@ pickers.line_manager = function(max_results, set_line)
   --        line = ...
   --        metadata ? ...
   --    }
-  local state = {}
+  local line_state = {}
 
   set_line = set_line or function() end
 
@@ -355,7 +369,7 @@ pickers.line_manager = function(max_results, set_line)
     add_result = function(self, score, line)
       score = score or 0
 
-      for index, item in ipairs(state) do
+      for index, item in ipairs(line_state) do
         if item.score > score then
           return self:insert(index, {
             score = score,
@@ -378,17 +392,17 @@ pickers.line_manager = function(max_results, set_line)
     insert = function(self, index, item)
       if item == nil then
         item = index
-        index = #state + 1
+        index = #line_state + 1
       end
 
       -- To insert something, we place at the next available index (or specified index)
       -- and then shift all the corresponding items one place.
       local next_item
       repeat
-        next_item = state[index]
+        next_item = line_state[index]
 
         set_line(index, item.line)
-        state[index] = item
+        line_state[index] = item
 
         index = index + 1
         item = next_item
@@ -396,11 +410,11 @@ pickers.line_manager = function(max_results, set_line)
     end,
 
     num_results = function()
-      return #state
+      return #line_state
     end,
 
     _get_state = function()
-      return state
+      return line_state
     end,
   }, {
     -- insert =

@@ -1,5 +1,8 @@
 require('plenary.test_harness'):setup_busted()
 
+local log = require('telescope.log')
+-- log.use_console = false
+
 local pickers = require('telescope.pickers')
 local utils = require('telescope.utils')
 
@@ -175,6 +178,22 @@ describe('Picker', function()
           assert.are.same(n:find("telini"), "telescope/init.lua")
         end)
       end)
+    end)
+  end)
+end)
+
+describe('Sorters', function()
+  describe('norcalli_sorter', function()
+    it('sort matches well', function()
+      local sorter = require('telescope.sorters').get_norcalli_sorter()
+
+      local exact_match = sorter:score('hello', 'hello')
+      local no_match = sorter:score('abcdef', 'ghijkl')
+      local ok_match = sorter:score('abcdef', 'ab')
+
+      assert(exact_match < no_match)
+      assert(exact_match < ok_match)
+      assert(ok_match < no_match)
     end)
   end)
 end)

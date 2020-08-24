@@ -8,6 +8,7 @@ local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
 local sorters = require('telescope.sorters')
 local state = require('telescope.state')
+local builtin = require('telescope.builtin')
 
 local telescope = {
   -- <module>.new { }
@@ -17,6 +18,8 @@ local telescope = {
   sorters = sorters,
 
   state = state,
+
+  builtin = builtin,
 }
 
 function __TelescopeOnLeave(prompt_bufnr)
