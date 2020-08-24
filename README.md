@@ -11,6 +11,16 @@ Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-lua/telescope.nvim'
 ```
 
+## Usage
+
+(I will write a longer description later about how to create each of the objects described in Pipeline)
+
+There is currently a fuzzy finder for git files builtin:
+
+```
+require('telescope').builtin.git_files()
+```
+
 ## Goals
 
 

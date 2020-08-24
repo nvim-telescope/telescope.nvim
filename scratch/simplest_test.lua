@@ -19,13 +19,12 @@ local file_picker = telescope.pickers.new {
   previewer = file_previewer
 }
 
-local file_sorter = telescope.sorters.get_ngram_sorter()
+-- local file_sorter = telescope.sorters.get_ngram_sorter()
 -- local file_sorter = require('telescope.sorters').get_levenshtein_sorter()
+local file_sorter = require('telescope.sorters').get_norcalli_sorter()
 
 file_picker:find {
   prompt = 'Simple File',
   finder = file_finder,
   sorter = file_sorter,
 }
-
-local x = function() end
