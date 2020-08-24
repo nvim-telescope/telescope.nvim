@@ -4,28 +4,36 @@ A collection of builtin pipelines for telesceope.
 Meant for both example and for easy startup.
 --]]
 
-local Finder = require('telescope.finder')
-local pickers = require('telescope.pickers')
-
 local builtin = {}
 
-builtin.rg_vimgrep = setmetatable({}, {
-  __call = function(t, ...)
-    -- builtin.rg_vimgrep("--type lua function")
-    print(t, ...)
-  end
-})
+builtin.git_files = function(_)
+  -- TODO: Auto select bottom row
+  -- TODO: filter out results when they don't match at all anymore.
 
-builtin.rg_vimgrep.finder = Finder:new {
-  fn_command = function(prompt)
-    return string.format('rg --vimgrep %s', prompt)
-  end,
+  local telescope = require('telescope')
 
-  responsive = false
-}
+  local file_finder = telescope.finders.new {
+    static = true,
 
-builtin.rg_vimgrep.picker = pickers.new {
-}
+    fn_command = function() return 'git ls-files' end,
+  }
+
+  local file_previewer = telescope.previewers.vim_buffer
+
+  local file_picker = telescope.pickers.new {
+    previewer = file_previewer
+  }
+
+  -- local file_sorter = telescope.sorters.get_ngram_sorter()
+  -- local file_sorter = require('telescope.sorters').get_levenshtein_sorter()
+  local file_sorter = telescope.sorters.get_norcalli_sorter()
+
+  file_picker:find {
+    prompt = 'Simple File',
+    finder = file_finder,
+    sorter = file_sorter,
+  }
+end
 
 
 return builtin
