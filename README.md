@@ -7,6 +7,7 @@ Gaze deeply into unknown regions using the power of the moon.
 ## Installation
 
 ```vim
+Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-lua/telescope.nvim'
 ```
