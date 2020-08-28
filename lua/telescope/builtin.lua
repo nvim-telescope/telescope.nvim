@@ -11,7 +11,19 @@ local sorters = require('telescope.sorters')
 
 local builtin = {}
 
-builtin.git_files = function()
+local ifnil = function(x, was_nil, was_not_nil)
+  if x == nil then
+    return was_nil
+  else
+    return was_not_nil
+  end
+end
+
+builtin.git_files = function(opts)
+  opts = opts or {}
+
+  local show_preview = ifnil(opts.show_preview, true, opts.show_preview)
+
   -- TODO: Auto select bottom row
   -- TODO: filter out results when they don't match at all anymore.
 
@@ -29,7 +41,7 @@ builtin.git_files = function()
   local file_previewer = previewers.cat
 
   local file_picker = pickers.new {
-    previewer = file_previewer
+    previewer = show_preview and file_previewer,
   }
 
   -- local file_sorter = telescope.sorters.get_ngram_sorter()

@@ -12,6 +12,14 @@ local Previewer = require('telescope.previewers').Previewer
 
 local pickers = {}
 
+-- Picker takes a function (`get_window_options`) that returns the configurations required for three windows:
+--  prompt
+--  results
+--  preview
+
+
+-- TODO: Add overscroll option for results buffer
+
 --- Picker is the main UI that shows up to interact w/ your results.
 -- Takes a filter & a previewr
 local Picker = {}
@@ -32,10 +40,11 @@ function Picker:new(opts)
     filter = opts.filter,
     previewer = opts.previewer,
     maps = opts.maps,
+    get_window_options = opts.get_window_options,
   }, Picker)
 end
 
-function Picker._get_window_options(max_columns, max_lines, prompt_title)
+function Picker:get_window_options(max_columns, max_lines, prompt_title)
   local preview = {
     border = {},
     enter = false,
@@ -54,7 +63,9 @@ function Picker._get_window_options(max_columns, max_lines, prompt_title)
   -- TODO: Test with 120 width terminal
 
   local width_padding = 10
-  if max_columns < 150 then
+  if not self.previewer then
+    preview.width = 0
+  elseif max_columns < 150 then
     width_padding = 5
     preview.width = math.floor(max_columns * 0.4)
   elseif max_columns < 200 then
@@ -78,8 +89,12 @@ function Picker._get_window_options(max_columns, max_lines, prompt_title)
   prompt.height = 1
   prompt.minheight = prompt.height
 
-  preview.height = results.height + prompt.height + 2
-  preview.minheight = preview.height
+  if self.previewer then
+    preview.height = results.height + prompt.height + 2
+    preview.minheight = preview.height
+  else
+    preview.height = 0
+  end
 
   results.col = width_padding
   prompt.col = width_padding
@@ -92,7 +107,7 @@ function Picker._get_window_options(max_columns, max_lines, prompt_title)
   preview.line = results.line
 
   return {
-    preview = preview,
+    preview = self.previewer and preview,
     results = results,
     prompt = prompt,
   }
@@ -113,7 +128,7 @@ function Picker:find(opts)
   -- 1. Prompt window
   -- 2. Options window
   -- 3. Preview window
-  local popup_opts = Picker._get_window_options(vim.o.columns, vim.o.lines, prompt_string)
+  local popup_opts = self:get_window_options(vim.o.columns, vim.o.lines, prompt_string)
 
   -- TODO: Add back the borders after fixing some stuff in popup.nvim
   local results_win, results_opts = popup.create('', popup_opts.results)
@@ -122,13 +137,17 @@ function Picker:find(opts)
   -- TODO: Should probably always show all the line for results win, so should implement a resize for the windows
   a.nvim_win_set_option(results_win, 'wrap', false)
 
-  local preview_win, preview_opts = popup.create('', popup_opts.preview)
-  local preview_bufnr = a.nvim_win_get_buf(preview_win)
 
-  -- TODO: For some reason, highlighting is kind of weird on these windows.
-  --        It may actually be my colorscheme tho...
-  a.nvim_win_set_option(preview_win, 'winhl', 'Normal:Normal')
-  a.nvim_win_set_option(preview_win, 'winblend', 1)
+  local preview_win, preview_opts, preview_bufnr
+  if popup_opts.preview then
+    preview_win, preview_opts = popup.create('', popup_opts.preview)
+    preview_bufnr = a.nvim_win_get_buf(preview_win)
+
+    -- TODO: For some reason, highlighting is kind of weird on these windows.
+    --        It may actually be my colorscheme tho...
+    a.nvim_win_set_option(preview_win, 'winhl', 'Normal:Normal')
+    a.nvim_win_set_option(preview_win, 'winblend', 10)
+  end
 
   -- TODO: We need to center this and make it prettier...
   local prompt_win, prompt_opts = popup.create('', popup_opts.prompt)
@@ -190,6 +209,8 @@ function Picker:find(opts)
     end
 
     local process_complete = vim.schedule_wrap(function()
+      self:set_selection(self:get_selection_row())
+
       local worst_line = self.max_results - self.manager.num_results()
       if worst_line == 0 then
         return
@@ -257,7 +278,7 @@ function Picker:find(opts)
 
     preview_bufnr = preview_bufnr,
     preview_win = preview_win,
-    preview_border_win = preview_opts.border.win_id,
+    preview_border_win = preview_opts and preview_opts.border.win_id,
 
     picker = self,
     previewer = self.previewer,
@@ -268,6 +289,12 @@ function Picker:find(opts)
 
   vim.cmd [[startinsert]]
 end
+
+function Picker:hide_preview()
+  -- 1. Hide the window (and border)
+  -- 2. Resize prompt & results windows accordingly
+end
+
 
 function Picker:close_windows(status)
   local prompt_win = status.prompt_win
@@ -330,6 +357,11 @@ function Picker:set_selection(row)
   end
 
   local entry = self.manager:get_entry(self.max_results - row + 1)
+  if entry == self._selection then
+    log.debug("Same entry as before. Skipping set")
+    return
+  end
+
   local status = state.get_status(self.prompt_bufnr)
 
   a.nvim_buf_clear_namespace(status.results_bufnr, ns_telescope_selection, 0, -1)
@@ -349,7 +381,7 @@ function Picker:set_selection(row)
   self._selection = entry
   self._selection_row = row
 
-  if self.previewer then
+  if status.preview_win and self.previewer then
     self.previewer:preview(
       entry,
       status
@@ -450,7 +482,6 @@ pickers.entry_manager = function(max_results, set_entry)
     -- end,
   })
 end
-
 
 
 function pickers.on_close_prompt(prompt_bufnr)
