@@ -150,6 +150,51 @@ builtin.lsp_references = function()
   }
 end
 
+builtin.quickfix = function()
+  local locations = vim.fn.getqflist()
+
+  local results = {}
+  for _, entry in ipairs(locations) do
+    if not entry.filename then
+      entry.filename = vim.api.nvim_buf_get_name(entry.bufnr)
+    end
+
+    local vimgrep_str = string.format(
+      "%s:%s:%s: %s",
+      vim.fn.fnamemodify(entry.filename, ":."),
+      entry.lnum,
+      entry.col,
+      entry.text
+    )
+
+    table.insert(results, {
+      valid = true,
+      value = entry,
+      ordinal = vimgrep_str,
+      display = vimgrep_str,
+    })
+  end
+
+  if vim.tbl_isempty(results) then
+    return
+  end
+
+  local lsp_reference_finder = finders.new {
+    results = results
+  }
+
+  local reference_previewer = previewers.qflist
+  local reference_picker = pickers.new {
+    previewer = reference_previewer
+  }
+
+  reference_picker:find {
+    prompt = 'LSP References',
+    finder = lsp_reference_finder,
+    sorter = sorters.get_norcalli_sorter(),
+  }
+end
+
 
 
 return builtin
