@@ -51,9 +51,12 @@ function Picker._get_window_options(max_columns, max_lines, prompt_title)
     enter = true
   }
 
+  -- TODO: Test with 120 width terminal
+
   local width_padding = 10
   if max_columns < 150 then
-    preview.width = 60
+    width_padding = 5
+    preview.width = math.floor(max_columns * 0.4)
   elseif max_columns < 200 then
     preview.width = 80
   else
@@ -64,7 +67,13 @@ function Picker._get_window_options(max_columns, max_lines, prompt_title)
   results.width = other_width
   prompt.width = other_width
 
-  results.height = 25
+  local base_height
+  if max_lines < 40 then
+    base_height = math.floor(max_lines * 0.5)
+  else
+    base_height = math.floor(max_lines * 0.8)
+  end
+  results.height = base_height
   results.minheight = results.height
   prompt.height = 1
   prompt.minheight = prompt.height
@@ -76,7 +85,8 @@ function Picker._get_window_options(max_columns, max_lines, prompt_title)
   prompt.col = width_padding
   preview.col = results.col + results.width + 2
 
-  local height_padding = math.floor(0.95 * max_lines)
+  -- TODO: Center this in the page a bit better.
+  local height_padding = math.max(math.floor(0.95 * max_lines), 2)
   results.line = max_lines - height_padding
   prompt.line = results.line + results.height + 2
   preview.line = results.line
@@ -96,6 +106,8 @@ function Picker:find(opts)
 
   local sorter = opts.sorter
   local prompt_string = opts.prompt
+
+  self.original_win_id = a.nvim_get_current_win()
 
   -- Create three windows:
   -- 1. Prompt window

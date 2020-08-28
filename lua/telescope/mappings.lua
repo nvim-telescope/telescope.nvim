@@ -52,7 +52,8 @@ keymap["control-p"] = function(prompt_bufnr, _)
 end
 
 keymap["enter"] = function(prompt_bufnr, results_bufnr)
-  local entry = state.get_status(prompt_bufnr).picker:get_selection()
+  local picker = state.get_status(prompt_bufnr).picker
+  local entry = picker:get_selection()
 
   if not entry then
     print("[telescope] Nothing currently selected")
@@ -71,6 +72,8 @@ keymap["enter"] = function(prompt_bufnr, results_bufnr)
     local col = tonumber(sections[3])
 
     vim.cmd(string.format([[bdelete! %s]], prompt_bufnr))
+
+    a.nvim_set_current_win(picker.original_win_id or 0)
 
     local bufnr = vim.fn.bufnr(filename, true)
     a.nvim_set_current_buf(bufnr)
