@@ -27,6 +27,9 @@ require('telescope.builtin').live_grep()
 
 -- Use builtin LSP to request references under cursor. Fuzzy find over results.
 require('telescope.builtin').lsp_references()
+
+-- Convert currently quickfixlist to telescope
+require('telescope.builtin').quickfix()
 ```
 
 ## Status (Unstable API)
