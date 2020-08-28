@@ -76,12 +76,12 @@ keymap["enter"] = function(prompt_bufnr, results_bufnr)
     local row = tonumber(sections[2])
     local col = tonumber(sections[3])
 
-    vim.cmd(string.format([[bdelete! %s]], prompt_bufnr))
+    vim.cmd(string.format([[bwipeout! %s]], prompt_bufnr))
 
     a.nvim_set_current_win(picker.original_win_id or 0)
+    vim.cmd(string.format(":e %s", filename))
 
-    local bufnr = vim.fn.bufnr(filename, true)
-    a.nvim_set_current_buf(bufnr)
+    local bufnr = vim.api.nvim_get_current_buf()
     a.nvim_buf_set_option(bufnr, 'buflisted', true)
     if row and col then
       a.nvim_win_set_cursor(0, {row, col})
