@@ -5,6 +5,9 @@ local previewers = {}
 local Previewer = {}
 Previewer.__index = Previewer
 
+local bat_options = "--style=grid --paging=always --wrap=never"
+--  --terminal-width=%s
+
 function Previewer:new(opts)
   opts = opts or {}
 
@@ -122,7 +125,7 @@ previewers.vimgrep = previewers.new {
   setup = function()
     local command_string = "cat %s"
     if vim.fn.executable("bat") then
-      command_string = "bat %s --style=grid --paging=always --highlight-line %s -r %s:%s"
+      command_string = "bat %s --highlight-line %s -r %s:%s" .. bat_options
     end
 
     return {
@@ -160,7 +163,7 @@ previewers.qflist = previewers.new {
   setup = function()
     local command_string = "cat %s"
     if vim.fn.executable("bat") then
-      command_string = "bat %s --style=grid --paging=always --highlight-line %s -r %s:%s"
+      command_string = "bat %s --highlight-line %s -r %s:%s"
     end
 
     return {
