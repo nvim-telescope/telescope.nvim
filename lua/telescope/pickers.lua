@@ -44,7 +44,7 @@ function Picker:new(opts)
   }, Picker)
 end
 
-function Picker:get_window_options(max_columns, max_lines, prompt_title)
+function Picker:get_window_options(max_columns, max_lines, prompt_title, find_options)
   local preview = {
     border = {},
     enter = false,
@@ -63,7 +63,7 @@ function Picker:get_window_options(max_columns, max_lines, prompt_title)
   -- TODO: Test with 120 width terminal
 
   local width_padding = 10
-  if not self.previewer then
+  if not self.previewer or max_columns < find_options.preview_cutoff then
     preview.width = 0
   elseif max_columns < 150 then
     width_padding = 5
@@ -107,14 +107,19 @@ function Picker:get_window_options(max_columns, max_lines, prompt_title)
   preview.line = results.line
 
   return {
-    preview = self.previewer and preview,
+    preview = preview.width > 0 and preview,
     results = results,
     prompt = prompt,
   }
 end
 
+-- opts.preview_cutoff = 120
 function Picker:find(opts)
   opts = opts or {}
+
+  if opts.preview_cutoff == nil then
+    opts.preview_cutoff = 120
+  end
 
   local finder = opts.finder
   assert(finder, "Finder is required to do picking")
@@ -128,7 +133,7 @@ function Picker:find(opts)
   -- 1. Prompt window
   -- 2. Options window
   -- 3. Preview window
-  local popup_opts = self:get_window_options(vim.o.columns, vim.o.lines, prompt_string)
+  local popup_opts = self:get_window_options(vim.o.columns, vim.o.lines, prompt_string, opts)
 
   -- TODO: Add back the borders after fixing some stuff in popup.nvim
   local results_win, results_opts = popup.create('', popup_opts.results)
