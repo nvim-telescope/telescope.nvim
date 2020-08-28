@@ -18,9 +18,25 @@ Plug 'nvim-lua/telescope.nvim'
 
 There is currently a fuzzy finder for git files builtin:
 
-```
+```lua
+-- Fuzzy find over git files in your directory
 require('telescope.builtin').git_files()
+
+-- Grep as you type (requires rg currently)
+require('telescope.builtin').live_grep()
+
+-- Use builtin LSP to request references under cursor. Fuzzy find over results.
+require('telescope.builtin').lsp_references()
 ```
+
+## Status (Unstable API)
+
+While the underlying API & Infrastructure (A.K.A. Spaghetti Code) is still very much WIP and
+will probably change quite a bit, the functions in `builtin` should be relatively stable (as
+in, you can report bugs if they don't work, you should be able to keep them around in your config
+even if everything inside of those functions is rewritten. They provide pretty simple, easy to use
+wrappers over common tasks).
+
 
 ## Goals
 
