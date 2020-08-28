@@ -5,7 +5,7 @@ local previewers = {}
 local Previewer = {}
 Previewer.__index = Previewer
 
-local bat_options = "--style=grid --paging=always --wrap=never"
+local bat_options = " --style=grid --paging=always "
 --  --terminal-width=%s
 
 function Previewer:new(opts)
@@ -71,7 +71,7 @@ previewers.vim_buffer_or_bat = previewers.new {
 
     local file_name = vim.split(value, ":")[1]
 
-    log.info("Previewing File: %s", file_name)
+    log.trace("Previewing File: %s", file_name)
 
     -- vim.fn.termopen(
     --   string.format("bat --color=always --style=grid %s"),
@@ -151,9 +151,11 @@ previewers.vimgrep = previewers.new {
 
     vim.api.nvim_win_set_buf(status.preview_win, bufnr)
 
+    local termopen_command = string.format(self.state.command_string, filename, lnum, start, finish)
+
     -- HACK! Requires `termopen` to accept buffer argument.
     vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
-    vim.fn.termopen(string.format(self.state.command_string, filename, lnum, start, finish))
+    vim.fn.termopen(termopen_command)
     vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.prompt_win))
 
   end
@@ -185,9 +187,11 @@ previewers.qflist = previewers.new {
 
     vim.api.nvim_win_set_buf(status.preview_win, bufnr)
 
+    local termopen_command = string.format(self.state.command_string, filename, lnum, start, finish)
+
     -- HACK! Requires `termopen` to accept buffer argument.
     vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
-    vim.fn.termopen(string.format(self.state.command_string, filename, lnum, start, finish))
+    vim.fn.termopen(termopen_command)
     vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.prompt_win))
   end
 }

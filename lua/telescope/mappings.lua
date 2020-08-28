@@ -65,6 +65,11 @@ keymap["enter"] = function(prompt_bufnr, results_bufnr)
       return
     end
 
+    -- TODO: This is not great.
+    if type(value) == "table" then
+      value = entry.display
+    end
+
     local sections = vim.split(value, ":")
 
     local filename = sections[1]

@@ -12,6 +12,8 @@ local Previewer = require('telescope.previewers').Previewer
 
 local pickers = {}
 
+local ifnil = function(x, was_nil, was_not_nil) if x == nil then return was_nil else return was_not_nil end end
+
 -- Picker takes a function (`get_window_options`) that returns the configurations required for three windows:
 --  prompt
 --  results
@@ -45,18 +47,26 @@ function Picker:new(opts)
 end
 
 function Picker:get_window_options(max_columns, max_lines, prompt_title, find_options)
+
+  local popup_border = ifnil(find_options.border, {}, find_options.border)
+
   local preview = {
-    border = {},
+    border = popup_border,
+    borderchars = find_options.borderchars or nil,
     enter = false,
     highlight = false
   }
+
   local results = {
-    border = {},
+    border = popup_border,
+    borderchars = find_options.borderchars or nil,
     enter = false,
   }
+
   local prompt = {
     title = prompt_title,
-    border = {},
+    border = popup_border,
+    borderchars = find_options.borderchars or nil,
     enter = true
   }
 
@@ -120,6 +130,8 @@ function Picker:find(opts)
   if opts.preview_cutoff == nil then
     opts.preview_cutoff = 120
   end
+
+  opts.borderchars = opts.borderchars or { '─', '│', '─', '│', '┌', '┐', '┘', '└'}
 
   local finder = opts.finder
   assert(finder, "Finder is required to do picking")
@@ -275,16 +287,15 @@ function Picker:find(opts)
   state.set_status(prompt_bufnr, {
     prompt_bufnr = prompt_bufnr,
     prompt_win = prompt_win,
-    prompt_border_win = prompt_opts.border.win_id,
+    prompt_border_win = prompt_opts.border and prompt_opts.border.win_id,
 
     results_bufnr = results_bufnr,
     results_win = results_win,
-    results_border_win = results_opts.border.win_id,
+    results_border_win = results_opts.border and results_opts.border.win_id,
 
     preview_bufnr = preview_bufnr,
     preview_win = preview_win,
-    preview_border_win = preview_opts and preview_opts.border.win_id,
-
+    preview_border_win = preview_opts.border and preview_opts.border.win_id,
     picker = self,
     previewer = self.previewer,
     finder = finder,

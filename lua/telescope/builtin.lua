@@ -11,13 +11,7 @@ local sorters = require('telescope.sorters')
 
 local builtin = {}
 
-local ifnil = function(x, was_nil, was_not_nil)
-  if x == nil then
-    return was_nil
-  else
-    return was_not_nil
-  end
-end
+local ifnil = function(x, was_nil, was_not_nil) if x == nil then return was_nil else return was_not_nil end end
 
 builtin.git_files = function(opts)
   opts = opts or {}
@@ -52,6 +46,9 @@ builtin.git_files = function(opts)
     prompt = 'Simple File',
     finder = file_finder,
     sorter = file_sorter,
+
+    border = opts.border,
+    borderchars = opts.borderchars,
   }
 end
 
@@ -203,6 +200,36 @@ builtin.quickfix = function()
   reference_picker:find {
     prompt = 'LSP References',
     finder = lsp_reference_finder,
+    sorter = sorters.get_norcalli_sorter(),
+  }
+end
+
+builtin.grep_string = function(opts)
+  opts = opts or {}
+
+  local search = opts.search or vim.fn.expand("<cword>")
+
+  local grepper = finders.new {
+    maximum_results = 10000,
+
+    -- TODO: We can optimize these.
+    -- static = true,
+
+    fn_command = function()
+      return {
+        command = 'rg',
+        args = {"--vimgrep", search},
+      }
+    end
+  }
+
+  local file_picker = pickers.new {
+    previewer = previewers.vimgrep
+  }
+
+  file_picker:find {
+    prompt = 'Live Grep',
+    finder = grepper,
     sorter = sorters.get_norcalli_sorter(),
   }
 end
