@@ -19,7 +19,7 @@ Plug 'nvim-lua/telescope.nvim'
 There is currently a fuzzy finder for git files builtin:
 
 ```
-require('telescope').builtin.git_files()
+require('telescope.builtin').git_files()
 ```
 
 ## Goals

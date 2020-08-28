@@ -1,7 +1,14 @@
-local a = vim.api
+local Job = require('plenary.job')
+
 local log = require('telescope.log')
 
 local finders = {}
+
+
+-- TODO: We should make a few different "FinderGenerators":
+--  SimpleListFinder(my_list)
+--  FunctionFinder(my_func)
+--  JobFinder(my_job_args)
 
 ---@class Finder
 local Finder = {}
@@ -30,10 +37,14 @@ function Finder:new(opts)
   --    ...
   return setmetatable({
     results = opts.results,
+
     fn_command = opts.fn_command,
     static = opts.static,
     state = {},
-    job_id = -1,
+
+    -- Maximum number of results to process.
+    --  Particularly useful for live updating large queries.
+    maximum_results = opts.maximum_results,
   }, Finder)
 end
 
@@ -57,8 +68,8 @@ function Finder:_find(prompt, process_result, process_complete)
     return
   end
 
-  if (self.state.job_id or 0) > 0 then
-    vim.fn.jobstop(self.job_id)
+  if self.job and not self.job.is_shutdown then
+    self.job:shutdown()
   end
 
   log.info("Finding...")
@@ -78,30 +89,57 @@ function Finder:_find(prompt, process_result, process_complete)
 
   self.done = false
 
+  -- TODO: Should consider ways to allow "transformers" to be run here.
+  --        So that a finder can choose to "transform" the text into something much more easily usable.
+  local entries_processed = 0
+
+  local on_output = function(_, line, _)
+    if not line then
+      return
+    end
+
+    if maximum_results then
+      entries_processed = entries_processed + 1
+      if entries_processed > maximum_results then
+        log.info("Shutting down job early...")
+        self.job:shutdown()
+      end
+    end
+
+    if vim.trim(line) ~= "" then
+      line = line:gsub("\n", "")
+
+      process_result(line)
+
+      if self.static then
+        table.insert(self._cached_lines, line)
+      end
+    end
+  end
+
   -- TODO: How to just literally pass a list...
   -- TODO: How to configure what should happen here
   -- TODO: How to run this over and over?
-  self.job_id = vim.fn.jobstart(self:fn_command(prompt), {
-    stdout_buffered = true,
+  local opts = self:fn_command(prompt)
+  if not opts then return end
 
-    on_stdout = function(_, data, _)
-      for _, line in ipairs(data) do
-        if vim.trim(line) ~= "" then
-          process_result(line)
+  self.job = Job:new {
+    command = opts.command,
+    args = opts.args,
 
-          if self.static then
-            table.insert(self._cached_lines, line)
-          end
-        end
-      end
-    end,
+    maximum_results = self.maximum_results,
+
+    on_stdout = on_output,
+    on_stderr = on_output,
 
     on_exit = function()
       self.done = true
 
       process_complete()
     end,
-  })
+  }
+
+  self.job:start()
 end
 
 --- Return a new Finder

@@ -1,6 +1,7 @@
 require('plenary.test_harness'):setup_busted()
 
 local log = require('telescope.log')
+log.level = 'info'
 -- log.use_console = false
 
 local pickers = require('telescope.pickers')
@@ -19,50 +20,50 @@ describe('Picker', function()
 
   describe('process_result', function()
     it('works with one entry', function()
-      local lines_manager = pickers.line_manager(5, nil)
+      local manager = pickers.entry_manager(5, nil)
 
-      lines_manager:add_result(1, "hello")
+      manager:add_entry(1, "hello")
 
-      assert.are.same(1, lines_manager:_get_state()[1].score)
+      assert.are.same(1, manager:_get_state()[1].score)
     end)
 
     it('works with two entries', function()
-      local lines_manager = pickers.line_manager(5, nil)
+      local manager = pickers.entry_manager(5, nil)
 
-      lines_manager:add_result(1, "hello")
-      lines_manager:add_result(2, "later")
+      manager:add_entry(1, "hello")
+      manager:add_entry(2, "later")
 
-      assert.are.same("hello", lines_manager:_get_state()[1].line)
-      assert.are.same("later", lines_manager:_get_state()[2].line)
+      assert.are.same("hello", manager:get_ordinal(1))
+      assert.are.same("later", manager:get_ordinal(2))
     end)
 
     it('calls functions when inserting', function()
       local called_count = 0
-      local lines_manager = pickers.line_manager(5, function() called_count = called_count + 1 end)
+      local manager = pickers.entry_manager(5, function() called_count = called_count + 1 end)
 
       assert(called_count == 0)
-      lines_manager:add_result(1, "hello")
+      manager:add_entry(1, "hello")
       assert(called_count == 1)
     end)
 
     it('calls functions when inserting twice', function()
       local called_count = 0
-      local lines_manager = pickers.line_manager(5, function() called_count = called_count + 1 end)
+      local manager = pickers.entry_manager(5, function() called_count = called_count + 1 end)
 
       assert(called_count == 0)
-      lines_manager:add_result(1, "hello")
-      lines_manager:add_result(2, "world")
+      manager:add_entry(1, "hello")
+      manager:add_entry(2, "world")
       assert(called_count == 2)
     end)
 
     it('correctly sorts lower scores', function()
       local called_count = 0
-      local lines_manager = pickers.line_manager(5, function() called_count = called_count + 1 end)
-      lines_manager:add_result(5, "worse result")
-      lines_manager:add_result(2, "better result")
+      local manager = pickers.entry_manager(5, function() called_count = called_count + 1 end)
+      manager:add_entry(5, "worse result")
+      manager:add_entry(2, "better result")
 
-      assert.are.same("better result", lines_manager:_get_state()[1].line)
-      assert.are.same("worse result", lines_manager:_get_state()[2].line)
+      assert.are.same("better result", manager:get_ordinal(1))
+      assert.are.same("worse result", manager:get_ordinal(2))
 
       -- once to insert "worse"
       -- once to insert "better"
@@ -72,11 +73,11 @@ describe('Picker', function()
 
     it('respects max results', function()
       local called_count = 0
-      local lines_manager = pickers.line_manager(1, function() called_count = called_count + 1 end)
-      lines_manager:add_result(2, "better result")
-      lines_manager:add_result(5, "worse result")
+      local manager = pickers.entry_manager(1, function() called_count = called_count + 1 end)
+      manager:add_entry(2, "better result")
+      manager:add_entry(5, "worse result")
 
-      assert.are.same("better result", lines_manager:_get_state()[1].line)
+      assert.are.same("better result", manager:get_ordinal(1))
 
       -- once to insert "worse"
       -- once to insert "better"
@@ -86,10 +87,36 @@ describe('Picker', function()
 
     -- TODO: We should decide if we want to add this or not.
     -- it('should handle no scores', function()
-    --   local lines_manager = pickers.line_manager(5, nil)
+    --   local manager = pickers.entry_manager(5, nil)
 
-    --   lines_manager:add_result(nil, 
+    --   manager:add_entry(nil, 
     -- end)
+
+    it('should allow simple entries', function()
+      local manager = pickers.entry_manager(5)
+
+      local counts_executed = 0
+      manager:add_entry(1, setmetatable({}, {
+        __index = function(t, k)
+          local val = nil
+          if k == "ordinal" then
+            counts_executed = counts_executed + 1
+
+            -- This could be expensive, only call later
+            val = "wow"
+          end
+
+          rawset(t, k, val)
+          return val
+        end,
+      }))
+
+      assert.are.same("wow", manager:get_ordinal(1))
+      assert.are.same("wow", manager:get_ordinal(1))
+      assert.are.same("wow", manager:get_ordinal(1))
+
+      assert.are.same(1, counts_executed)
+    end)
   end)
 
   describe('ngrams', function()

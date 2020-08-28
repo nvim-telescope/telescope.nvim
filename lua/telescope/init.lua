@@ -11,22 +11,15 @@ local state = require('telescope.state')
 local builtin = require('telescope.builtin')
 
 local telescope = {
-  -- <module>.new { }
-  finders = finders,
-  pickers = pickers,
-  previewers = previewers,
-  sorters = sorters,
+--   -- <module>.new { }
+--   finders = finders,
+--   pickers = pickers,
+--   previewers = previewers,
+--   sorters = sorters,
 
-  state = state,
+--   state = state,
 
-  builtin = builtin,
+--   builtin = builtin,
 }
-
-function __TelescopeOnLeave(prompt_bufnr)
-  local status = state.get_status(prompt_bufnr)
-  local picker = status.picker
-
-  picker:close_windows(status)
-end
 
 return telescope

@@ -52,18 +52,19 @@ keymap["control-p"] = function(prompt_bufnr, _)
 end
 
 keymap["enter"] = function(prompt_bufnr, results_bufnr)
-  local row = state.get_status(prompt_bufnr).picker:get_selection()
-  if row == nil then
-    print("Could not do anything...")
+  local entry = state.get_status(prompt_bufnr).picker:get_selection()
+
+  if not entry then
+    print("[telescope] Nothing currently selected")
     return
   else
-    local line = a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1]
-    if line == nil then
+    local value = entry.value
+    if not value then
       print("Could not do anything with blank line...")
       return
     end
 
-    local sections = vim.split(line, ":")
+    local sections = vim.split(value, ":")
 
     local filename = sections[1]
     local row = tonumber(sections[2])
@@ -77,6 +78,8 @@ keymap["enter"] = function(prompt_bufnr, results_bufnr)
     if row and col then
       a.nvim_win_set_cursor(0, {row, col})
     end
+
+    vim.cmd [[stopinsert]]
   end
 end
 
