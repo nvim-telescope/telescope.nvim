@@ -10,6 +10,8 @@ local Entry = require('telescope.entry')
 local Sorter = require('telescope.sorters').Sorter
 local Previewer = require('telescope.previewers').Previewer
 
+local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
+
 local pickers = {}
 
 local ifnil = function(x, was_nil, was_not_nil) if x == nil then return was_nil else return was_not_nil end end
@@ -191,8 +193,15 @@ function Picker:find(opts)
           return
         end
 
+        local display = entry.display
+
+        if has_devicons then
+          local icon = devicons.get_icon(display, vim.fn.fnamemodify(display, ":e"))
+          display = (icon or ' ') .. ' ' ..  display
+        end
+
         -- log.info("Setting row", row, "with value", entry)
-        vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {entry.display})
+        vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {display})
       end
     ))
 
