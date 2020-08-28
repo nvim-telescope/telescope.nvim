@@ -1,5 +1,3 @@
-local ceil = math.ceil
-
 local log = require('telescope.log')
 local util = require('telescope.utils')
 
@@ -26,8 +24,9 @@ function Sorter:new(opts)
   }, Sorter)
 end
 
-function Sorter:score(prompt, line)
-  return self:scoring_function(prompt, line)
+function Sorter:score(prompt, entry)
+  -- TODO: Decide if we actually want to check the type every time.
+  return self:scoring_function(prompt, type(entry) == "string" and entry or entry.ordinal)
 end
 
 function sorters.new(...)
@@ -140,6 +139,10 @@ sorters.get_norcalli_sorter = function()
       )
 
       if denominator == 0 or denominator ~= denominator then
+        return -1
+      end
+
+      if #prompt > 2 and denominator < 0.5 then
         return -1
       end
 

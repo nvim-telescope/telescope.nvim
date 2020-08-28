@@ -1,11 +1,14 @@
 local a = vim.api
 local popup = require('popup')
 
-
 local log = require('telescope.log')
 local mappings = require('telescope.mappings')
 local state = require('telescope.state')
 local utils = require('telescope.utils')
+
+local Entry = require('telescope.entry')
+local Sorter = require('telescope.sorters').Sorter
+local Previewer = require('telescope.previewers').Previewer
 
 local pickers = {}
 
@@ -13,10 +16,6 @@ local pickers = {}
 -- Takes a filter & a previewr
 local Picker = {}
 Picker.__index = Picker
-
-
-local Sorter = require('telescope.sorters').Sorter
-local Previewer = require('telescope.previewers').Previewer
 
 assert(Sorter)
 assert(Previewer)
@@ -53,7 +52,9 @@ function Picker._get_window_options(max_columns, max_lines, prompt_title)
   }
 
   local width_padding = 10
-  if max_columns < 200 then
+  if max_columns < 150 then
+    preview.width = 60
+  elseif max_columns < 200 then
     preview.width = 80
   else
     preview.width = 120
@@ -94,7 +95,6 @@ function Picker:find(opts)
   assert(finder, "Finder is required to do picking")
 
   local sorter = opts.sorter
-
   local prompt_string = opts.prompt
 
   -- Create three windows:
@@ -106,6 +106,9 @@ function Picker:find(opts)
   -- TODO: Add back the borders after fixing some stuff in popup.nvim
   local results_win, results_opts = popup.create('', popup_opts.results)
   local results_bufnr = a.nvim_win_get_buf(results_win)
+
+  -- TODO: Should probably always show all the line for results win, so should implement a resize for the windows
+  a.nvim_win_set_option(results_win, 'wrap', false)
 
   local preview_win, preview_opts = popup.create('', popup_opts.preview)
   local preview_bufnr = a.nvim_win_get_buf(preview_win)
@@ -124,28 +127,15 @@ function Picker:find(opts)
 
   -- First thing we want to do is set all the lines to blank.
   self.max_results = popup_opts.results.height - 1
-  local initial_lines = {}
-  for _ = 1, self.max_results do table.insert(initial_lines, "") end
-  vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, initial_lines)
+
+  vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
 
   local on_lines = function(_, _, _, first_line, last_line)
     local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]
 
-    -- Create a closure that has all the data we need
-    -- We pass a function called "newResult" to get_results
-    --    get_results calles "newResult" every time it gets a new result
-    --    picker then (if available) calls sorter
-    --    and then appropriately places new result in the buffer.
-
-    -- TODO: We need to fix the sorting
-    -- TODO: We should provide a simple fuzzy matcher in Lua for people
-    -- TODO: We should get all the stuff on the bottom line directly, not floating around
-    -- TODO: We need to handle huge lists in a good way, cause currently we'll just put too much stuff in the buffer
-    -- TODO: Stop having things crash if we have an error.
-
-    local line_manager = pickers.line_manager(
+    self.manager = pickers.entry_manager(
       self.max_results,
-      function(index, line)
+      vim.schedule_wrap(function(index, entry)
         local row = self.max_results - index + 1
 
         -- If it's less than 0, then we don't need to show it at all.
@@ -153,43 +143,48 @@ function Picker:find(opts)
           return
         end
 
-        log.trace("Setting row", row, "with value", line)
-        vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {line})
+        -- log.info("Setting row", row, "with value", entry)
+        vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {entry.display})
       end
-    )
+    ))
 
     local process_result = function(line)
-      if vim.trim(line) == "" then
+      local entry = Entry:new(line)
+
+      if not entry.valid then
         return
       end
 
-      log.trace("Processing result... ", line)
+      log.trace("Processing result... ", entry)
 
-      local sort_score = 0
-      local sort_ok
+      local sort_ok, sort_score = nil, 0
       if sorter then
         sort_ok, sort_score = pcall(function ()
-          return sorter:score(prompt, line)
+          return sorter:score(prompt, entry)
         end)
 
         if not sort_ok then
-          log.warn("Sorting failed with:", prompt, line, sort_score)
+          log.warn("Sorting failed with:", prompt, entry, sort_score)
           return
         end
 
         if sort_score == -1 then
-          log.trace("Filtering out result: ", line)
+          log.trace("Filtering out result: ", entry)
           return
         end
       end
 
-      line_manager:add_result(sort_score, line)
+      self.manager:add_entry(sort_score, entry)
     end
 
-    local process_complete = function()
-      local worst_line = self.max_results - line_manager.num_results()
+    local process_complete = vim.schedule_wrap(function()
+      local worst_line = self.max_results - self.manager.num_results()
+      if worst_line == 0 then
+        return
+      end
+
       local empty_lines = utils.repeated_table(worst_line, "")
-      -- vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line + 1, false, empty_lines)
+      vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line, false, empty_lines)
 
       log.debug("Worst Line after process_complete: %s", worst_line, results_bufnr)
 
@@ -201,7 +196,7 @@ function Picker:find(opts)
       --   a.nvim_buf_get_lines(results_bufnr, worst_line, self.max_results, false),
       --   self.line_scores
       -- )))
-    end
+    end)
 
     local ok, msg = pcall(function()
       return finder(prompt, process_result, process_complete)
@@ -229,7 +224,7 @@ function Picker:find(opts)
 
   -- TODO: Use WinLeave as well?
   local on_buf_leave = string.format(
-    [[  autocmd BufLeave <buffer> ++nested ++once :lua __TelescopeOnLeave(%s)]],
+    [[  autocmd BufLeave <buffer> ++nested ++once :lua require('telescope.pickers').on_close_prompt(%s)]],
     prompt_bufnr)
 
   vim.cmd([[augroup PickerInsert]])
@@ -304,11 +299,15 @@ end
 local ns_telescope_selection = a.nvim_create_namespace('telescope_selection')
 
 function Picker:get_selection()
-  return self.selection or self.max_results
+  return self._selection
+end
+
+function Picker:get_selection_row()
+  return self._selection_row or self.max_results
 end
 
 function Picker:move_selection(change)
-  self:set_selection(self:get_selection() + change)
+  self:set_selection(self:get_selection_row() + change)
 end
 
 function Picker:set_selection(row)
@@ -318,6 +317,7 @@ function Picker:set_selection(row)
     row = 1
   end
 
+  local entry = self.manager:get_entry(self.max_results - row + 1)
   local status = state.get_status(self.prompt_bufnr)
 
   a.nvim_buf_clear_namespace(status.results_bufnr, ns_telescope_selection, 0, -1)
@@ -334,14 +334,13 @@ function Picker:set_selection(row)
   -- TODO: Make sure you start exactly at the bottom selected
 
   -- TODO: Get row & text in the same obj
-  self.selection = row
+  self._selection = entry
+  self._selection_row = row
 
   if self.previewer then
     self.previewer:preview(
-      status.preview_win,
-      status.preview_bufnr,
-      status.results_bufnr,
-      row
+      entry,
+      status
     )
   end
 end
@@ -350,10 +349,10 @@ pickers.new = function(...)
   return Picker:new(...)
 end
 
--- TODO: We should consider adding `process_bulk` or `bulk_line_manager` for things
+-- TODO: We should consider adding `process_bulk` or `bulk_entry_manager` for things
 -- that we always know the items and can score quickly, so as to avoid drawing so much.
-pickers.line_manager = function(max_results, set_line)
-  log.debug("Creating line_manager...")
+pickers.entry_manager = function(max_results, set_entry)
+  log.debug("Creating entry_manager...")
 
   -- state contains list of
   --    {
@@ -361,19 +360,24 @@ pickers.line_manager = function(max_results, set_line)
   --        line = ...
   --        metadata ? ...
   --    }
-  local line_state = {}
+  local entry_state = {}
 
-  set_line = set_line or function() end
+  set_entry = set_entry or function() end
 
   return setmetatable({
-    add_result = function(self, score, line)
+    add_entry = function(self, score, entry)
+      -- TODO: Consider forcing people to make these entries before we add them.
+      if type(entry) == "string" then
+        entry = Entry:new(entry)
+      end
+
       score = score or 0
 
-      for index, item in ipairs(line_state) do
+      for index, item in ipairs(entry_state) do
         if item.score > score then
           return self:insert(index, {
             score = score,
-            line = line,
+            entry = entry,
           })
         end
 
@@ -385,36 +389,44 @@ pickers.line_manager = function(max_results, set_line)
 
       return self:insert({
         score = score,
-        line = line,
+        entry = entry,
       })
     end,
 
-    insert = function(self, index, item)
-      if item == nil then
-        item = index
-        index = #line_state + 1
+    insert = function(self, index, entry)
+      if entry == nil then
+        entry = index
+        index = #entry_state + 1
       end
 
       -- To insert something, we place at the next available index (or specified index)
       -- and then shift all the corresponding items one place.
-      local next_item
+      local next_entry
       repeat
-        next_item = line_state[index]
+        next_entry = entry_state[index]
 
-        set_line(index, item.line)
-        line_state[index] = item
+        set_entry(index, entry.entry)
+        entry_state[index] = entry
 
         index = index + 1
-        item = next_item
-      until not next_item
+        entry = next_entry
+      until not next_entry
     end,
 
     num_results = function()
-      return #line_state
+      return #entry_state
+    end,
+
+    get_ordinal = function(self, index)
+      return self:get_entry(index).ordinal
+    end,
+
+    get_entry = function(_, index)
+      return (entry_state[index] or {}).entry
     end,
 
     _get_state = function()
-      return line_state
+      return entry_state
     end,
   }, {
     -- insert =
@@ -425,6 +437,15 @@ pickers.line_manager = function(max_results, set_line)
     -- __newindex = function(_, index, line)
     -- end,
   })
+end
+
+
+
+function pickers.on_close_prompt(prompt_bufnr)
+  local status = state.get_status(prompt_bufnr)
+  local picker = status.picker
+
+  picker:close_windows(status)
 end
 
 
