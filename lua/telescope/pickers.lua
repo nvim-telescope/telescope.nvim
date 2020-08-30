@@ -193,12 +193,15 @@ function Picker:find(opts)
           return
         end
 
+        -- TODO: This really isn't the place to do this.
         local display = entry.display
 
         if has_devicons then
           local icon = devicons.get_icon(display, vim.fn.fnamemodify(display, ":e"))
           display = (icon or ' ') .. ' ' ..  display
         end
+
+        display = '  ' .. display
 
         -- log.info("Setting row", row, "with value", entry)
         vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {display})
@@ -388,16 +391,32 @@ function Picker:set_selection(row)
   end
 
   local status = state.get_status(self.prompt_bufnr)
+  local results_bufnr = status.results_bufnr
 
-  a.nvim_buf_clear_namespace(status.results_bufnr, ns_telescope_selection, 0, -1)
+  -- Handle adding '> ' to beginning of selections
+  if self._selection_row then
+    a.nvim_buf_set_lines(results_bufnr, self._selection_row, self._selection_row + 1, false, {'  ' .. a.nvim_buf_get_lines(results_bufnr, self._selection_row, self._selection_row + 1, false)[1]:sub(3)})
+  end
+
+  a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {'> ' .. a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1]:sub(3)})
+
+  a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
   a.nvim_buf_add_highlight(
-    status.results_bufnr,
+    results_bufnr,
     ns_telescope_selection,
-    'Error',
+    'TelescopeSelection',
     row,
     0,
     -1
   )
+
+
+  -- if self._match_id then
+  --   -- vim.fn.matchdelete(self._match_id)
+  --   vim.fn.clearmatches(results_win)
+  -- end
+
+  -- self._match_id = vim.fn.matchaddpos("Conceal", { {row + 1, 1, 2} }, 0, -1, { window = results_win, conceal = ">" })
 
   -- TODO: Don't let you go over / under the buffer limits
   -- TODO: Make sure you start exactly at the bottom selected

@@ -1,6 +1,7 @@
 -- TODO: Customize keymap
 local a = vim.api
 
+local actions = require('telescope.actions')
 local state = require('telescope.state')
 
 local mappings = {}
@@ -29,10 +30,6 @@ mappings.set_keymap = function(prompt_bufnr, results_bufnr)
   default_mapper('<CR>', 'enter')
 end
 
-local function update_current_selection(prompt_bufnr, change)
-  state.get_status(prompt_bufnr).picker:move_selection(change)
-end
-
 
 function __TelescopeMapping(prompt_bufnr, results_bufnr, characters)
   if keymap[characters] then
@@ -44,11 +41,11 @@ end
 -- TODO: Move from top to bottom, etc.
 -- TODO: It seems like doing this brings us back to the beginning of the prompt, which is not great.
 keymap["control-n"] = function(prompt_bufnr, _)
-  update_current_selection(prompt_bufnr, 1)
+  actions.shift_current_selection(prompt_bufnr, 1)
 end
 
 keymap["control-p"] = function(prompt_bufnr, _)
-  update_current_selection(prompt_bufnr, -1)
+  actions.shift_current_selection(prompt_bufnr, -1)
 end
 
 keymap["enter"] = function(prompt_bufnr, results_bufnr)
