@@ -402,7 +402,7 @@ function Picker:set_selection(row)
     end
   end
 
-  a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {'> ' .. a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1]:sub(3)})
+  a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {'> ' .. (a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] or ''):sub(3)})
 
   a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
   a.nvim_buf_add_highlight(
