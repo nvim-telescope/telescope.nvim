@@ -429,31 +429,14 @@ end
 builtin.planets = function(opts)
   local opts = opts or {}
   local show_pluto = opts.show_pluto or false
-  local planets = table.concat(vim.tbl_keys(require('telescope.planets')), '\n')
+  local planets = vim.tbl_keys(require('telescope.planets'))
 
-  local planet_searcher = finders.new {
-    maximum_results = 1000,
-
-    fn_command = function(self, prompt)
-      return {
-        command = 'fzf',
-        args = {'--no-sort', '--filter', prompt},
-
-        writer = {
-          command = 'echo',
-          args = {planets}
-        }
-      }
-    end
-  }
-
-  local planet_picker = pickers.new {
-    previewer = previewers.planet_previewer
-  }
-
+  local planet_searcher = finders.new { results = planets }
+  local planet_picker = pickers.new { previewer = previewers.planet_previewer }
   planet_picker:find {
     prompt = 'Planets',
     finder = planet_searcher,
+    sorter = sorters.get_norcalli_sorter(),
   }
 end
 
