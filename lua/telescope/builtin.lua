@@ -427,11 +427,19 @@ builtin.treesitter = function(opts)
 end
 
 builtin.planets = function(opts)
-  local opts = opts or {}
+  opts = opts or {}
   local show_pluto = opts.show_pluto or false
-  local planets = vim.tbl_keys(require('telescope.planets'))
 
-  local planet_searcher = finders.new { results = planets }
+  local planet_directory = vim.fn.globpath(vim.o.runtimepath, '**/telescope.nvim') .. '/memes/'
+  local planet_searcher = finders.new {
+    fn_command = function()
+      return {
+        command = 'ls',
+        args = show_pluto and {planet_directory} or {"-I", "pluto", planet_directory}
+      }
+    end
+  }
+
   local planet_picker = pickers.new { previewer = previewers.planet_previewer }
   planet_picker:find {
     prompt = 'Planets',
