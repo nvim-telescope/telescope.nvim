@@ -317,6 +317,23 @@ previewers.help = defaulter(function(_)
   }
 end, {})
 
+previewers.planet_previewer = previewers.new {
+  preview_fn = function(self, entry, status)
+    local planets = require('telescope.planets')
+    local bufnr = vim.api.nvim_create_buf(false, true)
+
+    vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+
+    local termopen_command = string.format("echo '%s'", planets[entry.display])
+    print(termopen_command)
+
+    -- HACK! Requires `termopen` to accept buffer argument.
+    vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
+    vim.fn.termopen(termopen_command)
+    vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.prompt_win))
+  end
+}
+
 previewers.Previewer = Previewer
 
 return previewers
