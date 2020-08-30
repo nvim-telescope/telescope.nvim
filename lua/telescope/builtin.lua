@@ -233,4 +233,30 @@ builtin.grep_string = function(opts)
   }
 end
 
+builtin.fzf_history = function()
+  local history_lines = table.concat(vim.v.oldfiles, '\n')
+
+  local fzf = finders.new {
+    maximum_results = 1000,
+    fn_command = function(self, prompt)
+      return {
+        command = 'fzf',
+        args = {'--no-sort', '--filter', prompt},
+
+        writer = {
+          command = 'echo',
+          args = {history_lines},
+        }
+      }
+    end
+  }
+
+  local file_picker = pickers.new { }
+
+  file_picker:find {
+    prompt = 'FZF History',
+    finder = fzf,
+  }
+end
+
 return builtin
