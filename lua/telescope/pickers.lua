@@ -40,11 +40,16 @@ assert(Previewer)
 --- Create new picker
 --- @param opts PickOpts
 function Picker:new(opts)
+  opts = opts or {}
+
   return setmetatable({
     filter = opts.filter,
     previewer = opts.previewer,
     maps = opts.maps,
+
     get_window_options = opts.get_window_options,
+
+    selection_strategy = opts.selection_strategy,
   }, Picker)
 end
 
@@ -180,6 +185,8 @@ function Picker:find(opts)
 
   vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
 
+  local selection_strategy = self.selection_strategy or 'reset'
+
   local on_lines = function(_, _, _, first_line, last_line)
     local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]
 
@@ -238,7 +245,21 @@ function Picker:find(opts)
     end
 
     local process_complete = vim.schedule_wrap(function()
-      self:set_selection(self:get_selection_row())
+      if selection_strategy == 'row' then
+        self:set_selection(self:get_selection_row())
+      elseif selection_strategy == 'follow' then
+        local index = self.manager:find_entry(self:get_selection())
+
+        if index then
+          local follow_row = self.max_results - index + 1
+          self:set_selection(follow_row)
+        else
+          self:set_selection(self.max_results)
+        end
+      else
+        -- selection_strategy == 'reset'
+        self:set_selection(self.max_results)
+      end
 
       local worst_line = self.max_results - self.manager.num_results()
       if worst_line <= 0 then
@@ -507,18 +528,27 @@ pickers.entry_manager = function(max_results, set_entry)
       return (entry_state[index] or {}).entry
     end,
 
+    find_entry = function(_, entry)
+      if entry == nil then
+        return nil
+      end
+
+      for k, v in ipairs(entry_state) do
+        local existing_entry = v.entry
+
+        -- FIXME: This has the problem of assuming that display will not be the same for two different entries.
+        if existing_entry.display == entry.display then
+          return k
+        end
+      end
+
+      return nil
+    end,
+
     _get_state = function()
       return entry_state
     end,
-  }, {
-    -- insert =
-
-    -- __index = function(_, line)
-    -- end,
-
-    -- __newindex = function(_, index, line)
-    -- end,
-  })
+  }, {})
 end
 
 
