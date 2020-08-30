@@ -72,7 +72,7 @@ function Finder:_find(prompt, process_result, process_complete)
     self.job:shutdown()
   end
 
-  log.info("Finding...")
+  log.trace("Finding...")
   if self.static and self.done then
     log.info("Using previous results")
     for _, v in ipairs(self._cached_lines) do

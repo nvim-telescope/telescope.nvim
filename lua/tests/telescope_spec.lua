@@ -222,6 +222,15 @@ describe('Sorters', function()
       assert(exact_match < ok_match)
       assert(ok_match < no_match)
     end)
+
+    it('sorts multiple finds better', function()
+      local sorter = require('telescope.sorters').get_norcalli_sorter()
+
+      local multi_match = sorter:score('generics', 'exercises/generics/generics2.rs')
+      local one_match = sorter:score('abcdef', 'exercises/generics/README.md')
+
+      assert(multi_match < one_match)
+    end)
   end)
 end)
 
