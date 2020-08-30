@@ -63,11 +63,17 @@ wrappers over common tasks).
 
 Defaults:
 
-- require'telescope.builtin'.git_files{ show_preview = true }
-- require'telescope.builtin'.live_grep{}
-- require'telescope.builtin'.lsp_references{}
-- require'telescope.builtin'.quickfix{}
-- require'telescope.builtin'.grep_string{ search = "query" }
+```lua
+require'telescope.builtin'.git_files{
+	show_preview = true,
+	selection_strategy = "reset" -- follow, reset, line
+}
+```
+
+- `require'telescope.builtin'.live_grep{}`
+- `require'telescope.builtin'.lsp_references{}`
+- `require'telescope.builtin'.quickfix{}`
+- `require'telescope.builtin'.grep_string{ search = "query" }`
 
 ## Goals
 
