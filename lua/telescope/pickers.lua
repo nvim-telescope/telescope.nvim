@@ -237,28 +237,21 @@ function Picker:find(opts)
       self.manager:add_entry(sort_score, entry)
     end
 
-    local process_complete = vim.schedule_wrap(function()
+    local process_complete = function()
       self:set_selection(self:get_selection_row())
 
       local worst_line = self.max_results - self.manager.num_results()
-      if worst_line == 0 then
+      if worst_line <= 0 then
         return
       end
 
-      local empty_lines = utils.repeated_table(worst_line, "")
-      vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line, false, empty_lines)
+      vim.schedule(function()
+        local empty_lines = utils.repeated_table(worst_line, "")
+        vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line, false, empty_lines)
 
-      log.debug("Worst Line after process_complete: %s", worst_line, results_bufnr)
-
-      -- local fun = require('fun')
-      -- local zip = fun.zip
-      -- local tomap = fun.tomap
-
-      -- log.trace("%s", tomap(zip(
-      --   a.nvim_buf_get_lines(results_bufnr, worst_line, self.max_results, false),
-      --   self.line_scores
-      -- )))
-    end)
+        log.trace("Worst Line after process_complete: %s", worst_line, results_bufnr)
+      end)
+    end
 
     local ok, msg = pcall(function()
       return finder(prompt, process_result, process_complete)
