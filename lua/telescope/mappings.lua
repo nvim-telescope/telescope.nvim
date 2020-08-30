@@ -49,8 +49,8 @@ keymap["control-p"] = function(prompt_bufnr, _)
 end
 
 keymap["enter"] = function(prompt_bufnr, results_bufnr)
-  local picker = state.get_status(prompt_bufnr).picker
-  local entry = picker:get_selection()
+  local picker = actions.get_current_picker(prompt_bufnr)
+  local entry = actions.get_selected_entry(prompt_bufnr)
 
   if not entry then
     print("[telescope] Nothing currently selected")

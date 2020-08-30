@@ -395,7 +395,11 @@ function Picker:set_selection(row)
 
   -- Handle adding '> ' to beginning of selections
   if self._selection_row then
-    a.nvim_buf_set_lines(results_bufnr, self._selection_row, self._selection_row + 1, false, {'  ' .. a.nvim_buf_get_lines(results_bufnr, self._selection_row, self._selection_row + 1, false)[1]:sub(3)})
+    local old_selection = a.nvim_buf_get_lines(results_bufnr, self._selection_row, self._selection_row + 1, false)[1]
+
+    if old_selection then
+      a.nvim_buf_set_lines(results_bufnr, self._selection_row, self._selection_row + 1, false, {'  ' .. old_selection:sub(3)})
+    end
   end
 
   a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {'> ' .. a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1]:sub(3)})
