@@ -304,7 +304,7 @@ function Picker:find(opts)
 
     preview_bufnr = preview_bufnr,
     preview_win = preview_win,
-    preview_border_win = preview_opts.border and preview_opts.border.win_id,
+    preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id,
     picker = self,
     previewer = self.previewer,
     finder = finder,
