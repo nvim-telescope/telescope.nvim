@@ -74,7 +74,7 @@ function Finder:_find(prompt, process_result, process_complete)
 
   log.trace("Finding...")
   if self.static and self.done then
-    log.info("Using previous results")
+    log.trace("Using previous results")
     for _, v in ipairs(self._cached_lines) do
       process_result(v)
     end

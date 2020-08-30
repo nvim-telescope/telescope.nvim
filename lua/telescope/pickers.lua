@@ -237,7 +237,7 @@ function Picker:find(opts)
       self.manager:add_entry(sort_score, entry)
     end
 
-    local process_complete = function()
+    local process_complete = vim.schedule_wrap(function()
       self:set_selection(self:get_selection_row())
 
       local worst_line = self.max_results - self.manager.num_results()
@@ -245,13 +245,11 @@ function Picker:find(opts)
         return
       end
 
-      vim.schedule(function()
-        local empty_lines = utils.repeated_table(worst_line, "")
-        vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line, false, empty_lines)
+      local empty_lines = utils.repeated_table(worst_line, "")
+      vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line, false, empty_lines)
 
-        log.trace("Worst Line after process_complete: %s", worst_line, results_bufnr)
-      end)
-    end
+      log.trace("Worst Line after process_complete: %s", worst_line, results_bufnr)
+    end)
 
     local ok, msg = pcall(function()
       return finder(prompt, process_result, process_complete)
@@ -378,8 +376,8 @@ function Picker:set_selection(row)
   end
 
   local entry = self.manager:get_entry(self.max_results - row + 1)
-  if entry == self._selection then
-    log.debug("Same entry as before. Skipping set")
+  if entry == self._selection and row == self._selection_row then
+    log.trace("Same entry as before. Skipping set")
     return
   end
 
@@ -406,7 +404,6 @@ function Picker:set_selection(row)
     0,
     -1
   )
-
 
   -- if self._match_id then
   --   -- vim.fn.matchdelete(self._match_id)
