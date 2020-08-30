@@ -325,7 +325,6 @@ previewers.planet_previewer = previewers.new {
     vim.api.nvim_win_set_buf(status.preview_win, bufnr)
 
     local termopen_command = string.format("echo '%s'", planets[entry.display])
-    print(termopen_command)
 
     -- HACK! Requires `termopen` to accept buffer argument.
     vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
