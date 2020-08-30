@@ -8,10 +8,10 @@ local mappings = {}
 local keymap = {}
 
 mappings.set_keymap = function(prompt_bufnr, results_bufnr)
-  local function default_mapper(map_key, table_key)
+  local function default_mapper(mode, map_key, table_key)
     a.nvim_buf_set_keymap(
       prompt_bufnr,
-      'i',
+      mode,
       map_key,
       string.format(
         [[<C-O>:lua __TelescopeMapping(%s, %s, '%s')<CR>]],
@@ -25,9 +25,11 @@ mappings.set_keymap = function(prompt_bufnr, results_bufnr)
     )
   end
 
-  default_mapper('<c-n>', 'control-n')
-  default_mapper('<c-p>', 'control-p')
-  default_mapper('<CR>', 'enter')
+  default_mapper('i', '<c-n>', 'control-n')
+  default_mapper('i', '<c-p>', 'control-p')
+  default_mapper('i', '<CR>', 'enter')
+
+  default_mapper('n', '<esc>', 'escape')
 end
 
 
@@ -86,6 +88,10 @@ keymap["enter"] = function(prompt_bufnr, results_bufnr)
 
     vim.cmd [[stopinsert]]
   end
+end
+
+keymap["escape"] = function(prompt_bufnr)
+  vim.cmd(string.format([[bwipeout! %s]], prompt_bufnr))
 end
 
 return mappings
