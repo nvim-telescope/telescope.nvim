@@ -36,6 +36,8 @@ builtin.git_files = function(opts)
 
   local file_picker = pickers.new {
     previewer = show_preview and file_previewer,
+
+    selection_strategy = opts.selection_strategy,
   }
 
   -- local file_sorter = telescope.sorters.get_ngram_sorter()
