@@ -7,6 +7,37 @@ local state = require('telescope.state')
 local mappings = {}
 local keymap = {}
 
+local keymap_store = {}
+
+--[[
+mappings.apply_keymap(42, {
+  normal = {
+    ["<leader>x"] = "just do this string",
+
+    ["<CR>"] = function(picker, prompt_bufnr)
+      actions.close_prompt()
+
+      local filename = ...
+      vim.cmd(string.format(":e %s", filename))
+    end,
+  },
+  insert = {
+  }
+})
+--]]
+mappings.apply_keymap = function(prompt_bufnr, buffer_keymap)
+
+  vim.cmd(string.format(
+    [[autocmd BufDelete %s :lua require('telescope.mappings').clear(%s)]],
+    prompt_bufnr,
+    prompt_bufnr
+  ))
+end
+
+mappings.clear = function(prompt_bufnr)
+  keymap_store[prompt_bufnr] = nil
+end
+
 mappings.set_keymap = function(prompt_bufnr, results_bufnr)
   local function default_mapper(mode, map_key, table_key)
     a.nvim_buf_set_keymap(
@@ -25,8 +56,8 @@ mappings.set_keymap = function(prompt_bufnr, results_bufnr)
     )
   end
 
-  default_mapper('i', '<c-n>', 'control-n')
-  default_mapper('i', '<c-p>', 'control-p')
+  default_mapper('i', '<c-n>', 'next_selection')
+  default_mapper('i', '<c-p>', 'previous_selection')
   default_mapper('i', '<CR>', 'enter')
 
   default_mapper('n', '<esc>', 'escape')
@@ -42,11 +73,11 @@ end
 -- TODO: Refactor this to use shared code.
 -- TODO: Move from top to bottom, etc.
 -- TODO: It seems like doing this brings us back to the beginning of the prompt, which is not great.
-keymap["control-n"] = function(prompt_bufnr, _)
+keymap["next_selection"] = function(prompt_bufnr, _)
   actions.shift_current_selection(prompt_bufnr, 1)
 end
 
-keymap["control-p"] = function(prompt_bufnr, _)
+keymap["previous_selection"] = function(prompt_bufnr, _)
   actions.shift_current_selection(prompt_bufnr, -1)
 end
 
