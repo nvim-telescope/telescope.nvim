@@ -18,9 +18,6 @@ builtin.git_files = function(opts)
 
   local show_preview = ifnil(opts.show_preview, true, opts.show_preview)
 
-  -- TODO: Auto select bottom row
-  -- TODO: filter out results when they don't match at all anymore.
-
   local file_finder = finders.new {
     static = true,
 
@@ -235,7 +232,5 @@ builtin.grep_string = function(opts)
     sorter = sorters.get_norcalli_sorter(),
   }
 end
-
-
 
 return builtin

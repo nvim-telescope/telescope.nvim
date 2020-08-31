@@ -149,6 +149,12 @@ finders.new = function(...)
   return Finder:new(...)
 end
 
+-- We should add a few utility functions here...
+--
+-- finders.new_job
+-- finders.new_one_shot_job
+-- finders.new_table
+
 finders.Finder = Finder
 
 return finders
