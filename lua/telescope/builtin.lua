@@ -187,18 +187,18 @@ builtin.quickfix = function()
     return
   end
 
-  local lsp_reference_finder = finders.new {
+  local quickfix_finder = finders.new {
     results = results
   }
 
-  local reference_previewer = previewers.qflist
-  local reference_picker = pickers.new {
-    previewer = reference_previewer
+  local quickfix_previewer = previewers.qflist
+  local quickfix_picker = pickers.new {
+    previewer = quickfix_previewer
   }
 
-  reference_picker:find {
-    prompt = 'LSP References',
-    finder = lsp_reference_finder,
+  quickfix_picker:find {
+    prompt = 'Quickfix',
+    finder = quickfix_finder,
     sorter = sorters.get_norcalli_sorter(),
   }
 end
