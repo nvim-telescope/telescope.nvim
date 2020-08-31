@@ -8,50 +8,20 @@ local finders = require('telescope.finders')
 local previewers = require('telescope.previewers')
 local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
+local utils = require('telescope.utils')
 
 local builtin = {}
 
-local ifnil = function(x, was_nil, was_not_nil) if x == nil then return was_nil else return was_not_nil end end
-
 builtin.git_files = function(opts)
-  opts = opts or {}
-
-  local show_preview = ifnil(opts.show_preview, true, opts.show_preview)
-
-  local file_finder = finders.new {
-    static = true,
-
-    fn_command = function(self)
-      return {
-        command = 'git',
-        args = {'ls-files'}
-      }
-    end,
-  }
-
-  local file_previewer = previewers.cat
-
-  local file_picker = pickers.new {
-    previewer = show_preview and file_previewer,
-
-    selection_strategy = opts.selection_strategy,
-  }
-
-  -- local file_sorter = telescope.sorters.get_ngram_sorter()
-  -- local file_sorter = require('telescope.sorters').get_levenshtein_sorter()
-  local file_sorter = sorters.get_norcalli_sorter()
-
-  file_picker:find {
-    prompt = 'Simple File',
-    finder = file_finder,
-    sorter = file_sorter,
-
-    border = opts.border,
-    borderchars = opts.borderchars,
-  }
+  pickers.new(opts, {
+    prompt    = 'Git File',
+    finder    = finders.new_oneshot_job({ "git", "ls-files" }),
+    previewer = previewers.cat,
+    sorter    = sorters.get_norcalli_sorter(),
+  }):find()
 end
 
-builtin.live_grep = function()
+builtin.live_grep = function(opts)
   local live_grepper = finders.new {
     maximum_results = 1000,
 
@@ -68,15 +38,13 @@ builtin.live_grep = function()
     end
   }
 
-  local file_previewer = previewers.vimgrep
-  local file_picker = pickers.new {
-    previewer = file_previewer
-  }
+  pickers.new(opts, {
+    prompt    = 'Live Grep',
+    finder    = live_grepper,
+    previewer = previewers.vimgrep,
+  }):find()
 
-  -- local file_sorter = telescope.sorters.get_ngram_sorter()
-  -- local file_sorter = require('telescope.sorters').get_levenshtein_sorter()
-  -- local file_sorter = sorters.get_norcalli_sorter()
-
+  -- TODO: Incorporate this.
   -- Weight the results somehow to be more likely to be the ones that you've opened.
   -- local old_files = {}
   -- for _, f in ipairs(vim.v.oldfiles) do
@@ -102,15 +70,9 @@ builtin.live_grep = function()
   --     end
   --   end
   -- }
-
-  file_picker:find {
-    prompt = 'Live Grep',
-    finder = live_grepper,
-    sorter = oldfiles_sorter,
-  }
 end
 
-builtin.lsp_references = function()
+builtin.lsp_references = function(opts)
   local params = vim.lsp.util.make_position_params()
   params.context = { includeDeclaration = true }
 
@@ -120,87 +82,34 @@ builtin.lsp_references = function()
     vim.list_extend(locations, vim.lsp.util.locations_to_items(server_results.result) or {})
   end
 
-  local results = {}
-  for _, entry in ipairs(locations) do
-    local vimgrep_str = string.format(
-      "%s:%s:%s: %s",
-      vim.fn.fnamemodify(entry.filename, ":."),
-      entry.lnum,
-      entry.col,
-      entry.text
-    )
-
-    table.insert(results, {
-      valid = true,
-      value = entry,
-      ordinal = vimgrep_str,
-      display = vimgrep_str,
-    })
-  end
+  local results = utils.quickfix_items_to_entries(locations)
 
   if vim.tbl_isempty(results) then
     return
   end
 
-  local lsp_reference_finder = finders.new {
-    results = results
-  }
-
-  local reference_previewer = previewers.qflist
-  local reference_picker = pickers.new {
-    previewer = reference_previewer
-  }
-
-  reference_picker:find {
-    prompt = 'LSP References',
-    finder = lsp_reference_finder,
-    sorter = sorters.get_norcalli_sorter(),
-  }
+  local reference_picker = pickers.new(opts, {
+    prompt    = 'LSP References',
+    finder    = finders.new_table(results),
+    previewer = previewers.qflist,
+    sorter    = sorters.get_norcalli_sorter(),
+  }):find()
 end
 
-builtin.quickfix = function()
+builtin.quickfix = function(opts)
   local locations = vim.fn.getqflist()
-
-  local results = {}
-  for _, entry in ipairs(locations) do
-    if not entry.filename then
-      entry.filename = vim.api.nvim_buf_get_name(entry.bufnr)
-    end
-
-    local vimgrep_str = string.format(
-      "%s:%s:%s: %s",
-      vim.fn.fnamemodify(entry.filename, ":."),
-      entry.lnum,
-      entry.col,
-      entry.text
-    )
-
-    table.insert(results, {
-      valid = true,
-      value = entry,
-      ordinal = vimgrep_str,
-      display = vimgrep_str,
-    })
-  end
+  local results = utils.quickfix_items_to_entries(locations)
 
   if vim.tbl_isempty(results) then
     return
   end
 
-  local quickfix_finder = finders.new {
-    results = results
-  }
-
-  local quickfix_previewer = previewers.qflist
-  local quickfix_picker = pickers.new {
-    previewer = quickfix_previewer
-  }
-
-  quickfix_picker:find {
-    prompt = 'Quickfix',
-    finder = quickfix_finder,
-    sorter = sorters.get_norcalli_sorter(),
-  }
+  pickers.new(opts, {
+    prompt    = 'Quickfix',
+    finder    = finders.new_table(results),
+    previewer = previewers.qflist,
+    sorter    = sorters.get_norcalli_sorter(),
+  }):find()
 end
 
 builtin.grep_string = function(opts)
@@ -208,42 +117,23 @@ builtin.grep_string = function(opts)
 
   local search = opts.search or vim.fn.expand("<cword>")
 
-  local grepper = finders.new {
-    maximum_results = 10000,
-
-    -- TODO: We can optimize these.
-    -- static = true,
-
-    fn_command = function()
-      return {
-        command = 'rg',
-        args = {"--vimgrep", search},
-      }
-    end
-  }
-
-  local file_picker = pickers.new {
-    previewer = previewers.vimgrep
-  }
-
-  file_picker:find {
-    prompt = 'Live Grep',
-    finder = grepper,
+  local file_picker = pickers.new(opts, {
+    prompt = 'Find Word',
+    finder = finders.new_oneshot_job {'rg', '--vimgrep', search},
+    previewer = previewers.vimgrep,
     sorter = sorters.get_norcalli_sorter(),
-  }
+  }):find()
 end
 
-builtin.oldfiles = function()
-  local oldfiles_finder = finders.new {
-    results = vim.v.oldfiles
-  }
-  local file_picker = pickers.new{}
-
-  file_picker:find {
+builtin.oldfiles = function(opts)
+  pickers.new(opts, {
     prompt = 'Oldfiles',
-    finder = oldfiles_finder,
-    sorter = sorters.get_norcalli_sorter()
-  }
+    finder = finders.new_table(vim.tbl_filter(function(val)
+      return 0 ~= vim.fn.filereadable(val)
+    end, vim.v.oldfiles)),
+    sorter = sorters.get_norcalli_sorter(),
+    previewer = previewers.cat,
+  }):find()
 end
 
 return builtin

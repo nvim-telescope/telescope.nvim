@@ -1,9 +1,9 @@
 local Job = require('plenary.job')
 
 local log = require('telescope.log')
+local utils = require('telescope.utils')
 
 local finders = {}
-
 
 -- TODO: We should make a few different "FinderGenerators":
 --  SimpleListFinder(my_list)
@@ -11,7 +11,9 @@ local finders = {}
 --  JobFinder(my_job_args)
 
 ---@class Finder
-local Finder = {}
+local Finder = {
+  hello = "world"
+}
 
 Finder.__index = Finder
 Finder.__call = function(t, ... ) return t:_find(...) end
@@ -35,7 +37,7 @@ function Finder:new(opts)
   --    string
   --    list
   --    ...
-  return setmetatable({
+  local obj = setmetatable({
     results = opts.results,
 
     fn_command = opts.fn_command,
@@ -45,7 +47,9 @@ function Finder:new(opts)
     -- Maximum number of results to process.
     --  Particularly useful for live updating large queries.
     maximum_results = opts.maximum_results,
-  }, Finder)
+  }, self)
+
+  return obj
 end
 
 -- Probably should use the word apply here, since we're apply the callback passed to us by
@@ -145,8 +149,38 @@ end
 --- Return a new Finder
 --
 --@return Finder
-finders.new = function(...)
-  return Finder:new(...)
+finders.new = function(opts)
+  return Finder:new(opts)
+end
+
+-- TODO: Is this worth making?
+-- finders.new_responsive_job = function(opts)
+--   return finders.new {
+--     maximum_results = get_default(opts.maximum_results, 2000),
+--   }
+-- end
+
+finders.new_oneshot_job = function(command_list)
+  command_list = vim.deepcopy(command_list)
+
+  local command = table.remove(command_list, 1)
+
+  return finders.new {
+    static = true,
+
+    fn_command = function()
+      return {
+        command = command,
+        args = command_list,
+      }
+    end,
+  }
+end
+
+finders.new_table = function(t)
+  return finders.new {
+    results = t
+  }
 end
 
 -- We should add a few utility functions here...
@@ -155,6 +189,6 @@ end
 -- finders.new_one_shot_job
 -- finders.new_table
 
-finders.Finder = Finder
+-- finders.Finder = Finder
 
 return finders

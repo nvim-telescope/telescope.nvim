@@ -1,5 +1,6 @@
 local a = vim.api
 local popup = require('popup')
+local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 
 local actions = require('telescope.actions')
 local log = require('telescope.log')
@@ -8,14 +9,22 @@ local state = require('telescope.state')
 local utils = require('telescope.utils')
 
 local Entry = require('telescope.entry')
-local Sorter = require('telescope.sorters').Sorter
-local Previewer = require('telescope.previewers').Previewer
 
-local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
+local get_default = utils.get_default
+
+-- TODO: Make this work with deep extend I think.
+local extend = function(opts, defaults)
+  local result = vim.deepcopy(opts or {})
+  for k, v in pairs(defaults or {}) do
+    if result[k] == nil then
+      result[k] = v
+    end
+  end
+
+  return result
+end
 
 local pickers = {}
-
-local ifnil = function(x, was_nil, was_not_nil) if x == nil then return was_nil else return was_not_nil end end
 
 local default_mappings = {
   i = {
@@ -42,58 +51,60 @@ local default_mappings = {
 local Picker = {}
 Picker.__index = Picker
 
-assert(Sorter)
-assert(Previewer)
-
----@class PickOpts
----@field filter Sorter
----@field maps table
----@field unseen string
-
 --- Create new picker
---- @param opts PickOpts
 function Picker:new(opts)
   opts = opts or {}
 
   return setmetatable({
-    filter = opts.filter,
+    prompt = opts.prompt,
+
+    finder = opts.finder,
+    sorter = opts.sorter,
     previewer = opts.previewer,
-    maps = opts.maps,
+
+    mappings = get_default(opts.mappings, default_mappings),
 
     get_window_options = opts.get_window_options,
-
     selection_strategy = opts.selection_strategy,
+
+    window = {
+      border = get_default(opts.border, {}),
+      borderchars = get_default(opts.borderchars, { '─', '│', '─', '│', '┌', '┐', '┘', '└'}),
+    },
+
+    preview_cutoff = get_default(opts.preview_cutoff, 120),
   }, Picker)
 end
 
-function Picker:get_window_options(max_columns, max_lines, prompt_title, find_options)
-
-  local popup_border = ifnil(find_options.border, {}, find_options.border)
+function Picker:get_window_options(max_columns, max_lines, prompt_title)
+  local popup_border = self.window.border
+  local popup_borderchars = self.window.borderchars
 
   local preview = {
     border = popup_border,
-    borderchars = find_options.borderchars or nil,
+    borderchars = popup_borderchars,
     enter = false,
     highlight = false
   }
 
   local results = {
     border = popup_border,
-    borderchars = find_options.borderchars or nil,
+    borderchars = popup_borderchars,
     enter = false,
   }
 
   local prompt = {
     title = prompt_title,
     border = popup_border,
-    borderchars = find_options.borderchars or nil,
+    borderchars = popup_borderchars,
     enter = true
   }
 
   -- TODO: Test with 120 width terminal
 
   local width_padding = 10
-  if not self.previewer or max_columns < find_options.preview_cutoff then
+  if not self.previewer or max_columns < self.preview_cutoff then
+    width_padding = 2
     preview.width = 0
   elseif max_columns < 150 then
     width_padding = 5
@@ -110,7 +121,7 @@ function Picker:get_window_options(max_columns, max_lines, prompt_title, find_op
 
   local base_height
   if max_lines < 40 then
-    base_height = math.floor(max_lines * 0.5)
+    base_height = math.min(math.floor(max_lines * 0.8), max_lines - 8)
   else
     base_height = math.floor(max_lines * 0.8)
   end
@@ -143,21 +154,10 @@ function Picker:get_window_options(max_columns, max_lines, prompt_title, find_op
   }
 end
 
--- opts.preview_cutoff = 120
-function Picker:find(opts)
-  opts = opts or {}
-
-  if opts.preview_cutoff == nil then
-    opts.preview_cutoff = 120
-  end
-
-  opts.borderchars = opts.borderchars or { '─', '│', '─', '│', '┌', '┐', '┘', '└'}
-
-  local finder = opts.finder
-  assert(finder, "Finder is required to do picking")
-
-  local sorter = opts.sorter
-  local prompt_string = opts.prompt
+function Picker:find()
+  local prompt_string = assert(self.prompt, "Prompt is required.")
+  local finder = assert(self.finder, "Finder is required to do picking")
+  local sorter = self.sorter
 
   self.original_win_id = a.nvim_get_current_win()
 
@@ -165,7 +165,7 @@ function Picker:find(opts)
   -- 1. Prompt window
   -- 2. Options window
   -- 3. Preview window
-  local popup_opts = self:get_window_options(vim.o.columns, vim.o.lines, prompt_string, opts)
+  local popup_opts = self:get_window_options(vim.o.columns, vim.o.lines, prompt_string)
 
   -- TODO: Add back the borders after fixing some stuff in popup.nvim
   local results_win, results_opts = popup.create('', popup_opts.results)
@@ -338,8 +338,7 @@ function Picker:find(opts)
     finder = finder,
   })
 
-  -- mappings.set_keymap(prompt_bufnr, results_bufnr)
-  mappings.apply_keymap(prompt_bufnr, opts.mappings or default_mappings)
+  mappings.apply_keymap(prompt_bufnr, self.mappings)
 
   vim.cmd [[startinsert]]
 end
@@ -462,8 +461,9 @@ function Picker:set_selection(row)
   end
 end
 
-pickers.new = function(...)
-  return Picker:new(...)
+pickers.new = function(opts, defaults)
+  opts = extend(opts, defaults)
+  return Picker:new(opts)
 end
 
 -- TODO: We should consider adding `process_bulk` or `bulk_entry_manager` for things
