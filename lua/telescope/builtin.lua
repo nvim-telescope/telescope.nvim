@@ -430,14 +430,20 @@ builtin.planets = function(opts)
   opts = opts or {}
   local show_pluto = opts.show_pluto or false
 
-  local planet_directory = vim.fn.globpath(vim.o.runtimepath, '**/telescope.nvim') .. '/memes/'
-  local planet_searcher = finders.new {
-    fn_command = function()
-      return {
-        command = 'ls',
-        args = show_pluto and {planet_directory} or {"-I", "pluto", planet_directory}
-      }
+  local sourced_file = require('plenary.debug_utils').sourced_filepath()
+  local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h")
+
+  local globbed_files = vim.fn.globpath(base_directory .. '/data/memes/planets/', '*', true, true)
+  local acceptable_files = {}
+  for _, v in ipairs(globbed_files) do
+    if not show_pluto and v:find("pluto") then
+    else
+      table.insert(acceptable_files, v)
     end
+  end
+
+  local planet_searcher = finders.new {
+    results = acceptable_files
   }
 
   local planet_picker = pickers.new { previewer = previewers.planet_previewer }

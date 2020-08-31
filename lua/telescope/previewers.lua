@@ -318,15 +318,12 @@ previewers.help = defaulter(function(_)
 end, {})
 
 previewers.planet_previewer = previewers.new {
-  setup = function()
-    return vim.fn.globpath(vim.o.runtimepath, '**/telescope.nvim') .. '/memes/'
-  end,
   preview_fn = function(self, entry, status)
     local bufnr = vim.api.nvim_create_buf(false, true)
 
     vim.api.nvim_win_set_buf(status.preview_win, bufnr)
 
-    local termopen_command = "cat " .. self.state .. entry.display
+    local termopen_command = "bat " .. entry.value
 
     -- HACK! Requires `termopen` to accept buffer argument.
     vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
