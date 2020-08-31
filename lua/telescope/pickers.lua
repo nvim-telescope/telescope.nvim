@@ -241,7 +241,7 @@ function Picker:find()
         return
       end
 
-      log.info("Processing result... ", entry)
+      log.trace("Processing result... ", entry)
 
       local sort_ok, sort_score = nil, 0
       if sorter then
