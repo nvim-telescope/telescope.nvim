@@ -34,6 +34,27 @@ previewers.new = function(...)
   return Previewer:new(...)
 end
 
+previewers.new_termopen = function(opts)
+  local entry_value = opts.get_value or function(entry)
+    return entry.value
+  end
+
+  local command_string = opts.command
+
+  return previewers.new {
+    preview_fn = function(_, entry, status)
+      local bufnr = vim.api.nvim_create_buf(false, true)
+
+      vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+
+      -- HACK! Requires `termopen` to accept buffer argument.
+      vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
+      vim.fn.termopen(string.format(command_string, entry_value(entry)))
+      vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.prompt_win))
+    end
+  }
+end
+
 previewers.vim_buffer = previewers.new {
   preview_fn = function(_, entry, status)
     local value = entry.value

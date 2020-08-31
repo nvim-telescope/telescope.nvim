@@ -1,17 +1,36 @@
 -- TODO: Customize keymap
 local a = vim.api
 
-local actions = require('telescope.actions')
-local state = require('telescope.state')
-
 local mappings = {}
-local keymap = {}
 
-local keymap_store = {}
+local keymap_store = setmetatable({}, {
+  __index = function(t, k)
+    rawset(t, k, {})
+
+    return rawget(t, k)
+  end
+})
+
+local _mapping_key_id = 0
+local get_next_id = function()
+  _mapping_key_id = _mapping_key_id + 1
+  return _mapping_key_id
+end
+
+local assign_function = function(prompt_bufnr, func)
+  local func_id = get_next_id()
+
+  keymap_store[prompt_bufnr][func_id] = func
+
+  return func_id
+end
+
 
 --[[
+Usage:
+
 mappings.apply_keymap(42, {
-  normal = {
+  n = {
     ["<leader>x"] = "just do this string",
 
     ["<CR>"] = function(picker, prompt_bufnr)
@@ -21,11 +40,49 @@ mappings.apply_keymap(42, {
       vim.cmd(string.format(":e %s", filename))
     end,
   },
-  insert = {
+
+  i = {
   }
 })
 --]]
 mappings.apply_keymap = function(prompt_bufnr, buffer_keymap)
+  for mode, mode_map in pairs(buffer_keymap) do
+    for key_bind, key_func in pairs(mode_map) do
+      if type(key_func) == "string" then
+        a.nvim_buf_set_keymap(
+          prompt_bufnr,
+          mode,
+          key_bind,
+          key_func,
+          {
+            silent = true
+          }
+        )
+      else
+        local key_id = assign_function(prompt_bufnr, key_func)
+        local prefix = ""
+        if mode == "i" then
+          prefix = "<C-O>"
+        end
+
+        a.nvim_buf_set_keymap(
+          prompt_bufnr,
+          mode,
+          key_bind,
+          string.format(
+            "%s:lua require('telescope.mappings').execute_keymap(%s, %s)<CR>",
+            prefix,
+            prompt_bufnr,
+            key_id
+          ),
+          {
+            silent = true
+          }
+        )
+
+      end
+    end
+  end
 
   vim.cmd(string.format(
     [[autocmd BufDelete %s :lua require('telescope.mappings').clear(%s)]],
@@ -34,95 +91,23 @@ mappings.apply_keymap = function(prompt_bufnr, buffer_keymap)
   ))
 end
 
+mappings.execute_keymap = function(prompt_bufnr, keymap_identifier)
+  local key_func = keymap_store[prompt_bufnr][keymap_identifier]
+
+  assert(
+    key_func,
+    string.format(
+      "Unsure of how we got this failure: %s %s",
+      prompt_bufnr,
+      keymap_identifier
+    )
+  )
+
+  key_func(prompt_bufnr)
+end
+
 mappings.clear = function(prompt_bufnr)
   keymap_store[prompt_bufnr] = nil
-end
-
-mappings.set_keymap = function(prompt_bufnr, results_bufnr)
-  local function default_mapper(mode, map_key, table_key)
-    a.nvim_buf_set_keymap(
-      prompt_bufnr,
-      mode,
-      map_key,
-      string.format(
-        [[<C-O>:lua __TelescopeMapping(%s, %s, '%s')<CR>]],
-        prompt_bufnr,
-        results_bufnr,
-        table_key
-        ),
-      {
-        silent = true,
-      }
-    )
-  end
-
-  default_mapper('i', '<c-n>', 'next_selection')
-  default_mapper('i', '<c-p>', 'previous_selection')
-  default_mapper('i', '<CR>', 'enter')
-
-  default_mapper('n', '<esc>', 'escape')
-end
-
-
-function __TelescopeMapping(prompt_bufnr, results_bufnr, characters)
-  if keymap[characters] then
-    keymap[characters](prompt_bufnr, results_bufnr)
-  end
-end
-
--- TODO: Refactor this to use shared code.
--- TODO: Move from top to bottom, etc.
--- TODO: It seems like doing this brings us back to the beginning of the prompt, which is not great.
-keymap["next_selection"] = function(prompt_bufnr, _)
-  actions.shift_current_selection(prompt_bufnr, 1)
-end
-
-keymap["previous_selection"] = function(prompt_bufnr, _)
-  actions.shift_current_selection(prompt_bufnr, -1)
-end
-
-keymap["enter"] = function(prompt_bufnr, results_bufnr)
-  local picker = actions.get_current_picker(prompt_bufnr)
-  local entry = actions.get_selected_entry(prompt_bufnr)
-
-  if not entry then
-    print("[telescope] Nothing currently selected")
-    return
-  else
-    local value = entry.value
-    if not value then
-      print("Could not do anything with blank line...")
-      return
-    end
-
-    -- TODO: This is not great.
-    if type(value) == "table" then
-      value = entry.display
-    end
-
-    local sections = vim.split(value, ":")
-
-    local filename = sections[1]
-    local row = tonumber(sections[2])
-    local col = tonumber(sections[3])
-
-    vim.cmd(string.format([[bwipeout! %s]], prompt_bufnr))
-
-    a.nvim_set_current_win(picker.original_win_id or 0)
-    vim.cmd(string.format(":e %s", filename))
-
-    local bufnr = vim.api.nvim_get_current_buf()
-    a.nvim_buf_set_option(bufnr, 'buflisted', true)
-    if row and col then
-      a.nvim_win_set_cursor(0, {row, col})
-    end
-
-    vim.cmd [[stopinsert]]
-  end
-end
-
-keymap["escape"] = function(prompt_bufnr)
-  vim.cmd(string.format([[bwipeout! %s]], prompt_bufnr))
 end
 
 return mappings

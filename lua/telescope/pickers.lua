@@ -1,6 +1,7 @@
 local a = vim.api
 local popup = require('popup')
 
+local actions = require('telescope.actions')
 local log = require('telescope.log')
 local mappings = require('telescope.mappings')
 local state = require('telescope.state')
@@ -15,6 +16,18 @@ local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 local pickers = {}
 
 local ifnil = function(x, was_nil, was_not_nil) if x == nil then return was_nil else return was_not_nil end end
+
+local default_mappings = {
+  i = {
+    ["<C-n>"] = actions.move_selection_next,
+    ["<C-p>"] = actions.move_selection_previous,
+    ["<CR>"] = actions.goto_file_selection,
+  },
+
+  n = {
+    ["<esc>"] = actions.close,
+  },
+}
 
 -- Picker takes a function (`get_window_options`) that returns the configurations required for three windows:
 --  prompt
@@ -325,7 +338,8 @@ function Picker:find(opts)
     finder = finder,
   })
 
-  mappings.set_keymap(prompt_bufnr, results_bufnr)
+  -- mappings.set_keymap(prompt_bufnr, results_bufnr)
+  mappings.apply_keymap(prompt_bufnr, opts.mappings or default_mappings)
 
   vim.cmd [[startinsert]]
 end
