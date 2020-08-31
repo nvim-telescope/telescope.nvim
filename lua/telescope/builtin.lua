@@ -235,10 +235,7 @@ end
 
 builtin.oldfiles = function()
   local oldfiles_finder = finders.new {
-    results = vim.tbl_map(
-      function(x) return (x:gsub('\n', '')) end,
-      vim.v.oldfiles
-    )
+    results = vim.v.oldfiles
   }
   local file_picker = pickers.new{}
 
