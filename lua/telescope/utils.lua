@@ -74,4 +74,37 @@ utils.new_ngram = function()
   return require("telescope._private.NGram"):new()
 end
 
+-- TODO: Figure out how to do this... could include in plenary :)
+-- NOTE: Don't use this yet. It will segfault sometimes.
+--
+-- opts.shorten_path and function(value)
+--     local result = {
+--       valid = true,
+--       display = utils.path_shorten(value),
+--       ordinal = value,
+--       value = value
+--     }
+
+--     return result
+--   end or nil)
+utils.path_shorten = (function()
+  if jit then
+    local ffi = require('ffi')
+    ffi.cdef [[
+    typedef unsigned char char_u;
+    char_u *shorten_dir(char_u *str);
+    ]]
+
+    return function(path)
+      local c_str = ffi.new("char[?]", #path)
+      ffi.copy(c_str, path)
+      return ffi.string(ffi.C.shorten_dir(c_str))
+    end
+  else
+    return function(path)
+      return path
+    end
+  end
+end)()
+
 return utils

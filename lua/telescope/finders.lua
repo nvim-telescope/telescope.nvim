@@ -40,6 +40,7 @@ function Finder:new(opts)
   local obj = setmetatable({
     results = opts.results,
 
+    entry_maker = opts.entry_maker,
     fn_command = opts.fn_command,
     static = opts.static,
     state = {},
@@ -95,23 +96,17 @@ function Finder:_find(prompt, process_result, process_complete)
 
   -- TODO: Should consider ways to allow "transformers" to be run here.
   --        So that a finder can choose to "transform" the text into something much more easily usable.
-  local entries_processed = 0
-
   local on_output = function(_, line, _)
     if not line then
       return
     end
 
-    if maximum_results then
-      entries_processed = entries_processed + 1
-      if entries_processed > maximum_results then
-        log.info("Shutting down job early...")
-        self.job:shutdown()
-      end
-    end
-
     if vim.trim(line) ~= "" then
       line = line:gsub("\n", "")
+
+      if self.entry_maker then
+        line = self.entry_maker(line)
+      end
 
       process_result(line)
 
@@ -160,13 +155,15 @@ end
 --   }
 -- end
 
-finders.new_oneshot_job = function(command_list)
+finders.new_oneshot_job = function(command_list, entry_maker)
   command_list = vim.deepcopy(command_list)
 
   local command = table.remove(command_list, 1)
 
   return finders.new {
     static = true,
+
+    entry_maker = entry_maker,
 
     fn_command = function()
       return {

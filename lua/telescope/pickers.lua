@@ -68,6 +68,12 @@ function Picker:new(opts)
     selection_strategy = opts.selection_strategy,
 
     window = {
+      -- TODO: This won't account for different layouts...
+      height = get_default(opts.height, 0.8),
+      preview_width = get_default(opts.preview_width, 0.8),
+      results_width = get_default(opts.results_width, 0.8),
+
+      -- Border config
       border = get_default(opts.border, {}),
       borderchars = get_default(opts.borderchars, { '─', '│', '─', '│', '┌', '┐', '┘', '└'}),
     },
@@ -235,7 +241,7 @@ function Picker:find()
         return
       end
 
-      log.trace("Processing result... ", entry)
+      log.info("Processing result... ", entry)
 
       local sort_ok, sort_score = nil, 0
       if sorter then
