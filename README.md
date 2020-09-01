@@ -2,7 +2,7 @@
 
 Gaze deeply into unknown regions using the power of the moon.
 
-![Example](./media/simple_rg_v1.gif)
+![Example](https://raw.githubusercontent.com/tjdevries/media.repo/master/telescope.nvim/simple_rg_v1.gif)
 [Example video](https://www.youtube.com/watch?v=65AVwHZflsU)
 
 ## Installation
