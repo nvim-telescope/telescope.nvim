@@ -13,6 +13,8 @@ local utils = require('telescope.utils')
 local builtin = {}
 
 builtin.git_files = function(opts)
+  opts = opts or {}
+
   local make_entry = (
     opts.shorten_path
     and function(value)
@@ -86,6 +88,9 @@ builtin.live_grep = function(opts)
   -- }
 end
 
+-- TODO: document_symbol
+-- TODO: workspace_symbol
+
 builtin.lsp_references = function(opts)
   local params = vim.lsp.util.make_position_params()
   params.context = { includeDeclaration = true }
@@ -147,6 +152,27 @@ builtin.oldfiles = function(opts)
     end, vim.v.oldfiles)),
     sorter = sorters.get_norcalli_sorter(),
     previewer = previewers.cat,
+  }):find()
+end
+
+builtin.command_history = function(opts)
+  local history_string = vim.fn.execute('history cmd')
+  local history_list = vim.split(history_string, "\n")
+
+  local results = {}
+  for i = 3, #history_list do
+    local item = history_list[i]
+    local start, finish = string.find(item, "%d+ +")
+    table.insert(results, string.sub(item, finish + 1))
+  end
+
+  pickers.new(opts, {
+    prompt = 'Command History',
+    finder = finders.new_table(results),
+    sorter = sorters.get_norcalli_sorter(),
+
+    -- TODO: Adapt `help` to this.
+    -- previewer = previewers.cat,
   }):find()
 end
 
