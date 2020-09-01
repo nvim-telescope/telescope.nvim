@@ -35,6 +35,7 @@ local default_mappings = {
 
   n = {
     ["<esc>"] = actions.close,
+    ["<CR>"] = actions.goto_file_selection,
 
     -- TODO: This would be weird if we switch the ordering.
     ["j"] = actions.move_selection_next,
