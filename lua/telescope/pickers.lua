@@ -35,6 +35,10 @@ local default_mappings = {
 
   n = {
     ["<esc>"] = actions.close,
+
+    -- TODO: This would be weird if we switch the ordering.
+    ["j"] = actions.move_selection_next,
+    ["k"] = actions.move_selection_previous,
   },
 }
 
