@@ -61,11 +61,10 @@ wrappers over common tasks).
 
 ### `builtin`
 
-Defaults:
-
 ```lua
 require'telescope.builtin'.git_files{
-	show_preview = true,
+	-- See Picker for additional options
+	show_preview = true, -- Show preview
 	selection_strategy = "reset" -- follow, reset, line
 }
 ```
@@ -93,6 +92,34 @@ require'telescope.builtin'.git_files{
 - sk
 - does this always need to be fuzzy?
   - you'll map what you want to do with vimscript / lua mappings
+
+Defaults:
+
+### Picker
+
+```lua
+-- lua/telescope/pickers.lua
+Picker:new{
+	prompt: "Git Files", -- REQUIRED
+	finder: FUNCTION, -- REQUIRED
+	sorter: FUNCTION, -- REQUIRED
+	previewer: FUNCTION, -- REQUIRED
+	mappings = {
+  i = {
+    ["<C-n>"] = require'telescope.actions'.move_selection_next,
+    ["<C-p>"] = require'telescope.actions'.move_selection_previous,
+    ["<CR>"] = require'telescope.actions'.goto_file_selection,
+  },
+
+  n = {
+    ["<esc>"] = require'telescope.actions'.close,
+  },
+	selection_strategy = "reset", -- follow, reset, line
+	border = {},
+	borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└'},
+	preview_cutoff = 120
+}.find()
+```
 
 "previewer":
 
