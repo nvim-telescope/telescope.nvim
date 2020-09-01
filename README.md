@@ -105,14 +105,15 @@ Picker:new{
 	sorter = FUNCTION, -- REQUIRED
 	previewer = FUNCTION, -- REQUIRED
 	mappings = {
-	i = {
-		["<C-n>"] = require'telescope.actions'.move_selection_next,
-		["<C-p>"] = require'telescope.actions'.move_selection_previous,
-		["<CR>"] = require'telescope.actions'.goto_file_selection,
-	},
+		i = {
+			["<C-n>"] = require'telescope.actions'.move_selection_next,
+			["<C-p>"] = require'telescope.actions'.move_selection_previous,
+			["<CR>"] = require'telescope.actions'.goto_file_selection,
+		},
 
-	n = {
-		["<esc>"] = require'telescope.actions'.close,
+		n = {
+			["<esc>"] = require'telescope.actions'.close,
+		}
 	},
 	selection_strategy = "reset", -- follow, reset, line
 	border = {},
