@@ -33,26 +33,25 @@ end
 
 -- TODO: Make it so that when you select stuff, it's inserted
 -- TODO: Make it so the previewer shows the help text.
-WIP.completion = function()
+WIP.completion = function(opts)
   local results = {}
-  for k, v in pairs(vim.api) do
-    table.insert(results, k)
+  for k, _ in pairs(vim.api) do
+    table.insert(results, k .. "()")
   end
 
   local lsp_reference_finder = finders.new {
     results = results
   }
 
-  -- local reference_previewer = previewers.qflist
-  local reference_picker = pickers.new {
-    -- previewer = reference_previewer
-  }
-
-  reference_picker:find {
-    prompt = 'LSP References',
+  -- TODO: Open the help text for the line.
+  local reference_picker = pickers.new(opts, {
+    prompt = 'vim.api Help Reference',
     finder = lsp_reference_finder,
     sorter = sorters.get_norcalli_sorter(),
-  }
+    previewer = previewers.help,
+  })
+
+  reference_picker:find {}
 end
 
 -- TODO: Use tree sitter to get "everything" in your current scope / file / etc.

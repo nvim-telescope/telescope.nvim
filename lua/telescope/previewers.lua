@@ -1,3 +1,5 @@
+local context_manager = require('plenary.context_manager')
+
 local log = require('telescope.log')
 
 local previewers = {}
@@ -34,6 +36,14 @@ previewers.new = function(...)
   return Previewer:new(...)
 end
 
+local with_preview_window = function(status, callable)
+  return context_manager.with(function()
+    vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
+    coroutine.yield()
+    vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.prompt_win))
+  end, callable)
+end
+
 previewers.new_termopen = function(opts)
   local entry_value = opts.get_value or function(entry)
     return entry.value
@@ -47,10 +57,9 @@ previewers.new_termopen = function(opts)
 
       vim.api.nvim_win_set_buf(status.preview_win, bufnr)
 
-      -- HACK! Requires `termopen` to accept buffer argument.
-      vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
-      vim.fn.termopen(string.format(command_string, entry_value(entry)))
-      vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.prompt_win))
+      with_preview_window(status, function()
+        vim.fn.termopen(string.format(command_string, entry_value(entry)))
+      end)
     end
   }
 end
@@ -133,10 +142,9 @@ previewers.cat = previewers.new {
 
     vim.api.nvim_win_set_buf(status.preview_win, bufnr)
 
-    -- HACK! Requires `termopen` to accept buffer argument.
-    vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
-    vim.fn.termopen(string.format(self.state.command_string, entry.value))
-    vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.prompt_win))
+    with_preview_window(status, function()
+      vim.fn.termopen(string.format(self.state.command_string, entry.value))
+    end)
 
     vim.api.nvim_buf_set_name(bufnr, tostring(bufnr))
   end
@@ -174,10 +182,9 @@ previewers.vimgrep = previewers.new {
 
     local termopen_command = string.format(self.state.command_string, filename, lnum, start, finish)
 
-    -- HACK! Requires `termopen` to accept buffer argument.
-    vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
-    vim.fn.termopen(termopen_command)
-    vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.prompt_win))
+    with_preview_window(status, function()
+      vim.fn.termopen(termopen_command)
+    end)
 
   end
 }
@@ -210,10 +217,39 @@ previewers.qflist = previewers.new {
 
     local termopen_command = string.format(self.state.command_string, filename, lnum, start, finish)
 
-    -- HACK! Requires `termopen` to accept buffer argument.
-    vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
-    vim.fn.termopen(termopen_command)
-    vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.prompt_win))
+    with_preview_window(status, function()
+      vim.fn.termopen(termopen_command)
+    end)
+  end
+}
+
+previewers.help = previewers.new {
+  preview_fn = function(_, entry, status)
+    with_preview_window(status, function()
+      local old_tags = vim.o.tags
+      vim.o.tags = vim.fn.expand("$VIMRUNTIME") .. '/doc/tags'
+
+      local taglist = vim.fn.taglist('^' .. entry.value .. '$')
+      if vim.tbl_isempty(taglist) then
+        taglist = vim.fn.taglist(entry.value)
+      end
+
+      if vim.tbl_isempty(taglist) then
+        return
+      end
+
+      local best_entry = taglist[1]
+      local new_bufnr = vim.fn.bufnr(best_entry.filename, true)
+
+      vim.api.nvim_buf_set_option(new_bufnr, 'filetype', 'help')
+      vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
+
+      vim.cmd [["gg"]]
+      print(best_entry.cmd)
+      vim.cmd(string.format([[execute "%s"]], best_entry.cmd))
+
+      vim.o.tags = old_tags
+    end)
   end
 }
 
