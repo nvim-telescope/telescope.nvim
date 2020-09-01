@@ -13,9 +13,23 @@ local utils = require('telescope.utils')
 local builtin = {}
 
 builtin.git_files = function(opts)
+  local make_entry = (
+    opts.shorten_path
+    and function(value)
+      local result = {
+        valid = true,
+        display = utils.path_shorten(value),
+        ordinal = value,
+        value = value
+      }
+
+      return result
+    end)
+
+    or nil
   pickers.new(opts, {
     prompt    = 'Git File',
-    finder    = finders.new_oneshot_job({ "git", "ls-files" }),
+    finder    = finders.new_oneshot_job({ "git", "ls-files" }, make_entry),
     previewer = previewers.cat,
     sorter    = sorters.get_norcalli_sorter(),
   }):find()

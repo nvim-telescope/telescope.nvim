@@ -161,6 +161,8 @@ function Picker:get_window_options(max_columns, max_lines, prompt_title)
 end
 
 function Picker:find()
+  self:reset_selection()
+
   local prompt_string = assert(self.prompt, "Prompt is required.")
   local finder = assert(self.finder, "Finder is required to do picking")
   local sorter = self.sorter
@@ -408,6 +410,11 @@ function Picker:move_selection(change)
   self:set_selection(self:get_selection_row() + change)
 end
 
+function Picker:reset_selection()
+  self._selection = nil
+  self._selection_row = nil
+end
+
 function Picker:set_selection(row)
   if row > self.max_results then
     row = self.max_results
@@ -416,11 +423,6 @@ function Picker:set_selection(row)
   end
 
   local entry = self.manager:get_entry(self.max_results - row + 1)
-  if entry == self._selection and row == self._selection_row then
-    log.trace("Same entry as before. Skipping set")
-    return
-  end
-
   local status = state.get_status(self.prompt_bufnr)
   local results_bufnr = status.results_bufnr
 
@@ -451,6 +453,9 @@ function Picker:set_selection(row)
   -- end
 
   -- self._match_id = vim.fn.matchaddpos("Conceal", { {row + 1, 1, 2} }, 0, -1, { window = results_win, conceal = ">" })
+  if self._selection == entry and self._selection_row == row then
+    return
+  end
 
   -- TODO: Don't let you go over / under the buffer limits
   -- TODO: Make sure you start exactly at the bottom selected
