@@ -100,20 +100,20 @@ Defaults:
 ```lua
 -- lua/telescope/pickers.lua
 Picker:new{
-	prompt: "Git Files", -- REQUIRED
-	finder: FUNCTION, -- REQUIRED
-	sorter: FUNCTION, -- REQUIRED
-	previewer: FUNCTION, -- REQUIRED
+	prompt = "Git Files", -- REQUIRED
+	finder = FUNCTION, -- REQUIRED
+	sorter = FUNCTION, -- REQUIRED
+	previewer = FUNCTION, -- REQUIRED
 	mappings = {
-  i = {
-    ["<C-n>"] = require'telescope.actions'.move_selection_next,
-    ["<C-p>"] = require'telescope.actions'.move_selection_previous,
-    ["<CR>"] = require'telescope.actions'.goto_file_selection,
-  },
+	i = {
+		["<C-n>"] = require'telescope.actions'.move_selection_next,
+		["<C-p>"] = require'telescope.actions'.move_selection_previous,
+		["<CR>"] = require'telescope.actions'.goto_file_selection,
+	},
 
-  n = {
-    ["<esc>"] = require'telescope.actions'.close,
-  },
+	n = {
+		["<esc>"] = require'telescope.actions'.close,
+	},
 	selection_strategy = "reset", -- follow, reset, line
 	border = {},
 	borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└'},
