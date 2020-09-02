@@ -10,6 +10,10 @@ Previewer.__index = Previewer
 local bat_options = " --style=grid --paging=always "
 --  --terminal-width=%s
 
+-- TODO: We shoudl make sure that all our terminals close all the way.
+--          Otherwise it could be bad if they're just sitting around, waiting to be closed.
+--          I don't think that's the problem, but it could be?
+
 function Previewer:new(opts)
   opts = opts or {}
 

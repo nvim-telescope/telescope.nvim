@@ -2,8 +2,16 @@
 A collection of builtin pipelines for telesceope.
 
 Meant for both example and for easy startup.
+
+Any of these functions can just be called directly by doing:
+
+:lua require('telescope.builtin').__name__()
+
+This will use the default configuration options.
+  Other configuration options still in flux at the moment
 --]]
 
+local actions = require('telescope.actions')
 local finders = require('telescope.finders')
 local previewers = require('telescope.previewers')
 local pickers = require('telescope.pickers')
@@ -36,14 +44,11 @@ builtin.git_files = function(opts)
     previewer = previewers.cat,
     sorter    = sorters.get_fuzzy_file(),
   }):find()
-
 end
 
 builtin.live_grep = function(opts)
   local live_grepper = finders.new {
-    maximum_results = 1000,
-
-    fn_command = function(self, prompt)
+    fn_command = function(_, prompt)
       -- TODO: Make it so that we can start searching on the first character.
       if not prompt or prompt == "" then
         return nil
@@ -186,7 +191,7 @@ builtin.command_history = function(opts)
   local results = {}
   for i = 3, #history_list do
     local item = history_list[i]
-    local start, finish = string.find(item, "%d+ +")
+    local _, finish = string.find(item, "%d+ +")
     table.insert(results, string.sub(item, finish + 1))
   end
 
@@ -194,6 +199,15 @@ builtin.command_history = function(opts)
     prompt = 'Command History',
     finder = finders.new_table(results),
     sorter = sorters.get_norcalli_sorter(),
+
+    attach_mappings = function(map)
+      map('i', '<CR>', actions.set_command_line)
+
+      -- TODO: Find a way to insert the text... it seems hard.
+      -- map('i', '<C-i>', actions.insert_value, { expr = true })
+
+      return true
+    end,
 
     -- TODO: Adapt `help` to this.
     -- previewer = previewers.cat,
@@ -227,6 +241,28 @@ builtin.builtin = function(opts)
     finder    = finders.new_table(entries),
     previewer = previewers.qflist,
     sorter    = sorters.get_norcalli_sorter(),
+  }):find()
+end
+
+
+builtin.fd = function(opts)
+  local fd_string = nil
+  if 1 == vim.fn.executable("fd") then
+    fd_string = "fd"
+  elseif 1 == vim.fn.executable("fdfind") then
+    fd_string = "fdfind"
+  end
+
+  if not fd_string then
+    print("You need to install fd")
+    return
+  end
+
+  pickers.new(opts, {
+    prompt = 'Find Files',
+    finder = finders.new_oneshot_job {fd_string},
+    previewer = previewers.cat,
+    sorter = sorters.get_fuzzy_file(),
   }):find()
 end
 

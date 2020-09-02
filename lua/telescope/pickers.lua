@@ -14,7 +14,7 @@ local get_default = utils.get_default
 
 -- TODO: Make this work with deep extend I think.
 local extend = function(opts, defaults)
-  local result = vim.deepcopy(opts or {})
+  local result = opts or {}
   for k, v in pairs(defaults or {}) do
     if result[k] == nil then
       result[k] = v
@@ -69,7 +69,19 @@ function Picker:new(opts)
     sorter = opts.sorter,
     previewer = opts.previewer,
 
-    mappings = get_default(opts.mappings, default_mappings),
+    -- opts.mappings => overwrites entire table
+    -- opts.override_mappings => merges your table in with defaults.
+    --  Add option to change default
+    -- opts.attach(bufnr)
+
+    --[[
+    function(map)
+      map('n', '<esc>', actions.close, [opts])
+      telescope.apply_mapping
+    end
+    --]]
+    -- mappings = get_default(opts.mappings, default_mappings),
+    attach_mappings = opts.attach_mappings,
 
     get_window_options = opts.get_window_options,
     selection_strategy = opts.selection_strategy,
@@ -366,7 +378,7 @@ function Picker:find()
     finder = finder,
   })
 
-  mappings.apply_keymap(prompt_bufnr, self.mappings)
+  mappings.apply_keymap(prompt_bufnr, self.attach_mappings, default_mappings)
 
   vim.cmd [[startinsert]]
 end

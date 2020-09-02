@@ -155,6 +155,24 @@ end
 --   }
 -- end
 
+finders.new_job = function(command_generator)
+  return finders.new {
+    fn_command = function(_, prompt)
+      local command_list = command_generator(prompt)
+      if command_list == nil then
+        return nil
+      end
+
+      local command = table.remove(command_list, 1)
+
+      return {
+        command = command,
+        args = command_list,
+      }
+    end
+  }
+end
+
 finders.new_oneshot_job = function(command_list, entry_maker)
   command_list = vim.deepcopy(command_list)
 

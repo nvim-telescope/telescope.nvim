@@ -78,5 +78,23 @@ actions.close = function(prompt_bufnr)
   vim.cmd(string.format([[bwipeout! %s]], prompt_bufnr))
 end
 
+actions.set_command_line = function(prompt_bufnr)
+  local entry = actions.get_selected_entry(prompt_bufnr)
+
+  actions.close(prompt_bufnr)
+
+  vim.cmd(entry.value)
+end
+
+-- TODO: Think about how to do this.
+actions.insert_value = function(prompt_bufnr)
+  local entry = actions.get_selected_entry(prompt_bufnr)
+
+  vim.schedule(function()
+    actions.close(prompt_bufnr)
+  end)
+
+  return entry.value
+end
 
 return actions
