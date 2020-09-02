@@ -246,6 +246,8 @@ end
 
 
 builtin.fd = function(opts)
+  opts = opts or {}
+
   local fd_string = nil
   if 1 == vim.fn.executable("fd") then
     fd_string = "fd"
@@ -258,9 +260,23 @@ builtin.fd = function(opts)
     return
   end
 
+  -- TODO: CWD not 100% supported at this moment.
+  --        Previewers don't work. We'll have to try out something for that later
+  local cwd = opts.cwd
+  if cwd then
+    cwd = vim.fn.expand(cwd)
+  end
+
   pickers.new(opts, {
     prompt = 'Find Files',
-    finder = finders.new_oneshot_job {fd_string},
+    finder = finders.new {
+      fn_command = function()
+        return {
+          command = fd_string,
+          cwd = cwd,
+        }
+      end,
+    },
     previewer = previewers.cat,
     sorter = sorters.get_fuzzy_file(),
   }):find()

@@ -125,6 +125,7 @@ function Finder:_find(prompt, process_result, process_complete)
   self.job = Job:new {
     command = opts.command,
     args = opts.args,
+    cwd = opts.cwd,
 
     maximum_results = self.maximum_results,
 

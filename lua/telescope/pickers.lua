@@ -231,6 +231,10 @@ function Picker:find()
   local selection_strategy = self.selection_strategy or 'reset'
 
   local on_lines = function(_, _, _, first_line, last_line)
+    if not vim.api.nvim_buf_is_valid(prompt_bufnr) then
+      return
+    end
+
     local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]
 
     self.manager = pickers.entry_manager(
@@ -306,7 +310,7 @@ function Picker:find()
         self:set_selection(self.max_results)
       end
 
-      local worst_line = self.max_results - self.manager.num_results()
+      local worst_line = self.max_results - self.manager.num_results() + 1
       if worst_line <= 0 then
         return
       end
@@ -448,10 +452,20 @@ function Picker:reset_selection()
 end
 
 function Picker:set_selection(row)
+  -- TODO: Loop around behavior?
+  -- TODO: Scrolling past max results
   if row > self.max_results then
     row = self.max_results
   elseif row < 1 then
     row = 1
+  end
+
+  -- TODO: Move max results and row and entry management into an overridable funciton.
+  --        I have this same thing copied all over the place (and it's not good).
+  --        Particularly if we're going to do something like make it possible to sort
+  --        top to bottom, rather than bottom to top.
+  if row < (self.max_results - self.manager:num_results() + 1) then
+    return
   end
 
   local entry = self.manager:get_entry(self.max_results - row + 1)
