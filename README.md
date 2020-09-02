@@ -61,19 +61,50 @@ wrappers over common tasks).
 
 ### `builtin`
 
-Defaults:
-
 ```lua
 require'telescope.builtin'.git_files{
-	show_preview = true,
+	-- See Picker for additional options
+	show_preview       = true, -- Show preview
+	prompt             = "Git File",
 	selection_strategy = "reset" -- follow, reset, line
 }
 ```
 
-- `require'telescope.builtin'.live_grep{}`
-- `require'telescope.builtin'.lsp_references{}`
-- `require'telescope.builtin'.quickfix{}`
-- `require'telescope.builtin'.grep_string{ search = "query" }`
+```lua
+require'telescope.builtin'.live_grep{
+	-- See Picker for additional options
+	prompt = "Live Grep",
+}
+```
+
+```lua
+require'telescope.builtin'.lsp_references{
+	-- See Picker for additional options
+	prompt = 'LSP References'
+}
+```
+
+```lua
+require'telescope.builtin'.quickfix{
+	-- See Picker for additional options
+	prompt = 'Quickfix'
+}
+```
+
+```lua
+require'telescope.builtin'.grep_string{
+	-- See Picker for additional options
+	prompt = 'Find Word',
+	search = false -- Search term or <cword>
+}
+```
+
+```lua
+require'telescope.builtin'.oldfiles{
+	-- See Picker for additional options
+	prompt = 'Oldfiles',
+}
+```
 
 ## Goals
 
@@ -87,12 +118,51 @@ require'telescope.builtin'.git_files{
 - things in lua already
 - vim things
 
+```lua
+-- lua/telescope/finders.lua
+Finder:new{
+	entry_maker = function(line) end,
+	fn_command = function() { command = "", args  = { "ls-files" } } end,
+	static = false,
+	maximum_results = false
+}
+```
+
 "picker":
 
 - fzf
 - sk
 - does this always need to be fuzzy?
   - you'll map what you want to do with vimscript / lua mappings
+
+Defaults:
+
+### Picker
+
+```lua
+-- lua/telescope/pickers.lua
+Picker:new{
+	prompt = "Git Files", -- REQUIRED
+	finder = FUNCTION, -- REQUIRED
+	sorter = FUNCTION, -- REQUIRED
+	previewer = FUNCTION, -- REQUIRED
+	mappings = {
+		i = {
+			["<C-n>"] = require'telescope.actions'.move_selection_next,
+			["<C-p>"] = require'telescope.actions'.move_selection_previous,
+			["<CR>"] = require'telescope.actions'.goto_file_selection,
+		},
+
+		n = {
+			["<esc>"] = require'telescope.actions'.close,
+		}
+	},
+	selection_strategy = "reset", -- follow, reset, line
+	border = {},
+	borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└'},
+	preview_cutoff = 120
+}
+```
 
 "previewer":
 
