@@ -51,9 +51,9 @@ utils.quickfix_items_to_entries = function(locations)
   local results = {}
 
   for _, entry in ipairs(locations) do
-    local vimgrep_str = string.format(
+    local vimgrep_str = entry.vimgrep_str or string.format(
       "%s:%s:%s: %s",
-      vim.fn.fnamemodify(entry.filename, ":."),
+      vim.fn.fnamemodify(entry.display_filename or entry.filename, ":."),
       entry.lnum,
       entry.col,
       entry.text
@@ -64,6 +64,9 @@ utils.quickfix_items_to_entries = function(locations)
       value = entry,
       ordinal = vimgrep_str,
       display = vimgrep_str,
+
+      start = entry.start,
+      finish = entry.finish,
     })
   end
 

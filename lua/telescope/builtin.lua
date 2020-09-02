@@ -152,7 +152,7 @@ builtin.oldfiles = function(opts)
     finder = finders.new_table(vim.tbl_filter(function(val)
       return 0 ~= vim.fn.filereadable(val)
     end, vim.v.oldfiles)),
-    sorter = sorters.get_norcalli_sorter(),
+    sorter = sorters.get_fuzzy_file(),
     previewer = previewers.cat,
   }):find()
 end
@@ -175,6 +175,36 @@ builtin.command_history = function(opts)
 
     -- TODO: Adapt `help` to this.
     -- previewer = previewers.cat,
+  }):find()
+end
+
+-- TODO: What the heck should we do for accepting this.
+--  vim.fn.setreg("+", "nnoremap $TODO :lua require('telescope.builtin').<whatever>()<CR>")
+-- TODO: Can we just do the names instead?
+builtin.builtin = function(opts)
+  local objs = {}
+
+  for k, v in pairs(builtin) do
+    local debug_info = debug.getinfo(v)
+
+    table.insert(objs, {
+      vimgrep_str = k,
+      filename = string.sub(debug_info.source, 2),
+      lnum = debug_info.linedefined,
+      col = 0,
+
+      start = debug_info.linedefined,
+      finish = debug_info.lastlinedefined,
+    })
+  end
+
+  local entries = utils.quickfix_items_to_entries(objs)
+
+  pickers.new(opts, {
+    prompt    = 'Telescope Builtin',
+    finder    = finders.new_table(entries),
+    previewer = previewers.qflist,
+    sorter    = sorters.get_norcalli_sorter(),
   }):find()
 end
 

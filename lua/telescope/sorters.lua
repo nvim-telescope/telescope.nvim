@@ -179,15 +179,13 @@ sorters.get_fuzzy_file = function(opts)
         tail_modifier = 2
       end
 
-      -- TODO: Copied from ashkan.
       local denominator = (
         (10 * match_count / #prompt_lower_ngrams)
         -- biases for shorter strings
-        -- TODO(ashkan): this can bias towards repeated finds of the same
-        -- subpattern with overlapping_ngrams
         + 3 * match_count * ngram_len / #line
         + consecutive_matches
         + N / (contains_string or (2 * #line))
+
         -- + 30/(c1 or 2*N)
 
         -- TODO: It might be possible that this too strongly correlates,
