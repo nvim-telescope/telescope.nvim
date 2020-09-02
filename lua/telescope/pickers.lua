@@ -276,6 +276,8 @@ function Picker:find()
     end
 
     local process_complete = vim.schedule_wrap(function()
+      -- TODO: We should either: always leave one result or make sure we actually clean up the results when nothing matches
+
       if selection_strategy == 'row' then
         self:set_selection(self:get_selection_row())
       elseif selection_strategy == 'follow' then

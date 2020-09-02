@@ -29,12 +29,14 @@ builtin.git_files = function(opts)
     end)
 
     or nil
+
   pickers.new(opts, {
     prompt    = 'Git File',
     finder    = finders.new_oneshot_job({ "git", "ls-files" }, make_entry),
     previewer = previewers.cat,
-    sorter    = sorters.get_norcalli_sorter(),
+    sorter    = sorters.get_fuzzy_file(),
   }):find()
+
 end
 
 builtin.live_grep = function(opts)

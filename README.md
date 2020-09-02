@@ -63,46 +63,46 @@ wrappers over common tasks).
 
 ```lua
 require'telescope.builtin'.git_files{
-	-- See Picker for additional options
-	show_preview       = true, -- Show preview
-	prompt             = "Git File",
-	selection_strategy = "reset" -- follow, reset, line
+    -- See Picker for additional options
+    show_preview       = true, -- Show preview
+    prompt             = "Git File",
+    selection_strategy = "reset" -- follow, reset, line
 }
 ```
 
 ```lua
 require'telescope.builtin'.live_grep{
-	-- See Picker for additional options
-	prompt = "Live Grep",
+    -- See Picker for additional options
+    prompt = "Live Grep",
 }
 ```
 
 ```lua
 require'telescope.builtin'.lsp_references{
-	-- See Picker for additional options
-	prompt = 'LSP References'
+    -- See Picker for additional options
+    prompt = 'LSP References'
 }
 ```
 
 ```lua
 require'telescope.builtin'.quickfix{
-	-- See Picker for additional options
-	prompt = 'Quickfix'
+    -- See Picker for additional options
+    prompt = 'Quickfix'
 }
 ```
 
 ```lua
 require'telescope.builtin'.grep_string{
-	-- See Picker for additional options
-	prompt = 'Find Word',
-	search = false -- Search term or <cword>
+    -- See Picker for additional options
+    prompt = 'Find Word',
+    search = false -- Search term or <cword>
 }
 ```
 
 ```lua
 require'telescope.builtin'.oldfiles{
-	-- See Picker for additional options
-	prompt = 'Oldfiles',
+    -- See Picker for additional options
+    prompt = 'Oldfiles',
 }
 ```
 
@@ -121,15 +121,20 @@ require'telescope.builtin'.oldfiles{
 ```lua
 -- lua/telescope/finders.lua
 Finder:new{
-	entry_maker = function(line) end,
-	fn_command = function() { command = "", args  = { "ls-files" } } end,
-	static = false,
-	maximum_results = false
+    entry_maker = function(line) end,
+    fn_command = function() { command = "", args  = { "ls-files" } } end,
+    static = false,
+    maximum_results = false
 }
 ```
+
 `Sorter`:
 - A `Sorter` is called by the `Picker` on each item returned by the `Finder`.
-- `Sorter`s return a number, which is equivalent to the "distance" between two
+- `Sorter`s return a number, which is equivalent to the "distance" between the current `prompt` and the `entry` returned by a `finder`.
+    - Currently, it's not possible to delay calling the `Sorter` until the end of the execution, it is called on each item as we receive them.
+    - This was done this way so that long running / expensive searches can be instantly searchable and we don't have to wait til it completes for things to start being worked on.
+    - However, this prevents using some tools, like FZF easily.
+    - In the future, I'll probably add a mode where you can delay the sorting til the end, so you can use more traditional sorting tools.
 
 "picker":
 
@@ -145,25 +150,25 @@ Defaults:
 ```lua
 -- lua/telescope/pickers.lua
 Picker:new{
-	prompt = "Git Files", -- REQUIRED
-	finder = FUNCTION, -- REQUIRED
-	sorter = FUNCTION, -- REQUIRED
-	previewer = FUNCTION, -- REQUIRED
-	mappings = {
-		i = {
-			["<C-n>"] = require'telescope.actions'.move_selection_next,
-			["<C-p>"] = require'telescope.actions'.move_selection_previous,
-			["<CR>"] = require'telescope.actions'.goto_file_selection,
-		},
+    prompt = "Git Files", -- REQUIRED
+    finder = FUNCTION, -- REQUIRED
+    sorter = FUNCTION, -- REQUIRED
+    previewer = FUNCTION, -- REQUIRED
+    mappings = {
+        i = {
+            ["<C-n>"] = require'telescope.actions'.move_selection_next,
+            ["<C-p>"] = require'telescope.actions'.move_selection_previous,
+            ["<CR>"] = require'telescope.actions'.goto_file_selection,
+        },
 
-		n = {
-			["<esc>"] = require'telescope.actions'.close,
-		}
-	},
-	selection_strategy = "reset", -- follow, reset, line
-	border = {},
-	borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└'},
-	preview_cutoff = 120
+        n = {
+            ["<esc>"] = require'telescope.actions'.close,
+        }
+    },
+    selection_strategy = "reset", -- follow, reset, line
+    border = {},
+    borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└'},
+    preview_cutoff = 120
 }
 ```
 

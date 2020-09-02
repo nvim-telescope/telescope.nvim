@@ -237,13 +237,25 @@ describe('Sorters', function()
     it('sort matches well', function()
       local sorter = require('telescope.sorters').get_fuzzy_file()
 
-      local exact_match = sorter:score('hello', 'hello')
+      local exact_match = sorter:score('abcdef', 'abcdef')
       local no_match = sorter:score('abcdef', 'ghijkl')
       local ok_match = sorter:score('abcdef', 'ab')
 
-      assert(exact_match < no_match)
-      assert(exact_match < ok_match)
-      assert(ok_match < no_match)
+      assert(
+        exact_match < no_match,
+        string.format("Exact match better than no match: %s %s", exact_match, no_match)
+      )
+      assert(exact_match < ok_match, "Exact match better than OK match")
+      assert(ok_match < no_match, "OK match better than no match")
+    end)
+
+    it('sorts matches after last os sep better', function()
+      local sorter = require('telescope.sorters').get_fuzzy_file()
+
+      local exact_match = sorter:score('aaa/bbb', 'aaa')
+      local ok_match = sorter:score('bbb/aaa', 'aaa')
+
+      assert(exact_match < ok_match, "Exact match better than OK match")
     end)
 
   --   it('sorts multiple finds better', function()

@@ -73,13 +73,138 @@ end
 
 -- TODO: Match on upper case words
 -- TODO: Match on last match
-sorters.get_fuzzy_file = function()
-  local cached_tails = {}
+sorters.get_fuzzy_file = function(opts)
+  opts = opts or {}
+
+  local ngram_len = opts.ngram_len or 2
+  local os_sep = '/'
+
+  local cached_tails = setmetatable({}, {
+    __index = function(t, k)
+      local tail_split = vim.split(k, os_sep)
+      local tail = tail_split[#tail_split]
+
+      rawset(t, k, tail)
+      return tail
+    end,
+  })
+
+  local cached_uppers = setmetatable({}, {
+    __index = function(t, k)
+      local obj = {}
+      for i = 1, #k do
+        local s = k:sub(i, i)
+        local s_byte = s:byte()
+        if s_byte <= 90 and s_byte >= 65 then
+          obj[s] = true
+        end
+      end
+
+      rawset(t, k, obj)
+      return obj
+    end
+  })
+
   local cached_ngrams = {}
+
+  local function overlapping_ngrams(s, n)
+    if cached_ngrams[s] and cached_ngrams[s][n] then
+      return cached_ngrams[s][n]
+    end
+
+    local R = {}
+    for i = 1, s:len() - n + 1 do
+      R[#R+1] = s:sub(i, i+n-1)
+    end
+
+    if not cached_ngrams[s] then
+      cached_ngrams[s] = {}
+    end
+
+    cached_ngrams[s][n] = R
+
+    return R
+  end
 
   return Sorter:new {
     scoring_function = function(_, prompt, line)
-      return 1
+      local N = #prompt
+
+      if prompt == 0 or N < ngram_len then
+        -- TODO: If the character is in the line,
+        -- then it should get a point or somethin.
+        return 0
+      end
+
+      local prompt_lower = prompt:lower()
+      local line_lower = line:lower()
+
+      local prompt_lower_ngrams = overlapping_ngrams(prompt_lower, ngram_len)
+
+      -- Contains the original string
+      local contains_string = line_lower:find(prompt_lower, 1, true)
+
+      local prompt_uppers = cached_uppers[prompt]
+      local line_uppers = cached_uppers[line]
+
+      local uppers_matching = 0
+      for k, _ in pairs(prompt_uppers) do
+        if line_uppers[k] then
+          uppers_matching = uppers_matching + 1
+        end
+      end
+
+      -- TODO: Consider case senstivity
+      local tail = cached_tails[line_lower]
+      local contains_tail = tail:find(prompt, 1, true)
+
+      local consecutive_matches = 0
+      local previous_match_index = 0
+      local match_count = 0
+
+      for i = 1, #prompt_lower_ngrams do
+        local match_start = line_lower:find(prompt_lower_ngrams[i], 1, true)
+        if match_start then
+          match_count = match_count + 1
+          if match_start > previous_match_index then
+            consecutive_matches = consecutive_matches + 1
+          end
+
+          previous_match_index = match_start
+        end
+      end
+
+      local tail_modifier = 1
+      if contains_tail then
+        tail_modifier = 2
+      end
+
+      -- TODO: Copied from ashkan.
+      local denominator = (
+        (10 * match_count / #prompt_lower_ngrams)
+        -- biases for shorter strings
+        -- TODO(ashkan): this can bias towards repeated finds of the same
+        -- subpattern with overlapping_ngrams
+        + 3 * match_count * ngram_len / #line
+        + consecutive_matches
+        + N / (contains_string or (2 * #line))
+        -- + 30/(c1 or 2*N)
+
+        -- TODO: It might be possible that this too strongly correlates,
+        --          but it's unlikely for people to type capital letters without actually
+        --          wanting to do something with a capital letter in it.
+        + uppers_matching
+      ) * tail_modifier
+
+      if denominator == 0 or denominator ~= denominator then
+        return -1
+      end
+
+      if #prompt > 2 and denominator < 0.5 then
+        return -1
+      end
+
+      return 1 / denominator
     end
   }
 end
