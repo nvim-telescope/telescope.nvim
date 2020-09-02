@@ -1,5 +1,9 @@
 
+" Sets the highlight for selected items within the picker.
 highlight default link TelescopeSelection Visual
+
+" "Normal" in the floating windows created by telescope.
+highlight default link TelescopeNormal Normal
 
 
 " let s:term_command = "rg preview_quit_map -l | fzf --preview 'bat --color=always --style=grid {-1}' --print0"

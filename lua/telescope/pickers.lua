@@ -26,6 +26,8 @@ end
 
 local pickers = {}
 
+-- TODO: Add motions to keybindings
+-- TODO: Add relative line numbers?
 local default_mappings = {
   i = {
     ["<C-n>"] = actions.move_selection_next,
@@ -186,6 +188,7 @@ function Picker:find()
 
   -- TODO: Should probably always show all the line for results win, so should implement a resize for the windows
   a.nvim_win_set_option(results_win, 'wrap', false)
+  a.nvim_win_set_option(results_win, 'winhl', 'Normal:TelescopeNormal')
 
 
   local preview_win, preview_opts, preview_bufnr
@@ -195,13 +198,15 @@ function Picker:find()
 
     -- TODO: For some reason, highlighting is kind of weird on these windows.
     --        It may actually be my colorscheme tho...
-    a.nvim_win_set_option(preview_win, 'winhl', 'Normal:Normal')
+    a.nvim_win_set_option(preview_win, 'winhl', 'Normal:TelescopeNormal')
     a.nvim_win_set_option(preview_win, 'winblend', 10)
   end
 
   -- TODO: We need to center this and make it prettier...
   local prompt_win, prompt_opts = popup.create('', popup_opts.prompt)
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
+
+  a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
 
   -- a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
   -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_string)
@@ -334,18 +339,26 @@ function Picker:find()
 
   self.prompt_bufnr = prompt_bufnr
 
+  local prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
+  local results_border_win = results_opts.border and results_opts.border.win_id
+  local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
+
+  if prompt_border_win then vim.api.nvim_win_set_option(prompt_border_win, 'winhl', 'Normal:TelescopeNormal') end
+  if results_border_win then vim.api.nvim_win_set_option(results_border_win, 'winhl', 'Normal:TelescopeNormal') end
+  if preview_border_win then vim.api.nvim_win_set_option(preview_border_win, 'winhl', 'Normal:TelescopeNormal') end
+
   state.set_status(prompt_bufnr, {
     prompt_bufnr = prompt_bufnr,
     prompt_win = prompt_win,
-    prompt_border_win = prompt_opts.border and prompt_opts.border.win_id,
+    prompt_border_win = prompt_border_win,
 
     results_bufnr = results_bufnr,
     results_win = results_win,
-    results_border_win = results_opts.border and results_opts.border.win_id,
+    results_border_win = results_border_win,
 
     preview_bufnr = preview_bufnr,
     preview_win = preview_win,
-    preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id,
+    preview_border_win = preview_border_win,
     picker = self,
     previewer = self.previewer,
     finder = finder,

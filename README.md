@@ -127,6 +127,9 @@ Finder:new{
 	maximum_results = false
 }
 ```
+`Sorter`:
+- A `Sorter` is called by the `Picker` on each item returned by the `Finder`.
+- `Sorter`s return a number, which is equivalent to the "distance" between two
 
 "picker":
 
@@ -171,8 +174,3 @@ Picker:new{
 
 As an example, you could pipe your inputs into fzf, and then it can sort them for you.
 
-fzf:
-
-- have a list of inputs
-- i have a prompt/things people typed
-- instantly return the stuff via stdout

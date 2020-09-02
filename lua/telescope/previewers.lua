@@ -128,7 +128,7 @@ previewers.vim_buffer_or_bat = previewers.new {
 previewers.cat = previewers.new {
   setup = function()
     local command_string = "cat %s"
-    if vim.fn.executable("bat") then
+    if 1 == vim.fn.executable("bat") then
       command_string = "bat %s --style=grid --paging=always"
     end
 

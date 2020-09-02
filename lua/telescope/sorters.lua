@@ -71,6 +71,19 @@ sorters.get_levenshtein_sorter = function()
   }
 end
 
+-- TODO: Match on upper case words
+-- TODO: Match on last match
+sorters.get_fuzzy_file = function()
+  local cached_tails = {}
+  local cached_ngrams = {}
+
+  return Sorter:new {
+    scoring_function = function(_, prompt, line)
+      return 1
+    end
+  }
+end
+
 sorters.get_norcalli_sorter = function()
   local ngramlen = 2
 
@@ -101,10 +114,10 @@ sorters.get_norcalli_sorter = function()
         return 0
       end
 
-      local prompt_ngrams = overlapping_ngrams(prompt, ngramlen)
-
       local prompt_lower = prompt:lower()
       local line_lower = line:lower()
+
+      local prompt_ngrams = overlapping_ngrams(prompt_lower, ngramlen)
 
       local N = #prompt
 
