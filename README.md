@@ -37,6 +37,9 @@ require('telescope.builtin').lsp_references()
 
 -- Convert currently quickfixlist to telescope
 require('telescope.builtin').quickfix()
+
+-- Convert currently loclist to telescope
+require('telescope.builtin').loclist()
 ```
 
 ### Example
@@ -88,6 +91,13 @@ require'telescope.builtin'.lsp_references{
 require'telescope.builtin'.quickfix{
     -- See Picker for additional options
     prompt = 'Quickfix'
+}
+```
+
+```lua
+require'telescope.builtin'.loclist{
+    -- See Picker for additional options
+    prompt = 'Loclist'
 }
 ```
 

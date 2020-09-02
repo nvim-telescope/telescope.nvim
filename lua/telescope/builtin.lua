@@ -133,6 +133,28 @@ builtin.quickfix = function(opts)
   }):find()
 end
 
+builtin.loclist = function(opts)
+  local locations = vim.fn.getloclist(0)
+  local filename = vim.api.nvim_buf_get_name(0)
+
+  for _, value in pairs(locations) do
+    value.filename = filename
+  end
+
+  local results = utils.quickfix_items_to_entries(locations)
+
+  if vim.tbl_isempty(results) then
+    return
+  end
+
+  pickers.new(opts, {
+    prompt    = 'Loclist',
+    finder    = finders.new_table(results),
+    previewer = previewers.qflist,
+    sorter    = sorters.get_norcalli_sorter(),
+  }):find()
+end
+
 builtin.grep_string = function(opts)
   opts = opts or {}
 
