@@ -70,53 +70,53 @@ wrappers over common tasks).
 
 ```lua
 require'telescope.builtin'.git_files{
-    -- See Picker for additional options
-    show_preview       = true, -- Show preview
-    prompt             = "Git File",
-    selection_strategy = "reset" -- follow, reset, line
+  -- See Picker for additional options
+  show_preview       = true, -- Show preview
+  prompt             = "Git File",
+  selection_strategy = "reset" -- follow, reset, line
 }
 ```
 
 ```lua
 require'telescope.builtin'.live_grep{
-    -- See Picker for additional options
-    prompt = "Live Grep",
+  -- See Picker for additional options
+  prompt = "Live Grep",
 }
 ```
 
 ```lua
 require'telescope.builtin'.lsp_references{
-    -- See Picker for additional options
-    prompt = 'LSP References'
+  -- See Picker for additional options
+  prompt = 'LSP References'
 }
 ```
 
 ```lua
 require'telescope.builtin'.quickfix{
-    -- See Picker for additional options
-    prompt = 'Quickfix'
+  -- See Picker for additional options
+  prompt = 'Quickfix'
 }
 ```
 
 ```lua
 require'telescope.builtin'.loclist{
-    -- See Picker for additional options
-    prompt = 'Loclist'
+  -- See Picker for additional options
+  prompt = 'Loclist'
 }
 ```
 
 ```lua
 require'telescope.builtin'.grep_string{
-    -- See Picker for additional options
-    prompt = 'Find Word',
-    search = false -- Search term or <cword>
+  -- See Picker for additional options
+  prompt = 'Find Word',
+  search = false -- Search term or <cword>
 }
 ```
 
 ```lua
 require'telescope.builtin'.oldfiles{
-    -- See Picker for additional options
-    prompt = 'Oldfiles',
+  -- See Picker for additional options
+  prompt = 'Oldfiles',
 }
 ```
 
@@ -135,10 +135,10 @@ require'telescope.builtin'.oldfiles{
 ```lua
 -- lua/telescope/finders.lua
 Finder:new{
-    entry_maker = function(line) end,
-    fn_command = function() { command = "", args  = { "ls-files" } } end,
-    static = false,
-    maximum_results = false
+  entry_maker = function(line) end,
+  fn_command = function() { command = "", args  = { "ls-files" } } end,
+  static = false,
+  maximum_results = false
 }
 ```
 
@@ -153,16 +153,16 @@ Finder:new{
 
 ```lua
 Sorter:new{
-	scoring_function = function(sorter, prompt, line)
-		--- Sorter sorts a list of results by return a single integer for a line,
-		--- given a prompt
-		---
-		--- Lower number is better (because it's like a closer match)
-		--- But, any number below 0 means you want that line filtered out.
+  scoring_function = function(sorter, prompt, line)
+    --- Sorter sorts a list of results by return a single integer for a line,
+    --- given a prompt
+    ---
+    --- Lower number is better (because it's like a closer match)
+    --- But, any number below 0 means you want that line filtered out.
 
     --- @field scoring_function function Function that has the interface:
-		--      (sorter, prompt, line): number
-	end
+    --      (sorter, prompt, line): number
+  end
 }
 ```
 
@@ -183,10 +183,10 @@ Picker:new{
     sorter = sorters.new{}, -- Sorts the results
     previewer = previewer.new{}, -- Previews the items in the list
     attach_mappings = function(map)
-			--- map(mode, key_bind, key_func, opts)
-			map('i', '<c-p>', require'telescope.actions'.move_selection_previous)
-			map('i', '<c-n>', require'telescope.actions'.move_selection_next)
-		end,
+      --- map(mode, key_bind, key_func, opts)
+      map('i', '<c-p>', require'telescope.actions'.move_selection_previous)
+      map('i', '<c-n>', require'telescope.actions'.move_selection_next)
+    end,
     selection_strategy = "reset", -- follow, reset, line
     border = {},
     borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└'},
@@ -203,15 +203,15 @@ As an example, you could pipe your inputs into fzf, and then it can sort them fo
 
 ```lua
 Previewer:new{
-	--- Previewer API subject to massive changes. Works with files mostly currently.
-	setup = function()
-		return {
-			command_string = "cat " -- Terminal command to run previewer
-		}
-	end,
-	preview_fn = function(self, entry, status)
-		-- status = {
-		--
-	end
+  --- Previewer API subject to massive changes. Works with files mostly currently.
+  setup = function()
+     return {
+       command_string = "cat " -- Terminal command to run previewer
+     }
+  end,
+  preview_fn = function(self, entry, status)
+    -- status = {
+    --
+  end
 }
 ```
