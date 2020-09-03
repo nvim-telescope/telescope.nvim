@@ -32,6 +32,10 @@ local default_mappings = {
   i = {
     ["<C-n>"] = actions.move_selection_next,
     ["<C-p>"] = actions.move_selection_previous,
+
+    ["<Down>"] = actions.move_selection_next,
+    ["<Up>"] = actions.move_selection_previous,
+
     ["<CR>"] = actions.goto_file_selection,
   },
 
@@ -42,6 +46,9 @@ local default_mappings = {
     -- TODO: This would be weird if we switch the ordering.
     ["j"] = actions.move_selection_next,
     ["k"] = actions.move_selection_previous,
+
+    ["<Down>"] = actions.move_selection_next,
+    ["<Up>"] = actions.move_selection_previous,
   },
 }
 
