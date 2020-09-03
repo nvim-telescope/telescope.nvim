@@ -259,7 +259,14 @@ function Picker:find()
         display = '  ' .. display
 
         -- log.info("Setting row", row, "with value", entry)
-        vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {display})
+        local set_ok = pcall(vim.api.nvim_buf_set_lines, results_bufnr, row, row + 1, false, {display})
+
+        -- This pretty much only fails when people leave newlines in their results.
+        --  So we'll clean it up for them if it fails.
+        if not set_ok then
+          display = display:gsub("\n", " | ")
+          vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {display})
+        end
       end
     ))
 
