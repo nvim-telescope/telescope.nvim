@@ -11,9 +11,7 @@ local finders = {}
 --  JobFinder(my_job_args)
 
 ---@class Finder
-local Finder = {
-  hello = "world"
-}
+local Finder = {}
 
 Finder.__index = Finder
 Finder.__call = function(t, ... ) return t:_find(...) end

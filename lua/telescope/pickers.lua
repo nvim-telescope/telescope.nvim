@@ -64,6 +64,7 @@ function Picker:new(opts)
 
   return setmetatable({
     prompt = opts.prompt,
+    default_text = opts.default_text,
 
     finder = opts.finder,
     sorter = opts.sorter,
@@ -384,7 +385,11 @@ function Picker:find()
 
   mappings.apply_keymap(prompt_bufnr, self.attach_mappings, default_mappings)
 
-  vim.cmd [[startinsert]]
+  if self.default_text then
+    vim.api.nvim_buf_set_lines(prompt_bufnr, 0, 1, false, {self.default_text})
+  end
+
+  vim.cmd [[startinsert!]]
 end
 
 function Picker:hide_preview()

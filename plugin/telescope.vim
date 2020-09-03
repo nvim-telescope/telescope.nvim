@@ -6,6 +6,13 @@ highlight default link TelescopeSelection Visual
 highlight default link TelescopeNormal Normal
 
 
+" This is like "<C-R>" in your terminal.
+"   To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)
+cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
+      \ "lua require('telescope.builtin').command_history {
+        \ default_text = [=[" . escape(getcmdline(), '"') . "]=]
+        \ }"<CR><CR>
+
 " let s:term_command = "rg preview_quit_map -l | fzf --preview 'bat --color=always --style=grid {-1}' --print0"
 " let s:term_command = "rg preview_quit_map -l | fzf --preview 'bat --color=always --style=grid {-1}' > file.txt"
 " let s:term_command = "(rg preview_quit_map -l | fzf --preview 'bat --color=always --style=grid {-1}')"
