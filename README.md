@@ -2,7 +2,9 @@
 
 Gaze deeply into unknown regions using the power of the moon.
 
-![Example](https://raw.githubusercontent.com/tjdevries/media.repo/master/telescope.nvim/simple_rg_v1.gif)
+![Finding Files](https://raw.githubusercontent.com/tjdevries/media.repo/master/telescope.nvim/simple_rg_v1.gif)
+
+
 [Example video](https://www.youtube.com/watch?v=65AVwHZflsU)
 
 ## Installation
@@ -189,3 +191,10 @@ Picker:new{
 
 As an example, you could pipe your inputs into fzf, and then it can sort them for you.
 
+
+## Other Examples
+
+
+![Live Grep](https://raw.githubusercontent.com/tjdevries/media.repo/master/telescope.nvim/live_grep.gif)
+
+![Command History](https://raw.githubusercontent.com/tjdevries/media.repo/master/telescope.nvim/command_history.gif)
