@@ -42,15 +42,19 @@ require('telescope.builtin').quickfix()
 require('telescope.builtin').loclist()
 ```
 
-### Example
+## Examples
 
 ```vimscript
 nnoremap <Leader>p :lua require'telescope.builtin'.git_files{}<CR>
 ```
 
+Open telescope with the files added to a git repository.
+
 ```vimscript
 nnoremap <silent> gr <cmd>lua require'telescope.builtin'.lsp_references{}<CR>
 ```
+
+Open telescope with LSP references under the cursor.
 
 ## Status (Unstable API)
 
@@ -122,7 +126,7 @@ require'telescope.builtin'.oldfiles{
 
 (Please note, this section is still in progress)
 
-"finder":
+## Finder:
 
 - executable: rg, git ls-files, ...
 - things in lua already
@@ -138,43 +142,51 @@ Finder:new{
 }
 ```
 
-`Sorter`:
+## Sorter:
+
 - A `Sorter` is called by the `Picker` on each item returned by the `Finder`.
 - `Sorter`s return a number, which is equivalent to the "distance" between the current `prompt` and the `entry` returned by a `finder`.
-    - Currently, it's not possible to delay calling the `Sorter` until the end of the execution, it is called on each item as we receive them.
-    - This was done this way so that long running / expensive searches can be instantly searchable and we don't have to wait til it completes for things to start being worked on.
-    - However, this prevents using some tools, like FZF easily.
-    - In the future, I'll probably add a mode where you can delay the sorting til the end, so you can use more traditional sorting tools.
+  - Currently, it's not possible to delay calling the `Sorter` until the end of the execution, it is called on each item as we receive them.
+  - This was done this way so that long running / expensive searches can be instantly searchable and we don't have to wait til it completes for things to start being worked on.
+  - However, this prevents using some tools, like FZF easily.
+  - In the future, I'll probably add a mode where you can delay the sorting til the end, so you can use more traditional sorting tools.
 
-"picker":
+```lua
+Sorter:new{
+	scoring_function = function(sorter, prompt, line)
+		--- Sorter sorts a list of results by return a single integer for a line,
+		--- given a prompt
+		---
+		--- Lower number is better (because it's like a closer match)
+		--- But, any number below 0 means you want that line filtered out.
+
+    --- @field scoring_function function Function that has the interface:
+		--      (sorter, prompt, line): number
+	end
+}
+```
+
+## Picker:
+
+Pickers are your main entry point because they direct the interaction with all the telescope modules. Most builtins are pickers.
 
 - fzf
 - sk
 - does this always need to be fuzzy?
   - you'll map what you want to do with vimscript / lua mappings
 
-Defaults:
-
-### Picker
-
 ```lua
 -- lua/telescope/pickers.lua
 Picker:new{
-    prompt = "Git Files", -- REQUIRED
-    finder = FUNCTION, -- REQUIRED
-    sorter = FUNCTION, -- REQUIRED
-    previewer = FUNCTION, -- REQUIRED
-    mappings = {
-        i = {
-            ["<C-n>"] = require'telescope.actions'.move_selection_next,
-            ["<C-p>"] = require'telescope.actions'.move_selection_previous,
-            ["<CR>"] = require'telescope.actions'.goto_file_selection,
-        },
-
-        n = {
-            ["<esc>"] = require'telescope.actions'.close,
-        }
-    },
+    prompt = "Git Files", -- Sets the title of the prompt
+    finder = finders.new{}, -- Uses the prompt to filter
+    sorter = sorters.new{}, -- Sorts the results
+    previewer = previewer.new{}, -- Previews the items in the list
+    attach_mappings = function(map)
+			--- map(mode, key_bind, key_func, opts)
+			map('i', '<c-p>', require'telescope.actions'.move_selection_previous)
+			map('i', '<c-n>', require'telescope.actions'.move_selection_next)
+		end,
     selection_strategy = "reset", -- follow, reset, line
     border = {},
     borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└'},
@@ -182,10 +194,24 @@ Picker:new{
 }
 ```
 
-"previewer":
+## Previewer:
 
 - sometimes built-in
 - sometimes a lua callback
 
 As an example, you could pipe your inputs into fzf, and then it can sort them for you.
 
+```lua
+Previewer:new{
+	--- Previewer API subject to massive changes. Works with files mostly currently.
+	setup = function()
+		return {
+			command_string = "cat " -- Terminal command to run previewer
+		}
+	end,
+	preview_fn = function(self, entry, status)
+		-- status = {
+		--
+	end
+}
+```

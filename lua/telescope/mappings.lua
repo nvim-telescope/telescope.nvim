@@ -97,6 +97,9 @@ end
 mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
   local applied_mappings = { n = {}, i = {} }
 
+	-- map callback for users to apply key mapping.
+	-- map('i', '<c-p>', require'telescope.actions'.move_selection_previous)
+	-- map('n', '<esc>', require'telesccope.actions'.close
   local map = function(mode, key_bind, key_func, opts)
     applied_mappings[mode][key_bind] = true
 
