@@ -84,45 +84,45 @@ Showing default values. Most builtins need no options to be passed.
 
 ```lua
 require'telescope.builtin'.git_files{
-    -- See Picker for additional options
-    prompt             = "Git File",
+  -- See Picker for additional options
+  prompt             = "Git File",
 }
 ```
 
 ```lua
 require'telescope.builtin'.live_grep{
-    -- See Picker for options
+  -- See Picker for options
 }
 ```
 
 ```lua
 require'telescope.builtin'.lsp_references{
-    -- See Picker for options
+  -- See Picker for options
 }
 ```
 
 ```lua
 require'telescope.builtin'.quickfix{
-    -- See Picker for options
+  -- See Picker for options
 }
 ```
 
 ```lua
 require'telescope.builtin'.loclist{
-    -- See Picker for options
+  -- See Picker for options
 }
 ```
 
 ```lua
 require'telescope.builtin'.grep_string{
-     -- See Picker for options
-		search = false -- Search term or <cword>
+  -- See Picker for options
+  search = false -- Search term or <cword>
 }
 ```
 
 ```lua
 require'telescope.builtin'.oldfiles{
-    -- See Picker for options
+  -- See Picker for options
 }
 ```
 
@@ -141,10 +141,10 @@ require'telescope.builtin'.oldfiles{
 ```lua
 -- lua/telescope/finders.lua
 Finder:new{
-    entry_maker = function(line) end,
-    fn_command = function() { command = "", args  = { "ls-files" } } end,
-    static = false,
-    maximum_results = false
+  entry_maker = function(line) end,
+  fn_command = function() { command = "", args  = { "ls-files" } } end,
+  static = false,
+  maximum_results = false
 }
 ```
 
@@ -159,16 +159,16 @@ Finder:new{
 
 ```lua
 Sorter:new{
-	scoring_function = function(sorter, prompt, line)
-		--- Sorter sorts a list of results by return a single integer for a line,
-		--- given a prompt
-		---
-		--- Lower number is better (because it's like a closer match)
-		--- But, any number below 0 means you want that line filtered out.
+  scoring_function = function(sorter, prompt, line)
+    --- Sorter sorts a list of results by return a single integer for a line,
+    --- given a prompt
+    ---
+    --- Lower number is better (because it's like a closer match)
+    --- But, any number below 0 means you want that line filtered out.
 
     --- @field scoring_function function Function that has the interface:
-		--      (sorter, prompt, line): number
-	end
+    --      (sorter, prompt, line): number
+  end
 }
 ```
 
@@ -184,19 +184,19 @@ Pickers are your main entry point because they direct the interaction with all t
 ```lua
 -- lua/telescope/pickers.lua
 Picker:new{
-    prompt = "Git Files", -- Sets the title of the prompt
-    finder = finders.new{}, -- Uses the prompt to filter
-    sorter = sorters.new{}, -- Sorts the results
-    previewer = previewer.new{}, -- Previews the items in the list
-    attach_mappings = function(map)
-			--- map(mode, key_bind, key_func, opts)
-			map('i', '<c-p>', require'telescope.actions'.move_selection_previous)
-			map('i', '<c-n>', require'telescope.actions'.move_selection_next)
-		end,
-    selection_strategy = "reset", -- follow, reset, line
-    border = {},
-    borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└'},
-    preview_cutoff = 120
+  prompt = "Git Files", -- Sets the title of the prompt
+  finder = finders.new{}, -- Uses the prompt to filter
+  sorter = sorters.new{}, -- Sorts the results
+  previewer = previewer.new{}, -- Previews the items in the list
+  attach_mappings = function(map)
+    --- map(mode, key_bind, key_func, opts)
+    map('i', '<c-p>', require'telescope.actions'.move_selection_previous)
+    map('i', '<c-n>', require'telescope.actions'.move_selection_next)
+  end,
+  selection_strategy = "reset", -- follow, reset, line
+  border = {},
+  borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└'},
+  preview_cutoff = 120
 }
 ```
 
@@ -209,16 +209,16 @@ As an example, you could pipe your inputs into fzf, and then it can sort them fo
 
 ```lua
 Previewer:new{
-	--- Previewer API subject to massive changes. Works with files mostly currently.
-	setup = function()
-		return {
-			command_string = "cat " -- Terminal command to run previewer
-		}
-	end,
-	preview_fn = function(self, entry, status)
-		-- status = {
-		--
-	end
+  --- Previewer API subject to massive changes. Works with files mostly currently.
+  setup = function()
+     return {
+       command_string = "cat " -- Terminal command to run previewer
+     }
+  end,
+  preview_fn = function(self, entry, status)
+    -- status = {
+    --
+  end
 }
 ```
 
