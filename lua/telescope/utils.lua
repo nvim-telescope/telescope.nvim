@@ -99,6 +99,10 @@ utils.path_shorten = (function()
     ]]
 
     return function(path)
+      if not path then
+        return path
+      end
+
       local c_str = ffi.new("char[?]", #path + 1)
       ffi.copy(c_str, path)
       return ffi.string(ffi.C.shorten_dir(c_str))

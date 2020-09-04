@@ -42,22 +42,31 @@ function actions.goto_file_selection(prompt_bufnr)
     print("[telescope] Nothing currently selected")
     return
   else
-    local value = entry.value
-    if not value then
-      print("Could not do anything with blank line...")
-      return
+    local filename, row, col
+    if entry.filename then
+      filename = entry.filename
+      -- TODO: Check for off-by-one
+      row = entry.row or entry.lnum
+      col = entry.col
+    else
+      -- TODO: Might want to remove this and force people
+      -- to put stuff into `filename`
+      local value = entry.value
+      if not value then
+        print("Could not do anything with blank line...")
+        return
+      end
+
+      if type(value) == "table" then
+        value = entry.display
+      end
+
+      local sections = vim.split(value, ":")
+
+      filename = sections[1]
+      row = tonumber(sections[2])
+      col = tonumber(sections[3])
     end
-
-    -- TODO: This is not great.
-    if type(value) == "table" then
-      value = entry.display
-    end
-
-    local sections = vim.split(value, ":")
-
-    local filename = sections[1]
-    local row = tonumber(sections[2])
-    local col = tonumber(sections[3])
 
     vim.cmd(string.format([[bwipeout! %s]], prompt_bufnr))
 

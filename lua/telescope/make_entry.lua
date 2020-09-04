@@ -1,0 +1,162 @@
+local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
+
+local utils = require('telescope.utils')
+
+local make_entry = {}
+
+make_entry.types = {
+  GENERIC = 0,
+  FILE    = 1,
+}
+
+local transform_devicons
+if has_devicons then
+  transform_devicons = function(filename, display, opts)
+    if opts.disable_devicons then
+      return display
+    end
+
+    return (devicons.get_icon(filename, string.match(filename, '%a+$')) or ' ') .. ' ' .. display
+  end
+else
+  transform_devicons = function(_, display, _)
+    return display
+  end
+end
+
+function make_entry.gen_from_string()
+  return function(line)
+    return {
+      valid = line ~= "",
+      entry_type = make_entry.types.SIMPLE,
+
+      value = line,
+      ordinal = line,
+      display = line,
+    }
+  end
+end
+
+function make_entry.gen_from_file(opts)
+  opts = opts or {}
+
+  local make_display = function(line)
+    local display = line
+    if opts.shorten_path then
+      display = utils.path_shorten(line)
+    end
+
+    display = transform_devicons(line, display, opts)
+
+    return display
+  end
+
+  return function(line)
+    local entry = {
+      ordinal = line,
+      value = line,
+
+      entry_type = make_entry.types.FILE,
+      filename = line,
+    }
+
+    entry.display = make_display(line)
+
+    return entry
+  end
+end
+
+function make_entry.gen_from_vimgrep(opts)
+  opts = opts or {}
+
+  local display_string = "%s:%s%s"
+
+  local make_display = function(entry)
+    local display = entry.value
+
+    local display_filename
+    if opts.shorten_path then
+      display_filename = utils.path_shorten(entry.filename)
+    else
+      display_filename = entry.filename
+    end
+
+    local coordinates = ""
+    if not opts.disable_coordinates then
+      coordinates = string.format("%s:%s:", entry.lnum, entry.col)
+    end
+
+    display = transform_devicons(
+      entry.filename,
+      string.format(display_string, display_filename,  coordinates, entry.text),
+      opts
+    )
+
+    return display
+  end
+
+  return function(line)
+    -- TODO: Consider waiting to do this string.find
+    -- TODO: Is this the fastest way to get each of these?
+    --         Or could we just walk the text and check for colons faster?
+    local _, _, filename, lnum, col, text = string.find(line, [[([^:]+):(%d+):(%d+):(.*)]])
+
+    return {
+      valid = line ~= "",
+
+      value = line,
+      ordinal = line,
+      display = make_display,
+
+      entry_type = make_entry.types.FILE,
+      filename = filename,
+      lnum = lnum,
+      col = col,
+      text = text,
+    }
+  end
+end
+
+function make_entry.gen_from_quickfix(opts)
+  opts = opts or {}
+
+  local make_display = function(entry)
+    local to_concat = {}
+
+    if not opts.hide_filename then
+      local filename = entry.filename
+      if opts.shorten_path then
+        filename = utils.path_shorten(filename)
+      end
+
+      table.insert(to_concat, filename)
+      table.insert(to_concat, ":")
+    end
+
+    table.insert(to_concat, entry.text)
+
+    return table.concat(to_concat, "")
+  end
+
+  return function(entry)
+    return {
+      valid = true,
+
+      value = entry,
+      ordinal = (
+        not opts.ignore_filename and entry.filename
+        or ''
+        ) .. ' ' .. entry.text,
+      display = make_display,
+
+      filename = entry.filename,
+      lnum = entry.lnum,
+      col = entry.col,
+      text = entry.text,
+      start = entry.start,
+      finish = entry.finish,
+    }
+  end
+end
+
+return make_entry

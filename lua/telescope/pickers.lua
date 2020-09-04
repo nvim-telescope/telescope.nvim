@@ -1,14 +1,11 @@
 local a = vim.api
 local popup = require('popup')
-local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 
 local actions = require('telescope.actions')
 local log = require('telescope.log')
 local mappings = require('telescope.mappings')
 local state = require('telescope.state')
 local utils = require('telescope.utils')
-
-local Entry = require('telescope.entry')
 
 local get_default = utils.get_default
 
@@ -255,14 +252,19 @@ function Picker:find()
           return
         end
 
-        -- TODO: This really isn't the place to do this.
-        local display = entry.display
-
-        if has_devicons then
-          local icon = devicons.get_icon(display, vim.fn.fnamemodify(display, ":e"))
-          display = (icon or ' ') .. ' ' ..  display
+        local display
+        if type(entry.display) == 'function' then
+          display = entry:display()
+        elseif type(entry.display) == 'string' then
+          display = entry.display
+        else
+          log.info("Weird entry", entry)
+          return
         end
 
+        -- This is the two spaces to manage the '> ' stuff.
+        -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
+        -- until then, insert two spaces
         display = '  ' .. display
 
         -- log.info("Setting row", row, "with value", entry)
@@ -277,10 +279,9 @@ function Picker:find()
       end
     ))
 
-    local process_result = function(line)
-      local entry = Entry:new(line)
-
-      if not entry.valid then
+    local process_result = function(entry)
+      -- TODO: Should we even have valid?
+      if entry.valid == false then
         return
       end
 
@@ -559,10 +560,7 @@ pickers.entry_manager = function(max_results, set_entry)
 
   return setmetatable({
     add_entry = function(self, score, entry)
-      -- TODO: Consider forcing people to make these entries before we add them.
-      if type(entry) == "string" then
-        entry = Entry:new(entry)
-      end
+      assert(type(entry) == "table", "entry must be a table by the time it reaches here")
 
       score = score or 0
 
@@ -647,6 +645,10 @@ function pickers.on_close_prompt(prompt_bufnr)
   local picker = status.picker
 
   picker:close_windows(status)
+
+  if picker.previewer then
+    picker.previewer:teardown()
+  end
 end
 
 

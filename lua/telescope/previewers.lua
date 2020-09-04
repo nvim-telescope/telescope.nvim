@@ -8,6 +8,7 @@ local Previewer = {}
 Previewer.__index = Previewer
 
 local bat_options = " --style=grid --paging=always "
+local previewer_ns = vim.api.nvim_create_namespace('telescope.previewers')
 --  --terminal-width=%s
 
 -- TODO: We shoudl make sure that all our terminals close all the way.
@@ -20,6 +21,7 @@ function Previewer:new(opts)
   return setmetatable({
     state = nil,
     _setup_func = opts.setup,
+    _teardown_func = opts.teardown,
     preview_fn = opts.preview_fn,
   }, Previewer)
 end
@@ -29,11 +31,20 @@ function Previewer:preview(entry, status)
     return
   end
 
-  if not self.state and self._setup_func then
-    self.state = self._setup_func()
+  if not self.state then
+    if self._setup_func then
+      self.state = self._setup_func()
+    end
   end
 
+  self:teardown()
   return self:preview_fn(entry, status)
+end
+
+function Previewer:teardown()
+  if self._teardown_func then
+    self:_teardown_func()
+  end
 end
 
 previewers.new = function(...)
@@ -69,20 +80,36 @@ previewers.new_termopen = function(opts)
 end
 
 previewers.vim_buffer = previewers.new {
-  preview_fn = function(_, entry, status)
-    local value = entry.value
-    if value == nil then
+  setup = function() return { last_set_bufnr = nil } end,
+
+  teardown = function(self)
+    if self.state.last_set_bufnr then
+      vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, previewer_ns, 0, -1)
+    end
+  end,
+
+  preview_fn = function(self, entry, status)
+    local filename = entry.filename
+
+    if filename == nil then
+      local value = entry.value
+      filename = vim.split(value, ":")[1]
+    end
+
+    if filename == nil then
       return
     end
-    local file_name = vim.split(value, ":")[1]
 
-    log.trace("Previewing File: %s", file_name)
+    log.trace("Previewing File: %s", filename)
 
-    -- vim.fn.termopen(
-    --   string.format("bat --color=always --style=grid %s"),
-    -- vim.fn.fnamemodify(file_name, ":p")
-    local bufnr = vim.fn.bufadd(file_name)
-    vim.fn.bufload(bufnr)
+    local bufnr = vim.fn.bufnr(filename)
+    if bufnr == -1 then
+      -- TODO: Is this the best way to load the buffer?... I'm not sure tbh
+      bufnr = vim.fn.bufadd(bufnr)
+      vim.fn.bufload(bufnr)
+    end
+
+    self.state.last_set_bufnr = bufnr
 
     -- TODO: We should probably call something like this because we're not always getting highlight and all that stuff.
     -- api.nvim_command('doautocmd filetypedetect BufRead ' .. vim.fn.fnameescape(filename))
@@ -92,6 +119,11 @@ previewers.vim_buffer = previewers.new {
     -- vim.api.nvim_win_set_option(preview_win, 'winblend', 20)
     vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
     vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
+
+    if entry.lnum then
+      vim.api.nvim_buf_add_highlight(bufnr, previewer_ns, "Visual", entry.lnum - 1, 0, -1)
+      -- print("LNUM:", entry.lnum)
+    end
   end,
 }
 

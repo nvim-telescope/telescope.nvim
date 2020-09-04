@@ -1,5 +1,6 @@
 local Job = require('plenary.job')
 
+local make_entry = require('telescope.make_entry')
 local log = require('telescope.log')
 local utils = require('telescope.utils')
 
@@ -10,35 +11,43 @@ local finders = {}
 --  FunctionFinder(my_func)
 --  JobFinder(my_job_args)
 
----@class Finder
-local Finder = {}
+local _callable_obj = function()
+  local obj = {}
 
-Finder.__index = Finder
-Finder.__call = function(t, ... ) return t:_find(...) end
+  obj.__index = obj
+  obj.__call = function(t, ...) return t:_find(...) end
+
+  return obj
+end
+
+
+--[[ =============================================================
+
+    JobFinder
+
+Uses an external Job to get results. Processes results as they arrive.
+
+For more information about how Jobs are implemented, checkout 'plenary.job'
+
+-- ============================================================= ]]
+local JobFinder = _callable_obj()
 
 --- Create a new finder command
 ---
 ---@param opts table Keys:
 --     fn_command function The function to call
-function Finder:new(opts)
+function JobFinder:new(opts)
   opts = opts or {}
 
-  -- TODO: Add config for:
-  --        - cwd
-
+  assert(not opts.results, "`results` should be used with finder.new_table")
   -- TODO:
   -- - `types`
   --    job
   --    pipe
   --        vim.loop.new_pipe (stdin / stdout). stdout => filter pipe
   --        rg huge_search | fzf --filter prompt_is > buffer. buffer could do stuff do w/ preview callback
-  --    string
-  --    list
-  --    ...
   local obj = setmetatable({
-    results = opts.results,
-
-    entry_maker = opts.entry_maker,
+    entry_maker = opts.entry_maker or make_entry.from_string,
     fn_command = opts.fn_command,
     static = opts.static,
     state = {},
@@ -51,26 +60,7 @@ function Finder:new(opts)
   return obj
 end
 
--- Probably should use the word apply here, since we're apply the callback passed to us by
---  the picker... But I'm not sure how we want to say that.
-
--- find_incremental
--- find_prompt
--- process_prompt
--- process_search
--- do_your_job
--- process_plz
-function Finder:_find(prompt, process_result, process_complete)
-  if self.results then
-    assert(type(self.results) == 'table', "self.results must be a table")
-    for _, v in ipairs(self.results) do
-      process_result(v)
-    end
-
-    process_complete()
-    return
-  end
-
+function JobFinder:_find(prompt, process_result, process_complete)
   if self.job and not self.job.is_shutdown then
     self.job:shutdown()
   end
@@ -140,22 +130,66 @@ function Finder:_find(prompt, process_result, process_complete)
   self.job:start()
 end
 
---- Return a new Finder
---
---@return Finder
-finders.new = function(opts)
-  return Finder:new(opts)
+--[[ =============================================================
+Static Finders
+
+A static finder has results that never change.
+They are passed in directly as a result.
+-- ============================================================= ]]
+local StaticFinder = _callable_obj()
+
+function StaticFinder:new(opts)
+  assert(opts, "Options are required. See documentation for usage")
+
+  local input_results
+  if vim.tbl_islist(opts) then
+    input_results = opts
+  else
+    input_results = opts.results
+  end
+
+  local entry_maker = opts.entry_maker or make_entry.gen_from_string()
+
+  assert(input_results)
+  assert(input_results, "Results are required for static finder")
+  assert(type(input_results) == 'table', "self.results must be a table")
+
+  local results = {}
+  for _, v in ipairs(input_results) do
+    table.insert(results, entry_maker(v))
+  end
+
+  return setmetatable({ results = results }, self)
 end
 
--- TODO: Is this worth making?
--- finders.new_responsive_job = function(opts)
---   return finders.new {
---     maximum_results = get_default(opts.maximum_results, 2000),
---   }
--- end
+function StaticFinder:_find(_, process_result, process_complete)
+  for _, v in ipairs(self.results) do
+    process_result(v)
+  end
 
-finders.new_job = function(command_generator)
-  return finders.new {
+  process_complete()
+end
+
+
+-- local
+
+
+--- Return a new Finder
+--
+-- Use at your own risk.
+-- This opts dictionary is likely to change, but you are welcome to use it right now.
+-- I will try not to change it needlessly, but I will change it sometimes and I won't feel bad.
+finders._new = function(opts)
+  if opts.results then
+    print("finder.new is deprecated with `results`. You should use `finder.new_table`")
+    return StaticFinder:new(opts)
+  end
+
+  return JobFinder:new(opts)
+end
+
+finders.new_job = function(command_generator, entry_maker, maximum_results)
+  return JobFinder:new {
     fn_command = function(_, prompt)
       local command_list = command_generator(prompt)
       if command_list == nil then
@@ -168,19 +202,24 @@ finders.new_job = function(command_generator)
         command = command,
         args = command_list,
       }
-    end
+    end,
+
+    entry_maker = entry_maker,
+    maximum_results = maximum_results,
   }
 end
 
+---@param command_list string[] Command list to execute.
+---@param entry_maker function Optional: function(line: string) => table
 finders.new_oneshot_job = function(command_list, entry_maker)
   command_list = vim.deepcopy(command_list)
 
   local command = table.remove(command_list, 1)
 
-  return finders.new {
+  return JobFinder:new {
     static = true,
 
-    entry_maker = entry_maker,
+    entry_maker = entry_maker or make_entry.from_string,
 
     fn_command = function()
       return {
@@ -191,18 +230,14 @@ finders.new_oneshot_job = function(command_list, entry_maker)
   }
 end
 
-finders.new_table = function(t)
-  return finders.new {
-    results = t
-  }
-end
-
--- We should add a few utility functions here...
+--- Used to create a finder for a Lua table.
+-- If you only pass a table of results, then it will use that as the entries.
 --
--- finders.new_job
--- finders.new_one_shot_job
--- finders.new_table
-
--- finders.Finder = Finder
+-- If you pass a table, and then a function, it's used as:
+--  results table, the results to run on
+--  entry_maker function, the function to convert results to entries.
+finders.new_table = function(t)
+  return StaticFinder:new(t)
+end
 
 return finders
