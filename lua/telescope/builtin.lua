@@ -340,4 +340,33 @@ builtin.fd = function(opts)
   }):find()
 end
 
+builtin.buffers = function(opts)
+  opts = opts or {}
+
+  local buffers_list = vim.split(vim.fn.execute('buffers'), "\n")
+
+  local objs = {}
+  for i = 2, #buffers_list do
+    local item = buffers_list[i]
+    local _, bufname, linenr = string.match(item, '(%d+).*"([a-zA-Z0-9/.]+)"%s*line (%d+)')
+
+    table.insert(objs, {
+      filename = bufname,
+      lnum = tonumber(linenr),
+      col = 0,
+      text = linenr,
+    })
+  end
+
+  pickers.new(opts, {
+    prompt = 'Buffers',
+    finder    = finders.new_table {
+      results     = objs,
+      entry_maker = make_entry.gen_from_quickfix(opts),
+    },
+    previewer = previewers.qflist.new(opts),
+    sorter = sorters.get_norcalli_sorter(),
+  }):find()
+end
+
 return builtin
