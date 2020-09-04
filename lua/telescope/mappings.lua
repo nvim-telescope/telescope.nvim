@@ -103,7 +103,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     telescope_map(prompt_bufnr, mode, key_bind, key_func, opts)
   end
 
-  if attach_mappings and not attach_mappings(map) then
+  if attach_mappings and not attach_mappings(prompt_bufnr, map) then
     return
   end
 

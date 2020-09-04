@@ -254,7 +254,7 @@ builtin.command_history = function(opts)
     finder = finders.new_table(results),
     sorter = sorters.get_norcalli_sorter(),
 
-    attach_mappings = function(map)
+    attach_mappings = function(_, map)
       map('i', '<CR>', actions.set_command_line)
 
       -- TODO: Find a way to insert the text... it seems hard.
