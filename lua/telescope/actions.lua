@@ -21,10 +21,12 @@ function actions.shift_current_selection(prompt_bufnr, change)
   actions.get_current_picker(prompt_bufnr):move_selection(change)
 end
 
+--- Move selection to next item in the list
 function actions.move_selection_next(prompt_bufnr)
   actions.shift_current_selection(prompt_bufnr, 1)
 end
 
+-- Move selection to previous item in the list
 function actions.move_selection_previous(prompt_bufnr)
   actions.shift_current_selection(prompt_bufnr, -1)
 end
@@ -34,7 +36,8 @@ function actions.get_selected_entry(prompt_bufnr)
   return actions.get_current_picker(prompt_bufnr):get_selection()
 end
 
-local function goto_file_selection(prompt_bufnr, command)
+--- Go to the file that is currently selected
+function actions.goto_file_selection(prompt_bufnr, command)
   local picker = actions.get_current_picker(prompt_bufnr)
   local entry = actions.get_selected_entry(prompt_bufnr)
 
@@ -99,6 +102,7 @@ function actions.goto_file_selection_tabedit(prompt_bufnr)
   goto_file_selection(prompt_bufnr, "tabe")
 end
 
+--- Close the popup window
 actions.close = function(prompt_bufnr)
   vim.cmd(string.format([[bwipeout! %s]], prompt_bufnr))
 end
