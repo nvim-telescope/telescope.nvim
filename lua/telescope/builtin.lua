@@ -200,6 +200,7 @@ end
 builtin.grep_string = function(opts)
   opts = opts or {}
 
+  -- TODO: This should probably check your visual selection as well, if you've got one
   local search = opts.search or vim.fn.expand("<cword>")
 
   pickers.new(opts, {

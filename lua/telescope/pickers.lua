@@ -2,6 +2,8 @@ local a = vim.api
 local popup = require('popup')
 
 local actions = require('telescope.actions')
+local config = require('telescope.config')
+local layout_strategies = require('telescope.pickers.layout_strategies')
 local log = require('telescope.log')
 local mappings = require('telescope.mappings')
 local state = require('telescope.state')
@@ -66,6 +68,10 @@ Picker.__index = Picker
 function Picker:new(opts)
   opts = opts or {}
 
+  if opts.layout_strategy and opts.get_window_options then
+    error("layout_strategy and get_window_options are not compatible keys")
+  end
+
   return setmetatable({
     prompt = opts.prompt,
     default_text = opts.default_text,
@@ -88,12 +94,17 @@ function Picker:new(opts)
     -- mappings = get_default(opts.mappings, default_mappings),
     attach_mappings = opts.attach_mappings,
 
+    layout_strategy = opts.layout_strategy,
     get_window_options = opts.get_window_options,
     selection_strategy = opts.selection_strategy,
 
     window = {
       -- TODO: This won't account for different layouts...
+      -- TODO: If it's between 0 and 1, it's a percetnage.
+      -- TODO: If its's a single number, it's always that many columsn
+      -- TODO: If it's a list, of length 2, then it's a range of min to max?
       height = get_default(opts.height, 0.8),
+      width = get_default(opts.width, config.default_window_width),
       preview_width = get_default(opts.preview_width, 0.8),
       results_width = get_default(opts.results_width, 0.8),
 
@@ -106,7 +117,7 @@ function Picker:new(opts)
   }, Picker)
 end
 
-function Picker:get_window_options(max_columns, max_lines, prompt_title)
+function Picker:_get_initial_window_options(prompt_title)
   local popup_border = self.window.border
   local popup_borderchars = self.window.borderchars
 
@@ -130,58 +141,26 @@ function Picker:get_window_options(max_columns, max_lines, prompt_title)
     enter = true
   }
 
-  -- TODO: Test with 120 width terminal
-
-  local width_padding = 10
-  if not self.previewer or max_columns < self.preview_cutoff then
-    width_padding = 2
-    preview.width = 0
-  elseif max_columns < 150 then
-    width_padding = 5
-    preview.width = math.floor(max_columns * 0.4)
-  elseif max_columns < 200 then
-    preview.width = 80
-  else
-    preview.width = 120
-  end
-
-  local other_width = max_columns - preview.width - (2 * width_padding)
-  results.width = other_width
-  prompt.width = other_width
-
-  local base_height
-  if max_lines < 40 then
-    base_height = math.min(math.floor(max_lines * 0.8), max_lines - 8)
-  else
-    base_height = math.floor(max_lines * 0.8)
-  end
-  results.height = base_height
-  results.minheight = results.height
-  prompt.height = 1
-  prompt.minheight = prompt.height
-
-  if self.previewer then
-    preview.height = results.height + prompt.height + 2
-    preview.minheight = preview.height
-  else
-    preview.height = 0
-  end
-
-  results.col = width_padding
-  prompt.col = width_padding
-  preview.col = results.col + results.width + 2
-
-  -- TODO: Center this in the page a bit better.
-  local height_padding = math.max(math.floor(0.95 * max_lines), 2)
-  results.line = max_lines - height_padding
-  prompt.line = results.line + results.height + 2
-  preview.line = results.line
-
   return {
-    preview = preview.width > 0 and preview,
+    preview = preview,
     results = results,
     prompt = prompt,
   }
+end
+
+function Picker:get_window_options(max_columns, max_lines, prompt_title)
+  local layout_strategy = self.layout_strategy
+  if not layout_strategy then
+    layout_strategy = config.default_layout_strategy
+  end
+
+  local getter = layout_strategies[layout_strategy]
+
+  if not getter then
+    error("Not a valid layout strategy: ", layout_strategy)
+  end
+
+  return getter(self, max_columns, max_lines, prompt_title)
 end
 
 function Picker:find()
@@ -650,6 +629,8 @@ function pickers.on_close_prompt(prompt_bufnr)
     picker.previewer:teardown()
   end
 end
+
+pickers._Picker = Picker
 
 
 return pickers
