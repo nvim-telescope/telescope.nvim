@@ -35,12 +35,18 @@ local default_mappings = {
     ["<Down>"] = actions.move_selection_next,
     ["<Up>"] = actions.move_selection_previous,
 
-    ["<CR>"] = actions.goto_file_selection,
+    ["<CR>"] = actions.goto_file_selection_edit,
+    ["<C-x>"] = actions.goto_file_selection_split,
+    ["<C-v>"] = actions.goto_file_selection_vsplit,
+    ["<C-t>"] = actions.goto_file_selection_tabedit,
   },
 
   n = {
     ["<esc>"] = actions.close,
-    ["<CR>"] = actions.goto_file_selection,
+    ["<CR>"] = actions.goto_file_selection_edit,
+    ["<C-x>"] = actions.goto_file_selection_split,
+    ["<C-v>"] = actions.goto_file_selection_vsplit,
+    ["<C-t>"] = actions.goto_file_selection_tabedit,
 
     -- TODO: This would be weird if we switch the ordering.
     ["j"] = actions.move_selection_next,
