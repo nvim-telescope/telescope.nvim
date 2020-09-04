@@ -31,7 +31,7 @@ utils.reversed_ipairs = function(t)
   return reversedipairsiter, t, #t + 1
 end
 
-utils.default_table_mt = { 
+utils.default_table_mt = {
   __index = function(t, k)
     local obj = {}
     rawset(t, k, obj)
@@ -113,5 +113,29 @@ utils.path_shorten = (function()
     end
   end
 end)()
+
+-- local x = utils.make_default_callable(function(opts)
+--   return function()
+--     print(opts.example, opts.another)
+--   end
+-- end, { example = 7, another = 5 })
+
+-- x()
+-- x.new { example = 3 }()
+function utils.make_default_callable(f, default_opts)
+  return setmetatable({
+    new = function(opts)
+      opts = vim.tbl_extend("keep", opts, default_opts)
+      return f(opts)
+    end,
+  }, {
+    __call = function()
+      local ok, err = pcall(f(default_opts))
+      if not ok then
+        error(debug.traceback(err))
+      end
+    end
+  })
+end
 
 return utils

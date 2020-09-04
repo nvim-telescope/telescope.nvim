@@ -33,13 +33,18 @@ local builtin = {}
 builtin.git_files = function(opts)
   opts = opts or {}
 
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
+  if opts.cwd then
+    opts.cwd = vim.fn.expand(opts.cwd)
+  end
+
   pickers.new(opts, {
     prompt    = 'Git File',
     finder    = finders.new_oneshot_job(
       { "git", "ls-files", "-o", "--exclude-standard", "-c" },
-      make_entry.gen_from_file(opts)
+      opts
     ),
-    previewer = previewers.cat,
+    previewer = previewers.cat.new(opts),
     sorter    = sorters.get_fuzzy_file(),
   }):find()
 end
@@ -63,12 +68,9 @@ builtin.live_grep = function(opts)
   pickers.new(opts, {
     prompt    = 'Live Grep',
     finder    = live_grepper,
-    previewer = previewers.vimgrep,
+    previewer = previewers.vimgrep.new(opts),
   }):find()
 end
-
--- TODO: document_symbol
--- TODO: workspace_symbol
 
 builtin.lsp_references = function(opts)
   opts = opts or {}
@@ -93,12 +95,14 @@ builtin.lsp_references = function(opts)
       results = locations,
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
-    previewer = previewers.qflist,
+    previewer = previewers.qflist.new(opts),
     sorter    = sorters.get_norcalli_sorter(),
   }):find()
 end
 
 builtin.lsp_document_symbols = function(opts)
+  opts = opts or {}
+
   local params = vim.lsp.util.make_position_params()
   local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/documentSymbol", params)
 
@@ -122,12 +126,15 @@ builtin.lsp_document_symbols = function(opts)
       results = locations,
       entry_maker = make_entry.gen_from_quickfix(opts)
     },
-    previewer = previewers.vim_buffer,
+    previewer = previewers.vim_buffer.new(opts),
     sorter    = sorters.get_norcalli_sorter(),
   }):find()
 end
 
 builtin.lsp_workspace_symbols = function(opts)
+  opts = opts or {}
+  opts.shorten_path = utils.get_default(opts.shorten_path, true)
+
   local params = {query = opts.query or ''}
   local results_lsp = vim.lsp.buf_request_sync(0, "workspace/symbol", params, 1000)
 
@@ -151,7 +158,7 @@ builtin.lsp_workspace_symbols = function(opts)
       results = locations,
       entry_maker = make_entry.gen_from_quickfix(opts)
     },
-    previewer = previewers.qflist,
+    previewer = previewers.qflist.new(opts),
     sorter    = sorters.get_norcalli_sorter(),
   }):find()
 end
@@ -169,7 +176,7 @@ builtin.quickfix = function(opts)
       results     = locations,
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
-    previewer = previewers.qflist,
+    previewer = previewers.qflist.new(opts),
     sorter    = sorters.get_norcalli_sorter(),
   }):find()
 end
@@ -192,36 +199,42 @@ builtin.loclist = function(opts)
       results     = locations,
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
-    previewer = previewers.qflist,
+    previewer = previewers.qflist.new(opts),
     sorter    = sorters.get_norcalli_sorter(),
   }):find()
 end
 
+-- Special keys:
+--  opts.search -- the string to search.
 builtin.grep_string = function(opts)
   opts = opts or {}
 
   -- TODO: This should probably check your visual selection as well, if you've got one
   local search = opts.search or vim.fn.expand("<cword>")
 
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
+
   pickers.new(opts, {
     prompt = 'Find Word',
     finder = finders.new_oneshot_job(
       flatten { vimgrep_arguments, search},
-      make_entry.gen_from_vimgrep(opts)
+      opts
     ),
-    previewer = previewers.vimgrep,
+    previewer = previewers.vimgrep.new(opts),
     sorter = sorters.get_norcalli_sorter(),
   }):find()
 end
 
 builtin.oldfiles = function(opts)
+  opts = opts or {}
+
   pickers.new(opts, {
     prompt = 'Oldfiles',
     finder = finders.new_table(vim.tbl_filter(function(val)
       return 0 ~= vim.fn.filereadable(val)
     end, vim.v.oldfiles)),
     sorter = sorters.get_fuzzy_file(),
-    previewer = previewers.cat,
+    previewer = previewers.cat.new(opts),
   }):find()
 end
 
@@ -247,6 +260,7 @@ builtin.command_history = function(opts)
       -- TODO: Find a way to insert the text... it seems hard.
       -- map('i', '<C-i>', actions.insert_value, { expr = true })
 
+      -- Please add the default mappings for me for the rest of the keys.
       return true
     end,
 
@@ -285,7 +299,7 @@ builtin.builtin = function(opts)
       results     = objs,
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
-    previewer = previewers.qflist,
+    previewer = previewers.qflist.new(opts),
     sorter    = sorters.get_norcalli_sorter(),
   }):find()
 end
@@ -313,13 +327,15 @@ builtin.fd = function(opts)
     cwd = vim.fn.expand(cwd)
   end
 
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
+
   pickers.new(opts, {
     prompt = 'Find Files',
     finder = finders.new_oneshot_job(
       {fd_string},
-      make_entry.gen_from_file(opts)
+      opts
     ),
-    previewer = previewers.cat,
+    previewer = previewers.cat.new(opts),
     sorter = sorters.get_fuzzy_file(),
   }):find()
 end

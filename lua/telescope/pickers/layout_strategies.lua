@@ -1,6 +1,16 @@
 
 local layout_strategies = {}
 
+--[[
+   +-----------------+---------------------+
+   |                 |                     |
+   |     Results     |                     |
+   |                 |       Preview       |
+   |                 |                     |
+   +-----------------|                     |
+   |     Prompt      |                     |
+   +-----------------+---------------------+
+--]]
 layout_strategies.horizontal = function(self, max_columns, max_lines, prompt_title)
   local initial_options = self:_get_initial_window_options(prompt_title)
   local preview = initial_options.preview
@@ -62,6 +72,21 @@ layout_strategies.horizontal = function(self, max_columns, max_lines, prompt_tit
   }
 end
 
+
+
+--[[
+    +-----------------+
+    |    Previewer    |
+    |    Previewer    |
+    |    Previewer    |
+    +-----------------+
+    |     Result      |
+    |     Result      |
+    |     Result      |
+    +-----------------+
+    |     Prompt      |
+    +-----------------+
+--]]
 layout_strategies.vertical = function(self, max_columns, max_lines, prompt_title)
   local initial_options = self:_get_initial_window_options(prompt_title)
 

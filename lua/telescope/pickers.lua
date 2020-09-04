@@ -122,6 +122,7 @@ function Picker:_get_initial_window_options(prompt_title)
   local popup_borderchars = self.window.borderchars
 
   local preview = {
+    title = 'Preview',
     border = popup_border,
     borderchars = popup_borderchars,
     enter = false,
@@ -129,6 +130,7 @@ function Picker:_get_initial_window_options(prompt_title)
   }
 
   local results = {
+    title = 'Results',
     border = popup_border,
     borderchars = popup_borderchars,
     enter = false,

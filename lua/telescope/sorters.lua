@@ -26,7 +26,7 @@ end
 
 function Sorter:score(prompt, entry)
   -- TODO: Decide if we actually want to check the type every time.
-  return self:scoring_function(prompt, type(entry) == "string" and entry or entry.ordinal)
+  return self:scoring_function(prompt, type(entry) == "string" and entry or entry.ordinal, entry)
 end
 
 function sorters.new(...)
@@ -232,7 +232,11 @@ sorters.get_norcalli_sorter = function()
   end
 
   return Sorter:new {
-    scoring_function = function(_, prompt, line)
+    -- self
+    -- prompt (which is the text on the line)
+    -- line (entry.ordinal)
+    -- entry (the whole entry)
+    scoring_function = function(_, prompt, line, _)
       if prompt == 0 or #prompt < ngramlen then
         return 0
       end

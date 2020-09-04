@@ -28,7 +28,7 @@ function make_entry.gen_from_string()
   return function(line)
     return {
       valid = line ~= "",
-      entry_type = make_entry.types.SIMPLE,
+      entry_type = make_entry.types.GENERIC,
 
       value = line,
       ordinal = line,
@@ -39,6 +39,8 @@ end
 
 function make_entry.gen_from_file(opts)
   opts = opts or {}
+
+  local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
 
   local make_display = function(line)
     local display = line
@@ -58,6 +60,7 @@ function make_entry.gen_from_file(opts)
 
       entry_type = make_entry.types.FILE,
       filename = line,
+      path = cwd .. '/' .. line,
     }
 
     entry.display = make_display(line)
@@ -100,6 +103,13 @@ function make_entry.gen_from_vimgrep(opts)
     -- TODO: Is this the fastest way to get each of these?
     --         Or could we just walk the text and check for colons faster?
     local _, _, filename, lnum, col, text = string.find(line, [[([^:]+):(%d+):(%d+):(.*)]])
+
+    local ok
+    ok, lnum = pcall(tonumber, lnum)
+    if not ok then lnum = nil end
+
+    ok, col = pcall(tonumber, col)
+    if not ok then col = nil end
 
     return {
       valid = line ~= "",

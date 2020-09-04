@@ -46,11 +46,14 @@ function JobFinder:new(opts)
   --    pipe
   --        vim.loop.new_pipe (stdin / stdout). stdout => filter pipe
   --        rg huge_search | fzf --filter prompt_is > buffer. buffer could do stuff do w/ preview callback
+
   local obj = setmetatable({
     entry_maker = opts.entry_maker or make_entry.from_string,
     fn_command = opts.fn_command,
     static = opts.static,
     state = {},
+
+    cwd = opts.cwd,
 
     -- Maximum number of results to process.
     --  Particularly useful for live updating large queries.
@@ -113,7 +116,7 @@ function JobFinder:_find(prompt, process_result, process_complete)
   self.job = Job:new {
     command = opts.command,
     args = opts.args,
-    cwd = opts.cwd,
+    cwd = opts.cwd or self.cwd,
 
     maximum_results = self.maximum_results,
 
@@ -210,8 +213,12 @@ finders.new_job = function(command_generator, entry_maker, maximum_results)
 end
 
 ---@param command_list string[] Command list to execute.
----@param entry_maker function Optional: function(line: string) => table
-finders.new_oneshot_job = function(command_list, entry_maker)
+---@param opts table
+---         @key entry_maker function Optional: function(line: string) => table
+---         @key cwd string
+finders.new_oneshot_job = function(command_list, opts)
+  opts = opts or {}
+
   command_list = vim.deepcopy(command_list)
 
   local command = table.remove(command_list, 1)
@@ -219,7 +226,9 @@ finders.new_oneshot_job = function(command_list, entry_maker)
   return JobFinder:new {
     static = true,
 
-    entry_maker = entry_maker or make_entry.from_string,
+    entry_maker = opts.entry_maker or make_entry.gen_from_string,
+
+    cwd = opts.cwd,
 
     fn_command = function()
       return {
