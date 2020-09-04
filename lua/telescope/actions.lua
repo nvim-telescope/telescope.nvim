@@ -34,7 +34,7 @@ function actions.get_selected_entry(prompt_bufnr)
   return actions.get_current_picker(prompt_bufnr):get_selection()
 end
 
-function actions.goto_file_selection(prompt_bufnr)
+local function goto_file_selection(prompt_bufnr, command)
   local picker = actions.get_current_picker(prompt_bufnr)
   local entry = actions.get_selected_entry(prompt_bufnr)
 
@@ -71,7 +71,7 @@ function actions.goto_file_selection(prompt_bufnr)
     vim.cmd(string.format([[bwipeout! %s]], prompt_bufnr))
 
     a.nvim_set_current_win(picker.original_win_id or 0)
-    vim.cmd(string.format(":e %s", filename))
+    vim.cmd(string.format(":%s %s", command, filename))
 
     local bufnr = vim.api.nvim_get_current_buf()
     a.nvim_buf_set_option(bufnr, 'buflisted', true)
@@ -81,6 +81,22 @@ function actions.goto_file_selection(prompt_bufnr)
 
     vim.cmd [[stopinsert]]
   end
+end
+
+function actions.goto_file_selection_edit(prompt_bufnr)
+  goto_file_selection(prompt_bufnr, "e")
+end
+
+function actions.goto_file_selection_split(prompt_bufnr)
+  goto_file_selection(prompt_bufnr, "sp")
+end
+
+function actions.goto_file_selection_vsplit(prompt_bufnr)
+  goto_file_selection(prompt_bufnr, "vsp")
+end
+
+function actions.goto_file_selection_tabedit(prompt_bufnr)
+  goto_file_selection(prompt_bufnr, "tabe")
 end
 
 actions.close = function(prompt_bufnr)
