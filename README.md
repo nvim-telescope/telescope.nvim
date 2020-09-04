@@ -60,6 +60,7 @@ nnoremap <silent> gr <cmd>lua require'telescope.builtin'.lsp_references{}<CR>
 
 Open telescope with LSP references under the cursor.
 
+<<<<<<< HEAD
 ![Live Grep](https://raw.githubusercontent.com/tjdevries/media.repo/master/telescope.nvim/live_grep.gif)
 
 ```vimscript
@@ -67,6 +68,10 @@ nnoremap <Leader>ggr :lua require'telescope.builtin'.live_grep{}
 ```
 
 Grep as you type (requires rg currently)
+
+=======
+
+> > > > > > > db87b602b03c74920fef6ed2e15845b6ae1cb579
 
 ## Status (Unstable API)
 
@@ -85,7 +90,13 @@ Showing default values. Most builtins need no options to be passed.
 ```lua
 require'telescope.builtin'.git_files{
   -- See Picker for additional options
+<<<<<<< HEAD
   prompt             = "Git File",
+=======
+  show_preview       = true, -- Show preview
+  prompt             = "Git File",
+  selection_strategy = "reset" -- follow, reset, line
+>>>>>>> db87b602b03c74920fef6ed2e15845b6ae1cb579
 }
 ```
 
@@ -224,4 +235,4 @@ Previewer:new{
 
 ## Other Examples
 
-![Command History](https://raw.githubusercontent.com/tjdevries/media.repo/master/telescope.nvim/command_history.gif)
+# ![Command History](https://raw.githubusercontent.com/tjdevries/media.repo/master/telescope.nvim/command_history.gif)

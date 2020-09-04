@@ -86,6 +86,7 @@ function actions.goto_file_selection(prompt_bufnr, command)
   end
 end
 
+
 function actions.goto_file_selection_edit(prompt_bufnr)
   goto_file_selection(prompt_bufnr, "e")
 end
@@ -102,7 +103,7 @@ function actions.goto_file_selection_tabedit(prompt_bufnr)
   goto_file_selection(prompt_bufnr, "tabe")
 end
 
---- Close the popup window
+-- Close the popup window
 actions.close = function(prompt_bufnr)
   vim.cmd(string.format([[bwipeout! %s]], prompt_bufnr))
 end
