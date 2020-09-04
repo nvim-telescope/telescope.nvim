@@ -68,18 +68,36 @@ local function goto_file_selection(prompt_bufnr, command)
       col = tonumber(sections[3])
     end
 
-    vim.cmd(string.format([[bwipeout! %s]], prompt_bufnr))
+    local preview_win = state.get_status(prompt_bufnr).preview_win
+    if preview_win then
+      a.nvim_win_set_config(preview_win, {style = ''})
+    end
 
     a.nvim_set_current_win(picker.original_win_id or 0)
     vim.cmd(string.format(":%s %s", command, filename))
+    actions.close(prompt_bufnr)
 
-    local bufnr = vim.api.nvim_get_current_buf()
-    a.nvim_buf_set_option(bufnr, 'buflisted', true)
-    if row and col then
-      a.nvim_win_set_cursor(0, {row, col})
-    end
+    local original_win_id = picker.original_win_id or 0
+    local entry_bufnr = entry.bufnr
 
-    vim.cmd [[stopinsert]]
+    -- TODO: Perhaps I should remove this hack...
+    -- but it seems like unless I do this, it sets the wrong kind of style
+    vim.defer_fn(function()
+      a.nvim_set_current_win(original_win_id)
+      if entry_bufnr then
+        a.nvim_win_set_buf(original_win_id, entry_bufnr)
+      else
+        vim.cmd(string.format(":e %s", filename))
+
+        local bufnr = vim.api.nvim_get_current_buf()
+        a.nvim_buf_set_option(bufnr, 'buflisted', true)
+        if row and col then
+          a.nvim_win_set_cursor(0, {row, col})
+        end
+      end
+
+      vim.cmd [[stopinsert]]
+    end, 1)
   end
 end
 
