@@ -73,7 +73,7 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
       )
     else
       if mode == "i" and not opts.expr then
-        prefix = "<C-O>"
+        prefix = "<cmd>"
       end
 
       map_string = string.format(
