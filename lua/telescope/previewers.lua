@@ -140,10 +140,10 @@ previewers.vim_buffer_or_bat = defaulter(function(_)
 
       local file_name = vim.split(value, ":")[1]
 
-      log.trace("Previewing File: %s", file_name)
+      log.trace("Previewing File: '%s'", file_name)
 
       -- vim.fn.termopen(
-      --   string.format("bat --color=always --style=grid %s"),
+      --   string.format("bat --color=always --style=grid '%s'"),
       -- vim.fn.fnamemodify(file_name, ":p")
       local bufnr = vim.fn.bufadd(file_name)
 
@@ -159,7 +159,7 @@ previewers.vim_buffer_or_bat = defaulter(function(_)
         vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
         vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
       else
-        vim.api.nvim_buf_set_lines(status.preview_bufnr, 0, -1, false, vim.fn.systemlist(string.format('bat %s', file_name)))
+        vim.api.nvim_buf_set_lines(status.preview_bufnr, 0, -1, false, vim.fn.systemlist(string.format('bat "%s"', file_name)))
       end
     end,
   }
@@ -168,9 +168,9 @@ end, {})
 previewers.cat = defaulter(function(opts)
   return previewers.new {
     setup = function()
-      local command_string = "cat %s"
+      local command_string = "cat '%s'"
       if 1 == vim.fn.executable("bat") then
-        command_string = "bat %s --style=grid --paging=always"
+        command_string = "bat '%s' --style=grid --paging=always"
       end
 
       return {
@@ -203,9 +203,9 @@ end, {})
 previewers.vimgrep = defaulter(function(_)
   return previewers.new {
     setup = function()
-      local command_string = "cat %s"
+      local command_string = "cat '%s'"
       if vim.fn.executable("bat") then
-        command_string = "bat %s --highlight-line %s -r %s:%s" .. bat_options
+        command_string = "bat '%s' --highlight-line '%s' -r '%s':'%s'" .. bat_options
       end
 
       return {
@@ -244,9 +244,9 @@ end, {})
 previewers.qflist = defaulter(function(_)
   return previewers.new {
     setup = function()
-      local command_string = "cat %s"
+      local command_string = "cat '%s'"
       if vim.fn.executable("bat") then
-        command_string = "bat %s --highlight-line %s -r %s:%s" .. bat_options
+        command_string = "bat '%s' --highlight-line '%s' -r '%s':'%s'" .. bat_options
       end
 
       return {
