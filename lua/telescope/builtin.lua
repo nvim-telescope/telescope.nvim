@@ -11,6 +11,13 @@ This will use the default configuration options.
   Other configuration options still in flux at the moment
 --]]
 
+if 1 ~= vim.fn.has('nvim-0.5') then
+  vim.api.nvim_err_writeln("This plugins requires neovim 0.5")
+  vim.api.nvim_err_writeln("Please update your neovim.")
+  return
+end
+
+
 -- TODO: Give some bonus weight to files we've picked before
 -- TODO: Give some bonus weight to oldfiles
 
