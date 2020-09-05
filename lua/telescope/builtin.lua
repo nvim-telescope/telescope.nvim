@@ -371,10 +371,9 @@ builtin.treesitter = function(opts)
   end
 
   local ts_locals = require('nvim-treesitter.locals')
-  local bufnr = vim.api.nvim_get_current_buf()
+  local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
 
   local results = {}
-  local log = require('telescope.log')
   for _, definitions in ipairs(ts_locals.get_definitions(bufnr)) do
     local entries = prepare_match(definitions)
     for _, entry in ipairs(entries) do
