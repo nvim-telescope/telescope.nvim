@@ -45,7 +45,8 @@ local function goto_file_selection(prompt_bufnr, command)
   else
     local filename, row, col
     if entry.filename then
-      filename = entry.filename
+      filename = entry.path or entry.filename
+
       -- TODO: Check for off-by-one
       row = entry.row or entry.lnum
       col = entry.col
