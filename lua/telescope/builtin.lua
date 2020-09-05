@@ -341,6 +341,7 @@ builtin.fd = function(opts)
   }):find()
 end
 
+-- TODO: This is partially broken, but I think it might be an nvim bug.
 builtin.buffers = function(opts)
   opts = opts or {}
 
@@ -350,7 +351,6 @@ builtin.buffers = function(opts)
       and 1 == vim.fn.buflisted(b)
 
   end, vim.api.nvim_list_bufs())
-  print(vim.inspect(buffers))
 
   pickers.new(opts, {
     prompt    = 'Buffers',
