@@ -169,4 +169,26 @@ function make_entry.gen_from_quickfix(opts)
   end
 end
 
+function make_entry.gen_from_buffer(opts)
+  return function(entry)
+    local bufnr_str = tostring(entry)
+    local bufname = vim.api.nvim_buf_get_name(entry)
+
+    if '' == bufname then
+      return nil
+    end
+
+    return {
+      valid = true,
+
+      value = bufname,
+      ordinal = bufnr_str .. " : " .. bufname,
+      display = bufnr_str .. " : " .. bufname,
+
+      bufnr = entry,
+      filename = bufname,
+    }
+  end
+end
+
 return make_entry

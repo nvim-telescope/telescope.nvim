@@ -34,6 +34,7 @@ function actions.get_selected_entry(prompt_bufnr)
   return actions.get_current_picker(prompt_bufnr):get_selection()
 end
 
+-- TODO: It seems sometimes we get bad styling.
 local function goto_file_selection(prompt_bufnr, command)
   local picker = actions.get_current_picker(prompt_bufnr)
   local entry = actions.get_selected_entry(prompt_bufnr)
@@ -68,15 +69,28 @@ local function goto_file_selection(prompt_bufnr, command)
       col = tonumber(sections[3])
     end
 
-    vim.cmd(string.format([[bwipeout! %s]], prompt_bufnr))
+    local preview_win = state.get_status(prompt_bufnr).preview_win
+    if preview_win then
+      a.nvim_win_set_config(preview_win, {style = ''})
+    end
 
-    a.nvim_set_current_win(picker.original_win_id or 0)
-    vim.cmd(string.format(":%s %s", command, filename))
+    actions.close(prompt_bufnr)
 
-    local bufnr = vim.api.nvim_get_current_buf()
-    a.nvim_buf_set_option(bufnr, 'buflisted', true)
-    if row and col then
-      a.nvim_win_set_cursor(0, {row, col})
+    local original_win_id = picker.original_win_id or 0
+    local entry_bufnr = entry.bufnr
+
+    -- TODO: Sometimes we open something with missing line numbers and stuff...
+    a.nvim_set_current_win(original_win_id)
+    if entry_bufnr then
+      a.nvim_win_set_buf(original_win_id, entry_bufnr)
+    else
+      vim.cmd(string.format(":%s %s", command, filename))
+
+      local bufnr = vim.api.nvim_get_current_buf()
+      a.nvim_buf_set_option(bufnr, 'buflisted', true)
+      if row and col then
+        a.nvim_win_set_cursor(0, {row, col})
+      end
     end
 
     vim.cmd [[stopinsert]]

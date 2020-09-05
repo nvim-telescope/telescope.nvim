@@ -22,6 +22,7 @@ local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
 local utils = require('telescope.utils')
 
+local filter = vim.tbl_filter
 local flatten = vim.tbl_flatten
 
 -- TODO: Support silver search here.
@@ -337,6 +338,28 @@ builtin.fd = function(opts)
     ),
     previewer = previewers.cat.new(opts),
     sorter = sorters.get_fuzzy_file(),
+  }):find()
+end
+
+-- TODO: This is partially broken, but I think it might be an nvim bug.
+builtin.buffers = function(opts)
+  opts = opts or {}
+
+  local buffers =  filter(function(b)
+    return
+      vim.api.nvim_buf_is_loaded(b)
+      and 1 == vim.fn.buflisted(b)
+
+  end, vim.api.nvim_list_bufs())
+
+  pickers.new(opts, {
+    prompt    = 'Buffers',
+    finder    = finders.new_table {
+      results = buffers,
+      entry_maker = make_entry.gen_from_buffer(opts)
+    },
+    previewer = previewers.vim_buffer.new(opts),
+    sorter    = sorters.get_norcalli_sorter(),
   }):find()
 end
 
