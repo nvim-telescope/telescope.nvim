@@ -147,7 +147,7 @@ builtin.lsp_workspace_symbols = function(opts)
   local results_lsp = vim.lsp.buf_request_sync(0, "workspace/symbol", params, 1000)
 
   if not results_lsp or vim.tbl_isempty(results_lsp) then
-    print("No results from textDocument/documentSymbol")
+    print("No results from workspace/symbol")
     return
   end
 
