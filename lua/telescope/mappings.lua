@@ -98,7 +98,9 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
   local applied_mappings = { n = {}, i = {} }
 
   local map = function(mode, key_bind, key_func, opts)
-    applied_mappings[mode][key_bind] = true
+    local mode = string.lower(mode)
+    local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
+    applied_mappings[mode][key_bind_internal] = true
 
     telescope_map(prompt_bufnr, mode, key_bind, key_func, opts)
   end
@@ -108,11 +110,13 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
   end
 
   for mode, mode_map in pairs(buffer_keymap) do
+    local mode = string.lower(mode)
     -- TODO: Probalby should not overwrite any keymaps
     -- local buffer_keymaps 
 
     for key_bind, key_func in pairs(mode_map) do
-      if not applied_mappings[mode][key_bind] then
+      local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
+      if not applied_mappings[mode][key_bind_internal] then
         telescope_map(prompt_bufnr, mode, key_bind, key_func)
       end
     end
