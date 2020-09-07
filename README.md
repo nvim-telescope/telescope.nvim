@@ -34,6 +34,8 @@ Plug 'nvim-lua/telescope.nvim'
 
 - bat (preview)
 - ripgrep (finder)
+- Treesitter (nvim-treesitter)
+- fd ([sharkdp/fd](https://github.com/sharkdp/fd))
 - git (picker)
 - LSP (picker)
 - [devicons](https://github.com/kyazdani42/nvim-web-devicons)
@@ -109,7 +111,8 @@ Searches files in your working directory.
 
 ```lua
 require'telescope.builtin'.grep_string{
-    search = false -- Search term or <cword>
+    -- Optional 
+    -- search = false -- Search term or <cword>
 }
 ```
 
@@ -166,7 +169,7 @@ Search on all workspace symbols.
 ```lua
 require'telescope.builtin'.treesitter{
   -- Optional
-  bufnr = -- Buffer handle
+  -- bufnr = Buffer handle
 }
 ```
 
