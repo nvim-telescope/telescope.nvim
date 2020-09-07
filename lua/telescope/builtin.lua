@@ -426,4 +426,45 @@ builtin.treesitter = function(opts)
   }):find()
 end
 
+builtin.planets = function(opts)
+  opts = opts or {}
+  local show_pluto = opts.show_pluto or false
+
+  local sourced_file = require('plenary.debug_utils').sourced_filepath()
+  local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h")
+
+  local globbed_files = vim.fn.globpath(base_directory .. '/data/memes/planets/', '*', true, true)
+  local acceptable_files = {}
+  for _, v in ipairs(globbed_files) do
+    if not show_pluto and v:find("pluto") then
+    else
+      table.insert(acceptable_files,vim.fn.fnamemodify(v, ':t'))
+    end
+  end
+
+  pickers.new {
+    prompt = 'Planets',
+    finder = finders.new_table {
+      results = acceptable_files,
+      entry_maker = function(line)
+        return {
+          ordinal = line,
+          display = line,
+          filename = base_directory .. '/data/memes/planets/' .. line,
+        }
+      end
+    },
+    previewer = previewers.cat.new(opts),
+    sorter = sorters.get_norcalli_sorter(),
+    attach_mappings = function(prompt_bufnr, map)
+      map('i', '<CR>', function()
+        local selection = actions.get_selected_entry(prompt_bufnr)
+        actions.close(prompt_bufnr)
+
+        print("Enjoy astronomy! You viewed:", selection.display)
+      end)
+    end,
+  }:find()
+end
+
 return builtin

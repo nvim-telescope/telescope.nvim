@@ -120,6 +120,8 @@ function JobFinder:_find(prompt, process_result, process_complete)
 
     maximum_results = self.maximum_results,
 
+    writer = opts.writer and Job:new(opts.writer) or nil,
+
     on_stdout = on_output,
     on_stderr = on_output,
 
