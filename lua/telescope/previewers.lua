@@ -10,7 +10,10 @@ local previewers = {}
 local Previewer = {}
 Previewer.__index = Previewer
 
-local bat_options = " --style=grid --paging=always "
+-- TODO: Should play with these some more, ty @clason
+local bat_options = " --style=numbers --plain --paging=never --pager=cat"
+bat_options = " --style=grid --plain --pager=cat "
+
 local previewer_ns = vim.api.nvim_create_namespace('telescope.previewers')
 
 --  --terminal-width=%s
@@ -173,12 +176,19 @@ previewers.cat = defaulter(function(opts)
     setup = function()
       local command_string = "cat '%s'"
       if 1 == vim.fn.executable("bat") then
-        command_string = "bat '%s' --style=grid --paging=always"
+        command_string = "bat '%s' " .. bat_options
       end
 
       return {
-        command_string = command_string
+        command_string = command_string,
+        termopen_id = nil,
       }
+    end,
+
+    teardown = function(self)
+      if self.state.termopen_id then
+        pcall(vim.fn.chanclose, self.state.termopen_id)
+      end
     end,
 
     preview_fn = function(self, entry, status)
@@ -195,7 +205,7 @@ previewers.cat = defaulter(function(opts)
       term_opts.cwd = opts.cwd
 
       with_preview_window(status, function()
-        vim.fn.termopen(string.format(self.state.command_string, path), term_opts)
+        self.state.termopen_id = vim.fn.termopen(string.format(self.state.command_string, path), term_opts)
       end)
 
       vim.api.nvim_buf_set_name(bufnr, tostring(bufnr))
