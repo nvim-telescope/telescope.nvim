@@ -438,20 +438,33 @@ builtin.planets = function(opts)
   for _, v in ipairs(globbed_files) do
     if not show_pluto and v:find("pluto") then
     else
-      table.insert(acceptable_files, v)
+      table.insert(acceptable_files,vim.fn.fnamemodify(v, ':t'))
     end
   end
 
-  local planet_searcher = finders.new {
-    results = acceptable_files
-  }
-
-  local planet_picker = pickers.new { previewer = previewers.planet_previewer }
-  planet_picker:find {
+  pickers.new {
     prompt = 'Planets',
-    finder = planet_searcher,
+    finder = finders.new_table {
+      results = acceptable_files,
+      entry_maker = function(line)
+        return {
+          ordinal = line,
+          display = line,
+          filename = base_directory .. '/data/memes/planets/' .. line,
+        }
+      end
+    },
+    previewer = previewers.cat.new(opts),
     sorter = sorters.get_norcalli_sorter(),
-  }
+    attach_mappings = function(prompt_bufnr, map)
+      map('i', '<CR>', function()
+        local selection = actions.get_selected_entry(prompt_bufnr)
+        actions.close(prompt_bufnr)
+
+        print("Enjoy astronomy! You viewed:", selection.display)
+      end)
+    end,
+  }:find()
 end
 
 return builtin

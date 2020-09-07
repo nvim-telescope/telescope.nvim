@@ -12,6 +12,7 @@ Previewer.__index = Previewer
 
 local bat_options = " --style=grid --paging=always "
 local previewer_ns = vim.api.nvim_create_namespace('telescope.previewers')
+
 --  --terminal-width=%s
 
 -- TODO: We shoudl make sure that all our terminals close all the way.
