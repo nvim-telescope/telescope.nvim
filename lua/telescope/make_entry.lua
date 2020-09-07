@@ -191,4 +191,29 @@ function make_entry.gen_from_buffer(opts)
   end
 end
 
+function make_entry.gen_from_treesitter(opts)
+  opts = opts or {}
+  return function(entry)
+    local ts_utils = require('nvim-treesitter.ts_utils')
+    local start_row, start_col, end_row, end_col = ts_utils.get_node_range(entry.node)
+    local node_text = ts_utils.get_node_text(entry.node)[1]
+    local bufnr = vim.api.nvim_get_current_buf()
+    return {
+      valid = true,
+
+      value = entry.node,
+      ordinal = entry.kind .. " " .. node_text,
+      display = entry.kind .. " " .. node_text,
+
+      filename = vim.api.nvim_buf_get_name(bufnr),
+      -- need to add one since the previewer substacts one
+      lnum = start_row + 1,
+      col = start_col,
+      text = node_text,
+      start = start_row,
+      finish = end_row
+    }
+  end
+end
+
 return make_entry

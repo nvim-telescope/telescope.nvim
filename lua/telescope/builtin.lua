@@ -370,4 +370,60 @@ builtin.buffers = function(opts)
   }):find()
 end
 
+local function prepare_match(entry, kind)
+  local entries = {}
+
+  if entry.node then
+      entry["kind"] = kind
+      table.insert(entries, entry)
+  else
+    for name, item in pairs(entry) do
+        vim.list_extend(entries, prepare_match(item, name))
+    end
+  end
+
+  return entries
+end
+
+builtin.treesitter = function(opts)
+  opts = opts or {}
+
+  local has_nvim_treesitter, nvim_treesitter = pcall(require, 'nvim-treesitter')
+  if not has_nvim_treesitter then
+    print('You need to install nvim-treesitter')
+    return
+  end
+
+  local parsers = require('nvim-treesitter.parsers')
+  if not parsers.has_parser() then
+    print('No parser for the current buffer')
+    return
+  end
+
+  local ts_locals = require('nvim-treesitter.locals')
+  local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
+
+  local results = {}
+  for _, definitions in ipairs(ts_locals.get_definitions(bufnr)) do
+    local entries = prepare_match(definitions)
+    for _, entry in ipairs(entries) do
+      table.insert(results, entry)
+    end
+  end
+
+  if vim.tbl_isempty(results) then
+    return
+  end
+
+  pickers.new(opts, {
+    prompt    = 'Treesitter Symbols',
+    finder    = finders.new_table {
+      results = results,
+      entry_maker = make_entry.gen_from_treesitter(opts)
+    },
+    previewer = previewers.vim_buffer.new(opts),
+    sorter    = sorters.get_norcalli_sorter(),
+  }):find()
+end
+
 return builtin

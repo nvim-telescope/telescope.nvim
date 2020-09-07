@@ -123,6 +123,8 @@ previewers.vim_buffer = defaulter(function(_)
 
       if entry.lnum then
         vim.api.nvim_buf_add_highlight(bufnr, previewer_ns, "Visual", entry.lnum - 1, 0, -1)
+        vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 10)
+        vim.api.nvim_win_set_cursor(status.preview_win, {entry.lnum, 0})
         -- print("LNUM:", entry.lnum)
       end
     end,
