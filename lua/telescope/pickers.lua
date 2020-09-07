@@ -186,6 +186,13 @@ function Picker:find()
   -- 3. Preview window
   local popup_opts = self:get_window_options(vim.o.columns, vim.o.lines, prompt_string)
 
+  -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
+  popup_opts.results.minheight = popup_opts.results.height
+  popup_opts.prompt.minheight = popup_opts.prompt.height
+  if popup_opts.preview then
+    popup_opts.preview.minheight = popup_opts.preview.height
+  end
+
   -- TODO: Add back the borders after fixing some stuff in popup.nvim
   local results_win, results_opts = popup.create('', popup_opts.results)
   local results_bufnr = a.nvim_win_get_buf(results_win)
