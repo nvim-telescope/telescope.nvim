@@ -193,17 +193,40 @@ end
 
 function make_entry.gen_from_treesitter(opts)
   opts = opts or {}
+
+  local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
+
+  local make_display = function(entry)
+    if opts.show_line then
+      if not tonumber(opts.show_line) then
+        opts.show_line = 30
+      end
+
+      local spacing = string.rep(" ", opts.show_line - #entry.ordinal)
+
+      return entry.ordinal .. spacing .. ": " .. (vim.api.nvim_buf_get_lines(
+        bufnr,
+        entry.lnum - 1,
+        entry.lnum,
+        false
+      )[1] or '')
+    else
+      return entry.ordinal
+    end
+  end
+
   return function(entry)
     local ts_utils = require('nvim-treesitter.ts_utils')
     local start_row, start_col, end_row, end_col = ts_utils.get_node_range(entry.node)
     local node_text = ts_utils.get_node_text(entry.node)[1]
-    local bufnr = vim.api.nvim_get_current_buf()
     return {
       valid = true,
 
       value = entry.node,
       ordinal = entry.kind .. " " .. node_text,
-      display = entry.kind .. " " .. node_text,
+      display = make_display,
+
+      node_text = node_text,
 
       filename = vim.api.nvim_buf_get_name(bufnr),
       -- need to add one since the previewer substacts one

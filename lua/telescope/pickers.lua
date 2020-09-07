@@ -100,9 +100,10 @@ function Picker:new(opts)
     -- mappings = get_default(opts.mappings, default_mappings),
     attach_mappings = opts.attach_mappings,
 
-    layout_strategy = opts.layout_strategy,
+    selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
+
+    layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy),
     get_window_options = opts.get_window_options,
-    selection_strategy = opts.selection_strategy,
 
     window = {
       -- TODO: This won't account for different layouts...
@@ -110,13 +111,16 @@ function Picker:new(opts)
       -- TODO: If its's a single number, it's always that many columsn
       -- TODO: If it's a list, of length 2, then it's a range of min to max?
       height = get_default(opts.height, 0.8),
-      width = get_default(opts.width, config.default_window_width),
-      preview_width = get_default(opts.preview_width, 0.8),
+      width = get_default(opts.width, config.values.width),
+      get_preview_width = get_default(opts.preview_width, config.values.get_preview_width),
       results_width = get_default(opts.results_width, 0.8),
 
       -- Border config
       border = get_default(opts.border, {}),
       borderchars = get_default(opts.borderchars, { '─', '│', '─', '│', '┌', '┐', '┘', '└'}),
+
+      -- WIP:
+      horizontal_config = get_default(opts.horizontal_config, config.values.horizontal_config),
     },
 
     preview_cutoff = get_default(opts.preview_cutoff, 120),
@@ -158,10 +162,6 @@ end
 
 function Picker:get_window_options(max_columns, max_lines, prompt_title)
   local layout_strategy = self.layout_strategy
-  if not layout_strategy then
-    layout_strategy = config.default_layout_strategy
-  end
-
   local getter = layout_strategies[layout_strategy]
 
   if not getter then
@@ -203,7 +203,7 @@ function Picker:find()
     -- TODO: For some reason, highlighting is kind of weird on these windows.
     --        It may actually be my colorscheme tho...
     a.nvim_win_set_option(preview_win, 'winhl', 'Normal:TelescopeNormal')
-    a.nvim_win_set_option(preview_win, 'winblend', 10)
+    a.nvim_win_set_option(preview_win, 'winblend', config.values.winblend)
   end
 
   -- TODO: We need to center this and make it prettier...

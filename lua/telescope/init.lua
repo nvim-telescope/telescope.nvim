@@ -1,25 +1,50 @@
--- TODO: Debounce preview window maybe
--- TODO: Make filters
---          "fzf --filter"
---           jobstart() -> | fzf --filter "input on prompt"
+local telescope = {}
 
-local finders = require('telescope.finders')
-local pickers = require('telescope.pickers')
-local previewers = require('telescope.previewers')
-local sorters = require('telescope.sorters')
-local state = require('telescope.state')
-local builtin = require('telescope.builtin')
+--[[
+local actions = require('telescope.actions')
 
-local telescope = {
---   -- <module>.new { }
---   finders = finders,
---   pickers = pickers,
---   previewers = previewers,
---   sorters = sorters,
+require('telescope').setup {
+  defaults = {
+    -- Picker Configuration
+    border = {},
+    borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└'},
+    preview_cutoff = 120,
+    selection_strategy = "reset",
 
---   state = state,
+    -- Can choose EITHER one of these:
+    layout_strategy = "horizontal",
 
---   builtin = builtin,
+    get_window_options = function(...) end,
+
+    default_mappings = {
+      i = {
+        ["<C-n>"] = actions.move_selection_next,
+        ["<C-p>"] = actions.move_selection_previous,
+      },
+
+      n = {
+        ["<esc>"] = actions.close,
+        ["<CR>"] = actions.goto_file_selection_edit,
+      },
+    },
+
+    shorten_path = true,
+
+    winblend = 10, -- help winblend
+
+    winblend = {
+      preview = 0,
+      prompt = 20,
+      results = 20,
+    },
+
+  },
 }
+
+--]]
+
+function telescope.setup(opts)
+  require('telescope.config').set_defaults(opts.defaults)
+end
 
 return telescope

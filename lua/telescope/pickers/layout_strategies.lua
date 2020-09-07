@@ -18,19 +18,25 @@ layout_strategies.horizontal = function(self, max_columns, max_lines, prompt_tit
   local prompt = initial_options.prompt
 
   -- TODO: Test with 120 width terminal
-  -- TODO: Test with self.width.
+  -- TODO: Test with self.width
 
   local width_padding = 10
-  if not self.previewer or max_columns < self.preview_cutoff then
-    width_padding = 2
-    preview.width = 0
-  elseif max_columns < 150 then
-    width_padding = 5
-    preview.width = math.floor(max_columns * 0.4)
-  elseif max_columns < 200 then
-    preview.width = 80
+
+  -- TODO: Determine config settings.
+  if false and self.window.horizontal_config and self.window.horizontal_config.get_preview_width then
+    preview.width = self.window.horizontal_config.get_preview_width(max_columns, max_lines)
   else
-    preview.width = 120
+    if not self.previewer or max_columns < self.preview_cutoff then
+      width_padding = 2
+      preview.width = 0
+    elseif max_columns < 150 then
+      width_padding = 5
+      preview.width = math.floor(max_columns * 0.4)
+    elseif max_columns < 200 then
+      preview.width = 80
+    else
+      preview.width = 120
+    end
   end
 
   local other_width = max_columns - preview.width - (2 * width_padding)

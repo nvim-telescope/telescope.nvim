@@ -313,6 +313,8 @@ builtin.builtin = function(opts)
 end
 
 
+-- TODO: Maybe just change this to `find`.
+--          Support `find` and maybe let peopel do other stuff with it as well.
 builtin.fd = function(opts)
   opts = opts or {}
 
@@ -328,8 +330,6 @@ builtin.fd = function(opts)
     return
   end
 
-  -- TODO: CWD not 100% supported at this moment.
-  --        Previewers don't work. We'll have to try out something for that later
   local cwd = opts.cwd
   if cwd then
     cwd = vim.fn.expand(cwd)
@@ -388,7 +388,9 @@ end
 builtin.treesitter = function(opts)
   opts = opts or {}
 
-  local has_nvim_treesitter, nvim_treesitter = pcall(require, 'nvim-treesitter')
+  opts.show_line = utils.get_default(opts.show_line, true)
+
+  local has_nvim_treesitter, _ = pcall(require, 'nvim-treesitter')
   if not has_nvim_treesitter then
     print('You need to install nvim-treesitter')
     return
