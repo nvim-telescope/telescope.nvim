@@ -2,10 +2,25 @@
 
 Gaze deeply into unknown regions using the power of the moon.
 
+## What is Telescope?
+
+Telescope is a highly extendable fuzzy finder over lists. Items are shown in a popup with a prompt to search over.  
+
+Support for:
+
+* LSP (references, document symbols, workspace symbols)
+* Treesitter 
+* Grep 
+* Files (git, fd) 
+* Vim (command history, quickfix, loclist)
+
+[What is Telescope?](https://www.twitch.tv/teej_dv/clip/RichDistinctPlumberPastaThat)
+
+
 ![Finding Files](https://raw.githubusercontent.com/tjdevries/media.repo/master/telescope.nvim/simple_rg_v1.gif)
 
-
 [Example video](https://www.youtube.com/watch?v=65AVwHZflsU)
+
 
 ## Installation
 
@@ -67,56 +82,101 @@ wrappers over common tasks).
 ### `builtin`
 
 ```lua
-require'telescope.builtin'.git_files{
-    -- See Picker for additional options
-    show_preview       = true, -- Show preview
-    prompt             = "Git File",
-    selection_strategy = "reset" -- follow, reset, line
+require'telescope.builtin'.builtin{
+  -- Optional
+  -- hide_filename = true
+  -- ignore_filename = true
 }
 ```
 
-```lua
-require'telescope.builtin'.live_grep{
-    -- See Picker for additional options
-    prompt = "Live Grep",
-}
-```
+Handy documentation, showcase of all tools available in Telescope.
+
+#### Files
 
 ```lua
-require'telescope.builtin'.lsp_references{
-    -- See Picker for additional options
-    prompt = 'LSP References'
-}
+require'telescope.builtin'.git_files{}
 ```
 
-```lua
-require'telescope.builtin'.quickfix{
-    -- See Picker for additional options
-    prompt = 'Quickfix'
-}
-```
+Search your files in a git repo. Ignores files in your .gitignore.
 
 ```lua
-require'telescope.builtin'.loclist{
-    -- See Picker for additional options
-    prompt = 'Loclist'
+require'telescope.builtin'.fd{
+  -- Optional  
+  -- cwd = "/home/tj/"  
 }
 ```
+Searches files in your working directory.
 
 ```lua
 require'telescope.builtin'.grep_string{
-    -- See Picker for additional options
-    prompt = 'Find Word',
     search = false -- Search term or <cword>
 }
 ```
 
 ```lua
-require'telescope.builtin'.oldfiles{
-    -- See Picker for additional options
-    prompt = 'Oldfiles',
+require'telescope.builtin'.live_grep{}
+```
+
+#### Vim
+
+```lua
+require'telescope.builtin'.oldfiles{}
+```
+
+Searches the vim oldfiles. See `:help v:oldfiles`
+
+```lua
+require'telescope.builtin'.quickfix{}
+```
+
+Search on the quickfix. See `:help quickfix`
+
+```lua
+require'telescope.builtin'.loclist{}
+```
+
+Search on the current window's location list.
+
+```lua
+require'telescope.builtin'.command_history{}
+```
+
+Search the vim command history.
+
+#### LSP
+
+```lua
+require'telescope.builtin'.lsp_references{}
+```
+
+Search on LSP references.
+
+```lua
+require'telescope.builtin'.lsp_document_symbols{}
+```
+
+Search on LSP Document Symbols in the current document.
+
+```lua
+require'telescope.builtin'.lsp_workspace_symbols{}
+```
+
+Search on all workspace symbols.
+
+```lua
+require'telescope.builtin'.treesitter{
+  -- Optional
+  bufnr = -- Buffer handle
 }
 ```
+
+Search on function names, variables, from Treesitter!
+
+```lua 
+require'telescope.builtin'.planets{}
+```
+
+Use the telescope.
 
 ## Goals
 
