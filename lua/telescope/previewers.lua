@@ -11,8 +11,7 @@ local Previewer = {}
 Previewer.__index = Previewer
 
 -- TODO: Should play with these some more, ty @clason
-local bat_options = " --style=numbers --plain --paging=never --pager=cat"
-bat_options = " --style=grid --plain --pager=cat "
+local bat_options = " --style=plain --paging=never --color=always "
 
 local previewer_ns = vim.api.nvim_create_namespace('telescope.previewers')
 
