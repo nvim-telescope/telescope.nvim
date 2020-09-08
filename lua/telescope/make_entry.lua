@@ -60,7 +60,7 @@ function make_entry.gen_from_file(opts)
 
       entry_type = make_entry.types.FILE,
       filename = line,
-      path = cwd .. vim.fn.expand('/') .. line,
+      path = cwd .. utils.get_separator() .. line,
     }
 
     entry.display = make_display(line)
