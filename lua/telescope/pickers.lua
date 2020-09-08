@@ -12,7 +12,7 @@ local utils = require('telescope.utils')
 local get_default = utils.get_default
 
 -- TODO: Make this work with deep extend I think.
-local extend = function (opts, defaults)
+local extend = function(opts, defaults)
   local result = opts or {}
   for k, v in pairs(defaults or {}) do
     if result[k] == nil then
@@ -236,14 +236,14 @@ function Picker:find()
 
   local selection_strategy = self.selection_strategy or 'reset'
 
-  local on_lines = function (_, _, _, first_line, last_line)
+  local on_lines = function(_, _, _, first_line, last_line)
     if not vim.api.nvim_buf_is_valid(prompt_bufnr) then
       return
     end
 
     local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]
 
-    self.manager = pickers.entry_manager(self.max_results, vim.schedule_wrap(function (index, entry)
+    self.manager = pickers.entry_manager(self.max_results, vim.schedule_wrap(function(index, entry)
           local row = self.max_results - index + 1
 
           -- If it's less than 0, then we don't need to show it at all.
@@ -281,7 +281,7 @@ function Picker:find()
           end
         end))
 
-    local process_result = function (entry)
+    local process_result = function(entry)
       -- TODO: Should we even have valid?
       if entry.valid == false then
         return
@@ -291,7 +291,7 @@ function Picker:find()
 
       local sort_ok, sort_score = nil, 0
       if sorter then
-        sort_ok, sort_score = pcall(function ()
+        sort_ok, sort_score = pcall(function()
             return sorter:score(prompt, entry)
           end)
 
@@ -309,7 +309,7 @@ function Picker:find()
       self.manager:add_entry(sort_score, entry)
     end
 
-    local process_complete = vim.schedule_wrap(function ()
+    local process_complete = vim.schedule_wrap(function()
         -- TODO: We should either: always leave one result or make sure we actually clean up the results when nothing matches
 
         if selection_strategy == 'row' then
@@ -339,7 +339,7 @@ function Picker:find()
         log.trace("Worst Line after process_complete: %s", worst_line, results_bufnr)
       end)
 
-    local ok, msg = pcall(function ()
+    local ok, msg = pcall(function()
         return finder(prompt, process_result, process_complete)
       end)
 
@@ -349,7 +349,7 @@ function Picker:find()
   end
 
   -- TODO: Uncomment
-  vim.schedule(function ()
+  vim.schedule(function()
       on_lines(nil, nil, nil, 0, 1)
     end)
 
@@ -357,7 +357,7 @@ function Picker:find()
   vim.api.nvim_buf_attach(prompt_bufnr, true, {
       on_lines = vim.schedule_wrap(on_lines),
 
-      on_detach = function (...)
+      on_detach = function(...)
  -- print("DETACH:", ...)
                end
     })
@@ -451,7 +451,7 @@ function Picker:close_windows(status)
   -- Major hack?? Why do I have to od this.
   --    Probably because we're currently IN the buffer.
   --    Should wait to do this until after we're done.
-  vim.defer_fn(function ()
+  vim.defer_fn(function()
       del_win("prompt_win", prompt_win, true)
     end, 10)
 
@@ -538,14 +538,14 @@ function Picker:set_selection(row)
   end
 end
 
-pickers.new = function (opts, defaults)
+pickers.new = function(opts, defaults)
   opts = extend(opts, defaults)
   return Picker:new(opts)
 end
 
 -- TODO: We should consider adding `process_bulk` or `bulk_entry_manager` for things
 -- that we always know the items and can score quickly, so as to avoid drawing so much.
-pickers.entry_manager = function (max_results, set_entry)
+pickers.entry_manager = function(max_results, set_entry)
   log.debug("Creating entry_manager...")
 
   -- state contains list of
@@ -556,11 +556,11 @@ pickers.entry_manager = function (max_results, set_entry)
   --    }
   local entry_state = {}
 
-  set_entry = set_entry or function ()
+  set_entry = set_entry or function()
   end
 
   return setmetatable({
-      add_entry = function (self, score, entry)
+      add_entry = function(self, score, entry)
         assert(type(entry) == "table", "entry must be a table by the time it reaches here")
 
         score = score or 0
@@ -585,7 +585,7 @@ pickers.entry_manager = function (max_results, set_entry)
           })
       end,
 
-      insert = function (self, index, entry)
+      insert = function(self, index, entry)
         if entry == nil then
           entry = index
           index = #entry_state + 1
@@ -605,19 +605,19 @@ pickers.entry_manager = function (max_results, set_entry)
         until not next_entry
       end,
 
-      num_results = function ()
+      num_results = function()
         return #entry_state
       end,
 
-      get_ordinal = function (self, index)
+      get_ordinal = function(self, index)
         return self:get_entry(index).ordinal
       end,
 
-      get_entry = function (_, index)
+      get_entry = function(_, index)
         return (entry_state[index] or {}).entry
       end,
 
-      find_entry = function (_, entry)
+      find_entry = function(_, entry)
         if entry == nil then
           return nil
         end
@@ -634,7 +634,7 @@ pickers.entry_manager = function (max_results, set_entry)
         return nil
       end,
 
-      _get_state = function ()
+      _get_state = function()
         return entry_state
       end
     }, {})
