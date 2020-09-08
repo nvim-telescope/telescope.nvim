@@ -97,7 +97,7 @@ layout_strategies.vertical = function(self, max_columns, max_lines, prompt_title
   local results = initial_options.results
   local prompt = initial_options.prompt
 
-  local width_padding = math.ceil((1 - self.window.width) * 0.5 * max_columns)
+  local width_padding = 3
   local width = max_columns - width_padding * 2
   if not self.previewer then
     preview.width = 0
@@ -110,12 +110,12 @@ layout_strategies.vertical = function(self, max_columns, max_lines, prompt_title
   -- Height
   local height_padding = 3
 
-  results.height = 10
   prompt.height = 1
 
-  -- The last 2 * 2 is for the extra borders
+  -- Plus 2 * 2 for the extra borders
   if self.previewer then
-    preview.height = max_lines - results.height - prompt.height - 2 * 2 - height_padding * 2
+    preview.height = math.ceil(0.5 * max_lines - 4)
+    results.height = max_lines - preview.height - prompt.height - 2 * 3 - height_padding * 2
   else
     results.height = max_lines - prompt.height - 2 - height_padding * 2
   end
