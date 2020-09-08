@@ -70,7 +70,7 @@ local Picker = {}
 Picker.__index = Picker
 
 --- Create new picker
-function Picker:new (opts)
+function Picker:new(opts)
   opts = opts or {}
 
   if opts.layout_strategy and opts.get_window_options then
@@ -135,7 +135,7 @@ function Picker:new (opts)
     }, Picker)
 end
 
-function Picker:_get_initial_window_options (prompt_title)
+function Picker:_get_initial_window_options(prompt_title)
   local popup_border = self.window.border
   local popup_borderchars = self.window.borderchars
 
@@ -168,7 +168,7 @@ function Picker:_get_initial_window_options (prompt_title)
   }
 end
 
-function Picker:get_window_options (max_columns, max_lines, prompt_title)
+function Picker:get_window_options(max_columns, max_lines, prompt_title)
   local layout_strategy = self.layout_strategy
   local getter = layout_strategies[layout_strategy]
 
@@ -179,7 +179,7 @@ function Picker:get_window_options (max_columns, max_lines, prompt_title)
   return getter(self, max_columns, max_lines, prompt_title)
 end
 
-function Picker:find ()
+function Picker:find()
   self:reset_selection()
 
   local prompt_string = assert(self.prompt, "Prompt is required.")
@@ -414,12 +414,12 @@ function Picker:find ()
   vim.cmd [[startinsert!]]
 end
 
-function Picker:hide_preview ()
+function Picker:hide_preview()
  -- 1. Hide the window (and border)
     -- 2. Resize prompt & results windows accordingly
    end
 
-function Picker:close_windows (status)
+function Picker:close_windows(status)
   local prompt_win = status.prompt_win
   local results_win = status.results_win
   local preview_win = status.preview_win
@@ -460,24 +460,24 @@ end
 
 local ns_telescope_selection = a.nvim_create_namespace('telescope_selection')
 
-function Picker:get_selection ()
+function Picker:get_selection()
   return self._selection
 end
 
-function Picker:get_selection_row ()
+function Picker:get_selection_row()
   return self._selection_row or self.max_results
 end
 
-function Picker:move_selection (change)
+function Picker:move_selection(change)
   self:set_selection(self:get_selection_row() + change)
 end
 
-function Picker:reset_selection ()
+function Picker:reset_selection()
   self._selection = nil
   self._selection_row = nil
 end
 
-function Picker:set_selection (row)
+function Picker:set_selection(row)
   -- TODO: Loop around behavior?
   -- TODO: Scrolling past max results
   if row > self.max_results then
@@ -640,7 +640,7 @@ pickers.entry_manager = function (max_results, set_entry)
     }, {})
 end
 
-function pickers.on_close_prompt (prompt_bufnr)
+function pickers.on_close_prompt(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
 
