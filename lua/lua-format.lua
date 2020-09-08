@@ -133,11 +133,11 @@ local lua = {
          K "for" * SPACE * V "space" * V "namelist" * V "space" * SPACE * K "in" * SPACE * V "space" * V "explist" * V "space" * SPACE * K "do" * INDENT_INCREASE(V "filler" * V "block" * V "filler") * INDENT * K "end" +
          K "function" * SPACE * V "space" * V "funcname" * SPACE * V "space" * V "funcbody" +
          K "local" * SPACE * V "space" * K "function" * SPACE * V "space" * V "Name" * V "space" * SPACE * V "funcbody" +
-         K "local" * SPACE * V "space" * V "namelist" * (SPACE * V "space" * C "=" * SPACE * V "space" * V "explist")^-1  * Cc ";" +
-         V "varlist" * V "space" * SPACE * C "=" * SPACE * V "space" * V "explist" * Cc ";" +
-         V "functioncall" * Cc ";";
+         K "local" * SPACE * V "space" * V "namelist" * (SPACE * V "space" * C "=" * SPACE * V "space" * V "explist")^-1 +
+         V "varlist" * V "space" * SPACE * C "=" * SPACE * V "space" * V "explist" +
+         V "functioncall";
 
-  laststat = K "return" * (SPACE * V "space" * V "explist")^-1 * Cc ";" + K "break" * Cc ";";
+  laststat = K "return" * (SPACE * V "space" * V "explist")^-1 + K "break";
 
   funcname = V "Name" * (V "space" * C "." * V "space" * V "Name")^0 * (V "space" * C ":" * V "space" * V "Name")^-1;
 
