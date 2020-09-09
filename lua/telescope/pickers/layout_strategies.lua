@@ -138,6 +138,14 @@ layout_strategies.vertical = function(self, max_columns, max_lines, prompt_title
   }
 end
 
+layout_strategies.flex = function(self, max_columns, max_lines, prompt_title)
+  if max_columns < 100 and max_lines > 20 then
+    return layout_strategies.vertical(self, max_columns, max_lines, prompt_title)
+  else
+    return layout_strategies.horizontal(self, max_columns, max_lines, prompt_title)
+  end
+end
+
 -- TODO: Add "flex"
 -- If you don't have enough width, use the height one
 -- etc.
