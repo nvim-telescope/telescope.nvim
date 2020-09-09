@@ -42,6 +42,9 @@ local default_mappings = {
     ["<C-x>"] = actions.goto_file_selection_split,
     ["<C-v>"] = actions.goto_file_selection_vsplit,
     ["<C-t>"] = actions.goto_file_selection_tabedit,
+
+    ["<C-u>"] = actions.preview_scrolling_up,
+    ["<C-d>"] = actions.preview_scrolling_down,
   },
 
   n = {
@@ -57,6 +60,9 @@ local default_mappings = {
 
     ["<Down>"] = actions.move_selection_next,
     ["<Up>"] = actions.move_selection_previous,
+
+    ["<C-u>"] = actions.preview_scrolling_up,
+    ["<C-d>"] = actions.preview_scrolling_down,
   },
 }
 

@@ -142,6 +142,9 @@ j      k     next | previous (in normal mode)
 <C-v>        go to file selection as a vertical split
 <C-t>        go to a file in a new tab
 
+<C-u>        scroll up in preview window
+<C-d>        scroll down in preview window
+
 <C-c>        close telescope
 <Esc>        close telescope (in normal mode)
 ```
