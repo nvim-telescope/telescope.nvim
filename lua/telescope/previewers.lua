@@ -185,6 +185,10 @@ previewers.cat = defaulter(function(opts)
     end,
 
     teardown = function(self)
+      if not self.state then
+        return
+      end
+
       if self.state.termopen_id then
         pcall(vim.fn.chanclose, self.state.termopen_id)
       end
