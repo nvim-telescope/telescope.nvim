@@ -70,7 +70,7 @@ builtin.live_grep = function(opts)
       return flatten { vimgrep_arguments, prompt }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
-    opts.max_results
+    opts.max_results or 1000
   )
 
   pickers.new(opts, {
