@@ -63,11 +63,11 @@ require('telescope.builtin').loclist()
 
 ### Example
 
-```vimscript
+```vim
 nnoremap <Leader>p :lua require'telescope.builtin'.git_files{}<CR>
 ```
 
-```vimscript
+```vim
 nnoremap <silent> gr <cmd>lua require'telescope.builtin'.lsp_references{}<CR>
 ```
 
