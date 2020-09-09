@@ -71,6 +71,24 @@ nnoremap <Leader>p :lua require'telescope.builtin'.git_files{}<CR>
 nnoremap <silent> gr <cmd>lua require'telescope.builtin'.lsp_references{}<CR>
 ```
 
+## Mappings
+
+Mappings are fully customizable. Many familiar mapping patterns are setup as defaults.
+
+```
+<C-n>/<C-p> next/previous
+<Down>/<Up> next/previous
+<CR> go to file selection 
+
+<C-x> go to file selection as a split
+<C-v> go to file selection as a vertical split
+<C-t> go to a file in a new tab
+
+j/k next/previous (in insert mode)
+```
+
+Attaching your own mappings is possible and additional information will come soon.
+
 ## Status (Unstable API)
 
 While the underlying API & Infrastructure (A.K.A. Spaghetti Code) is still very much WIP and
@@ -111,8 +129,8 @@ Searches files in your working directory.
 
 ```lua
 require'telescope.builtin'.grep_string{
-    -- Optional 
-    -- search = false -- Search term or <cword>
+  -- Optional 
+  -- search = false -- Search term or <cword>
 }
 ```
 
@@ -169,11 +187,14 @@ Search on all workspace symbols.
 ```lua
 require'telescope.builtin'.treesitter{
   -- Optional
-  -- bufnr = Buffer handle
+  -- bufnr = Buffer number 
 }
 ```
+#### Treesitter
 
 Search on function names, variables, from Treesitter!
+
+#### Telescope
 
 ```lua 
 require'telescope.builtin'.planets{}
@@ -196,10 +217,10 @@ Use the telescope.
 ```lua
 -- lua/telescope/finders.lua
 Finder:new{
-    entry_maker = function(line) end,
-    fn_command = function() { command = "", args  = { "ls-files" } } end,
-    static = false,
-    maximum_results = false
+  entry_maker = function(line) end,
+  fn_command = function() { command = "", args  = { "ls-files" } } end,
+  static = false,
+  maximum_results = false
 }
 ```
 
@@ -225,25 +246,14 @@ Defaults:
 ```lua
 -- lua/telescope/pickers.lua
 Picker:new{
-    prompt = "Git Files", -- REQUIRED
-    finder = FUNCTION, -- REQUIRED
-    sorter = FUNCTION, -- REQUIRED
-    previewer = FUNCTION, -- REQUIRED
-    mappings = {
-        i = {
-            ["<C-n>"] = require'telescope.actions'.move_selection_next,
-            ["<C-p>"] = require'telescope.actions'.move_selection_previous,
-            ["<CR>"] = require'telescope.actions'.goto_file_selection,
-        },
-
-        n = {
-            ["<esc>"] = require'telescope.actions'.close,
-        }
-    },
-    selection_strategy = "reset", -- follow, reset, line
-    border = {},
-    borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└'},
-    preview_cutoff = 120
+  prompt = "", -- REQUIRED
+  finder = FUNCTION, -- see lua/telescope/finder.lua 
+  sorter = FUNCTION, -- see lua/telescope/sorter.lua
+  previewer = FUNCTION, -- see lua/telescope/previewer.lua 
+  selection_strategy = "reset", -- follow, reset, line
+  border = {},
+  borderchars = {"─", "│", "─", "│", "┌", "┐", "┘", "└"},
+  preview_cutoff = 120,
 }
 ```
 
