@@ -264,9 +264,9 @@ Use the telescope.
 ```lua
 -- lua/telescope/finders.lua
 Finder:new{
-  entry_maker = function(line) end,
-  fn_command = function() { command = "", args  = { "ls-files" } } end,
-  static = false,
+  entry_maker     = function(line) end,
+  fn_command      = function() { command = "", args  = { "ls-files" } } end,
+  static          = false,
   maximum_results = false
 }
 ```
@@ -293,14 +293,14 @@ Defaults:
 ```lua
 -- lua/telescope/pickers.lua
 Picker:new{
-  prompt = "", -- REQUIRED
-  finder = FUNCTION, -- see lua/telescope/finder.lua 
-  sorter = FUNCTION, -- see lua/telescope/sorter.lua
-  previewer = FUNCTION, -- see lua/telescope/previewer.lua 
+  prompt             = "", -- REQUIRED
+  finder             = FUNCTION, -- see lua/telescope/finder.lua 
+  sorter             = FUNCTION, -- see lua/telescope/sorter.lua
+  previewer          = FUNCTION, -- see lua/telescope/previewer.lua 
   selection_strategy = "reset", -- follow, reset, line
-  border = {},
-  borderchars = {"─", "│", "─", "│", "┌", "┐", "┘", "└"},
-  preview_cutoff = 120,
+  border             = {},
+  borderchars        = {"─", "│", "─", "│", "┌", "┐", "┘", "└"},
+  preview_cutoff     = 120,
 }
 ```
 
