@@ -116,8 +116,8 @@ function Picker:new(opts)
       results_width = get_default(opts.results_width, 0.8),
 
       -- Border config
-      border = get_default(opts.border, {}),
-      borderchars = get_default(opts.borderchars, { '─', '│', '─', '│', '╭', '╮', '╯', '╰'}),
+      border = get_default(opts.border, config.values.border),
+      borderchars = get_default(opts.borderchars, config.values.borderchars),
 
       -- WIP:
       horizontal_config = get_default(opts.horizontal_config, config.values.horizontal_config),

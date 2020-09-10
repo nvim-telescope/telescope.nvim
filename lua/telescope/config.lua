@@ -13,8 +13,6 @@ local function first_non_null(...)
 end
 
 -- TODO: Add other major configuration points here.
--- border
--- borderchars
 -- selection_strategy
 
 local config = {}
@@ -37,6 +35,9 @@ function config.set_defaults(defaults)
   set("layout_strategy", "horizontal")
   set("width", 0.75)
   set("winblend", 0)
+
+  set("border", {})
+  set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
 
   -- Builtin configuration
 
