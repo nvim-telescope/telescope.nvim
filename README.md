@@ -69,11 +69,12 @@ require('telescope.builtin').loclist()
 Options can be passed directly to the above functions, or set as defaults.
 
 ```lua
+-- Optional way to setup default values
 require('telescope').setup{
-	default = {
-		-- Example: 
-		shorten_path = true -- currently the default value is true
-	}
+  default = {
+    -- Example: 
+    shorten_path = true -- currently the default value is true
+  }
 }
 ```
 
@@ -99,15 +100,16 @@ nnoremap <silent> gr <cmd>lua require'telescope.builtin'.lsp_references{}<CR>
 
 ```vim
 lua <<EOF
+-- totally optional to use setup
 require('telescope').setup{
-	default = {
-		shorten_path = false -- currently the default value is true
-	}
+  default = {
+    shorten_path = false -- currently the default value is true
+  }
 }
 EOF
 
 nnoremap <c-p> :lua require'telescope.builtin'.find_files{}<CR>
-nnoremap <silent> gr <cmd>lua require'telescope.builtin'.lsp_references{}<CR>
+nnoremap <silent> gr <cmd>lua require'telescope.builtin'.lsp_references{ shorten_path = true }<CR>
 ```
 
 * Make the paths full size
