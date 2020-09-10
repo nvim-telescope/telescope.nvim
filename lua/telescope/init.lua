@@ -1,7 +1,5 @@
 local telescope = {}
 
-print("HELLO WORLD")
-
 --[[
 local actions = require('telescope.actions')
 
