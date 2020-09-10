@@ -21,6 +21,11 @@ Support for:
 
 [Example video](https://www.youtube.com/watch?v=65AVwHZflsU)
 
+## Requirements
+
+Neovim 0.4+
+
+Best experience on Neovim Nightly with LSP configured. 
 
 ## Installation
 
@@ -32,17 +37,17 @@ Plug 'nvim-lua/telescope.nvim'
 
 ### Optional
 
-- bat (preview)
-- ripgrep (finder)
-- Treesitter (nvim-treesitter)
-- fd ([sharkdp/fd](https://github.com/sharkdp/fd))
+- [bat](https://github.com/sharkdp/bat) (preview)
+- [ripgrep](https://github.com/BurntSushi/ripgrep) (finder)
+- Treesitter ([nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter)) (finder/preview)
+- fd ([sharkdp/fd](https://github.com/sharkdp/fd)) (finder)
 - git (picker)
-- LSP (picker)
+- [neovim LSP]( https://neovim.io/doc/user/lsp.html) (picker)
 - [devicons](https://github.com/kyazdani42/nvim-web-devicons)
 
 ## Usage
 
-(I will write a longer description later about how to create each of the objects described in Pipeline)
+Most actions are activated via keybinds. Attach these functions as described more in the [Examples](#Examples)
 
 ```lua
 -- Fuzzy find over git files in your directory
@@ -61,30 +66,68 @@ require('telescope.builtin').quickfix()
 require('telescope.builtin').loclist()
 ```
 
-### Example
+Options can be passed directly to the above functions, or set as defaults.
+
+```lua
+require('telescope').setup{
+	default = {
+		-- Example: 
+		shorten_path = true -- currently the default value is true
+	}
+}
+```
+
+### Examples
 
 ```vim
 nnoremap <Leader>p :lua require'telescope.builtin'.git_files{}<CR>
 ```
 
+Searches over files in a git folder. Note: This does not work outside a git repo folder.
+
+```vim
+nnoremap <Leader>p :lua require'telescope.builtin'.find_files{}<CR>
+```
+
+Search over files in your `cwd` current working directory. 
+
 ```vim
 nnoremap <silent> gr <cmd>lua require'telescope.builtin'.lsp_references{}<CR>
 ```
+
+#### Full Example
+
+```vim
+lua <<EOF
+require('telescope').setup{
+	default = {
+		shorten_path = false -- currently the default value is true
+	}
+}
+EOF
+
+nnoremap <c-p> :lua require'telescope.builtin'.find_files{}<CR>
+nnoremap <silent> gr <cmd>lua require'telescope.builtin'.lsp_references{}<CR>
+```
+
+* Make the paths full size
+* Bind `<ctrl-p>` for a common mapping to find files. Using `telescope.builtin.git_files` is better in git directories, a toggle can be programmed in to detect if it's a git directory.
+* Bind `gr` to find references in LSP. `telescope.builtin.lsp_workspace_symbols` and `telescope.builtin.lsp_document_symbols` are also good to bind for LSP.
 
 ## Mappings
 
 Mappings are fully customizable. Many familiar mapping patterns are setup as defaults.
 
 ```
-<C-n>/<C-p> next/previous
-<Down>/<Up> next/previous
-<CR> go to file selection 
+<C-n>  <C-p> next | previous
+<Down> <Up>  next | previous
+<CR>         go to file selection 
 
-<C-x> go to file selection as a split
-<C-v> go to file selection as a vertical split
-<C-t> go to a file in a new tab
+<C-x>	       go to file selection as a split
+<C-v>	       go to file selection as a vertical split
+<C-t>        go to a file in a new tab
 
-j/k next/previous (in normal mode)
+j      k     next/previous (in normal mode)
 ```
 
 Attaching your own mappings is possible and additional information will come soon.
