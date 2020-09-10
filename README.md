@@ -23,7 +23,7 @@ Support for:
 
 ## Requirements
 
-Neovim 0.4+
+Neovim Nightly (0.5) 
 
 Best experience on Neovim Nightly with LSP configured. 
 
