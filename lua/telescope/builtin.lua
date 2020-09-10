@@ -314,7 +314,7 @@ end
 
 -- TODO: Maybe just change this to `find`.
 --          Support `find` and maybe let peopel do other stuff with it as well.
-builtin.fd = function(opts)
+builtin.find_files = function(opts)
   opts = opts or {}
 
   local fd_string = nil
@@ -325,7 +325,7 @@ builtin.fd = function(opts)
   end
 
   if not fd_string then
-    print("You need to install fd")
+    print("You need to install fd or submit PR for different default file finder :)")
     return
   end
 
@@ -346,6 +346,9 @@ builtin.fd = function(opts)
     sorter = sorters.get_fuzzy_file(),
   }):find()
 end
+
+-- Leave this alias around for people.
+builtin.fd = builtin.find_files
 
 -- TODO: This is partially broken, but I think it might be an nvim bug.
 builtin.buffers = function(opts)
