@@ -89,6 +89,8 @@ j/k next/previous (in normal mode)
 
 Attaching your own mappings is possible and additional information will come soon.
 
+Additionally, the prompt's filetype will be `TelescopePrompt`. You can customize the filetype as you would normally.
+
 ## Status (Unstable API)
 
 While the underlying API & Infrastructure (A.K.A. Spaghetti Code) is still very much WIP and
