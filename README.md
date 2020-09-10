@@ -125,8 +125,8 @@ Mappings are fully customizable. Many familiar mapping patterns are setup as def
 <Down> <Up>  next | previous
 <CR>         go to file selection 
 
-<C-x>	       go to file selection as a split
-<C-v>	       go to file selection as a vertical split
+<C-x>        go to file selection as a split
+<C-v>        go to file selection as a vertical split
 <C-t>        go to a file in a new tab
 
 j      k     next/previous (in normal mode)
