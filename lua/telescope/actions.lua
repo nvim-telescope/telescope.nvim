@@ -81,7 +81,6 @@ local function goto_file_selection(prompt_bufnr, command)
     local entry_bufnr = entry.bufnr
 
     -- TODO: Sometimes we open something with missing line numbers and stuff...
-    a.nvim_set_current_win(original_win_id)
     if entry_bufnr then
       a.nvim_win_set_buf(original_win_id, entry_bufnr)
     else
@@ -114,8 +113,13 @@ function actions.goto_file_selection_tabedit(prompt_bufnr)
   goto_file_selection(prompt_bufnr, "tabe")
 end
 
-actions.close = function(prompt_bufnr)
+function actions.close(prompt_bufnr)
+  local picker = actions.get_current_picker(prompt_bufnr)
+
   vim.cmd(string.format([[bwipeout! %s]], prompt_bufnr))
+
+  local original_win_id = picker.original_win_id or 0
+  a.nvim_set_current_win(original_win_id)
 end
 
 actions.set_command_line = function(prompt_bufnr)
