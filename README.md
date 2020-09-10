@@ -112,9 +112,13 @@ nnoremap <c-p> :lua require'telescope.builtin'.find_files{}<CR>
 nnoremap <silent> gr <cmd>lua require'telescope.builtin'.lsp_references{ shorten_path = true }<CR>
 ```
 
-* Make the paths full size
-* Bind `<ctrl-p>` for a common mapping to find files. Using `telescope.builtin.git_files` is better in git directories, a toggle can be programmed in to detect if it's a git directory.
-* Bind `gr` to find references in LSP. `telescope.builtin.lsp_workspace_symbols` and `telescope.builtin.lsp_document_symbols` are also good to bind for LSP.
+What this does: 
+
+* Make the paths full size by default. On LSP references we are shortening paths.
+* Bind `<ctrl-p>` for a common mapping to find files. 
+  - Using `telescope.builtin.git_files` is better in git directories. You can make a toggle to detect if it's a git directory.
+* Bind `gr` to find references in LSP. 
+  - `telescope.builtin.lsp_workspace_symbols` and `telescope.builtin.lsp_document_symbols` are also good to bind for LSP.
 
 ## Mappings
 
