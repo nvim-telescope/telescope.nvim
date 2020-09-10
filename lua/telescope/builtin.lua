@@ -29,12 +29,11 @@ local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
 local utils = require('telescope.utils')
 
+local conf = require('telescope.config').values
+
 local filter = vim.tbl_filter
 local flatten = vim.tbl_flatten
 
--- TODO: Support silver search here.
--- TODO: Support normal grep here (in case neither are installed).
-local vimgrep_arguments = {'rg', '--color=never', '--no-heading', '--with-filename', '--line-number', '--column'}
 
 local builtin = {}
 
@@ -67,7 +66,7 @@ builtin.live_grep = function(opts)
         return nil
       end
 
-      return flatten { vimgrep_arguments, prompt }
+      return flatten { conf.vimgrep_arguments, prompt }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
     opts.max_results or 1000
@@ -225,7 +224,7 @@ builtin.grep_string = function(opts)
   pickers.new(opts, {
     prompt = 'Find Word',
     finder = finders.new_oneshot_job(
-      flatten { vimgrep_arguments, search},
+      flatten { conf.vimgrep_arguments, search},
       opts
     ),
     previewer = previewers.vimgrep.new(opts),

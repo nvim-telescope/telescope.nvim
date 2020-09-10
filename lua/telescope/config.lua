@@ -38,6 +38,12 @@ function config.set_defaults(defaults)
   set("width", 0.75)
   set("winblend", 0)
 
+  -- Builtin configuration
+
+  -- List that will be executed.
+  --    Last argument will be the search term (passed in during execution)
+  set("vimgrep_arguments", {'rg', '--color=never', '--no-heading', '--with-filename', '--line-number', '--column'})
+
   -- TODO: Shortenpath
   --    Decide how to propagate that to all the opts everywhere.
 
