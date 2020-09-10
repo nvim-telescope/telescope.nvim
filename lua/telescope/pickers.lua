@@ -218,7 +218,7 @@ function Picker:find()
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
 
   a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
-  a.nvim_buf_set_option(prompt_bufnr, 'filetype', 'TelescopePrompt')
+  pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')
 
   -- a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
   -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_string)
