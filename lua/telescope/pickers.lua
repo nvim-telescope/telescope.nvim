@@ -100,7 +100,7 @@ function Picker:new(opts)
     -- mappings = get_default(opts.mappings, default_mappings),
     attach_mappings = opts.attach_mappings,
 
-    sorting_strategy = 'ascending',
+    sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
     layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy),
@@ -198,7 +198,6 @@ end
 
 function Picker:get_reset_row()
   if self.sorting_strategy == 'ascending' then
-    log.info("Setting reset row:", 1)
     return 1
   else
     return self.max_results
@@ -214,7 +213,6 @@ function Picker:clear_extra_rows(results_bufnr)
       return
     end
 
-    log.info("start", num_results + 1, "end", self.max_results)
     vim.api.nvim_buf_set_lines(results_bufnr, num_results + 1, self.max_results, false, {})
   else
     local worst_line = self:get_row(self.manager:num_results())
@@ -233,7 +231,7 @@ function Picker:can_select_row(row)
   if self.sorting_strategy == 'ascending' then
     return row <= self.manager:num_results()
   else
-    return row >= self.manager:num_results()
+    return row <= self.max_results and row >= self.max_results - self.manager:num_results()
   end
 end
 
@@ -303,6 +301,10 @@ function Picker:find()
 
     local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]
 
+    local filtered_amount = 0
+    local displayed_amount = 0
+    local displayed_fn_amount = 0
+
     self.manager = pickers.entry_manager(
       self.max_results,
       vim.schedule_wrap(function(index, entry)
@@ -316,6 +318,7 @@ function Picker:find()
 
         local display
         if type(entry.display) == 'function' then
+          displayed_fn_amount = displayed_fn_amount + 1
           display = entry:display()
         elseif type(entry.display) == 'string' then
           display = entry.display
@@ -328,6 +331,8 @@ function Picker:find()
         -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
         -- until then, insert two spaces
         display = '  ' .. display
+
+        displayed_amount = displayed_amount + 1
 
         -- log.info("Setting row", row, "with value", entry)
         local set_ok = pcall(vim.api.nvim_buf_set_lines, results_bufnr, row, row + 1, false, {display})
@@ -361,6 +366,7 @@ function Picker:find()
         end
 
         if sort_score == -1 then
+          filtered_amount = filtered_amount + 1
           log.trace("Filtering out result: ", entry)
           return
         end
@@ -390,6 +396,10 @@ function Picker:find()
       end
 
       self:clear_extra_rows(results_bufnr)
+
+      PERF("Filtered Amount    ", filtered_amount)
+      PERF("Displayed Amount   ", displayed_amount)
+      PERF("Displayed FN Amount", displayed_fn_amount)
     end)
 
     local ok, msg = pcall(function()
@@ -535,13 +545,8 @@ function Picker:set_selection(row)
     row = 1
   end
 
-  -- TODO: Move max results and row and entry management into an overridable funciton.
-  --        I have this same thing copied all over the place (and it's not good).
-  --        Particularly if we're going to do something like make it possible to sort
-  --        top to bottom, rather than bottom to top.
-
-  -- TODO: Is this the right logic here?
   if not self:can_select_row(row) then
+    log.info("Cannot select row:", row, self.manager:num_results(), self.max_results)
     return
   end
 

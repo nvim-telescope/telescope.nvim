@@ -2,7 +2,6 @@ local Job = require('plenary.job')
 
 local make_entry = require('telescope.make_entry')
 local log = require('telescope.log')
-local utils = require('telescope.utils')
 
 local finders = {}
 
@@ -64,7 +63,12 @@ function JobFinder:new(opts)
 end
 
 function JobFinder:_find(prompt, process_result, process_complete)
+  START = vim.loop.hrtime()
+  PERF()
+  PERF('starting...')
+
   if self.job and not self.job.is_shutdown then
+    PERF('...had to shutdown')
     self.job:shutdown()
   end
 
@@ -76,25 +80,22 @@ function JobFinder:_find(prompt, process_result, process_complete)
     end
 
     process_complete()
+    PERF('Num Lines: ', self._cached_lines)
+    PERF('...finished static')
+
+    COMPLETED = true
     return
   end
 
-  if self.static then
-    self._cached_lines = {}
-  end
-
   self.done = false
+  self._cached_lines = {}
 
-  -- TODO: Should consider ways to allow "transformers" to be run here.
-  --        So that a finder can choose to "transform" the text into something much more easily usable.
   local on_output = function(_, line, _)
     if not line then
       return
     end
 
-    if vim.trim(line) ~= "" then
-      line = line:gsub("\n", "")
-
+    if line ~= "" then
       if self.entry_maker then
         line = self.entry_maker(line)
       end
@@ -129,6 +130,8 @@ function JobFinder:_find(prompt, process_result, process_complete)
       self.done = true
 
       process_complete()
+
+      PERF('done')
     end,
   }
 
@@ -228,9 +231,10 @@ finders.new_oneshot_job = function(command_list, opts)
   return JobFinder:new {
     static = true,
 
-    entry_maker = opts.entry_maker or make_entry.gen_from_string,
+    entry_maker = opts.entry_maker or make_entry.gen_from_string(),
 
     cwd = opts.cwd,
+    maximum_results = opts.maximum_results,
 
     fn_command = function()
       return {

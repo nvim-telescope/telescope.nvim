@@ -11,12 +11,22 @@ make_entry.types = {
 
 local transform_devicons
 if has_devicons then
+  _DeviconStore = _DeviconStore or {}
+
   transform_devicons = function(filename, display, opts)
     if opts.disable_devicons then
       return display
     end
 
-    return (devicons.get_icon(filename, string.match(filename, '%a+$')) or ' ') .. ' ' .. display
+    if _DeviconStore[filename] then
+      return _DeviconStore[filename]
+    end
+
+    local icon_display = (devicons.get_icon(filename, string.match(filename, '%a+$')) or ' ') .. ' ' .. display
+
+    _DeviconStore[filename] = icon_display
+
+    return icon_display
   end
 else
   transform_devicons = function(_, display, _)

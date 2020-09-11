@@ -30,12 +30,13 @@ function config.set_defaults(defaults)
     config.values[name] = get(name, default_val)
   end
 
+  set("sorting_strategy", "descending")
   set("selection_strategy", "reset")
 
   set("layout_strategy", "horizontal")
   set("width", 0.75)
   set("winblend", 0)
-  set("prompt_position", "top")
+  set("prompt_position", "bottom")
   set("preview_cutoff", 120)
 
   set("border", {})
