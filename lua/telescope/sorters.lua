@@ -208,6 +208,13 @@ sorters.get_fuzzy_file = function(opts)
 end
 
 sorters.get_norcalli_sorter = function()
+  vim.api.nvim_err_writeln(
+    "get_norcalli_sorter() is changed to get_generic_fuzzy_sorter()"
+  )
+  return sorters.get_generic_fuzzy_sorter()
+end
+
+sorters.get_generic_fuzzy_sorter = function()
   local ngramlen = 2
 
   local cached_ngrams = {}
