@@ -241,6 +241,9 @@ previewers.vimgrep = defaulter(function(_)
 
       local _, _, filename, lnum, col, text = string.find(line, [[([^:]+):(%d+):(%d+):(.*)]])
 
+      filename = filename or entry.filename
+      lnum = lnum or entry.lnum or 0
+
       local context = math.floor(height / 2)
       local start = math.max(0, lnum - context)
       local finish = lnum + context

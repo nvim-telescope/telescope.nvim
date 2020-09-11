@@ -350,10 +350,9 @@ end
 -- Leave this alias around for people.
 builtin.fd = builtin.find_files
 
--- TODO: Sometimes some window options (for me, I've experience number & relativenumber)
---          don't work when we open this up.
+-- TODO: I'd like to use the `vim_buffer` previewer, but it doesn't seem to work due to some styling problems.
 --       I think it has something to do with nvim_open_win and style='minimal',
---       but I can't figure that part out at the moment...
+-- Status, currently operational.
 builtin.buffers = function(opts)
   opts = opts or {}
 
@@ -370,7 +369,8 @@ builtin.buffers = function(opts)
       results = buffers,
       entry_maker = make_entry.gen_from_buffer(opts)
     },
-    previewer = previewers.vim_buffer.new(opts),
+    -- previewer = previewers.vim_buffer.new(opts),
+    previewer = previewers.vimgrep.new(opts),
     sorter    = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end

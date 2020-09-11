@@ -75,10 +75,10 @@ local function goto_file_selection(prompt_bufnr, command)
       a.nvim_win_set_config(preview_win, {style = ''})
     end
 
-    actions.close(prompt_bufnr)
-
     local original_win_id = picker.original_win_id or 0
     local entry_bufnr = entry.bufnr
+
+    actions.close(prompt_bufnr)
 
     -- TODO: Sometimes we open something with missing line numbers and stuff...
     if entry_bufnr then
@@ -115,8 +115,10 @@ end
 
 function actions.close(prompt_bufnr)
   local picker = actions.get_current_picker(prompt_bufnr)
+  local prompt_win = state.get_status(prompt_bufnr).prompt_win
 
-  vim.cmd(string.format([[bwipeout! %s]], prompt_bufnr))
+  vim.api.nvim_win_close(prompt_win, true)
+  vim.cmd(string.format([[bdelete! %s]], prompt_bufnr))
 
   local original_win_id = picker.original_win_id or 0
   a.nvim_set_current_win(original_win_id)
