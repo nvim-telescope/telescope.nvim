@@ -53,6 +53,7 @@ function JobFinder:new(opts)
     state = {},
 
     cwd = opts.cwd,
+    writer = opts.writer,
 
     -- Maximum number of results to process.
     --  Particularly useful for live updating large queries.
@@ -114,6 +115,14 @@ function JobFinder:_find(prompt, process_result, process_complete)
   local opts = self:fn_command(prompt)
   if not opts then return end
 
+  local writer = nil
+  if opts.writer and Job.is_job(opts.writer) then
+    print("WOW A JOB")
+    writer = opts.writer
+  elseif opts.writer then
+    writer = Job:new(opts.writer)
+  end
+
   self.job = Job:new {
     command = opts.command,
     args = opts.args,
@@ -121,7 +130,7 @@ function JobFinder:_find(prompt, process_result, process_complete)
 
     maximum_results = self.maximum_results,
 
-    writer = opts.writer and Job:new(opts.writer) or nil,
+    writer = writer,
 
     on_stdout = on_output,
     on_stderr = on_output,
