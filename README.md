@@ -53,7 +53,7 @@ Most actions are activated via keybinds. Attach these functions as described mor
 -- Fuzzy find over git files in your directory
 require('telescope.builtin').git_files()
 
--- Grep as you type (requires rg currently)
+-- Grep files as you type (requires rg currently)
 require('telescope.builtin').live_grep()
 
 -- Use builtin LSP to request references under cursor. Fuzzy find over results.
@@ -170,8 +170,10 @@ require'telescope.builtin'.git_files{}
 
 Search your files in a git repo. Ignores files in your .gitignore.
 
+Note: Requires the `cwd` to be a git directory.
+
 ```lua
-require'telescope.builtin'.fd{
+require'telescope.builtin'.find_files{
   -- Optional  
   -- cwd = "/home/tj/"  
 }
@@ -185,9 +187,15 @@ require'telescope.builtin'.grep_string{
 }
 ```
 
+Searches you string with a grep. 
+Note: Requires `rg`.
+
 ```lua
 require'telescope.builtin'.live_grep{}
 ```
+
+Searches all your files (respecting .gitignore) using grep. 
+Note: Requires `rg`
 
 #### Vim
 
@@ -235,16 +243,18 @@ require'telescope.builtin'.lsp_workspace_symbols{}
 
 Search on all workspace symbols.
 
+#### Treesitter
+
 ```lua
 require'telescope.builtin'.treesitter{
   -- Optional
   -- bufnr = Buffer number 
 }
 ```
-#### Treesitter
 
 Search on function names, variables, from Treesitter!
 
+Note: Requires nvim-treesitter
 #### Telescope
 
 ```lua 
