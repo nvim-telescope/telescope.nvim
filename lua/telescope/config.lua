@@ -35,6 +35,8 @@ function config.set_defaults(defaults)
   set("layout_strategy", "horizontal")
   set("width", 0.75)
   set("winblend", 0)
+  set("prompt_position", "top")
+  set("preview_cutoff", 120)
 
   set("border", {})
   set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})

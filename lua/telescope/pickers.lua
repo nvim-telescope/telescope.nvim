@@ -100,6 +100,7 @@ function Picker:new(opts)
     -- mappings = get_default(opts.mappings, default_mappings),
     attach_mappings = opts.attach_mappings,
 
+    sorting_strategy = 'ascending',
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
     layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy),
@@ -115,6 +116,8 @@ function Picker:new(opts)
       get_preview_width = get_default(opts.preview_width, config.values.get_preview_width),
       results_width = get_default(opts.results_width, 0.8),
 
+      prompt_position = get_default(opts.prompt_position, config.values.prompt_position),
+
       -- Border config
       border = get_default(opts.border, config.values.border),
       borderchars = get_default(opts.borderchars, config.values.borderchars),
@@ -123,7 +126,7 @@ function Picker:new(opts)
       horizontal_config = get_default(opts.horizontal_config, config.values.horizontal_config),
     },
 
-    preview_cutoff = get_default(opts.preview_cutoff, 120),
+    preview_cutoff = get_default(opts.preview_cutoff, config.values.preview_cutoff),
   }, Picker)
 end
 
@@ -169,6 +172,69 @@ function Picker:get_window_options(max_columns, max_lines, prompt_title)
   end
 
   return getter(self, max_columns, max_lines, prompt_title)
+end
+
+--- Take a row and get an index
+---@param index number: The row being displayed
+---@return number The row for the picker to display in
+function Picker:get_row(index)
+  if self.sorting_strategy == 'ascending' then
+    return index
+  else
+    return self.max_results - index + 1
+  end
+end
+
+--- Take a row and get an index
+---@param row number: The row being displayed
+---@return number The index in line_manager
+function Picker:get_index(row)
+  if self.sorting_strategy == 'ascending' then
+    return row
+  else
+    return self.max_results - row + 1
+  end
+end
+
+function Picker:get_reset_row()
+  if self.sorting_strategy == 'ascending' then
+    log.info("Setting reset row:", 1)
+    return 1
+  else
+    return self.max_results
+  end
+end
+
+function Picker:clear_extra_rows(results_bufnr)
+  if self.sorting_strategy == 'ascending' then
+    local num_results = self.manager:num_results()
+    local worst_line = self.max_results - num_results
+
+    if worst_line <= 0 then
+      return
+    end
+
+    log.info("start", num_results + 1, "end", self.max_results)
+    vim.api.nvim_buf_set_lines(results_bufnr, num_results + 1, self.max_results, false, {})
+  else
+    local worst_line = self:get_row(self.manager:num_results())
+    if worst_line <= 0 then
+      return
+    end
+
+    local empty_lines = utils.repeated_table(worst_line, "")
+    vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line, false, empty_lines)
+
+    log.trace("Worst Line after process_complete: %s", worst_line, results_bufnr)
+  end
+end
+
+function Picker:can_select_row(row)
+  if self.sorting_strategy == 'ascending' then
+    return row <= self.manager:num_results()
+  else
+    return row >= self.manager:num_results()
+  end
 end
 
 function Picker:find()
@@ -240,12 +306,13 @@ function Picker:find()
     self.manager = pickers.entry_manager(
       self.max_results,
       vim.schedule_wrap(function(index, entry)
-        local row = self.max_results - index + 1
+        local row = self:get_row(index)
 
         -- If it's less than 0, then we don't need to show it at all.
         if row < 0 then
           return
         end
+        -- TODO: Do we need to also make sure we don't have something bigger than max results?
 
         local display
         if type(entry.display) == 'function' then
@@ -311,25 +378,18 @@ function Picker:find()
         local index = self.manager:find_entry(self:get_selection())
 
         if index then
-          local follow_row = self.max_results - index + 1
+          local follow_row = self:get_row(index)
           self:set_selection(follow_row)
         else
-          self:set_selection(self.max_results)
+          self:set_selection(self:get_reset_row())
         end
+      elseif selection_strategy == 'reset' then
+        self:set_selection(self:get_reset_row())
       else
-        -- selection_strategy == 'reset'
-        self:set_selection(self.max_results)
+        error('Unknown selection strategy: ' .. selection_strategy)
       end
 
-      local worst_line = self.max_results - self.manager.num_results() + 1
-      if worst_line <= 0 then
-        return
-      end
-
-      local empty_lines = utils.repeated_table(worst_line, "")
-      vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line, false, empty_lines)
-
-      log.trace("Worst Line after process_complete: %s", worst_line, results_bufnr)
+      self:clear_extra_rows(results_bufnr)
     end)
 
     local ok, msg = pcall(function()
@@ -479,11 +539,14 @@ function Picker:set_selection(row)
   --        I have this same thing copied all over the place (and it's not good).
   --        Particularly if we're going to do something like make it possible to sort
   --        top to bottom, rather than bottom to top.
-  if row < (self.max_results - self.manager:num_results() + 1) then
+
+  -- TODO: Is this the right logic here?
+  if not self:can_select_row(row) then
     return
   end
 
-  local entry = self.manager:get_entry(self.max_results - row + 1)
+  -- local entry = self.manager:get_entry(self.max_results - row + 1)
+  local entry = self.manager:get_entry(self:get_index(row))
   local status = state.get_status(self.prompt_bufnr)
   local results_bufnr = status.results_bufnr
 
