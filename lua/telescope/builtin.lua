@@ -339,7 +339,7 @@ builtin.find_files = function(opts)
   pickers.new(opts, {
     prompt = 'Find Files',
     finder = finders.new_oneshot_job(
-      {fd_string},
+      {fd_string, '--type', 'f'},
       opts
     ),
     previewer = previewers.cat.new(opts),
