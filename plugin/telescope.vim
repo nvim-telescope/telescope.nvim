@@ -14,4 +14,6 @@ cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
         \ }"<CR><CR>
 
 
+" TODO: Make a real perf module that works nicer. Probably something for
+" another night :)
 lua PERF = function(...) end

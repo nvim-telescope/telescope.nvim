@@ -44,6 +44,10 @@ require('telescope').setup {
 --]]
 
 function telescope.setup(opts)
+  if opts.default then
+    error("'default' is not a valid value for setup. See 'defaults'")
+  end
+
   require('telescope.config').set_defaults(opts.defaults)
 end
 

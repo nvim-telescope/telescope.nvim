@@ -115,6 +115,7 @@ function Picker:new(opts)
       width = get_default(opts.width, config.values.width),
       get_preview_width = get_default(opts.preview_width, config.values.get_preview_width),
       results_width = get_default(opts.results_width, 0.8),
+      winblend = get_default(opts.winblend, config.values.winblend),
 
       prompt_position = get_default(opts.prompt_position, config.values.prompt_position),
 
@@ -264,6 +265,7 @@ function Picker:find()
   -- TODO: Should probably always show all the line for results win, so should implement a resize for the windows
   a.nvim_win_set_option(results_win, 'wrap', false)
   a.nvim_win_set_option(results_win, 'winhl', 'Normal:TelescopeNormal')
+  a.nvim_win_set_option(results_win, 'winblend', self.window.winblend)
 
 
   local preview_win, preview_opts, preview_bufnr
@@ -274,12 +276,13 @@ function Picker:find()
     -- TODO: For some reason, highlighting is kind of weird on these windows.
     --        It may actually be my colorscheme tho...
     a.nvim_win_set_option(preview_win, 'winhl', 'Normal:TelescopeNormal')
-    a.nvim_win_set_option(preview_win, 'winblend', config.values.winblend)
+    a.nvim_win_set_option(preview_win, 'winblend', self.window.winblend)
   end
 
   -- TODO: We need to center this and make it prettier...
   local prompt_win, prompt_opts = popup.create('', popup_opts.prompt)
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
+  a.nvim_win_set_option(prompt_win, 'winblend', self.window.winblend)
 
   a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
   pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')
