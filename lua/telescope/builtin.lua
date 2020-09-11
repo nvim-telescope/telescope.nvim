@@ -76,6 +76,7 @@ builtin.live_grep = function(opts)
     prompt    = 'Live Grep',
     finder    = live_grepper,
     previewer = previewers.vimgrep.new(opts),
+    sorter    = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end
 
