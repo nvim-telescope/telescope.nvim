@@ -27,6 +27,58 @@ Result of `resolve` should be a table with:
   },
 }
 
+!!NOT IMPLEMENTED YET!!
+
+height =
+    1. pass between 0 & 1
+        This means total height as a percentage
+
+    2. pass a number > 1
+        This means total height as a fixed number
+
+    3. {
+        previewer = x,
+        results = x,
+        prompt = x,
+    }, this means I do my best guess I can for these, given your options
+
+    4. function(max_rows)
+        -> returns one of the above options
+        return max.min(110, max_rows * .5)
+
+        if columns > 120 then
+            return 110
+        else
+            return 0.6
+        end
+
+width =
+    exactly the same, but switch to width
+
+
+{
+    height = 0.5,
+    width = {
+        previewer = 0.25,
+        results = 30,
+    }
+}
+
+https://github.com/nvim-lua/telescope.nvim/pull/43
+
+After we get layout, we should try and make top-down sorting work.
+That's the next step to scrolling.
+
+{
+    vertical = {
+    },
+    horizontal = {
+    },
+
+    height = ...
+    width = ...
+}
+
 --]]
 
 local resolver = {}
