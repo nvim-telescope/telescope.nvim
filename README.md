@@ -197,7 +197,7 @@ require'telescope.builtin'.grep_string{
 }
 ```
 
-Searches you string with a grep. 
+Searches your string with a grep. 
 Note: Requires `rg`.
 
 ```lua
