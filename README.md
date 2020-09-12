@@ -104,7 +104,7 @@ nnoremap <Leader>en <cmd>lua require'telescope.builtin'.find_files{ cwd = "~/.co
 
 Find all the files in your nvim config.
 
-#### Full Example
+### Full Example
 
 ```vim
 lua <<EOF
