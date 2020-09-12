@@ -81,13 +81,13 @@ require('telescope').setup{
 ### Examples
 
 ```vim
-nnoremap <Leader>p :lua require'telescope.builtin'.git_files{}<CR>
+nnoremap <Leader>p <cmd>lua require'telescope.builtin'.git_files{}<CR>
 ```
 
 Searches over files in a git folder. Note: This does not work outside a git repo folder.
 
 ```vim
-nnoremap <Leader>p :lua require'telescope.builtin'.find_files{}<CR>
+nnoremap <Leader>p <cmd>lua require'telescope.builtin'.find_files{}<CR>
 ```
 
 Search over files in your `cwd` current working directory. 
@@ -141,7 +141,7 @@ Mappings are fully customizable. Many familiar mapping patterns are setup as def
 <C-v>        go to file selection as a vertical split
 <C-t>        go to a file in a new tab
 
-j      k     next/previous (in normal mode)
+j      k     next | previous (in normal mode)
 ```
 
 Attaching your own mappings is possible and additional information will come soon.
