@@ -1,6 +1,29 @@
+--[[
+    Layout strategies are different functions to position telescope.
 
+    horizontal: 
+    - Supports `prompt_position`, `preview_cutoff`
+
+    vertical:
+
+    flex: Swap between `horizontal` and `vertical` strategies based on the window width
+    - Supports `vertical` or `horizontal` features 
+
+    dropdown:
+
+
+   Layout strategies are callback functions
+
+   -- @param self: Picker
+   -- @param columns: number Columns in the vim window
+   -- @param lines: number Lines in the vim window
+   -- @param prompt_title: string
+   function(self, columns, lines, prompt_title)
+   end
+--]]
 local layout_strategies = {}
 local log = require('telescope.log')
+
 --[[
    +-----------------+---------------------+
    |                 |                     |
@@ -11,15 +34,6 @@ local log = require('telescope.log')
    |     Prompt      |                     |
    +-----------------+---------------------+
 --]]
-
--- Layout strategies are callback functions with this signature
--- function(self, max_columns, max_lines, prompt_title)
---
--- @param max_columns: number
--- @param max_lines: number
--- @param prompt_title: string
-
-
 layout_strategies.horizontal = function(self, max_columns, max_lines, prompt_title)
   local initial_options = self:_get_initial_window_options(prompt_title)
   local preview = initial_options.preview
@@ -103,38 +117,68 @@ end
     +-----------------+
 --]]
 
+-- TODO(rockerBOO): Move these generics to some library?
+local is_all = function(array, comparable)
+   if array == nil then return false end
+
+  for n in array 
+  do
+    if n ~= comparable then return false end
+  end
+  
+  return true
+end
+
+-- Check if all items in an array are empty strings
+local is_all_empty_strings = function(array)
+  return is_all(array, "") 
+end
+
+-- Check if there are any borders. Right now it's a little raw as 
+-- there are a few things that contribute to the border 
+local is_borderless = function(opts)
+  -- Note: borderchars is not a great check here, we need some boolean for borders 
+  -- or other border options. For instance to add a border only around the outside.
+  -- A border around the outside may have different side effects.
+  return opts.results_title == "" and is_all_empty_strings(opts.borderchars)
+end
+
 layout_strategies.dropdown = function(self, columns, lines, prompt_title)
-	local initial_options = self:_get_initial_window_options(prompt_title)
+  local initial_options = self:_get_initial_window_options(prompt_title)
 
-	local preview = initial_options.preview
-	local results = initial_options.results
-	local prompt = initial_options.prompt
+  local preview = initial_options.preview
+  local results = initial_options.results
+  local prompt = initial_options.prompt
 
-	local max_results = self.max_results or 15
-	local width = self.window.width or 80
+  local max_results = self.max_results or 15
+  local width = self.window.width or 80
 
-	prompt.height = 1
-	results.height = max_results
+  -- consider width of the window
+  local max_width = width 
 
-	prompt.width = width
-	results.width = width
+  prompt.height = 1
+  results.height = max_results
 
-	prompt.line = lines / 2 - (( 15 + 1 + 2 + 2)/2)
+  prompt.width = max_width
+  results.width = max_width
 
-	if self.results_title ~= "" then
-		results.line = prompt.line + 3
-	else
-		results.line = prompt.line + 1
-	end
+  if is_borderless(self) then
+    prompt.line = lines / 2 - (( max_results + 1) / 2 )
+    results.line = prompt.line + 3 
+  else
+    prompt.line = lines / 2 - (( max_results + 1 + 2 + 2 )/ 2 )
+    results.line = prompt.line + 1
 
-	prompt.col =  (columns / 2) - (width/ 2)
-	results.col = (columns / 2) - (width/ 2)
+  end
 
-	return {
-		preview = preview,
-		results = results,
-		prompt = prompt
-	}
+  prompt.col =  (columns / 2) - (width/ 2)
+  results.col = (columns / 2) - (width/ 2)
+
+  return {
+    preview = preview,
+    results = results,
+    prompt = prompt
+  }
 end
 
 --[[
