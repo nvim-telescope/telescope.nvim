@@ -80,7 +80,7 @@ builtin.commands = function()
         }
       end
     },
-    sorter = sorters.get_ngram_sorter(),
+    sorter = sorters.get_generic_fuzzy_sorter(),
     attach_mappings = function(prompt_bufnr, map)
       local run_command = function()
         local selection = actions.get_selected_entry(prompt_bufnr)
