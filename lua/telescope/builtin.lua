@@ -329,9 +329,8 @@ builtin.find_files = function(opts)
     return
   end
 
-  local cwd = opts.cwd
-  if cwd then
-    cwd = vim.fn.expand(cwd)
+  if opts.cwd then
+    opts.cwd = vim.fn.expand(opts.cwd)
   end
 
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
