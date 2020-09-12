@@ -13,8 +13,6 @@ local function first_non_null(...)
 end
 
 -- TODO: Add other major configuration points here.
--- border
--- borderchars
 -- selection_strategy
 
 local config = {}
@@ -32,11 +30,23 @@ function config.set_defaults(defaults)
     config.values[name] = get(name, default_val)
   end
 
+  set("sorting_strategy", "descending")
   set("selection_strategy", "reset")
 
   set("layout_strategy", "horizontal")
   set("width", 0.75)
   set("winblend", 0)
+  set("prompt_position", "bottom")
+  set("preview_cutoff", 120)
+
+  set("border", {})
+  set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
+
+  -- Builtin configuration
+
+  -- List that will be executed.
+  --    Last argument will be the search term (passed in during execution)
+  set("vimgrep_arguments", {'rg', '--color=never', '--no-heading', '--with-filename', '--line-number', '--column', '--smart-case'})
 
   -- TODO: Shortenpath
   --    Decide how to propagate that to all the opts everywhere.

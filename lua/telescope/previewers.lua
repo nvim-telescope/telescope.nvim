@@ -40,6 +40,8 @@ function Previewer:preview(entry, status)
   if not self.state then
     if self._setup_func then
       self.state = self._setup_func()
+    else
+      self.state = {}
     end
   end
 
@@ -185,7 +187,11 @@ previewers.cat = defaulter(function(opts)
     end,
 
     teardown = function(self)
-      if self.state and self.state.termopen_id then
+      if not self.state then
+        return
+      end
+
+      if self.state.termopen_id then
         pcall(vim.fn.chanclose, self.state.termopen_id)
       end
     end,
@@ -236,6 +242,9 @@ previewers.vimgrep = defaulter(function(_)
       end
 
       local _, _, filename, lnum, col, text = string.find(line, [[([^:]+):(%d+):(%d+):(.*)]])
+
+      filename = filename or entry.filename
+      lnum = lnum or entry.lnum or 0
 
       local context = math.floor(height / 2)
       local start = math.max(0, lnum - context)

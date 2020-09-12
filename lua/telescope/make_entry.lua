@@ -11,12 +11,22 @@ make_entry.types = {
 
 local transform_devicons
 if has_devicons then
+  _DeviconStore = _DeviconStore or {}
+
   transform_devicons = function(filename, display, opts)
     if opts.disable_devicons then
       return display
     end
 
-    return (devicons.get_icon(filename, string.match(filename, '%a+$')) or ' ') .. ' ' .. display
+    if _DeviconStore[filename] then
+      return _DeviconStore[filename]
+    end
+
+    local icon_display = (devicons.get_icon(filename, string.match(filename, '%a+$')) or ' ') .. ' ' .. display
+
+    _DeviconStore[filename] = icon_display
+
+    return icon_display
   end
 else
   transform_devicons = function(_, display, _)
@@ -170,9 +180,22 @@ function make_entry.gen_from_quickfix(opts)
 end
 
 function make_entry.gen_from_buffer(opts)
+  local get_position = function(entry)
+    local tabpage_wins = vim.api.nvim_tabpage_list_wins(0)
+    for k, v in ipairs(tabpage_wins) do
+      if entry == vim.api.nvim_win_get_buf(v) then
+        return vim.api.nvim_win_get_cursor(v)
+      end
+    end
+
+    return {}
+  end
+
   return function(entry)
     local bufnr_str = tostring(entry)
     local bufname = vim.api.nvim_buf_get_name(entry)
+
+    local position = get_position(entry)
 
     if '' == bufname then
       return nil
@@ -187,6 +210,8 @@ function make_entry.gen_from_buffer(opts)
 
       bufnr = entry,
       filename = bufname,
+
+      lnum = position[1] or 1,
     }
   end
 end

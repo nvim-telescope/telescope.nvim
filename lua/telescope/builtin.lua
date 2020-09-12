@@ -29,12 +29,11 @@ local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
 local utils = require('telescope.utils')
 
+local conf = require('telescope.config').values
+
 local filter = vim.tbl_filter
 local flatten = vim.tbl_flatten
 
--- TODO: Support silver search here.
--- TODO: Support normal grep here (in case neither are installed).
-local vimgrep_arguments = {'rg', '--color=never', '--no-heading', '--with-filename', '--line-number', '--column'}
 
 local builtin = {}
 
@@ -116,10 +115,10 @@ builtin.live_grep = function(opts)
         return nil
       end
 
-      return flatten { vimgrep_arguments, prompt }
+      return flatten { conf.vimgrep_arguments, prompt }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
-    opts.max_results
+    opts.max_results or 1000
   )
 
   pickers.new(opts, {
@@ -153,7 +152,7 @@ builtin.lsp_references = function(opts)
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_norcalli_sorter(),
+    sorter    = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end
 
@@ -184,7 +183,7 @@ builtin.lsp_document_symbols = function(opts)
       entry_maker = make_entry.gen_from_quickfix(opts)
     },
     previewer = previewers.vim_buffer.new(opts),
-    sorter    = sorters.get_norcalli_sorter(),
+    sorter    = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end
 
@@ -216,7 +215,7 @@ builtin.lsp_workspace_symbols = function(opts)
       entry_maker = make_entry.gen_from_quickfix(opts)
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_norcalli_sorter(),
+    sorter    = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end
 
@@ -234,7 +233,7 @@ builtin.quickfix = function(opts)
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_norcalli_sorter(),
+    sorter    = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end
 
@@ -257,7 +256,7 @@ builtin.loclist = function(opts)
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_norcalli_sorter(),
+    sorter    = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end
 
@@ -274,11 +273,11 @@ builtin.grep_string = function(opts)
   pickers.new(opts, {
     prompt = 'Find Word',
     finder = finders.new_oneshot_job(
-      flatten { vimgrep_arguments, search},
+      flatten { conf.vimgrep_arguments, search},
       opts
     ),
     previewer = previewers.vimgrep.new(opts),
-    sorter = sorters.get_norcalli_sorter(),
+    sorter = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end
 
@@ -309,7 +308,7 @@ builtin.command_history = function(opts)
   pickers.new(opts, {
     prompt = 'Command History',
     finder = finders.new_table(results),
-    sorter = sorters.get_norcalli_sorter(),
+    sorter = sorters.get_generic_fuzzy_sorter(),
 
     attach_mappings = function(_, map)
       map('i', '<CR>', actions.set_command_line)
@@ -357,14 +356,14 @@ builtin.builtin = function(opts)
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_norcalli_sorter(),
+    sorter    = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end
 
 
 -- TODO: Maybe just change this to `find`.
 --          Support `find` and maybe let peopel do other stuff with it as well.
-builtin.fd = function(opts)
+builtin.find_files = function(opts)
   opts = opts or {}
 
   local fd_string = nil
@@ -375,7 +374,7 @@ builtin.fd = function(opts)
   end
 
   if not fd_string then
-    print("You need to install fd")
+    print("You need to install fd or submit PR for different default file finder :)")
     return
   end
 
@@ -389,7 +388,7 @@ builtin.fd = function(opts)
   pickers.new(opts, {
     prompt = 'Find Files',
     finder = finders.new_oneshot_job(
-      {fd_string},
+      {fd_string, '--type', 'f'},
       opts
     ),
     previewer = previewers.cat.new(opts),
@@ -397,7 +396,12 @@ builtin.fd = function(opts)
   }):find()
 end
 
--- TODO: This is partially broken, but I think it might be an nvim bug.
+-- Leave this alias around for people.
+builtin.fd = builtin.find_files
+
+-- TODO: I'd like to use the `vim_buffer` previewer, but it doesn't seem to work due to some styling problems.
+--       I think it has something to do with nvim_open_win and style='minimal',
+-- Status, currently operational.
 builtin.buffers = function(opts)
   opts = opts or {}
 
@@ -414,8 +418,9 @@ builtin.buffers = function(opts)
       results = buffers,
       entry_maker = make_entry.gen_from_buffer(opts)
     },
-    previewer = previewers.vim_buffer.new(opts),
-    sorter    = sorters.get_norcalli_sorter(),
+    -- previewer = previewers.vim_buffer.new(opts),
+    previewer = previewers.vimgrep.new(opts),
+    sorter    = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end
 
@@ -473,7 +478,7 @@ builtin.treesitter = function(opts)
       entry_maker = make_entry.gen_from_treesitter(opts)
     },
     previewer = previewers.vim_buffer.new(opts),
-    sorter    = sorters.get_norcalli_sorter(),
+    sorter    = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end
 
@@ -506,7 +511,7 @@ builtin.planets = function(opts)
       end
     },
     previewer = previewers.cat.new(opts),
-    sorter = sorters.get_norcalli_sorter(),
+    sorter = sorters.get_generic_fuzzy_sorter(),
     attach_mappings = function(prompt_bufnr, map)
       map('i', '<CR>', function()
         local selection = actions.get_selected_entry(prompt_bufnr)
@@ -516,6 +521,44 @@ builtin.planets = function(opts)
       end)
     end,
   }:find()
+end
+
+builtin.current_buffer_fuzzy_find = function(opts)
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local lines_with_numbers = {}
+  for k, v in ipairs(lines) do
+    table.insert(lines_with_numbers, {k, v})
+  end
+
+  pickers.new(opts, {
+    prompt = 'Current Buffer Fuzzy',
+    finder = finders.new_table {
+      results = lines_with_numbers,
+      entry_maker = function(enumerated_line)
+        return {
+          display = enumerated_line[2],
+          ordinal = enumerated_line[2],
+
+          lnum = enumerated_line[1],
+        }
+      end
+    },
+    sorter = sorters.get_generic_fuzzy_sorter(),
+    attach_mappings = function(prompt_bufnr, map)
+      local goto_line = function()
+        local selection = actions.get_selected_entry(prompt_bufnr)
+        actions.close(prompt_bufnr)
+
+        vim.api.nvim_win_set_cursor(0, {selection.lnum, 0})
+        vim.cmd [[stopinsert]]
+      end
+
+      map('n', '<CR>', goto_line)
+      map('i', '<CR>', goto_line)
+
+      return true
+    end
+  }):find()
 end
 
 return builtin

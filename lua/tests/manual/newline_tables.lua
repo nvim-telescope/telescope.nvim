@@ -4,18 +4,12 @@ local finders = require('telescope.finders')
 local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
 
+local my_list = {'a', 'b', 'c'}
 
 pickers.new({
   prompt    = 'Telescope Builtin',
   finder    = finders.new_table {
-    results = {"hello\nworld", "other", "item"},
-    entry_maker = false and function(line)
-      return {
-        value = line,
-        ordinal = line,
-        display = "wow: // " .. line,
-      }
-    end,
+    results = my_list,
   },
-  sorter    = sorters.get_norcalli_sorter(),
+  sorter    = sorters.get_generic_fuzzy_sorter(),
 }):find()

@@ -64,9 +64,18 @@ layout_strategies.horizontal = function(self, max_columns, max_lines, prompt_tit
 
   -- TODO: Center this in the page a bit better.
   local height_padding = math.max(math.floor(0.95 * max_lines), 2)
-  results.line = max_lines - height_padding
-  prompt.line = results.line + results.height + 2
-  preview.line = results.line
+
+  if self.window.prompt_position == "top" then
+    prompt.line = max_lines - height_padding
+    results.line = prompt.line + 3
+    preview.line = prompt.line
+  elseif self.window.prompt_position == "bottom" then
+    results.line = max_lines - height_padding
+    prompt.line = results.line + results.height + 2
+    preview.line = results.line
+  else
+    error("Unknown prompt_position: " .. self.window.prompt_position)
+  end
 
   return {
     preview = preview.width > 0 and preview,
@@ -136,6 +145,15 @@ layout_strategies.vertical = function(self, max_columns, max_lines, prompt_title
     results = results,
     prompt = prompt
   }
+end
+
+layout_strategies.flex = function(self, max_columns, max_lines, prompt_title)
+  -- TODO: Make a config option for this that makes sense.
+  if max_columns < 100 and max_lines > 20 then
+    return layout_strategies.vertical(self, max_columns, max_lines, prompt_title)
+  else
+    return layout_strategies.horizontal(self, max_columns, max_lines, prompt_title)
+  end
 end
 
 -- TODO: Add "flex"

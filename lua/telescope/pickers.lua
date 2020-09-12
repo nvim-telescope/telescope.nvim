@@ -32,6 +32,8 @@ local default_mappings = {
     ["<C-n>"] = actions.move_selection_next,
     ["<C-p>"] = actions.move_selection_previous,
 
+    ["<C-c>"] = actions.close,
+
     ["<Down>"] = actions.move_selection_next,
     ["<Up>"] = actions.move_selection_previous,
 
@@ -100,6 +102,7 @@ function Picker:new(opts)
     -- mappings = get_default(opts.mappings, default_mappings),
     attach_mappings = opts.attach_mappings,
 
+    sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
     layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy),
@@ -114,16 +117,19 @@ function Picker:new(opts)
       width = get_default(opts.width, config.values.width),
       get_preview_width = get_default(opts.preview_width, config.values.get_preview_width),
       results_width = get_default(opts.results_width, 0.8),
+      winblend = get_default(opts.winblend, config.values.winblend),
+
+      prompt_position = get_default(opts.prompt_position, config.values.prompt_position),
 
       -- Border config
-      border = get_default(opts.border, {}),
-      borderchars = get_default(opts.borderchars, { '─', '│', '─', '│', '┌', '┐', '┘', '└'}),
+      border = get_default(opts.border, config.values.border),
+      borderchars = get_default(opts.borderchars, config.values.borderchars),
 
       -- WIP:
       horizontal_config = get_default(opts.horizontal_config, config.values.horizontal_config),
     },
 
-    preview_cutoff = get_default(opts.preview_cutoff, 120),
+    preview_cutoff = get_default(opts.preview_cutoff, config.values.preview_cutoff),
   }, Picker)
 end
 
@@ -171,6 +177,67 @@ function Picker:get_window_options(max_columns, max_lines, prompt_title)
   return getter(self, max_columns, max_lines, prompt_title)
 end
 
+--- Take a row and get an index
+---@param index number: The row being displayed
+---@return number The row for the picker to display in
+function Picker:get_row(index)
+  if self.sorting_strategy == 'ascending' then
+    return index
+  else
+    return self.max_results - index + 1
+  end
+end
+
+--- Take a row and get an index
+---@param row number: The row being displayed
+---@return number The index in line_manager
+function Picker:get_index(row)
+  if self.sorting_strategy == 'ascending' then
+    return row
+  else
+    return self.max_results - row + 1
+  end
+end
+
+function Picker:get_reset_row()
+  if self.sorting_strategy == 'ascending' then
+    return 1
+  else
+    return self.max_results
+  end
+end
+
+function Picker:clear_extra_rows(results_bufnr)
+  if self.sorting_strategy == 'ascending' then
+    local num_results = self.manager:num_results()
+    local worst_line = self.max_results - num_results
+
+    if worst_line <= 0 then
+      return
+    end
+
+    vim.api.nvim_buf_set_lines(results_bufnr, num_results + 1, self.max_results, false, {})
+  else
+    local worst_line = self:get_row(self.manager:num_results())
+    if worst_line <= 0 then
+      return
+    end
+
+    local empty_lines = utils.repeated_table(worst_line, "")
+    vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line, false, empty_lines)
+
+    log.trace("Worst Line after process_complete: %s", worst_line, results_bufnr)
+  end
+end
+
+function Picker:can_select_row(row)
+  if self.sorting_strategy == 'ascending' then
+    return row <= self.manager:num_results()
+  else
+    return row <= self.max_results and row >= self.max_results - self.manager:num_results()
+  end
+end
+
 function Picker:find()
   self:reset_selection()
 
@@ -200,6 +267,7 @@ function Picker:find()
   -- TODO: Should probably always show all the line for results win, so should implement a resize for the windows
   a.nvim_win_set_option(results_win, 'wrap', false)
   a.nvim_win_set_option(results_win, 'winhl', 'Normal:TelescopeNormal')
+  a.nvim_win_set_option(results_win, 'winblend', self.window.winblend)
 
 
   local preview_win, preview_opts, preview_bufnr
@@ -210,14 +278,16 @@ function Picker:find()
     -- TODO: For some reason, highlighting is kind of weird on these windows.
     --        It may actually be my colorscheme tho...
     a.nvim_win_set_option(preview_win, 'winhl', 'Normal:TelescopeNormal')
-    a.nvim_win_set_option(preview_win, 'winblend', config.values.winblend)
+    a.nvim_win_set_option(preview_win, 'winblend', self.window.winblend)
   end
 
   -- TODO: We need to center this and make it prettier...
   local prompt_win, prompt_opts = popup.create('', popup_opts.prompt)
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
+  a.nvim_win_set_option(prompt_win, 'winblend', self.window.winblend)
 
   a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
+  pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')
 
   -- a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
   -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_string)
@@ -236,18 +306,24 @@ function Picker:find()
 
     local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]
 
+    local filtered_amount = 0
+    local displayed_amount = 0
+    local displayed_fn_amount = 0
+
     self.manager = pickers.entry_manager(
       self.max_results,
       vim.schedule_wrap(function(index, entry)
-        local row = self.max_results - index + 1
+        local row = self:get_row(index)
 
         -- If it's less than 0, then we don't need to show it at all.
         if row < 0 then
           return
         end
+        -- TODO: Do we need to also make sure we don't have something bigger than max results?
 
         local display
         if type(entry.display) == 'function' then
+          displayed_fn_amount = displayed_fn_amount + 1
           display = entry:display()
         elseif type(entry.display) == 'string' then
           display = entry.display
@@ -260,6 +336,8 @@ function Picker:find()
         -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
         -- until then, insert two spaces
         display = '  ' .. display
+
+        displayed_amount = displayed_amount + 1
 
         -- log.info("Setting row", row, "with value", entry)
         local set_ok = pcall(vim.api.nvim_buf_set_lines, results_bufnr, row, row + 1, false, {display})
@@ -293,6 +371,7 @@ function Picker:find()
         end
 
         if sort_score == -1 then
+          filtered_amount = filtered_amount + 1
           log.trace("Filtering out result: ", entry)
           return
         end
@@ -310,25 +389,22 @@ function Picker:find()
         local index = self.manager:find_entry(self:get_selection())
 
         if index then
-          local follow_row = self.max_results - index + 1
+          local follow_row = self:get_row(index)
           self:set_selection(follow_row)
         else
-          self:set_selection(self.max_results)
+          self:set_selection(self:get_reset_row())
         end
+      elseif selection_strategy == 'reset' then
+        self:set_selection(self:get_reset_row())
       else
-        -- selection_strategy == 'reset'
-        self:set_selection(self.max_results)
+        error('Unknown selection strategy: ' .. selection_strategy)
       end
 
-      local worst_line = self.max_results - self.manager.num_results() + 1
-      if worst_line <= 0 then
-        return
-      end
+      self:clear_extra_rows(results_bufnr)
 
-      local empty_lines = utils.repeated_table(worst_line, "")
-      vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line, false, empty_lines)
-
-      log.trace("Worst Line after process_complete: %s", worst_line, results_bufnr)
+      PERF("Filtered Amount    ", filtered_amount)
+      PERF("Displayed Amount   ", displayed_amount)
+      PERF("Displayed FN Amount", displayed_fn_amount)
     end)
 
     local ok, msg = pcall(function()
@@ -474,15 +550,13 @@ function Picker:set_selection(row)
     row = 1
   end
 
-  -- TODO: Move max results and row and entry management into an overridable funciton.
-  --        I have this same thing copied all over the place (and it's not good).
-  --        Particularly if we're going to do something like make it possible to sort
-  --        top to bottom, rather than bottom to top.
-  if row < (self.max_results - self.manager:num_results() + 1) then
+  if not self:can_select_row(row) then
+    log.info("Cannot select row:", row, self.manager:num_results(), self.max_results)
     return
   end
 
-  local entry = self.manager:get_entry(self.max_results - row + 1)
+  -- local entry = self.manager:get_entry(self.max_results - row + 1)
+  local entry = self.manager:get_entry(self:get_index(row))
   local status = state.get_status(self.prompt_bufnr)
   local results_bufnr = status.results_bufnr
 
