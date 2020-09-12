@@ -3,6 +3,7 @@ local popup = require('popup')
 
 local actions = require('telescope.actions')
 local config = require('telescope.config')
+local resolve = require('telescope.config.resolve')
 local layout_strategies = require('telescope.pickers.layout_strategies')
 local log = require('telescope.log')
 local mappings = require('telescope.mappings')
@@ -134,28 +135,28 @@ function Picker:new(opts)
 end
 
 function Picker:_get_initial_window_options(prompt_title)
-  local popup_border = self.window.border
-  local popup_borderchars = self.window.borderchars
+  local popup_border = resolve.win_option(self.window.border)
+  local popup_borderchars = resolve.win_option(self.window.borderchars)
 
   local preview = {
     title = 'Preview',
-    border = popup_border,
-    borderchars = popup_borderchars,
+    border = popup_border.preview,
+    borderchars = popup_borderchars.preview,
     enter = false,
     highlight = false
   }
 
   local results = {
     title = 'Results',
-    border = popup_border,
-    borderchars = popup_borderchars,
+    border = popup_border.results,
+    borderchars = popup_borderchars.results,
     enter = false,
   }
 
   local prompt = {
     title = prompt_title,
-    border = popup_border,
-    borderchars = popup_borderchars,
+    border = popup_border.prompt,
+    borderchars = popup_borderchars.prompt,
     enter = true
   }
 
