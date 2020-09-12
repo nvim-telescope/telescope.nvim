@@ -138,4 +138,8 @@ function utils.make_default_callable(f, default_opts)
   })
 end
 
+function utils.get_separator()
+  return package.config:sub(1, 1)
+end
+
 return utils

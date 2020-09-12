@@ -56,6 +56,55 @@ builtin.git_files = function(opts)
   }):find()
 end
 
+builtin.commands = function()
+  pickers.new({}, {
+    prompt = 'Commands',
+    finder = finders.new_table {
+      results = (function()
+        local command_iter = vim.api.nvim_get_commands({})
+        local commands = {}
+
+        for _, cmd in pairs(command_iter) do
+          table.insert(commands, cmd)
+        end
+
+        return commands
+      end)(),
+      entry_maker = function(line)
+        return {
+          valid = line ~= "",
+          entry_type = make_entry.types.GENERIC,
+          value = line,
+          ordinal = line.name,
+          display = line.name
+        }
+      end
+    },
+    sorter = sorters.get_generic_fuzzy_sorter(),
+    attach_mappings = function(prompt_bufnr, map)
+      local run_command = function()
+        local selection = actions.get_selected_entry(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        local val = selection.value
+        local cmd = string.format([[:%s ]], val.name)
+
+        if val.nargs == "0" then
+            vim.cmd(cmd)
+        else
+            vim.cmd [[stopinsert]]
+            vim.fn.feedkeys(cmd)
+        end
+
+      end
+
+      map('i', '<CR>', run_command)
+      map('n', '<CR>', run_command)
+
+      return true
+    end
+  }):find()
+end
+
 builtin.live_grep = function(opts)
   opts = opts or {}
 
