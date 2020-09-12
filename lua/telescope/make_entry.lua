@@ -180,6 +180,8 @@ function make_entry.gen_from_quickfix(opts)
 end
 
 function make_entry.gen_from_buffer(opts)
+  opts = opts or {}
+
   local get_position = function(entry)
     local tabpage_wins = vim.api.nvim_tabpage_list_wins(0)
     for k, v in ipairs(tabpage_wins) do
@@ -189,6 +191,18 @@ function make_entry.gen_from_buffer(opts)
     end
 
     return {}
+  end
+
+  local make_display = function(entry)
+    local display_bufname
+    if opts.shorten_path then
+      display_bufname = utils.path_shorten(entry.filename)
+    else
+      display_bufname = entry.filename
+    end
+
+    return string.format("%" .. opts.bufnr_width .. "d : %s",
+                         entry.bufnr, display_bufname)
   end
 
   return function(entry)
@@ -206,7 +220,7 @@ function make_entry.gen_from_buffer(opts)
 
       value = bufname,
       ordinal = bufnr_str .. " : " .. bufname,
-      display = bufnr_str .. " : " .. bufname,
+      display = make_display,
 
       bufnr = entry,
       filename = bufname,

@@ -4,14 +4,14 @@ Gaze deeply into unknown regions using the power of the moon.
 
 ## What is Telescope?
 
-Telescope is a highly extendable fuzzy finder over lists. Items are shown in a popup with a prompt to search over.  
+Telescope is a highly extendable fuzzy finder over lists. Items are shown in a popup with a prompt to search over.
 
 Support for:
 
 * LSP (references, document symbols, workspace symbols)
-* Treesitter 
-* Grep 
-* Files (git, fd) 
+* Treesitter
+* Grep
+* Files (git, fd)
 * Vim (command history, quickfix, loclist)
 
 [What is Telescope?](https://www.twitch.tv/teej_dv/clip/RichDistinctPlumberPastaThat)
@@ -23,9 +23,9 @@ Support for:
 
 ## Requirements
 
-Neovim Nightly (0.5) 
+Neovim Nightly (0.5)
 
-Best experience on Neovim Nightly with LSP configured. 
+Best experience on Neovim Nightly with LSP configured.
 
 ## Installation
 
@@ -72,7 +72,7 @@ Options can be passed directly to the above functions, or set as defaults.
 -- Optional way to setup default values
 require('telescope').setup{
   default = {
-    -- Example: 
+    -- Example:
     shorten_path = true -- currently the default value is true
   }
 }
@@ -90,7 +90,7 @@ Searches over files in a git folder. Note: This does not work outside a git repo
 nnoremap <Leader>p <cmd>lua require'telescope.builtin'.find_files{}<CR>
 ```
 
-Search over files in your `cwd` current working directory. 
+Search over files in your `cwd` current working directory.
 
 ```vim
 nnoremap <silent> gr <cmd>lua require'telescope.builtin'.lsp_references{}<CR>
@@ -120,12 +120,12 @@ nnoremap <c-p> :lua require'telescope.builtin'.find_files{}<CR>
 nnoremap <silent> gr <cmd>lua require'telescope.builtin'.lsp_references{ shorten_path = true }<CR>
 ```
 
-What this does: 
+What this does:
 
 * Make the paths full size by default. On LSP references we are shortening paths.
-* Bind `<ctrl-p>` for a common mapping to find files. 
+* Bind `<ctrl-p>` for a common mapping to find files.
   - Using `telescope.builtin.git_files` is better in git directories. You can make a toggle to detect if it's a git directory.
-* Bind `gr` to find references in LSP. 
+* Bind `gr` to find references in LSP.
   - `telescope.builtin.lsp_workspace_symbols` and `telescope.builtin.lsp_document_symbols` are also good to bind for LSP.
 
 ## Mappings
@@ -136,7 +136,7 @@ Mappings are fully customizable. Many familiar mapping patterns are setup as def
 <C-n>  <C-p> next | previous
 <Down> <Up>  next | previous
 j      k     next | previous (in normal mode)
-<CR>         go to file selection 
+<CR>         go to file selection
 
 <C-x>        go to file selection as a split
 <C-v>        go to file selection as a vertical split
@@ -184,27 +184,27 @@ Note: Requires the `cwd` to be a git directory.
 
 ```lua
 require'telescope.builtin'.find_files{
-  -- Optional  
-  -- cwd = "/home/tj/"  
+  -- Optional
+  -- cwd = "/home/tj/"
 }
 ```
 Searches files in your working directory.
 
 ```lua
 require'telescope.builtin'.grep_string{
-  -- Optional 
+  -- Optional
   -- search = false -- Search term or <cword>
 }
 ```
 
-Searches your string with a grep. 
+Searches your string with a grep.
 Note: Requires `rg`.
 
 ```lua
 require'telescope.builtin'.live_grep{}
 ```
 
-Searches all your files (respecting .gitignore) using grep. 
+Searches all your files (respecting .gitignore) using grep.
 Note: Requires `rg`
 
 #### Vim
@@ -233,6 +233,15 @@ require'telescope.builtin'.command_history{}
 
 Search the vim command history.
 
+```lua
+require'telescope.builtin'.buffers{
+    -- Optional
+    -- show_all_buffers = true -- Show unloaded buffers aswell
+}
+```
+
+Search on vim buffers list.
+
 #### LSP
 
 ```lua
@@ -258,7 +267,7 @@ Search on all workspace symbols.
 ```lua
 require'telescope.builtin'.treesitter{
   -- Optional
-  -- bufnr = Buffer number 
+  -- bufnr = Buffer number
 }
 ```
 
@@ -267,7 +276,7 @@ Search on function names, variables, from Treesitter!
 Note: Requires nvim-treesitter
 #### Telescope
 
-```lua 
+```lua
 require'telescope.builtin'.planets{}
 ```
 
@@ -318,9 +327,9 @@ Defaults:
 -- lua/telescope/pickers.lua
 Picker:new{
   prompt             = "", -- REQUIRED
-  finder             = FUNCTION, -- see lua/telescope/finder.lua 
+  finder             = FUNCTION, -- see lua/telescope/finder.lua
   sorter             = FUNCTION, -- see lua/telescope/sorter.lua
-  previewer          = FUNCTION, -- see lua/telescope/previewer.lua 
+  previewer          = FUNCTION, -- see lua/telescope/previewer.lua
   selection_strategy = "reset", -- follow, reset, line
   border             = {},
   borderchars        = {"─", "│", "─", "│", "┌", "┐", "┘", "└"},

@@ -83,6 +83,7 @@ local function goto_file_selection(prompt_bufnr, command)
     -- TODO: Sometimes we open something with missing line numbers and stuff...
     if entry_bufnr then
       a.nvim_win_set_buf(original_win_id, entry_bufnr)
+      vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
     else
       vim.cmd(string.format(":%s %s", command, filename))
 

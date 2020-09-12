@@ -404,12 +404,18 @@ builtin.fd = builtin.find_files
 builtin.buffers = function(opts)
   opts = opts or {}
 
-  local buffers =  filter(function(b)
+  local buffers = filter(function(b)
     return
-      vim.api.nvim_buf_is_loaded(b)
+      (opts.show_all_buffers
+      or vim.api.nvim_buf_is_loaded(b))
       and 1 == vim.fn.buflisted(b)
 
   end, vim.api.nvim_list_bufs())
+
+  if not opts.bufnr_width then
+    local max_bufnr = math.max(unpack(buffers))
+    opts.bufnr_width = #tostring(max_bufnr)
+  end
 
   pickers.new(opts, {
     prompt    = 'Buffers',
