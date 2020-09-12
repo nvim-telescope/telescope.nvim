@@ -78,7 +78,7 @@ require('telescope').setup{
 }
 ```
 
-### Examples
+## Examples
 
 ```vim
 nnoremap <Leader>p <cmd>lua require'telescope.builtin'.git_files{}<CR>
