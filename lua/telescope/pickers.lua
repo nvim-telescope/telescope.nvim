@@ -172,7 +172,7 @@ function Picker:get_window_options(max_columns, max_lines, prompt_title)
   local getter = layout_strategies[layout_strategy]
 
   if not getter then
-    error("Not a valid layout strategy: ", layout_strategy)
+    error("Not a valid layout strategy: " .. layout_strategy)
   end
 
   return getter(self, max_columns, max_lines, prompt_title)
