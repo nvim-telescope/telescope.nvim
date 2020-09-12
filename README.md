@@ -96,6 +96,14 @@ Search over files in your `cwd` current working directory.
 nnoremap <silent> gr <cmd>lua require'telescope.builtin'.lsp_references{}<CR>
 ```
 
+Search over variable references from your Language Server.
+
+```vim
+nnoremap <Leader>en <cmd>lua require'telescope.builtin'.find_files{ cwd = "~/.config/nvim/" }<CR>
+```
+
+Find all the files in your nvim config.
+
 #### Full Example
 
 ```vim
