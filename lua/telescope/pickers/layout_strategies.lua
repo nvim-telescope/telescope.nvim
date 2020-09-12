@@ -1,6 +1,6 @@
 
 local layout_strategies = {}
-
+local log = require('telescope.log')
 --[[
    +-----------------+---------------------+
    |                 |                     |
@@ -11,6 +11,15 @@ local layout_strategies = {}
    |     Prompt      |                     |
    +-----------------+---------------------+
 --]]
+
+-- Layout strategies are callback functions with this signature
+-- function(self, max_columns, max_lines, prompt_title)
+--
+-- @param max_columns: number
+-- @param max_lines: number
+-- @param prompt_title: string
+
+
 layout_strategies.horizontal = function(self, max_columns, max_lines, prompt_title)
   local initial_options = self:_get_initial_window_options(prompt_title)
   local preview = initial_options.preview
@@ -19,7 +28,6 @@ layout_strategies.horizontal = function(self, max_columns, max_lines, prompt_tit
 
   -- TODO: Test with 120 width terminal
   -- TODO: Test with self.width
-
   local width_padding = 10
 
   -- TODO: Determine config settings.
@@ -40,6 +48,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines, prompt_tit
   end
 
   local other_width = max_columns - preview.width - (2 * width_padding)
+
   results.width = other_width
   prompt.width = other_width
 
@@ -84,7 +93,49 @@ layout_strategies.horizontal = function(self, max_columns, max_lines, prompt_tit
   }
 end
 
+--[[
+    +-----------------+
+    |     Prompt      |
+    +-----------------+
+    |     Result      |
+    |     Result      |
+    |     Result      |
+    +-----------------+
+--]]
 
+layout_strategies.dropdown = function(self, columns, lines, prompt_title)
+	local initial_options = self:_get_initial_window_options(prompt_title)
+
+	local preview = initial_options.preview
+	local results = initial_options.results
+	local prompt = initial_options.prompt
+
+	local max_results = self.max_results or 15
+	local width = self.window.width or 80
+
+	prompt.height = 1
+	results.height = max_results
+
+	prompt.width = width
+	results.width = width
+
+	prompt.line = lines / 2 - (( 15 + 1 + 2 + 2)/2)
+
+	if self.results_title ~= "" then
+		results.line = prompt.line + 3
+	else
+		results.line = prompt.line + 1
+	end
+
+	prompt.col =  (columns / 2) - (width/ 2)
+	results.col = (columns / 2) - (width/ 2)
+
+	return {
+		preview = preview,
+		results = results,
+		prompt = prompt
+	}
+end
 
 --[[
     +-----------------+
