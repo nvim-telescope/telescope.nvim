@@ -87,21 +87,41 @@ local get_default = require('telescope.utils').get_default
 
 local resolver = {}
 
-local percentage_resolver = function(selector, percentage)
-  assert(percentage <= 1)
-  assert(percentage >= 0)
+local _resolve_map = {
+  -- Percentages
+  [function(val) return type(val) == 'number' and val > 0 and val <= 1 end] = function(selector, val)
+    return function(...)
+      return math.floor(val * select(selector, ...))
+    end
+  end,
 
-  return function(...)
-    return percentage * select(selector, ...)
+  -- Numbers
+  [function(val) return type(val) == 'number' and val > 1 end] = function(selector, val)
+    return function(...)
+      return math.min(val, select(selector, ...))
+    end
+  end,
+
+}
+
+resolver.resolve_height = function(val)
+  for k, v in pairs(_resolve_map) do
+    if k(val) then
+      return v(3, val)
+    end
   end
+
+  error('invalid configuration option for height:' .. tostring(val))
 end
 
-resolver.resolve_percentage_height = function(percentage)
-  return percentage_resolver(3, percentage)
-end
+resolver.resolve_width = function(val)
+  for k, v in pairs(_resolve_map) do
+    if k(val) then
+      return v(2, val)
+    end
+  end
 
-resolver.resolve_percentage_width = function(percentage)
-  return percentage_resolver(2, percentage)
+  error('invalid configuration option for height:' .. tostring(val))
 end
 
 --- Win option always returns a table with preview, results, and prompt.

@@ -288,7 +288,6 @@ function Picker:find()
   a.nvim_win_set_option(prompt_win, 'winblend', self.window.winblend)
 
   a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
-  pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')
 
   -- a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
   -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_string)
@@ -311,6 +310,7 @@ function Picker:find()
     local displayed_amount = 0
     local displayed_fn_amount = 0
 
+    -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
     self.manager = pickers.entry_manager(
       self.max_results,
       vim.schedule_wrap(function(index, entry)
@@ -470,6 +470,9 @@ function Picker:find()
   })
 
   mappings.apply_keymap(prompt_bufnr, self.attach_mappings, default_mappings)
+
+  -- Do filetype last, so that users can register at the last second.
+  pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')
 
   if self.default_text then
     vim.api.nvim_buf_set_lines(prompt_bufnr, 0, 1, false, {self.default_text})
