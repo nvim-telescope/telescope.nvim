@@ -11,7 +11,7 @@ Support for:
 * LSP (references, document symbols, workspace symbols)
 * Treesitter
 * Grep
-* Files (git, fd)
+* Files (git, fd, rg)
 * Vim (command history, quickfix, loclist)
 
 [What is Telescope?](https://www.twitch.tv/teej_dv/clip/RichDistinctPlumberPastaThat)
