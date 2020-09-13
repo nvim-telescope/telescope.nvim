@@ -187,6 +187,46 @@ builtin.lsp_document_symbols = function(opts)
   }):find()
 end
 
+builtin.lsp_code_actions = function(opts)
+  opts = opts or {}
+
+  local actions = {}
+  local params = vim.lsp.util.make_range_params()
+
+  local results_lsp, err = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 1000)
+
+  if results_lsp == nil then
+    print("ERROR: " .. err)
+  else
+    inspect(results_lsp)
+  end
+
+
+  -- if not results_lsp or vim.tbl_isempty(results_lsp) then
+  --   print("No results from textDocument/codeAction")
+  --   return
+  -- end
+
+  -- local locations = {}
+  -- for _, server_results in pairs(results_lsp) do
+  --   vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
+  -- end
+
+  -- if vim.tbl_isempty(locations) then
+  --   return
+  -- end
+
+  pickers.new(opts, {
+    prompt    = 'LSP Code Actions',
+    finder    = finders.new_table {
+      results = actions,
+      entry_maker = make_entry.gen_from_string()
+    },
+    -- previewer = previewers.vim_buffer.new(opts),
+    sorter    = sorters.get_generic_fuzzy_sorter(),
+  }):find()
+end
+
 builtin.lsp_workspace_symbols = function(opts)
   opts = opts or {}
   opts.shorten_path = utils.get_default(opts.shorten_path, true)
