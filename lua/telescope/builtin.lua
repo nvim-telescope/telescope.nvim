@@ -366,13 +366,16 @@ end
 builtin.find_files = function(opts)
   opts = opts or {}
 
-  local find_command = nil
-  if 1 == vim.fn.executable("fd") then
-    find_command = { 'fd', '--type', 'f' }
-  elseif 1 == vim.fn.executable("fdfind") then
-    find_command = { 'fdfind', '--type', 'f' }
-  elseif 1 == vim.fn.executable("rg") then
-    find_command = { 'rg', '--files' }
+  local find_command = opts.find_command
+
+  if not find_command then
+    if 1 == vim.fn.executable("fd") then
+      find_command = { 'fd', '--type', 'f' }
+    elseif 1 == vim.fn.executable("fdfind") then
+      find_command = { 'fdfind', '--type', 'f' }
+    elseif 1 == vim.fn.executable("rg") then
+      find_command = { 'rg', '--files' }
+    end
   end
 
   if not find_command then
