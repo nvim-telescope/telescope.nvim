@@ -376,7 +376,7 @@ builtin.find_files = function(opts)
   end
 
   if not find_command then
-    print("You need to install fd or submit PR for different default file finder :)")
+    print("You need to install either fd or rg. You can also submit a PR to add support for another file finder :)")
     return
   end
 
