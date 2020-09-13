@@ -49,6 +49,13 @@ eq('a', opt.preview)
 eq('b', opt.prompt)
 eq('c', opt.results)
 
+
+eq(10, resolve.resolve_height(0.1)(nil, 24, 100))
+eq(2, resolve.resolve_width(0.1)(nil, 24, 100))
+
+eq(10, resolve.resolve_width(10)(nil, 24, 100))
+eq(24, resolve.resolve_width(50)(nil, 24, 100))
+
 -- local true_table = {true}
 -- opt = resolve.win_option(some_specified, 'a')
 -- eq('a', opt.preview)
