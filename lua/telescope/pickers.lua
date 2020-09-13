@@ -3,6 +3,7 @@ local popup = require('popup')
 
 local actions = require('telescope.actions')
 local config = require('telescope.config')
+local resolve = require('telescope.config.resolve')
 local layout_strategies = require('telescope.pickers.layout_strategies')
 local log = require('telescope.log')
 local mappings = require('telescope.mappings')
@@ -134,28 +135,28 @@ function Picker:new(opts)
 end
 
 function Picker:_get_initial_window_options(prompt_title)
-  local popup_border = self.window.border
-  local popup_borderchars = self.window.borderchars
+  local popup_border = resolve.win_option(self.window.border)
+  local popup_borderchars = resolve.win_option(self.window.borderchars)
 
   local preview = {
     title = 'Preview',
-    border = popup_border,
-    borderchars = popup_borderchars,
+    border = popup_border.preview,
+    borderchars = popup_borderchars.preview,
     enter = false,
     highlight = false
   }
 
   local results = {
     title = 'Results',
-    border = popup_border,
-    borderchars = popup_borderchars,
+    border = popup_border.results,
+    borderchars = popup_borderchars.results,
     enter = false,
   }
 
   local prompt = {
     title = prompt_title,
-    border = popup_border,
-    borderchars = popup_borderchars,
+    border = popup_border.prompt,
+    borderchars = popup_borderchars.prompt,
     enter = true
   }
 
@@ -171,7 +172,7 @@ function Picker:get_window_options(max_columns, max_lines, prompt_title)
   local getter = layout_strategies[layout_strategy]
 
   if not getter then
-    error("Not a valid layout strategy: ", layout_strategy)
+    error("Not a valid layout strategy: " .. layout_strategy)
   end
 
   return getter(self, max_columns, max_lines, prompt_title)
@@ -287,7 +288,6 @@ function Picker:find()
   a.nvim_win_set_option(prompt_win, 'winblend', self.window.winblend)
 
   a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
-  pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')
 
   -- a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
   -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_string)
@@ -310,6 +310,7 @@ function Picker:find()
     local displayed_amount = 0
     local displayed_fn_amount = 0
 
+    -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
     self.manager = pickers.entry_manager(
       self.max_results,
       vim.schedule_wrap(function(index, entry)
@@ -469,6 +470,9 @@ function Picker:find()
   })
 
   mappings.apply_keymap(prompt_bufnr, self.attach_mappings, default_mappings)
+
+  -- Do filetype last, so that users can register at the last second.
+  pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')
 
   if self.default_text then
     vim.api.nvim_buf_set_lines(prompt_bufnr, 0, 1, false, {self.default_text})

@@ -5,6 +5,14 @@ highlight default link TelescopeSelection Visual
 " "Normal" in the floating windows created by telescope.
 highlight default link TelescopeNormal Normal
 
+" Border highlight groups.
+"   Use TelescopeBorder to override the default.
+"   Otherwise set them specifically
+highlight default link TelescopeBorder TelescopeNormal
+highlight default link TelescopePromptBorder TelescopeBorder
+highlight default link TelescopeResultsBorder TelescopeBorder
+highlight default link TelescopePreviewBorder TelescopeBorder
+
 
 " This is like "<C-R>" in your terminal.
 "   To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)

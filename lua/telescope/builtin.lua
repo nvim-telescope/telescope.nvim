@@ -366,21 +366,22 @@ end
 builtin.find_files = function(opts)
   opts = opts or {}
 
-  local fd_string = nil
+  local find_command = nil
   if 1 == vim.fn.executable("fd") then
-    fd_string = "fd"
+    find_command = { 'fd', '--type', 'f' }
   elseif 1 == vim.fn.executable("fdfind") then
-    fd_string = "fdfind"
+    find_command = { 'fdfind', '--type', 'f' }
+  elseif 1 == vim.fn.executable("rg") then
+    find_command = { 'rg', '--files' }
   end
 
-  if not fd_string then
-    print("You need to install fd or submit PR for different default file finder :)")
+  if not find_command then
+    print("You need to install either fd or rg. You can also submit a PR to add support for another file finder :)")
     return
   end
 
-  local cwd = opts.cwd
-  if cwd then
-    cwd = vim.fn.expand(cwd)
+  if opts.cwd then
+    opts.cwd = vim.fn.expand(opts.cwd)
   end
 
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
@@ -388,7 +389,7 @@ builtin.find_files = function(opts)
   pickers.new(opts, {
     prompt = 'Find Files',
     finder = finders.new_oneshot_job(
-      {fd_string, '--type', 'f'},
+      find_command,
       opts
     ),
     previewer = previewers.cat.new(opts),
@@ -405,12 +406,18 @@ builtin.fd = builtin.find_files
 builtin.buffers = function(opts)
   opts = opts or {}
 
-  local buffers =  filter(function(b)
+  local buffers = filter(function(b)
     return
-      vim.api.nvim_buf_is_loaded(b)
+      (opts.show_all_buffers
+      or vim.api.nvim_buf_is_loaded(b))
       and 1 == vim.fn.buflisted(b)
 
   end, vim.api.nvim_list_bufs())
+
+  if not opts.bufnr_width then
+    local max_bufnr = math.max(unpack(buffers))
+    opts.bufnr_width = #tostring(max_bufnr)
+  end
 
   pickers.new(opts, {
     prompt    = 'Buffers',
