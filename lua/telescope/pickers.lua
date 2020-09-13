@@ -83,9 +83,9 @@ function Picker:new(opts)
 
   return setmetatable({
     prompt = opts.prompt,
-		results_title = opts.results_title,
-		preview_title = opts.preview_title,
-		default_text = opts.default_text,
+    results_title = opts.results_title,
+    preview_title = opts.preview_title,
+    default_text = opts.default_text,
 
     finder = opts.finder,
     sorter = opts.sorter,
