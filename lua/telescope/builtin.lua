@@ -190,39 +190,58 @@ end
 builtin.lsp_code_actions = function(opts)
   opts = opts or {}
 
-  local actions = {}
   local params = vim.lsp.util.make_range_params()
+
+  params.context = {
+    diagnostics = vim.lsp.util.get_line_diagnostics()
+  }
 
   local results_lsp, err = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 1000)
 
-  if results_lsp == nil then
+  if err then
     print("ERROR: " .. err)
-  else
-    inspect(results_lsp)
+    return
   end
 
-
-  -- if not results_lsp or vim.tbl_isempty(results_lsp) then
-  --   print("No results from textDocument/codeAction")
-  --   return
-  -- end
-
-  -- local locations = {}
-  -- for _, server_results in pairs(results_lsp) do
-  --   vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
-  -- end
-
-  -- if vim.tbl_isempty(locations) then
-  --   return
-  -- end
+  if not results_lsp or vim.tbl_isempty(results_lsp) then
+    print("No results from textDocument/codeAction")
+    return
+  end
 
   pickers.new(opts, {
     prompt    = 'LSP Code Actions',
     finder    = finders.new_table {
-      results = actions,
-      entry_maker = make_entry.gen_from_string()
+      results = results_lsp[1].result,
+      entry_maker = function(line)
+        return {
+          valid = line ~= nil,
+          entry_type = make_entry.types.GENERIC,
+          value = line,
+          ordinal = line.title,
+          display = line.title
+        }
+      end
     },
-    -- previewer = previewers.vim_buffer.new(opts),
+    attach_mappings = function(prompt_bufnr, map)
+      local execute = function()
+        local selection = actions.get_selected_entry(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        local val = selection.value
+
+        inspect(val)
+
+        local result = vim.lsp.buf_request_sync(0, val.command, val.arguments)[1]
+
+        if result.error then
+          print("ERROR: " .. result.error.message)
+        end
+      end
+
+      map('i', '<CR>', execute)
+      map('n', '<CR>', execute)
+
+      return true
+    end,
     sorter    = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end
