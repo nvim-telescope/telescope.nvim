@@ -178,7 +178,7 @@ Handy documentation, showcase of all tools available in Telescope.
 require'telescope.builtin'.git_files{}
 ```
 
-Search your files in a git repo. Ignores files in your .gitignore.
+Search your files in a git repo. Ignores files in your .gitignore. You can optionally override the find command.
 
 Note: Requires the `cwd` to be a git directory.
 
@@ -186,6 +186,7 @@ Note: Requires the `cwd` to be a git directory.
 require'telescope.builtin'.find_files{
   -- Optional
   -- cwd = "/home/tj/"
+  -- find_command = { "rg", "-i", "--hidden", "--files", "-g", "!.git" }
 }
 ```
 Searches files in your working directory.
