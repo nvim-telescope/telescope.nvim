@@ -427,7 +427,7 @@ builtin.find_files = function(opts)
 
   local find_command = opts.find_command
 
-  if not opts.find_command then
+  if not find_command then
     if 1 == vim.fn.executable("fd") then
       find_command = { 'fd', '--type', 'f' }
     elseif 1 == vim.fn.executable("fdfind") then
