@@ -22,10 +22,9 @@ Layout strategies are callback functions
 function(self, columns, lines, prompt_title)
 end
 
---]]
-local layout_strategies = {}
-local log = require('telescope.log')
-local resolve = require('telescope.config.resolve')
+--]] local layout_strategies = {}
+local log = require("telescope.log")
+local resolve = require("telescope.config.resolve")
 --[[
    +-----------------+---------------------+
    |                 |                     |
@@ -102,11 +101,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines, prompt_tit
     error("Unknown prompt_position: " .. self.window.prompt_position)
   end
 
-  return {
-    preview = preview.width > 0 and preview,
-    results = results,
-    prompt = prompt,
-  }
+  return {preview = preview.width > 0 and preview, results = results, prompt = prompt}
 end
 
 --[[
@@ -125,40 +120,44 @@ local is_borderless = function(opts)
   if opts.window.border == false then return true end
 end
 
-layout_strategies.dropdown = function(self, columns, lines, prompt_title)
+layout_strategies.center = function(self, columns, lines, prompt_title)
   local initial_options = self:_get_initial_window_options(prompt_title)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
 
   local max_results = self.max_results or 15
-  local width = self.window.width or 80
+  local width = self.width or 70
 
-  --TODO(rockerBOO): consider width of the window
-  local max_width = width
+  local max_width = (width > columns and columns or width)
 
   prompt.height = 1
   results.height = max_results
 
   prompt.width = max_width
   results.width = max_width
+  preview.width = max_width
 
-  if is_borderless(self) then
-    prompt.line = lines / 2 - (( max_results + 1) / 2 )
-    results.line = prompt.line + 1 
-  else
-    prompt.line = lines / 2 - (( max_results + 1 + 2 + 2 )/ 2 )
-    results.line = prompt.line + 3 
+  local bs = 1 -- border size
+
+  if is_borderless(self) then bs = 0 end
+
+  prompt.line = (lines / 2) - ((max_results + (bs * 2)) / 2)
+  results.line = prompt.line + prompt.height + (bs * 2)
+
+  preview.line = 1
+  preview.height = math.floor(prompt.line - 2)
+
+  if not self.previewer or columns < self.preview_cutoff then
+    preview.height = 0
   end
 
-  prompt.col =  (columns / 2) - (width/ 2)
-  results.col = (columns / 2) - (width/ 2)
+  -- Get left column, after centering, appling the width, and the border size
+  results.col = (columns / 2) - (width / 2) + (bs * 2)
+  prompt.col = results.col
+  preview.col = results.col
 
-  return {
-    preview = preview,
-    results = results,
-    prompt = prompt
-  }
+  return {preview = preview, results = results, prompt = prompt}
 end
 
 --[[
@@ -215,11 +214,7 @@ layout_strategies.vertical = function(self, max_columns, max_lines, prompt_title
     prompt.line = results.line + results.height + 2
   end
 
-  return {
-    preview = preview.width > 0 and preview,
-    results = results,
-    prompt = prompt
-  }
+  return {preview = preview.width > 0 and preview, results = results, prompt = prompt}
 end
 
 layout_strategies.flex = function(self, max_columns, max_lines, prompt_title)
