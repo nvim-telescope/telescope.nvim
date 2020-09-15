@@ -208,17 +208,28 @@ builtin.lsp_code_actions = function(opts)
     return
   end
 
+  local results = (results_lsp[1] or results_lsp[2]).result;
+
+  if #results == 0 then
+    print("No code actions available")
+    return
+  end
+
+  for i,x in ipairs(results) do
+    x.idx = i
+  end
+
   pickers.new(opts, {
     prompt    = 'LSP Code Actions',
     finder    = finders.new_table {
-      results = results_lsp[1].result,
+      results = results,
       entry_maker = function(line)
         return {
           valid = line ~= nil,
           entry_type = make_entry.types.GENERIC,
           value = line,
-          ordinal = line.title,
-          display = line.title
+          ordinal = line.idx .. line.title,
+          display = line.idx .. ': ' .. line.title
         }
       end
     },
@@ -228,12 +239,15 @@ builtin.lsp_code_actions = function(opts)
         actions.close(prompt_bufnr)
         local val = selection.value
 
-        inspect(val)
-
-        local result = vim.lsp.buf_request_sync(0, val.command, val.arguments)[1]
-
-        if result.error then
-          print("ERROR: " .. result.error.message)
+        if val.edit or type(val.command) == "table" then
+          if val.edit then
+            vim.lsp.util.apply_workspace_edit(val.edit)
+          end
+          if type(val.command) == "table" then
+            vim.lsp.buf.execute_command(val.command)
+          end
+        else
+          vim.lsp.buf.execute_command(val)
         end
       end
 
