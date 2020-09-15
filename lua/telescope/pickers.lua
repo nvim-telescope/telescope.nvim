@@ -83,8 +83,10 @@ function Picker:new(opts)
 
   return setmetatable({
     prompt = opts.prompt,
-    results_title = opts.results_title,
-    preview_title = opts.preview_title,
+
+    results_title = get_default(opts.results_title, "Results"),
+    preview_title = get_default(opts.preview_title, "Preview"),
+
     default_text = opts.default_text,
 
     finder = opts.finder,
@@ -141,7 +143,7 @@ function Picker:_get_initial_window_options(prompt_title)
   local popup_borderchars = resolve.win_option(self.window.borderchars)
 
   local preview = {
-    title = self.preview_title or 'Preview',
+    title = self.preview_title,
     border = popup_border.preview,
     borderchars = popup_borderchars.preview,
     enter = false,
@@ -149,7 +151,7 @@ function Picker:_get_initial_window_options(prompt_title)
   }
 
   local results = {
-    title = self.results_title or 'Results',
+    title = self.results_title,
     border = popup_border.results,
     borderchars = popup_borderchars.results,
     enter = false,

@@ -22,7 +22,9 @@ Layout strategies are callback functions
 function(self, columns, lines, prompt_title)
 end
 
---]] local layout_strategies = {}
+--]]
+
+local layout_strategies = {}
 local log = require("telescope.log")
 local resolve = require("telescope.config.resolve")
 --[[
@@ -101,7 +103,11 @@ layout_strategies.horizontal = function(self, max_columns, max_lines, prompt_tit
     error("Unknown prompt_position: " .. self.window.prompt_position)
   end
 
-  return {preview = preview.width > 0 and preview, results = results, prompt = prompt}
+  return {
+    preview = preview.width > 0 and preview,
+    results = results,
+    prompt = prompt
+}
 end
 
 --[[
@@ -157,7 +163,11 @@ layout_strategies.center = function(self, columns, lines, prompt_title)
   prompt.col = results.col
   preview.col = results.col
 
-  return {preview = preview, results = results, prompt = prompt}
+  return {
+    preview = self.previewer and preview,
+    results = results,
+    prompt = prompt
+  }
 end
 
 --[[
@@ -214,7 +224,11 @@ layout_strategies.vertical = function(self, max_columns, max_lines, prompt_title
     prompt.line = results.line + results.height + 2
   end
 
-  return {preview = preview.width > 0 and preview, results = results, prompt = prompt}
+  return {
+    preview = preview.width > 0 and preview,
+    results = results,
+    prompt = prompt
+  }
 end
 
 layout_strategies.flex = function(self, max_columns, max_lines, prompt_title)
