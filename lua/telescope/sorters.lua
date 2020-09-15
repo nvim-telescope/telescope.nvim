@@ -77,26 +77,28 @@ sorters.get_fuzzy_file = function(opts)
   opts = opts or {}
 
   local ngram_len = opts.ngram_len or 2
-  local os_sep = '/'
+  local os_sep = util.get_separator()
+  local match_string = '[^' .. os_sep .. ']*$'
 
   local cached_tails = setmetatable({}, {
     __index = function(t, k)
-      local tail_split = vim.split(k, os_sep)
-      local tail = tail_split[#tail_split]
+      local tail = string.match(k, match_string)
 
       rawset(t, k, tail)
       return tail
     end,
   })
 
+  -- TODO: Consider either a faster way of getting these
+  --        OR we really should just cache them longer
+  --        OR we need a different way of keeping track of uppercase letters.
   local cached_uppers = setmetatable({}, {
     __index = function(t, k)
       local obj = {}
       for i = 1, #k do
-        local s = k:sub(i, i)
-        local s_byte = s:byte()
+        local s_byte = k:byte(i, i)
         if s_byte <= 90 and s_byte >= 65 then
-          obj[s] = true
+          obj[s_byte] = true
         end
       end
 
