@@ -364,25 +364,11 @@ function Picker:find()
 
       log.trace("Processing result... ", entry)
 
-      local sort_ok, sort_score = nil, 0
       if sorter then
-        sort_ok, sort_score = pcall(function ()
-          return sorter:score(prompt, entry)
-        end)
-
-        if not sort_ok then
-          log.warn("Sorting failed with:", prompt, entry, sort_score)
-          return
-        end
-
-        if sort_score == -1 then
-          filtered_amount = filtered_amount + 1
-          log.trace("Filtering out result: ", entry)
-          return
-        end
+        require('telescope.sorters.multi_thread').score_entry(prompt, entry, self)
+      else
+        self.manager:add_entry(0, entry)
       end
-
-      self.manager:add_entry(sort_score, entry)
     end
 
     local process_complete = vim.schedule_wrap(function()

@@ -1,15 +1,44 @@
-local uv = require('luv')
+local uv = vim.loop
 
--- print(vim.inspect(uv))
+ThreadsAvailable = {}
 
+local work = vim.loop.new_work(function(path, prompt, line)
+  package.path = path
+  local had_to_load = false
 
-local my_table = {}
-local my_value = 1
+  local uv = require('luv')
+  if not fuzzy_sorter then
+    had_to_load = true
+    fuzzy_sorter = require('telescope.sorters').get_fuzzy_file()
+  end
 
-local table_adder = uv.new_thread(function(tbl)
-  table.insert(tbl, "HELLO")
-end, my_table)
+  -- return fuzzy_sorter:score(prompt, line), had_to_load, uv.hrtime(), tostring(uv.thread_self())
+  return tostring(uv.thread_self())
+end, function(thread_string)
+  -- print(vim.inspect(vim.split(x, ';')))
+  ThreadsAvailable[thread_string] = true
+end)
 
-uv.thread_join(table_adder)
--- print(vim.inspect(MY_TABLE))
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+work:queue(package.path, "hello", "hello world")
+
 

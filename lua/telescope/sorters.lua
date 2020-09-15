@@ -1,4 +1,3 @@
-local log = require('telescope.log')
 local util = require('telescope.utils')
 
 local sorters = {}
@@ -65,7 +64,6 @@ sorters.get_levenshtein_sorter = function()
   return Sorter:new {
     scoring_function = function(_, prompt, line)
       local result = require('telescope.algos.string_distance')(prompt, line)
-      log.info("Sorting result for", prompt, line, " = ", result)
       return result
     end
   }
