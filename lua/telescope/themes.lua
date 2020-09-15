@@ -7,6 +7,8 @@
 local themes = {}
 
 function themes.get_dropdown(opts)
+  opts = opts or {}
+
   local theme_opts = {
     -- WIP: Decide on keeping these names or not.
     theme = "dropdown",
