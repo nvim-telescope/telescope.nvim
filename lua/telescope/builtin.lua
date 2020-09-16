@@ -117,13 +117,14 @@ builtin.live_grep = function(opts)
 
       return flatten { conf.vimgrep_arguments, prompt }
     end,
-    opts.entry_maker or make_entry.gen_from_vimgrep(opts),
-    opts.max_results or 1000
+    opts.entry_maker or make_entry.gen_from_vimgrep(opts)
+    -- opts.max_results or 10
   )
 
   pickers.new(opts, {
     prompt    = 'Live Grep',
     finder    = live_grepper,
+    sorter    = sorters.get_generic_fuzzy_sorter(opts),
     previewer = previewers.vimgrep.new(opts),
   }):find()
 end

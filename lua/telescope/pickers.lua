@@ -639,9 +639,9 @@ pickers.entry_manager = function(max_results, set_entry)
   return setmetatable({
     add_entry = function(self, score, entry)
       assert(type(entry) == "table", "entry must be a table by the time it reaches here")
-
       score = score or 0
 
+      -- O(n) in worst case, actual worst case is max_results
       for index, item in ipairs(entry_state) do
         if item.score > score then
           return self:insert(index, {
@@ -679,7 +679,7 @@ pickers.entry_manager = function(max_results, set_entry)
 
         index = index + 1
         entry = next_entry
-      until not next_entry
+      until not next_entry or index > max_results
     end,
 
     num_results = function()

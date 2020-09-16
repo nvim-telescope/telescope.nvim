@@ -11,7 +11,7 @@ local request_id_to_picker = setmetatable({}, {
 local max_entry_id = 0
 local entry_id_to_entry = {}
 
-local worker_func = function(path, bound_request_id, entry_id, prompt, entry)
+local function worker_func(path, bound_request_id, entry_id, prompt, entry)
   package.path = path
 
   if not FuzzySorter then
@@ -21,7 +21,7 @@ local worker_func = function(path, bound_request_id, entry_id, prompt, entry)
   return bound_request_id, entry_id, pcall(FuzzySorter.score, FuzzySorter, prompt, entry)
 end
 
-local after_func = function(bound_request_id, entry_id, score_ok, sort_score)
+local function after_func(bound_request_id, entry_id, score_ok, sort_score)
   local picker = request_id_to_picker[bound_request_id]
 
   if picker._requests_id ~= bound_request_id or bound_request_id ~= current_request_id then
