@@ -2,7 +2,7 @@ local log = require('telescope.log')
 local util = require('telescope.utils')
 
 local sorters = {}
-
+local os_sep = util.get_separator()
 
 local Sorter = {}
 Sorter.__index = Sorter
@@ -75,6 +75,7 @@ end
 -- scriptf
 -- blah
 -- [ b, l, a
+
 sorters.get_prime_fuzzy_file = function(opts)
   opts = opts or {}
 
@@ -212,14 +213,18 @@ sorters.get_prime_fuzzy_file = function(opts)
 
   return Sorter:new {
     scoring_function = function(_, prompt, line)
+      if prompt == "" then
+        return 1
+      end
+
       local areas = create_areas(line)
       local exact_match = false
       local idx = 1
       while idx <= #prompt and not exact_match do
         exact_match = is_upper_case(prompt:byte(idx))
+        idx = idx + 1
       end
 
-      local areas = create_areas(line)
       local points = {
         {
           -- this is the terminal node
@@ -230,12 +235,23 @@ sorters.get_prime_fuzzy_file = function(opts)
       }
 
       idx = 1
+
       while #points > 0 and idx <= #prompt do
         points = find_points(areas, points, prompt, idx, exact_match)
         idx = idx + 1
       end
 
-      return 1 / score(points, areas)
+      if #points == 0 then
+        return -1
+      end
+
+      local score_value = score(points, areas)
+
+      if score_value == 0 then
+        return -1
+      end
+
+      return 1 / score_value
     end
   }
 end
@@ -246,7 +262,6 @@ sorters.get_fuzzy_file = function(opts)
   opts = opts or {}
 
   local ngram_len = opts.ngram_len or 2
-  local os_sep = util.get_separator()
   local match_string = '[^' .. os_sep .. ']*$'
 
   local cached_tails = setmetatable({}, {
