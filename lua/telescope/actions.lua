@@ -5,7 +5,7 @@ local a = vim.api
 local state = require('telescope.state')
 
 local actions = setmetatable({}, {
-  __index = function(t, k)
+  __index = function(_, k)
     error("Actions does not have a value: " .. tostring(k))
   end
 })
@@ -93,8 +93,6 @@ local function goto_file_selection(prompt_bufnr, command)
         a.nvim_win_set_cursor(0, {row, col})
       end
     end
-
-    vim.cmd [[stopinsert]]
   end
 end
 
@@ -114,9 +112,18 @@ function actions.goto_file_selection_tabedit(prompt_bufnr)
   goto_file_selection(prompt_bufnr, "tabe")
 end
 
+function actions.close_pum(_)
+  if 0 ~= vim.fn.pumvisible() then
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<c-y>", true, true, true), 'n', true)
+  end
+end
+
 function actions.close(prompt_bufnr)
   local picker = actions.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
+
+  actions.close_pum(prompt_bufnr)
+  vim.cmd [[stopinsert]]
 
   vim.api.nvim_win_close(prompt_win, true)
   vim.cmd(string.format([[bdelete! %s]], prompt_bufnr))
