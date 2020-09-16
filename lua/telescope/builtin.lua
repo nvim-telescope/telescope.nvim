@@ -347,7 +347,7 @@ builtin.grep_string = function(opts)
   pickers.new(opts, {
     prompt = 'Find Word',
     finder = finders.new_oneshot_job(
-      flatten { conf.vimgrep_arguments, " --", search},
+      flatten { conf.vimgrep_arguments, search},
       opts
     ),
     previewer = previewers.vimgrep.new(opts),

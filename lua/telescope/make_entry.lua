@@ -105,7 +105,6 @@ function make_entry.gen_from_vimgrep(opts)
     -- TODO: Is this the fastest way to get each of these?
     --         Or could we just walk the text and check for colons faster?
     local _, _, filename, lnum, col, text = string.find(line, [[([^:]+):(%d+):(%d+):(.*)]])
-    print(line, "|", text)
 
     local ok
     ok, lnum = pcall(tonumber, lnum)

@@ -159,7 +159,7 @@ previewers.new_termopen_previewer = function(opts)
     with_preview_window(status, bufnr, function()
       set_term_id(
         self,
-        vim.fn.termopen(opts.get_command(entry), term_opts)
+        vim.fn.termopen(opts.get_command(entry, status), term_opts)
       )
     end)
 
@@ -312,46 +312,25 @@ previewers.cat = defaulter(function(opts)
 end, {})
 
 previewers.vimgrep = defaulter(function(_)
-  return previewers.new {
-    setup = function()
-      local command_string = "cat -- '%s'"
-      if vim.fn.executable("bat") then
-        command_string = "bat --highlight-line '%s' -r '%s':'%s'" .. bat_options .. " -- '%s'"
-      end
+  local command_string = "cat -- '%s'"
+  if vim.fn.executable("bat") then
+    command_string = "bat --highlight-line '%s' -r '%s':'%s'" .. bat_options .. " -- '%s'"
+  end
 
-      return {
-        command_string = command_string
-      }
-    end,
-
-    preview_fn = function(self, entry, status)
-      local bufnr = vim.api.nvim_create_buf(false, true)
+  return previewers.new_termopen_previewer {
+    get_command = function(entry, status)
       local win_id = status.preview_win
       local height = vim.api.nvim_win_get_height(win_id)
 
-      local line = entry.value
-      if type(line) == "table" then
-        line = entry.ordinal
-      end
-
-      local _, _, filename, lnum, col, text = string.find(line, [[([^:]+):(%d+):(%d+):(.*)]])
-
-      filename = filename or entry.filename
-      lnum = lnum or entry.lnum or 0
+      local filename = entry.filename
+      local lnum = entry.lnum or 0
 
       local context = math.floor(height / 2)
       local start = math.max(0, lnum - context)
       local finish = lnum + context
 
-      vim.api.nvim_win_set_buf(status.preview_win, bufnr)
-
-      local termopen_command = string.format(self.state.command_string, lnum, start, finish, filename)
-
-      with_preview_window(status, bufnr, function()
-        vim.fn.termopen(termopen_command)
-      end)
-
-    end
+      return string.format(command_string, lnum, start, finish, filename)
+    end,
   }
 end, {})
 
