@@ -2,29 +2,57 @@ local log = require('telescope.log')
 
 local M = {}
 
-function M.score_entry(prompt, entry, picker)
-  local worker = vim.loop.new_work(function(path, prompt, entry)
-    package.path = path
+local current_request_id = nil
 
-    if not FuzzySorter then
-      FuzzySorter = require('telescope.sorters').get_fuzzy_file()
-    end
+local request_id_to_picker = setmetatable({}, {
+  __mode = 'kv'
+})
 
-    -- return pcall(FuzzySorter.score, FuzzySorter, prompt, entry)
-    return true, 3
-  end, vim.schedule_wrap(function(score_ok, sort_score)
-    -- TODO: we should totally make sure that this picker is still doing stuff...
-    -- it could otherwise be done.
-    if not score_ok or sort_score == -1 then
-      log.warn("Sorting failed with:", prompt, entry, sort_score)
-      return
-    end
+local max_entry_id = 0
+local entry_id_to_entry = {}
 
-    -- picker.manager:add_entry(sort_score, entry)
-    print(score_ok, sort_score)
-  end))
+local worker_func = function(path, bound_request_id, entry_id, prompt, entry)
+  package.path = path
 
-  worker:queue(package.path, prompt, type(entry) == "string" and entry or entry.ordinal)
+  if not FuzzySorter then
+    FuzzySorter = require('telescope.sorters').get_fuzzy_file()
+  end
+
+  return bound_request_id, entry_id, pcall(FuzzySorter.score, FuzzySorter, prompt, entry)
+end
+
+local after_func = function(bound_request_id, entry_id, score_ok, sort_score)
+  local picker = request_id_to_picker[bound_request_id]
+
+  if picker._requests_id ~= bound_request_id or bound_request_id ~= current_request_id then
+    return
+  end
+
+  -- TODO: we should totally make sure that this picker is still doing stuff...
+  -- it could otherwise be done.
+  if not score_ok or sort_score == -1 then
+    picker._requests_in_flight = picker._requests_in_flight - 1
+    return
+  end
+
+  local entry = entry_id_to_entry[entry_id]
+  entry_id_to_entry[entry_id] = nil
+
+  picker.manager:add_entry(sort_score, entry)
+end
+
+local worker = vim.loop.new_work(worker_func, after_func)
+
+
+function M.score_entry(bound_request_id, prompt, entry, picker)
+  current_request_id = bound_request_id
+
+  request_id_to_picker[bound_request_id] = picker
+
+  max_entry_id = max_entry_id + 1
+  entry_id_to_entry[max_entry_id] = entry
+
+  worker:queue(package.path, bound_request_id, max_entry_id, prompt, type(entry) == "string" and entry or entry.ordinal)
 end
 
 return M

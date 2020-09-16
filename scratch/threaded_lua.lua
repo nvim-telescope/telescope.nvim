@@ -1,3 +1,15 @@
+--[[
+
+Some open questions:
+
+1. Can I pass a function as a string and deserialize on the other side?
+2. How expensive is said serialization?
+
+
+--]]
+
+
+
 local uv = vim.loop
 
 ThreadsAvailable = {}

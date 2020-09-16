@@ -1,16 +1,18 @@
 RELOAD('plenary')
 RELOAD('telescope')
 
+require('telescope')
+
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local previewers = require('telescope.previewers')
 local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
 
-PERF_DEBUG = 182
+PERF_DEBUG = 455
 vim.api.nvim_buf_set_lines(PERF_DEBUG, 0, -1, false, {})
 
-local cwd = vim.fn.expand("~/build/neovim")
+local cwd = vim.fn.expand("~/plugins/telescope.nvim")
 
 pickers.new {
   prompt = 'Large search',
@@ -29,9 +31,9 @@ pickers.new {
 
 
 COMPLETED = false
--- vim.wait(3000, function()
+-- print(vim.wait(3000, function()
 --   vim.cmd [[redraw!]]
 --   return COMPLETED
--- end, 100)
+-- end, 100))
 -- vim.cmd [[bd!]]
 -- vim.cmd [[stopinsert]]

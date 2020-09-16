@@ -304,6 +304,9 @@ function Picker:find()
   local selection_strategy = self.selection_strategy or 'reset'
 
   local on_lines = function(_, _, _, first_line, last_line)
+    self._requests_in_flight = 0
+    self._requests_id = vim.loop.hrtime()
+
     if not vim.api.nvim_buf_is_valid(prompt_bufnr) then
       return
     end
@@ -318,6 +321,8 @@ function Picker:find()
     self.manager = pickers.entry_manager(
       self.max_results,
       vim.schedule_wrap(function(index, entry)
+        -- TODO: Should assert some things about request id
+
         local row = self:get_row(index)
 
         -- If it's less than 0, then we don't need to show it at all.
@@ -353,6 +358,8 @@ function Picker:find()
           display = display:gsub("\n", " | ")
           vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {display})
         end
+
+        self._requests_in_flight = self._requests_in_flight - 1
       end
     ))
 
@@ -364,14 +371,23 @@ function Picker:find()
 
       log.trace("Processing result... ", entry)
 
+      self._requests_in_flight = self._requests_in_flight + 1
+
       if sorter then
-        require('telescope.sorters.multi_thread').score_entry(prompt, entry, self)
+        vim.schedule(function()
+          require('telescope.sorters.multi_thread').score_entry(self._requests_id, prompt, entry, self)
+        end)
       else
         self.manager:add_entry(0, entry)
       end
     end
 
     local process_complete = vim.schedule_wrap(function()
+      vim.wait(100, function()
+        -- print("ID:", self._requests_id, "IN FLIGHT:", self._requests_in_flight)
+        return self._requests_in_flight <= 0
+      end)
+
       -- TODO: We should either: always leave one result or make sure we actually clean up the results when nothing matches
 
       if selection_strategy == 'row' then
