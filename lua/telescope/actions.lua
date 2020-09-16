@@ -34,13 +34,6 @@ function actions.get_selected_entry(prompt_bufnr)
   return actions.get_current_picker(prompt_bufnr):get_selection()
 end
 
-local function preview_scrolling(prompt_bufnr, termcode)
-  local preview_win = state.get_status(prompt_bufnr).preview_win
-  local bufnr = vim.api.nvim_win_get_buf(preview_win)
-  local channel = vim.api.nvim_buf_get_option(bufnr, "channel")
-  vim.fn.chansend(channel, termcode)
-end
-
 function actions.preview_scrolling_up(prompt_bufnr)
   actions.get_current_picker(prompt_bufnr).previewer:scroll_fn(-1)
 end
