@@ -70,6 +70,176 @@ sorters.get_levenshtein_sorter = function()
   }
 end
 
+-- blah/blu/blam/script/foo.js
+-- script/foo.js
+-- scriptf
+-- blah
+-- [ b, l, a
+sorters.get_prime_fuzzy_file = function(opts)
+  opts = opts or {}
+
+  local function create_areas(line)
+    local split_line = vim.split(line, os_sep)
+    local areas = {}
+    local offset = 1
+    for idx = 1, #split_line do
+      table.insert(areas, {
+          word = split_line[idx],
+          offset = offset
+        })
+
+      offset = offset + 1 + #split_line
+    end
+
+    return areas
+  end
+
+  function is_upper_case(byte)
+    return byte >= 65 and byte <= 90
+  end
+
+  local function score(points, areas)
+    local out = 0
+    for idx = 1, #points do
+      local area_count = #areas
+      local curr = points[idx]
+      local prev_area = -1
+      local prev_offset = -1
+      local cc = 1
+      local score = 0
+      local from_upper_case = false
+      local bonus_caps_matcher = 0
+      local point_list = {}
+      repeat
+        table.insert(point_list, curr)
+        curr = curr.previous
+      until not curr or curr.area_offset == 0
+      for idx = 1, math.floor(#point_list / 2) do
+        local point = point_list[idx]
+        local other_idx = #point_list - (idx - 1)
+        point_list[idx] = point_list[other_idx]
+        point_list[other_idx] = point
+      end
+
+      for idx = 1, #point_list do
+        local curr = point_list[idx]
+
+        if curr.area_idx == prev_area and
+          curr.area_offset == prev_offset + 1 then
+          if from_upper_case then
+            bonus_caps_matcher = bonus_caps_matcher + 1
+          end
+          cc = cc + 1
+        else
+          cc = 1
+          from_upper_case = curr.is_upper_case
+          bonus_caps_matcher = 0
+        end
+
+        score = score +
+        (cc + bonus_caps_matcher) *
+        (1 +
+          curr.area_idx / area_count +
+          cc / #areas[curr.area_idx].word +
+          (curr.exact_match and 0.1 or 0))
+
+        prev_area = curr.area_idx
+        prev_offset = curr.area_offset
+      end
+
+      if out < score then
+        out = score
+      end
+    end
+
+    return out
+  end
+
+  local function find_points(areas, start_points, prompt, prompt_idx, exact_match)
+
+    local local_points = {}
+    local start_point = start_points[1]
+    local area_idx = start_point.area_idx
+    local area_offset = start_point.area_offset
+
+    repeat
+      local curr_area = areas[area_idx]
+      local target = prompt:byte(prompt_idx)
+
+      if target == os_sep then
+        -- I HATE THIS WTHTY ONTHOEUN YROEU NTOHEUNCFINTHINTHSN ONTTDH E MT
+        return start_points
+      end
+
+      for idx = area_offset + 1, #curr_area.word do
+        if target == curr_area.word:byte(idx) or
+          not exact_match and target - 32 == curr_area.word:byte(idx) then
+          table.insert(local_points, {
+              area_idx = area_idx,
+              area_offset = idx,
+              exact_match = target == curr_area.word:byte(idx),
+              is_upper_case = target >= 65 and target <= 90,
+            })
+        end
+      end
+
+      area_idx = area_idx + 1
+      area_offset = 0
+
+    until area_idx > #areas
+
+    local return_points = {}
+    for idx = 1, #start_points do
+      local point = start_points[idx]
+      for local_idx = 1, #local_points do
+        local local_point = local_points[local_idx]
+        if local_point.area_idx == point.area_idx and
+          local_point.area_offset > point.area_offset or
+          local_point.area_idx > point.area_idx then
+          table.insert(return_points, {
+              area_idx = local_point.area_idx,
+              area_offset = local_point.area_offset,
+              previous = point,
+              exact_match = local_point.exact_match,
+              is_upper_case = local_point.is_upper_case,
+            })
+        end
+      end
+    end
+
+    return return_points
+  end
+
+  return Sorter:new {
+    scoring_function = function(_, prompt, line)
+      local areas = create_areas(line)
+      local exact_match = false
+      local idx = 1
+      while idx <= #prompt and not exact_match do
+        exact_match = is_upper_case(prompt:byte(idx))
+      end
+
+      local areas = create_areas(line)
+      local points = {
+        {
+          -- this is the terminal node
+          area_idx = 1,
+          area_offset = 0,
+          previous = nil
+        }
+      }
+
+      idx = 1
+      while #points > 0 and idx <= #prompt do
+        points = find_points(areas, points, prompt, idx, exact_match)
+        idx = idx + 1
+      end
+
+      return 1 / score(points, areas)
+    end
+  }
+end
+
 -- TODO: Match on upper case words
 -- TODO: Match on last match
 sorters.get_fuzzy_file = function(opts)
