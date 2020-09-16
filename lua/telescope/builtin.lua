@@ -115,7 +115,7 @@ builtin.live_grep = function(opts)
         return nil
       end
 
-      return flatten { conf.vimgrep_arguments, prompt }
+      return flatten { conf.vimgrep_arguments, " --", prompt }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
     opts.max_results or 1000
@@ -346,7 +346,7 @@ builtin.grep_string = function(opts)
   pickers.new(opts, {
     prompt = 'Find Word',
     finder = finders.new_oneshot_job(
-      flatten { conf.vimgrep_arguments, search},
+      flatten { conf.vimgrep_arguments, " --", search},
       opts
     ),
     previewer = previewers.vimgrep.new(opts),
