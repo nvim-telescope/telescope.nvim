@@ -1,5 +1,6 @@
 local context_manager = require('plenary.context_manager')
 
+local from_entry = require('telescope.from_entry')
 local log = require('telescope.log')
 local utils = require('telescope.utils')
 
@@ -105,7 +106,7 @@ previewers.new_termopen_previewer = function(opts)
   local function get_term_id(self) return self.state.termopen_id end
   local function get_bufnr(self) return self.state.termopen_bufnr end
 
-  local function set_term_id(self, value) 
+  local function set_term_id(self, value)
     if job_is_running(get_term_id(self)) then vim.fn.jobstop(get_term_id(self)) end
     self.state.termopen_id = value
   end
@@ -300,10 +301,10 @@ end, {})
 previewers.cat = defaulter(function(opts)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
-      local path = entry.path
-      if path == nil then path = entry.filename end
-      if path == nil then path = entry.value end
-      if path == nil then print("Invalid entry", vim.inspect(entry)); return end
+      local path = from_entry.path(entry, true)
+      if path == nil then
+        return
+      end
 
       return string.format('bat %s -- "%s"', bat_options, path)
     end

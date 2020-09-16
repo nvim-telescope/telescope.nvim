@@ -11,20 +11,12 @@ make_entry.types = {
 
 local transform_devicons
 if has_devicons then
-  _DeviconStore = _DeviconStore or {}
-
   transform_devicons = function(filename, display, opts)
-    if opts.disable_devicons then
+    if opts.disable_devicons or not filename then
       return display
     end
 
-    if _DeviconStore[filename] then
-      return _DeviconStore[filename]
-    end
-
     local icon_display = (devicons.get_icon(filename, string.match(filename, '%a+$')) or ' ') .. ' ' .. display
-
-    _DeviconStore[filename] = icon_display
 
     return icon_display
   end
@@ -113,6 +105,7 @@ function make_entry.gen_from_vimgrep(opts)
     -- TODO: Is this the fastest way to get each of these?
     --         Or could we just walk the text and check for colons faster?
     local _, _, filename, lnum, col, text = string.find(line, [[([^:]+):(%d+):(%d+):(.*)]])
+    print(line, "|", text)
 
     local ok
     ok, lnum = pcall(tonumber, lnum)
