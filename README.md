@@ -286,6 +286,22 @@ require'telescope.builtin'.planets{}
 
 Use the telescope.
 
+## Themes
+
+Common groups of settings can be setup to allow for themes. We have some built in themes but are looking for more cool options. 
+
+```vim
+nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({}))<cr>
+```
+
+Then you can put your configuration into `get_dropdown({})`
+
+```vim
+nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({ winblend = 10 }))<cr>
+```
+
+If you wish to make theme, check out `lua/telescope/themes.lua`. If you need more features, make an issue :).
+
 ## Goals
 
 ### Pipeline Different Objects
