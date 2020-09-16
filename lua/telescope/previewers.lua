@@ -193,9 +193,9 @@ end, {})
 previewers.cat = defaulter(function(opts)
   return previewers.new {
     setup = function()
-      local command_string = "cat '%s'"
+      local command_string = "cat -- '%s'"
       if 1 == vim.fn.executable("bat") then
-        command_string = "bat '%s' " .. bat_options
+        command_string = "bat " .. bat_options .. " -- '%s'"
       end
 
       return {
@@ -255,9 +255,9 @@ end, {})
 previewers.vimgrep = defaulter(function(_)
   return previewers.new {
     setup = function()
-      local command_string = "cat '%s'"
+      local command_string = "cat -- '%s'"
       if vim.fn.executable("bat") then
-        command_string = "bat '%s' --highlight-line '%s' -r '%s':'%s'" .. bat_options
+        command_string = "bat --highlight-line '%s' -r '%s':'%s'" .. bat_options .. " -- '%s'"
       end
 
       return {
@@ -286,7 +286,7 @@ previewers.vimgrep = defaulter(function(_)
 
       vim.api.nvim_win_set_buf(status.preview_win, bufnr)
 
-      local termopen_command = string.format(self.state.command_string, filename, lnum, start, finish)
+      local termopen_command = string.format(self.state.command_string, lnum, start, finish, filename)
 
       with_preview_window(status, function()
         vim.fn.termopen(termopen_command)
