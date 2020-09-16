@@ -142,4 +142,17 @@ function utils.get_separator()
   return package.config:sub(1, 1)
 end
 
+function utils.job_is_running(job_id)
+  if job_id == nil then return false end
+  return vim.fn.jobwait({job_id}, 0)[1] == -1
+end
+
+function utils.buf_delete(bufnr)
+  if bufnr == nil then return end
+
+  if vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_is_loaded(bufnr) then
+    vim.cmd(string.format("bdelete! %s", bufnr))
+  end
+end
+
 return utils

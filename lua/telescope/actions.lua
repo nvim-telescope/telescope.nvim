@@ -131,6 +131,10 @@ function actions.close(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
 
+  if picker.previewer then
+    picker.previewer:teardown()
+  end
+
   actions.close_pum(prompt_bufnr)
   vim.cmd [[stopinsert]]
 
