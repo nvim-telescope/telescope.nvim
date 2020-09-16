@@ -187,6 +187,79 @@ builtin.lsp_document_symbols = function(opts)
   }):find()
 end
 
+builtin.lsp_code_actions = function(opts)
+  opts = opts or {}
+
+  local params = vim.lsp.util.make_range_params()
+
+  params.context = {
+    diagnostics = vim.lsp.util.get_line_diagnostics()
+  }
+
+  local results_lsp, err = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 1000)
+
+  if err then
+    print("ERROR: " .. err)
+    return
+  end
+
+  if not results_lsp or vim.tbl_isempty(results_lsp) then
+    print("No results from textDocument/codeAction")
+    return
+  end
+
+  local results = (results_lsp[1] or results_lsp[2]).result;
+
+  if #results == 0 then
+    print("No code actions available")
+    return
+  end
+
+  for i,x in ipairs(results) do
+    x.idx = i
+  end
+
+  pickers.new(opts, {
+    prompt    = 'LSP Code Actions',
+    finder    = finders.new_table {
+      results = results,
+      entry_maker = function(line)
+        return {
+          valid = line ~= nil,
+          entry_type = make_entry.types.GENERIC,
+          value = line,
+          ordinal = line.idx .. line.title,
+          display = line.idx .. ': ' .. line.title
+        }
+      end
+    },
+    attach_mappings = function(prompt_bufnr, map)
+      local execute = function()
+        local selection = actions.get_selected_entry(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        local val = selection.value
+
+        if val.edit or type(val.command) == "table" then
+          if val.edit then
+            vim.lsp.util.apply_workspace_edit(val.edit)
+          end
+          if type(val.command) == "table" then
+            vim.lsp.buf.execute_command(val.command)
+          end
+        else
+          vim.lsp.buf.execute_command(val)
+        end
+      end
+
+      map('i', '<CR>', execute)
+      map('n', '<CR>', execute)
+
+      return true
+    end,
+    sorter    = sorters.get_generic_fuzzy_sorter(),
+  }):find()
+end
+
 builtin.lsp_workspace_symbols = function(opts)
   opts = opts or {}
   opts.shorten_path = utils.get_default(opts.shorten_path, true)
