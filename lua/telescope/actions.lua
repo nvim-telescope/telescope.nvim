@@ -34,6 +34,14 @@ function actions.get_selected_entry(prompt_bufnr)
   return actions.get_current_picker(prompt_bufnr):get_selection()
 end
 
+function actions.preview_scrolling_up(prompt_bufnr)
+  actions.get_current_picker(prompt_bufnr).previewer:scroll_fn(-30)
+end
+
+function actions.preview_scrolling_down(prompt_bufnr)
+  actions.get_current_picker(prompt_bufnr).previewer:scroll_fn(30)
+end
+
 -- TODO: It seems sometimes we get bad styling.
 local function goto_file_selection(prompt_bufnr, command)
   local picker = actions.get_current_picker(prompt_bufnr)

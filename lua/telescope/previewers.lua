@@ -11,7 +11,7 @@ local Previewer = {}
 Previewer.__index = Previewer
 
 -- TODO: Should play with these some more, ty @clason
-local bat_options = " --style=plain --paging=never --color=always "
+local bat_options = " --style=plain --color=always "
 
 local previewer_ns = vim.api.nvim_create_namespace('telescope.previewers')
 
@@ -28,6 +28,8 @@ function Previewer:new(opts)
     state = nil,
     _setup_func = opts.setup,
     _teardown_func = opts.teardown,
+    _send_input = opts.send_input,
+    _scroll_fn = opts.scroll_fn,
     preview_fn = opts.preview_fn,
   }, Previewer)
 end
@@ -52,6 +54,22 @@ end
 function Previewer:teardown()
   if self._teardown_func then
     self:_teardown_func()
+  end
+end
+
+function Previewer:send_input(input)
+  if self._send_input then
+    self:_send_input(input)
+  else
+    vim.api.nvim_err_writeln("send_input is not defined for this previewer")
+  end
+end
+
+function Previewer:scroll_fn(direction)
+  if self._scroll_fn then
+    self:_scroll_fn(direction)
+  else
+    vim.api.nvim_err_writeln("scroll_fn is not defined for this previewer")
   end
 end
 
@@ -184,6 +202,22 @@ previewers.cat = defaulter(function(opts)
         command_string = command_string,
         termopen_id = nil,
       }
+    end,
+
+    send_input = function(self, input)
+      termcode = vim.api.nvim_replace_termcodes(input, true, false, true)
+      if self.state.termopen_id then
+        pcall(vim.fn.chansend, self.state.termopen_id, termcode)
+      end
+    end,
+
+    scroll_fn = function(self, direction)
+      if not self.state then
+        return
+      end
+      if direction > 0 then input = "d" else input = "u" end
+      local count = math.abs(direction)
+      self:send_input(count..input)
     end,
 
     teardown = function(self)
