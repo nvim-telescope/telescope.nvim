@@ -500,23 +500,34 @@ function Picker:close_windows(status)
   local results_border_win = status.results_border_win
   local preview_border_win = status.preview_border_win
 
-  local function del_win(name, win_id, force)
+  local function del_win(name, win_id, force, bdelete)
+    if not vim.api.nvim_win_is_valid(win_id) then
+      return
+    end
+
+    local bufnr = vim.api.nvim_win_get_buf(win_id)
+    if bdelete
+        and vim.api.nvim_buf_is_valid(bufnr)
+        and not vim.api.nvim_buf_get_option(bufnr, 'buflisted') then
+      vim.cmd(string.format("bdelete! %s", bufnr))
+    end
+
     if not vim.api.nvim_win_is_valid(win_id) then
       return
     end
 
     if not pcall(vim.api.nvim_win_close, win_id, force) then
-      log.trace("Unable to close window: %s/%s", name, win_id)
+      log.info("Unable to close window: ", name, "/", win_id)
     end
   end
 
   del_win("prompt_win", prompt_win, true)
-  del_win("results_win", results_win, true)
-  del_win("preview_win", preview_win, true)
+  del_win("results_win", results_win, true, true)
+  del_win("preview_win", preview_win, true, true)
 
-  del_win("prompt_border_win", prompt_border_win, true)
-  del_win("results_border_win", results_border_win, true)
-  del_win("preview_border_win", preview_border_win, true)
+  del_win("prompt_border_win", prompt_border_win, true, true)
+  del_win("results_border_win", results_border_win, true, true)
+  del_win("preview_border_win", preview_border_win, true, true)
 
   -- vim.cmd(string.format("bdelete! %s", status.prompt_bufnr))
 
@@ -720,11 +731,11 @@ function pickers.on_close_prompt(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
 
-  picker:close_windows(status)
-
   if picker.previewer then
     picker.previewer:teardown()
   end
+
+  picker:close_windows(status)
 end
 
 pickers._Picker = Picker

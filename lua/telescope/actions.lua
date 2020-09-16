@@ -121,14 +121,14 @@ end
 function actions.close(prompt_bufnr)
   local picker = actions.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
+  local original_win_id = picker.original_win_id
 
   actions.close_pum(prompt_bufnr)
   vim.cmd [[stopinsert]]
 
   vim.api.nvim_win_close(prompt_win, true)
-  vim.cmd(string.format([[bdelete! %s]], prompt_bufnr))
+  pcall(vim.cmd, string.format([[bdelete! %s]], prompt_bufnr))
 
-  local original_win_id = picker.original_win_id or 0
   a.nvim_set_current_win(original_win_id)
 end
 
