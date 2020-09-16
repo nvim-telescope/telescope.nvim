@@ -35,11 +35,11 @@ function actions.get_selected_entry(prompt_bufnr)
 end
 
 function actions.preview_scrolling_up(prompt_bufnr)
-  actions.get_current_picker(prompt_bufnr).previewer:scroll_fn(-1)
+  actions.get_current_picker(prompt_bufnr).previewer:scroll_fn(-30)
 end
 
 function actions.preview_scrolling_down(prompt_bufnr)
-  actions.get_current_picker(prompt_bufnr).previewer:scroll_fn(1)
+  actions.get_current_picker(prompt_bufnr).previewer:scroll_fn(30)
 end
 
 -- TODO: It seems sometimes we get bad styling.

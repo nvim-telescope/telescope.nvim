@@ -215,8 +215,9 @@ previewers.cat = defaulter(function(opts)
       if not self.state then
         return
       end
-      if direction > 0 then input = "<c-d>" else input = "<c-u>" end
-      self:send_input(input)
+      if direction > 0 then input = "d" else input = "u" end
+      local count = math.abs(direction)
+      self:send_input(count..input)
     end,
 
     teardown = function(self)
