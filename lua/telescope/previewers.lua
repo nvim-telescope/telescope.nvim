@@ -1,7 +1,12 @@
 local context_manager = require('plenary.context_manager')
 
+local from_entry = require('telescope.from_entry')
 local log = require('telescope.log')
 local utils = require('telescope.utils')
+
+local get_default = utils.get_default
+local buf_delete = utils.buf_delete
+local job_is_running = utils.job_is_running
 
 local defaulter = utils.make_default_callable
 
@@ -14,6 +19,18 @@ Previewer.__index = Previewer
 local bat_options = " --style=plain --color=always "
 
 local previewer_ns = vim.api.nvim_create_namespace('telescope.previewers')
+
+local with_preview_window = function(status, bufnr, callable)
+  if bufnr and vim.api.nvim_buf_call then
+    vim.api.nvim_buf_call(bufnr, callable)
+  else
+    return context_manager.with(function()
+      vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
+      coroutine.yield()
+      vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.prompt_win))
+    end, callable)
+  end
+end
 
 --  --terminal-width=%s
 
@@ -41,13 +58,12 @@ function Previewer:preview(entry, status)
 
   if not self.state then
     if self._setup_func then
-      self.state = self._setup_func()
+      self.state = self:_setup_func()
     else
       self.state = {}
     end
   end
 
-  self:teardown()
   return self:preview_fn(entry, status)
 end
 
@@ -77,12 +93,104 @@ previewers.new = function(...)
   return Previewer:new(...)
 end
 
-local with_preview_window = function(status, callable)
-  return context_manager.with(function()
-    vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
-    coroutine.yield()
-    vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.prompt_win))
-  end, callable)
+previewers.new_termopen_previewer = function(opts)
+  opts = opts or {}
+
+  assert(opts.get_command, "get_command is a required function")
+
+  local opt_setup = opts.setup
+  local opt_teardown = opts.teardown
+
+  local old_bufs = {}
+
+  local function get_term_id(self) return self.state.termopen_id end
+  local function get_bufnr(self) return self.state.termopen_bufnr end
+
+  local function set_term_id(self, value)
+    if job_is_running(get_term_id(self)) then vim.fn.jobstop(get_term_id(self)) end
+    self.state.termopen_id = value
+  end
+  local function set_bufnr(self, value)
+    if get_bufnr(self) then table.insert(old_bufs, get_bufnr(self)) end
+    self.state.termopen_bufnr = value
+  end
+
+  local function setup(self)
+    local state = {}
+    if opt_setup then
+      vim.tbl_deep_extend("force", state, opt_setup(self))
+    end
+
+    return state
+  end
+
+  local function teardown(self)
+    if opt_teardown then
+      opt_teardown(self)
+    end
+
+    local term_id = get_term_id(self)
+    if term_id and utils.job_is_running(term_id) then
+      vim.fn.jobclose(term_id)
+    end
+
+    set_term_id(self, nil)
+    set_bufnr(self, nil)
+
+    for _, bufnr in ipairs(old_bufs) do
+      buf_delete(bufnr)
+    end
+  end
+
+  local function preview_fn(self, entry, status)
+    if get_bufnr(self) == nil then
+      set_bufnr(self, vim.api.nvim_win_get_buf(status.preview_win))
+    end
+
+    set_bufnr(self, vim.api.nvim_create_buf(false, true))
+
+    local bufnr = get_bufnr(self)
+    vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+
+    local term_opts = {
+      cwd = opts.cwd or vim.fn.getcwd(),
+    }
+
+    with_preview_window(status, bufnr, function()
+      set_term_id(
+        self,
+        vim.fn.termopen(opts.get_command(entry, status), term_opts)
+      )
+    end)
+
+    vim.api.nvim_buf_set_name(bufnr, tostring(bufnr))
+  end
+
+  return Previewer:new {
+    setup    = setup,
+    teardown = teardown,
+    preview_fn = preview_fn,
+
+    send_input = function(self, input)
+      local termcode = vim.api.nvim_replace_termcodes(input, true, false, true)
+
+      local term_id = get_term_id(self)
+      if term_id then
+        vim.fn.chansend(term_id, termcode)
+      end
+    end,
+
+    scroll_fn = function(self, direction)
+      if not self.state then
+        return
+      end
+
+      local input = direction > 0 and "d" or "u"
+      local count = math.abs(direction)
+
+      self:send_input(count..input)
+    end,
+  }
 end
 
 previewers.termopen = defaulter(function(opts)
@@ -94,7 +202,7 @@ previewers.termopen = defaulter(function(opts)
 
       vim.api.nvim_win_set_buf(status.preview_win, bufnr)
 
-      with_preview_window(status, function()
+      with_preview_window(status, bufnr, function()
         vim.fn.termopen(string.format(command_string, entry.value))
       end)
     end
@@ -191,108 +299,38 @@ previewers.vim_buffer_or_bat = defaulter(function(_)
 end, {})
 
 previewers.cat = defaulter(function(opts)
-  return previewers.new {
-    setup = function()
-      local command_string = "cat -- '%s'"
-      if 1 == vim.fn.executable("bat") then
-        command_string = "bat " .. bat_options .. " -- '%s'"
-      end
-
-      return {
-        command_string = command_string,
-        termopen_id = nil,
-      }
-    end,
-
-    send_input = function(self, input)
-      termcode = vim.api.nvim_replace_termcodes(input, true, false, true)
-      if self.state.termopen_id then
-        pcall(vim.fn.chansend, self.state.termopen_id, termcode)
-      end
-    end,
-
-    scroll_fn = function(self, direction)
-      if not self.state then
-        return
-      end
-      if direction > 0 then input = "d" else input = "u" end
-      local count = math.abs(direction)
-      self:send_input(count..input)
-    end,
-
-    teardown = function(self)
-      if not self.state then
+  return previewers.new_termopen_previewer {
+    get_command = function(entry)
+      local path = from_entry.path(entry, true)
+      if path == nil then
         return
       end
 
-      if self.state.termopen_id then
-        pcall(vim.fn.chanclose, self.state.termopen_id)
-      end
-    end,
-
-    preview_fn = function(self, entry, status)
-      local bufnr = vim.api.nvim_create_buf(false, true)
-
-      vim.api.nvim_win_set_buf(status.preview_win, bufnr)
-
-      local path = entry.path
-      if path == nil then path = entry.filename end
-      if path == nil then path = entry.value end
-      if path == nil then print("Invalid entry", vim.inspect(entry)); return end
-
-      local term_opts = vim.empty_dict()
-      term_opts.cwd = opts.cwd
-
-      with_preview_window(status, function()
-        self.state.termopen_id = vim.fn.termopen(string.format(self.state.command_string, path), term_opts)
-      end)
-
-      vim.api.nvim_buf_set_name(bufnr, tostring(bufnr))
+      return string.format('bat %s -- "%s"', bat_options, path)
     end
   }
 end, {})
 
 previewers.vimgrep = defaulter(function(_)
-  return previewers.new {
-    setup = function()
-      local command_string = "cat -- '%s'"
-      if vim.fn.executable("bat") then
-        command_string = "bat --highlight-line '%s' -r '%s':'%s'" .. bat_options .. " -- '%s'"
-      end
+  local command_string = "cat -- '%s'"
+  if vim.fn.executable("bat") then
+    command_string = "bat --highlight-line '%s' -r '%s':'%s'" .. bat_options .. " -- '%s'"
+  end
 
-      return {
-        command_string = command_string
-      }
-    end,
-
-    preview_fn = function(self, entry, status)
-      local bufnr = vim.api.nvim_create_buf(false, true)
+  return previewers.new_termopen_previewer {
+    get_command = function(entry, status)
       local win_id = status.preview_win
       local height = vim.api.nvim_win_get_height(win_id)
 
-      local line = entry.value
-      if type(line) == "table" then
-        line = entry.ordinal
-      end
-
-      local _, _, filename, lnum, col, text = string.find(line, [[([^:]+):(%d+):(%d+):(.*)]])
-
-      filename = filename or entry.filename
-      lnum = lnum or entry.lnum or 0
+      local filename = entry.filename
+      local lnum = entry.lnum or 0
 
       local context = math.floor(height / 2)
       local start = math.max(0, lnum - context)
       local finish = lnum + context
 
-      vim.api.nvim_win_set_buf(status.preview_win, bufnr)
-
-      local termopen_command = string.format(self.state.command_string, lnum, start, finish, filename)
-
-      with_preview_window(status, function()
-        vim.fn.termopen(termopen_command)
-      end)
-
-    end
+      return string.format(command_string, lnum, start, finish, filename)
+    end,
   }
 end, {})
 
@@ -331,7 +369,7 @@ previewers.qflist = defaulter(function(_)
 
       local termopen_command = string.format(self.state.command_string, filename, lnum, start, finish)
 
-      with_preview_window(status, function()
+      with_preview_window(status, bufnr, function()
         vim.fn.termopen(termopen_command)
       end)
     end
@@ -341,7 +379,7 @@ end, {})
 previewers.help = defaulter(function(_)
   return previewers.new {
     preview_fn = function(_, entry, status)
-      with_preview_window(status, function()
+      with_preview_window(status, nil, function()
         local old_tags = vim.o.tags
         vim.o.tags = vim.fn.expand("$VIMRUNTIME") .. '/doc/tags'
 
