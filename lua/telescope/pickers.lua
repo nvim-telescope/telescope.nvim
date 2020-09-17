@@ -324,6 +324,10 @@ function Picker:find()
     self.manager = pickers.entry_manager(
       self.max_results,
       vim.schedule_wrap(function(index, entry)
+        if not vim.api.nvim_buf_is_valid(results_bufnr) then
+          return
+        end
+
         local row = self:get_row(index)
 
         -- If it's less than 0, then we don't need to show it at all.
@@ -584,6 +588,10 @@ function Picker:set_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   local status = state.get_status(self.prompt_bufnr)
   local results_bufnr = status.results_bufnr
+
+  if not vim.api.nvim_buf_is_valid(results_bufnr) then
+    return
+  end
 
   -- Handle adding '> ' to beginning of selections
   if self._selection_row then
