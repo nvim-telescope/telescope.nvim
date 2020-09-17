@@ -359,7 +359,7 @@ function Picker:find()
 
         -- This pretty much only fails when people leave newlines in their results.
         --  So we'll clean it up for them if it fails.
-        if not set_ok then
+        if not set_ok and display:find("\n") then
           display = display:gsub("\n", " | ")
           vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {display})
         end
@@ -527,7 +527,7 @@ function Picker:close_windows(status)
     end
 
     if not pcall(vim.api.nvim_win_close, win_id, force) then
-      log.info("Unable to close window: ", name, "/", win_id)
+      log.trace("Unable to close window: ", name, "/", win_id)
     end
   end
 
