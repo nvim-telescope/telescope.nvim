@@ -103,16 +103,34 @@ previewers.new_termopen_previewer = function(opts)
 
   local old_bufs = {}
 
-  local function get_term_id(self) return self.state.termopen_id end
-  local function get_bufnr(self) return self.state.termopen_bufnr end
+  local function get_term_id(self)
+    if not self.state then
+      return nil
+    end
+
+    return self.state.termopen_id
+  end
+  local function get_bufnr(self)
+    if not self.state then
+      return nil
+    end
+    return self.state.termopen_bufnr
+  end
 
   local function set_term_id(self, value)
-    if job_is_running(get_term_id(self)) then vim.fn.jobstop(get_term_id(self)) end
-    self.state.termopen_id = value
+    if job_is_running(get_term_id(self)) then
+      vim.fn.jobstop(get_term_id(self))
+    end
+
+    if self.state then
+      self.state.termopen_id = value
+    end
   end
   local function set_bufnr(self, value)
     if get_bufnr(self) then table.insert(old_bufs, get_bufnr(self)) end
-    self.state.termopen_bufnr = value
+    if self.state then
+      self.state.termopen_bufnr = value
+    end
   end
 
   local function setup(self)
@@ -140,6 +158,7 @@ previewers.new_termopen_previewer = function(opts)
     for _, bufnr in ipairs(old_bufs) do
       buf_delete(bufnr)
     end
+
   end
 
   local function preview_fn(self, entry, status)
