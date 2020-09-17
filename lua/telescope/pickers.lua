@@ -593,6 +593,9 @@ function Picker:set_selection(row)
     return
   end
 
+  -- TODO: Probably should figure out what the rows are that made this happen...
+  --        Probably something with setting a row that's too high for this?
+  --        Not sure.
   local set_ok, set_errmsg = pcall(function()
     -- Handle adding '> ' to beginning of selections
     if self._selection_row then

@@ -2,6 +2,8 @@ local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 
 local utils = require('telescope.utils')
 
+local get_default = utils.get_default
+
 local make_entry = {}
 
 make_entry.types = {
@@ -131,13 +133,16 @@ end
 
 function make_entry.gen_from_quickfix(opts)
   opts = opts or {}
+  opts.tail_path = get_default(opts.tail_path, true)
 
   local make_display = function(entry)
     local to_concat = {}
 
     if not opts.hide_filename then
       local filename = entry.filename
-      if opts.shorten_path then
+      if opts.tail_path then
+        filename = utils.path_tail(filename)
+      elseif opts.shorten_path then
         filename = utils.path_shorten(filename)
       end
 
@@ -151,17 +156,19 @@ function make_entry.gen_from_quickfix(opts)
   end
 
   return function(entry)
+    local filename = entry.filename or vim.api.nvim_buf_get_name(entry.bufnr)
+
     return {
       valid = true,
 
       value = entry,
       ordinal = (
-        not opts.ignore_filename and entry.filename
+        not opts.ignore_filename and filename
         or ''
         ) .. ' ' .. entry.text,
       display = make_display,
 
-      filename = entry.filename,
+      filename = filename,
       lnum = entry.lnum,
       col = entry.col,
       text = entry.text,

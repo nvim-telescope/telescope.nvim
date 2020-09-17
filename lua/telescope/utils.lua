@@ -1,5 +1,12 @@
 local utils = {}
 
+utils.get_separator = (function()
+  local val = package.config:sub(1, 1)
+  return function()
+    return val
+  end
+end)()
+
 utils.if_nil = function(x, was_nil, was_not_nil)
   if x == nil then
     return was_nil
@@ -114,6 +121,15 @@ utils.path_shorten = (function()
   end
 end)()
 
+utils.path_tail = (function()
+  local os_sep = utils.get_separator()
+  local match_string = '[^' .. os_sep .. ']*$'
+
+  return function(path)
+    return string.match(path, match_string)
+  end
+end)()
+
 -- local x = utils.make_default_callable(function(opts)
 --   return function()
 --     print(opts.example, opts.another)
@@ -136,10 +152,6 @@ function utils.make_default_callable(f, default_opts)
       end
     end
   })
-end
-
-function utils.get_separator()
-  return package.config:sub(1, 1)
 end
 
 function utils.job_is_running(job_id)

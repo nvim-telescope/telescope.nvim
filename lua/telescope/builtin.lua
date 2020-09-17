@@ -294,6 +294,8 @@ builtin.lsp_workspace_symbols = function(opts)
 end
 
 builtin.quickfix = function(opts)
+  opts = opts or {}
+
   local locations = vim.fn.getqflist()
 
   if vim.tbl_isempty(locations) then
@@ -603,6 +605,8 @@ builtin.planets = function(opts)
 
         print("Enjoy astronomy! You viewed:", selection.display)
       end)
+
+      return true
     end,
   }:find()
 end
