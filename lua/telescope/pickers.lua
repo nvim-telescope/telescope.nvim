@@ -593,26 +593,33 @@ function Picker:set_selection(row)
     return
   end
 
-  -- Handle adding '> ' to beginning of selections
-  if self._selection_row then
-    local old_selection = a.nvim_buf_get_lines(results_bufnr, self._selection_row, self._selection_row + 1, false)[1]
+  local set_ok, set_errmsg = pcall(function()
+    -- Handle adding '> ' to beginning of selections
+    if self._selection_row then
+      local old_selection = a.nvim_buf_get_lines(results_bufnr, self._selection_row, self._selection_row + 1, false)[1]
 
-    if old_selection then
-      a.nvim_buf_set_lines(results_bufnr, self._selection_row, self._selection_row + 1, false, {'  ' .. old_selection:sub(3)})
+      if old_selection then
+        a.nvim_buf_set_lines(results_bufnr, self._selection_row, self._selection_row + 1, false, {'  ' .. old_selection:sub(3)})
+      end
     end
+
+    a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {'> ' .. (a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] or ''):sub(3)})
+
+    a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
+    a.nvim_buf_add_highlight(
+      results_bufnr,
+      ns_telescope_selection,
+      'TelescopeSelection',
+      row,
+      0,
+      -1
+    )
+  end)
+
+  if not set_ok then
+    log.debug(set_errmsg)
+    return
   end
-
-  a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {'> ' .. (a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] or ''):sub(3)})
-
-  a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
-  a.nvim_buf_add_highlight(
-    results_bufnr,
-    ns_telescope_selection,
-    'TelescopeSelection',
-    row,
-    0,
-    -1
-  )
 
   -- if self._match_id then
   --   -- vim.fn.matchdelete(self._match_id)
