@@ -2,6 +2,7 @@
 
 local a = vim.api
 
+local log = require('telescope.log')
 local state = require('telescope.state')
 
 local actions = setmetatable({}, {
@@ -98,7 +99,10 @@ local function goto_file_selection(prompt_bufnr, command)
       local bufnr = vim.api.nvim_get_current_buf()
       a.nvim_buf_set_option(bufnr, 'buflisted', true)
       if row and col then
-        a.nvim_win_set_cursor(0, {row, col})
+        local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, {row, col})
+        if not ok then
+          log.debug("Failed to move to cursor:", err_msg)
+        end
       end
     end
   end
