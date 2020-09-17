@@ -26,7 +26,7 @@ end
 
 function Sorter:score(prompt, entry)
   -- TODO: Decide if we actually want to check the type every time.
-  return self:scoring_function(prompt, type(entry) == "string" and entry or entry.ordinal, entry)
+  return self:scoring_function(prompt or "", type(entry) == "string" and entry or entry.ordinal, entry)
 end
 
 function sorters.new(...)
