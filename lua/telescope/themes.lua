@@ -17,11 +17,12 @@ function themes.get_dropdown(opts)
     layout_strategy = "center",
     results_title = false,
     preview_title = "Preview",
-    border = false,
+    width = 70,
     borderchars = {
+      { '─', '│', '─', '│', '╭', '╮', '╯', '╰'},
       prompt = {"─", "│", " ", "│", "╭", "╮", "│", "│"},
       results = {"─", "│", "─", "│", "├", "┤", "╯", "╰"},
-      preview = {"=", "=", "", "", "", "", "", ""}
+      preview = { '─', '│', '─', '│', '╭', '╮', '╯', '╰'},
     },
   }
 
