@@ -88,6 +88,13 @@ local get_default = require('telescope.utils').get_default
 local resolver = {}
 
 local _resolve_map = {
+  -- Booleans
+  [function(val) return val == false end] = function(selector, val)
+    return function(...)
+      return val
+    end
+  end,
+
   -- Percentages
   [function(val) return type(val) == 'number' and val > 0 and val <= 1 end] = function(selector, val)
     return function(...)
@@ -102,6 +109,9 @@ local _resolve_map = {
     end
   end,
 
+
+  -- Tables TODO:
+  -- ...
 }
 
 resolver.resolve_height = function(val)
