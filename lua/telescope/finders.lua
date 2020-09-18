@@ -1,5 +1,6 @@
 local Job = require('plenary.job')
 
+local Cache = require('telescope.cache')
 local make_entry = require('telescope.make_entry')
 local log = require('telescope.log')
 
@@ -14,7 +15,9 @@ local _callable_obj = function()
   local obj = {}
 
   obj.__index = obj
-  obj.__call = function(t, ...) return t:_find(...) end
+  obj.__call = function(t, ...)
+    return t:_find(...)
+  end
 
   return obj
 end
@@ -46,11 +49,16 @@ function JobFinder:new(opts)
   --        vim.loop.new_pipe (stdin / stdout). stdout => filter pipe
   --        rg huge_search | fzf --filter prompt_is > buffer. buffer could do stuff do w/ preview callback
 
+  self.__index = self
   local obj = setmetatable({
     entry_maker = opts.entry_maker or make_entry.from_string,
     fn_command = opts.fn_command,
     static = opts.static,
     state = {},
+
+    track_results = opts.track_results,
+    cache = Cache.PromptCache:new(),
+    cache_round = 1,
 
     cwd = opts.cwd,
     writer = opts.writer,
@@ -64,23 +72,46 @@ function JobFinder:new(opts)
 end
 
 function JobFinder:_find(prompt, process_result, process_complete)
+
   START = vim.loop.hrtime()
   PERF()
   PERF('starting...')
+
+  if self.static and self.track_results then
+    self.cache:start_round(self.cache_round)
+    self.cache_round = self.cache_round + 1
+  end
 
   if self.job and not self.job.is_shutdown then
     PERF('...had to shutdown')
     self.job:shutdown()
   end
 
-  log.trace("Finding...")
   if self.static and self.done then
-    log.trace("Using previous results")
-    for _, v in ipairs(self._cached_lines) do
-      process_result(v)
+
+    local lines = self._cached_lines
+    if self.track_results then
+      local cached_results = self.cache:get_cache(prompt)
+
+      if cached_results and type(cached_results) == "table" then
+        lines = cached_results
+      end
     end
 
+    log.info("cached lines", #lines)
+
+    for _, v in ipairs(lines) do
+      local score = process_result(v)
+      if self.track_results then
+        self.cache:add_to_round(self.cache_round - 1, v, score)
+      end
+    end
+
+    if self.track_results then
+      self.cache:complete_round(self.cache_round - 1, prompt)
+    end
     process_complete()
+
     PERF('Num Lines: ', self._cached_lines)
     PERF('...finished static')
 
@@ -140,6 +171,7 @@ function JobFinder:_find(prompt, process_result, process_complete)
     on_exit = function()
       self.done = true
 
+      log.trace("I AM COMPLETE")
       process_complete()
 
       PERF('done')
@@ -240,6 +272,7 @@ finders.new_oneshot_job = function(command_list, opts)
   local command = table.remove(command_list, 1)
 
   return JobFinder:new {
+    track_results = opts.track_results,
     static = true,
 
     entry_maker = opts.entry_maker or make_entry.gen_from_string(),

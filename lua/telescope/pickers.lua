@@ -369,7 +369,7 @@ function Picker:find()
     local process_result = function(entry)
       -- TODO: Should we even have valid?
       if entry.valid == false then
-        return
+        return -1
       end
 
       log.trace("Processing result... ", entry)
@@ -382,17 +382,18 @@ function Picker:find()
 
         if not sort_ok then
           log.warn("Sorting failed with:", prompt, entry, sort_score)
-          return
+          return sort_score
         end
 
         if sort_score == -1 then
           filtered_amount = filtered_amount + 1
           log.trace("Filtering out result: ", entry)
-          return
+          return sort_score
         end
       end
 
       self.manager:add_entry(sort_score, entry)
+      return sort_score
     end
 
     local process_complete = vim.schedule_wrap(function()

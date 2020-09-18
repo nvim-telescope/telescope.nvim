@@ -21,6 +21,7 @@ end
 -- TODO: Give some bonus weight to files we've picked before
 -- TODO: Give some bonus weight to oldfiles
 
+local log  = require('telescope.log')
 local actions = require('telescope.actions')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
@@ -44,6 +45,8 @@ builtin.git_files = function(opts)
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)
   end
+
+  opts.track_results = vim.g["telescope_cache_results"]
 
   pickers.new(opts, {
     prompt    = 'Git File',
