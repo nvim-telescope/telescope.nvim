@@ -138,11 +138,12 @@ sorters.get_prime_fuzzy_file = function(opts)
         end
 
         score = score +
-        (cc + bonus_caps_matcher) *
+        (cc + bonus_caps_matcher) * -- Using caps should be worth more in score
         (1 +
-          curr.area_idx / area_count +
-          cc / #areas[curr.area_idx].word +
-          (curr.exact_match and 0.1 or 0))
+          curr.area_idx / area_count + -- More specific is worth more
+          cc / #areas[curr.area_idx].word + -- More percent of an area matched
+          (curr.exact_match and 0.1 or 0) + -- case matching
+          (curr.area_idx == area_count and 0.5 or 0)) -- A bonus for final word
 
         prev_area = curr.area_idx
         prev_offset = curr.area_offset
