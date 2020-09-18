@@ -112,19 +112,24 @@ layout_strategies.horizontal = function(self, max_columns, max_lines, prompt_tit
 end
 
 --[[
-    +-----------------+
-    |     Prompt      |
-    +-----------------+
-    |     Result      |
-    |     Result      |
-    |     Result      |
-    +-----------------+
+    +--------------+
+    |    Preview   |
+    +--------------+
+    |    Prompt    |
+    +--------------+
+    |    Result    |
+    |    Result    |
+    |    Result    |
+    +--------------+
+
+
+
 --]]
 
 -- Check if there are any borders. Right now it's a little raw as
 -- there are a few things that contribute to the border
 local is_borderless = function(opts)
-  if opts.window.border == false then return true else return false end
+  return opts.window.border == false
 end
 
 layout_strategies.center = function(self, columns, lines, prompt_title)
@@ -133,18 +138,9 @@ layout_strategies.center = function(self, columns, lines, prompt_title)
   local results = initial_options.results
   local prompt = initial_options.prompt
 
-  local max_results = self.max_results or 15
-  local width = resolve.resolve_width(function(self, max_columns)
-    local width_opts = resolve.win_option(self.window.width)
+  local max_results = 15
+  local width = resolve.resolve_width(self.window.width)(self, columns)
 
-    if width_opts.preview > max_columns then
-      return max_columns
-    end
-
-    return width_opts.preview
-  end)(self, columns)
-
-  -- All width's will likely result in the same width. Can be more specific with inquiry.
   local max_width = (width > columns and columns or width)
 
   prompt.height = 1
@@ -154,9 +150,11 @@ layout_strategies.center = function(self, columns, lines, prompt_title)
   results.width = max_width
   preview.width = max_width
 
-  local bs = 1 -- border size
-
-  if is_borderless(self) then bs = 0 end
+  -- border size
+  local bs = 1
+  if is_borderless(self) then
+    bs = 0
+  end
 
   prompt.line = (lines / 2) - ((max_results + (bs * 2)) / 2)
   results.line = prompt.line + prompt.height + (bs * 2)
@@ -168,8 +166,7 @@ layout_strategies.center = function(self, columns, lines, prompt_title)
     preview.height = 0
   end
 
-  -- Get left column, after centering, appling the width, and the border size
-  results.col = (columns / 2) - (width / 2) + (bs * 2)
+  results.col = math.ceil((columns / 2) - (width / 2) - bs)
   prompt.col = results.col
   preview.col = results.col
 
