@@ -22,9 +22,11 @@ Result of `resolve` should be a table with:
   },
 
   prompt = {
-    get_width = function(self, max_columns, max_lines) return 1end
+    get_width = function(self, max_columns, max_lines) end
     get_height = function(self, max_columns, max_lines) end
   },
+
+  total ?
 }
 
 !!NOT IMPLEMENTED YET!!
@@ -111,7 +113,17 @@ local _resolve_map = {
 
 
   -- Tables TODO:
-  -- ...
+  -- ... {70, max}
+
+
+  -- function:
+  --    Function must have same signature as get_window_layout
+  --        function(self, max_columns, max_lines): number
+  --
+  --    Resulting number is used for this configuration value.
+  [function(val) return type(val) == 'function' end] = function(selector, val)
+    return val
+  end,
 }
 
 resolver.resolve_height = function(val)
