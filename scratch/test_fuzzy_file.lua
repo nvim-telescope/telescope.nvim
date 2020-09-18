@@ -16,5 +16,5 @@ assert(sorter:score("AAA", "/blah/this/aaa/that") > sorter:score("AAA", "/blah/t
 -- TODO: Make it so that capital letters count extra for being after a path sep.
 -- assert(sorter:score("ftp", "/folder/to/python") > sorter:score("FTP", "/folder/to/python"))
 
--- TODO: Make it so that 
+-- TODO: Make it so that
 -- assert(sorter:score("build", "/home/tj/build/neovim") > sorter:score("htbn", "/home/tj/build/neovim"))
