@@ -656,8 +656,11 @@ end
 
 -- TODO: We should consider adding `process_bulk` or `bulk_entry_manager` for things
 -- that we always know the items and can score quickly, so as to avoid drawing so much.
-pickers.entry_manager = function(max_results, set_entry)
+pickers.entry_manager = function(max_results, set_entry, info)
   log.debug("Creating entry_manager...")
+
+  info = info or {}
+  info.items_looped = 0
 
   -- state contains list of
   --    {
@@ -669,11 +672,19 @@ pickers.entry_manager = function(max_results, set_entry)
 
   set_entry = set_entry or function() end
 
+  local worst_acceptable_score = math.huge
+
   return setmetatable({
     add_entry = function(self, score, entry)
       score = score or 0
 
+      if score >= worst_acceptable_score then
+        return
+      end
+
       for index, item in ipairs(entry_state) do
+        info.items_looped = info.items_looped + 1
+
         if item.score > score then
           return self:insert(index, {
             score = score,
@@ -683,7 +694,7 @@ pickers.entry_manager = function(max_results, set_entry)
 
         -- Don't add results that are too bad.
         if index >= max_results then
-          return self
+          return
         end
       end
 
@@ -701,16 +712,23 @@ pickers.entry_manager = function(max_results, set_entry)
 
       -- To insert something, we place at the next available index (or specified index)
       -- and then shift all the corresponding items one place.
-      local next_entry
+      local next_entry, last_score
       repeat
         next_entry = entry_state[index]
 
         set_entry(index, entry.entry)
         entry_state[index] = entry
 
+        last_score = entry.score
+
         index = index + 1
         entry = next_entry
-      until not next_entry
+
+      until not next_entry or index > max_results
+
+      if index > max_results then
+        worst_acceptable_score = last_score
+      end
     end,
 
     num_results = function()

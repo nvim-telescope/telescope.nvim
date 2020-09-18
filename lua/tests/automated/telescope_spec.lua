@@ -10,7 +10,7 @@ local pickers = require('telescope.pickers')
 local utils = require('telescope.utils')
 
 --[[
-require("plenary.test_harness"):test_directory("busted", "./tests/")
+lua RELOAD('plenary'); require("plenary.test_harness"):test_directory("busted", "./tests/automated")
 --]]
 
 describe('Picker', function()
@@ -263,7 +263,7 @@ describe('Sorters', function()
       assert(better_match < worse_match, "Final match should be stronger")
     end)
 
-    it('sorts multiple finds better', function()
+    pending('sorts multiple finds better', function()
       local sorter = require('telescope.sorters').get_fuzzy_file()
 
       local multi_match = sorter:score('generics', 'exercises/generics/generics2.rs')
