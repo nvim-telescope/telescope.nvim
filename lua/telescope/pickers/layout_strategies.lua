@@ -27,6 +27,7 @@ end
 local layout_strategies = {}
 local log = require("telescope.log")
 local resolve = require("telescope.config.resolve")
+
 --[[
    +-----------------+---------------------+
    |                 |                     |
@@ -123,7 +124,7 @@ end
 -- Check if there are any borders. Right now it's a little raw as
 -- there are a few things that contribute to the border
 local is_borderless = function(opts)
-  if opts.window.border == false then return true end
+  if opts.window.border == false then return true else return false end
 end
 
 layout_strategies.center = function(self, columns, lines, prompt_title)
@@ -133,8 +134,17 @@ layout_strategies.center = function(self, columns, lines, prompt_title)
   local prompt = initial_options.prompt
 
   local max_results = self.max_results or 15
-  local width = self.width or 70
+  local width = resolve.resolve_width(function(self, max_columns)
+    local width_opts = resolve.win_option(self.window.width)
 
+    if width_opts.preview > max_columns then
+      return max_columns
+    end
+
+    return width_opts.preview
+  end)(self, columns)
+
+  -- All width's will likely result in the same width. Can be more specific with inquiry.
   local max_width = (width > columns and columns or width)
 
   prompt.height = 1
@@ -152,7 +162,7 @@ layout_strategies.center = function(self, columns, lines, prompt_title)
   results.line = prompt.line + prompt.height + (bs * 2)
 
   preview.line = 1
-  preview.height = math.floor(prompt.line - 2)
+  preview.height = math.floor(prompt.line - (2 + bs))
 
   if not self.previewer or columns < self.preview_cutoff then
     preview.height = 0
