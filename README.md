@@ -292,7 +292,7 @@ Common groups of settings can be setup to allow for themes. We have some built i
 
 ### Dropdown
 
-![Dropdown layout](https://i.imgur.com/bQKiEkh.png)
+![Dropdown layout](https://i.imgur.com/S3DE30I.png)
 
 ```vim
 nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({}))<cr>
