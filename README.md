@@ -290,6 +290,10 @@ Use the telescope.
 
 Common groups of settings can be setup to allow for themes. We have some built in themes but are looking for more cool options. 
 
+### Dropdown
+
+![Dropdown layout](https://i.imgur.com/bQKiEkh.png)
+
 ```vim
 nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({}))<cr>
 ```
