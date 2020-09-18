@@ -1,5 +1,7 @@
 require('plenary.test_harness'):setup_busted()
 
+local assert = require('luassert')
+
 local log = require('telescope.log')
 log.level = 'info'
 -- log.use_console = false
@@ -24,7 +26,7 @@ describe('Picker', function()
 
       manager:add_entry(1, "hello")
 
-      assert.are.same(1, manager:_get_state()[1].score)
+      assert.are.same(1, manager:get_score(1))
     end)
 
     it('works with two entries', function()
@@ -33,8 +35,8 @@ describe('Picker', function()
       manager:add_entry(1, "hello")
       manager:add_entry(2, "later")
 
-      assert.are.same("hello", manager:get_ordinal(1))
-      assert.are.same("later", manager:get_ordinal(2))
+      assert.are.same("hello", manager:get_entry(1))
+      assert.are.same("later", manager:get_entry(2))
     end)
 
     it('calls functions when inserting', function()
@@ -62,8 +64,8 @@ describe('Picker', function()
       manager:add_entry(5, "worse result")
       manager:add_entry(2, "better result")
 
-      assert.are.same("better result", manager:get_ordinal(1))
-      assert.are.same("worse result", manager:get_ordinal(2))
+      assert.are.same("better result", manager:get_entry(1))
+      assert.are.same("worse result", manager:get_entry(2))
 
       -- once to insert "worse"
       -- once to insert "better"
@@ -77,7 +79,7 @@ describe('Picker', function()
       manager:add_entry(2, "better result")
       manager:add_entry(5, "worse result")
 
-      assert.are.same("better result", manager:get_ordinal(1))
+      assert.are.same("better result", manager:get_entry(1))
 
       -- once to insert "worse"
       -- once to insert "better"
@@ -210,21 +212,21 @@ describe('Picker', function()
 end)
 
 describe('Sorters', function()
-  describe('norcalli_sorter', function()
+  describe('generic_fuzzy_sorter', function()
     it('sort matches well', function()
-      local sorter = require('telescope.sorters').get_norcalli_sorter()
+      local sorter = require('telescope.sorters').get_generic_fuzzy_sorter()
 
       local exact_match = sorter:score('hello', 'hello')
       local no_match = sorter:score('abcdef', 'ghijkl')
       local ok_match = sorter:score('abcdef', 'ab')
 
-      assert(exact_match < no_match)
-      assert(exact_match < ok_match)
-      assert(ok_match < no_match)
+      assert(exact_match < no_match, "exact match better than no match")
+      assert(exact_match < ok_match, "exact match better than ok match")
+      assert(ok_match < no_match, "ok match better than no match")
     end)
 
     it('sorts multiple finds better', function()
-      local sorter = require('telescope.sorters').get_norcalli_sorter()
+      local sorter = require('telescope.sorters').get_generic_fuzzy_sorter()
 
       local multi_match = sorter:score('generics', 'exercises/generics/generics2.rs')
       local one_match = sorter:score('abcdef', 'exercises/generics/README.md')
@@ -245,27 +247,30 @@ describe('Sorters', function()
         exact_match < no_match,
         string.format("Exact match better than no match: %s %s", exact_match, no_match)
       )
-      assert(exact_match < ok_match, "Exact match better than OK match")
+      assert(
+        exact_match < ok_match,
+        string.format("Exact match better than OK match: %s %s", exact_match, ok_match)
+      )
       assert(ok_match < no_match, "OK match better than no match")
     end)
 
     it('sorts matches after last os sep better', function()
       local sorter = require('telescope.sorters').get_fuzzy_file()
 
-      local exact_match = sorter:score('aaa/bbb', 'aaa')
-      local ok_match = sorter:score('bbb/aaa', 'aaa')
+      local better_match = sorter:score('aaa', 'bbb/aaa')
+      local worse_match  = sorter:score('aaa', 'aaa/bbb')
 
-      assert(exact_match < ok_match, "Exact match better than OK match")
+      assert(better_match < worse_match, "Final match should be stronger")
     end)
 
-  --   it('sorts multiple finds better', function()
-  --     local sorter = require('telescope.sorters').get_fuzzy_file()
+    it('sorts multiple finds better', function()
+      local sorter = require('telescope.sorters').get_fuzzy_file()
 
-  --     local multi_match = sorter:score('generics', 'exercises/generics/generics2.rs')
-  --     local one_match = sorter:score('abcdef', 'exercises/generics/README.md')
+      local multi_match = sorter:score('generics', 'exercises/generics/generics2.rs')
+      local one_match = sorter:score('abcdef', 'exercises/generics/README.md')
 
-  --     assert(multi_match < one_match)
-  --   end)
+      assert(multi_match < one_match)
+    end)
   end)
 end)
 

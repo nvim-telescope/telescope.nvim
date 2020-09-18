@@ -671,8 +671,6 @@ pickers.entry_manager = function(max_results, set_entry)
 
   return setmetatable({
     add_entry = function(self, score, entry)
-      assert(type(entry) == "table", "entry must be a table by the time it reaches here")
-
       score = score or 0
 
       for index, item in ipairs(entry_state) do
@@ -725,6 +723,10 @@ pickers.entry_manager = function(max_results, set_entry)
 
     get_entry = function(_, index)
       return (entry_state[index] or {}).entry
+    end,
+
+    get_score = function(_, index)
+      return (entry_state[index] or {}).score
     end,
 
     find_entry = function(_, entry)

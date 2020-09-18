@@ -55,7 +55,6 @@ sorters.get_ngram_sorter = function()
         return score
       end)
 
-      print(prompt, line, result)
       return ok and result or 1
     end
   }
@@ -207,13 +206,6 @@ sorters.get_fuzzy_file = function(opts)
       return 1 / denominator
     end
   }
-end
-
-sorters.get_norcalli_sorter = function()
-  vim.api.nvim_err_writeln(
-    "get_norcalli_sorter() is changed to get_generic_fuzzy_sorter()"
-  )
-  return sorters.get_generic_fuzzy_sorter()
 end
 
 sorters.get_generic_fuzzy_sorter = function()
