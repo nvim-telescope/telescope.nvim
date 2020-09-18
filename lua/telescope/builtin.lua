@@ -136,7 +136,7 @@ builtin.lsp_references = function(opts)
   local params = vim.lsp.util.make_position_params()
   params.context = { includeDeclaration = true }
 
-  local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/references", params)
+  local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/references", params, opts.timeout or 10000)
   local locations = {}
   for _, server_results in pairs(results_lsp) do
     vim.list_extend(locations, vim.lsp.util.locations_to_items(server_results.result) or {})
@@ -161,7 +161,7 @@ builtin.lsp_document_symbols = function(opts)
   opts = opts or {}
 
   local params = vim.lsp.util.make_position_params()
-  local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/documentSymbol", params)
+  local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/documentSymbol", params, opts.timeout or 10000)
 
   if not results_lsp or vim.tbl_isempty(results_lsp) then
     print("No results from textDocument/documentSymbol")
@@ -197,7 +197,7 @@ builtin.lsp_code_actions = function(opts)
     diagnostics = vim.lsp.util.get_line_diagnostics()
   }
 
-  local results_lsp, err = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 1000)
+  local results_lsp, err = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, opts.timeout or 10000)
 
   if err then
     print("ERROR: " .. err)
@@ -266,7 +266,7 @@ builtin.lsp_workspace_symbols = function(opts)
   opts.shorten_path = utils.get_default(opts.shorten_path, true)
 
   local params = {query = opts.query or ''}
-  local results_lsp = vim.lsp.buf_request_sync(0, "workspace/symbol", params, opts.timeout or 1000)
+  local results_lsp = vim.lsp.buf_request_sync(0, "workspace/symbol", params, opts.timeout or 10000)
 
   if not results_lsp or vim.tbl_isempty(results_lsp) then
     print("No results from workspace/symbol")
