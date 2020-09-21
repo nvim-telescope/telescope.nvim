@@ -660,7 +660,8 @@ pickers.entry_manager = function(max_results, set_entry, info)
   log.debug("Creating entry_manager...")
 
   info = info or {}
-  info.items_looped = 0
+  info.looped = 0
+  info.inserted = 0
 
   -- state contains list of
   --    {
@@ -683,7 +684,7 @@ pickers.entry_manager = function(max_results, set_entry, info)
       end
 
       for index, item in ipairs(entry_state) do
-        info.items_looped = info.items_looped + 1
+        info.looped = info.looped + 1
 
         if item.score > score then
           return self:insert(index, {
@@ -714,6 +715,7 @@ pickers.entry_manager = function(max_results, set_entry, info)
       -- and then shift all the corresponding items one place.
       local next_entry, last_score
       repeat
+        info.inserted = info.inserted + 1 
         next_entry = entry_state[index]
 
         set_entry(index, entry.entry)
