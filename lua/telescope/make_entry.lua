@@ -181,6 +181,8 @@ end
 function make_entry.gen_from_buffer(opts)
   opts = opts or {}
 
+  local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
+
   local get_position = function(entry)
     local tabpage_wins = vim.api.nvim_tabpage_list_wins(0)
     for k, v in ipairs(tabpage_wins) do
@@ -207,6 +209,11 @@ function make_entry.gen_from_buffer(opts)
   return function(entry)
     local bufnr_str = tostring(entry)
     local bufname = vim.api.nvim_buf_get_name(entry)
+
+    -- if bufname is inside the cwd, trim that part of the string
+    if bufname:sub(1, #cwd) == cwd  then
+      bufname = bufname:sub(#cwd + 1, #bufname)
+    end
 
     local position = get_position(entry)
 
