@@ -132,6 +132,8 @@ function JobFinder:_find(prompt, process_result, process_complete)
 
     writer = writer,
 
+    enable_recording = false,
+
     on_stdout = on_output,
     on_stderr = on_output,
 
