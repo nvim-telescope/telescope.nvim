@@ -147,7 +147,7 @@ function actions.close(prompt_bufnr)
   vim.cmd [[stopinsert]]
 
   vim.api.nvim_win_close(prompt_win, true)
-  pcall(vim.cmd, string.format([[bdelete! %s]], prompt_bufnr))
+  pcall(vim.cmd, string.format([[silent bdelete! %s]], prompt_bufnr))
 
   a.nvim_set_current_win(original_win_id)
 end
