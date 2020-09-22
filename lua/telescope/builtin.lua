@@ -345,11 +345,12 @@ builtin.grep_string = function(opts)
   local search = opts.search or vim.fn.expand("<cword>")
 
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
+  opts.word_match = opts.word_match or ''
 
   pickers.new(opts, {
     prompt = 'Find Word',
     finder = finders.new_oneshot_job(
-      flatten { conf.vimgrep_arguments, search},
+      flatten { conf.vimgrep_arguments, opts.word_match, search},
       opts
     ),
     previewer = previewers.vimgrep.new(opts),
