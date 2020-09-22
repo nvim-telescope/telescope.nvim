@@ -1,4 +1,5 @@
+
 return require('plenary.log').new {
   plugin = 'telescope',
-  level = 'info',
+  level = (vim.loop.os_getenv("USER") == 'tj' and 'debug') or 'info',
 }

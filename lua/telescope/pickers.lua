@@ -581,7 +581,7 @@ function Picker:set_selection(row)
   end
 
   if not self:can_select_row(row) then
-    log.info("Cannot select row:", row, self.manager:num_results(), self.max_results)
+    log.debug("Cannot select row:", row, self.manager:num_results(), self.max_results)
     return
   end
 
@@ -665,7 +665,7 @@ end
 -- TODO: We should consider adding `process_bulk` or `bulk_entry_manager` for things
 -- that we always know the items and can score quickly, so as to avoid drawing so much.
 pickers.entry_manager = function(max_results, set_entry, info)
-  log.debug("Creating entry_manager...")
+  log.trace("Creating entry_manager...")
 
   info = info or {}
   info.looped = 0
