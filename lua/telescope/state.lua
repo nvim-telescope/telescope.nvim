@@ -15,4 +15,8 @@ function state.clear_status(prompt_bufnr)
   state.set_status(prompt_bufnr, nil)
 end
 
+function state.get_existing_prompts()
+  return vim.tbl_keys(TelescopeGlobalState)
+end
+
 return state
