@@ -212,7 +212,12 @@ function make_entry.gen_from_buffer(opts)
 
     -- if bufname is inside the cwd, trim that part of the string
     if bufname:sub(1, #cwd) == cwd  then
-      bufname = bufname:sub(#cwd + 1, #bufname)
+      local offset =  0
+      -- if  cwd does ends in '/', we need to take it off
+      if cwd:sub(#cwd, #cwd) ~= '/' then
+        offset = 1
+      end
+      bufname = bufname:sub(#cwd + 1 + offset, #bufname)
     end
 
     local position = get_position(entry)
