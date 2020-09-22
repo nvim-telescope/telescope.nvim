@@ -1,4 +1,7 @@
+require('plenary.reload').reload_module('plenary')
 require('plenary.reload').reload_module('telescope')
+
+PERF = function() end
 
 --[[
 
@@ -15,7 +18,7 @@ local sorters = require('telescope.sorters')
 local find_and_sort_test = function(prompt, f, s)
   local info = {}
 
-  info.start = vim.loop.hrtime()
+  local start = vim.loop.hrtime()
 
   info.filtered = 0
   info.added = 0
@@ -47,8 +50,7 @@ local find_and_sort_test = function(prompt, f, s)
   end
 
   local process_complete = function()
-    info.finish = vim.loop.hrtime()
-    info.time = (info.finish - info.start) / 1e9
+    info.time = (vim.loop.hrtime() - start) / 1e9
 
     info.total = info.filtered + info.added
     completed = true
@@ -62,26 +64,53 @@ local find_and_sort_test = function(prompt, f, s)
   return entry_manager, info
 end
 
-local cwd = vim.fn.expand("~/")
+local info_to_csv = function(info, filename)
+  local writer = io.open(filename, "a")
 
-local finder = finders.new_oneshot_job(
-  {"fdfind"},
-  {
-    cwd = cwd,
-    entry_maker = make_entry.gen_from_file {cwd = cwd},
-    -- disable_devicons = true,
-    -- maximum_results = 1000,
-  }
-)
+  writer:write(string.format("%.8f", info.scoring_time) .. "\t")
+  writer:write(string.format("%.8f", info.time) .. "\t")
+  writer:write(info.looped .. "\t")
+  writer:write(info.filtered .. "\t")
+  writer:write(info.added .. "\t")
+  writer:write(info.inserted .. "\t")
+  writer:write(info.total .. "\t")
+  writer:write(info.set_entry .. "\t")
+  writer:write(string.format("%.0f", collectgarbage("count")) .. "\t")
+  writer:write("\n")
 
-local res, info = find_and_sort_test(
-  "pickers.lua",
-  finder,
-  sorters.get_generic_fuzzy_sorter()
-)
+  writer:close()
+end
 
-print(vim.inspect(res:get_entry(1)))
-print(vim.inspect(info))
 
+local cwd = vim.fn.expand("~/build/neovim")
+
+collectgarbage("collect")
+for _ = 1, 1 do
+
+  -- local s = sorters.get_fuzzy_file()
+  local s = sorters.get_generic_fuzzy_sorter()
+  local finder = finders.new_oneshot_job(
+    {"fdfind"},
+    {
+      cwd = cwd,
+      entry_maker = make_entry.gen_from_file {cwd = cwd},
+      -- disable_devicons = true,
+      -- maximum_results = 1000,
+    }
+  )
+
+  local res, info = find_and_sort_test(
+    "pickers.lua",
+    finder,
+    s
+  )
+
+  -- print(vim.inspect(res:get_entry(1)))
+  -- print(vim.inspect(info))
+
+  info_to_csv(info, "/home/tj/tmp/profile.csv")
+
+  collectgarbage("collect")
+end
 -- No skip: 2,206,186
 -- Ya skip:     2,133
