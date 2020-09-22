@@ -250,6 +250,7 @@ function Picker:can_select_row(row)
 end
 
 function Picker:find()
+  self:close_existing_pickers()
   self:reset_selection()
 
   local prompt_string = assert(self.prompt, "Prompt is required.")
@@ -648,6 +649,13 @@ function Picker:set_selection(row)
     )
   end
 end
+
+function Picker:close_existing_pickers()
+  for _, prompt_bufnr in ipairs(state.get_existing_prompts()) do
+    actions.close(prompt_bufnr)
+  end
+end
+
 
 pickers.new = function(opts, defaults)
   opts = extend(opts, defaults)
