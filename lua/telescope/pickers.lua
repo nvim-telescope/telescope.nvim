@@ -296,9 +296,8 @@ function Picker:find()
   -- TODO: We need to center this and make it prettier...
   local prompt_win, prompt_opts = popup.create('', popup_opts.prompt)
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
-  a.nvim_win_set_option(prompt_win, 'winblend', self.window.winblend)
-
   a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
+  a.nvim_win_set_option(prompt_win, 'winblend', self.window.winblend)
 
   -- a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
   -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_string)
