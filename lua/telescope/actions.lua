@@ -101,6 +101,7 @@ local function goto_file_selection(prompt_bufnr, command)
       local bufnr = vim.api.nvim_get_current_buf()
       if filename ~= vim.api.nvim_buf_get_name(bufnr) then
         vim.cmd(string.format(":%s %s", command, filename))
+        bufnr = vim.api.nvim_get_current_buf()
         a.nvim_buf_set_option(bufnr, "buflisted", true)
       end
 
