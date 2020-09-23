@@ -102,6 +102,7 @@ local function goto_file_selection(prompt_bufnr, command)
       if filename ~= vim.api.nvim_buf_get_name(bufnr) then
         vim.cmd(string.format(":%s %s", command, filename))
         a.nvim_buf_set_option(bufnr, "buflisted", true)
+        vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
       end
 
       if row and col then
