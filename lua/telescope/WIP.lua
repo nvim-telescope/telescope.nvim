@@ -1,4 +1,6 @@
 
+local make_entry = require('telescope.make_entry')
+local actions = require('telescope.actions')
 local finders = require('telescope.finders')
 local previewers = require('telescope.previewers')
 local pickers = require('telescope.pickers')
@@ -52,6 +54,35 @@ WIP.completion = function(opts)
   })
 
   reference_picker:find {}
+end
+
+
+WIP.reloader = function(opts)
+  opts = opts or {}
+
+  pickers.new(opts, {
+    prompt = 'Packages',
+    finder = finders.new_table {
+      results = vim.tbl_keys(package.loaded),
+      entry_maker = make_entry.gen_from_string(opts),
+    },
+    sorter = sorters.get_generic_fuzzy_sorter(),
+
+    attach_mappings = function(prompt_bufnr, map)
+      local reload_package = function()
+        local selection = actions.get_selected_entry(prompt_bufnr)
+
+        actions.close(prompt_bufnr)
+
+        print(vim.inspect(selection))
+      end
+
+      map('i', '<CR>', reload_package)
+      map('n', '<CR>', reload_package)
+
+      return true
+    end
+  }):find()
 end
 
 -- TODO: Use tree sitter to get "everything" in your current scope / file / etc.
