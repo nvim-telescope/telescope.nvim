@@ -462,9 +462,9 @@ function Picker:find()
   local results_border_win = results_opts.border and results_opts.border.win_id
   local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
 
-  if prompt_border_win then vim.api.nvim_win_set_option(prompt_border_win, 'winhl', 'Normal:TelescopeNormal') end
-  if results_border_win then vim.api.nvim_win_set_option(results_border_win, 'winhl', 'Normal:TelescopeNormal') end
-  if preview_border_win then vim.api.nvim_win_set_option(preview_border_win, 'winhl', 'Normal:TelescopeNormal') end
+  if prompt_border_win then vim.api.nvim_win_set_option(prompt_border_win, 'winhl', 'Normal:TelescopeBorder') end
+  if results_border_win then vim.api.nvim_win_set_option(results_border_win, 'winhl', 'Normal:TelescopeBorder') end
+  if preview_border_win then vim.api.nvim_win_set_option(preview_border_win, 'winhl', 'Normal:TelescopeBorder') end
 
   state.set_status(prompt_bufnr, {
     prompt_bufnr = prompt_bufnr,
