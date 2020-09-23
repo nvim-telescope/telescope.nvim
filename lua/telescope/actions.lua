@@ -98,10 +98,12 @@ local function goto_file_selection(prompt_bufnr, command)
         vim.cmd(string.format(":%s #%d", command, entry_bufnr))
       end
     else
-      vim.cmd(string.format(":%s %s", command, filename))
-
       local bufnr = vim.api.nvim_get_current_buf()
-      a.nvim_buf_set_option(bufnr, 'buflisted', true)
+      if filename ~= vim.api.nvim_buf_get_name(bufnr) then
+        vim.cmd(string.format(":%s %s", command, filename))
+        a.nvim_buf_set_option(bufnr, "buflisted", true)
+      end
+
       if row and col then
         local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, {row, col})
         if not ok then

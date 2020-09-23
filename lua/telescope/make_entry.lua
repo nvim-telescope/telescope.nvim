@@ -268,7 +268,7 @@ function make_entry.gen_from_treesitter(opts)
       valid = true,
 
       value = entry.node,
-      ordinal = entry.kind .. " " .. node_text,
+      ordinal = string.format("%s [%s]", node_text, entry.kind),
       display = make_display,
 
       node_text = node_text,
