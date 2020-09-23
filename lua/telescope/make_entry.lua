@@ -278,18 +278,27 @@ function make_entry.gen_from_treesitter(opts)
 end
 
 function make_entry.gen_from_packages(opts)
-  return function(module_name)
+  opts = opts or {}
+
+  local make_display = function(module_name)
     local path = package.searchpath(module_name, package.path) or ""
-    display = string.format("%-" .. opts.column_len .. "s : %s", module_name, vim.fn.fnamemodify(path, ":~:."))
-    return {
+    local display = string.format("%-" .. opts.column_len .. "s : %s", module_name, vim.fn.fnamemodify(path, ":~:."))
+
+    return display
+  end
+
+  return function(module_name)
+    local entry = {
       valid = module_name ~= "",
       entry_type = make_entry.types.GENERIC,
 
       value = module_name,
       ordinal = module_name,
-      display = display,
-    }
-    end
+      }
+    entry.display = make_display(module_name)
+
+    return entry
+  end
 end
 
 return make_entry
