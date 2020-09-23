@@ -410,8 +410,8 @@ builtin.reloader = function(opts)
   for index, module_name in pairs(package_list) do
     if type(require(module_name)) ~= 'table' or module_name:sub(1,1) == "_" or package.searchpath(module_name, package.path) == nil then
       table.remove(package_list, index)
-    elseif module_name:len() > opts.column_len then
-      opts.column_len = module_name:len()
+    elseif #module_name > opts.column_len then
+      opts.column_len = #module_name
     end
   end
 
