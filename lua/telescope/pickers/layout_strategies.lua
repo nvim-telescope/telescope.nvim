@@ -157,7 +157,7 @@ layout_strategies.center = function(self, columns, lines, prompt_title)
   end
 
   prompt.line = (lines / 2) - ((max_results + (bs * 2)) / 2)
-  results.line = prompt.line + prompt.height + (bs * 2)
+  results.line = prompt.line + 2
 
   preview.line = 1
   preview.height = math.floor(prompt.line - (2 + bs))
