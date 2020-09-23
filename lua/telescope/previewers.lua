@@ -241,7 +241,7 @@ previewers.vim_buffer = defaulter(function(_)
     setup = function() return { last_set_bufnr = nil } end,
 
     teardown = function(self)
-      if self.state.last_set_bufnr then
+      if self.state and self.state.last_set_bufnr then
         vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, previewer_ns, 0, -1)
       end
     end,
