@@ -23,38 +23,12 @@ function PromptCache:new(opts)
   return obj
 end
 
-function PromptCache:start_round(cache_round)
-  self.cache_round = cache_round
-  log.trace("start_round (had this", self.results and #self.results or nil, "for past results)", self.cache_round)
-  self.results = {}
+function PromptCache:set_cache(prompt, item_to_cache)
+  self.results = item_to_cache
+  self:_complete(prompt)
 end
 
-function PromptCache:add_to_round(cache_round, line, score)
-  if cache_round < self.cache_round or score == -1 then
-    return
-  end
-
-  table.insert(self.results, line)
-end
-
-function PromptCache:_last_cache()
-  local last_cache = nil
-
-  for idx = 1, #self.cached_results do
-    local cache = self.cached_results[idx]
-    if cache then
-      last_cache = cache
-    end
-  end
-
-  return last_cache
-end
-
-function PromptCache:complete_round(cache_round, prompt)
-  if cache_round ~= self.cache_round then
-    return
-  end
-
+function PromptCache:_complete(prompt)
   if #prompt == 0 then
     self:_reset()
     return
@@ -83,7 +57,7 @@ function PromptCache:complete_round(cache_round, prompt)
   -- diff = 2
   for i = idx, #prompt do
     if #self.cached_results < (#prompt - 1) then
-      local last_cache = self:_last_cache()
+      local last_cache = self:get_last_cache()
       table.insert(self.cached_results, last_cache)
     else
       table.insert(self.cached_results, cached_lines)
@@ -91,6 +65,41 @@ function PromptCache:complete_round(cache_round, prompt)
   end
 
   self.current_line = prompt
+end
+
+function PromptCache:start_round(cache_round)
+  self.cache_round = cache_round
+  log.trace("start_round (had this", self.results and #self.results or nil, "for past results)", self.cache_round)
+  self.results = {}
+end
+
+function PromptCache:add_to_round(cache_round, line, score)
+  if cache_round < self.cache_round or score == -1 then
+    return
+  end
+
+  table.insert(self.results, line)
+end
+
+function PromptCache:get_last_cache()
+  local last_cache = nil
+
+  for idx = 1, #self.cached_results do
+    local cache = self.cached_results[idx]
+    if cache then
+      last_cache = cache
+    end
+  end
+
+  return last_cache
+end
+
+function PromptCache:complete_round(cache_round, prompt)
+  if cache_round ~= self.cache_round then
+    return
+  end
+
+  self:_complete(prompt)
 end
 
 function PromptCache:get_cache(prompt)

@@ -47,6 +47,7 @@ builtin.git_files = function(opts)
   end
 
   opts.track_results = vim.g["telescope_cache_results"]
+  local use_prime = vim.g["telescope_prime_fuzzy_find"]
 
   pickers.new(opts, {
     prompt    = 'Git File',
@@ -55,7 +56,8 @@ builtin.git_files = function(opts)
       opts
     ),
     previewer = previewers.cat.new(opts),
-    sorter    = sorters.get_prime_fuzzy_file(opts),
+    sorter    = use_prime and sorters.get_prime_fuzzy_file(opts) or
+                sorters.get_fuzzy_file(opts)
   }):find()
 end
 

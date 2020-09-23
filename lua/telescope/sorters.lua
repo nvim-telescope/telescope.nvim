@@ -1,3 +1,4 @@
+local Cache = require('telescope.cache')
 local log = require('telescope.log')
 local util = require('telescope.utils')
 
@@ -212,21 +213,45 @@ sorters.get_prime_fuzzy_file = function(opts)
     return return_points
   end
 
+  local line_cache = {}
+  local function get_cache_for(line, prompt)
+    if not line_cache[line] then
+      line_cache[line] = Cache.PromptCache:new()
+    end
+
+    return line_cache[line]:get_cache(prompt)
+  end
+
+  local function cache_line_results(line, prompt, results)
+    local cache = line_cache[line]
+    cache:set_cache(prompt, results)
+  end
+
+  local function cache_remove_line(line)
+    line_cache[line] = nil
+  end
+
   return Sorter:new {
     scoring_function = function(_, prompt, line)
       if prompt == "" then
         return 1
       end
 
-      local areas = create_areas(line)
+      local cache = get_cache_for(line, prompt) or {}
+      local areas = cache.areas or create_areas(line)
+      local new_cache = {
+        areas = areas
+      }
+
       local exact_match = false
       local idx = 1
+
       while idx <= #prompt and not exact_match do
         exact_match = is_upper_case(prompt:byte(idx))
         idx = idx + 1
       end
 
-      local points = {
+      local points = cache.points or {
         {
           -- this is the terminal node
           area_idx = 1,
@@ -235,7 +260,7 @@ sorters.get_prime_fuzzy_file = function(opts)
         }
       }
 
-      idx = 1
+      idx = cache.idx or 1
 
       while #points > 0 and idx <= #prompt do
         points = find_points(areas, points, prompt, idx, exact_match)
@@ -243,15 +268,21 @@ sorters.get_prime_fuzzy_file = function(opts)
       end
 
       if #points == 0 then
+        cache_remove_line(line)
         return -1
       end
+
+      new_cache.idx = idx
+      new_cache.points = points
 
       local score_value = score(points, areas)
 
       if score_value == 0 then
+        cache_remove_line(line)
         return -1
       end
 
+      cache_line_results(line, prompt, new_cache)
       return 1 / score_value
     end
   }

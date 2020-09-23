@@ -423,9 +423,12 @@ function Picker:find()
       PERF("Displayed FN Amount", displayed_fn_amount)
     end)
 
+
+    local start = vim.fn.reltimefloat(vim.fn.reltime())
     local ok, msg = pcall(function()
       return finder(prompt, process_result, process_complete)
     end)
+    log.info("LOAD TIME", vim.fn.reltimefloat(vim.fn.reltime()) - start)
 
     if not ok then
       log.warn("Failed with msg: ", msg)
