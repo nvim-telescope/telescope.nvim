@@ -285,45 +285,52 @@ function make_entry.gen_from_treesitter(opts)
 end
 
 function make_entry.gen_from_tagfile(opts)
-    local help_entry = ""
-    local version = ""
-    local delim = string.char(7)
+  local help_entry, version
+  local delim = string.char(7)
 
-    local make_display = function(line)
-      line = line .. delim
-      for section in line:gmatch("(.-)" .. delim) do
-        if section:find("^vim:") == nil then
-          local ver = section:match("^neovim:(.*)")
-          if ver == nil then
-            help_entry = section
-          else
-            version = ver:sub(1, -2)
-          end
-        end
-      end
-      if version ~= "" then -- some Vim only entries are unversioned
-        if opts.show_version then
-          display = string.format("%s [%s]", help_entry, version)
+  local make_display = function(line)
+    help_entry = ""
+    display    = ""
+    version    = ""
+
+    line = line .. delim
+    for section in line:gmatch("(.-)" .. delim) do
+      if section:find("^vim:") == nil then
+        local ver = section:match("^neovim:(.*)")
+        if ver == nil then
+          help_entry = section
         else
-          display = help_entry
+          version = ver:sub(1, -2)
         end
       end
-
-      return display
     end
 
-    return function(line)
-      local entry = {
-        valid = help_entry ~= "",
-        entry_type = make_entry.types.GENERIC,
-
-        value = help_entry,
-        ordinal = help_entry,
-      }
-      entry.display = make_display(line)
-
-      return entry
+    result = {}
+    if version ~= "" then -- some Vim only entries are unversioned
+      if opts.show_version then
+        result.display = string.format("%s [%s]", help_entry, version)
+      else
+        result.display = help_entry
+      end
     end
+    result.value = help_entry
+
+    return result
+  end
+
+  return function(line)
+    local entry = {
+      valid = help_entry ~= "",
+      entry_type = make_entry.types.GENERIC,
+
+    }
+    local d = make_display(line)
+    entry.display = d.display
+    entry.value   = d.value
+    entry.ordinal = d.value
+
+    return entry
+  end
 end
 
 return make_entry
