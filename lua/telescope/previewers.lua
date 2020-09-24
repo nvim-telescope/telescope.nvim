@@ -384,15 +384,15 @@ previewers.help = defaulter(function(_)
 
         local best_entry = taglist[1]
         -- convert the cmd from `/foo` to `search('foo')
-        best_entry.cmd = best_entry.cmd:gsub("^/", "call search('") .. "', 'ceW')|:norm zt"
+        best_entry.cmd = best_entry.cmd:sub(2) -- remove leading '/'
+        best_entry.cmd = string.format([[call search(%s, 'cew')|:norm zt]], string.format("'%s'", vim.fn.fnameescape(best_entry.cmd)))
 
         local new_bufnr = vim.fn.bufnr(best_entry.filename, true)
-
         vim.api.nvim_buf_set_option(new_bufnr, 'filetype', 'help')
         vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
 
         vim.cmd [["gg"]]
-        -- print(best_entry.cmd)
+        -- print(vim.inspect(best_entry))
         vim.cmd(string.format([[execute "%s"]], best_entry.cmd))
 
         vim.o.tags = old_tags
