@@ -385,6 +385,7 @@ previewers.help = defaulter(function(_)
         local best_entry = taglist[1]
         -- convert the cmd from `/foo` to `search('foo')
         best_entry.cmd = best_entry.cmd:sub(2) -- remove leading '/'
+        best_entry.cmd = best_entry.cmd:gsub("~", [[\~]]) -- escape tilde
         best_entry.cmd = string.format([[call search(%s, 'cew')|:norm zt]], string.format("'%s'", vim.fn.fnameescape(best_entry.cmd)))
 
         local new_bufnr = vim.fn.bufnr(best_entry.filename, true)
