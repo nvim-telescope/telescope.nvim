@@ -312,19 +312,19 @@ function make_entry.gen_from_tagfile(opts)
       else
         result.display = help_entry
       end
+      result.value = help_entry
     end
-    result.value = help_entry
 
     return result
   end
 
   return function(line)
     local entry = {
-      valid = help_entry ~= "",
       entry_type = make_entry.types.GENERIC,
 
     }
     local d = make_display(line)
+    entry.valid   = next(d) ~= nil
     entry.display = d.display
     entry.value   = d.value
     entry.ordinal = d.value
