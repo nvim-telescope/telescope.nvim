@@ -102,11 +102,18 @@ function make_entry.gen_from_vimgrep(opts)
     return display
   end
 
+  local on_windows = vim.fn.has('win32')
+
   return function(line)
     -- TODO: Consider waiting to do this string.find
     -- TODO: Is this the fastest way to get each of these?
     --         Or could we just walk the text and check for colons faster?
     local _, _, filename, lnum, col, text = string.find(line, [[([^:]+):(%d+):(%d+):(.*)]])
+
+    -- Avoid printing out carriage returns (^M)
+    if on_windows == 1 then
+      text = text:gsub('\r', "")
+    end
 
     local ok
     ok, lnum = pcall(tonumber, lnum)
