@@ -139,6 +139,8 @@ end)()
 -- x()
 -- x.new { example = 3 }()
 function utils.make_default_callable(f, default_opts)
+  default_opts = default_opts or {}
+
   return setmetatable({
     new = function(opts)
       opts = vim.tbl_extend("keep", opts, default_opts)
