@@ -238,7 +238,11 @@ end
 
 previewers.vim_buffer = defaulter(function(_)
   return previewers.new {
-    setup = function() return { last_set_bufnr = nil } end,
+    setup = function()
+      return {
+        last_set_bufnr = nil
+      }
+    end,
 
     teardown = function(self)
       if self.state and self.state.last_set_bufnr then
@@ -251,6 +255,10 @@ previewers.vim_buffer = defaulter(function(_)
       local filename = entry.filename
 
       if filename == nil then
+        filename = entry.path
+      end
+
+      if filename == nil then
         local value = entry.value
         filename = vim.split(value, ":")[1]
       end
@@ -259,13 +267,15 @@ previewers.vim_buffer = defaulter(function(_)
         return
       end
 
-      log.trace("Previewing File: %s", filename)
+      log.info("Previewing File:", filename)
 
       local bufnr = vim.fn.bufnr(filename)
       if bufnr == -1 then
         -- TODO: Is this the best way to load the buffer?... I'm not sure tbh
-        bufnr = vim.fn.bufadd(bufnr)
+        bufnr = vim.fn.bufadd(filename)
         vim.fn.bufload(bufnr)
+
+        vim.cmd([[doautocmd filetypedetect BufRead ]] .. filename)
       end
 
       self.state.last_set_bufnr = bufnr
@@ -285,6 +295,8 @@ previewers.vim_buffer = defaulter(function(_)
         vim.api.nvim_win_set_cursor(status.preview_win, {entry.lnum, 0})
         -- print("LNUM:", entry.lnum)
       end
+
+      log.info("Previewed bufnr", bufnr)
     end,
   }
 end, {})
@@ -422,6 +434,58 @@ previewers.vim_buffer_or_bat = defaulter(function(_)
     end,
   }
 end, {})
+
+
+previewers.nvim_file = defaulter(function(_)
+  return previewers.new {
+    preview_fn = function(_, entry, status)
+      local filename = entry.filename
+
+      if filename == nil then
+        filename = entry.path
+      end
+
+      -- if filename == nil then
+      --   local value = entry.value
+      --   filename = vim.split(value, ":")[1]
+      -- end
+
+      if filename == nil then
+        log.info("Could not find file from entry", entry)
+        return
+      end
+
+      local win_id = status.preview_win
+      local bufnr = vim.fn.bufnr(filename)
+      if bufnr == -1 then
+        bufnr = vim.api.nvim_create_buf(false, true)
+        -- vim.api.nvim_buf_set_name(bufnr, filename)
+        vim.api.nvim_win_set_buf(win_id, bufnr)
+
+        vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
+        if false then
+          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.readfile(filename))
+          vim.api.nvim_buf_set_option(bufnr, 'filetype', 'lua')
+        else
+          vim.api.nvim_buf_call(bufnr, function()
+            vim.cmd(":noauto view " .. filename)
+            vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
+          end)
+        end
+
+        vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
+        -- print("FT:", vim.api.nvim_buf_get_option(bufnr, 'filetype'))
+      else
+        vim.api.nvim_win_set_buf(win_id, bufnr)
+        vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
+        vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
+      end
+
+      -- vim.api.nvim_buf_set_option(bufnr, 'filetype', 'lua')
+      -- vim.cmd([[doautocmd filetypedetect BufRead ]] .. vim.fn.fnameescape(filename))
+    end,
+  }
+end)
 
 previewers.Previewer = Previewer
 

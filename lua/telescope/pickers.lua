@@ -235,9 +235,7 @@ function Picker:clear_extra_rows(results_bufnr)
     end
 
     local empty_lines = utils.repeated_table(worst_line, "")
-    vim.api.nvim_buf_set_lines(results_bufnr, 0, worst_line, false, empty_lines)
-
-    log.trace("Worst Line after process_complete: %s", worst_line, results_bufnr)
+    pcall(vim.api.nvim_buf_set_lines, results_bufnr, 0, worst_line, false, empty_lines)
   end
 end
 
