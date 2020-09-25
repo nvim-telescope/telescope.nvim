@@ -375,11 +375,14 @@ previewers.help = defaulter(function(_)
     preview_fn = function(_, entry, status)
       with_preview_window(status, nil, function()
         local old_tags = vim.o.tags
+        local special_chars = ":~#^$.?/%[%]%*"
+
         vim.o.tags = vim.fn.expand("$VIMRUNTIME") .. '/doc/tags'
 
-        local taglist = vim.fn.taglist('^' .. entry.value .. '$')
+        local escaped = vim.fn.escape(entry.value, special_chars)
+        local taglist = vim.fn.taglist('^' .. escaped .. '$')
         if vim.tbl_isempty(taglist) then
-          taglist = vim.fn.taglist(entry.value)
+          taglist = vim.fn.taglist(escaped)
         end
 
         if vim.tbl_isempty(taglist) then
@@ -387,13 +390,9 @@ previewers.help = defaulter(function(_)
         end
 
         local best_entry = taglist[1]
-        -- convert the cmd from `/foo` to `search('foo')
-        -- print("[debug] pre:" .. best_entry.cmd)
-        best_entry.cmd = best_entry.cmd:sub(2)                        -- remove leading '/'
-        best_entry.cmd = vim.fn.escape(best_entry.cmd, "#^$.?/\\[]")  -- let Vim handle most special characters
-        best_entry.cmd = best_entry.cmd:gsub("*+", "\\\\*")           -- escape asterisk
-        best_entry.cmd = best_entry.cmd:gsub("~+", "\\\\~")           -- escape tilde
-        best_entry.cmd = best_entry.cmd:gsub(":+", "\\%:")            -- escape tilde
+        best_entry.cmd = best_entry.cmd:sub(2) -- remove leading '/'
+        best_entry.cmd = vim.fn.escape(best_entry.cmd, special_chars)  -- double-escape special characters
+        best_entry.cmd = vim.fn.escape(best_entry.cmd, special_chars)
 
         best_entry.cmd = string.format([[call search(%s, "cew")|:norm zt]], string.format([["%s"]], best_entry.cmd))
         -- print("[debug] exe:" .. best_entry.cmd)
