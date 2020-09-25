@@ -448,7 +448,7 @@ function Picker:find()
 
   -- TODO: Use WinLeave as well?
   local on_buf_leave = string.format(
-    [[  autocmd BufLeave <buffer> ++nested ++once :lua require('telescope.pickers').on_close_prompt(%s)]],
+    [[  autocmd BufLeave <buffer> ++nested ++once :silent lua require('telescope.pickers').on_close_prompt(%s)]],
     prompt_bufnr)
 
   vim.cmd([[augroup PickerInsert]])
@@ -519,7 +519,7 @@ function Picker:close_windows(status)
     if bdelete
         and vim.api.nvim_buf_is_valid(bufnr)
         and not vim.api.nvim_buf_get_option(bufnr, 'buflisted') then
-      vim.cmd(string.format("bdelete! %s", bufnr))
+      vim.cmd(string.format("silent! bdelete! %s", bufnr))
     end
 
     if not vim.api.nvim_win_is_valid(win_id) then
