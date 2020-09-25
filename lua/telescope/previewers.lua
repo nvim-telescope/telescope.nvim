@@ -374,7 +374,11 @@ previewers.help = defaulter(function(_)
 
         local escaped = vim.fn.escape(entry.value, special_chars)
         local tagfile = vim.fn.expand("$VIMRUNTIME") .. '/doc/tags'
+        local old_tags = vim.o.tags
+        vim.o.tags = tagfile
         local taglist = vim.fn.taglist('^' .. escaped .. '$', tagfile)
+        vim.o.tags = old_tags
+
         if vim.tbl_isempty(taglist) then
           taglist = vim.fn.taglist(escaped, tagfile)
         end
