@@ -17,6 +17,12 @@ if 1 ~= vim.fn.has('nvim-0.5') then
   return
 end
 
+if 2 > vim.o.report then
+  vim.api.nvim_err_writeln(string.format("[telescope] It seems you have `set report=%s`", vim.o.report))
+  vim.api.nvim_err_writeln("[telescope] Instead, change 'report' back to its default value. `set report=2`.")
+  vim.api.nvim_err_writeln("[telescope] If you do not, you will have a bad experience")
+end
+
 
 -- TODO: Give some bonus weight to files we've picked before
 -- TODO: Give some bonus weight to oldfiles
