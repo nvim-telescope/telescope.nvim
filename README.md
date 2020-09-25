@@ -71,7 +71,7 @@ Options can be passed directly to the above functions, or set as defaults.
 ```lua
 -- Optional way to setup default values
 require('telescope').setup{
-  default = {
+  defaults = {
     -- Example:
     shorten_path = true -- currently the default value is true
   }
@@ -110,7 +110,7 @@ Find all the files in your nvim config.
 lua <<EOF
 -- totally optional to use setup
 require('telescope').setup{
-  default = {
+  defaults = {
     shorten_path = false -- currently the default value is true
   }
 }
