@@ -406,6 +406,12 @@ previewers.help = defaulter(function(_)
         vim.cmd "norm! gg"
         vim.fn.search(search_query, "W")
         vim.cmd "norm  zt"
+
+        if status.preview_search_hl_id then
+          vim.fn.matchdelete(status.preview_search_hl_id)
+          status.preview_search_hl_id = nil
+        end
+        status.preview_search_hl_id = vim.fn.matchadd('Search', search_query)
       end)
     end
   }
