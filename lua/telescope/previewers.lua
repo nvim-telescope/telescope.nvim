@@ -58,7 +58,7 @@ end
 local previewer_ns = vim.api.nvim_create_namespace('telescope.previewers')
 
 local with_preview_window = function(status, bufnr, callable)
-  if bufnr and vim.api.nvim_buf_call then
+  if bufnr and vim.api.nvim_buf_call and false then
     vim.api.nvim_buf_call(bufnr, callable)
   else
     return context_manager.with(function()
@@ -365,20 +365,17 @@ previewers.qflist = defaulter(function(opts)
   }
 end, {})
 
--- WIP
 previewers.help = defaulter(function(_)
   return previewers.new {
     preview_fn = function(_, entry, status)
       with_preview_window(status, nil, function()
-        local old_tags = vim.o.tags
         local special_chars = ":~^.?/%[%]%*"
 
-        vim.o.tags = vim.fn.expand("$VIMRUNTIME") .. '/doc/tags'
-
         local escaped = vim.fn.escape(entry.value, special_chars)
-        local taglist = vim.fn.taglist('^' .. escaped .. '$')
+        local tagfile = vim.fn.expand("$VIMRUNTIME") .. '/doc/tags'
+        local taglist = vim.fn.taglist('^' .. escaped .. '$', tagfile)
         if vim.tbl_isempty(taglist) then
-          taglist = vim.fn.taglist(escaped)
+          taglist = vim.fn.taglist(escaped, tagfile)
         end
 
         if vim.tbl_isempty(taglist) then
@@ -391,17 +388,19 @@ previewers.help = defaulter(function(_)
         vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
 
         local search_query = best_entry.cmd
-        search_query = search_query:sub(2) -- remove leading '/'
-        search_query = vim.fn.escape(search_query, special_chars)  -- double-escape special characters
-        search_query = vim.fn.escape(search_query, special_chars)
 
-        -- FIXME: these searches work manually?!?
-        vim.cmd "norm gg"
-        print([[lua vim.fn.search("]] .. search_query ..[[")]])
+        -- remove leading '/'
+        search_query = search_query:sub(2)
+
+        -- Set the query to "very nomagic".
+        -- This should make it work quite nicely given tags.
+        search_query = [[\V]] .. search_query
+
+        log.trace([[lua vim.fn.search("]], search_query, [[")]])
+
+        vim.cmd "norm! gg"
         vim.fn.search(search_query, "W")
         vim.cmd "norm  zt"
-
-        vim.o.tags = old_tags
       end)
     end
   }
