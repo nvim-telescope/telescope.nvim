@@ -366,16 +366,12 @@ previewers.qflist = defaulter(function(opts)
 end, {})
 
 -- WIP
-local function escape_chars(str)
-  return 
-end
-
 previewers.help = defaulter(function(_)
   return previewers.new {
     preview_fn = function(_, entry, status)
       with_preview_window(status, nil, function()
         local old_tags = vim.o.tags
-        local special_chars = ":~#^$.?/%[%]%*"
+        local special_chars = ":~^.?/%[%]%*"
 
         vim.o.tags = vim.fn.expand("$VIMRUNTIME") .. '/doc/tags'
 
@@ -390,19 +386,20 @@ previewers.help = defaulter(function(_)
         end
 
         local best_entry = taglist[1]
-        best_entry.cmd = best_entry.cmd:sub(2) -- remove leading '/'
-        best_entry.cmd = vim.fn.escape(best_entry.cmd, special_chars)  -- double-escape special characters
-        best_entry.cmd = vim.fn.escape(best_entry.cmd, special_chars)
-
-        best_entry.cmd = string.format([[call search(%s, "cew")|:norm zt]], string.format([["%s"]], best_entry.cmd))
-        -- print("[debug] exe:" .. best_entry.cmd)
-
         local new_bufnr = vim.fn.bufnr(best_entry.filename, true)
         vim.api.nvim_buf_set_option(new_bufnr, 'filetype', 'help')
         vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
 
-        vim.cmd [["gg"]]
-        vim.cmd(string.format([[execute '%s']], best_entry.cmd))
+        local search_query = best_entry.cmd
+        search_query = search_query:sub(2) -- remove leading '/'
+        search_query = vim.fn.escape(search_query, special_chars)  -- double-escape special characters
+        search_query = vim.fn.escape(search_query, special_chars)
+
+        -- FIXME: these searches work manually?!?
+        vim.cmd "norm gg"
+        print([[lua vim.fn.search("]] .. search_query ..[[")]])
+        vim.fn.search(search_query, "W")
+        vim.cmd "norm  zt"
 
         vim.o.tags = old_tags
       end)
