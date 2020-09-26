@@ -191,23 +191,25 @@ function Picker:get_window_options(max_columns, max_lines, prompt_title)
   return getter(self, max_columns, max_lines, prompt_title)
 end
 
---- Take a row and get an index
+--- Take a row and get an index.
+---@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
 ---@param index number: The row being displayed
 ---@return number The row for the picker to display in
 function Picker:get_row(index)
   if self.sorting_strategy == 'ascending' then
-    return index
+    return index - 1
   else
     return self.max_results - index + 1
   end
 end
 
 --- Take a row and get an index
+---@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
 ---@param row number: The row being displayed
 ---@return number The index in line_manager
 function Picker:get_index(row)
   if self.sorting_strategy == 'ascending' then
-    return row
+    return row + 1
   else
     return self.max_results - row + 1
   end
@@ -215,7 +217,7 @@ end
 
 function Picker:get_reset_row()
   if self.sorting_strategy == 'ascending' then
-    return 1
+    return 0
   else
     return self.max_results
   end
@@ -225,6 +227,7 @@ function Picker:clear_extra_rows(results_bufnr)
   if self.sorting_strategy == 'ascending' then
     local num_results = self.manager:num_results()
     local worst_line = self.max_results - num_results
+    log.info(self.max_results, num_results, worst_line)
 
     if worst_line <= 0 then
       return
@@ -246,7 +249,6 @@ function Picker:highlight_displayed_rows(results_bufnr, prompt)
   if not self.sorter.highlighter then
     return
   end
-
 
   vim.api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_matching, 0, -1)
 
@@ -616,8 +618,8 @@ function Picker:set_selection(row)
   -- TODO: Scrolling past max results
   if row > self.max_results then
     row = self.max_results
-  elseif row < 1 then
-    row = 1
+  elseif row < 0 then
+    row = 0
   end
 
   if not self:can_select_row(row) then
@@ -721,6 +723,7 @@ pickers.entry_manager = function(max_results, set_entry, info)
 
   set_entry = set_entry or function() end
 
+  local should_save_result = function(index) return index <= max_results + 1 end
   local worst_acceptable_score = math.huge
 
   return setmetatable({
@@ -742,7 +745,7 @@ pickers.entry_manager = function(max_results, set_entry, info)
         end
 
         -- Don't add results that are too bad.
-        if index >= max_results then
+        if not should_save_result(index) then
           return
         end
       end
@@ -774,9 +777,9 @@ pickers.entry_manager = function(max_results, set_entry, info)
         index = index + 1
         entry = next_entry
 
-      until not next_entry or index > max_results
+      until not next_entry or not should_save_result(index)
 
-      if index > max_results then
+      if not should_save_result(index) then
         worst_acceptable_score = last_score
       end
     end,
