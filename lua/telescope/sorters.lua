@@ -3,6 +3,23 @@ local util = require('telescope.utils')
 
 local sorters = {}
 
+local ngram_highlighter = function(ngram_len, prompt, display)
+  local highlights = {}
+  display = display:lower()
+
+  for disp_index = 1, #display do
+    local char = display:sub(disp_index, disp_index + ngram_len - 1)
+    if prompt:find(char, 1, true) then
+      table.insert(highlights, {
+        start = disp_index,
+        finish = disp_index + ngram_len - 1
+      })
+    end
+  end
+
+  return highlights
+end
+
 
 local Sorter = {}
 Sorter.__index = Sorter
@@ -21,6 +38,7 @@ function Sorter:new(opts)
   return setmetatable({
     state = {},
     scoring_function = opts.scoring_function,
+    highlighter = opts.highlighter,
   }, Sorter)
 end
 
@@ -204,12 +222,16 @@ sorters.get_fuzzy_file = function(opts)
       end
 
       return 1 / denominator
-    end
+    end,
+
+    highlighter = function(_, prompt, display)
+      return ngram_highlighter(ngram_len, prompt, display)
+    end,
   }
 end
 
 sorters.get_generic_fuzzy_sorter = function()
-  local ngramlen = 2
+  local ngram_len = 2
 
   local cached_ngrams = {}
 
@@ -238,14 +260,14 @@ sorters.get_generic_fuzzy_sorter = function()
     -- line (entry.ordinal)
     -- entry (the whole entry)
     scoring_function = function(_, prompt, line, _)
-      if prompt == 0 or #prompt < ngramlen then
+      if prompt == 0 or #prompt < ngram_len then
         return 0
       end
 
       local prompt_lower = prompt:lower()
       local line_lower = line:lower()
 
-      local prompt_ngrams = overlapping_ngrams(prompt_lower, ngramlen)
+      local prompt_ngrams = overlapping_ngrams(prompt_lower, ngram_len)
 
       local N = #prompt
 
@@ -273,7 +295,7 @@ sorters.get_generic_fuzzy_sorter = function()
         -- biases for shorter strings
         -- TODO(ashkan): this can bias towards repeated finds of the same
         -- subpattern with overlapping_ngrams
-        + 3 * match_count * ngramlen / #line
+        + 3 * match_count * ngram_len / #line
         + consecutive_matches
         + N / (contains_string or (2 * #line))
         -- + 30/(c1 or 2*N)
@@ -288,7 +310,11 @@ sorters.get_generic_fuzzy_sorter = function()
       end
 
       return 1 / denominator
-    end
+    end,
+
+    highlighter = function(_, prompt, display)
+      return ngram_highlighter(ngram_len, prompt, display)
+    end,
   }
 end
 

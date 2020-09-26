@@ -24,6 +24,9 @@ local extend = function(opts, defaults)
   return result
 end
 
+local ns_telescope_selection = a.nvim_create_namespace('telescope_selection')
+local ns_telescope_matching = a.nvim_create_namespace('telescope_matching')
+
 local pickers = {}
 
 -- TODO: Add motions to keybindings
@@ -239,6 +242,47 @@ function Picker:clear_extra_rows(results_bufnr)
   end
 end
 
+function Picker:highlight_displayed_rows(results_bufnr, prompt)
+  if not self.sorter.highlighter then
+    return
+  end
+
+
+  vim.api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_matching, 0, -1)
+
+  local displayed_rows = vim.api.nvim_buf_get_lines(results_bufnr, 0, -1, false)
+  for row = 1, #displayed_rows do
+    local display = displayed_rows[row]
+
+    local highlights = self.sorter:highlighter(prompt, display)
+    if highlights then
+      for _, hl in ipairs(highlights) do
+        local highlight, start, finish
+        if type(hl) == 'table' then
+          highlight = hl.highlight or 'TelescopeMatching'
+          start = hl.start
+          finish = hl.finish or hl.start
+        elseif type(hl) == 'number' then
+          highlight = 'TelescopeMatching'
+          start = hl
+          finish = hl
+        else
+          error('Invalid higlighter fn')
+        end
+
+        vim.api.nvim_buf_add_highlight(
+          results_bufnr,
+          ns_telescope_matching,
+          highlight,
+          row - 1,
+          start - 1,
+          finish
+        )
+      end
+    end
+  end
+end
+
 function Picker:can_select_row(row)
   if self.sorting_strategy == 'ascending' then
     return row <= self.manager:num_results()
@@ -414,6 +458,7 @@ function Picker:find()
       end
 
       self:clear_extra_rows(results_bufnr)
+      self:highlight_displayed_rows(results_bufnr, prompt)
 
       PERF("Filtered Amount    ", filtered_amount)
       PERF("Displayed Amount   ", displayed_amount)
@@ -548,8 +593,6 @@ function Picker:close_windows(status)
 
   state.clear_status(status.prompt_bufnr)
 end
-
-local ns_telescope_selection = a.nvim_create_namespace('telescope_selection')
 
 function Picker:get_selection()
   return self._selection
