@@ -3,6 +3,7 @@ local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 local utils = require('telescope.utils')
 
 local get_default = utils.get_default
+local os_sep = utils.get_separator()
 
 local make_entry = {}
 
@@ -213,8 +214,8 @@ function make_entry.gen_from_buffer(opts)
     -- if bufname is inside the cwd, trim that part of the string
     if bufname:sub(1, #cwd) == cwd  then
       local offset =  0
-      -- if  cwd does ends in '/', we need to take it off
-      if cwd:sub(#cwd, #cwd) ~= '/' then
+      -- if  cwd does ends in the os separator, we need to take it off
+      if cwd:sub(#cwd, #cwd) ~= os_sep then
         offset = 1
       end
       bufname = bufname:sub(#cwd + 1 + offset, #bufname)
