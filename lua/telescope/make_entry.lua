@@ -465,4 +465,48 @@ function make_entry.gen_from_marks(_)
   end
 end
 
+local function truncate(str, len)
+  if #str > len then
+    str = str:sub(1, len)
+    str = str .. "…"
+  end
+  return str
+end
+
+function make_entry.gen_from_vimoptions(opts)
+  local make_display = function(line)
+    display    = ""
+    result = {}
+    line.value_type = string.format("[%s]", line.value_type)
+
+    line.current_value = tostring(line.current_value)
+
+    -- replace control codes with strings
+    line.current_value = line.current_value:gsub(string.char(9), "<TAB>")
+    line.current_value = line.current_value:gsub("", "<C-F>")
+
+    -- truncate long option values
+    line.current_value = truncate(line.current_value, 9)
+
+    result.display = string.format("%-15s %-10s - %s", line.name, line.current_value, line.description)
+    result.value = string.format(line.name)
+
+    return result
+  end
+
+  return function(line)
+    local entry = {
+      entry_type = make_entry.types.GENERIC,
+
+    }
+    local d = make_display(line)
+    entry.valid   = true
+    entry.display = d.display
+    entry.value   = d.value
+    entry.ordinal = d.value
+
+    return entry
+  end
+end
+
 return make_entry

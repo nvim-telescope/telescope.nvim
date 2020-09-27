@@ -416,7 +416,7 @@ builtin.vim_options = function(opts)
   opts = opts or {}
 
   local vim_opts = require'options'.options
-  local results = {}
+  local options_data = {}
 
   for _, o in ipairs(vim_opts) do
     if o.enable_if ~= nil then goto continue end -- if option is unsupported
@@ -425,6 +425,7 @@ builtin.vim_options = function(opts)
 
     local option = {
       name          = "",
+      description   = "",
       current_value = "",
       default_value = "",
       value_type    = "",
@@ -438,21 +439,31 @@ builtin.vim_options = function(opts)
     end
 
     if is_global then
-
-      -- option name
       option.name = o.full_name
 
-      -- option short description
-      option.description = o.short_desc()
-
-      -- option current value
       ok, option.current_value = pcall(vim.api.nvim_get_option, o.full_name)
       if not ok then
         print("WHAT'S GOING ON WITH " .. o.full_name)
         goto continue
       end
 
-      -- option default value
+      -- TODO: where should this global function live, if it worked?
+      function N_(s)
+        print("in_function: ".. s)
+        return s
+      end
+
+      local str_funcname = o.short_desc()
+      -- TODO: loadstring() method not working for some reason
+      -- print("str_funcname: " .. str_funcname)
+      -- option.description = assert(loadstring(str_funcname)) ()
+      -- print("returned: " .. option.description)
+
+      -- workaround using string functions
+      option.description = str_funcname:match("N_%((.*)%)")
+      option.description = option.description:gsub("\\\"", "\"")
+      option.description = option.description:sub(2,-2)
+
       if o.defaults ~= nil then
         option.default_value = o.defaults.if_true.vim or o.defaults.if_true.vi
       end
@@ -460,10 +471,8 @@ builtin.vim_options = function(opts)
         option.default_value = "Macro: " .. option.default_value()
       end
 
-      -- option type TODO: is this conversion necessary?
       option.value_type = (type(option.current_value) == "boolean" and "bool" or type(option.current_value))
 
-      -- if option has been set by user
       if option.current_value ~= option.default_value then
         option.set_by_user = true
         value_origin = vim.fn.execute("redir => msg | silent verb set " .. o.full_name .. "? | redir end | echo msg")
@@ -473,38 +482,36 @@ builtin.vim_options = function(opts)
         end
       end
 
-      table.insert(results, option)
+      table.insert(options_data, option)
     end
 
     ::continue::
   end
-  print("done")
-  print(vim.inspect(results))
+  -- print(vim.inspect(results))
 
-  --
-  -- pickers.new(opts, {
-  --     prompt = 'options',
-  --     finder = finders.new_table {
-  --       results = options_data,
-  --       entry_maker = make_entry.gen_from_tagfile(opts),
-  --     },
-  --     -- TODO: previewer for Vim options
-  --     previewer = previewers.options.new(opts),
-  --     sorter = sorters.get_generic_fuzzy_sorter(),
-  --     attach_mappings = function(prompt_bufnr, map)
-  --       local view_options = function()
-  --         local selection = actions.get_selected_entry(prompt_bufnr)
+  pickers.new(opts, {
+      prompt = 'options',
+      finder = finders.new_table {
+        results = options_data,
+        entry_maker = make_entry.gen_from_vimoptions(opts),
+      },
+      -- TODO: previewer for Vim options
+      -- previewer = previewers.help.new(opts),
+      sorter = sorters.get_generic_fuzzy_sorter(),
+      attach_mappings = function(prompt_bufnr, map)
+        local view_options = function()
+          local selection = actions.get_selected_entry(prompt_bufnr)
 
-  --         actions.close(prompt_bufnr)
-  --         vim.cmd("options " .. selection.value)
-  --       end
+          actions.close(prompt_bufnr)
+          vim.cmd("options " .. selection.value)
+        end
 
-  --       map('i', '<CR>', view_options)
-  --       map('n', '<CR>', view_options)
+        map('i', '<CR>', view_options)
+        map('n', '<CR>', view_options)
 
-  --       return true
-  --     end
-  --   }):find()
+        return true
+      end
+    }):find()
 end
 
 builtin.help_tags = function(opts)
