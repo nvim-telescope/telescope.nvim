@@ -474,11 +474,13 @@ local function truncate(str, len)
 end
 
 function make_entry.gen_from_vimoptions(opts)
+  -- TODO: don't call this 'line'
   local make_display = function(line)
     display    = ""
     result = {}
     line.value_type = string.format("[%s]", line.value_type)
 
+    result.ordinal = line.current_value
     line.current_value = tostring(line.current_value)
 
     -- replace control codes with strings
@@ -489,7 +491,7 @@ function make_entry.gen_from_vimoptions(opts)
     line.current_value = truncate(line.current_value, 9)
 
     result.display = string.format("%-15s %-10s - %s", line.name, line.current_value, line.description)
-    result.value = string.format(line.name)
+    result.value = line.name
 
     return result
   end
@@ -503,7 +505,7 @@ function make_entry.gen_from_vimoptions(opts)
     entry.valid   = true
     entry.display = d.display
     entry.value   = d.value
-    entry.ordinal = d.value
+    entry.ordinal = d.ordinal
 
     return entry
   end

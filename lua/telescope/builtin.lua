@@ -494,7 +494,7 @@ builtin.vim_options = function(opts)
           local selection = actions.get_selected_entry(prompt_bufnr)
 
           actions.close(prompt_bufnr)
-          vim.fn.feedkeys(string.format(":set %s=", selection.value))
+          vim.fn.feedkeys(string.format(":set %s=%s", selection.value, selection.ordinal))
           -- vim.cmd("options " .. selection.value)
         end
 
