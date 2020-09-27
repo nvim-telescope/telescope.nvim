@@ -443,7 +443,7 @@ builtin.vim_options = function(opts)
 
       ok, option.current_value = pcall(vim.api.nvim_get_option, o.full_name)
       if not ok then
-        print("WHAT'S GOING ON WITH " .. o.full_name)
+        -- print("WHAT'S GOING ON WITH " .. o.full_name)
         goto continue
       end
 
@@ -494,7 +494,7 @@ builtin.vim_options = function(opts)
           local selection = actions.get_selected_entry(prompt_bufnr)
 
           actions.close(prompt_bufnr)
-          vim.fn.feedkeys(string.format(":set %s=%s", selection.value, selection.ordinal))
+          vim.fn.feedkeys(string.format(":set %s=%s", selection.value, selection.raw_value))
           -- vim.cmd("options " .. selection.value)
         end
 

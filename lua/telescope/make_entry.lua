@@ -480,7 +480,7 @@ function make_entry.gen_from_vimoptions(opts)
     result = {}
     line.value_type = string.format("[%s]", line.value_type)
 
-    result.ordinal = line.current_value
+    result.raw_value = line.current_value
     line.current_value = tostring(line.current_value)
 
     -- replace control codes with strings
@@ -505,7 +505,8 @@ function make_entry.gen_from_vimoptions(opts)
     entry.valid   = true
     entry.display = d.display
     entry.value   = d.value
-    entry.ordinal = d.ordinal
+    entry.ordinal = d.value
+    entry.raw_value = d.raw_value
 
     return entry
   end
