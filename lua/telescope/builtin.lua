@@ -449,20 +449,11 @@ builtin.vim_options = function(opts)
 
       -- TODO: where should this global function live, if it worked?
       function N_(s)
-        print("in_function: ".. s)
         return s
       end
 
       local str_funcname = o.short_desc()
-      -- TODO: loadstring() method not working for some reason
-      -- print("str_funcname: " .. str_funcname)
-      -- option.description = assert(loadstring(str_funcname)) ()
-      -- print("returned: " .. option.description)
-
-      -- workaround using string functions
-      option.description = str_funcname:match("N_%((.*)%)")
-      option.description = option.description:gsub("\\\"", "\"")
-      option.description = option.description:sub(2,-2)
+      option.description = assert(loadstring("return " .. str_funcname)) ()
 
       if o.defaults ~= nil then
         option.default_value = o.defaults.if_true.vim or o.defaults.if_true.vi
@@ -499,15 +490,16 @@ builtin.vim_options = function(opts)
       -- previewer = previewers.help.new(opts),
       sorter = sorters.get_generic_fuzzy_sorter(),
       attach_mappings = function(prompt_bufnr, map)
-        local view_options = function()
+        local edit_option = function()
           local selection = actions.get_selected_entry(prompt_bufnr)
 
           actions.close(prompt_bufnr)
-          vim.cmd("options " .. selection.value)
+          vim.fn.feedkeys(string.format(":set %s=", selection.value))
+          -- vim.cmd("options " .. selection.value)
         end
 
-        map('i', '<CR>', view_options)
-        map('n', '<CR>', view_options)
+        map('i', '<CR>', edit_option)
+        map('n', '<CR>', edit_option)
 
         return true
       end
