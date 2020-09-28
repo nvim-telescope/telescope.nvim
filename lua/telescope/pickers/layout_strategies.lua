@@ -138,7 +138,7 @@ layout_strategies.center = function(self, columns, lines, prompt_title)
   local results = initial_options.results
   local prompt = initial_options.prompt
 
-  local max_results = 15
+  local max_results = 5
   local width = resolve.resolve_width(self.window.width)(self, columns)
 
   local max_width = (width > columns and columns or width)
@@ -210,7 +210,7 @@ layout_strategies.vertical = function(self, max_columns, max_lines, prompt_title
   -- Height
   local height_padding = 3
 
-  results.height = 10
+  results.height = 5
   prompt.height = 1
 
   -- The last 2 * 2 is for the extra borders

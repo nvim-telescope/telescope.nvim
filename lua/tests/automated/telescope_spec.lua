@@ -6,8 +6,7 @@ local log = require('telescope.log')
 log.level = 'info'
 -- log.use_console = false
 
-local pickers = require('telescope.pickers')
-local utils = require('telescope.utils')
+local EntryManager = require('telescope.entry_manager')
 
 --[[
 lua RELOAD('plenary'); require("plenary.test_harness"):test_directory("busted", "./tests/automated")
@@ -22,7 +21,7 @@ describe('Picker', function()
 
   describe('process_result', function()
     it('works with one entry', function()
-      local manager = pickers.entry_manager(5, nil)
+      local manager = EntryManager:new(5, nil)
 
       manager:add_entry(1, "hello")
 
@@ -30,7 +29,7 @@ describe('Picker', function()
     end)
 
     it('works with two entries', function()
-      local manager = pickers.entry_manager(5, nil)
+      local manager = EntryManager:new(5, nil)
 
       manager:add_entry(1, "hello")
       manager:add_entry(2, "later")
@@ -41,7 +40,7 @@ describe('Picker', function()
 
     it('calls functions when inserting', function()
       local called_count = 0
-      local manager = pickers.entry_manager(5, function() called_count = called_count + 1 end)
+      local manager = EntryManager:new(5, function() called_count = called_count + 1 end)
 
       assert(called_count == 0)
       manager:add_entry(1, "hello")
@@ -50,7 +49,7 @@ describe('Picker', function()
 
     it('calls functions when inserting twice', function()
       local called_count = 0
-      local manager = pickers.entry_manager(5, function() called_count = called_count + 1 end)
+      local manager = EntryManager:new(5, function() called_count = called_count + 1 end)
 
       assert(called_count == 0)
       manager:add_entry(1, "hello")
@@ -60,7 +59,7 @@ describe('Picker', function()
 
     it('correctly sorts lower scores', function()
       local called_count = 0
-      local manager = pickers.entry_manager(5, function() called_count = called_count + 1 end)
+      local manager = EntryManager:new(5, function() called_count = called_count + 1 end)
       manager:add_entry(5, "worse result")
       manager:add_entry(2, "better result")
 
@@ -75,27 +74,23 @@ describe('Picker', function()
 
     it('respects max results', function()
       local called_count = 0
-      local manager = pickers.entry_manager(1, function() called_count = called_count + 1 end)
+      local manager = EntryManager:new(1, function() called_count = called_count + 1 end)
       manager:add_entry(2, "better result")
       manager:add_entry(5, "worse result")
 
       assert.are.same("better result", manager:get_entry(1))
-
-      -- once to insert "worse"
-      -- once to insert "better"
-      -- and then to move "worse"
       assert.are.same(1, called_count)
     end)
 
     -- TODO: We should decide if we want to add this or not.
     -- it('should handle no scores', function()
-    --   local manager = pickers.entry_manager(5, nil)
+    --   local manager = EntryManager:new(5, nil)
 
     --   manager:add_entry(nil, 
     -- end)
 
     it('should allow simple entries', function()
-      local manager = pickers.entry_manager(5)
+      local manager = EntryManager:new(5)
 
       local counts_executed = 0
       manager:add_entry(1, setmetatable({}, {

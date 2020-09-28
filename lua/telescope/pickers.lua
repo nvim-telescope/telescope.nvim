@@ -10,6 +10,8 @@ local mappings = require('telescope.mappings')
 local state = require('telescope.state')
 local utils = require('telescope.utils')
 
+local EntryManager = require('telescope.entry_manager')
+
 local get_default = utils.get_default
 
 -- TODO: Make this work with deep extend I think.
@@ -48,6 +50,8 @@ local default_mappings = {
 
     ["<C-u>"] = actions.preview_scrolling_up,
     ["<C-d>"] = actions.preview_scrolling_down,
+
+    ["<Tab>"] = actions.add_selection,
   },
 
   n = {
@@ -199,7 +203,7 @@ function Picker:get_row(index)
   if self.sorting_strategy == 'ascending' then
     return index - 1
   else
-    return self.max_results - index + 1
+    return self.max_results - index
   end
 end
 
@@ -211,7 +215,7 @@ function Picker:get_index(row)
   if self.sorting_strategy == 'ascending' then
     return row + 1
   else
-    return self.max_results - row + 1
+    return self.max_results - row
   end
 end
 
@@ -219,7 +223,7 @@ function Picker:get_reset_row()
   if self.sorting_strategy == 'ascending' then
     return 0
   else
-    return self.max_results
+    return self.max_results - 1
   end
 end
 
@@ -346,11 +350,14 @@ function Picker:find()
   a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
   a.nvim_win_set_option(prompt_win, 'winblend', self.window.winblend)
 
+  -- Draw the screen ASAP. This makes things feel speedier.
+  vim.cmd [[redraw]]
+
   -- a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
   -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_string)
 
   -- First thing we want to do is set all the lines to blank.
-  self.max_results = popup_opts.results.height - 1
+  self.max_results = popup_opts.results.height
 
   vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
 
@@ -375,7 +382,7 @@ function Picker:find()
     local displayed_fn_amount = 0
 
     -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
-    self.manager = pickers.entry_manager(
+    self.manager = EntryManager:new(
       self.max_results,
       vim.schedule_wrap(function(index, entry)
         if not vim.api.nvim_buf_is_valid(results_bufnr) then
@@ -618,9 +625,32 @@ function Picker:move_selection(change)
   self:set_selection(self:get_selection_row() + change)
 end
 
+function Picker:add_selection(row)
+  local entry = self.manager:get_entry(self:get_index(row))
+  self.multi_select[entry] = true
+end
+
+function Picker:display_multi_select(results_bufnr)
+  for entry, _ in pairs(self.multi_select) do
+    local index = self.manager:find_entry(entry)
+    if index then
+      vim.api.nvim_buf_add_highlight(
+        results_bufnr,
+        ns_telescope_selection,
+        "TelescopeMultiSelection",
+        self:get_row(index),
+        0,
+        -1
+      )
+    end
+  end
+end
+
 function Picker:reset_selection()
   self._selection_entry = nil
   self._selection_row = nil
+
+  self.multi_select = {}
 end
 
 function Picker:set_selection(row)
@@ -686,6 +716,8 @@ function Picker:set_selection(row)
       -1
     )
 
+    self:display_multi_select(results_bufnr)
+
     if prompt and self.sorter.highlighter then
       self:highlight_one_row(results_bufnr, prompt, display, row)
     end
@@ -723,126 +755,6 @@ pickers.new = function(opts, defaults)
   opts = extend(opts, defaults)
   return Picker:new(opts)
 end
-
--- TODO: We should consider adding `process_bulk` or `bulk_entry_manager` for things
--- that we always know the items and can score quickly, so as to avoid drawing so much.
-pickers.entry_manager = function(max_results, set_entry, info)
-  log.trace("Creating entry_manager...")
-
-  info = info or {}
-  info.looped = 0
-  info.inserted = 0
-
-  -- state contains list of
-  --    {
-  --        score = ...
-  --        line = ...
-  --        metadata ? ...
-  --    }
-  local entry_state = {}
-
-  set_entry = set_entry or function() end
-
-  local should_save_result = function(index) return index <= max_results + 1 end
-  local worst_acceptable_score = math.huge
-
-  return setmetatable({
-    add_entry = function(self, score, entry)
-      score = score or 0
-
-      if score >= worst_acceptable_score then
-        return
-      end
-
-      for index, item in ipairs(entry_state) do
-        info.looped = info.looped + 1
-
-        if item.score > score then
-          return self:insert(index, {
-            score = score,
-            entry = entry,
-          })
-        end
-
-        -- Don't add results that are too bad.
-        if not should_save_result(index) then
-          return
-        end
-      end
-
-      return self:insert({
-        score = score,
-        entry = entry,
-      })
-    end,
-
-    insert = function(self, index, entry)
-      if entry == nil then
-        entry = index
-        index = #entry_state + 1
-      end
-
-      -- To insert something, we place at the next available index (or specified index)
-      -- and then shift all the corresponding items one place.
-      local next_entry, last_score
-      repeat
-        info.inserted = info.inserted + 1 
-        next_entry = entry_state[index]
-
-        set_entry(index, entry.entry)
-        entry_state[index] = entry
-
-        last_score = entry.score
-
-        index = index + 1
-        entry = next_entry
-
-      until not next_entry or not should_save_result(index)
-
-      if not should_save_result(index) then
-        worst_acceptable_score = last_score
-      end
-    end,
-
-    num_results = function()
-      return #entry_state
-    end,
-
-    get_ordinal = function(self, index)
-      return self:get_entry(index).ordinal
-    end,
-
-    get_entry = function(_, index)
-      return (entry_state[index] or {}).entry
-    end,
-
-    get_score = function(_, index)
-      return (entry_state[index] or {}).score
-    end,
-
-    find_entry = function(_, entry)
-      if entry == nil then
-        return nil
-      end
-
-      for k, v in ipairs(entry_state) do
-        local existing_entry = v.entry
-
-        -- FIXME: This has the problem of assuming that display will not be the same for two different entries.
-        if existing_entry.display == entry.display then
-          return k
-        end
-      end
-
-      return nil
-    end,
-
-    _get_state = function()
-      return entry_state
-    end,
-  }, {})
-end
-
 
 function pickers.on_close_prompt(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)

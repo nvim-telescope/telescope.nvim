@@ -31,6 +31,11 @@ function actions.move_selection_previous(prompt_bufnr)
   actions.shift_current_selection(prompt_bufnr, -1)
 end
 
+function actions.add_selection(prompt_bufnr)
+  local current_picker = actions.get_current_picker(prompt_bufnr)
+  current_picker:add_selection(current_picker:get_selection_row())
+end
+
 --- Get the current entry
 function actions.get_selected_entry(prompt_bufnr)
   return actions.get_current_picker(prompt_bufnr):get_selection()
