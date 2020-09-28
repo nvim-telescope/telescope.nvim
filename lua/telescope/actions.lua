@@ -3,6 +3,7 @@
 local a = vim.api
 
 local log = require('telescope.log')
+local path = require('telescope.path')
 local state = require('telescope.state')
 
 local actions = setmetatable({}, {
@@ -89,11 +90,12 @@ local function goto_file_selection(prompt_bufnr, command)
 
     actions.close(prompt_bufnr)
 
+    filename = path.normalize(filename, vim.fn.getcwd())
+
     -- TODO: Sometimes we open something with missing line numbers and stuff...
     if entry_bufnr then
       if command == "e" then
         a.nvim_win_set_buf(original_win_id, entry_bufnr)
-        vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
       else
         vim.cmd(string.format(":%s #%d", command, entry_bufnr))
       end
@@ -103,7 +105,6 @@ local function goto_file_selection(prompt_bufnr, command)
         vim.cmd(string.format(":%s %s", command, filename))
         bufnr = vim.api.nvim_get_current_buf()
         a.nvim_buf_set_option(bufnr, "buflisted", true)
-        vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
       end
 
       if row and col then
@@ -113,23 +114,27 @@ local function goto_file_selection(prompt_bufnr, command)
         end
       end
     end
+
+    if command == "edit" then
+      vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
+    end
   end
 end
 
 function actions.goto_file_selection_edit(prompt_bufnr)
-  goto_file_selection(prompt_bufnr, "e")
+  goto_file_selection(prompt_bufnr, "edit")
 end
 
 function actions.goto_file_selection_split(prompt_bufnr)
-  goto_file_selection(prompt_bufnr, "sp")
+  goto_file_selection(prompt_bufnr, "new")
 end
 
 function actions.goto_file_selection_vsplit(prompt_bufnr)
-  goto_file_selection(prompt_bufnr, "vsp")
+  goto_file_selection(prompt_bufnr, "vnew")
 end
 
 function actions.goto_file_selection_tabedit(prompt_bufnr)
-  goto_file_selection(prompt_bufnr, "tabe")
+  goto_file_selection(prompt_bufnr, "tabedit")
 end
 
 function actions.close_pum(_)
@@ -151,6 +156,7 @@ function actions.close(prompt_bufnr)
   vim.cmd [[stopinsert]]
 
   vim.api.nvim_win_close(prompt_win, true)
+
   pcall(vim.cmd, string.format([[silent bdelete! %s]], prompt_bufnr))
 
   a.nvim_set_current_win(original_win_id)

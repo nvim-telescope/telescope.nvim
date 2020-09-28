@@ -1,11 +1,10 @@
+local pathlib = require('telescope.path')
+
 local utils = {}
 
-utils.get_separator = (function()
-  local val = package.config:sub(1, 1)
-  return function()
-    return val
-  end
-end)()
+utils.get_separator = function()
+  return pathlib.separator
+end
 
 utils.if_nil = function(x, was_nil, was_not_nil)
   if x == nil then
@@ -97,29 +96,7 @@ end
 
 --     return result
 --   end or nil)
-utils.path_shorten = (function()
-  if jit then
-    local ffi = require('ffi')
-    ffi.cdef [[
-    typedef unsigned char char_u;
-    char_u *shorten_dir(char_u *str);
-    ]]
-
-    return function(path)
-      if not path then
-        return path
-      end
-
-      local c_str = ffi.new("char[?]", #path + 1)
-      ffi.copy(c_str, path)
-      return ffi.string(ffi.C.shorten_dir(c_str))
-    end
-  else
-    return function(path)
-      return path
-    end
-  end
-end)()
+utils.path_shorten = pathlib.shorten
 
 utils.path_tail = (function()
   local os_sep = utils.get_separator()

@@ -361,7 +361,14 @@ function Picker:find()
       return
     end
 
+    if first_line > 0 or last_line > 1 then
+      return
+    end
+
     local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]
+
+    -- TODO: Statusbar possibilities here.
+    -- vim.api.nvim_buf_set_virtual_text(prompt_bufnr, 0, 1, { {"hello", "Error"} }, {})
 
     local filtered_amount = 0
     local displayed_amount = 0
@@ -643,6 +650,10 @@ function Picker:set_selection(row)
   --        Probably something with setting a row that's too high for this?
   --        Not sure.
   local set_ok, set_errmsg = pcall(function()
+    if not a.nvim_buf_is_valid(results_bufnr) then
+      return
+    end
+
     local prompt = vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, 1, false)[1]
 
     -- Handle adding '> ' to beginning of selections

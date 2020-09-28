@@ -1,9 +1,9 @@
 local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 
+local path = require('telescope.path')
 local utils = require('telescope.utils')
 
 local get_default = utils.get_default
-local os_sep = utils.get_separator()
 
 local make_entry = {}
 
@@ -198,7 +198,7 @@ function make_entry.gen_from_buffer(opts)
   local make_display = function(entry)
     local display_bufname
     if opts.shorten_path then
-      display_bufname = utils.path_shorten(entry.filename)
+      display_bufname = path.shorten(entry.filename)
     else
       display_bufname = entry.filename
     end
@@ -209,17 +209,9 @@ function make_entry.gen_from_buffer(opts)
 
   return function(entry)
     local bufnr_str = tostring(entry)
-    local bufname = vim.api.nvim_buf_get_name(entry)
+    local bufname = path.normalize(vim.api.nvim_buf_get_name(entry), cwd)
 
     -- if bufname is inside the cwd, trim that part of the string
-    if bufname:sub(1, #cwd) == cwd  then
-      local offset =  0
-      -- if  cwd does ends in the os separator, we need to take it off
-      if cwd:sub(#cwd, #cwd) ~= os_sep then
-        offset = 1
-      end
-      bufname = bufname:sub(#cwd + 1 + offset, #bufname)
-    end
 
     local position = get_position(entry)
 
