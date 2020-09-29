@@ -64,12 +64,7 @@ function JobFinder:new(opts)
 end
 
 function JobFinder:_find(prompt, process_result, process_complete)
-  START = vim.loop.hrtime()
-  PERF()
-  PERF('starting...')
-
   if self.job and not self.job.is_shutdown then
-    PERF('...had to shutdown')
     self.job:shutdown()
   end
 
@@ -81,10 +76,6 @@ function JobFinder:_find(prompt, process_result, process_complete)
     end
 
     process_complete()
-    PERF('Num Lines: ', self._cached_lines)
-    PERF('...finished static')
-
-    COMPLETED = true
     return
   end
 
@@ -141,8 +132,6 @@ function JobFinder:_find(prompt, process_result, process_complete)
       self.done = true
 
       process_complete()
-
-      PERF('done')
     end,
   }
 

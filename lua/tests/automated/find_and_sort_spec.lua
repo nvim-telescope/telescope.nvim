@@ -1,8 +1,6 @@
 require('plenary.reload').reload_module('plenary')
 require('plenary.reload').reload_module('telescope')
 
-PERF = function() end
-
 --[[
 
 Goals:

@@ -24,8 +24,3 @@ cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
       \ "lua require('telescope.builtin').command_history {
         \ default_text = [=[" . escape(getcmdline(), '"') . "]=]
         \ }"<CR><CR>
-
-
-" TODO: Make a real perf module that works nicer. Probably something for
-" another night :)
-lua PERF = function(...) end

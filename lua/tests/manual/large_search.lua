@@ -7,9 +7,6 @@ local previewers = require('telescope.previewers')
 local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
 
-PERF_DEBUG = 182
-vim.api.nvim_buf_set_lines(PERF_DEBUG, 0, -1, false, {})
-
 local cwd = vim.fn.expand("~/build/neovim")
 
 pickers.new {
@@ -28,7 +25,6 @@ pickers.new {
 }:find()
 
 
-COMPLETED = false
 -- vim.wait(3000, function()
 --   vim.cmd [[redraw!]]
 --   return COMPLETED

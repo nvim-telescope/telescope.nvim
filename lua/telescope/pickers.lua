@@ -31,48 +31,6 @@ local ns_telescope_matching = a.nvim_create_namespace('telescope_matching')
 
 local pickers = {}
 
--- TODO: Add motions to keybindings
--- TODO: Add relative line numbers?
-local default_mappings = {
-  i = {
-    ["<C-n>"] = actions.move_selection_next,
-    ["<C-p>"] = actions.move_selection_previous,
-
-    ["<C-c>"] = actions.close,
-
-    ["<Down>"] = actions.move_selection_next,
-    ["<Up>"] = actions.move_selection_previous,
-
-    ["<CR>"] = actions.goto_file_selection_edit,
-    ["<C-x>"] = actions.goto_file_selection_split,
-    ["<C-v>"] = actions.goto_file_selection_vsplit,
-    ["<C-t>"] = actions.goto_file_selection_tabedit,
-
-    ["<C-u>"] = actions.preview_scrolling_up,
-    ["<C-d>"] = actions.preview_scrolling_down,
-
-    ["<Tab>"] = actions.add_selection,
-  },
-
-  n = {
-    ["<esc>"] = actions.close,
-    ["<CR>"] = actions.goto_file_selection_edit,
-    ["<C-x>"] = actions.goto_file_selection_split,
-    ["<C-v>"] = actions.goto_file_selection_vsplit,
-    ["<C-t>"] = actions.goto_file_selection_tabedit,
-
-    -- TODO: This would be weird if we switch the ordering.
-    ["j"] = actions.move_selection_next,
-    ["k"] = actions.move_selection_previous,
-
-    ["<Down>"] = actions.move_selection_next,
-    ["<Up>"] = actions.move_selection_previous,
-
-    ["<C-u>"] = actions.preview_scrolling_up,
-    ["<C-d>"] = actions.preview_scrolling_down,
-  },
-}
-
 -- Picker takes a function (`get_window_options`) that returns the configurations required for three windows:
 --  prompt
 --  results
@@ -106,10 +64,10 @@ function Picker:new(opts)
     sorter = opts.sorter,
     previewer = opts.previewer,
 
-    -- opts.mappings => overwrites entire table
-    -- opts.override_mappings => merges your table in with defaults.
-    --  Add option to change default
-    -- opts.attach(bufnr)
+    _completion_callbacks = {},
+
+    track = opts.track,
+    stats = {},
 
     --[[
     function(map)
@@ -117,7 +75,6 @@ function Picker:new(opts)
       telescope.apply_mapping
     end
     --]]
-    -- mappings = get_default(opts.mappings, default_mappings),
     attach_mappings = opts.attach_mappings,
 
     sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
@@ -264,7 +221,8 @@ function Picker:highlight_displayed_rows(results_bufnr, prompt)
 end
 
 function Picker:highlight_one_row(results_bufnr, prompt, display, row)
-  local highlights = self.sorter:highlighter(prompt, display)
+  local highlights = self:_track("_highlight_time", self.sorter.highlighter, self.sorter, prompt, display)
+
   if highlights then
     for _, hl in ipairs(highlights) do
       local highlight, start, finish
@@ -279,6 +237,8 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
       else
         error('Invalid higlighter fn')
       end
+
+      self:_increment('highlights')
 
       vim.api.nvim_buf_add_highlight(
         results_bufnr,
@@ -364,6 +324,8 @@ function Picker:find()
   local selection_strategy = self.selection_strategy or 'reset'
 
   local on_lines = function(_, _, _, first_line, last_line)
+    self:_reset_track()
+
     if not vim.api.nvim_buf_is_valid(prompt_bufnr) then
       return
     end
@@ -376,10 +338,6 @@ function Picker:find()
 
     -- TODO: Statusbar possibilities here.
     -- vim.api.nvim_buf_set_virtual_text(prompt_bufnr, 0, 1, { {"hello", "Error"} }, {})
-
-    local filtered_amount = 0
-    local displayed_amount = 0
-    local displayed_fn_amount = 0
 
     -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
     self.manager = EntryManager:new(
@@ -399,7 +357,7 @@ function Picker:find()
 
         local display
         if type(entry.display) == 'function' then
-          displayed_fn_amount = displayed_fn_amount + 1
+          self:_increment("display_fn")
           display = entry:display()
         elseif type(entry.display) == 'string' then
           display = entry.display
@@ -413,7 +371,7 @@ function Picker:find()
         -- until then, insert two spaces
         display = '  ' .. display
 
-        displayed_amount = displayed_amount + 1
+        self:_increment("displayed")
 
         -- log.info("Setting row", row, "with value", entry)
         local set_ok = pcall(vim.api.nvim_buf_set_lines, results_bufnr, row, row + 1, false, {display})
@@ -428,6 +386,8 @@ function Picker:find()
     ))
 
     local process_result = function(entry)
+      self:_increment("processed")
+
       -- TODO: Should we even have valid?
       if entry.valid == false then
         return
@@ -437,9 +397,7 @@ function Picker:find()
 
       local sort_ok, sort_score = nil, 0
       if sorter then
-        sort_ok, sort_score = pcall(function ()
-          return sorter:score(prompt, entry)
-        end)
+        sort_ok, sort_score = self:_track("_sort_time", pcall, sorter.score, sorter, prompt, entry)
 
         if not sort_ok then
           log.warn("Sorting failed with:", prompt, entry, sort_score)
@@ -447,13 +405,13 @@ function Picker:find()
         end
 
         if sort_score == -1 then
-          filtered_amount = filtered_amount + 1
+          self:_increment("filtered")
           log.trace("Filtering out result: ", entry)
           return
         end
       end
 
-      self.manager:add_entry(sort_score, entry)
+      self:_track("_add_time", self.manager.add_entry, self.manager, sort_score, entry)
     end
 
     local process_complete = vim.schedule_wrap(function()
@@ -479,9 +437,20 @@ function Picker:find()
       self:clear_extra_rows(results_bufnr)
       self:highlight_displayed_rows(results_bufnr, prompt)
 
-      PERF("Filtered Amount    ", filtered_amount)
-      PERF("Displayed Amount   ", displayed_amount)
-      PERF("Displayed FN Amount", displayed_fn_amount)
+
+      -- TODO: Cleanup.
+      self.stats._done = vim.loop.hrtime()
+      self.stats.time = (self.stats._done - self.stats._start) / 1e9
+
+      local function do_times(key)
+        self.stats[key] = self.stats["_" .. key] / 1e9
+      end
+
+      do_times("sort_time")
+      do_times("add_time")
+      do_times("highlight_time")
+
+      self:_on_complete()
     end)
 
     local ok, msg = pcall(function()
@@ -545,7 +514,7 @@ function Picker:find()
     finder = finder,
   })
 
-  mappings.apply_keymap(prompt_bufnr, self.attach_mappings, default_mappings)
+  mappings.apply_keymap(prompt_bufnr, self.attach_mappings, config.values.default_mappings)
 
   -- Do filetype last, so that users can register at the last second.
   pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')
@@ -741,6 +710,56 @@ function Picker:set_selection(row)
       entry,
       status
     )
+  end
+end
+
+function Picker:_reset_track()
+  self.stats.processed = 0
+  self.stats.displayed = 0
+  self.stats.display_fn = 0
+
+  self.stats.filtered = 0
+  self.stats.highlights = 0
+
+  self.stats._sort_time = 0
+  self.stats._add_time = 0
+  self.stats._highlight_time = 0
+  self.stats._start = vim.loop.hrtime()
+end
+
+function Picker:_track(key, func, ...)
+  local start, final
+  if self.track then
+    start = vim.loop.hrtime()
+  end
+
+  -- Hack... we just do this so that we can track stuff that returns two values.
+  local res1, res2 = func(...)
+
+  if self.track then
+    final = vim.loop.hrtime()
+    self.stats[key] = final - start + self.stats[key]
+  end
+
+  return res1, res2
+end
+
+function Picker:_increment(key)
+  if self.track then
+    self.stats[key] = self.stats[key] + 1
+  end
+end
+
+
+-- TODO: Decide how much we want to use this.
+--  Would allow for better debugging of items.
+function Picker:register_completion_callback(cb)
+  table.insert(self._completion_callbacks, cb)
+end
+
+function Picker:_on_complete()
+  for _, v in ipairs(self._completion_callbacks) do
+    v(self)
   end
 end
 
