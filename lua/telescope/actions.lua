@@ -94,7 +94,7 @@ local function goto_file_selection(prompt_bufnr, command)
 
     -- TODO: Sometimes we open something with missing line numbers and stuff...
     if entry_bufnr then
-      if command == "e" then
+      if command == "edit" then
         a.nvim_win_set_buf(original_win_id, entry_bufnr)
       else
         vim.cmd(string.format(":%s #%d", command, entry_bufnr))
