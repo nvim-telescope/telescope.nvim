@@ -68,7 +68,7 @@ function Picker:new(opts)
 
     _completion_callbacks = {},
 
-    track = get_default(opts.track, true),
+    track = get_default(opts.track, false),
     stats = {},
 
     attach_mappings = opts.attach_mappings,
@@ -411,7 +411,7 @@ function Picker:find()
       end)
     end
 
-    self.manager = EntryManager:new(self.max_results, entry_adder)
+    self.manager = EntryManager:new(self.max_results, entry_adder, self.stats)
 
     local process_result = function(entry)
       self:_increment("processed")
@@ -783,9 +783,7 @@ function Picker:_track(key, func, ...)
 end
 
 function Picker:_increment(key)
-  if self.track then
-    self.stats[key] = self.stats[key] + 1
-  end
+  self.stats[key] = self.stats[key] + 1
 end
 
 

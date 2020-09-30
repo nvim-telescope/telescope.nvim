@@ -44,7 +44,7 @@ function config.set_defaults(defaults)
   set("border", {})
   set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
 
-  set("get_status_text", function(self) return string.format("Entries: %s", self.stats.processed) end)
+  set("get_status_text", function(self) return string.format("%s / %s", self.stats.processed - self.stats.filtered, self.stats.processed) end)
 
   -- Builtin configuration
 
@@ -75,7 +75,8 @@ function config.set_defaults(defaults)
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
 
-      ["<Tab>"] = actions.add_selection,
+      -- TODO: When we implement multi-select, you can turn this back on :)
+      -- ["<Tab>"] = actions.add_selection,
     },
 
     n = {
