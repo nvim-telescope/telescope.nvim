@@ -518,7 +518,7 @@ builtin.find_files = function(opts)
       opts
     ),
     previewer = previewers.cat.new(opts),
-    sorter = sorters.get_fuzzy_file(),
+    sorter = sorters.get_fuzzy_file(opts),
   }):find()
 end
 

@@ -8,20 +8,8 @@ local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
 local utils = require('telescope.utils')
 
-local find_files = function(opts)
+local slow_proc = function(opts)
   opts = opts or {}
-
-  local find_command = opts.find_command
-
-  if not find_command then
-    if 1 == vim.fn.executable("fd") then
-      find_command = { 'fd', '--type', 'f' }
-    elseif 1 == vim.fn.executable("fdfind") then
-      find_command = { 'fdfind', '--type', 'f' }
-    elseif 1 == vim.fn.executable("rg") then
-      find_command = { 'rg', '--files' }
-    end
-  end
 
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)
@@ -30,9 +18,9 @@ local find_files = function(opts)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
 
   local p = pickers.new(opts, {
-    prompt = 'Find Files',
+    prompt = 'Slow Proc',
     finder = finders.new_oneshot_job(
-      find_command,
+      {"./scratch/slow_proc.sh"},
       opts
     ),
     previewer = previewers.cat.new(opts),
@@ -60,21 +48,24 @@ local find_files = function(opts)
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(text, true, false, true), 'n', true)
   end
 
-  p:register_completion_callback(coroutine.wrap(function()
-    local input = "pickers.lua"
-    for i = 1, #input do
-      feed(input:sub(i, i))
-      coroutine.yield()
-    end
+  if false then
+    p:register_completion_callback(coroutine.wrap(function()
+      local input = "pickers.lua"
+      for i = 1, #input do
+        feed(input:sub(i, i))
+        coroutine.yield()
+      end
 
-    vim.wait(300, function() end)
+      vim.wait(300, function() end)
 
-    vim.cmd [[:q]]
-    vim.cmd [[:Messages]]
-    vim.cmd [[stopinsert]]
-  end))
+      vim.cmd [[:q]]
+      vim.cmd [[:Messages]]
+      vim.cmd [[stopinsert]]
+    end))
+  end
+
 
   p:find()
 end
 
-find_files()
+slow_proc()
