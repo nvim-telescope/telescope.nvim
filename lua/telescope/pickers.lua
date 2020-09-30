@@ -416,6 +416,11 @@ function Picker:find()
     local process_result = function(entry)
       self:_increment("processed")
 
+      if not entry then
+        log.debug("No entry...")
+        return
+      end
+
       -- TODO: Should we even have valid?
       if entry.valid == false then
         return
