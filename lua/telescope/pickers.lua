@@ -821,7 +821,7 @@ function pickers.on_close_prompt(prompt_bufnr)
   end
 
   -- TODO: This is an attempt to clear all the memory stuff we may have left.
-  vim.api.nvim_buf_detach(prompt_bufnr)
+  -- vim.api.nvim_buf_detach(prompt_bufnr)
 
   picker:close_windows(status)
 end
