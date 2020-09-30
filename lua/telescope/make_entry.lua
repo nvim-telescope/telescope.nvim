@@ -488,11 +488,18 @@ function make_entry.gen_from_vimoptions(opts)
     line.current_value = line.current_value:gsub("", "<C-F>")
 
     -- truncate long option values
-    line.current_value = truncate(line.current_value, 9)
-
-    result.display = string.format("%-15s %-10s - %s", line.name, line.current_value, line.description)
+    local col1, col2, col3
+    local win_width = vim.api.nvim_win_get_width(0) * 0.7
+    col2 = 30
+    line.current_value = truncate(line.current_value, col2-1)
+    col1 = win_width - col2 - opts.desc_col_length
+    -- print(col1)
+    -- print(vim.inspect(opts))
+    -- print(string.format("col1 = %d -%d -%s", win_width  , col2, opts.desc_col_length))
+    result.display = string.format("%-".. math.floor(col1) .."s │ %-" ..col2.."s │ %s", line.name, line.current_value, line.description)
     result.value = line.name
 
+    result.last_set_from = line.last_set_from
     return result
   end
 
@@ -507,6 +514,7 @@ function make_entry.gen_from_vimoptions(opts)
     entry.value   = d.value
     entry.ordinal = d.value
     entry.raw_value = d.raw_value
+    entry.last_set_from = d.last_set_from
 
     return entry
   end
