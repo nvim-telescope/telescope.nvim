@@ -359,6 +359,7 @@ function make_entry.gen_from_tagfile(opts)
 
     return entry
   end
+end
 
 function make_entry.gen_from_packages(opts)
   return function(module_name)
