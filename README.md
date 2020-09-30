@@ -14,7 +14,9 @@ Support for:
 * Files (git, fd, rg)
 * Vim (command history, quickfix, loclist)
 
-[What is Telescope?](https://www.twitch.tv/teej_dv/clip/RichDistinctPlumberPastaThat)
+[What is Telescope? (Video)](https://www.twitch.tv/teej_dv/clip/RichDistinctPlumberPastaThat)
+
+[More advanced configuration (Video)](https://www.twitch.tv/videos/756229115)
 
 
 ![Finding Files](https://raw.githubusercontent.com/tjdevries/media.repo/master/telescope.nvim/simple_rg_v1.gif)
