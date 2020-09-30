@@ -1,6 +1,7 @@
 
 " Sets the highlight for selected items within the picker.
 highlight default link TelescopeSelection Visual
+highlight default link TelescopeMultiSelection Type
 
 " "Normal" in the floating windows created by telescope.
 highlight default link TelescopeNormal Normal
@@ -23,8 +24,3 @@ cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
       \ "lua require('telescope.builtin').command_history {
         \ default_text = [=[" . escape(getcmdline(), '"') . "]=]
         \ }"<CR><CR>
-
-
-" TODO: Make a real perf module that works nicer. Probably something for
-" another night :)
-lua PERF = function(...) end

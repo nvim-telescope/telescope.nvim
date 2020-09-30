@@ -5,7 +5,7 @@ local telescope = require('telescope')
 -- When updating the table, we should call filter on those items
 -- and then only display ones that pass the filter
 local rg_finder = telescope.finders.new {
-  fn_command = function(self, prompt)
+  fn_command = function(_, prompt)
     return string.format('rg --vimgrep %s', prompt)
   end,
 

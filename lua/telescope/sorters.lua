@@ -53,51 +53,11 @@ end
 
 sorters.Sorter = Sorter
 
-sorters.get_ngram_sorter = function()
-  return Sorter:new {
-    scoring_function = function(_, prompt, line)
-      if prompt == "" or prompt == nil then
-        return 1
-      end
-
-      local ok, result = pcall(function()
-        local ngram = util.new_ngram { N = 4 }
-        ngram:add(line)
-
-        local score = ngram:score(prompt)
-        if score == 0 then
-          return -1
-        end
-
-        -- return math.pow(math.max(score, 0.0001), -1)
-        return score
-      end)
-
-      return ok and result or 1
-    end
-  }
-end
-
-sorters.get_levenshtein_sorter = function()
-  return Sorter:new {
-    scoring_function = function(_, prompt, line)
-      local result = require('telescope.algos.string_distance')(prompt, line)
-      log.info("Sorting result for", prompt, line, " = ", result)
-      return result
-    end
-  }
-end
-
--- TODO: Match on upper case words
--- TODO: Match on last match
-sorters.get_fuzzy_file = function(opts)
-  opts = opts or {}
-
-  local ngram_len = opts.ngram_len or 2
+TelescopeCachedTails = TelescopeCachedTails or nil
+do
   local os_sep = util.get_separator()
   local match_string = '[^' .. os_sep .. ']*$'
-
-  local cached_tails = setmetatable({}, {
+  TelescopeCachedTails = setmetatable({}, {
     __index = function(t, k)
       local tail = string.match(k, match_string)
 
@@ -105,30 +65,35 @@ sorters.get_fuzzy_file = function(opts)
       return tail
     end,
   })
+end
 
-  -- TODO: Consider either a faster way of getting these
-  --        OR we really should just cache them longer
-  --        OR we need a different way of keeping track of uppercase letters.
-  local cached_uppers = setmetatable({}, {
-    __index = function(t, k)
-      local obj = {}
-      for i = 1, #k do
-        local s_byte = k:byte(i, i)
-        if s_byte <= 90 and s_byte >= 65 then
-          obj[s_byte] = true
-        end
+TelescopeCachedUppers = TelescopeCachedUppers or setmetatable({}, {
+  __index = function(t, k)
+    local obj = {}
+    for i = 1, #k do
+      local s_byte = k:byte(i, i)
+      if s_byte <= 90 and s_byte >= 65 then
+        obj[s_byte] = true
       end
-
-      rawset(t, k, obj)
-      return obj
     end
-  })
 
-  local cached_ngrams = {}
+    rawset(t, k, obj)
+    return obj
+  end
+})
+
+TelescopeCachedNgrams = TelescopeCachedNgrams or {}
+
+-- TODO: Match on upper case words
+-- TODO: Match on last match
+sorters.get_fuzzy_file = function(opts)
+  opts = opts or {}
+
+  local ngram_len = opts.ngram_len or 2
 
   local function overlapping_ngrams(s, n)
-    if cached_ngrams[s] and cached_ngrams[s][n] then
-      return cached_ngrams[s][n]
+    if TelescopeCachedNgrams[s] and TelescopeCachedNgrams[s][n] then
+      return TelescopeCachedNgrams[s][n]
     end
 
     local R = {}
@@ -136,11 +101,11 @@ sorters.get_fuzzy_file = function(opts)
       R[#R+1] = s:sub(i, i+n-1)
     end
 
-    if not cached_ngrams[s] then
-      cached_ngrams[s] = {}
+    if not TelescopeCachedNgrams[s] then
+      TelescopeCachedNgrams[s] = {}
     end
 
-    cached_ngrams[s][n] = R
+    TelescopeCachedNgrams[s][n] = R
 
     return R
   end
@@ -163,8 +128,8 @@ sorters.get_fuzzy_file = function(opts)
       -- Contains the original string
       local contains_string = line_lower:find(prompt_lower, 1, true)
 
-      local prompt_uppers = cached_uppers[prompt]
-      local line_uppers = cached_uppers[line]
+      local prompt_uppers = TelescopeCachedUppers[prompt]
+      local line_uppers = TelescopeCachedUppers[line]
 
       local uppers_matching = 0
       for k, _ in pairs(prompt_uppers) do
@@ -174,7 +139,7 @@ sorters.get_fuzzy_file = function(opts)
       end
 
       -- TODO: Consider case senstivity
-      local tail = cached_tails[line_lower]
+      local tail = TelescopeCachedTails[line_lower]
       local contains_tail = tail:find(prompt, 1, true)
 
       local consecutive_matches = 0
@@ -224,20 +189,20 @@ sorters.get_fuzzy_file = function(opts)
       return 1 / denominator
     end,
 
-    highlighter = function(_, prompt, display)
+    highlighter = opts.highlighter or function(_, prompt, display)
       return ngram_highlighter(ngram_len, prompt, display)
     end,
   }
 end
 
-sorters.get_generic_fuzzy_sorter = function()
+sorters.get_generic_fuzzy_sorter = function(opts)
+  opts = opts or {}
+
   local ngram_len = 2
 
-  local cached_ngrams = {}
-
   local function overlapping_ngrams(s, n)
-    if cached_ngrams[s] and cached_ngrams[s][n] then
-      return cached_ngrams[s][n]
+    if TelescopeCachedNgrams[s] and TelescopeCachedNgrams[s][n] then
+      return TelescopeCachedNgrams[s][n]
     end
 
     local R = {}
@@ -245,11 +210,11 @@ sorters.get_generic_fuzzy_sorter = function()
       R[#R+1] = s:sub(i, i+n-1)
     end
 
-    if not cached_ngrams[s] then
-      cached_ngrams[s] = {}
+    if not TelescopeCachedNgrams[s] then
+      TelescopeCachedNgrams[s] = {}
     end
 
-    cached_ngrams[s][n] = R
+    TelescopeCachedNgrams[s][n] = R
 
     return R
   end
@@ -312,9 +277,18 @@ sorters.get_generic_fuzzy_sorter = function()
       return 1 / denominator
     end,
 
-    highlighter = function(_, prompt, display)
+    highlighter = opts.highlighter or function(_, prompt, display)
       return ngram_highlighter(ngram_len, prompt, display)
     end,
+  }
+end
+
+-- Bad & Dumb Sorter
+sorters.get_levenshtein_sorter = function()
+  return Sorter:new {
+    scoring_function = function(_, prompt, line)
+      return require('telescope.algos.string_distance')(prompt, line)
+    end
   }
 end
 

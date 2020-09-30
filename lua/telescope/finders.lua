@@ -5,11 +5,6 @@ local log = require('telescope.log')
 
 local finders = {}
 
--- TODO: We should make a few different "FinderGenerators":
---  SimpleListFinder(my_list)
---  FunctionFinder(my_func)
---  JobFinder(my_job_args)
-
 local _callable_obj = function()
   local obj = {}
 
@@ -39,19 +34,11 @@ function JobFinder:new(opts)
   opts = opts or {}
 
   assert(not opts.results, "`results` should be used with finder.new_table")
-  -- TODO:
-  -- - `types`
-  --    job
-  --    pipe
-  --        vim.loop.new_pipe (stdin / stdout). stdout => filter pipe
-  --        rg huge_search | fzf --filter prompt_is > buffer. buffer could do stuff do w/ preview callback
+  assert(not opts.static, "`static` should be used with finder.new_oneshot_job")
 
   local obj = setmetatable({
     entry_maker = opts.entry_maker or make_entry.from_string,
     fn_command = opts.fn_command,
-    static = opts.static,
-    state = {},
-
     cwd = opts.cwd,
     writer = opts.writer,
 
@@ -64,60 +51,30 @@ function JobFinder:new(opts)
 end
 
 function JobFinder:_find(prompt, process_result, process_complete)
-  START = vim.loop.hrtime()
-  PERF()
-  PERF('starting...')
+  log.trace("Finding...")
 
   if self.job and not self.job.is_shutdown then
-    PERF('...had to shutdown')
+    log.debug("Shutting down old job")
     self.job:shutdown()
   end
 
-  log.trace("Finding...")
-  if self.static and self.done then
-    log.trace("Using previous results")
-    for _, v in ipairs(self._cached_lines) do
-      process_result(v)
-    end
-
-    process_complete()
-    PERF('Num Lines: ', self._cached_lines)
-    PERF('...finished static')
-
-    COMPLETED = true
-    return
-  end
-
-  self.done = false
-  self._cached_lines = {}
-
   local on_output = function(_, line, _)
-    if not line then
+    if not line or line == "" then
       return
     end
 
-    if line ~= "" then
-      if self.entry_maker then
-        line = self.entry_maker(line)
-      end
-
-      process_result(line)
-
-      if self.static then
-        table.insert(self._cached_lines, line)
-      end
+    if self.entry_maker then
+      line = self.entry_maker(line)
     end
+
+    process_result(line)
   end
 
-  -- TODO: How to just literally pass a list...
-  -- TODO: How to configure what should happen here
-  -- TODO: How to run this over and over?
   local opts = self:fn_command(prompt)
   if not opts then return end
 
   local writer = nil
   if opts.writer and Job.is_job(opts.writer) then
-    print("WOW A JOB")
     writer = opts.writer
   elseif opts.writer then
     writer = Job:new(opts.writer)
@@ -138,16 +95,123 @@ function JobFinder:_find(prompt, process_result, process_complete)
     on_stderr = on_output,
 
     on_exit = function()
-      self.done = true
-
       process_complete()
-
-      PERF('done')
     end,
   }
 
   self.job:start()
 end
+
+local OneshotJobFinder = _callable_obj()
+
+function OneshotJobFinder:new(opts)
+  opts = opts or {}
+
+  assert(not opts.results, "`results` should be used with finder.new_table")
+  assert(not opts.static, "`static` should be used with finder.new_oneshot_job")
+
+  local obj = setmetatable({
+    fn_command = opts.fn_command,
+    entry_maker = opts.entry_maker or make_entry.from_string,
+
+    cwd = opts.cwd,
+    writer = opts.writer,
+
+    maximum_results = opts.maximum_results,
+
+    _started = false,
+  }, self)
+
+  obj._find = coroutine.wrap(function(finder, _, process_result, process_complete)
+    local num_execution = 1
+    local num_results = 0
+
+    local results = setmetatable({}, {
+      __newindex = function(t, k, v)
+        rawset(t, k, v)
+        process_result(v)
+      end
+    })
+
+    local job_opts = finder:fn_command(prompt)
+    if not job_opts then
+      error(debug.trackeback("expected `job_opts` from fn_command"))
+    end
+
+    local writer = nil
+    if job_opts.writer and Job.is_job(job_opts.writer) then
+      writer = job_opts.writer
+    elseif job_opts.writer then
+      writer = Job:new(job_opts.writer)
+    end
+
+    local on_output = function(_, line)
+      -- This will call the metamethod, process_result
+      num_results = num_results + 1
+      results[num_results] = finder.entry_maker(line)
+    end
+
+    local completed = false
+    local job = Job:new {
+      command = job_opts.command,
+      args = job_opts.args,
+      cwd = job_opts.cwd or finder.cwd,
+
+      maximum_results = finder.maximum_results,
+
+      writer = writer,
+
+      enable_recording = false,
+
+      on_stdout = on_output,
+      on_stderr = on_output,
+
+      on_exit = function()
+        process_complete()
+        completed = true
+      end,
+    }
+
+    job:start()
+
+    while true do
+      finder, _, process_result, process_complete = coroutine.yield()
+      num_execution = num_execution + 1
+
+      log.debug("Using previous results", job.is_shutdown, completed, num_execution)
+
+      local current_count = num_results
+      for index = 1, current_count do
+        process_result(results[index])
+      end
+
+      if completed then
+        process_complete()
+      end
+    end
+  end)
+
+  return obj
+end
+
+function OneshotJobFinder:old_find(_, process_result, process_complete)
+  local first_run = false
+
+  if not self._started then
+    first_run = true
+
+    self._started = true
+
+  end
+
+  -- First time we get called, start on up that job.
+  -- Every time after that, just use the results LUL
+  if not first_run then
+    return
+  end
+end
+
+
 
 --[[ =============================================================
 Static Finders
@@ -239,9 +303,7 @@ finders.new_oneshot_job = function(command_list, opts)
 
   local command = table.remove(command_list, 1)
 
-  return JobFinder:new {
-    static = true,
-
+  return OneshotJobFinder:new {
     entry_maker = opts.entry_maker or make_entry.gen_from_string(),
 
     cwd = opts.cwd,

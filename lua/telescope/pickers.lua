@@ -3,12 +3,15 @@ local popup = require('popup')
 
 local actions = require('telescope.actions')
 local config = require('telescope.config')
+local debounce = require('telescope.debounce')
 local resolve = require('telescope.config.resolve')
 local layout_strategies = require('telescope.pickers.layout_strategies')
 local log = require('telescope.log')
 local mappings = require('telescope.mappings')
 local state = require('telescope.state')
 local utils = require('telescope.utils')
+
+local EntryManager = require('telescope.entry_manager')
 
 local get_default = utils.get_default
 
@@ -26,48 +29,9 @@ end
 
 local ns_telescope_selection = a.nvim_create_namespace('telescope_selection')
 local ns_telescope_matching = a.nvim_create_namespace('telescope_matching')
+local ns_telescope_prompt = a.nvim_create_namespace('telescope_prompt')
 
 local pickers = {}
-
--- TODO: Add motions to keybindings
--- TODO: Add relative line numbers?
-local default_mappings = {
-  i = {
-    ["<C-n>"] = actions.move_selection_next,
-    ["<C-p>"] = actions.move_selection_previous,
-
-    ["<C-c>"] = actions.close,
-
-    ["<Down>"] = actions.move_selection_next,
-    ["<Up>"] = actions.move_selection_previous,
-
-    ["<CR>"] = actions.goto_file_selection_edit,
-    ["<C-x>"] = actions.goto_file_selection_split,
-    ["<C-v>"] = actions.goto_file_selection_vsplit,
-    ["<C-t>"] = actions.goto_file_selection_tabedit,
-
-    ["<C-u>"] = actions.preview_scrolling_up,
-    ["<C-d>"] = actions.preview_scrolling_down,
-  },
-
-  n = {
-    ["<esc>"] = actions.close,
-    ["<CR>"] = actions.goto_file_selection_edit,
-    ["<C-x>"] = actions.goto_file_selection_split,
-    ["<C-v>"] = actions.goto_file_selection_vsplit,
-    ["<C-t>"] = actions.goto_file_selection_tabedit,
-
-    -- TODO: This would be weird if we switch the ordering.
-    ["j"] = actions.move_selection_next,
-    ["k"] = actions.move_selection_previous,
-
-    ["<Down>"] = actions.move_selection_next,
-    ["<Up>"] = actions.move_selection_previous,
-
-    ["<C-u>"] = actions.preview_scrolling_up,
-    ["<C-d>"] = actions.preview_scrolling_down,
-  },
-}
 
 -- Picker takes a function (`get_window_options`) that returns the configurations required for three windows:
 --  prompt
@@ -102,18 +66,11 @@ function Picker:new(opts)
     sorter = opts.sorter,
     previewer = opts.previewer,
 
-    -- opts.mappings => overwrites entire table
-    -- opts.override_mappings => merges your table in with defaults.
-    --  Add option to change default
-    -- opts.attach(bufnr)
+    _completion_callbacks = {},
 
-    --[[
-    function(map)
-      map('n', '<esc>', actions.close, [opts])
-      telescope.apply_mapping
-    end
-    --]]
-    -- mappings = get_default(opts.mappings, default_mappings),
+    track = get_default(opts.track, false),
+    stats = {},
+
     attach_mappings = opts.attach_mappings,
 
     sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
@@ -121,6 +78,7 @@ function Picker:new(opts)
 
     layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy),
     get_window_options = opts.get_window_options,
+    get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
 
     window = {
       -- TODO: This won't account for different layouts...
@@ -199,7 +157,7 @@ function Picker:get_row(index)
   if self.sorting_strategy == 'ascending' then
     return index - 1
   else
-    return self.max_results - index + 1
+    return self.max_results - index
   end
 end
 
@@ -211,7 +169,7 @@ function Picker:get_index(row)
   if self.sorting_strategy == 'ascending' then
     return row + 1
   else
-    return self.max_results - row + 1
+    return self.max_results - row
   end
 end
 
@@ -219,14 +177,15 @@ function Picker:get_reset_row()
   if self.sorting_strategy == 'ascending' then
     return 0
   else
-    return self.max_results
+    return self.max_results - 1
   end
 end
 
 function Picker:clear_extra_rows(results_bufnr)
+  local worst_line
   if self.sorting_strategy == 'ascending' then
     local num_results = self.manager:num_results()
-    local worst_line = self.max_results - num_results
+    worst_line = self.max_results - num_results
 
     if worst_line <= 0 then
       return
@@ -234,7 +193,7 @@ function Picker:clear_extra_rows(results_bufnr)
 
     vim.api.nvim_buf_set_lines(results_bufnr, num_results + 1, self.max_results, false, {})
   else
-    local worst_line = self:get_row(self.manager:num_results())
+    worst_line = self:get_row(self.manager:num_results())
     if worst_line <= 0 then
       return
     end
@@ -242,6 +201,8 @@ function Picker:clear_extra_rows(results_bufnr)
     local empty_lines = utils.repeated_table(worst_line, "")
     pcall(vim.api.nvim_buf_set_lines, results_bufnr, 0, worst_line, false, empty_lines)
   end
+
+  log.debug("Clearing:", worst_line)
 end
 
 function Picker:highlight_displayed_rows(results_bufnr, prompt)
@@ -260,7 +221,8 @@ function Picker:highlight_displayed_rows(results_bufnr, prompt)
 end
 
 function Picker:highlight_one_row(results_bufnr, prompt, display, row)
-  local highlights = self.sorter:highlighter(prompt, display)
+  local highlights = self:_track("_highlight_time", self.sorter.highlighter, self.sorter, prompt, display)
+
   if highlights then
     for _, hl in ipairs(highlights) do
       local highlight, start, finish
@@ -275,6 +237,8 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
       else
         error('Invalid higlighter fn')
       end
+
+      self:_increment('highlights')
 
       vim.api.nvim_buf_add_highlight(
         results_bufnr,
@@ -319,7 +283,6 @@ function Picker:find()
     popup_opts.preview.minheight = popup_opts.preview.height
   end
 
-  -- TODO: Add back the borders after fixing some stuff in popup.nvim
   local results_win, results_opts = popup.create('', popup_opts.results)
   local results_bufnr = a.nvim_win_get_buf(results_win)
 
@@ -334,8 +297,6 @@ function Picker:find()
     preview_win, preview_opts = popup.create('', popup_opts.preview)
     preview_bufnr = a.nvim_win_get_buf(preview_win)
 
-    -- TODO: For some reason, highlighting is kind of weird on these windows.
-    --        It may actually be my colorscheme tho...
     a.nvim_win_set_option(preview_win, 'winhl', 'Normal:TelescopeNormal')
     a.nvim_win_set_option(preview_win, 'winblend', self.window.winblend)
   end
@@ -346,69 +307,99 @@ function Picker:find()
   a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
   a.nvim_win_set_option(prompt_win, 'winblend', self.window.winblend)
 
-  -- a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
-  -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_string)
+  -- Draw the screen ASAP. This makes things feel speedier.
+  vim.cmd [[redraw]]
+
+  local prompt_prefix
+  if false then
+    prompt_prefix = " > "
+    a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
+    vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
+  else
+    prompt_prefix = ""
+  end
 
   -- First thing we want to do is set all the lines to blank.
-  self.max_results = popup_opts.results.height - 1
+  self.max_results = popup_opts.results.height
 
   vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
 
   local selection_strategy = self.selection_strategy or 'reset'
 
+  local update_status = function()
+    local text = self:get_status_text()
+    local current_prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, 0, 1, false)[1]
+    if not current_prompt then
+      return
+    end
+
+    if not vim.api.nvim_win_is_valid(prompt_win) then
+      return
+    end
+
+    local padding = string.rep(" ", vim.api.nvim_win_get_width(prompt_win) - #current_prompt - #text - 3)
+    vim.api.nvim_buf_clear_namespace(prompt_bufnr, ns_telescope_prompt, 0, 1)
+    vim.api.nvim_buf_set_virtual_text(prompt_bufnr, ns_telescope_prompt, 0, { {padding .. text, "NonText"} }, {})
+
+    self:_increment("status")
+  end
+
+  local debounced_status = debounce.throttle_leading(update_status, 50)
+
   local on_lines = function(_, _, _, first_line, last_line)
+    self:_reset_track()
+
     if not vim.api.nvim_buf_is_valid(prompt_bufnr) then
+      log.debug("ON_LINES: Invalid prompt_bufnr", prompt_bufnr)
       return
     end
 
     if first_line > 0 or last_line > 1 then
+      log.debug("ON_LINES: Bad range", first_line, last_line)
       return
     end
 
-    local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]
+    local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]:sub(#prompt_prefix)
 
     -- TODO: Statusbar possibilities here.
     -- vim.api.nvim_buf_set_virtual_text(prompt_bufnr, 0, 1, { {"hello", "Error"} }, {})
 
-    local filtered_amount = 0
-    local displayed_amount = 0
-    local displayed_fn_amount = 0
-
     -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
-    self.manager = pickers.entry_manager(
-      self.max_results,
-      vim.schedule_wrap(function(index, entry)
+    local entry_adder = function(index, entry)
+      local row = self:get_row(index)
+
+      -- If it's less than 0, then we don't need to show it at all.
+      if row < 0 then
+        log.debug("ON_ENTRY: Weird row", row)
+        return
+      end
+
+      local display
+      if type(entry.display) == 'function' then
+        self:_increment("display_fn")
+        display = entry:display()
+      elseif type(entry.display) == 'string' then
+        display = entry.display
+      else
+        log.info("Weird entry", entry)
+        return
+      end
+
+      -- This is the two spaces to manage the '> ' stuff.
+      -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
+      -- until then, insert two spaces
+      display = '  ' .. display
+
+      self:_increment("displayed")
+
+      -- TODO: Don't need to schedule this if we schedule the adder.
+      vim.schedule(function()
         if not vim.api.nvim_buf_is_valid(results_bufnr) then
+          log.debug("ON_ENTRY: Invalid buffer")
           return
         end
 
-        local row = self:get_row(index)
 
-        -- If it's less than 0, then we don't need to show it at all.
-        if row < 0 then
-          return
-        end
-        -- TODO: Do we need to also make sure we don't have something bigger than max results?
-
-        local display
-        if type(entry.display) == 'function' then
-          displayed_fn_amount = displayed_fn_amount + 1
-          display = entry:display()
-        elseif type(entry.display) == 'string' then
-          display = entry.display
-        else
-          log.info("Weird entry", entry)
-          return
-        end
-
-        -- This is the two spaces to manage the '> ' stuff.
-        -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
-        -- until then, insert two spaces
-        display = '  ' .. display
-
-        displayed_amount = displayed_amount + 1
-
-        -- log.info("Setting row", row, "with value", entry)
         local set_ok = pcall(vim.api.nvim_buf_set_lines, results_bufnr, row, row + 1, false, {display})
 
         -- This pretty much only fails when people leave newlines in their results.
@@ -417,10 +408,14 @@ function Picker:find()
           display = display:gsub("\n", " | ")
           vim.api.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {display})
         end
-      end
-    ))
+      end)
+    end
+
+    self.manager = EntryManager:new(self.max_results, entry_adder, self.stats)
 
     local process_result = function(entry)
+      self:_increment("processed")
+
       -- TODO: Should we even have valid?
       if entry.valid == false then
         return
@@ -430,9 +425,7 @@ function Picker:find()
 
       local sort_ok, sort_score = nil, 0
       if sorter then
-        sort_ok, sort_score = pcall(function ()
-          return sorter:score(prompt, entry)
-        end)
+        sort_ok, sort_score = self:_track("_sort_time", pcall, sorter.score, sorter, prompt, entry)
 
         if not sort_ok then
           log.warn("Sorting failed with:", prompt, entry, sort_score)
@@ -440,16 +433,21 @@ function Picker:find()
         end
 
         if sort_score == -1 then
-          filtered_amount = filtered_amount + 1
+          self:_increment("filtered")
           log.trace("Filtering out result: ", entry)
           return
         end
       end
 
-      self.manager:add_entry(sort_score, entry)
+      self:_track("_add_time", self.manager.add_entry, self.manager, sort_score, entry)
+
+      debounced_status()
     end
 
-    local process_complete = vim.schedule_wrap(function()
+    local process_complete = function()
+      -- prompt_prefix = " hello > "
+      -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
+
       -- TODO: We should either: always leave one result or make sure we actually clean up the results when nothing matches
 
       if selection_strategy == 'row' then
@@ -472,13 +470,26 @@ function Picker:find()
       self:clear_extra_rows(results_bufnr)
       self:highlight_displayed_rows(results_bufnr, prompt)
 
-      PERF("Filtered Amount    ", filtered_amount)
-      PERF("Displayed Amount   ", displayed_amount)
-      PERF("Displayed FN Amount", displayed_fn_amount)
-    end)
+
+      -- TODO: Cleanup.
+      self.stats._done = vim.loop.hrtime()
+      self.stats.time = (self.stats._done - self.stats._start) / 1e9
+
+      local function do_times(key)
+        self.stats[key] = self.stats["_" .. key] / 1e9
+      end
+
+      do_times("sort_time")
+      do_times("add_time")
+      do_times("highlight_time")
+
+      self:_on_complete()
+
+      update_status()
+    end
 
     local ok, msg = pcall(function()
-      return finder(prompt, process_result, process_complete)
+      return finder(prompt, process_result, vim.schedule_wrap(process_complete))
     end)
 
     if not ok then
@@ -486,18 +497,13 @@ function Picker:find()
     end
   end
 
-  -- TODO: Uncomment
-  vim.schedule(function()
-    on_lines(nil, nil, nil, 0, 1)
-  end)
+  on_lines(nil, nil, nil, 0, 1)
+  update_status()
 
   -- Register attach
-  vim.api.nvim_buf_attach(prompt_bufnr, true, {
-    on_lines = vim.schedule_wrap(on_lines),
-
-    on_detach = function(...)
-      -- print("DETACH:", ...)
-    end,
+  vim.api.nvim_buf_attach(prompt_bufnr, false, {
+    on_lines = on_lines,
+    on_detach = function(...) print("DETACH:", ...) end,
   })
 
 
@@ -538,7 +544,7 @@ function Picker:find()
     finder = finder,
   })
 
-  mappings.apply_keymap(prompt_bufnr, self.attach_mappings, default_mappings)
+  mappings.apply_keymap(prompt_bufnr, self.attach_mappings, config.values.default_mappings)
 
   -- Do filetype last, so that users can register at the last second.
   pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')
@@ -618,9 +624,32 @@ function Picker:move_selection(change)
   self:set_selection(self:get_selection_row() + change)
 end
 
+function Picker:add_selection(row)
+  local entry = self.manager:get_entry(self:get_index(row))
+  self.multi_select[entry] = true
+end
+
+function Picker:display_multi_select(results_bufnr)
+  for entry, _ in pairs(self.multi_select) do
+    local index = self.manager:find_entry(entry)
+    if index then
+      vim.api.nvim_buf_add_highlight(
+        results_bufnr,
+        ns_telescope_selection,
+        "TelescopeMultiSelection",
+        self:get_row(index),
+        0,
+        -1
+      )
+    end
+  end
+end
+
 function Picker:reset_selection()
   self._selection_entry = nil
   self._selection_row = nil
+
+  self.multi_select = {}
 end
 
 function Picker:set_selection(row)
@@ -674,6 +703,10 @@ function Picker:set_selection(row)
 
     -- TODO: You should go back and redraw the highlights for this line from the sorter.
     -- That's the only smart thing to do.
+    if not a.nvim_buf_is_valid(results_bufnr) then
+      log.debug("Invalid buf somehow...")
+      return
+    end
     a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {display})
 
     a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
@@ -685,6 +718,8 @@ function Picker:set_selection(row)
       0,
       -1
     )
+
+    self:display_multi_select(results_bufnr)
 
     if prompt and self.sorter.highlighter then
       self:highlight_one_row(results_bufnr, prompt, display, row)
@@ -705,6 +740,8 @@ function Picker:set_selection(row)
   self._selection_row = row
 
   if status.preview_win and self.previewer then
+    self:_increment("previewed")
+
     self.previewer:preview(
       entry,
       status
@@ -712,9 +749,59 @@ function Picker:set_selection(row)
   end
 end
 
+function Picker:_reset_track()
+  self.stats.processed = 0
+  self.stats.displayed = 0
+  self.stats.display_fn = 0
+  self.stats.previewed = 0
+  self.stats.status = 0
+
+  self.stats.filtered = 0
+  self.stats.highlights = 0
+
+  self.stats._sort_time = 0
+  self.stats._add_time = 0
+  self.stats._highlight_time = 0
+  self.stats._start = vim.loop.hrtime()
+end
+
+function Picker:_track(key, func, ...)
+  local start, final
+  if self.track then
+    start = vim.loop.hrtime()
+  end
+
+  -- Hack... we just do this so that we can track stuff that returns two values.
+  local res1, res2 = func(...)
+
+  if self.track then
+    final = vim.loop.hrtime()
+    self.stats[key] = final - start + self.stats[key]
+  end
+
+  return res1, res2
+end
+
+function Picker:_increment(key)
+  self.stats[key] = self.stats[key] + 1
+end
+
+
+-- TODO: Decide how much we want to use this.
+--  Would allow for better debugging of items.
+function Picker:register_completion_callback(cb)
+  table.insert(self._completion_callbacks, cb)
+end
+
+function Picker:_on_complete()
+  for _, v in ipairs(self._completion_callbacks) do
+    v(self)
+  end
+end
+
 function Picker:close_existing_pickers()
   for _, prompt_bufnr in ipairs(state.get_existing_prompts()) do
-    actions.close(prompt_bufnr)
+    pcall(actions.close, prompt_bufnr)
   end
 end
 
@@ -724,126 +811,6 @@ pickers.new = function(opts, defaults)
   return Picker:new(opts)
 end
 
--- TODO: We should consider adding `process_bulk` or `bulk_entry_manager` for things
--- that we always know the items and can score quickly, so as to avoid drawing so much.
-pickers.entry_manager = function(max_results, set_entry, info)
-  log.trace("Creating entry_manager...")
-
-  info = info or {}
-  info.looped = 0
-  info.inserted = 0
-
-  -- state contains list of
-  --    {
-  --        score = ...
-  --        line = ...
-  --        metadata ? ...
-  --    }
-  local entry_state = {}
-
-  set_entry = set_entry or function() end
-
-  local should_save_result = function(index) return index <= max_results + 1 end
-  local worst_acceptable_score = math.huge
-
-  return setmetatable({
-    add_entry = function(self, score, entry)
-      score = score or 0
-
-      if score >= worst_acceptable_score then
-        return
-      end
-
-      for index, item in ipairs(entry_state) do
-        info.looped = info.looped + 1
-
-        if item.score > score then
-          return self:insert(index, {
-            score = score,
-            entry = entry,
-          })
-        end
-
-        -- Don't add results that are too bad.
-        if not should_save_result(index) then
-          return
-        end
-      end
-
-      return self:insert({
-        score = score,
-        entry = entry,
-      })
-    end,
-
-    insert = function(self, index, entry)
-      if entry == nil then
-        entry = index
-        index = #entry_state + 1
-      end
-
-      -- To insert something, we place at the next available index (or specified index)
-      -- and then shift all the corresponding items one place.
-      local next_entry, last_score
-      repeat
-        info.inserted = info.inserted + 1 
-        next_entry = entry_state[index]
-
-        set_entry(index, entry.entry)
-        entry_state[index] = entry
-
-        last_score = entry.score
-
-        index = index + 1
-        entry = next_entry
-
-      until not next_entry or not should_save_result(index)
-
-      if not should_save_result(index) then
-        worst_acceptable_score = last_score
-      end
-    end,
-
-    num_results = function()
-      return #entry_state
-    end,
-
-    get_ordinal = function(self, index)
-      return self:get_entry(index).ordinal
-    end,
-
-    get_entry = function(_, index)
-      return (entry_state[index] or {}).entry
-    end,
-
-    get_score = function(_, index)
-      return (entry_state[index] or {}).score
-    end,
-
-    find_entry = function(_, entry)
-      if entry == nil then
-        return nil
-      end
-
-      for k, v in ipairs(entry_state) do
-        local existing_entry = v.entry
-
-        -- FIXME: This has the problem of assuming that display will not be the same for two different entries.
-        if existing_entry.display == entry.display then
-          return k
-        end
-      end
-
-      return nil
-    end,
-
-    _get_state = function()
-      return entry_state
-    end,
-  }, {})
-end
-
-
 function pickers.on_close_prompt(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
@@ -851,6 +818,9 @@ function pickers.on_close_prompt(prompt_bufnr)
   if picker.previewer then
     picker.previewer:teardown()
   end
+
+  -- TODO: This is an attempt to clear all the memory stuff we may have left.
+  -- vim.api.nvim_buf_detach(prompt_bufnr)
 
   picker:close_windows(status)
 end
