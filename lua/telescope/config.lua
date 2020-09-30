@@ -44,6 +44,8 @@ function config.set_defaults(defaults)
   set("border", {})
   set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
 
+  set("get_status_text", function(self) return string.format("Entries: %s", self.stats.processed) end)
+
   -- Builtin configuration
 
   -- List that will be executed.

@@ -138,7 +138,7 @@ layout_strategies.center = function(self, columns, lines, prompt_title)
   local results = initial_options.results
   local prompt = initial_options.prompt
 
-  local max_results = 5
+  local max_results = 10
   local width = resolve.resolve_width(self.window.width)(self, columns)
 
   local max_width = (width > columns and columns or width)

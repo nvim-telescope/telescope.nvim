@@ -78,6 +78,7 @@ function Picker:new(opts)
 
     layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy),
     get_window_options = opts.get_window_options,
+    get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
 
     window = {
       -- TODO: This won't account for different layouts...
@@ -326,7 +327,7 @@ function Picker:find()
   local selection_strategy = self.selection_strategy or 'reset'
 
   local update_status = function()
-    local text = string.format("P: %-3s / F: %-3s", self.stats.processed, self.stats.filtered)
+    local text = self:get_status_text()
     local current_prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, 0, 1, false)[1]
     if not current_prompt then
       return
