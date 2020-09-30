@@ -479,6 +479,11 @@ builtin.help_tags = function(opts)
       map('n', '<CR>', view_help)
 >>>>>>> c3f9b25... feature: Vim help-tags picker (#117)
 
+      return true
+    end
+  }):find()
+end
+
 builtin.reloader = function(opts)
   opts = opts or {}
   local package_list = vim.tbl_keys(package.loaded)
