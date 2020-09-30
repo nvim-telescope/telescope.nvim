@@ -103,7 +103,6 @@ local function goto_file_selection(prompt_bufnr, command)
         vim.cmd(string.format(":%s %s", command, filename))
         bufnr = vim.api.nvim_get_current_buf()
         a.nvim_buf_set_option(bufnr, "buflisted", true)
-        vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
       end
 
       if row and col then
@@ -111,6 +110,10 @@ local function goto_file_selection(prompt_bufnr, command)
         if not ok then
           log.debug("Failed to move to cursor:", err_msg)
         end
+      end
+
+      if command == "edit" then
+	vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
       end
     end
   end
