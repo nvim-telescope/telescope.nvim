@@ -290,7 +290,6 @@ function make_entry.gen_from_treesitter(opts)
   end
 end
 
-<<<<<<< HEAD
 function make_entry.gen_from_packages(opts)
   opts = opts or {}
 
@@ -310,7 +309,11 @@ function make_entry.gen_from_packages(opts)
       ordinal = module_name,
       }
     entry.display = make_display(module_name)
-=======
+
+    return entry
+  end
+end
+
 function make_entry.gen_from_tagfile(opts)
   local help_entry, version
   local delim = string.char(7)
@@ -355,7 +358,6 @@ function make_entry.gen_from_tagfile(opts)
     entry.display = d.display
     entry.value   = d.value
     entry.ordinal = d.value
->>>>>>> c3f9b25... feature: Vim help-tags picker (#117)
 
     return entry
   end

@@ -408,7 +408,6 @@ builtin.command_history = function(opts)
   }):find()
 end
 
-<<<<<<< HEAD
 builtin.reloader = function(opts)
   opts = opts or {}
   local package_list = vim.tbl_keys(package.loaded)
@@ -443,7 +442,12 @@ builtin.reloader = function(opts)
 
       map('i', '<CR>', reload_package)
       map('n', '<CR>', reload_package)
-=======
+
+      return true
+    end
+  }):find()
+end
+
 builtin.help_tags = function(opts)
   opts = opts or {}
 
@@ -477,7 +481,6 @@ builtin.help_tags = function(opts)
 
       map('i', '<CR>', view_help)
       map('n', '<CR>', view_help)
->>>>>>> c3f9b25... feature: Vim help-tags picker (#117)
 
       return true
     end
