@@ -359,6 +359,20 @@ function make_entry.gen_from_tagfile(opts)
 
     return entry
   end
+
+function make_entry.gen_from_packages(opts)
+  return function(module_name)
+    local path = package.searchpath(module_name, package.path) or ""
+    display = string.format("%-" .. opts.column_len .. "s : %s", module_name, vim.fn.fnamemodify(path, ":~:."))
+    return {
+      valid = module_name ~= "",
+      entry_type = make_entry.types.GENERIC,
+
+      value = module_name,
+      ordinal = module_name,
+      display = display,
+    }
+    end
 end
 
 return make_entry
