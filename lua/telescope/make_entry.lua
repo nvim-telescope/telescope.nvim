@@ -414,4 +414,28 @@ function make_entry.gen_from_packages(opts)
   end
 end
 
+function make_entry.gen_from_apropos(opts)
+    opts = opts or {}
+
+    local make_display = function(line)
+
+      local result = {}
+      result.cmd, result.section, result.desc = line:match("^(.*)%s+%((.*)%)%s+%-%s(.*)$")
+      return result
+    end
+  return function(line)
+    local entry = {
+      valid = line ~= "",
+      entry_type = make_entry.types.GENERIC,
+    }
+
+    local entry = {}
+    local d = make_display(line)
+      entry.value = d.cmd
+      entry.ordinal = d.cmd
+      entry.display = string.format("%-30s : %s", d.cmd, d.desc)
+    return entry
+  end
+end
+
 return make_entry
