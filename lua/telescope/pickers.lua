@@ -723,6 +723,14 @@ function Picker:set_selection(row)
       0,
       -1
     )
+    a.nvim_buf_add_highlight(
+      results_bufnr,
+      ns_telescope_selection,
+      'TelescopeSelectionCaret',
+      row,
+      0,
+      1
+    )
 
     self:display_multi_select(results_bufnr)
 
