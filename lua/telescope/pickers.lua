@@ -704,7 +704,8 @@ function Picker:set_selection(row)
       end
     end
 
-    local display = '> ' .. (a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] or ''):sub(3)
+    local caret = '>'
+    local display = string.format('%s %s', caret, (a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] or ''):sub(3))
 
     -- TODO: You should go back and redraw the highlights for this line from the sorter.
     -- That's the only smart thing to do.
@@ -718,18 +719,18 @@ function Picker:set_selection(row)
     a.nvim_buf_add_highlight(
       results_bufnr,
       ns_telescope_selection,
-      'TelescopeSelection',
+      'TelescopeSelectionCaret',
       row,
       0,
-      -1
+      #caret
     )
     a.nvim_buf_add_highlight(
       results_bufnr,
       ns_telescope_selection,
-      'TelescopeSelectionCaret',
+      'TelescopeSelection',
       row,
-      0,
-      1
+      #caret,
+      -1
     )
 
     self:display_multi_select(results_bufnr)
