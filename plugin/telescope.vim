@@ -1,6 +1,7 @@
 
 " Sets the highlight for selected items within the picker.
 highlight default link TelescopeSelection Visual
+highlight default link TelescopeSelectionCaret TelescopeSelection
 highlight default link TelescopeMultiSelection Type
 
 " "Normal" in the floating windows created by telescope.
