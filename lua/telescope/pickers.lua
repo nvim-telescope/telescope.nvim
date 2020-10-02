@@ -290,6 +290,8 @@ function Picker:find()
   a.nvim_win_set_option(results_win, 'wrap', false)
   a.nvim_win_set_option(results_win, 'winhl', 'Normal:TelescopeNormal')
   a.nvim_win_set_option(results_win, 'winblend', self.window.winblend)
+  local results_border_win = results_opts.border and results_opts.border.win_id
+  if results_border_win then vim.api.nvim_win_set_option(results_border_win, 'winhl', 'Normal:TelescopeResultsBorder') end
 
 
   local preview_win, preview_opts, preview_bufnr
@@ -299,6 +301,9 @@ function Picker:find()
 
     a.nvim_win_set_option(preview_win, 'winhl', 'Normal:TelescopeNormal')
     a.nvim_win_set_option(preview_win, 'winblend', self.window.winblend)
+    local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
+    if preview_border_win then vim.api.nvim_win_set_option(preview_border_win, 'winhl', 'Normal:TelescopePreviewBorder') end
+
   end
 
   -- TODO: We need to center this and make it prettier...
@@ -306,6 +311,8 @@ function Picker:find()
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
   a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
   a.nvim_win_set_option(prompt_win, 'winblend', self.window.winblend)
+  local prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
+  if prompt_border_win then vim.api.nvim_win_set_option(prompt_border_win, 'winhl', 'Normal:TelescopePromptBorder') end
 
   -- Draw the screen ASAP. This makes things feel speedier.
   vim.cmd [[redraw]]
@@ -524,13 +531,7 @@ function Picker:find()
 
   self.prompt_bufnr = prompt_bufnr
 
-  local prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
-  local results_border_win = results_opts.border and results_opts.border.win_id
   local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
-
-  if prompt_border_win then vim.api.nvim_win_set_option(prompt_border_win, 'winhl', 'Normal:TelescopePromptBorder') end
-  if results_border_win then vim.api.nvim_win_set_option(results_border_win, 'winhl', 'Normal:TelescopeResultsBorder') end
-  if preview_border_win then vim.api.nvim_win_set_option(preview_border_win, 'winhl', 'Normal:TelescopePreviewBorder') end
 
   state.set_status(prompt_bufnr, {
     prompt_bufnr = prompt_bufnr,
