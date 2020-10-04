@@ -87,10 +87,13 @@ function Picker:new(opts)
       -- TODO: If it's a list, of length 2, then it's a range of min to max?
       height = get_default(opts.height, 0.8),
       width = get_default(opts.width, config.values.width),
-      get_preview_width = get_default(opts.preview_width, config.values.get_preview_width),
-      results_width = get_default(opts.results_width, 0.8),
-      winblend = get_default(opts.winblend, config.values.winblend),
 
+      get_preview_width = get_default(opts.preview_width, config.values.get_preview_width),
+
+      results_width = get_default(opts.results_width, 0.8),
+      results_height = get_default(opts.results_height, 1),
+
+      winblend = get_default(opts.winblend, config.values.winblend),
       prompt_position = get_default(opts.prompt_position, config.values.prompt_position),
 
       -- Border config
