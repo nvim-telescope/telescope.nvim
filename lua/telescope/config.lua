@@ -41,6 +41,9 @@ function config.set_defaults(defaults)
   set("prompt_position", "bottom")
   set("preview_cutoff", 120)
 
+  set("results_height", 1)
+  set("results_width", 0.8)
+
   set("border", {})
   set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
 

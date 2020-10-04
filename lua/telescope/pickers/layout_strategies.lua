@@ -123,7 +123,6 @@ end
     +--------------+
 
 
-
 --]]
 
 -- Check if there are any borders. Right now it's a little raw as
@@ -138,9 +137,11 @@ layout_strategies.center = function(self, columns, lines, prompt_title)
   local results = initial_options.results
   local prompt = initial_options.prompt
 
-  local max_results = 15
-  local width = resolve.resolve_width(self.window.width)(self, columns)
+  -- This sets the height/width for the whole layout
+  local height = resolve.resolve_height(self.window.results_height)(self, lines)
+  local width = resolve.resolve_width(self.window.results_width)(self, columns)
 
+  local max_results = (height > lines and lines or height)
   local max_width = (width > columns and columns or width)
 
   prompt.height = 1
@@ -157,7 +158,7 @@ layout_strategies.center = function(self, columns, lines, prompt_title)
   end
 
   prompt.line = (lines / 2) - ((max_results + (bs * 2)) / 2)
-  results.line = prompt.line + 2
+  results.line = prompt.line + 1 + (bs)
 
   preview.line = 1
   preview.height = math.floor(prompt.line - (2 + bs))
