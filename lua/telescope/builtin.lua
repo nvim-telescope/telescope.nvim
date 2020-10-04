@@ -447,6 +447,46 @@ builtin.help_tags = function(opts)
   }):find()
 end
 
+builtin.reloader = function(opts)
+  opts = opts or {}
+  local package_list = vim.tbl_keys(package.loaded)
+
+  -- filter out packages we don't want and track the longest package name
+  opts.column_len = 0
+  for index, module_name in pairs(package_list) do
+    if type(require(module_name)) ~= 'table' or module_name:sub(1,1) == "_" or package.searchpath(module_name, package.path) == nil then
+      table.remove(package_list, index)
+    elseif #module_name > opts.column_len then
+      opts.column_len = #module_name
+    end
+  end
+
+  pickers.new(opts, {
+    prompt = 'Packages',
+    finder = finders.new_table {
+      results = package_list,
+      entry_maker = make_entry.gen_from_packages(opts),
+    },
+    -- previewer = previewers.vim_buffer.new(opts),
+    sorter = sorters.get_generic_fuzzy_sorter(),
+
+    attach_mappings = function(prompt_bufnr, map)
+      local reload_package = function()
+        local selection = actions.get_selected_entry(prompt_bufnr)
+
+        actions.close(prompt_bufnr)
+        require('plenary.reload').reload_module(selection.value)
+        print(string.format("[%s] - module reloaded", selection.value))
+      end
+
+      map('i', '<CR>', reload_package)
+      map('n', '<CR>', reload_package)
+
+      return true
+    end
+  }):find()
+end
+
 -- TODO: What the heck should we do for accepting this.
 --  vim.fn.setreg("+", "nnoremap $TODO :lua require('telescope.builtin').<whatever>()<CR>")
 -- TODO: Can we just do the names instead?
