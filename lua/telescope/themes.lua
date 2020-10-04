@@ -17,7 +17,7 @@ function themes.get_dropdown(opts)
     layout_strategy = "center",
     results_title = false,
     preview_title = "Preview",
-    results_width = 70,
+    width = 70,
     results_height = 15,
     borderchars = {
       { '─', '│', '─', '│', '╭', '╮', '╯', '╰'},

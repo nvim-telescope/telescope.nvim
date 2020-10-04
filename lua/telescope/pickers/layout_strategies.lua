@@ -139,7 +139,7 @@ layout_strategies.center = function(self, columns, lines, prompt_title)
 
   -- This sets the height/width for the whole layout
   local height = resolve.resolve_height(self.window.results_height)(self, lines)
-  local width = resolve.resolve_width(self.window.results_width)(self, columns)
+  local width = resolve.resolve_width(self.window.width)(self, columns)
 
   local max_results = (height > lines and lines or height)
   local max_width = (width > columns and columns or width)
