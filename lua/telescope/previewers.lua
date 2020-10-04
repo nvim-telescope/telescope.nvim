@@ -16,7 +16,7 @@ local Previewer = {}
 Previewer.__index = Previewer
 
 -- TODO: Should play with these some more, ty @clason
-local bat_options = {"--style=plain", "--color=always"}
+local bat_options = {"--style=plain", "--color=always", "--paging=always"}
 local bat_maker = function(filename, lnum, start, finish)
   local command = {"bat"}
 
