@@ -524,7 +524,7 @@ end
 
 
 -- TODO: Maybe just change this to `find`.
---          Support `find` and maybe let peopel do other stuff with it as well.
+--          Support `find` and maybe let people do other stuff with it as well.
 builtin.find_files = function(opts)
   opts = opts or {}
 
@@ -537,11 +537,13 @@ builtin.find_files = function(opts)
       find_command = { 'fdfind', '--type', 'f' }
     elseif 1 == vim.fn.executable("rg") then
       find_command = { 'rg', '--files' }
+    elseif 1 == vim.fn.executable("find") then
+      find_command = { 'find', '-type', 'f' }
     end
   end
 
   if not find_command then
-    print("You need to install either fd or rg. You can also submit a PR to add support for another file finder :)")
+    print("You need to install either find, fd, or rg. You can also submit a PR to add support for another file finder :)")
     return
   end
 
