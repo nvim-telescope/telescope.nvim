@@ -163,8 +163,7 @@ function actions.close(prompt_bufnr)
   vim.api.nvim_win_close(prompt_win, true)
 
   pcall(vim.cmd, string.format([[silent bdelete! %s]], prompt_bufnr))
-
-  a.nvim_set_current_win(original_win_id)
+  pcall(a.nvim_set_current_win, original_win_id)
 end
 
 actions.set_command_line = function(prompt_bufnr)
