@@ -59,6 +59,7 @@ do
     opts = opts or {}
 
     local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
+
     local disable_devicons = opts.disable_devicons
     local shorten_path = opts.shorten_path
 
@@ -82,7 +83,7 @@ do
         return t.cwd .. path.separator .. t.value
       end
 
-      return rawget(t, lookup_keys[k])
+      return rawget(t, rawget(lookup_keys, k))
     end
 
     return function(line)
@@ -91,40 +92,15 @@ do
   end
 end
 
-function make_entry.gen_from_vimgrep(opts)
-  opts = opts or {}
+do
+  local lookup_keys = {
+    value = 1,
+    ordinal = 1,
+  }
 
-  local display_string = "%s:%s%s"
-
-  local make_display = function(entry)
-    local display = entry.value
-
-    local display_filename
-    if opts.shorten_path then
-      display_filename = utils.path_shorten(entry.filename)
-    else
-      display_filename = entry.filename
-    end
-
-    local coordinates = ""
-    if not opts.disable_coordinates then
-      coordinates = string.format("%s:%s:", entry.lnum, entry.col)
-    end
-
-    display = transform_devicons(
-      entry.filename,
-      string.format(display_string, display_filename,  coordinates, entry.text),
-      opts
-    )
-
-    return display
-  end
-
-  return function(line)
-    -- TODO: Consider waiting to do this string.find
-    -- TODO: Is this the fastest way to get each of these?
-    --         Or could we just walk the text and check for colons faster?
-    local _, _, filename, lnum, col, text = string.find(line, [[([^:]+):(%d+):(%d+):(.*)]])
+  local parse = function(t)
+    -- TODO: Can probably use #filename to skip parsing some stuff
+    local _, _, filename, lnum, col, text = string.find(t.value, [[([^:]+):(%d+):(%d+):(.*)]])
 
     local ok
     ok, lnum = pcall(tonumber, lnum)
@@ -133,18 +109,89 @@ function make_entry.gen_from_vimgrep(opts)
     ok, col = pcall(tonumber, col)
     if not ok then col = nil end
 
-    return {
-      valid = line ~= "",
+    t.filename = filename
+    t.lnum = lnum
+    t.col = col
+    t.text = text
 
-      value = line,
-      ordinal = line,
-      display = make_display,
+    return {filename, lnum, col, text}
+  end
 
-      filename = filename,
-      lnum = lnum,
-      col = col,
-      text = text,
-    }
+  local execute_keys = {
+    path = function(t) 
+      return t.cwd .. path.separator .. t.filename, false
+    end,
+
+    filename = function(t)
+      return parse(t)[1], true
+    end,
+
+    lnum = function(t)
+      return parse(t)[2], true
+    end,
+
+    col = function(t)
+      return parse(t)[3], true
+    end,
+
+    text = function(t)
+      return parse(t)[4], true
+    end,
+  }
+
+  function make_entry.gen_from_vimgrep(opts)
+    opts = opts or {}
+
+    local shorten_path = opts.shorten_path
+    local disable_coordinates = opts.disable_coordinates
+    local disable_devicons = opts.disable_devicons
+
+    local display_string = "%s:%s%s"
+
+    local mt_vimgrep_entry = {}
+
+    mt_vimgrep_entry.cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
+    mt_vimgrep_entry.display = function(entry)
+      local display = entry.value
+
+      local display_filename
+      if shorten_path then
+        display_filename = utils.path_shorten(entry.filename)
+      else
+        display_filename = entry.filename
+      end
+
+      local coordinates = ""
+      if not disable_coordinates then
+        coordinates = string.format("%s:%s:", entry.lnum, entry.col)
+      end
+
+      display = transform_devicons(
+        entry.filename,
+        string.format(display_string, display_filename,  coordinates, entry.text),
+        disable_devicons
+      )
+
+      return display
+    end
+
+    mt_vimgrep_entry.__index = function(t, k)
+      local raw = rawget(mt_vimgrep_entry, k)
+      if raw then return raw end
+
+      local executor = rawget(execute_keys, k)
+      if executor then
+        local val, save = executor(t)
+        if save then rawset(t, k, val) end
+        return val
+      end
+
+      return rawget(t, rawget(lookup_keys, k))
+    end
+
+    return function(line)
+      return setmetatable({line}, mt_vimgrep_entry)
+    end
   end
 end
 
