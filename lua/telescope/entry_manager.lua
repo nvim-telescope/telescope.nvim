@@ -71,7 +71,7 @@ function EntryManager:should_save_result(index)
   return index <= self.max_results
 end
 
-function EntryManager:add_entry(score, entry)
+function EntryManager:add_entry(picker, score, entry)
   score = score or 0
 
   if score >= self.worst_acceptable_score then
@@ -82,7 +82,7 @@ function EntryManager:add_entry(score, entry)
     self.info.looped = self.info.looped + 1
 
     if item.score > score then
-      return self:insert(index, {
+      return self:insert(picker, index, {
         score = score,
         entry = entry,
       })
@@ -94,13 +94,13 @@ function EntryManager:add_entry(score, entry)
     end
   end
 
-  return self:insert({
+  return self:insert(picker, {
     score = score,
     entry = entry,
   })
 end
 
-function EntryManager:insert(index, entry)
+function EntryManager:insert(picker, index, entry)
   if entry == nil then
     entry = index
     index = #self.entry_state + 1
@@ -113,7 +113,7 @@ function EntryManager:insert(index, entry)
     self.info.inserted = self.info.inserted + 1 
     next_entry = self.entry_state[index]
 
-    self.set_entry(index, entry.entry)
+    self.set_entry(picker, index, entry.entry)
     self.entry_state[index] = entry
 
     last_score = entry.score

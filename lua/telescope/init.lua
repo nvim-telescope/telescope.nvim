@@ -1,3 +1,5 @@
+require('telescope._compat')
+
 local telescope = {}
 
 --[[
