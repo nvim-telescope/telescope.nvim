@@ -368,13 +368,25 @@ end, {})
 
 previewers.help = defaulter(function(_)
   return previewers.new {
-    preview_fn = function(_, entry, status)
+    setup = function()
+      return {}
+    end,
+
+    teardown = function(self)
+      if self.state and self.state.hl_id then
+        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+        self.state.hl_id = nil
+      end
+    end,
+
+    preview_fn = function(self, entry, status)
       with_preview_window(status, nil, function()
         local special_chars = ":~^.?/%[%]%*"
 
         local escaped = vim.fn.escape(entry.value, special_chars)
         local tagfile = vim.fn.expand("$VIMRUNTIME") .. '/doc/tags'
         local old_tags = vim.o.tags
+
         vim.o.tags = tagfile
         local taglist = vim.fn.taglist('^' .. escaped .. '$', tagfile)
         vim.o.tags = old_tags
@@ -389,6 +401,7 @@ previewers.help = defaulter(function(_)
 
         local best_entry = taglist[1]
         local new_bufnr = vim.fn.bufnr(best_entry.filename, true)
+
         vim.api.nvim_buf_set_option(new_bufnr, 'filetype', 'help')
         vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
 
@@ -407,11 +420,8 @@ previewers.help = defaulter(function(_)
         vim.fn.search(search_query, "W")
         vim.cmd "norm  zt"
 
-        if status.preview_search_hl_id then
-          vim.fn.matchdelete(status.preview_search_hl_id)
-          status.preview_search_hl_id = nil
-        end
-        status.preview_search_hl_id = vim.fn.matchadd('Search', search_query)
+        self.state.hl_win = status.preview_win
+        self.state.hl_id = vim.fn.matchadd('Search', search_query)
       end)
     end
   }
