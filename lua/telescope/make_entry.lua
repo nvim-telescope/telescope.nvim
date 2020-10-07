@@ -7,11 +7,6 @@ local get_default = utils.get_default
 
 local make_entry = {}
 
-make_entry.types = {
-  GENERIC = 0,
-  FILE    = 1,
-}
-
 local transform_devicons
 if has_devicons then
   transform_devicons = function(filename, display, disable_devicons)
@@ -29,51 +24,70 @@ else
   end
 end
 
-function make_entry.gen_from_string()
-  return function(line)
-    return {
-      valid = line ~= "",
-      entry_type = make_entry.types.GENERIC,
+do
+  -- TODO: Is this crazy?
+  -- local lookup_keys = {
+  --   display = 1,
+  --   ordinal = 1,
+  --   value = 1,
+  -- }
 
-      value = line,
-      ordinal = line,
-      display = line,
-    }
+  local mt_string_entry = {
+    __index = function(t, k)
+      return rawget(t, 1)
+    end
+  }
+
+  function make_entry.gen_from_string()
+    return function(line)
+      return setmetatable({
+        line,
+      }, mt_string_entry)
+    end
   end
 end
 
-function make_entry.gen_from_file(opts)
-  -- local opts = vim.deepcopy(init_opts or {})
-  opts = opts or {}
+do
+  local lookup_keys = {
+    ordinal = 1,
+    value = 1,
+    filename = 1,
+    cwd = 2,
+  }
 
-  local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
-  local disable_devicons = opts.disable_devicons
-  local shorten_path = opts.shorten_path
+  function make_entry.gen_from_file(opts)
+    opts = opts or {}
 
-  local make_display = function(line)
-    local display = line
-    if shorten_path then
-      display = utils.path_shorten(line)
+    local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
+    local disable_devicons = opts.disable_devicons
+    local shorten_path = opts.shorten_path
+
+    local mt_file_entry = {}
+
+    mt_file_entry.cwd = cwd
+    mt_file_entry.display = function(entry)
+      local display = entry.value
+      if shorten_path then
+        display = utils.path_shorten(display)
+      end
+
+      return transform_devicons(entry.value, display, disable_devicons)
     end
 
-    display = transform_devicons(line, display, disable_devicons)
+    mt_file_entry.__index = function(t, k)
+      local raw = rawget(mt_file_entry, k)
+      if raw then return raw end
 
-    return display
-  end
+      if k == "path" then
+        return t.cwd .. path.separator .. t.value
+      end
 
-  return function(line)
-    local entry = {
-      ordinal = line,
-      value = line,
+      return rawget(t, lookup_keys[k])
+    end
 
-      entry_type = make_entry.types.FILE,
-      filename = line,
-      path = cwd .. utils.get_separator() .. line,
-    }
-
-    entry.display = make_display(line)
-
-    return entry
+    return function(line)
+      return setmetatable({line}, mt_file_entry)
+    end
   end
 end
 
@@ -126,7 +140,6 @@ function make_entry.gen_from_vimgrep(opts)
       ordinal = line,
       display = make_display,
 
-      entry_type = make_entry.types.FILE,
       filename = filename,
       lnum = lnum,
       col = col,
@@ -320,10 +333,7 @@ function make_entry.gen_from_tagfile(opts)
   end
 
   return function(line)
-    local entry = {
-      entry_type = make_entry.types.GENERIC,
-
-    }
+    local entry = {}
     local d = make_display(line)
     entry.valid   = next(d) ~= nil
     entry.display = d.display
@@ -338,8 +348,8 @@ function make_entry.gen_from_packages(opts)
   opts = opts or {}
 
   local make_display = function(module_name)
-    local path = package.searchpath(module_name, package.path) or ""
-    local display = string.format("%-" .. opts.column_len .. "s : %s", module_name, vim.fn.fnamemodify(path, ":~:."))
+    local p_path = package.searchpath(module_name, package.path) or ""
+    local display = string.format("%-" .. opts.column_len .. "s : %s", module_name, vim.fn.fnamemodify(p_path, ":~:."))
 
     return display
   end

@@ -1,9 +1,10 @@
--- require('plenary.reload').reload_module('telescope')
+require('plenary.reload').reload_module('telescope')
 
 local finders = require('telescope.finders')
 local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
 local previewers = require('telescope.previewers')
+local make_entry = require('telescope.make_entry')
 
 local my_list = {
   'lua/telescope/WIP.lua',
