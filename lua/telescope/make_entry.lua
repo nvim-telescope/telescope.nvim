@@ -403,11 +403,9 @@ function make_entry.gen_from_packages(opts)
   return function(module_name)
     local entry = {
       valid = module_name ~= "",
-      entry_type = make_entry.types.GENERIC,
-
       value = module_name,
       ordinal = module_name,
-      }
+    }
     entry.display = make_display(module_name)
 
     return entry
@@ -415,26 +413,16 @@ function make_entry.gen_from_packages(opts)
 end
 
 function make_entry.gen_from_apropos(opts)
-    opts = opts or {}
+  opts = opts or {}
 
-    local make_display = function(line)
-
-      local result = {}
-      result.cmd, result.section, result.desc = line:match("^(.*)%s+%((.*)%)%s+%-%s(.*)$")
-      return result
-    end
   return function(line)
-    local entry = {
-      valid = line ~= "",
-      entry_type = make_entry.types.GENERIC,
-    }
+    local cmd, _, desc = line:match("^(.*)%s+%((.*)%)%s+%-%s(.*)$")
 
-    local entry = {}
-    local d = make_display(line)
-      entry.value = d.cmd
-      entry.ordinal = d.cmd
-      entry.display = string.format("%-30s : %s", d.cmd, d.desc)
-    return entry
+    return {
+      value = cmd,
+      ordinal = cmd,
+      display = string.format("%-30s : %s", cmd, desc)
+    }
   end
 end
 

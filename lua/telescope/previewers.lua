@@ -2,6 +2,7 @@ local context_manager = require('plenary.context_manager')
 
 local from_entry = require('telescope.from_entry')
 local log = require('telescope.log')
+local debounce = require('telescope.debounce')
 local utils = require('telescope.utils')
 
 local flatten = vim.tbl_flatten
@@ -62,9 +63,9 @@ local with_preview_window = function(status, bufnr, callable)
     vim.api.nvim_buf_call(bufnr, callable)
   else
     return context_manager.with(function()
-      vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.preview_win))
+      vim.cmd(string.format("noautocmd call nvim_set_current_win(%s)", status.preview_win))
       coroutine.yield()
-      vim.cmd(string.format("noautocmd call win_gotoid(%s)", status.prompt_win))
+      vim.cmd(string.format("noautocmd call nvim_set_current_win(%s)", status.prompt_win))
     end, callable)
   end
 end
@@ -492,6 +493,44 @@ previewers.nvim_file = defaulter(function(_)
       -- vim.api.nvim_buf_set_option(bufnr, 'filetype', 'lua')
       -- vim.cmd([[doautocmd filetypedetect BufRead ]] .. vim.fn.fnameescape(filename))
     end,
+  }
+end)
+
+previewers.man = defaulter(function(_)
+  return previewers.new {
+    preview_fn = debounce.throttle_leading(function(_, entry, status)
+      local cmd = entry.value
+
+      local st = {}
+      st.prompt_win = status.prompt_win
+      st.preview_win = status.preview_win
+
+      with_preview_window(st, nil, function()
+        if not vim.api.nvim_win_is_valid(st.preview_win) then
+          return
+        end
+
+        local man_value = vim.fn['man#goto_tag'](cmd, '', '')
+        if #man_value == 0 then
+          print("No value for:", cmd)
+          return
+        end
+
+        local filename = man_value[1].filename
+        if vim.api.nvim_buf_get_name(0) == filename then
+          return
+        end
+
+        local bufnr = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_win_set_buf(st.preview_win, bufnr)
+        vim.api.nvim_command('view ' .. filename)
+
+        vim.api.nvim_buf_set_option(bufnr, 'buftype', 'nofile')
+        vim.api.nvim_buf_set_option(bufnr, 'bufhidden', 'hide')
+        vim.api.nvim_buf_set_option(bufnr, 'swapfile', false)
+        vim.api.nvim_buf_set_option(bufnr, 'buflisted', false)
+      end)
+    end, 5)
   }
 end)
 
