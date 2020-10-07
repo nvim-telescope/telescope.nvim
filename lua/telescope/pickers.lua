@@ -64,6 +64,8 @@ function Picker:new(opts)
     results_title = get_default(opts.results_title, "Results"),
     preview_title = get_default(opts.preview_title, "Preview"),
 
+    prompt_prefix = opts.prompt_prefix or '',
+
     default_text = opts.default_text,
     get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
 
@@ -329,13 +331,14 @@ function Picker:find()
   -- Draw the screen ASAP. This makes things feel speedier.
   vim.cmd [[redraw]]
 
-  local prompt_prefix
-  if false then
-    prompt_prefix = " > "
+  -- Prompt prefix
+  local prompt_prefix = self.prompt_prefix
+  if prompt_prefix ~= '' then
+    if not vim.endswith(prompt_prefix, ' ') then
+      prompt_prefix = prompt_prefix.." "
+    end
     a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
     vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
-  else
-    prompt_prefix = ""
   end
 
   -- First thing we want to do is set all the lines to blank.
@@ -425,8 +428,8 @@ function Picker:find()
     end
 
     local process_complete = function()
-      -- prompt_prefix = " hello > "
-      -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
+      --prompt_prefix = " hello > "
+      --vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
 
       -- TODO: We should either: always leave one result or make sure we actually clean up the results when nothing matches
 
