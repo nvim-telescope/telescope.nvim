@@ -14,8 +14,8 @@ make_entry.types = {
 
 local transform_devicons
 if has_devicons then
-  transform_devicons = function(filename, display, opts)
-    if opts.disable_devicons or not filename then
+  transform_devicons = function(filename, display, disable_devicons)
+    if disable_devicons or not filename then
       return display
     end
 
@@ -43,17 +43,20 @@ function make_entry.gen_from_string()
 end
 
 function make_entry.gen_from_file(opts)
+  -- local opts = vim.deepcopy(init_opts or {})
   opts = opts or {}
 
   local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
+  local disable_devicons = opts.disable_devicons
+  local shorten_path = opts.shorten_path
 
   local make_display = function(line)
     local display = line
-    if opts.shorten_path then
+    if shorten_path then
       display = utils.path_shorten(line)
     end
 
-    display = transform_devicons(line, display, opts)
+    display = transform_devicons(line, display, disable_devicons)
 
     return display
   end

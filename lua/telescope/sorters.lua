@@ -54,7 +54,7 @@ end
 sorters.Sorter = Sorter
 
 TelescopeCachedTails = TelescopeCachedTails or nil
-do
+if not TelescopeCachedTails then
   local os_sep = util.get_separator()
   local match_string = '[^' .. os_sep .. ']*$'
   TelescopeCachedTails = setmetatable({}, {
