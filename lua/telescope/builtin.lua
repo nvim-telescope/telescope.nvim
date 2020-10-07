@@ -737,4 +737,43 @@ builtin.current_buffer_fuzzy_find = function(opts)
   }):find()
 end
 
+builtin.man_pages = function(opts)
+  opts = opts or {}
+
+  local cmd = opts.man_cmd or "apropos --sections=1 ''"
+
+  local f = assert(io.popen(cmd, 'r'))
+  local pages = assert(f:read('*a'))
+  f:close()
+
+  local lines = {}
+  for s in pages:gmatch("[^\r\n]+") do
+    table.insert(lines, s)
+  end
+
+  pickers.new(opts, {
+    prompt    = 'Man',
+    finder    = finders.new_table {
+      results = lines,
+      entry_maker = make_entry.gen_from_apropos(opts),
+    },
+    previewer = previewers.man.new(opts),
+    sorter = sorters.get_generic_fuzzy_sorter(),
+    attach_mappings = function(prompt_bufnr, map)
+      local view_manpage = function()
+        local selection = actions.get_selected_entry(prompt_bufnr)
+
+        actions.close(prompt_bufnr)
+        print(vim.inspect(selection.value))
+        vim.cmd("Man " .. selection.value)
+      end
+
+      map('i', '<CR>', view_manpage)
+      map('n', '<CR>', view_manpage)
+
+      return true
+    end
+  }):find()
+end
+
 return builtin

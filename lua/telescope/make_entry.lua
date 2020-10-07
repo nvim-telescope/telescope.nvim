@@ -403,14 +403,26 @@ function make_entry.gen_from_packages(opts)
   return function(module_name)
     local entry = {
       valid = module_name ~= "",
-      entry_type = make_entry.types.GENERIC,
-
       value = module_name,
       ordinal = module_name,
-      }
+    }
     entry.display = make_display(module_name)
 
     return entry
+  end
+end
+
+function make_entry.gen_from_apropos(opts)
+  opts = opts or {}
+
+  return function(line)
+    local cmd, _, desc = line:match("^(.*)%s+%((.*)%)%s+%-%s(.*)$")
+
+    return {
+      value = cmd,
+      ordinal = cmd,
+      display = string.format("%-30s : %s", cmd, desc)
+    }
   end
 end
 
