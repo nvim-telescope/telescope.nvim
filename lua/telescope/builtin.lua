@@ -44,7 +44,7 @@ local flatten = vim.tbl_flatten
 local builtin = {}
 
 builtin.git_files = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
 
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
   if opts.cwd then
@@ -112,7 +112,7 @@ builtin.commands = function()
 end
 
 builtin.live_grep = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
 
   local live_grepper = finders.new_job(function(prompt)
       -- TODO: Probably could add some options for smart case and whatever else rg offers.
@@ -136,7 +136,7 @@ builtin.live_grep = function(opts)
 end
 
 builtin.lsp_references = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
   opts.shorten_path = utils.get_default(opts.shorten_path, true)
 
   local params = vim.lsp.util.make_position_params()
@@ -164,7 +164,7 @@ builtin.lsp_references = function(opts)
 end
 
 builtin.lsp_document_symbols = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
 
   local params = vim.lsp.util.make_position_params()
   local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/documentSymbol", params, opts.timeout or 10000)
@@ -195,7 +195,7 @@ builtin.lsp_document_symbols = function(opts)
 end
 
 builtin.lsp_code_actions = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
 
   local params = vim.lsp.util.make_range_params()
 
@@ -268,7 +268,7 @@ builtin.lsp_code_actions = function(opts)
 end
 
 builtin.lsp_workspace_symbols = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
   opts.shorten_path = utils.get_default(opts.shorten_path, true)
 
   local params = {query = opts.query or ''}
@@ -300,7 +300,7 @@ builtin.lsp_workspace_symbols = function(opts)
 end
 
 builtin.quickfix = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
 
   local locations = vim.fn.getqflist()
 
@@ -345,7 +345,7 @@ end
 -- Special keys:
 --  opts.search -- the string to search.
 builtin.grep_string = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
 
   -- TODO: This should probably check your visual selection as well, if you've got one
   local search = opts.search or vim.fn.expand("<cword>")
@@ -365,7 +365,7 @@ builtin.grep_string = function(opts)
 end
 
 builtin.oldfiles = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
 
   pickers.new(opts, {
     prompt = 'Oldfiles',
@@ -409,7 +409,7 @@ builtin.command_history = function(opts)
 end
 
 builtin.help_tags = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
 
   local sourced_file = require('plenary.debug_utils').sourced_filepath()
   local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h")
@@ -448,7 +448,7 @@ builtin.help_tags = function(opts)
 end
 
 builtin.reloader = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
   local package_list = vim.tbl_keys(package.loaded)
 
   -- filter out packages we don't want and track the longest package name
@@ -491,7 +491,7 @@ end
 --  vim.fn.setreg("+", "nnoremap $TODO :lua require('telescope.builtin').<whatever>()<CR>")
 -- TODO: Can we just do the names instead?
 builtin.builtin = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
   opts.hide_filename = utils.get_default(opts.hide_filename, true)
   opts.ignore_filename = utils.get_default(opts.ignore_filename, true)
 
@@ -526,7 +526,7 @@ end
 -- TODO: Maybe just change this to `find`.
 --          Support `find` and maybe let people do other stuff with it as well.
 builtin.find_files = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
 
   local find_command = opts.find_command
 
@@ -571,7 +571,7 @@ builtin.fd = builtin.find_files
 --       I think it has something to do with nvim_open_win and style='minimal',
 -- Status, currently operational.
 builtin.buffers = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
 
   local buffers = filter(function(b)
     return
@@ -614,7 +614,7 @@ local function prepare_match(entry, kind)
 end
 
 builtin.treesitter = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
 
   opts.show_line = utils.get_default(opts.show_line, true)
 
@@ -657,7 +657,7 @@ builtin.treesitter = function(opts)
 end
 
 builtin.planets = function(opts)
-  opts = opts or {}
+  opts = vim.tbl_deep_extend("force", conf, opts)
   local show_pluto = opts.show_pluto or false
 
   local sourced_file = require('plenary.debug_utils').sourced_filepath()
