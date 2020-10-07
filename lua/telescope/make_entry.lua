@@ -25,16 +25,15 @@ else
 end
 
 do
-  -- TODO: Is this crazy?
-  -- local lookup_keys = {
-  --   display = 1,
-  --   ordinal = 1,
-  --   value = 1,
-  -- }
+  local lookup_keys = {
+    display = 1,
+    ordinal = 1,
+    value = 1,
+  }
 
   local mt_string_entry = {
     __index = function(t, k)
-      return rawget(t, 1)
+      return rawget(t, rawget(lookup_keys, k))
     end
   }
 
@@ -98,8 +97,8 @@ do
     ordinal = 1,
   }
 
+  -- Gets called only once to parse everything out for the vimgrep, after that looks up directly.
   local parse = function(t)
-    -- TODO: Can probably use #filename to skip parsing some stuff
     local _, _, filename, lnum, col, text = string.find(t.value, [[([^:]+):(%d+):(%d+):(.*)]])
 
     local ok
