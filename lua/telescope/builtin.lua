@@ -54,7 +54,7 @@ builtin.git_files = function(opts)
   pickers.new(opts, {
     prompt    = 'Git File',
     finder    = finders.new_oneshot_job(
-      { "git", "ls-files", "-o", "--exclude-standard", "-c" },
+      { "git", "ls-tree", "--full-tree", "-r", "--name-only", "HEAD" },
       opts
     ),
     previewer = previewers.cat.new(opts),
