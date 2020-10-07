@@ -308,11 +308,13 @@ nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope
 
 Themes should work with every `telescope.builtin` function.  
 
-To use a theme by default, use:
+To use a theme globally, put it in setup
 
 ```lua
 require('telescope').setup{
-  default = require'telescope.themes'.get_dropdown{}
+  default = require('telescope.themes').get_dropdown({
+    -- Other config here
+  })
 }
 ```
 
