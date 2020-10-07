@@ -39,6 +39,7 @@ end
 local ns_telescope_selection = a.nvim_create_namespace('telescope_selection')
 local ns_telescope_matching = a.nvim_create_namespace('telescope_matching')
 local ns_telescope_prompt = a.nvim_create_namespace('telescope_prompt')
+local ns_telescope_prompt_prefix = a.nvim_create_namespace('telescope_prompt_prefix')
 
 local pickers = {}
 
@@ -339,6 +340,7 @@ function Picker:find()
     end
     a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
     vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
+    a.nvim_buf_add_highlight(prompt_bufnr, ns_telescope_prompt_prefix, 'TelescopePromptPrefix', 0, 0, #prompt_prefix)
   end
 
   -- First thing we want to do is set all the lines to blank.
