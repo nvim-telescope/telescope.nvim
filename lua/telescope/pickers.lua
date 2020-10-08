@@ -430,11 +430,7 @@ function Picker:find()
     end
 
     local process_complete = function()
-      --prompt_prefix = " hello > "
-      --vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
-
       -- TODO: We should either: always leave one result or make sure we actually clean up the results when nothing matches
-
       if selection_strategy == 'row' then
         self:set_selection(self:get_selection_row())
       elseif selection_strategy == 'follow' then
