@@ -340,8 +340,8 @@ function Picker:find()
     a.nvim_buf_add_highlight(prompt_bufnr, ns_telescope_prompt_prefix, 'TelescopePromptPrefix', 0, 0, #prompt_prefix)
   end
 
-  -- Draw the screen ASAP. This makes things feel speedier.
-  vim.cmd [[redraw]]
+  -- Temporarily disabled: Draw the screen ASAP. This makes things feel speedier.
+  -- vim.cmd [[redraw]]
 
   -- First thing we want to do is set all the lines to blank.
   self.max_results = popup_opts.results.height
