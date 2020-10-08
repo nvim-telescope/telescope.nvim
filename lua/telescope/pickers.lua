@@ -57,13 +57,15 @@ function Picker:new(opts)
     error("layout_strategy and get_window_options are not compatible keys")
   end
 
+  local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
+
   return setmetatable({
     prompt = opts.prompt,
-
     results_title = get_default(opts.results_title, "Results"),
     preview_title = get_default(opts.preview_title, "Preview"),
 
     default_text = opts.default_text,
+    get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
 
     finder = opts.finder,
     sorter = opts.sorter,
@@ -79,12 +81,12 @@ function Picker:new(opts)
     sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
-    layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy),
-    layout_options = get_default(opts.layout_options, config.values.layout_options),
-
     get_window_options = opts.get_window_options,
-
-    get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
+    layout_strategy = layout_strategy,
+    layout_config = get_default(
+      opts.layout_config,
+      (config.values.layout_defaults or {})[layout_strategy]
+    ) or {},
 
     window = {
       -- TODO: This won't account for different layouts...

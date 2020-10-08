@@ -24,9 +24,16 @@ end
 
 --]]
 
-local layout_strategies = {}
-local log = require("telescope.log")
+local config = require('telescope.config')
 local resolve = require("telescope.config.resolve")
+
+-- Check if there are any borders. Right now it's a little raw as
+-- there are a few things that contribute to the border
+local is_borderless = function(opts)
+  return opts.window.border == false
+end
+
+local layout_strategies = {}
 
 --[[
    +-----------------+---------------------+
@@ -39,6 +46,8 @@ local resolve = require("telescope.config.resolve")
    +-----------------+---------------------+
 --]]
 layout_strategies.horizontal = function(self, max_columns, max_lines)
+  local layout_config = self.layout_config or {}
+
   local initial_options = self:_get_initial_window_options()
   local preview = initial_options.preview
   local results = initial_options.results
@@ -46,41 +55,45 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
 
   -- TODO: Test with 120 width terminal
   -- TODO: Test with self.width
-  local width_padding = 10
-
-  -- TODO: Determine config settings.
-  if false and self.window.horizontal_config and self.window.horizontal_config.get_preview_width then
-    preview.width = self.window.horizontal_config.get_preview_width(max_columns, max_lines)
-  else
-    if not self.previewer or max_columns < self.preview_cutoff then
-      width_padding = 2
-      preview.width = 0
-    elseif max_columns < 150 then
-      width_padding = 5
-      preview.width = math.floor(max_columns * 0.4)
-    elseif max_columns < 200 then
-      preview.width = 80
+  local width_padding = resolve.resolve_width(layout_config.width_padding or function(_, cols)
+    if cols < self.preview_cutoff then
+      return 2
+    elseif cols < 150 then
+      return 5
     else
-      preview.width = 120
+      return 10
     end
-  end
+  end)(self, max_columns, max_lines)
+  local picker_width = max_columns - 2 * width_padding
 
-  local other_width = max_columns - preview.width - (2 * width_padding)
+  local height_padding = resolve.resolve_height(layout_config.height_padding or function(_, _, lines)
+    if lines < 40 then
+      return 4
+    else
+      return math.floor(0.1 * lines)
+    end
+  end)(self, max_columns, max_lines)
+  local picker_height = max_lines - 2 * height_padding
 
-  results.width = other_width
-  prompt.width = other_width
+  preview.width = resolve.resolve_width(layout_config.preview_width or function(_, cols)
+    if not self.previewer or cols < self.preview_cutoff then
+      return 0
+    elseif cols < 150 then
+      return math.floor(cols * 0.4)
+    elseif cols < 200 then
+      return 80
+    else
+      return 120
+    end
+  end)(self, picker_width, max_lines)
+  results.width = picker_width - preview.width
+  prompt.width = picker_width - preview.width
 
-  local base_height
-  if max_lines < 40 then
-    base_height = math.min(math.floor(max_lines * 0.8), max_lines - 8)
-  else
-    base_height = math.floor(max_lines * 0.8)
-  end
-  results.height = base_height
   prompt.height = 1
+  results.height = picker_height - prompt.height - 2
 
   if self.previewer then
-    preview.height = results.height + prompt.height + 2
+    preview.height = picker_height
   else
     preview.height = 0
   end
@@ -89,17 +102,13 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
   prompt.col = width_padding
   preview.col = results.col + results.width + 2
 
-  -- TODO: Center this in the page a bit better.
-  local height_padding = math.max(math.floor(0.95 * max_lines), 2)
-
+  preview.line = height_padding
   if self.window.prompt_position == "top" then
-    prompt.line = max_lines - height_padding
-    results.line = prompt.line + 3
-    preview.line = prompt.line
+    prompt.line = height_padding
+    results.line = prompt.line + prompt.height + 2
   elseif self.window.prompt_position == "bottom" then
-    results.line = max_lines - height_padding
+    results.line = height_padding
     prompt.line = results.line + results.height + 2
-    preview.line = results.line
   else
     error("Unknown prompt_position: " .. self.window.prompt_position)
   end
@@ -124,13 +133,6 @@ end
 
 
 --]]
-
--- Check if there are any borders. Right now it's a little raw as
--- there are a few things that contribute to the border
-local is_borderless = function(opts)
-  return opts.window.border == false
-end
-
 layout_strategies.center = function(self, columns, lines)
   local initial_options = self:_get_initial_window_options()
   local preview = initial_options.preview
@@ -138,8 +140,8 @@ layout_strategies.center = function(self, columns, lines)
   local prompt = initial_options.prompt
 
   -- This sets the height/width for the whole layout
-  local height = resolve.resolve_height(self.window.results_height)(self, lines)
-  local width = resolve.resolve_width(self.window.width)(self, columns)
+  local height = resolve.resolve_height(self.window.results_height)(self, columns, lines)
+  local width = resolve.resolve_width(self.window.width)(self, columns, lines)
 
   local max_results = (height > lines and lines or height)
   local max_width = (width > columns and columns or width)
@@ -192,13 +194,17 @@ end
     +-----------------+
 --]]
 layout_strategies.vertical = function(self, max_columns, max_lines)
+  local layout_config = self.layout_config or {}
   local initial_options = self:_get_initial_window_options()
 
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
 
-  local width_padding = math.ceil((1 - self.window.width) * 0.5 * max_columns)
+  local width_padding = resolve.resolve_width(
+    layout_config.width_padding or math.ceil((1 - self.window.width) * 0.5 * max_columns)
+  )(self, max_columns, max_lines)
+
   local width = max_columns - width_padding * 2
   if not self.previewer then
     preview.width = 0
@@ -209,9 +215,9 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   prompt.width = width
 
   -- Height
-  local height_padding = 3
+  local height_padding = resolve.resolve_height(layout_config.height_padding or 3)(self, max_columns, max_lines)
 
-  results.height = 10
+  results.height = resolve.resolve_height(layout_config.results_height or 10)(self, max_columns, max_lines)
   prompt.height = 1
 
   -- The last 2 * 2 is for the extra borders
@@ -239,11 +245,21 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   }
 end
 
+-- Uses:
+--  flip_columns
+--  flip_lines
 layout_strategies.flex = function(self, max_columns, max_lines)
-  -- TODO: Make a config option for this that makes sense.
-  if max_columns < 100 and max_lines > 20 then
+  local layout_config = self.layout_config or {}
+
+  local flip_columns = layout_config.flip_columns or 100
+  local flip_lines = layout_config.flip_lines or 20
+
+  if max_columns < flip_columns and max_lines > flip_lines then
+    -- TODO: This feels a bit like a hack.... cause you wouldn't be able to pass this to flex easily.
+    self.layout_config = (config.values.layout_defaults or {})['vertical']
     return layout_strategies.vertical(self, max_columns, max_lines)
   else
+    self.layout_config = (config.values.layout_defaults or {})['horizontal']
     return layout_strategies.horizontal(self, max_columns, max_lines)
   end
 end
@@ -303,9 +319,5 @@ layout_strategies.current_buffer = function(self, _, _)
     prompt = prompt,
   }
 end
-
--- TODO: Add "flex"
--- If you don't have enough width, use the height one
--- etc.
 
 return layout_strategies

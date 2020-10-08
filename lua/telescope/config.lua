@@ -36,7 +36,7 @@ function config.set_defaults(defaults)
   set("selection_strategy", "reset")
 
   set("layout_strategy", "horizontal")
-  set("layout_options", {})
+  set("layout_defaults", {})
 
   set("width", 0.75)
   set("winblend", 0)
