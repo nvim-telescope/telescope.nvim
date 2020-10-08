@@ -631,8 +631,8 @@ end
 function Picker:set_selection(row)
   -- TODO: Loop around behavior?
   -- TODO: Scrolling past max results
-  if row > self.max_results then
-    row = self.max_results
+  if row >= self.max_results then
+    row = self.max_results - 1
   elseif row < 0 then
     row = 0
   end
