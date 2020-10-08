@@ -329,9 +329,6 @@ function Picker:find()
   local prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
   if prompt_border_win then vim.api.nvim_win_set_option(prompt_border_win, 'winhl', 'Normal:TelescopePromptBorder') end
 
-  -- Draw the screen ASAP. This makes things feel speedier.
-  vim.cmd [[redraw]]
-
   -- Prompt prefix
   local prompt_prefix = self.prompt_prefix
   if prompt_prefix ~= '' then
@@ -342,6 +339,9 @@ function Picker:find()
     vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
     a.nvim_buf_add_highlight(prompt_bufnr, ns_telescope_prompt_prefix, 'TelescopePromptPrefix', 0, 0, #prompt_prefix)
   end
+
+  -- Draw the screen ASAP. This makes things feel speedier.
+  vim.cmd [[redraw]]
 
   -- First thing we want to do is set all the lines to blank.
   self.max_results = popup_opts.results.height
