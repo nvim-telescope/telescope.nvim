@@ -140,9 +140,8 @@ layout_strategies.center = function(self, columns, lines)
   local prompt = initial_options.prompt
 
   -- This sets the height/width for the whole layout
-  local height = resolve.resolve_height(self.window.results_height)(self, columns, lines)
-  local width = resolve.resolve_width(self.window.width)(self, columns, lines)
-
+  local height = resolve.resolve_height(self.window.results_height)(self, lines)
+  local width = resolve.resolve_width(self.window.width)(self, columns)
   local max_results = (height > lines and lines or height)
   local max_width = (width > columns and columns or width)
 
@@ -216,7 +215,7 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
 
   -- Height
   local height_padding = math.max(
-    1, 
+    1,
     resolve.resolve_height(layout_config.height_padding or 3)(self, max_columns, max_lines)
   )
   local picker_height = max_lines - 2 * height_padding
