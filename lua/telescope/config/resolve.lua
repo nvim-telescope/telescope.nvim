@@ -98,14 +98,14 @@ local _resolve_map = {
   end,
 
   -- Percentages
-  [function(val) return type(val) == 'number' and val > 0 and val <= 1 end] = function(selector, val)
+  [function(val) return type(val) == 'number' and val > 0 and val < 1 end] = function(selector, val)
     return function(...)
       return math.floor(val * select(selector, ...))
     end
   end,
 
   -- Numbers
-  [function(val) return type(val) == 'number' and val > 1 end] = function(selector, val)
+  [function(val) return type(val) == 'number' and val >= 1 end] = function(selector, val)
     return function(...)
       return math.min(val, select(selector, ...))
     end
