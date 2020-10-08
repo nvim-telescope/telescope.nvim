@@ -18,6 +18,8 @@ highlight default link TelescopePreviewBorder TelescopeBorder
 " Used for highlighting characters that you match.
 highlight default link TelescopeMatching NormalNC
 
+" Used for the prompt prefix
+highlight default link TelescopePromptPrefix Identifier
 
 " This is like "<C-R>" in your terminal.
 "   To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)

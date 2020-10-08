@@ -65,7 +65,7 @@ function Picker:new(opts)
     results_title = get_default(opts.results_title, "Results"),
     preview_title = get_default(opts.preview_title, "Preview"),
 
-    prompt_prefix = opts.prompt_prefix or '',
+    prompt_prefix = get_default(opts.prompt_prefix, config.values.prompt_prefix),
 
     default_text = opts.default_text,
     get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
