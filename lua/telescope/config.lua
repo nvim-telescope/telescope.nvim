@@ -40,6 +40,7 @@ function config.set_defaults(defaults)
   set("winblend", 0)
   set("prompt_position", "bottom")
   set("preview_cutoff", 120)
+  set("previewer", true)
 
   set("results_height", 1)
   set("results_width", 0.8)
