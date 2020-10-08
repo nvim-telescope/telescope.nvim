@@ -215,17 +215,24 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   prompt.width = width
 
   -- Height
-  local height_padding = resolve.resolve_height(layout_config.height_padding or 3)(self, max_columns, max_lines)
+  local height_padding = math.max(
+    1, 
+    resolve.resolve_height(layout_config.height_padding or 3)(self, max_columns, max_lines)
+  )
+  local picker_height = max_lines - 2 * height_padding
 
-  results.height = resolve.resolve_height(layout_config.results_height or 10)(self, max_columns, max_lines)
-  prompt.height = 1
-
-  -- The last 2 * 2 is for the extra borders
+  local preview_total = 0
+  preview.height = 0
   if self.previewer then
-    preview.height = max_lines - results.height - prompt.height - 2 * 2 - height_padding * 2
-  else
-    results.height = max_lines - prompt.height - 2 - height_padding * 2
+    preview.height = resolve.resolve_height(
+      layout_config.preview_height or (max_lines - 15)
+    )(self, max_columns, picker_height)
+
+    preview_total = preview.height + 2
   end
+
+  prompt.height = 1
+  results.height = picker_height - preview_total - prompt.height - 2
 
   results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
 

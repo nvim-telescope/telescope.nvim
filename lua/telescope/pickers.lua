@@ -280,7 +280,12 @@ function Picker:find()
   -- 1. Prompt window
   -- 2. Options window
   -- 3. Preview window
-  local popup_opts = self:get_window_options(vim.o.columns, vim.o.lines)
+  local line_count = vim.o.lines - vim.o.cmdheight
+  if vim.o.laststatus ~= 0 then
+    line_count = line_count - 1
+  end
+
+  local popup_opts = self:get_window_options(vim.o.columns, line_count)
 
   -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
   popup_opts.results.minheight = popup_opts.results.height
