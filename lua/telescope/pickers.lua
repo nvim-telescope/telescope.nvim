@@ -39,6 +39,7 @@ end
 local ns_telescope_selection = a.nvim_create_namespace('telescope_selection')
 local ns_telescope_matching = a.nvim_create_namespace('telescope_matching')
 local ns_telescope_prompt = a.nvim_create_namespace('telescope_prompt')
+local ns_telescope_prompt_prefix = a.nvim_create_namespace('telescope_prompt_prefix')
 
 local pickers = {}
 
@@ -63,6 +64,8 @@ function Picker:new(opts)
     prompt = opts.prompt,
     results_title = get_default(opts.results_title, "Results"),
     preview_title = get_default(opts.preview_title, "Preview"),
+
+    prompt_prefix = get_default(opts.prompt_prefix, config.values.prompt_prefix),
 
     default_text = opts.default_text,
     get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
@@ -326,17 +329,19 @@ function Picker:find()
   local prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
   if prompt_border_win then vim.api.nvim_win_set_option(prompt_border_win, 'winhl', 'Normal:TelescopePromptBorder') end
 
-  -- Draw the screen ASAP. This makes things feel speedier.
-  vim.cmd [[redraw]]
-
-  local prompt_prefix
-  if false then
-    prompt_prefix = " > "
+  -- Prompt prefix
+  local prompt_prefix = self.prompt_prefix
+  if prompt_prefix ~= '' then
+    if not vim.endswith(prompt_prefix, ' ') then
+      prompt_prefix = prompt_prefix.." "
+    end
     a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
     vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
-  else
-    prompt_prefix = ""
+    a.nvim_buf_add_highlight(prompt_bufnr, ns_telescope_prompt_prefix, 'TelescopePromptPrefix', 0, 0, #prompt_prefix)
   end
+
+  -- Draw the screen ASAP. This makes things feel speedier.
+  vim.cmd [[redraw]]
 
   -- First thing we want to do is set all the lines to blank.
   self.max_results = popup_opts.results.height
@@ -425,11 +430,7 @@ function Picker:find()
     end
 
     local process_complete = function()
-      -- prompt_prefix = " hello > "
-      -- vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
-
       -- TODO: We should either: always leave one result or make sure we actually clean up the results when nothing matches
-
       if selection_strategy == 'row' then
         self:set_selection(self:get_selection_row())
       elseif selection_strategy == 'follow' then
