@@ -43,8 +43,8 @@ function Sorter:new(opts)
 end
 
 function Sorter:score(prompt, entry)
-  -- TODO: Decide if we actually want to check the type every time.
-  return self:scoring_function(prompt or "", type(entry) == "string" and entry or entry.ordinal, entry)
+  if not entry or not entry.ordinal then return -1 end
+  return self:scoring_function(prompt or "", entry.ordinal, entry)
 end
 
 function sorters.new(...)
@@ -114,7 +114,7 @@ sorters.get_fuzzy_file = function(opts)
     scoring_function = function(_, prompt, line)
       local N = #prompt
 
-      if prompt == 0 or N < ngram_len then
+      if N == 0 or N < ngram_len then
         -- TODO: If the character is in the line,
         -- then it should get a point or somethin.
         return 0
