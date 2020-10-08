@@ -18,8 +18,8 @@ Layout strategies are callback functions
 -- @param self: Picker
 -- @param columns: number Columns in the vim window
 -- @param lines: number Lines in the vim window
--- @param prompt_title: string
-function(self, columns, lines, prompt_title)
+
+function(self, columns, lines)
 end
 
 --]]
@@ -38,8 +38,8 @@ local resolve = require("telescope.config.resolve")
    |     Prompt      |                     |
    +-----------------+---------------------+
 --]]
-layout_strategies.horizontal = function(self, max_columns, max_lines, prompt_title)
-  local initial_options = self:_get_initial_window_options(prompt_title)
+layout_strategies.horizontal = function(self, max_columns, max_lines)
+  local initial_options = self:_get_initial_window_options()
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
@@ -131,8 +131,8 @@ local is_borderless = function(opts)
   return opts.window.border == false
 end
 
-layout_strategies.center = function(self, columns, lines, prompt_title)
-  local initial_options = self:_get_initial_window_options(prompt_title)
+layout_strategies.center = function(self, columns, lines)
+  local initial_options = self:_get_initial_window_options()
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
@@ -191,8 +191,8 @@ end
     |     Prompt      |
     +-----------------+
 --]]
-layout_strategies.vertical = function(self, max_columns, max_lines, prompt_title)
-  local initial_options = self:_get_initial_window_options(prompt_title)
+layout_strategies.vertical = function(self, max_columns, max_lines)
+  local initial_options = self:_get_initial_window_options()
 
   local preview = initial_options.preview
   local results = initial_options.results
@@ -239,17 +239,17 @@ layout_strategies.vertical = function(self, max_columns, max_lines, prompt_title
   }
 end
 
-layout_strategies.flex = function(self, max_columns, max_lines, prompt_title)
+layout_strategies.flex = function(self, max_columns, max_lines)
   -- TODO: Make a config option for this that makes sense.
   if max_columns < 100 and max_lines > 20 then
-    return layout_strategies.vertical(self, max_columns, max_lines, prompt_title)
+    return layout_strategies.vertical(self, max_columns, max_lines)
   else
-    return layout_strategies.horizontal(self, max_columns, max_lines, prompt_title)
+    return layout_strategies.horizontal(self, max_columns, max_lines)
   end
 end
 
-layout_strategies.current_buffer = function(self, _, _, prompt_title)
-  local initial_options = self:_get_initial_window_options(prompt_title)
+layout_strategies.current_buffer = function(self, _, _)
+  local initial_options = self:_get_initial_window_options()
 
   local window_width = vim.api.nvim_win_get_width(0)
   local window_height = vim.api.nvim_win_get_height(0)

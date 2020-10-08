@@ -80,7 +80,10 @@ function Picker:new(opts)
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
     layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy),
+    layout_options = get_default(opts.layout_options, config.values.layout_options),
+
     get_window_options = opts.get_window_options,
+
     get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
 
     window = {
@@ -102,16 +105,13 @@ function Picker:new(opts)
       -- Border config
       border = get_default(opts.border, config.values.border),
       borderchars = get_default(opts.borderchars, config.values.borderchars),
-
-      -- WIP:
-      horizontal_config = get_default(opts.horizontal_config, config.values.horizontal_config),
     },
 
     preview_cutoff = get_default(opts.preview_cutoff, config.values.preview_cutoff),
   }, self)
 end
 
-function Picker:_get_initial_window_options(prompt_title)
+function Picker:_get_initial_window_options()
   local popup_border = resolve.win_option(self.window.border)
   local popup_borderchars = resolve.win_option(self.window.borderchars)
 
@@ -131,7 +131,7 @@ function Picker:_get_initial_window_options(prompt_title)
   }
 
   local prompt = {
-    title = prompt_title,
+    title = self.prompt,
     border = popup_border.prompt,
     borderchars = popup_borderchars.prompt,
     enter = true
@@ -144,7 +144,7 @@ function Picker:_get_initial_window_options(prompt_title)
   }
 end
 
-function Picker:get_window_options(max_columns, max_lines, prompt_title)
+function Picker:get_window_options(max_columns, max_lines)
   local layout_strategy = self.layout_strategy
   local getter = layout_strategies[layout_strategy]
 
@@ -152,7 +152,7 @@ function Picker:get_window_options(max_columns, max_lines, prompt_title)
     error("Not a valid layout strategy: " .. layout_strategy)
   end
 
-  return getter(self, max_columns, max_lines, prompt_title)
+  return getter(self, max_columns, max_lines)
 end
 
 --- Take a row and get an index.
@@ -270,8 +270,6 @@ function Picker:find()
   self:close_existing_pickers()
   self:reset_selection()
 
-  local prompt_string = assert(self.prompt, "Prompt is required.")
-
   assert(self.finder, "Finder is required to do picking")
 
   self.original_win_id = a.nvim_get_current_win()
@@ -280,7 +278,7 @@ function Picker:find()
   -- 1. Prompt window
   -- 2. Options window
   -- 3. Preview window
-  local popup_opts = self:get_window_options(vim.o.columns, vim.o.lines, prompt_string)
+  local popup_opts = self:get_window_options(vim.o.columns, vim.o.lines)
 
   -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
   popup_opts.results.minheight = popup_opts.results.height
