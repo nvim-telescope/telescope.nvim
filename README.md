@@ -68,10 +68,10 @@ require('telescope.builtin').quickfix()
 require('telescope.builtin').loclist()
 ```
 
-Options can be passed directly to the above functions, or set as defaults.
+Options can be passed directly to the above functions, or set defaults with `telescope.setup`.
 
 ```lua
--- Optional way to setup default values
+-- Optional way to set default values
 require('telescope').setup{
   defaults = {
     -- Example:
