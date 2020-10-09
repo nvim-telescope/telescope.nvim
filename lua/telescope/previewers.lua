@@ -32,7 +32,7 @@ local bat_maker = function(filename, lnum, start, finish)
     if start then
       table.insert(command, {"--pager", string.format("less -S +%s", start)})
     else
-      table.insert(command, {"--pager", "less -S"})
+      table.insert(command, {"--pager", "less -RS"})
     end
   else
     if start and finish then
