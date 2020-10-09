@@ -33,7 +33,7 @@ local JobFinder = _callable_obj()
 function JobFinder:new(opts)
   opts = opts or {}
 
-  assert(not opts.results, "`results` should be used with finder.new_table")
+> assert(not opts.results, "`results` should be used with finder.new_table")
   assert(not opts.static, "`static` should be used with finder.new_oneshot_job")
 
   local obj = setmetatable({
@@ -238,8 +238,11 @@ function StaticFinder:new(opts)
   assert(type(input_results) == 'table', "self.results must be a table")
 
   local results = {}
-  for _, v in ipairs(input_results) do
-    table.insert(results, entry_maker(v))
+  for k, v in ipairs(input_results) do
+    local entry = entry_maker(v)
+    entry.index = k
+
+    table.insert(results, entry)
   end
 
   return setmetatable({ results = results }, self)

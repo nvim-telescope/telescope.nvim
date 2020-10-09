@@ -75,17 +75,22 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
   end)(self, max_columns, max_lines)
   local picker_height = max_lines - 2 * height_padding
 
-  preview.width = resolve.resolve_width(layout_config.preview_width or function(_, cols)
-    if not self.previewer or cols < self.preview_cutoff then
-      return 0
-    elseif cols < 150 then
-      return math.floor(cols * 0.4)
-    elseif cols < 200 then
-      return 80
-    else
-      return 120
-    end
-  end)(self, picker_width, max_lines)
+  if self.previewer then
+    preview.width = resolve.resolve_width(layout_config.preview_width or function(_, cols)
+      if not self.previewer or cols < self.preview_cutoff then
+        return 0
+      elseif cols < 150 then
+        return math.floor(cols * 0.4)
+      elseif cols < 200 then
+        return 80
+      else
+        return 120
+      end
+    end)(self, picker_width, max_lines)
+  else
+    preview.width = 0
+  end
+
   results.width = picker_width - preview.width
   prompt.width = picker_width - preview.width
 
@@ -114,7 +119,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
   end
 
   return {
-    preview = preview.width > 0 and preview,
+    preview = self.previewer and preview.width > 0 and preview,
     results = results,
     prompt = prompt
 }
@@ -174,7 +179,7 @@ layout_strategies.center = function(self, columns, lines)
   preview.col = results.col
 
   return {
-    preview = self.previewer and preview,
+    preview = self.previewer and preview.width > 0 and preview,
     results = results,
     prompt = prompt
   }
@@ -246,7 +251,7 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   end
 
   return {
-    preview = preview.width > 0 and preview,
+    preview = self.previewer and preview.width > 0 and preview,
     results = results,
     prompt = prompt
   }

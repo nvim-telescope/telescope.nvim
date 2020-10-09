@@ -113,7 +113,7 @@ function EntryManager:insert(picker, index, entry)
     self.info.inserted = self.info.inserted + 1 
     next_entry = self.entry_state[index]
 
-    self.set_entry(picker, index, entry.entry)
+    self.set_entry(picker, index, entry.entry, entry.score)
     self.entry_state[index] = entry
 
     last_score = entry.score

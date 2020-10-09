@@ -79,7 +79,6 @@ builtin.commands = function()
       entry_maker = function(line)
         return {
           valid = line ~= "",
-          entry_type = make_entry.types.GENERIC,
           value = line,
           ordinal = line.name,
           display = line.name
@@ -233,7 +232,6 @@ builtin.lsp_code_actions = function(opts)
       entry_maker = function(line)
         return {
           valid = line ~= nil,
-          entry_type = make_entry.types.GENERIC,
           value = line,
           ordinal = line.idx .. line.title,
           display = line.idx .. ': ' .. line.title
@@ -382,7 +380,7 @@ builtin.command_history = function(opts)
   local history_list = vim.split(history_string, "\n")
 
   local results = {}
-  for i = 3, #history_list do
+  for i = #history_list, 3, -1 do
     local item = history_list[i]
     local _, finish = string.find(item, "%d+ +")
     table.insert(results, string.sub(item, finish + 1))
@@ -391,7 +389,7 @@ builtin.command_history = function(opts)
   pickers.new(opts, {
     prompt = 'Command History',
     finder = finders.new_table(results),
-    sorter = sorters.get_generic_fuzzy_sorter(),
+    sorter = sorters.fuzzy_with_index_bias(),
 
     attach_mappings = function(_, map)
       map('i', '<CR>', actions.set_command_line)
@@ -399,12 +397,8 @@ builtin.command_history = function(opts)
       -- TODO: Find a way to insert the text... it seems hard.
       -- map('i', '<C-i>', actions.insert_value, { expr = true })
 
-      -- Please add the default mappings for me for the rest of the keys.
       return true
     end,
-
-    -- TODO: Adapt `help` to this.
-    -- previewer = previewers.cat,
   }):find()
 end
 

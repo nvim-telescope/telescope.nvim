@@ -741,7 +741,7 @@ function Picker:set_selection(row)
 end
 
 
-function Picker:entry_adder(index, entry)
+function Picker:entry_adder(index, entry, score)
   local row = self:get_row(index)
 
   -- If it's less than 0, then we don't need to show it at all.
@@ -764,7 +764,11 @@ function Picker:entry_adder(index, entry)
   -- This is the two spaces to manage the '> ' stuff.
   -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
   -- until then, insert two spaces
-  display = '  ' .. display
+  if TELESCOPE_DEBUG then
+    display = '  ' .. score .. display
+  else
+    display = '  ' .. display
+  end
 
   self:_increment("displayed")
 

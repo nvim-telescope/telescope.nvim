@@ -198,7 +198,7 @@ end
 sorters.get_generic_fuzzy_sorter = function(opts)
   opts = opts or {}
 
-  local ngram_len = 2
+  local ngram_len = opts.ngram_len or 2
 
   local function overlapping_ngrams(s, n)
     if TelescopeCachedNgrams[s] and TelescopeCachedNgrams[s][n] then
@@ -280,6 +280,30 @@ sorters.get_generic_fuzzy_sorter = function(opts)
     highlighter = opts.highlighter or function(_, prompt, display)
       return ngram_highlighter(ngram_len, prompt, display)
     end,
+  }
+end
+
+sorters.fuzzy_with_index_bias = function(opts)
+  opts = opts or {}
+  opts.ngram_len = 2
+
+  -- TODO: Probably could use a better sorter here.
+  local fuzzy_sorter = sorters.get_generic_fuzzy_sorter(opts)
+
+  return Sorter:new {
+    scoring_function = function(_, prompt, _, entry)
+      local base_score = fuzzy_sorter:score(prompt, entry)
+
+      if base_score == -1 then
+        return -1
+      end
+
+      if base_score == 0 then
+        return entry.index
+      else
+        return math.min(math.pow(entry.index, 0.25), 2) * base_score
+      end
+    end
   }
 end
 
