@@ -47,5 +47,5 @@ command! -nargs=0 -bar TelescopeTreesitter lua require'telescope.builtin'.treesi
 command! -nargs=0 -bar TelescopePlanets lua require'telescope.builtin'.planets{}
 command! -nargs=0 -bar TelescopeHelpTags lua require'telescope.builtin'.help_tags{}
 command! -nargs=0 -bar TelescopeManPages lua require'telescope.builtin'.man_pages{}
-
+command! -nargs=0 -bar TelescopeChangeColorscheme lua require'telescope.builtin'.colorscheme{}
 
