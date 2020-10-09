@@ -110,7 +110,7 @@ local function goto_file_selection(prompt_bufnr, command)
       if row and col then
         local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, {row, col})
         if not ok then
-          log.debug("Failed to move to cursor:", err_msg)
+          log.debug("Failed to move to cursor:", err_msg, row, col)
         end
       end
     end

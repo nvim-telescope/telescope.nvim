@@ -807,34 +807,19 @@ builtin.marks = function(opts)
   opts = opts or {}
 
   local marks = vim.api.nvim_exec("marks", true)
-  local marks_table = vim.fn.split(marks,'\n')
+  local marks_table = vim.fn.split(marks, "\n")
+
+  -- Pop off the header.
+  table.remove(marks_table, 1)
 
   pickers.new(opts,{
     prompt = 'Marks',
     finder = finders.new_table {
       results = marks_table,
+      entry_maker = make_entry.gen_from_marks(opts),
     },
-    previewer = previewers.man.new(opts),
+    previewer = previewers.vimgrep.new(opts),
     sorter = sorters.get_generic_fuzzy_sorter(),
-    attach_mappings = function(prompt_bufnr, map)
-      local jump_marks = function()
-        local selection = actions.get_selected_entry(prompt_bufnr)
-        local marks_data = {}
-        for v in selection.value:gmatch("%S+") do
-          table.insert(marks_data,v)
-        end
-          
-        local row,col = tonumber(marks_data[2]),tonumber(marks_data[3])
-        actions.close(prompt_bufnr)
-        vim.api.nvim_command("edit "..marks_data[4])
-        vim.api.nvim_win_set_cursor(0,{row,col})
-      end
-
-      map('i', '<CR>', jump_marks)
-      map('n', '<CR>', jump_marks)
-
-      return true
-    end
   }):find()
 end
 
