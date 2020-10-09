@@ -77,6 +77,7 @@ function config.set_defaults(defaults)
   --            ...,
   --
   set("mappings", {})
+  set("default_mappings", nil)
 
   -- NOT STABLE. DO NOT USE
   set("horizontal_config", {
