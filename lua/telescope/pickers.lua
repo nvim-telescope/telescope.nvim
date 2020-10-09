@@ -193,6 +193,11 @@ function Picker:get_reset_row()
 end
 
 function Picker:clear_extra_rows(results_bufnr)
+  if not vim.api.nvim_buf_is_valid(results_bufnr) then
+    log.debug("Invalid results_bufnr for clearing:", results_bufnr)
+    return
+  end
+
   local worst_line
   if self.sorting_strategy == 'ascending' then
     local num_results = self.manager:num_results()
