@@ -97,13 +97,8 @@ local function goto_file_selection(prompt_bufnr, command)
 
     filename = path.normalize(filename, vim.fn.getcwd())
 
-    -- TODO: Sometimes we open something with missing line numbers and stuff...
     if entry_bufnr then
-      if command == "edit" then
-        a.nvim_win_set_buf(original_win_id, entry_bufnr)
-      else
-        vim.cmd(string.format(":%s #%d", command, entry_bufnr))
-      end
+      vim.cmd(string.format(":%s #%d", command, entry_bufnr))
     else
       local bufnr = vim.api.nvim_get_current_buf()
       if filename ~= vim.api.nvim_buf_get_name(bufnr) then
@@ -118,10 +113,6 @@ local function goto_file_selection(prompt_bufnr, command)
           log.debug("Failed to move to cursor:", err_msg)
         end
       end
-    end
-
-    if command == "edit" then
-      vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
     end
   end
 end

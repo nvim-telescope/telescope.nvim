@@ -238,9 +238,11 @@ function StaticFinder:new(opts)
   local results = {}
   for k, v in ipairs(input_results) do
     local entry = entry_maker(v)
-    entry.index = k
 
-    table.insert(results, entry)
+    if entry then
+      entry.index = k
+      table.insert(results, entry)
+    end
   end
 
   return setmetatable({ results = results }, self)
