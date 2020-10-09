@@ -153,7 +153,9 @@ j      k     next | previous (in normal mode)
 
 To see the full list of mappings, check out `lua/telescope/mappings.lua` and the `default_mappings` table.
 
-To change the default mappings globally, you can use the `mappings` key in the `setup` table.
+To override ALL of the default mappings, you can use the `default_mappings` key in the `setup` table.
+
+To override only SOME of the default mappings, you can use the `mappings` key in the `setup` table.
 
 ```
  To disable a keymap, put [map] = false
