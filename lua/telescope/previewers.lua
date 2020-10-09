@@ -18,6 +18,8 @@ Previewer.__index = Previewer
 
 -- TODO: Should play with these some more, ty @clason
 local bat_options = {"--style=plain", "--color=always", "--paging=always"}
+local has_less = (vim.fn.executable('less') == 1)
+
 local bat_maker = function(filename, lnum, start, finish)
   local command = {"bat"}
 
@@ -25,8 +27,16 @@ local bat_maker = function(filename, lnum, start, finish)
     table.insert(command, { "--highlight-line", lnum})
   end
 
-  if start and finish then
-    table.insert(command, { "-r", string.format("%s:%s", start, finish) })
+  if has_less then
+    if start then
+      table.insert(command, {"--pager", string.format("less -S +%s", start)})
+    else
+      table.insert(command, {"--pager", "less -S"})
+    end
+  else
+    if start and finish then
+      table.insert(command, { "-r", string.format("%s:%s", start, finish) })
+    end
   end
 
   return flatten {
