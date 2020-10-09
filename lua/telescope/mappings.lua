@@ -1,7 +1,50 @@
 -- TODO: Customize keymap
 local a = vim.api
 
+local actions = require('telescope.actions')
+
 local mappings = {}
+
+mappings.default_mappings = {
+    i = {
+      ["<C-n>"] = actions.move_selection_next,
+      ["<C-p>"] = actions.move_selection_previous,
+
+      ["<C-c>"] = actions.close,
+
+      ["<Down>"] = actions.move_selection_next,
+      ["<Up>"] = actions.move_selection_previous,
+
+      ["<CR>"] = actions.goto_file_selection_edit,
+      ["<C-x>"] = actions.goto_file_selection_split,
+      ["<C-v>"] = actions.goto_file_selection_vsplit,
+      ["<C-t>"] = actions.goto_file_selection_tabedit,
+
+      ["<C-u>"] = actions.preview_scrolling_up,
+      ["<C-d>"] = actions.preview_scrolling_down,
+
+      -- TODO: When we implement multi-select, you can turn this back on :)
+      -- ["<Tab>"] = actions.add_selection,
+    },
+
+    n = {
+      ["<esc>"] = actions.close,
+      ["<CR>"] = actions.goto_file_selection_edit,
+      ["<C-x>"] = actions.goto_file_selection_split,
+      ["<C-v>"] = actions.goto_file_selection_vsplit,
+      ["<C-t>"] = actions.goto_file_selection_tabedit,
+
+      -- TODO: This would be weird if we switch the ordering.
+      ["j"] = actions.move_selection_next,
+      ["k"] = actions.move_selection_previous,
+
+      ["<Down>"] = actions.move_selection_next,
+      ["<Up>"] = actions.move_selection_previous,
+
+      ["<C-u>"] = actions.preview_scrolling_up,
+      ["<C-d>"] = actions.preview_scrolling_down,
+    },
+  }
 
 local keymap_store = setmetatable({}, {
   __index = function(t, k)
@@ -46,6 +89,10 @@ mappings.apply_keymap(42, <function>, {
 })
 --]]
 local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
+  if not key_func then
+    return
+  end
+
   opts = opts or {
     silent = true
   }
@@ -98,7 +145,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
   local applied_mappings = { n = {}, i = {} }
 
   local map = function(mode, key_bind, key_func, opts)
-    local mode = string.lower(mode)
+    mode = string.lower(mode)
     local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
     applied_mappings[mode][key_bind_internal] = true
 
@@ -109,14 +156,26 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     return
   end
 
-  for mode, mode_map in pairs(buffer_keymap) do
-    local mode = string.lower(mode)
-    -- TODO: Probalby should not overwrite any keymaps
-    -- local buffer_keymaps 
+  for mode, mode_map in pairs(buffer_keymap or {}) do
+    mode = string.lower(mode)
 
     for key_bind, key_func in pairs(mode_map) do
       local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
       if not applied_mappings[mode][key_bind_internal] then
+        applied_mappings[mode][key_bind_internal] = true
+        telescope_map(prompt_bufnr, mode, key_bind, key_func)
+      end
+    end
+  end
+
+  -- TODO: Probalby should not overwrite any keymaps
+  for mode, mode_map in pairs(mappings.default_mappings) do
+    mode = string.lower(mode)
+
+    for key_bind, key_func in pairs(mode_map) do
+      local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
+      if not applied_mappings[mode][key_bind_internal] then
+        applied_mappings[mode][key_bind_internal] = true
         telescope_map(prompt_bufnr, mode, key_bind, key_func)
       end
     end

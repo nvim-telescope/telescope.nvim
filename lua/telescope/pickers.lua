@@ -526,7 +526,7 @@ function Picker:find()
     picker = self,
   }, { __mode = 'kv' }))
 
-  mappings.apply_keymap(prompt_bufnr, self.attach_mappings, config.values.default_mappings)
+  mappings.apply_keymap(prompt_bufnr, self.attach_mappings, config.values.mappings)
 
   -- Do filetype last, so that users can register at the last second.
   pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')

@@ -151,6 +151,50 @@ j      k     next | previous (in normal mode)
 <Esc>        close telescope (in normal mode)
 ```
 
+To see the full list of mappings, check out `lua/telescope/mappings.lua` and the `default_mappings` table.
+
+To change the default mappings globally, you can use the `mappings` key in the `setup` table.
+
+```
+ To disable a keymap, put [map] = false
+
+        So, to not map "<C-n>", just put 
+
+            ...,
+            ["<C-n>"] = false,
+            ...,
+
+        Into your config.
+
+ Otherwise, just set the mapping to the function that you want it to be.
+
+            ...,
+            ["<C-i>"] = actions.goto_file_selection_split
+            ...,
+
+
+```
+
+A full example:
+
+```lua
+local actions = require('telescope.actions')
+
+require('telescope').setup {
+  defaults = {
+    mappings = {
+      i = {
+        -- Disable the default <c-x> mapping
+        ["<c-x>"] = false,
+
+        -- Create a new <c-s> mapping
+        ["<c-s>"] = actions.goto_file_selection_split,
+      },
+    },
+  }
+}
+```
+
 Attaching your own mappings is possible and additional information will come soon.
 
 Additionally, the prompt's filetype will be `TelescopePrompt`. You can customize the filetype as you would normally.
