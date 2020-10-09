@@ -12,6 +12,7 @@ local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
+local EntryManager = require('telescope.entry_manager')
 
 local find_and_sort_test = function(prompt, f, s)
   local info = {}
@@ -23,7 +24,7 @@ local find_and_sort_test = function(prompt, f, s)
   info.scoring_time = 0
   info.set_entry = 0
 
-  local entry_manager = pickers.entry_manager(25, function()
+  local entry_manager = EntryManager:new(25, function()
     info.set_entry = info.set_entry + 1
   end, info)
 

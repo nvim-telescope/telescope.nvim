@@ -23,7 +23,7 @@ describe('Picker', function()
     it('works with one entry', function()
       local manager = EntryManager:new(5, nil)
 
-      manager:add_entry(1, "hello")
+      manager:add_entry(nil, 1, "hello")
 
       assert.are.same(1, manager:get_score(1))
     end)
@@ -31,8 +31,8 @@ describe('Picker', function()
     it('works with two entries', function()
       local manager = EntryManager:new(5, nil)
 
-      manager:add_entry(1, "hello")
-      manager:add_entry(2, "later")
+      manager:add_entry(nil, 1, "hello")
+      manager:add_entry(nil, 2, "later")
 
       assert.are.same("hello", manager:get_entry(1))
       assert.are.same("later", manager:get_entry(2))
@@ -43,7 +43,7 @@ describe('Picker', function()
       local manager = EntryManager:new(5, function() called_count = called_count + 1 end)
 
       assert(called_count == 0)
-      manager:add_entry(1, "hello")
+      manager:add_entry(nil, 1, "hello")
       assert(called_count == 1)
     end)
 
@@ -52,16 +52,16 @@ describe('Picker', function()
       local manager = EntryManager:new(5, function() called_count = called_count + 1 end)
 
       assert(called_count == 0)
-      manager:add_entry(1, "hello")
-      manager:add_entry(2, "world")
+      manager:add_entry(nil, 1, "hello")
+      manager:add_entry(nil, 2, "world")
       assert(called_count == 2)
     end)
 
     it('correctly sorts lower scores', function()
       local called_count = 0
       local manager = EntryManager:new(5, function() called_count = called_count + 1 end)
-      manager:add_entry(5, "worse result")
-      manager:add_entry(2, "better result")
+      manager:add_entry(nil, 5, "worse result")
+      manager:add_entry(nil, 2, "better result")
 
       assert.are.same("better result", manager:get_entry(1))
       assert.are.same("worse result", manager:get_entry(2))
@@ -75,8 +75,8 @@ describe('Picker', function()
     it('respects max results', function()
       local called_count = 0
       local manager = EntryManager:new(1, function() called_count = called_count + 1 end)
-      manager:add_entry(2, "better result")
-      manager:add_entry(5, "worse result")
+      manager:add_entry(nil, 2, "better result")
+      manager:add_entry(nil, 5, "worse result")
 
       assert.are.same("better result", manager:get_entry(1))
       assert.are.same(1, called_count)
@@ -93,7 +93,7 @@ describe('Picker', function()
       local manager = EntryManager:new(5)
 
       local counts_executed = 0
-      manager:add_entry(1, setmetatable({}, {
+      manager:add_entry(nil, 1, setmetatable({}, {
         __index = function(t, k)
           local val = nil
           if k == "ordinal" then
@@ -211,9 +211,9 @@ describe('Sorters', function()
     it('sort matches well', function()
       local sorter = require('telescope.sorters').get_generic_fuzzy_sorter()
 
-      local exact_match = sorter:score('hello', 'hello')
-      local no_match = sorter:score('abcdef', 'ghijkl')
-      local ok_match = sorter:score('abcdef', 'ab')
+      local exact_match = sorter:score('hello', {ordinal = 'hello'})
+      local no_match = sorter:score('abcdef', {ordinal = 'ghijkl'})
+      local ok_match = sorter:score('abcdef', {ordinal = 'ab'})
 
       assert(exact_match < no_match, "exact match better than no match")
       assert(exact_match < ok_match, "exact match better than ok match")
@@ -234,9 +234,9 @@ describe('Sorters', function()
     it('sort matches well', function()
       local sorter = require('telescope.sorters').get_fuzzy_file()
 
-      local exact_match = sorter:score('abcdef', 'abcdef')
-      local no_match = sorter:score('abcdef', 'ghijkl')
-      local ok_match = sorter:score('abcdef', 'ab')
+      local exact_match = sorter:score('abcdef', {ordinal = 'abcdef'})
+      local no_match = sorter:score('abcdef', {ordinal = 'ghijkl'})
+      local ok_match = sorter:score('abcdef', {ordinal = 'ab'})
 
       assert(
         exact_match < no_match,
@@ -252,8 +252,8 @@ describe('Sorters', function()
     it('sorts matches after last os sep better', function()
       local sorter = require('telescope.sorters').get_fuzzy_file()
 
-      local better_match = sorter:score('aaa', 'bbb/aaa')
-      local worse_match  = sorter:score('aaa', 'aaa/bbb')
+      local better_match = sorter:score('aaa', {ordinal = 'bbb/aaa'})
+      local worse_match  = sorter:score('aaa', {ordinal = 'aaa/bbb'})
 
       assert(better_match < worse_match, "Final match should be stronger")
     end)
@@ -261,12 +261,38 @@ describe('Sorters', function()
     pending('sorts multiple finds better', function()
       local sorter = require('telescope.sorters').get_fuzzy_file()
 
-      local multi_match = sorter:score('generics', 'exercises/generics/generics2.rs')
-      local one_match = sorter:score('abcdef', 'exercises/generics/README.md')
+      local multi_match = sorter:score('generics', {ordinal = 'exercises/generics/generics2.rs'})
+      local one_match = sorter:score('abcdef', {ordinal = 'exercises/generics/README.md'})
 
       assert(multi_match < one_match)
     end)
   end)
+
+  describe('layout_strategies', function()
+    describe('center', function()
+      it('should handle large terminals', function()
+        -- TODO: This could call layout_strategies.center w/ some weird edge case.
+        -- and then assert stuff about the dimensions.
+      end)
+    end)
+  end)
+
+  -- describe('file_finder', function()
+  --   COMPLETED = false
+  --   PASSED = false
+
+  --   require('tests.helpers').auto_find_files {
+  --     input = 'pickers.lua',
+
+  --     condition = function()
+  --       print(vim.api.nvim_buf_get_name(0))
+  --       return string.find(vim.api.nvim_buf_get_name(0), 'pickers.lua')
+  --     end,
+  --   }
+
+  --   print("WAIT:", vim.wait(5000, function() return COMPLETED end))
+  --   assert(PASSED)
+  -- end)
 end)
 
 

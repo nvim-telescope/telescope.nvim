@@ -1,12 +1,13 @@
-RELOAD('telescope')
-
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local previewers = require('telescope.previewers')
 local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
 
-local find_files = function(opts)
+local helpers = {}
+
+-- TODO: We should do something with builtins to get those easily.
+helpers.auto_find_files = function(opts)
   opts = opts or {}
   opts.prompt_prefix = ''
 
@@ -61,7 +62,8 @@ local find_files = function(opts)
   end
 
   p:register_completion_callback(coroutine.wrap(function()
-    local input = "pickers.lua"
+    local input = opts.input
+
     for i = 1, #input do
       feed(input:sub(i, i))
       coroutine.yield()
@@ -70,10 +72,15 @@ local find_files = function(opts)
     vim.wait(300, function() end)
     feed("<CR>", '')
 
+    vim.defer_fn(function()
+      PASSED = opts.condition()
+      COMPLETED = true
+    end, 500)
+
     coroutine.yield()
   end))
 
   p:find()
 end
 
-find_files()
+return helpers
