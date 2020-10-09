@@ -1,8 +1,9 @@
 local context_manager = require('plenary.context_manager')
 
+local config = require('telescope.config')
+local debounce = require('telescope.debounce')
 local from_entry = require('telescope.from_entry')
 local log = require('telescope.log')
-local debounce = require('telescope.debounce')
 local utils = require('telescope.utils')
 
 local flatten = vim.tbl_flatten
@@ -18,7 +19,7 @@ Previewer.__index = Previewer
 
 -- TODO: Should play with these some more, ty @clason
 local bat_options = {"--style=plain", "--color=always", "--paging=always"}
-local has_less = (vim.fn.executable('less') == 1)
+local has_less = (vim.fn.executable('less') == 1) and config.values.use_less
 
 local bat_maker = function(filename, lnum, start, finish)
   local command = {"bat"}

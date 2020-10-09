@@ -59,6 +59,7 @@ function config.set_defaults(defaults)
   -- List that will be executed.
   --    Last argument will be the search term (passed in during execution)
   set("vimgrep_arguments", {'rg', '--color=never', '--no-heading', '--with-filename', '--line-number', '--column', '--smart-case'})
+  set("use_less", true)
 
   -- TODO: Add motions to keybindings
 
