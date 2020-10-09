@@ -774,4 +774,33 @@ builtin.man_pages = function(opts)
   }):find()
 end
 
+builtin.colorscheme = function(opts)
+  opts = opts or {}
+
+  local colors = vim.fn.getcompletion('', 'color')
+
+  pickers.new(opts,{
+    prompt = 'Change Colorscheme',
+    finder = finders.new_table {
+      results = colors
+    },
+    previewer = previewers.man.new(opts),
+    sorter = sorters.get_generic_fuzzy_sorter(),
+    attach_mappings = function(prompt_bufnr, map)
+      local change_colorscheme = function()
+        local selection = actions.get_selected_entry(prompt_bufnr)
+
+        actions.close(prompt_bufnr)
+        print(vim.inspect(selection.value))
+        vim.cmd("colorscheme " .. selection.value)
+      end
+
+      map('i', '<CR>', change_colorscheme)
+      map('n', '<CR>', change_colorscheme)
+
+      return true
+    end
+  }):find()
+end
+
 return builtin
