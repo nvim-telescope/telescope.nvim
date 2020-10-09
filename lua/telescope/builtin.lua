@@ -144,7 +144,9 @@ builtin.lsp_references = function(opts)
   local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/references", params, opts.timeout or 10000)
   local locations = {}
   for _, server_results in pairs(results_lsp) do
-    vim.list_extend(locations, vim.lsp.util.locations_to_items(server_results.result) or {})
+    if server_results.result then
+      vim.list_extend(locations, vim.lsp.util.locations_to_items(server_results.result) or {})
+    end
   end
 
   if vim.tbl_isempty(locations) then
@@ -279,7 +281,9 @@ builtin.lsp_workspace_symbols = function(opts)
 
   local locations = {}
   for _, server_results in pairs(results_lsp) do
-    vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
+    if server_results.result then
+      vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
+    end
   end
 
   if vim.tbl_isempty(locations) then
