@@ -178,8 +178,6 @@ function OneshotJobFinder:new(opts)
       finder, _, process_result, process_complete = coroutine.yield()
       num_execution = num_execution + 1
 
-      log.debug("Using previous results", job.is_shutdown, completed, num_execution)
-
       local current_count = num_results
       for index = 1, current_count do
         process_result(results[index])

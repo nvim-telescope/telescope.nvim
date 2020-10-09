@@ -83,6 +83,7 @@ function Picker:new(opts)
 
     sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
+    scroll_strategy = get_default(opts.scroll_strategy, config.values.scroll_strategy),
 
     get_window_options = opts.get_window_options,
     layout_strategy = layout_strategy,
@@ -639,14 +640,28 @@ function Picker:reset_selection()
   self.multi_select = {}
 end
 
+function Picker:_handle_scroll_strategy(row)
+  if self.scroll_strategy == "cycle" then
+    if row >= self.max_results then
+      row = 0
+    elseif row < 0 then
+      row = self.max_results - 1
+    end
+  else
+    if row >= self.max_results then
+      row = self.max_results - 1
+    elseif row < 0 then
+      row = 0
+    end
+  end
+
+  return row
+end
+
 function Picker:set_selection(row)
   -- TODO: Loop around behavior?
   -- TODO: Scrolling past max results
-  if row >= self.max_results then
-    row = self.max_results - 1
-  elseif row < 0 then
-    row = 0
-  end
+  row = self:_handle_scroll_strategy(row)
 
   if not self:can_select_row(row) then
     log.debug("Cannot select row:", row, self.manager:num_results(), self.max_results)
