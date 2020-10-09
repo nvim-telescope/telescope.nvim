@@ -495,31 +495,20 @@ builtin.builtin = function(opts)
 
   local objs = {}
 
-  for k, v in pairs(builtin) do
-    local debug_info = debug.getinfo(v)
-
-    table.insert(objs, {
-      filename = string.sub(debug_info.source, 2),
-      lnum = debug_info.linedefined,
-      col = 0,
-      text = k,
-
-      start = debug_info.linedefined,
-      finish = debug_info.lastlinedefined,
-    })
+  for k, _ in pairs(builtin) do
+    table.insert(objs, k)
   end
 
   pickers.new(opts, {
     prompt    = 'Telescope Builtin',
-    finder    = finders.new_table {
-      results     = objs,
-      entry_maker = make_entry.gen_from_quickfix(opts),
-    },
-    previewer = previewers.qflist.new(opts),
+    finder    = finders.new_table(objs),
     sorter    = sorters.get_generic_fuzzy_sorter(),
+    attach_mappings = function(_, map)
+      map('i', '<CR>', actions.run_builtin)
+      return true
+    end
   }):find()
 end
-
 
 -- TODO: Maybe just change this to `find`.
 --          Support `find` and maybe let people do other stuff with it as well.
