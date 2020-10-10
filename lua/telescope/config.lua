@@ -60,6 +60,7 @@ function config.set_defaults(defaults)
   --    Last argument will be the search term (passed in during execution)
   set("vimgrep_arguments", {'rg', '--color=never', '--no-heading', '--with-filename', '--line-number', '--column', '--smart-case'})
   set("use_less", true)
+  set("use_external_pager_for_lsp_document_symbols", true)
 
   -- TODO: Add motions to keybindings
 

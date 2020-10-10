@@ -184,13 +184,18 @@ builtin.lsp_document_symbols = function(opts)
     return
   end
 
+  local previewer = previewers.vim_buffer.new(opts)
+  if conf.use_external_pager_for_lsp_document_symbols then
+    previewer = previewers.qflist.new(opts)
+  end
+
   pickers.new(opts, {
     prompt    = 'LSP Document Symbols',
     finder    = finders.new_table {
       results = locations,
       entry_maker = make_entry.gen_from_quickfix(opts)
     },
-    previewer = previewers.vim_buffer.new(opts),
+    previewer = previewer,
     sorter    = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end
