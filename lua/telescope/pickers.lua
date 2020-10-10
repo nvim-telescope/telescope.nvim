@@ -102,8 +102,8 @@ function Picker:new(opts)
 
       get_preview_width = get_default(opts.preview_width, config.values.get_preview_width),
 
-      results_width = get_default(opts.results_width, 0.8),
-      results_height = get_default(opts.results_height, 1),
+      results_width = get_default(opts.results_width, config.values.results_width),
+      results_height = get_default(opts.results_height, config.values.results_height),
 
       winblend = get_default(opts.winblend, config.values.winblend),
       prompt_position = get_default(opts.prompt_position, config.values.prompt_position),
