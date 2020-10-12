@@ -774,4 +774,68 @@ builtin.man_pages = function(opts)
   }):find()
 end
 
+builtin.colorscheme = function(opts)
+  opts = opts or {}
+
+  local colors = vim.list_extend(opts.colors or {}, vim.fn.getcompletion('', 'color'))
+
+  pickers.new(opts,{
+    prompt = 'Change Colorscheme',
+    finder = finders.new_table {
+      results = colors
+    },
+    -- TODO: better preview?
+    sorter = sorters.get_generic_fuzzy_sorter(),
+    attach_mappings = function(prompt_bufnr, map)
+      local change_colorscheme = function()
+        local selection = actions.get_selected_entry(prompt_bufnr)
+
+        actions.close(prompt_bufnr)
+        print(vim.inspect(selection.value))
+        vim.cmd("colorscheme " .. selection.value)
+      end
+
+      map('i', '<CR>', change_colorscheme)
+      map('n', '<CR>', change_colorscheme)
+
+      return true
+    end
+  }):find()
+end
+
+builtin.marks = function(opts)
+  opts = opts or {}
+
+  local marks = vim.api.nvim_exec("marks", true)
+  local marks_table = vim.fn.split(marks,'\n')
+
+  pickers.new(opts,{
+    prompt = 'Marks',
+    finder = finders.new_table {
+      results = marks_table,
+    },
+    previewer = previewers.man.new(opts),
+    sorter = sorters.get_generic_fuzzy_sorter(),
+    attach_mappings = function(prompt_bufnr, map)
+      local jump_marks = function()
+        local selection = actions.get_selected_entry(prompt_bufnr)
+        local marks_data = {}
+        for v in selection.value:gmatch("%S+") do
+          table.insert(marks_data,v)
+        end
+          
+        local row,col = tonumber(marks_data[2]),tonumber(marks_data[3])
+        actions.close(prompt_bufnr)
+        vim.api.nvim_command("edit "..marks_data[4])
+        vim.api.nvim_win_set_cursor(0,{row,col})
+      end
+
+      map('i', '<CR>', jump_marks)
+      map('n', '<CR>', jump_marks)
+
+      return true
+    end
+  }):find()
+end
+
 return builtin
