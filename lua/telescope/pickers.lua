@@ -39,7 +39,7 @@ end
 local ns_telescope_selection = a.nvim_create_namespace('telescope_selection')
 local ns_telescope_matching = a.nvim_create_namespace('telescope_matching')
 local ns_telescope_prompt = a.nvim_create_namespace('telescope_prompt')
-local ns_telescope_prompt_text = a.nvim_create_namespace('telescope_prompt_text')
+local ns_telescope_prompt_prefix = a.nvim_create_namespace('telescope_prompt_prefix')
 
 local pickers = {}
 
@@ -65,7 +65,7 @@ function Picker:new(opts)
     results_title = get_default(opts.results_title, "Results"),
     preview_title = get_default(opts.preview_title, "Preview"),
 
-    prompt_text = get_default(opts.prompt_text, config.values.prompt_text),
+    prompt_prefix = get_default(opts.prompt_prefix, config.values.prompt_prefix),
 
     default_text = opts.default_text,
     get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
@@ -330,14 +330,14 @@ function Picker:find()
   if prompt_border_win then vim.api.nvim_win_set_option(prompt_border_win, 'winhl', 'Normal:TelescopePromptBorder') end
 
   -- Prompt text
-  local prompt_text = self.prompt_text
-  if prompt_text ~= '' then
-    if not vim.endswith(prompt_text, ' ') then
-      prompt_text = prompt_text.." "
+  local prompt_prefix = self.prompt_prefix
+  if prompt_prefix ~= '' then
+    if not vim.endswith(prompt_prefix, ' ') then
+      prompt_prefix = prompt_prefix.." "
     end
     a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
-    vim.fn.prompt_setprompt(prompt_bufnr, prompt_text)
-    a.nvim_buf_add_highlight(prompt_bufnr, ns_telescope_prompt_text, 'TelescopePromptText', 0, 0, #prompt_text)
+    vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
+    a.nvim_buf_add_highlight(prompt_bufnr, ns_telescope_prompt_prefix, 'TelescopePromptText', 0, 0, #prompt_prefix)
   end
 
   -- Temporarily disabled: Draw the screen ASAP. This makes things feel speedier.
@@ -383,7 +383,7 @@ function Picker:find()
       return
     end
 
-    local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]:sub(#prompt_text)
+    local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]:sub(#prompt_prefix)
 
     -- TODO: Statusbar possibilities here.
     -- vim.api.nvim_buf_set_virtual_text(prompt_bufnr, 0, 1, { {"hello", "Error"} }, {})
