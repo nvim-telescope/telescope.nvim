@@ -61,7 +61,7 @@ function Picker:new(opts)
   local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
 
   return setmetatable({
-    prompt = opts.prompt,
+    prompt_title = get_default(opts.prompt_title, "Prompt"),
     results_title = get_default(opts.results_title, "Results"),
     preview_title = get_default(opts.preview_title, "Preview"),
 
@@ -137,7 +137,7 @@ function Picker:_get_initial_window_options()
   }
 
   local prompt = {
-    title = self.prompt,
+    title = self.prompt_title,
     border = popup_border.prompt,
     borderchars = popup_borderchars.prompt,
     enter = true

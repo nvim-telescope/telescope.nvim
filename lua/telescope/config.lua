@@ -47,7 +47,7 @@ function config.set_defaults(defaults)
   set("results_height", 1)
   set("results_width", 0.8)
 
-  set("prompt_prefix", "> ")
+  set("prompt_prefix", ">")
 
   set("border", {})
   set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})

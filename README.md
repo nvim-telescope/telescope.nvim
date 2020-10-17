@@ -400,7 +400,7 @@ Defaults:
 ```lua
 -- lua/telescope/pickers.lua
 Picker:new{
-  prompt             = "", -- REQUIRED
+  prompt_title       = "", -- REQUIRED
   finder             = FUNCTION, -- see lua/telescope/finder.lua
   sorter             = FUNCTION, -- see lua/telescope/sorter.lua
   previewer          = FUNCTION, -- see lua/telescope/previewer.lua

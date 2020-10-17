@@ -52,7 +52,7 @@ builtin.git_files = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'Git File',
+    prompt_title = 'Git File',
     finder    = finders.new_oneshot_job(
       { "git", "ls-tree", "--full-tree", "-r", "--name-only", "HEAD" },
       opts
@@ -64,7 +64,7 @@ end
 
 builtin.commands = function()
   pickers.new({}, {
-    prompt = 'Commands',
+    prompt_title = 'Commands',
     finder = finders.new_table {
       results = (function()
         local command_iter = vim.api.nvim_get_commands({})
@@ -127,7 +127,7 @@ builtin.live_grep = function(opts)
   )
 
   pickers.new(opts, {
-    prompt    = 'Live Grep',
+    prompt_title = 'Live Grep',
     finder    = live_grepper,
     previewer = previewers.vimgrep.new(opts),
     sorter    = sorters.get_generic_fuzzy_sorter(),
@@ -154,7 +154,7 @@ builtin.lsp_references = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'LSP References',
+    prompt_title = 'LSP References',
     finder    = finders.new_table {
       results = locations,
       entry_maker = make_entry.gen_from_quickfix(opts),
@@ -185,7 +185,7 @@ builtin.lsp_document_symbols = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'LSP Document Symbols',
+    prompt_title = 'LSP Document Symbols',
     finder    = finders.new_table {
       results = locations,
       entry_maker = make_entry.gen_from_quickfix(opts)
@@ -228,7 +228,7 @@ builtin.lsp_code_actions = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'LSP Code Actions',
+    prompt_title = 'LSP Code Actions',
     finder    = finders.new_table {
       results = results,
       entry_maker = function(line)
@@ -291,7 +291,7 @@ builtin.lsp_workspace_symbols = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'LSP Workspace Symbols',
+    prompt_title = 'LSP Workspace Symbols',
     finder    = finders.new_table {
       results = locations,
       entry_maker = make_entry.gen_from_quickfix(opts)
@@ -311,7 +311,7 @@ builtin.quickfix = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'Quickfix',
+    prompt_title  = 'Quickfix',
     finder    = finders.new_table {
       results     = locations,
       entry_maker = make_entry.gen_from_quickfix(opts),
@@ -334,7 +334,7 @@ builtin.loclist = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'Loclist',
+    prompt_title = 'Loclist',
     finder    = finders.new_table {
       results     = locations,
       entry_maker = make_entry.gen_from_quickfix(opts),
@@ -356,7 +356,7 @@ builtin.grep_string = function(opts)
   opts.word_match = opts.word_match or nil
 
   pickers.new(opts, {
-    prompt = 'Find Word',
+    prompt_title = 'Find Word',
     finder = finders.new_oneshot_job(
       flatten { conf.vimgrep_arguments, opts.word_match, search},
       opts
@@ -370,7 +370,7 @@ builtin.oldfiles = function(opts)
   opts = opts or {}
 
   pickers.new(opts, {
-    prompt = 'Oldfiles',
+    prompt_title = 'Oldfiles',
     finder = finders.new_table(vim.tbl_filter(function(val)
       return 0 ~= vim.fn.filereadable(val)
     end, vim.v.oldfiles)),
@@ -391,7 +391,7 @@ builtin.command_history = function(opts)
   end
 
   pickers.new(opts, {
-    prompt = 'Command History',
+    prompt_title = 'Command History',
     finder = finders.new_table(results),
     sorter = sorters.fuzzy_with_index_bias(),
 
@@ -421,7 +421,7 @@ builtin.help_tags = function(opts)
   f:close()
 
   pickers.new(opts, {
-    prompt = 'Help',
+    prompt_title = 'Help',
     finder = finders.new_table {
       results = tags,
       entry_maker = make_entry.gen_from_tagfile(opts),
@@ -460,7 +460,7 @@ builtin.reloader = function(opts)
   end
 
   pickers.new(opts, {
-    prompt = 'Packages',
+    prompt_title = 'Packages',
     finder = finders.new_table {
       results = package_list,
       entry_maker = make_entry.gen_from_packages(opts),
@@ -510,7 +510,7 @@ builtin.builtin = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'Telescope Builtin',
+    prompt_title = 'Telescope Builtin',
     finder    = finders.new_table {
       results     = objs,
       entry_maker = make_entry.gen_from_quickfix(opts),
@@ -552,7 +552,7 @@ builtin.find_files = function(opts)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
 
   pickers.new(opts, {
-    prompt = 'Find Files',
+    prompt_title = 'Find Files',
     finder = finders.new_oneshot_job(
       find_command,
       opts
@@ -585,7 +585,7 @@ builtin.buffers = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'Buffers',
+    prompt_title = 'Buffers',
     finder    = finders.new_table {
       results = buffers,
       entry_maker = make_entry.gen_from_buffer(opts)
@@ -644,7 +644,7 @@ builtin.treesitter = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'Treesitter Symbols',
+    prompt_title = 'Treesitter Symbols',
     finder    = finders.new_table {
       results = results,
       entry_maker = make_entry.gen_from_treesitter(opts)
@@ -671,7 +671,7 @@ builtin.planets = function(opts)
   end
 
   pickers.new {
-    prompt = 'Planets',
+    prompt_title = 'Planets',
     finder = finders.new_table {
       results = acceptable_files,
       entry_maker = function(line)
@@ -705,7 +705,7 @@ builtin.current_buffer_fuzzy_find = function(opts)
   end
 
   pickers.new(opts, {
-    prompt = 'Current Buffer Fuzzy',
+    prompt_title = 'Current Buffer Fuzzy',
     finder = finders.new_table {
       results = lines_with_numbers,
       entry_maker = function(enumerated_line)
@@ -750,7 +750,7 @@ builtin.man_pages = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'Man',
+    prompt_tile = 'Man',
     finder    = finders.new_table {
       results = lines,
       entry_maker = make_entry.gen_from_apropos(opts),
