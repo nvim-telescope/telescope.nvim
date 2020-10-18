@@ -23,6 +23,16 @@ Support for:
 
 [Example video](https://www.youtube.com/watch?v=65AVwHZflsU)
 
+### Telescope Table of Contents
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Optional](#optional)
+- [Examples](#examples)
+- [Mappings](#mappings)
+- [API](#api)
+- [Goals](#goals)
+- [Other Examples](#other-examples)
+
 ## Requirements
 
 Neovim Nightly (0.5)
