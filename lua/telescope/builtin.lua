@@ -49,7 +49,8 @@ builtin.git_files = function(opts)
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)
   else
-    opts.cwd = utils.capture("git rev-parse --show-toplevel")
+    --- Find root of git directory and remove trailing newline characters
+    opts.cwd = string.gsub(vim.fn.system("git rev-parse --show-toplevel"), '[\n\r]+', '')
   end
   -- By creating the entry maker after the cwd options,
   -- we ensure the maker uses the cwd options when being created.

@@ -176,26 +176,6 @@ function utils.max_split(s, pattern, maxsplit)
   end
 
   return t
-
----
--- Retrieve stdout from shell command
---
-function utils.capture(cmd)
-    local handle = assert(io.popen(cmd, 'r'))
-    local output = assert(handle:read('*a'))
-    handle:close()
-
-    output = string.gsub(
-        string.gsub(
-            string.gsub(output, '^%s+', ''),
-            '%s+$',
-            ''
-        ),
-        '[\n\r]+',
-        ' '
-    )
-   return output
-
 end
 
 return utils
