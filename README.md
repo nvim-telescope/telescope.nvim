@@ -26,7 +26,6 @@ Support for:
 ### Telescope Table of Contents
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Optional](#optional)
 - [Examples](#examples)
 - [Mappings](#mappings)
 - [API](#api)
