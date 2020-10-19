@@ -206,8 +206,6 @@ require('telescope').setup {
 }
 ```
 
-Attaching your own mappings is possible and additional information will come soon.
-
 Additionally, the prompt's filetype will be `TelescopePrompt`. You can customize the filetype as you would normally.
 
 ## Status (Unstable API)
