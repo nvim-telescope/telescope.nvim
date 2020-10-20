@@ -310,7 +310,7 @@ end
 -- Sorter using the fzy algorithm
 sorters.get_fzy_sorter = function()
   local fzy = require('telescope.algos.fzy')
-  local OFFSET = (fzy.MATCH_MAX_LENGTH + 1) * -fzy.SCORE_GAP_INNER
+  local OFFSET = -fzy.SCORE_FLOOR()
 
   return sorters.Sorter:new{
     scoring_function = function(_, prompt, line)
@@ -328,7 +328,7 @@ sorters.get_fzy_sorter = function()
       -- The fzy score is -inf for empty queries and overlong strings.  Since
       -- this function converts all scores into the range (0, 1), we can
       -- convert these to 1 as a suitable "worst score" value.
-      if fzy_score == fzy.SCORE_MIN then
+      if fzy_score == fzy.SCORE_MIN() then
         return 1
       end
 
