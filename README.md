@@ -23,6 +23,15 @@ Support for:
 
 [Example video](https://www.youtube.com/watch?v=65AVwHZflsU)
 
+### Telescope Table of Contents
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Examples](#examples)
+- [Mappings](#mappings)
+- [API](#api)
+- [Goals](#goals)
+- [Other Examples](#other-examples)
+
 ## Requirements
 
 Neovim Nightly (0.5)
@@ -106,12 +115,21 @@ nnoremap <Leader>en <cmd>lua require'telescope.builtin'.find_files{ cwd = "~/.co
 
 Find all the files in your nvim config.
 
+### Available keys for `defaults`
+
+- `generic_sorter`:
+    - Description: The sorter to be used for generic searches.
+    - `default`: `require('telescope.sorters').get_generic_fuzzy_sorter
+- `file_sorter`:
+    - Description: The sorter to be used for file based searches.
+    - `default`: `require('telescope.sorters').get_fuzzy_file
+
 ### Full Example
 
 ```vim
 lua <<EOF
 -- totally optional to use setup
-require('telescope').setup{
+require('telescope').setup {
   defaults = {
     shorten_path = false -- currently the default value is true
   }
@@ -196,8 +214,6 @@ require('telescope').setup {
   }
 }
 ```
-
-Attaching your own mappings is possible and additional information will come soon.
 
 Additionally, the prompt's filetype will be `TelescopePrompt`. You can customize the filetype as you would normally.
 
@@ -400,7 +416,7 @@ Defaults:
 ```lua
 -- lua/telescope/pickers.lua
 Picker:new{
-  prompt             = "", -- REQUIRED
+  prompt_title       = "", -- REQUIRED
   finder             = FUNCTION, -- see lua/telescope/finder.lua
   sorter             = FUNCTION, -- see lua/telescope/sorter.lua
   previewer          = FUNCTION, -- see lua/telescope/previewer.lua

@@ -146,4 +146,36 @@ function utils.buf_delete(bufnr)
   end
 end
 
+function utils.max_split(s, pattern, maxsplit)
+  pattern = pattern or ' '
+  maxsplit = maxsplit or -1
+
+  local t = {}
+
+  local curpos = 0
+  while maxsplit ~= 0 and curpos < #s do
+    local found, final = string.find(s, pattern, curpos, false)
+    if found ~= nil then
+      local val = string.sub(s, curpos, found - 1)
+
+      if #val > 0 then
+        maxsplit = maxsplit - 1
+        table.insert(t, val)
+      end
+
+      curpos = final + 1
+    else
+      table.insert(t, string.sub(s, curpos))
+      break
+      -- curpos = curpos + 1
+    end
+
+    if maxsplit == 0 then
+      table.insert(t, string.sub(s, curpos))
+    end
+  end
+
+  return t
+end
+
 return utils

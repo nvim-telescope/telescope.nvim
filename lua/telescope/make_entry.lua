@@ -426,4 +426,23 @@ function make_entry.gen_from_apropos(opts)
   end
 end
 
+function make_entry.gen_from_marks(_)
+  return function(line)
+    local split_value = utils.max_split(line, "%s+", 4)
+
+    local mark_value = split_value[1]
+    local cursor_position = vim.fn.getpos("'" .. mark_value)
+
+    return {
+      value = line,
+      ordinal = line,
+      display = line,
+      lnum = cursor_position[2],
+      col = cursor_position[3],
+      start = cursor_position[2],
+      filename = vim.api.nvim_buf_get_name(cursor_position[1])
+    }
+  end
+end
+
 return make_entry

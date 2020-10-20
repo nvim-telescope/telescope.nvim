@@ -46,25 +46,31 @@ local builtin = {}
 builtin.git_files = function(opts)
   opts = opts or {}
 
-  opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)
+  else
+    --- Find root of git directory and remove trailing newline characters
+    opts.cwd = string.gsub(vim.fn.system("git rev-parse --show-toplevel"), '[\n\r]+', '')
   end
 
+  -- By creating the entry maker after the cwd options,
+  -- we ensure the maker uses the cwd options when being created.
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
+
   pickers.new(opts, {
-    prompt    = 'Git File',
-    finder    = finders.new_oneshot_job(
+    prompt_title = 'Git File',
+    finder = finders.new_oneshot_job(
       { "git", "ls-tree", "--full-tree", "-r", "--name-only", "HEAD" },
       opts
     ),
     previewer = previewers.cat.new(opts),
-    sorter    = sorters.get_fuzzy_file(),
+    sorter = conf.file_sorter(opts),
   }):find()
 end
 
 builtin.commands = function()
   pickers.new({}, {
-    prompt = 'Commands',
+    prompt_title = 'Commands',
     finder = finders.new_table {
       results = (function()
         local command_iter = vim.api.nvim_get_commands({})
@@ -85,7 +91,7 @@ builtin.commands = function()
         }
       end
     },
-    sorter = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(),
     attach_mappings = function(prompt_bufnr, map)
       local run_command = function()
         local selection = actions.get_selected_entry(prompt_bufnr)
@@ -127,10 +133,10 @@ builtin.live_grep = function(opts)
   )
 
   pickers.new(opts, {
-    prompt    = 'Live Grep',
-    finder    = live_grepper,
+    prompt_title = 'Live Grep',
+    finder = live_grepper,
     previewer = previewers.vimgrep.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -154,13 +160,13 @@ builtin.lsp_references = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'LSP References',
+    prompt_title = 'LSP References',
     finder    = finders.new_table {
       results = locations,
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -185,13 +191,13 @@ builtin.lsp_document_symbols = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'LSP Document Symbols',
+    prompt_title = 'LSP Document Symbols',
     finder    = finders.new_table {
       results = locations,
       entry_maker = make_entry.gen_from_quickfix(opts)
     },
     previewer = previewers.vim_buffer.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -228,7 +234,7 @@ builtin.lsp_code_actions = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'LSP Code Actions',
+    prompt_title = 'LSP Code Actions',
     finder    = finders.new_table {
       results = results,
       entry_maker = function(line)
@@ -263,7 +269,7 @@ builtin.lsp_code_actions = function(opts)
 
       return true
     end,
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -291,13 +297,13 @@ builtin.lsp_workspace_symbols = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'LSP Workspace Symbols',
+    prompt_title = 'LSP Workspace Symbols',
     finder    = finders.new_table {
       results = locations,
       entry_maker = make_entry.gen_from_quickfix(opts)
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -311,13 +317,13 @@ builtin.quickfix = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'Quickfix',
+    prompt_title  = 'Quickfix',
     finder    = finders.new_table {
       results     = locations,
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -334,13 +340,13 @@ builtin.loclist = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'Loclist',
+    prompt_title = 'Loclist',
     finder    = finders.new_table {
       results     = locations,
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -356,13 +362,13 @@ builtin.grep_string = function(opts)
   opts.word_match = opts.word_match or nil
 
   pickers.new(opts, {
-    prompt = 'Find Word',
+    prompt_title = 'Find Word',
     finder = finders.new_oneshot_job(
       flatten { conf.vimgrep_arguments, opts.word_match, search},
       opts
     ),
     previewer = previewers.vimgrep.new(opts),
-    sorter = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -370,11 +376,11 @@ builtin.oldfiles = function(opts)
   opts = opts or {}
 
   pickers.new(opts, {
-    prompt = 'Oldfiles',
+    prompt_title = 'Oldfiles',
     finder = finders.new_table(vim.tbl_filter(function(val)
       return 0 ~= vim.fn.filereadable(val)
     end, vim.v.oldfiles)),
-    sorter = sorters.get_fuzzy_file(),
+    sorter = conf.file_sorter(opts),
     previewer = previewers.cat.new(opts),
   }):find()
 end
@@ -391,7 +397,7 @@ builtin.command_history = function(opts)
   end
 
   pickers.new(opts, {
-    prompt = 'Command History',
+    prompt_title = 'Command History',
     finder = finders.new_table(results),
     sorter = sorters.fuzzy_with_index_bias(),
 
@@ -421,14 +427,14 @@ builtin.help_tags = function(opts)
   f:close()
 
   pickers.new(opts, {
-    prompt = 'Help',
+    prompt_title = 'Help',
     finder = finders.new_table {
       results = tags,
       entry_maker = make_entry.gen_from_tagfile(opts),
     },
     -- TODO: previewer for Vim help
     previewer = previewers.help.new(opts),
-    sorter = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr, map)
       local view_help = function()
         local selection = actions.get_selected_entry(prompt_bufnr)
@@ -460,13 +466,13 @@ builtin.reloader = function(opts)
   end
 
   pickers.new(opts, {
-    prompt = 'Packages',
+    prompt_title = 'Packages',
     finder = finders.new_table {
       results = package_list,
       entry_maker = make_entry.gen_from_packages(opts),
     },
     -- previewer = previewers.vim_buffer.new(opts),
-    sorter = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
 
     attach_mappings = function(prompt_bufnr, map)
       local reload_package = function()
@@ -495,20 +501,35 @@ builtin.builtin = function(opts)
 
   local objs = {}
 
-  for k, _ in pairs(builtin) do
-    table.insert(objs, k)
+  for k, v in pairs(builtin) do
+    local debug_info = debug.getinfo(v)
+
+    table.insert(objs, {
+      filename = string.sub(debug_info.source, 2),
+      lnum = debug_info.linedefined,
+      col = 0,
+      text = k,
+
+      start = debug_info.linedefined,
+      finish = debug_info.lastlinedefined,
+    })
   end
 
   pickers.new(opts, {
-    prompt    = 'Telescope Builtin',
-    finder    = finders.new_table(objs),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    prompt_title = 'Telescope Builtin',
+    finder    = finders.new_table {
+      results     = objs,
+      entry_maker = make_entry.gen_from_quickfix(opts),
+    },
+    previewer = previewers.qflist.new(opts),
+    sorter = conf.generic_sorter(opts),
     attach_mappings = function(_, map)
       map('i', '<CR>', actions.run_builtin)
       return true
     end
   }):find()
 end
+
 
 -- TODO: Maybe just change this to `find`.
 --          Support `find` and maybe let people do other stuff with it as well.
@@ -541,13 +562,13 @@ builtin.find_files = function(opts)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
 
   pickers.new(opts, {
-    prompt = 'Find Files',
+    prompt_title = 'Find Files',
     finder = finders.new_oneshot_job(
       find_command,
       opts
     ),
     previewer = previewers.cat.new(opts),
-    sorter = sorters.get_fuzzy_file(opts),
+    sorter = conf.file_sorter(opts),
   }):find()
 end
 
@@ -574,14 +595,14 @@ builtin.buffers = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'Buffers',
+    prompt_title = 'Buffers',
     finder    = finders.new_table {
       results = buffers,
       entry_maker = make_entry.gen_from_buffer(opts)
     },
     -- previewer = previewers.vim_buffer.new(opts),
     previewer = previewers.vimgrep.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -633,13 +654,13 @@ builtin.treesitter = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'Treesitter Symbols',
+    prompt_title = 'Treesitter Symbols',
     finder    = finders.new_table {
       results = results,
       entry_maker = make_entry.gen_from_treesitter(opts)
     },
     previewer = previewers.vim_buffer.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -660,7 +681,7 @@ builtin.planets = function(opts)
   end
 
   pickers.new {
-    prompt = 'Planets',
+    prompt_title = 'Planets',
     finder = finders.new_table {
       results = acceptable_files,
       entry_maker = function(line)
@@ -672,7 +693,7 @@ builtin.planets = function(opts)
       end
     },
     previewer = previewers.cat.new(opts),
-    sorter = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr, map)
       map('i', '<CR>', function()
         local selection = actions.get_selected_entry(prompt_bufnr)
@@ -694,7 +715,7 @@ builtin.current_buffer_fuzzy_find = function(opts)
   end
 
   pickers.new(opts, {
-    prompt = 'Current Buffer Fuzzy',
+    prompt_title = 'Current Buffer Fuzzy',
     finder = finders.new_table {
       results = lines_with_numbers,
       entry_maker = function(enumerated_line)
@@ -739,7 +760,7 @@ builtin.man_pages = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'Man',
+    prompt_tile = 'Man',
     finder    = finders.new_table {
       results = lines,
       entry_maker = make_entry.gen_from_apropos(opts),
@@ -760,6 +781,55 @@ builtin.man_pages = function(opts)
 
       return true
     end
+  }):find()
+end
+
+builtin.colorscheme = function(opts)
+  opts = opts or {}
+
+  local colors = vim.list_extend(opts.colors or {}, vim.fn.getcompletion('', 'color'))
+
+  pickers.new(opts,{
+    prompt = 'Change Colorscheme',
+    finder = finders.new_table {
+      results = colors
+    },
+    -- TODO: better preview?
+    sorter = sorters.get_generic_fuzzy_sorter(),
+    attach_mappings = function(prompt_bufnr, map)
+      local change_colorscheme = function()
+        local selection = actions.get_selected_entry(prompt_bufnr)
+
+        actions.close(prompt_bufnr)
+        print(vim.inspect(selection.value))
+        vim.cmd("colorscheme " .. selection.value)
+      end
+
+      map('i', '<CR>', change_colorscheme)
+      map('n', '<CR>', change_colorscheme)
+
+      return true
+    end
+  }):find()
+end
+
+builtin.marks = function(opts)
+  opts = opts or {}
+
+  local marks = vim.api.nvim_exec("marks", true)
+  local marks_table = vim.fn.split(marks, "\n")
+
+  -- Pop off the header.
+  table.remove(marks_table, 1)
+
+  pickers.new(opts,{
+    prompt = 'Marks',
+    finder = finders.new_table {
+      results = marks_table,
+      entry_maker = make_entry.gen_from_marks(opts),
+    },
+    previewer = previewers.vimgrep.new(opts),
+    sorter = sorters.get_generic_fuzzy_sorter(),
   }):find()
 end
 
