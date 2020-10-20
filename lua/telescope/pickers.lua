@@ -338,11 +338,13 @@ function Picker:find()
   -- Prompt prefix
   local prompt_prefix = self.prompt_prefix
   if prompt_prefix ~= '' then
-    if not vim.endswith(prompt_prefix, ' ') then
-      prompt_prefix = prompt_prefix.." "
-    end
     a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
+
+    if not vim.endswith(prompt_prefix, " ") then
+      prompt_prefix = prompt_prefix .. " "
+    end
     vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
+
     a.nvim_buf_add_highlight(prompt_bufnr, ns_telescope_prompt_prefix, 'TelescopePromptPrefix', 0, 0, #prompt_prefix)
   end
 
@@ -389,7 +391,7 @@ function Picker:find()
       return
     end
 
-    local prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]:sub(#prompt_prefix)
+    local prompt = vim.trim(vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]:sub(#prompt_prefix))
 
     -- TODO: Statusbar possibilities here.
     -- vim.api.nvim_buf_set_virtual_text(prompt_bufnr, 0, 1, { {"hello", "Error"} }, {})
