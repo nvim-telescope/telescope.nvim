@@ -167,21 +167,21 @@ function fzy.positions(needle, haystack)
   return positions
 end
 
--- If strings a or b are empty or too long, `fzy.score(a, b) == fzy.SCORE_MIN()`.
-function fzy.SCORE_MIN()
+-- If strings a or b are empty or too long, `fzy.score(a, b) == fzy.get_score_min()`.
+function fzy.get_score_min()
   return SCORE_MIN
 end
 
--- For exact matches, `fzy.score(s, s) == fzy.SCORE_MAX()`.
-function fzy.SCORE_MAX()
+-- For exact matches, `fzy.score(s, s) == fzy.get_score_max()`.
+function fzy.get_score_max()
   return SCORE_MAX
 end
 
 -- For all strings a and b that
---  - are not covered by either `fzy.SCORE_MIN()` or fzy.SCORE_MAX()`, and
+--  - are not covered by either `fzy.get_score_min()` or fzy.get_score_max()`, and
 --  - are matched, such that `fzy.has_match(a, b) == true`,
--- then `fzy.score(a, b) > fzy.SCORE_FLOOR()` will be true.
-function fzy.SCORE_FLOOR()
+-- then `fzy.score(a, b) > fzy.get_score_floor()` will be true.
+function fzy.get_score_floor()
   return (MATCH_MAX_LENGTH + 1) * SCORE_GAP_INNER
 end
 
