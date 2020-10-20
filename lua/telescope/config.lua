@@ -12,7 +12,7 @@ local function first_non_null(...)
   end
 end
 
-local actions = require('telescope.actions')
+local sorters = require('telescope.sorters')
 
 -- TODO: Add other major configuration points here.
 -- selection_strategy
@@ -81,12 +81,8 @@ function config.set_defaults(defaults)
   set("mappings", {})
   set("default_mappings", nil)
 
-  -- NOT STABLE. DO NOT USE
-  set("horizontal_config", {
-    get_preview_width = function(columns, _)
-      return math.floor(columns * 0.75)
-    end,
-  })
+  set("generic_sorter", sorters.get_generic_fuzzy_sorter)
+  set("file_sorter", sorters.get_fuzzy_file)
 end
 
 function config.clear_defaults()

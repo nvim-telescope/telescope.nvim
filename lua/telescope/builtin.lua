@@ -52,18 +52,19 @@ builtin.git_files = function(opts)
     --- Find root of git directory and remove trailing newline characters
     opts.cwd = string.gsub(vim.fn.system("git rev-parse --show-toplevel"), '[\n\r]+', '')
   end
+
   -- By creating the entry maker after the cwd options,
   -- we ensure the maker uses the cwd options when being created.
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
 
   pickers.new(opts, {
     prompt_title = 'Git File',
-    finder    = finders.new_oneshot_job(
+    finder = finders.new_oneshot_job(
       { "git", "ls-tree", "--full-tree", "-r", "--name-only", "HEAD" },
       opts
     ),
     previewer = previewers.cat.new(opts),
-    sorter    = sorters.get_fuzzy_file(),
+    sorter = conf.file_sorter(opts),
   }):find()
 end
 
@@ -90,7 +91,7 @@ builtin.commands = function()
         }
       end
     },
-    sorter = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(),
     attach_mappings = function(prompt_bufnr, map)
       local run_command = function()
         local selection = actions.get_selected_entry(prompt_bufnr)
@@ -133,9 +134,9 @@ builtin.live_grep = function(opts)
 
   pickers.new(opts, {
     prompt_title = 'Live Grep',
-    finder    = live_grepper,
+    finder = live_grepper,
     previewer = previewers.vimgrep.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -165,7 +166,7 @@ builtin.lsp_references = function(opts)
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -196,7 +197,7 @@ builtin.lsp_document_symbols = function(opts)
       entry_maker = make_entry.gen_from_quickfix(opts)
     },
     previewer = previewers.vim_buffer.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -268,7 +269,7 @@ builtin.lsp_code_actions = function(opts)
 
       return true
     end,
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -302,7 +303,7 @@ builtin.lsp_workspace_symbols = function(opts)
       entry_maker = make_entry.gen_from_quickfix(opts)
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -322,7 +323,7 @@ builtin.quickfix = function(opts)
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -345,7 +346,7 @@ builtin.loclist = function(opts)
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -367,7 +368,7 @@ builtin.grep_string = function(opts)
       opts
     ),
     previewer = previewers.vimgrep.new(opts),
-    sorter = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -379,7 +380,7 @@ builtin.oldfiles = function(opts)
     finder = finders.new_table(vim.tbl_filter(function(val)
       return 0 ~= vim.fn.filereadable(val)
     end, vim.v.oldfiles)),
-    sorter = sorters.get_fuzzy_file(),
+    sorter = conf.file_sorter(opts),
     previewer = previewers.cat.new(opts),
   }):find()
 end
@@ -433,7 +434,7 @@ builtin.help_tags = function(opts)
     },
     -- TODO: previewer for Vim help
     previewer = previewers.help.new(opts),
-    sorter = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr, map)
       local view_help = function()
         local selection = actions.get_selected_entry(prompt_bufnr)
@@ -471,7 +472,7 @@ builtin.reloader = function(opts)
       entry_maker = make_entry.gen_from_packages(opts),
     },
     -- previewer = previewers.vim_buffer.new(opts),
-    sorter = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
 
     attach_mappings = function(prompt_bufnr, map)
       local reload_package = function()
@@ -521,7 +522,7 @@ builtin.builtin = function(opts)
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = previewers.qflist.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -563,7 +564,7 @@ builtin.find_files = function(opts)
       opts
     ),
     previewer = previewers.cat.new(opts),
-    sorter = sorters.get_fuzzy_file(opts),
+    sorter = conf.file_sorter(opts),
   }):find()
 end
 
@@ -597,7 +598,7 @@ builtin.buffers = function(opts)
     },
     -- previewer = previewers.vim_buffer.new(opts),
     previewer = previewers.vimgrep.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -655,7 +656,7 @@ builtin.treesitter = function(opts)
       entry_maker = make_entry.gen_from_treesitter(opts)
     },
     previewer = previewers.vim_buffer.new(opts),
-    sorter    = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
@@ -688,7 +689,7 @@ builtin.planets = function(opts)
       end
     },
     previewer = previewers.cat.new(opts),
-    sorter = sorters.get_generic_fuzzy_sorter(),
+    sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr, map)
       map('i', '<CR>', function()
         local selection = actions.get_selected_entry(prompt_bufnr)

@@ -115,12 +115,21 @@ nnoremap <Leader>en <cmd>lua require'telescope.builtin'.find_files{ cwd = "~/.co
 
 Find all the files in your nvim config.
 
+### Available keys for `defaults`
+
+- `generic_sorter`:
+    - Description: The sorter to be used for generic searches.
+    - `default`: `require('telescope.sorters').get_generic_fuzzy_sorter
+- `file_sorter`:
+    - Description: The sorter to be used for file based searches.
+    - `default`: `require('telescope.sorters').get_fuzzy_file
+
 ### Full Example
 
 ```vim
 lua <<EOF
 -- totally optional to use setup
-require('telescope').setup{
+require('telescope').setup {
   defaults = {
     shorten_path = false -- currently the default value is true
   }
