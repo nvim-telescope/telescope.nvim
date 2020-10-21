@@ -7,6 +7,8 @@
 -- > matches on consecutive letters and starts of words. This allows matching
 -- > using acronyms or different parts of the path." - J Hawthorn
 
+local path = require('telescope.path')
+
 local SCORE_GAP_LEADING = -0.005
 local SCORE_GAP_TRAILING = -0.005
 local SCORE_GAP_INNER = -0.01
@@ -22,18 +24,19 @@ local MATCH_MAX_LENGTH = 1024
 local fzy = {}
 
 function fzy.has_match(needle, haystack)
-  local needle = string.lower(needle)
-  local haystack = string.lower(haystack)
+  needle = string.lower(needle)
+  haystack = string.lower(haystack)
 
   local j = 1
-  for i=1,string.len(needle) do
-    j = string.find(haystack, needle:sub(i, i), j)
+  for i = 1, string.len(needle) do
+    j = string.find(haystack, needle:sub(i, i), j, true)
     if not j then
       return false
     else
       j = j + 1
     end
   end
+
   return true
 end
 
@@ -48,10 +51,10 @@ end
 local function precompute_bonus(haystack)
   local match_bonus = {}
 
-  local last_char = "/"
-  for i=1,string.len(haystack) do
+  local last_char = path.separator
+  for i = 1, string.len(haystack) do
     local this_char = haystack:sub(i, i)
-    if last_char == "/" then
+    if last_char == path.separator then
       match_bonus[i] = SCORE_MATCH_SLASH
     elseif last_char == "-" or last_char == "_" or last_char == " " then
       match_bonus[i] = SCORE_MATCH_WORD
@@ -79,7 +82,7 @@ local function compute(needle, haystack, D, M)
   -- Because lua only grants access to chars through substring extraction,
   -- get all the characters from the haystack once now, to reuse below.
   local haystack_chars = {}
-  for i=1,m do
+  for i = 1, m do
     haystack_chars[i] = lower_haystack:sub(i, i)
   end
 
@@ -91,7 +94,7 @@ local function compute(needle, haystack, D, M)
     local gap_score = i == n and SCORE_GAP_TRAILING or SCORE_GAP_INNER
     local needle_char = lower_needle:sub(i, i)
 
-    for j=1,m do
+    for j = 1, m do
       if needle_char == haystack_chars[j] then
         local score = SCORE_MIN
         if i == 1 then

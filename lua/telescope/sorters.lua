@@ -314,10 +314,6 @@ sorters.get_fzy_sorter = function()
 
   return sorters.Sorter:new{
     scoring_function = function(_, prompt, line)
-      -- For some reason, the prompt is prefixed by a space. Strip
-      -- leading/trailing spaces from the prompt.
-      local prompt = string.match(prompt, '^%s*(.*%S)') or ""
-
       -- Check for actual matches before running the scoring alogrithm.
       if not fzy.has_match(prompt, line) then
         return -1
