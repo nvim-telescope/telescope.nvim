@@ -9,12 +9,16 @@ local make_entry = {}
 
 local transform_devicons
 if has_devicons then
-  transform_devicons = function(filename, display, disable_devicons)
+  transform_devicons = function(filename, display, disable_devicons, default_icon)
     if disable_devicons or not filename then
       return display
     end
 
-    local icon_display = (devicons.get_icon(filename, string.match(filename, '%a+$')) or ' ') .. ' ' .. display
+    local icon_display = table.concat{
+      (devicons.get_icon(filename, string.match(filename, '%a+$'), { default = default_icon }) or ' '),
+      ' ',
+      display
+    }
 
     return icon_display
   end
@@ -60,6 +64,7 @@ do
     local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
 
     local disable_devicons = opts.disable_devicons
+    local default_icon = opts.default_icon
     local shorten_path = opts.shorten_path
 
     local mt_file_entry = {}
@@ -71,7 +76,7 @@ do
         display = utils.path_shorten(display)
       end
 
-      return transform_devicons(entry.value, display, disable_devicons)
+      return transform_devicons(entry.value, display, disable_devicons, default_icon)
     end
 
     mt_file_entry.__index = function(t, k)
@@ -117,7 +122,7 @@ do
   end
 
   local execute_keys = {
-    path = function(t) 
+    path = function(t)
       return t.cwd .. path.separator .. t.filename, false
     end,
 
@@ -144,6 +149,7 @@ do
     local shorten_path = opts.shorten_path
     local disable_coordinates = opts.disable_coordinates
     local disable_devicons = opts.disable_devicons
+    local default_icon = opts.default_icon
 
     local display_string = "%s:%s%s"
 
@@ -168,7 +174,8 @@ do
       display = transform_devicons(
         entry.filename,
         string.format(display_string, display_filename,  coordinates, entry.text),
-        disable_devicons
+        disable_devicons,
+        default_icon
       )
 
       return display
