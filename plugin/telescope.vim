@@ -16,7 +16,7 @@ highlight default link TelescopeResultsBorder TelescopeBorder
 highlight default link TelescopePreviewBorder TelescopeBorder
 
 " Used for highlighting characters that you match.
-highlight default link TelescopeMatching NormalNC
+highlight default link TelescopeMatching Special
 
 " Used for the prompt prefix
 highlight default link TelescopePromptPrefix Identifier
