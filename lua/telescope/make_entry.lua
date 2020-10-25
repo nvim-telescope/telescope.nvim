@@ -1,5 +1,6 @@
 local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 
+local conf = require('telescope.config').values
 local path = require('telescope.path')
 local utils = require('telescope.utils')
 
@@ -17,7 +18,11 @@ if has_devicons then
     local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, '%a+$'), { default = true })
     local icon_display = (icon or ' ') .. ' ' .. display
 
-    return icon_display, icon_highlight
+    if conf.color_devicons then
+      return icon_display, icon_highlight
+    else
+      return icon_display
+    end
   end
 else
   transform_devicons = function(_, display, _)

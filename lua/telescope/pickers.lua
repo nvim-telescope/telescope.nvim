@@ -803,9 +803,9 @@ function Picker:entry_adder(index, entry, score)
       return
     end
 
-
     local set_ok = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + 1, false, {display})
     if set_ok and display_highlights then
+      -- TODO: This should actually be done during the cursor moving stuff annoyingly.... didn't see this bug yesterday.
       for _, hl_block in ipairs(display_highlights) do
         a.nvim_buf_add_highlight(self.results_bufnr, ns_telescope_entry, hl_block[2], row, #prefix + hl_block[1][1], #prefix + hl_block[1][2])
       end
