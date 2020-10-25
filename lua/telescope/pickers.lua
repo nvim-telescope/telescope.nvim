@@ -394,6 +394,10 @@ function Picker:find()
 
     local prompt = vim.trim(vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]:sub(#prompt_prefix))
 
+    if self.sorter then
+      self.sorter:_start(prompt)
+    end
+
     -- TODO: Statusbar possibilities here.
     -- vim.api.nvim_buf_set_virtual_text(prompt_bufnr, 0, 1, { {"hello", "Error"} }, {})
 
