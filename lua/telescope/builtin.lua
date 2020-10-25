@@ -923,4 +923,36 @@ builtin.marks = function(opts)
   }):find()
 end
 
+-- find normal mode mappings
+-- TODO: Consider changing  to <space>
+builtin.maps = function(opts)
+  opts = opts or {}
+  local modes = {"n", "i", "c"}
+
+  pickers.new({}, {
+    prompt_title = 'Maps',
+    finder = finders.new_table {
+      results = (function()
+        local maps = {}
+        for _, mode in pairs(modes) do
+          local maps_iter = vim.api.nvim_get_keymap(mode)
+          for _, map in pairs(maps_iter) do
+            table.insert(maps, map)
+          end
+        end
+        return maps
+      end)(),
+      entry_maker = function(line)
+        return {
+          valid = line ~= "",
+          value = line,
+          ordinal = line.lhs .. line.rhs,
+          display = line.mode .. ' ' .. line.lhs .. ' ' .. line.rhs
+        }
+      end
+    },
+    sorter = conf.generic_sorter()
+  }):find()
+end
+
 return builtin
