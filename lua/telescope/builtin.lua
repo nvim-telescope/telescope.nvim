@@ -523,6 +523,10 @@ builtin.builtin = function(opts)
     },
     previewer = previewers.qflist.new(opts),
     sorter = conf.generic_sorter(opts),
+    attach_mappings = function(_, map)
+      map('i', '<CR>', actions.run_builtin)
+      return true
+    end
   }):find()
 end
 

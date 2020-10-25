@@ -165,6 +165,15 @@ actions.set_command_line = function(prompt_bufnr)
   vim.cmd(entry.value)
 end
 
+actions.run_builtin = function(prompt_bufnr)
+  local entry = actions.get_selected_entry(prompt_bufnr)
+
+  actions.close(prompt_bufnr)
+  vim.cmd [[startinsert]]
+
+  require('telescope.builtin')[entry.text]()
+end
+
 -- TODO: Think about how to do this.
 actions.insert_value = function(prompt_bufnr)
   local entry = actions.get_selected_entry(prompt_bufnr)
