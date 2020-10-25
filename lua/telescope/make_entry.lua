@@ -14,9 +14,10 @@ if has_devicons then
       return display
     end
 
-    local icon_display = (devicons.get_icon(filename, string.match(filename, '%a+$')) or ' ') .. ' ' .. display
+    local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, '%a+$'), { default = true })
+    local icon_display = (icon or ' ') .. ' ' .. display
 
-    return icon_display
+    return icon_display, icon_highlight
   end
 else
   transform_devicons = function(_, display, _)
@@ -66,12 +67,18 @@ do
 
     mt_file_entry.cwd = cwd
     mt_file_entry.display = function(entry)
-      local display = entry.value
+      local display, hl_group = entry.value, nil
       if shorten_path then
         display = utils.path_shorten(display)
       end
 
-      return transform_devicons(entry.value, display, disable_devicons)
+      display, hl_group = transform_devicons(entry.value, display, disable_devicons)
+
+      if hl_group then
+        return display, { { {1, 3}, hl_group } }
+      else
+        return display
+      end
     end
 
     mt_file_entry.__index = function(t, k)
@@ -151,7 +158,7 @@ do
 
     mt_vimgrep_entry.cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
     mt_vimgrep_entry.display = function(entry)
-      local display = entry.value
+      local display, hl_group = entry.value, nil
 
       local display_filename
       if shorten_path then
@@ -165,13 +172,17 @@ do
         coordinates = string.format("%s:%s:", entry.lnum, entry.col)
       end
 
-      display = transform_devicons(
+      display, hl_group = transform_devicons(
         entry.filename,
         string.format(display_string, display_filename,  coordinates, entry.text),
         disable_devicons
       )
 
-      return display
+      if hl_group then
+        return display, { { {1, 3}, hl_group } }
+      else
+        return display
+      end
     end
 
     mt_vimgrep_entry.__index = function(t, k)

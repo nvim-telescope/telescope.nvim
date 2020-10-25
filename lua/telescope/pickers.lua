@@ -37,6 +37,7 @@ local extend = function(opts, defaults)
 end
 
 local ns_telescope_selection = a.nvim_create_namespace('telescope_selection')
+local ns_telescope_entry = a.nvim_create_namespace('telescope_entry')
 local ns_telescope_matching = a.nvim_create_namespace('telescope_matching')
 local ns_telescope_prompt = a.nvim_create_namespace('telescope_prompt')
 local ns_telescope_prompt_prefix = a.nvim_create_namespace('telescope_prompt_prefix')
@@ -772,10 +773,10 @@ function Picker:entry_adder(index, entry, score)
     return
   end
 
-  local display
+  local display, display_highlights
   if type(entry.display) == 'function' then
     self:_increment("display_fn")
-    display = entry:display()
+    display, display_highlights = entry:display()
   elseif type(entry.display) == 'string' then
     display = entry.display
   else
@@ -786,11 +787,8 @@ function Picker:entry_adder(index, entry, score)
   -- This is the two spaces to manage the '> ' stuff.
   -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
   -- until then, insert two spaces
-  if TELESCOPE_DEBUG then
-    display = '  ' .. score .. display
-  else
-    display = '  ' .. display
-  end
+  local prefix = TELESCOPE_DEBUG and ('  ' .. score) or '  '
+  display = prefix .. display
 
   self:_increment("displayed")
 
@@ -803,6 +801,11 @@ function Picker:entry_adder(index, entry, score)
 
 
     local set_ok = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + 1, false, {display})
+    if set_ok and display_highlights then
+      for _, hl_block in ipairs(display_highlights) do
+        a.nvim_buf_add_highlight(self.results_bufnr, ns_telescope_entry, hl_block[2], row, #prefix + hl_block[1][1], #prefix + hl_block[1][2])
+      end
+    end
 
     -- This pretty much only fails when people leave newlines in their results.
     --  So we'll clean it up for them if it fails.
