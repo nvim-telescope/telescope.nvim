@@ -52,7 +52,13 @@ function config.set_defaults(defaults)
   set("border", {})
   set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
 
-  set("get_status_text", function(self) return string.format("%s / %s", self.stats.processed - self.stats.filtered, self.stats.processed) end)
+  set("get_status_text", function(self)
+    return string.format(
+      "%s / %s",
+      (self.stats.processed or 0) - (self.stats.filtered or 0),
+      self.stats.processed or 0
+    )
+  end)
 
   -- Builtin configuration
 

@@ -176,17 +176,53 @@ function OneshotJobFinder:new(opts)
 
     while true do
       finder, _, process_result, process_complete = coroutine.yield()
-      num_execution = num_execution + 1
 
-      local current_count = num_results
-      for index = 1, current_count do
-        process_result(results[index])
+      local scheduled_count = 1
+      local process_next_result
+      process_next_result = function()
+        if process_result(results[scheduled_count]) then
+          vim.schedule(function()
+            print("YOOO, we cancelled!!")
+            print("YOOO, we cancelled!!")
+            print("YOOO, we cancelled!!")
+          end)
+          return
+        end
+
+        scheduled_count = scheduled_count + 1
+
+        if scheduled_count >= num_results then
+          process_complete()
+          return
+        end
+
+        if false and scheduled_count % 10000 then
+          vim.defer_fn(process_next_result, 1)
+        else
+          vim.schedule(process_next_result)
+        end
       end
 
-      if completed then
-        process_complete()
-      end
+      vim.schedule(process_next_result)
     end
+
+    -- local process_em_all = function()
+    --   finder, _, process_result, process_complete = coroutine.yield()
+    --   num_execution = num_execution + 1
+
+    --   local current_count = num_results
+    --   for index = 1, current_count do
+    --     vim.schedule(function() process_result(results[index]) end)
+    --   end
+
+    --   if completed then
+    --     vim.schedule(process_complete)
+    --   end
+    -- end
+
+    -- while true do
+    --   process_em_all()
+    -- end
   end)
 
   return obj

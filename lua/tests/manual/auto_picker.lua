@@ -68,7 +68,7 @@ local find_files = function(opts)
     end
 
     vim.wait(300, function() end)
-    feed("<CR>", '')
+    feed("<c-c>", '')
 
     coroutine.yield()
   end))
@@ -76,4 +76,4 @@ local find_files = function(opts)
   p:find()
 end
 
-find_files()
+find_files { cwd = '~/build/neovim' }
