@@ -504,10 +504,7 @@ function make_entry.gen_from_vimoptions(opts)
   end
 
   return function(line)
-    local entry = {
-      entry_type = make_entry.types.GENERIC,
-
-    }
+    local entry = {}
     local d = make_display(line)
     entry.valid   = true
     entry.display = d.display

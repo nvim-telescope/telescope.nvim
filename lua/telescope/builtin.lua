@@ -24,14 +24,13 @@ if 2 > vim.o.report then
 end
 
 
--- TODO: Give some bonus weight to files we've picked before
--- TODO: Give some bonus weight to oldfiles
-
 local actions = require('telescope.actions')
 local finders = require('telescope.finders')
+local log = require('telescope.log')
 local make_entry = require('telescope.make_entry')
-local previewers = require('telescope.previewers')
+local path = require('telescope.path')
 local pickers = require('telescope.pickers')
+local previewers = require('telescope.previewers')
 local sorters = require('telescope.sorters')
 local utils = require('telescope.utils')
 
@@ -46,11 +45,17 @@ local builtin = {}
 builtin.git_files = function(opts)
   opts = opts or {}
 
+  local show_untracked = utils.get_default(opts.show_untracked, true)
+
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)
   else
     --- Find root of git directory and remove trailing newline characters
-    opts.cwd = string.gsub(vim.fn.system("git rev-parse --show-toplevel"), '[\n\r]+', '')
+    opts.cwd = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
+
+    if not vim.fn.isdirectory(opts.cwd) then
+      error("Not a working directory for git_files:", opts.cwd)
+    end
   end
 
   -- By creating the entry maker after the cwd options,
@@ -60,7 +65,7 @@ builtin.git_files = function(opts)
   pickers.new(opts, {
     prompt_title = 'Git File',
     finder = finders.new_oneshot_job(
-      { "git", "ls-tree", "--full-tree", "-r", "--name-only", "HEAD" },
+      { "git", "ls-files", "--exclude-standard", "--cached", show_untracked and "--others" },
       opts
     ),
     previewer = previewers.cat.new(opts),
@@ -415,13 +420,14 @@ end
 builtin.vim_options = function(opts)
   opts = opts or {}
 
-  local vim_opts = require'options'.options
+  -- Load vim options.
+  local vim_opts = loadfile(utils.data_directory() .. path.separator .. 'options' .. path.separator .. 'options.lua')().options
+
+  opts.desc_col_length = 0
+
   local options_data = {}
-  opts.desc_col_length= 0
 
-  for _, o in ipairs(vim_opts) do
-    if o.enable_if ~= nil then goto continue end -- if option is unsupported
-
+  local process_one_opt = function(o)
     local ok, value_origin
 
     local option = {
@@ -436,7 +442,9 @@ builtin.vim_options = function(opts)
 
     local is_global = false
     for _, v in ipairs(o.scope) do
-      if v == "global" then is_global = true end
+      if v == "global" then
+        is_global = true
+      end
     end
 
     if is_global then
@@ -444,8 +452,8 @@ builtin.vim_options = function(opts)
 
       ok, option.current_value = pcall(vim.api.nvim_get_option, o.full_name)
       if not ok then
-        -- print("WHAT'S GOING ON WITH " .. o.full_name)
-        goto continue
+        log.debug("Unable to handle:", o.full_name)
+        return
       end
 
       -- TODO: where should this global function live, if it worked?
@@ -462,6 +470,7 @@ builtin.vim_options = function(opts)
       if o.defaults ~= nil then
         option.default_value = o.defaults.if_true.vim or o.defaults.if_true.vi
       end
+
       if type(option.default_value) == "function" then
         option.default_value = "Macro: " .. option.default_value()
       end
@@ -479,10 +488,14 @@ builtin.vim_options = function(opts)
 
       table.insert(options_data, option)
     end
-
-    ::continue::
   end
-  -- print(vim.inspect(results))
+
+  for _, o in ipairs(vim_opts) do
+    -- print(vim.inspect(o))
+    if o.enable_if == nil then
+      process_one_opt(o)
+    end
+  end
 
   pickers.new(opts, {
       prompt = 'options',

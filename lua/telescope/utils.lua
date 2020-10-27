@@ -178,4 +178,12 @@ function utils.max_split(s, pattern, maxsplit)
   return t
 end
 
+
+function utils.data_directory()
+  local sourced_file = require('plenary.debug_utils').sourced_filepath()
+  local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h")
+
+  return base_directory .. pathlib.separator .. 'data' .. pathlib.separator
+end
+
 return utils
