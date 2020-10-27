@@ -28,7 +28,7 @@ cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
         \ default_text = [=[" . escape(getcmdline(), '"') . "]=]
         \ }"<CR><CR>
         
-" Telescope Commands
+" Telescope builtin lists
 function! s:telescope_complete(...)
   let telescope_builtin = [
       \ 'builtin','find_files','live_grep','grep_string','git_files',
@@ -40,22 +40,20 @@ function! s:telescope_complete(...)
   return telescope_builtin
 endfunction
 
+" TODO: If the lua datatype contains complex type,It will cause convert to
+" viml datatype failed. So current doesn't support config telescope.themes
 function! s:load_command(builtin,...) abort
   let opts = {}
 
   " range command args
   for arg in a:000
     let opt = split(arg,'=')
-    if opt[0] == 'theme'
-      let theme = opt[1]
-    else
-      let opts[opt[0]] = opt[1]
-    endif
+    let opts[opt[0]] = opt[1]
   endfor
 
   let telescope = v:lua.require('telescope.builtin')
   call telescope[a:builtin](opts)
 endfunction
 
-" Telescope Commands
+" Telescope Commands with complete 
 command! -nargs=+ -complete=customlist,s:telescope_complete Telescope          call s:load_command(<f-args>)
