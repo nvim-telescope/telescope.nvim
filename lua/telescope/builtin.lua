@@ -546,7 +546,7 @@ builtin.find_files = function(opts)
     elseif 1 == vim.fn.executable("rg") then
       find_command = { 'rg', '--files' }
     elseif 1 == vim.fn.executable("find") then
-      find_command = { 'find', '-type', 'f' }
+      find_command = { 'find', '.', '-type', 'f' }
     end
   end
 
