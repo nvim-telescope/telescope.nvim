@@ -145,7 +145,7 @@ resolver.resolve_width = function(val)
     end
   end
 
-  error('invalid configuration option for height:' .. tostring(val))
+  error('invalid configuration option for width:' .. tostring(val))
 end
 
 --- Win option always returns a table with preview, results, and prompt.
