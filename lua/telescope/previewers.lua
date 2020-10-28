@@ -23,6 +23,7 @@ local has_less = (vim.fn.executable('less') == 1) and config.values.use_less
 
 local bat_maker = function(filename, lnum, start, finish)
   local command = {"bat"}
+  local theme = os.getenv("BAT_THEME")
 
   if lnum then
     table.insert(command, { "--highlight-line", lnum})
@@ -38,6 +39,10 @@ local bat_maker = function(filename, lnum, start, finish)
     if start and finish then
       table.insert(command, { "-r", string.format("%s:%s", start, finish) })
     end
+  end
+
+  if theme ~= nil then
+    table.insert(command, { "--theme", string.format("%s", theme) })
   end
 
   return flatten {
