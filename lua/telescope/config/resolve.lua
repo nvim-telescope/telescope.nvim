@@ -32,19 +32,13 @@ Result of `resolve` should be a table with:
 !!NOT IMPLEMENTED YET!!
 
 height =
-    1. pass between 0 & 1
+    1. 0 <= number < 1
         This means total height as a percentage
 
-    2. pass a number > 1
+    2. 1 <= number
         This means total height as a fixed number
 
-    3. {
-        previewer = x,
-        results = x,
-        prompt = x,
-    }, this means I do my best guess I can for these, given your options
-
-    4. function(max_rows)
+    3. function(picker, columns, lines)
         -> returns one of the above options
         return max.min(110, max_rows * .5)
 
@@ -53,6 +47,12 @@ height =
         else
             return 0.6
         end
+
+    3. {
+        previewer = x,
+        results = x,
+        prompt = x,
+    }, this means I do my best guess I can for these, given your options
 
 width =
     exactly the same, but switch to width

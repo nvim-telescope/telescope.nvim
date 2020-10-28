@@ -372,6 +372,30 @@ Themes should work with every `telescope.builtin` function.
 
 If you wish to make theme, check out `lua/telescope/themes.lua`. If you need more features, make an issue :).
 
+## Configuration
+
+### Display
+
+`Resolvable`:
+1. 0 <= number < 1:
+    - This means total height as a percentage
+2. 1 <= number:
+    - This means total height as a fixed number
+3. function(picker, columns, lines):
+    - returns one of the above options
+    - `return max.min(110, max_rows * .5)`
+
+```lua
+layout_strategies.horizontal = function(self, max_columns, max_lines)
+  local layout_config = validate_layout_config(self.layout_config or {}, {
+    width_padding = "How many cells to pad the width",
+    height_padding = "How many cells to pad the height",
+    preview_width = "(Resolvable): Determine preview width",
+  })
+  ...
+end
+```
+
 ## Goals
 
 ### Pipeline Different Objects

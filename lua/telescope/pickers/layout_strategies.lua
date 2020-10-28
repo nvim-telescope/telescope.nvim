@@ -33,6 +33,21 @@ local is_borderless = function(opts)
   return opts.window.border == false
 end
 
+
+local function validate_layout_config(options, values)
+  for k, _ in pairs(options) do
+    if not values[k] then
+      error(string.format(
+        "Unsupported layout_config key: %s\n%s",
+        k,
+        vim.inspect(values)
+      ))
+    end
+  end
+
+  return options
+end
+
 local layout_strategies = {}
 
 --[[
@@ -46,7 +61,11 @@ local layout_strategies = {}
    +-----------------+---------------------+
 --]]
 layout_strategies.horizontal = function(self, max_columns, max_lines)
-  local layout_config = self.layout_config or {}
+  local layout_config = validate_layout_config(self.layout_config or {}, {
+    width_padding = "How many cells to pad the width",
+    height_padding = "How many cells to pad the height",
+    preview_width = "(Resolvable): Determine preview width",
+  })
 
   local initial_options = self:_get_initial_window_options()
   local preview = initial_options.preview
