@@ -427,6 +427,12 @@ builtin.vim_options = function(opts)
 
   local options_data = {}
 
+
+  -- TODO: Can we just remove this from `options.lua`?
+  function N_(s)
+    return s
+  end
+
   local process_one_opt = function(o)
     local ok, value_origin
 
@@ -456,13 +462,8 @@ builtin.vim_options = function(opts)
         return
       end
 
-      -- TODO: where should this global function live, if it worked?
-      function N_(s)
-        return s
-      end
-
       local str_funcname = o.short_desc()
-      option.description = assert(loadstring("return " .. str_funcname)) ()
+      option.description = assert(loadstring("return " .. str_funcname))()
       if #option.description > opts.desc_col_length then
         opts.desc_col_length = #option.description
       end
@@ -479,7 +480,7 @@ builtin.vim_options = function(opts)
 
       if option.current_value ~= option.default_value then
         option.set_by_user = true
-        value_origin = vim.fn.execute("redir => msg | silent verb set " .. o.full_name .. "? | redir end | echo msg")
+        value_origin = vim.fn.execute("verbose set " .. o.full_name .. "?")
         if string.match(value_origin, "Last set from") then
           -- TODO: parse file and line number as separate items
           option.last_set_from = value_origin:gsub("^.*Last set from ", "")
