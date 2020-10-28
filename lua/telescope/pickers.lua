@@ -209,7 +209,7 @@ function Picker:clear_extra_rows(results_bufnr)
       return
     end
 
-    vim.api.nvim_buf_set_lines(results_bufnr, num_results + 1, self.max_results, false, {})
+    pcall(vim.api.nvim_buf_set_lines, results_bufnr, num_results, self.max_results, false, {})
   else
     worst_line = self:get_row(self.manager:num_results())
     if worst_line <= 0 then
