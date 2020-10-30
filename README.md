@@ -184,8 +184,6 @@ To see the full list of mappings, check out `lua/telescope/mappings.lua` and the
 
 To override ALL of the default mappings, you can use the `default_mappings` key in the `setup` table.
 
-To override only SOME of the default mappings, you can use the `mappings` key in the `setup` table.
-
 ```
  To disable a keymap, put [map] = false
 
@@ -224,6 +222,24 @@ require('telescope').setup {
     },
   }
 }
+```
+
+To override only SOME of the default mappings, you can use the `attach_mappings` key in the `setup` table. For example:
+
+```lua
+function my_custom_picker(results)
+  pickers.new(opts, {
+    prompt_title = 'Custom Picker',
+    finder = finders.new_table(results),
+    sorter = sorters.fuzzy_with_index_bias(),
+    attach_mappings = function(_, map)
+      -- Map "<CR>" in insert mode to the funciton, actions.set_command_line
+      map('i', '<CR>', actions.set_command_line)
+
+      return true
+    end,
+  }):find()
+end
 ```
 
 Additionally, the prompt's filetype will be `TelescopePrompt`. You can customize the filetype as you would normally.
