@@ -13,13 +13,35 @@ local actions = setmetatable({}, {
 })
 
 local action_mt = {
-  __add = function (lhs, rhs)
-    return setmetatable({}, { __call = function(_, ...)
-      lhs(...)
-      rhs(...)
-    end })
+  __call = function(t, ...)
+    local values = {}
+    for _, v in ipairs(t) do
+      local result = {v(...)}
+      for _, res in ipairs(result) do
+        table.insert(values, res)
+      end
+    end
+
+    return unpack(values)
+  end,
+
+  __add = function(lhs, rhs)
+    local new_actions = {}
+    for _, v in ipairs(lhs) do
+      table.insert(new_actions, v)
+    end
+
+    for _, v in ipairs(rhs) do
+      table.insert(new_actions, v)
+    end
+
+    return setmetatable(new_actions, getmetatable(lhs))
   end
 }
+
+local transform_action = function(a)
+  return setmetatable({a}, action_mt)
+end
 
 --- Get the current picker object for the prompt
 function actions.get_current_picker(prompt_bufnr)
@@ -125,7 +147,7 @@ local function goto_file_selection(prompt_bufnr, command)
 end
 
 function actions.center(_)
-  vim.cmd(':normal zz')
+  vim.cmd(':normal! zz')
 end
 
 function actions.goto_file_selection_edit(prompt_bufnr)
@@ -197,13 +219,10 @@ actions.insert_value = function(prompt_bufnr)
 end
 
 for k, v in pairs(actions) do
-  actions[k] = setmetatable({}, vim.tbl_extend("force", {
-    __call = function(_, ...)
-      return v(...)
-    end }, action_mt)
-  )
+  actions[k] = transform_action(v)
 end
 
 actions._action_mt = action_mt
+actions._transform_action = transform_action
 
 return actions
