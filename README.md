@@ -184,23 +184,31 @@ To see the full list of mappings, check out `lua/telescope/mappings.lua` and the
 
 To override ALL of the default mappings, you can use the `default_mappings` key in the `setup` table.
 
-```
- To disable a keymap, put [map] = false
+```lua
+-- To disable a keymap, put [map] = false
+-- So, to not map "<C-n>", just put
+["<C-n>"] = false,
+-- Into your config.
 
-        So, to not map "<C-n>", just put 
+-- Otherwise, just set the mapping to the function that you want it to be.
+["<C-i>"] = actions.goto_file_selection_split,
 
-            ...,
-            ["<C-n>"] = false,
-            ...,
+-- You can also define your own functions, which then can be mapped to a key
+local function test_action(prompt_bufnr)
+  print("Action was attached with prompt_bufnr: ", prompt_bufnr)
+  -- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
+end
 
-        Into your config.
+["<C-i>"] = test_action,
 
- Otherwise, just set the mapping to the function that you want it to be.
-
-            ...,
-            ["<C-i>"] = actions.goto_file_selection_split
-            ...,
-
+-- If you want your function to run after another action you should define it as follows
+local test_action = setmetatable({}, vim.tbl_extend("force", {
+  __call = function(_, prompt_bufnr)
+    print("This function ran after another action")
+    -- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
+  end }, actions._action_mt)
+)
+["<C-i>"] = actions.goto_file_selection_split + test_action
 
 ```
 
@@ -208,6 +216,14 @@ A full example:
 
 ```lua
 local actions = require('telescope.actions')
+
+-- If you want your function to run after another action you should define it as follows
+local test_action = setmetatable({}, vim.tbl_extend("force", {
+  __call = function(_, prompt_bufnr)
+    print("This function ran after another action")
+    -- Put your function here. You can take inspiration from lua/telescope/actions.lua
+  end }, actions._action_mt)
+)
 
 require('telescope').setup {
   defaults = {
@@ -218,6 +234,14 @@ require('telescope').setup {
 
         -- Create a new <c-s> mapping
         ["<c-s>"] = actions.goto_file_selection_split,
+
+        -- Add up multiple actions
+        -- Currently actions.center is not set,
+        -- so if you want to center you screen after opening a file you should do this
+        ["<CR>"] = actions.goto_file_selection_edit + actions.center,
+
+        -- You can perform as many actions in a row as you like
+        ["<CR>"] = actions.goto_file_selection_edit + actions.center + test_action,
       },
     },
   }
@@ -379,7 +403,7 @@ Use the telescope.
 
 ## Themes
 
-Common groups of settings can be setup to allow for themes. We have some built in themes but are looking for more cool options. 
+Common groups of settings can be setup to allow for themes. We have some built in themes but are looking for more cool options.
 
 ### Dropdown
 
@@ -395,7 +419,7 @@ Then you can put your configuration into `get_dropdown({})`
 nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({ winblend = 10 }))<cr>
 ```
 
-Themes should work with every `telescope.builtin` function.  
+Themes should work with every `telescope.builtin` function.
 
 If you wish to make theme, check out `lua/telescope/themes.lua`. If you need more features, make an issue :).
 
