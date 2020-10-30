@@ -89,6 +89,17 @@ require('telescope').setup{
 }
 ```
 
+### Default Configuration Keys
+
+
+- ( Missing configuration description for many items here, but I'm trying :smile: )
+- `file_ignore_patterns`:
+    - List of strings that are Lua patterns that, if any are matched, will make result be ignored.
+    - Please note, these are Lua patterns. See: [Lua Patterns](https://www.lua.org/pil/20.2.html)
+    - Example:
+        - `file_ignore_patterns = { "scratch/.*", "%.env" }`
+        - This will ignore anything in `scratch/` folders and any files named `.env`
+
 ## Examples
 
 ```vim

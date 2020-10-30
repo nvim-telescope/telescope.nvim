@@ -81,6 +81,7 @@ function Picker:new(opts)
     stats = {},
 
     attach_mappings = opts.attach_mappings,
+    file_ignore_patterns = get_default(opts.file_ignore_patterns, config.values.file_ignore_patterns),
 
     sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
@@ -420,6 +421,13 @@ function Picker:find()
       end
 
       log.trace("Processing result... ", entry)
+
+      for _, v in ipairs(self.file_ignore_patterns or {}) do
+        if string.find(entry.value, v) then
+          log.debug("SKPIPING", entry.value, "because", v)
+          return
+        end
+      end
 
       local sort_ok, sort_score = nil, 0
       if self.sorter then

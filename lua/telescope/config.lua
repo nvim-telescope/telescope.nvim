@@ -84,6 +84,8 @@ function config.set_defaults(defaults)
 
   set("generic_sorter", sorters.get_generic_fuzzy_sorter)
   set("file_sorter", sorters.get_fuzzy_file)
+
+  set("file_ignore_patterns", nil)
 end
 
 function config.clear_defaults()
