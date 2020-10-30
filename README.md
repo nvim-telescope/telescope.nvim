@@ -198,16 +198,13 @@ local function test_action(prompt_bufnr)
   print("Action was attached with prompt_bufnr: ", prompt_bufnr)
   -- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
 end
-
 ["<C-i>"] = test_action,
 
 -- If you want your function to run after another action you should define it as follows
-local test_action = setmetatable({}, vim.tbl_extend("force", {
-  __call = function(_, prompt_bufnr)
-    print("This function ran after another action")
-    -- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
-  end }, actions._action_mt)
-)
+local test_action = actions._transform_action(function(prompt_bufnr)
+  print("This function ran after another action. Prompt_bufnr: " .. prompt_bufnr)
+  -- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
+end)
 ["<C-i>"] = actions.goto_file_selection_split + test_action
 
 ```
@@ -218,12 +215,10 @@ A full example:
 local actions = require('telescope.actions')
 
 -- If you want your function to run after another action you should define it as follows
-local test_action = setmetatable({}, vim.tbl_extend("force", {
-  __call = function(_, prompt_bufnr)
-    print("This function ran after another action")
-    -- Put your function here. You can take inspiration from lua/telescope/actions.lua
-  end }, actions._action_mt)
-)
+local test_action = actions._transform_action(function(prompt_bufnr)
+  print("This function ran after another action. Prompt_bufnr: " .. prompt_bufnr)
+  -- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
+end)
 
 require('telescope').setup {
   defaults = {
@@ -236,8 +231,6 @@ require('telescope').setup {
         ["<c-s>"] = actions.goto_file_selection_split,
 
         -- Add up multiple actions
-        -- Currently actions.center is not set,
-        -- so if you want to center you screen after opening a file you should do this
         ["<CR>"] = actions.goto_file_selection_edit + actions.center,
 
         -- You can perform as many actions in a row as you like

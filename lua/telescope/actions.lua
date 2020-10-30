@@ -222,7 +222,6 @@ for k, v in pairs(actions) do
   actions[k] = transform_action(v)
 end
 
-actions._action_mt = action_mt
 actions._transform_action = transform_action
 
 return actions
