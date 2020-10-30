@@ -7,7 +7,12 @@
 -- > matches on consecutive letters and starts of words. This allows matching
 -- > using acronyms or different parts of the path." - J Hawthorn
 
-local path = require('telescope.path')
+local has_path, path = pcall(require, 'telescope.path')
+if not has_path then
+  path = {
+    separator = '/'
+  }
+end
 
 local SCORE_GAP_LEADING = -0.005
 local SCORE_GAP_TRAILING = -0.005
