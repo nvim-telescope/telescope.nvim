@@ -30,8 +30,7 @@ cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
         
 " Telescope builtin lists
 function! s:telescope_complete(...)
-  let l:telescope_builtin = luaeval('require("telescope.builtin")')
-  return v:lua.vim.tbl_keys(l:telescope_builtin)
+  return luaeval('vim.tbl_keys(require("telescope.builtin"))')
 endfunction
 
 " TODO: If the lua datatype contains complex type,It will cause convert to
