@@ -30,14 +30,12 @@ cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
         
 " Telescope builtin lists
 function! s:telescope_complete(...)
-  let telescope_builtin = [
-      \ 'builtin','find_files','live_grep','grep_string','git_files',
-      \ 'oldfiles','quickfix','loclist','command_history','buffers',
-      \ 'lsp_references','lsp_document_symbol','lsp_workspace_symbol',
-      \ 'lsp_code_actions','treesitter','planets','help_tags','man_pages',
-      \ 'colorscheme','marks'
-      \]
-  return telescope_builtin
+  let l:telescope_builtin = luaeval('require("telescope.builtin")')
+  let l:builtin_list = []
+  for key in keys(l:telescope_builtin)
+    call add(l:builtin_list,key)
+  endfor
+  return l:builtin_list
 endfunction
 
 " TODO: If the lua datatype contains complex type,It will cause convert to
