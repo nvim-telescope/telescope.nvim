@@ -28,25 +28,25 @@ cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
         \ default_text = [=[" . escape(getcmdline(), '"') . "]=]
         \ }"<CR><CR>
         
-" Telescope Commands
-command! -nargs=0 -bar TelescopeBuiltin lua require'telescope.builtin'.builtin{}
-command! -nargs=0 -bar TelescopeFindFile lua require'telescope.builtin'.find_files{}
-command! -nargs=0 -bar TelescopeLiveGrep lua require'telescope.builtin'.live_grep{}
-command! -nargs=0 -bar TelescopeGrepString lua require'telescope.builtin'.grep_string{}
-command! -nargs=0 -bar TelescopeFindGitFile lua require'telescope.builtin'.git_files{}
-command! -nargs=0 -bar TelescopeOldFiles lua require'telescope.builtin'.oldfiles{}
-command! -nargs=0 -bar TelescopeQuickFix lua require'telescope.builtin'.quickfix{}
-command! -nargs=0 -bar TelescopeLocalList lua require'telescope.builtin'.loclist{}
-command! -nargs=0 -bar TelescopeCommandHistory lua require'telescope.builtin'.command_history{}
-command! -nargs=0 -bar TelescopeBuffers lua require'telescope.builtin'.buffers{}
-command! -nargs=0 -bar TelescopeLspReferences lua require'telescope.builtin'.lsp_references{}
-command! -nargs=0 -bar TelescopeLspDocumentSymbols lua require'telescope.builtin'.lsp_document_symbols{}
-command! -nargs=0 -bar TelescopeLspWorkSpaceSymbols lua require'telescope.builtin'.lsp_workspace_symbols{}
-command! -nargs=0 -bar TelescopeLspCodeActions lua require'telescope.builtin'.lsp_code_actions{}
-command! -nargs=0 -bar TelescopeTreesitter lua require'telescope.builtin'.treesitter{}
-command! -nargs=0 -bar TelescopePlanets lua require'telescope.builtin'.planets{}
-command! -nargs=0 -bar TelescopeHelpTags lua require'telescope.builtin'.help_tags{}
-command! -nargs=0 -bar TelescopeManPages lua require'telescope.builtin'.man_pages{}
-command! -nargs=0 -bar TelescopeColorscheme lua require'telescope.builtin'.colorscheme{}
-command! -nargs=0 -bar TelescopeMarks lua require'telescope.builtin'.marks{}
+" Telescope builtin lists
+function! s:telescope_complete(...)
+  return luaeval('vim.tbl_keys(require("telescope.builtin"))')
+endfunction
 
+" TODO: If the lua datatype contains complex type,It will cause convert to
+" viml datatype failed. So current doesn't support config telescope.themes
+function! s:load_command(builtin,...) abort
+  let opts = {}
+
+  " range command args
+  for arg in a:000
+    let opt = split(arg,'=')
+    let opts[opt[0]] = opt[1]
+  endfor
+
+  let telescope = v:lua.require('telescope.builtin')
+  call telescope[a:builtin](opts)
+endfunction
+
+" Telescope Commands with complete 
+command! -nargs=+ -complete=customlist,s:telescope_complete Telescope          call s:load_command(<f-args>)

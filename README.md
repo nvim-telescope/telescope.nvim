@@ -485,6 +485,18 @@ Picker:new{
 
 As an example, you could pipe your inputs into fzf, and then it can sort them for you.
 
+### Command
+
+Also you can use the `Telescope` command with options in vim command line. like
+
+```vim
+" Press Tab to  get completion list
+:Telescope find_files
+" Command with options
+:Telescope find_files  prompt_prefix=🔍
+
+```
+
 
 ## Other Examples
 
