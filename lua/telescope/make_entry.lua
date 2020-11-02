@@ -132,34 +132,41 @@ do
     return {filename, lnum, col, text}
   end
 
-  local execute_keys = {
-    path = function(t) 
-      return t.cwd .. path.separator .. t.filename, false
-    end,
-
-    filename = function(t)
-      return parse(t)[1], true
-    end,
-
-    lnum = function(t)
-      return parse(t)[2], true
-    end,
-
-    col = function(t)
-      return parse(t)[3], true
-    end,
-
-    text = function(t)
-      return parse(t)[4], true
-    end,
-  }
-
   function make_entry.gen_from_vimgrep(opts)
+    local execute_keys = {
+      path = function(t) 
+        return t.cwd .. path.separator .. t.filename, false
+      end,
+
+      filename = function(t)
+        return parse(t)[1], true
+      end,
+
+      lnum = function(t)
+        return parse(t)[2], true
+      end,
+
+      col = function(t)
+        return parse(t)[3], true
+      end,
+
+      text = function(t)
+        return parse(t)[4], true
+      end,
+    }
+
     opts = opts or {}
 
     local shorten_path = opts.shorten_path
     local disable_coordinates = opts.disable_coordinates
     local disable_devicons = opts.disable_devicons
+    local exclusive_text_sort = get_default(opts.exclusive_text_sort, false)
+
+    if exclusive_text_sort then
+      execute_keys.ordinal = function(entry)
+        return entry.text
+      end
+    end
 
     local display_string = "%s:%s%s"
 
