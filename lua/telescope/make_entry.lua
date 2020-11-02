@@ -10,6 +10,10 @@ local make_entry = {}
 
 local transform_devicons
 if has_devicons then
+  if not devicons.has_loaded() then
+    devicons.setup()
+  end
+
   transform_devicons = function(filename, display, disable_devicons)
     if disable_devicons or not filename then
       return display
