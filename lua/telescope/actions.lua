@@ -12,6 +12,37 @@ local actions = setmetatable({}, {
   end
 })
 
+local action_mt = {
+  __call = function(t, ...)
+    local values = {}
+    for _, v in ipairs(t) do
+      local result = {v(...)}
+      for _, res in ipairs(result) do
+        table.insert(values, res)
+      end
+    end
+
+    return unpack(values)
+  end,
+
+  __add = function(lhs, rhs)
+    local new_actions = {}
+    for _, v in ipairs(lhs) do
+      table.insert(new_actions, v)
+    end
+
+    for _, v in ipairs(rhs) do
+      table.insert(new_actions, v)
+    end
+
+    return setmetatable(new_actions, getmetatable(lhs))
+  end
+}
+
+local transform_action = function(a)
+  return setmetatable({a}, action_mt)
+end
+
 --- Get the current picker object for the prompt
 function actions.get_current_picker(prompt_bufnr)
   return state.get_status(prompt_bufnr).picker
@@ -51,7 +82,6 @@ end
 
 -- TODO: It seems sometimes we get bad styling.
 local function goto_file_selection(prompt_bufnr, command)
-  local picker = actions.get_current_picker(prompt_bufnr)
   local entry = actions.get_selected_entry(prompt_bufnr)
 
   if not entry then
@@ -90,7 +120,6 @@ local function goto_file_selection(prompt_bufnr, command)
       a.nvim_win_set_config(preview_win, {style = ''})
     end
 
-    local original_win_id = picker.original_win_id or 0
     local entry_bufnr = entry.bufnr
 
     actions.close(prompt_bufnr)
@@ -115,6 +144,10 @@ local function goto_file_selection(prompt_bufnr, command)
       end
     end
   end
+end
+
+function actions.center(_)
+  vim.cmd(':normal! zz')
 end
 
 function actions.goto_file_selection_edit(prompt_bufnr)
@@ -184,5 +217,11 @@ actions.insert_value = function(prompt_bufnr)
 
   return entry.value
 end
+
+for k, v in pairs(actions) do
+  actions[k] = transform_action(v)
+end
+
+actions._transform_action = transform_action
 
 return actions
