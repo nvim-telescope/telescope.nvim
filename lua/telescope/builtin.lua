@@ -833,4 +833,34 @@ builtin.marks = function(opts)
   }):find()
 end
 
+builtin.tagstack = function(opts)
+  opts = opts or {}
+  local tagstack = vim.fn.gettagstack()
+  if vim.tbl_isempty(tagstack.items) then
+    return
+  end
+
+  for i, value in pairs(tagstack.items) do
+    value.text = value.tagname
+    value.lnum = value.from[2]
+    value.filename = vim.fn.bufname(value.from[1])
+  end
+
+  -- reverse the list
+  tags = {}
+  for i=#tagstack.items, 1, -1 do
+    tags[#tags+1] = tagstack.items[i]
+  end
+
+  pickers.new(opts, {
+      prompt_title = 'TagStack',
+      finder = finders.new_table {
+        results = tags,
+        entry_maker = make_entry.gen_from_quickfix(opts),
+      },
+      previewer = previewers.qflist.new(opts),
+      sorter = conf.generic_sorter(opts),
+    }):find()
+end
+
 return builtin
