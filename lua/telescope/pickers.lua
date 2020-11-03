@@ -337,7 +337,11 @@ function Picker:find()
     log.debug("ITERATION:", self.iteration)
 
     local current_iteration = self.iteration
-    local prompt = a.nvim_buf_get_lines(self.prompt_bufnr, 0, 1, false)[1]
+    local prompt = vim.trim(vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]:sub(#prompt_prefix))
+
+    if self.sorter then
+      self.sorter:_start(prompt)
+    end
 
     -- vim.defer_fn(function()
       -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
@@ -717,8 +721,6 @@ function Picker:get_result_processor(prompt, iteration, status_updater)
       return
     end
 
-    log.debug("Processing result... ", entry.value)
-
     for _, v in ipairs(self.file_ignore_patterns or {}) do
       if string.find(entry.value, v) then
         log.debug("SKPIPING", entry.value, "because", v)
@@ -729,7 +731,6 @@ function Picker:get_result_processor(prompt, iteration, status_updater)
     local sort_ok, sort_score = nil, 0
     if self.sorter then
       sort_ok, sort_score = self:_track("_sort_time", pcall, self.sorter.score, self.sorter, prompt, entry)
-      log.debug(sort_score, prompt, entry.ordinal)
 
       if not sort_ok then
         log.warn("Sorting failed with:", prompt, entry, sort_score)
