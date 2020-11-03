@@ -181,14 +181,25 @@ To change default mapping globally, then change default->mappings dict
 ```lua
 local actions = require('telescope.actions')
 
+-- If you want your function to run after another action you should define it as follows
+local test_action = actions._transform_action(function(prompt_bufnr)
+  print("This function ran after another action. Prompt_bufnr: " .. prompt_bufnr)
+  -- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
+end)
+
 require('telescope').setup {
   defaults = {
     mappings = {
       i = {
-        -- Disable the default <c-x> mapping
+        -- To disable a keymap, put [map] = false
+        -- So, to not map "<C-n>", just put
         ["<c-x>"] = false,
-        -- Create a new <c-s> mapping
-        ["<c-s>"] = actions.goto_file_selection_split,
+        -- Otherwise, just set the mapping to the function that you want it to be.
+        ["<C-i>"] = actions.goto_file_selection_split,
+        -- Add up multiple actions
+        ["<CR>"] = actions.goto_file_selection_edit + actions.center,
+        -- You can perform as many actions in a row as you like
+        ["<CR>"] = actions.goto_file_selection_edit + actions.center + test_action,
       },
       n = {
         ["<esc>"] = actions.close
@@ -196,6 +207,20 @@ require('telescope').setup {
     },
   }
 }
+
+-- You can also define your own functions, which then can be mapped to a key
+local function test_action(prompt_bufnr)
+  print("Action was attached with prompt_bufnr: ", prompt_bufnr)
+-- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
+end
+["<C-i>"] = test_action,
+
+-- If you want your function to run after another action you should define it as follows
+local test_action = actions._transform_action(function(prompt_bufnr)
+  print("This function ran after another action. Prompt_bufnr: " .. prompt_bufnr)
+-- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
+end)
+["<C-i>"] = actions.goto_file_selection_split + test_action
 ```
 
 To change a builtin function mappings, then change attach_mappings to a function:
