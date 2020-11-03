@@ -333,6 +333,7 @@ Builtin function ready to be bound :D.
 | `builtin.quickfix`                  | Prompts a list from quickfix                                     | ...    |
 | `builtin.loclist`                   | Prompts a list from current window's location list.              | ...    |
 | `builtin.reloader`                  | Prompts a list of lua modules to be reloaded on enter            | ...    |
+| `builtin.vim_options`               | Prompts a list of vim options and on enter edit the options      | WIP    |
 | ..................................  | Your next awesome finder function here :D                        | PR     |
 
 #### Themes
