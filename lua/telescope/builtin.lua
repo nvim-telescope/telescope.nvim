@@ -443,8 +443,8 @@ builtin.vim_options = function(opts)
             esc = vim.api.nvim_replace_termcodes("<esc>", true, false, true)
           end
 
-          -- vim.api.
-          -- TODO: only insert the escape if dialog is in insert mode
+          -- TODO: Make this actually work.
+
           -- actions.close(prompt_bufnr)
           -- vim.api.nvim_win_set_var(vim.fn.nvim_get_current_win(), "telescope", 1)
           -- print(prompt_bufnr)
@@ -452,36 +452,27 @@ builtin.vim_options = function(opts)
           -- vim.cmd([[ autocmd BufEnter <buffer> ++nested ++once startinsert!]])
           -- print(vim.fn.winheight(0))
 
+          -- local prompt_winnr = vim.fn.getbufinfo(prompt_bufnr)[1].windows[1]
+          -- print(prompt_winnr)
 
-          local prompt_winnr = vim.fn.getbufinfo(prompt_bufnr)[1].windows[1]
-          print(prompt_winnr)
-
-          local float_opts = {}
-          float_opts.relative = "editor"
-          float_opts.anchor = "sw"
-          float_opts.focusable = false
-          float_opts.style = "minimal"
-          float_opts.row = vim.api.nvim_get_option("lines") - 2 -- TODO: include `cmdheight` and `laststatus` in this calculation
-          float_opts.col = 2
-          float_opts.height = 10
-          float_opts.width = string.len(selection.last_set_from)+15
-          local buf = vim.fn.nvim_create_buf(false, true)
-          vim.fn.nvim_buf_set_lines(buf, 0, 0, false, {"default value: abcdef", "last set from: " .. selection.last_set_from})
-          local status_win = vim.fn.nvim_open_win(buf, false, float_opts)
-          -- vim.api.nvim_win_set_option(status_win, "winblend", 100)
-          vim.api.nvim_win_set_option(status_win, "winhl", "Normal:PmenuSel")
-          -- vim.api.nvim_set_current_win(status_win)
-          vim.cmd[[redraw!]]
-          vim.cmd("autocmd CmdLineLeave : ++once echom 'beep'")
-          vim.api.nvim_feedkeys(string.format("%s:set %s=%s", esc, selection.value, selection.raw_value), "m", true)
-
-
-  -- vim.cmd([[augroup PickerInsert]])
-  -- vim.cmd([[  au!]])
-  -- vim.cmd(    on_buf_leave)
-  -- vim.cmd([[augroup END]])
-
-  -- self.prompt_bufnr = prompt_bufnr
+          -- local float_opts = {}
+          -- float_opts.relative = "editor"
+          -- float_opts.anchor = "sw"
+          -- float_opts.focusable = false
+          -- float_opts.style = "minimal"
+          -- float_opts.row = vim.api.nvim_get_option("lines") - 2 -- TODO: include `cmdheight` and `laststatus` in this calculation
+          -- float_opts.col = 2
+          -- float_opts.height = 10
+          -- float_opts.width = string.len(selection.last_set_from)+15
+          -- local buf = vim.fn.nvim_create_buf(false, true)
+          -- vim.fn.nvim_buf_set_lines(buf, 0, 0, false, {"default value: abcdef", "last set from: " .. selection.last_set_from})
+          -- local status_win = vim.fn.nvim_open_win(buf, false, float_opts)
+          -- -- vim.api.nvim_win_set_option(status_win, "winblend", 100)
+          -- vim.api.nvim_win_set_option(status_win, "winhl", "Normal:PmenuSel")
+          -- -- vim.api.nvim_set_current_win(status_win)
+          -- vim.cmd[[redraw!]]
+          -- vim.cmd("autocmd CmdLineLeave : ++once echom 'beep'")
+          vim.api.nvim_feedkeys(string.format("%s:set %s=%s", esc, selection.name, selection.current_value), "m", true)
         end
 
         map('i', '<CR>', edit_option)

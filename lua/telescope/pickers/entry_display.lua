@@ -10,6 +10,9 @@ local entry_display = {}
 -- },
 -- separator = " " -- either arbitrary string, when you wanna use the same separator between all elements
 -- separator = { " ", ":" }  -- or table, where [1] is separator between elements[1] and elements[2], etc
+
+-- TODO: Remove this and move ONLY to create method.
+
 local table_format = function(picker, elements, separator)
   -- TODO: Truncate...
   local win_width = vim.api.nvim_win_get_width(picker.results_win)
