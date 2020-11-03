@@ -7,11 +7,13 @@ local actions = require('telescope.actions')
 local config = require('telescope.config')
 local debounce = require('telescope.debounce')
 local resolve = require('telescope.config.resolve')
-local layout_strategies = require('telescope.pickers.layout_strategies')
 local log = require('telescope.log')
 local mappings = require('telescope.mappings')
 local state = require('telescope.state')
 local utils = require('telescope.utils')
+
+local layout_strategies = require('telescope.pickers.layout_strategies')
+local entry_display = require('telescope.pickers.entry_display')
 
 local EntryManager = require('telescope.entry_manager')
 
@@ -307,7 +309,9 @@ function Picker:find()
 
   local results_win, results_opts = popup.create('', popup_opts.results)
   local results_bufnr = a.nvim_win_get_buf(results_win)
+
   self.results_bufnr = results_bufnr
+  self.results_win = results_win
 
   -- TODO: Should probably always show all the line for results win, so should implement a resize for the windows
   a.nvim_win_set_option(results_win, 'wrap', false)
@@ -785,13 +789,8 @@ function Picker:entry_adder(index, entry, score)
     return
   end
 
-  local display, display_highlights
-  if type(entry.display) == 'function' then
-    self:_increment("display_fn")
-    display, display_highlights = entry:display()
-  elseif type(entry.display) == 'string' then
-    display = entry.display
-  else
+  local display, display_highlights = entry_display.resolve(self, entry)
+  if not display then
     log.info("Weird entry", entry)
     return
   end
