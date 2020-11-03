@@ -1,6 +1,7 @@
 local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 
 local conf = require('telescope.config').values
+local entry_display = require('telescope.pickers.entry_display')
 local path = require('telescope.path')
 local utils = require('telescope.utils')
 
@@ -465,53 +466,107 @@ function make_entry.gen_from_marks(_)
   end
 end
 
-local function truncate(str, len)
-  if #str > len then
-    str = str:sub(1, len)
-    str = str .. "…"
-  end
-  return str
-end
-
 function make_entry.gen_from_vimoptions(opts)
+  -- TODO: Can we just remove this from `options.lua`?
+  function N_(s)
+    return s
+  end
+
+  local process_one_opt = function(o)
+    local ok, value_origin
+
+    local option = {
+      name          = "",
+      description   = "",
+      current_value = "",
+      default_value = "",
+      value_type    = "",
+      set_by_user   = false,
+      last_set_from = "",
+    }
+
+    local is_global = false
+    for _, v in ipairs(o.scope) do
+      if v == "global" then
+        is_global = true
+      end
+    end
+
+    if not is_global then
+      return
+    end
+
+    if is_global then
+      option.name = o.full_name
+
+      ok, option.current_value = pcall(vim.api.nvim_get_option, o.full_name)
+      if not ok then
+        return
+      end
+
+      local str_funcname = o.short_desc()
+      option.description = assert(loadstring("return " .. str_funcname))()
+      -- if #option.description > opts.desc_col_length then
+      --   opts.desc_col_length = #option.description
+      -- end
+
+      if o.defaults ~= nil then
+        option.default_value = o.defaults.if_true.vim or o.defaults.if_true.vi
+      end
+
+      if type(option.default_value) == "function" then
+        option.default_value = "Macro: " .. option.default_value()
+      end
+
+      option.value_type = (type(option.current_value) == "boolean" and "bool" or type(option.current_value))
+
+      if option.current_value ~= option.default_value then
+        option.set_by_user = true
+        value_origin = vim.fn.execute("verbose set " .. o.full_name .. "?")
+        if string.match(value_origin, "Last set from") then
+          -- TODO: parse file and line number as separate items
+          option.last_set_from = value_origin:gsub("^.*Last set from ", "")
+        end
+      end
+
+      return option
+    end
+  end
+
   -- TODO: don't call this 'line'
-  local make_display = function(line)
-    display    = ""
-    result = {}
-    line.value_type = string.format("[%s]", line.value_type)
+  local displayer = entry_display.create {
+    separator = "│",
+    items = {
+      { width = 25 },
+      { width = 50 },
+      { remaining = true },
+    },
+  }
 
-    result.raw_value = line.current_value
-    line.current_value = tostring(line.current_value)
+  local make_display = function(entry)
 
-    -- replace control codes with strings
-    line.current_value = line.current_value:gsub(string.char(9), "<TAB>")
-    line.current_value = line.current_value:gsub("", "<C-F>")
-
-    -- truncate long option values
-    local col1, col2, col3
-    local win_width = vim.api.nvim_win_get_width(0) * 0.7
-    col2 = 30
-    line.current_value = truncate(line.current_value, col2-1)
-    col1 = win_width - col2 - opts.desc_col_length
-    -- print(col1)
-    -- print(vim.inspect(opts))
-    -- print(string.format("col1 = %d -%d -%s", win_width  , col2, opts.desc_col_length))
-    result.display = string.format("%-".. math.floor(col1) .."s │ %-" ..col2.."s │ %s", line.name, line.current_value, line.description)
-    result.value = line.name
-
-    result.last_set_from = line.last_set_from
-    return result
+    return displayer {
+      entry.name,
+      string.format(
+        "[%s] %s",
+        entry.value_type,
+        utils.display_termcodes(tostring(entry.current_value))),
+      entry.description,
+    }
   end
 
   return function(line)
-    local entry = {}
-    local d = make_display(line)
+    local entry = process_one_opt(line)
+    if not entry then
+      return
+    end
+
     entry.valid   = true
-    entry.display = d.display
-    entry.value   = d.value
-    entry.ordinal = d.value
-    entry.raw_value = d.raw_value
-    entry.last_set_from = d.last_set_from
+    entry.display = make_display
+    entry.value   = line
+    entry.ordinal = line.full_name
+    -- entry.raw_value = d.raw_value
+    -- entry.last_set_from = d.last_set_from
 
     return entry
   end

@@ -423,90 +423,15 @@ builtin.vim_options = function(opts)
   -- Load vim options.
   local vim_opts = loadfile(utils.data_directory() .. path.separator .. 'options' .. path.separator .. 'options.lua')().options
 
-  opts.desc_col_length = 0
-
-  local options_data = {}
-
-
-  -- TODO: Can we just remove this from `options.lua`?
-  function N_(s)
-    return s
-  end
-
-  local process_one_opt = function(o)
-    local ok, value_origin
-
-    local option = {
-      name          = "",
-      description   = "",
-      current_value = "",
-      default_value = "",
-      value_type    = "",
-      set_by_user   = false,
-      last_set_from = "",
-    }
-
-    local is_global = false
-    for _, v in ipairs(o.scope) do
-      if v == "global" then
-        is_global = true
-      end
-    end
-
-    if is_global then
-      option.name = o.full_name
-
-      ok, option.current_value = pcall(vim.api.nvim_get_option, o.full_name)
-      if not ok then
-        log.debug("Unable to handle:", o.full_name)
-        return
-      end
-
-      local str_funcname = o.short_desc()
-      option.description = assert(loadstring("return " .. str_funcname))()
-      if #option.description > opts.desc_col_length then
-        opts.desc_col_length = #option.description
-      end
-
-      if o.defaults ~= nil then
-        option.default_value = o.defaults.if_true.vim or o.defaults.if_true.vi
-      end
-
-      if type(option.default_value) == "function" then
-        option.default_value = "Macro: " .. option.default_value()
-      end
-
-      option.value_type = (type(option.current_value) == "boolean" and "bool" or type(option.current_value))
-
-      if option.current_value ~= option.default_value then
-        option.set_by_user = true
-        value_origin = vim.fn.execute("verbose set " .. o.full_name .. "?")
-        if string.match(value_origin, "Last set from") then
-          -- TODO: parse file and line number as separate items
-          option.last_set_from = value_origin:gsub("^.*Last set from ", "")
-        end
-      end
-
-      table.insert(options_data, option)
-    end
-  end
-
-  for _, o in ipairs(vim_opts) do
-    -- print(vim.inspect(o))
-    if o.enable_if == nil then
-      process_one_opt(o)
-    end
-  end
-
   pickers.new(opts, {
       prompt = 'options',
       finder = finders.new_table {
-        results = options_data,
+        results = vim_opts,
         entry_maker = make_entry.gen_from_vimoptions(opts),
       },
       -- TODO: previewer for Vim options
       -- previewer = previewers.help.new(opts),
-      sorter = sorters.get_generic_fuzzy_sorter(),
+      sorter = sorters.get_fzy_sorter(),
       attach_mappings = function(prompt_bufnr, map)
         local edit_option = function()
           local selection = actions.get_selected_entry(prompt_bufnr)
