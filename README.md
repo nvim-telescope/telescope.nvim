@@ -102,7 +102,7 @@ as well as custom ones).
 | `sorting_strategy`     | descnding/ascending        | Where first selection should be located.              |
 | `layout_strategy`      | centr/horizontal/vertical  | How the telescope is drawn.                           |
 | `layout_defaults`      | TODO                       | Layout specific configuration ........ TODO           |
-| `selection_strategy`   | follow/reset/line          | ... TODO                                              | 
+| `selection_strategy`   | follow/reset/row           | ... TODO                                              | 
 | `file_ignore_patterns` | dict                       | Pattern to be ignored `{ "scratch/.*", "%.env"}`      | 
 | `file_sorter`          | [see sorters](#sorters)    | The sorter for file lists.                            |
 | `generic_sorter`       | [see sorters](#sorters)    | The sorter for everything else.                       |
@@ -382,7 +382,7 @@ Picker:new{
   finder             = FUNCTION, -- see lua/telescope/finder.lua
   sorter             = FUNCTION, -- see lua/telescope/sorter.lua
   previewer          = FUNCTION, -- see lua/telescope/previewer.lua
-  selection_strategy = "reset", -- follow, reset, line
+  selection_strategy = "reset", -- follow, reset, row
   border             = {},
   borderchars        = {"─", "│", "─", "│", "┌", "┐", "┘", "└"},
   preview_cutoff     = 120,
