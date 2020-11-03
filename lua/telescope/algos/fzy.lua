@@ -7,13 +7,6 @@
 -- > matches on consecutive letters and starts of words. This allows matching
 -- > using acronyms or different parts of the path." - J Hawthorn
 
-local has_path, path = pcall(require, 'telescope.path')
-if not has_path then
-  path = {
-    separator = '/'
-  }
-end
-
 local SCORE_GAP_LEADING = -0.005
 local SCORE_GAP_TRAILING = -0.005
 local SCORE_GAP_INNER = -0.01
@@ -25,6 +18,80 @@ local SCORE_MATCH_DOT = 0.6
 local SCORE_MAX = math.huge
 local SCORE_MIN = -math.huge
 local MATCH_MAX_LENGTH = 1024
+
+local has_path, path = pcall(require, 'telescope.path')
+if not has_path then
+  path = {
+    separator = '/'
+  }
+end
+
+local utils = require('telescope.utils')
+
+local ffi = require'ffi'
+
+local has_native, native = utils.load_native('libfzy')
+if has_native then
+  print("USING NATIVE")
+
+  ffi.cdef[[
+  int has_match(const char *needle, const char *haystack, int is_case_sensitive);
+
+  // typedef double score_t;
+  // match_positions originally returns score_t;
+  double match_positions(const char *needle, const char *haystack, uint32_t *positions, int is_case_sensitive);
+  ]]
+
+  local function positions_to_lua(positions, length)
+    local result = {}
+    for i = 0, length - 1, 1  do
+      table.insert(result, positions[i])
+    end
+    return result
+  end
+
+  return {
+    has_match = function(needle, haystack)
+      local is_case_sensitive = false
+      return native.has_match(needle, haystack, is_case_sensitive) == 1
+    end,
+
+    score = function(needle, haystack)
+      local length = #needle
+      local positions = ffi.new('uint32_t[' .. length .. ']', {})
+      local is_case_sensitive = false
+
+      -- TODO: return score
+      local score = native.match_positions(needle, haystack, positions, is_case_sensitive)
+
+      return score
+    end,
+
+    positions = function(needle, haystack)
+      local length = #needle
+      local positions = ffi.new('uint32_t[' .. length .. ']', {})
+      local is_case_sensitive = false
+
+      -- TODO: return score
+      local score = native.match_positions(needle, haystack, positions, is_case_sensitive)
+
+      local result = positions_to_lua(positions, length)
+      require('telescope.log').info(result)
+      -- if true then return nil end
+
+      return result
+    end,
+
+    get_score_floor = function()
+      return (MATCH_MAX_LENGTH + 1) * SCORE_GAP_INNER
+    end,
+
+    -- If strings a or b are empty or too long, `fzy.score(a, b) == fzy.get_score_min()`.
+    get_score_min = function()
+      return SCORE_MIN
+    end,
+  }
+end
 
 local fzy = {}
 

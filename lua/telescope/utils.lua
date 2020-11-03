@@ -1,3 +1,4 @@
+local ffi = require'ffi'
 local pathlib = require('telescope.path')
 
 local utils = {}
@@ -184,6 +185,19 @@ function utils.data_directory()
   local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h")
 
   return base_directory .. pathlib.separator .. 'data' .. pathlib.separator
+end
+
+function utils.load_native(so_file)
+  local sourced_file = require('plenary.debug_utils').sourced_filepath()
+  local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h")
+
+  local so_path = base_directory.. pathlib.separator .. 'build' .. pathlib.separator .. so_file .. '.so'
+  print(so_path)
+  if 0 == vim.fn.filereadable(so_path) then
+    return nil
+  end
+
+  return pcall(ffi.load, so_path)
 end
 
 function utils.display_termcodes(str)
