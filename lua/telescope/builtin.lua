@@ -837,10 +837,11 @@ builtin.tagstack = function(opts)
   opts = opts or {}
   local tagstack = vim.fn.gettagstack()
   if vim.tbl_isempty(tagstack.items) then
+    print("No tagstack available")
     return
   end
 
-  for i, value in pairs(tagstack.items) do
+  for i, value in ipairs(tagstack.items) do
     value.text = value.tagname
     value.lnum = value.from[2]
     value.filename = vim.fn.bufname(value.from[1])
@@ -849,7 +850,7 @@ builtin.tagstack = function(opts)
   -- reverse the list
   tags = {}
   for i=#tagstack.items, 1, -1 do
-    tags[#tags+1] = tagstack.items[i]
+    table.insert(tags, tagstack.items[i])
   end
 
   pickers.new(opts, {
