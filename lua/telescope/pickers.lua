@@ -683,8 +683,14 @@ function Picker:set_selection(row)
   row = self:_handle_scroll_strategy(row)
 
   if not self:can_select_row(row) then
-    log.debug("Cannot select row:", row, self.manager:num_results(), self.max_results)
-    return
+    -- If the current selected row exceeds number of currently displayed
+    -- elements we have to reset it. Affectes sorting_strategy = 'row'.
+    if not self:can_select_row(self:get_selection_row()) then
+      row = self:get_row(self.manager:num_results())
+    else
+      log.debug("Cannot select row:", row, self.manager:num_results(), self.max_results)
+      return
+    end
   end
 
   -- local entry = self.manager:get_entry(self.max_results - row + 1)
