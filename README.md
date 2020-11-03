@@ -511,7 +511,9 @@ Also you can use the `Telescope` command with options in vim command line. like
 :Telescope find_files
 " Command with options
 :Telescope find_files  prompt_prefix=🔍
-
+" If option is table type in lua code ,you can use `,` connect each command string eg:
+" find_command,vimgrep_arguments they are both table type. so config it in commandline like
+:Telecope find_files find_command=rg,--ignore,--hidden,--files prompt_prefix=🔍
 ```
 
 
