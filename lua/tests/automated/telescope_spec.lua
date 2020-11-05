@@ -1,5 +1,3 @@
-require('plenary.test_harness'):setup_busted()
-
 local assert = require('luassert')
 
 local log = require('telescope.log')
@@ -86,7 +84,7 @@ describe('Picker', function()
     -- it('should handle no scores', function()
     --   local manager = EntryManager:new(5, nil)
 
-    --   manager:add_entry(nil, 
+    --   manager:add_entry(nil,
     -- end)
 
     it('should allow simple entries', function()
@@ -301,5 +299,3 @@ describe('Sorters', function()
   --   assert(PASSED)
   -- end)
 end)
-
-

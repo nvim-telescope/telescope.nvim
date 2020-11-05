@@ -1,5 +1,3 @@
-require('plenary.test_harness'):setup_busted()
-
 local eq = function(a, b)
   assert.are.same(a, b)
 end
