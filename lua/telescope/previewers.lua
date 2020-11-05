@@ -51,7 +51,16 @@ local bat_maker = function(filename, lnum, start, finish)
 end
 
 -- TODO: Add other options for cat to do this better
-local cat_maker = function(filename, lnum, start, finish)
+local cat_maker = function(filename, _, _, _)
+  if vim.fn.executable('file') then
+    local handle = io.popen('file --mime-type -b ' .. filename)
+    local mime_type = vim.split(handle:read('*a'), '/')[1]
+    handle:close()
+    if mime_type ~= "text" then
+      return { "echo", "Binary file found. These files cannot be displayed!" }
+    end
+  end
+
   return {
     "cat", "--", filename
   }
