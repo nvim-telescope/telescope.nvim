@@ -1,17 +1,35 @@
 # Telescope.nvim
 
-> Gaze deeply into unknown regions using the power of the moon. :P
+## Introduction 
 
-Telescope is a next generation fuzzy finder and floating prompts library
-written in lua and built on top of latest feature from nvim core (requires nvim
-0.5). It is extremely performant and highly extendible library (almost all
-aspect of your experience can be customized (see [configuration options](#options), and
-[configuration recipes](#recipes)). Although it is originally intended as
-library for neovim users to build whatever prompt they can imagine and bound
-its selection to whatever function they please, it also comes equipped with growing
-number of community driven [builtins functions](#) that covers wide variate of
-use cases. For screenshots and example UI checkout the community gallery
-[here]().
+> **Telescope**: An arrangement of lenses or mirrors or both that gathers light,
+> permitting direct observation or photographic recording of distant objects.
+> -- thefreedictionary 
+
+`Telescope.nvim` is a next generation floating prompts library with performant
+text search and fuzzy match capabilities. It is written in lua and it is built
+on top of latest feature from nvim core.
+
+Telescope is centered around fast perfromance and modularity. It enables its
+users to easily extendible it configure almost all every aspect of it. (see
+[configuration options](#options), and [configuration
+recipes](#configuration-recipes).
+
+In addition to being a library, telescope is also a plugin a growing number of
+community driven [builtins ](#functions) covering a broad range of use cases
+and integrating variety tools. 
+
+- To get started follow the [installation instructions](#) and make sure to
+  review the [Dependencies](#dependences) required.
+- To learn more about how to configure and customize your telescope, checkout
+  [customization section](#)
+- To learn more about the builtin prompts and supported tools checkout
+  [builtin-functions](#).
+- To learn more about how it is easy to build your own prompts checkout the
+  [api section](#api).
+- For screenshots and example UI checkout the [community
+  gallery](https://github.com/nvim-lua/telescope.nvim/wiki/Gallery).
+
 
 ### Table of Contents
 - [Configuration](configuration)
