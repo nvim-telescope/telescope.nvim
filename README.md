@@ -4,18 +4,18 @@
 > light, permitting direct observation or photographic recording of distant
 > objects.  -- thefreedictionary 
 
-`Telescope.nvim` is a next generation library for creating floating promotes
+`Telescope.nvim` is a next generation library for creating floating pickers 
 with advance features. It is written in lua and it is built on top of latest
 awesome features from nvim core. Telescope is centered around modularity *to the
 extend that* the promotes can be customized in isolation from one another
 (such presentation, algorithm, mappings ... etc). In addition, Telescope is a
-plugin that comes with a growing number of community driven [builtins
-](#functions) covering a wide range of use cases and tools.
+plugin that comes with a growing number of community driven [builtin pickers
+](#builtin-pickers) covering a wide range of use cases and tools.
 
 - [Getting Started](#getting-started): To get started and run your first built-in prompt.
 - [customization](#): To learn how to configure and customize your telescope.
-- [builtin-functions](#): To explore the cool builtin prompts.
-- [API](#): To learn more about how to build your first demo prompt.
+- [builtin-pickers](#): To explore the cool builtin pickers.
+- [API](#): To learn more about how to build your first demo picker.
 - [community Gallery](https://github.com/nvim-lua/telescope.nvim/wiki/Gallery): To see screenshots and example UI.
 - [Media](#media): To see live demos and overview from @tjdevries
 - [FAQ](#faq)
