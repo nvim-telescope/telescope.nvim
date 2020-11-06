@@ -53,7 +53,6 @@ call dein#add('nvim-lua/popup.nvim')
 call dein#add('nvim-lua/plenary.nvim')
 call dein#add('nvim-lua/telescope.nvim')
 ```
-
 Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua 
@@ -63,8 +62,7 @@ use {
 }
 ```
 
-#### Quick start 
----
+#### Usage
 
 To test if `telescope.nvim` is installed correctly try `:Telescope find_files<cr>`. 
 
@@ -81,40 +79,52 @@ nn <leader>fg <cmd>lua require('telescope.builtin').live_grep()<cr>
 nn <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
 nn <leader>ff <cmd>lua require('telescope.builtin').help_tags()<cr>
 ```
+For a complete list of the builtin functions, see [builtin pickers](#builtin-pickers)
 
-For a complete list of the builtin functions, see [builtin functions](#functions)
 
-## Configuration 
+<!-- Section -->
 
-### options 
 
-Here a list of default options to play with in order to customize your
-experience and how telescope behaves globally (i.e. effecting builtin functions
-as well as custom ones). 
+## Customization
 
-| Keys                   | Options                    | Description                                           |
-|------------------------|----------------------------|-------------------------------------------------------|
-| `vimgrep_arguments`    | dict                       | The command line argument for grep search ... TODO.   |
-| `prompt_position`      | top/bottom                 | Where the prompt should be located.                   |
-| `prompt_prefix`        | string                     | The prefix prefix.                                    |
-| `sorting_strategy`     | descnding/ascending        | Where first selection should be located.              |
-| `layout_strategy`      | centr/horizontal/vertical  | How the telescope is drawn.                           |
-| `layout_defaults`      | TODO                       | Layout specific configuration ........ TODO           |
-| `selection_strategy`   | follow/reset/row           | ... TODO                                              | 
-| `file_ignore_patterns` | dict                       | Pattern to be ignored `{ "scratch/.*", "%.env"}`      | 
-| `file_sorter`          | [see sorters](#sorters)    | The sorter for file lists.                            |
-| `generic_sorter`       | [see sorters](#sorters)    | The sorter for everything else.                       |
-| `shorten_path`         | boolean                    | Whether to shorten paths or not.                      |
-| `winblend`             | NUM                        | How transparent is the telescope window should be.    |
-| `width`                | NUM                        | ... TODO                                              |
-| `preview_cutoff`       | NUM                        | WIP                                                   |
-| `results_height`       | NUM                        | ... TODO                                              |
-| `results_width`        | NUM                        | ... TODO                                              |
-| `borderchars`          | dict                       | The border chars, it gives border telescope window    | 
-| `color_devicons`       | boolean                    | Whether to color devicons or not                      |
-| `use_less`             | boolean                    | Whether to use less or bat .. TODO                    |
+Customization can be globally added in telescope's setup method or individually
+through passing the options to the builtin pickers .
 
-> NOTE: to make the following code snippet work in vim filetype, wrap it in `lua << EOF code EOF`.
+|  [Presentation](#presentation) | [Sorting](#sorting) | [Mappings](#mappings)
+
+#### Presentation
+
+| Description                                           | Keys                   | Options                    |
+|-------------------------------------------------------|------------------------|----------------------------|
+| Where the prompt should be located.                   | `prompt_position`      | top/bottom                 |
+| What should the prompt prefix be.                     | `prompt_prefix`        | string                     |
+| Where first selection should be located.              | `sorting_strategy`     | descending/ascending       |
+| How the telescope is drawn.                           | `layout_strategy`      | center/horizontal/vertical |
+| How transparent is the telescope window should be.    | `winblend`             | NUM                        |
+| Layout specific configuration ........ TODO           | `layout_defaults`      | TODO                       |
+| TODO                                                  | `width`                | NUM                        |
+| TODO                                                  | `preview_cutoff`       | NUM                        |
+| TODO                                                  | `results_height`       | NUM                        |
+| TODO                                                  | `results_width`        | NUM                        |
+| The border chars, it gives border telescope window    | `borderchars`          | dict                       | 
+| Whether to color devicons or not                      | `color_devicons`       | boolean                    |
+| Whether to use less or bat .. TODO                    | `use_less`             | boolean                    |
+
+#### Sorting
+
+| Description                                           | Keys                   | Options                    |
+|-------------------------------------------------------|------------------------|----------------------------|
+| The sorter for file lists.                            | `file_sorter`          | [see sorters](#builtin-sorters)    |
+| The sorter for everything else.                       | `generic_sorter`       | [see sorters](#builtin-sorters)    |
+| The command line argument for grep search ... TODO.   | `vimgrep_arguments`    | dict                               |
+| ... TODO                                              | `selection_strategy`   | follow/reset/row                   | 
+| Pattern to be ignored `{ "scratch/.*", "%.env"}`      | `file_ignore_patterns` | dict                               | 
+| Whether to shorten paths or not.                      | `shorten_path`         | boolean                            |
+
+
+#### Defaults
+
+To make the following code snippet work in vim filetype (.vim), wrap it in `lua << EOF code-snippet EOF`.
 
 ```lua
 require('telescope').setup{
@@ -153,28 +163,29 @@ require('telescope').setup{
 }
 ```
 
-### Mappings
+#### Mappings
 
 Mappings are fully customizable. Many familiar mapping patterns are setup as defaults.
 
-| Mappings       | Action                           |
-|----------------|----------------------------------|
-| `<C-n>/<Down>` | Next item                        |
-| `<C-p>/<Up>`   | Previous item                    |
-| `j/k`          | Next/previous (in normal mode)   |
-| `<CR>`         | Confirm selection                |
-| `<C-x>`        | go to file selection as a split  |
-| `<C-v>`        | go to file selection as a vsplit |
-| `<C-t>`        | go to a file in a new tab        |
-| `<C-u>`        | scroll up in preview window      |
-| `<C-d>`        | scroll down in preview window    |
-| `<C-c>`        | close telescope                  |
-| `<Esc>`        | close telescope (in normal mode) |
+| Action                           | Mappings       |
+|----------------------------------|----------------|
+| Next item                        | `<C-n>/<Down>` |
+| Previous item                    | `<C-p>/<Up>`   |
+| Next/previous (in normal mode)   | `j/k`          |
+| Confirm selection                | `<CR>`         |
+| go to file selection as a split  | `<C-x>`        |
+| go to file selection as a vsplit | `<C-v>`        |
+| go to a file in a new tab        | `<C-t>`        |
+| scroll up in preview window      | `<C-u>`        |
+| scroll down in preview window    | `<C-d>`        |
+| close telescope                  | `<C-c>`        |
+| close telescope (in normal mode) | `<Esc>`        |
 
 To see the full list of mappings, check out `lua/telescope/mappings.lua` and
 the `default_mappings` table.  
 
 To change default mapping globally, then change default->mappings dict
+<!-- TODO should be in the wiki -->
 
 ```lua
 local actions = require('telescope.actions')
