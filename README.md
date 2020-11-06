@@ -232,7 +232,7 @@ end)
 ["<C-i>"] = actions.goto_file_selection_split + test_action
 ```
 
-To change a builtin function mappings, then change attach_mappings to a function:
+To change a [builtin pickers](#builtin-pickers) mappings, then change attach_mappings to a function:
 
 ```lua 
 require'telescope.builtin'.fd({
@@ -243,58 +243,40 @@ require'telescope.builtin'.fd({
 ```
 
 
-## FAQ
-<!-- Any question answered in issues should be written here -->
+## Builtin Pickers
 
-### How to change some defaults in builtin functions?
+Builtin function ready to be bound :D.
 
-All options available from setup function (see [Configuration options]()) and
-some other functions can be easily changed in custom pickers or builtin
-functions. 
-<!-- TODO: insert a list of available options like previewer and prompt prefix -->
+| Functions                           | Description                                                      | Status |
+|-------------------------------------|------------------------------------------------------------------|--------|
+| `builtin.planets`                   | Demo showcasing how simple to create pickers with telescope.     | ...    |
+| `builtin.builtin`                   | Lists Built-in pickers and run them on enter.                    | WIP    |
+| `builtin.find_files`                | Lists Files in current directory.                                | ...    |
+| `builtin.git_files`                 | Lists Git files in current directory.                            | WIP    |
+| `builtin.buffers`                   | Lists Open buffers in the current vim instance.                  | ...    |
+| `builtin.oldfiles`                  | Lists Previously open files.                                     | ...    |
+| `builtin.commands`                  | Lists Available plugin/user commands and run it.                 | ...    |
+| `builtin.command_history`           | Lists Commands previously ran and run it on enter.               | ...    |
+| `builtin.help_tags`                 | Lists Available help tags and open help document                 | ...    |
+| `builtin.man_pages`                 | Lists Man entries.                                               | ...    |
+| `builtin.marks`                     | Lists Markers and their value.                                   | ...    |
+| `builtin.colorscheme`               | Lists Colorscheme and switch to it on enter.                     | ...    |
+| `builtin.treesitter`                | Lists Function names, variables, from Treesitter!                | ...    |
+| `builtin.live_grep`                 | Searches in current directory files (respecting .gitignore)      | WIP    | 
+| `builtin.current_buffer_fuzzy_find` | Searches in current buffer lines.                                | ...    |
+| `builtin.grep_string`               | Searches for a string under the cursor in current directory.     | ...    |
+| `builtin.lsp_references`            | Searches in LSP references.                                      | ...    |
+| `builtin.lsp_document_symbols`      | Searches in LSP Document Symbols in the current document.        | WIP    |
+| `builtin.lsp_workspace_symbols`     | Searches in LSP all workspace symbols.                           | WIP    |
+| `builtin.lsp_code_actions`          | Lists LSP action to be trigged on enter                          | WIP    |
+| `builtin.quickfix`                  | Lists items from quickfix                                        | ...    |
+| `builtin.loclist`                   | Lists items from current window's location list.                 | ...    |
+| `builtin.reloader`                  | Lists lua modules and reload them on enter                       | ...    |
+| `builtin.vim_options`               | Lists vim options and on enter edit the options value            | WIP    |
+| ..................................  | Your next awesome finder function here :D                        | PR     |
 
 
-```lua 
--- Disable preview for find files 
-nn <leader>ff :lua require('telescope.builtin').find_files({previewer = false})<CR>
-
--- Change change prompt prefix for find_files builtin function:
-nn <leader>fg :lua require('telescope.builtin').live_grep({ prompt_prefix=🔍 })<CR>
-nn <leader>fg :Telescope live_grep prompt_prefix=🔍<CR>
-```
-
-### How to change Telescope Highlights group?
-
-There are 10 highlights group you can play around with in order to meet your needs:
-
-```viml
-hi TelescopeSelection guifg=#D79921 gui=bold " selected item
-hi TelescopeSelectionCaret guifg=#CC241D     " selection caret
-hi TelescopeMultiSelection guifg=#928374     " multisections
-hi TelescopeNormal guibg=#00000       " floating windows created by telescope.
-
-" Border highlight groups.
-hi TelescopeBorder guifg=#ffffff 
-hi TelescopePromptBorder guifg=#ffffff 
-hi TelescopeResultsBorder guifg=#ffffff  
-hi TelescopePreviewBorder guifg=#ffffff 
-
-" Used for highlighting characters that you match.
-hi TelescopeMatching guifg=blue
-
-" Used for the prompt prefix
-hi TelescopePromptPrefix guifg=red
-```
-
-To checkout the default values of the highlight groups, checkout `plugin/telescope.vim`
-
-### How to add autocmds to telescope prompt ?
-
-`TelescopePrompt` is the prompt Filetype. You can customize the Filetype as you would normally.
-
-## API 
-
-#### Sorters 
+#### Builtin Sorters 
 
 | Sorters                            | Description                                                     | Status |
 |------------------------------------|-----------------------------------------------------------------|--------|
@@ -305,55 +287,25 @@ To checkout the default values of the highlight groups, checkout `plugin/telesco
 | `sorters.fuzzy_with_index_bias`    | Used to list stuff with consideration to when the item is added | WIP    |
 | .................................. | Your next awesome sorter here :D                                | PR     |
 
+A `Sorter` is called by the `Picker` on each item returned by the `Finder`. It
+return a number, which is equivalent to the "distance" between the current
+`prompt` and the `entry` returned by a `finder`.
 
-A `Sorter` is called by the `Picker` on each item returned by the `Finder`. It return a number, which is equivalent to the "distance" between the current `prompt` and the `entry` returned by a `finder`.
+<!-- TODO review -->
+<!-- - Currently, it's not possible to delay calling the `Sorter` until the end of the execution, it is called on each item as we receive them. -->
+<!-- - This was done this way so that long running / expensive searches can be instantly searchable and we don't have to wait til it completes for things to start being worked on. -->
+<!-- - However, this prevents using some tools, like FZF easily. -->
+<!-- - In the future, I'll probably add a mode where you can delay the sorting til the end, so you can use more traditional sorting tools. -->
 
-- Currently, it's not possible to delay calling the `Sorter` until the end of the execution, it is called on each item as we receive them.
-- This was done this way so that long running / expensive searches can be instantly searchable and we don't have to wait til it completes for things to start being worked on.
-- However, this prevents using some tools, like FZF easily.
-- In the future, I'll probably add a mode where you can delay the sorting til the end, so you can use more traditional sorting tools.
-
-#### Functions
-
-Builtin function ready to be bound :D.
-
-| Functions                           | Description                                                      | Status |
-|-------------------------------------|------------------------------------------------------------------|--------|
-| `builtin.planets`                   | Demo showcasing how simple to create prompts with telescope.     | ...    |
-| `builtin.builtin`                   | Prompts a list to select a built-in function and run it.         | WIP    |
-| `builtin.find_files`                | Prompts a list of files in current directory.                    | ...    |
-| `builtin.git_files`                 | Prompts a list of git files in current directory.                | WIP    |
-| `builtin.buffers`                   | Prompts a list of open buffers.                                  | ...    |
-| `builtin.current_buffer_fuzzy_find` | Prompts a list of lines from current buffer lines.               | ...    |
-| `builtin.oldfiles`                  | Prompts a list of previously open files.                         | ...    |
-| `builtin.commands`                  | Prompts a list of available plugin/user commands and run it.     | ...    |
-| `builtin.command_history`           | Prompts a sorted list of command previously ran and run it.      | ...    |
-| `builtin.help_tags`                 | Prompts a list of available help tags and open help document     | ...    |
-| `builtin.man_pages`                 | Prompts a list of man entries.                                   | ...    |
-| `builtin.marks`                     | Prompts a list of markers and their value.                       | ...    |
-| `builtin.colorscheme`               | Prompts a list of colorscheme and switch to it on enter.         | ...    |
-| `builtin.treesitter`                | Prompts a list of function names, variables, from Treesitter!    | ...    |
-| `builtin.live_grep`                 | Searches all your files (respecting .gitignore)                  | WIP    | 
-| `builtin.grep_string`               | Searches for a string under the cursor in current directory.     | ...    |
-| `builtin.lsp_references`            | Searches in LSP references.                                      | ...    |
-| `builtin.lsp_document_symbols`      | Searches in LSP Document Symbols in the current document.        | WIP    |
-| `builtin.lsp_workspace_symbols`     | Searches in LSP all workspace symbols.                           | WIP    |
-| `builtin.lsp_code_actions`          | Prompts a list of LSP action to be trigged on enter              | WIP    |
-| `builtin.quickfix`                  | Prompts a list from quickfix                                     | ...    |
-| `builtin.loclist`                   | Prompts a list from current window's location list.              | ...    |
-| `builtin.reloader`                  | Prompts a list of lua modules to be reloaded on enter            | ...    |
-| `builtin.vim_options`               | Prompts a list of vim options and on enter edit the options      | WIP    |
-| ..................................  | Your next awesome finder function here :D                        | PR     |
-
-#### Themes
+## Builtin Themes
 
 Common groups of settings can be setup to allow for themes. We have some built
 in themes but are looking for more cool options. 
 
 | Themes                   | Description                                                      | Status |
 |--------------------------|------------------------------------------------------------------|--------|
-| `themes.get_dropdown`    | A list like centered list. [example](https://i.imgur.com/SorAcXv.png)                                       | ...    |
-| ..................................  | Your next awesome theme here :D                       | PR     |
+| `themes.get_dropdown`    | A list like centered list. [example](https://i.imgur.com/SorAcXv.png) | ...    |
+| .......................  | Your next awesome theme here :D                                  | PR     |
 
 
 To use a theme, simply append it to a builtin function:
@@ -367,8 +319,11 @@ Themes should work with every `telescope.builtin` function.  If you wish to
 make theme, check out `lua/telescope/themes.lua`. If you need more features,
 make an issue :).
 
-#### Finders
+## API 
+<!-- TODO: need to provide working examples for every api -->
 
+#### Finders
+<!-- TODO what is finders -->
 ```lua
 -- lua/telescope/finders.lua
 Finder:new{
@@ -381,6 +336,7 @@ Finder:new{
 
 #### Picker
 <!-- TODO: this section need some love, an in-depth explanation will be appreciated it need some in depth explanation --> 
+<!-- TODO what is pickers -->
 This section is an overview of how custom pickers can be created any configured. 
 
 
@@ -469,7 +425,7 @@ supports tab completions and settings options.
 - [Example video](https://www.youtube.com/watch?v=65AVwHZflsU)
 
 ## Configuration Recipes 
-
+<!-- TODO: Move to wiki -->
 Here a few simple recipes to simply configuration  telescope builtin and powered function.
 
 ### Having to different themes and applying them selectively.
@@ -568,6 +524,56 @@ return main
 -- nn <leader>ff :lua require'main'.run('fd')<cr>
 -- nn <leader>ff :lua require'main'.run('fd_in_nvim')<cr>
 ```
+
+## FAQ
+<!-- Any question answered in issues should be written here -->
+
+### How to change some defaults in builtin functions?
+
+All options available from setup function (see [Configuration options]()) and
+some other functions can be easily changed in custom pickers or builtin
+functions. 
+<!-- TODO: insert a list of available options like previewer and prompt prefix -->
+
+
+```lua 
+-- Disable preview for find files 
+nn <leader>ff :lua require('telescope.builtin').find_files({previewer = false})<CR>
+
+-- Change change prompt prefix for find_files builtin function:
+nn <leader>fg :lua require('telescope.builtin').live_grep({ prompt_prefix=🔍 })<CR>
+nn <leader>fg :Telescope live_grep prompt_prefix=🔍<CR>
+```
+
+### How to change Telescope Highlights group?
+
+There are 10 highlights group you can play around with in order to meet your needs:
+
+```viml
+hi TelescopeSelection guifg=#D79921 gui=bold " selected item
+hi TelescopeSelectionCaret guifg=#CC241D     " selection caret
+hi TelescopeMultiSelection guifg=#928374     " multisections
+hi TelescopeNormal guibg=#00000       " floating windows created by telescope.
+
+" Border highlight groups.
+hi TelescopeBorder guifg=#ffffff 
+hi TelescopePromptBorder guifg=#ffffff 
+hi TelescopeResultsBorder guifg=#ffffff  
+hi TelescopePreviewBorder guifg=#ffffff 
+
+" Used for highlighting characters that you match.
+hi TelescopeMatching guifg=blue
+
+" Used for the prompt prefix
+hi TelescopePromptPrefix guifg=red
+```
+
+To checkout the default values of the highlight groups, checkout `plugin/telescope.vim`
+
+### How to add autocmds to telescope prompt ?
+
+`TelescopePrompt` is the prompt Filetype. You can customize the Filetype as you would normally.
+
 
 ## Contribution 
 
