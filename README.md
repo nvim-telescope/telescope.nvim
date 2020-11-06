@@ -1,50 +1,45 @@
 # Telescope.nvim
 
-## Introduction 
+> **Telescope**: An arrangement of lenses or mirrors or both that gathers
+> light, permitting direct observation or photographic recording of distant
+> objects.  -- thefreedictionary 
 
-> **Telescope**: An arrangement of lenses or mirrors or both that gathers light,
-> permitting direct observation or photographic recording of distant objects.
-> -- thefreedictionary 
+`Telescope.nvim` is a next generation library for creating floating promotes
+with advance features. It is written in lua and it is built on top of latest
+awesome features from nvim core. Telescope is centered around modularity *to the
+extend that* the promotes can be customized in isolation from one another
+(such presentation, algorithm, mappings ... etc). In addition, Telescope is a
+plugin that comes with a growing number of community driven [builtins
+](#functions) covering a wide range of use cases and tools.
 
-`Telescope.nvim` is a next generation floating prompts library with performant
-text search and fuzzy match capabilities. It is written in lua and it is built
-on top of latest feature from nvim core.
-
-Telescope is centered around fast perfromance and modularity. It enables its
-users to easily extendible it configure almost all every aspect of it. (see
-[configuration options](#options), and [configuration
-recipes](#configuration-recipes).
-
-In addition to being a library, telescope is also a plugin a growing number of
-community driven [builtins ](#functions) covering a broad range of use cases
-and integrating variety tools. 
-
-- To get started follow the [installation instructions](#) and make sure to
-  review the [Dependencies](#dependences) required.
-- To learn more about how to configure and customize your telescope, checkout
-  [customization section](#)
-- To learn more about the builtin prompts and supported tools checkout
-  [builtin-functions](#).
-- To learn more about how it is easy to build your own prompts checkout the
-  [api section](#api).
-- For screenshots and example UI checkout the [community
-  gallery](https://github.com/nvim-lua/telescope.nvim/wiki/Gallery).
-
-
-### Table of Contents
-- [Configuration](configuration)
+- [Getting Started](#getting-started): To get started and run your first built-in prompt.
+- [customization](#): To learn how to configure and customize your telescope.
+- [builtin-functions](#): To explore the cool builtin prompts.
+- [API](#): To learn more about how to build your first demo prompt.
+- [community Gallery](https://github.com/nvim-lua/telescope.nvim/wiki/Gallery): To see screenshots and example UI.
+- [Media](#media): To see live demos and overview from @tjdevries
 - [FAQ](#faq)
-- [API](#api)
-- [Media](#media)
-- [Recipes](#recipes)
-- [Contribution](#contribution)
+- [Contribution](#contribution):
 
-## Overview
-
-### Installation
+## Getting Started
 ---
 
+[Neovim Nightly (0.5)](https://github.com/neovim/neovim/releases/tag/nightly)
+is required for telescope to work.
+
+#### Optional dependences 
+- [sharkdp/bat](https://github.com/sharkdp/bat) (preview) [Optional]
+- [sharkdp/fd](https://github.com/sharkdp/fd) (finder) [Optional]
+- [BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) (finder) [Optional]
+- [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) (finder/preview) [Optional]
+- [neovim LSP]( https://neovim.io/doc/user/lsp.html) (picker) [Optional]
+- [devicons](https://github.com/kyazdani42/nvim-web-devicons) (icons) [Optional]
+
+
+#### Installation
+
 Using [vim-plug](https://github.com/junegunn/vim-plug)
+
 ```viml
 Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
@@ -68,22 +63,7 @@ use {
 }
 ```
 
-### Dependencies
-
-> O: optional, R: required
-
-- [Neovim Nightly (0.5)](https://github.com/neovim/neovim/releases/tag/nightly) [R] 
-- [nvim-lua/popup.nvim](https://github.com/nvim-lua/popup.nvim) [R] 
-- [nvim-lua/plenary.nvim](https://github.com/nvim-lua/plenary.nvim) [R]
-- [sharkdp/bat](https://github.com/sharkdp/bat) (preview) [O]
-- [sharkdp/fd](https://github.com/sharkdp/fd) (finder) [O]
-- [BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) (finder) [O]
-- [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) (finder/preview) [O]
-- [neovim LSP]( https://neovim.io/doc/user/lsp.html) (picker) [O]
-- [devicons](https://github.com/kyazdani42/nvim-web-devicons) (icons) [O]
-
-
-### Quick start 
+#### Quick start 
 ---
 
 To test if `telescope.nvim` is installed correctly try `:Telescope find_files<cr>`. 
