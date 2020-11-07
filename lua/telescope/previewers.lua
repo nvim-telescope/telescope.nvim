@@ -21,7 +21,15 @@ Previewer.__index = Previewer
 local bat_options = {"--style=plain", "--color=always", "--paging=always"}
 local has_less = (vim.fn.executable('less') == 1) and config.values.use_less
 
+local get_file_stat = function(filename)
+  return assert(vim.loop.fs_stat(vim.fn.expand(filename)))
+end
+
 local bat_maker = function(filename, lnum, start, finish)
+  if get_file_stat(filename).type == 'directory' then
+    return { 'ls', '-la' }
+  end
+
   local command = {"bat"}
   local theme = os.getenv("BAT_THEME")
 
@@ -46,23 +54,26 @@ local bat_maker = function(filename, lnum, start, finish)
   end
 
   return flatten {
-    command, bat_options, "--", filename
+    command, bat_options, "--", vim.fn.expand(filename)
   }
 end
 
 -- TODO: Add other options for cat to do this better
 local cat_maker = function(filename, _, _, _)
-  if vim.fn.executable('file') then
-    local handle = io.popen('file --mime-type -b ' .. filename)
-    local mime_type = vim.split(handle:read('*a'), '/')[1]
-    handle:close()
+  if get_file_stat(filename).type == 'directory' then
+    return { 'ls', '-la' }
+  end
+
+  if 1 == vim.fn.executable('file') then
+    local output = utils.get_os_command_output('file --mime-type -b ' .. filename)
+    local mime_type = vim.split(output, '/')[1]
     if mime_type ~= "text" then
       return { "echo", "Binary file found. These files cannot be displayed!" }
     end
   end
 
   return {
-    "cat", "--", filename
+    "cat", "--", vim.fn.expand(filename)
   }
 end
 
