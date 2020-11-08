@@ -507,15 +507,36 @@ builtin.help_tags = function(opts)
     previewer = previewers.help.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr, map)
-      local view_help = function()
+      local open = function(cmd)
         local selection = actions.get_selected_entry(prompt_bufnr)
 
         actions.close(prompt_bufnr)
-        vim.cmd("help " .. selection.value)
+        vim.cmd(cmd .. selection.value)
       end
-
-      map('i', '<CR>', view_help)
-      map('n', '<CR>', view_help)
+      local nhelp = function()
+        return open("help ")
+      end
+      local vhelp = function()
+        return open("vert bo help ")
+      end
+      local hhelp = function()
+        return open("help ")
+        -- Not sure how explictly make horizontal
+      end
+      local thelp = function()
+        return open("tab help ")
+      end
+      -- Perhaps it would be a good idea to have vsplit,tab,hsplit open
+      -- a builtin action that accepts a command to be ran before creating
+      -- the split or tab
+      map('i', '<CR>',  nhelp)
+      map('n', '<CR>',  nhelp)
+      map('i', '<C-v>', vhelp)
+      map('n', '<C-v>', vhelp)
+      map('i', '<C-x>', hhelp)
+      map('n', '<C-x>', hhelp)
+      map('i', '<C-t>', thelp)
+      map('n', '<C-t>', thelp)
 
       return true
     end
