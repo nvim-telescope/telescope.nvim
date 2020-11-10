@@ -9,17 +9,24 @@ with advance features. It is written in lua and it is built on top of latest
 awesome features from nvim core. Telescope is centered around modularity *to the
 extend that* the promotes can be customized in isolation from one another
 (such presentation, algorithm, mappings ... etc). In addition, Telescope is a
-plugin that comes with a growing number of community driven [builtin pickers
-](#builtin-pickers) covering a wide range of use cases and tools.
+plugin that comes with a growing number of community driven
+[builtin pickers](#builtin-pickers) covering a wide range of use cases and tools.
+
+`Telescope.nvim` offers a customizable user interface.
+Take a look at our [community gallery](https://github.com/nvim-lua/telescope.nvim/wiki/Gallery)
+  to see some examples.
+
+You can read this documentation from start to finish,
+  or you can look at the outline
+  and directly jump to the section that interests you most.
 
 - [Getting Started](#getting-started): To get started and run your first built-in prompt.
-- [customization](#): To learn how to configure and customize your telescope.
-- [builtin-pickers](#): To explore the cool builtin pickers.
-- [API](#): To learn more about how to build your first demo picker.
-- [community Gallery](https://github.com/nvim-lua/telescope.nvim/wiki/Gallery): To see screenshots and example UI.
+- [Customization](#customization): To learn how to configure and customize your telescope.
+- [Builtin pickers](#builtin-pickers): To explore the cool builtin pickers.
+- [API](#api): To learn more about how to build your first demo picker.
 - [Media](#media): To see live demos and overview from @tjdevries
 - [FAQ](#faq)
-- [Contribution](#contribution):
+- [Contribution](#contribution)
 
 ## Getting Started
 ---
@@ -302,16 +309,16 @@ return a number, which is equivalent to the "distance" between the current
 Common groups of settings can be setup to allow for themes. We have some built
 in themes but are looking for more cool options. 
 
-| Themes                   | Description                                                      | Status |
-|--------------------------|------------------------------------------------------------------|--------|
+| Themes                   | Description                                                           | Status |
+|--------------------------|-----------------------------------------------------------------------|--------|
 | `themes.get_dropdown`    | A list like centered list. [example](https://i.imgur.com/SorAcXv.png) | ...    |
-| .......................  | Your next awesome theme here :D                                  | PR     |
+| ...                      | Your next awesome theme here :D                                       | PR     |
 
 
 To use a theme, simply append it to a builtin function:
 ```vim
 nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({}))<cr>
--- Change an option
+" Change an option
 nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({ winblend = 10 }))<cr>
 ```
 
