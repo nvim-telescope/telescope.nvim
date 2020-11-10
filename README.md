@@ -68,16 +68,16 @@ To test if `telescope.nvim` is installed correctly try `:Telescope find_files<cr
 
 ```viml
 " Find files using Telescope command-line sugar.
-nn <leader>ff <cmd>Telescope find_files<cr>
-nn <leader>fg <cmd>Telescope live_grep<cr>
-nn <leader>fb <cmd>Telescope buffers<cr>
-nn <leader>fh <cmd>Telescope help_tags<cr>
+nnoremap <leader>ff <cmd>Telescope find_files<cr>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
 " Using lua functions
-nn <leader>ff <cmd>lua require('telescope.builtin').find_files()<cr>
-nn <leader>fg <cmd>lua require('telescope.builtin').live_grep()<cr>
-nn <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
-nn <leader>ff <cmd>lua require('telescope.builtin').help_tags()<cr>
+nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<cr>
+nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<cr>
+nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
+nnoremap <leader>ff <cmd>lua require('telescope.builtin').help_tags()<cr>
 ```
 For a complete list of the builtin functions, see [builtin pickers](#builtin-pickers)
 
@@ -472,8 +472,8 @@ end
 return finders
 
 -- make sure to map it:
--- nn <leader>ff :lua require'finders'.fd_in_nvim()<cr> 
--- nn <leader>ff :lua require'finders'.fd()<cr>
+-- nnoremap <leader>ff :lua require'finders'.fd_in_nvim()<cr> 
+-- nnoremap <leader>ff :lua require'finders'.fd()<cr>
 ```
 
 ### Having a factory-like function based on a dict (may become a builtin function)
@@ -521,8 +521,8 @@ end
 
 return main
 -- make sure to map it:
--- nn <leader>ff :lua require'main'.run('fd')<cr>
--- nn <leader>ff :lua require'main'.run('fd_in_nvim')<cr>
+-- nnoremap <leader>ff :lua require'main'.run('fd')<cr>
+-- nnoremap <leader>ff :lua require'main'.run('fd_in_nvim')<cr>
 ```
 
 ## FAQ
@@ -538,11 +538,11 @@ functions.
 
 ```lua 
 -- Disable preview for find files 
-nn <leader>ff :lua require('telescope.builtin').find_files({previewer = false})<CR>
+nnoremap <leader>ff :lua require('telescope.builtin').find_files({previewer = false})<CR>
 
 -- Change change prompt prefix for find_files builtin function:
-nn <leader>fg :lua require('telescope.builtin').live_grep({ prompt_prefix=🔍 })<CR>
-nn <leader>fg :Telescope live_grep prompt_prefix=🔍<CR>
+nnoremap <leader>fg :lua require('telescope.builtin').live_grep({ prompt_prefix=🔍 })<CR>
+nnoremap <leader>fg :Telescope live_grep prompt_prefix=🔍<CR>
 ```
 
 ### How to change Telescope Highlights group?
@@ -550,22 +550,22 @@ nn <leader>fg :Telescope live_grep prompt_prefix=🔍<CR>
 There are 10 highlights group you can play around with in order to meet your needs:
 
 ```viml
-hi TelescopeSelection guifg=#D79921 gui=bold " selected item
-hi TelescopeSelectionCaret guifg=#CC241D     " selection caret
-hi TelescopeMultiSelection guifg=#928374     " multisections
-hi TelescopeNormal guibg=#00000       " floating windows created by telescope.
+highlight TelescopeSelection      guifg=#D79921 gui=bold " selected item
+highlight TelescopeSelectionCaret guifg=#CC241D " selection caret
+highlight TelescopeMultiSelection guifg=#928374 " multisections
+highlight TelescopeNormal         guibg=#00000  " floating windows created by telescope.
 
 " Border highlight groups.
-hi TelescopeBorder guifg=#ffffff 
-hi TelescopePromptBorder guifg=#ffffff 
-hi TelescopeResultsBorder guifg=#ffffff  
-hi TelescopePreviewBorder guifg=#ffffff 
+highlight TelescopeBorder         guifg=#ffffff
+highlight TelescopePromptBorder   guifg=#ffffff
+highlight TelescopeResultsBorder  guifg=#ffffff
+highlight TelescopePreviewBorder  guifg=#ffffff
 
 " Used for highlighting characters that you match.
-hi TelescopeMatching guifg=blue
+highlight TelescopeMatching       guifg=blue
 
 " Used for the prompt prefix
-hi TelescopePromptPrefix guifg=red
+highlight TelescopePromptPrefix   guifg=red
 ```
 
 To checkout the default values of the highlight groups, checkout `plugin/telescope.vim`
