@@ -365,24 +365,16 @@ function make_entry.gen_from_treesitter(opts)
   end
 end
 
-function make_entry.gen_from_tagfile(_)
+function make_entry.gen_from_taglist(_)
   local delim = string.char(9)
-
-  local make_display = function(line)
-    local help_entry = (line..delim):match("(.-)" .. delim)
-    return {
-      display = help_entry,
-      value = help_entry
-    }
-  end
 
   return function(line)
     local entry = {}
-    local d = make_display(line)
-    entry.valid   = next(d) ~= nil
-    entry.display = d.display
-    entry.value   = d.value
-    entry.ordinal = d.value
+    local tag = (line..delim):match("(.-)" .. delim)
+    entry.valid   = tag ~= ""
+    entry.display = tag
+    entry.value   = tag
+    entry.ordinal = tag
 
     return entry
   end

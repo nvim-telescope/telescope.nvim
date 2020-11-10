@@ -499,7 +499,7 @@ builtin.help_tags = function(opts)
     prompt_title = 'Help',
     finder = finders.new_table {
       results = tags,
-      entry_maker = make_entry.gen_from_tagfile(opts),
+      entry_maker = make_entry.gen_from_taglist(opts),
     },
     -- TODO: previewer for Vim help
     previewer = previewers.help.new(opts),
