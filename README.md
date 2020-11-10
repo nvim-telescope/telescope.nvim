@@ -29,12 +29,23 @@ You can read this documentation from start to finish,
   or you can look at the outline
   and directly jump to the section that interests you most.
 
-- [Getting Started](#getting-started) to run your first built-in prompt.
-- [Customization](#customization) to configure and customize `telescope.nvim`.
-- [Built-in pickers](#built-in-pickers) to explore the built-in pickers.
-- [API](#api) to build your first demo picker.
-- [Media](#media) to see live demos and overview from @tjdevries
+- [Getting Started](#getting-started)
+
+  to run your first built-in prompt
+- [Customization](#customization)
+
+  to configure and customize `telescope.nvim`
+- [Built-in pickers](#built-in-pickers)
+
+  explore the built-in pickers
+- [API](#api)
+
+  dive deeper and build your first demo picker
+- [Media](#media)
+
+  see live demos and overview from @tjdevries
 - [FAQ](#faq)
+
 - [Contributing](#contribution)
 
 ## Getting Started
