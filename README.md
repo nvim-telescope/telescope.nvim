@@ -1,18 +1,27 @@
 # Telescope.nvim
 
-> **Telescope**: An arrangement of lenses or mirrors or both that gathers
-> light, permitting direct observation or photographic recording of distant
-> objects.  -- thefreedictionary 
+> **Telescope**
+> An arrangement of lenses or mirrors or both that gathers light,
+> permitting direct observation or photographic recording of distant objects.
+>
+> — thefreedictionary
 
+<!-- FIXME: I think `creating floating pickers with advanced features`
+              can be made much clearer for those
+              who don't already know what the plugin is about.
+            Terms like `prompt` and `picker` are unlikely to be familiar. -PL -->
 `Telescope.nvim` is a next generation library for creating floating pickers 
-with advance features. It is written in lua and it is built on top of latest
-awesome features from nvim core. Telescope is centered around modularity *to the
-extend that* the promotes can be customized in isolation from one another
-(such presentation, algorithm, mappings ... etc). In addition, Telescope is a
-plugin that comes with a growing number of community driven
-[builtin pickers](#builtin-pickers) covering a wide range of use cases and tools.
-
-`Telescope.nvim` offers a customizable user interface.
+  with advanced features.
+It is written in `lua` and is built on top of latest
+  awesome features from `neovim` core.
+<!-- FIXME: I don't understand the next sentence. -PL -->
+`Telescope.nvim` is centered around modularity
+  *to the extent that* the promotes can be customized in isolation from one another
+  (such presentation, algorithm, mappings ... etc).
+In addition, `telescope.nvim` comes with a growing number
+  of community driven [built-in pickers](#built-in-pickers),
+  covering a wide range of use cases and tools,
+  and offers a customizable user interface.
 Take a look at our [community gallery](https://github.com/nvim-lua/telescope.nvim/wiki/Gallery)
   to see some examples.
 
@@ -20,27 +29,27 @@ You can read this documentation from start to finish,
   or you can look at the outline
   and directly jump to the section that interests you most.
 
-- [Getting Started](#getting-started): To get started and run your first built-in prompt.
-- [Customization](#customization): To learn how to configure and customize your telescope.
-- [Builtin pickers](#builtin-pickers): To explore the cool builtin pickers.
-- [API](#api): To learn more about how to build your first demo picker.
-- [Media](#media): To see live demos and overview from @tjdevries
+- [Getting Started](#getting-started) to run your first built-in prompt.
+- [Customization](#customization) to configure and customize `telescope.nvim`.
+- [Built-in pickers](#built-in-pickers) to explore the built-in pickers.
+- [API](#api) to build your first demo picker.
+- [Media](#media) to see live demos and overview from @tjdevries
 - [FAQ](#faq)
-- [Contribution](#contribution)
+- [Contributing](#contribution)
 
 ## Getting Started
 ---
 
 [Neovim Nightly (0.5)](https://github.com/neovim/neovim/releases/tag/nightly)
-is required for telescope to work.
+  is required for `telescope.nvim` to work.
 
 #### Optional dependences 
-- [sharkdp/bat](https://github.com/sharkdp/bat) (preview) [Optional]
-- [sharkdp/fd](https://github.com/sharkdp/fd) (finder) [Optional]
-- [BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) (finder) [Optional]
-- [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) (finder/preview) [Optional]
-- [neovim LSP]( https://neovim.io/doc/user/lsp.html) (picker) [Optional]
-- [devicons](https://github.com/kyazdani42/nvim-web-devicons) (icons) [Optional]
+- [sharkdp/bat](https://github.com/sharkdp/bat) (preview)
+- [sharkdp/fd](https://github.com/sharkdp/fd) (finder)
+- [BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) (finder)
+- [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) (finder/preview)
+- [neovim LSP]( https://neovim.io/doc/user/lsp.html) (picker)
+- [devicons](https://github.com/kyazdani42/nvim-web-devicons) (icons)
 
 
 #### Installation
@@ -71,7 +80,8 @@ use {
 
 #### Usage
 
-To test if `telescope.nvim` is installed correctly try `:Telescope find_files<cr>`. 
+Try the command `:Telescope find_files<cr>`
+  to see if `telescope.nvim` is installed correctly.
 
 ```viml
 " Find files using Telescope command-line sugar.
@@ -86,7 +96,9 @@ nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<cr>
 nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
 nnoremap <leader>ff <cmd>lua require('telescope.builtin').help_tags()<cr>
 ```
-For a complete list of the builtin functions, see [builtin pickers](#builtin-pickers)
+
+See [built-in pickers](#built-in-pickers)
+  for the list of all built-in functions.
 
 
 <!-- Section -->
@@ -94,8 +106,10 @@ For a complete list of the builtin functions, see [builtin pickers](#builtin-pic
 
 ## Customization
 
-Customization can be globally added in telescope's setup method or individually
-through passing the options to the builtin pickers .
+You can configure `telescope.nvim` at two levels:
+  globally, through the `setup()` method,
+  or in a finer-grained manner
+  by passing options to individual built-in pickers.
 
 |  [Presentation](#presentation) | [Sorting](#sorting) | [Mappings](#mappings)
 
@@ -121,8 +135,8 @@ through passing the options to the builtin pickers .
 
 | Description                                           | Keys                   | Options                    |
 |-------------------------------------------------------|------------------------|----------------------------|
-| The sorter for file lists.                            | `file_sorter`          | [see sorters](#builtin-sorters)    |
-| The sorter for everything else.                       | `generic_sorter`       | [see sorters](#builtin-sorters)    |
+| The sorter for file lists.                            | `file_sorter`          | [see sorters](#built-in-sorters)    |
+| The sorter for everything else.                       | `generic_sorter`       | [see sorters](#built-in-sorters)    |
 | The command line argument for grep search ... TODO.   | `vimgrep_arguments`    | dict                               |
 | ... TODO                                              | `selection_strategy`   | follow/reset/row                   | 
 | Pattern to be ignored `{ "scratch/.*", "%.env"}`      | `file_ignore_patterns` | dict                               | 
@@ -131,7 +145,9 @@ through passing the options to the builtin pickers .
 
 #### Defaults
 
-To make the following code snippet work in vim filetype (.vim), wrap it in `lua << EOF code-snippet EOF`.
+As an example of using the `setup()` method,
+  the following code configures `telescope.nvim`
+  to its default settings.
 
 ```lua
 require('telescope').setup{
@@ -170,9 +186,22 @@ require('telescope').setup{
 }
 ```
 
+To embed the above code snippet in a `.vim` file
+  (for example in `after/plugin/telescope.nvim.vim`),
+  wrap it in `lua << EOF code-snippet EOF`:
+
+```lua
+lua << EOF
+require('telescope').setup{
+  -- ...
+}
+EOF
+````
+
 #### Mappings
 
-Mappings are fully customizable. Many familiar mapping patterns are setup as defaults.
+Mappings are fully customizable.
+Many familiar mapping patterns are setup as defaults.
 
 | Action                           | Mappings       |
 |----------------------------------|----------------|
@@ -203,7 +232,7 @@ local test_action = actions._transform_action(function(prompt_bufnr)
   -- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
 end)
 
-require('telescope').setup {
+require('telescope').setup{
   defaults = {
     mappings = {
       i = {
@@ -239,10 +268,11 @@ end)
 ["<C-i>"] = actions.goto_file_selection_split + test_action
 ```
 
-To change a [builtin pickers](#builtin-pickers) mappings, then change attach_mappings to a function:
+Configuring the mappings of a [built-in picker](#built-in-pickers)
+  is done by setting its `attach_mappings` key to a function:
 
 ```lua 
-require'telescope.builtin'.fd({
+require('telescope.builtin').fd({
   attach_mappings = function(prompt_bufnr, map)
     map('i', '<esc>', actions.close)
   end
@@ -250,9 +280,9 @@ require'telescope.builtin'.fd({
 ```
 
 
-## Builtin Pickers
+## Built-in Pickers
 
-Builtin function ready to be bound :D.
+Built-in function ready to be bound :D.
 
 | Functions                           | Description                                                      | Status |
 |-------------------------------------|------------------------------------------------------------------|--------|
@@ -283,7 +313,7 @@ Builtin function ready to be bound :D.
 | ..................................  | Your next awesome finder function here :D                        | PR     |
 
 
-#### Builtin Sorters 
+#### Built-in Sorters 
 
 | Sorters                            | Description                                                     | Status |
 |------------------------------------|-----------------------------------------------------------------|--------|
@@ -304,10 +334,10 @@ return a number, which is equivalent to the "distance" between the current
 <!-- - However, this prevents using some tools, like FZF easily. -->
 <!-- - In the future, I'll probably add a mode where you can delay the sorting til the end, so you can use more traditional sorting tools. -->
 
-## Builtin Themes
+## Built-in Themes
 
-Common groups of settings can be setup to allow for themes. We have some built
-in themes but are looking for more cool options. 
+Common groups of settings can be set up to allow for themes.
+We have some built in themes but are looking for more cool options. 
 
 | Themes                   | Description                                                           | Status |
 |--------------------------|-----------------------------------------------------------------------|--------|
@@ -315,7 +345,7 @@ in themes but are looking for more cool options.
 | ...                      | Your next awesome theme here :D                                       | PR     |
 
 
-To use a theme, simply append it to a builtin function:
+To use a theme, simply append it to a built-in function:
 ```vim
 nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({}))<cr>
 " Change an option
@@ -365,7 +395,7 @@ Picker:new{
 
 ###### Override mappings
 
-To override only SOME of the default mappings, you can use the
+To override only *some* of the default mappings, you can use the
 `attach_mappings` key in the `setup` table. For example:
 
 ```lua
@@ -413,7 +443,7 @@ end
 
 #### Command-line `WIP`
 
-All `Telescope` functions are wrapped in vim commands for easy access, its
+All `telescope.nvim` functions are wrapped in `vim` commands for easy access, its
 supports tab completions and settings options.
 
 ```viml
@@ -433,7 +463,7 @@ supports tab completions and settings options.
 
 ## Configuration Recipes 
 <!-- TODO: Move to wiki -->
-Here a few simple recipes to simply configuration  telescope builtin and powered function.
+Here a few simple recipes to simply configuration telescope built-in and powered function.
 
 ### Having to different themes and applying them selectively.
 
@@ -483,7 +513,7 @@ return finders
 -- nnoremap <leader>ff :lua require'finders'.fd()<cr>
 ```
 
-### Having a factory-like function based on a dict (may become a builtin function)
+### Having a factory-like function based on a dict (may become a built-in function)
 
 ```lua
 local center_list  -- check the above snippet
@@ -535,10 +565,10 @@ return main
 ## FAQ
 <!-- Any question answered in issues should be written here -->
 
-### How to change some defaults in builtin functions?
+### How to change some defaults in built-in functions?
 
-All options available from setup function (see [Configuration options]()) and
-some other functions can be easily changed in custom pickers or builtin
+All options available from the setup function (see [Configuration options]()) and
+some other functions can be easily changed in custom pickers or built-in
 functions. 
 <!-- TODO: insert a list of available options like previewer and prompt prefix -->
 
@@ -582,9 +612,10 @@ To checkout the default values of the highlight groups, checkout `plugin/telesco
 `TelescopePrompt` is the prompt Filetype. You can customize the Filetype as you would normally.
 
 
-## Contribution 
+## Contributing
 
-All contribution are welcomed through opening PR, notice that any change on
-source code or addition of new sorters, finders, or buitlins must be reflected
-when approbate in the docs and README.md. 
-
+All contributions are welcome! Just open a pull request.
+<!-- TODO: add plugin documentation -->
+When approved,
+  changes in the user interface and new built-in functions
+  will need to be reflected in the documentation and in `README.md`.
