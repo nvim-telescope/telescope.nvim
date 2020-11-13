@@ -842,9 +842,7 @@ builtin.man_pages = function(opts)
 
   local cmd = opts.man_cmd or "apropos --sections=1 ''"
 
-  local f = assert(io.popen(cmd, 'r'))
-  local pages = assert(f:read('*a'))
-  f:close()
+  local pages = utils.get_os_command_output(cmd)
 
   local lines = {}
   for s in pages:gmatch("[^\r\n]+") do

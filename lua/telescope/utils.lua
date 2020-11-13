@@ -190,4 +190,11 @@ function utils.display_termcodes(str)
   return str:gsub(string.char(9), "<TAB>"):gsub("", "<C-F>"):gsub(" ", "<Space>")
 end
 
+function utils.get_os_command_output(cmd)
+  local handle = assert(io.popen(cmd, 'r'))
+  local output = assert(handle:read('*a'))
+  assert(handle:close())
+  return output
+end
+
 return utils
