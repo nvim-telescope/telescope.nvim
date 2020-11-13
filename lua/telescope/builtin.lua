@@ -53,8 +53,8 @@ builtin.git_files = function(opts)
     --- Find root of git directory and remove trailing newline characters
     opts.cwd = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
 
-    if not vim.fn.isdirectory(opts.cwd) then
-      error("Not a working directory for git_files:", opts.cwd)
+    if 1 ~= vim.fn.isdirectory(opts.cwd) then
+      error("Not a working directory for git_files:" .. opts.cwd)
     end
   end
 
