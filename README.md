@@ -43,7 +43,7 @@ Best experience on Neovim Nightly with LSP configured.
 ```vim
 Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-lua/telescope.nvim'
+Plug 'nvim-telescope/telescope.nvim'
 ```
 
 ### Optional
