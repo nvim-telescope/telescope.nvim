@@ -48,7 +48,7 @@ local slow_proc = function(opts)
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(text, true, false, true), 'n', true)
   end
 
-  if false then
+  if true then
     p:register_completion_callback(coroutine.wrap(function()
       local input = "pickers.lua"
       for i = 1, #input do
