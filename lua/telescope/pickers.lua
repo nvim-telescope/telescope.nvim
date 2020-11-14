@@ -443,7 +443,7 @@ function Picker:find()
     -- self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats)
 
     local process_result = function(entry)
-      if self:is_done() then return end
+      if self:is_done() then return true end
 
       self:_increment("processed")
 
