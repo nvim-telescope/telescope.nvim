@@ -928,20 +928,18 @@ end
 builtin.maps = function(opts)
   opts = opts or {}
   local modes = {"n", "i", "c"}
+  local maps_table = {}
+  for _, mode in pairs(modes) do
+    local maps_iter = vim.api.nvim_get_keymap(mode)
+    for _, map in pairs(maps_iter) do
+      table.insert(maps_table, map)
+    end
+  end
 
   pickers.new({}, {
     prompt_title = 'Maps',
     finder = finders.new_table {
-      results = (function()
-        local maps = {}
-        for _, mode in pairs(modes) do
-          local maps_iter = vim.api.nvim_get_keymap(mode)
-          for _, map in pairs(maps_iter) do
-            table.insert(maps, map)
-          end
-        end
-        return maps
-      end)(),
+      results = maps_table,
       entry_maker = function(line)
         return {
           valid = line ~= "",
