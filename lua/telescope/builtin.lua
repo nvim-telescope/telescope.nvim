@@ -924,22 +924,21 @@ builtin.marks = function(opts)
 end
 
 -- find normal mode mappings
--- TODO: Consider changing  to <space>
-builtin.maps = function(opts)
+builtin.keymaps = function(opts)
   opts = opts or {}
   local modes = {"n", "i", "c"}
-  local maps_table = {}
+  local keymaps_table = {}
   for _, mode in pairs(modes) do
-    local maps_iter = vim.api.nvim_get_keymap(mode)
-    for _, map in pairs(maps_iter) do
-      table.insert(maps_table, map)
+    local keymaps_iter = vim.api.nvim_get_keymap(mode)
+    for _, keymap in pairs(keymaps_iter) do
+      table.insert(keymaps_table, keymap)
     end
   end
 
   pickers.new({}, {
-    prompt_title = 'Maps',
+    prompt_title = 'Key Maps',
     finder = finders.new_table {
-      results = maps_table,
+      results = keymaps_table,
       entry_maker = function(line)
         return {
           valid = line ~= "",
