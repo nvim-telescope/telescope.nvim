@@ -945,7 +945,7 @@ builtin.maps = function(opts)
           valid = line ~= "",
           value = line,
           ordinal = line.lhs .. line.rhs,
-          display = line.mode .. ' ' .. line.lhs .. ' ' .. line.rhs
+          display = line.mode .. ' ' .. utils.display_termcodes(line.lhs) .. ' ' .. line.rhs
         }
       end
     },
