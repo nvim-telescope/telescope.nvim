@@ -346,6 +346,13 @@ require'telescope.builtin'.command_history{}
 Search the vim command history.
 
 ```lua
+require'telescope.builtin.maps{}
+```
+
+Search on vim key maps.
+
+
+```lua
 require'telescope.builtin'.buffers{
     -- Optional
     -- show_all_buffers = true -- Show unloaded buffers aswell
