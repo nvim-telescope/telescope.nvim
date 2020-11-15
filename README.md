@@ -131,7 +131,7 @@ You can configure `telescope.nvim` at two levels:
 | Where the prompt should be located.                   | `prompt_position`      | top/bottom                 |
 | What should the prompt prefix be.                     | `prompt_prefix`        | string                     |
 | Where first selection should be located.              | `sorting_strategy`     | descending/ascending       |
-| How the telescope is drawn.                           | `layout_strategy`      | center/horizontal/vertical |
+| How the telescope is drawn.                           | `layout_strategy`      | [supported layouts](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts) |
 | How transparent is the telescope window should be.    | `winblend`             | NUM                        |
 | Layout specific configuration ........ TODO           | `layout_defaults`      | TODO                       |
 | TODO                                                  | `width`                | NUM                        |
