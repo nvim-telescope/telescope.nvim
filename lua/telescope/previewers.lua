@@ -421,24 +421,27 @@ previewers.help = defaulter(function(_)
         local delim = string.char(9)
 
         local escaped = vim.fn.escape(entry.value, special_chars)
-
         local tags = {}
-        local tag_entry
-        for _,file in pairs(vim.fn.findfile('doc/tags', vim.o.runtimepath, -1)) do
+
+        local find_rtp_file = function(path, count)
+          return vim.fn.findfile(path, vim.o.runtimepath, count)
+        end
+
+        local matches = {}
+        for _,file in pairs(find_rtp_file('doc/tags', -1)) do
           local f = assert(io.open(file, "rb"))
             for line in f:lines() do
-              tag_entry = {}
+              matches = {}
+
               for match in (line..delim):gmatch("(.-)" .. delim) do
-                if vim.tbl_isempty(tag_entry) then
-                  tag_entry.name = match
-                elseif not tag_entry.filename then
-                  tag_entry.filename = match
-                else
-                  tag_entry.cmd = match
-                end
+                table.insert(matches, match)
               end
 
-              table.insert(tags, tag_entry)
+              table.insert(tags, {
+                name = matches[1],
+                filename = matches[2],
+                cmd = matches[3]
+              })
             end
           f:close()
         end
@@ -457,7 +460,7 @@ previewers.help = defaulter(function(_)
         if taglist == {} then taglist = search_tags(escaped) end
 
         local best_entry = taglist[1]
-        local new_bufnr = vim.fn.bufnr(vim.fn.findfile('doc/'..best_entry.filename, vim.o.runtimepath), true)
+        local new_bufnr = vim.fn.bufnr(find_rtp_file('doc/' .. best_entry.filename), true)
         print(vim.inspect(new_bufnr))
 
         vim.api.nvim_buf_set_option(new_bufnr, 'filetype', 'help')
