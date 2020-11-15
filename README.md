@@ -108,36 +108,6 @@ customize your `telescope.nvim`.
 - **Global** (i.e. affecting all pickers) through the `setup()` method, or 
 - **Individual** (i.e. affecting a single picker) through passing `opts` built-in pickers (e.g. `builtin.fd(opts)` )
 
-#### Options affecting Presentation
-
-| Description                                           | Keys                   | Options                    |
-|-------------------------------------------------------|------------------------|----------------------------|
-| Where the prompt should be located.                   | `prompt_position`      | top/bottom                 |
-| What should the prompt prefix be.                     | `prompt_prefix`        | string                     |
-| Where first selection should be located.              | `sorting_strategy`     | descending/ascending       |
-| How the telescope is drawn.                           | `layout_strategy`      | [supported layouts](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts) |
-| How transparent is the telescope window should be.    | `winblend`             | NUM                        |
-| Layout specific configuration ........ TODO           | `layout_defaults`      | TODO                       |
-| TODO                                                  | `width`                | NUM                        |
-| TODO                                                  | `preview_cutoff`       | NUM                        |
-| TODO                                                  | `results_height`       | NUM                        |
-| TODO                                                  | `results_width`        | NUM                        |
-| The border chars, it gives border telescope window    | `borderchars`          | dict                       | 
-| Whether to color devicons or not                      | `color_devicons`       | boolean                    |
-| Whether to use less or bat .. TODO                    | `use_less`             | boolean                    |
-
-#### Options affecting Sorting
-
-| Description                                           | Keys                   | Options                    |
-|-------------------------------------------------------|------------------------|----------------------------|
-| The sorter for file lists.                            | `file_sorter`          | [see sorters](#built-in-sorters)    |
-| The sorter for everything else.                       | `generic_sorter`       | [see sorters](#built-in-sorters)    |
-| The command line argument for grep search ... TODO.   | `vimgrep_arguments`    | dict                               |
-| ... TODO                                              | `selection_strategy`   | follow/reset/row                   | 
-| Pattern to be ignored `{ "scratch/.*", "%.env"}`      | `file_ignore_patterns` | dict                               | 
-| Whether to shorten paths or not.                      | `shorten_path`         | boolean                            |
-
-
 #### Telescope Defaults
 
 As an example of using the `setup()` method, the following code configures
@@ -191,6 +161,35 @@ require('telescope').setup{
 }
 EOF
 ````
+
+#### Options affecting Presentation
+
+| Description                                           | Keys                   | Options                    |
+|-------------------------------------------------------|------------------------|----------------------------|
+| Where the prompt should be located.                   | `prompt_position`      | top/bottom                 |
+| What should the prompt prefix be.                     | `prompt_prefix`        | string                     |
+| Where first selection should be located.              | `sorting_strategy`     | descending/ascending       |
+| How the telescope is drawn.                           | `layout_strategy`      | [supported layouts](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts) |
+| How transparent is the telescope window should be.    | `winblend`             | NUM                        |
+| Layout specific configuration ........ TODO           | `layout_defaults`      | TODO                       |
+| TODO                                                  | `width`                | NUM                        |
+| TODO                                                  | `preview_cutoff`       | NUM                        |
+| TODO                                                  | `results_height`       | NUM                        |
+| TODO                                                  | `results_width`        | NUM                        |
+| The border chars, it gives border telescope window    | `borderchars`          | dict                       | 
+| Whether to color devicons or not                      | `color_devicons`       | boolean                    |
+| Whether to use less or bat .. TODO                    | `use_less`             | boolean                    |
+
+#### Options affecting Sorting
+
+| Description                                           | Keys                   | Options                    |
+|-------------------------------------------------------|------------------------|----------------------------|
+| The sorter for file lists.                            | `file_sorter`          | [see sorters](#built-in-sorters)    |
+| The sorter for everything else.                       | `generic_sorter`       | [see sorters](#built-in-sorters)    |
+| The command line argument for grep search ... TODO.   | `vimgrep_arguments`    | dict                               |
+| ... TODO                                              | `selection_strategy`   | follow/reset/row                   | 
+| Pattern to be ignored `{ "scratch/.*", "%.env"}`      | `file_ignore_patterns` | dict                               | 
+| Whether to shorten paths or not.                      | `shorten_path`         | boolean                            |
 
 #### Mappings
 
@@ -272,6 +271,8 @@ require('telescope.builtin').fd({
   end
 })
 ```
+
+
 
 
 ## Built-in Pickers
