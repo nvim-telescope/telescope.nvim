@@ -6,50 +6,36 @@
 >
 > — thefreedictionary
 
-<!-- FIXME: I think `creating floating pickers with advanced features`
-              can be made much clearer for those
-              who don't already know what the plugin is about.
-            Terms like `prompt` and `picker` are unlikely to be familiar. -PL -->
-`Telescope.nvim` is a next generation library for creating floating pickers 
-  with advanced features.
-It is written in `lua` and is built on top of latest
-  awesome features from `neovim` core.
-<!-- FIXME: I don't understand the next sentence. -PL -->
-`Telescope.nvim` is centered around modularity
-  *to the extent that* the promotes can be customized in isolation from one another
-  (such presentation, algorithm, mappings ... etc).
-In addition, `telescope.nvim` comes with a growing number
-  of community driven [built-in pickers](#built-in-pickers),
-  covering a wide range of use cases and tools,
-  and offers a customizable user interface.
-Take a look at our [community gallery](https://github.com/nvim-lua/telescope.nvim/wiki/Gallery)
-  to see some examples.
+![](https://raw.githubusercontent.com/tjdevries/media.repo/master/telescope.nvim/simple_rg_v1.gif)
 
-You can read this documentation from start to finish,
-  or you can look at the outline
-  and directly jump to the section that interests you most.
+`Telescope.nvim` is a next generation library for creating floating pickers
+with advanced features.  It is written in `lua` and is built on top of latest
+awesome features from `neovim` core.  `Telescope.nvim` is centered around
+modularity *to the extent that* the pickers can be customized in isolation from
+one another (such presentation, algorithm, mappings ... etc).  
+
+In addition to extensions which can be found
+[here](https://github.com/nvim-telescope)`, Telescope.nvim` comes with a
+growing number of community driven [built-in pickers](#built-in-pickers),
+covering a wide range of use cases and tools, and offers a customizable user
+interface.
+
+ 
+<!-- You can read this documentation from start to finish, or you can look at the -->
+<!-- outline and directly jump to the section that interests you most. -->
 
 - [Getting Started](#getting-started)
-
-  to run your first built-in prompt
 - [Customization](#customization)
-
-  to configure and customize `telescope.nvim`
 - [Built-in pickers](#built-in-pickers)
-
-  explore the built-in pickers
 - [API](#api)
-
-  dive deeper and build your first demo picker
 - [Media](#media)
-
-  see live demos and overview from @tjdevries
+- [Gallery](https://github.com/nvim-lua/telescope.nvim/wiki/Gallery)
 - [FAQ](#faq)
-
 - [Contributing](#contribution)
 
 ## Getting Started
----
+
+This section should guide to run your first built-in pickers :smile:
 
 [Neovim Nightly (0.5)](https://github.com/neovim/neovim/releases/tag/nightly)
   is required for `telescope.nvim` to work.
