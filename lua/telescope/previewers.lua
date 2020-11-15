@@ -423,8 +423,14 @@ previewers.help = defaulter(function(_)
         local tagfile = vim.fn.expand("$VIMRUNTIME") .. '/doc/tags'
         local old_tags = vim.o.tags
 
-        vim.o.tags = tagfile
-        local taglist = vim.fn.taglist('^' .. escaped .. '$', tagfile)
+        vim.o.tags = ''
+        for _,file in pairs(vim.fn.findfile('doc/tags', vim.o.runtimepath, -1)) do
+          vim.o.tags = vim.o.tags .. file .. ','
+        end
+
+        vim.o.tags = vim.o.tags:sub(1,-2) -- Remove trailing comma
+        print(vim.inspect(vim.o.tags))
+        local taglist = vim.fn.taglist('^' .. escaped .. '$')
         vim.o.tags = old_tags
 
         if vim.tbl_isempty(taglist) then
