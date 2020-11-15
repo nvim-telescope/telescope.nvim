@@ -226,8 +226,7 @@ Much like [built-in pickers](#built-in-pickers), there are a number of
 local actions = require('telescope.actions')
 
 -- or create your custom action
-local function my_cool_custom_action(prompt_bufnr)
-  print("Action was attached with prompt_bufnr: ", prompt_bufnr)
+local my_cool_custom_action = actions._transform_action(function(prompt_bufnr)
 -- Enter your function logic here. 
 -- You can take inspiration from lua/telescope/actions.lua
 end
