@@ -181,7 +181,7 @@ EOF
 | `results_width`        | TODO                                                  | NUM                        |
 | `borderchars`          | The border chars, it gives border telescope window    | dict                       | 
 | `color_devicons`       | Whether to color devicons or not                      | boolean                    |
-| `use_less`             | Whether to use less or bat .. TODO                    | boolean                    |
+| `use_less`             | Whether to use less of cat/bat                        | boolean                    |
 | `scroll_strategy`      | How to behave when the when there are no more item next/prev | cycle, nil          |
 
 #### Options affecting Sorting
