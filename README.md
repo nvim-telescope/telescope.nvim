@@ -105,10 +105,10 @@ customize your `telescope.nvim`.
 
 `Telescope.nvim` can be configured at two levels: 
 
-- **Global** (i.e. effecting all pickers) through the `setup()` method, or 
-- **Individual** (i.e. effecting a single picker) through passing `opts` built-in pickers (e.g. `builtin.fd(opts)` )
+- **Global** (i.e. affecting all pickers) through the `setup()` method, or 
+- **Individual** (i.e. affecting a single picker) through passing `opts` built-in pickers (e.g. `builtin.fd(opts)` )
 
-#### Options effecting Presentation
+#### Options affecting Presentation
 
 | Description                                           | Keys                   | Options                    |
 |-------------------------------------------------------|------------------------|----------------------------|
@@ -126,7 +126,7 @@ customize your `telescope.nvim`.
 | Whether to color devicons or not                      | `color_devicons`       | boolean                    |
 | Whether to use less or bat .. TODO                    | `use_less`             | boolean                    |
 
-#### Options effecting Sorting
+#### Options affecting Sorting
 
 | Description                                           | Keys                   | Options                    |
 |-------------------------------------------------------|------------------------|----------------------------|
@@ -278,45 +278,45 @@ require('telescope.builtin').fd({
 
 Built-in function ready to be bound to any key you like :smile:.
 
-| Functions                           | Description                                                      | Status |
-|-------------------------------------|------------------------------------------------------------------|--------|
-| `builtin.planets`                   | Demo showcasing how simple to create pickers with telescope.     | ...    |
-| `builtin.builtin`                   | Lists Built-in pickers and run them on enter.                    | WIP    |
-| `builtin.find_files`                | Lists Files in current directory.                                | ...    |
-| `builtin.git_files`                 | Lists Git files in current directory.                            | WIP    |
-| `builtin.buffers`                   | Lists Open buffers in the current vim instance.                  | ...    |
-| `builtin.oldfiles`                  | Lists Previously open files.                                     | ...    |
-| `builtin.commands`                  | Lists Available plugin/user commands and run it.                 | ...    |
-| `builtin.command_history`           | Lists Commands previously ran and run it on enter.               | ...    |
-| `builtin.help_tags`                 | Lists Available help tags and open help document                 | ...    |
-| `builtin.man_pages`                 | Lists Man entries.                                               | ...    |
-| `builtin.marks`                     | Lists Markers and their value.                                   | ...    |
-| `builtin.colorscheme`               | Lists Colorscheme and switch to it on enter.                     | ...    |
-| `builtin.treesitter`                | Lists Function names, variables, from Treesitter!                | ...    |
-| `builtin.live_grep`                 | Searches in current directory files (respecting .gitignore)      | WIP    | 
-| `builtin.current_buffer_fuzzy_find` | Searches in current buffer lines.                                | ...    |
-| `builtin.grep_string`               | Searches for a string under the cursor in current directory.     | ...    |
-| `builtin.lsp_references`            | Searches in LSP references.                                      | ...    |
-| `builtin.lsp_document_symbols`      | Searches in LSP Document Symbols in the current document.        | WIP    |
-| `builtin.lsp_workspace_symbols`     | Searches in LSP all workspace symbols.                           | WIP    |
-| `builtin.lsp_code_actions`          | Lists LSP action to be trigged on enter                          | WIP    |
-| `builtin.quickfix`                  | Lists items from quickfix                                        | ...    |
-| `builtin.loclist`                   | Lists items from current window's location list.                 | ...    |
-| `builtin.reloader`                  | Lists lua modules and reload them on enter                       | ...    |
-| `builtin.vim_options`               | Lists vim options and on enter edit the options value            | WIP    |
-| ..................................  | Your next awesome finder function here :D                        | PR     |
+| Functions                           | Description                                                      |
+|-------------------------------------|------------------------------------------------------------------|
+| `builtin.planets`                   | Demo showcasing how simple to create pickers with telescope.     |
+| `builtin.builtin`                   | Lists Built-in pickers and run them on enter.                    |
+| `builtin.find_files`                | Lists Files in current directory.                                |
+| `builtin.git_files`                 | Lists Git files in current directory.                            |
+| `builtin.buffers`                   | Lists Open buffers in the current vim instance.                  |
+| `builtin.oldfiles`                  | Lists Previously open files.                                     |
+| `builtin.commands`                  | Lists Available plugin/user commands and run it.                 |
+| `builtin.command_history`           | Lists Commands previously ran and run it on enter.               |
+| `builtin.help_tags`                 | Lists Available help tags and open help document                 |
+| `builtin.man_pages`                 | Lists Man entries.                                               |
+| `builtin.marks`                     | Lists Markers and their value.                                   |
+| `builtin.colorscheme`               | Lists Colorscheme and switch to it on enter.                     |
+| `builtin.treesitter`                | Lists Function names, variables, from Treesitter!                |
+| `builtin.live_grep`                 | Searches in current directory files (respecting .gitignore)      | 
+| `builtin.current_buffer_fuzzy_find` | Searches in current buffer lines.                                |
+| `builtin.grep_string`               | Searches for a string under the cursor in current directory.     |
+| `builtin.lsp_references`            | Searches in LSP references.                                      |
+| `builtin.lsp_document_symbols`      | Searches in LSP Document Symbols in the current document.        |
+| `builtin.lsp_workspace_symbols`     | Searches in LSP all workspace symbols.                           |
+| `builtin.lsp_code_actions`          | Lists LSP action to be trigged on enter                          |
+| `builtin.quickfix`                  | Lists items from quickfix                                        |
+| `builtin.loclist`                   | Lists items from current window's location list.                 |
+| `builtin.reloader`                  | Lists lua modules and reload them on enter                       |
+| `builtin.vim_options`               | Lists vim options and on enter edit the options value            |
+| ..................................  | Your next awesome finder function here :D                        |
 
 
 #### Built-in Sorters 
 
-| Sorters                            | Description                                                     | Status |
-|------------------------------------|-----------------------------------------------------------------|--------|
-| `sorters.get_fuzzy_file`           | Telescope's default sorter for files                            | ...    |
-| `sorters.get_generic_fuzzy_sorter` | Telescope's default sorter for everything else                  | ...    |
-| `sorters.get_levenshtein_sorter`   | Using Levenshtein distance algorithm (don't use :D)             | ...    |
-| `sorters.get_fzy_sorter`           | Using fzy algorithm                                             | ...    |
-| `sorters.fuzzy_with_index_bias`    | Used to list stuff with consideration to when the item is added | WIP    |
-| .................................. | Your next awesome sorter here :D                                | PR     |
+| Sorters                            | Description                                                     |
+|------------------------------------|-----------------------------------------------------------------|
+| `sorters.get_fuzzy_file`           | Telescope's default sorter for files                            |
+| `sorters.get_generic_fuzzy_sorter` | Telescope's default sorter for everything else                  |
+| `sorters.get_levenshtein_sorter`   | Using Levenshtein distance algorithm (don't use :D)             |
+| `sorters.get_fzy_sorter`           | Using fzy algorithm                                             |
+| `sorters.fuzzy_with_index_bias`    | Used to list stuff with consideration to when the item is added |
+| .................................. | Your next awesome sorter here :D                                |
 
 A `Sorter` is called by the `Picker` on each item returned by the `Finder`. It
 return a number, which is equivalent to the "distance" between the current
@@ -333,10 +333,10 @@ return a number, which is equivalent to the "distance" between the current
 Common groups of settings can be set up to allow for themes.
 We have some built in themes but are looking for more cool options. 
 
-| Themes                   | Description                                                           | Status |
-|--------------------------|-----------------------------------------------------------------------|--------|
-| `themes.get_dropdown`    | A list like centered list. [example](https://i.imgur.com/SorAcXv.png) | ...    |
-| ...                      | Your next awesome theme here :D                                       | PR     |
+| Themes                   | Description                                                           |
+|--------------------------|-----------------------------------------------------------------------|
+| `themes.get_dropdown`    | A list like centered list. [example](https://i.imgur.com/SorAcXv.png) |
+| ...                      | Your next awesome theme here :D                                       |
 
 
 To use a theme, simply append it to a built-in function:
