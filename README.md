@@ -160,7 +160,9 @@ require('telescope').setup{
   -- ...
 }
 EOF
-````
+```
+
+<!-- TODO: move some options to Options affecting Behaviour -->
 
 #### Options affecting Presentation
 
@@ -179,17 +181,18 @@ EOF
 | `borderchars`          | The border chars, it gives border telescope window    | dict                       | 
 | `color_devicons`       | Whether to color devicons or not                      | boolean                    |
 | `use_less`             | Whether to use less or bat .. TODO                    | boolean                    |
+| `scroll_strategy`      | How to behave when the when there are no more item next/prev | cycle, nil          |
 
 #### Options affecting Sorting
 
 | Keys                   | Description                                           | Options                    |
 |------------------------|-------------------------------------------------------|----------------------------|
-| `file_sorter`          | The sorter for file lists.                            | [see sorters](#built-in-sorters)    |
-| `generic_sorter`       | The sorter for everything else.                       | [see sorters](#built-in-sorters)    |
-| `vimgrep_arguments`    | The command line argument for grep search ... TODO.   | dict                               |
-| `selection_strategy`   | What happens to the selection if the list changes.    | follow/reset/row                   | 
-| `file_ignore_patterns` | Pattern to be ignored `{ "scratch/.*", "%.env"}`      | dict                               | 
-| `shorten_path`         | Whether to shorten paths or not.                      | boolean                            |
+| `file_sorter`          | The sorter for file lists.                            | [Sorters](#built-in-sorters)   |
+| `generic_sorter`       | The sorter for everything else.                       | [Sorters](#built-in-sorters)   |
+| `vimgrep_arguments`    | The command line argument for grep search ... TODO.   | dict                       |
+| `selection_strategy`   | What happens to the selection if the list changes.    | follow/reset/row           | 
+| `file_ignore_patterns` | Pattern to be ignored `{ "scratch/.*", "%.env"}`      | dict                       | 
+| `shorten_path`         | Whether to shorten paths or not.                      | boolean                    |
 
 #### Mappings
 
