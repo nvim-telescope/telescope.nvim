@@ -177,7 +177,7 @@ require('telescope').setup{
     selection_strategy = "reset",
     sorting_strategy = "descending",
     layout_strategy = "horizontal",
-    layout_defualts = {
+    layout_defaults = {
       -- TODO add builtin options.
     },
     file_sorter =  require'telescope.sorters'.get_fuzzy_file ,
