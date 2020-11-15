@@ -461,7 +461,6 @@ previewers.help = defaulter(function(_)
 
         local best_entry = taglist[1]
         local new_bufnr = vim.fn.bufnr(find_rtp_file('doc/' .. best_entry.filename), true)
-        print(vim.inspect(new_bufnr))
 
         vim.api.nvim_buf_set_option(new_bufnr, 'filetype', 'help')
         vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
