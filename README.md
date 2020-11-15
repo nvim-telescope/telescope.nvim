@@ -216,8 +216,7 @@ Many familiar mapping patterns are setup as defaults.
 To see the full list of mappings, check out `lua/telescope/mappings.lua` and
 the `default_mappings` table.  
 
-To change default mapping globally, then change default->mappings dict
-<!-- TODO should be in the wiki -->
+Below are examples of how you can change mappings globally.
 
 ```lua
 local actions = require('telescope.actions')
@@ -274,8 +273,6 @@ require('telescope.builtin').fd({
   end
 })
 ```
-
-
 
 
 ## Built-in Pickers
@@ -389,10 +386,6 @@ Picker:new{
 }
 ```
 
-##### Examples
-
-###### Override mappings
-
 To override only *some* of the default mappings, you can use the
 `attach_mappings` key in the `setup` table. For example:
 
@@ -411,10 +404,6 @@ function my_custom_picker(results)
   }):find()
 end
 ```
-
-###### Planets example 
-
-see `lua/builtins.lua/planents`
 
 #### Layout (display)
 <!-- TODO need some work -->
@@ -439,13 +428,17 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
 end
 ```
 
-#### Command-line `WIP`
+#### Command-line
 
 All `telescope.nvim` functions are wrapped in `vim` commands for easy access, its
 supports tab completions and settings options.
 
 ```viml
-:Telescope find_files |<tab> 
+" Tab completion 
+:Telescope |<tab> 
+:Telescope find_files
+
+" Setting options
 :Telescope find_files prompt_prefix=🔍 
 
 " If option is table type in lua code ,you can use `,` connect each command string eg:
