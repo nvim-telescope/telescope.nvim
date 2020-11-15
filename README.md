@@ -217,17 +217,27 @@ Many familiar mapping patterns are setup as defaults.
 To see the full list of mappings, check out `lua/telescope/mappings.lua` and
 the `default_mappings` table.  
 
-Below are examples of how you can change mappings globally.
+
+Much like [built-in pickers](#built-in-pickers), there are a number of
+[built-in actions](https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/actions.lua) you can pick from to remap your telescope buffer mappings:
 
 ```lua
+-- Built-in actions
 local actions = require('telescope.actions')
 
--- If you want your function to run after another action you should define it as follows
-local test_action = actions._transform_action(function(prompt_bufnr)
-  print("This function ran after another action. Prompt_bufnr: " .. prompt_bufnr)
-  -- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
-end)
+-- or create your custom action
+local function my_cool_custom_action(prompt_bufnr)
+  print("Action was attached with prompt_bufnr: ", prompt_bufnr)
+-- Enter your function logic here. 
+-- You can take inspiration from lua/telescope/actions.lua
+end
+```
 
+To remap telescope mappings and make them apply to all pickers:
+
+```lua
+-- Global remapping
+------------------------------
 require('telescope').setup{
   defaults = {
     mappings = {
@@ -240,41 +250,30 @@ require('telescope').setup{
         -- Add up multiple actions
         ["<CR>"] = actions.goto_file_selection_edit + actions.center,
         -- You can perform as many actions in a row as you like
-        ["<CR>"] = actions.goto_file_selection_edit + actions.center + test_action,
+        ["<CR>"] = actions.goto_file_selection_edit + actions.center + my_cool_custom_action,
       },
       n = {
         ["<esc>"] = actions.close
+        ["<C-i>"] = my_cool_custom_action,
       },
     },
   }
 }
-
--- You can also define your own functions, which then can be mapped to a key
-local function test_action(prompt_bufnr)
-  print("Action was attached with prompt_bufnr: ", prompt_bufnr)
--- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
-end
-["<C-i>"] = test_action,
-
--- If you want your function to run after another action you should define it as follows
-local test_action = actions._transform_action(function(prompt_bufnr)
-  print("This function ran after another action. Prompt_bufnr: " .. prompt_bufnr)
--- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
-end)
-["<C-i>"] = actions.goto_file_selection_split + test_action
 ```
 
-Configuring the mappings of a [built-in picker](#built-in-pickers)
-  is done by setting its `attach_mappings` key to a function:
+For a [picker](#built-in-pickers) specific remapping, it can be done by setting
+its `attach_mappings` key to a function, like this
 
 ```lua 
+-- Picker specific remapping
+------------------------------
 require('telescope.builtin').fd({
   attach_mappings = function(prompt_bufnr, map)
     map('i', '<esc>', actions.close)
+    map('i', '<c-i>', my_cool_custom_action)
   end
 })
 ```
-
 
 ## Built-in Pickers
 
