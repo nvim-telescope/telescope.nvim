@@ -305,6 +305,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.loclist`                   | Lists items from current window's location list.                 |
 | `builtin.reloader`                  | Lists lua modules and reload them on enter                       |
 | `builtin.vim_options`               | Lists vim options and on enter edit the options value            |
+| `builtin.keymaps`                   | Lists normal-mode mappings                                       |
 | ..................................  | Your next awesome finder function here :D                        |
 
 
