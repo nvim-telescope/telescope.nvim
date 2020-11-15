@@ -418,31 +418,47 @@ previewers.help = defaulter(function(_)
     preview_fn = function(self, entry, status)
       with_preview_window(status, nil, function()
         local special_chars = ":~^.?/%[%]%*"
+        local delim = string.char(9)
 
         local escaped = vim.fn.escape(entry.value, special_chars)
-        local tagfile = vim.fn.expand("$VIMRUNTIME") .. '/doc/tags'
-        local old_tags = vim.o.tags
 
-        vim.o.tags = ''
+        local tags = {}
+        local tag_entry
         for _,file in pairs(vim.fn.findfile('doc/tags', vim.o.runtimepath, -1)) do
-          vim.o.tags = vim.o.tags .. file .. ','
+          local f = assert(io.open(file, "rb"))
+            for line in f:lines() do
+              tag_entry = {}
+              for match in (line..delim):gmatch("(.-)" .. delim) do
+                if vim.tbl_isempty(tag_entry) then
+                  tag_entry.name = match
+                elseif not tag_entry.filename then
+                  tag_entry.filename = match
+                else
+                  tag_entry.cmd = match
+                end
+              end
+
+              table.insert(tags, tag_entry)
+            end
+          f:close()
         end
 
-        vim.o.tags = vim.o.tags:sub(1,-2) -- Remove trailing comma
-        print(vim.inspect(vim.o.tags))
-        local taglist = vim.fn.taglist('^' .. escaped .. '$')
-        vim.o.tags = old_tags
-
-        if vim.tbl_isempty(taglist) then
-          taglist = vim.fn.taglist(escaped, tagfile)
+        local search_tags = function(pattern)
+          local results = {}
+          for _, tag in pairs(tags) do
+            if vim.fn.match(tag.name, pattern) ~= -1 then
+              table.insert(results, tag)
+            end
+          end
+          return results
         end
 
-        if vim.tbl_isempty(taglist) then
-          return
-        end
+        local taglist = search_tags('^' .. escaped .. '$')
+        if taglist == {} then taglist = search_tags(escaped) end
 
         local best_entry = taglist[1]
-        local new_bufnr = vim.fn.bufnr(best_entry.filename, true)
+        local new_bufnr = vim.fn.bufnr(vim.fn.findfile('doc/'..best_entry.filename, vim.o.runtimepath), true)
+        print(vim.inspect(new_bufnr))
 
         vim.api.nvim_buf_set_option(new_bufnr, 'filetype', 'help')
         vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
@@ -451,6 +467,7 @@ previewers.help = defaulter(function(_)
 
         -- remove leading '/'
         search_query = search_query:sub(2)
+        print(search_query)
 
         -- Set the query to "very nomagic".
         -- This should make it work quite nicely given tags.
