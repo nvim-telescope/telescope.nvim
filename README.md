@@ -164,51 +164,51 @@ EOF
 
 #### Options affecting Presentation
 
-| Description                                           | Keys                   | Options                    |
-|-------------------------------------------------------|------------------------|----------------------------|
-| Where the prompt should be located.                   | `prompt_position`      | top/bottom                 |
-| What should the prompt prefix be.                     | `prompt_prefix`        | string                     |
-| Where first selection should be located.              | `sorting_strategy`     | descending/ascending       |
-| How the telescope is drawn.                           | `layout_strategy`      | [supported layouts](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts) |
-| How transparent is the telescope window should be.    | `winblend`             | NUM                        |
-| Layout specific configuration ........ TODO           | `layout_defaults`      | TODO                       |
-| TODO                                                  | `width`                | NUM                        |
-| TODO                                                  | `preview_cutoff`       | NUM                        |
-| TODO                                                  | `results_height`       | NUM                        |
-| TODO                                                  | `results_width`        | NUM                        |
-| The border chars, it gives border telescope window    | `borderchars`          | dict                       | 
-| Whether to color devicons or not                      | `color_devicons`       | boolean                    |
-| Whether to use less or bat .. TODO                    | `use_less`             | boolean                    |
+| Keys                   | Description                                           | Options                    |
+|------------------------|-------------------------------------------------------|----------------------------|
+| `prompt_position`      | Where the prompt should be located.                   | top/bottom                 |
+| `prompt_prefix`        | What should the prompt prefix be.                     | string                     |
+| `sorting_strategy`     | Where first selection should be located.              | descending/ascending       |
+| `layout_strategy`      | How the telescope is drawn.                           | [supported layouts](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts) |
+| `winblend`             | How transparent is the telescope window should be.    | NUM                        |
+| `layout_defaults`      | Layout specific configuration ........ TODO           | TODO                       |
+| `width`                | TODO                                                  | NUM                        |
+| `preview_cutoff`       | TODO                                                  | NUM                        |
+| `results_height`       | TODO                                                  | NUM                        |
+| `results_width`        | TODO                                                  | NUM                        |
+| `borderchars`          | The border chars, it gives border telescope window    | dict                       | 
+| `color_devicons`       | Whether to color devicons or not                      | boolean                    |
+| `use_less`             | Whether to use less or bat .. TODO                    | boolean                    |
 
 #### Options affecting Sorting
 
-| Description                                           | Keys                   | Options                    |
-|-------------------------------------------------------|------------------------|----------------------------|
-| The sorter for file lists.                            | `file_sorter`          | [see sorters](#built-in-sorters)    |
-| The sorter for everything else.                       | `generic_sorter`       | [see sorters](#built-in-sorters)    |
-| The command line argument for grep search ... TODO.   | `vimgrep_arguments`    | dict                               |
-| ... TODO                                              | `selection_strategy`   | follow/reset/row                   | 
-| Pattern to be ignored `{ "scratch/.*", "%.env"}`      | `file_ignore_patterns` | dict                               | 
-| Whether to shorten paths or not.                      | `shorten_path`         | boolean                            |
+| Keys                   | Description                                           | Options                    |
+|------------------------|-------------------------------------------------------|----------------------------|
+| `file_sorter`          | The sorter for file lists.                            | [see sorters](#built-in-sorters)    |
+| `generic_sorter`       | The sorter for everything else.                       | [see sorters](#built-in-sorters)    |
+| `vimgrep_arguments`    | The command line argument for grep search ... TODO.   | dict                               |
+| `selection_strategy`   | ... TODO                                              | follow/reset/row                   | 
+| `file_ignore_patterns` | Pattern to be ignored `{ "scratch/.*", "%.env"}`      | dict                               | 
+| `shorten_path`         | Whether to shorten paths or not.                      | boolean                            |
 
 #### Mappings
 
 Mappings are fully customizable.
 Many familiar mapping patterns are setup as defaults.
 
-| Action                           | Mappings       |
-|----------------------------------|----------------|
-| Next item                        | `<C-n>/<Down>` |
-| Previous item                    | `<C-p>/<Up>`   |
-| Next/previous (in normal mode)   | `j/k`          |
-| Confirm selection                | `<CR>`         |
-| go to file selection as a split  | `<C-x>`        |
-| go to file selection as a vsplit | `<C-v>`        |
-| go to a file in a new tab        | `<C-t>`        |
-| scroll up in preview window      | `<C-u>`        |
-| scroll down in preview window    | `<C-d>`        |
-| close telescope                  | `<C-c>`        |
-| close telescope (in normal mode) | `<Esc>`        |
+| Mappings       | Action                           |
+|----------------|----------------------------------|
+| `<C-n>/<Down>` | Next item                        |
+| `<C-p>/<Up>`   | Previous item                    |
+| `j/k`          | Next/previous (in normal mode)   |
+| `<CR>`         | Confirm selection                |
+| `<C-x>`        | go to file selection as a split  |
+| `<C-v>`        | go to file selection as a vsplit |
+| `<C-t>`        | go to a file in a new tab        |
+| `<C-u>`        | scroll up in preview window      |
+| `<C-d>`        | scroll down in preview window    |
+| `<C-c>`        | close telescope                  |
+| `<Esc>`        | close telescope (in normal mode) |
 
 To see the full list of mappings, check out `lua/telescope/mappings.lua` and
 the `default_mappings` table.  
