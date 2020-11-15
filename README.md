@@ -29,7 +29,7 @@ interface.
 - [Built-in pickers](#built-in-pickers)
 - [API](#api)
 - [Media](#media)
-- [Gallery](https://github.com/nvim-lua/telescope.nvim/wiki/Gallery)
+- [Gallery](https://github.com/nvim-telescope/telescope.nvim/wiki/Gallery)
 - [FAQ](#faq)
 - [Contributing](#contribution)
 
@@ -56,7 +56,7 @@ Using [vim-plug](https://github.com/junegunn/vim-plug)
 ```viml
 Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-lua/telescope.nvim'
+Plug 'nvim-telescope/telescope.nvim'
 ```
 
 Using [dein](https://github.com/Shougo/dein.vim)
@@ -64,13 +64,13 @@ Using [dein](https://github.com/Shougo/dein.vim)
 ```viml
 call dein#add('nvim-lua/popup.nvim')
 call dein#add('nvim-lua/plenary.nvim')
-call dein#add('nvim-lua/telescope.nvim')
+call dein#add('nvim-telescope/telescope.nvim')
 ```
 Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua 
 use {
-  'nvim-lua/telescope.nvim',
+  'nvim-telescope/telescope.nvim',
   requires = {{'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'}}
 }
 ```
