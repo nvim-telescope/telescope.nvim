@@ -229,7 +229,7 @@ builtin.lsp_code_actions = function(opts)
 
   local results = (results_lsp[1] or results_lsp[2]).result;
 
-  if #results == 0 then
+  if not results or #results == 0 then
     print("No code actions available")
     return
   end
