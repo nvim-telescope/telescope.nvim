@@ -361,6 +361,12 @@ require'telescope.builtin'.buffers{
 
 Search on vim buffers list.
 
+```lua
+require'telescope.builtin'.help_tags{}
+```
+
+Search on the helptags in each directory in the runtimepath
+
 #### LSP
 
 ```lua

@@ -486,22 +486,20 @@ end
 builtin.help_tags = function(opts)
   opts = opts or {}
 
-  local sourced_file = require('plenary.debug_utils').sourced_filepath()
-  local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h")
-  local file = base_directory .. "/data/help/tags"
-
   local tags = {}
-  local f = assert(io.open(file, "rb"))
-    for line in f:lines() do
-      table.insert(tags, line)
-    end
-  f:close()
+  for _, file in pairs(vim.fn.findfile('doc/tags', vim.o.runtimepath, -1)) do
+    local f = assert(io.open(file, "rb"))
+      for line in f:lines() do
+        table.insert(tags, line)
+      end
+    f:close()
+  end
 
   pickers.new(opts, {
     prompt_title = 'Help',
     finder = finders.new_table {
       results = tags,
-      entry_maker = make_entry.gen_from_tagfile(opts),
+      entry_maker = make_entry.gen_from_taglist(opts),
     },
     -- TODO: previewer for Vim help
     previewer = previewers.help.new(opts),
