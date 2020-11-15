@@ -94,23 +94,21 @@ nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
 nnoremap <leader>ff <cmd>lua require('telescope.builtin').help_tags()<cr>
 ```
 
-See [built-in pickers](#built-in-pickers)
-  for the list of all built-in functions.
-
-
-<!-- Section -->
+See [built-in pickers](#built-in-pickers) for the list of all built-in
+functions.
 
 
 ## Customization
 
-You can configure `telescope.nvim` at two levels:
-  globally, through the `setup()` method,
-  or in a finer-grained manner
-  by passing options to individual built-in pickers.
+This section should help you explore available options to configure and
+customize your `telescope.nvim`.
 
-|  [Presentation](#presentation) | [Sorting](#sorting) | [Mappings](#mappings)
+`Telescope.nvim` can be configured at two levels: 
 
-#### Presentation
+- **Global** (i.e. effecting all pickers) through the `setup()` method, or 
+- **Individual** (i.e. effecting a single picker) through passing `opts` built-in pickers (e.g. `builtin.fd(opts)` )
+
+#### Options effecting Presentation
 
 | Description                                           | Keys                   | Options                    |
 |-------------------------------------------------------|------------------------|----------------------------|
@@ -128,7 +126,7 @@ You can configure `telescope.nvim` at two levels:
 | Whether to color devicons or not                      | `color_devicons`       | boolean                    |
 | Whether to use less or bat .. TODO                    | `use_less`             | boolean                    |
 
-#### Sorting
+#### Options effecting Sorting
 
 | Description                                           | Keys                   | Options                    |
 |-------------------------------------------------------|------------------------|----------------------------|
@@ -140,11 +138,10 @@ You can configure `telescope.nvim` at two levels:
 | Whether to shorten paths or not.                      | `shorten_path`         | boolean                            |
 
 
-#### Defaults
+#### Telescope Defaults
 
-As an example of using the `setup()` method,
-  the following code configures `telescope.nvim`
-  to its default settings.
+As an example of using the `setup()` method, the following code configures
+`telescope.nvim` to its default settings.
 
 ```lua
 require('telescope').setup{
@@ -279,7 +276,7 @@ require('telescope.builtin').fd({
 
 ## Built-in Pickers
 
-Built-in function ready to be bound :D.
+Built-in function ready to be bound to any key you like :smile:.
 
 | Functions                           | Description                                                      | Status |
 |-------------------------------------|------------------------------------------------------------------|--------|
