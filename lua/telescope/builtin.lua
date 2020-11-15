@@ -212,7 +212,7 @@ builtin.lsp_code_actions = function(opts)
   local params = vim.lsp.util.make_range_params()
 
   params.context = {
-    diagnostics = vim.lsp.util.get_line_diagnostics()
+    diagnostics = vim.lsp.diagnostic.get_line_diagnostics()
   }
 
   local results_lsp, err = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, opts.timeout or 10000)
