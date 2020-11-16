@@ -223,7 +223,7 @@ end
 function Picker:clear_extra_rows(results_bufnr)
   if self:is_done() then return end
 
-  if not vim.api.nvim_buf_is_valid(results_bufnr) then
+  if not a.nvim_buf_is_valid(results_bufnr) then
     log.debug("Invalid results_bufnr for clearing:", results_bufnr)
     return
   end
@@ -237,7 +237,7 @@ function Picker:clear_extra_rows(results_bufnr)
       return
     end
 
-    pcall(vim.api.nvim_buf_set_lines, results_bufnr, num_results, self.max_results, false, {})
+    pcall(a.nvim_buf_set_lines, results_bufnr, num_results, self.max_results, false, {})
   else
     worst_line = self:get_row(self.manager:num_results())
     if worst_line <= 0 then
@@ -245,7 +245,7 @@ function Picker:clear_extra_rows(results_bufnr)
     end
 
     local empty_lines = utils.repeated_table(worst_line, "")
-    pcall(vim.api.nvim_buf_set_lines, results_bufnr, 0, worst_line, false, empty_lines)
+    pcall(a.nvim_buf_set_lines, results_bufnr, 0, worst_line, false, empty_lines)
   end
 
   log.trace("Clearing:", worst_line)
@@ -256,9 +256,9 @@ function Picker:highlight_displayed_rows(results_bufnr, prompt)
     return
   end
 
-  vim.api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_matching, 0, -1)
+  a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_matching, 0, -1)
 
-  local displayed_rows = vim.api.nvim_buf_get_lines(results_bufnr, 0, -1, false)
+  local displayed_rows = a.nvim_buf_get_lines(results_bufnr, 0, -1, false)
   for row_index = 1, math.min(#displayed_rows, self.max_results) do
     local display = displayed_rows[row_index]
 
@@ -286,7 +286,7 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
 
       self:_increment('highlights')
 
-      vim.api.nvim_buf_add_highlight(
+      a.nvim_buf_add_highlight(
         results_bufnr,
         ns_telescope_matching,
         highlight,
@@ -343,9 +343,7 @@ function Picker:find()
   a.nvim_win_set_option(results_win, 'winhl', 'Normal:TelescopeNormal')
   a.nvim_win_set_option(results_win, 'winblend', self.window.winblend)
   local results_border_win = results_opts.border and results_opts.border.win_id
-  if results_border_win then
-    vim.api.nvim_win_set_option(results_border_win, 'winhl', 'Normal:TelescopeResultsBorder')
-  end
+  if results_border_win then a.nvim_win_set_option(results_border_win, 'winhl', 'Normal:TelescopeResultsBorder') end
 
 
   local preview_win, preview_opts, preview_bufnr
@@ -356,9 +354,7 @@ function Picker:find()
     a.nvim_win_set_option(preview_win, 'winhl', 'Normal:TelescopeNormal')
     a.nvim_win_set_option(preview_win, 'winblend', self.window.winblend)
     local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
-    if preview_border_win then
-      vim.api.nvim_win_set_option(preview_border_win, 'winhl', 'Normal:TelescopePreviewBorder')
-    end
+    if preview_border_win then a.nvim_win_set_option(preview_border_win, 'winhl', 'Normal:TelescopePreviewBorder') end
   end
 
   -- TODO: We need to center this and make it prettier...
@@ -367,7 +363,7 @@ function Picker:find()
   a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
   a.nvim_win_set_option(prompt_win, 'winblend', self.window.winblend)
   local prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
-  if prompt_border_win then vim.api.nvim_win_set_option(prompt_border_win, 'winhl', 'Normal:TelescopePromptBorder') end
+  if prompt_border_win then a.nvim_win_set_option(prompt_border_win, 'winhl', 'Normal:TelescopePromptBorder') end
 
   -- Prompt prefix
   local prompt_prefix = self.prompt_prefix
@@ -389,27 +385,27 @@ function Picker:find()
   -- First thing we want to do is set all the lines to blank.
   self.max_results = popup_opts.results.height
 
-  vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
+  a.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
 
   local selection_strategy = self.selection_strategy or 'reset'
 
   local update_status = function()
     local text = self:get_status_text()
-    local current_prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, 0, 1, false)[1]
+    local current_prompt = a.nvim_buf_get_lines(prompt_bufnr, 0, 1, false)[1]
     if not current_prompt then
       return
     end
 
-    if not vim.api.nvim_win_is_valid(prompt_win) then
+    if not a.nvim_win_is_valid(prompt_win) then
       return
     end
 
     local expected_prompt_len = #self.prompt_prefix + 1
     local prompt_len = #current_prompt < expected_prompt_len and expected_prompt_len or #current_prompt
 
-    local padding = string.rep(" ", vim.api.nvim_win_get_width(prompt_win) - prompt_len - #text - 3)
-    vim.api.nvim_buf_clear_namespace(prompt_bufnr, ns_telescope_prompt, 0, 1)
-    vim.api.nvim_buf_set_virtual_text(prompt_bufnr, ns_telescope_prompt, 0, { {padding .. text, "NonText"} }, {})
+    local padding = string.rep(" ", a.nvim_win_get_width(prompt_win) - prompt_len - #text - 3)
+    a.nvim_buf_clear_namespace(prompt_bufnr, ns_telescope_prompt, 0, 1)
+    a.nvim_buf_set_virtual_text(prompt_bufnr, ns_telescope_prompt, 0, { {padding .. text, "NonText"} }, {})
 
     self:_increment("status")
   end
@@ -419,7 +415,7 @@ function Picker:find()
   local on_lines = function(_, _, _, first_line, last_line)
     self:_reset_track()
 
-    if not vim.api.nvim_buf_is_valid(prompt_bufnr) then
+    if not a.nvim_buf_is_valid(prompt_bufnr) then
       log.debug("ON_LINES: Invalid prompt_bufnr", prompt_bufnr)
       return
     end
@@ -435,7 +431,7 @@ function Picker:find()
     end
 
     -- TODO: Statusbar possibilities here.
-    -- vim.api.nvim_buf_set_virtual_text(prompt_bufnr, 0, 1, { {"hello", "Error"} }, {})
+    -- a.nvim_buf_set_virtual_text(prompt_bufnr, 0, 1, { {"hello", "Error"} }, {})
 
     -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
 
@@ -557,7 +553,7 @@ function Picker:find()
   update_status()
 
   -- Register attach
-  vim.api.nvim_buf_attach(prompt_bufnr, false, {
+  a.nvim_buf_attach(prompt_bufnr, false, {
     on_lines = on_lines,
     on_detach = vim.schedule_wrap(function()
       self:_reset_highlights()
@@ -610,7 +606,7 @@ function Picker:find()
   pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')
 
   if self.default_text then
-    vim.api.nvim_buf_set_lines(prompt_bufnr, 0, 1, false, {self.default_text})
+    a.nvim_buf_set_lines(prompt_bufnr, 0, 1, false, {self.default_text})
   end
 
   vim.cmd [[startinsert!]]
@@ -632,22 +628,22 @@ function Picker.close_windows(status)
   local preview_border_win = status.preview_border_win
 
   local function del_win(name, win_id, force, bdelete)
-    if not vim.api.nvim_win_is_valid(win_id) then
+    if not a.nvim_win_is_valid(win_id) then
       return
     end
 
-    local bufnr = vim.api.nvim_win_get_buf(win_id)
+    local bufnr = a.nvim_win_get_buf(win_id)
     if bdelete
-        and vim.api.nvim_buf_is_valid(bufnr)
-        and not vim.api.nvim_buf_get_option(bufnr, 'buflisted') then
+        and a.nvim_buf_is_valid(bufnr)
+        and not a.nvim_buf_get_option(bufnr, 'buflisted') then
       vim.cmd(string.format("silent! bdelete! %s", bufnr))
     end
 
-    if not vim.api.nvim_win_is_valid(win_id) then
+    if not a.nvim_win_is_valid(win_id) then
       return
     end
 
-    if not pcall(vim.api.nvim_win_close, win_id, force) then
+    if not pcall(a.nvim_win_close, win_id, force) then
       log.trace("Unable to close window: ", name, "/", win_id)
     end
   end
@@ -737,7 +733,7 @@ function Picker:set_selection(row)
 
   state.set_global_key("selected_entry", entry)
 
-  if not vim.api.nvim_buf_is_valid(results_bufnr) then
+  if not a.nvim_buf_is_valid(results_bufnr) then
     return
   end
 
@@ -836,12 +832,12 @@ function Picker:entry_adder(index, entry, score)
 
   -- TODO: Don't need to schedule this if we schedule the adder.
   vim.schedule(function()
-    if not vim.api.nvim_buf_is_valid(self.results_bufnr) then
+    if not a.nvim_buf_is_valid(self.results_bufnr) then
       log.debug("ON_ENTRY: Invalid buffer")
       return
     end
 
-    local set_ok = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + 1, false, {display})
+    local set_ok = pcall(a.nvim_buf_set_lines, self.results_bufnr, row, row + 1, false, {display})
     if set_ok and display_highlights then
       self.highlighter:hi_display(row, prefix, display_highlights)
     end
@@ -850,7 +846,7 @@ function Picker:entry_adder(index, entry, score)
     --  So we'll clean it up for them if it fails.
     if not set_ok and display:find("\n") then
       display = display:gsub("\n", " | ")
-      vim.api.nvim_buf_set_lines(self.results_bufnr, row, row + 1, false, {display})
+      a.nvim_buf_set_lines(self.results_bufnr, row, row + 1, false, {display})
     end
   end)
 end
@@ -926,7 +922,7 @@ function pickers.on_close_prompt(prompt_bufnr)
   end
 
   -- TODO: This is an attempt to clear all the memory stuff we may have left.
-  -- vim.api.nvim_buf_detach(prompt_bufnr)
+  -- a.nvim_buf_detach(prompt_bufnr)
 
   picker.close_windows(status)
 end

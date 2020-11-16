@@ -15,7 +15,7 @@ local slow_proc = function(opts)
     opts.cwd = vim.fn.expand(opts.cwd)
   end
 
-  opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_string(opts)
 
   local p = pickers.new(opts, {
     prompt = 'Slow Proc',
@@ -48,7 +48,7 @@ local slow_proc = function(opts)
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(text, true, false, true), 'n', true)
   end
 
-  if true then
+  if false then
     p:register_completion_callback(coroutine.wrap(function()
       local input = "pickers.lua"
       for i = 1, #input do

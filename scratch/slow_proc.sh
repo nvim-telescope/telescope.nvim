@@ -1,11 +1,10 @@
 
-echo "hello"
+echo "lua/telescope/WIP.lua"
 sleep 1
-echo "help"
+echo "lua/telescope/actions.lua"
 sleep 1
-echo "hi"
+echo "README.md"
 sleep 1
-echo "husband"
+echo "Makefile"
 sleep 1
-echo "helper"
-
+echo "./data/"
