@@ -469,7 +469,6 @@ previewers.help = defaulter(function(_)
 
         -- remove leading '/'
         search_query = search_query:sub(2)
-        print(search_query)
 
         -- Set the query to "very nomagic".
         -- This should make it work quite nicely given tags.
