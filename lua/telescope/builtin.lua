@@ -804,12 +804,15 @@ builtin.current_buffer_fuzzy_find = function(opts)
     table.insert(lines_with_numbers, {k, v})
   end
 
+  local bufnr = vim.api.nvim_get_current_buf()
+
   pickers.new(opts, {
     prompt_title = 'Current Buffer Fuzzy',
     finder = finders.new_table {
       results = lines_with_numbers,
       entry_maker = function(enumerated_line)
         return {
+          bufnr = bufnr,
           display = enumerated_line[2],
           ordinal = enumerated_line[2],
 
@@ -818,17 +821,13 @@ builtin.current_buffer_fuzzy_find = function(opts)
       end
     },
     sorter = sorters.get_generic_fuzzy_sorter(),
-    attach_mappings = function(prompt_bufnr, map)
-      local goto_line = function()
-        local selection = actions.get_selected_entry(prompt_bufnr)
-        actions.close(prompt_bufnr)
-
-        vim.api.nvim_win_set_cursor(0, {selection.lnum, 0})
-        vim.cmd [[stopinsert]]
-      end
-
-      map('n', '<CR>', goto_line)
-      map('i', '<CR>', goto_line)
+    attach_mappings = function(prompt_bufnr)
+      actions._goto_file_selection:enhance {
+        post = vim.schedule_wrap(function()
+          local selection = actions.get_selected_entry(prompt_bufnr)
+          vim.api.nvim_win_set_cursor(0, {selection.lnum, 0})
+        end),
+      }
 
       return true
     end
