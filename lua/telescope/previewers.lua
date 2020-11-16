@@ -418,25 +418,49 @@ previewers.help = defaulter(function(_)
     preview_fn = function(self, entry, status)
       with_preview_window(status, nil, function()
         local special_chars = ":~^.?/%[%]%*"
+        local delim = string.char(9)
 
         local escaped = vim.fn.escape(entry.value, special_chars)
-        local tagfile = vim.fn.expand("$VIMRUNTIME") .. '/doc/tags'
-        local old_tags = vim.o.tags
+        local tags = {}
 
-        vim.o.tags = tagfile
-        local taglist = vim.fn.taglist('^' .. escaped .. '$', tagfile)
-        vim.o.tags = old_tags
-
-        if vim.tbl_isempty(taglist) then
-          taglist = vim.fn.taglist(escaped, tagfile)
+        local find_rtp_file = function(path, count)
+          return vim.fn.findfile(path, vim.o.runtimepath, count)
         end
 
-        if vim.tbl_isempty(taglist) then
-          return
+        local matches = {}
+        for _,file in pairs(find_rtp_file('doc/tags', -1)) do
+          local f = assert(io.open(file, "rb"))
+            for line in f:lines() do
+              matches = {}
+
+              for match in (line..delim):gmatch("(.-)" .. delim) do
+                table.insert(matches, match)
+              end
+
+              table.insert(tags, {
+                name = matches[1],
+                filename = matches[2],
+                cmd = matches[3]
+              })
+            end
+          f:close()
         end
+
+        local search_tags = function(pattern)
+          local results = {}
+          for _, tag in pairs(tags) do
+            if vim.fn.match(tag.name, pattern) ~= -1 then
+              table.insert(results, tag)
+            end
+          end
+          return results
+        end
+
+        local taglist = search_tags('^' .. escaped .. '$')
+        if taglist == {} then taglist = search_tags(escaped) end
 
         local best_entry = taglist[1]
-        local new_bufnr = vim.fn.bufnr(best_entry.filename, true)
+        local new_bufnr = vim.fn.bufnr(find_rtp_file('doc/' .. best_entry.filename), true)
 
         vim.api.nvim_buf_set_option(new_bufnr, 'filetype', 'help')
         vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
