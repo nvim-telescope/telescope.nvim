@@ -61,6 +61,9 @@ function Picker:new(opts)
     error("layout_strategy and get_window_options are not compatible keys")
   end
 
+  -- Reset actions for any replaced / enhanced actions.
+  actions._clear()
+
   local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
 
   return setmetatable({
@@ -707,6 +710,8 @@ function Picker:set_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   local status = state.get_status(self.prompt_bufnr)
   local results_bufnr = status.results_bufnr
+
+  state.set_global_key("selected_entry", entry)
 
   if not vim.api.nvim_buf_is_valid(results_bufnr) then
     return
