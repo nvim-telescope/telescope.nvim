@@ -134,7 +134,7 @@ do
   end
 
   local execute_keys = {
-    path = function(t) 
+    path = function(t)
       return t.cwd .. path.separator .. t.filename, false
     end,
 
@@ -212,6 +212,24 @@ do
     return function(line)
       return setmetatable({line}, mt_vimgrep_entry)
     end
+  end
+end
+
+function make_entry.gen_from_git_commits(opts)
+  opts = opts or {}
+
+  return function(entry)
+    if entry == "" then
+      return nil
+    end
+
+    local sha, msg = string.match(entry, '([^ ]+) (.+)')
+
+    return {
+      value = sha,
+      ordinal = sha .. ' ' .. msg,
+      display = sha .. ' ' .. msg,
+    }
   end
 end
 

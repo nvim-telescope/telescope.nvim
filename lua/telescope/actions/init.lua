@@ -189,9 +189,22 @@ actions.insert_value = function(prompt_bufnr)
   return entry.value
 end
 
+actions.git_checkout = function(prompt_bufnr)
+  local selection = actions.get_selected_entry(prompt_bufnr)
+  actions.close(prompt_bufnr)
+  local val = selection.value
+  os.execute('git checkout ' .. val)
+end
+
+actions.git_add = function(prompt_bufnr)
+  local selection = actions.get_selected_entry(prompt_bufnr)
+  actions.close(prompt_bufnr)
+  local val = selection.value
+  os.execute('git add ' .. val)
+end
+
 -- ==================================================
 -- Transforms modules and sets the corect metatables.
 -- ==================================================
 actions = transform_mod(actions)
 return actions
-

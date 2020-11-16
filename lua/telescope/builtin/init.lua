@@ -39,39 +39,13 @@ local conf = require('telescope.config').values
 local filter = vim.tbl_filter
 local flatten = vim.tbl_flatten
 
-
 local builtin = {}
 
-builtin.git_files = function(opts)
-  opts = opts or {}
-
-  local show_untracked = utils.get_default(opts.show_untracked, true)
-
-  if opts.cwd then
-    opts.cwd = vim.fn.expand(opts.cwd)
-  else
-    --- Find root of git directory and remove trailing newline characters
-    opts.cwd = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
-
-    if 1 ~= vim.fn.isdirectory(opts.cwd) then
-      error("Not a working directory for git_files:" .. opts.cwd)
-    end
-  end
-
-  -- By creating the entry maker after the cwd options,
-  -- we ensure the maker uses the cwd options when being created.
-  opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
-
-  pickers.new(opts, {
-    prompt_title = 'Git File',
-    finder = finders.new_oneshot_job(
-      { "git", "ls-files", "--exclude-standard", "--cached", show_untracked and "--others" },
-      opts
-    ),
-    previewer = previewers.cat.new(opts),
-    sorter = conf.file_sorter(opts),
-  }):find()
-end
+builtin.git_files = require('telescope.builtin.git').files
+builtin.git_commits = require('telescope.builtin.git').commits
+builtin.git_bcommits = require('telescope.builtin.git').bcommits
+builtin.git_branches = require('telescope.builtin.git').branches
+builtin.git_status = require('telescope.builtin.git').status
 
 builtin.commands = function()
   pickers.new({}, {
