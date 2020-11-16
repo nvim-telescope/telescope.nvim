@@ -923,4 +923,54 @@ builtin.keymaps = function(opts)
   }):find()
 end
 
+builtin.tags = function(opts)
+  opts = opts or {}
+
+  local ctags_file = opts.ctags_file or 'tags'
+
+  if not vim.loop.fs_open(vim.fn.expand(ctags_file), "r", 438) then
+    print('Tags file does not exists. Create one with ctags -R')
+    return
+  end
+
+  local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file), "r", 438))
+  local stat = assert(vim.loop.fs_fstat(fd))
+  local data = assert(vim.loop.fs_read(fd, stat.size, 0))
+  assert(vim.loop.fs_close(fd))
+
+  local results = vim.split(data, '\n')
+
+  pickers.new(opts,{
+    prompt = 'Tags',
+    finder = finders.new_table {
+      results = results,
+      entry_maker = make_entry.gen_from_ctags(opts),
+    },
+    previewer = previewers.ctags.new(opts),
+    sorter = conf.generic_sorter(opts),
+    attach_mappings = function(prompt_bufnr)
+      actions._goto_file_selection:enhance {
+        post = function()
+          local selection = actions.get_selected_entry(prompt_bufnr)
+
+          local scode = string.gsub(selection.scode, '[$]$', '')
+          scode = string.gsub(scode, [[\\]], [[\]])
+          scode = string.gsub(scode, [[\/]], [[/]])
+          scode = string.gsub(scode, '[*]', [[\*]])
+
+          vim.cmd('norm! gg')
+          vim.fn.search(scode)
+          vim.cmd('norm! zz')
+        end,
+      }
+      return true
+    end
+  }):find()
+end
+
+builtin.current_buffer_tags = function(opts)
+  opts = opts or {}
+  return builtin.tags(vim.tbl_extend("force", {only_current_file = true, hide_filename = true}, opts))
+end
+
 return builtin
