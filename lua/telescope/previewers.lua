@@ -22,12 +22,12 @@ local bat_options = {"--style=plain", "--color=always", "--paging=always"}
 local has_less = (vim.fn.executable('less') == 1) and config.values.use_less
 
 local get_file_stat = function(filename)
-  return assert(vim.loop.fs_stat(vim.fn.expand(filename)))
+  return vim.loop.fs_stat(vim.fn.expand(filename)) or {}
 end
 
 local bat_maker = function(filename, lnum, start, finish)
   if get_file_stat(filename).type == 'directory' then
-    return { 'ls', '-la' }
+    return { 'ls', '-la', vim.fn.expand(filename) }
   end
 
   local command = {"bat"}
@@ -61,7 +61,7 @@ end
 -- TODO: Add other options for cat to do this better
 local cat_maker = function(filename, _, _, _)
   if get_file_stat(filename).type == 'directory' then
-    return { 'ls', '-la' }
+    return { 'ls', '-la', vim.fn.expand(filename) }
   end
 
   if 1 == vim.fn.executable('file') then
