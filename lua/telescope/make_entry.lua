@@ -559,4 +559,73 @@ function make_entry.gen_from_vimoptions(opts)
   end
 end
 
+function make_entry.gen_from_ctags(opts)
+  opts = opts or {}
+
+  local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
+  local current_file = path.normalize(vim.fn.expand('%'), cwd)
+
+  local display_items = {
+    { width = 30 },
+    { remaining = true },
+  }
+
+  if opts.show_line then
+    table.insert(display_items, 2, { width = 30 })
+  end
+
+  local displayer = entry_display.create {
+    separator = " │ ",
+    items = display_items,
+  }
+
+  local make_display = function(entry)
+    local filename
+    if not opts.hide_filename then
+      if opts.shorten_path then
+        filename = path.shorten(entry.filename)
+      else
+        filename = entry.filename
+      end
+    end
+
+    local scode
+    if opts.show_line then
+      scode = entry.scode
+    end
+
+    return displayer {
+      filename,
+      entry.tag,
+      scode,
+    }
+  end
+
+  return function(line)
+    if line == '' or line:sub(1, 1) == '!' then
+      return nil
+    end
+
+    local tag, file, scode = string.match(line, '([^\t]+)\t([^\t]+)\t/^\t?(.*)/;"\t+.*')
+
+    if opts.only_current_file and file ~= current_file then
+      return nil
+    end
+
+    return {
+      valid = true,
+
+      ordinal = file .. ': ' .. tag,
+      display = make_display,
+      scode = scode,
+      tag = tag,
+
+      filename = file,
+
+      col = 1,
+      lnum = 1,
+    }
+  end
+end
+
 return make_entry

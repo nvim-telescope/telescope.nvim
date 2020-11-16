@@ -400,6 +400,46 @@ previewers.vimgrep = defaulter(function(opts)
   }
 end, {})
 
+previewers.ctags = defaulter(function(opts)
+  return previewers.new {
+    setup = function()
+      return {}
+    end,
+
+    teardown = function(self)
+      if self.state and self.state.hl_id then
+        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+        self.state.hl_id = nil
+      end
+    end,
+
+    preview_fn = function(self, entry, status)
+      with_preview_window(status, nil, function()
+        local scode = string.gsub(entry.scode, '[$]$', '')
+        scode = string.gsub(scode, [[\\]], [[\]])
+        scode = string.gsub(scode, [[\/]], [[/]])
+        scode = string.gsub(scode, '[*]', [[\*]])
+
+        local new_bufnr = vim.fn.bufnr(entry.filename, true)
+        vim.fn.bufload(new_bufnr)
+
+        vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
+        vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
+        vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
+        vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
+        vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
+
+        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+        vim.fn.search(scode)
+        vim.cmd "norm zz"
+
+        self.state.hl_win = status.preview_win
+        self.state.hl_id = vim.fn.matchadd('Search', scode)
+      end)
+    end
+  }
+end, {})
+
 previewers.qflist = defaulter(function(opts)
   opts = opts or {}
 

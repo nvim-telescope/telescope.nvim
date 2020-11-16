@@ -43,8 +43,8 @@ end
 
 local function truncate(str, len)
   -- TODO: This doesn't handle multi byte chars...
-  if vim.fn.strdisplaywidth(str) > len - 1 then
-    str = str:sub(1, len)
+  if vim.fn.strdisplaywidth(str) > len then
+    str = str:sub(1, len - 1)
     str = str .. "…"
   end
   return str
@@ -68,8 +68,10 @@ entry_display.create = function(configuration)
 
   return function(self, picker)
     local results = {}
-    for k, v in ipairs(self) do
-      table.insert(results, generator[k](v, picker))
+    for i = 1, table.getn(generator) do
+      if self[i] ~= nil then
+        table.insert(results, generator[i](self[i], picker))
+      end
     end
 
     return table.concat(results, configuration.separator or "│")
