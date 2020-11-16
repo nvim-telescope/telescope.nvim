@@ -338,6 +338,32 @@ previewers.vim_buffer = defaulter(function(_)
   }
 end, {})
 
+previewers.git_commit_diff = defaulter(function(_)
+  return previewers.new_termopen_previewer {
+    get_command = function(entry)
+      local sha = entry.value
+      return { 'git', '--no-pager', 'diff', sha .. '^!' }
+    end
+  }
+end, {})
+
+previewers.git_branch_log = defaulter(function(_)
+  return previewers.new_termopen_previewer {
+    get_command = function(entry)
+      return { 'git', 'log', '--graph',
+               '--pretty=format:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset',
+               '--abbrev-commit', '--date=relative', entry.value }
+    end
+  }
+end, {})
+
+previewers.git_file_diff = defaulter(function(_)
+  return previewers.new_termopen_previewer {
+    get_command = function(entry)
+      return { 'git', '--no-pager', 'diff', entry.value }
+    end
+  }
+end, {})
 
 previewers.cat = defaulter(function(opts)
   local maker = get_maker(opts)
