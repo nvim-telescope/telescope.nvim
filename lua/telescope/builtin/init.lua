@@ -71,24 +71,20 @@ builtin.commands = function()
       end
     },
     sorter = conf.generic_sorter(),
-    attach_mappings = function(prompt_bufnr, map)
-      local run_command = function()
-        local selection = actions.get_selected_entry(prompt_bufnr)
+    attach_mappings = function(prompt_bufnr)
+      actions.goto_file_selection_edit:replace(function()
+        local selection = actions.get_selected_entry()
         actions.close(prompt_bufnr)
         local val = selection.value
         local cmd = string.format([[:%s ]], val.name)
 
         if val.nargs == "0" then
-            vim.cmd(cmd)
+          vim.cmd(cmd)
         else
-            vim.cmd [[stopinsert]]
-            vim.fn.feedkeys(cmd)
+          vim.cmd [[stopinsert]]
+          vim.fn.feedkeys(cmd)
         end
-
-      end
-
-      map('i', '<CR>', run_command)
-      map('n', '<CR>', run_command)
+      end)
 
       return true
     end
@@ -225,9 +221,9 @@ builtin.lsp_code_actions = function(opts)
         }
       end
     },
-    attach_mappings = function(prompt_bufnr, map)
-      local execute = function()
-        local selection = actions.get_selected_entry(prompt_bufnr)
+    attach_mappings = function(prompt_bufnr)
+      actions.goto_file_selection_edit:replace(function()
+        local selection = actions.get_selected_entry()
         actions.close(prompt_bufnr)
         local val = selection.value
 
@@ -241,10 +237,7 @@ builtin.lsp_code_actions = function(opts)
         else
           vim.lsp.buf.execute_command(val)
         end
-      end
-
-      map('i', '<CR>', execute)
-      map('n', '<CR>', execute)
+      end)
 
       return true
     end,
@@ -398,63 +391,59 @@ builtin.vim_options = function(opts)
   local vim_opts = loadfile(utils.data_directory() .. path.separator .. 'options' .. path.separator .. 'options.lua')().options
 
   pickers.new(opts, {
-      prompt = 'options',
-      finder = finders.new_table {
-        results = vim_opts,
-        entry_maker = make_entry.gen_from_vimoptions(opts),
-      },
-      -- TODO: previewer for Vim options
-      -- previewer = previewers.help.new(opts),
-      sorter = sorters.get_fzy_sorter(),
-      attach_mappings = function(prompt_bufnr, map)
-        local edit_option = function()
-          local selection = actions.get_selected_entry(prompt_bufnr)
-          local esc = ""
+    prompt = 'options',
+    finder = finders.new_table {
+      results = vim_opts,
+      entry_maker = make_entry.gen_from_vimoptions(opts),
+    },
+    -- TODO: previewer for Vim options
+    -- previewer = previewers.help.new(opts),
+    sorter = sorters.get_fzy_sorter(),
+    attach_mappings = function(prompt_bufnr)
+      actions.goto_file_selection_edit:replace(function()
+        local selection = actions.get_selected_entry()
+        local esc = ""
 
-
-          if vim.fn.mode() == "i" then
-            -- TODO: don't make this local
-            esc = vim.api.nvim_replace_termcodes("<esc>", true, false, true)
-          end
-
-          -- TODO: Make this actually work.
-
-          -- actions.close(prompt_bufnr)
-          -- vim.api.nvim_win_set_var(vim.fn.nvim_get_current_win(), "telescope", 1)
-          -- print(prompt_bufnr)
-          -- print(vim.fn.bufnr())
-          -- vim.cmd([[ autocmd BufEnter <buffer> ++nested ++once startinsert!]])
-          -- print(vim.fn.winheight(0))
-
-          -- local prompt_winnr = vim.fn.getbufinfo(prompt_bufnr)[1].windows[1]
-          -- print(prompt_winnr)
-
-          -- local float_opts = {}
-          -- float_opts.relative = "editor"
-          -- float_opts.anchor = "sw"
-          -- float_opts.focusable = false
-          -- float_opts.style = "minimal"
-          -- float_opts.row = vim.api.nvim_get_option("lines") - 2 -- TODO: include `cmdheight` and `laststatus` in this calculation
-          -- float_opts.col = 2
-          -- float_opts.height = 10
-          -- float_opts.width = string.len(selection.last_set_from)+15
-          -- local buf = vim.fn.nvim_create_buf(false, true)
-          -- vim.fn.nvim_buf_set_lines(buf, 0, 0, false, {"default value: abcdef", "last set from: " .. selection.last_set_from})
-          -- local status_win = vim.fn.nvim_open_win(buf, false, float_opts)
-          -- -- vim.api.nvim_win_set_option(status_win, "winblend", 100)
-          -- vim.api.nvim_win_set_option(status_win, "winhl", "Normal:PmenuSel")
-          -- -- vim.api.nvim_set_current_win(status_win)
-          -- vim.cmd[[redraw!]]
-          -- vim.cmd("autocmd CmdLineLeave : ++once echom 'beep'")
-          vim.api.nvim_feedkeys(string.format("%s:set %s=%s", esc, selection.name, selection.current_value), "m", true)
+        if vim.fn.mode() == "i" then
+          -- TODO: don't make this local
+          esc = vim.api.nvim_replace_termcodes("<esc>", true, false, true)
         end
 
-        map('i', '<CR>', edit_option)
-        map('n', '<CR>', edit_option)
+        -- TODO: Make this actually work.
 
-        return true
-      end
-    }):find()
+        -- actions.close(prompt_bufnr)
+        -- vim.api.nvim_win_set_var(vim.fn.nvim_get_current_win(), "telescope", 1)
+        -- print(prompt_bufnr)
+        -- print(vim.fn.bufnr())
+        -- vim.cmd([[ autocmd BufEnter <buffer> ++nested ++once startinsert!]])
+        -- print(vim.fn.winheight(0))
+
+        -- local prompt_winnr = vim.fn.getbufinfo(prompt_bufnr)[1].windows[1]
+        -- print(prompt_winnr)
+
+        -- local float_opts = {}
+        -- float_opts.relative = "editor"
+        -- float_opts.anchor = "sw"
+        -- float_opts.focusable = false
+        -- float_opts.style = "minimal"
+        -- float_opts.row = vim.api.nvim_get_option("lines") - 2 -- TODO: include `cmdheight` and `laststatus` in this calculation
+        -- float_opts.col = 2
+        -- float_opts.height = 10
+        -- float_opts.width = string.len(selection.last_set_from)+15
+        -- local buf = vim.fn.nvim_create_buf(false, true)
+        -- vim.fn.nvim_buf_set_lines(buf, 0, 0, false, {"default value: abcdef", "last set from: " .. selection.last_set_from})
+        -- local status_win = vim.fn.nvim_open_win(buf, false, float_opts)
+        -- -- vim.api.nvim_win_set_option(status_win, "winblend", 100)
+        -- vim.api.nvim_win_set_option(status_win, "winhl", "Normal:PmenuSel")
+        -- -- vim.api.nvim_set_current_win(status_win)
+        -- vim.cmd[[redraw!]]
+        -- vim.cmd("autocmd CmdLineLeave : ++once echom 'beep'")
+        vim.api.nvim_feedkeys(string.format("%s:set %s=%s", esc, selection.name, selection.current_value), "m", true)
+      end)
+
+      return true
+    end
+  }):find()
 end
 
 builtin.help_tags = function(opts)
@@ -478,37 +467,18 @@ builtin.help_tags = function(opts)
     -- TODO: previewer for Vim help
     previewer = previewers.help.new(opts),
     sorter = conf.generic_sorter(opts),
-    attach_mappings = function(prompt_bufnr, map)
-      local open = function(cmd)
-        local selection = actions.get_selected_entry(prompt_bufnr)
-
+    attach_mappings = function(prompt_bufnr)
+      actions._goto_file_selection:replace(function(_, cmd)
+        local selection = actions.get_selected_entry()
         actions.close(prompt_bufnr)
-        vim.cmd(cmd .. selection.value)
-      end
-      local nhelp = function()
-        return open("help ")
-      end
-      local vhelp = function()
-        return open("vert bo help ")
-      end
-      local hhelp = function()
-        return open("help ")
-        -- Not sure how explictly make horizontal
-      end
-      local thelp = function()
-        return open("tab help ")
-      end
-      -- Perhaps it would be a good idea to have vsplit,tab,hsplit open
-      -- a builtin action that accepts a command to be ran before creating
-      -- the split or tab
-      map('i', '<CR>',  nhelp)
-      map('n', '<CR>',  nhelp)
-      map('i', '<C-v>', vhelp)
-      map('n', '<C-v>', vhelp)
-      map('i', '<C-x>', hhelp)
-      map('n', '<C-x>', hhelp)
-      map('i', '<C-t>', thelp)
-      map('n', '<C-t>', thelp)
+        if cmd == 'edit' or cmd == 'new' then
+          vim.cmd('help ' .. selection.value)
+        elseif cmd == 'vnew' then
+          vim.cmd('vert bo help ' .. selection.value)
+        elseif cmd == 'tabedit' then
+          vim.cmd('tab help ' .. selection.value)
+        end
+      end)
 
       return true
     end
@@ -538,17 +508,14 @@ builtin.reloader = function(opts)
     -- previewer = previewers.vim_buffer.new(opts),
     sorter = conf.generic_sorter(opts),
 
-    attach_mappings = function(prompt_bufnr, map)
-      local reload_package = function()
-        local selection = actions.get_selected_entry(prompt_bufnr)
+    attach_mappings = function(prompt_bufnr)
+      actions.goto_file_selection_edit:replace(function()
+        local selection = actions.get_selected_entry()
 
         actions.close(prompt_bufnr)
         require('plenary.reload').reload_module(selection.value)
         print(string.format("[%s] - module reloaded", selection.value))
-      end
-
-      map('i', '<CR>', reload_package)
-      map('n', '<CR>', reload_package)
+      end)
 
       return true
     end
@@ -587,8 +554,8 @@ builtin.builtin = function(opts)
     },
     previewer = previewers.qflist.new(opts),
     sorter = conf.generic_sorter(opts),
-    attach_mappings = function(_, map)
-      map('i', '<CR>', actions.run_builtin)
+    attach_mappings = function(_)
+      actions.goto_file_selection_edit:replace(actions.run_builtin)
       return true
     end
   }):find()
@@ -758,9 +725,9 @@ builtin.planets = function(opts)
     },
     previewer = previewers.cat.new(opts),
     sorter = conf.generic_sorter(opts),
-    attach_mappings = function(prompt_bufnr, map)
-      map('i', '<CR>', function()
-        local selection = actions.get_selected_entry(prompt_bufnr)
+    attach_mappings = function(prompt_bufnr)
+      actions.goto_file_selection_edit:replace(function()
+        local selection = actions.get_selected_entry()
         actions.close(prompt_bufnr)
 
         print("Enjoy astronomy! You viewed:", selection.display)
@@ -795,12 +762,12 @@ builtin.current_buffer_fuzzy_find = function(opts)
       end
     },
     sorter = sorters.get_generic_fuzzy_sorter(),
-    attach_mappings = function(prompt_bufnr)
+    attach_mappings = function()
       actions._goto_file_selection:enhance {
-        post = vim.schedule_wrap(function()
-          local selection = actions.get_selected_entry(prompt_bufnr)
+        post = function()
+          local selection = actions.get_selected_entry()
           vim.api.nvim_win_set_cursor(0, {selection.lnum, 0})
-        end),
+        end,
       }
 
       return true
@@ -828,17 +795,19 @@ builtin.man_pages = function(opts)
     },
     previewer = previewers.man.new(opts),
     sorter = sorters.get_generic_fuzzy_sorter(),
-    attach_mappings = function(prompt_bufnr, map)
-      local view_manpage = function()
-        local selection = actions.get_selected_entry(prompt_bufnr)
+    attach_mappings = function(prompt_bufnr)
+      actions._goto_file_selection:replace(function(_, cmd)
+        local selection = actions.get_selected_entry()
 
         actions.close(prompt_bufnr)
-        print(vim.inspect(selection.value))
-        vim.cmd("Man " .. selection.value)
-      end
-
-      map('i', '<CR>', view_manpage)
-      map('n', '<CR>', view_manpage)
+        if cmd == 'edit' or cmd == 'new' then
+          vim.cmd('Man ' .. selection.value)
+        elseif cmd == 'vnew' then
+          vim.cmd('vert bo Man ' .. selection.value)
+        elseif cmd == 'tabedit' then
+          vim.cmd('tab Man ' .. selection.value)
+        end
+      end)
 
       return true
     end
@@ -857,17 +826,13 @@ builtin.colorscheme = function(opts)
     },
     -- TODO: better preview?
     sorter = sorters.get_generic_fuzzy_sorter(),
-    attach_mappings = function(prompt_bufnr, map)
-      local change_colorscheme = function()
-        local selection = actions.get_selected_entry(prompt_bufnr)
+    attach_mappings = function(prompt_bufnr)
+      actions.goto_file_selection_edit:replace(function()
+        local selection = actions.get_selected_entry()
 
         actions.close(prompt_bufnr)
-        print(vim.inspect(selection.value))
         vim.cmd("colorscheme " .. selection.value)
-      end
-
-      map('i', '<CR>', change_colorscheme)
-      map('n', '<CR>', change_colorscheme)
+      end)
 
       return true
     end
