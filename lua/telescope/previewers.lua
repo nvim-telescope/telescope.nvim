@@ -21,7 +21,15 @@ Previewer.__index = Previewer
 local bat_options = {"--style=plain", "--color=always", "--paging=always"}
 local has_less = (vim.fn.executable('less') == 1) and config.values.use_less
 
+local get_file_stat = function(filename)
+  return vim.loop.fs_stat(vim.fn.expand(filename)) or {}
+end
+
 local bat_maker = function(filename, lnum, start, finish)
+  if get_file_stat(filename).type == 'directory' then
+    return { 'ls', '-la', vim.fn.expand(filename) }
+  end
+
   local command = {"bat"}
   local theme = os.getenv("BAT_THEME")
 
@@ -46,14 +54,26 @@ local bat_maker = function(filename, lnum, start, finish)
   end
 
   return flatten {
-    command, bat_options, "--", filename
+    command, bat_options, "--", vim.fn.expand(filename)
   }
 end
 
 -- TODO: Add other options for cat to do this better
-local cat_maker = function(filename, lnum, start, finish)
+local cat_maker = function(filename, _, _, _)
+  if get_file_stat(filename).type == 'directory' then
+    return { 'ls', '-la', vim.fn.expand(filename) }
+  end
+
+  if 1 == vim.fn.executable('file') then
+    local output = utils.get_os_command_output('file --mime-type -b ' .. filename)
+    local mime_type = vim.split(output, '/')[1]
+    if mime_type ~= "text" then
+      return { "echo", "Binary file found. These files cannot be displayed!" }
+    end
+  end
+
   return {
-    "cat", "--", filename
+    "cat", "--", vim.fn.expand(filename)
   }
 end
 
@@ -318,6 +338,32 @@ previewers.vim_buffer = defaulter(function(_)
   }
 end, {})
 
+previewers.git_commit_diff = defaulter(function(_)
+  return previewers.new_termopen_previewer {
+    get_command = function(entry)
+      local sha = entry.value
+      return { 'git', '--no-pager', 'diff', sha .. '^!' }
+    end
+  }
+end, {})
+
+previewers.git_branch_log = defaulter(function(_)
+  return previewers.new_termopen_previewer {
+    get_command = function(entry)
+      return { 'git', 'log', '--graph',
+               '--pretty=format:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset',
+               '--abbrev-commit', '--date=relative', entry.value }
+    end
+  }
+end, {})
+
+previewers.git_file_diff = defaulter(function(_)
+  return previewers.new_termopen_previewer {
+    get_command = function(entry)
+      return { 'git', '--no-pager', 'diff', entry.value }
+    end
+  }
+end, {})
 
 previewers.cat = defaulter(function(opts)
   local maker = get_maker(opts)
@@ -351,6 +397,46 @@ previewers.vimgrep = defaulter(function(opts)
 
       return maker(filename, lnum, start, finish)
     end,
+  }
+end, {})
+
+previewers.ctags = defaulter(function(opts)
+  return previewers.new {
+    setup = function()
+      return {}
+    end,
+
+    teardown = function(self)
+      if self.state and self.state.hl_id then
+        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+        self.state.hl_id = nil
+      end
+    end,
+
+    preview_fn = function(self, entry, status)
+      with_preview_window(status, nil, function()
+        local scode = string.gsub(entry.scode, '[$]$', '')
+        scode = string.gsub(scode, [[\\]], [[\]])
+        scode = string.gsub(scode, [[\/]], [[/]])
+        scode = string.gsub(scode, '[*]', [[\*]])
+
+        local new_bufnr = vim.fn.bufnr(entry.filename, true)
+        vim.fn.bufload(new_bufnr)
+
+        vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
+        vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
+        vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
+        vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
+        vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
+
+        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+        vim.fn.search(scode)
+        vim.cmd "norm zz"
+
+        self.state.hl_win = status.preview_win
+        self.state.hl_id = vim.fn.matchadd('Search', scode)
+      end)
+    end
   }
 end, {})
 
@@ -398,25 +484,49 @@ previewers.help = defaulter(function(_)
     preview_fn = function(self, entry, status)
       with_preview_window(status, nil, function()
         local special_chars = ":~^.?/%[%]%*"
+        local delim = string.char(9)
 
         local escaped = vim.fn.escape(entry.value, special_chars)
-        local tagfile = vim.fn.expand("$VIMRUNTIME") .. '/doc/tags'
-        local old_tags = vim.o.tags
+        local tags = {}
 
-        vim.o.tags = tagfile
-        local taglist = vim.fn.taglist('^' .. escaped .. '$', tagfile)
-        vim.o.tags = old_tags
-
-        if vim.tbl_isempty(taglist) then
-          taglist = vim.fn.taglist(escaped, tagfile)
+        local find_rtp_file = function(path, count)
+          return vim.fn.findfile(path, vim.o.runtimepath, count)
         end
 
-        if vim.tbl_isempty(taglist) then
-          return
+        local matches = {}
+        for _,file in pairs(find_rtp_file('doc/tags', -1)) do
+          local f = assert(io.open(file, "rb"))
+            for line in f:lines() do
+              matches = {}
+
+              for match in (line..delim):gmatch("(.-)" .. delim) do
+                table.insert(matches, match)
+              end
+
+              table.insert(tags, {
+                name = matches[1],
+                filename = matches[2],
+                cmd = matches[3]
+              })
+            end
+          f:close()
         end
+
+        local search_tags = function(pattern)
+          local results = {}
+          for _, tag in pairs(tags) do
+            if vim.fn.match(tag.name, pattern) ~= -1 then
+              table.insert(results, tag)
+            end
+          end
+          return results
+        end
+
+        local taglist = search_tags('^' .. escaped .. '$')
+        if taglist == {} then taglist = search_tags(escaped) end
 
         local best_entry = taglist[1]
-        local new_bufnr = vim.fn.bufnr(best_entry.filename, true)
+        local new_bufnr = vim.fn.bufnr(find_rtp_file('doc/' .. best_entry.filename), true)
 
         vim.api.nvim_buf_set_option(new_bufnr, 'filetype', 'help')
         vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)

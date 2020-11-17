@@ -53,7 +53,7 @@ function EntryManager:new(max_results, set_entry, info)
         local existing_entry = v.entry
 
         -- FIXME: This has the problem of assuming that display will not be the same for two different entries.
-        if existing_entry.display == entry.display then
+        if existing_entry == entry then
           return k
         end
       end
@@ -110,7 +110,7 @@ function EntryManager:insert(picker, index, entry)
   -- and then shift all the corresponding items one place.
   local next_entry, last_score
   repeat
-    self.info.inserted = self.info.inserted + 1 
+    self.info.inserted = self.info.inserted + 1
     next_entry = self.entry_state[index]
 
     self.set_entry(picker, index, entry.entry, entry.score)

@@ -16,7 +16,7 @@ mappings.default_mappings = config.values.default_mappings or {
       ["<Down>"] = actions.move_selection_next,
       ["<Up>"] = actions.move_selection_previous,
 
-      ["<CR>"] = actions.goto_file_selection_edit,
+      ["<CR>"] = actions.goto_file_selection_edit + actions.center,
       ["<C-x>"] = actions.goto_file_selection_split,
       ["<C-v>"] = actions.goto_file_selection_vsplit,
       ["<C-t>"] = actions.goto_file_selection_tabedit,
@@ -30,7 +30,7 @@ mappings.default_mappings = config.values.default_mappings or {
 
     n = {
       ["<esc>"] = actions.close,
-      ["<CR>"] = actions.goto_file_selection_edit,
+      ["<CR>"] = actions.goto_file_selection_edit + actions.center,
       ["<C-x>"] = actions.goto_file_selection_split,
       ["<C-v>"] = actions.goto_file_selection_vsplit,
       ["<C-t>"] = actions.goto_file_selection_tabedit,

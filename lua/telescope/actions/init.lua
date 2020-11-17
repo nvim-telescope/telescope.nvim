@@ -6,6 +6,8 @@ local log = require('telescope.log')
 local path = require('telescope.path')
 local state = require('telescope.state')
 
+local transform_mod = require('telescope.actions.mt').transform_mod
+
 local actions = setmetatable({}, {
   __index = function(_, k)
     error("Actions does not have a value: " .. tostring(k))
@@ -37,8 +39,8 @@ function actions.add_selection(prompt_bufnr)
 end
 
 --- Get the current entry
-function actions.get_selected_entry(prompt_bufnr)
-  return actions.get_current_picker(prompt_bufnr):get_selection()
+function actions.get_selected_entry()
+  return state.get_global_key('selected_entry')
 end
 
 function actions.preview_scrolling_up(prompt_bufnr)
@@ -50,8 +52,7 @@ function actions.preview_scrolling_down(prompt_bufnr)
 end
 
 -- TODO: It seems sometimes we get bad styling.
-local function goto_file_selection(prompt_bufnr, command)
-  local picker = actions.get_current_picker(prompt_bufnr)
+function actions._goto_file_selection(prompt_bufnr, command)
   local entry = actions.get_selected_entry(prompt_bufnr)
 
   if not entry then
@@ -65,7 +66,7 @@ local function goto_file_selection(prompt_bufnr, command)
       -- TODO: Check for off-by-one
       row = entry.row or entry.lnum
       col = entry.col
-    else
+    elseif not entry.bufnr then
       -- TODO: Might want to remove this and force people
       -- to put stuff into `filename`
       local value = entry.value
@@ -90,16 +91,15 @@ local function goto_file_selection(prompt_bufnr, command)
       a.nvim_win_set_config(preview_win, {style = ''})
     end
 
-    local original_win_id = picker.original_win_id or 0
     local entry_bufnr = entry.bufnr
 
     actions.close(prompt_bufnr)
 
-    filename = path.normalize(filename, vim.fn.getcwd())
-
     if entry_bufnr then
       vim.cmd(string.format(":%s #%d", command, entry_bufnr))
     else
+      filename = path.normalize(filename, vim.fn.getcwd())
+
       local bufnr = vim.api.nvim_get_current_buf()
       if filename ~= vim.api.nvim_buf_get_name(bufnr) then
         vim.cmd(string.format(":%s %s", command, filename))
@@ -117,20 +117,24 @@ local function goto_file_selection(prompt_bufnr, command)
   end
 end
 
+function actions.center(_)
+  vim.cmd(':normal! zz')
+end
+
 function actions.goto_file_selection_edit(prompt_bufnr)
-  goto_file_selection(prompt_bufnr, "edit")
+  actions._goto_file_selection(prompt_bufnr, "edit")
 end
 
 function actions.goto_file_selection_split(prompt_bufnr)
-  goto_file_selection(prompt_bufnr, "new")
+  actions._goto_file_selection(prompt_bufnr, "new")
 end
 
 function actions.goto_file_selection_vsplit(prompt_bufnr)
-  goto_file_selection(prompt_bufnr, "vnew")
+  actions._goto_file_selection(prompt_bufnr, "vnew")
 end
 
 function actions.goto_file_selection_tabedit(prompt_bufnr)
-  goto_file_selection(prompt_bufnr, "tabedit")
+  actions._goto_file_selection(prompt_bufnr, "tabedit")
 end
 
 function actions.close_pum(_)
@@ -185,4 +189,22 @@ actions.insert_value = function(prompt_bufnr)
   return entry.value
 end
 
+actions.git_checkout = function(prompt_bufnr)
+  local selection = actions.get_selected_entry(prompt_bufnr)
+  actions.close(prompt_bufnr)
+  local val = selection.value
+  os.execute('git checkout ' .. val)
+end
+
+actions.git_add = function(prompt_bufnr)
+  local selection = actions.get_selected_entry(prompt_bufnr)
+  actions.close(prompt_bufnr)
+  local val = selection.value
+  os.execute('git add ' .. val)
+end
+
+-- ==================================================
+-- Transforms modules and sets the corect metatables.
+-- ==================================================
+actions = transform_mod(actions)
 return actions

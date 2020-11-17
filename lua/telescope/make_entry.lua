@@ -1,6 +1,7 @@
 local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 
 local conf = require('telescope.config').values
+local entry_display = require('telescope.pickers.entry_display')
 local path = require('telescope.path')
 local utils = require('telescope.utils')
 
@@ -10,6 +11,10 @@ local make_entry = {}
 
 local transform_devicons
 if has_devicons then
+  if not devicons.has_loaded() then
+    devicons.setup()
+  end
+
   transform_devicons = function(filename, display, disable_devicons)
     if disable_devicons or not filename then
       return display
@@ -129,7 +134,7 @@ do
   end
 
   local execute_keys = {
-    path = function(t) 
+    path = function(t)
       return t.cwd .. path.separator .. t.filename, false
     end,
 
@@ -207,6 +212,24 @@ do
     return function(line)
       return setmetatable({line}, mt_vimgrep_entry)
     end
+  end
+end
+
+function make_entry.gen_from_git_commits(opts)
+  opts = opts or {}
+
+  return function(entry)
+    if entry == "" then
+      return nil
+    end
+
+    local sha, msg = string.match(entry, '([^ ]+) (.+)')
+
+    return {
+      value = sha,
+      ordinal = sha .. ' ' .. msg,
+      display = sha .. ' ' .. msg,
+    }
   end
 end
 
@@ -360,47 +383,16 @@ function make_entry.gen_from_treesitter(opts)
   end
 end
 
-function make_entry.gen_from_tagfile(opts)
-  local help_entry, version
-  local delim = string.char(7)
-
-  local make_display = function(line)
-    help_entry = ""
-    display    = ""
-    version    = ""
-
-    line = line .. delim
-    for section in line:gmatch("(.-)" .. delim) do
-      if section:find("^vim:") == nil then
-        local ver = section:match("^neovim:(.*)")
-        if ver == nil then
-          help_entry = section
-        else
-          version = ver:sub(1, -2)
-        end
-      end
-    end
-
-    result = {}
-    if version ~= "" then -- some Vim only entries are unversioned
-      if opts.show_version then
-        result.display = string.format("%s [%s]", help_entry, version)
-      else
-        result.display = help_entry
-      end
-      result.value = help_entry
-    end
-
-    return result
-  end
+function make_entry.gen_from_taglist(_)
+  local delim = string.char(9)
 
   return function(line)
     local entry = {}
-    local d = make_display(line)
-    entry.valid   = next(d) ~= nil
-    entry.display = d.display
-    entry.value   = d.value
-    entry.ordinal = d.value
+    local tag = (line..delim):match("(.-)" .. delim)
+    entry.valid   = tag ~= ""
+    entry.display = tag
+    entry.value   = tag
+    entry.ordinal = tag
 
     return entry
   end
@@ -457,6 +449,181 @@ function make_entry.gen_from_marks(_)
       col = cursor_position[3],
       start = cursor_position[2],
       filename = vim.api.nvim_buf_get_name(cursor_position[1])
+    }
+  end
+end
+
+function make_entry.gen_from_vimoptions(opts)
+  -- TODO: Can we just remove this from `options.lua`?
+  function N_(s)
+    return s
+  end
+
+  local process_one_opt = function(o)
+    local ok, value_origin
+
+    local option = {
+      name          = "",
+      description   = "",
+      current_value = "",
+      default_value = "",
+      value_type    = "",
+      set_by_user   = false,
+      last_set_from = "",
+    }
+
+    local is_global = false
+    for _, v in ipairs(o.scope) do
+      if v == "global" then
+        is_global = true
+      end
+    end
+
+    if not is_global then
+      return
+    end
+
+    if is_global then
+      option.name = o.full_name
+
+      ok, option.current_value = pcall(vim.api.nvim_get_option, o.full_name)
+      if not ok then
+        return
+      end
+
+      local str_funcname = o.short_desc()
+      option.description = assert(loadstring("return " .. str_funcname))()
+      -- if #option.description > opts.desc_col_length then
+      --   opts.desc_col_length = #option.description
+      -- end
+
+      if o.defaults ~= nil then
+        option.default_value = o.defaults.if_true.vim or o.defaults.if_true.vi
+      end
+
+      if type(option.default_value) == "function" then
+        option.default_value = "Macro: " .. option.default_value()
+      end
+
+      option.value_type = (type(option.current_value) == "boolean" and "bool" or type(option.current_value))
+
+      if option.current_value ~= option.default_value then
+        option.set_by_user = true
+        value_origin = vim.fn.execute("verbose set " .. o.full_name .. "?")
+        if string.match(value_origin, "Last set from") then
+          -- TODO: parse file and line number as separate items
+          option.last_set_from = value_origin:gsub("^.*Last set from ", "")
+        end
+      end
+
+      return option
+    end
+  end
+
+  -- TODO: don't call this 'line'
+  local displayer = entry_display.create {
+    separator = "│",
+    items = {
+      { width = 25 },
+      { width = 50 },
+      { remaining = true },
+    },
+  }
+
+  local make_display = function(entry)
+
+    return displayer {
+      entry.name,
+      string.format(
+        "[%s] %s",
+        entry.value_type,
+        utils.display_termcodes(tostring(entry.current_value))),
+      entry.description,
+    }
+  end
+
+  return function(line)
+    local entry = process_one_opt(line)
+    if not entry then
+      return
+    end
+
+    entry.valid   = true
+    entry.display = make_display
+    entry.value   = line
+    entry.ordinal = line.full_name
+    -- entry.raw_value = d.raw_value
+    -- entry.last_set_from = d.last_set_from
+
+    return entry
+  end
+end
+
+function make_entry.gen_from_ctags(opts)
+  opts = opts or {}
+
+  local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
+  local current_file = path.normalize(vim.fn.expand('%'), cwd)
+
+  local display_items = {
+    { width = 30 },
+    { remaining = true },
+  }
+
+  if opts.show_line then
+    table.insert(display_items, 2, { width = 30 })
+  end
+
+  local displayer = entry_display.create {
+    separator = " │ ",
+    items = display_items,
+  }
+
+  local make_display = function(entry)
+    local filename
+    if not opts.hide_filename then
+      if opts.shorten_path then
+        filename = path.shorten(entry.filename)
+      else
+        filename = entry.filename
+      end
+    end
+
+    local scode
+    if opts.show_line then
+      scode = entry.scode
+    end
+
+    return displayer {
+      filename,
+      entry.tag,
+      scode,
+    }
+  end
+
+  return function(line)
+    if line == '' or line:sub(1, 1) == '!' then
+      return nil
+    end
+
+    local tag, file, scode = string.match(line, '([^\t]+)\t([^\t]+)\t/^\t?(.*)/;"\t+.*')
+
+    if opts.only_current_file and file ~= current_file then
+      return nil
+    end
+
+    return {
+      valid = true,
+
+      ordinal = file .. ': ' .. tag,
+      display = make_display,
+      scode = scode,
+      tag = tag,
+
+      filename = file,
+
+      col = 1,
+      lnum = 1,
     }
   end
 end

@@ -39,9 +39,15 @@ function! s:load_command(builtin,...) abort
   let opts = {}
 
   " range command args
+  " if arg in lua code is table type,we split command string by `,` to vimscript
+  " list type.
   for arg in a:000
     let opt = split(arg,'=')
-    let opts[opt[0]] = opt[1]
+    if opt[0] == 'find_command' || opt[0] == 'vimgrep_arguments'
+      let opts[opt[0]] = split(opt[1],',')
+    else
+      let opts[opt[0]] = opt[1]
+    endif
   endfor
 
   let telescope = v:lua.require('telescope.builtin')
