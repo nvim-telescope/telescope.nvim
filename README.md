@@ -1,5 +1,6 @@
 # Telescope.nvim
 
+
 > **Telescope**
 > An arrangement of lenses or mirrors or both that gathers light,
 > permitting direct observation or photographic recording of distant objects.
@@ -219,7 +220,7 @@ the `default_mappings` table.
 
 
 Much like [built-in pickers](#built-in-pickers), there are a number of
-[built-in actions](https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/actions.lua) you can pick from to remap your telescope buffer mappings or create a new custom action:
+[built-in actions](https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/actions/init.lua) you can pick from to remap your telescope buffer mappings or create a new custom action:
 <!-- TODO: add custom action in addition to a function that gets ran after a given action--->
 ```lua
 -- Built-in actions
@@ -274,10 +275,13 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
   attach_mappings = function(prompt_bufnr)
     -- This will replace goto_file_selection_edit no mather on which key it is mapped by default
     actions.goto_file_selection_edit:replace(function()
-        -- Code here
+      local entry = actions.get_selected_entry()
+      actions.close(prompt_bufnr)
+      print(vim.inspect(entry))
+      -- Code here
     end)
 
-    -- You can also enhance an action with post and post action which will run before of after an action
+    -- You can also enhance an action with pre and post action which will run before of after an action
     actions.goto_file_selection_split:enhance ({
       pre = function()
       -- Will run before actions.goto_file_selection_split
@@ -343,7 +347,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.buffers`                   | Lists Open buffers in the current vim instance.                  |
 | `builtin.oldfiles`                  | Lists Previously open files.                                     |
 | `builtin.commands`                  | Lists Available plugin/user commands and run it.                 |
-| `builtin.tags`                      ||
+| `builtin.tags`                      | Lists Tags in current directory with preview (ctags -R)          |
 | `builtin.command_history`           | Lists Commands previously ran and run it on enter.               |
 | `builtin.help_tags`                 | Lists Available help tags and open help document                 |
 | `builtin.man_pages`                 | Lists Man entries.                                               |
@@ -352,7 +356,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.treesitter`                | Lists Function names, variables, from Treesitter!                |
 | `builtin.live_grep`                 | Searches in current directory files (respecting .gitignore)      | 
 | `builtin.current_buffer_fuzzy_find` | Searches in current buffer lines.                                |
-| `builtin.current_buffer_tags`                      ||
+| `builtin.current_buffer_tags`       | Lists Tags in current buffer                                     |
 | `builtin.grep_string`               | Searches for a string under the cursor in current directory.     |
 | `builtin.lsp_references`            | Searches in LSP references.                                      |
 | `builtin.lsp_document_symbols`      | Searches in LSP Document Symbols in the current document.        |
@@ -363,10 +367,11 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.reloader`                  | Lists lua modules and reload them on enter                       |
 | `builtin.vim_options`               | Lists vim options and on enter edit the options value            |
 | `builtin.keymaps`                   | Lists normal-mode mappings                                       |
-| `builtin.git_commits`               | Lists git commit with diff preview and checkout action           |
-| `builtin.git_bcommits`              ||
-| `builtin.git_branches`              ||
-| `builtin.git_status`                ||
+| `builtin.git_commits`               | Lists git commits with diff preview and on enter checkout the commit.|
+| `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and
+checkouts it out on enter|
+| `builtin.git_branches`              | Lists all branches with log preview and checkout action |
+| `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multiselection still WIP) |
 | ..................................  | Your next awesome finder function here :D                        |
 
 
