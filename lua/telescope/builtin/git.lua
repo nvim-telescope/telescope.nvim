@@ -144,20 +144,19 @@ git.status = function(opts)
 end
 
 local set_opts_cwd = function(opts)
-  local is_git_dir = function(path)
-    vim.fn.system('cd ' .. path .. ' && git rev-parse HEAD >/dev/null 2>&1')
-    if vim.v.shell_error ~= 0 then
-      error(path .. ' is not a git directory')
-    end
-  end
-
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)
-    is_git_dir(opts.cwd)
   else
-    is_git_dir(vim.fn.expand('%:p:h'))
-    --- Find root of git directory and remove trailing newline characters
-    opts.cwd = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
+    opts.cwd = vim.fn.expand('%:p:h')
+  end
+
+  -- Find root of git directory and remove trailing newline characters
+  local git_root = vim.fn.systemlist("git -C " .. opts.cwd .. " rev-parse --show-toplevel")[1]
+
+  if vim.v.shell_error ~= 0 then
+    error(opts.cwd .. ' is not a git directory')
+  else
+    opts.cwd = git_root
   end
 end
 
