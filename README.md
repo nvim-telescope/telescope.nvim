@@ -12,11 +12,13 @@
 `Telescope.nvim` is a next generation library for creating floating pickers
 with advanced features.  It is written in `lua` and is built on top of latest
 awesome features from `neovim` core.  `Telescope.nvim` is centered around
-modularity *to the extent that* the pickers can be customized in isolation from
-one another (such presentation, algorithm, mappings ... etc).  
+modularity so much so that each picker is its own world, (meaning it can be
+configured in isolation from other pickers, such presentation, algorithm,
+mappings ... etc).  
 
-In addition to extensions which can be found
-[here](https://github.com/nvim-telescope)`, Telescope.nvim` comes with a
+Although `Telescope.nvim` was first intended as a library, it is long grow to
+be much bigger then that.  In addition to
+[extensions](https://github.com/nvim-telescope) `Telescope.nvim` comes with a
 growing number of community driven [built-in pickers](#built-in-pickers),
 covering a wide range of use cases and tools, and offers a customizable user
 interface.
@@ -32,6 +34,7 @@ interface.
 - [Media](#media)
 - [Gallery](https://github.com/nvim-telescope/telescope.nvim/wiki/Gallery)
 - [FAQ](#faq)
+- [Configuration recipes](https://github.com/nvim-telescope/telescope.nvim/wiki/Configuration-Recipes)
 - [Contributing](#contribution)
 
 ## Getting Started
