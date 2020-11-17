@@ -287,6 +287,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.buffers`                   | Lists Open buffers in the current vim instance.                  |
 | `builtin.oldfiles`                  | Lists Previously open files.                                     |
 | `builtin.commands`                  | Lists Available plugin/user commands and run it.                 |
+| `builtin.tags`                      ||
 | `builtin.command_history`           | Lists Commands previously ran and run it on enter.               |
 | `builtin.help_tags`                 | Lists Available help tags and open help document                 |
 | `builtin.man_pages`                 | Lists Man entries.                                               |
@@ -295,6 +296,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.treesitter`                | Lists Function names, variables, from Treesitter!                |
 | `builtin.live_grep`                 | Searches in current directory files (respecting .gitignore)      | 
 | `builtin.current_buffer_fuzzy_find` | Searches in current buffer lines.                                |
+| `builtin.current_buffer_tags`                      ||
 | `builtin.grep_string`               | Searches for a string under the cursor in current directory.     |
 | `builtin.lsp_references`            | Searches in LSP references.                                      |
 | `builtin.lsp_document_symbols`      | Searches in LSP Document Symbols in the current document.        |
@@ -305,6 +307,10 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.reloader`                  | Lists lua modules and reload them on enter                       |
 | `builtin.vim_options`               | Lists vim options and on enter edit the options value            |
 | `builtin.keymaps`                   | Lists normal-mode mappings                                       |
+| `builtin.git_commits`               | Lists git commit with diff preview and checkout action           |
+| `builtin.git_bcommits`              ||
+| `builtin.git_branches`              ||
+| `builtin.git_status`                ||
 | ..................................  | Your next awesome finder function here :D                        |
 
 
