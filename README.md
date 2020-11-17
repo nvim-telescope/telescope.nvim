@@ -107,11 +107,14 @@ functions.
 This section should help you explore available options to configure and
 customize your `telescope.nvim`.
 
-`Telescope.nvim` can be configured at two levels: 
+Unlike most vim plugins, `telescope.nvim` can be customized either by applying
+customizations globally or individual pre picker. 
 
-- **Global** (i.e. affecting all pickers) through the `setup()` method, or 
-- **Individual** (i.e. affecting a single picker) through passing `opts` built-in pickers (e.g. `builtin.fd(opts)` )
- see [Configuration recipes](https://github.com/nvim-telescope/telescope.nvim/wiki/Configuration-Recipes) wiki page for idea.
+- **Global Customization** affecting all pickers can be done through the
+  main `setup()` method (see defaults below)
+- **Individual Customization** affecting a single picker through passing `opts`
+  built-in pickers (e.g. `builtin.fd(opts)`) see [Configuration recipes](https://github.com/nvim-telescope/telescope.nvim/wiki/Configuration-Recipes) wiki page for ideas.
+
 
 #### Telescope Defaults
 
