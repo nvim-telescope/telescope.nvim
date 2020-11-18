@@ -429,6 +429,30 @@ previewers.ctags = defaulter(function(_)
       end
     end,
 
+    scroll_fn = function(self, direction)
+      if self.state then
+        local input = direction > 0 and "d" or "u"
+        local count = math.abs(direction)
+
+        self:send_input({ count = count, input = input })
+      end
+    end,
+
+    send_input = function(self, input)
+      if self.state then
+        local count = input.count
+        local line = vim.api.nvim_win_get_cursor(self.state.hl_win)[1]
+        local max_line = vim.fn.getbufinfo(vim.api.nvim_win_get_buf(self.state.hl_win))[1].linecount
+        if input.input == 'u' then
+          line = (line - count) > 0 and (line - count) or 1
+        else
+          line = (line + count) <= max_line and (line + count) or max_line
+        end
+        vim.api.nvim_win_set_cursor(self.state.hl_win, { line, 1 })
+        vim.cmd "norm zz"
+      end
+    end,
+
     preview_fn = function(self, entry, status)
       with_preview_window(status, nil, function()
         local scode = string.gsub(entry.scode, '[$]$', '')
