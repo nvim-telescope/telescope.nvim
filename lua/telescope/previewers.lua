@@ -20,6 +20,7 @@ Previewer.__index = Previewer
 -- TODO: Should play with these some more, ty @clason
 local bat_options = {"--style=plain", "--color=always", "--paging=always"}
 local has_less = (vim.fn.executable('less') == 1) and config.values.use_less
+local termopen_env = vim.tbl_extend("force", { ['GIT_PAGER'] = 'less' }, config.values.set_env)
 
 local get_file_stat = function(filename)
   return vim.loop.fs_stat(vim.fn.expand(filename)) or {}
@@ -39,9 +40,9 @@ local bat_maker = function(filename, lnum, start, finish)
 
   if has_less then
     if start then
-      table.insert(command, {"--pager", string.format("less -RS +%s", start)})
+      table.insert(command, {"--pager", string.format("'less -RS +%s'", start)})
     else
-      table.insert(command, {"--pager", "less -RS"})
+      table.insert(command, {"--pager", "'less -RS'"})
     end
   else
     if start and finish then
@@ -59,7 +60,7 @@ local bat_maker = function(filename, lnum, start, finish)
 end
 
 -- TODO: Add other options for cat to do this better
-local cat_maker = function(filename, _, _, _)
+local cat_maker = function(filename, _, start, _)
   if get_file_stat(filename).type == 'directory' then
     return { 'ls', '-la', vim.fn.expand(filename) }
   end
@@ -72,9 +73,17 @@ local cat_maker = function(filename, _, _, _)
     end
   end
 
-  return {
-    "cat", "--", vim.fn.expand(filename)
-  }
+  if has_less then
+    if start then
+      return { 'less', '-RS', string.format('+%s', start), vim.fn.expand(filename) }
+    else
+      return { 'less', '-RS', vim.fn.expand(filename) }
+    end
+  else
+    return {
+      "cat", "--", vim.fn.expand(filename)
+    }
+  end
 end
 
 local get_maker = function(opts)
@@ -236,10 +245,17 @@ previewers.new_termopen_previewer = function(opts)
       cwd = opts.cwd or vim.fn.getcwd(),
     }
 
+    local env = {}
+    for k, v in pairs(termopen_env) do
+      table.insert(env, k .. '=' .. v)
+    end
+    env = table.concat(env, ' ')
+
     with_preview_window(status, bufnr, function()
       set_term_id(
         self,
-        vim.fn.termopen(opts.get_command(entry, status), term_opts)
+        vim.fn.termopen(env .. ' ' .. table.concat(opts.get_command(entry, status), ' '),
+                        term_opts)
       )
     end)
 
@@ -342,7 +358,7 @@ previewers.git_commit_diff = defaulter(function(_)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
       local sha = entry.value
-      return { 'git', '--no-pager', 'diff', sha .. '^!' }
+      return { 'GIT_PAGER=less', 'git', '-p', 'diff', sha .. '^!' }
     end
   }
 end, {})
@@ -350,8 +366,8 @@ end, {})
 previewers.git_branch_log = defaulter(function(_)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
-      return { 'git', 'log', '--graph',
-               '--pretty=format:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset',
+      return { 'git', '-p', 'log', '--graph',
+               '--pretty=format:\'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\'',
                '--abbrev-commit', '--date=relative', entry.value }
     end
   }
@@ -360,7 +376,7 @@ end, {})
 previewers.git_file_diff = defaulter(function(_)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
-      return { 'git', '--no-pager', 'diff', entry.value }
+      return { 'git', '-p', 'diff', entry.value }
     end
   }
 end, {})
@@ -400,7 +416,7 @@ previewers.vimgrep = defaulter(function(opts)
   }
 end, {})
 
-previewers.ctags = defaulter(function(opts)
+previewers.ctags = defaulter(function(_)
   return previewers.new {
     setup = function()
       return {}
