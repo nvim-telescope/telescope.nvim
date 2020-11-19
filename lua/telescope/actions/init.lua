@@ -172,7 +172,7 @@ end
 actions.run_builtin = function(prompt_bufnr)
   local entry = actions.get_selected_entry(prompt_bufnr)
 
-  actions.close(prompt_bufnr)
+  actions.close(prompt_bufnr, 1)
 
   require('telescope.builtin')[entry.text]()
 end
