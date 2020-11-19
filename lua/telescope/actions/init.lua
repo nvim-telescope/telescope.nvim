@@ -143,7 +143,7 @@ function actions.close_pum(_)
   end
 end
 
-function actions.close(prompt_bufnr)
+function actions.close(prompt_bufnr, insert)
   local picker = actions.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
@@ -153,7 +153,7 @@ function actions.close(prompt_bufnr)
   end
 
   actions.close_pum(prompt_bufnr)
-  vim.cmd [[stopinsert]]
+  if not insert then vim.cmd [[stopinsert]] end
 
   vim.api.nvim_win_close(prompt_win, true)
 
@@ -172,8 +172,7 @@ end
 actions.run_builtin = function(prompt_bufnr)
   local entry = actions.get_selected_entry(prompt_bufnr)
 
-  actions.close(prompt_bufnr)
-  vim.cmd [[startinsert]]
+  actions.close(prompt_bufnr, 1)
 
   require('telescope.builtin')[entry.text]()
 end
