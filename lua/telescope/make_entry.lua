@@ -453,7 +453,33 @@ function make_entry.gen_from_marks(_)
   end
 end
 
-function make_entry.gen_from_vimoptions(opts)
+function make_entry.gen_from_highlights()
+  return function(entry)
+    local make_display = function(entry)
+      local display = entry.value
+      return display, { { { 0, #display }, display } }
+    end
+
+    local preview_command = function(entry, bufnr)
+      local hl = entry.value
+      vim.api.nvim_buf_set_option(bufnr, 'filetype', 'vim')
+      local output = vim.split(vim.fn.execute('hi ' .. hl), '\n')
+      local start = string.find(output[2], 'xxx', 1, true)
+      vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, output)
+      vim.api.nvim_buf_add_highlight(bufnr, -1, hl, 1, start - 1, start + 2)
+    end
+
+    return {
+      value = entry,
+      display = make_display,
+      ordinal = entry,
+
+      preview_command = preview_command
+    }
+  end
+end
+
+function make_entry.gen_from_vimoptions()
   -- TODO: Can we just remove this from `options.lua`?
   function N_(s)
     return s
