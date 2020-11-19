@@ -888,6 +888,28 @@ builtin.keymaps = function(opts)
   }):find()
 end
 
+builtin.filetypes = function(opts)
+  opts = opts or {}
+
+  local filetypes = vim.fn.getcompletion('', 'filetype')
+
+  pickers.new({}, {
+    prompt_title = 'Filetypes',
+    finder = finders.new_table {
+      results = filetypes,
+    },
+    sorter = conf.generic_sorter(),
+    attach_mappings = function(prompt_bufnr)
+      actions.goto_file_selection_edit:replace(function()
+        local selection = actions.get_selected_entry()
+        actions.close(prompt_bufnr)
+        vim.cmd('setfiletype ' .. selection[1])
+      end)
+      return true
+    end
+  }):find()
+end
+
 builtin.tags = function(opts)
   opts = opts or {}
 
@@ -913,10 +935,10 @@ builtin.tags = function(opts)
     },
     previewer = previewers.ctags.new(opts),
     sorter = conf.generic_sorter(opts),
-    attach_mappings = function(prompt_bufnr)
+    attach_mappings = function()
       actions._goto_file_selection:enhance {
         post = function()
-          local selection = actions.get_selected_entry(prompt_bufnr)
+          local selection = actions.get_selected_entry()
 
           local scode = string.gsub(selection.scode, '[$]$', '')
           scode = string.gsub(scode, [[\\]], [[\]])
