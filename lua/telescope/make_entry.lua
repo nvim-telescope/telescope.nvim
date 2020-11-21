@@ -453,6 +453,16 @@ function make_entry.gen_from_marks(_)
   end
 end
 
+function make_entry.gen_from_registers(_)
+  return function(line)
+    return {
+      value = line.key,
+      ordinal = line.key,
+      display = string.format("%s : %s", line.key, vim.fn.getreg(line.key)),
+    }
+  end
+end
+
 function make_entry.gen_from_vimoptions(opts)
   -- TODO: Can we just remove this from `options.lua`?
   function N_(s)
