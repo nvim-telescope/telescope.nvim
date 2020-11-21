@@ -1,4 +1,4 @@
--- Actions functions that are useful for people creating their own mappings.
+jjjjj-- Actions functions that are useful for people creating their own mappings.
 
 local a = vim.api
 
@@ -153,6 +153,7 @@ function actions.close(prompt_bufnr)
   end
 
   actions.close_pum(prompt_bufnr)
+  vim.cmd [[stopinsert]]
 
   vim.api.nvim_win_close(prompt_win, true)
 
