@@ -559,9 +559,9 @@ builtin.builtin = function(opts)
       actions.close:enhance{
         post = function() vim.cmd [[startinsert]] end
       }
-        return true
-      end
-    }):find()
+      return true
+    end
+  }):find()
 end
 
 

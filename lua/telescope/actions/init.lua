@@ -1,4 +1,4 @@
-jjjjj-- Actions functions that are useful for people creating their own mappings.
+-- Actions functions that are useful for people creating their own mappings.
 
 local a = vim.api
 
