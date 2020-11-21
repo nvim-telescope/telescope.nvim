@@ -556,9 +556,12 @@ builtin.builtin = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
       actions.goto_file_selection_edit:replace(actions.run_builtin)
-      return true
-    end
-  }):find()
+      actions.close:enhance{
+        post = function() vim.cmd [[startinsert]] end
+      }
+        return true
+      end
+    }):find()
 end
 
 
