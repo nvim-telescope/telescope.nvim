@@ -936,9 +936,9 @@ end
 
 builtin.tags = function(opts)
   opts = opts or {}
-  local ctags_file = opts.ctags_file or 'tags'
+  local ctags_file = opts.ctags_file and vim.fn.expand(opts.ctags_file, true) or 'tags'
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_ctags(opts)
-  if vim.loop.fs_stat(vim.fn.expand(ctags_file, true)) == nil then
+  if vim.loop.fs_stat(ctags_file) == nil then
     print('Tags file does not exists. Create one with ctags -R')
     return
   end
