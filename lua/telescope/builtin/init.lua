@@ -863,34 +863,32 @@ builtin.registers = function(opts)
   opts = opts or {}
 
   local registers_table = {}
-  table.insert(registers_table, {kind = "Unnamed",      key = "\""})
-  table.insert(registers_table, {kind = "Small Delete", key = "_"})
-  table.insert(registers_table, {kind = "Alternate",    key = "#"})
-  table.insert(registers_table, {kind = "Expression",   key = "="})
-  table.insert(registers_table, {kind = "Black Hole",   key = "_"})
-  table.insert(registers_table, {kind = "Last Search",  key = "/"})
+  table.insert(registers_table, "\"")
+  table.insert(registers_table, "_")
+  table.insert(registers_table, "#")
+  table.insert(registers_table, "=")
+  table.insert(registers_table, "_")
+  table.insert(registers_table, "/")
 
-  -- clipboaord
-  local selection = {"*", "+"}
-  for i in pairs(selection) do
-    table.insert(registers_table, {kind = "Selection",    key = selection[i]})
-  end
+  -- selection
+  table.insert(registers_table, "*")
+  table.insert(registers_table, "+")
 
   -- named
   for i = 0, 9 do
-    table.insert(registers_table, {kind = "Numbered", key = tostring(i)})
+    table.insert(registers_table, tostring(i))
   end
 
-  -- alpha
+  -- alphabetical
   for i = 65, 90 do
-    table.insert(registers_table, {kind = "Named", key = string.char(i)})
+    table.insert(registers_table, string.char(i))
   end
 
   -- readonly
-  local readonly = {":", ".", "%"}
-  for i in pairs(readonly) do
-    table.insert(registers_table, {kind = "Read-Only",    key = readonly[i]})
-  end
+  table.insert(registers_table, ":")
+  table.insert(registers_table, ".")
+  table.insert(registers_table, "%")
+
 
   pickers.new(opts,{
     prompt_title = 'Registers',
@@ -898,7 +896,6 @@ builtin.registers = function(opts)
       results = registers_table,
       entry_maker = make_entry.gen_from_registers(opts),
     },
-    previewer = previewers.vimgrep.new(opts),
     -- use levenshtein as n-gram doesn't support <2 char matches
     sorter = sorters.get_levenshtein_sorter(),
     attach_mappings = function(_, map)

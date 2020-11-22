@@ -464,19 +464,19 @@ function make_entry.gen_from_registers(_)
 
   local make_display = function(register, content)
     return displayer {
-      string.format("[%s]", register.key),
+      string.format("[%s]", register),
       content,
     }
   end
 
-  return function(entry)
-    local reg_content = vim.fn.getreg(entry.key)
+  return function(register)
+    local content = vim.fn.getreg(register)
     return {
-      value = entry.key,
-      ordinal = entry.key,
-      content = reg_content,
-      regtype = vim.fn.getregtype(entry.key),
-      display = make_display(entry, reg_content),
+      value = register,
+      ordinal = register,
+      content = content,
+      regtype = vim.fn.getregtype(register),
+      display = make_display(register, content),
     }
   end
 end
