@@ -22,6 +22,18 @@ local bat_options = {"--style=plain", "--color=always", "--paging=always"}
 local has_less = (vim.fn.executable('less') == 1) and config.values.use_less
 local termopen_env = vim.tbl_extend("force", { ['GIT_PAGER'] = (has_less and 'less' or ''), LESS = '-RS' }, config.values.set_env)
 
+-- TODO(conni2461): Workaround for neovim/neovim#11751. Add only quotes when using else branch.
+local valuate_shell = function()
+  local shell = vim.o.shell
+  if string.find(shell, 'powershell.exe') or string.find(shell, 'cmd.exe') then
+    return ''
+  else
+    return "'"
+  end
+end
+
+local add_quotes = valuate_shell()
+
 local get_file_stat = function(filename)
   return vim.loop.fs_stat(vim.fn.expand(filename)) or {}
 end
@@ -40,7 +52,7 @@ local bat_maker = function(filename, lnum, start, finish)
 
   if has_less then
     if start then
-      table.insert(command, {"--pager", string.format("'less +%s'", start)})
+      table.insert(command, {"--pager", string.format("%sless +%s%s", add_quotes, start, add_quotes)})
     else
       table.insert(command, {"--pager", "less"})
     end
@@ -55,14 +67,14 @@ local bat_maker = function(filename, lnum, start, finish)
   end
 
   return flatten {
-    command, bat_options, "--", "'" .. vim.fn.expand(filename) .. "'"
+    command, bat_options, "--", add_quotes .. vim.fn.expand(filename) .. add_quotes
   }
 end
 
 -- TODO: Add other options for cat to do this better
 local cat_maker = function(filename, _, start, _)
   if get_file_stat(filename).type == 'directory' then
-    return { 'ls', '-la', "'" .. vim.fn.expand(filename) .. "'" }
+    return { 'ls', '-la', add_quotes .. vim.fn.expand(filename) .. add_quotes }
   end
 
   if 1 == vim.fn.executable('file') then
@@ -75,13 +87,13 @@ local cat_maker = function(filename, _, start, _)
 
   if has_less then
     if start then
-      return { 'less', string.format('+%s', start), "'" .. vim.fn.expand(filename) .. "'" }
+      return { 'less', string.format('+%s', start), add_quotes .. vim.fn.expand(filename) .. add_quotes }
     else
-      return { 'less', "'" .. vim.fn.expand(filename) .. "'" }
+      return { 'less', add_quotes .. vim.fn.expand(filename) .. add_quotes }
     end
   else
     return {
-      "cat", "--", "'" .. vim.fn.expand(filename) .. "'"
+      "cat", "--", add_quotes .. vim.fn.expand(filename) .. add_quotes
     }
   end
 end
@@ -408,7 +420,7 @@ previewers.git_branch_log = defaulter(function(_)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
       return { 'git', '-p', 'log', '--graph',
-               "--pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset'",
+               "--pretty=format:" .. add_quotes .. "%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset" .. add_quotes,
                '--abbrev-commit', '--date=relative', entry.value }
     end
   }
