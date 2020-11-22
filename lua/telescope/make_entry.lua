@@ -641,7 +641,7 @@ function make_entry.gen_from_ctags(opts)
     return {
       valid = true,
 
-      ordinal = file .. ': ' .. tag,
+      ordinal = tag .. ' : ' .. scode,
       display = make_display,
       scode = scode,
       tag = tag,
