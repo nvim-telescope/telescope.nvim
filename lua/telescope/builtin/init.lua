@@ -939,12 +939,13 @@ builtin.tags = function(opts)
 
   local ctags_file = opts.ctags_file or 'tags'
 
-  if not vim.loop.fs_open(vim.fn.expand(ctags_file), "r", 438) then
+  local fd = vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438)
+
+  if fd == nil then
     print('Tags file does not exists. Create one with ctags -R')
     return
   end
 
-  local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file), "r", 438))
   local stat = assert(vim.loop.fs_fstat(fd))
   local data = assert(vim.loop.fs_read(fd, stat.size, 0))
   assert(vim.loop.fs_close(fd))
@@ -953,10 +954,14 @@ builtin.tags = function(opts)
 
   pickers.new(opts,{
     prompt = 'Tags',
-    finder = finders.new_table {
-      results = results,
-      entry_maker = make_entry.gen_from_ctags(opts),
-    },
+    -- finder = finders.new_table {
+    --   results = results,
+    --   entry_maker = make_entry.gen_from_ctags(opts),
+    -- },
+    finder = finders.new_oneshot_job(
+      { 'cat', 'tags' },
+      opts
+    ),
     previewer = previewers.ctags.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function()
