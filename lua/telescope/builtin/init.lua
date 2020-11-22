@@ -910,6 +910,30 @@ builtin.filetypes = function(opts)
   }):find()
 end
 
+builtin.highlights = function(opts)
+  opts = opts or {}
+
+  local highlights = vim.fn.getcompletion('', 'highlight')
+
+  pickers.new({}, {
+    prompt_title = 'Highlights',
+    finder = finders.new_table {
+      results = highlights,
+      entry_maker = make_entry.gen_from_highlights(opts)
+    },
+    sorter = conf.generic_sorter(),
+    attach_mappings = function(prompt_bufnr)
+      actions.goto_file_selection_edit:replace(function()
+        local selection = actions.get_selected_entry()
+        actions.close(prompt_bufnr)
+        vim.cmd('hi ' .. selection.value)
+      end)
+      return true
+    end,
+    previewer = previewers.display_content.new(opts),
+  }):find()
+end
+
 builtin.tags = function(opts)
   opts = opts or {}
 

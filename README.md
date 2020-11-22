@@ -374,6 +374,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.vim_options`               | Lists vim options and on enter edit the options value            |
 | `builtin.keymaps`                   | Lists normal-mode mappings                                       |
 | `builtin.filetypes                  | Lists all filetypes                                              |
+| `builtin.highlights                 | Lists all highlights                                             |
 | `builtin.git_commits`               | Lists git commits with diff preview and on enter checkout the commit.|
 | `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and
 checkouts it out on enter|

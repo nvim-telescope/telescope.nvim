@@ -680,6 +680,30 @@ previewers.man = defaulter(function(_)
   }
 end)
 
+previewers.display_content = defaulter(function(_)
+  return previewers.new {
+    preview_fn = function(self, entry, status)
+      with_preview_window(status, nil, function()
+        local bufnr = vim.fn.bufadd("Preview command")
+        vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+        vim.api.nvim_win_set_option(status.preview_win, 'wrap', true)
+        vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
+        vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
+        vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
+
+        if type(entry.preview_command) ~= 'function' then
+          print('entry must provide a preview_command function which will put the content into the buffer')
+          return
+        end
+
+        entry.preview_command(entry, bufnr)
+
+        self.state.hl_win = status.preview_win
+      end)
+    end
+  }
+end, {})
+
 previewers.Previewer = Previewer
 
 return previewers
