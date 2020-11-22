@@ -938,13 +938,13 @@ builtin.tags = function(opts)
   opts = opts or {}
 
   local ctags_file = opts.ctags_file or 'tags'
+  local fd = vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438)
 
-  if not vim.loop.fs_open(vim.fn.expand(ctags_file), "r", 438) then
+  if fd == nil then
     print('Tags file does not exists. Create one with ctags -R')
     return
   end
 
-  local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file), "r", 438))
   local stat = assert(vim.loop.fs_fstat(fd))
   local data = assert(vim.loop.fs_read(fd, stat.size, 0))
   assert(vim.loop.fs_close(fd))
