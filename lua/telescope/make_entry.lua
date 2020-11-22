@@ -454,11 +454,30 @@ function make_entry.gen_from_marks(_)
 end
 
 function make_entry.gen_from_registers(_)
-  return function(line)
+  local displayer = entry_display.create {
+    separator = ":",
+    items = {
+      { width = 4 },
+      { width = 6 },
+      { remaining = true },
+    },
+  }
+
+  local make_display = function(register, content)
+    return displayer {
+      string.format("[%s]", register.key),
+      content,
+    }
+  end
+
+  return function(entry)
+    local reg_content = vim.fn.getreg(entry.key)
     return {
-      value = line.key,
-      ordinal = line.key,
-      display = string.format("%s : %s", line.key, vim.fn.getreg(line.key)),
+      value = entry.key,
+      ordinal = entry.key,
+      content = reg_content,
+      regtype = vim.fn.getregtype(entry.key),
+      display = make_display(entry, reg_content),
     }
   end
 end
@@ -530,7 +549,6 @@ function make_entry.gen_from_vimoptions(opts)
     end
   end
 
-  -- TODO: don't call this 'line'
   local displayer = entry_display.create {
     separator = "│",
     items = {

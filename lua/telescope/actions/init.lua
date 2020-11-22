@@ -169,6 +169,37 @@ actions.set_command_line = function(prompt_bufnr)
   vim.cmd(entry.value)
 end
 
+actions.edit_register = function(prompt_bufnr)
+  local entry = actions.get_selected_entry(prompt_bufnr)
+
+  local picker = actions.get_current_picker(prompt_bufnr)
+  print(vim.inspect(getmetatable(picker)))
+  -- actions.close(prompt_bufnr)
+
+  vim.fn.inputsave()
+  local updated_value = vim.fn.input("Edit" .. entry.value .. "> ", entry.content)
+  vim.fn.inputrestore()
+  if updated_value ~= entry.content then
+    vim.fn.setreg(entry.value, updated_value)
+    entry.content = updated_value
+  end
+end
+
+actions.paste_register = function(prompt_bufnr)
+  local entry = actions.get_selected_entry(prompt_bufnr)
+  local picker = actions.get_current_picker(prompt_bufnr)
+
+  actions.close(prompt_bufnr)
+
+  local reg_type = vim.fn.getregtype(entry.value)
+  if reg_type:byte(1, 1) == 0x16 then
+    reg_type = "b" .. reg_type:sub(2, -1)
+  end
+
+  vim.api.nvim_put({entry.content}, reg_type, true, true)
+  print (reg_type)
+end
+
 actions.run_builtin = function(prompt_bufnr)
   local entry = actions.get_selected_entry(prompt_bufnr)
 

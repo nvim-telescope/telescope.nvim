@@ -892,7 +892,6 @@ builtin.registers = function(opts)
     table.insert(registers_table, {kind = "Read-Only",    key = readonly[i]})
   end
 
-
   pickers.new(opts,{
     prompt_title = 'Registers',
     finder = finders.new_table {
@@ -900,7 +899,17 @@ builtin.registers = function(opts)
       entry_maker = make_entry.gen_from_registers(opts),
     },
     previewer = previewers.vimgrep.new(opts),
-    sorter = sorters.get_generic_fuzzy_sorter(),
+    -- use levenshtein as n-gram doesn't support <2 char matches
+    sorter = sorters.get_levenshtein_sorter(),
+    attach_mappings = function(_, map)
+      -- TODO: Find a way to insert the text... it seems hard.
+      -- map('i', '<C-i>', actions.insert_value, { expr = true })
+      map('i', '<CR>', actions.insert_value)
+      map('i', '<C-e>', actions.edit_register)
+      map('i', '<C-p>', actions.paste_register)
+
+      return true
+    end,
   }):find()
 end
 
