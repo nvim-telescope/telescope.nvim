@@ -458,7 +458,6 @@ function make_entry.gen_from_registers(_)
     separator = ":",
     items = {
       { width = 4 },
-      { width = 6 },
       { remaining = true },
     },
   }
