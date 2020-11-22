@@ -14,7 +14,7 @@ with advanced features.  It is written in `lua` and is built on top of latest
 awesome features from `neovim` core.  `Telescope.nvim` is centered around
 modularity so much so that each picker is its own world, (meaning it can be
 configured in isolation from other pickers, such presentation, algorithm,
-mappings ... etc).  
+mappings ... etc).
 
 `Telescope.nvim` was built with the intention of becoming a library, but it has long grown to
 be much bigger than that.  In addition to
@@ -23,7 +23,7 @@ growing number of community driven [built-in pickers](#built-in-pickers),
 covering a wide range of use cases and tools, and offers a customizable user
 interface.
 
- 
+
 <!-- You can read this documentation from start to finish, or you can look at the -->
 <!-- outline and directly jump to the section that interests you most. -->
 
@@ -44,7 +44,7 @@ This section should guide to run your first built-in pickers :smile:
 [Neovim Nightly (0.5)](https://github.com/neovim/neovim/releases/tag/nightly)
   is required for `telescope.nvim` to work.
 
-#### Optional dependences 
+#### Optional dependences
 - [sharkdp/bat](https://github.com/sharkdp/bat) (preview)
 - [sharkdp/fd](https://github.com/sharkdp/fd) (finder)
 - [BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) (finder)
@@ -72,7 +72,7 @@ call dein#add('nvim-telescope/telescope.nvim')
 ```
 Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
-```lua 
+```lua
 use {
   'nvim-telescope/telescope.nvim',
   requires = {{'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'}}
@@ -108,7 +108,7 @@ This section should help you explore available options to configure and
 customize your `telescope.nvim`.
 
 Unlike most vim plugins, `telescope.nvim` can be customized either by applying
-customizations globally or individual pre picker. 
+customizations globally or individual pre picker.
 
 - **Global Customization** affecting all pickers can be done through the
   main `setup()` method (see defaults below)
@@ -125,12 +125,12 @@ As an example of using the `setup()` method, the following code configures
 require('telescope').setup{
   defaults = {
     vimgrep_arguments = {
-      'rg', 
-      '--color=never', 
-      '--no-heading', 
-      '--with-filename', 
-      '--line-number', 
-      '--column', 
+      'rg',
+      '--color=never',
+      '--no-heading',
+      '--with-filename',
+      '--line-number',
+      '--column',
       '--smart-case'
     },
     prompt_position = "bottom",
@@ -154,6 +154,7 @@ require('telescope').setup{
     borderchars = { '─', '│', '─', '│', '╭', '╮', '╯', '╰'},
     color_devicons = true,
     use_less = true,
+    set_env = { ['COLORTERM'] = 'truecolor' }, -- default { }, currently unsupported for shells like cmd.exe / powershell.exe
   }
 }
 ```
@@ -186,9 +187,10 @@ EOF
 | `preview_cutoff`       | TODO                                                  | NUM                        |
 | `results_height`       | TODO                                                  | NUM                        |
 | `results_width`        | TODO                                                  | NUM                        |
-| `borderchars`          | The border chars, it gives border telescope window    | dict                       | 
+| `borderchars`          | The border chars, it gives border telescope window    | dict                       |
 | `color_devicons`       | Whether to color devicons or not                      | boolean                    |
-| `use_less`             | Whether to use less of cat/bat                        | boolean                    |
+| `use_less`             | Whether to use less with bat or less/cat if bat not installed | boolean                    |
+| `set_env`              | Set environment variables for previewer               | dict                       |
 | `scroll_strategy`      | How to behave when the when there are no more item next/prev | cycle, nil          |
 
 #### Options affecting Sorting
@@ -198,8 +200,8 @@ EOF
 | `file_sorter`          | The sorter for file lists.                            | [Sorters](#built-in-sorters)   |
 | `generic_sorter`       | The sorter for everything else.                       | [Sorters](#built-in-sorters)   |
 | `vimgrep_arguments`    | The command line argument for grep search ... TODO.   | dict                       |
-| `selection_strategy`   | What happens to the selection if the list changes.    | follow/reset/row           | 
-| `file_ignore_patterns` | Pattern to be ignored `{ "scratch/.*", "%.env"}`      | dict                       | 
+| `selection_strategy`   | What happens to the selection if the list changes.    | follow/reset/row           |
+| `file_ignore_patterns` | Pattern to be ignored `{ "scratch/.*", "%.env"}`      | dict                       |
 | `shorten_path`         | Whether to shorten paths or not.                      | boolean                    |
 
 #### Mappings
@@ -222,7 +224,7 @@ Many familiar mapping patterns are setup as defaults.
 | `<Esc>`        | close telescope (in normal mode) |
 
 To see the full list of mappings, check out `lua/telescope/mappings.lua` and
-the `default_mappings` table.  
+the `default_mappings` table.
 
 
 Much like [built-in pickers](#built-in-pickers), there are a number of
@@ -273,7 +275,7 @@ require('telescope').setup{
 For a [picker](#built-in-pickers) specific remapping, it can be done by setting
 its `attach_mappings` key to a function, like this
 
-```lua 
+```lua
 local actions = require('telescope.actions')
 -- Picker specific remapping
 ------------------------------
@@ -382,7 +384,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | ..................................  | Your next awesome finder function here :D                        |
 
 
-#### Built-in Sorters 
+#### Built-in Sorters
 
 | Sorters                            | Description                                                     |
 |------------------------------------|-----------------------------------------------------------------|
@@ -406,7 +408,7 @@ return a number, which is equivalent to the "distance" between the current
 ## Built-in Themes
 
 Common groups of settings can be set up to allow for themes.
-We have some built in themes but are looking for more cool options. 
+We have some built in themes but are looking for more cool options.
 
 | Themes                   | Description                                                           |
 |--------------------------|-----------------------------------------------------------------------|
@@ -425,7 +427,7 @@ Themes should work with every `telescope.builtin` function.  If you wish to
 make theme, check out `lua/telescope/themes.lua`. If you need more features,
 make an issue :).
 
-## API 
+## API
 <!-- TODO: need to provide working examples for every api -->
 
 #### Finders
@@ -441,9 +443,9 @@ Finder:new{
 ```
 
 #### Picker
-<!-- TODO: this section need some love, an in-depth explanation will be appreciated it need some in depth explanation --> 
+<!-- TODO: this section need some love, an in-depth explanation will be appreciated it need some in depth explanation -->
 <!-- TODO what is pickers -->
-This section is an overview of how custom pickers can be created any configured. 
+This section is an overview of how custom pickers can be created any configured.
 
 
 ```lua
@@ -508,19 +510,19 @@ All `telescope.nvim` functions are wrapped in `vim` commands for easy access, it
 supports tab completions and settings options.
 
 ```viml
-" Tab completion 
-:Telescope |<tab> 
+" Tab completion
+:Telescope |<tab>
 :Telescope find_files
 
 " Setting options
-:Telescope find_files prompt_prefix=🔍 
+:Telescope find_files prompt_prefix=🔍
 
 " If option is table type in lua code ,you can use `,` connect each command string eg:
 " find_command,vimgrep_arguments they are both table type. so config it in commandline like
 :Telecope find_files find_command=rg,--ignore,--hidden,--files prompt_prefix=🔍
 ```
 
-## Media 
+## Media
 
 - [What is Telescope? (Video)](https://www.twitch.tv/teej_dv/clip/RichDistinctPlumberPastaThat)
 - [More advanced configuration (Video)](https://www.twitch.tv/videos/756229115)
@@ -533,11 +535,11 @@ supports tab completions and settings options.
 
 All options available from the setup function (see [Configuration options]()) and
 some other functions can be easily changed in custom pickers or built-in
-functions. 
+functions.
 <!-- TODO: insert a list of available options like previewer and prompt prefix -->
 
-```lua 
--- Disable preview for find files 
+```lua
+-- Disable preview for find files
 nnoremap <leader>ff :lua require('telescope.builtin').find_files({previewer = false})<CR>
 
 -- Change change prompt prefix for find_files builtin function:
