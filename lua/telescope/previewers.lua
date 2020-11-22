@@ -20,6 +20,19 @@ Previewer.__index = Previewer
 -- TODO: Should play with these some more, ty @clason
 local bat_options = {"--style=plain", "--color=always", "--paging=always"}
 local has_less = (vim.fn.executable('less') == 1) and config.values.use_less
+local termopen_env = vim.tbl_extend("force", { ['GIT_PAGER'] = (has_less and 'less' or ''), LESS = '-RS' }, config.values.set_env)
+
+-- TODO(conni2461): Workaround for neovim/neovim#11751. Add only quotes when using else branch.
+local valuate_shell = function()
+  local shell = vim.o.shell
+  if string.find(shell, 'powershell.exe') or string.find(shell, 'cmd.exe') then
+    return ''
+  else
+    return "'"
+  end
+end
+
+local add_quotes = valuate_shell()
 
 local get_file_stat = function(filename)
   return vim.loop.fs_stat(vim.fn.expand(filename)) or {}
@@ -39,9 +52,9 @@ local bat_maker = function(filename, lnum, start, finish)
 
   if has_less then
     if start then
-      table.insert(command, {"--pager", string.format("less -RS +%s", start)})
+      table.insert(command, {"--pager", string.format("%sless +%s%s", add_quotes, start, add_quotes)})
     else
-      table.insert(command, {"--pager", "less -RS"})
+      table.insert(command, {"--pager", "less"})
     end
   else
     if start and finish then
@@ -54,14 +67,14 @@ local bat_maker = function(filename, lnum, start, finish)
   end
 
   return flatten {
-    command, bat_options, "--", vim.fn.expand(filename)
+    command, bat_options, "--", add_quotes .. vim.fn.expand(filename) .. add_quotes
   }
 end
 
 -- TODO: Add other options for cat to do this better
-local cat_maker = function(filename, _, _, _)
+local cat_maker = function(filename, _, start, _)
   if get_file_stat(filename).type == 'directory' then
-    return { 'ls', '-la', vim.fn.expand(filename) }
+    return { 'ls', '-la', add_quotes .. vim.fn.expand(filename) .. add_quotes }
   end
 
   if 1 == vim.fn.executable('file') then
@@ -72,9 +85,17 @@ local cat_maker = function(filename, _, _, _)
     end
   end
 
-  return {
-    "cat", "--", vim.fn.expand(filename)
-  }
+  if has_less then
+    if start then
+      return { 'less', string.format('+%s', start), add_quotes .. vim.fn.expand(filename) .. add_quotes }
+    else
+      return { 'less', add_quotes .. vim.fn.expand(filename) .. add_quotes }
+    end
+  else
+    return {
+      "cat", "--", add_quotes .. vim.fn.expand(filename) .. add_quotes
+    }
+  end
 end
 
 local get_maker = function(opts)
@@ -167,6 +188,41 @@ previewers.new = function(...)
   return Previewer:new(...)
 end
 
+previewers.new_buffer_previewer = function(opts)
+  opts = opts or {}
+
+  assert(opts.preview_fn, "preview_fn is required function")
+
+  if not opts.scroll_fn then
+    function opts.scroll_fn(self, direction)
+      local input = direction > 0 and "d" or "u"
+      local count = math.abs(direction)
+
+      self:send_input({ count = count, input = input })
+    end
+  end
+
+  if not opts.send_input then
+    function opts.send_input(self, input)
+      if not self.state then
+        return
+      end
+
+      local bufnr = vim.api.nvim_win_get_buf(self.state.hl_win)
+      local max_line = vim.fn.getbufinfo(bufnr)[1].linecount
+      local line = vim.api.nvim_win_get_cursor(self.state.hl_win)[1]
+      if input.input == 'u' then
+        line = (line - input.count) > 0 and (line - input.count) or 1
+      else
+        line = (line + input.count) <= max_line and (line + input.count) or max_line
+      end
+      vim.api.nvim_win_set_cursor(self.state.hl_win, { line, 1 })
+    end
+  end
+
+  return Previewer:new(opts)
+end
+
 previewers.new_termopen_previewer = function(opts)
   opts = opts or {}
 
@@ -234,13 +290,25 @@ previewers.new_termopen_previewer = function(opts)
 
     local term_opts = {
       cwd = opts.cwd or vim.fn.getcwd(),
+      env = termopen_env
     }
 
+    -- TODO(conni2461): Workaround for neovim/neovim#11751.
+    local get_cmd = function(status)
+      local shell = vim.o.shell
+      if string.find(shell, 'powershell.exe') or string.find(shell, 'cmd.exe') then
+        return opts.get_command(entry, status)
+      else
+        local env = {}
+        for k, v in pairs(termopen_env) do
+          table.insert(env, k .. '=' .. v)
+        end
+        return table.concat(env, ' ') .. ' ' .. table.concat(opts.get_command(entry, status), ' ')
+      end
+    end
+
     with_preview_window(status, bufnr, function()
-      set_term_id(
-        self,
-        vim.fn.termopen(opts.get_command(entry, status), term_opts)
-      )
+      set_term_id(self, vim.fn.termopen(get_cmd(status), term_opts))
     end)
 
     vim.api.nvim_buf_set_name(bufnr, tostring(bufnr))
@@ -274,7 +342,7 @@ previewers.new_termopen_previewer = function(opts)
 end
 
 previewers.vim_buffer = defaulter(function(_)
-  return previewers.new {
+  return previewers.new_buffer_previewer {
     setup = function()
       return {
         last_set_bufnr = nil
@@ -333,6 +401,7 @@ previewers.vim_buffer = defaulter(function(_)
         -- print("LNUM:", entry.lnum)
       end
 
+      vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
       log.info("Previewed bufnr", bufnr)
     end,
   }
@@ -342,7 +411,7 @@ previewers.git_commit_diff = defaulter(function(_)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
       local sha = entry.value
-      return { 'git', '--no-pager', 'diff', sha .. '^!' }
+      return { 'git', '-p', 'diff', sha .. '^!' }
     end
   }
 end, {})
@@ -350,8 +419,8 @@ end, {})
 previewers.git_branch_log = defaulter(function(_)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
-      return { 'git', 'log', '--graph',
-               '--pretty=format:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset',
+      return { 'git', '-p', 'log', '--graph',
+               "--pretty=format:" .. add_quotes .. "%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset" .. add_quotes,
                '--abbrev-commit', '--date=relative', entry.value }
     end
   }
@@ -360,7 +429,7 @@ end, {})
 previewers.git_file_diff = defaulter(function(_)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
-      return { 'git', '--no-pager', 'diff', entry.value }
+      return { 'git', '-p', 'diff', entry.value }
     end
   }
 end, {})
@@ -400,8 +469,8 @@ previewers.vimgrep = defaulter(function(opts)
   }
 end, {})
 
-previewers.ctags = defaulter(function(opts)
-  return previewers.new {
+previewers.ctags = defaulter(function(_)
+  return previewers.new_buffer_previewer {
     setup = function()
       return {}
     end,
@@ -428,10 +497,10 @@ previewers.ctags = defaulter(function(opts)
         vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
         vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
         vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
+        vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
 
         pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
         vim.fn.search(scode)
-        vim.cmd "norm zz"
 
         self.state.hl_win = status.preview_win
         self.state.hl_id = vim.fn.matchadd('Search', scode)
@@ -469,7 +538,7 @@ previewers.qflist = defaulter(function(opts)
 end, {})
 
 previewers.help = defaulter(function(_)
-  return previewers.new {
+  return previewers.new_buffer_previewer {
     setup = function()
       return {}
     end,
@@ -542,9 +611,12 @@ previewers.help = defaulter(function(_)
 
         log.trace([[lua vim.fn.search("]], search_query, [[")]])
 
+        -- Clear previous search
+        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
         vim.cmd "norm! gg"
         vim.fn.search(search_query, "W")
-        vim.cmd "norm  zt"
+
+        vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
 
         self.state.hl_win = status.preview_win
         self.state.hl_id = vim.fn.matchadd('Search', search_query)
@@ -681,7 +753,7 @@ previewers.man = defaulter(function(_)
 end)
 
 previewers.display_content = defaulter(function(_)
-  return previewers.new {
+  return previewers.new_buffer_previewer {
     preview_fn = function(self, entry, status)
       with_preview_window(status, nil, function()
         local bufnr = vim.fn.bufadd("Preview command")
