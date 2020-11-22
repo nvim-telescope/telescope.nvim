@@ -79,6 +79,7 @@ function Picker:new(opts)
     finder = opts.finder,
     sorter = opts.sorter,
     previewer = opts.previewer,
+    default_selection_index = opts.default_selection_index,
 
     _completion_callbacks = {},
 
@@ -470,18 +471,30 @@ function Picker:find()
 
       -- TODO: We should either: always leave one result or make sure we actually clean up the results when nothing matches
       if selection_strategy == 'row' then
-        self:set_selection(self:get_selection_row())
+        if self._selection_row == nil and self.default_selection_index ~= nil then
+          self:set_selection(self:get_row(self.default_selection_index))
+        else
+          self:set_selection(self:get_selection_row())
+        end
       elseif selection_strategy == 'follow' then
-        local index = self.manager:find_entry(self:get_selection())
+        if self._selection_row == nil and self.default_selection_index ~= nil then
+          self:set_selection(self:get_row(self.default_selection_index))
+        else
+          local index = self.manager:find_entry(self:get_selection())
 
-        if index then
-          local follow_row = self:get_row(index)
-          self:set_selection(follow_row)
+          if index then
+            local follow_row = self:get_row(index)
+            self:set_selection(follow_row)
+          else
+            self:set_selection(self:get_reset_row())
+          end
+        end
+      elseif selection_strategy == 'reset' then
+        if self.default_selection_index ~= nil then
+          self:set_selection(self:get_row(self.default_selection_index))
         else
           self:set_selection(self:get_reset_row())
         end
-      elseif selection_strategy == 'reset' then
-        self:set_selection(self:get_reset_row())
       else
         error('Unknown selection strategy: ' .. selection_strategy)
       end

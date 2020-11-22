@@ -96,7 +96,15 @@ function actions._goto_file_selection(prompt_bufnr, command)
     actions.close(prompt_bufnr)
 
     if entry_bufnr then
-      vim.cmd(string.format(":%s #%d", command, entry_bufnr))
+      if command == 'edit' then
+        vim.cmd(string.format(":buffer %d", entry_bufnr))
+      elseif command == 'new' then
+        vim.cmd(string.format(":sbuffer %d", entry_bufnr))
+      elseif command == 'vnew' then
+        vim.cmd(string.format(":vert sbuffer %d", entry_bufnr))
+      elseif command == 'tabedit' then
+        vim.cmd(string.format(":tab sb %d", entry_bufnr))
+      end
     else
       filename = path.normalize(filename, vim.fn.getcwd())
 

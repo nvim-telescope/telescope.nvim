@@ -283,18 +283,16 @@ end
 function make_entry.gen_from_buffer(opts)
   opts = opts or {}
 
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = opts.bufnr_width },
+      { width = 4 },
+      { remaining = true },
+    },
+  }
+
   local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
-
-  local get_position = function(entry)
-    local tabpage_wins = vim.api.nvim_tabpage_list_wins(0)
-    for k, v in ipairs(tabpage_wins) do
-      if entry == vim.api.nvim_win_get_buf(v) then
-        return vim.api.nvim_win_get_cursor(v)
-      end
-    end
-
-    return {}
-  end
 
   local make_display = function(entry)
     local display_bufname
@@ -304,33 +302,35 @@ function make_entry.gen_from_buffer(opts)
       display_bufname = entry.filename
     end
 
-    return string.format("%" .. opts.bufnr_width .. "d : %s",
-                         entry.bufnr, display_bufname)
+    return displayer {
+      entry.bufnr,
+      entry.indicator,
+      display_bufname .. ":" .. entry.lnum,
+    }
   end
 
   return function(entry)
-    local bufnr_str = tostring(entry)
-    local bufname = path.normalize(vim.api.nvim_buf_get_name(entry), cwd)
-
+    local bufname = entry.info.name ~= "" and entry.info.name or '[No Name]'
     -- if bufname is inside the cwd, trim that part of the string
+    bufname = path.normalize(bufname, cwd)
 
-    local position = get_position(entry)
-
-    if '' == bufname then
-      return nil
-    end
+    local hidden = entry.info.hidden == 1 and 'h' or 'a'
+    local readonly = vim.api.nvim_buf_get_option(entry.bufnr, 'readonly') and '=' or ' '
+    local changed = entry.info.changed == 1 and '+' or ' '
+    local indicator = entry.flag .. hidden .. readonly .. changed
 
     return {
       valid = true,
 
       value = bufname,
-      ordinal = bufnr_str .. " : " .. bufname,
+      ordinal = entry.bufnr .. " : " .. bufname,
       display = make_display,
 
-      bufnr = entry,
+      bufnr = entry.bufnr,
       filename = bufname,
 
-      lnum = position[1] or 1,
+      lnum = entry.info.lnum or 1,
+      indicator = indicator,
     }
   end
 end
