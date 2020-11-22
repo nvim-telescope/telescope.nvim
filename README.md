@@ -16,8 +16,8 @@ modularity so much so that each picker is its own world, (meaning it can be
 configured in isolation from other pickers, such presentation, algorithm,
 mappings ... etc).  
 
-Although `Telescope.nvim` was first intended as a library, it is long grow to
-be much bigger then that.  In addition to
+`Telescope.nvim` was built with the intention of becoming a library, but it has long grown to
+be much bigger than that.  In addition to
 [extensions](https://github.com/nvim-telescope) `Telescope.nvim` comes with a
 growing number of community driven [built-in pickers](#built-in-pickers),
 covering a wide range of use cases and tools, and offers a customizable user
