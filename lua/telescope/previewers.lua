@@ -356,53 +356,27 @@ previewers.vim_buffer = defaulter(function(_)
     end,
 
     preview_fn = function(self, entry, status)
-      -- TODO: Consider using path here? Might not work otherwise.
-      local filename = entry.filename
+      local bufnr = tonumber(entry.bufnr)
 
-      if filename == nil then
-        filename = entry.path
-      end
-
-      if filename == nil then
-        local value = entry.value
-        filename = vim.split(value, ":")[1]
-      end
-
-      if filename == nil then
-        return
-      end
-
-      log.info("Previewing File:", filename)
-
-      local bufnr = vim.fn.bufnr(filename)
-      if bufnr == -1 then
-        -- TODO: Is this the best way to load the buffer?... I'm not sure tbh
-        bufnr = vim.fn.bufadd(filename)
+      if not vim.api.nvim_buf_is_loaded(bufnr) then
         vim.fn.bufload(bufnr)
-
-        vim.cmd([[doautocmd filetypedetect BufRead ]] .. filename)
       end
 
       self.state.last_set_bufnr = bufnr
 
-      -- TODO: We should probably call something like this because we're not always getting highlight and all that stuff.
-      -- api.nvim_command('doautocmd filetypedetect BufRead ' .. vim.fn.fnameescape(filename))
       vim.api.nvim_win_set_buf(status.preview_win, bufnr)
       vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
       vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
-      -- vim.api.nvim_win_set_option(preview_win, 'winblend', 20)
       vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
       vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
-
       if entry.lnum then
         vim.api.nvim_buf_add_highlight(bufnr, previewer_ns, "Visual", entry.lnum - 1, 0, -1)
-        vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 10)
+        vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
         vim.api.nvim_win_set_cursor(status.preview_win, {entry.lnum, 0})
         -- print("LNUM:", entry.lnum)
       end
 
-      vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
-      log.info("Previewed bufnr", bufnr)
+      self.state.hl_win = status.preview_win
     end,
   }
 end, {})

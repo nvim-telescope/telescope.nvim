@@ -611,16 +611,38 @@ builtin.fd = builtin.find_files
 builtin.buffers = function(opts)
   opts = opts or {}
 
-  local buffers = filter(function(b)
+  local bufnrs = filter(function(b)
     return
       (opts.show_all_buffers
       or vim.api.nvim_buf_is_loaded(b))
       and 1 == vim.fn.buflisted(b)
-
   end, vim.api.nvim_list_bufs())
 
+  local buffers = {}
+  local default_selection_idx = 1
+  for _, bufnr in ipairs(bufnrs) do
+    local flag = bufnr == vim.fn.bufnr('') and '%' or (bufnr == vim.fn.bufnr('#') and '#' or ' ')
+
+    if opts.sort_lastused and flag == "#" then
+      default_selection_idx = 2
+    end
+
+    local element = {
+      bufnr = bufnr,
+      flag = flag,
+      info = vim.fn.getbufinfo(bufnr)[1],
+    }
+
+    if opts.sort_lastused and (flag == "#" or flag == "%") then
+      local idx = ((buffers[1] ~= nil and buffers[1].flag == "%") and 2 or 1)
+      table.insert(buffers, idx, element)
+    else
+      table.insert(buffers, element)
+    end
+  end
+
   if not opts.bufnr_width then
-    local max_bufnr = math.max(unpack(buffers))
+    local max_bufnr = math.max(unpack(bufnrs))
     opts.bufnr_width = #tostring(max_bufnr)
   end
 
@@ -630,9 +652,9 @@ builtin.buffers = function(opts)
       results = buffers,
       entry_maker = make_entry.gen_from_buffer(opts)
     },
-    -- previewer = previewers.vim_buffer.new(opts),
-    previewer = previewers.vimgrep.new(opts),
+    previewer = previewers.vim_buffer.new(opts),
     sorter = conf.generic_sorter(opts),
+    default_selection_index = default_selection_idx,
   }):find()
 end
 
