@@ -1,5 +1,5 @@
 # Telescope.nvim
-
+[![Gitter](https://badges.gitter.im/nvim-telescope/community.svg)](https://gitter.im/nvim-telescope/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 > **Telescope**
 > An arrangement of lenses or mirrors or both that gathers light,
