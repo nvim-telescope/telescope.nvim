@@ -42,8 +42,8 @@ local table_format = function(picker, elements, separator)
 end
 
 local function truncate(str, len)
-  -- TODO: This doesn't handle multi byte chars...
-  if #str > len then
+  -- TODO(tj): does it handle multi byte chars?
+  if vim.api.nvim_strwidth(str) > len then
     str = str:sub(1, len - 1)
     str = str .. "…"
   end
