@@ -191,13 +191,13 @@ actions.paste_register = function(prompt_bufnr)
 
   actions.close(prompt_bufnr)
 
+  -- substitute "^V" for "b"
   local reg_type = vim.fn.getregtype(entry.value)
   if reg_type:byte(1, 1) == 0x16 then
     reg_type = "b" .. reg_type:sub(2, -1)
   end
 
   vim.api.nvim_put({entry.content}, reg_type, true, true)
-  print (reg_type)
 end
 
 actions.run_builtin = function(prompt_bufnr)

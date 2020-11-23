@@ -899,9 +899,6 @@ builtin.registers = function(opts)
     -- use levenshtein as n-gram doesn't support <2 char matches
     sorter = sorters.get_levenshtein_sorter(),
     attach_mappings = function(_, map)
-      -- TODO: Find a way to insert the text... it seems hard.
-      -- map('i', '<C-i>', actions.insert_value, { expr = true })
-      map('i', '<CR>', actions.insert_value)
       map('i', '<C-e>', actions.edit_register)
       map('i', '<C-p>', actions.paste_register)
 
