@@ -62,10 +62,12 @@ function config.set_defaults(defaults)
   set("use_less", true)
   set("color_devicons", true)
 
+  set("set_env", {})
+
   -- TODO: Add motions to keybindings
 
   -- To disable a keymap, put [map] = false
-  --        So, to not map "<C-n>", just put 
+  --        So, to not map "<C-n>", just put
   --
   --            ...,
   --            ["<C-n>"] = false,
