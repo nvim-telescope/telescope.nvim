@@ -453,6 +453,33 @@ function make_entry.gen_from_marks(_)
   end
 end
 
+function make_entry.gen_from_registers(_)
+  local displayer = entry_display.create {
+    separator = ":",
+    items = {
+      { width = 4 },
+      { remaining = true },
+    },
+  }
+
+  local make_display = function(entry)
+    return displayer {
+      string.format("[%s]", entry.value),
+      entry.content
+    }
+  end
+
+  return function(entry)
+    return {
+      valid = true,
+      value = entry,
+      ordinal = entry,
+      content = vim.fn.getreg(entry),
+      display = make_display
+    }
+  end
+end
+
 function make_entry.gen_from_highlights()
   return function(entry)
     local make_display = function(entry)
@@ -475,11 +502,13 @@ function make_entry.gen_from_highlights()
       ordinal = entry,
 
       preview_command = preview_command
+
     }
   end
 end
 
 function make_entry.gen_from_vimoptions()
+
   -- TODO: Can we just remove this from `options.lua`?
   function N_(s)
     return s
@@ -546,7 +575,6 @@ function make_entry.gen_from_vimoptions()
     end
   end
 
-  -- TODO: don't call this 'line'
   local displayer = entry_display.create {
     separator = "│",
     items = {

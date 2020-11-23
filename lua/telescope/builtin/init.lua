@@ -788,7 +788,7 @@ builtin.man_pages = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_tile = 'Man',
+    prompt_title = 'Man',
     finder    = finders.new_table {
       results = lines,
       entry_maker = make_entry.gen_from_apropos(opts),
@@ -856,6 +856,38 @@ builtin.marks = function(opts)
     },
     previewer = previewers.vimgrep.new(opts),
     sorter = sorters.get_generic_fuzzy_sorter(),
+  }):find()
+end
+
+builtin.registers = function(opts)
+  opts = opts or {}
+
+  local registers_table = {"\"", "_", "#", "=", "_", "/", "*", "+", ":", ".", "%"}
+
+  -- named
+  for i = 0, 9 do
+    table.insert(registers_table, tostring(i))
+  end
+
+  -- alphabetical
+  for i = 65, 90 do
+    table.insert(registers_table, string.char(i))
+  end
+
+  pickers.new(opts,{
+    prompt_title = 'Registers',
+    finder = finders.new_table {
+      results = registers_table,
+      entry_maker = make_entry.gen_from_registers(opts),
+    },
+    -- use levenshtein as n-gram doesn't support <2 char matches
+    sorter = sorters.get_levenshtein_sorter(),
+    attach_mappings = function(_, map)
+      map('i', '<CR>', actions.paste_register)
+      map('i', '<C-e>', actions.edit_register)
+
+      return true
+    end,
   }):find()
 end
 
