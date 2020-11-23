@@ -407,6 +407,19 @@ sorters.get_fzy_sorter = function(opts)
   }
 end
 
+sorters.highlighter_only = function(opts)
+  opts = opts or {}
+  local fzy = opts.fzy_mod or require('telescope.algos.fzy')
+
+  return Sorter:new {
+    scoring_function = function() return 0 end,
+
+    highlighter = function(_, prompt, display)
+      return fzy.positions(prompt, display)
+    end,
+  }
+end
+
 -- Bad & Dumb Sorter
 sorters.get_levenshtein_sorter = function()
   return Sorter:new {
