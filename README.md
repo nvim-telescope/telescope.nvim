@@ -1,5 +1,7 @@
 # Telescope.nvim
 
+[![Join the chat at https://gitter.im/nvim-telescope/go-test](https://badges.gitter.im/nvim-telescope/go-test.svg)](https://gitter.im/nvim-telescope/go-test?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 
 > **Telescope**
 > An arrangement of lenses or mirrors or both that gathers light,
