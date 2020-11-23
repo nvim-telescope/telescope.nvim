@@ -26,7 +26,6 @@ end
 
 local actions = require('telescope.actions')
 local finders = require('telescope.finders')
-local log = require('telescope.log')
 local make_entry = require('telescope.make_entry')
 local path = require('telescope.path')
 local pickers = require('telescope.pickers')
