@@ -862,7 +862,7 @@ end
 builtin.registers = function(opts)
   opts = opts or {}
 
-  local registers_table = {"\"", "_", "#", "=", "_", "/",-"*", "+", ":", ".", "%"}
+  local registers_table = {"\"", "_", "#", "=", "_", "/", "*", "+", ":", ".", "%"}
 
   -- named
   for i = 0, 9 do
