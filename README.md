@@ -428,6 +428,32 @@ Themes should work with every `telescope.builtin` function.  If you wish to
 make theme, check out `lua/telescope/themes.lua`. If you need more features,
 make an issue :).
 
+
+## Extensions
+
+Telescope provides the capabilties to create & register extensions, which improve telescope in a variety of ways.
+
+Some extensions provide integration with external tools, outside of the scope of `builtins`. Others provide performance
+enhancements by using compiled C and interfacing directly with Lua.
+
+For example:
+- [fzy-native](https://github.com/nvim-telescope/telescope-fzy-native.nvim) : WIP native FZY sorter that uses compiled C to do the matching.
+- [nvim-dap integration](https://github.com/nvim-telescope/telescope-dap.nvim) : WIP nvim-dap integration.
+
+Extensions can be refenced by doing the following:
+
+```lua
+-- Run the `configurations` picker from nvim-dap (not yet implemented)
+require('telescope').extensions.dap.configurations()
+```
+
+To pre-load an extension (so that it will override default configurations), you can do:
+
+```lua
+-- This will load fzy_native and have it override the default file sorter
+require('telescope').load_extension('fzy_native')
+```
+
 ## API
 <!-- TODO: need to provide working examples for every api -->
 

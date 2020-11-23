@@ -901,7 +901,6 @@ end
 
 function Picker:close_existing_pickers()
   for _, prompt_bufnr in ipairs(state.get_existing_prompts()) do
-    log.debug("Prompt bufnr was left open:", prompt_bufnr)
     pcall(actions.close, prompt_bufnr)
   end
 end

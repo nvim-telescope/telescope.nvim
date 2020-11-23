@@ -366,8 +366,9 @@ sorters.fuzzy_with_index_bias = function(opts)
 end
 
 -- Sorter using the fzy algorithm
-sorters.get_fzy_sorter = function()
-  local fzy = require('telescope.algos.fzy')
+sorters.get_fzy_sorter = function(opts)
+  opts = opts or {}
+  local fzy = opts.fzy_mod or require('telescope.algos.fzy')
   local OFFSET = -fzy.get_score_floor()
 
   return sorters.Sorter:new{
