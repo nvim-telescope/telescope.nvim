@@ -862,17 +862,7 @@ end
 builtin.registers = function(opts)
   opts = opts or {}
 
-  local registers_table = {}
-  table.insert(registers_table, "\"")
-  table.insert(registers_table, "_")
-  table.insert(registers_table, "#")
-  table.insert(registers_table, "=")
-  table.insert(registers_table, "_")
-  table.insert(registers_table, "/")
-
-  -- selection
-  table.insert(registers_table, "*")
-  table.insert(registers_table, "+")
+  local registers_table = {"\"", "_", "#", "=", "_", "/",-"*", "+", ":", ".", "%"}
 
   -- named
   for i = 0, 9 do
@@ -883,12 +873,6 @@ builtin.registers = function(opts)
   for i = 65, 90 do
     table.insert(registers_table, string.char(i))
   end
-
-  -- readonly
-  table.insert(registers_table, ":")
-  table.insert(registers_table, ".")
-  table.insert(registers_table, "%")
-
 
   pickers.new(opts,{
     prompt_title = 'Registers',
