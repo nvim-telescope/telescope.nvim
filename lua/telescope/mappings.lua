@@ -94,9 +94,9 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
     return
   end
 
-  opts = opts or {
-    silent = true
-  }
+  opts = opts or {}
+  if opts.noremap == nil then opts.noremap = true end
+  if opts.silent == nil then opts.silent = true end
 
   if type(key_func) == "string" then
     a.nvim_buf_set_keymap(
