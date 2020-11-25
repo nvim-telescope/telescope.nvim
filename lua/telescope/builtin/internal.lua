@@ -35,12 +35,7 @@ internal.builtin = function(opts)
 
       table.insert(objs, {
         filename = string.sub(debug_info.source, 2),
-        lnum = debug_info.linedefined,
-        col = 0,
         text = k,
-
-        start = debug_info.linedefined,
-        finish = debug_info.lastlinedefined,
       })
     end
   end
@@ -51,7 +46,7 @@ internal.builtin = function(opts)
       results     = objs,
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
-    previewer = previewers.qflist.new(opts),
+    previewer = previewers.builtin.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
       actions.goto_file_selection_edit:replace(actions.run_builtin)

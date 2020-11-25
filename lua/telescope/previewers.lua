@@ -474,10 +474,50 @@ previewers.ctags = defaulter(function(_)
         vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
 
         pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+        vim.cmd "norm! gg"
         vim.fn.search(scode)
 
         self.state.hl_win = status.preview_win
         self.state.hl_id = vim.fn.matchadd('Search', scode)
+      end)
+    end
+  }
+end, {})
+
+previewers.builtin = defaulter(function(_)
+  return previewers.new_buffer_previewer {
+    setup = function()
+      return {}
+    end,
+
+    teardown = function(self)
+      if self.state and self.state.hl_id then
+        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+        self.state.hl_id = nil
+      end
+    end,
+
+    preview_fn = function(self, entry, status)
+      with_preview_window(status, nil, function()
+        local module_name = vim.fn.fnamemodify(entry.filename, ':t:r')
+        local text = module_name .. '\\.' .. entry.text
+
+        local new_bufnr = vim.fn.bufnr(entry.filename, true)
+        vim.fn.bufload(new_bufnr)
+
+        vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
+        vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
+        vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
+        vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
+        vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
+        vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
+
+        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+        vim.cmd "norm! gg"
+        vim.fn.search(text)
+
+        self.state.hl_win = status.preview_win
+        self.state.hl_id = vim.fn.matchadd('Search', text)
       end)
     end
   }
