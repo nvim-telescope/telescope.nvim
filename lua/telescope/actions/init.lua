@@ -245,16 +245,11 @@ actions.git_staging_toggle = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
 
-  -- If parts of the file are staged and unstaged at the same time, stage
-  -- changes. Else toggle between staged and unstaged if the file is tracked,
-  -- and between added and untracked if the file is untracked.
   if selection.status:sub(2) == ' ' then
     utils.get_os_command_output({ 'git', 'restore', '--staged', selection.value }, cwd)
   else
     utils.get_os_command_output({ 'git', 'add', selection.value }, cwd)
   end
-  do_close(prompt_bufnr, true)
-  require('telescope.builtin').git_status()
 end
 
 local entry_to_qf = function(entry)

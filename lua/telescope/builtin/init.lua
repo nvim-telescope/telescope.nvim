@@ -23,6 +23,7 @@ builtin.live_grep = require('telescope.builtin.files').live_grep
 builtin.grep_string = require('telescope.builtin.files').grep_string
 builtin.find_files = require('telescope.builtin.files').find_files
 builtin.fd = builtin.find_files
+builtin.file_browser = require('telescope.builtin.files').file_browser
 builtin.treesitter = require('telescope.builtin.files').treesitter
 builtin.current_buffer_fuzzy_find = require('telescope.builtin.files').current_buffer_fuzzy_find
 builtin.tags = require('telescope.builtin.files').tags

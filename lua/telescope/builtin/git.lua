@@ -1,4 +1,5 @@
 local actions = require('telescope.actions')
+local action_state = require('telescope.actions.state')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
@@ -108,22 +109,35 @@ git.branches = function(opts)
 end
 
 git.status = function(opts)
-  local output = utils.get_os_command_output({ 'git', 'status', '-s' }, opts.cwd)
+  local gen_new_finder = function()
+    local output = utils.get_os_command_output({ 'git', 'status', '-s' }, opts.cwd)
 
-  if table.getn(output) == 0 then
-    print('No changes found')
-    return
+    if table.getn(output) == 0 then
+      print('No changes found')
+      return
+    end
+
+    return finders.new_table {
+      results = output,
+      entry_maker = opts.entry_maker or make_entry.gen_from_git_status(opts)
+    }
   end
+
+  local initial_finder = gen_new_finder()
+  if not initial_finder then return end
 
   pickers.new(opts, {
     prompt_title = 'Git Status',
-    finder = finders.new_table {
-      results = output,
-      entry_maker = make_entry.gen_from_git_status(opts)
-    },
+    finder = initial_finder,
     previewer = previewers.git_file_diff.new(opts),
     sorter = conf.file_sorter(opts),
-    attach_mappings = function(_, map)
+    attach_mappings = function(prompt_bufnr, map)
+      actions.git_staging_toggle:enhance {
+        post = function()
+          action_state.get_current_picker(prompt_bufnr):refresh(gen_new_finder(), { reset_prompt = true })
+        end,
+      }
+
       map('i', '<tab>', actions.git_staging_toggle)
       map('n', '<tab>', actions.git_staging_toggle)
       return true
