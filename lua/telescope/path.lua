@@ -4,6 +4,15 @@ local path = {}
 path.separator = package.config:sub(1, 1)
 path.home = vim.fn.expand("~")
 
+path.exists = function(filepath)
+  return vim.loop.fs_stat(filepath) ~= nil
+end
+
+-- TODO: This is obviously super naive and shouldn't exist in a random library
+path.join = function(filepath, child)
+  return filepath .. path.separator .. child
+end
+
 path.make_relative = function(filepath, cwd)
   if not cwd or not filepath then return filepath end
 

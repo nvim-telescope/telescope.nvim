@@ -242,19 +242,24 @@ files.current_buffer_fuzzy_find = function(opts)
 end
 
 files.tags = function(opts)
-  local ctags_file = opts.ctags_file or 'tags'
-
-  if not vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438) then
-    print('Tags file does not exists. Create one with ctags -R')
-    return
+  local tagfiles
+  if opts.ctags_file then
+    tagfiles = {opts.ctags_file}
+  else
+    tagfiles = vim.fn.map(vim.fn.tagfiles(), 'expand(fnamemodify(v:val, ":p"))')
+    if vim.tbl_isempty(tagfiles) then
+      print('No tags file found. Create one with ctags -R or verify your &tagfiles option is correctly set.')
+      return
+    end
   end
 
-  local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438))
-  local stat = assert(vim.loop.fs_fstat(fd))
-  local data = assert(vim.loop.fs_read(fd, stat.size, 0))
-  assert(vim.loop.fs_close(fd))
-
-  local results = vim.split(data, '\n')
+  local results = {}
+  for _, each in ipairs(tagfiles) do
+    tags_directory = vim.fn.fnamemodify(each, ":h")
+    for line in io.lines(each) do
+      table.insert(results, { line = line, tags_directory = tags_directory })
+    end
+  end
 
   pickers.new(opts,{
     prompt = 'Tags',
