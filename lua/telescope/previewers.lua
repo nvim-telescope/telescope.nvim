@@ -20,7 +20,7 @@ Previewer.__index = Previewer
 -- TODO: Should play with these some more, ty @clason
 local bat_options = {"--style=plain", "--color=always", "--paging=always"}
 local has_less = (vim.fn.executable('less') == 1) and config.values.use_less
-local termopen_env = vim.tbl_extend("force", { ['GIT_PAGER'] = (has_less and 'less' or ''), LESS = '-RS' }, config.values.set_env)
+local termopen_env = vim.tbl_extend("force", { ['GIT_PAGER'] = (has_less and 'less' or '') }, config.values.set_env)
 
 -- TODO(conni2461): Workaround for neovim/neovim#11751. Add only quotes when using else branch.
 local valuate_shell = function()
