@@ -53,6 +53,26 @@ files.grep_string = function(opts)
   }):find()
 end
 
+-- NOTE(tj): Get clarification on comment and put this in the right place
+local function insert_search_dirs(find_command, search_dirs)
+  local command = find_command[1]
+  if command == 'fd' or command == 'fdfind' then
+    table.insert(find_command, '.')
+    for _,v in pairs(search_dirs) do
+      table.insert(find_command, v)
+    end
+  elseif command == 'rg' then
+    for _,v in pairs(search_dirs) do
+      table.insert(find_command, v)
+    end
+  elseif command == 'find' then
+    table.remove(find_command, 1)
+    for _,v in pairs(search_dirs) do
+      table.insert(find_command, 2, v)
+    end
+  end
+end
+
 -- TODO: Maybe just change this to `find`.
 --          Support `find` and maybe let people do other stuff with it as well.
 files.find_files = function(opts)
@@ -74,6 +94,10 @@ files.find_files = function(opts)
     print("You need to install either find, fd, or rg. " ..
           "You can also submit a PR to add support for another file finder :)")
     return
+  end
+
+  if search_dirs then
+    insert_search_dirs(find_command, search_dirs)
   end
 
   if opts.cwd then
