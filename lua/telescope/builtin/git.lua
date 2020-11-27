@@ -147,7 +147,7 @@ local set_opts_cwd = function(opts)
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)
   else
-    opts.cwd = vim.fn.expand('%:p:h')
+    opts.cwd = vim.loop.cwd()
   end
 
   -- Find root of git directory and remove trailing newline characters

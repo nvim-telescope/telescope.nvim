@@ -40,13 +40,13 @@ TIP: copy the template to your vim buffer
 <!--
 Example:
 
-1. nvim -NU test.vim
+1. nvim -nu test.vim
 2. :Telescope live_grep or git_commits 
 3. .... bang here is the issue
 ...
 -->
 
-1. nvim -NU test.vim
+1. nvim -nu test.vim
 2. 
 3. 
 </details>

@@ -366,8 +366,9 @@ sorters.fuzzy_with_index_bias = function(opts)
 end
 
 -- Sorter using the fzy algorithm
-sorters.get_fzy_sorter = function()
-  local fzy = require('telescope.algos.fzy')
+sorters.get_fzy_sorter = function(opts)
+  opts = opts or {}
+  local fzy = opts.fzy_mod or require('telescope.algos.fzy')
   local OFFSET = -fzy.get_score_floor()
 
   return sorters.Sorter:new{
@@ -400,6 +401,19 @@ sorters.get_fzy_sorter = function()
     -- call call fzy.score(x,y) followed by fzy.positions(x,y): both call the
     -- fzy.compute function, which does all the work. But, this doesn't affect
     -- perceived performance.
+    highlighter = function(_, prompt, display)
+      return fzy.positions(prompt, display)
+    end,
+  }
+end
+
+sorters.highlighter_only = function(opts)
+  opts = opts or {}
+  local fzy = opts.fzy_mod or require('telescope.algos.fzy')
+
+  return Sorter:new {
+    scoring_function = function() return 0 end,
+
     highlighter = function(_, prompt, display)
       return fzy.positions(prompt, display)
     end,
