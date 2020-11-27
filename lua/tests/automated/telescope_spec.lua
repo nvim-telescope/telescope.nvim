@@ -112,6 +112,16 @@ describe('Picker', function()
 
       assert.are.same(1, counts_executed)
     end)
+
+    it('should not loop a bunch', function()
+      local info = {}
+      local manager = EntryManager:new(5, nil, info)
+      manager:add_entry(nil, 4, "better result")
+      manager:add_entry(nil, 3, "better result")
+      manager:add_entry(nil, 2, "better result")
+
+      assert.are.same({}, info)
+    end)
   end)
 end)
 
