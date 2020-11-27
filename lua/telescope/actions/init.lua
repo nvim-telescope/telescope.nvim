@@ -222,6 +222,8 @@ actions.run_builtin = function(prompt_bufnr)
   actions.close(prompt_bufnr)
 
   require('telescope.builtin')[entry.text]()
+
+  vim.api.nvim_feedkeys('i', 'n', false)
 end
 
 -- TODO: Think about how to do this.
