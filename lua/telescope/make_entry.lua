@@ -841,10 +841,6 @@ function make_entry.gen_from_ctags(opts)
       tag, file, lnum  = string.match(result.line, '([^\t]+)\t([^\t]+)\t(%d+).*')
     end
 
-    if not path.exists(file) then
-      file = path.join(result.tags_directory, file)
-    end
-
     if opts.only_current_file and file ~= current_file then
       return nil
     end
@@ -858,6 +854,7 @@ function make_entry.gen_from_ctags(opts)
       tag = tag,
 
       filename = file,
+      resolve_filename = result.resolve_filename,
 
       col = 1,
       lnum = lnum and tonumber(lnum) or 1,

@@ -1,6 +1,7 @@
 local actions = require('telescope.actions')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
+local path = require('telescope.path')
 local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
 local utils = require('telescope.utils')
@@ -242,22 +243,23 @@ files.current_buffer_fuzzy_find = function(opts)
 end
 
 files.tags = function(opts)
-  local tagfiles
-  if opts.ctags_file then
-    tagfiles = {opts.ctags_file}
-  else
-    tagfiles = vim.fn.map(vim.fn.tagfiles(), 'expand(fnamemodify(v:val, ":p"))')
-    if vim.tbl_isempty(tagfiles) then
-      print('No tags file found. Create one with ctags -R or verify your &tagfiles option is correctly set.')
-      return
-    end
+  local tagfiles = opts.ctags_file and { opts.ctags_file } or
+                   vim.fn.map(vim.fn.tagfiles(), 'expand(fnamemodify(v:val, ":p"))')
+
+  if vim.tbl_isempty(tagfiles) then
+    print('No tags file found. Create one with ctags -R or verify your &tags option is correctly set.')
+    return
   end
 
   local results = {}
   for _, each in ipairs(tagfiles) do
-    tags_directory = vim.fn.fnamemodify(each, ":h")
+    local tags_directory = vim.fn.fnamemodify(each, ":h")
+    local resolve_filename = function(filename)
+        return path.exists(filename) and filename or
+               path.join(tags_directory, filename)
+    end
     for line in io.lines(each) do
-      table.insert(results, { line = line, tags_directory = tags_directory })
+      table.insert(results, { line = line, resolve_filename = resolve_filename })
     end
   end
 
@@ -271,6 +273,10 @@ files.tags = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function()
       actions._goto_file_selection:enhance {
+        pre = function()
+          local entry = actions.get_selected_entry()
+          entry.filename = entry.resolve_filename(entry.filename)
+        end,
         post = function()
           local selection = actions.get_selected_entry()
 

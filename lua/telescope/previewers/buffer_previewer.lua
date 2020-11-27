@@ -265,7 +265,7 @@ previewers.ctags = defaulter(function(_)
 
     define_preview = function(self, entry, status)
       putils.with_preview_window(status, nil, function()
-        conf.buffer_previewer_maker(entry.filename, self.state.bufnr, self.state.bufname, true, function(bufnr)
+        conf.buffer_previewer_maker(entry.resolve_filename(entry.filename), self.state.bufnr, self.state.bufname, true, function(bufnr)
           vim.api.nvim_buf_call(bufnr, function()
             determine_jump(entry)(self, bufnr)
           end)
