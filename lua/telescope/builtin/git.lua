@@ -106,18 +106,9 @@ git.branches = function(opts)
 end
 
 git.status = function(opts)
-  local output = vim.split(utils.get_os_command_output('git status -s'), '\n')
-  local results = {}
-  for _, v in ipairs(output) do
-    if v ~= "" then
-      local mod, fname = string.match(v, '(..)%s(.+)')
-      if mod ~= 'A ' and mod ~= 'M ' and mod ~= 'R ' and mod ~= 'D ' then
-        table.insert(results, { mod = mod, file = fname })
-      end
-    end
-  end
+  local output = utils.get_os_command_output('git status -s')
 
-  if vim.tbl_isempty(results) then
+  if output == '' then
     print('No changes found')
     return
   end
@@ -125,19 +116,23 @@ git.status = function(opts)
   pickers.new(opts, {
     prompt_title = 'Git Status',
     finder = finders.new_table {
-      results = results,
+      results = vim.split(output, '\n'),
       entry_maker = function(entry)
+        if entry == '' then return nil end
+        local mod, file = string.match(entry, '(..).*%s[->%s]?(.+)')
         return {
-          value = entry.file,
-          ordinal = entry.mod .. ' ' .. entry.file,
-          display = entry.mod .. ' ' .. entry.file,
+          value = file,
+          status = mod,
+          ordinal = entry,
+          display = entry,
         }
       end
     },
     previewer = previewers.git_file_diff.new(opts),
     sorter = conf.file_sorter(opts),
-    attach_mappings = function()
-      actions.goto_file_selection_edit:replace(actions.git_add)
+    attach_mappings = function(_, map)
+      map('i', '<tab>', actions.git_staging_toggle)
+      map('n', '<tab>', actions.git_staging_toggle)
       return true
     end
   }):find()
