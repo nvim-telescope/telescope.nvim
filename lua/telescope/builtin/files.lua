@@ -96,6 +96,7 @@ files.find_files = function(opts)
     return
   end
 
+  local search_dirs = opts.search_dirs
   if search_dirs then
     insert_search_dirs(find_command, search_dirs)
   end
