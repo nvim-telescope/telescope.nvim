@@ -28,7 +28,7 @@ files.live_grep = function(opts)
   pickers.new(opts, {
     prompt_title = 'Live Grep',
     finder = live_grepper,
-    previewer = previewers.vimgrep.new(opts),
+    previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
   }):find()
 end
@@ -48,7 +48,7 @@ files.grep_string = function(opts)
       flatten { conf.vimgrep_arguments, opts.word_match, search},
       opts
     ),
-    previewer = previewers.vimgrep.new(opts),
+    previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
   }):find()
 end
@@ -87,7 +87,7 @@ files.find_files = function(opts)
       find_command,
       opts
     ),
-    previewer = previewers.cat.new(opts),
+    previewer = conf.file_previewer(opts),
     sorter = conf.file_sorter(opts),
   }):find()
 end
@@ -143,7 +143,7 @@ files.treesitter = function(opts)
       results = results,
       entry_maker = make_entry.gen_from_treesitter(opts)
     },
-    previewer = previewers.vimgrep.new(opts),
+    previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
   }):find()
 end
