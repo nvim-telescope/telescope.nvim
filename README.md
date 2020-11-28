@@ -346,43 +346,44 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
 
 Built-in function ready to be bound to any key you like :smile:.
 
-| Functions                           | Description                                                      |
-|-------------------------------------|------------------------------------------------------------------|
-| `builtin.planets`                   | Demo showcasing how simple to create pickers with telescope.     |
-| `builtin.builtin`                   | Lists Built-in pickers and run them on enter.                    |
-| `builtin.find_files`                | Lists Files in current directory.                                |
-| `builtin.git_files`                 | Lists Git files in current directory.                            |
-| `builtin.buffers`                   | Lists Open buffers in the current vim instance.                  |
-| `builtin.oldfiles`                  | Lists Previously open files.                                     |
-| `builtin.commands`                  | Lists Available plugin/user commands and run it.                 |
-| `builtin.tags`                      | Lists Tags in current directory with preview (ctags -R)          |
-| `builtin.command_history`           | Lists Commands previously ran and run it on enter.               |
-| `builtin.help_tags`                 | Lists Available help tags and open help document.                |
-| `builtin.man_pages`                 | Lists Man entries.                                               |
-| `builtin.marks`                     | Lists Markers and their value.                                   |
-| `builtin.colorscheme`               | Lists Colorscheme and switch to it on enter.                     |
-| `builtin.treesitter`                | Lists Function names, variables, from Treesitter!                |
-| `builtin.live_grep`                 | Searches in current directory files. (respecting .gitignore)     |
-| `builtin.current_buffer_fuzzy_find` | Searches in current buffer lines.                                |
-| `builtin.current_buffer_tags`       | Lists Tags in current buffer.                                    |
-| `builtin.grep_string`               | Searches for a string under the cursor in current directory.     |
-| `builtin.lsp_references`            | Searches in LSP references.                                      |
-| `builtin.lsp_document_symbols`      | Searches in LSP Document Symbols in the current document.        |
-| `builtin.lsp_workspace_symbols`     | Searches in LSP all workspace symbols.                           |
-| `builtin.lsp_code_actions`          | Lists LSP action to be trigged on enter.                         |
-| `builtin.quickfix`                  | Lists items from quickfix.                                       |
-| `builtin.loclist`                   | Lists items from current window's location list.                 |
-| `builtin.reloader`                  | Lists lua modules and reload them on enter.                      |
-| `builtin.vim_options`               | Lists vim options and on enter edit the options value.           |
-| `builtin.registers`                 | Lists vim registers and edit or paste selection.                 |
-| `builtin.keymaps`                   | Lists normal-mode mappings.                                      |
-| `builtin.filetypes`                 | Lists all filetypes.                                             |
-| `builtin.highlights`                | Lists all highlights.                                            |
-| `builtin.git_commits`               | Lists git commits with diff preview and on enter checkout the commit.|
-| `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checkouts it out on enter.|
-| `builtin.git_branches`              | Lists all branches with log preview and checkout action. |
+| Functions                           | Description                                                                                 |
+|-------------------------------------|---------------------------------------------------------------------------------------------|
+| `builtin.planets`                   | Demo showcasing how simple to create pickers with telescope.                                |
+| `builtin.builtin`                   | Lists Built-in pickers and run them on enter.                                               |
+| `builtin.find_files`                | Lists Files in current directory.                                                           |
+| `builtin.git_files`                 | Lists Git files in current directory.                                                       |
+| `builtin.buffers`                   | Lists Open buffers in the current vim instance.                                             |
+| `builtin.oldfiles`                  | Lists Previously open files.                                                                |
+| `builtin.commands`                  | Lists Available plugin/user commands and run it.                                            |
+| `builtin.tags`                      | Lists Tags in current directory with preview (ctags -R)                                     |
+| `builtin.command_history`           | Lists Commands previously ran and run it on enter.                                          |
+| `builtin.help_tags`                 | Lists Available help tags and open help document.                                           |
+| `builtin.man_pages`                 | Lists Man entries.                                                                          |
+| `builtin.marks`                     | Lists Markers and their value.                                                              |
+| `builtin.colorscheme`               | Lists Colorscheme and switch to it on enter.                                                |
+| `builtin.treesitter`                | Lists Function names, variables, from Treesitter!                                           |
+| `builtin.live_grep`                 | Searches in current directory files. (respecting .gitignore)                                |
+| `builtin.current_buffer_fuzzy_find` | Searches in current buffer lines.                                                           |
+| `builtin.current_buffer_tags`       | Lists Tags in current buffer.                                                               |
+| `builtin.grep_string`               | Searches for a string under the cursor in current directory.                                |
+| `builtin.lsp_references`            | Searches in LSP references.                                                                 |
+| `builtin.lsp_document_symbols`      | Searches in LSP Document Symbols in the current document.                                   |
+| `builtin.lsp_workspace_symbols`     | Searches in LSP all workspace symbols.                                                      |
+| `builtin.lsp_code_actions`          | Lists LSP action to be trigged on enter.                                                    |
+| `builtin.lsp_range_code_actions`    | Lists LSP range code action to be trigged on enter.                                         |
+| `builtin.quickfix`                  | Lists items from quickfix.                                                                  |
+| `builtin.loclist`                   | Lists items from current window's location list.                                            |
+| `builtin.reloader`                  | Lists lua modules and reload them on enter.                                                 |
+| `builtin.vim_options`               | Lists vim options and on enter edit the options value.                                      |
+| `builtin.registers`                 | Lists vim registers and edit or paste selection.                                            |
+| `builtin.keymaps`                   | Lists normal-mode mappings.                                                                 |
+| `builtin.filetypes`                 | Lists all filetypes.                                                                        |
+| `builtin.highlights`                | Lists all highlights.                                                                       |
+| `builtin.git_commits`               | Lists git commits with diff preview and on enter checkout the commit.                       |
+| `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checkouts it out on enter.                 |
+| `builtin.git_branches`              | Lists all branches with log preview and checkout action.                                    |
 | `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multiselection still WIP) |
-| ..................................  | Your next awesome finder function here :D                        |
+| ..................................  | Your next awesome finder function here :D                                                   |
 
 
 #### Built-in Sorters

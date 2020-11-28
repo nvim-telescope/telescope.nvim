@@ -68,7 +68,7 @@ lsp.document_symbols = function(opts)
 end
 
 lsp.code_actions = function(opts)
-  local params = vim.lsp.util.make_range_params()
+  local params = opts.params or vim.lsp.util.make_range_params()
 
   params.context = {
     diagnostics = vim.lsp.diagnostic.get_line_diagnostics()
@@ -132,6 +132,11 @@ lsp.code_actions = function(opts)
     end,
     sorter = conf.generic_sorter(opts),
   }):find()
+end
+
+lsp.range_code_actions = function(opts)
+ opts.params = vim.lsp.util.make_given_range_params()
+ lsp.code_actions(opts)
 end
 
 lsp.workspace_symbols = function(opts)
