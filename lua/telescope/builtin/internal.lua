@@ -22,22 +22,12 @@ internal.builtin = function(opts)
 
   local objs = {}
 
-  local modules = {
-    require('telescope.builtin.internal'),
-    require('telescope.builtin.git'),
-    require('telescope.builtin.lsp'),
-    require('telescope.builtin.files'),
-  }
-
-  for _, m in ipairs(modules) do
-    for k, v in pairs(m) do
-      local debug_info = debug.getinfo(v)
-
-      table.insert(objs, {
-        filename = string.sub(debug_info.source, 2),
-        text = k,
-      })
-    end
+  for k, v in pairs(require'telescope.builtin') do
+    local debug_info = debug.getinfo(v)
+    table.insert(objs, {
+      filename = string.sub(debug_info.source, 2),
+      text = k,
+    })
   end
 
   pickers.new(opts, {

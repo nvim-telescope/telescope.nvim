@@ -500,8 +500,12 @@ previewers.builtin = defaulter(function(_)
     preview_fn = function(self, entry, status)
       with_preview_window(status, nil, function()
         local module_name = vim.fn.fnamemodify(entry.filename, ':t:r')
-        local text = module_name .. '\\.' .. entry.text
-
+        local text
+        if entry.text:sub(1, #module_name) ~= module_name then
+          text = module_name .. '.' .. entry.text
+        else
+          text = entry.text:gsub('_', '.', 1)
+        end
         local new_bufnr = vim.fn.bufnr(entry.filename, true)
         vim.fn.bufload(new_bufnr)
 
