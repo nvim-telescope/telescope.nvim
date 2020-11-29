@@ -569,6 +569,96 @@ internal.highlights = function(opts)
   }):find()
 end
 
+internal.autocommands = function(opts)
+  local autocmd_table = {}
+
+  local pattern  = {}
+  pattern.BUFFER = "<buffer=%d+>"
+  pattern.EVENT  = "[%a]+"
+  pattern.GROUP  = "[%a%d_:]+"
+  pattern.INDENT = "^%s%s%s%s" -- match indentation of 4 spaces
+
+  local event, group, ft_pat, cmd, source_file, source_lnum
+  local current_event, current_group, current_ft
+
+  local cmd_output = vim.fn.execute("verb autocmd *", "silent")
+  for line in cmd_output:gmatch("[^\r\n]+") do
+    -- capture group and event
+    group, event = line:match("^(" .. pattern.GROUP .. ")%s+(" .. pattern.EVENT .. ")")
+    -- ..or just an event
+    if event == nil then
+      event = line:match("^(" .. pattern.EVENT .. ")")
+    end
+
+    if event then
+      group = group or "<anonymous>"
+      if event ~= current_event or group ~= current_group then
+        current_event = event
+        current_group = group
+      end
+      goto line_parsed
+    end
+
+    -- non event/group lines
+    ft_pat = line:match(pattern.INDENT .. "(%S+)")
+    if ft_pat then
+      if ft_pat:match("^%d+") then
+        ft_pat = "<buffer=" .. ft_pat .. ">"
+      end
+      current_ft = ft_pat
+
+      -- is there a command on the same line?
+      cmd = line:match(pattern.INDENT .. "%S+%s+(.+)")
+
+      goto line_parsed
+    end
+
+    if current_ft and cmd == nil then
+      -- trim leading spaces
+      cmd = line:gsub("^%s+", "")
+      goto line_parsed
+    end
+
+    if current_ft and cmd then
+      source_file, source_lnum = line:match("Last set from (.*) line (.*)")
+      if source_file then
+        local autocmd = {}
+        autocmd.event       = current_event
+        autocmd.group       = current_group
+        autocmd.ft_pattern  = current_ft
+        autocmd.command     = cmd
+        autocmd.source_file = source_file
+        autocmd.source_lnum = source_lnum
+        table.insert(autocmd_table, autocmd)
+
+        cmd = nil
+      end
+    end
+
+    ::line_parsed::
+  end
+
+  -- print(vim.inspect(autocmd_table))
+
+  pickers.new(opts,{
+    prompt_title = 'autocommands',
+    finder = finders.new_table {
+      results = autocmd_table,
+      entry_maker = make_entry.gen_from_autocommands(opts),
+    },
+    previewer = previewers.autocommands.new(opts),
+    sorter = conf.generic_sorter(opts),
+    attach_mappings = function(prompt_bufnr)
+      actions._goto_file_selection:replace(function(_, cmd)
+        local selection = actions.get_selected_entry()
+        actions.close(prompt_bufnr)
+        vim.cmd(cmd .. ' ' .. selection.value)
+      end)
+
+      return true
+    end
+  }):find()
+end
 
 local function apply_checks(mod)
   for k, v in pairs(mod) do

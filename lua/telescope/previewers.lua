@@ -770,6 +770,49 @@ previewers.man = defaulter(function(_)
   }
 end)
 
+previewers.autocommands = defaulter(function(_)
+return previewers.new_buffer_previewer {
+  setup = function()
+    return {}
+  end,
+
+  teardown = function(self)
+    if self.state and self.state.hl_id then
+      pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+      self.state.hl_id = nil
+    end
+  end,
+
+  preview_fn = function(self, entry, status)
+    local results = vim.tbl_filter(
+      function (x) return x.group == entry.group end,
+      status.picker.finder.results
+      )
+    local display = {}
+    table.insert(display, string.format(" augroup: %s - [ %d entries ]", entry.group, #results))
+    -- TODO: calculate banner width/string in setup()
+    table.insert(display, string.rep("-", vim.fn.getwininfo(status.preview_win)[1].width))
+
+    local marker
+    for _, item in ipairs(results) do
+      marker = " "
+      if item == entry then
+        marker = "*"
+      end
+      table.insert(display,
+        string.format("%s%-12s : %-08s %s", marker, item.event, "<" .. item.ft_pattern .. ">", item.command)
+      )
+
+    end
+    with_preview_window(status, nil, function()
+      -- TODO: set filetype in setup()
+      vim.api.nvim_buf_set_option(status.preview_bufnr, "filetype", "vim")
+      vim.api.nvim_buf_set_lines(status.preview_bufnr, 0, -1, false, display)
+    end)
+  end,
+}
+end, {})
+
 previewers.display_content = defaulter(function(_)
   return previewers.new_buffer_previewer {
     preview_fn = function(self, entry, status)
