@@ -791,7 +791,7 @@ return previewers.new_buffer_previewer {
     local display = {}
     table.insert(display, string.format(" augroup: %s - [ %d entries ]", entry.group, #results))
     -- TODO: calculate banner width/string in setup()
-    -- TODO: get column/banner characters to be the same HL group as border
+    -- TODO: get column characters to be the same HL group as border
     table.insert(display, string.rep("─", vim.fn.getwininfo(status.preview_win)[1].width))
 
     local marker
@@ -809,6 +809,7 @@ return previewers.new_buffer_previewer {
       -- TODO: set filetype in setup()
       vim.api.nvim_buf_set_option(status.preview_bufnr, "filetype", "vim")
       vim.api.nvim_buf_set_lines(status.preview_bufnr, 0, -1, false, display)
+      vim.api.nvim_buf_add_highlight(status.preview_bufnr, 0, "TelescopeBorder", 1, 0, -1)
     end)
   end,
 }
