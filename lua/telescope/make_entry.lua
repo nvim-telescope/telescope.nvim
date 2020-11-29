@@ -686,16 +686,16 @@ function make_entry.gen_from_autocommands(_)
   local displayer = entry_display.create {
     separator = "▏",
     items = {
+      { width = 14 },
+      { width = 18 },
       { width = 16 },
-      { width = 18 },
-      { width = 18 },
       { remaining = true },
     },
   }
 
   local make_display = function(entry)
     return displayer {
-      string.format("<%s>", entry.event),
+      entry.event,
       entry.group,
       entry.ft_pattern,
       entry.command

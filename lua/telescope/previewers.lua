@@ -791,7 +791,8 @@ return previewers.new_buffer_previewer {
     local display = {}
     table.insert(display, string.format(" augroup: %s - [ %d entries ]", entry.group, #results))
     -- TODO: calculate banner width/string in setup()
-    table.insert(display, string.rep("-", vim.fn.getwininfo(status.preview_win)[1].width))
+    -- TODO: get column/banner characters to be the same HL group as border
+    table.insert(display, string.rep("─", vim.fn.getwininfo(status.preview_win)[1].width))
 
     local marker
     for _, item in ipairs(results) do
@@ -800,7 +801,7 @@ return previewers.new_buffer_previewer {
         marker = "*"
       end
       table.insert(display,
-        string.format("%s%-12s : %-08s %s", marker, item.event, "<" .. item.ft_pattern .. ">", item.command)
+        string.format("%s%-12s : %-08s %s", marker, item.event, item.ft_pattern, item.command)
       )
 
     end
