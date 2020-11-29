@@ -7,7 +7,8 @@
 >
 > — thefreedictionary
 
-![](https://raw.githubusercontent.com/tjdevries/media.repo/master/telescope.nvim/simple_rg_v1.gif)
+![](https://files.gitter.im/5fbbeebed73408ce4ff4bdd0/OcyL/telescope.gif) 
+> by @glepnir
 
 `Telescope.nvim` is a next generation library for creating floating pickers
 with advanced features.  It is written in `lua` and is built on top of latest
