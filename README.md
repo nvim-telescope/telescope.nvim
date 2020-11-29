@@ -391,6 +391,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checkouts it out on enter.                 |
 | `builtin.git_branches`              | Lists all branches with log preview and checkout action.                                    |
 | `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multiselection still WIP) |
+| `builtin.symbols`                   | Lists symbols inside a file `data/telescope-sources/*.json` found in your rtp. More info and symbol sources can be found [here](https://github.com/nvim-telescope/telescope-symbols.nvim) |
 | ..................................  | Your next awesome finder function here :D                                                   |
 
 #### Built-in Previewers

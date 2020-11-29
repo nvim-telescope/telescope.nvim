@@ -36,6 +36,7 @@ builtin.git_status = require('telescope.builtin.git').status
 
 builtin.builtin = require('telescope.builtin.internal').builtin
 builtin.planets = require('telescope.builtin.internal').planets
+builtin.symbols = require('telescope.builtin.internal').symbols
 builtin.commands = require('telescope.builtin.internal').commands
 builtin.quickfix = require('telescope.builtin.internal').quickfix
 builtin.loclist = require('telescope.builtin.internal').loclist

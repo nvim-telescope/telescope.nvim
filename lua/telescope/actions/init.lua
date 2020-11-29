@@ -230,6 +230,12 @@ actions.run_builtin = function(prompt_bufnr)
   require('telescope.builtin')[entry.text]()
 end
 
+actions.insert_symbol = function(prompt_bufnr)
+  local selection = actions.get_selected_entry()
+  actions.close(prompt_bufnr)
+  vim.api.nvim_put({selection.value[1]}, '', true, true)
+end
+
 -- TODO: Think about how to do this.
 actions.insert_value = function(prompt_bufnr)
   local entry = actions.get_selected_entry(prompt_bufnr)
