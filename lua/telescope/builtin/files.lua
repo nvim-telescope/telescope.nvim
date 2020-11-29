@@ -56,20 +56,20 @@ end
 -- NOTE(tj): Get clarification on comment and put this in the right place
 local function insert_search_dirs(find_command, search_dirs)
   local command = find_command[1]
+  local insert_pos = -1
   if command == 'fd' or command == 'fdfind' then
     table.insert(find_command, '.')
-    for _,v in pairs(search_dirs) do
-      table.insert(find_command, v)
-    end
-  elseif command == 'rg' then
-    for _,v in pairs(search_dirs) do
-      table.insert(find_command, v)
-    end
   elseif command == 'find' then
-    table.remove(find_command, 1)
-    for _,v in pairs(search_dirs) do
-      table.insert(find_command, 2, v)
+    for idx,val in ipairs(find_command) do
+      if val=='.' then
+        insert_pos = idx
+        break
+      end
     end
+    table.remove(find_command, insert_pos)
+  end
+  for _,v in pairs(search_dirs) do
+    table.insert(find_command, insert_pos==-1 and (#find_command+1) or insert_pos, vim.fn.expand(v))
   end
 end
 
@@ -104,6 +104,7 @@ files.find_files = function(opts)
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)
   end
+  P(find_command)
 
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
 
