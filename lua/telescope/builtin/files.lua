@@ -258,17 +258,24 @@ files.tags = function(opts)
         return path.exists(filename) and filename or
                path.join(tags_directory, filename)
     end
-    for line in io.lines(each) do
-      table.insert(results, { line = line, resolve_filename = resolve_filename })
-    end
+    path.read(each, function(err, data)
+      for _, line in ipairs(vim.split(data, '\n')) do
+        table.insert(results, { line = line, resolve_filename = resolve_filename })
+      end
+    end)
   end
 
   pickers.new(opts,{
     prompt = 'Tags',
-    finder = finders.new_table {
-      results = results,
-      entry_maker = opts.entry_maker or make_entry.gen_from_ctags(opts),
-    },
+    finder = finders.new_job(function(prompt)
+      print(prompt)
+      if not prompt or prompt == "" then
+        return nil
+      end
+      return prompt
+    end,
+    opts.entry_maker or make_entry.gen_from_ctags(opts),
+    opts.max_results),
     previewer = previewers.ctags.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function()

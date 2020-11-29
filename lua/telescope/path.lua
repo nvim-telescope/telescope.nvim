@@ -13,6 +13,47 @@ path.join = function(filepath, child)
   return filepath .. path.separator .. child
 end
 
+-- Taken with trivial modification from luvit's readFile
+-- (which is Apache 2.0 licensed)
+local function noop() end
+path.read = function (filepath, callback)
+  local fd, onStat, onRead, onChunk, pos, chunks
+  vim.loop.fs_open(filepath, "r", 438 --[[ 0666 ]], function (err, result)
+    if err then return callback(err) end
+    fd = result
+    vim.loop.fs_fstat(fd, onStat)
+  end)
+  function onStat(err, stat)
+    if err then return onRead(err) end
+    if stat.size > 0 then
+      vim.loop.fs_read(fd, stat.size, 0, onRead)
+    else
+      -- the kernel lies about many files.
+      -- Go ahead and try to read some bytes.
+      pos = 0
+      chunks = {}
+      vim.loop.fs_read(fd, 8192, 0, onChunk)
+    end
+  end
+  function onRead(err, chunk)
+    vim.loop.fs_close(fd, noop)
+    return callback(err, chunk)
+  end
+  function onChunk(err, chunk)
+    if err then
+      vim.loop.fs_close(fd, noop)
+      return callback(err)
+    end
+    if chunk and #chunk > 0 then
+      chunks[#chunks + 1] = chunk
+      pos = pos + #chunk
+      return vim.loop.fs_read(fd, 8192, pos, onChunk)
+    end
+    vim.loop.fs_close(fd, noop)
+    return callback(nil, table.concat(chunks))
+  end
+end
+
 path.make_relative = function(filepath, cwd)
   if not cwd or not filepath then return filepath end
 
