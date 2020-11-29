@@ -794,22 +794,22 @@ return previewers.new_buffer_previewer {
     -- TODO: get column characters to be the same HL group as border
     table.insert(display, string.rep("─", vim.fn.getwininfo(status.preview_win)[1].width))
 
-    local marker
-    for _, item in ipairs(results) do
-      marker = " "
+    local selected_row
+    for idx, item in ipairs(results) do
       if item == entry then
-        marker = "*"
+        selected_row = idx
       end
       table.insert(display,
-        string.format("%s%-12s : %-08s %s", marker, item.event, item.ft_pattern, item.command)
+        string.format("  %-14s▏%-08s %s", item.event, item.ft_pattern, item.command)
       )
-
     end
+
     with_preview_window(status, nil, function()
       -- TODO: set filetype in setup()
       vim.api.nvim_buf_set_option(status.preview_bufnr, "filetype", "vim")
       vim.api.nvim_buf_set_lines(status.preview_bufnr, 0, -1, false, display)
       vim.api.nvim_buf_add_highlight(status.preview_bufnr, 0, "TelescopeBorder", 1, 0, -1)
+      vim.api.nvim_buf_add_highlight(status.preview_bufnr, 0, "TelescopeSelection", selected_row + 1, 0, -1)
     end)
   end,
 }
