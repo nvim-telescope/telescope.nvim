@@ -65,4 +65,7 @@ builtin.lsp_code_actions = require('telescope.builtin.lsp').code_actions
 builtin.lsp_range_code_actions = require('telescope.builtin.lsp').range_code_actions
 builtin.lsp_workspace_symbols = require('telescope.builtin.lsp').workspace_symbols
 
+builtin.gh_issue = require('telescope.builtin.ghcli').gh_issue
+builtin.gh_pull_request = require('telescope.builtin.ghcli').gh_pull_request
+
 return builtin
