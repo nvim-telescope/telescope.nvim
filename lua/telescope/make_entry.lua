@@ -329,7 +329,7 @@ function make_entry.gen_from_buffer(opts)
       bufnr = entry.bufnr,
       filename = bufname,
 
-      lnum = entry.info.lnum and entry.info.lnum or 1,
+      lnum = entry.info.lnum ~= 0 and entry.info.lnum or 1,
       indicator = indicator,
     }
   end
