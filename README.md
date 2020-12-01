@@ -441,6 +441,7 @@ enhancements by using compiled C and interfacing directly with Lua.
 For example:
 - [fzy-native](https://github.com/nvim-telescope/telescope-fzy-native.nvim) : WIP native FZY sorter that uses compiled C to do the matching.
 - [nvim-dap integration](https://github.com/nvim-telescope/telescope-dap.nvim) : WIP nvim-dap integration.
+- [packer.nvim integration](https://github.com/nvim-telescope/telescope-packer.nvim) : WIP packer.nvim integration.
 
 Extensions can be refenced by doing the following:
 
