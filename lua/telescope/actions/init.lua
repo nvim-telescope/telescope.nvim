@@ -151,7 +151,7 @@ function actions.close_pum(_)
   end
 end
 
-function actions.close(prompt_bufnr, keepinsert)
+local do_close = function(prompt_bufnr, keepinsert)
   local picker = actions.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
@@ -169,6 +169,10 @@ function actions.close(prompt_bufnr, keepinsert)
 
   pcall(vim.cmd, string.format([[silent bdelete! %s]], prompt_bufnr))
   pcall(a.nvim_set_current_win, original_win_id)
+end
+
+function actions.close(prompt_bufnr)
+  do_close(prompt_bufnr, false)
 end
 
 actions.set_command_line = function(prompt_bufnr)
@@ -221,8 +225,7 @@ end
 actions.run_builtin = function(prompt_bufnr)
   local entry = actions.get_selected_entry(prompt_bufnr)
 
-  actions.close(prompt_bufnr, "keepinsert")
-
+  do_close(prompt_bufnr, true)
   require('telescope.builtin')[entry.text]()
 end
 
