@@ -682,4 +682,42 @@ function make_entry.gen_from_ctags(opts)
   end
 end
 
+function make_entry.gen_from_autocommands(_)
+  local displayer = entry_display.create {
+    separator = "▏",
+    items = {
+      { width = 14 },
+      { width = 18 },
+      { width = 16 },
+      { remaining = true },
+    },
+  }
+
+  local make_display = function(entry)
+    return displayer {
+      entry.event,
+      entry.group,
+      entry.ft_pattern,
+      entry.command
+    }
+  end
+
+  -- TODO: <action> dump current filtered items to buffer
+  return function(entry)
+    return {
+      event      = entry.event,
+      group      = entry.group,
+      ft_pattern = entry.ft_pattern,
+      command    = entry.command,
+      value      = string.format("+%d %s", entry.source_lnum, entry.source_file),
+      source_file = entry.source_file,
+      source_lnum = entry.source_lnum,
+      --
+      valid = true,
+      ordinal = entry.event .. " "  .. entry.group .. " " .. entry.ft_pattern .. " " .. entry.command,
+      display = make_display,
+    }
+  end
+end
+
 return make_entry
