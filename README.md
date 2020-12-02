@@ -7,7 +7,7 @@
 >
 > — thefreedictionary
 
-![by @glepnir](https://files.gitter.im/5fbbeebed73408ce4ff4bdd0/OcyL/telescope.gif) 
+![by @glepnir](https://user-images.githubusercontent.com/41671631/100819597-6f737900-3487-11eb-8621-37ec1ffabe4b.gif) 
 
 
 `Telescope.nvim` is a next generation library for creating floating pickers
