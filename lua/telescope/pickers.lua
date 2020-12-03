@@ -439,9 +439,12 @@ function Picker:find()
       log.trace("Processing result... ", entry)
 
       for _, v in ipairs(self.file_ignore_patterns or {}) do
-        if string.find(entry.value, v) then
-          log.debug("SKPIPING", entry.value, "because", v)
-          return
+        local file = type(entry.value) == 'string' and entry.value or entry.filename
+        if file then
+          if string.find(file, v) then
+            log.debug("SKPIPING", entry.value, "because", v)
+            return
+          end
         end
       end
 
