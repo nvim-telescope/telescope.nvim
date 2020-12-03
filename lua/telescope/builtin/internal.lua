@@ -88,7 +88,7 @@ internal.planets = function(opts)
 end
 
 internal.commands = function(opts)
-  pickers.new({}, {
+  pickers.new(opts, {
     prompt_title = 'Commands',
     finder = finders.new_table {
       results = (function()
@@ -510,7 +510,7 @@ internal.keymaps = function(opts)
     end
   end
 
-  pickers.new({}, {
+  pickers.new(opts, {
     prompt_title = 'Key Maps',
     finder = finders.new_table {
       results = keymaps_table,
@@ -530,7 +530,7 @@ end
 internal.filetypes = function(opts)
   local filetypes = vim.fn.getcompletion('', 'filetype')
 
-  pickers.new({}, {
+  pickers.new(opts, {
     prompt_title = 'Filetypes',
     finder = finders.new_table {
       results = filetypes,
@@ -550,7 +550,7 @@ end
 internal.highlights = function(opts)
   local highlights = vim.fn.getcompletion('', 'highlight')
 
-  pickers.new({}, {
+  pickers.new(opts, {
     prompt_title = 'Highlights',
     finder = finders.new_table {
       results = highlights,
