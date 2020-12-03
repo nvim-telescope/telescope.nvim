@@ -122,6 +122,7 @@ function actions._goto_file_selection(prompt_bufnr, command)
         end
       end
     end
+    vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
   end
 end
 
