@@ -399,7 +399,7 @@ end, {})
 previewers.git_commit_diff_to_head = defaulter(function(opts)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
-      local command = { 'git', '--paginate', 'diff', entry.value }
+      local command = { 'git', '--paginate', 'diff', '--cached', entry.value }
 
       if opts.relative_file_path ~= nil then
         table.insert(command, '--')
