@@ -244,8 +244,14 @@ end
 actions.git_checkout = function(prompt_bufnr)
   local selection = actions.get_selected_entry(prompt_bufnr)
   actions.close(prompt_bufnr)
-  local val = selection.value
-  os.execute('git checkout ' .. val)
+  os.execute('git checkout ' .. selection.value)
+end
+
+actions.git_checkout_current_buffer = function(prompt_bufnr)
+  local selection = actions.get_selected_entry(prompt_bufnr)
+  actions.close(prompt_bufnr)
+  local file_of_current_buffer = vim.fn.expand('%')
+  os.execute('git checkout ' .. selection.value .. ' -- ' .. file_of_current_buffer)
 end
 
 actions.git_staging_toggle = function(prompt_bufnr)

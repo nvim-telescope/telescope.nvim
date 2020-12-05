@@ -60,7 +60,7 @@ git.bcommits = function(opts)
     previewer = previewers.git_commit_diff_to_parent.new(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
-      actions.goto_file_selection_edit:replace(actions.git_checkout)
+      actions.goto_file_selection_edit:replace(actions.git_checkout_current_buffer)
       return true
     end
   }):find()
