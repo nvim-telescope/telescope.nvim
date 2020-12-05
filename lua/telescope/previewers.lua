@@ -381,11 +381,48 @@ previewers.vim_buffer = defaulter(function(_)
   }
 end, {})
 
-previewers.git_commit_diff = defaulter(function(_)
+previewers.git_commit_diff_to_parent = defaulter(function(opts)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
-      local sha = entry.value
-      return { 'git', '-p', 'diff', sha .. '^!' }
+      local command = { 'git', '--paginate', 'diff', entry.value .. '^!' }
+
+      if opts.relative_file_path ~= nil then
+        table.insert(command, '--')
+        table.insert(command, opts.relative_file_path)
+      end
+
+      return command
+    end
+  }
+end, {})
+
+previewers.git_commit_diff_to_head = defaulter(function(opts)
+  return previewers.new_termopen_previewer {
+    get_command = function(entry)
+      local command = { 'git', '--paginate', 'diff', entry.value }
+
+      if opts.relative_file_path ~= nil then
+        table.insert(command, '--')
+        table.insert(command, opts.relative_file_path)
+      end
+
+      return command
+    end
+  }
+end, {})
+
+previewers.git_commit_as_was = defaulter(function(opts)
+  return previewers.new_termopen_previewer {
+    get_command = function(entry)
+      local command = { 'git', '--paginate', 'show' }
+
+      if opts.relative_file_path == nil then
+        table.insert(command, entry.value)
+      else
+        table.insert(command, entry.value .. ':' .. opts.relative_file_path)
+      end
+
+      return command
     end
   }
 end, {})
@@ -393,7 +430,7 @@ end, {})
 previewers.git_branch_log = defaulter(function(_)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
-      return { 'git', '-p', 'log', '--graph',
+      return { 'git', '--paginate', 'log', '--graph',
                "--pretty=format:" .. add_quotes .. "%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset" .. add_quotes,
                '--abbrev-commit', '--date=relative', entry.value }
     end

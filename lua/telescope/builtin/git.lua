@@ -37,7 +37,7 @@ git.commits = function(opts)
       results = results,
       entry_maker = make_entry.gen_from_git_commits(opts),
     },
-    previewer = previewers.git_commit_diff.new(opts),
+    previewer = previewers.git_commit_diff_to_parent.new(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
       actions.goto_file_selection_edit:replace(actions.git_checkout)
@@ -47,6 +47,7 @@ git.commits = function(opts)
 end
 
 git.bcommits = function(opts)
+  opts.relative_file_path = vim.fn.expand('%')
   local cmd = 'git log --pretty=oneline --abbrev-commit ' .. vim.fn.expand('%')
   local results = vim.split(utils.get_os_command_output(cmd), '\n')
 
@@ -56,7 +57,7 @@ git.bcommits = function(opts)
       results = results,
       entry_maker = make_entry.gen_from_git_commits(opts),
     },
-    previewer = previewers.git_commit_diff.new(opts),
+    previewer = previewers.git_commit_diff_to_parent.new(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
       actions.goto_file_selection_edit:replace(actions.git_checkout)
