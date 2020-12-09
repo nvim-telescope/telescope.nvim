@@ -77,7 +77,7 @@ do
 
     mt_file_entry.cwd = cwd
     mt_file_entry.display = function(entry)
-      local display, hl_group = entry.value, nil
+      local display, hl_group = entry.value
       if shorten_path then
         display = utils.path_shorten(display)
       end

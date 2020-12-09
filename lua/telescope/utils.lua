@@ -79,10 +79,6 @@ utils.quickfix_items_to_entries = function(locations)
   return results
 end
 
-utils.new_ngram = function()
-  return require("telescope._private.NGram"):new()
-end
-
 -- TODO: Figure out how to do this... could include in plenary :)
 -- NOTE: Don't use this yet. It will segfault sometimes.
 --

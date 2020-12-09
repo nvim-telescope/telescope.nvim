@@ -453,7 +453,8 @@ function Picker:find()
         end
       end
 
-      local sort_ok, sort_score = nil, 0
+      local sort_ok
+      local sort_score = 0
       if self.sorter then
         sort_ok, sort_score = self:_track("_sort_time", pcall, self.sorter.score, self.sorter, prompt, entry)
 
@@ -842,7 +843,7 @@ function Picker:entry_adder(index, entry, score)
   -- This is the two spaces to manage the '> ' stuff.
   -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
   -- until then, insert two spaces
-  local prefix = TELESCOPE_DEBUG and ('  ' .. score) or '  '
+  local prefix = '  '
   display = prefix .. display
 
   self:_increment("displayed")

@@ -53,9 +53,10 @@ entry_display.create = function(configuration)
 
     if configuration.separator_hl then
       local width = #configuration.separator or 1
-      local hl_start, hl_end = 0, 0
+
+      local hl_start, hl_end
       for _, v in ipairs(results) do
-        hl_start = hl_end + #tostring(v)
+        hl_start = (hl_end or 0) + #tostring(v)
         hl_end = hl_start + width
         table.insert(highlights, { { hl_start, hl_end }, configuration.separator_hl })
       end
