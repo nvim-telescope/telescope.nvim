@@ -12,6 +12,14 @@ ignore = {
   "122" -- Indirectly setting a readonly global
 }
 
+globals = {
+  "TelescopeGlobalState",
+  "TelescopeCachedUppers",
+  "TelescopeCachedTails",
+  "TelescopeCachedNgrams",
+  "_TelescopeConfigurationValues",
+}
+
 -- Global objects defined by the C code
 read_globals = {
   "vim",

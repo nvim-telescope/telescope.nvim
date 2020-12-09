@@ -9,8 +9,8 @@ local function td_validate(fn, ms)
     fn = { fn, 'f' },
     ms = {
       ms,
-      function(ms)
-        return type(ms) == 'number' and ms > 0
+      function(v)
+        return type(v) == 'number' and v > 0
       end,
       "number > 0",
     },

@@ -328,7 +328,9 @@ function Picker:find()
   a.nvim_win_set_option(results_win, 'winhl', 'Normal:TelescopeNormal')
   a.nvim_win_set_option(results_win, 'winblend', self.window.winblend)
   local results_border_win = results_opts.border and results_opts.border.win_id
-  if results_border_win then vim.api.nvim_win_set_option(results_border_win, 'winhl', 'Normal:TelescopeResultsBorder') end
+  if results_border_win then
+    vim.api.nvim_win_set_option(results_border_win, 'winhl', 'Normal:TelescopeResultsBorder')
+  end
 
 
   local preview_win, preview_opts, preview_bufnr
@@ -339,8 +341,9 @@ function Picker:find()
     a.nvim_win_set_option(preview_win, 'winhl', 'Normal:TelescopeNormal')
     a.nvim_win_set_option(preview_win, 'winblend', self.window.winblend)
     local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
-    if preview_border_win then vim.api.nvim_win_set_option(preview_border_win, 'winhl', 'Normal:TelescopePreviewBorder') end
-
+    if preview_border_win then
+      vim.api.nvim_win_set_option(preview_border_win, 'winhl', 'Normal:TelescopePreviewBorder')
+    end
   end
 
   -- TODO: We need to center this and make it prettier...
@@ -407,7 +410,9 @@ function Picker:find()
       return
     end
 
-    local prompt = vim.trim(vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]:sub(#prompt_prefix))
+    local prompt = vim.trim(
+      vim.api.nvim_buf_get_lines(prompt_bufnr, first_line, last_line, false)[1]:sub(#prompt_prefix)
+    )
 
     if self.sorter then
       self.sorter:_start(prompt)
@@ -472,7 +477,7 @@ function Picker:find()
     local process_complete = function()
       if self:is_done() then return end
 
-      -- TODO: We should either: always leave one result or make sure we actually clean up the results when nothing matches
+      -- TODO: Either: always leave one result or make sure we actually clean up the results when nothing matches
       if selection_strategy == 'row' then
         if self._selection_row == nil and self.default_selection_index ~= nil then
           self:set_selection(self:get_row(self.default_selection_index))
@@ -758,7 +763,9 @@ function Picker:set_selection(row)
     end
 
     local caret = '>'
-    local display = string.format('%s %s', caret, (a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] or ''):sub(3))
+    local display = string.format('%s %s', caret,
+      (a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] or ''):sub(3)
+    )
 
     -- TODO: You should go back and redraw the highlights for this line from the sorter.
     -- That's the only smart thing to do.
@@ -851,7 +858,12 @@ function Picker:entry_adder(index, entry, score)
     if set_ok and display_highlights then
       -- TODO: This should actually be done during the cursor moving stuff annoyingly.... didn't see this bug yesterday.
       for _, hl_block in ipairs(display_highlights) do
-        a.nvim_buf_add_highlight(self.results_bufnr, ns_telescope_entry, hl_block[2], row, #prefix + hl_block[1][1], #prefix + hl_block[1][2])
+        a.nvim_buf_add_highlight(self.results_bufnr,
+                                 ns_telescope_entry,
+                                 hl_block[2],
+                                 row,
+                                 #prefix + hl_block[1][1],
+                                 #prefix + hl_block[1][2])
       end
     end
 

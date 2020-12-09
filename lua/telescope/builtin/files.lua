@@ -71,7 +71,8 @@ files.find_files = function(opts)
   end
 
   if not find_command then
-    print("You need to install either find, fd, or rg. You can also submit a PR to add support for another file finder :)")
+    print("You need to install either find, fd, or rg. " ..
+          "You can also submit a PR to add support for another file finder :)")
     return
   end
 

@@ -17,7 +17,7 @@ function themes.get_dropdown(opts)
     layout_strategy = "center",
     results_title = false,
     preview_title = "Preview",
-    preview_cutoff = 1, -- Preview should always show (unless previewer = false) 
+    preview_cutoff = 1, -- Preview should always show (unless previewer = false)
     width = 80,
     results_height = 15,
     borderchars = {

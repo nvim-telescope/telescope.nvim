@@ -142,7 +142,7 @@ function utils.buf_delete(bufnr)
   if bufnr == nil then return end
 
   -- Suppress the buffer deleted message for those with &report<2
-  start_report = vim.o.report
+  local start_report = vim.o.report
   if start_report < 2 then vim.o.report = 2 end
 
   if vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_is_loaded(bufnr) then

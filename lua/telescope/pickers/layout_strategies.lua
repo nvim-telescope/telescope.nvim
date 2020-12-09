@@ -240,7 +240,7 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
 
   -- Height
   local height_padding = math.max(
-    1, 
+    1,
     resolve.resolve_height(layout_config.height_padding or 3)(self, max_columns, max_lines)
   )
   local picker_height = max_lines - 2 * height_padding

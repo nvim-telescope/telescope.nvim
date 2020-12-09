@@ -198,7 +198,7 @@ actions.edit_register = function(prompt_bufnr)
 
   -- update entry in results table
   -- TODO: find way to redraw finder content
-  for k, v in pairs(picker.finder.results) do
+  for _, v in pairs(picker.finder.results) do
     if v == entry then
       v.content = updated_value
     end
