@@ -32,8 +32,8 @@ function EntryManager:new(max_results, set_entry, info)
       return #entry_state
     end,
 
-    get_ordinal = function(_, index)
-      return self:get_entry(index).ordinal
+    get_ordinal = function(em, index)
+      return em:get_entry(index).ordinal
     end,
 
     get_entry = function(_, index)
