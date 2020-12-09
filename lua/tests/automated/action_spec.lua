@@ -1,5 +1,3 @@
-require('plenary.test_harness'):setup_busted()
-
 local transform_mod = require('telescope.actions.mt').transform_mod
 
 local eq = function(a, b)
