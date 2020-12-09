@@ -14,17 +14,13 @@ jobs:
         with:
           path: |
             _neovim
-            ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
-            ~/.local/share/nvim/site/pack/vendor/start/popup.nvim
           key: ${{ runner.os }}-x64-${{ hashFiles('todays-date') }}
 
       - name: Prepare
         run: |
-          test -d ~/.local/share/nvim/site/pack/vendor/start || {
-            mkdir -p ~/.local/share/nvim/site/pack/vendor/start
-            git clone https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
-            git clone https://github.com/nvim-lua/popup.nvim ~/.local/share/nvim/site/pack/vendor/start/popup.nvim
-          }
+          mkdir -p ~/.local/share/nvim/site/pack/vendor/start
+          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
+          git clone --depth 1 https://github.com/nvim-lua/popup.nvim ~/.local/share/nvim/site/pack/vendor/start/popup.nvim
           ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
 
       - name: Run tests
@@ -44,8 +40,6 @@ jobs:
         with:
           path: |
             build
-            ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
-            ~/.local/share/nvim/site/pack/vendor/start/popup.nvim
           key: ${{ runner.os }}-appimage-${{ hashFiles('todays-date') }}
 
       - name: Prepare
@@ -56,11 +50,9 @@ jobs:
             chmod +x nvim.appimage
             mv nvim.appimage ./build/nvim
           }
-          test -d ~/.local/share/nvim/site/pack/vendor/start || {
-            mkdir -p ~/.local/share/nvim/site/pack/vendor/start
-            git clone https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
-            git clone https://github.com/nvim-lua/popup.nvim ~/.local/share/nvim/site/pack/vendor/start/popup.nvim
-          }
+          mkdir -p ~/.local/share/nvim/site/pack/vendor/start
+          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
+          git clone --depth 1 https://github.com/nvim-lua/popup.nvim ~/.local/share/nvim/site/pack/vendor/start/popup.nvim
           ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
 
       - name: Run tests
