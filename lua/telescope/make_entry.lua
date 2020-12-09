@@ -77,7 +77,7 @@ do
 
     mt_file_entry.cwd = cwd
     mt_file_entry.display = function(entry)
-      local display, hl_group = entry.value, nil
+      local display, hl_group = entry.value
       if shorten_path then
         display = utils.path_shorten(display)
       end
@@ -168,8 +168,6 @@ do
 
     mt_vimgrep_entry.cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
     mt_vimgrep_entry.display = function(entry)
-      local display, hl_group = entry.value, nil
-
       local display_filename
       if shorten_path then
         display_filename = utils.path_shorten(entry.filename)
@@ -182,7 +180,7 @@ do
         coordinates = string.format("%s:%s:", entry.lnum, entry.col)
       end
 
-      display, hl_group = transform_devicons(
+      local display, hl_group = transform_devicons(
         entry.filename,
         string.format(display_string, display_filename,  coordinates, entry.text),
         disable_devicons
@@ -215,9 +213,7 @@ do
   end
 end
 
-function make_entry.gen_from_git_commits(opts)
-  opts = opts or {}
-
+function make_entry.gen_from_git_commits()
   return function(entry)
     if entry == "" then
       return nil
@@ -361,7 +357,7 @@ function make_entry.gen_from_treesitter(opts)
 
   return function(entry)
     local ts_utils = require('nvim-treesitter.ts_utils')
-    local start_row, start_col, end_row, end_col = ts_utils.get_node_range(entry.node)
+    local start_row, start_col, end_row, _ = ts_utils.get_node_range(entry.node)
     local node_text = ts_utils.get_node_text(entry.node)[1]
     return {
       valid = true,
@@ -420,9 +416,7 @@ function make_entry.gen_from_packages(opts)
   end
 end
 
-function make_entry.gen_from_apropos(opts)
-  opts = opts or {}
-
+function make_entry.gen_from_apropos()
   return function(line)
     local cmd, _, desc = line:match("^(.*)%s+%((.*)%)%s+%-%s(.*)$")
 
@@ -481,21 +475,21 @@ function make_entry.gen_from_registers(_)
 end
 
 function make_entry.gen_from_highlights()
+  local make_display = function(entry)
+    local display = entry.value
+    return display, { { { 0, #display }, display } }
+  end
+
+  local preview_command = function(entry, bufnr)
+    local hl = entry.value
+    vim.api.nvim_buf_set_option(bufnr, 'filetype', 'vim')
+    local output = vim.split(vim.fn.execute('hi ' .. hl), '\n')
+    local start = string.find(output[2], 'xxx', 1, true)
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, output)
+    vim.api.nvim_buf_add_highlight(bufnr, -1, hl, 1, start - 1, start + 2)
+  end
+
   return function(entry)
-    local make_display = function(entry)
-      local display = entry.value
-      return display, { { { 0, #display }, display } }
-    end
-
-    local preview_command = function(entry, bufnr)
-      local hl = entry.value
-      vim.api.nvim_buf_set_option(bufnr, 'filetype', 'vim')
-      local output = vim.split(vim.fn.execute('hi ' .. hl), '\n')
-      local start = string.find(output[2], 'xxx', 1, true)
-      vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, output)
-      vim.api.nvim_buf_add_highlight(bufnr, -1, hl, 1, start - 1, start + 2)
-    end
-
     return {
       value = entry,
       display = make_display,
@@ -508,12 +502,6 @@ function make_entry.gen_from_highlights()
 end
 
 function make_entry.gen_from_vimoptions()
-
-  -- TODO: Can we just remove this from `options.lua`?
-  function N_(s)
-    return s
-  end
-
   local process_one_opt = function(o)
     local ok, value_origin
 

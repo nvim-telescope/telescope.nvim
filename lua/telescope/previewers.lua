@@ -3,7 +3,6 @@ local context_manager = require('plenary.context_manager')
 local conf = require('telescope.config').values
 local debounce = require('telescope.debounce')
 local from_entry = require('telescope.from_entry')
-local log = require('telescope.log')
 local utils = require('telescope.utils')
 local path = require('telescope.path')
 
@@ -332,7 +331,7 @@ previewers.new_buffer_previewer = function(opts)
       self.state.bufnr = get_bufnr_by_bufname(self, self.state.bufname)
       vim.api.nvim_win_set_buf(status.preview_win, self.state.bufnr)
     else
-      bufnr = vim.api.nvim_create_buf(false, true)
+      local bufnr = vim.api.nvim_create_buf(false, true)
       set_bufnr(self, bufnr)
 
       vim.api.nvim_win_set_buf(status.preview_win, bufnr)
@@ -454,16 +453,16 @@ previewers.new_termopen_previewer = function(opts)
     }
 
     -- TODO(conni2461): Workaround for neovim/neovim#11751.
-    local get_cmd = function(status)
+    local get_cmd = function(st)
       local shell = vim.o.shell
       if string.find(shell, 'powershell.exe') or string.find(shell, 'cmd.exe') then
-        return opts.get_command(entry, status)
+        return opts.get_command(entry, st)
       else
         local env = {}
         for k, v in pairs(termopen_env) do
           table.insert(env, k .. '=' .. v)
         end
-        return table.concat(env, ' ') .. ' ' .. table.concat(opts.get_command(entry, status), ' ')
+        return table.concat(env, ' ') .. ' ' .. table.concat(opts.get_command(entry, st), ' ')
       end
     end
 
@@ -514,7 +513,8 @@ previewers.git_branch_log = defaulter(function(_)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
       return { 'git', '-p', 'log', '--graph',
-               "--pretty=format:" .. add_quotes .. "%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset" .. add_quotes,
+               "--pretty=format:" .. add_quotes .. "%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset"
+               .. add_quotes,
                '--abbrev-commit', '--date=relative', entry.value }
     end
   }
@@ -533,10 +533,10 @@ previewers.cat = defaulter(function(opts)
 
   return previewers.new_termopen_previewer {
     get_command = function(entry)
-      local path = from_entry.path(entry, true)
-      if path == nil or path == '' then return end
+      local p = from_entry.path(entry, true)
+      if p == nil or p == '' then return end
 
-      return maker(path)
+      return maker(p)
     end
   }
 end, {})
@@ -569,9 +569,9 @@ previewers.vim_buffer_cat = defaulter(function(_)
 
     define_preview = function(self, entry, status)
       with_preview_window(status, nil, function()
-        local path = from_entry.path(entry, true)
-        if path == nil or path == '' then return end
-        file_maker_async(path, self.state.bufnr, self.state.bufname)
+        local p = from_entry.path(entry, true)
+        if p == nil or p == '' then return end
+        file_maker_async(p, self.state.bufnr, self.state.bufname)
       end)
     end
   }
@@ -598,10 +598,10 @@ previewers.vim_buffer_vimgrep = defaulter(function(_)
     define_preview = function(self, entry, status)
       with_preview_window(status, nil, function()
         local lnum = entry.lnum or 0
-        local path = from_entry.path(entry, true)
-        if path == nil or path == '' then return end
+        local p = from_entry.path(entry, true)
+        if p == nil or p == '' then return end
 
-        file_maker_sync(path, self.state.bufnr, self.state.bufname)
+        file_maker_sync(p, self.state.bufnr, self.state.bufname)
 
         if lnum ~= 0 then
           if self.state.last_set_bufnr then
@@ -739,15 +739,14 @@ previewers.help = defaulter(function(_)
         local escaped = vim.fn.escape(entry.value, special_chars)
         local tags = {}
 
-        local find_rtp_file = function(path, count)
-          return vim.fn.findfile(path, vim.o.runtimepath, count)
+        local find_rtp_file = function(p, count)
+          return vim.fn.findfile(p, vim.o.runtimepath, count)
         end
 
-        local matches = {}
         for _,file in pairs(find_rtp_file('doc/tags', -1)) do
           local f = assert(io.open(file, "rb"))
             for line in f:lines() do
-              matches = {}
+              local matches = {}
 
               for match in (line..delim):gmatch("(.-)" .. delim) do
                 table.insert(matches, match)

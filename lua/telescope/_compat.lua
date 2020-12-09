@@ -1,4 +1,3 @@
-
 vim.deepcopy = (function()
   local function _id(v)
     return v
@@ -55,17 +54,3 @@ vim.deepcopy = (function()
     end
   end
 end)()
-
-
-
-table.clear = table.clear or function(t)
-  for k in pairs (t) do
-      t[k] = nil
-  end
-end
-
-table.pop = table.pop or function(t, k)
-  local val = t[k]
-  t[k] = nil
-  return val
-end

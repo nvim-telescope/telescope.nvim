@@ -54,8 +54,7 @@ internal.planets = function(opts)
   local globbed_files = vim.fn.globpath(base_directory .. '/data/memes/planets/', '*', true, true)
   local acceptable_files = {}
   for _, v in ipairs(globbed_files) do
-    if not show_pluto and v:find("pluto") then
-    else
+    if show_pluto or not v:find("pluto") then
       table.insert(acceptable_files,vim.fn.fnamemodify(v, ':t'))
     end
   end
@@ -212,7 +211,8 @@ end
 
 internal.vim_options = function(opts)
   -- Load vim options.
-  local vim_opts = loadfile(utils.data_directory() .. path.separator .. 'options' .. path.separator .. 'options.lua')().options
+  local vim_opts = loadfile(utils.data_directory() .. path.separator .. 'options' ..
+                            path.separator .. 'options.lua')().options
 
   pickers.new(opts, {
     prompt = 'options',
@@ -250,12 +250,13 @@ internal.vim_options = function(opts)
         -- float_opts.anchor = "sw"
         -- float_opts.focusable = false
         -- float_opts.style = "minimal"
-        -- float_opts.row = vim.api.nvim_get_option("lines") - 2 -- TODO: include `cmdheight` and `laststatus` in this calculation
+        -- float_opts.row = vim.api.nvim_get_option("lines") - 2 -- TODO: inc `cmdheight` and `laststatus` in this calc
         -- float_opts.col = 2
         -- float_opts.height = 10
         -- float_opts.width = string.len(selection.last_set_from)+15
         -- local buf = vim.fn.nvim_create_buf(false, true)
-        -- vim.fn.nvim_buf_set_lines(buf, 0, 0, false, {"default value: abcdef", "last set from: " .. selection.last_set_from})
+        -- vim.fn.nvim_buf_set_lines(buf, 0, 0, false,
+        --                           {"default value: abcdef", "last set from: " .. selection.last_set_from})
         -- local status_win = vim.fn.nvim_open_win(buf, false, float_opts)
         -- -- vim.api.nvim_win_set_option(status_win, "winblend", 100)
         -- vim.api.nvim_win_set_option(status_win, "winhl", "Normal:PmenuSel")
@@ -308,9 +309,7 @@ internal.help_tags = function(opts)
 end
 
 internal.man_pages = function(opts)
-  local cmd = opts.man_cmd or "apropos --sections=1 ''"
-
-  local pages = utils.get_os_command_output(cmd)
+  local pages = utils.get_os_command_output(opts.man_cmd or "apropos --sections=1 ''")
 
   local lines = {}
   for s in pages:gmatch("[^\r\n]+") do
@@ -350,7 +349,9 @@ internal.reloader = function(opts)
   -- filter out packages we don't want and track the longest package name
   opts.column_len = 0
   for index, module_name in pairs(package_list) do
-    if type(require(module_name)) ~= 'table' or module_name:sub(1,1) == "_" or package.searchpath(module_name, package.path) == nil then
+    if type(require(module_name)) ~= 'table' or
+       module_name:sub(1,1) == "_" or
+       package.searchpath(module_name, package.path) == nil then
       table.remove(package_list, index)
     elseif #module_name > opts.column_len then
       opts.column_len = #module_name
@@ -649,10 +650,10 @@ internal.autocommands = function(opts)
     previewer = previewers.autocommands.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions._goto_file_selection:replace(function(_, cmd)
+      actions._goto_file_selection:replace(function(_, vim_cmd)
         local selection = actions.get_selected_entry()
         actions.close(prompt_bufnr)
-        vim.cmd(cmd .. ' ' .. selection.value)
+        vim.cmd(vim_cmd .. ' ' .. selection.value)
       end)
 
       return true

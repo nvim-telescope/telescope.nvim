@@ -133,9 +133,9 @@ function OneshotJobFinder:new(opts)
       end
     })
 
-    local job_opts = finder:fn_command(prompt)
+    local job_opts = finder:fn_command(_)
     if not job_opts then
-      error(debug.trackeback("expected `job_opts` from fn_command"))
+      error(debug.traceback("expected `job_opts` from fn_command"))
     end
 
     local writer = nil

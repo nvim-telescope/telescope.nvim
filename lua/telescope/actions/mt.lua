@@ -1,5 +1,4 @@
-
-local action_mt = {}   
+local action_mt = {}
 
 action_mt.create = function(mod)
   local mt = {
