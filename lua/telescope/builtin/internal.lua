@@ -144,7 +144,7 @@ internal.quickfix = function(opts)
       results     = locations,
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
-    previewer = previewers.qflist.new(opts),
+    previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),
   }):find()
 end
@@ -167,7 +167,7 @@ internal.loclist = function(opts)
       results     = locations,
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
-    previewer = previewers.qflist.new(opts),
+    previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),
   }):find()
 end
@@ -179,7 +179,7 @@ internal.oldfiles = function(opts)
       return 0 ~= vim.fn.filereadable(val)
     end, vim.v.oldfiles)),
     sorter = conf.file_sorter(opts),
-    previewer = previewers.cat.new(opts),
+    previewer = conf.file_previewer(opts),
   }):find()
 end
 
@@ -422,7 +422,7 @@ internal.buffers = function(opts)
       results = buffers,
       entry_maker = make_entry.gen_from_buffer(opts)
     },
-    previewer = previewers.vim_buffer.new(opts),
+    previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
     default_selection_index = default_selection_idx,
   }):find()
@@ -464,7 +464,7 @@ internal.marks = function(opts)
       results = marks_table,
       entry_maker = make_entry.gen_from_marks(opts),
     },
-    previewer = previewers.vimgrep.new(opts),
+    previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
   }):find()
 end

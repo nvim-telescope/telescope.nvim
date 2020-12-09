@@ -33,7 +33,7 @@ lsp.references = function(opts)
       results = locations,
       entry_maker = make_entry.gen_from_quickfix(opts),
     },
-    previewer = previewers.qflist.new(opts),
+    previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),
   }):find()
 end
@@ -62,7 +62,7 @@ lsp.document_symbols = function(opts)
       results = locations,
       entry_maker = make_entry.gen_from_quickfix(opts)
     },
-    previewer = previewers.qflist.new(opts),
+    previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),
   }):find()
 end
@@ -167,7 +167,7 @@ lsp.workspace_symbols = function(opts)
       results = locations,
       entry_maker = make_entry.gen_from_quickfix(opts)
     },
-    previewer = previewers.qflist.new(opts),
+    previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),
   }):find()
 end

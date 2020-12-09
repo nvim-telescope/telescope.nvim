@@ -1,10 +1,15 @@
 local context_manager = require('plenary.context_manager')
 
-local config = require('telescope.config')
+local conf = require('telescope.config').values
 local debounce = require('telescope.debounce')
 local from_entry = require('telescope.from_entry')
 local log = require('telescope.log')
 local utils = require('telescope.utils')
+local path = require('telescope.path')
+
+local has_ts, _ = pcall(require, 'nvim-treesitter')
+local ts_highlight = require('nvim-treesitter.highlight')
+local ts_parsers = require('nvim-treesitter.parsers')
 
 local flatten = vim.tbl_flatten
 local buf_delete = utils.buf_delete
@@ -19,8 +24,8 @@ Previewer.__index = Previewer
 
 -- TODO: Should play with these some more, ty @clason
 local bat_options = {"--style=plain", "--color=always", "--paging=always"}
-local has_less = (vim.fn.executable('less') == 1) and config.values.use_less
-local termopen_env = vim.tbl_extend("force", { ['GIT_PAGER'] = (has_less and 'less' or '') }, config.values.set_env)
+local has_less = (vim.fn.executable('less') == 1) and conf.has_less
+local termopen_env = vim.tbl_extend("force", { ['GIT_PAGER'] = (has_less and 'less' or '') }, conf.set_env)
 
 -- TODO(conni2461): Workaround for neovim/neovim#11751. Add only quotes when using else branch.
 local valuate_shell = function()
@@ -33,6 +38,84 @@ local valuate_shell = function()
 end
 
 local add_quotes = valuate_shell()
+
+local all_fts = vim.tbl_filter(function(line)
+  return line:find('setf')
+end, vim.fn.split(vim.fn.execute('autocmd filetypedetect'), '\n'))
+
+local ft_cache = {
+  Makefile = 'make', makefile = 'make', c = 'c', h = 'c', cpp = 'cpp', hpp = 'cpp',
+  css = 'css', ['CMakeLists.txt'] = 'cmake', Dockerfile = 'dockerfile', go = 'go',
+  js = 'javascript', lua = 'lua', py = 'python', vim = 'vim'
+}
+local determine_filetype = function(filepath)
+  local ext = vim.fn.fnamemodify(filepath, ':e')
+  if ext == '' then
+    local match = ft_cache[vim.fn.fnamemodify(filepath, ':t')]
+    if match then return match else return '' end
+  end
+
+  if ext == 'txt' then
+    local match = ft_cache[vim.fn.fnamemodify(filepath, ':t')]
+    if match then return match end
+    -- Take a look at end of file for vim:noet:tw=78:ts=8:ft=help:norl:
+    local tail = path.read_last_line(filepath)
+    if tail:sub(1, 5) == ' vim:' then
+      return tail:match('.*:ft=([^:]*):.*$')
+    end
+  end
+
+  if ft_cache[ext] then return ft_cache[ext] end
+
+  local matchings = vim.tbl_filter(function(val)
+    return val:match('.*%*%.' .. ext .. '%s')
+  end, all_fts)
+
+  local match = ''
+  if table.getn(matchings) > 1 then
+    match = matchings[1]:match('.* setf%s([^%s|]*)[%s|]?.*')
+    ft_cache[ext] = match
+  end
+  return match
+end
+
+local file_maker_async = function(filepath, bufnr, bufname, callback)
+  local ft = determine_filetype(filepath)
+
+  if bufname ~= filepath then
+    path.read_file_async(filepath, vim.schedule_wrap(function(data)
+      vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(data, "\n"))
+
+      if callback then callback() end
+    end))
+  else
+    if callback then callback() end
+  end
+
+  if ft ~= '' then
+    if has_ts and ts_parsers.has_parser(ft) then
+      ts_highlight.attach(bufnr, ft)
+    else
+      vim.cmd(':ownsyntax ' .. ft)
+    end
+  end
+end
+
+local file_maker_sync = function(filepath, bufnr, bufname)
+  local ft = determine_filetype(filepath)
+  if bufname ~= filepath then
+    local data = path.read_file(filepath)
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(data, "\n"))
+  end
+
+  if ft ~= '' then
+    if has_ts and ts_parsers.has_parser(ft) then
+      ts_highlight.attach(bufnr, ft)
+    else
+      vim.cmd(':ownsyntax ' .. ft)
+    end
+  end
+end
 
 local get_file_stat = function(filename)
   return vim.loop.fs_stat(vim.fn.expand(filename)) or {}
@@ -191,7 +274,85 @@ end
 previewers.new_buffer_previewer = function(opts)
   opts = opts or {}
 
-  assert(opts.preview_fn, "preview_fn is required function")
+  assert(opts.define_preview, "define_preview is a required function")
+  assert(not opts.preview_fn, "preview_fn not allowed")
+
+  local opt_setup = opts.setup
+  local opt_teardown = opts.teardown
+
+  local old_bufs = {}
+  local bufname_table = {}
+
+  local function get_bufnr(self)
+    if not self.state then return nil end
+    return self.state.bufnr
+  end
+
+  local function set_bufnr(self, value)
+    if get_bufnr(self) then table.insert(old_bufs, get_bufnr(self)) end
+    if self.state then self.state.bufnr = value end
+  end
+
+  local function get_bufnr_by_bufname(self, value)
+    if not self.state then return nil end
+    return bufname_table[value]
+  end
+
+  local function set_bufname(self, value)
+    if get_bufnr(self) then bufname_table[value] = get_bufnr(self) end
+    if self.state then self.state.bufname = value end
+  end
+
+  function opts.setup(self)
+    local state = {}
+    if opt_setup then vim.tbl_deep_extend("force", state, opt_setup(self)) end
+    return state
+  end
+
+  function opts.teardown(self)
+    if opt_teardown then
+      opt_teardown(self)
+    end
+
+    set_bufnr(self, nil)
+    set_bufname(self, nil)
+
+    for _, bufnr in ipairs(old_bufs) do
+      buf_delete(bufnr)
+    end
+  end
+
+  function opts.preview_fn(self, entry, status)
+    if get_bufnr(self) == nil then
+      set_bufnr(self, vim.api.nvim_win_get_buf(status.preview_win))
+    end
+
+    if opts.get_buffer_by_name and get_bufnr_by_bufname(self, opts.get_buffer_by_name(self, entry)) then
+      self.state.bufname = opts.get_buffer_by_name(self, entry)
+      self.state.bufnr = get_bufnr_by_bufname(self, self.state.bufname)
+      vim.api.nvim_win_set_buf(status.preview_win, self.state.bufnr)
+    else
+      bufnr = vim.api.nvim_create_buf(false, true)
+      set_bufnr(self, bufnr)
+
+      vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+
+      -- TODO(conni2461): We only have to set options once. Right?
+      vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
+      vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
+      vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
+      vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
+
+      self.state.winid = status.preview_win
+      self.state.bufname = nil
+    end
+
+    opts.define_preview(self, entry, status)
+
+    if opts.get_buffer_by_name then
+      set_bufname(self, opts.get_buffer_by_name(self, entry))
+    end
+  end
 
   if not opts.scroll_fn then
     function opts.scroll_fn(self, direction)
@@ -208,15 +369,14 @@ previewers.new_buffer_previewer = function(opts)
         return
       end
 
-      local bufnr = vim.api.nvim_win_get_buf(self.state.hl_win)
-      local max_line = vim.fn.getbufinfo(bufnr)[1].linecount
-      local line = vim.api.nvim_win_get_cursor(self.state.hl_win)[1]
+      local max_line = vim.fn.getbufinfo(self.state.bufnr)[1].linecount
+      local line = vim.api.nvim_win_get_cursor(self.state.winid)[1]
       if input.input == 'u' then
         line = (line - input.count) > 0 and (line - input.count) or 1
       else
         line = (line + input.count) <= max_line and (line + input.count) or max_line
       end
-      vim.api.nvim_win_set_cursor(self.state.hl_win, { line, 1 })
+      vim.api.nvim_win_set_cursor(self.state.winid, { line, 1 })
     end
   end
 
@@ -341,46 +501,6 @@ previewers.new_termopen_previewer = function(opts)
   return Previewer:new(opts)
 end
 
-previewers.vim_buffer = defaulter(function(_)
-  return previewers.new_buffer_previewer {
-    setup = function()
-      return {
-        last_set_bufnr = nil
-      }
-    end,
-
-    teardown = function(self)
-      if self.state and self.state.last_set_bufnr then
-        vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, previewer_ns, 0, -1)
-      end
-    end,
-
-    preview_fn = function(self, entry, status)
-      local bufnr = tonumber(entry.bufnr)
-
-      if not vim.api.nvim_buf_is_loaded(bufnr) then
-        vim.fn.bufload(bufnr)
-      end
-
-      self.state.last_set_bufnr = bufnr
-
-      vim.api.nvim_win_set_buf(status.preview_win, bufnr)
-      vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
-      vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
-      vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
-      vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
-      if entry.lnum then
-        vim.api.nvim_buf_add_highlight(bufnr, previewer_ns, "Visual", entry.lnum - 1, 0, -1)
-        vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
-        vim.api.nvim_win_set_cursor(status.preview_win, {entry.lnum, 0})
-        -- print("LNUM:", entry.lnum)
-      end
-
-      self.state.hl_win = status.preview_win
-    end,
-  }
-end, {})
-
 previewers.git_commit_diff = defaulter(function(_)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
@@ -414,9 +534,7 @@ previewers.cat = defaulter(function(opts)
   return previewers.new_termopen_previewer {
     get_command = function(entry)
       local path = from_entry.path(entry, true)
-      if path == nil then
-        return
-      end
+      if path == nil or path == '' then return end
 
       return maker(path)
     end
@@ -443,12 +561,66 @@ previewers.vimgrep = defaulter(function(opts)
   }
 end, {})
 
-previewers.ctags = defaulter(function(_)
+previewers.vim_buffer_cat = defaulter(function(_)
   return previewers.new_buffer_previewer {
-    setup = function()
-      return {}
+    get_buffer_by_name = function(self, entry)
+      return from_entry.path(entry, true)
     end,
 
+    define_preview = function(self, entry, status)
+      with_preview_window(status, nil, function()
+        local path = from_entry.path(entry, true)
+        if path == nil or path == '' then return end
+        file_maker_async(path, self.state.bufnr, self.state.bufname)
+      end)
+    end
+  }
+end, {})
+
+previewers.vim_buffer_vimgrep = defaulter(function(_)
+  return previewers.new_buffer_previewer {
+    setup = function()
+      return {
+        last_set_bufnr = nil
+      }
+    end,
+
+    teardown = function(self)
+      if self.state and self.state.hl_id then
+        vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, previewer_ns, 0, -1)
+      end
+    end,
+
+    get_buffer_by_name = function(self, entry)
+      return from_entry.path(entry, true)
+    end,
+
+    define_preview = function(self, entry, status)
+      with_preview_window(status, nil, function()
+        local lnum = entry.lnum or 0
+        local path = from_entry.path(entry, true)
+        if path == nil or path == '' then return end
+
+        file_maker_sync(path, self.state.bufnr, self.state.bufname)
+
+        if lnum ~= 0 then
+          if self.state.last_set_bufnr then
+            pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, previewer_ns, 0, -1)
+          end
+          pcall(vim.api.nvim_buf_add_highlight, self.state.bufnr, previewer_ns, "Search", lnum - 1, 0, -1)
+          pcall(vim.api.nvim_win_set_cursor, status.preview_win, {lnum, 0})
+        end
+
+        self.state.last_set_bufnr = self.state.bufnr
+      end)
+    end
+  }
+end, {})
+
+previewers.vim_buffer_qflist = previewers.vim_buffer_vimgrep
+
+previewers.ctags = defaulter(function(_)
+  return previewers.new_buffer_previewer {
     teardown = function(self)
       if self.state and self.state.hl_id then
         pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
@@ -456,28 +628,23 @@ previewers.ctags = defaulter(function(_)
       end
     end,
 
-    preview_fn = function(self, entry, status)
+    get_buffer_by_name = function(self, entry)
+      return entry.filename
+    end,
+
+    define_preview = function(self, entry, status)
       with_preview_window(status, nil, function()
         local scode = string.gsub(entry.scode, '[$]$', '')
         scode = string.gsub(scode, [[\\]], [[\]])
         scode = string.gsub(scode, [[\/]], [[/]])
         scode = string.gsub(scode, '[*]', [[\*]])
 
-        local new_bufnr = vim.fn.bufnr(entry.filename, true)
-        vim.fn.bufload(new_bufnr)
+        file_maker_sync(entry.filename, self.state.bufnr, self.state.bufname)
 
-        vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
-        vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
-        vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
-        vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
-        vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
-        vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
-
-        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
         vim.cmd "norm! gg"
         vim.fn.search(scode)
 
-        self.state.hl_win = status.preview_win
         self.state.hl_id = vim.fn.matchadd('Search', scode)
       end)
     end
@@ -497,7 +664,11 @@ previewers.builtin = defaulter(function(_)
       end
     end,
 
-    preview_fn = function(self, entry, status)
+    get_buffer_by_name = function(self, entry)
+      return entry.filename
+    end,
+
+    define_preview = function(self, entry, status)
       with_preview_window(status, nil, function()
         local module_name = vim.fn.fnamemodify(entry.filename, ':t:r')
         local text
@@ -506,21 +677,13 @@ previewers.builtin = defaulter(function(_)
         else
           text = entry.text:gsub('_', '.', 1)
         end
-        local new_bufnr = vim.fn.bufnr(entry.filename, true)
-        vim.fn.bufload(new_bufnr)
 
-        vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
-        vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
-        vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
-        vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
-        vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
-        vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
+        file_maker_sync(entry.filename, self.state.bufnr, self.state.bufname)
 
-        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
         vim.cmd "norm! gg"
         vim.fn.search(text)
 
-        self.state.hl_win = status.preview_win
         self.state.hl_id = vim.fn.matchadd('Search', text)
       end)
     end
@@ -568,7 +731,7 @@ previewers.help = defaulter(function(_)
       end
     end,
 
-    preview_fn = function(self, entry, status)
+    define_preview = function(self, entry, status)
       with_preview_window(status, nil, function()
         local special_chars = ":~^.?/%[%]%*"
         local delim = string.char(9)
@@ -613,139 +776,28 @@ previewers.help = defaulter(function(_)
         if taglist == {} then taglist = search_tags(escaped) end
 
         local best_entry = taglist[1]
-        local new_bufnr = vim.fn.bufnr(find_rtp_file('doc/' .. best_entry.filename), true)
-
-        vim.api.nvim_buf_set_option(new_bufnr, 'filetype', 'help')
-        vim.api.nvim_win_set_buf(status.preview_win, new_bufnr)
+        file_maker_sync(find_rtp_file('doc/' .. best_entry.filename), self.state.bufnr, self.state.bufname)
+        -- We do no longer need to set the filetype. file_maker_ can do this now
 
         local search_query = best_entry.cmd
-
-        -- remove leading '/'
         search_query = search_query:sub(2)
-
-        -- Set the query to "very nomagic".
-        -- This should make it work quite nicely given tags.
         search_query = [[\V]] .. search_query
 
-        log.trace([[lua vim.fn.search("]], search_query, [[")]])
-
-        -- Clear previous search
-        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
         vim.cmd "norm! gg"
         vim.fn.search(search_query, "W")
 
-        vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
-
-        self.state.hl_win = status.preview_win
         self.state.hl_id = vim.fn.matchadd('Search', search_query)
       end)
     end
   }
 end, {})
 
--- WIP
--- TODO: This needs a big rewrite.
-previewers.vim_buffer_or_bat = defaulter(function(_)
-  return previewers.new {
-    preview_fn = function(_, entry, status)
-        local value = entry.value
-      if value == nil then
-        return
-      end
-
-      local file_name = vim.split(value, ":")[1]
-
-      log.trace("Previewing File: '%s'", file_name)
-
-      -- vim.fn.termopen(
-      --   string.format("bat --color=always --style=grid '%s'"),
-      -- vim.fn.fnamemodify(file_name, ":p")
-      local bufnr = vim.fn.bufadd(file_name)
-
-      if vim.api.nvim_buf_is_loaded(bufnr) then
-        vim.fn.bufload(bufnr)
-
-        -- TODO: We should probably call something like this because we're not always getting highlight and all that stuff.
-        -- api.nvim_command('doautocmd filetypedetect BufRead ' .. vim.fn.fnameescape(filename))
-        vim.api.nvim_win_set_buf(status.preview_win, bufnr)
-        vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
-        vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
-        -- vim.api.nvim_win_set_option(preview_win, 'winblend', 20)
-        vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
-        vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
-      else
-        vim.api.nvim_buf_set_lines(status.preview_bufnr, 0, -1, false, vim.fn.systemlist(string.format('bat "%s"', file_name)))
-      end
-    end,
-  }
-end, {})
-
-
-previewers.nvim_file = defaulter(function(_)
-  return previewers.new {
-    preview_fn = function(_, entry, status)
-      local filename = entry.filename
-
-      if filename == nil then
-        filename = entry.path
-      end
-
-      -- if filename == nil then
-      --   local value = entry.value
-      --   filename = vim.split(value, ":")[1]
-      -- end
-
-      if filename == nil then
-        log.info("Could not find file from entry", entry)
-        return
-      end
-
-      local win_id = status.preview_win
-      local bufnr = vim.fn.bufnr(filename)
-      if bufnr == -1 then
-        bufnr = vim.api.nvim_create_buf(false, true)
-        -- vim.api.nvim_buf_set_name(bufnr, filename)
-        vim.api.nvim_win_set_buf(win_id, bufnr)
-
-        vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
-        if false then
-          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.readfile(filename))
-          vim.api.nvim_buf_set_option(bufnr, 'filetype', 'lua')
-        else
-          vim.api.nvim_buf_call(bufnr, function()
-            vim.cmd(":noauto view " .. filename)
-            vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
-          end)
-        end
-
-        vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
-        -- print("FT:", vim.api.nvim_buf_get_option(bufnr, 'filetype'))
-      else
-        vim.api.nvim_win_set_buf(win_id, bufnr)
-        vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
-        vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
-      end
-
-      -- vim.api.nvim_buf_set_option(bufnr, 'filetype', 'lua')
-      -- vim.cmd([[doautocmd filetypedetect BufRead ]] .. vim.fn.fnameescape(filename))
-    end,
-  }
-end)
-
 previewers.man = defaulter(function(_)
-  return previewers.new {
-    preview_fn = debounce.throttle_leading(function(_, entry, status)
-      local cmd = entry.value
-
-      local st = {}
-      st.prompt_win = status.prompt_win
-      st.preview_win = status.preview_win
-
-      with_preview_window(st, nil, function()
-        if not vim.api.nvim_win_is_valid(st.preview_win) then
-          return
-        end
-
+  return previewers.new_buffer_previewer {
+    define_preview = debounce.throttle_leading(function(self, entry, status)
+      with_preview_window(status, nil, function()
+        local cmd = entry.value
         local man_value = vim.fn['man#goto_tag'](cmd, '', '')
         if #man_value == 0 then
           print("No value for:", cmd)
@@ -757,83 +809,63 @@ previewers.man = defaulter(function(_)
           return
         end
 
-        local bufnr = vim.api.nvim_create_buf(false, true)
-        vim.api.nvim_win_set_buf(st.preview_win, bufnr)
         vim.api.nvim_command('view ' .. filename)
 
-        vim.api.nvim_buf_set_option(bufnr, 'buftype', 'nofile')
-        vim.api.nvim_buf_set_option(bufnr, 'bufhidden', 'hide')
-        vim.api.nvim_buf_set_option(bufnr, 'swapfile', false)
-        vim.api.nvim_buf_set_option(bufnr, 'buflisted', false)
+        vim.api.nvim_buf_set_option(self.state.bufnr, 'buftype', 'nofile')
+        vim.api.nvim_buf_set_option(self.state.bufnr, 'bufhidden', 'hide')
+        vim.api.nvim_buf_set_option(self.state.bufnr, 'swapfile', false)
+        vim.api.nvim_buf_set_option(self.state.bufnr, 'buflisted', false)
       end)
     end, 5)
   }
 end)
 
 previewers.autocommands = defaulter(function(_)
-return previewers.new_buffer_previewer {
-  setup = function()
-    return {}
-  end,
-
-  teardown = function(self)
-    if self.state and self.state.hl_id then
-      pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
-      self.state.hl_id = nil
-    end
-  end,
-
-  preview_fn = function(self, entry, status)
-    local results = vim.tbl_filter(
-      function (x) return x.group == entry.group end,
-      status.picker.finder.results
-      )
-    local display = {}
-    table.insert(display, string.format(" augroup: %s - [ %d entries ]", entry.group, #results))
-    -- TODO: calculate banner width/string in setup()
-    -- TODO: get column characters to be the same HL group as border
-    table.insert(display, string.rep("─", vim.fn.getwininfo(status.preview_win)[1].width))
-
-    local selected_row
-    for idx, item in ipairs(results) do
-      if item == entry then
-        selected_row = idx
+  return previewers.new_buffer_previewer {
+    teardown = function(self)
+      if self.state and self.state.hl_id then
+        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+        self.state.hl_id = nil
       end
-      table.insert(display,
-        string.format("  %-14s▏%-08s %s", item.event, item.ft_pattern, item.command)
-      )
-    end
+    end,
 
-    with_preview_window(status, nil, function()
+    define_preview = function(self, entry, status)
+      local results = vim.tbl_filter(function (x)
+        return x.group == entry.group
+      end, status.picker.finder.results)
+
+      local display = {}
+      table.insert(display, string.format(" augroup: %s - [ %d entries ]", entry.group, #results))
+      -- TODO: calculate banner width/string in setup()
+      -- TODO: get column characters to be the same HL group as border
+      table.insert(display, string.rep("─", vim.fn.getwininfo(status.preview_win)[1].width))
+
+      local selected_row
+      for idx, item in ipairs(results) do
+        if item == entry then
+          selected_row = idx
+        end
+        table.insert(display,
+          string.format("  %-14s▏%-08s %s", item.event, item.ft_pattern, item.command)
+        )
+      end
+
       -- TODO: set filetype in setup()
-      vim.api.nvim_buf_set_option(status.preview_bufnr, "filetype", "vim")
-      vim.api.nvim_buf_set_lines(status.preview_bufnr, 0, -1, false, display)
-      vim.api.nvim_buf_add_highlight(status.preview_bufnr, 0, "TelescopeBorder", 1, 0, -1)
-      vim.api.nvim_buf_add_highlight(status.preview_bufnr, 0, "TelescopeSelection", selected_row + 1, 0, -1)
-    end)
-  end,
-}
+      vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "vim")
+      vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, display)
+      vim.api.nvim_buf_add_highlight(self.state.bufnr, 0, "TelescopeBorder", 1, 0, -1)
+      vim.api.nvim_buf_add_highlight(self.state.bufnr, 0, "TelescopeSelection", selected_row + 1, 0, -1)
+    end,
+  }
 end, {})
 
 previewers.display_content = defaulter(function(_)
   return previewers.new_buffer_previewer {
-    preview_fn = function(self, entry, status)
+    define_preview = function(self, entry, status)
       with_preview_window(status, nil, function()
-        local bufnr = vim.fn.bufadd("Preview command")
-        vim.api.nvim_win_set_buf(status.preview_win, bufnr)
-        vim.api.nvim_win_set_option(status.preview_win, 'wrap', true)
-        vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
-        vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
-        vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
-
-        if type(entry.preview_command) ~= 'function' then
-          print('entry must provide a preview_command function which will put the content into the buffer')
-          return
-        end
-
-        entry.preview_command(entry, bufnr)
-
-        self.state.hl_win = status.preview_win
+        assert(type(entry.preview_command) == 'function',
+               'entry must provide a preview_command function which will put the content into the buffer')
+        entry.preview_command(entry, self.state.bufnr)
       end)
     end
   }

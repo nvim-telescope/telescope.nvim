@@ -57,4 +57,45 @@ path.normalize = function(filepath, cwd)
   return filepath
 end
 
+path.read_last_line = function(filepath)
+  local fd = vim.loop.fs_open(filepath, "r", 438)
+  if fd == nil then return '' end
+  local stat = assert(vim.loop.fs_fstat(fd))
+  local data = ''
+  local index = stat.size - 2
+  while true do
+    local char = assert(vim.loop.fs_read(fd, 1, index))
+    if char == '\n' then break end
+    data = char .. data
+    index = index - 1
+  end
+  assert(vim.loop.fs_close(fd))
+  return data
+end
+
+path.read_file = function(filepath)
+  local fd = vim.loop.fs_open(filepath, "r", 438)
+  if fd == nil then return '' end
+  local stat = assert(vim.loop.fs_fstat(fd))
+  local data = assert(vim.loop.fs_read(fd, stat.size, 0))
+  assert(vim.loop.fs_close(fd))
+  return data
+end
+
+path.read_file_async = function(filepath, callback)
+  vim.loop.fs_open(filepath, "r", 438, function(err, fd)
+    assert(not err, err)
+    vim.loop.fs_fstat(fd, function(err, stat)
+      assert(not err, err)
+      vim.loop.fs_read(fd, stat.size, 0, function(err, data)
+        assert(not err, err)
+        vim.loop.fs_close(fd, function(err)
+          assert(not err, err)
+          return callback(data)
+        end)
+      end)
+    end)
+  end)
+end
+
 return path

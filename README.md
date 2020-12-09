@@ -7,7 +7,7 @@
 >
 > — thefreedictionary
 
-![by @glepnir](https://user-images.githubusercontent.com/41671631/100819597-6f737900-3487-11eb-8621-37ec1ffabe4b.gif) 
+![by @glepnir](https://user-images.githubusercontent.com/41671631/100819597-6f737900-3487-11eb-8621-37ec1ffabe4b.gif)
 
 
 `Telescope.nvim` is a next generation library for creating floating pickers
@@ -142,7 +142,7 @@ require('telescope').setup{
     layout_defaults = {
       -- TODO add builtin options.
     },
-    file_sorter =  require'telescope.sorters'.get_fuzzy_file ,
+    file_sorter =  require'telescope.sorters'.get_fuzzy_file,
     file_ignore_patterns = {},
     generic_sorter =  require'telescope.sorters'.get_generic_fuzzy_sorter,
     shorten_path = true,
@@ -156,6 +156,9 @@ require('telescope').setup{
     color_devicons = true,
     use_less = true,
     set_env = { ['COLORTERM'] = 'truecolor' }, -- default { }, currently unsupported for shells like cmd.exe / powershell.exe
+    file_previewer = require'telescope.previewers'.cat.new, -- For buffer previewer use `require'telescope.previewers'.vim_buffer_cat.new`
+    grep_previewer = require'telescope.previewers'.vimgrep.new, -- For buffer previewer use `require'telescope.previewers'.vim_buffer_vimgrep.new`
+    qflist_previewer = require'telescope.previewers'.qflist.new, -- For buffer previewer use `require'telescope.previewers'.vim_buffer_qflist.new`
   }
 }
 ```
@@ -193,6 +196,9 @@ EOF
 | `use_less`             | Whether to use less with bat or less/cat if bat not installed | boolean                    |
 | `set_env`              | Set environment variables for previewer               | dict                       |
 | `scroll_strategy`      | How to behave when the when there are no more item next/prev | cycle, nil          |
+| `file_previewer`       | What telescope previewer to use for files.            | [Previewers](#built-in-previewers) |
+| `grep_previewer`       | What telescope previewer to use for grep and similar  | [Previewers](#built-in-previewers) |
+| `qflist_previewer`     | What telescope previewer to use for qflist            | [Previewers](#built-in-previewers) |
 
 #### Options affecting Sorting
 
@@ -386,6 +392,24 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.git_branches`              | Lists all branches with log preview and checkout action.                                    |
 | `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multiselection still WIP) |
 | ..................................  | Your next awesome finder function here :D                                                   |
+
+#### Built-in Previewers
+
+| Previewers                         | Description                                                     |
+|------------------------------------|-----------------------------------------------------------------|
+| `previewers.cat.new`               | Default previewer for files. Uses `cat`/`bat`                   |
+| `previewers.vimgrep.new`           | Default previewer for grep and similar. Uses `cat`/`bat`        |
+| `previewers.qflist.new`            | Default previewer for qflist. Uses `cat`/`bat`                  |
+| `previewers.vim_buffer_cat.new`        | Experimental previewer for files. Uses vim buffers              |
+| `previewers.vim_buffer_vimgrep.new`    | Experimental previewer for grep and similar. Uses vim buffers   |
+| `previewers.vim_buffer_qflist.new`     | Experimental previewer for qflist. Uses vim buffers             |
+| .................................. | Your next awesome previewer here :D                             |
+
+By default, telescope.nvim uses `cat`/`bat` for preview. However after telescope's new experimental previewers
+are stable this will change. The new experimental previewers use tree-sitter and vim buffers, provide much
+better performance and are ready for daily usage (`vim_buffer_cat` more than the others), but there might be
+cases where it can't detect a Filetype correctly, thus leading to wrong highlights.
+Also `vimgrep` and `qflist` might be slower due to synchronous file loading.
 
 
 #### Built-in Sorters

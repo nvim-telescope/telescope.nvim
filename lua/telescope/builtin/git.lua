@@ -22,7 +22,7 @@ git.files = function(opts)
       { "git", "ls-files", "--exclude-standard", "--cached", show_untracked and "--others" },
       opts
     ),
-    previewer = previewers.cat.new(opts),
+    previewer = conf.file_previewer(opts),
     sorter = conf.file_sorter(opts),
   }):find()
 end

@@ -88,6 +88,10 @@ function config.set_defaults(defaults)
   set("file_sorter", sorters.get_fuzzy_file)
 
   set("file_ignore_patterns", nil)
+
+  set("file_previewer", function(...) return require('telescope.previewers').cat.new(...) end)
+  set("grep_previewer", function(...) return require('telescope.previewers').vimgrep.new(...) end)
+  set("qflist_previewer", function(...) return require('telescope.previewers').qflist.new(...) end)
 end
 
 function config.clear_defaults()
