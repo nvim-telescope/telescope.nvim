@@ -13,7 +13,7 @@ Community driven built-in [pickers](#pickers), [sorters](#sorters) and [previewe
 
 ### Built-in Support:
 - [vim](#vim-pickers) 
-- [files](#files-pickers) 
+- [files](#file-pickers) 
 - [git](#git-pickers)
 - [LSP](#lsp-pickers)
 - [Treesitter](#treesitter-pickers)
