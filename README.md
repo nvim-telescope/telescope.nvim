@@ -12,11 +12,11 @@ modularity, allowing for easy customization.
 Community driven built-in [pickers](#pickers), [sorters](#sorters) and [previewers](#previewers).
 
 ### Built-in Support:
-- [vim](#vim) 
-- [files](#files) 
-- [git](#git)
-- [LSP](#lsp)
-- [Treesitter](#treesitter)
+- [vim](#vim-pickers) 
+- [files](#files-pickers) 
+- [git](#git-pickers)
+- [LSP](#lsp-pickers)
+- [Treesitter](#treesitter-pickers)
 
 ![by @glepnir](https://user-images.githubusercontent.com/41671631/100819597-6f737900-3487-11eb-8621-37ec1ffabe4b.gif)
 
@@ -354,9 +354,15 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
 
 ## Pickers
 
-Built-in function ready to be bound to any key you like :smile:.
+Built-in functions. Ready to be bound to any key you like. :smile:
 
-### Files
+```vim 
+:lua require'telescope.builtin'.planets{}
+
+:nnoremap <Leader>pp :lua require'telescope.builtin'.planets{}
+```
+
+### File Pickers
 
 | Functions                           | Description                                                                                 |
 |-------------------------------------|---------------------------------------------------------------------------------------------|
@@ -365,7 +371,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.grep_string`               | Searches for a string under the cursor in current directory.                                |
 | `builtin.live_grep`                 | Searches in current directory files. (respecting .gitignore)                                |
 
-### Vim
+### Vim Pickers
 
 | Functions                           | Description                                                                                 |
 |-------------------------------------|---------------------------------------------------------------------------------------------|
@@ -390,7 +396,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.current_buffer_tags`       | Lists Tags in current buffer.                                                               |
 | ..................................  | Your next awesome picker function here :D                                                   |
 
-### LSP 
+### LSP Pickers
 
 | Functions                           | Description                                                                                 |
 |-------------------------------------|---------------------------------------------------------------------------------------------|
@@ -401,7 +407,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.lsp_range_code_actions`    | Lists LSP range code action to be trigged on enter.                                         |
 | ..................................  | Your next awesome picker function here :D                                                   |
 
-### Git 
+### Git Pickers
 
 | Functions                           | Description                                                                                 |
 |-------------------------------------|---------------------------------------------------------------------------------------------|
@@ -411,14 +417,14 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multiselection still WIP) |
 | ..................................  | Your next awesome picker function here :D                                                   |
 
-### Treesitter
+### Treesitter Picker
 
 | Functions                           | Description                                                                                 |
 |-------------------------------------|---------------------------------------------------------------------------------------------|
 | `builtin.treesitter`                | Lists Function names, variables, from Treesitter!                                           |
 | ..................................  | Your next awesome picker function here :D                                                   |
 
-### Lists 
+### Lists Picker
 
 | Functions                           | Description                                                                                 |
 |-------------------------------------|---------------------------------------------------------------------------------------------|
