@@ -7,7 +7,7 @@ Gaze deeply into unknown regions using the power of the moon.
 
 `telescope.nvim` is a highly extendable fuzzy finder over lists.   Built on top of latest
 awesome features from `neovim` core.  Telescope is centered around
-modularity allowing for easy customization.
+modularity, allowing for easy customization.
 
 ![by @glepnir](https://user-images.githubusercontent.com/41671631/100819597-6f737900-3487-11eb-8621-37ec1ffabe4b.gif)
 
