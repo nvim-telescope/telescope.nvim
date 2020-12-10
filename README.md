@@ -363,7 +363,6 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.git_files`                 | Lists Git files in current directory.                                                       |
 | `builtin.grep_string`               | Searches for a string under the cursor in current directory.                                |
 | `builtin.live_grep`                 | Searches in current directory files. (respecting .gitignore)                                |
-|-------------------------------------|---------------------------------------------------------------------------------------------|
 
 ### Vim
 
@@ -386,6 +385,8 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.keymaps`                   | Lists normal-mode mappings.                                                                 |
 | `builtin.filetypes`                 | Lists all filetypes.                                                                        |
 | `builtin.highlights`                | Lists all highlights.                                                                       |
+| `builtin.current_buffer_fuzzy_find` | Searches in current buffer lines.                                                           |
+| `builtin.current_buffer_tags`       | Lists Tags in current buffer.                                                               |
 | ..................................  | Your next awesome picker function here :D                                                   |
 
 ### LSP 
@@ -422,8 +423,6 @@ Built-in function ready to be bound to any key you like :smile:.
 |-------------------------------------|---------------------------------------------------------------------------------------------|
 | `builtin.planets`                   | Use the telescope.                                                                          |
 | `builtin.builtin`                   | Lists Built-in pickers and run them on enter.                                               |
-| `builtin.current_buffer_fuzzy_find` | Searches in current buffer lines.                                                           |
-| `builtin.current_buffer_tags`       | Lists Tags in current buffer.                                                               |
 | `builtin.reloader`                  | Lists lua modules and reload them on enter.                                                 |
 | `builtin.symbols`                   | Lists symbols inside a file `data/telescope-sources/*.json` found in your rtp. More info and symbol sources can be found [here](https://github.com/nvim-telescope/telescope-symbols.nvim) |
 | ..................................  | Your next awesome picker function here :D                                                   |
