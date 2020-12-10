@@ -11,7 +11,7 @@ modularity, allowing for easy customization.
 
 ![by @glepnir](https://user-images.githubusercontent.com/41671631/100819597-6f737900-3487-11eb-8621-37ec1ffabe4b.gif)
 
-`telescope.nvim` comes with a growing number of community driven [built-in pickers](#built-in-pickers),
+`telescope.nvim` comes with a growing number of community driven [built-in pickers](#pickers),
 covering a `vim, files, git, LSP, Treesitter`. The popup interface can be customized using options like `borderchars` and [themes](#themes). 
 `telescope.nvim` has a number of [extensions](https://github.com/nvim-telescope) for supporting specific plugins. 
 
