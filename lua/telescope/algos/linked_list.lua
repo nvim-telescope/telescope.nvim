@@ -3,7 +3,7 @@ local LinkedList = {}
 LinkedList.__index = LinkedList
 
 function LinkedList:new()
-  return setmetatable({ size = 0, }, self)
+  return setmetatable({ size = 0, head = false, tail = false }, self)
 end
 
 function LinkedList:_increment()
@@ -32,6 +32,10 @@ end
 function LinkedList:insert(item)
   self:_increment()
 end
+
+-- Do you even do this in linked lists...?
+-- function LinkedList:remove(item)
+-- end
 
 function LinkedList:iter()
   local current_node = self.head
