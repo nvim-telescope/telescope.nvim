@@ -1,4 +1,4 @@
-# Telescope.nvim
+# telescope.nvim
 [![Gitter](https://badges.gitter.im/nvim-telescope/community.svg)](https://gitter.im/nvim-telescope/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Gaze deeply into unknown regions using the power of the moon.
