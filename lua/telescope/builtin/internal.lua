@@ -86,6 +86,55 @@ internal.planets = function(opts)
   }:find()
 end
 
+internal.symbols = function(opts)
+  local files = vim.api.nvim_get_runtime_file('data/telescope-sources/*.json', true)
+  if table.getn(files) == 0 then
+    print("No sources found! Check out https://github.com/nvim-telescope/telescope-symbols.nvim " ..
+          "for some prebuild symbols or how to create you own symbol source.")
+    return
+  end
+
+  local sources = {}
+  if opts.sources then
+    for _, v in ipairs(files) do
+      for _, s in ipairs(opts.sources) do
+        if v:find(s) then
+          table.insert(sources, v)
+        end
+      end
+    end
+  else
+    sources = files
+  end
+
+  local results = {}
+  for _, source in ipairs(sources) do
+    local data = vim.fn.json_decode(path.read_file(source))
+    for _, entry in ipairs(data) do
+      table.insert(results, entry)
+    end
+  end
+
+  pickers.new(opts, {
+    prompt_title = 'Symbols',
+    finder    = finders.new_table {
+      results     = results,
+      entry_maker = function(entry)
+        return {
+          value = entry,
+          ordinal = entry[1] .. ' ' .. entry[2],
+          display = entry[1] .. ' ' .. entry[2],
+        }
+      end
+    },
+    sorter = conf.generic_sorter(opts),
+    attach_mappings = function(_)
+      actions.goto_file_selection_edit:replace(actions.insert_symbol)
+      return true
+    end
+  }):find()
+end
+
 internal.commands = function(opts)
   pickers.new(opts, {
     prompt_title = 'Commands',
