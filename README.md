@@ -1,36 +1,31 @@
 # Telescope.nvim
 [![Gitter](https://badges.gitter.im/nvim-telescope/community.svg)](https://gitter.im/nvim-telescope/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-> **Telescope**
-> An arrangement of lenses or mirrors or both that gathers light,
-> permitting direct observation or photographic recording of distant objects.
->
-> — thefreedictionary
+Gaze deeply into unknown regions using the power of the moon.
+
+## What Is Telescope?
+
+`telescope.nvim` is a highly extendable fuzzy finder over lists.   Built on top of latest
+awesome features from `neovim` core.  Telescope is centered around
+modularity, allowing for easy customization.
 
 ![by @glepnir](https://user-images.githubusercontent.com/41671631/100819597-6f737900-3487-11eb-8621-37ec1ffabe4b.gif)
 
-
-`Telescope.nvim` is a next generation library for creating floating pickers
-with advanced features.  It is written in `lua` and is built on top of latest
-awesome features from `neovim` core.  `Telescope.nvim` is centered around
-modularity so much so that each picker is its own world, (meaning it can be
-configured in isolation from other pickers, such presentation, algorithm,
-mappings ... etc).
-
-`Telescope.nvim` was built with the intention of becoming a library, but it has long grown to
-be much bigger than that.  In addition to
-[extensions](https://github.com/nvim-telescope) `Telescope.nvim` comes with a
-growing number of community driven [built-in pickers](#built-in-pickers),
-covering a wide range of use cases and tools, and offers a customizable user
-interface.
-
+`telescope.nvim` comes with a growing number of community driven [built-in pickers](#built-in-pickers),
+covering a `vim, files, git, LSP, Treesitter`. The popup interface can be customized using options like `borderchars` and [themes](#themes). 
+`telescope.nvim` has a number of [extensions](https://github.com/nvim-telescope) for supporting specific plugins. 
 
 <!-- You can read this documentation from start to finish, or you can look at the -->
 <!-- outline and directly jump to the section that interests you most. -->
 
 - [Getting Started](#getting-started)
 - [Customization](#customization)
-- [Built-in pickers](#built-in-pickers)
+- [Mappings](#mappings)
+- [Pickers](#pickers)
+- [Sorters](#sorters)
+- [Previewers](#previewers)
+- [Themes](#themes)
+- [Extensions](#extensions)
 - [API](#api)
 - [Media](#media)
 - [Gallery](https://github.com/nvim-telescope/telescope.nvim/wiki/Gallery)
@@ -117,7 +112,7 @@ customizations globally or individual pre picker.
   built-in pickers (e.g. `builtin.fd(opts)`) see [Configuration recipes](https://github.com/nvim-telescope/telescope.nvim/wiki/Configuration-Recipes) wiki page for ideas.
 
 
-#### Telescope Defaults
+### Telescope Defaults
 
 As an example of using the `setup()` method, the following code configures
 `telescope.nvim` to its default settings.
@@ -177,7 +172,7 @@ EOF
 
 <!-- TODO: move some options to Options affecting Behaviour -->
 
-#### Options affecting Presentation
+### Options affecting Presentation
 
 | Keys                   | Description                                           | Options                    |
 |------------------------|-------------------------------------------------------|----------------------------|
@@ -200,7 +195,7 @@ EOF
 | `grep_previewer`       | What telescope previewer to use for grep and similar  | [Previewers](#built-in-previewers) |
 | `qflist_previewer`     | What telescope previewer to use for qflist            | [Previewers](#built-in-previewers) |
 
-#### Options affecting Sorting
+### Options affecting Sorting
 
 | Keys                   | Description                                           | Options                    |
 |------------------------|-------------------------------------------------------|----------------------------|
@@ -211,7 +206,7 @@ EOF
 | `file_ignore_patterns` | Pattern to be ignored `{ "scratch/.*", "%.env"}`      | dict                       |
 | `shorten_path`         | Whether to shorten paths or not.                      | boolean                    |
 
-#### Mappings
+## Mappings
 
 Mappings are fully customizable.
 Many familiar mapping patterns are setup as defaults.
@@ -349,7 +344,7 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
 <!-- ``` -->
 <!-- See `lua/telescope/builtin.lua` for examples on how to `attach_mappings` in the prefered way. -->
 
-## Built-in Pickers
+## Pickers
 
 Built-in function ready to be bound to any key you like :smile:.
 
@@ -394,7 +389,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.symbols`                   | Lists symbols inside a file `data/telescope-sources/*.json` found in your rtp. More info and symbol sources can be found [here](https://github.com/nvim-telescope/telescope-symbols.nvim) |
 | ..................................  | Your next awesome finder function here :D                                                   |
 
-#### Built-in Previewers
+## Previewers
 
 | Previewers                         | Description                                                     |
 |------------------------------------|-----------------------------------------------------------------|
@@ -413,7 +408,7 @@ cases where it can't detect a Filetype correctly, thus leading to wrong highligh
 Also `vimgrep` and `qflist` might be slower due to synchronous file loading.
 
 
-#### Built-in Sorters
+## Sorters
 
 | Sorters                            | Description                                                     |
 |------------------------------------|-----------------------------------------------------------------|
@@ -434,14 +429,16 @@ return a number, which is equivalent to the "distance" between the current
 <!-- - However, this prevents using some tools, like FZF easily. -->
 <!-- - In the future, I'll probably add a mode where you can delay the sorting til the end, so you can use more traditional sorting tools. -->
 
-## Built-in Themes
+## Themes
 
 Common groups of settings can be set up to allow for themes.
 We have some built in themes but are looking for more cool options.
 
+![dropdown](https://i.imgur.com/SorAcXv.png)
+
 | Themes                   | Description                                                           |
 |--------------------------|-----------------------------------------------------------------------|
-| `themes.get_dropdown`    | A list like centered list. [example](https://i.imgur.com/SorAcXv.png) |
+| `themes.get_dropdown`    | A list like centered list. [dropdown](https://i.imgur.com/SorAcXv.png)|
 | ...                      | Your next awesome theme here :D                                       |
 
 
@@ -453,8 +450,7 @@ nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope
 ```
 
 Themes should work with every `telescope.builtin` function.  If you wish to
-make theme, check out `lua/telescope/themes.lua`. If you need more features,
-make an issue :).
+make theme, check out `lua/telescope/themes.lua`.
 
 
 ## Extensions
@@ -490,7 +486,7 @@ require('telescope').load_extension('fzy_native')
 ## API
 <!-- TODO: need to provide working examples for every api -->
 
-#### Finders
+### Finders
 <!-- TODO what is finders -->
 ```lua
 -- lua/telescope/finders.lua
@@ -502,7 +498,7 @@ Finder:new{
 }
 ```
 
-#### Picker
+### Picker
 <!-- TODO: this section need some love, an in-depth explanation will be appreciated it need some in depth explanation -->
 <!-- TODO what is pickers -->
 This section is an overview of how custom pickers can be created any configured.
@@ -542,7 +538,7 @@ function my_custom_picker(results)
 end
 ```
 
-#### Layout (display)
+### Layout (display)
 <!-- TODO need some work -->
 
 `Resolvable`:
@@ -565,7 +561,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
 end
 ```
 
-#### Command-line
+## Vim Commands
 
 All `telescope.nvim` functions are wrapped in `vim` commands for easy access, its
 supports tab completions and settings options.
