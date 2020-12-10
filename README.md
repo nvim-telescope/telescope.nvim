@@ -5,19 +5,26 @@ Gaze deeply into unknown regions using the power of the moon.
 
 ## What Is Telescope?
 
-`telescope.nvim` is a highly extendable fuzzy finder over lists.   Built on top of latest
-awesome features from `neovim` core.  Telescope is centered around
-modularity, allowing for easy customization.
+`telescope.nvim` is a highly extendable fuzzy finder over lists. Built on the latest
+awesome features from `neovim` core.  Telescope is centered around 
+modularity, allowing for easy customization. 
+
+Community driven built-in [pickers](#pickers), [sorters](#sorters) and [previewers](#previewers).
+
+### Built-in Support:
+- vim 
+- files 
+- git
+- LSP
+- Treesitter
 
 ![by @glepnir](https://user-images.githubusercontent.com/41671631/100819597-6f737900-3487-11eb-8621-37ec1ffabe4b.gif)
 
-`telescope.nvim` comes with a growing number of community driven [built-in pickers](#pickers),
-covering a `vim, files, git, LSP, Treesitter`. The popup interface can be customized using options like `borderchars` and [themes](#themes). 
-`telescope.nvim` has a number of [extensions](#extensions) for supporting specific plugins. 
-
+ 
 <!-- You can read this documentation from start to finish, or you can look at the -->
 <!-- outline and directly jump to the section that interests you most. -->
 
+## Telescope Table of Contents
 - [Getting Started](#getting-started)
 - [Customization](#customization)
 - [Mappings](#mappings)
@@ -35,7 +42,7 @@ covering a `vim, files, git, LSP, Treesitter`. The popup interface can be custom
 
 ## Getting Started
 
-This section should guide to run your first built-in pickers :smile:
+This section should guide to run your first built-in pickers :smile:.
 
 [Neovim Nightly (0.5)](https://github.com/neovim/neovim/releases/tag/nightly)
   is required for `telescope.nvim` to work.
