@@ -464,10 +464,14 @@ Telescope provides the capabilties to create & register extensions, which improv
 Some extensions provide integration with external tools, outside of the scope of `builtins`. Others provide performance
 enhancements by using compiled C and interfacing directly with Lua.
 
-For example:
-- [fzy-native](https://github.com/nvim-telescope/telescope-fzy-native.nvim) : WIP native FZY sorter that uses compiled C to do the matching.
-- [nvim-dap integration](https://github.com/nvim-telescope/telescope-dap.nvim) : WIP nvim-dap integration.
-- [packer.nvim integration](https://github.com/nvim-telescope/telescope-packer.nvim) : WIP packer.nvim integration.
+### Community Extensions
+- [telescope-fzy-native.nvim](https://github.com/nvim-telescope/telescope-fzy-native.nvim) - Native FZY sorter that uses compiled C to do the matching
+- [telescope-dap.nvim](https://github.com/nvim-telescope/telescope-dap.nvim) - [`nvim-dap`](https://github.com/mfussenegger/nvim-dap) integration
+- [telescope-packer.nvim](https://github.com/nvim-telescope/telescope-packer.nvim) - A Telescope extension that provides extra functionality for Packer.nvim
+- [telescope-github.nvim](https://github.com/nvim-telescope/telescope-github.nvim) - Integration with github cli
+- [telescope-vimspector.nvim](https://github.com/nvim-telescope/telescope-vimspector.nvim) - Integration for [vimspector](https://github.com/puremourning/vimspector)
+- [telescope-fzf-writer.nvim](https://github.com/nvim-telescope/telescope-fzf-writer.nvim) - Incorporating some fzf concepts with plenary jobs and telescope 
+- [telescope-symbols.nvim](https://github.com/nvim-telescope/telescope-symbols.nvim) - Picking symbols and insert them at point.
 
 Extensions can be refenced by doing the following:
 
