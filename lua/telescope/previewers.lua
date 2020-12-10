@@ -7,8 +7,8 @@ local utils = require('telescope.utils')
 local path = require('telescope.path')
 
 local has_ts, _ = pcall(require, 'nvim-treesitter')
-local ts_highlight = require('nvim-treesitter.highlight')
-local ts_parsers = require('nvim-treesitter.parsers')
+local _, ts_highlight = pcall(require, 'nvim-treesitter.highlight')
+local _, ts_parsers = pcall(require, 'nvim-treesitter.parsers')
 
 local flatten = vim.tbl_flatten
 local buf_delete = utils.buf_delete
