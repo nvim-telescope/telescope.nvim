@@ -26,6 +26,7 @@ Community driven built-in [pickers](#pickers), [sorters](#sorters) and [previewe
 
 ## Telescope Table of Contents
 - [Getting Started](#getting-started)
+- [Usage](#usage)
 - [Customization](#customization)
 - [Mappings](#mappings)
 - [Pickers](#pickers)
@@ -47,7 +48,7 @@ This section should guide to run your first built-in pickers :smile:.
 [Neovim Nightly (0.5)](https://github.com/neovim/neovim/releases/tag/nightly)
   is required for `telescope.nvim` to work.
 
-#### Optional dependences
+### Optional dependences
 - [sharkdp/bat](https://github.com/sharkdp/bat) (preview)
 - [sharkdp/fd](https://github.com/sharkdp/fd) (finder)
 - [BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) (finder)
@@ -56,7 +57,7 @@ This section should guide to run your first built-in pickers :smile:.
 - [devicons](https://github.com/kyazdani42/nvim-web-devicons) (icons)
 
 
-#### Installation
+### Installation
 
 Using [vim-plug](https://github.com/junegunn/vim-plug)
 
@@ -82,7 +83,7 @@ use {
 }
 ```
 
-#### Usage
+## Usage
 
 Try the command `:Telescope find_files<cr>`
   to see if `telescope.nvim` is installed correctly.
