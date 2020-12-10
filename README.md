@@ -576,7 +576,7 @@ supports tab completions and settings options.
 
 " If option is table type in lua code ,you can use `,` connect each command string eg:
 " find_command,vimgrep_arguments they are both table type. so config it in commandline like
-:Telecope find_files find_command=rg,--ignore,--hidden,--files prompt_prefix=🔍
+:Telescope find_files find_command=rg,--ignore,--hidden,--files prompt_prefix=🔍
 ```
 
 ## Media
