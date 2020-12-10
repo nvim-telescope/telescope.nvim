@@ -38,16 +38,24 @@ end
 
 local add_quotes = valuate_shell()
 
-local all_fts = vim.tbl_filter(function(line)
-  return line:find('setf')
-end, vim.fn.split(vim.fn.execute('autocmd filetypedetect'), '\n'))
-
+local all_fts
 local ft_cache = {
   Makefile = 'make', makefile = 'make', c = 'c', h = 'c', cpp = 'cpp', hpp = 'cpp',
   css = 'css', ['CMakeLists.txt'] = 'cmake', Dockerfile = 'dockerfile', go = 'go',
   js = 'javascript', lua = 'lua', py = 'python', vim = 'vim'
 }
 local determine_filetype = function(filepath)
+  if not all_fts then
+    _, all_fts = pcall(vim.fn.execute, 'autocmd filetypedetect')
+    if all_fts then
+      all_fts = vim.tbl_filter(function(line)
+        return line:find('setf') or line:find('set filetype') or line:find('setlocal filetype')
+      end, vim.fn.split(all_fts, '\n'))
+    else
+      all_fts = {}
+    end
+  end
+
   local ext = vim.fn.fnamemodify(filepath, ':e')
   if ext == '' then
     local match = ft_cache[vim.fn.fnamemodify(filepath, ':t')]
@@ -65,14 +73,15 @@ local determine_filetype = function(filepath)
   end
 
   if ft_cache[ext] then return ft_cache[ext] end
-
   local matchings = vim.tbl_filter(function(val)
-    return val:match('.*%*%.' .. ext .. '%s')
+    return val:match('.*%*%.' .. ext .. '%s*.*')
   end, all_fts)
 
   local match = ''
   if table.getn(matchings) > 1 then
     match = matchings[1]:match('.* setf%s([^%s|]*)[%s|]?.*')
+    if not match then match = matchings[1]:match('.* set filetype[%s=]([^%s|]*)[%s|]?.*') end
+    if not match then match = matchings[1]:match('.* setlocal filetype[%s=]([^%s|]*)[%s|]?.*') end
     ft_cache[ext] = match
   end
   return match
