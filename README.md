@@ -411,6 +411,8 @@ Built-in function ready to be bound to any key you like :smile:.
 
 ### Treesitter
 
+| Functions                           | Description                                                                                 |
+|-------------------------------------|---------------------------------------------------------------------------------------------|
 | `builtin.treesitter`                | Lists Function names, variables, from Treesitter!                                           |
 | ..................................  | Your next awesome picker function here :D                                                   |
 
