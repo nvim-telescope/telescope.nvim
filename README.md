@@ -382,7 +382,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | `builtin.loclist`                   | Lists items from current window's location list.                                            |
 | `builtin.vim_options`               | Lists vim options and on enter edit the options value.                                      |
 | `builtin.registers`                 | Lists vim registers and edit or paste selection.                                            |
-| `builtin.autocommands`              | Lists vim autocommands and go to their declaration.                                    |
+| `builtin.autocommands`              | Lists vim autocommands and go to their declaration.                                         |
 | `builtin.keymaps`                   | Lists normal-mode mappings.                                                                 |
 | `builtin.filetypes`                 | Lists all filetypes.                                                                        |
 | `builtin.highlights`                | Lists all highlights.                                                                       |
@@ -410,6 +410,7 @@ Built-in function ready to be bound to any key you like :smile:.
 | ..................................  | Your next awesome picker function here :D                                                   |
 
 ### Treesitter
+
 | `builtin.treesitter`                | Lists Function names, variables, from Treesitter!                                           |
 | ..................................  | Your next awesome picker function here :D                                                   |
 
