@@ -94,7 +94,7 @@ nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
 nnoremap <leader>ff <cmd>lua require('telescope.builtin').help_tags()<cr>
 ```
 
-See [built-in pickers](#built-in-pickers) for the list of all built-in
+See [built-in pickers](#pickers) for the list of all built-in
 functions.
 
 
@@ -191,16 +191,16 @@ EOF
 | `use_less`             | Whether to use less with bat or less/cat if bat not installed | boolean                    |
 | `set_env`              | Set environment variables for previewer               | dict                       |
 | `scroll_strategy`      | How to behave when the when there are no more item next/prev | cycle, nil          |
-| `file_previewer`       | What telescope previewer to use for files.            | [Previewers](#built-in-previewers) |
-| `grep_previewer`       | What telescope previewer to use for grep and similar  | [Previewers](#built-in-previewers) |
-| `qflist_previewer`     | What telescope previewer to use for qflist            | [Previewers](#built-in-previewers) |
+| `file_previewer`       | What telescope previewer to use for files.            | [Previewers](#previewers)  |
+| `grep_previewer`       | What telescope previewer to use for grep and similar  | [Previewers](#previewers)  |
+| `qflist_previewer`     | What telescope previewer to use for qflist            | [Previewers](#previewers)  |
 
 ### Options affecting Sorting
 
 | Keys                   | Description                                           | Options                    |
 |------------------------|-------------------------------------------------------|----------------------------|
-| `file_sorter`          | The sorter for file lists.                            | [Sorters](#built-in-sorters)   |
-| `generic_sorter`       | The sorter for everything else.                       | [Sorters](#built-in-sorters)   |
+| `file_sorter`          | The sorter for file lists.                            | [Sorters](#sorters)        |
+| `generic_sorter`       | The sorter for everything else.                       | [Sorters](#sorters)        |
 | `vimgrep_arguments`    | The command line argument for grep search ... TODO.   | dict                       |
 | `selection_strategy`   | What happens to the selection if the list changes.    | follow/reset/row           |
 | `file_ignore_patterns` | Pattern to be ignored `{ "scratch/.*", "%.env"}`      | dict                       |
@@ -229,8 +229,8 @@ To see the full list of mappings, check out `lua/telescope/mappings.lua` and
 the `default_mappings` table.
 
 
-Much like [built-in pickers](#built-in-pickers), there are a number of
-[built-in actions](https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/actions/init.lua) you can pick from to remap your telescope buffer mappings or create a new custom action:
+Much like [built-in pickers](#pickers), there are a number of
+[actions](https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/actions/init.lua) you can pick from to remap your telescope buffer mappings or create a new custom action:
 <!-- TODO: add custom action in addition to a function that gets ran after a given action--->
 ```lua
 -- Built-in actions
@@ -274,7 +274,7 @@ require('telescope').setup{
 }
 ```
 
-For a [picker](#built-in-pickers) specific remapping, it can be done by setting
+For a [picker](#pickers) specific remapping, it can be done by setting
 its `attach_mappings` key to a function, like this
 
 ```lua
