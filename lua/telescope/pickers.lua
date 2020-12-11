@@ -14,6 +14,7 @@ local utils = require('telescope.utils')
 
 local layout_strategies = require('telescope.pickers.layout_strategies')
 local entry_display = require('telescope.pickers.entry_display')
+local p_scroller = require('telescope.pickers.scroller')
 
 local EntryManager = require('telescope.entry_manager')
 
@@ -66,7 +67,7 @@ function Picker:new(opts)
 
   local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
 
-  return setmetatable({
+  local obj = setmetatable({
     prompt_title = get_default(opts.prompt_title, "Prompt"),
     results_title = get_default(opts.results_title, "Results"),
     preview_title = get_default(opts.preview_title, "Preview"),
@@ -91,7 +92,6 @@ function Picker:new(opts)
 
     sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
-    scroll_strategy = get_default(opts.scroll_strategy, config.values.scroll_strategy),
 
     get_window_options = opts.get_window_options,
     layout_strategy = layout_strategy,
@@ -123,6 +123,13 @@ function Picker:new(opts)
 
     preview_cutoff = get_default(opts.preview_cutoff, config.values.preview_cutoff),
   }, self)
+
+
+  obj.scroller = p_scroller.create(
+    get_default(opts.scroll_strategy, config.values.scroll_strategy)
+  )
+
+  return obj
 end
 
 function Picker:_get_initial_window_options()
@@ -694,28 +701,10 @@ function Picker:reset_selection()
   self.multi_select = {}
 end
 
-function Picker:_handle_scroll_strategy(row)
-  if self.scroll_strategy == "cycle" then
-    if row >= self.max_results then
-      row = 0
-    elseif row < 0 then
-      row = self.max_results - 1
-    end
-  else
-    if row >= self.max_results then
-      row = self.max_results - 1
-    elseif row < 0 then
-      row = 0
-    end
-  end
-
-  return row
-end
-
 function Picker:set_selection(row)
   -- TODO: Loop around behavior?
   -- TODO: Scrolling past max results
-  row = self:_handle_scroll_strategy(row)
+  row = self.scroller(self.max_results, self.manager:num_results(), row)
 
   if not self:can_select_row(row) then
     -- If the current selected row exceeds number of currently displayed
