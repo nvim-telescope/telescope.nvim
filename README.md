@@ -12,9 +12,9 @@ modularity, allowing for easy customization.
 Community driven built-in [pickers](#pickers), [sorters](#sorters) and [previewers](#previewers).
 
 ### Built-in Support:
-- [vim](#vim-pickers) 
-- [files](#file-pickers) 
-- [git](#git-pickers)
+- [Vim](#vim-pickers) 
+- [Files](#file-pickers) 
+- [Git](#git-pickers)
 - [LSP](#lsp-pickers)
 - [Treesitter](#treesitter-pickers)
 
