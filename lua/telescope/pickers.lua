@@ -15,6 +15,7 @@ local utils = require('telescope.utils')
 local layout_strategies = require('telescope.pickers.layout_strategies')
 local entry_display = require('telescope.pickers.entry_display')
 local p_scroller = require('telescope.pickers.scroller')
+local p_selector = require('telescope.pickers.selector')
 
 local EntryManager = require('telescope.entry_manager')
 
@@ -91,7 +92,6 @@ function Picker:new(opts)
     file_ignore_patterns = get_default(opts.file_ignore_patterns, config.values.file_ignore_patterns),
 
     sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
-    selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
     get_window_options = opts.get_window_options,
     layout_strategy = layout_strategy,
@@ -127,6 +127,10 @@ function Picker:new(opts)
 
   obj.scroller = p_scroller.create(
     get_default(opts.scroll_strategy, config.values.scroll_strategy)
+  )
+
+  obj.row_selector = p_selector.create(
+     get_default(opts.selection_strategy, config.values.selection_strategy)
   )
 
   return obj
@@ -177,7 +181,7 @@ function Picker:get_window_options(max_columns, max_lines)
 end
 
 --- Take a row and get an index.
----@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
+--- @note: Rows are 0-indexed, and `index` is 1 indexed (table index)
 ---@param index number: The row being displayed
 ---@return number The row for the picker to display in
 function Picker:get_row(index)
@@ -189,7 +193,7 @@ function Picker:get_row(index)
 end
 
 --- Take a row and get an index
----@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
+--- @note: Rows are 0-indexed, and `index` is 1 indexed (table index)
 ---@param row number: The row being displayed
 ---@return number The index in line_manager
 function Picker:get_index(row)
@@ -382,8 +386,6 @@ function Picker:find()
 
   vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
 
-  local selection_strategy = self.selection_strategy or 'reset'
-
   local update_status = function()
     local text = self:get_status_text()
     local current_prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, 0, 1, false)[1]
@@ -485,36 +487,17 @@ function Picker:find()
     local process_complete = function()
       if self:is_done() then return end
 
+      local selection_row = self.row_selector {
+        selected = self._selection_row,
+        default = self.default_selection_index
+          and self:get_row(self.default_selection_index),
+        reset = self:get_reset_row(),
+      }
+      assert(selection_row, "Must return a value ")
+
+      self:set_selection(selection_row)
+
       -- TODO: Either: always leave one result or make sure we actually clean up the results when nothing matches
-      if selection_strategy == 'row' then
-        if self._selection_row == nil and self.default_selection_index ~= nil then
-          self:set_selection(self:get_row(self.default_selection_index))
-        else
-          self:set_selection(self:get_selection_row())
-        end
-      elseif selection_strategy == 'follow' then
-        if self._selection_row == nil and self.default_selection_index ~= nil then
-          self:set_selection(self:get_row(self.default_selection_index))
-        else
-          local index = self.manager:find_entry(self:get_selection())
-
-          if index then
-            local follow_row = self:get_row(index)
-            self:set_selection(follow_row)
-          else
-            self:set_selection(self:get_reset_row())
-          end
-        end
-      elseif selection_strategy == 'reset' then
-        if self.default_selection_index ~= nil then
-          self:set_selection(self:get_row(self.default_selection_index))
-        else
-          self:set_selection(self:get_reset_row())
-        end
-      else
-        error('Unknown selection strategy: ' .. selection_strategy)
-      end
-
       self:clear_extra_rows(results_bufnr)
       self:highlight_displayed_rows(results_bufnr, prompt)
 
@@ -665,6 +648,8 @@ function Picker:get_selection()
   return self._selection_entry
 end
 
+-- TODO: We should probably remove this?
+--       Otherwise, the logic seems a bit quesitonable for selector
 function Picker:get_selection_row()
   return self._selection_row or self.max_results
 end
