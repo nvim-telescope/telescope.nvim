@@ -696,18 +696,10 @@ end
 
 function Picker:_handle_scroll_strategy(row)
   if self.scroll_strategy == "cycle" then
-    if self.max_results > self.manager:num_results() then
-      if row < self.max_results - self.manager:num_results() then
-        row = self.max_results - 1
-      elseif row > self.max_results - 1 then
-          row = self.max_results - self.manager:num_results()
-      end
-    else
-      if row >= self.max_results then
-        row = 0
-      elseif row < 0 then
-        row = self.max_results - 1
-      end
+    if row >= self.max_results then
+      row = 0
+    elseif row < 0 then
+      row = self.max_results - 1
     end
   else
     if row >= self.max_results then
