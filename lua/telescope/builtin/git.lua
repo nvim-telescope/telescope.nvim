@@ -11,6 +11,10 @@ local git = {}
 
 git.files = function(opts)
   local show_untracked = utils.get_default(opts.show_untracked, true)
+  local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
+  if show_untracked and recurse_submodules then
+    error("Git does not suppurt both --others and --recurse-submodules")
+  end
 
   -- By creating the entry maker after the cwd options,
   -- we ensure the maker uses the cwd options when being created.
@@ -19,7 +23,11 @@ git.files = function(opts)
   pickers.new(opts, {
     prompt_title = 'Git File',
     finder = finders.new_oneshot_job(
-      { "git", "ls-files", "--exclude-standard", "--cached", show_untracked and "--others" },
+      vim.tbl_flatten( {
+        "git", "ls-files", "--exclude-standard", "--cached",
+        show_untracked and "--others" or nil,
+        recurse_submodules and "--recurse-submodules" or nil
+      } ),
       opts
     ),
     previewer = conf.file_previewer(opts),

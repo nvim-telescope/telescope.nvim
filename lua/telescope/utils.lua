@@ -7,6 +7,20 @@ utils.get_separator = function()
   return pathlib.separator
 end
 
+utils.as_bool = function(x)
+  local t = type(x)
+  if t == "string" then
+    if x == "true" then return true
+    elseif x == "false" then return false
+    else return nil end
+  elseif t == "boolean" then
+    return x
+  elseif t == "number" then
+    return x ~= 0
+  end
+  return nil
+end
+
 utils.if_nil = function(x, was_nil, was_not_nil)
   if x == nil then
     return was_nil
@@ -16,6 +30,9 @@ utils.if_nil = function(x, was_nil, was_not_nil)
 end
 
 utils.get_default = function(x, default)
+  if type(default) == "boolean" then
+    return utils.if_nil(x, default, utils.as_bool(x))
+  end
   return utils.if_nil(x, default, x)
 end
 
