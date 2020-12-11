@@ -154,7 +154,7 @@ local bat_maker = function(filename, lnum, start, finish)
   end
 
   if theme ~= nil then
-    table.insert(command, { "--theme", string.format("%s", theme) })
+    table.insert(command, { "--theme", string.format("%s", vim.fn.shellescape(theme)) })
   end
 
   return flatten {
