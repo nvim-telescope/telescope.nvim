@@ -126,7 +126,8 @@ function Picker:new(opts)
 
 
   obj.scroller = p_scroller.create(
-    get_default(opts.scroll_strategy, config.values.scroll_strategy)
+    get_default(opts.scroll_strategy, config.values.scroll_strategy),
+    obj.sorting_strategy
   )
 
   return obj
