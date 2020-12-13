@@ -233,24 +233,31 @@ function make_entry.gen_from_quickfix(opts)
   opts = opts or {}
   opts.tail_path = get_default(opts.tail_path, true)
 
-  local make_display = function(entry)
-    local to_concat = {}
+    local displayer = entry_display.create {
+    separator = "▏",
+    items = {
+      { width = 6 },
+      { width = 50 },
+      { remaining = true },
+    },
+  }
 
+  local make_display = function(entry)
+    local filename
     if not opts.hide_filename then
-      local filename = entry.filename
+      filename = entry.filename
       if opts.tail_path then
         filename = utils.path_tail(filename)
       elseif opts.shorten_path then
         filename = utils.path_shorten(filename)
       end
-
-      table.insert(to_concat, filename)
-      table.insert(to_concat, ":")
     end
 
-    table.insert(to_concat, entry.text)
-
-    return table.concat(to_concat, "")
+    return displayer {
+      entry.lnum .. ":" .. entry.col,
+      entry.text:gsub(".* | ", ""),
+      filename,
+    }
   end
 
   return function(entry)
