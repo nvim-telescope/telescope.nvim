@@ -616,7 +616,7 @@ internal.highlights = function(opts)
       end)
       return true
     end,
-    previewer = previewers.display_content.new(opts),
+    previewer = previewers.highlights.new(opts),
   }):find()
 end
 
