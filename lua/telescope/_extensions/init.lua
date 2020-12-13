@@ -8,7 +8,7 @@ extensions.manager = setmetatable({}, {
     -- See if this extension exists.
     local ok, ext = pcall(require, 'telescope._extensions.' .. k)
     if not ok then
-      error("This extenion doesn't exist or is not installed: " .. k .. "\n" .. ext)
+      error("This extension doesn't exist or is not installed: " .. k .. "\n" .. ext)
     end
 
     if ext.setup then
