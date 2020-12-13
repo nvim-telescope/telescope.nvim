@@ -256,7 +256,7 @@ function make_entry.gen_from_quickfix(opts)
     return displayer {
       entry.lnum .. ":" .. entry.col,
       entry.text:gsub(".* | ", ""),
-      filename or "",
+      filename,
     }
   end
 
