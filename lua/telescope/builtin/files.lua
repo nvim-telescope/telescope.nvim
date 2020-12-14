@@ -251,7 +251,9 @@ files.tags = function(opts)
     return
   end
 
-  local results = {}
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_ctags(opts)
+  local finder = finders.new_incremental(opts)
+
   for _, each in ipairs(tagfiles) do
     local tags_directory = vim.fn.fnamemodify(each, ":h")
     local resolve_filename = function(filename)
@@ -260,22 +262,15 @@ files.tags = function(opts)
     end
     path.read(each, function(err, data)
       for _, line in ipairs(vim.split(data, '\n')) do
-        table.insert(results, { line = line, resolve_filename = resolve_filename })
+        finder:feed({ line = line, resolve_filename = resolve_filename })
       end
     end)
+    finder:finish()
   end
 
   pickers.new(opts,{
     prompt = 'Tags',
-    finder = finders.new_job(function(prompt)
-      print(prompt)
-      if not prompt or prompt == "" then
-        return nil
-      end
-      return prompt
-    end,
-    opts.entry_maker or make_entry.gen_from_ctags(opts),
-    opts.max_results),
+    finder = finder,
     previewer = previewers.ctags.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function()

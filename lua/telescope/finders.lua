@@ -15,6 +15,40 @@ local _callable_obj = function()
 end
 
 
+local IncrementalFinder = _callable_obj()
+
+function IncrementalFinder:new(opts)
+  opts = opts or {}
+  local obj = setmetatable({
+    entry_maker = opts.entry_maker or make_entry.from_string,
+  }, self)
+
+  self.results = {}
+  self.finished = false
+
+  obj._find = coroutine.wrap(function(finder, _, process_result, process_complete)
+    repeat
+      finder, _, process_result, process_complete = coroutine.yield()
+      for index, result in ipairs(self.results) do
+        process_result(finder.entry_maker(result))
+      end
+    until self.completed
+
+    process_complete()
+  end)
+
+  return obj
+end
+
+function IncrementalFinder:feed(result)
+  table.insert(self.results, result)
+end
+
+function IncrementalFinder:finish(result)
+  self.finished = true
+end
+
+
 --[[ =============================================================
 
     JobFinder
@@ -272,6 +306,11 @@ finders._new = function(opts)
   end
 
   return JobFinder:new(opts)
+end
+
+finders.new_incremental = function(opts)
+  opts = opts or {}
+  return IncrementalFinder:new(opts)
 end
 
 finders.new_job = function(command_generator, entry_maker, maximum_results, cwd)
