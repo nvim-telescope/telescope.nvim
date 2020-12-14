@@ -112,19 +112,6 @@ internal.test_menu = function(opts)
   }
 end
 
--- function internal.test_menu()
---   internal.menu({
---     hello = {
---       dude = "",
---       wow = "",
---       another = "",
---     },
---     wothis = "",
---     interstin = "",
---   })
--- end
-
-
 internal.planets = function(opts)
   local show_pluto = opts.show_pluto or false
 
