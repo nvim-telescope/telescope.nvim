@@ -248,6 +248,38 @@ function StaticFinder:new(opts)
   return setmetatable({ results = results }, self)
 end
 
+function StaticFinder:new_tree(opts)
+  assert(opts, "Options are required. See documentation for usage")
+
+  local input_results
+  if vim.tbl_islist(opts) then
+    input_results = opts
+  else
+    input_results = opts.results
+  end
+
+  local entry_maker = opts.entry_maker or make_entry.gen_from_tree()
+
+  assert(input_results)
+  assert(input_results, "Results are required for static finder")
+  assert(type(input_results) == 'table', "self.results must be a table")
+
+  local results = {}
+  local counter = 0
+  for k, v in pairs(input_results) do
+    local entry = entry_maker(k, v)
+
+    if entry then
+      -- entry.index = counter
+      table.insert(results, entry)
+    end
+
+    counter = counter + 1
+  end
+
+  return setmetatable({ results = results }, self)
+end
+
 function StaticFinder:_find(_, process_result, process_complete)
   for _, v in ipairs(self.results) do
     process_result(v)
@@ -329,6 +361,10 @@ end
 --  entry_maker function, the function to convert results to entries.
 finders.new_table = function(t)
   return StaticFinder:new(t)
+end
+
+finders.new_tree = function(t)
+  return StaticFinder:new_tree(t)
 end
 
 return finders

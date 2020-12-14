@@ -60,6 +60,30 @@ end
 do
   local lookup_keys = {
     ordinal = 1,
+    value = 2,
+    display = 1,
+    key = 1,
+  }
+
+  local mt_tree_entry = {
+    __index = function(t, k)
+      return rawget(t, rawget(lookup_keys, k))
+    end
+  }
+
+  function make_entry.gen_from_tree()
+    return function(key, value)
+      return setmetatable({
+        key,
+        value,
+      }, mt_tree_entry)
+    end
+  end
+end
+
+do
+  local lookup_keys = {
+    ordinal = 1,
     value = 1,
     filename = 1,
     cwd = 2,

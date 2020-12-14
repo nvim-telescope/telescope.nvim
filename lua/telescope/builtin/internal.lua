@@ -45,6 +45,85 @@ internal.builtin = function(opts)
   }):find()
 end
 
+do
+  internal.menu = function(opts)
+    if opts.callback == nil then
+      vim.cmd [[echoerr 'There is no callback']]
+      return
+    end
+
+    pickers.new(opts, {
+      prompt_title = opts.title or 'Menu',
+      finder = finders.new_tree {
+        results = opts.t,
+      },
+      sorter = conf.generic_sorter(opts),
+      attach_mappings = function(prompt_bufnr)
+        actions._goto_file_selection:replace(function()
+          local entry = actions.get_selected_entry()
+          local value = entry.value
+          if value == "" then
+            -- it is a leaf
+            opts.callback(entry.key)
+            actions.close(prompt_bufnr)
+          elseif type(value) == "table" then
+            -- it is a node
+            actions.close(prompt_bufnr)
+            -- recurse
+            internal.menu{t = value, callback = opts.callback}
+            -- sometimes does not start insert for some reason
+            vim.api.nvim_input('i')
+          else
+            vim.cmd [[echoerr 'value must be leaf or table']]
+          end
+        end)
+
+        return true
+      end,
+    }):find()
+  end
+end
+
+internal.test_menu = function(opts)
+  internal.menu {
+    t = {
+      a_leaf = "",
+      another_leaf = "",
+      blah = "",
+      ["1 level deep node"] = {
+        leaf = "",
+        another_leaf = "",
+        inside_a_node = "",
+      },
+      ["2 level deep node"] = {
+        leaf = "",
+        another_leaf = "",
+        inside_a_node = "",
+        node_inside_node = {
+          final_leaf = ""
+        },
+      },
+    },
+    title = 'test menu',
+    callback = function(selection)
+      print("just testing the callback selection ", selection)
+    end
+  }
+end
+
+-- function internal.test_menu()
+--   internal.menu({
+--     hello = {
+--       dude = "",
+--       wow = "",
+--       another = "",
+--     },
+--     wothis = "",
+--     interstin = "",
+--   })
+-- end
+
+
 internal.planets = function(opts)
   local show_pluto = opts.show_pluto or false
 
