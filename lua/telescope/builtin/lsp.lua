@@ -85,8 +85,13 @@ lsp.code_actions = function(opts)
     return
   end
 
-  local results = (results_lsp[1] or results_lsp[2]).result;
+  local _, response = next(results_lsp)
+  if not response then
+    print("No code actions available")
+    return
+  end
 
+  local results = response.result
   if not results or #results == 0 then
     print("No code actions available")
     return
