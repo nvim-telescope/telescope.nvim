@@ -73,10 +73,20 @@ do
 
   function make_entry.gen_from_tree()
     return function(key, value)
-      return setmetatable({
-        key,
-        value,
-      }, mt_tree_entry)
+      if type(key) == "number" then
+        -- it is a leaf
+        return setmetatable({
+          value,
+          -- this means it is leaf
+          nil,
+        }, mt_tree_entry)
+      else
+        -- it is a node
+        return setmetatable({
+          key,
+          value,
+        }, mt_tree_entry)
+      end
     end
   end
 end

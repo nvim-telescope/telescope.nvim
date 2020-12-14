@@ -62,9 +62,10 @@ do
         actions._goto_file_selection:replace(function()
           local entry = actions.get_selected_entry()
           local value = entry.value
-          if value == "" then
+          local key = entry.key
+          if value == nil then
             -- it is a leaf
-            opts.callback(entry.key)
+            opts.callback(key)
             actions.close(prompt_bufnr)
           elseif type(value) == "table" then
             -- it is a node
@@ -87,26 +88,26 @@ end
 internal.test_menu = function(opts)
   internal.menu {
     t = {
-      a_leaf = "",
-      another_leaf = "",
-      blah = "",
+      "a_leaf",
+      "another_leaf",
+      "blah",
       ["1 level deep node"] = {
-        leaf = "",
-        another_leaf = "",
-        inside_a_node = "",
+        "leaf",
+        "another_leaf",
+        "inside_a_node",
       },
       ["2 level deep node"] = {
-        leaf = "",
-        another_leaf = "",
-        inside_a_node = "",
+        "leaf",
+        "another_leaf",
+        "inside_a_node",
         node_inside_node = {
-          final_leaf = ""
+          "final_leaf",
         },
       },
     },
     title = 'test menu',
     callback = function(selection)
-      print("just testing the callback selection ", selection)
+      print("test callback selection:", selection)
     end
   }
 end
