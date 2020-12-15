@@ -28,10 +28,10 @@ function IncrementalFinder:new(opts)
 
   obj._find = coroutine.wrap(function(finder, _, process_result, process_complete)
     repeat
-      finder, _, process_result, process_complete = coroutine.yield()
-      for index, result in ipairs(self.results) do
+      for _, result in ipairs(self.results) do
         process_result(finder.entry_maker(result))
       end
+      finder, _, process_result, process_complete = coroutine.yield()
     until self.completed
 
     process_complete()
