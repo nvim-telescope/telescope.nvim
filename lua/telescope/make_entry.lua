@@ -391,21 +391,6 @@ function make_entry.gen_from_treesitter(opts)
   end
 end
 
-function make_entry.gen_from_taglist(_)
-  local delim = string.char(9)
-
-  return function(line)
-    local entry = {}
-    local tag = (line..delim):match("(.-)" .. delim)
-    entry.valid   = tag ~= ""
-    entry.display = tag
-    entry.value   = tag
-    entry.ordinal = tag
-
-    return entry
-  end
-end
-
 function make_entry.gen_from_packages(opts)
   opts = opts or {}
 

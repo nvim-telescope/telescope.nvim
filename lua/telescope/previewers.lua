@@ -694,62 +694,24 @@ previewers.help = defaulter(function(_)
       end
     end,
 
+    get_buffer_by_name = function(_, entry)
+      return entry.filename
+    end,
+
     define_preview = function(self, entry, status)
       with_preview_window(status, nil, function()
-        local special_chars = ":~^.?/%[%]%*"
-        local delim = string.char(9)
+        local query = entry.cmd
+        query = query:sub(2)
+        query = [[\V]] .. query
 
-        local escaped = vim.fn.escape(entry.value, special_chars)
-        local tags = {}
-
-        local find_rtp_file = function(p, count)
-          return vim.fn.findfile(p, vim.o.runtimepath, count)
-        end
-
-        for _,file in pairs(find_rtp_file('doc/tags', -1)) do
-          local f = assert(io.open(file, "rb"))
-            for line in f:lines() do
-              local matches = {}
-
-              for match in (line..delim):gmatch("(.-)" .. delim) do
-                table.insert(matches, match)
-              end
-
-              table.insert(tags, {
-                name = matches[1],
-                filename = matches[2],
-                cmd = matches[3]
-              })
-            end
-          f:close()
-        end
-
-        local search_tags = function(pattern)
-          local results = {}
-          for _, tag in pairs(tags) do
-            if vim.fn.match(tag.name, pattern) ~= -1 then
-              table.insert(results, tag)
-            end
-          end
-          return results
-        end
-
-        local taglist = search_tags('^' .. escaped .. '$')
-        if taglist == {} then taglist = search_tags(escaped) end
-
-        local best_entry = taglist[1]
-        file_maker_sync(find_rtp_file('doc/' .. best_entry.filename), self.state.bufnr, self.state.bufname)
-        -- We do no longer need to set the filetype. file_maker_ can do this now
-
-        local search_query = best_entry.cmd
-        search_query = search_query:sub(2)
-        search_query = [[\V]] .. search_query
+        file_maker_sync(entry.filename, self.state.bufnr, self.state.bufname)
+        vim.cmd(':ownsyntax help')
 
         pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
         vim.cmd "norm! gg"
-        vim.fn.search(search_query, "W")
+        vim.fn.search(query, "W")
 
-        self.state.hl_id = vim.fn.matchadd('Search', search_query)
+        self.state.hl_id = vim.fn.matchadd('Search', query)
       end)
     end
   }
