@@ -810,7 +810,7 @@ function Picker:set_selection(row)
 end
 
 
-function Picker:entry_adder(index, entry, score)
+function Picker:entry_adder(index, entry, score, insert)
   local row = self:get_row(index)
 
   -- If it's less than 0, then we don't need to show it at all.
@@ -834,13 +834,14 @@ function Picker:entry_adder(index, entry, score)
   self:_increment("displayed")
 
   -- TODO: Don't need to schedule this if we schedule the adder.
+  local offset = insert and 0 or 1
   vim.schedule(function()
     if not vim.api.nvim_buf_is_valid(self.results_bufnr) then
       log.debug("ON_ENTRY: Invalid buffer")
       return
     end
 
-    local set_ok = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + 1, false, {display})
+    local set_ok = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + offset, false, {display})
     if set_ok and display_highlights then
       self.highlighter:hi_display(row, prefix, display_highlights)
     end
@@ -903,8 +904,6 @@ function Picker:_on_complete()
   for _, v in ipairs(self._completion_callbacks) do
     pcall(v, self)
   end
-
-  P(self.stats)
 end
 
 function Picker:close_existing_pickers()

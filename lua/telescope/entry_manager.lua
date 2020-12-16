@@ -1,3 +1,5 @@
+local entry_display = require('telescope.pickers.entry_display')
+local LinkedList = require('telescope.algos.linked_list')
 local log = require("telescope.log")
 
 --[[
@@ -37,55 +39,60 @@ function EntryManager:new(max_results, set_entry, info)
   --        line = ...
   --        metadata ? ...
   --    }
-  local entry_state = {}
+  local linked_states = {}
 
   set_entry = set_entry or function() end
 
   return setmetatable({
-    set_entry = set_entry,
-    max_results = max_results,
-    worst_acceptable_score = math.huge,
-
-    entry_state = entry_state,
+    linked_states = LinkedList:new(),
     info = info,
-
-    num_results = function()
-      return #entry_state
-    end,
-
-    get_ordinal = function(em, index)
-      return em:get_entry(index).ordinal
-    end,
-
-    get_entry = function(_, index)
-      return (entry_state[index] or {}).entry
-    end,
-
-    get_score = function(_, index)
-      return (entry_state[index] or {}).score
-    end,
-
-    find_entry = function(_, entry)
-      if entry == nil then
-        return nil
-      end
-
-      for k, v in ipairs(entry_state) do
-        local existing_entry = v.entry
-
-        -- FIXME: This has the problem of assuming that display will not be the same for two different entries.
-        if existing_entry == entry then
-          return k
-        end
-      end
-
-      return nil
-    end,
-
-    _get_state = function()
-      return entry_state
-    end,
+    max_results = max_results,
+    set_entry = set_entry,
+    worst_acceptable_score = math.huge,
   }, self)
+end
+
+function EntryManager:num_results()
+  return self.linked_states.size
+end
+
+function EntryManager:get_entry(index)
+  local count = 0
+  for val in self.linked_states:iter() do
+    count = count + 1
+
+    if count == index then
+      return val.entry
+    end
+  end
+
+  -- return (linked_states[index] or {}).entry
+  return nil
+end
+
+function EntryManager:get_ordinal(index)
+  return self:get_entry(index).ordinal
+end
+
+function EntryManager:get_score(index)
+  return self:get_entry(index).score
+end
+
+function EntryManager:find_entry(entry)
+  local count = 0
+  for val in self.linked_states:iter() do
+    count = count + 1
+
+    if val.entry == entry then
+      return count
+    end
+  end
+
+  return nil
+end
+
+function EntryManager:_get_state()
+  return self.linked_states
 end
 
 function EntryManager:should_save_result(index)
@@ -95,18 +102,21 @@ end
 function EntryManager:add_entry(picker, score, entry)
   score = score or 0
 
+  local new_item = {
+    score = score,
+    entry = entry,
+  }
+
   if score >= self.worst_acceptable_score then
+    self.linked_states:append(new_item)
     return
   end
 
-  for index, item in ipairs(self.entry_state) do
+  for index, item in self.linked_states:ipairs() do
     self.info.looped = self.info.looped + 1
 
     if item.score > score then
-      return self:insert(picker, index, {
-        score = score,
-        entry = entry,
-      })
+      return self:insert(picker, index, new_item)
     end
 
     -- Don't add results that are too bad.
@@ -115,37 +125,64 @@ function EntryManager:add_entry(picker, score, entry)
     end
   end
 
-  return self:insert(picker, {
+  return self:insert(picker, self.linked_states.size + 1, {
     score = score,
     entry = entry,
   })
 end
 
 function EntryManager:insert(picker, index, entry)
-  if entry == nil then
-    entry = index
-    index = #self.entry_state + 1
+  assert(index)
+  assert(entry)
+
+  -- This is the append case.
+  -- Just add it at the end
+  if index > self.linked_states.size then
+    self.linked_states:append(entry)
+
+    if index <= self.max_results then
+      self.set_entry(picker, index, entry.entry, entry.score)
+    end
+
+    return
   end
 
-  -- To insert something, we place at the next available index (or specified index)
-  -- and then shift all the corresponding items one place.
-  local next_entry, last_score
-  repeat
-    self.info.inserted = self.info.inserted + 1
-    next_entry = self.entry_state[index]
+  -- TODO: Add `shift_entry` which just pushes things down one line
+  for i, e, node in self.linked_states:ipairs() do
+    if i == index then
+      self.linked_states:place_after(node, entry)
+      self.set_entry(picker, index, entry.entry, entry.score, true)
+      return
+    elseif i > index then
+      assert(false, "Cannot get here")
+    end
 
-    self.set_entry(picker, index, entry.entry, entry.score)
-    self.entry_state[index] = entry
-
-    last_score = entry.score
-
-    index = index + 1
-    entry = next_entry
-  until not next_entry or not self:should_save_result(index)
-
-  if not self:should_save_result(index) then
-    self.worst_acceptable_score = last_score
+    if i > self.max_results then
+      print("Quit because of max results")
+      return
+    end
   end
+
+  -- To insert something, we place at the next available index
+  -- (or specified index) and then shift all the corresponding
+  -- items one place.
+  -- local next_entry, last_score
+  -- repeat
+  --   self.info.inserted = self.info.inserted + 1
+  --   next_entry = self.linked_states[index]
+
+  --   self.set_entry(picker, index, entry.entry, entry.score)
+  --   self.linked_states[index] = entry
+
+  --   last_score = entry.score
+
+  --   index = index + 1
+  --   entry = next_entry
+  -- until not next_entry or not self:should_save_result(index)
+
+  -- if not self:should_save_result(index) then
+  --   self.worst_acceptable_score = last_score
+  -- end
 end
 
 
