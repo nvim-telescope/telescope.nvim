@@ -549,7 +549,7 @@ previewers.vim_buffer_vimgrep = defaulter(function(_)
     end,
 
     teardown = function(self)
-      if self.state and self.state.last_set_bufnr then
+      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
         vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, previewer_ns, 0, -1)
       end
     end,
@@ -570,7 +570,7 @@ previewers.vim_buffer_vimgrep = defaulter(function(_)
           if self.state.last_set_bufnr then
             pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, previewer_ns, 0, -1)
           end
-          pcall(vim.api.nvim_buf_add_highlight, self.state.bufnr, previewer_ns, "Search", lnum - 1, 0, -1)
+          pcall(vim.api.nvim_buf_add_highlight, self.state.bufnr, previewer_ns, "TelescopePreviewLine", lnum - 1, 0, -1)
           pcall(vim.api.nvim_win_set_cursor, status.preview_win, {lnum, 0})
         end
 
@@ -608,7 +608,7 @@ previewers.ctags = defaulter(function(_)
         vim.cmd "norm! gg"
         vim.fn.search(scode)
 
-        self.state.hl_id = vim.fn.matchadd('Search', scode)
+        self.state.hl_id = vim.fn.matchadd('TelescopePreviewLine', scode)
       end)
     end
   }
@@ -647,7 +647,7 @@ previewers.builtin = defaulter(function(_)
         vim.cmd "norm! gg"
         vim.fn.search(text)
 
-        self.state.hl_id = vim.fn.matchadd('Search', text)
+        self.state.hl_id = vim.fn.matchadd('TelescopePreviewLine', text)
       end)
     end
   }
@@ -711,7 +711,7 @@ previewers.help = defaulter(function(_)
         vim.cmd "norm! gg"
         vim.fn.search(query, "W")
 
-        self.state.hl_id = vim.fn.matchadd('Search', query)
+        self.state.hl_id = vim.fn.matchadd('TelescopePreviewLine', query)
       end)
     end
   }
@@ -747,7 +747,7 @@ end)
 previewers.autocommands = defaulter(function(_)
   return previewers.new_buffer_previewer {
     teardown = function(self)
-      if self.state and self.state.last_set_bufnr then
+      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
         pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, previewer_ns, 0, -1)
       end
     end,
@@ -794,7 +794,7 @@ previewers.autocommands = defaulter(function(_)
         end
       end
 
-      vim.api.nvim_buf_add_highlight(self.state.bufnr, previewer_ns, "Search", selected_row + 1, 0, -1)
+      vim.api.nvim_buf_add_highlight(self.state.bufnr, previewer_ns, "TelescopePreviewLine", selected_row + 1, 0, -1)
       vim.api.nvim_win_set_cursor(status.preview_win, {selected_row + 1, 0})
 
       self.state.last_set_bufnr = self.state.bufnr
@@ -805,7 +805,7 @@ end, {})
 previewers.highlights = defaulter(function(_)
   return previewers.new_buffer_previewer {
     teardown = function(self)
-      if self.state and self.state.last_set_bufnr then
+      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
         vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, previewer_ns, 0, -1)
       end
     end,
@@ -843,7 +843,12 @@ previewers.highlights = defaulter(function(_)
         vim.cmd "norm! gg"
         vim.fn.search(entry.value .. ' ')
         local lnum = vim.fn.line('.')
-        vim.api.nvim_buf_add_highlight(self.state.bufnr, previewer_ns, "Search", lnum - 1, 0, #entry.value)
+        vim.api.nvim_buf_add_highlight(self.state.bufnr,
+          previewer_ns,
+          "TelescopePreviewLine",
+          lnum - 1,
+          0,
+          #entry.value)
       end)
     end,
   }
