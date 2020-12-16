@@ -437,6 +437,7 @@ internal.buffers = function(opts)
       or vim.api.nvim_buf_is_loaded(b))
       and 1 == vim.fn.buflisted(b)
   end, vim.api.nvim_list_bufs())
+  if not next(bufnrs) then return end
 
   local buffers = {}
   local default_selection_idx = 1
