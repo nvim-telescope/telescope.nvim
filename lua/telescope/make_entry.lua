@@ -77,7 +77,8 @@ do
 
     mt_file_entry.cwd = cwd
     mt_file_entry.display = function(entry)
-      local display, hl_group = entry.value
+      local hl_group
+      local display = path.make_relative(entry.value, cwd)
       if shorten_path then
         display = utils.path_shorten(display)
       end
@@ -96,7 +97,11 @@ do
       if raw then return raw end
 
       if k == "path" then
-        return t.cwd .. path.separator .. t.value
+        local retpath = t.cwd .. path.separator .. t.value
+        if not vim.loop.fs_access(retpath, "R", nil) then
+          retpath = t.value
+        end
+        return retpath
       end
 
       return rawget(t, rawget(lookup_keys, k))

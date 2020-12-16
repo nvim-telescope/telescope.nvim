@@ -57,16 +57,46 @@ end
 --          Support `find` and maybe let people do other stuff with it as well.
 files.find_files = function(opts)
   local find_command = opts.find_command
+  local search_dirs = opts.search_dirs
+
+  if search_dirs then
+    for k,v in pairs(search_dirs) do
+      search_dirs[k] = vim.fn.expand(v)
+    end
+  end
 
   if not find_command then
     if 1 == vim.fn.executable("fd") then
       find_command = { 'fd', '--type', 'f' }
+      if search_dirs then
+        table.insert(find_command, '.')
+        for _,v in pairs(search_dirs) do
+          table.insert(find_command, v)
+        end
+      end
     elseif 1 == vim.fn.executable("fdfind") then
       find_command = { 'fdfind', '--type', 'f' }
+      if search_dirs then
+        table.insert(find_command, '.')
+        for _,v in pairs(search_dirs) do
+          table.insert(find_command, v)
+        end
+      end
     elseif 1 == vim.fn.executable("rg") then
       find_command = { 'rg', '--files' }
+      if search_dirs then
+        for _,v in pairs(search_dirs) do
+          table.insert(find_command, v)
+        end
+      end
     elseif 1 == vim.fn.executable("find") then
       find_command = { 'find', '.', '-type', 'f' }
+      if search_dirs then
+        table.remove(find_command, 2)
+        for _,v in pairs(search_dirs) do
+          table.insert(find_command, 2, v)
+        end
+      end
     end
   end
 
