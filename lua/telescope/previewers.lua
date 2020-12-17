@@ -608,7 +608,7 @@ previewers.ctags = defaulter(function(_)
         vim.cmd "norm! gg"
         vim.fn.search(scode)
 
-        self.state.hl_id = vim.fn.matchadd('TelescopePreviewLine', scode)
+        self.state.hl_id = vim.fn.matchadd('TelescopePreviewMatch', scode)
       end)
     end
   }
@@ -647,7 +647,7 @@ previewers.builtin = defaulter(function(_)
         vim.cmd "norm! gg"
         vim.fn.search(text)
 
-        self.state.hl_id = vim.fn.matchadd('TelescopePreviewLine', text)
+        self.state.hl_id = vim.fn.matchadd('TelescopePreviewMatch', text)
       end)
     end
   }
@@ -711,7 +711,7 @@ previewers.help = defaulter(function(_)
         vim.cmd "norm! gg"
         vim.fn.search(query, "W")
 
-        self.state.hl_id = vim.fn.matchadd('TelescopePreviewLine', query)
+        self.state.hl_id = vim.fn.matchadd('TelescopePreviewMatch', query)
       end)
     end
   }
@@ -843,9 +843,10 @@ previewers.highlights = defaulter(function(_)
         vim.cmd "norm! gg"
         vim.fn.search(entry.value .. ' ')
         local lnum = vim.fn.line('.')
+        -- That one is actually a match but its better to use it like that then matchadd
         vim.api.nvim_buf_add_highlight(self.state.bufnr,
           previewer_ns,
-          "TelescopePreviewLine",
+          "TelescopePreviewMatch",
           lnum - 1,
           0,
           #entry.value)
