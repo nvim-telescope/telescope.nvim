@@ -22,15 +22,14 @@ Node.new = function(opts)
 
   self.t = opts[1]
   self.callback = opts.callback
-  self.title = opts.title or 'Menu'
+  self.title = opts.title
 
   table.insert(self.t, "..")
 
-  return self
+  return self:preprocess()
 end
 
 Node.new_root = function(opts)
-  dump(opts)
   local self = setmetatable({}, Node)
 
   self.t = opts[1]
@@ -41,28 +40,37 @@ Node.new_root = function(opts)
   end
   self.title = opts.title or 'Menu'
 
+  return self:preprocess()
+end
+
+Node.new_leaf = function(opts)
+  local self = setmetatable({}, Node)
+
+  self.t = opts[1]
+  self.callback = opts.callback
+
+  return self:preprocess()
+end
+
+function Node:preprocess()
+  local results = {}
+
+  for k, v in pairs(self.t) do
+    if type(k) == "number" then -- leaf
+      table.insert(results, { leaf = v })
+    elseif type(k) == "string" then
+      table.insert(results, { branch_name = k, branches = v })
+    else
+      error "BUG: should not get here"
+    end
+  end
+
+  self.t = results
+
   return self
 end
 
 menu.Node = Node
-
-local function preprocess(tree, root)
-  local results = {}
-
-  for k, v in pairs(tree) do
-    if type(v) == "string" then -- leaf
-      table.insert(results, { leaf = v, root = root }) -- and have each element have the table. So you also have it when we hit enter
-    elseif type(k) == "string" then
-      table.insert(results, { branch = k, root = root }) -- when selecting you can then just check if branch is not nil. if thats the case the restart menu
-    else
-      -- we should never get here. Am i correct?
-    end
-  end
-
-  table.insert(results, { branch = '..', root = root })
-
-  return results
-end
 
 do
   local Stack = {}
@@ -100,8 +108,10 @@ do
 
   menu.open = function(tree, opts)
     opts = opts or {}
+
+    opts.entry_maker = make_entry.gen_from_node(opts)
+
     local node = tree
-    dump(node)
 
     if root == nil then
       root = node
@@ -109,8 +119,9 @@ do
 
     pickers.new(opts, {
       prompt_title = node.title,
-      finder = finders.new_tree {
+      finder = finders.new_table {
         results = node.t,
+        entry_maker = opts.entry_maker
       },
       sorter = conf.generic_sorter(opts),
       attach_mappings = function(prompt_bufnr)
@@ -118,12 +129,10 @@ do
           actions.close(prompt_bufnr)
 
           local entry = actions.get_selected_entry()
-          local value = entry.value
-          local key = entry.key
 
-          if value == nil then
-            -- it is a leaf
-            if key == ".." then
+          if entry.is_leaf then
+
+            if entry.value == ".." then
               local last = selections:pop()
               if selections:is_empty() then
                 menu.open(root)
@@ -134,21 +143,19 @@ do
               return
             end
 
-            selections:push(key)
+            selections:push(entry.value)
             local callback = node.callback or root.callback
             callback(selections)
 
             cleanup()
-
-          elseif type(value) == "table" then
+          else
             -- it is a node
-            selections:push(key)
+            selections:push(entry.value)
             -- recurse
-            menu.open(value, opts)
+            opts.prompt_title = entry.value.title or root.title
+            menu.open(entry.value, opts)
             -- sometimes does not start insert for some reason
             vim.api.nvim_input('i')
-          else
-            error "value must be leaf or table"
           end
         end)
 

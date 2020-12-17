@@ -36,7 +36,7 @@ builtin.git_status = require('telescope.builtin.git').status
 
 builtin.builtin = require('telescope.builtin.internal').builtin
 builtin.menu = require('telescope.builtin.menu').menu
-builtin.test_menu = require('telescope.builtin.menu').test_menu
+builtin.test_menu = require('telescope.builtin.menu').test
 builtin.Node = require('telescope.builtin.menu').Node
 
 builtin.planets = require('telescope.builtin.internal').planets

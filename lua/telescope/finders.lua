@@ -231,50 +231,25 @@ function StaticFinder:new(opts)
 
   local entry_maker = opts.entry_maker or make_entry.gen_from_string()
 
+  -- print('entry_maker')
+  -- dump(entry_maker)
+
   assert(input_results)
   assert(input_results, "Results are required for static finder")
   assert(type(input_results) == 'table', "self.results must be a table")
 
   local results = {}
   for k, v in ipairs(input_results) do
+    -- print('value')
+    -- dump(v)
     local entry = entry_maker(v)
+    -- print('a entry')
+    -- dump(entry)
 
     if entry then
       entry.index = k
       table.insert(results, entry)
     end
-  end
-
-  return setmetatable({ results = results }, self)
-end
-
-function StaticFinder:new_tree(opts)
-  assert(opts, "Options are required. See documentation for usage")
-
-  local input_results
-  if vim.tbl_islist(opts) then
-    input_results = opts
-  else
-    input_results = opts.results
-  end
-
-  local entry_maker = opts.entry_maker or make_entry.gen_from_tree()
-
-  assert(input_results)
-  assert(input_results, "Results are required for static finder")
-  assert(type(input_results) == 'table', "self.results must be a table")
-
-  local results = {}
-  local counter = 0
-  for k, v in pairs(input_results) do
-    local entry = entry_maker(k, v)
-
-    if entry then
-      -- entry.index = counter
-      table.insert(results, entry)
-    end
-
-    counter = counter + 1
   end
 
   return setmetatable({ results = results }, self)
