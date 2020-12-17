@@ -72,116 +72,105 @@ end
 
 menu.Node = Node
 
-do
-  local Stack = {}
-  Stack.__index = Stack
+local Stack = {}
+Stack.__index = Stack
 
-  function Stack.new(init)
-    init = init or {}
-    local self = setmetatable(init, Stack)
-    return self
+function Stack.new(init)
+  local self = setmetatable({}, Stack)
+  if init ~= nil then
+    self:push(init)
   end
+  return self
+end
 
-  function Stack:push(...)
-    local args = {...}
-    for _, v in ipairs(args) do
-      table.insert(self, v)
-    end
-  end
-
-  function Stack:is_empty()
-    return #self == 0
-  end
-
-  function Stack:pop()
-    return table.remove(self)
-  end
-
-  function Stack:last()
-    return self[#self]
-  end
-
-  -- the selections that the user has made, used for .., includes the entire tree in order to recurse
-  local remember = Stack.new()
-  -- the selections that the user has made, only the display, does not include the entire tree
-  local selections = Stack.new()
-  local root
-
-  -- cleanup the state
-  local function cleanup()
-    root = nil
-    remember = Stack.new()
-    selections = Stack.new()
-  end
-
-  menu.open = function(tree, opts)
-    opts = opts or {}
-
-    opts.entry_maker = make_entry.gen_from_node(opts)
-
-    local node = tree
-
-    if root == nil then
-      root = node
-    end
-
-    pickers.new(opts, {
-      prompt_title = node.title,
-      finder = finders.new_table {
-        results = node.t,
-        entry_maker = opts.entry_maker
-      },
-      sorter = conf.generic_sorter(opts),
-      attach_mappings = function(prompt_bufnr)
-        actions._goto_file_selection:replace(function()
-          actions.close(prompt_bufnr)
-
-          local entry = actions.get_selected_entry()
-
-          if entry.is_leaf then
-
-            if entry.value == ".." then
-              -- first pop is the one you are currently in
-              remember:pop()
-              -- second pop is the last one
-              local last = remember:pop()
-
-              -- if there is no last one, just open the root
-              if last == nil then
-                menu.open(root)
-              else
-                menu.open(last)
-              end
-              api.nvim_input('i')
-              return
-            end
-
-            remember:push(entry.value)
-            selections:push(entry.value)
-
-            local callback = entry.callback or root.callback
-            callback(selections)
-
-            cleanup()
-          else
-            -- it is a node
-            remember:push(entry.value)
-            selections:push(entry.display) -- for tree only add display, not full tree
-
-            -- recurse
-            menu.open(entry.value, opts)
-            -- sometimes does not start insert for some reason
-            vim.api.nvim_input('i')
-          end
-        end)
-
-        return true
-      end,
-    }):find()
+function Stack:push(...)
+  local args = {...}
+  for _, v in ipairs(args) do
+    table.insert(self, v)
   end
 end
 
-menu.test = function(opts)
+function Stack:is_empty()
+  return #self == 0
+end
+
+function Stack:pop()
+  return table.remove(self)
+end
+
+function Stack:last()
+  return self[#self]
+end
+
+-- helper function to recurse with more arguments
+-- remember contains the actual tree that is remembered so we can use it with ..
+-- selections contains only the display so we can pass it into the callback
+local function go(tree, opts, root, remember, selections)
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_node(opts)
+
+  pickers.new(opts, {
+    prompt_title = tree.title or root.title,
+    finder = finders.new_table {
+      results = tree.t,
+      entry_maker = opts.entry_maker
+    },
+    sorter = conf.generic_sorter(opts),
+    attach_mappings = function(prompt_bufnr)
+      actions._goto_file_selection:replace(function()
+        actions.close(prompt_bufnr)
+
+        local entry = actions.get_selected_entry()
+
+        if entry.is_leaf then
+
+          -- .. means go back
+          if entry.value == ".." then
+            -- first pop is the one you are currently in
+            remember:pop()
+            -- the last one is the last tree selected, but do not pop off, we want it to be available for the next prompt
+            local last = remember:last()
+
+            -- pop current selection because we went back
+            selections:pop()
+
+            go(last, opts, root, remember, selections)
+            api.nvim_input('i')
+            return
+          end
+
+          remember:push(entry.value)
+          selections:push(entry.value)
+
+          local callback = entry.callback or root.callback
+          callback(selections)
+        else
+          -- it is a node
+          remember:push(entry.value)
+          selections:push(entry.display) -- for tree only add display, not full tree
+
+          -- recurse
+          go(entry.value, opts, root, remember, selections)
+
+          -- sometimes does not start insert for some reason
+          vim.api.nvim_input('i')
+        end
+      end)
+
+      return true
+    end,
+  }):find()
+end
+
+-- entry point for menu
+menu.open = function(root)
+  local selections = Stack.new()
+  local remember = Stack.new(root)
+  local opts = {}
+
+  go(root, opts, root, remember, selections)
+end
+
+menu.test = function()
   menu.open(Node.new_root {
     {
       "a leaf",
@@ -205,7 +194,7 @@ menu.test = function(opts)
       end
     end,
     title = "testing",
-  }, opts)
+  })
 end
 
 return menu
