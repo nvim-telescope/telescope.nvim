@@ -321,22 +321,55 @@ internal.vim_options = function(opts)
 end
 
 internal.help_tags = function(opts)
+  local all_tag_files = {}
+  local all_help_files = {}
+  for _, v in ipairs(vim.split(vim.fn.globpath(vim.o.runtimepath, 'doc/*', 1), '\n')) do
+    local split_path = vim.split(v, path.separator, true)
+    local filename = split_path[#split_path]
+    if filename == 'tags' then
+      table.insert(all_tag_files, v)
+    else
+      all_help_files[filename] = v
+    end
+  end
+
+  local delim = string.char(9)
   local tags = {}
-  for _, file in pairs(vim.fn.findfile('doc/tags', vim.o.runtimepath, -1)) do
-    local f = assert(io.open(file, "rb"))
-      for line in f:lines() do
-        table.insert(tags, line)
+  for _, file in ipairs(all_tag_files) do
+    local data = vim.split(path.read_file(file), '\n')
+    for _, line in ipairs(data) do
+      if line ~= '' then
+        local matches = {}
+
+        for match in (line..delim):gmatch("(.-)" .. delim) do
+          table.insert(matches, match)
+        end
+
+        if table.getn(matches) ~= 0 then
+          table.insert(tags, {
+            name = matches[1],
+            filename = all_help_files[matches[2]],
+            cmd = matches[3]
+          })
+        end
       end
-    f:close()
+    end
   end
 
   pickers.new(opts, {
     prompt_title = 'Help',
     finder = finders.new_table {
       results = tags,
-      entry_maker = make_entry.gen_from_taglist(opts),
+      entry_maker = function(entry)
+        return {
+          value = entry.name,
+          display = entry.name,
+          ordinal = entry.name,
+          filename = entry.filename,
+          cmd = entry.cmd
+        }
+      end,
     },
-    -- TODO: previewer for Vim help
     previewer = previewers.help.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
@@ -616,7 +649,7 @@ internal.highlights = function(opts)
       end)
       return true
     end,
-    previewer = previewers.display_content.new(opts),
+    previewer = previewers.highlights.new(opts),
   }):find()
 end
 

@@ -303,6 +303,7 @@ previewers.new_buffer_previewer = function(opts)
       vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
       vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
       vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
+      vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
 
       self.state.winid = status.preview_win
       self.state.bufname = nil
@@ -525,7 +526,7 @@ end, {})
 
 previewers.vim_buffer_cat = defaulter(function(_)
   return previewers.new_buffer_previewer {
-    get_buffer_by_name = function(self, entry)
+    get_buffer_by_name = function(_, entry)
       return from_entry.path(entry, true)
     end,
 
@@ -548,12 +549,12 @@ previewers.vim_buffer_vimgrep = defaulter(function(_)
     end,
 
     teardown = function(self)
-      if self.state and self.state.hl_id then
+      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
         vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, previewer_ns, 0, -1)
       end
     end,
 
-    get_buffer_by_name = function(self, entry)
+    get_buffer_by_name = function(_, entry)
       return from_entry.path(entry, true)
     end,
 
@@ -569,7 +570,7 @@ previewers.vim_buffer_vimgrep = defaulter(function(_)
           if self.state.last_set_bufnr then
             pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, previewer_ns, 0, -1)
           end
-          pcall(vim.api.nvim_buf_add_highlight, self.state.bufnr, previewer_ns, "Search", lnum - 1, 0, -1)
+          pcall(vim.api.nvim_buf_add_highlight, self.state.bufnr, previewer_ns, "TelescopePreviewLine", lnum - 1, 0, -1)
           pcall(vim.api.nvim_win_set_cursor, status.preview_win, {lnum, 0})
         end
 
@@ -590,7 +591,7 @@ previewers.ctags = defaulter(function(_)
       end
     end,
 
-    get_buffer_by_name = function(self, entry)
+    get_buffer_by_name = function(_, entry)
       return entry.filename
     end,
 
@@ -607,7 +608,7 @@ previewers.ctags = defaulter(function(_)
         vim.cmd "norm! gg"
         vim.fn.search(scode)
 
-        self.state.hl_id = vim.fn.matchadd('Search', scode)
+        self.state.hl_id = vim.fn.matchadd('TelescopePreviewLine', scode)
       end)
     end
   }
@@ -626,7 +627,7 @@ previewers.builtin = defaulter(function(_)
       end
     end,
 
-    get_buffer_by_name = function(self, entry)
+    get_buffer_by_name = function(_, entry)
       return entry.filename
     end,
 
@@ -646,7 +647,7 @@ previewers.builtin = defaulter(function(_)
         vim.cmd "norm! gg"
         vim.fn.search(text)
 
-        self.state.hl_id = vim.fn.matchadd('Search', text)
+        self.state.hl_id = vim.fn.matchadd('TelescopePreviewLine', text)
       end)
     end
   }
@@ -693,62 +694,24 @@ previewers.help = defaulter(function(_)
       end
     end,
 
+    get_buffer_by_name = function(_, entry)
+      return entry.filename
+    end,
+
     define_preview = function(self, entry, status)
       with_preview_window(status, nil, function()
-        local special_chars = ":~^.?/%[%]%*"
-        local delim = string.char(9)
+        local query = entry.cmd
+        query = query:sub(2)
+        query = [[\V]] .. query
 
-        local escaped = vim.fn.escape(entry.value, special_chars)
-        local tags = {}
-
-        local find_rtp_file = function(p, count)
-          return vim.fn.findfile(p, vim.o.runtimepath, count)
-        end
-
-        for _,file in pairs(find_rtp_file('doc/tags', -1)) do
-          local f = assert(io.open(file, "rb"))
-            for line in f:lines() do
-              local matches = {}
-
-              for match in (line..delim):gmatch("(.-)" .. delim) do
-                table.insert(matches, match)
-              end
-
-              table.insert(tags, {
-                name = matches[1],
-                filename = matches[2],
-                cmd = matches[3]
-              })
-            end
-          f:close()
-        end
-
-        local search_tags = function(pattern)
-          local results = {}
-          for _, tag in pairs(tags) do
-            if vim.fn.match(tag.name, pattern) ~= -1 then
-              table.insert(results, tag)
-            end
-          end
-          return results
-        end
-
-        local taglist = search_tags('^' .. escaped .. '$')
-        if taglist == {} then taglist = search_tags(escaped) end
-
-        local best_entry = taglist[1]
-        file_maker_sync(find_rtp_file('doc/' .. best_entry.filename), self.state.bufnr, self.state.bufname)
-        -- We do no longer need to set the filetype. file_maker_ can do this now
-
-        local search_query = best_entry.cmd
-        search_query = search_query:sub(2)
-        search_query = [[\V]] .. search_query
+        file_maker_sync(entry.filename, self.state.bufnr, self.state.bufname)
+        vim.cmd(':ownsyntax help')
 
         pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
         vim.cmd "norm! gg"
-        vim.fn.search(search_query, "W")
+        vim.fn.search(query, "W")
 
-        self.state.hl_id = vim.fn.matchadd('Search', search_query)
+        self.state.hl_id = vim.fn.matchadd('TelescopePreviewLine', query)
       end)
     end
   }
@@ -784,10 +747,13 @@ end)
 previewers.autocommands = defaulter(function(_)
   return previewers.new_buffer_previewer {
     teardown = function(self)
-      if self.state and self.state.hl_id then
-        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
-        self.state.hl_id = nil
+      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
+        pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, previewer_ns, 0, -1)
       end
+    end,
+
+    get_buffer_by_name = function(_, entry)
+      return entry.group
     end,
 
     define_preview = function(self, entry, status)
@@ -795,27 +761,95 @@ previewers.autocommands = defaulter(function(_)
         return x.group == entry.group
       end, status.picker.finder.results)
 
-      local display = {}
-      table.insert(display, string.format(" augroup: %s - [ %d entries ]", entry.group, #results))
-      -- TODO: calculate banner width/string in setup()
-      -- TODO: get column characters to be the same HL group as border
-      table.insert(display, string.rep("─", vim.fn.getwininfo(status.preview_win)[1].width))
-
-      local selected_row
-      for idx, item in ipairs(results) do
-        if item == entry then
-          selected_row = idx
-        end
-        table.insert(display,
-          string.format("  %-14s▏%-08s %s", item.event, item.ft_pattern, item.command)
-        )
+      if self.state.last_set_bufnr then
+        pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, previewer_ns, 0, -1)
       end
 
-      -- TODO: set filetype in setup()
-      vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "vim")
-      vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, display)
-      vim.api.nvim_buf_add_highlight(self.state.bufnr, 0, "TelescopeBorder", 1, 0, -1)
-      vim.api.nvim_buf_add_highlight(self.state.bufnr, 0, "TelescopeSelection", selected_row + 1, 0, -1)
+      local selected_row = 0
+      if self.state.bufname ~= entry.group then
+        local display = {}
+        table.insert(display, string.format(" augroup: %s - [ %d entries ]", entry.group, #results))
+        -- TODO: calculate banner width/string in setup()
+        -- TODO: get column characters to be the same HL group as border
+        table.insert(display, string.rep("─", vim.fn.getwininfo(status.preview_win)[1].width))
+
+        for idx, item in ipairs(results) do
+          if item == entry then
+            selected_row = idx
+          end
+          table.insert(display,
+            string.format("  %-14s▏%-08s %s", item.event, item.ft_pattern, item.command)
+          )
+        end
+
+        vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "vim")
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, display)
+        vim.api.nvim_buf_add_highlight(self.state.bufnr, 0, "TelescopeBorder", 1, 0, -1)
+      else
+        for idx, item in ipairs(results) do
+          if item == entry then
+            selected_row = idx
+            break
+          end
+        end
+      end
+
+      vim.api.nvim_buf_add_highlight(self.state.bufnr, previewer_ns, "TelescopePreviewLine", selected_row + 1, 0, -1)
+      vim.api.nvim_win_set_cursor(status.preview_win, {selected_row + 1, 0})
+
+      self.state.last_set_bufnr = self.state.bufnr
+    end,
+  }
+end, {})
+
+previewers.highlights = defaulter(function(_)
+  return previewers.new_buffer_previewer {
+    teardown = function(self)
+      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
+        vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, previewer_ns, 0, -1)
+      end
+    end,
+
+    get_buffer_by_name = function(_, entry)
+      return "highlights"
+    end,
+
+    define_preview = function(self, entry, status)
+      with_preview_window(status, nil, function()
+        if not self.state.bufname then
+          local output = vim.split(vim.fn.execute('highlight'), '\n')
+          local hl_groups = {}
+          for _, v in ipairs(output) do
+            if v ~= '' then
+              if v:sub(1, 1) == ' ' then
+                local part_of_old = v:match('%s+(.*)')
+                hl_groups[table.getn(hl_groups)] = hl_groups[table.getn(hl_groups)] .. part_of_old
+              else
+                table.insert(hl_groups, v)
+              end
+            end
+          end
+
+          vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, hl_groups)
+          for k, v in ipairs(hl_groups) do
+            local startPos = string.find(v, 'xxx', 1, true) - 1
+            local endPos = startPos + 3
+            local hlgroup = string.match(v, '([^ ]*)%s+.*')
+            pcall(vim.api.nvim_buf_add_highlight, self.state.bufnr, 0, hlgroup, k - 1, startPos, endPos)
+          end
+        end
+
+        pcall(vim.api.nvim_buf_clear_namespace, self.state.bufnr, previewer_ns, 0, -1)
+        vim.cmd "norm! gg"
+        vim.fn.search(entry.value .. ' ')
+        local lnum = vim.fn.line('.')
+        vim.api.nvim_buf_add_highlight(self.state.bufnr,
+          previewer_ns,
+          "TelescopePreviewLine",
+          lnum - 1,
+          0,
+          #entry.value)
+      end)
     end,
   }
 end, {})

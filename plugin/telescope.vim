@@ -1,4 +1,3 @@
-
 " Sets the highlight for selected items within the picker.
 highlight default link TelescopeSelection Visual
 highlight default link TelescopeSelectionCaret TelescopeSelection
@@ -21,13 +20,16 @@ highlight default link TelescopeMatching Special
 " Used for the prompt prefix
 highlight default link TelescopePromptPrefix Identifier
 
+" Used for highlighting the matched line inside Previewer. Works only for (vim_buffer_ previewer)
+highlight default link TelescopePreviewLine Search
+
 " This is like "<C-R>" in your terminal.
 "   To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)
 cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
       \ "lua require('telescope.builtin').command_history {
         \ default_text = [=[" . escape(getcmdline(), '"') . "]=]
         \ }"<CR><CR>
-        
+
 " Telescope builtin lists
 function! s:telescope_complete(...)
   return join(luaeval('vim.tbl_keys(require("telescope.builtin"))'), "\n")
@@ -54,5 +56,5 @@ function! s:load_command(builtin,...) abort
   call telescope[a:builtin](opts)
 endfunction
 
-" Telescope Commands with complete 
+" Telescope Commands with complete
 command! -nargs=+ -complete=custom,s:telescope_complete Telescope          call s:load_command(<f-args>)
