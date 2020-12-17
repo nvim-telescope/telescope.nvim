@@ -2,15 +2,9 @@ local api = vim.api
 local actions = require('telescope.actions')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
-local path = require('telescope.path')
 local pickers = require('telescope.pickers')
-local previewers = require('telescope.previewers')
-local sorters = require('telescope.sorters')
-local utils = require('telescope.utils')
 
 local conf = require('telescope.config').values
-
-local filter = vim.tbl_filter
 
 local menu = {}
 
@@ -194,38 +188,6 @@ menu.test = function(opts)
     end,
     title = "testing",
   }, opts)
-  -- menu.menu {
-  --   n = Node.new_root {
-  --     t = {
-  --       "a_leaf",
-  --       "another_leaf",
-  --       "blah",
-  --       ["1 level deep node"] = Node.new_root {
-  --         t = {
-  --           "leaf",
-  --           "another_leaf",
-  --           "inside_a_node",
-  --         }
-  --       },
-  --       ["2 level deep node"] = {
-  --         t = {
-  --           "leaf",
-  --           "another_leaf",
-  --           "inside_a_node",
-  --           node_inside_node = Node.new_root {
-  --             t = {
-  --               "final_leaf",
-  --             }
-  --           },
-  --         }
-  --       },
-  --     },
-  --   },
-  --   title = 'test menu',
-  --   callback = function(selections)
-  --     print("test callback selection:", selections[#selections])
-  --   end
-  -- }
 end
 
 return menu
