@@ -97,6 +97,10 @@ do
     return table.remove(self)
   end
 
+  function Stack:last()
+    return self[#self]
+  end
+
   -- the selections that the user has made, used for .., includes the entire tree in order to recurse
   local remember = Stack.new()
   -- the selections that the user has made, only the display, does not include the entire tree
