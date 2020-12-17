@@ -254,6 +254,8 @@ files.tags = function(opts)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_ctags(opts)
   local finder = finders.new_incremental(opts)
 
+  local remaining = #tagfiles
+
   for _, each in ipairs(tagfiles) do
     local tags_directory = vim.fn.fnamemodify(each, ":h")
     local resolve_filename = function(filename)
@@ -264,8 +266,8 @@ files.tags = function(opts)
       for _, line in ipairs(vim.split(data, '\n')) do
         finder:feed({ line = line, resolve_filename = resolve_filename })
       end
+      if remaining == 1 then finder:finish() else remaining = remaining - 1 end
     end)
-    finder:finish()
   end
 
   pickers.new(opts,{

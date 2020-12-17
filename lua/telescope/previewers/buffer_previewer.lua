@@ -260,7 +260,7 @@ previewers.ctags = defaulter(function(_)
     end,
 
     get_buffer_by_name = function(_, entry)
-      return entry.filename
+      return entry.resolve_filename(entry.filename)
     end,
 
     define_preview = function(self, entry, status)

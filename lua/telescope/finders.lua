@@ -32,7 +32,7 @@ function IncrementalFinder:new(opts)
         process_result(finder.entry_maker(result))
       end
       finder, _, process_result, process_complete = coroutine.yield()
-    until self.completed
+    until self.finished
 
     process_complete()
   end)
