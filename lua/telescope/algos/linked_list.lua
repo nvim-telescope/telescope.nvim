@@ -2,12 +2,27 @@
 local LinkedList = {}
 LinkedList.__index = LinkedList
 
-function LinkedList:new()
-  return setmetatable({ size = 0, head = false, tail = false }, self)
+function LinkedList:new(opts)
+  opts = opts or {}
+  local track_at = opts.track_at
+
+  return setmetatable({
+    size = 0,
+    head = false,
+    tail = false,
+
+    -- track_at: Track at can track a particular node
+    --              Use to keep a node tracked at a particular index
+    --              This greatly decreases looping for checking values at this location.
+    track_at = track_at,
+    _tracked_node = nil,
+    tracked = nil,
+  }, self)
 end
 
 function LinkedList:_increment()
   self.size = self.size + 1
+  return self.size
 end
 
 local create_node = function(item)
@@ -17,7 +32,8 @@ local create_node = function(item)
 end
 
 function LinkedList:append(item)
-  self:_increment()
+  local final_size = self:_increment()
+
   local node = create_node(item)
 
   if not self.head then
@@ -30,10 +46,17 @@ function LinkedList:append(item)
   end
 
   self.tail = node
+
+  if self.track_at then
+    if final_size == self.track_at then
+      self.tracked = item
+      self._tracked_node = node
+    end
+  end
 end
 
 function LinkedList:prepend(item)
-  self:_increment()
+  local final_size = self:_increment()
   local node = create_node(item)
 
   if not self.tail then
@@ -46,6 +69,18 @@ function LinkedList:prepend(item)
   end
 
   self.head = node
+
+  if self.track_at then
+    if final_size == self.track_at then
+      self._tracked_node = self.tail
+    elseif final_size > self.track_at then
+      self._tracked_node = self._tracked_node.prev
+    else
+        return
+    end
+
+    self.tracked = self._tracked_node.item
+  end
 end
 
 function LinkedList:place_after(node, item)
@@ -54,6 +89,10 @@ function LinkedList:place_after(node, item)
   assert(node.prev ~= node)
   assert(node.next ~= node)
   self:_increment()
+
+  if self.tail == node then
+    self.tail = new_node
+  end
 
   new_node.prev = node.prev
   new_node.next = node

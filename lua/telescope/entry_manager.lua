@@ -39,12 +39,10 @@ function EntryManager:new(max_results, set_entry, info)
   --        line = ...
   --        metadata ? ...
   --    }
-  local linked_states = {}
-
   set_entry = set_entry or function() end
 
   return setmetatable({
-    linked_states = LinkedList:new(),
+    linked_states = LinkedList:new { track_at = max_results },
     info = info,
     max_results = max_results,
     set_entry = set_entry,
@@ -56,13 +54,13 @@ function EntryManager:num_results()
   return self.linked_states.size
 end
 
-function EntryManager:get_entry(index)
+function EntryManager:get_container(index)
   local count = 0
   for val in self.linked_states:iter() do
     count = count + 1
 
     if count == index then
-      return val.entry
+      return val
     end
   end
 
@@ -70,20 +68,24 @@ function EntryManager:get_entry(index)
   return nil
 end
 
+function EntryManager:get_entry(index)
+  return self:get_container(index).entry
+end
+
 function EntryManager:get_ordinal(index)
   return self:get_entry(index).ordinal
 end
 
 function EntryManager:get_score(index)
-  return self:get_entry(index).score
+  return self:get_container(index).score
 end
 
 function EntryManager:find_entry(entry)
   local count = 0
-  for val in self.linked_states:iter() do
+  for container in self.linked_states:iter() do
     count = count + 1
 
-    if val.entry == entry then
+    if container.entry == entry then
       return count
     end
   end
@@ -102,87 +104,87 @@ end
 function EntryManager:add_entry(picker, score, entry)
   score = score or 0
 
-  local new_item = {
+  local max_res = self.max_results
+
+  local new_container = {
     score = score,
     entry = entry,
   }
 
   if score >= self.worst_acceptable_score then
-    self.linked_states:append(new_item)
-    return
+    return self:append(new_container)
   end
 
-  for index, item in self.linked_states:ipairs() do
+  for index, container in self.linked_states:ipairs() do
     self.info.looped = self.info.looped + 1
 
-    if item.score > score then
-      return self:insert(picker, index, new_item)
+    if container.score > score then
+      return self:insert(picker, index, new_container)
     end
 
     -- Don't add results that are too bad.
-    if not self:should_save_result(index) then
-      return
+    if index >= max_res then
+      self.worst_acceptable_score = math.min(self.worst_acceptable_score, score)
+      return self:append(new_container)
     end
   end
 
-  return self:insert(picker, self.linked_states.size + 1, {
-    score = score,
-    entry = entry,
-  })
+  if self.linked_states.size >= max_res then
+    self.worst_acceptable_score = math.min(self.worst_acceptable_score, score)
+  end
+
+  return self:insert(picker, self.linked_states.size + 1, new_container)
 end
 
-function EntryManager:insert(picker, index, entry)
-  assert(index)
-  assert(entry)
+function EntryManager:append(container)
+  -- assert(false)
+  self.linked_states:append(container)
+end
 
-  -- This is the append case.
-  -- Just add it at the end
-  if index > self.linked_states.size then
-    self.linked_states:append(entry)
+function EntryManager:insert(picker, index, container)
+  assert(index)
+  assert(container)
+
+  -- Update the worst result if possible.
+  if index >= self.max_results then
+    self.worst_acceptable_score = math.min(self.worst_acceptable_score, container.score)
+  end
+
+  -- Simple case: Prepend beginning of list
+  if index == 1 then
+    self.linked_states:prepend(container)
+    self.set_entry(picker, index, container.entry, container.score, true)
+    print("Inserting:", vim.inspect(container))
+
+  -- Simple case: Appending to end of list. No need to loop
+  elseif index > self.linked_states.size then
+    self.linked_states:append(container)
 
     if index <= self.max_results then
-      self.set_entry(picker, index, entry.entry, entry.score)
+      self.set_entry(picker, index, container.entry, container.score)
     end
 
     return
   end
 
-  -- TODO: Add `shift_entry` which just pushes things down one line
   for i, e, node in self.linked_states:ipairs() do
-    if i == index then
-      self.linked_states:place_after(node, entry)
-      self.set_entry(picker, index, entry.entry, entry.score, true)
-      return
-    elseif i > index then
-      assert(false, "Cannot get here")
+    self.info.looped = self.info.looped + 1
+
+    if i == index - 1 then
+      self.linked_states:place_after(node, container)
+      self.set_entry(picker, index, container.entry, container.score, true)
     end
 
-    if i > self.max_results then
-      print("Quit because of max results")
+    if e.score >= self.worst_acceptable_score then
+      error("Should not be able to reach this.")
+      return
+    end
+
+    if i >= self.max_results then
+      self.worst_acceptable_score = math.min(self.worst_acceptable_score, container.score)
       return
     end
   end
-
-  -- To insert something, we place at the next available index
-  -- (or specified index) and then shift all the corresponding
-  -- items one place.
-  -- local next_entry, last_score
-  -- repeat
-  --   self.info.inserted = self.info.inserted + 1
-  --   next_entry = self.linked_states[index]
-
-  --   self.set_entry(picker, index, entry.entry, entry.score)
-  --   self.linked_states[index] = entry
-
-  --   last_score = entry.score
-
-  --   index = index + 1
-  --   entry = next_entry
-  -- until not next_entry or not self:should_save_result(index)
-
-  -- if not self:should_save_result(index) then
-  --   self.worst_acceptable_score = last_score
-  -- end
 end
 
 

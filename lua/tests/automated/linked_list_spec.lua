@@ -90,4 +90,44 @@ describe('LinkedList', function()
 
     assert.are.same(expected, actual)
   end)
+
+  describe('track_at', function()
+    it('should update tracked when only appending', function()
+      local l = LinkedList:new { track_at = 2 }
+      l:append("first")
+      l:append("second")
+      l:append("third")
+
+      assert.are.same("second", l.tracked)
+    end)
+
+    it('should update tracked when first some prepend and then append', function()
+      local l = LinkedList:new { track_at = 2 }
+      l:prepend("first")
+      l:append("second")
+      l:append("third")
+
+      assert.are.same("second", l.tracked)
+    end)
+
+    it('should update when only prepending', function()
+      local l = LinkedList:new { track_at = 2 }
+      l:prepend("third")
+      l:prepend("second")
+      l:prepend("first")
+
+      assert.are.same("second", l.tracked)
+    end)
+
+    it('should update when lots of prepend and append', function()
+      local l = LinkedList:new { track_at = 2 }
+      l:prepend("third")
+      l:prepend("second")
+      l:prepend("first")
+      l:append("fourth")
+      l:prepend("zeroth")
+
+      assert.are.same("first", l.tracked)
+    end)
+  end)
 end)

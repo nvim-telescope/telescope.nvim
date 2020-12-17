@@ -828,7 +828,7 @@ function Picker:entry_adder(index, entry, score, insert)
   -- This is the two spaces to manage the '> ' stuff.
   -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
   -- until then, insert two spaces
-  local prefix = '  '
+  local prefix = '  ' .. string.format("%.06f", score)
   display = prefix .. display
 
   self:_increment("displayed")
