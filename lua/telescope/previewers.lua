@@ -6,6 +6,8 @@ local from_entry = require('telescope.from_entry')
 local utils = require('telescope.utils')
 local path = require('telescope.path')
 
+local pfiletype = require('plenary.filetype')
+
 local has_ts, _ = pcall(require, 'nvim-treesitter')
 local _, ts_highlight = pcall(require, 'nvim-treesitter.highlight')
 local _, ts_parsers = pcall(require, 'nvim-treesitter.parsers')
@@ -38,57 +40,8 @@ end
 
 local add_quotes = valuate_shell()
 
-local all_fts
-local ft_cache = {
-  Makefile = 'make', makefile = 'make', c = 'c', h = 'c', cpp = 'cpp', hpp = 'cpp',
-  css = 'css', ['CMakeLists.txt'] = 'cmake', Dockerfile = 'dockerfile', go = 'go',
-  js = 'javascript', lua = 'lua', py = 'python', vim = 'vim'
-}
-local determine_filetype = function(filepath)
-  if not all_fts then
-    _, all_fts = pcall(vim.fn.execute, 'autocmd filetypedetect')
-    if all_fts then
-      all_fts = vim.tbl_filter(function(line)
-        return line:find('setf') or line:find('set filetype') or line:find('setlocal filetype')
-      end, vim.fn.split(all_fts, '\n'))
-    else
-      all_fts = {}
-    end
-  end
-
-  local ext = vim.fn.fnamemodify(filepath, ':e')
-  if ext == '' then
-    local match = ft_cache[vim.fn.fnamemodify(filepath, ':t')]
-    if match then return match else return '' end
-  end
-
-  if ext == 'txt' then
-    local match = ft_cache[vim.fn.fnamemodify(filepath, ':t')]
-    if match then return match end
-    -- Take a look at end of file for vim:noet:tw=78:ts=8:ft=help:norl:
-    local tail = path.read_last_line(filepath)
-    if tail:sub(1, 5) == ' vim:' then
-      return tail:match('.*:ft=([^:]*):.*$')
-    end
-  end
-
-  if ft_cache[ext] then return ft_cache[ext] end
-  local matchings = vim.tbl_filter(function(val)
-    return val:match('.*%*%.' .. ext .. '%s*.*')
-  end, all_fts)
-
-  local match = ''
-  if table.getn(matchings) > 1 then
-    match = matchings[1]:match('.* setf%s([^%s|]*)[%s|]?.*')
-    if not match then match = matchings[1]:match('.* set filetype[%s=]([^%s|]*)[%s|]?.*') end
-    if not match then match = matchings[1]:match('.* setlocal filetype[%s=]([^%s|]*)[%s|]?.*') end
-    ft_cache[ext] = match
-  end
-  return match
-end
-
 local file_maker_async = function(filepath, bufnr, bufname, callback)
-  local ft = determine_filetype(filepath)
+  local ft = pfiletype.detect(filepath)
 
   if bufname ~= filepath then
     path.read_file_async(filepath, vim.schedule_wrap(function(data)
@@ -110,7 +63,7 @@ local file_maker_async = function(filepath, bufnr, bufname, callback)
 end
 
 local file_maker_sync = function(filepath, bufnr, bufname)
-  local ft = determine_filetype(filepath)
+  local ft = pfiletype.detect(filepath)
   if bufname ~= filepath then
     local data = path.read_file(filepath)
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(data, "\n"))
