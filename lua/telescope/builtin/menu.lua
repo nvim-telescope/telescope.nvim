@@ -83,26 +83,30 @@ do
   end
 
   function Stack:push(...)
-    local args = vim.tbl_flatten {...}
+    local args = {...}
     for _, v in ipairs(args) do
       table.insert(self, v)
     end
   end
 
   function Stack:is_empty()
-    return (#(self.t or {})) == 0
+    return #self == 0
   end
 
   function Stack:pop()
-    table.remove(self)
+    return table.remove(self)
   end
 
+  -- the selections that the user has made, used for .., includes the entire tree in order to recurse
+  local remember = Stack.new()
+  -- the selections that the user has made, only the display, does not include the entire tree
   local selections = Stack.new()
   local root
 
   -- cleanup the state
   local function cleanup()
     root = nil
+    remember = Stack.new()
     selections = Stack.new()
   end
 
@@ -133,26 +137,28 @@ do
           if entry.is_leaf then
 
             if entry.value == ".." then
-              local last = selections:pop()
-              if selections:is_empty() then
+              local last = remember:pop()
+              if remember:is_empty() then
                 menu.open(root)
               else
-                menu.open(root[last])
+                menu.open(last)
               end
               api.nvim_input('i')
               return
             end
 
+            remember:push(entry.value)
             selections:push(entry.value)
+
             local callback = node.callback or root.callback
             callback(selections)
 
             cleanup()
           else
             -- it is a node
-            selections:push(entry.value)
+            remember:push(entry.value)
+            selections:push(entry.display) -- for tree only add display, not full tree
             -- recurse
-            opts.prompt_title = entry.value.title or root.title
             menu.open(entry.value, opts)
             -- sometimes does not start insert for some reason
             vim.api.nvim_input('i')
@@ -170,11 +176,16 @@ menu.test = function(opts)
     {
       "a leaf",
       "another_leaf",
-      "blah",
       another_node = Node.new {
         {
           "inner",
           "inner2",
+          second_level_node = Node.new {
+            {
+              "inner inner leaf",
+              "another inner inner leaf",
+            }
+          }
         }
       }
     },
