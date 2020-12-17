@@ -8,7 +8,7 @@ local conf = require('telescope.config').values
 
 local menu = {}
 
-Node = {}
+local Node = {}
 Node.__index = Node
 
 Node.new = function(opts)
@@ -184,7 +184,9 @@ menu.test = function(opts)
       }
     },
     callback = function(selections)
-      dump(selections)
+      for selection in selections do
+        print(selection)
+      end
     end,
     title = "testing",
   }, opts)
