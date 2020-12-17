@@ -40,14 +40,20 @@ end
 Node.new_leaf = function(opts)
   local self = setmetatable({}, Node)
 
-  self.t = opts[1]
+  self.t = { leaf = opts[1] }
   self.callback = opts.callback
 
-  return self:preprocess()
+  return self
 end
 
 function Node:preprocess()
   local results = {}
+
+  if type(self.t) == "string" then
+    table.insert(results, { leaf = self.t })
+    self.t = results
+    return self
+  end
 
   for k, v in pairs(self.t) do
     if type(k) == "number" then -- leaf
@@ -131,8 +137,13 @@ do
           if entry.is_leaf then
 
             if entry.value == ".." then
+              -- first pop is the one you are currently in
+              remember:pop()
+              -- second pop is the last one
               local last = remember:pop()
-              if remember:is_empty() then
+
+              -- if there is no last one, just open the root
+              if last == nil then
                 menu.open(root)
               else
                 menu.open(last)
@@ -144,7 +155,7 @@ do
             remember:push(entry.value)
             selections:push(entry.value)
 
-            local callback = node.callback or root.callback
+            local callback = entry.callback or root.callback
             callback(selections)
 
             cleanup()
@@ -152,6 +163,7 @@ do
             -- it is a node
             remember:push(entry.value)
             selections:push(entry.display) -- for tree only add display, not full tree
+
             -- recurse
             menu.open(entry.value, opts)
             -- sometimes does not start insert for some reason
@@ -176,7 +188,7 @@ menu.test = function(opts)
           "inner2",
           second_level_node = Node.new {
             {
-              "inner inner leaf",
+              -- Node.new_leaf {"inner inner leaf", callback = function() print('this is a specific callback') end},
               "another inner inner leaf",
             }
           }
@@ -184,7 +196,7 @@ menu.test = function(opts)
       }
     },
     callback = function(selections)
-      for selection in selections do
+      for _, selection in ipairs(selections) do
         print(selection)
       end
     end,
