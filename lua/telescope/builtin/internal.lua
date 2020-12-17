@@ -45,6 +45,35 @@ internal.builtin = function(opts)
   }):find()
 end
 
+Node = {}
+Node.__index = Node
+
+Node.new = function(opts)
+  local self = setmetatable({}, Node)
+
+  self.t = opts.t
+  self.callback = opts.callback
+  self.title = opts.title or 'Menu'
+
+  table.insert(self.t, "..")
+
+  return self
+end
+
+Node.new_root = function(opts)
+  local self = setmetatable({}, Node)
+
+  self.t = opts.t
+  if opts.callback == nil then
+    error "Root node must have default callback"
+  else
+    self.callback = opts.callback
+  end
+  self.title = opts.title or 'Menu'
+
+  return self
+end
+
 do
   local Stack = {}
   Stack.__index = Stack
@@ -79,6 +108,10 @@ do
   local selections = Stack.new()
 
   internal.menu = function(opts)
+    if getmetatable(opts[1]) == internal.Node then
+      error "First value must be root"
+    end
+
     if opts.callback == nil then
       vim.cmd [[echoerr 'There is no callback']]
       return
@@ -143,31 +176,6 @@ internal.test_menu = function(opts)
       print("test callback selection:", selections[#selections])
     end
   }
-end
-
-Node = {}
-Node.__index = Node
-
-Node.new = function(opts)
-  local self = setmetatable({}, Node)
-
-  self.t = opts.t
-  self.callback = opts.callback
-  self.title = opts.title
-
-  table.insert(self.t, "..")
-
-  return self
-end
-
-Root = {}
-Root.__index = Root
-
-Root.new = function(opts)
-  local self = setmetatable({}, Node)
-  self.t = opts.t
-  self.callback = opts.callback
-  self.title = opts.title
 end
 
 internal.planets = function(opts)
