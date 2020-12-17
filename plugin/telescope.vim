@@ -21,7 +21,8 @@ highlight default link TelescopeMatching Special
 highlight default link TelescopePromptPrefix Identifier
 
 " Used for highlighting the matched line inside Previewer. Works only for (vim_buffer_ previewer)
-highlight default link TelescopePreviewLine Search
+highlight default link TelescopePreviewLine Visual
+highlight default link TelescopePreviewMatch Search
 
 " This is like "<C-R>" in your terminal.
 "   To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)
