@@ -46,6 +46,38 @@ internal.builtin = function(opts)
 end
 
 do
+  local Stack = {}
+  Stack.__index = Stack
+
+  function Stack.new(init)
+    init = init or {}
+    local self = setmetatable(init, Stack)
+    return self
+  end
+
+  function Stack:push(...)
+    local args = vim.tbl_flatten {...}
+    for _, v in ipairs(args) do
+      table.insert(self, v)
+    end
+  end
+
+  function Stack:not_empty()
+    return #self.t > 0
+  end
+
+  function Stack:pop()
+    table.remove(self)
+  end
+
+  function Stack:last()
+    if self:not_empty() then
+      return self.t[#self.t]
+    end
+  end
+
+  local selections = Stack.new()
+
   internal.menu = function(opts)
     if opts.callback == nil then
       vim.cmd [[echoerr 'There is no callback']]
@@ -60,22 +92,23 @@ do
       sorter = conf.generic_sorter(opts),
       attach_mappings = function(prompt_bufnr)
         actions._goto_file_selection:replace(function()
+          actions.close(prompt_bufnr)
           local entry = actions.get_selected_entry()
           local value = entry.value
           local key = entry.key
           if value == nil then
             -- it is a leaf
-            opts.callback(key)
-            actions.close(prompt_bufnr)
+            selections:push(key)
+            opts.callback(selections)
           elseif type(value) == "table" then
             -- it is a node
-            actions.close(prompt_bufnr)
+            selections:push(key)
             -- recurse
-            internal.menu{t = value, callback = opts.callback}
+            internal.menu {t = value, callback = opts.callback}
             -- sometimes does not start insert for some reason
             vim.api.nvim_input('i')
           else
-            vim.cmd [[echoerr 'value must be leaf or table']]
+            error "value must be leaf or table"
           end
         end)
 
@@ -106,10 +139,35 @@ internal.test_menu = function(opts)
       },
     },
     title = 'test menu',
-    callback = function(selection)
-      print("test callback selection:", selection)
+    callback = function(selections)
+      print("test callback selection:", selections[#selections])
     end
   }
+end
+
+Node = {}
+Node.__index = Node
+
+Node.new = function(opts)
+  local self = setmetatable({}, Node)
+
+  self.t = opts.t
+  self.callback = opts.callback
+  self.title = opts.title
+
+  table.insert(self.t, "..")
+
+  return self
+end
+
+Root = {}
+Root.__index = Root
+
+Root.new = function(opts)
+  local self = setmetatable({}, Node)
+  self.t = opts.t
+  self.callback = opts.callback
+  self.title = opts.title
 end
 
 internal.planets = function(opts)
