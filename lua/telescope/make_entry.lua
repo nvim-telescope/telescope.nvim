@@ -764,9 +764,9 @@ function make_entry.gen_from_autocommands(_)
 
   local make_display = function(entry)
     return displayer {
-      entry.event,
-      entry.group,
-      entry.ft_pattern,
+      {entry.event, "vimAutoEvent"},
+      {entry.group , "vimAugroup"},
+      {entry.ft_pattern, "vimAutoCmdSfxList"},
       entry.command
     }
   end
