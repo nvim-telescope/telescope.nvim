@@ -238,14 +238,14 @@ function make_entry.gen_from_quickfix(opts)
   opts = opts or {}
   opts.tail_path = get_default(opts.tail_path, true)
 
-    local displayer = entry_display.create {
+  local displayer = entry_display.create {
     separator = "▏",
     items = {
       { width = 8 },
       { width = 50 },
-      { remaining = true },
-    },
-  }
+      { remaining = true }
+      }
+    }
 
   local make_display = function(entry)
     local filename
