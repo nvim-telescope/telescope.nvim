@@ -548,17 +548,21 @@ end
 
 function make_entry.gen_from_registers(_)
   local displayer = entry_display.create {
-    separator = ":",
+    separator = "",
     items = {
-      { width = 4 },
+      { width = 1 },
+      { width = 1 },
+      { width = 2 },
       { remaining = true },
     },
   }
 
   local make_display = function(entry)
     return displayer {
-      string.format("[%s]", entry.value),
-      entry.content
+      {"[", "TelescopeBorder"},
+      {entry.value, "Number"},
+      {"]", "TelescopeBorder"},
+      entry.content,
     }
   end
 
