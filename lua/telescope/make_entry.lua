@@ -241,7 +241,7 @@ function make_entry.gen_from_quickfix(opts)
     local displayer = entry_display.create {
     separator = "▏",
     items = {
-      { width = 6 },
+      { width = 8 },
       { width = 50 },
       { remaining = true },
     },
@@ -258,8 +258,10 @@ function make_entry.gen_from_quickfix(opts)
       end
     end
 
+    local line_info = {table.concat({entry.lnum, entry.col}, ":"), "LineNr"}
+
     return displayer {
-      entry.lnum .. ":" .. entry.col,
+      line_info,
       entry.text:gsub(".* | ", ""),
       filename,
     }
@@ -282,6 +284,80 @@ function make_entry.gen_from_quickfix(opts)
       lnum = entry.lnum,
       col = entry.col,
       text = entry.text,
+      start = entry.start,
+      finish = entry.finish,
+    }
+  end
+end
+
+function make_entry.gen_from_symbols(opts)
+  opts = opts or {}
+  opts.tail_path = get_default(opts.tail_path, true)
+
+    local displayer = entry_display.create {
+    separator = "",
+    items = {
+      { width = 6 },
+      { width = 40 },
+      { width = 1 },
+      { remaining = true },
+      { width = 1 },
+    },
+  }
+
+  local make_display = function(entry)
+    local filename
+    if not opts.hide_filename then
+      filename = entry.filename
+      if opts.tail_path then
+        filename = utils.path_tail(filename)
+      elseif opts.shorten_path then
+        filename = utils.path_shorten(filename)
+      end
+    end
+
+    local default_type_highlight = {
+      ["Class"]    = "Function",
+      ["Constant"] = "Constant",
+      ["Field"]    = "Function",
+      ["Function"] = "Function",
+      ["Property"] = "Operator",
+      ["Struct"]   = "Struct",
+      ["Variable"] = "SpecialChar",
+    }
+
+    local type_highlight = opts.symbol_highlights or default_type_highlight
+
+    return displayer {
+      {entry.lnum .. ":" .. entry.col, "LineNr"},
+      entry.symbol_name,
+      {"[", "TelescopeBorder"},
+      {entry.symbol_type, type_highlight[entry.symbol_type], type_highlight[entry.symbol_type]},
+      {"]", "TelescopeBorder"},
+      filename,
+    }
+  end
+
+  return function(entry)
+    local filename = entry.filename or vim.api.nvim_buf_get_name(entry.bufnr)
+    local symbol_msg = entry.text:gsub(".* | ", "")
+    local symbol_type, symbol_name = symbol_msg:match("%[(.+)%]%s+(.*)")
+
+    return {
+      valid = true,
+
+      value = entry,
+      ordinal = (
+        not opts.ignore_filename and filename
+        or ''
+        ) .. ' ' .. symbol_name .. ' ' .. symbol_type,
+      display = make_display,
+
+      filename = filename,
+      lnum = entry.lnum,
+      col = entry.col,
+      symbol_name = symbol_name,
+      symbol_type = symbol_type,
       start = entry.start,
       finish = entry.finish,
     }
@@ -311,10 +387,10 @@ function make_entry.gen_from_buffer(opts)
     end
 
     return displayer {
-      entry.bufnr,
-      entry.indicator,
-      display_bufname .. ":" .. entry.lnum,
-    }
+      {entry.bufnr, "Number"},
+      {entry.indicator, "Comment"},
+      display_bufname .. ":" .. entry.lnum
+      }
   end
 
   return function(entry)
@@ -414,13 +490,29 @@ function make_entry.gen_from_packages(opts)
 end
 
 function make_entry.gen_from_apropos()
+  local displayer = entry_display.create {
+    separator = "",
+    items = {
+      { width = 30 },
+      { remaining = true },
+    },
+  }
+
+  local make_display = function(entry)
+    return displayer {
+      entry.value,
+      entry.description
+    }
+  end
+
   return function(line)
     local cmd, _, desc = line:match("^(.*)%s+%((.*)%)%s+%-%s(.*)$")
 
     return {
       value = cmd,
+      description = desc,
       ordinal = cmd,
-      display = string.format("%-30s : %s", cmd, desc)
+      display = make_display,
     }
   end
 end
@@ -446,17 +538,21 @@ end
 
 function make_entry.gen_from_registers(_)
   local displayer = entry_display.create {
-    separator = ":",
+    separator = "",
     items = {
-      { width = 4 },
+      { width = 1 },
+      { width = 1 },
+      { width = 2 },
       { remaining = true },
     },
   }
 
   local make_display = function(entry)
     return displayer {
-      string.format("[%s]", entry.value),
-      entry.content
+      {"[", "TelescopeBorder"},
+      {entry.value, "Number"},
+      {"]", "TelescopeBorder"},
+      entry.content,
     }
   end
 
