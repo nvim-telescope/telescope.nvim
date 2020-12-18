@@ -68,42 +68,9 @@ function make_entry.gen_from_node(_)
       value = value,
       display = display,
       ordinal = display,
-      is_leaf = is_leaf
+      is_leaf = is_leaf,
+      callback = node.callback,
     }
-  end
-end
-
-do
-  local lookup_keys = {
-    ordinal = 1,
-    value = 2,
-    display = 1,
-    key = 1,
-  }
-
-  local mt_tree_entry = {
-    __index = function(t, k)
-      return rawget(t, rawget(lookup_keys, k))
-    end
-  }
-
-  function make_entry.gen_from_tree()
-    return function(key, value)
-      if type(key) == "number" then
-        -- it is a leaf
-        return setmetatable({
-          value,
-          -- this means it is leaf
-          nil,
-        }, mt_tree_entry)
-      else
-        -- it is a node
-        return setmetatable({
-          key,
-          value,
-        }, mt_tree_entry)
-      end
-    end
   end
 end
 

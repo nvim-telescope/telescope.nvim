@@ -37,10 +37,13 @@ Node.new_root = function(opts)
   return self:preprocess()
 end
 
-Node.new_leaf = function(opts)
-  local self = setmetatable({}, Node)
+local Leaf = {}
+Leaf.__index = Leaf
 
-  self.t = { leaf = opts[1] }
+function Leaf.new(opts)
+  local self = setmetatable({}, Leaf)
+
+  self.t = opts[1]
   self.callback = opts.callback
 
   return self
@@ -49,15 +52,19 @@ end
 function Node:preprocess()
   local results = {}
 
-  if type(self.t) == "string" then
-    table.insert(results, { leaf = self.t })
-    self.t = results
-    return self
-  end
-
   for k, v in pairs(self.t) do
     if type(k) == "number" then -- leaf
-      table.insert(results, { leaf = v })
+
+      if type(v) == "string" then
+        -- its a leaf without a specific callback, just a regular string
+        table.insert(results, { leaf = v })
+      elseif type(v) == "table" then
+        -- its a leaf with a specific callback and other options, a Leaf class
+        table.insert(results, { leaf = v.t, callback = v.callback })
+      else
+        error "BUG: should not get here"
+      end
+
     elseif type(k) == "string" then
       table.insert(results, { branch_name = k, branches = v })
     else
@@ -102,10 +109,16 @@ function Stack:last()
   return self[#self]
 end
 
+function Stack:first()
+  return self[1]
+end
+
 -- helper function to recurse with more arguments
 -- remember contains the actual tree that is remembered so we can use it with ..
 -- selections contains only the display so we can pass it into the callback
-local function go(tree, opts, root, remember, selections)
+local function go(tree, opts, remember, selections)
+  local root = remember:first()
+
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_node(opts)
 
   pickers.new(opts, {
@@ -121,19 +134,24 @@ local function go(tree, opts, root, remember, selections)
 
         local entry = actions.get_selected_entry()
 
+        if entry == nil then
+          error "No entry selected"
+        end
+
         if entry.is_leaf then
 
           -- .. means go back
           if entry.value == ".." then
             -- first pop is the one you are currently in
             remember:pop()
-            -- the last one is the last tree selected, but do not pop off, we want it to be available for the next prompt
+            -- the last one is the last tree selected, but do not pop off,
+            -- we want it to be available for the next prompt
             local last = remember:last()
 
             -- pop current selection because we went back
             selections:pop()
 
-            go(last, opts, root, remember, selections)
+            go(last, opts, remember, selections)
             api.nvim_input('i')
             return
           end
@@ -149,7 +167,7 @@ local function go(tree, opts, root, remember, selections)
           selections:push(entry.display) -- for tree only add display, not full tree
 
           -- recurse
-          go(entry.value, opts, root, remember, selections)
+          go(entry.value, opts, remember, selections)
 
           -- sometimes does not start insert for some reason
           vim.api.nvim_input('i')
@@ -167,10 +185,11 @@ menu.open = function(root)
   local remember = Stack.new(root)
   local opts = {}
 
-  go(root, opts, root, remember, selections)
+  go(root, opts, remember, selections)
 end
 
 menu.test = function()
+  -- all options for default will propagate if they are not specified for inner nodes
   menu.open(Node.new_root {
     {
       "top level leaf",
@@ -181,19 +200,27 @@ menu.test = function()
           "another second level leaf",
           ["second level node"] = Node.new {
             {
-              -- Node.new_leaf {"inner inner leaf", callback = function() print('this is a specific callback') end},
+              Leaf.new {
+                "another third level leaf with specific callback",
+                -- this callback will override the default one
+                callback = function() print('this is a specific callback') end
+              },
               "third level leaf",
-            }
+            },
+            title = 'this title overrides the defualt one'
           }
         }
       }
     },
+    -- default callback if not specified for leaf
+    -- passed in a stack of all the selections that the user has made
     callback = function(selections)
       for _, selection in ipairs(selections) do
         print(selection)
       end
     end,
-    title = "testing",
+    -- this title will be default if title for node is not specified
+    title = "testing menu",
   })
 end
 
