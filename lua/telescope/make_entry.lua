@@ -500,13 +500,29 @@ function make_entry.gen_from_packages(opts)
 end
 
 function make_entry.gen_from_apropos()
+  local displayer = entry_display.create {
+    separator = "",
+    items = {
+      { width = 30 },
+      { remaining = true },
+    },
+  }
+
+  local make_display = function(entry)
+    return displayer {
+      entry.value,
+      entry.description
+    }
+  end
+
   return function(line)
     local cmd, _, desc = line:match("^(.*)%s+%((.*)%)%s+%-%s(.*)$")
 
     return {
       value = cmd,
+      description = desc,
       ordinal = cmd,
-      display = string.format("%-30s : %s", cmd, desc)
+      display = make_display,
     }
   end
 end
