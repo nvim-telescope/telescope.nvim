@@ -8,51 +8,11 @@ local conf = require('telescope.config').values
 
 local menu = {}
 
-local Node = {}
-Node.__index = Node
-
-Node.new = function(opts)
-  local self = setmetatable({}, Node)
-
-  self.t = opts[1]
-  self.callback = opts.callback
-  self.title = opts.title
-
-  table.insert(self.t, "..")
-
-  return self:preprocess()
-end
-
-Node.new_root = function(opts)
-  local self = setmetatable({}, Node)
-
-  self.t = opts[1]
-  if opts.callback == nil then
-    error "Root node must have default callback"
-  else
-    self.callback = opts.callback
-  end
-  self.title = opts.title or 'Menu'
-
-  return self:preprocess()
-end
-
-local Leaf = {}
-Leaf.__index = Leaf
-
-function Leaf.new(opts)
-  local self = setmetatable({}, Leaf)
-
-  self.t = opts[1]
-  self.callback = opts.callback
-
-  return self
-end
-
-function Node:preprocess()
+-- takes node
+local function preprocess(node)
   local results = {}
 
-  for k, v in pairs(self.t) do
+  for k, v in pairs(node.t) do
     if type(k) == "number" then -- leaf
 
       if type(v) == "string" then
@@ -72,12 +32,43 @@ function Node:preprocess()
     end
   end
 
-  self.t = results
+  node.t = results
 
-  return self
+  return node
 end
 
-menu.Node = Node
+function menu.node(opts)
+  local node = {}
+  node.t = opts[1]
+  table.insert(node.t, "..") -- add go back
+  node.callback = opts.callback
+  node.title = opts.title
+
+  return preprocess(node)
+end
+
+function menu.root(opts)
+  local root = {}
+
+  root.t = opts[1]
+  if opts.callback == nil then
+    error "Root node must have default callback"
+  else
+    root.callback = opts.callback
+  end
+  root.title = opts.title or 'Menu'
+
+  return preprocess(root)
+end
+
+function menu.leaf(opts)
+  local leaf = {}
+
+  leaf.t = opts[1]
+  leaf.callback = opts.callback
+
+  return leaf
+end
 
 local Stack = {}
 Stack.__index = Stack
@@ -191,17 +182,17 @@ end
 
 menu.test = function()
   -- all options for default will propagate if they are not specified for inner nodes
-  menu.open(Node.new_root {
+  menu.open(menu.root {
     {
       "top level leaf",
       "another top level leaf",
-      ["a node"] = Node.new {
+      ["a node"] = menu.node {
         {
           "second level leaf",
           "another second level leaf",
-          ["second level node"] = Node.new {
+          ["second level node"] = menu.node {
             {
-              Leaf.new {
+              menu.leaf {
                 "another third level leaf with specific callback",
                 -- this callback will override the default one
                 callback = function() print('this is a specific callback') end
