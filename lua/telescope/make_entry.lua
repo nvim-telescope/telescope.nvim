@@ -565,14 +565,10 @@ function make_entry.gen_from_builtin(opts)
       valid = true,
 
       value = entry,
-      ordinal = (
-        not opts.ignore_filename and filename
-        or ''
-        ) .. ' ' .. entry.text,
-      display = make_display,
-
-      filename = filename,
       text = entry.text,
+      display = make_display,
+      ordinal = entry.text,
+      filename = filename,
     }
   end
 end
