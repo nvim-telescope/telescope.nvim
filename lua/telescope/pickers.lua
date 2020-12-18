@@ -221,14 +221,17 @@ function Picker:is_done()
 end
 
 function Picker:clear_extra_rows(results_bufnr)
-  if self:is_done() then return end
+  if self:is_done() then
+    log.trace("Not clearing due to being already complete")
+    return
+  end
 
   if not vim.api.nvim_buf_is_valid(results_bufnr) then
     log.debug("Invalid results_bufnr for clearing:", results_bufnr)
     return
   end
 
-  local worst_line
+  local worst_line, ok, msg
   if self.sorting_strategy == 'ascending' then
     local num_results = self.manager:num_results()
     worst_line = self.max_results - num_results
@@ -237,7 +240,7 @@ function Picker:clear_extra_rows(results_bufnr)
       return
     end
 
-    pcall(vim.api.nvim_buf_set_lines, results_bufnr, num_results, self.max_results, false, {})
+    ok, msg = pcall(vim.api.nvim_buf_set_lines, results_bufnr, num_results, -1, false, {})
   else
     worst_line = self:get_row(self.manager:num_results())
     if worst_line <= 0 then
@@ -245,10 +248,14 @@ function Picker:clear_extra_rows(results_bufnr)
     end
 
     local empty_lines = utils.repeated_table(worst_line, "")
-    pcall(vim.api.nvim_buf_set_lines, results_bufnr, 0, worst_line, false, empty_lines)
+    ok, msg = pcall(vim.api.nvim_buf_set_lines, results_bufnr, 0, worst_line, false, empty_lines)
   end
 
-  log.trace("Clearing:", worst_line)
+  if not ok then
+    log.debug(msg)
+  end
+
+  log.debug("Clearing:", worst_line)
 end
 
 function Picker:highlight_displayed_rows(results_bufnr, prompt)
@@ -416,13 +423,18 @@ function Picker:find()
 
   local debounced_status = debounce.throttle_leading(update_status, 50)
 
+  self.request_number = 0
   local on_lines = function(_, _, _, first_line, last_line)
+    self.request_number = self.request_number + 1
     self:_reset_track()
 
     if not vim.api.nvim_buf_is_valid(prompt_bufnr) then
       log.debug("ON_LINES: Invalid prompt_bufnr", prompt_bufnr)
       return
     end
+
+    if not first_line then first_line = 0 end
+    if not last_line then last_line = 1 end
 
     if first_line > 0 or last_line > 1 then
       log.debug("ON_LINES: Bad range", first_line, last_line)
@@ -435,8 +447,7 @@ function Picker:find()
     end
 
     -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
-
-    self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats)
+    self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats, self.request_number)
 
     local process_result = function(entry)
       if self:is_done() then return end
@@ -828,16 +839,22 @@ function Picker:entry_adder(index, entry, score, insert)
   -- This is the two spaces to manage the '> ' stuff.
   -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
   -- until then, insert two spaces
-  local prefix = '  ' .. string.format("%.03f", score)
+  local prefix = '  ' .. string.format("%.03f", score) .. " "
   display = prefix .. display
 
   self:_increment("displayed")
 
   -- TODO: Don't need to schedule this if we schedule the adder.
   local offset = insert and 0 or 1
+  local scheduled_request = self.request_number
   vim.schedule(function()
     if not vim.api.nvim_buf_is_valid(self.results_bufnr) then
       log.debug("ON_ENTRY: Invalid buffer")
+      return
+    end
+
+    if self.request_number ~= scheduled_request then
+      log.info("Request number:", self.request_number, " // ", scheduled_request)
       return
     end
 
@@ -890,7 +907,7 @@ function Picker:_track(key, func, ...)
 end
 
 function Picker:_increment(key)
-  self.stats[key] = self.stats[key] + 1
+  self.stats[key] = (self.stats[key] or 0) + 1
 end
 
 

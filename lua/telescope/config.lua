@@ -53,7 +53,7 @@ function config.set_defaults(defaults)
   set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
 
   set("get_status_text", function(self)
-    return string.format("%s / %s", self.stats.processed - self.stats.filtered, self.stats.processed)
+    return string.format("%s / %s", (self.stats.processed or 0) - (self.stats.filtered or 0), self.stats.processed)
   end)
 
   -- Builtin configuration
