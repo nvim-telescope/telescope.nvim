@@ -173,16 +173,16 @@ end
 menu.test = function()
   menu.open(Node.new_root {
     {
-      "a leaf",
-      "another_leaf",
-      another_node = Node.new {
+      "top level leaf",
+      "another top level leaf",
+      ["a node"] = Node.new {
         {
-          "inner",
-          "inner2",
-          second_level_node = Node.new {
+          "second level leaf",
+          "another second level leaf",
+          ["second level node"] = Node.new {
             {
               -- Node.new_leaf {"inner inner leaf", callback = function() print('this is a specific callback') end},
-              "another inner inner leaf",
+              "third level leaf",
             }
           }
         }
