@@ -387,9 +387,9 @@ function make_entry.gen_from_buffer(opts)
     end
 
     return displayer {
-        {entry.bufnr, "Number"},
-        {entry.indicator, "Comment"},
-        display_bufname .. ":" .. entry.lnum,
+      {entry.bufnr, "Number"},
+      {entry.indicator, "Comment"},
+      display_bufname .. ":" .. entry.lnum
       }
   end
 
