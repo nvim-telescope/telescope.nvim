@@ -152,6 +152,7 @@ local function go(tree, opts, remember, selections)
             selections:pop()
 
             go(last, opts, remember, selections)
+
             api.nvim_input('i')
             return
           end
