@@ -1,6 +1,7 @@
 local entry_display = {}
 
 local function truncate(str, len)
+  str = tostring(str) -- We need to make sure its an actually a string and not a number
   -- TODO: This doesn't handle multi byte chars...
   if vim.fn.strdisplaywidth(str) > len then
     str = str:sub(1, len - 1)
