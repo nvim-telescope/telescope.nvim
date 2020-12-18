@@ -70,45 +70,11 @@ function menu.leaf(opts)
   return leaf
 end
 
-local Stack = {}
-Stack.__index = Stack
-
-function Stack.new(init)
-  local self = setmetatable({}, Stack)
-  if init ~= nil then
-    self:push(init)
-  end
-  return self
-end
-
-function Stack:push(...)
-  local args = {...}
-  for _, v in ipairs(args) do
-    table.insert(self, v)
-  end
-end
-
-function Stack:is_empty()
-  return #self == 0
-end
-
-function Stack:pop()
-  return table.remove(self)
-end
-
-function Stack:last()
-  return self[#self]
-end
-
-function Stack:first()
-  return self[1]
-end
-
 -- helper function to recurse with more arguments
 -- remember contains the actual tree that is remembered so we can use it with ..
 -- selections contains only the display so we can pass it into the callback
 local function go(tree, opts, remember, selections)
-  local root = remember:first()
+  local root = remember[1]
 
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_node(opts)
 
@@ -134,13 +100,13 @@ local function go(tree, opts, remember, selections)
           -- .. means go back
           if entry.value == ".." then
             -- first pop is the one you are currently in
-            remember:pop()
+            table.remove(remember)
             -- the last one is the last tree selected, but do not pop off,
             -- we want it to be available for the next prompt
-            local last = remember:last()
+            local last = remember[#remember]
 
             -- pop current selection because we went back
-            selections:pop()
+            table.remove(selections)
 
             go(last, opts, remember, selections)
 
@@ -148,15 +114,15 @@ local function go(tree, opts, remember, selections)
             return
           end
 
-          remember:push(entry.value)
-          selections:push(entry.value)
+          table.insert(remember, entry.value)
+          table.insert(selections, entry.value)
 
           local callback = entry.callback or root.callback
           callback(selections)
         else
           -- it is a node
-          remember:push(entry.value)
-          selections:push(entry.display) -- for tree only add display, not full tree
+          table.insert(remember, entry.value)
+          table.insert(selections, entry.display)
 
           -- recurse
           go(entry.value, opts, remember, selections)
@@ -173,8 +139,11 @@ end
 
 -- entry point for menu
 menu.open = function(root)
-  local selections = Stack.new()
-  local remember = Stack.new(root)
+  local selections = {}
+
+  local remember = {}
+  table.insert(remember, root)
+
   local opts = {}
 
   go(root, opts, remember, selections)
