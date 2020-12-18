@@ -396,7 +396,10 @@ function Picker:find()
       return
     end
 
-    local padding = string.rep(" ", vim.api.nvim_win_get_width(prompt_win) - #current_prompt - #text - 3)
+    local expected_prompt_len = #self.prompt_prefix + 1
+    local prompt_len = #current_prompt < expected_prompt_len and expected_prompt_len or #current_prompt
+
+    local padding = string.rep(" ", vim.api.nvim_win_get_width(prompt_win) - prompt_len - #text - 3)
     vim.api.nvim_buf_clear_namespace(prompt_bufnr, ns_telescope_prompt, 0, 1)
     vim.api.nvim_buf_set_virtual_text(prompt_bufnr, ns_telescope_prompt, 0, { {padding .. text, "NonText"} }, {})
 
