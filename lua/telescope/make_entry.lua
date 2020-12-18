@@ -295,7 +295,6 @@ function make_entry.gen_from_symbols(opts)
   opts.tail_path = get_default(opts.tail_path, true)
 
     local displayer = entry_display.create {
-    -- separator = "▏",
     separator = "",
     items = {
       { width = 6 },
@@ -344,7 +343,6 @@ function make_entry.gen_from_symbols(opts)
     local symbol_msg = entry.text:gsub(".* | ", "")
     local symbol_type, symbol_name = symbol_msg:match("%[(.+)%]%s+(.*)")
 
-    print(symbol_type)
     return {
       valid = true,
 
