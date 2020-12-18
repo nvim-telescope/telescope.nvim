@@ -289,7 +289,7 @@ function make_entry.gen_from_symbols(opts)
 
     local displayer = entry_display.create {
     -- separator = "▏",
-    separator = " ",
+    separator = "",
     items = {
       { width = 6 },
       { width = 40 },
@@ -310,19 +310,23 @@ function make_entry.gen_from_symbols(opts)
       end
     end
 
-    local type_highlight = {
+    local default_type_highlight = {
+      ["Class"]    = "Function",
       ["Constant"] = "Constant",
       ["Field"]    = "Function",
       ["Function"] = "Function",
       ["Property"] = "Operator",
+      ["Struct"]   = "Struct",
       ["Variable"] = "SpecialChar",
     }
+
+    local type_highlight = opts.symbol_highlights or default_type_highlight
 
     return displayer {
       {entry.lnum .. ":" .. entry.col, "LineNr"},
       entry.symbol_name,
       {"[", "TelescopeBorder"},
-      {entry.symbol_type, type_highlight[entry.symbol_type],type_highlight[entry.symbol_type]},
+      {entry.symbol_type, type_highlight[entry.symbol_type], type_highlight[entry.symbol_type]},
       {"]", "TelescopeBorder"},
       filename,
     }
@@ -333,6 +337,7 @@ function make_entry.gen_from_symbols(opts)
     local symbol_msg = entry.text:gsub(".* | ", "")
     local symbol_type, symbol_name = symbol_msg:match("%[(.+)%]%s+(.*)")
 
+    print(symbol_type)
     return {
       valid = true,
 
