@@ -517,50 +517,6 @@ function make_entry.gen_from_apropos()
   end
 end
 
-function make_entry.gen_from_builtin(opts)
-  opts = opts or {}
-  opts.tail_path = get_default(opts.tail_path, true)
-
-    local displayer = entry_display.create {
-    separator = "▏",
-    items = {
-      { width = 50 },
-      { remaining = true },
-    },
-  }
-
-  local make_display = function(entry)
-    local filename
-    if not opts.hide_filename then
-      filename = entry.filename
-      if opts.tail_path then
-        filename = utils.path_tail(filename)
-      elseif opts.shorten_path then
-        filename = utils.path_shorten(filename)
-      end
-    end
-
-    return displayer {
-      entry.text:gsub(".* | ", ""),
-      filename,
-    }
-  end
-
-  return function(entry)
-    local filename = entry.filename or vim.api.nvim_buf_get_name(entry.bufnr)
-
-    return {
-      valid = true,
-
-      value = entry,
-      text = entry.text,
-      display = make_display,
-      ordinal = entry.text,
-      filename = filename,
-    }
-  end
-end
-
 function make_entry.gen_from_marks(_)
   return function(line)
     local split_value = utils.max_split(line, "%s+", 4)
