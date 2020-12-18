@@ -219,6 +219,21 @@ do
 end
 
 function make_entry.gen_from_git_commits()
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = 8 },
+      { remaining = true }
+      }
+    }
+
+  local make_display = function(entry)
+    return displayer {
+      {entry.value, "Number"},
+      entry.msg
+    }
+  end
+
   return function(entry)
     if entry == "" then
       return nil
@@ -229,7 +244,8 @@ function make_entry.gen_from_git_commits()
     return {
       value = sha,
       ordinal = sha .. ' ' .. msg,
-      display = sha .. ' ' .. msg,
+      msg = msg,
+      display = make_display
     }
   end
 end
