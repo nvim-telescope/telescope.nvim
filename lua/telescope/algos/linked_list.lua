@@ -76,29 +76,114 @@ function LinkedList:prepend(item)
     elseif final_size > self.track_at then
       self._tracked_node = self._tracked_node.prev
     else
-        return
+      return
     end
 
     self.tracked = self._tracked_node.item
   end
 end
 
-function LinkedList:place_after(node, item)
+-- [a, b, c]
+--  b.prev = a
+--  b.next = c
+--
+--  a.next = b
+--  c.prev = c
+--
+-- insert d after b
+-- [a, b, d, c]
+--
+--  b.next = d
+--  b.prev = a
+--
+-- Place "item" after "node" (which is at index `index`)
+function LinkedList:place_after(index, node, item)
   local new_node = create_node(item)
 
   assert(node.prev ~= node)
   assert(node.next ~= node)
-  self:_increment()
+  local final_size = self:_increment()
 
+  -- Update tail to be the next node.
   if self.tail == node then
     self.tail = new_node
+  end
+
+  new_node.prev = node
+  new_node.next = node.next
+
+  node.next = new_node
+
+  if new_node.prev then
+    new_node.prev.next = new_node
+  end
+
+  if new_node.next then
+    new_node.next.prev = new_node
+  end
+
+
+  if self.track_at then
+    if index == self.track_at then
+      self._tracked_node = new_node
+    elseif index < self.track_at then
+      if final_size == self.track_at then
+        self._tracked_node = self.tail
+      elseif final_size > self.track_at then
+        self._tracked_node = self._tracked_node.prev
+      else
+        return
+      end
+    end
+
+    self.tracked = self._tracked_node.item
+  end
+end
+
+function LinkedList:place_before(index, node, item)
+  local new_node = create_node(item)
+
+  assert(node.prev ~= node)
+  assert(node.next ~= node)
+  local final_size = self:_increment()
+
+  -- Update head to be the node we are inserting.
+  if self.head == node then
+    self.head = new_node
   end
 
   new_node.prev = node.prev
   new_node.next = node
 
   node.prev = new_node
+  -- node.next = node.next
+
+  if new_node.prev then
+    new_node.prev.next = new_node
+  end
+
+  if new_node.next then
+    new_node.next.prev = new_node
+  end
+
+
+  if self.track_at then
+    if index == self.track_at - 1 then
+      self._tracked_node = node
+    elseif index < self.track_at then
+      if final_size == self.track_at then
+        self._tracked_node = self.tail
+      elseif final_size > self.track_at then
+        self._tracked_node = self._tracked_node.prev
+      else
+          return
+      end
+    end
+
+    self.tracked = self._tracked_node.item
+  end
 end
+
 
 -- Do you even do this in linked lists...?
 -- function LinkedList:remove(item)
