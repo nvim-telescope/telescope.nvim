@@ -273,6 +273,25 @@ actions.git_staging_toggle = function(prompt_bufnr)
   require('telescope.builtin').git_status()
 end
 
+actions.send_to_qflist = function(prompt_bufnr)
+  local picker = actions.get_current_picker(prompt_bufnr)
+  local manager = picker.manager
+
+  local qf_entries = {}
+  for entry in manager:iter() do
+    table.insert(qf_entries, {
+      bufnr = entry.bufnr,
+      filename = entry.filename,
+      lnum = entry.lnum,
+      col = entry.col,
+      text = entry.value,
+    })
+  end
+
+  vim.fn.setqflist(qf_entries, 'r')
+  vim.cmd [[copen]]
+end
+
 -- ==================================================
 -- Transforms modules and sets the corect metatables.
 -- ==================================================

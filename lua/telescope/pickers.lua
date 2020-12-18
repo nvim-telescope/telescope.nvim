@@ -839,7 +839,7 @@ function Picker:entry_adder(index, entry, score, insert)
   -- This is the two spaces to manage the '> ' stuff.
   -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
   -- until then, insert two spaces
-  local prefix = '  ' .. string.format("%.03f", score) .. " "
+  local prefix = '  '
   display = prefix .. display
 
   self:_increment("displayed")
@@ -854,7 +854,7 @@ function Picker:entry_adder(index, entry, score, insert)
     end
 
     if self.request_number ~= scheduled_request then
-      log.info("Request number:", self.request_number, " // ", scheduled_request)
+      log.debug("Request number:", self.request_number, " // ", scheduled_request)
       return
     end
 

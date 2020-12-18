@@ -181,4 +181,12 @@ function EntryManager:add_entry(picker, score, entry)
   return self:_insert_container_after(picker, size + 1, self.linked_states.tail, new_container)
 end
 
+function EntryManager:iter()
+  return coroutine.wrap(function()
+    for val in self.linked_states:iter() do
+      coroutine.yield(val[1])
+    end
+  end)
+end
+
 return EntryManager
