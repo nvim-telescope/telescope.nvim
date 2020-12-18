@@ -288,6 +288,8 @@ actions.send_to_qflist = function(prompt_bufnr)
     })
   end
 
+  actions.close(prompt_bufnr)
+
   vim.fn.setqflist(qf_entries, 'r')
   vim.cmd [[copen]]
 end
