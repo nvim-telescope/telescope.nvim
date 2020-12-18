@@ -34,7 +34,7 @@ internal.builtin = function(opts)
     prompt_title = 'Telescope Builtin',
     finder    = finders.new_table {
       results     = objs,
-      entry_maker = make_entry.gen_from_quickfix(opts),
+      entry_maker = make_entry.gen_from_builtin(opts),
     },
     previewer = previewers.builtin.new(opts),
     sorter = conf.generic_sorter(opts),
