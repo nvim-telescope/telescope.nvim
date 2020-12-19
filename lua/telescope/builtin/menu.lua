@@ -26,7 +26,7 @@ local function preprocess(node)
 
       if type(value) == "string" then
 
-        table.insert(results, {leaf = value})
+        table.insert(results, {leaf = value, conf = {}})
 
       elseif type(value) == "table" then
         -- its a leaf with a specific callback and other options
@@ -52,6 +52,7 @@ local function preprocess(node)
   end
 
   -- node[1] is contents, everything else (non number keys) are conf
+  -- results = {results}
   results.conf = {}
   extend_non_number_keys(results.conf, node)
 
@@ -73,6 +74,9 @@ function Tree.new(tree_syntax)
   local root = {branch_name = "root", branches = tree}
   return root
 end
+
+menu.preprocess = preprocess
+menu.Tree = Tree
 
 -- helper function to recurse with more arguments
 -- remember contains the actual tree that is remembered so we can use it with ..
@@ -241,7 +245,20 @@ local tree = {
   end
 }
 
-local res = Tree.new(tree)
+local tree2 = {
+  {
+    "top level leaf",
+    "another top level leaf",
+    ["a node"] = {
+      {
+        "second level leaf",
+        "another second level leaf",
+      }
+    }
+  },
+}
+
+local res = preprocess(tree2)
 dump(res)
 
 return menu
