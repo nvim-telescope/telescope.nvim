@@ -352,6 +352,7 @@ function make_entry.gen_from_lsp_symbols(opts)
 
     -- what to show in the last column: filename or symbol information
     if opts.ignore_filename then -- ignore the filename and show line preview instead
+      -- TODO: fixme - if ignore_filename is set for workspace, bufnr will be incorrect
       msg = vim.api.nvim_buf_get_lines(
           bufnr,
           entry.lnum - 1,
