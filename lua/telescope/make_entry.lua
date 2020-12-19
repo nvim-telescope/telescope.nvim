@@ -306,30 +306,45 @@ function make_entry.gen_from_quickfix(opts)
   end
 end
 
-function make_entry.gen_from_symbols(opts)
+function make_entry.gen_from_lsp_symbols(opts)
   opts = opts or {}
-  opts.tail_path = get_default(opts.tail_path, true)
+  local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
 
-    local displayer = entry_display.create {
-    separator = "",
+  local displayer = entry_display.create {
+    separator = " ",
     items = {
-      { width = 6 },
-      { width = 40 },
-      { width = 1 },
-      { remaining = true },
-      { width = 1 },
-    },
-  }
+      { width = 8 },
+      { width = 25 },
+      { width = 8 },
+      { remaining = true }
+      }
+    }
 
   local make_display = function(entry)
-    local filename
-    if not opts.hide_filename then
-      filename = entry.filename
-      if opts.tail_path then
-        filename = utils.path_tail(filename)
-      elseif opts.shorten_path then
-        filename = utils.path_shorten(filename)
+    local msg
+
+    -- what to show in the last column: filename or symbol information
+    if opts.ignore_filename then
+      msg = vim.api.nvim_buf_get_lines(
+          bufnr,
+          entry.lnum - 1,
+          entry.lnum,
+          false
+        )[1] or ''
+      msg = vim.trim(msg)
+    else
+      local filename
+      opts.tail_path = get_default(opts.tail_path, true)
+
+      if not opts.hide_filename then
+        filename = entry.filename
+        if opts.tail_path then
+          filename = utils.path_tail(filename)
+        elseif opts.shorten_path then
+          filename = utils.path_shorten(filename)
+        end
       end
+      msg = filename
     end
 
     local default_type_highlight = {
@@ -347,10 +362,8 @@ function make_entry.gen_from_symbols(opts)
     return displayer {
       {entry.lnum .. ":" .. entry.col, "LineNr"},
       entry.symbol_name,
-      {"[", "TelescopeBorder"},
-      {entry.symbol_type, type_highlight[entry.symbol_type], type_highlight[entry.symbol_type]},
-      {"]", "TelescopeBorder"},
-      filename,
+      {entry.symbol_type:lower(), type_highlight[entry.symbol_type], type_highlight[entry.symbol_type]},
+      msg,
     }
   end
 
@@ -359,14 +372,16 @@ function make_entry.gen_from_symbols(opts)
     local symbol_msg = entry.text:gsub(".* | ", "")
     local symbol_type, symbol_name = symbol_msg:match("%[(.+)%]%s+(.*)")
 
+    local ordinal = ""
+    if not opts.ignore_filename and filename then
+      ordinal = filename .. " "
+    end
+    ordinal = ordinal ..  symbol_name .. " " .. symbol_type
     return {
       valid = true,
 
       value = entry,
-      ordinal = (
-        not opts.ignore_filename and filename
-        or ''
-        ) .. ' ' .. symbol_name .. ' ' .. symbol_type,
+      ordinal = ordinal,
       display = make_display,
 
       filename = filename,
@@ -440,23 +455,44 @@ function make_entry.gen_from_treesitter(opts)
 
   local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
 
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = 6 },
+      { width = 25 },
+      { width = 10},
+      { remaining = true },
+    },
+  }
+
+  local default_type_highlight = {
+    ["associated"] = "TSConstant",
+    ["constant"]   = "TSConstant",
+    ["field"]      = "TSField",
+    ["function"]   = "TSFunction",
+    ["method"]     = "TSMethod",
+    ["parameter"]  = "TSParameter",
+    ["property"]   = "TSProperty",
+    ["struct"]     = "Struct",
+    ["var"]        = "TSVariableBuiltin",
+  }
+
+  local type_highlight = opts.symbol_highlights or default_type_highlight
+
   local make_display = function(entry)
-    if opts.show_line then
-      if not tonumber(opts.show_line) then
-        opts.show_line = 30
-      end
+      local msg = opts.show_line and vim.trim(vim.api.nvim_buf_get_lines(
+          bufnr,
+          entry.lnum - 1,
+          entry.lnum,
+          false
+        )[1]) or ''
 
-      local spacing = string.rep(" ", opts.show_line - #entry.ordinal)
-
-      return entry.ordinal .. spacing .. ": " .. (vim.api.nvim_buf_get_lines(
-        bufnr,
-        entry.lnum - 1,
-        entry.lnum,
-        false
-      )[1] or '')
-    else
-      return entry.ordinal
-    end
+      return displayer {
+        {entry.lnum .. ":" .. entry.col, "LineNr"},
+        entry.text,
+        {entry.kind, type_highlight[entry.kind], type_highlight[entry.kind]},
+        vim.trim(msg)
+      }
   end
 
   return function(entry)
@@ -467,7 +503,8 @@ function make_entry.gen_from_treesitter(opts)
       valid = true,
 
       value = entry.node,
-      ordinal = string.format("%s [%s]", node_text, entry.kind),
+      kind = entry.kind,
+      ordinal = node_text .. " " .. entry.kind,
       display = make_display,
 
       node_text = node_text,
