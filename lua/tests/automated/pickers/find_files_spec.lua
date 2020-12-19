@@ -81,11 +81,27 @@ describe('builtin.find_files', function()
   it('should be able to c-n the items', function()
     tester.run_string [[
       tester.builtin_picker('find_files', 'fixtures/file<c-p>', {
+        post_typed = {
+          {
+            {
+              "  lua/tests/fixtures/file_2.txt",
+              "> lua/tests/fixtures/file_1.txt",
+            }, function()
+            local res = GetResults()
+
+              return {
+                res[#res - 1],
+                res[#res],
+              }
+            end
+          },
+        },
         post_close = {
           { 'file_2.txt', GetFile },
-        }
+        },
       }, {
         sorter = require('telescope.sorters').get_fzy_sorter(),
+        disable_devicons = true,
       })
     ]]
   end)
