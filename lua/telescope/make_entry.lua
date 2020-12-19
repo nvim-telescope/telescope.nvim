@@ -344,6 +344,7 @@ function make_entry.gen_from_lsp_symbols(opts)
 
   local displayer = entry_display.create {
     separator = " ",
+    hl_chars = { ['['] = 'TelescopeBorder', [']'] = 'TelescopeBorder' },
     items = display_items
   }
 
@@ -374,10 +375,7 @@ function make_entry.gen_from_lsp_symbols(opts)
       end
 
       if opts.show_line then -- show inline line info
-        if not opts.hide_filename and #filename > 0 then
-          filename = filename .. ":"
-        end
-        filename = filename .. entry.lnum .. ":" .. entry.col
+        filename = filename .. " [" ..entry.lnum .. ":" .. entry.col .. "]"
       end
       msg = filename
     end
