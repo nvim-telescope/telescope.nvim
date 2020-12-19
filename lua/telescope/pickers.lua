@@ -131,6 +131,12 @@ function Picker:new(opts)
 
   obj.highlighter = p_highlights.new(obj)
 
+  if opts.on_complete then
+    for _, on_complete_item in ipairs(opts.on_complete) do
+      obj:register_completion_callback(on_complete_item)
+    end
+  end
+
   return obj
 end
 
@@ -179,7 +185,7 @@ function Picker:get_window_options(max_columns, max_lines)
 end
 
 --- Take a row and get an index.
----@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
+--- @note: Rows are 0-indexed, and `index` is 1 indexed (table index)
 ---@param index number: The row being displayed
 ---@return number The row for the picker to display in
 function Picker:get_row(index)
@@ -896,7 +902,7 @@ end
 
 function Picker:_on_complete()
   for _, v in ipairs(self._completion_callbacks) do
-    v(self)
+    pcall(v, self)
   end
 end
 

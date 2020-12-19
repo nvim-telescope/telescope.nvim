@@ -15,6 +15,12 @@ function Highlighter:new(picker)
 end
 
 function Highlighter:hi_display(row, prefix, display_highlights)
+  -- This is the bug that made my highlight fixes not work.
+  -- We will leave the solutino commented, so the test fails.
+  if not display_highlights or vim.tbl_isempty(display_highlights) then
+    return
+  end
+
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
 
   a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_entry, row, row + 1)
