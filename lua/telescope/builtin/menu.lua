@@ -19,7 +19,7 @@ end
 
 -- takes node syntax and processes it into internal representation,
 -- does no fully preprocess root, as that is a special node without a key of string, it is just there
-local function preprocess(node)
+local function process(node)
   local results = {}
 
   for key, value in pairs(node[1]) do
@@ -45,7 +45,7 @@ local function preprocess(node)
     elseif type(key) == "string" then -- node
 
       table.insert(value[1], "..")
-      local preprocessed = {branch_name = key, branches = preprocess(value)}
+      local preprocessed = {branch_name = key, branches = process(value)}
       preprocessed.conf = {}
       extend_non_number_keys(preprocessed.conf, value)
       table.insert(results, preprocessed) -- recurse until we hit a leaf
@@ -58,8 +58,8 @@ local function preprocess(node)
   return results
 end
 
-local function preprocess_root(root)
-  local processed = {branches = preprocess(root), branch_name = "root"}
+local function process_root(root)
+  local processed = {branches = process(root), branch_name = "root"}
   processed.conf = {}
   extend_non_number_keys(processed.conf, root)
 
@@ -75,15 +75,13 @@ end
 function Tree:display()
 end
 
--- will mutate consume the tree_syntax
 function Tree.new(tree_syntax)
-  local tree = preprocess(tree_syntax)
-  local root = {branch_name = "root", branches = tree}
-  return root
+  local root = process_root(tree_syntax)
+  return setmetatable(root, Tree)
 end
 
-menu.preprocess = preprocess
-menu.preprocess_root = preprocess_root
+menu.process = process
+menu.process_root = process_root
 menu.Tree = Tree
 
 -- helper function to recurse with more arguments
@@ -140,7 +138,7 @@ local function go(tree, opts, remember, selections)
         else
           -- it is a node
           dump(entry.value)
-          local processed_value = preprocess(entry.value)
+          local processed_value = process(entry.value)
           dump(processed_value)
           table.insert(remember, processed_value)
           table.insert(selections, processed_value)
@@ -161,7 +159,7 @@ end
 -- entry point for menu
 menu.open = function(opts)
   opts = opts or {}
-  opts.tree = preprocess(opts.tree)
+  opts.tree = process(opts.tree)
 
   local selections = {}
 
@@ -214,55 +212,5 @@ menu.test = function()
     },
   }
 end
-
-local tree = {
-  {
-    "top level leaf",
-    "another top level leaf",
-    ["a node"] = {
-      -- instead of directly setting the key to the value, we set it to a table of options, [1] is the contents
-      {
-        "second level leaf",
-        "another second level leaf",
-        ["second level node"] = {
-          {
-            -- vs this way, we can have multiple options
-            {
-              "third level leaf with a specific callback different",
-              -- for example we might want to set the description
-              description = 'this is a description', -- not implemented yet
-              callback = function()
-                print("this is a specific callback")
-              end,
-            },
-            "third level leaf",
-          },
-          -- because it is a table inside of a table, we can set options as the contents of the tree will be node[1]
-          -- other options will be anything except [1]
-          title = 'this title overrides the defualt one'
-        }
-      },
-      title = 'second level title'
-    }
-  },
-  title = 'test menu',
-  callback = function(selections)
-    for _, selection in pairs(selections) do
-      print(selection)
-    end
-  end
-}
-
-local tree2 = {
-  {
-    "top level leaf",
-    "another top level leaf",
-    ["a node"] = {{
-      "second level leaf",
-      "another second level leaf"
-    }}
-  },
-  title = 'root title'
-}
 
 return menu

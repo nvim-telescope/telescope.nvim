@@ -1,12 +1,7 @@
-local preprocess = require('telescope.builtin.menu').preprocess
-local preprocess_root = require('telescope.builtin.menu').preprocess_root
+local process = require('telescope.builtin.menu').process
+local process_root = require('telescope.builtin.menu').process_root
 
 local eq = function(a, b)
-  assert.are.same(a, b)
-end
-
-local _eq = function(a, b)
-  b = preprocess(b)
   assert.are.same(a, b)
 end
 
@@ -24,7 +19,8 @@ describe('preprocess function', function()
       {leaf = "another top level leaf", conf = {}},
     }
 
-    _eq(expected, tree)
+    local res = process(tree)
+    eq(expected, res)
   end)
 
   it('should preprocess with configuration in the root', function()
@@ -49,7 +45,7 @@ describe('preprocess function', function()
       }
     }
 
-    local res = preprocess_root(tree)
+    local res = process_root(tree)
 
     eq(expected, res)
   end)
@@ -82,7 +78,7 @@ describe('preprocess function', function()
         },
     }
 
-    local res = preprocess(tree)
+    local res = process(tree)
 
     eq(expected, res)
   end)
@@ -115,7 +111,7 @@ describe('preprocess function', function()
       },
     }
 
-    local res = preprocess(tree)
+    local res = process(tree)
 
     eq(expected, res)
   end)
