@@ -93,9 +93,9 @@ local function go(tree, opts, remember, selections)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_node(opts)
 
   pickers.new(opts, {
-    prompt_title = tree.title or root.title,
+    prompt_title = tree.conf.title or root.conf.title,
     finder = finders.new_table {
-      results = tree,
+      results = tree.branches,
       entry_maker = opts.entry_maker
     },
     sorter = conf.generic_sorter(opts),
@@ -112,7 +112,7 @@ local function go(tree, opts, remember, selections)
         if entry.is_leaf then
 
           -- .. means go back
-          if entry.value == ".." then
+          if entry.leaf == ".." then
             -- first pop is the one you are currently in
             table.remove(remember)
             -- the last one is the last tree selected, but do not pop off,
@@ -129,22 +129,18 @@ local function go(tree, opts, remember, selections)
             return
           end
 
-          table.insert(remember, entry.value)
-          table.insert(selections, entry.value)
+          table.insert(remember, entry)
+          table.insert(selections, entry.leaf)
 
-          dump(root)
-          local callback = entry.callback or root.callback
+          local callback = entry.conf.callback or root.conf.callback
           callback(selections)
         else
           -- it is a node
-          dump(entry.value)
-          local processed_value = process(entry.value)
-          dump(processed_value)
-          table.insert(remember, processed_value)
-          table.insert(selections, processed_value)
+          table.insert(remember, entry)
+          table.insert(selections, entry.branch_name)
 
           -- recurse
-          go(processed_value, opts, remember, selections)
+          go(entry, opts, remember, selections)
 
           -- sometimes does not start insert for some reason
           vim.api.nvim_input('i')
@@ -159,14 +155,12 @@ end
 -- entry point for menu
 menu.open = function(opts)
   opts = opts or {}
-  opts.tree = process(opts.tree)
+  opts.tree = process_root(opts.tree)
 
   local selections = {}
 
   local remember = {}
   table.insert(remember, opts.tree)
-
-  dump(opts)
 
   go(opts.tree, opts, remember, selections)
 end
@@ -175,41 +169,34 @@ menu.test = function()
   menu.open {
     tree = {
       {
-        "top level leaf",
-        "another top level leaf",
+        "hello dude",
         ["a node"] = {
-          -- instead of directly setting the key to the value, we set it to a table of options, [1] is the contents
           {
-            "second level leaf",
-            "another second level leaf",
+            "a leaf inside of the node",
+            "another leaf inside of node",
             ["second level node"] = {
               {
-                -- vs this way, we can have multiple options
+                "leaf inside second level node",
                 {
-                  "third level leaf with a specific callback different",
-                  -- for example we might want to set the description
-                  description = 'this is a description', -- not implemented yet
+                  "another leaf inside second level node with specific callback",
                   callback = function()
-                    print("this is a specific callback")
+                    print('this is a specific callback')
                   end,
                 },
-                "third level leaf",
               },
-              -- because it is a table inside of a table, we can set options as the contents of the tree will be node[1]
-              -- other options will be anything except [1]
-              title = 'this title overrides the defualt one'
+              title = 'this overrides the root title'
             }
           },
-          title = 'second level title'
+          -- no need to speecify title here, it is propagated from the root
         }
       },
       title = 'test menu',
       callback = function(selections)
-        for _, selection in pairs(selections) do
+        for _, selection in ipairs(selections) do
           print(selection)
         end
-      end
-    },
+      end,
+    }
   }
 end
 

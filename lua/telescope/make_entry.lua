@@ -60,15 +60,11 @@ end
 function make_entry.gen_from_node(_)
   return function(node)
     local display = node.leaf or node.branch_name
-    local value = node.branches or node.leaf
-    local is_leaf = node.leaf and true or false
+    node.display = display
+    node.ordinal = display
+    node.is_leaf = node.leaf and true or false
 
-    return {
-      value = value,
-      display = display,
-      ordinal = display,
-      is_leaf = is_leaf,
-    }
+    return node
   end
 end
 
