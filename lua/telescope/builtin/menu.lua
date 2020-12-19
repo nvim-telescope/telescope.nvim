@@ -10,31 +10,47 @@ local menu = {}
 
 -- takes node
 local function preprocess(node)
+  print('arg to pairs')
+  dump(node[1])
   local results = {}
 
-  for k, v in pairs(node.t) do
-    if type(k) == "number" then -- leaf
+  for key, value in pairs(node[1]) do
+    if type(key) == "number" then -- leaf
 
-      if type(v) == "string" then
-        -- its a leaf without a specific callback, just a regular string
-        table.insert(results, { leaf = v })
-      elseif type(v) == "table" then
-        -- its a leaf with a specific callback and other options, a Leaf class
-        table.insert(results, { leaf = v.t, callback = v.callback })
+      if type(value) == "string" then
+
+        table.insert(results, {leaf = value})
+
+      elseif type(value) == "table" then
+        -- its a leaf with a specific callback and other options
+        local processed = {}
+        processed.leaf = value
+
+        table.insert(results, processed)
       else
         error "BUG: should not get here"
       end
 
-    elseif type(k) == "string" then
-      table.insert(results, { branch_name = k, branches = v })
+    elseif type(key) == "string" then -- node
+
+      print('value:')
+      dump(value)
+      table.insert(value[1], "..")
+
+      local processed = {}
+      processed.branch_name = key
+      processed.branches = value
+
+      table.insert(results, processed)
+
     else
       error "BUG: should not get here"
     end
   end
 
-  node.t = results
-
-  return node
+  print('results:')
+  dump(results)
+  return results
 end
 
 function menu.node(opts)
@@ -81,7 +97,7 @@ local function go(tree, opts, remember, selections)
   pickers.new(opts, {
     prompt_title = tree.title or root.title,
     finder = finders.new_table {
-      results = tree.t,
+      results = tree,
       entry_maker = opts.entry_maker
     },
     sorter = conf.generic_sorter(opts),
@@ -108,6 +124,7 @@ local function go(tree, opts, remember, selections)
             -- pop current selection because we went back
             table.remove(selections)
 
+            -- no need to process because it is the last one
             go(last, opts, remember, selections)
 
             api.nvim_input('i')
@@ -117,15 +134,19 @@ local function go(tree, opts, remember, selections)
           table.insert(remember, entry.value)
           table.insert(selections, entry.value)
 
+          dump(root)
           local callback = entry.callback or root.callback
           callback(selections)
         else
           -- it is a node
-          table.insert(remember, entry.value)
-          table.insert(selections, entry.display)
+          dump(entry.value)
+          local processed_value = preprocess(entry.value)
+          dump(processed_value)
+          table.insert(remember, processed_value)
+          table.insert(selections, processed_value)
 
           -- recurse
-          go(entry.value, opts, remember, selections)
+          go(processed_value, opts, remember, selections)
 
           -- sometimes does not start insert for some reason
           vim.api.nvim_input('i')
@@ -138,51 +159,96 @@ local function go(tree, opts, remember, selections)
 end
 
 -- entry point for menu
-menu.open = function(root)
+menu.open = function(opts)
+  opts = opts or {}
+  opts.tree = preprocess(opts.tree)
+
   local selections = {}
 
   local remember = {}
-  table.insert(remember, root)
+  table.insert(remember, opts.tree)
 
-  local opts = {}
+  dump(opts)
 
-  go(root, opts, remember, selections)
+  go(opts.tree, opts, remember, selections)
 end
 
+-- menu.test = function()
+--   -- all options for default will propagate if they are not specified for inner nodes
+--   menu.open(menu.root {
+--     {
+--       "top level leaf",
+--       "another top level leaf",
+--       ["a node"] = menu.node {
+--         {
+--           "second level leaf",
+--           "another second level leaf",
+--           ["second level node"] = menu.node {
+--             {
+--               menu.leaf {
+--                 "another third level leaf with specific callback",
+--                 -- this callback will override the default one
+--                 callback = function() print('this is a specific callback') end
+--               },
+--               "third level leaf",
+--             },
+--             title = 'this title overrides the defualt one'
+--           }
+--         }
+--       }
+--     },
+--     -- default callback if not specified for leaf
+--     -- passed in a stack of all the selections that the user has made
+--     callback = function(selections)
+--       for _, selection in ipairs(selections) do
+--         print(selection)
+--       end
+--     end,
+--     -- this title will be default if title for node is not specified
+--     title = "testing menu",
+--   })
+-- end
+
 menu.test = function()
-  -- all options for default will propagate if they are not specified for inner nodes
-  menu.open(menu.root {
-    {
-      "top level leaf",
-      "another top level leaf",
-      ["a node"] = menu.node {
-        {
-          "second level leaf",
-          "another second level leaf",
-          ["second level node"] = menu.node {
-            {
-              menu.leaf {
-                "another third level leaf with specific callback",
-                -- this callback will override the default one
-                callback = function() print('this is a specific callback') end
+  menu.open {
+    tree = {
+      {
+        "top level leaf",
+        "another top level leaf",
+        ["a node"] = {
+          -- instead of directly setting the key to the value, we set it to a table of options, [1] is the contents
+          {
+            "second level leaf",
+            "another second level leaf",
+            ["second level node"] = {
+              {
+                -- vs this way, we can have multiple options
+                {
+                  "third level leaf with a specific callback different",
+                  -- for example we might want to set the description
+                  description = 'this is a description', -- not implemented yet
+                  callback = function()
+                    print("this is a specific callback")
+                  end,
+                },
+                "third level leaf",
               },
-              "third level leaf",
-            },
-            title = 'this title overrides the defualt one'
-          }
+              -- because it is a table inside of a table, we can set options as the contents of the tree will be node[1]
+              -- other options will be anything except [1]
+              title = 'this title overrides the defualt one'
+            }
+          },
+          title = 'second level title'
         }
-      }
-    },
-    -- default callback if not specified for leaf
-    -- passed in a stack of all the selections that the user has made
-    callback = function(selections)
-      for _, selection in ipairs(selections) do
-        print(selection)
+      },
+      title = 'test menu',
+      callback = function(selections)
+        for _, selection in pairs(selections) do
+          print(selection)
+        end
       end
-    end,
-    -- this title will be default if title for node is not specified
-    title = "testing menu",
-  })
+    },
+  }
 end
 
 return menu

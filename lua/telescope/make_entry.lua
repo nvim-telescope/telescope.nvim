@@ -61,7 +61,6 @@ function make_entry.gen_from_node(_)
   return function(node)
     local display = node.leaf or node.branch_name
     local value = node.branches or node.leaf
-    -- bool to tell if it is a leaf
     local is_leaf = node.leaf and true or false
 
     return {
@@ -69,7 +68,6 @@ function make_entry.gen_from_node(_)
       display = display,
       ordinal = display,
       is_leaf = is_leaf,
-      callback = node.callback,
     }
   end
 end
