@@ -61,7 +61,7 @@ describe('builtin.find_files', function()
     tester.run_string [[
       tester.builtin_picker('find_files', 'pickers.lua', {
         post_close = {
-          { 'lua/telescope/pickers.lua', GetFile },
+          { 'pickers.lua', GetFile },
         }
       })
     ]]
@@ -71,8 +71,8 @@ describe('builtin.find_files', function()
     tester.run_string [[
       tester.builtin_picker('find_files', 'pickers.lua', {
         post_close = {
-          { 'lua/telescope/pickers.lua', GetFile },
-          { 'lua/telescope/pickers.lua', GetFile },
+          { 'pickers.lua', GetFile },
+          { 'pickers.lua', GetFile },
         }
       })
     ]]
@@ -82,8 +82,10 @@ describe('builtin.find_files', function()
     tester.run_string [[
       tester.builtin_picker('find_files', 'fixtures/file<c-p>', {
         post_close = {
-          { 'lua/tests/fixtures/file_2.txt', GetFile },
+          { 'file_2.txt', GetFile },
         }
+      }, {
+        sorter = require('telescope.sorters').get_fzy_sorter(),
       })
     ]]
   end)

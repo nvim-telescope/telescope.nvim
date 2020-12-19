@@ -1,3 +1,4 @@
+local assert = require('luassert')
 local builtin = require('telescope.builtin')
 
 local Job = require("plenary.job")
@@ -132,7 +133,7 @@ tester.run_string = function(contents)
     return state.get_status(vim.api.nvim_get_current_buf()).results_bufnr
   end
 
-  local GetFile = function() return vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.") end
+  local GetFile = function() return vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":t") end
 
   local GetPrompt = function() return vim.api.nvim_buf_get_lines(0, 0, -1, false)[1] end
 
