@@ -366,16 +366,15 @@ function make_entry.gen_from_lsp_symbols(opts)
         elseif opts.shorten_path then
           filename = utils.path_shorten(filename)
         end
-      else
-        -- filename = "hidden"
       end
 
       if opts.show_line then
         if not opts.hide_filename and #filename > 0 then
           filename = filename .. ":"
         end
-        msg = filename .. entry.lnum .. ":" .. entry.col
+        filename = filename .. entry.lnum .. ":" .. entry.col
       end
+      msg = filename
     end
 
     local type_highlight = opts.symbol_highlights or lsp_type_highlight
