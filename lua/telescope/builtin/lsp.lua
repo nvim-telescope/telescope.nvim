@@ -166,8 +166,9 @@ lsp.workspace_symbols = function(opts)
     return
   end
 
-  opts.ignore_filename = opts.ignore_filename or false
-  opts.hide_filename = opts.hide_filename or false
+
+  opts.ignore_filename = utils.get_default(opts.ignore_filename, false)
+  opts.hide_filename = utils.get_default(opts.hide_filename, false)
 
   pickers.new(opts, {
     prompt_title = 'LSP Workspace Symbols',
