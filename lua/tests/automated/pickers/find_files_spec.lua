@@ -84,8 +84,8 @@ describe('builtin.find_files', function()
         post_typed = {
           {
             {
-              "  lua/tests/fixtures/file_2.txt",
-              "> lua/tests/fixtures/file_1.txt",
+              "  lua/tests/fixtures/file_abc.txt",
+              "> lua/tests/fixtures/file_a.txt",
             }, function()
             local res = GetResults()
 
@@ -97,7 +97,7 @@ describe('builtin.find_files', function()
           },
         },
         post_close = {
-          { 'file_2.txt', GetFile },
+          { 'file_abc.txt', GetFile },
         },
       }, {
         sorter = require('telescope.sorters').get_fzy_sorter(),
