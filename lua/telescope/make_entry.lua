@@ -338,6 +338,10 @@ function make_entry.gen_from_lsp_symbols(opts)
     { remaining = true }, -- filename{:optional_lnum+col} OR content preview
   }
 
+  if opts.ignore_filename and opts.show_line then
+    table.insert(display_items, 1, { width = 6 })
+  end
+
   local displayer = entry_display.create {
     separator = " ",
     items = display_items
@@ -368,7 +372,7 @@ function make_entry.gen_from_lsp_symbols(opts)
         end
       end
 
-      if opts.show_line then
+      if opts.show_line then -- show inline line info
         if not opts.hide_filename and #filename > 0 then
           filename = filename .. ":"
         end
@@ -378,12 +382,17 @@ function make_entry.gen_from_lsp_symbols(opts)
     end
 
     local type_highlight = opts.symbol_highlights or lsp_type_highlight
-
-    return displayer {
+    local display_columns = {
       entry.symbol_name,
       {entry.symbol_type:lower(), type_highlight[entry.symbol_type], type_highlight[entry.symbol_type]},
       msg,
     }
+
+    if opts.ignore_filename and opts.show_line then
+      table.insert(display_columns, 1, {entry.lnum .. ":" .. entry.col, "LineNr"})
+    end
+
+    return displayer(display_columns)
   end
 
   return function(entry)
