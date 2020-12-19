@@ -18,6 +18,7 @@ jobs:
 
       - name: Prepare
         run: |
+          sudo apt install fd-find
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
           git clone --depth 1 https://github.com/nvim-lua/popup.nvim ~/.local/share/nvim/site/pack/vendor/start/popup.nvim
@@ -45,6 +46,7 @@ jobs:
 
       - name: Prepare
         run: |
+          sudo apt install fd-find
           test -d build || {
             mkdir -p build
             wget https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
