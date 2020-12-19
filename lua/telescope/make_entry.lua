@@ -20,13 +20,14 @@ local treesitter_type_highlight = {
 }
 
 local lsp_type_highlight = {
-  ["Class"]    = "Function",
-  ["Constant"] = "Constant",
-  ["Field"]    = "Function",
-  ["Function"] = "Function",
-  ["Property"] = "Operator",
-  ["Struct"]   = "Struct",
-  ["Variable"] = "SpecialChar",
+  ["Class"]    = "TelescopeResultsClass",
+  ["Constant"] = "TelescopeResultsConstant",
+  ["Field"]    = "TelescopeResultsField",
+  ["Function"] = "TelescopeResultsFunction",
+  ["Method"]   = "TelescopeResultsMethod",
+  ["Property"] = "TelescopeResultsOperator",
+  ["Struct"]   = "TelescopeResultsStruct",
+  ["Variable"] = "TelescopeResultsVariable",
 }
 
 local make_entry = {}
@@ -251,7 +252,7 @@ function make_entry.gen_from_git_commits()
 
   local make_display = function(entry)
     return displayer {
-      {entry.value, "Number"},
+      {entry.value, "TelescopeResultsNumber"},
       entry.msg
     }
   end
@@ -296,7 +297,7 @@ function make_entry.gen_from_quickfix(opts)
       end
     end
 
-    local line_info = {table.concat({entry.lnum, entry.col}, ":"), "LineNr"}
+    local line_info = {table.concat({entry.lnum, entry.col}, ":"), "TelescopeResultsLineNr"}
 
     return displayer {
       line_info,
@@ -388,7 +389,7 @@ function make_entry.gen_from_lsp_symbols(opts)
     }
 
     if opts.ignore_filename and opts.show_line then
-      table.insert(display_columns, 2, {entry.lnum .. ":" .. entry.col, "LineNr"})
+      table.insert(display_columns, 2, {entry.lnum .. ":" .. entry.col, "TelescopeResultsLineNr"})
     end
 
     return displayer(display_columns)
@@ -445,8 +446,8 @@ function make_entry.gen_from_buffer(opts)
     end
 
     return displayer {
-      {entry.bufnr, "Number"},
-      {entry.indicator, "Comment"},
+      {entry.bufnr, "TelescopeResultsNumber"},
+      {entry.indicator, "TelescopeResultsComment"},
       display_bufname .. ":" .. entry.lnum
       }
   end
@@ -514,7 +515,7 @@ function make_entry.gen_from_treesitter(opts)
       msg
     }
     if opts.show_line then
-      table.insert(display_columns, 2, {entry.lnum .. ":" .. entry.col, "LineNr"})
+      table.insert(display_columns, 2, {entry.lnum .. ":" .. entry.col, "TelescopeResultsLineNr"})
     end
 
     return displayer(display_columns)
@@ -616,20 +617,17 @@ end
 
 function make_entry.gen_from_registers(_)
   local displayer = entry_display.create {
-    separator = "",
+    separator = " ",
+    hl_chars = { ['['] = 'TelescopeBorder', [']'] = 'TelescopeBorder' },
     items = {
-      { width = 1 },
-      { width = 1 },
-      { width = 2 },
+      { width = 3 },
       { remaining = true },
     },
   }
 
   local make_display = function(entry)
     return displayer {
-      {"[", "TelescopeBorder"},
-      {entry.value, "Number"},
-      {"]", "TelescopeBorder"},
+      {'[' .. entry.value .. ']', "TelescopeResultsNumber"},
       entry.content,
     }
   end
