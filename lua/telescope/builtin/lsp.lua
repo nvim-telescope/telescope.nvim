@@ -55,11 +55,12 @@ lsp.document_symbols = function(opts)
     return
   end
 
+  opts.ignore_filename = opts.ignore_filename or true
   pickers.new(opts, {
     prompt_title = 'LSP Document Symbols',
     finder    = finders.new_table {
       results = locations,
-      entry_maker = make_entry.gen_from_symbols(opts)
+      entry_maker = make_entry.gen_from_lsp_symbols(opts)
     },
     previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),
@@ -165,11 +166,15 @@ lsp.workspace_symbols = function(opts)
     return
   end
 
+
+  opts.ignore_filename = utils.get_default(opts.ignore_filename, false)
+  opts.hide_filename = utils.get_default(opts.hide_filename, false)
+
   pickers.new(opts, {
     prompt_title = 'LSP Workspace Symbols',
     finder    = finders.new_table {
       results = locations,
-      entry_maker = make_entry.gen_from_symbols(opts)
+      entry_maker = make_entry.gen_from_lsp_symbols(opts)
     },
     previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),
