@@ -17,7 +17,8 @@ local function extend_non_number_keys(table, add)
   end
 end
 
--- takes node syntax and processes it into internal representation
+-- takes node syntax and processes it into internal representation,
+-- does no fully preprocess root, as that is a special node without a key of string, it is just there
 local function preprocess(node)
   local results = {}
 
@@ -44,19 +45,25 @@ local function preprocess(node)
     elseif type(key) == "string" then -- node
 
       table.insert(value[1], "..")
-      table.insert(results, {branch_name = key, branches = preprocess(value)}) -- recurse until we hit a leaf
+      local preprocessed = {branch_name = key, branches = preprocess(value)}
+      preprocessed.conf = {}
+      extend_non_number_keys(preprocessed.conf, value)
+      table.insert(results, preprocessed) -- recurse until we hit a leaf
 
     else
       error "BUG: should not get here"
     end
   end
 
-  -- node[1] is contents, everything else (non number keys) are conf
-  -- results = {results}
-  results.conf = {}
-  extend_non_number_keys(results.conf, node)
-
   return results
+end
+
+local function preprocess_root(root)
+  local processed = {branches = preprocess(root), branch_name = "root"}
+  processed.conf = {}
+  extend_non_number_keys(processed.conf, root)
+
+  return processed
 end
 
 local Tree = {}
@@ -76,6 +83,7 @@ function Tree.new(tree_syntax)
 end
 
 menu.preprocess = preprocess
+menu.preprocess_root = preprocess_root
 menu.Tree = Tree
 
 -- helper function to recurse with more arguments
@@ -249,16 +257,12 @@ local tree2 = {
   {
     "top level leaf",
     "another top level leaf",
-    ["a node"] = {
-      {
-        "second level leaf",
-        "another second level leaf",
-      }
-    }
+    ["a node"] = {{
+      "second level leaf",
+      "another second level leaf"
+    }}
   },
+  title = 'root title'
 }
-
-local res = preprocess(tree2)
-dump(res)
 
 return menu

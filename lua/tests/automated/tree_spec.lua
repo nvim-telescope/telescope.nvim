@@ -1,4 +1,9 @@
 local preprocess = require('telescope.builtin.menu').preprocess
+local preprocess_root = require('telescope.builtin.menu').preprocess_root
+
+local eq = function(a, b)
+  assert.are.same(a, b)
+end
 
 local _eq = function(a, b)
   b = preprocess(b)
@@ -15,17 +20,14 @@ describe('preprocess function', function()
     }
 
     local expected = {
-      {
-        {leaf = "top level leaf", conf = {}},
-        {leaf = "another top level leaf", conf = {}},
-      },
-      conf = {}
+      {leaf = "top level leaf", conf = {}},
+      {leaf = "another top level leaf", conf = {}},
     }
 
     _eq(expected, tree)
   end)
 
-  it('should preprocess with configuration', function()
+  it('should preprocess with configuration in the root', function()
     local tree = {
       {
         "top level leaf",
@@ -36,7 +38,8 @@ describe('preprocess function', function()
     }
 
     local expected = {
-      {
+      branch_name = "root",
+      branches = {
         {leaf = "top level leaf", conf = {}},
         {leaf = "another top level leaf", conf = {}},
       },
@@ -46,7 +49,9 @@ describe('preprocess function', function()
       }
     }
 
-    _eq(expected, tree)
+    local res = preprocess_root(tree)
+
+    eq(expected, res)
   end)
 
   it('should preprocess with two levels', function()
@@ -64,7 +69,6 @@ describe('preprocess function', function()
     }
 
     local expected = {
-      {
         {leaf = "top level leaf", conf = {}},
         {leaf = "another top level leaf", conf = {}},
         {
@@ -76,11 +80,11 @@ describe('preprocess function', function()
           },
           conf = {}
         },
-      },
-      conf = {}
     }
 
-    _eq(expected, tree)
+    local res = preprocess(tree)
+
+    eq(expected, res)
   end)
 
   it('should preprocess with two levels and conf', function()
@@ -106,77 +110,13 @@ describe('preprocess function', function()
           {leaf = "second level leaf", conf = {}},
           {leaf = "another second level leaf", conf = {}},
           {leaf = "..", conf = {}},
-          conf = {}
         },
+        conf = {}
       },
-      conf = {}
-    }
-
-    -- _eq(expected, tree)
-  end)
-
-  it('should preprocess the tree correctly with only one level', function()
-    local tree = {
-      {
-        "top level leaf",
-        "another top level leaf",
-        ["a node"] = {
-          {
-            {
-              "second level leaf with a specific callback different",
-              description = 'this is a description',
-              callback = function()
-                print("this is a specific callback")
-              end,
-            },
-            "another leaf",
-          },
-          title = 'second level title'
-        }
-      },
-      title = 'test menu',
-      callback = function(selections)
-        for _, selection in pairs(selections) do
-          print(selection)
-        end
-      end
     }
 
     local res = preprocess(tree)
 
-    local expected = {
-      {
-        {leaf = "top level leaf"},
-        {leaf = "another top level leaf"},
-        {
-          branch_name = "a node",
-          branches = {
-            {
-              leaf = "second level leaf with a specific callback different",
-              conf = {
-                description = 'this is a description',
-                callback = function()
-                  print("this is a specific callback")
-                end,
-              }
-            },
-            "another leaf",
-          },
-          conf = {
-            title = 'second level title'
-          }
-        }
-      },
-      conf = {
-        title = 'test menu',
-        callback = function(selections)
-          for _, selection in pairs(selections) do
-            print(selection)
-          end
-        end
-      }
-    }
-
-    -- eq(res, expected)
+    eq(expected, res)
   end)
 end)
