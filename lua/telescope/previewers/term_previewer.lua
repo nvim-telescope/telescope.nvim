@@ -187,15 +187,18 @@ previewers.new_termopen_previewer = function(opts)
         return opts.get_command(entry, st)
       else
         local env = {}
+        local cmd = opts.get_command(entry, st)
+        if not cmd then return end
         for k, v in pairs(termopen_env) do
           table.insert(env, k .. '=' .. v)
         end
-        return table.concat(env, ' ') .. ' ' .. table.concat(opts.get_command(entry, st), ' ')
+        return table.concat(env, ' ') .. ' ' .. table.concat(cmd, ' ')
       end
     end
 
     putils.with_preview_window(status, bufnr, function()
-      set_term_id(self, vim.fn.termopen(get_cmd(status), term_opts))
+      local cmd = get_cmd(status)
+      if cmd then set_term_id(self, vim.fn.termopen(cmd, term_opts)) end
     end)
 
     vim.api.nvim_buf_set_name(bufnr, tostring(bufnr))
@@ -227,34 +230,6 @@ previewers.new_termopen_previewer = function(opts)
 
   return Previewer:new(opts)
 end
-
-previewers.git_commit_diff = defaulter(function(_)
-  return previewers.new_termopen_previewer {
-    get_command = function(entry)
-      local sha = entry.value
-      return { 'git', '-p', 'diff', sha .. '^!' }
-    end
-  }
-end, {})
-
-previewers.git_branch_log = defaulter(function(_)
-  return previewers.new_termopen_previewer {
-    get_command = function(entry)
-      return { 'git', '-p', 'log', '--graph',
-               "--pretty=format:" .. add_quotes .. "%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset"
-               .. add_quotes,
-               '--abbrev-commit', '--date=relative', entry.value }
-    end
-  }
-end, {})
-
-previewers.git_file_diff = defaulter(function(_)
-  return previewers.new_termopen_previewer {
-    get_command = function(entry)
-      return { 'git', '-p', 'diff', entry.value }
-    end
-  }
-end, {})
 
 previewers.cat = defaulter(function(opts)
   local maker = get_maker(opts)

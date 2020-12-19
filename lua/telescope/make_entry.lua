@@ -270,7 +270,7 @@ function make_entry.gen_from_git_commits()
 
   local make_display = function(entry)
     return displayer {
-      {entry.value, "TelescopeResultsNumber"},
+      {entry.value, "TelescopeResultsIdentifier"},
       entry.msg
     }
   end

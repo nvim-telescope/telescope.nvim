@@ -96,6 +96,7 @@ function config.set_defaults(defaults)
   set("file_previewer", function(...) return require('telescope.previewers').cat.new(...) end)
   set("grep_previewer", function(...) return require('telescope.previewers').vimgrep.new(...) end)
   set("qflist_previewer", function(...) return require('telescope.previewers').qflist.new(...) end)
+  set("buffer_previewer_maker", function(...) return require('telescope.previewers').buffer_previewer_maker(...) end)
 end
 
 function config.clear_defaults()

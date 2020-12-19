@@ -6,21 +6,21 @@ Gaze deeply into unknown regions using the power of the moon.
 ## What Is Telescope?
 
 `telescope.nvim` is a highly extendable fuzzy finder over lists. Built on the latest
-awesome features from `neovim` core. Telescope is centered around 
-modularity, allowing for easy customization. 
+awesome features from `neovim` core. Telescope is centered around
+modularity, allowing for easy customization.
 
 Community driven built-in [pickers](#pickers), [sorters](#sorters) and [previewers](#previewers).
 
 ### Built-in Support:
-- [Vim](#vim-pickers) 
-- [Files](#file-pickers) 
+- [Vim](#vim-pickers)
+- [Files](#file-pickers)
 - [Git](#git-pickers)
 - [LSP](#lsp-pickers)
 - [Treesitter](#treesitter-pickers)
 
 ![by @glepnir](https://user-images.githubusercontent.com/41671631/100819597-6f737900-3487-11eb-8621-37ec1ffabe4b.gif)
 
- 
+
 <!-- You can read this documentation from start to finish, or you can look at the -->
 <!-- outline and directly jump to the section that interests you most. -->
 
@@ -162,6 +162,9 @@ require('telescope').setup{
     file_previewer = require'telescope.previewers'.cat.new, -- For buffer previewer use `require'telescope.previewers'.vim_buffer_cat.new`
     grep_previewer = require'telescope.previewers'.vimgrep.new, -- For buffer previewer use `require'telescope.previewers'.vim_buffer_vimgrep.new`
     qflist_previewer = require'telescope.previewers'.qflist.new, -- For buffer previewer use `require'telescope.previewers'.vim_buffer_qflist.new`
+
+    -- Developer configurations: Not meant for general override
+    buffer_previewer_maker = require'telescope.previewers'.buffer_previewer_maker
   }
 }
 ```
@@ -202,6 +205,12 @@ EOF
 | `file_previewer`       | What telescope previewer to use for files.            | [Previewers](#previewers)  |
 | `grep_previewer`       | What telescope previewer to use for grep and similar  | [Previewers](#previewers)  |
 | `qflist_previewer`     | What telescope previewer to use for qflist            | [Previewers](#previewers)  |
+
+
+### Options for extension developers
+| Keys                   | Description                                           | Options                    |
+|------------------------|-------------------------------------------------------|----------------------------|
+| `buffer_previewer_maker` | How a file gets loaded and which highlighter will be used. Extensions will change it | function             |
 
 ### Options affecting Sorting
 
@@ -356,7 +365,7 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
 
 Built-in functions. Ready to be bound to any key you like. :smile:
 
-```vim 
+```vim
 :lua require'telescope.builtin'.planets{}
 
 :nnoremap <Leader>pp :lua require'telescope.builtin'.planets{}
@@ -441,17 +450,24 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `previewers.cat.new`               | Default previewer for files. Uses `cat`/`bat`                   |
 | `previewers.vimgrep.new`           | Default previewer for grep and similar. Uses `cat`/`bat`        |
 | `previewers.qflist.new`            | Default previewer for qflist. Uses `cat`/`bat`                  |
-| `previewers.vim_buffer_cat.new`        | Experimental previewer for files. Uses vim buffers              |
-| `previewers.vim_buffer_vimgrep.new`    | Experimental previewer for grep and similar. Uses vim buffers   |
-| `previewers.vim_buffer_qflist.new`     | Experimental previewer for qflist. Uses vim buffers             |
+| `previewers.vim_buffer_cat.new`    | Experimental previewer for files. Uses vim buffers              |
+| `previewers.vim_buffer_vimgrep.new`| Experimental previewer for grep and similar. Uses vim buffers   |
+| `previewers.vim_buffer_qflist.new` | Experimental previewer for qflist. Uses vim buffers             |
 | .................................. | Your next awesome previewer here :D                             |
 
 By default, telescope.nvim uses `cat`/`bat` for preview. However after telescope's new experimental previewers
 are stable this will change. The new experimental previewers use tree-sitter and vim buffers, provide much
-better performance and are ready for daily usage (`vim_buffer_cat` more than the others), but there might be
-cases where it can't detect a Filetype correctly, thus leading to wrong highlights.
-Also `vimgrep` and `qflist` might be slower due to synchronous file loading.
+better performance and are ready for daily usage, but there might be cases where it can't detect a Filetype
+correctly, thus leading to wrong highlights. This is because we can't determine the filetype in the traditional way
+(we don't do `bufload`. We read the file async with `vim.loop.fs_` and attach only a highlighter), because we can't
+execute autocommands, otherwise the speed of the previewer would slow down considerably.
+If you want to configure more filetypes take a look at
+[plenary wiki](https://github.com/nvim-lua/plenary.nvim#plenaryfiletype).
 
+If you want to configure the `vim_buffer_` previewer, e.g. you want the line to wrap do this:
+```vim
+autocmd User TelescopePreviewerLoaded setlocal wrap
+```
 
 ## Sorters
 
@@ -511,7 +527,7 @@ enhancements by using compiled C and interfacing directly with Lua.
 - [telescope-packer.nvim](https://github.com/nvim-telescope/telescope-packer.nvim) - A Telescope extension that provides extra functionality for Packer.nvim
 - [telescope-github.nvim](https://github.com/nvim-telescope/telescope-github.nvim) - Integration with github cli
 - [telescope-vimspector.nvim](https://github.com/nvim-telescope/telescope-vimspector.nvim) - Integration for [vimspector](https://github.com/puremourning/vimspector)
-- [telescope-fzf-writer.nvim](https://github.com/nvim-telescope/telescope-fzf-writer.nvim) - Incorporating some fzf concepts with plenary jobs and telescope 
+- [telescope-fzf-writer.nvim](https://github.com/nvim-telescope/telescope-fzf-writer.nvim) - Incorporating some fzf concepts with plenary jobs and telescope
 - [telescope-symbols.nvim](https://github.com/nvim-telescope/telescope-symbols.nvim) - Picking symbols and insert them at point.
 
 Extensions can be refenced by doing the following:
