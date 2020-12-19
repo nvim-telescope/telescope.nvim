@@ -7,6 +7,28 @@ local utils = require('telescope.utils')
 
 local get_default = utils.get_default
 
+local treesitter_type_highlight = {
+  ["associated"] = "TSConstant",
+  ["constant"]   = "TSConstant",
+  ["field"]      = "TSField",
+  ["function"]   = "TSFunction",
+  ["method"]     = "TSMethod",
+  ["parameter"]  = "TSParameter",
+  ["property"]   = "TSProperty",
+  ["struct"]     = "Struct",
+  ["var"]        = "TSVariableBuiltin",
+}
+
+local lsp_type_highlight = {
+  ["Class"]    = "Function",
+  ["Constant"] = "Constant",
+  ["Field"]    = "Function",
+  ["Function"] = "Function",
+  ["Property"] = "Operator",
+  ["Struct"]   = "Struct",
+  ["Variable"] = "SpecialChar",
+}
+
 local make_entry = {}
 
 local transform_devicons
@@ -310,20 +332,22 @@ function make_entry.gen_from_lsp_symbols(opts)
   opts = opts or {}
   local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
 
+  local display_items = {
+    { width = 25 },       -- symbol
+    { width = 8 },        -- symbol type
+    { remaining = true }, -- filename{:optional_lnum+col} OR content preview
+  }
+
   local displayer = entry_display.create {
     separator = " ",
-    items = {
-      { width = 25 },
-      { width = 9 },
-      { remaining = true }
-    }
+    items = display_items
   }
 
   local make_display = function(entry)
     local msg
 
     -- what to show in the last column: filename or symbol information
-    if opts.ignore_filename then
+    if opts.ignore_filename then -- ignore the filename and show line preview instead
       msg = vim.api.nvim_buf_get_lines(
           bufnr,
           entry.lnum - 1,
@@ -332,31 +356,29 @@ function make_entry.gen_from_lsp_symbols(opts)
         )[1] or ''
       msg = vim.trim(msg)
     else
-      local filename
+      local filename = ""
       opts.tail_path = get_default(opts.tail_path, true)
 
-      if not opts.hide_filename then
+      if not opts.hide_filename then -- hide the filename entirely
         filename = entry.filename
         if opts.tail_path then
           filename = utils.path_tail(filename)
         elseif opts.shorten_path then
           filename = utils.path_shorten(filename)
         end
+      else
+        -- filename = "hidden"
       end
-      msg = filename .. ":" .. entry.lnum .. ":" .. entry.col
+
+      if opts.show_line then
+        if not opts.hide_filename and #filename > 0 then
+          filename = filename .. ":"
+        end
+        msg = filename .. entry.lnum .. ":" .. entry.col
+      end
     end
 
-    local default_type_highlight = {
-      ["Class"]    = "Function",
-      ["Constant"] = "Constant",
-      ["Field"]    = "Function",
-      ["Function"] = "Function",
-      ["Property"] = "Operator",
-      ["Struct"]   = "Struct",
-      ["Variable"] = "SpecialChar",
-    }
-
-    local type_highlight = opts.symbol_highlights or default_type_highlight
+    local type_highlight = opts.symbol_highlights or lsp_type_highlight
 
     return displayer {
       entry.symbol_name,
@@ -456,40 +478,27 @@ function make_entry.gen_from_treesitter(opts)
   local displayer = entry_display.create {
     separator = " ",
     items = {
-      { width = 6 },
       { width = 25 },
       { width = 10},
       { remaining = true },
     },
   }
 
-  local default_type_highlight = {
-    ["associated"] = "TSConstant",
-    ["constant"]   = "TSConstant",
-    ["field"]      = "TSField",
-    ["function"]   = "TSFunction",
-    ["method"]     = "TSMethod",
-    ["parameter"]  = "TSParameter",
-    ["property"]   = "TSProperty",
-    ["struct"]     = "Struct",
-    ["var"]        = "TSVariableBuiltin",
-  }
-
-  local type_highlight = opts.symbol_highlights or default_type_highlight
+  local type_highlight = opts.symbol_highlights or treesitter_type_highlight
 
   local make_display = function(entry)
-      local msg = opts.show_line and vim.trim(vim.api.nvim_buf_get_lines(
+      local msg = opts.show_line and vim.api.nvim_buf_get_lines(
           bufnr,
           entry.lnum - 1,
           entry.lnum,
           false
-        )[1]) or ''
+        )[1] or ''
+      msg = string.format("%06s", entry.lnum .. ":" .. entry.col) .. " ".. vim.trim(msg)
 
       return displayer {
-        {entry.lnum .. ":" .. entry.col, "LineNr"},
         entry.text,
         {entry.kind, type_highlight[entry.kind], type_highlight[entry.kind]},
-        vim.trim(msg)
+        msg
       }
   end
 
