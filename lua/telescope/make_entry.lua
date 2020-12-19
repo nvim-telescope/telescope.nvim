@@ -339,7 +339,7 @@ function make_entry.gen_from_lsp_symbols(opts)
   }
 
   if opts.ignore_filename and opts.show_line then
-    table.insert(display_items, 1, { width = 6 })
+    table.insert(display_items, 2, { width = 6 })
   end
 
   local displayer = entry_display.create {
@@ -389,7 +389,7 @@ function make_entry.gen_from_lsp_symbols(opts)
     }
 
     if opts.ignore_filename and opts.show_line then
-      table.insert(display_columns, 1, {entry.lnum .. ":" .. entry.col, "LineNr"})
+      table.insert(display_columns, 2, {entry.lnum .. ":" .. entry.col, "LineNr"})
     end
 
     return displayer(display_columns)
