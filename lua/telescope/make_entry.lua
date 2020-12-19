@@ -260,8 +260,8 @@ function make_entry.gen_from_quickfix(opts)
       { width = 8 },
       { width = 50 },
       { remaining = true }
-      }
     }
+  }
 
   local make_display = function(entry)
     local filename
@@ -313,12 +313,11 @@ function make_entry.gen_from_lsp_symbols(opts)
   local displayer = entry_display.create {
     separator = " ",
     items = {
-      { width = 8 },
       { width = 25 },
-      { width = 8 },
+      { width = 9 },
       { remaining = true }
-      }
     }
+  }
 
   local make_display = function(entry)
     local msg
@@ -344,7 +343,7 @@ function make_entry.gen_from_lsp_symbols(opts)
           filename = utils.path_shorten(filename)
         end
       end
-      msg = filename
+      msg = filename .. ":" .. entry.lnum .. ":" .. entry.col
     end
 
     local default_type_highlight = {
@@ -360,7 +359,6 @@ function make_entry.gen_from_lsp_symbols(opts)
     local type_highlight = opts.symbol_highlights or default_type_highlight
 
     return displayer {
-      {entry.lnum .. ":" .. entry.col, "LineNr"},
       entry.symbol_name,
       {entry.symbol_type:lower(), type_highlight[entry.symbol_type], type_highlight[entry.symbol_type]},
       msg,
