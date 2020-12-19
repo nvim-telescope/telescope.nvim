@@ -59,7 +59,7 @@ lsp.document_symbols = function(opts)
     prompt_title = 'LSP Document Symbols',
     finder    = finders.new_table {
       results = locations,
-      entry_maker = make_entry.gen_from_quickfix(opts)
+      entry_maker = make_entry.gen_from_symbols(opts)
     },
     previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),
@@ -169,7 +169,7 @@ lsp.workspace_symbols = function(opts)
     prompt_title = 'LSP Workspace Symbols',
     finder    = finders.new_table {
       results = locations,
-      entry_maker = make_entry.gen_from_quickfix(opts)
+      entry_maker = make_entry.gen_from_symbols(opts)
     },
     previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),

@@ -33,17 +33,15 @@ internal.builtin = function(opts)
   pickers.new(opts, {
     prompt_title = 'Telescope Builtin',
     finder    = finders.new_table {
-      results     = objs,
-      entry_maker = function(entry)
-        return {
-          value = entry,
-          text = entry.text,
-          display = entry.text,
-          ordinal = entry.text,
-          filename = entry.filename,
-        }
-      end
-    },
+      results = objs,
+      entry_maker = function(entry)return {
+        value = entry,
+        text = entry.text,
+        display = entry.text,
+        ordinal = entry.text,
+        filename = entry.filename
+        }end
+      },
     previewer = previewers.builtin.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
