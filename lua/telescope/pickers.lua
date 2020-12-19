@@ -396,10 +396,21 @@ function Picker:find()
       return
     end
 
-    local expected_prompt_len = #self.prompt_prefix + 1
+    -- compensate for empty or whitespace prompt_prefix 
+    local adjust = 0
+    if self.prompt_prefix and #self.prompt_prefix ~= 0 then
+      if self.prompt_prefix:match("^%s$") then
+        adjust = 1
+      end
+    else
+      adjust = 1
+    end
+
+    local expected_prompt_len = #self.prompt_prefix + 1 - adjust
     local prompt_len = #current_prompt < expected_prompt_len and expected_prompt_len or #current_prompt
 
     local padding = string.rep(" ", vim.api.nvim_win_get_width(prompt_win) - prompt_len - #text - 3)
+
     vim.api.nvim_buf_clear_namespace(prompt_bufnr, ns_telescope_prompt, 0, 1)
     vim.api.nvim_buf_set_virtual_text(prompt_bufnr, ns_telescope_prompt, 0, { {padding .. text, "NonText"} }, {})
 
