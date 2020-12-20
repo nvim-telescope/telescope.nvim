@@ -177,7 +177,6 @@ lsp.workspace_symbols = function(opts)
 end
 
 local function check_capabilities(feature)
-  -- print(vim.inspect(vim.inspect(feature)))
   local clients = vim.lsp.buf_get_clients(0)
 
   local supported_client = false
