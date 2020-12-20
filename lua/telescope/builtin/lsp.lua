@@ -198,7 +198,7 @@ local function check_capabilities(feature)
   end
 end
 
-local feature = {
+local feature_map = {
   ["code_actions"]      = "code_action",
   ["document_symbols"]  = "document_symbol",
   ["references"]        = "find_references",
@@ -210,7 +210,8 @@ local function apply_checks(mod)
     mod[k] = function(opts)
       opts = opts or {}
 
-      if feature[k] and not check_capabilities(feature[k]) then
+      local feature_name = feature_map[k]
+      if feature_name and not check_capabilities(feature_name) then
         return
       end
       v(opts)
