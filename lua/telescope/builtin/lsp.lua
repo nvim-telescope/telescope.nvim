@@ -7,16 +7,23 @@ local utils = require('telescope.utils')
 local conf = require('telescope.config').values
 
 local function check_capabilities(feature)
-  local client = vim.lsp.buf_get_clients()[1]
-  if not client then
-    print("LSP: Client not attached")
-    return false
-  elseif not client.resolved_capabilities[feature] then
-    print("LSP: Server does not support " .. feature)
-    return false
+  local clients = vim.lsp.buf_get_clients(0)
+
+  local supported_client = false
+  for _, client in pairs(clients) do
+    supported_client = client.resolved_capabilities[feature]
   end
 
-  return true
+  if supported_client then
+    return true
+  else
+    if #clients == 0 then
+      print("LSP: no client attached")
+    else
+      print("LSP: server does not support " .. feature)
+    end
+    return false
+  end
 end
 
 local lsp = {}
