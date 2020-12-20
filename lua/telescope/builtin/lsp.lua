@@ -12,8 +12,10 @@ local function check_capabilities(feature)
   local supported_client = false
   for _, client in pairs(clients) do
     supported_client = client.resolved_capabilities[feature]
+    if supported_client then goto continue end
   end
 
+  ::continue::
   if supported_client then
     return true
   else
