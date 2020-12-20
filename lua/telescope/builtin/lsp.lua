@@ -6,33 +6,9 @@ local utils = require('telescope.utils')
 
 local conf = require('telescope.config').values
 
-local function check_capabilities(feature)
-  local clients = vim.lsp.buf_get_clients(0)
-
-  local supported_client = false
-  for _, client in pairs(clients) do
-    supported_client = client.resolved_capabilities[feature]
-    if supported_client then goto continue end
-  end
-
-  ::continue::
-  if supported_client then
-    return true
-  else
-    if #clients == 0 then
-      print("LSP: no client attached")
-    else
-      print("LSP: server does not support " .. feature)
-    end
-    return false
-  end
-end
-
 local lsp = {}
 
 lsp.references = function(opts)
-  if not check_capabilities("find_references") then return end
-
   opts.shorten_path = utils.get_default(opts.shorten_path, true)
 
   local params = vim.lsp.util.make_position_params()
@@ -62,8 +38,6 @@ lsp.references = function(opts)
 end
 
 lsp.document_symbols = function(opts)
-  if not check_capabilities("document_symbol") then return end
-
   local params = vim.lsp.util.make_position_params()
   local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/documentSymbol", params, opts.timeout or 10000)
 
@@ -93,8 +67,6 @@ lsp.document_symbols = function(opts)
 end
 
 lsp.code_actions = function(opts)
-  if not check_capabilities("code_action") then return end
-
   local params = opts.params or vim.lsp.util.make_range_params()
 
   params.context = {
@@ -172,8 +144,6 @@ lsp.range_code_actions = function(opts)
 end
 
 lsp.workspace_symbols = function(opts)
-  if not check_capabilities("workspace_symbol") then return end
-
   opts.shorten_path = utils.get_default(opts.shorten_path, true)
 
   local params = {query = opts.query or ''}
@@ -206,11 +176,44 @@ lsp.workspace_symbols = function(opts)
   }):find()
 end
 
+local function check_capabilities(feature)
+  -- print(vim.inspect(vim.inspect(feature)))
+  local clients = vim.lsp.buf_get_clients(0)
+
+  local supported_client = false
+  for _, client in pairs(clients) do
+    supported_client = client.resolved_capabilities[feature]
+    if supported_client then goto continue end
+  end
+
+  ::continue::
+  if supported_client then
+    return true
+  else
+    if #clients == 0 then
+      print("LSP: no client attached")
+    else
+      print("LSP: server does not support " .. feature)
+    end
+    return false
+  end
+end
+
+local feature = {
+  ["code_actions"]      = "code_action",
+  ["document_symbols"]  = "document_symbol",
+  ["references"]        = "find_references",
+  ["workspace_symbols"] = "workspace_symbol",
+}
+
 local function apply_checks(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)
       opts = opts or {}
 
+      if feature[k] and not check_capabilities(feature[k]) then
+        return
+      end
       v(opts)
     end
   end
