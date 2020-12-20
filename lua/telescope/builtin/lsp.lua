@@ -6,9 +6,24 @@ local utils = require('telescope.utils')
 
 local conf = require('telescope.config').values
 
+local function check_capabilities(feature)
+  local client = vim.lsp.buf_get_clients()[1]
+  if not client then
+    print("LSP: Client not attached")
+    return false
+  elseif not client.resolved_capabilities[feature] then
+    print("LSP: Server does not support " .. feature)
+    return false
+  end
+
+  return true
+end
+
 local lsp = {}
 
 lsp.references = function(opts)
+  if not check_capabilities("find_references") then return end
+
   opts.shorten_path = utils.get_default(opts.shorten_path, true)
 
   local params = vim.lsp.util.make_position_params()
@@ -38,6 +53,8 @@ lsp.references = function(opts)
 end
 
 lsp.document_symbols = function(opts)
+  if not check_capabilities("document_symbol") then return end
+
   local params = vim.lsp.util.make_position_params()
   local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/documentSymbol", params, opts.timeout or 10000)
 
@@ -67,6 +84,8 @@ lsp.document_symbols = function(opts)
 end
 
 lsp.code_actions = function(opts)
+  if not check_capabilities("code_action") then return end
+
   local params = opts.params or vim.lsp.util.make_range_params()
 
   params.context = {
@@ -144,6 +163,8 @@ lsp.range_code_actions = function(opts)
 end
 
 lsp.workspace_symbols = function(opts)
+  if not check_capabilities("workspace_symbol") then return end
+
   opts.shorten_path = utils.get_default(opts.shorten_path, true)
 
   local params = {query = opts.query or ''}
