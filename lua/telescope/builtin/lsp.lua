@@ -181,11 +181,44 @@ lsp.workspace_symbols = function(opts)
   }):find()
 end
 
+local function check_capabilities(feature)
+  local clients = vim.lsp.buf_get_clients(0)
+
+  local supported_client = false
+  for _, client in pairs(clients) do
+    supported_client = client.resolved_capabilities[feature]
+    if supported_client then goto continue end
+  end
+
+  ::continue::
+  if supported_client then
+    return true
+  else
+    if #clients == 0 then
+      print("LSP: no client attached")
+    else
+      print("LSP: server does not support " .. feature)
+    end
+    return false
+  end
+end
+
+local feature_map = {
+  ["code_actions"]      = "code_action",
+  ["document_symbols"]  = "document_symbol",
+  ["references"]        = "find_references",
+  ["workspace_symbols"] = "workspace_symbol",
+}
+
 local function apply_checks(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)
       opts = opts or {}
 
+      local feature_name = feature_map[k]
+      if feature_name and not check_capabilities(feature_name) then
+        return
+      end
       v(opts)
     end
   end
