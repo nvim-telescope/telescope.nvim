@@ -71,6 +71,7 @@ local find_files = function(opts)
     feed("<CR>", '')
 
     coroutine.yield()
+    print("STILL CALLED?")
   end))
 
   p:find()
