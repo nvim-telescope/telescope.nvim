@@ -265,9 +265,8 @@ actions.git_staging_toggle = function(prompt_bufnr)
   else
     os.execute('git add ' .. selection.value)
   end
-  actions.close(prompt_bufnr)
+  do_close(prompt_bufnr, true)
   require('telescope.builtin').git_status()
-  vim.api.nvim_feedkeys('i', 'n', false)
 end
 
 -- ==================================================
