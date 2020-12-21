@@ -1,7 +1,6 @@
-
-
-set rtp+=../popup.nvim/
-set rtp+=../plenary.nvim/
 set rtp+=.
+set rtp+=../plenary.nvim/
+set rtp+=../popup.nvim/
 
-nnoremap ,,x :luafile %<CR>
+runtime! plugin/plenary.vim
+runtime! plugin/telescope.vim
