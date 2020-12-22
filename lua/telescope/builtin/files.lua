@@ -262,7 +262,7 @@ files.tags = function(opts)
         return path.exists(filename) and filename or
                path.join(tags_directory, filename)
     end
-    path.read(each, function(err, data)
+    path.read_file_async(each, function(data)
       for _, line in ipairs(vim.split(data, '\n')) do
         finder:feed({ line = line, resolve_filename = resolve_filename })
       end
