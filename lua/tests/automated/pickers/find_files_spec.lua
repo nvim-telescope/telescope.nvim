@@ -1,10 +1,14 @@
 require('plenary.reload').reload_module('telescope')
 
-local tester = require('telescope.pickers._tests')
+local tester = require('telescope.pickers._test')
 
 describe('builtin.find_files', function()
   it('should find the readme', function()
     tester.run_file('find_files__readme')
+  end)
+
+  it('should be able to move selections', function()
+    tester.run_file('find_files__with_ctrl_n')
   end)
 
   it('should not display devicons when disabled', function()
@@ -102,6 +106,16 @@ describe('builtin.find_files', function()
       }, {
         sorter = require('telescope.sorters').get_fzy_sorter(),
         disable_devicons = true,
+      })
+    ]]
+  end)
+
+  it('should be able to get the current selection', function()
+    tester.run_string [[
+      tester.builtin_picker('find_files', 'fixtures/file_abc', {
+        post_typed = {
+          { 'lua/tests/fixtures/file_abc.txt', GetSelectionValue },
+        }
       })
     ]]
   end)
