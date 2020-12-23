@@ -15,6 +15,28 @@ local nvim_feed = function(text, feed_opts)
   vim.api.nvim_feedkeys(text, feed_opts, true)
 end
 
+local execute_test_case = function(location, key, spec)
+  local ok, actual = pcall(spec[2])
+
+  if not ok then
+    io.stderr:write(vim.fn.json_encode({
+      location = 'Error: ' .. location,
+      case = key,
+      expected = 'To succeed and return: ' .. tostring(spec[1]),
+      actual = actual,
+    }))
+  else
+    io.stderr:write(vim.fn.json_encode({
+      location = location,
+      case = key,
+      expected = spec[1],
+      actual = actual,
+    }))
+  end
+
+  io.stderr:write("\n")
+end
+
 tester.picker_feed = function(input, test_cases, debug)
   input = replace_terms(input)
 
@@ -36,8 +58,7 @@ tester.picker_feed = function(input, test_cases, debug)
     timer:start(20, 0, vim.schedule_wrap(function()
       if test_cases.post_close then
         for k, v in ipairs(test_cases.post_close) do
-          io.stderr:write(vim.fn.json_encode({ case = k, expected = v[1], actual = v[2]() }))
-          io.stderr:write("\n")
+          execute_test_case('post_close', k, v)
         end
       end
 
@@ -54,8 +75,7 @@ tester.picker_feed = function(input, test_cases, debug)
       vim.schedule(function()
         if test_cases.post_typed then
           for k, v in ipairs(test_cases.post_typed) do
-            io.stderr:write(vim.fn.json_encode({ case = k, expected = v[1], actual = v[2]() }))
-            io.stderr:write("\n")
+            execute_test_case('post_typed', k, v)
           end
         end
 
@@ -125,7 +145,13 @@ end
 local check_results = function(results)
   -- TODO: We should get all the test cases here that fail, not just the first one.
   for _, v in ipairs(results) do
-    assert.are.same(v.expected, v.actual)
+    assert.are.same(
+      v.expected,
+      v.actual,
+      string.format("Test Case: %s // %s",
+        v.location,
+        v.case)
+    )
   end
 end
 

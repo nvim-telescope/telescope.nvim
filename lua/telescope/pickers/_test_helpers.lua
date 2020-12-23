@@ -22,9 +22,15 @@ test_helpers.get_results = function()
   return vim.api.nvim_buf_get_lines(test_helpers.get_results_bufnr(), 0, -1, false)
 end
 
-test_helpers.get_last_result = function()
+test_helpers.get_best_result = function()
   local results = test_helpers.get_results()
-  return results[#results]
+  local picker = test_helpers.get_picker ()
+
+  if picker.sorting_strategy == 'ascending' then
+    return results[1]
+  else
+    return results[#results]
+  end
 end
 
 test_helpers.get_selection = function()
@@ -41,7 +47,7 @@ test_helpers.make_globals = function()
   GetPrompt         = test_helpers.get_prompt          -- luacheck: globals GetPrompt
 
   GetResults        = test_helpers.get_results         -- luacheck: globals GetResults
-  GetLastResult     = test_helpers.get_last_result     -- luacheck: globals GetLastResult
+  GetBestResult     = test_helpers.get_best_result     -- luacheck: globals GetBestResult
 
   GetSelection      = test_helpers.get_selection       -- luacheck: globals GetSelection
   GetSelectionValue = test_helpers.get_selection_value -- luacheck: globals GetSelectionValue

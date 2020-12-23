@@ -854,13 +854,29 @@ function Picker:entry_adder(index, entry, score, insert)
     end
 
     if self.request_number ~= scheduled_request then
-      log.debug("Request number:", self.request_number, " // ", scheduled_request)
+      log.debug("Cancelling request number:", self.request_number, " // ", scheduled_request)
       return
     end
 
-    local set_ok = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + offset, false, {display})
+    local line_count = vim.api.nvim_buf_line_count(self.results_bufnr)
+    if row > line_count then
+      log.warning("Largerasdfasdf")
+      return
+    end
+
+    if insert then
+      if self.sorting_strategy == 'descending' then
+        vim.api.nvim_buf_set_lines(self.results_bufnr, 0, 1, false, {})
+      end
+    end
+
+    local set_ok, msg = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + offset, false, {display})
     if set_ok and display_highlights then
       self.highlighter:hi_display(row, prefix, display_highlights)
+    end
+
+    if not set_ok then
+      log.debug("Failed to set lines...", msg)
     end
 
     -- This pretty much only fails when people leave newlines in their results.

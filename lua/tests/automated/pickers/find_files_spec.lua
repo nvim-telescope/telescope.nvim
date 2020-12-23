@@ -2,6 +2,10 @@ require('plenary.reload').reload_module('telescope')
 
 local tester = require('telescope.pickers._test')
 
+local disp = function(val)
+  return vim.inspect(val, { newline = " ", indent = "" })
+end
+
 describe('builtin.find_files', function()
   it('should find the readme', function()
     tester.run_file('find_files__readme')
@@ -11,45 +15,76 @@ describe('builtin.find_files', function()
     tester.run_file('find_files__with_ctrl_n')
   end)
 
-  it('should not display devicons when disabled', function()
-    tester.run_string [[
-      tester.builtin_picker('find_files', 'README.md', {
-        post_typed = {
-          { "> README.md", GetPrompt },
-          { "> README.md", GetLastResult },
-        },
-        post_close = {
-          { 'README.md', GetFile },
-          { 'README.md', GetFile },
-        }
-      }, {
-        disable_devicons = true,
-        sorter = require('telescope.sorters').get_fzy_sorter(),
-      })
-    ]]
-  end)
+  for _, configuration in ipairs {
+    { sorting_strategy = 'descending', },
+    { sorting_strategy = 'ascending', },
+  } do
+    it('should not display devicons when disabled: ' .. disp(configuration), function()
+      tester.run_string(string.format([[
+        local max_results = 5
 
-  it('use devicons, if it has it when enabled', function()
-    if not pcall(require, 'nvim-web-devicons') then
-      return
-    end
+        tester.builtin_picker('find_files', 'README.md', {
+          post_typed = {
+            { "> README.md", GetPrompt },
+            { "> README.md", GetBestResult },
+          },
+          post_close = {
+            { 'README.md', GetFile },
+            { 'README.md', GetFile },
+          }
+        }, vim.tbl_extend("force", {
+          disable_devicons = true,
+          sorter = require('telescope.sorters').get_fzy_sorter(),
+          results_height = max_results,
+          layout_strategy = 'center',
+        }, vim.fn.json_decode([==[%s]==])))
+      ]], vim.fn.json_encode(configuration)))
+    end)
 
-    tester.run_string [[
-      tester.builtin_picker('find_files', 'README.md', {
-        post_typed = {
-          { "> README.md", GetPrompt },
-          { ">  README.md", GetLastResult }
-        },
-        post_close = {
-          { 'README.md', GetFile },
-          { 'README.md', GetFile },
-        }
-      }, {
-        disable_devicons = false,
-        sorter = require('telescope.sorters').get_fzy_sorter(),
-      })
-    ]]
-  end)
+    it('should only save one line for ascending, but many for descending', function()
+      local expected
+      if configuration.sorting_strategy == 'descending' then
+        expected = 5
+      else
+        expected = 1
+      end
+
+      tester.run_string(string.format([[
+        tester.builtin_picker('find_files', 'README.md', {
+          post_typed = {
+            { %s, function() return #GetResults() end },
+          },
+        }, vim.tbl_extend("force", {
+          disable_devicons = true,
+          sorter = require('telescope.sorters').get_fzy_sorter(),
+          results_height = 5,
+          layout_strategy = 'center',
+        }, vim.fn.json_decode([==[%s]==])))
+      ]], expected, vim.fn.json_encode(configuration)))
+    end)
+
+    it('use devicons, if it has it when enabled', function()
+      if not pcall(require, 'nvim-web-devicons') then
+        return
+      end
+
+      tester.run_string(string.format([[
+        tester.builtin_picker('find_files', 'README.md', {
+          post_typed = {
+            { "> README.md", GetPrompt },
+            { ">  README.md", GetBestResult }
+          },
+          post_close = {
+            { 'README.md', GetFile },
+            { 'README.md', GetFile },
+          }
+        }, vim.tbl_extend("force", {
+          disable_devicons = false,
+          sorter = require('telescope.sorters').get_fzy_sorter(),
+        }, vim.fn.json_decode([==[%s]==])))
+      ]], vim.fn.json_encode(configuration)))
+    end)
+  end
 
   it('should find the readme, using lowercase', function()
     tester.run_string [[
