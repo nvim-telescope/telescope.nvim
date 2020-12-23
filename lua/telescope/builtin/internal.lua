@@ -591,13 +591,18 @@ internal.registers = function(opts)
   }):find()
 end
 
--- find normal mode mappings
+-- TODO: make filtering include the mapping and the action
 internal.keymaps = function(opts)
   local modes = {"n", "i", "c"}
   local keymaps_table = {}
+
   for _, mode in pairs(modes) do
-    local keymaps_iter = vim.api.nvim_get_keymap(mode)
-    for _, keymap in pairs(keymaps_iter) do
+    local global = vim.api.nvim_get_keymap(mode)
+    for _, keymap in pairs(global) do
+      table.insert(keymaps_table, keymap)
+    end
+    local buf_local = vim.api.nvim_buf_get_keymap(0, mode)
+    for _, keymap in pairs(buf_local) do
       table.insert(keymaps_table, keymap)
     end
   end
@@ -616,6 +621,16 @@ internal.keymaps = function(opts)
       end
     },
     sorter = conf.generic_sorter(opts),
+    attach_mappings = function(prompt_bufnr)
+      actions.goto_file_selection_edit:replace(function()
+        local selection = actions.get_selected_entry()
+        vim.api.nvim_feedkeys(
+          vim.api.nvim_replace_termcodes(selection.value.lhs, true, false, true),
+        "t", true)
+        return actions.close(prompt_bufnr)
+      end)
+      return true
+    end
   }):find()
 end
 
