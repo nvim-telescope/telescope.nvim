@@ -30,17 +30,16 @@ tester.picker_feed = function(input, test_cases, debug)
       end
     end
 
-    vim.wait(100, function() end)
+    vim.wait(10, function() end)
 
     local timer = vim.loop.new_timer()
-    timer:start(200, 0, vim.schedule_wrap(function()
+    timer:start(20, 0, vim.schedule_wrap(function()
       if test_cases.post_close then
         for k, v in ipairs(test_cases.post_close) do
           io.stderr:write(vim.fn.json_encode({ case = k, expected = v[1], actual = v[2]() }))
           io.stderr:write("\n")
         end
       end
-      vim.wait(10)
 
       if debug then
         return
@@ -48,7 +47,7 @@ tester.picker_feed = function(input, test_cases, debug)
 
       vim.defer_fn(function()
         vim.cmd [[qa!]]
-      end, 15)
+      end, 10)
     end))
 
     if not debug then
@@ -74,9 +73,24 @@ end
 --     { "README.md", function() return "README.md" end },
 --   },
 -- }
+
+local _VALID_KEYS = {
+  post_typed = true,
+  post_close = true,
+}
+
 tester.builtin_picker = function(key, input, test_cases, opts)
   opts = opts or {}
   local debug = opts.debug or false
+
+  for k, _ in pairs(test_cases) do
+    if not _VALID_KEYS[k] then
+      -- TODO: Make an error type for the json protocol.
+      io.stderr:write(vim.fn.json_encode({ case = k, expected = '<a valid key>', actual = k }))
+      io.stderr:write("\n")
+      vim.cmd [[qa!]]
+    end
+  end
 
   opts.on_complete = {
     tester.picker_feed(input, test_cases, debug)
@@ -119,32 +133,10 @@ tester.run_string = function(contents)
   local tempname = vim.fn.tempname()
 
   contents = [[
-  -- TODO: Add globals!
-  -- local tester = require('telescope.pickers._tests')
-  local tester = require('telescope.pickers._tests')
+  local tester = require('telescope.pickers._test')
+  local helper = require('telescope.pickers._test_helpers')
 
-  local get_picker = function()
-    local state = require('telescope.state')
-    return state.get_status(vim.api.nvim_get_current_buf()).picker
-  end
-
-  local get_results_bufnr = function()
-    local state = require('telescope.state')
-    return state.get_status(vim.api.nvim_get_current_buf()).results_bufnr
-  end
-
-  local GetFile = function() return vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":t") end
-
-  local GetPrompt = function() return vim.api.nvim_buf_get_lines(0, 0, -1, false)[1] end
-
-  local GetResults = function()
-    return vim.api.nvim_buf_get_lines(get_results_bufnr(), 0, -1, false)
-  end
-
-  local GetLastResult = function()
-    local results = GetResults()
-    return results[#results]
-  end
+  helper.make_globals()
   ]] .. contents
 
   vim.fn.writefile(vim.split(contents, "\n"), tempname)
@@ -161,7 +153,5 @@ tester.run_file = function(filename)
   local result_table = get_results_from_file(file)
   assert.are.same(result_table.expected, result_table.actual)
 end
-
-
 
 return tester

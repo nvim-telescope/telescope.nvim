@@ -1,4 +1,4 @@
-local tester = require('telescope.pickers._tests')
+local tester = require('telescope.pickers._test')
 
 tester.builtin_picker('find_files', 'README.md', {
   post_close = {
