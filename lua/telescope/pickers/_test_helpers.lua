@@ -37,14 +37,14 @@ test_helpers.get_selection_value = function()
 end
 
 test_helpers.make_globals = function()
-  GetFile = test_helpers.get_file
-  GetPrompt = test_helpers.get_prompt
+  GetFile           = test_helpers.get_file            -- luacheck: globals GetFile
+  GetPrompt         = test_helpers.get_prompt          -- luacheck: globals GetPrompt
 
-  GetResults = test_helpers.get_results
-  GetLastResult = test_helpers.get_last_result
+  GetResults        = test_helpers.get_results         -- luacheck: globals GetResults
+  GetLastResult     = test_helpers.get_last_result     -- luacheck: globals GetLastResult
 
-  GetSelection = test_helpers.get_selection
-  GetSelectionValue = test_helpers.get_selection_value
+  GetSelection      = test_helpers.get_selection       -- luacheck: globals GetSelection
+  GetSelectionValue = test_helpers.get_selection_value -- luacheck: globals GetSelectionValue
 end
 
 return test_helpers
