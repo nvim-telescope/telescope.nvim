@@ -512,7 +512,7 @@ internal.buffers = function(opts)
     prompt_title = 'Buffers',
     finder    = finders.new_table {
       results = buffers,
-      entry_maker = make_entry.gen_from_buffer(opts)
+      entry_maker = opts.entry_maker or make_entry.gen_from_buffer(opts)
     },
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
