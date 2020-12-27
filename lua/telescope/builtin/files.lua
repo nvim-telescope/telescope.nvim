@@ -177,7 +177,7 @@ files.treesitter = function(opts)
     prompt_title = 'Treesitter Symbols',
     finder    = finders.new_table {
       results = results,
-      entry_maker = make_entry.gen_from_treesitter(opts)
+      entry_maker = opts.entry_maker or make_entry.gen_from_treesitter(opts)
     },
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
@@ -240,7 +240,7 @@ files.tags = function(opts)
     prompt = 'Tags',
     finder = finders.new_table {
       results = results,
-      entry_maker = make_entry.gen_from_ctags(opts),
+      entry_maker = opts.entry_maker or make_entry.gen_from_ctags(opts),
     },
     previewer = previewers.ctags.new(opts),
     sorter = conf.generic_sorter(opts),

@@ -33,6 +33,7 @@ local lsp_type_highlight = {
 local make_entry = {}
 
 local transform_devicons
+local get_devicons
 if has_devicons then
   if not devicons.has_loaded() then
     devicons.setup()
@@ -52,9 +53,26 @@ if has_devicons then
       return icon_display
     end
   end
+
+  get_devicons = function(filename, disable_devicons)
+    if disable_devicons or not filename then
+      return ''
+    end
+
+    local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, '%a+$'), { default = true })
+    if conf.color_devicons then
+      return icon, icon_highlight
+    else
+      return icon
+    end
+  end
 else
   transform_devicons = function(_, display, _)
     return display
+  end
+
+  get_devicons = function(_, _)
+    return ''
   end
 end
 
@@ -426,11 +444,19 @@ end
 function make_entry.gen_from_buffer(opts)
   opts = opts or {}
 
+  local disable_devicons = opts.disable_devicons
+
+  local icon_width = 0
+  if not disable_devicons then
+    icon_width = vim.fn.strdisplaywidth(get_devicons('fname', disable_devicons))
+  end
+
   local displayer = entry_display.create {
     separator = " ",
     items = {
       { width = opts.bufnr_width },
       { width = 4 },
+      { width = icon_width },
       { remaining = true },
     },
   }
@@ -445,9 +471,12 @@ function make_entry.gen_from_buffer(opts)
       display_bufname = entry.filename
     end
 
+    local icon, hl_group = get_devicons(entry.filename, disable_devicons)
+
     return displayer {
       {entry.bufnr, "TelescopeResultsNumber"},
       {entry.indicator, "TelescopeResultsComment"},
+      { icon, hl_group },
       display_bufname .. ":" .. entry.lnum
       }
   end
