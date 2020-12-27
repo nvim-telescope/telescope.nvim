@@ -473,14 +473,10 @@ function make_entry.gen_from_buffer(opts)
 
     local icon, hl_group = get_devicons(entry.filename, disable_devicons)
 
-    if hl_group then
-      icon = { icon, hl_group }
-    end
-
     return displayer {
       {entry.bufnr, "TelescopeResultsNumber"},
       {entry.indicator, "TelescopeResultsComment"},
-      icon,
+      { icon, hl_group },
       display_bufname .. ":" .. entry.lnum
       }
   end
