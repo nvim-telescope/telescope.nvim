@@ -725,13 +725,14 @@ function Picker:reset_selection()
 end
 
 function Picker:set_selection(row)
-  -- TODO: Loop around behavior?
   -- TODO: Scrolling past max results
+  log.info("Was row: ", self.max_results, self.manager:num_results(), row)
   row = self.scroller(self.max_results, self.manager:num_results(), row)
+  log.info("New row: ", row)
 
   if not self:can_select_row(row) then
     -- If the current selected row exceeds number of currently displayed
-    -- elements we have to reset it. Affectes sorting_strategy = 'row'.
+    -- elements we have to reset it. Affects sorting_strategy = 'row'.
     if not self:can_select_row(self:get_selection_row()) then
       row = self:get_row(self.manager:num_results())
     else
@@ -740,10 +741,17 @@ function Picker:set_selection(row)
     end
   end
 
-  -- local entry = self.manager:get_entry(self.max_results - row + 1)
   local entry = self.manager:get_entry(self:get_index(row))
   local status = state.get_status(self.prompt_bufnr)
-  local results_bufnr = status.results_bufnr
+  local results_bufnr = self.results_bufnr
+
+  if row > a.nvim_buf_line_count(results_bufnr) then
+    error(string.format(
+      "Should not be possible to get row this large %s %s",
+        row,
+        a.nvim_buf_line_count(results_bufnr)
+    ))
+  end
 
   state.set_global_key("selected_entry", entry)
 

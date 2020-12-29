@@ -99,7 +99,16 @@ describe('scroller', function()
 
     it('should stay at current results when current results is less than max_results', function()
       local current = 5
-      eq(current - 1, limit_scroller(max_results, current, 4))
+      eq(max_results - current, limit_scroller(max_results, current, 4))
+    end)
+  end)
+
+  describe('https://github.com/nvim-telescope/telescope.nvim/pull/293#issuecomment-751463224', function()
+    it('should handle having many more results than necessary', function()
+      local scroller = p_scroller.create('cycle', 'descending')
+
+      -- 23 112 23
+      eq(0, scroller(23, 112, 23))
     end)
   end)
 end)

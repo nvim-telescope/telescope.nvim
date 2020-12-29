@@ -2,8 +2,11 @@ local assert = require('luassert')
 local builtin = require('telescope.builtin')
 
 local Job = require("plenary.job")
+local Path = require("plenary.path")
 
 local tester = {}
+
+tester.debug = false
 
 local replace_terms = function(input)
   return vim.api.nvim_replace_termcodes(input, true, false, true)
@@ -15,29 +18,53 @@ local nvim_feed = function(text, feed_opts)
   vim.api.nvim_feedkeys(text, feed_opts, true)
 end
 
+local writer = function(...)
+  if tester.debug then
+    -- print(...)
+  else
+    io.stderr:write(...)
+  end
+end
+
 local execute_test_case = function(location, key, spec)
   local ok, actual = pcall(spec[2])
 
   if not ok then
-    io.stderr:write(vim.fn.json_encode({
+    writer(vim.fn.json_encode({
       location = 'Error: ' .. location,
       case = key,
       expected = 'To succeed and return: ' .. tostring(spec[1]),
       actual = actual,
+
+      _type = spec._type,
     }))
   else
-    io.stderr:write(vim.fn.json_encode({
+    writer(vim.fn.json_encode({
       location = location,
       case = key,
       expected = spec[1],
       actual = actual,
+
+      _type = spec._type,
     }))
   end
 
-  io.stderr:write("\n")
+  writer("\n")
 end
 
-tester.picker_feed = function(input, test_cases, debug)
+local end_test_cases = function()
+  vim.cmd [[qa!]]
+end
+
+local invalid_test_case = function(k)
+  -- TODO: Make an error type for the json protocol.
+  writer(vim.fn.json_encode({ case = k, expected = '<a valid key>', actual = k }))
+  writer("\n")
+
+  end_test_cases()
+end
+
+tester.picker_feed = function(input, test_cases)
   input = replace_terms(input)
 
   return coroutine.wrap(function()
@@ -50,73 +77,66 @@ tester.picker_feed = function(input, test_cases, debug)
       if string.match(char, "%g") then
         coroutine.yield()
       end
+
+      if tester.debug then
+        vim.wait(200)
+      end
     end
 
-    vim.wait(10, function() end)
+    vim.wait(10)
 
-    local timer = vim.loop.new_timer()
-    timer:start(20, 0, vim.schedule_wrap(function()
+    if tester.debug then
+      coroutine.yield()
+    end
+
+    vim.defer_fn(function()
+      if test_cases.post_typed then
+        for k, v in ipairs(test_cases.post_typed) do
+          execute_test_case('post_typed', k, v)
+        end
+      end
+
+      nvim_feed(replace_terms("<CR>"), "")
+    end, 20)
+
+    vim.defer_fn(function()
       if test_cases.post_close then
         for k, v in ipairs(test_cases.post_close) do
           execute_test_case('post_close', k, v)
         end
       end
 
-      if debug then
+      if tester.debug then
         return
       end
 
-      vim.defer_fn(function()
-        vim.cmd [[qa!]]
-      end, 10)
-    end))
+      vim.defer_fn(end_test_cases, 20)
+    end, 40)
 
-    if not debug then
-      vim.schedule(function()
-        if test_cases.post_typed then
-          for k, v in ipairs(test_cases.post_typed) do
-            execute_test_case('post_typed', k, v)
-          end
-        end
-
-        nvim_feed(replace_terms("<CR>"), "")
-      end)
-    end
     coroutine.yield()
   end)
 end
-
--- local test_cases = {
---   post_typed = {
---   },
---   post_close = {
---     { "README.md", function() return "README.md" end },
---   },
--- }
 
 local _VALID_KEYS = {
   post_typed = true,
   post_close = true,
 }
 
-tester.builtin_picker = function(key, input, test_cases, opts)
+tester.builtin_picker = function(builtin_key, input, test_cases, opts)
   opts = opts or {}
-  local debug = opts.debug or false
+  tester.debug = opts.debug or false
 
   for k, _ in pairs(test_cases) do
     if not _VALID_KEYS[k] then
-      -- TODO: Make an error type for the json protocol.
-      io.stderr:write(vim.fn.json_encode({ case = k, expected = '<a valid key>', actual = k }))
-      io.stderr:write("\n")
-      vim.cmd [[qa!]]
+      return invalid_test_case(k)
     end
   end
 
   opts.on_complete = {
-    tester.picker_feed(input, test_cases, debug)
+    tester.picker_feed(input, test_cases),
   }
 
-  builtin[key](opts)
+  builtin[builtin_key](opts)
 end
 
 local get_results_from_file = function(file)
@@ -142,10 +162,21 @@ local get_results_from_file = function(file)
   return result_table
 end
 
+
+local asserters = {
+  _default = assert.are.same,
+
+  are = assert.are.same,
+  are_not = assert.are_not.same,
+}
+
+
 local check_results = function(results)
   -- TODO: We should get all the test cases here that fail, not just the first one.
   for _, v in ipairs(results) do
-    assert.are.same(
+    local assertion = asserters[v._type or 'default']
+
+    assertion(
       v.expected,
       v.actual,
       string.format("Test Case: %s // %s",
@@ -176,8 +207,17 @@ end
 tester.run_file = function(filename)
   local file = './lua/tests/pickers/' .. filename .. '.lua'
 
+  if not Path:new(file):exists() then
+    assert.are.same("<An existing file>", file)
+  end
+
   local result_table = get_results_from_file(file)
-  assert.are.same(result_table.expected, result_table.actual)
+  check_results(result_table)
+end
+
+tester.not_ = function(val)
+  val._type = 'are_not'
+  return val
 end
 
 return tester
