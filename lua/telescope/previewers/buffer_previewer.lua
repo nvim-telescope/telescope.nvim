@@ -350,12 +350,11 @@ previewers.man = defaulter(function(_)
     define_preview = function(self, entry, status)
       putils.with_preview_window(status, nil, function()
         local win_width = vim.api.nvim_win_get_width(self.state.winid)
-        putils.job_maker({'man', '-P', 'cat', entry.value},
-          { ["MANWIDTH"] = win_width },
-          entry.value,
-          self.state.bufnr,
-          self.state.bufname
-        )
+        putils.job_maker({'man', '-P', 'cat', entry.value}, self.state.bufnr, {
+          env = { ["MANWIDTH"] = win_width },
+          value = entry.value,
+          bufname = self.state.bufname
+        })
         putils.regex_highlighter(_, 'man')
        end)
     end
@@ -417,7 +416,11 @@ previewers.git_branch_log = defaulter(function(_)
         local cmd = { 'git', '-P', 'log', '--graph', '--pretty=format:%h -%d %s (%cr)',
           '--abbrev-commit', '--date=relative', entry.value
         }
-        putils.job_maker(cmd, nil, entry.value, self.state.bufnr, self.state.bufname, highlight_buffer)
+        putils.job_maker(cmd, self.state.bufnr, {
+          value = entry.value,
+          bufname = self.state.bufname,
+          callback = highlight_buffer
+        })
       end)
     end
   }
@@ -431,12 +434,10 @@ previewers.git_commit_diff = defaulter(function(_)
 
     define_preview = function(self, entry, status)
       putils.with_preview_window(status, nil, function()
-        putils.job_maker({ 'git', '-P', 'diff', entry.value .. '^!' },
-          nil,
-          entry.value,
-          self.state.bufnr,
-          self.state.bufname
-        )
+        putils.job_maker({ 'git', '-P', 'diff', entry.value .. '^!' }, self.state.bufnr, {
+          value = entry.value,
+          bufname = self.state.bufname
+        })
         putils.regex_highlighter(_, 'diff')
       end)
     end
@@ -451,12 +452,10 @@ previewers.git_file_diff = defaulter(function(_)
 
     define_preview = function(self, entry, status)
       putils.with_preview_window(status, nil, function()
-        putils.job_maker({ 'git', '-P', 'diff', entry.value },
-          nil,
-          entry.value,
-          self.state.bufnr,
-          self.state.bufname
-        )
+        putils.job_maker({ 'git', '-P', 'diff', entry.value }, self.state.bufnr, {
+          value = entry.value,
+          bufname = self.state.bufname
+        })
         putils.regex_highlighter(_, 'diff')
       end)
     end

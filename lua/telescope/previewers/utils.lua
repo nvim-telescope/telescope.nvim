@@ -22,20 +22,30 @@ end
 
 -- API helper functions for buffer previewer
 --- Job maker for buffer previewer
-utils.job_maker = function(cmd, env, value, bufnr, bufname, callback)
-  if bufname ~= value then
+utils.job_maker = function(cmd, bufnr, opts)
+  opts = opts or {}
+  opts.mode = opts.mode or "insert"
+  -- bufname and value are optional
+  -- if passed, they will be use as the cache key
+  -- if any of them are missing, cache will be skipped
+  if opts.bufname ~= opts.value or not opts.bufname or not opts.value then
     local command = table.remove(cmd, 1)
     Job:new({
       command = command,
       args = cmd,
-      env = env,
+      env = opts.env,
       on_exit = vim.schedule_wrap(function(j)
-        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, j:result())
-        if callback then callback(bufnr, j:result()) end
+        if opts.mode == "append" then
+          local count = vim.api.nvim_buf_line_count(bufnr)
+          vim.api.nvim_buf_set_lines(bufnr, count, -1, false, j:result())
+        elseif opts.mode == "insert" then
+          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, j:result())
+        end
+        if opts.callback then opts.callback(bufnr, j:result()) end
       end)
     }):start()
   else
-    if callback then callback(bufnr) end
+    if opts.callback then opts.callback(bufnr) end
   end
 end
 
