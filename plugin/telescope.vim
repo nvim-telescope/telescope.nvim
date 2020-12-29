@@ -35,8 +35,10 @@ highlight default link TelescopeResultsStruct Struct
 highlight default link TelescopeResultsVariable SpecialChar
 
 highlight default link TelescopeResultsLineNr LineNr
+highlight default link TelescopeResultsIdentifier Identifier
 highlight default link TelescopeResultsNumber Number
 highlight default link TelescopeResultsComment Comment
+highlight default link TelescopeResultsSpecialComment SpecialComment
 
 " This is like "<C-R>" in your terminal.
 "   To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)
