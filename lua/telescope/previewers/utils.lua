@@ -22,7 +22,7 @@ end
 
 -- API helper functions for buffer previewer
 --- Job maker for buffer previewer
-utils.job_maker = function(cmd, env, value, bufnr, bufname, callback)
+utils.job_maker = function(cmd, env, value, bufnr, bufname, callback, mode)
   if bufname ~= value then
     local command = table.remove(cmd, 1)
     Job:new({
@@ -30,7 +30,12 @@ utils.job_maker = function(cmd, env, value, bufnr, bufname, callback)
       args = cmd,
       env = env,
       on_exit = vim.schedule_wrap(function(j)
-        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, j:result())
+        if mode == "append" then
+          local count = vim.api.nvim_buf_line_count(bufnr)
+          vim.api.nvim_buf_set_lines(bufnr, count, -1, false, j:result())
+        else
+          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, j:result())
+        end
         if callback then callback(bufnr, j:result()) end
       end)
     }):start()
