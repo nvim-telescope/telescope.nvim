@@ -20,7 +20,7 @@ previewers.file_maker = function(filepath, bufnr, bufname, use_ft_detect, callba
 
   if bufname ~= filepath then
     path.read_file_async(filepath, vim.schedule_wrap(function(data)
-      vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(data, "\n"))
+      vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(data, '[\r]?\n'))
 
       if callback then callback(bufnr) end
     end))
