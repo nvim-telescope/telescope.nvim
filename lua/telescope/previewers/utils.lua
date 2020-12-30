@@ -49,31 +49,40 @@ utils.job_maker = function(cmd, bufnr, opts)
   end
 end
 
+local function has_filetype(ft)
+    return ft and ft ~= ''
+end
+
 --- Attach default highlighter which will choose between regex and ts
 utils.highlighter = function(bufnr, ft)
-  if ft and ft ~= '' then
-    if has_ts and ts_parsers.has_parser(ft) then
-      ts_highlight.attach(bufnr, ft)
-    else
-      vim.cmd(':ownsyntax ' .. ft)
-    end
+  if not(utils.ts_highlighter(bufnr, ft)) then
+    utils.regex_highlighter(bufnr, ft)
   end
 end
 
 --- Attach regex highlighter
 utils.regex_highlighter = function(_, ft)
-  if ft and ft ~= '' then
+  if has_filetype(ft) then
     vim.cmd(':ownsyntax ' .. ft)
+
+    return true
   end
+
+  return false
 end
 
 -- Attach ts highlighter
 utils.ts_highlighter = function(bufnr, ft)
-  if ft and ft ~= '' then
-    if has_ts and ts_parsers.has_parser(ft) then
-      ts_highlight.attach(bufnr, ft)
+  if has_filetype(ft) then
+    local lang = ts_parsers.ft_to_lang(ft);
+    if has_ts and ts_parsers.has_parser(lang) then
+      ts_highlight.attach(bufnr, lang)
+
+      return true
     end
   end
+
+  return false
 end
 
 return utils
