@@ -64,24 +64,20 @@ end
 utils.regex_highlighter = function(_, ft)
   if has_filetype(ft) then
     vim.cmd(':ownsyntax ' .. ft)
-
     return true
   end
-
   return false
 end
 
 -- Attach ts highlighter
 utils.ts_highlighter = function(bufnr, ft)
-  if has_filetype(ft) then
+  if has_ts and has_filetype(ft) then
     local lang = ts_parsers.ft_to_lang(ft);
-    if has_ts and ts_parsers.has_parser(lang) then
+    if ts_parsers.has_parser(lang) then
       ts_highlight.attach(bufnr, lang)
-
       return true
     end
   end
-
   return false
 end
 
