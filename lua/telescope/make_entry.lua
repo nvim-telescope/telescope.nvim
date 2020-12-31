@@ -834,7 +834,13 @@ function make_entry.gen_from_ctags(opts)
       return nil
     end
 
-    local tag, file, scode = string.match(line, '([^\t]+)\t([^\t]+)\t/^\t?(.*)/;"\t+.*')
+    local tag, file, scode, lnum
+    -- ctags gives us: 'tags\tfile\tsource'
+    tag, file, scode = string.match(line, '([^\t]+)\t([^\t]+)\t/^\t?(.*)/;"\t+.*')
+    if not tag then
+      -- hasktags gives us: 'tags\tfile\tlnum'
+      tag, file, lnum  = string.match(line, '([^\t]+)\t([^\t]+)\t(%d+).*')
+    end
 
     if opts.only_current_file and file ~= current_file then
       return nil
@@ -851,7 +857,7 @@ function make_entry.gen_from_ctags(opts)
       filename = file,
 
       col = 1,
-      lnum = 1,
+      lnum = lnum and tonumber(lnum) or 1,
     }
   end
 end

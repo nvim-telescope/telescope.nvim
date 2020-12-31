@@ -224,12 +224,12 @@ end
 files.tags = function(opts)
   local ctags_file = opts.ctags_file or 'tags'
 
-  if not vim.loop.fs_open(vim.fn.expand(ctags_file), "r", 438) then
+  if not vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438) then
     print('Tags file does not exists. Create one with ctags -R')
     return
   end
 
-  local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file), "r", 438))
+  local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438))
   local stat = assert(vim.loop.fs_fstat(fd))
   local data = assert(vim.loop.fs_read(fd, stat.size, 0))
   assert(vim.loop.fs_close(fd))
@@ -249,14 +249,18 @@ files.tags = function(opts)
         post = function()
           local selection = actions.get_selected_entry()
 
-          local scode = string.gsub(selection.scode, '[$]$', '')
-          scode = string.gsub(scode, [[\\]], [[\]])
-          scode = string.gsub(scode, [[\/]], [[/]])
-          scode = string.gsub(scode, '[*]', [[\*]])
+          if selection.scode then
+            local scode = string.gsub(selection.scode, '[$]$', '')
+            scode = string.gsub(scode, [[\\]], [[\]])
+            scode = string.gsub(scode, [[\/]], [[/]])
+            scode = string.gsub(scode, '[*]', [[\*]])
 
-          vim.cmd('norm! gg')
-          vim.fn.search(scode)
-          vim.cmd('norm! zz')
+            vim.cmd('norm! gg')
+            vim.fn.search(scode)
+            vim.cmd('norm! zz')
+          else
+            vim.api.nvim_win_set_cursor(0, {selection.lnum, 0})
+          end
         end,
       }
       return true

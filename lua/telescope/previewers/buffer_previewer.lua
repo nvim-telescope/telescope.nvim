@@ -222,11 +222,40 @@ end, {})
 previewers.qflist = previewers.vimgrep
 
 previewers.ctags = defaulter(function(_)
+  local determine_jump = function(entry)
+    if entry.scode then
+      return function(self)
+        local scode = string.gsub(entry.scode, '[$]$', '')
+        scode = string.gsub(scode, [[\\]], [[\]])
+        scode = string.gsub(scode, [[\/]], [[/]])
+        scode = string.gsub(scode, '[*]', [[\*]])
+
+        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
+        vim.cmd "norm! gg"
+        vim.fn.search(scode, "W")
+        vim.cmd "norm! zz"
+
+        self.state.hl_id = vim.fn.matchadd('TelescopePreviewMatch', scode)
+      end
+    else
+      return function(self, bufnr)
+        if self.state.last_set_bufnr then
+          pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
+        end
+        pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewMatch", entry.lnum - 1, 0, -1)
+        pcall(vim.api.nvim_win_set_cursor, self.state.winid, { entry.lnum, 0 })
+        self.state.last_set_bufnr = bufnr
+      end
+    end
+  end
+
   return previewers.new_buffer_previewer {
     teardown = function(self)
       if self.state and self.state.hl_id then
         pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
         self.state.hl_id = nil
+      elseif self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
+        vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_previewer, 0, -1)
       end
     end,
 
@@ -236,22 +265,11 @@ previewers.ctags = defaulter(function(_)
 
     define_preview = function(self, entry, status)
       putils.with_preview_window(status, nil, function()
-        local scode = string.gsub(entry.scode, '[$]$', '')
-        scode = string.gsub(scode, [[\\]], [[\]])
-        scode = string.gsub(scode, [[\/]], [[/]])
-        scode = string.gsub(scode, '[*]', [[\*]])
-
         conf.buffer_previewer_maker(entry.filename, self.state.bufnr, self.state.bufname, true, function(bufnr)
           vim.api.nvim_buf_call(bufnr, function()
-            pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
-            vim.cmd "norm! gg"
-            vim.fn.search(scode, "W")
-            vim.cmd "norm! zz"
-
-            self.state.hl_id = vim.fn.matchadd('TelescopePreviewMatch', scode)
+            determine_jump(entry)(self, bufnr)
           end)
         end)
-
       end)
     end
   }
