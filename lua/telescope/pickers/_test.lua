@@ -1,5 +1,6 @@
 local assert = require('luassert')
 local builtin = require('telescope.builtin')
+local log = require('telescope.log')
 
 local Job = require("plenary.job")
 local Path = require("plenary.path")
@@ -20,7 +21,7 @@ end
 
 local writer = function(...)
   if tester.debug then
-    -- print(...)
+    print(...)
   else
     io.stderr:write(...)
   end
@@ -57,7 +58,6 @@ local end_test_cases = function()
 end
 
 local invalid_test_case = function(k)
-  -- TODO: Make an error type for the json protocol.
   writer(vim.fn.json_encode({ case = k, expected = '<a valid key>', actual = k }))
   writer("\n")
 
@@ -188,6 +188,7 @@ end
 
 tester.run_string = function(contents)
   local tempname = vim.fn.tempname()
+  log.info("Running test string: ", tempname)
 
   contents = [[
   local tester = require('telescope.pickers._test')
@@ -200,11 +201,15 @@ tester.run_string = function(contents)
   local result_table = get_results_from_file(tempname)
   vim.fn.delete(tempname)
 
+  log.info("Completed string test: ", tempname)
+
   check_results(result_table)
   -- assert.are.same(result_table.expected, result_table.actual)
 end
 
 tester.run_file = function(filename)
+  log.info("Running test file:", filename)
+
   local file = './lua/tests/pickers/' .. filename .. '.lua'
 
   if not Path:new(file):exists() then
@@ -212,6 +217,8 @@ tester.run_file = function(filename)
   end
 
   local result_table = get_results_from_file(file)
+
+  log.info("Completed file test:", filename)
   check_results(result_table)
 end
 
