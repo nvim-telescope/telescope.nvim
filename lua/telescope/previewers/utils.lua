@@ -35,6 +35,7 @@ utils.job_maker = function(cmd, bufnr, opts)
       args = cmd,
       env = opts.env,
       on_exit = vim.schedule_wrap(function(j)
+        if not vim.api.nvim_buf_is_valid(bufnr) then return end
         if opts.mode == "append" then
           local count = vim.api.nvim_buf_line_count(bufnr)
           vim.api.nvim_buf_set_lines(bufnr, count, -1, false, j:result())
