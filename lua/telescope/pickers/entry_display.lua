@@ -62,8 +62,18 @@ entry_display.create = function(configuration)
         table.insert(highlights, { { hl_start, hl_end }, configuration.separator_hl })
       end
     end
+    local final_str = table.concat(results, configuration.separator or "│")
+    if configuration.hl_chars then
+      for i = 1, #final_str do
+        local c = final_str:sub(i,i)
+        local hl = configuration.hl_chars[c]
+        if hl then
+          table.insert(highlights, { { i - 1, i }, hl })
+        end
+      end
+    end
 
-    return table.concat(results, configuration.separator or "│"), highlights
+    return final_str, highlights
   end
 end
 

@@ -57,6 +57,7 @@ end
 --          Support `find` and maybe let people do other stuff with it as well.
 files.find_files = function(opts)
   local find_command = opts.find_command
+  local hidden = opts.hidden
   local search_dirs = opts.search_dirs
 
   if search_dirs then
@@ -68,6 +69,7 @@ files.find_files = function(opts)
   if not find_command then
     if 1 == vim.fn.executable("fd") then
       find_command = { 'fd', '--type', 'f' }
+      if hidden then table.insert(find_command, '--hidden') end
       if search_dirs then
         table.insert(find_command, '.')
         for _,v in pairs(search_dirs) do
@@ -76,6 +78,7 @@ files.find_files = function(opts)
       end
     elseif 1 == vim.fn.executable("fdfind") then
       find_command = { 'fdfind', '--type', 'f' }
+      if hidden then table.insert(find_command, '--hidden') end
       if search_dirs then
         table.insert(find_command, '.')
         for _,v in pairs(search_dirs) do
@@ -84,6 +87,7 @@ files.find_files = function(opts)
       end
     elseif 1 == vim.fn.executable("rg") then
       find_command = { 'rg', '--files' }
+      if hidden then table.insert(find_command, '--hidden') end
       if search_dirs then
         for _,v in pairs(search_dirs) do
           table.insert(find_command, v)
@@ -91,6 +95,7 @@ files.find_files = function(opts)
       end
     elseif 1 == vim.fn.executable("find") then
       find_command = { 'find', '.', '-type', 'f' }
+      if not hidden then vim.tbl_extend("error", find_command, {'-not', '-path', '*/.*'}) end
       if search_dirs then
         table.remove(find_command, 2)
         for _,v in pairs(search_dirs) do
@@ -172,7 +177,7 @@ files.treesitter = function(opts)
     prompt_title = 'Treesitter Symbols',
     finder    = finders.new_table {
       results = results,
-      entry_maker = make_entry.gen_from_treesitter(opts)
+      entry_maker = opts.entry_maker or make_entry.gen_from_treesitter(opts)
     },
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
@@ -219,12 +224,12 @@ end
 files.tags = function(opts)
   local ctags_file = opts.ctags_file or 'tags'
 
-  if not vim.loop.fs_open(vim.fn.expand(ctags_file), "r", 438) then
+  if not vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438) then
     print('Tags file does not exists. Create one with ctags -R')
     return
   end
 
-  local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file), "r", 438))
+  local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438))
   local stat = assert(vim.loop.fs_fstat(fd))
   local data = assert(vim.loop.fs_read(fd, stat.size, 0))
   assert(vim.loop.fs_close(fd))
@@ -235,7 +240,7 @@ files.tags = function(opts)
     prompt = 'Tags',
     finder = finders.new_table {
       results = results,
-      entry_maker = make_entry.gen_from_ctags(opts),
+      entry_maker = opts.entry_maker or make_entry.gen_from_ctags(opts),
     },
     previewer = previewers.ctags.new(opts),
     sorter = conf.generic_sorter(opts),
@@ -244,14 +249,18 @@ files.tags = function(opts)
         post = function()
           local selection = actions.get_selected_entry()
 
-          local scode = string.gsub(selection.scode, '[$]$', '')
-          scode = string.gsub(scode, [[\\]], [[\]])
-          scode = string.gsub(scode, [[\/]], [[/]])
-          scode = string.gsub(scode, '[*]', [[\*]])
+          if selection.scode then
+            local scode = string.gsub(selection.scode, '[$]$', '')
+            scode = string.gsub(scode, [[\\]], [[\]])
+            scode = string.gsub(scode, [[\/]], [[/]])
+            scode = string.gsub(scode, '[*]', [[\*]])
 
-          vim.cmd('norm! gg')
-          vim.fn.search(scode)
-          vim.cmd('norm! zz')
+            vim.cmd('norm! gg')
+            vim.fn.search(scode)
+            vim.cmd('norm! zz')
+          else
+            vim.api.nvim_win_set_cursor(0, {selection.lnum, 0})
+          end
         end,
       }
       return true

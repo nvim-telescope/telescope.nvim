@@ -50,7 +50,7 @@ scroller.create = function(strategy, sorting_strategy)
       return row
     end
   else
-    error("Unsupported strategy: ", strategy)
+    error("Unsupported strategy: " .. strategy)
   end
 end
 

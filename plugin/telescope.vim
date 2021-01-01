@@ -24,6 +24,22 @@ highlight default link TelescopePromptPrefix Identifier
 highlight default link TelescopePreviewLine Visual
 highlight default link TelescopePreviewMatch Search
 
+" Used for Picker specific Results highlighting
+highlight default link TelescopeResultsClass Function
+highlight default link TelescopeResultsConstant Constant
+highlight default link TelescopeResultsField Function
+highlight default link TelescopeResultsFunction Function
+highlight default link TelescopeResultsMethod Method
+highlight default link TelescopeResultsOperator Operator
+highlight default link TelescopeResultsStruct Struct
+highlight default link TelescopeResultsVariable SpecialChar
+
+highlight default link TelescopeResultsLineNr LineNr
+highlight default link TelescopeResultsIdentifier Identifier
+highlight default link TelescopeResultsNumber Number
+highlight default link TelescopeResultsComment Comment
+highlight default link TelescopeResultsSpecialComment SpecialComment
+
 " This is like "<C-R>" in your terminal.
 "   To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)
 cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e

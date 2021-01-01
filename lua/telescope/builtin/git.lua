@@ -35,7 +35,7 @@ git.commits = function(opts)
     prompt_title = 'Git Commits',
     finder = finders.new_table {
       results = results,
-      entry_maker = make_entry.gen_from_git_commits(opts),
+      entry_maker = opts.entry_maker or make_entry.gen_from_git_commits(opts),
     },
     previewer = previewers.git_commit_diff.new(opts),
     sorter = conf.file_sorter(opts),
@@ -54,7 +54,7 @@ git.bcommits = function(opts)
     prompt_title = 'Git BCommits',
     finder = finders.new_table {
       results = results,
-      entry_maker = make_entry.gen_from_git_commits(opts),
+      entry_maker = opts.entry_maker or make_entry.gen_from_git_commits(opts),
     },
     previewer = previewers.git_commit_diff.new(opts),
     sorter = conf.file_sorter(opts),
