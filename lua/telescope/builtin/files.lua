@@ -11,6 +11,17 @@ local flatten = vim.tbl_flatten
 
 local files = {}
 
+local escape_chars = function(string)
+  return string.gsub(string,  "[%(|%)|\\|%[|%]|%-|%{%}|%?|%+|%*]", {
+    ["\\"] = "\\\\", ["-"] = "\\-",
+    ["("] = "\\(", [")"] = "\\)",
+    ["["] = "\\[", ["]"] = "\\]",
+    ["{"] = "\\{", ["}"] = "\\}",
+    ["?"] = "\\?", ["+"] = "\\+",
+    ["*"] = "\\*",
+  })
+end
+
 files.live_grep = function(opts)
   local live_grepper = finders.new_job(function(prompt)
       -- TODO: Probably could add some options for smart case and whatever else rg offers.
@@ -19,7 +30,7 @@ files.live_grep = function(opts)
         return nil
       end
 
-      if string.match(prompt, "[\\|%(%)]") then prompt = "" end
+      prompt = escape_chars(prompt)
 
       return flatten { conf.vimgrep_arguments, prompt }
     end,
@@ -40,6 +51,8 @@ end
 files.grep_string = function(opts)
   -- TODO: This should probably check your visual selection as well, if you've got one
   local search = opts.search or vim.fn.expand("<cword>")
+
+  search = escape_chars(search)
 
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
   opts.word_match = opts.word_match or nil
