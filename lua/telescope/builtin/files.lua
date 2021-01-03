@@ -19,6 +19,8 @@ files.live_grep = function(opts)
         return nil
       end
 
+      if string.match(prompt, "[\\|%(%)]") then prompt = "" end
+
       return flatten { conf.vimgrep_arguments, prompt }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
