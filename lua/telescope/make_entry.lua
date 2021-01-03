@@ -532,7 +532,7 @@ function make_entry.gen_from_treesitter(opts)
   local make_display = function(entry)
     local msg = vim.api.nvim_buf_get_lines(
       bufnr,
-      entry.lnum - 1,
+      entry.lnum,
       entry.lnum,
       false
       )[1] or ''

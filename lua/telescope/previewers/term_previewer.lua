@@ -15,12 +15,12 @@ local previewers = {}
 -- TODO: Should play with these some more, ty @clason
 local bat_options = {"--style=plain", "--color=always", "--paging=always"}
 local has_less = (vim.fn.executable('less') == 1) and conf.use_less
-local termopen_env = vim.tbl_extend("force", { ['GIT_PAGER'] = (has_less and 'less' or '') }, conf.set_env)
 
 -- TODO(conni2461): Workaround for neovim/neovim#11751. Add only quotes when using else branch.
 local valuate_shell = function()
   local shell = vim.o.shell
-  if string.find(shell, 'powershell.exe') or string.find(shell, 'cmd.exe') then
+  if string.find(shell, 'powershell.exe') or string.find(shell, 'cmd.exe') or
+     string.find(shell, 'powershell') or string.find(shell, 'pwsh') then
     return ''
   else
     return "'"
@@ -177,19 +177,20 @@ previewers.new_termopen_previewer = function(opts)
 
     local term_opts = {
       cwd = opts.cwd or vim.fn.getcwd(),
-      env = termopen_env
+      env = conf.set_env
     }
 
     -- TODO(conni2461): Workaround for neovim/neovim#11751.
     local get_cmd = function(st)
       local shell = vim.o.shell
-      if string.find(shell, 'powershell.exe') or string.find(shell, 'cmd.exe') then
+      if string.find(shell, 'powershell.exe') or string.find(shell, 'cmd.exe') or
+         string.find(shell, 'powershell') or string.find(shell, 'pwsh') then
         return opts.get_command(entry, st)
       else
         local env = {}
         local cmd = opts.get_command(entry, st)
         if not cmd then return end
-        for k, v in pairs(termopen_env) do
+        for k, v in pairs(conf.set_env) do
           table.insert(env, k .. '=' .. v)
         end
         return table.concat(env, ' ') .. ' ' .. table.concat(cmd, ' ')
