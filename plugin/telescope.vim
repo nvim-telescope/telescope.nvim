@@ -49,7 +49,9 @@ cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
 
 " Telescope builtin lists
 function! s:telescope_complete(...)
-  return join(luaeval('vim.tbl_keys(require("telescope.builtin"))'), "\n")
+  let l:builtin_list = luaeval('vim.tbl_keys(require("telescope.builtin"))')
+  let l:extensions_list = luaeval('vim.tbl_keys(require("telescope._extensions").manager)')
+  return join(extend(l:builtin_list,l:extensions_list),"\n")
 endfunction
 
 " TODO: If the lua datatype contains complex type,It will cause convert to
@@ -70,7 +72,15 @@ function! s:load_command(builtin,...) abort
   endfor
 
   let telescope = v:lua.require('telescope.builtin')
-  call telescope[a:builtin](opts)
+  let extensions = v:lua.require('telescope._extensions').manager
+  if has_key(telescope,a:builtin)
+    call telescope[a:builtin](opts)
+    return
+  endif
+
+  if has_key(extensions,a:builtin)
+    call extensions[a:builtin][a:builtin](opts)
+  endif
 endfunction
 
 " Telescope Commands with complete
