@@ -70,6 +70,11 @@ highlight default link TelescopeResultsDiffChange DiffChange
 highlight default link TelescopeResultsDiffAdd DiffAdd
 highlight default link TelescopeResultsDiffDelete DiffDelete
 
+highlight ScrollbarBlank      guifg=#202020 guibg=#202020
+highlight ScrollbarFilled     guifg=#7c6f64 guibg=#7c6f64
+highlight ScrollbarFilledHead guifg=#7c6f64 guibg=#202020
+highlight ScrollbarFilledTail guifg=#202020 guibg=#7c6f64
+
 " This is like "<C-R>" in your terminal.
 "   To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)
 cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e

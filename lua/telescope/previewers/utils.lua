@@ -20,6 +20,12 @@ utils.with_preview_window = function(status, bufnr, callable)
   end
 end
 
+utils.jump_to_line = function(self, bufnr, lnum)
+  pcall(vim.api.nvim_win_set_cursor, self.state.winid, { lnum, 0 })
+  vim.api.nvim_buf_call(bufnr, function() vim.cmd"norm! zz" end)
+  self.state.sb:update()
+end
+
 -- API helper functions for buffer previewer
 --- Job maker for buffer previewer
 utils.job_maker = function(cmd, bufnr, opts)
@@ -43,10 +49,12 @@ utils.job_maker = function(cmd, bufnr, opts)
           vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, j:result())
         end
         if opts.callback then opts.callback(bufnr, j:result()) end
+        if opts.sb then opts.sb:update() end
       end)
     }):start()
   else
     if opts.callback then opts.callback(bufnr) end
+    if opts.sb then opts.sb:update() end
   end
 end
 
