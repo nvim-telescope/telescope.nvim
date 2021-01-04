@@ -180,7 +180,7 @@ actions.set_command_line = function(prompt_bufnr)
   local entry = actions.get_selected_entry(prompt_bufnr)
 
   actions.close(prompt_bufnr)
-
+  vim.fn.histadd("cmd", entry.value)
   vim.cmd(entry.value)
 end
 
