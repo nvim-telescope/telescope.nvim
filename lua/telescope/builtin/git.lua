@@ -117,16 +117,7 @@ git.status = function(opts)
     prompt_title = 'Git Status',
     finder = finders.new_table {
       results = vim.split(output, '\n'),
-      entry_maker = function(entry)
-        if entry == '' then return nil end
-        local mod, file = string.match(entry, '(..).*%s[->%s]?(.+)')
-        return {
-          value = file,
-          status = mod,
-          ordinal = entry,
-          display = entry,
-        }
-      end
+      entry_maker = make_entry.gen_from_git_status(opts)
     },
     previewer = previewers.git_file_diff.new(opts),
     sorter = conf.file_sorter(opts),
