@@ -23,6 +23,10 @@ local escape_chars = function(string)
 end
 
 files.live_grep = function(opts)
+  if opts.cwd then
+    opts.cwd = vim.fn.expand(opts.cwd)
+  end
+
   local live_grepper = finders.new_job(function(prompt)
       -- TODO: Probably could add some options for smart case and whatever else rg offers.
 
@@ -35,7 +39,8 @@ files.live_grep = function(opts)
       return flatten { conf.vimgrep_arguments, prompt }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
-    opts.max_results
+    opts.max_results,
+    opts.cwd
   )
 
   pickers.new(opts, {
