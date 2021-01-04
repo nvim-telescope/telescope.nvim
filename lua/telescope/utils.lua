@@ -1,3 +1,4 @@
+local uv = vim.loop
 local pathlib = require('telescope.path')
 
 local utils = {}
@@ -197,6 +198,17 @@ function utils.get_os_command_output(cmd)
   local output = assert(handle:read('*a'))
   assert(handle:close())
   return output
+end
+
+function utils.async(f)
+  return function(...)
+    local async_handle
+    async_handle = uv.new_async(vim.schedule_wrap(function(...)
+      f(...)
+      async_handle:close()
+    end))
+    async_handle:send(...)
+  end
 end
 
 return utils
