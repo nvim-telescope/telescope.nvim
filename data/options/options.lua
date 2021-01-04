@@ -41,7 +41,7 @@ local imacros=function(s)
     return '(intptr_t)' .. s
   end
 end
-local N_=function(s) -- luacheck: ignore 211 (currently unused)
+N_=function(s) -- luacheck: ignore 211 (currently unused)
   return function()
     return 'N_(' .. cstr(s) .. ')'
   end

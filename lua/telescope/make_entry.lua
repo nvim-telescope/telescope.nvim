@@ -543,7 +543,7 @@ function make_entry.gen_from_treesitter(opts)
   local make_display = function(entry)
     local msg = vim.api.nvim_buf_get_lines(
       bufnr,
-      entry.lnum - 1,
+      entry.lnum,
       entry.lnum,
       false
       )[1] or ''
@@ -732,7 +732,7 @@ function make_entry.gen_from_vimoptions()
       end
 
       local str_funcname = o.short_desc()
-      option.description = assert(loadstring("return " .. str_funcname))()
+      option.description = assert(loadstring(str_funcname))()
       -- if #option.description > opts.desc_col_length then
       --   opts.desc_col_length = #option.description
       -- end
@@ -761,10 +761,11 @@ function make_entry.gen_from_vimoptions()
   end
 
   local displayer = entry_display.create {
-    separator = "│",
+    separator = "",
+    hl_chars = { ['['] = 'TelescopeBorder', [']'] = 'TelescopeBorder' },
     items = {
       { width = 25 },
-      { width = 50 },
+      { width = 12 },
       { remaining = true },
     },
   }
@@ -772,11 +773,9 @@ function make_entry.gen_from_vimoptions()
   local make_display = function(entry)
 
     return displayer {
-      entry.name,
-      string.format(
-        "[%s] %s",
-        entry.value_type,
-        utils.display_termcodes(tostring(entry.current_value))),
+      {entry.name, "Keyword"},
+      {"["..entry.value_type.."]", "Type"},
+      utils.display_termcodes(tostring(entry.current_value)),
       entry.description,
     }
   end

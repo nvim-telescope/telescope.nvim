@@ -49,18 +49,26 @@ cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
 
 " Telescope builtin lists
 function! s:telescope_complete(...)
-  return join(luaeval('vim.tbl_keys(require("telescope.builtin"))'), "\n")
+  let l:builtin_list = luaeval('vim.tbl_keys(require("telescope.builtin"))')
+  let l:extensions_list = luaeval('vim.tbl_keys(require("telescope._extensions").manager)')
+  return join(extend(l:builtin_list,l:extensions_list),"\n")
 endfunction
 
 " TODO: If the lua datatype contains complex type,It will cause convert to
 " viml datatype failed. So current doesn't support config telescope.themes
 function! s:load_command(builtin,...) abort
   let opts = {}
+  let type = ''
 
   " range command args
   " if arg in lua code is table type,we split command string by `,` to vimscript
   " list type.
   for arg in a:000
+    if stridx(arg,'=') < 0
+      let type = arg
+      continue
+    endif
+
     let opt = split(arg,'=')
     if opt[0] == 'find_command' || opt[0] == 'vimgrep_arguments'
       let opts[opt[0]] = split(opt[1],',')
@@ -70,7 +78,23 @@ function! s:load_command(builtin,...) abort
   endfor
 
   let telescope = v:lua.require('telescope.builtin')
-  call telescope[a:builtin](opts)
+  let extensions = v:lua.require('telescope._extensions').manager
+  if has_key(telescope,a:builtin)
+    call telescope[a:builtin](opts)
+    return
+  endif
+
+  if has_key(extensions,a:builtin)
+    if has_key(extensions[a:builtin],a:builtin)
+      call extensions[a:builtin][a:builtin](opts)
+      return
+    endif
+
+    if has_key(extensions[a:builtin],type)
+      call extensions[a:builtin][type](opts)
+    endif
+  endif
+
 endfunction
 
 " Telescope Commands with complete
