@@ -58,11 +58,17 @@ endfunction
 " viml datatype failed. So current doesn't support config telescope.themes
 function! s:load_command(builtin,...) abort
   let opts = {}
+  let type = ''
 
   " range command args
   " if arg in lua code is table type,we split command string by `,` to vimscript
   " list type.
   for arg in a:000
+    if stridx(arg,'=') < 0
+      let type = arg
+      continue
+    endif
+
     let opt = split(arg,'=')
     if opt[0] == 'find_command' || opt[0] == 'vimgrep_arguments'
       let opts[opt[0]] = split(opt[1],',')
@@ -79,8 +85,16 @@ function! s:load_command(builtin,...) abort
   endif
 
   if has_key(extensions,a:builtin)
-    call extensions[a:builtin][a:builtin](opts)
+    if has_key(extensions[a:builtin],a:builtin)
+      call extensions[a:builtin][a:builtin](opts)
+      return
+    endif
+
+    if has_key(extensions[a:builtin],type)
+      call extensions[a:builtin][type](opts)
+    endif
   endif
+
 endfunction
 
 " Telescope Commands with complete
