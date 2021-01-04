@@ -40,6 +40,11 @@ highlight default link TelescopeResultsNumber Number
 highlight default link TelescopeResultsComment Comment
 highlight default link TelescopeResultsSpecialComment SpecialComment
 
+" Used for git status Results highlighting
+highlight default link TelescopeResultsDiffChange DiffChange
+highlight default link TelescopeResultsDiffAdd DiffAdd
+highlight default link TelescopeResultsDiffDelete DiffDelete
+
 " This is like "<C-R>" in your terminal.
 "   To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)
 cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e

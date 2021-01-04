@@ -899,4 +899,43 @@ function make_entry.gen_from_autocommands(_)
   end
 end
 
+function make_entry.gen_from_git_status(_)
+  local displayer = entry_display.create {
+  separator = " ",
+  items = {
+      { width = 1},
+      { width = 1},
+      { remaining = true },
+    }
+  }
+
+  local make_display = function(entry)
+    local modified = "TelescopeResultsDiffChange"
+    local staged = "TelescopeResultsDiffAdd"
+
+    if entry.status == "??" then
+      modified = "TelescopeResultsDiffDelete"
+      staged = "TelescopeResultsDiffDelete"
+    end
+
+    return displayer {
+      { string.sub(entry.status, 1, 1), staged},
+      { string.sub(entry.status, -1), modified},
+      entry.value,
+    }
+  end
+
+  return function (entry)
+    if entry == '' then return nil end
+    local mod, file = string.match(entry, '(..).*%s[->%s]?(.+)')
+      return {
+        value = file,
+        status = mod,
+        ordinal = entry,
+        display = make_display,
+      }
+  end
+end
+
+
 return make_entry
