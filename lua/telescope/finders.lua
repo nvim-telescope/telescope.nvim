@@ -274,7 +274,7 @@ finders._new = function(opts)
   return JobFinder:new(opts)
 end
 
-finders.new_job = function(command_generator, entry_maker, maximum_results)
+finders.new_job = function(command_generator, entry_maker, maximum_results, cwd)
   return JobFinder:new {
     fn_command = function(_, prompt)
       local command_list = command_generator(prompt)
@@ -292,6 +292,7 @@ finders.new_job = function(command_generator, entry_maker, maximum_results)
 
     entry_maker = entry_maker,
     maximum_results = maximum_results,
+    cwd = cwd,
   }
 end
 
