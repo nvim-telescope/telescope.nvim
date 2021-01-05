@@ -43,6 +43,10 @@ function actions.get_selected_entry()
   return state.get_global_key('selected_entry')
 end
 
+function actions.get_current_line()
+  return state.get_global_key('current_line')
+end
+
 function actions.preview_scrolling_up(prompt_bufnr)
   actions.get_current_picker(prompt_bufnr).previewer:scroll_fn(-30)
 end

@@ -524,6 +524,9 @@ function Picker:find()
         error('Unknown selection strategy: ' .. selection_strategy)
       end
 
+      local current_line = vim.api.nvim_get_current_line():sub(self.prompt_prefix:len() + 1)
+      state.set_global_key('current_line', current_line)
+
       self:clear_extra_rows(results_bufnr)
       self:highlight_displayed_rows(results_bufnr, prompt)
 
