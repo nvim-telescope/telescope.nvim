@@ -33,9 +33,14 @@ local get_file_stat = function(filename)
   return vim.loop.fs_stat(vim.fn.expand(filename)) or {}
 end
 
+local function list_dir(dirname)
+    local qdir = add_quotes .. vim.fn.expand(dirname) .. add_quotes
+    return vim.fn.has('win32') == 1 and {'cmd.exe', '/c', 'dir', qdir} or { 'ls', '-la', qdir}
+end
+
 local bat_maker = function(filename, lnum, start, finish)
   if get_file_stat(filename).type == 'directory' then
-    return { 'ls', '-la', vim.fn.expand(filename) }
+    return list_dir(filename)
   end
 
   local command = {"bat"}
@@ -68,7 +73,7 @@ end
 
 local cat_maker = function(filename, _, start, _)
   if get_file_stat(filename).type == 'directory' then
-    return { 'ls', '-la', add_quotes .. vim.fn.expand(filename) .. add_quotes }
+    return list_dir(filename)
   end
 
   if 1 == vim.fn.executable('file') then
