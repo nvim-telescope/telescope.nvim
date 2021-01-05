@@ -303,6 +303,8 @@ end
 finders.new_oneshot_job = function(command_list, opts)
   opts = opts or {}
 
+  assert(1 == vim.fn.executable(command_list[1]), command_list[1]..": command not found.")
+
   command_list = vim.deepcopy(command_list)
 
   local command = table.remove(command_list, 1)
