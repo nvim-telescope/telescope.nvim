@@ -1020,27 +1020,50 @@ function make_entry.gen_from_autocommands(_)
 end
 
 function make_entry.gen_from_git_status(opts)
+  opts = opts or {}
+
   local displayer = entry_display.create {
-  separator = " ",
+  separator = " ", -- NOTE: this is an &nbsp which fixes alignment whilst icons are not being rendered correctly
   items = {
-      { width = 1 },
-      { width = 1 },
+      { width = 2},
+      { width = 2},
       { remaining = true },
     }
   }
 
-  local make_display = function(entry)
-    local modified = "TelescopeResultsDiffChange"
-    local staged = "TelescopeResultsDiffAdd"
+  local giticons = opts.git_icons or {}
+  local make_display = function(entry, opts)
+    local icons = {
+      add       = giticons.added     or "+",
+      change    = giticons.changed   or "~",
+      delete    = giticons.deleted   or "-",
+      untracked = giticons.untracked or "?"
+    }
+
+    local str_1 = string.sub(entry.status, 1, 1)
+    local str_2 = string.sub(entry.status, -1)
+
+    local git_abbrev = {
+      ["A"] = icons.add,
+      ["M"] = icons.change,
+      ["D"] = icons.change,
+      ["?"] = icons.untracked
+    }
+
+    local hl_modified = "TelescopeResultsDiffChange"
+    local hl_staged   = "TelescopeResultsDiffAdd"
 
     if entry.status == "??" then
-      modified = "TelescopeResultsDiffDelete"
-      staged = "TelescopeResultsDiffDelete"
+      hl_modified = "TelescopeResultsDiffUntracked"
+      hl_staged   = "TelescopeResultsDiffUntracked"
     end
 
     return displayer {
-      { string.sub(entry.status, 1, 1), staged },
-      { string.sub(entry.status, -1), modified },
+      -- { string.sub(entry.status, 1, 1), staged },
+      -- { string.sub(entry.status, -1), modified },
+
+      { git_abbrev[str_1] or "", hl_staged},
+      { git_abbrev[str_2] or "", hl_modified},
       entry.value,
     }
   end

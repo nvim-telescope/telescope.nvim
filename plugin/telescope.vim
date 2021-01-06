@@ -69,6 +69,7 @@ highlight default link TelescopeResultsSpecialComment SpecialComment
 highlight default link TelescopeResultsDiffChange DiffChange
 highlight default link TelescopeResultsDiffAdd DiffAdd
 highlight default link TelescopeResultsDiffDelete DiffDelete
+highlight default link TelescopeResultsDiffUntracked NonText
 
 " This is like "<C-R>" in your terminal.
 "   To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)
