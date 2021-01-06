@@ -229,11 +229,15 @@ internal.loclist = function(opts)
 end
 
 internal.oldfiles = function(opts)
+  local results = vim.tbl_filter(function(val)
+    return 0 ~= vim.fn.filereadable(val)
+  end, vim.v.oldfiles)
   pickers.new(opts, {
     prompt_title = 'Oldfiles',
-    finder = finders.new_table(vim.tbl_filter(function(val)
-      return 0 ~= vim.fn.filereadable(val)
-    end, vim.v.oldfiles)),
+    finder = finders.new_table{
+      results = results,
+      entry_maker = opts.entry_maker or make_entry.gen_from_file(opts),
+    },
     sorter = conf.file_sorter(opts),
     previewer = conf.file_previewer(opts),
   }):find()
