@@ -54,6 +54,7 @@ builtin.keymaps = require('telescope.builtin.internal').keymaps
 builtin.filetypes = require('telescope.builtin.internal').filetypes
 builtin.highlights = require('telescope.builtin.internal').highlights
 builtin.autocommands = require('telescope.builtin.internal').autocommands
+builtin.spell_suggest = require('telescope.builtin.internal').spell_suggest
 
 builtin.lsp_references = require('telescope.builtin.lsp').references
 builtin.lsp_document_symbols = require('telescope.builtin.lsp').document_symbols

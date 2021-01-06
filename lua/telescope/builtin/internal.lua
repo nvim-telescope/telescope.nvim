@@ -771,6 +771,29 @@ internal.autocommands = function(opts)
   }):find()
 end
 
+internal.spell_suggest = function(opts)
+  if not vim.wo.spell then return false end
+
+  local cursor_word = vim.fn.expand("<cword>")
+  local suggestions = vim.fn.spellsuggest(cursor_word)
+
+  pickers.new(opts, {
+    prompt_title = 'Spelling Suggestions',
+    finder = finders.new_table {
+      results = suggestions,
+    },
+    sorter = conf.generic_sorter(opts),
+    attach_mappings = function(prompt_bufnr)
+      actions.goto_file_selection_edit:replace(function()
+        local selection = actions.get_selected_entry()
+        actions.close(prompt_bufnr)
+        vim.cmd('normal! "_ciw"' .. selection[1])
+      end)
+      return true
+    end
+  }):find()
+end
+
 local function apply_checks(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)

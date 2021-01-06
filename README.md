@@ -398,6 +398,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.vim_options`               | Lists vim options and on enter edit the options value.                                      |
 | `builtin.registers`                 | Lists vim registers and edit or paste selection.                                            |
 | `builtin.autocommands`              | Lists vim autocommands and go to their declaration.                                         |
+| `builtin.spell_suggest`             | Lists spelling suggestions for <cword>.
 | `builtin.keymaps`                   | Lists normal-mode mappings.                                                                 |
 | `builtin.filetypes`                 | Lists all filetypes.                                                                        |
 | `builtin.highlights`                | Lists all highlights.                                                                       |
