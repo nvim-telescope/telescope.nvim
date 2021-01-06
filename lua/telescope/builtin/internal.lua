@@ -774,7 +774,7 @@ internal.spell_suggest = function(opts)
   local suggestions = vim.fn.spellsuggest(cursor_word)
 
   pickers.new(opts, {
-    prompt_title = 'Filetypes',
+    prompt_title = 'Spelling Suggestions',
     finder = finders.new_table {
       results = suggestions,
     },
