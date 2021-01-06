@@ -1032,7 +1032,7 @@ function make_entry.gen_from_git_status(opts)
   }
 
   local giticons = opts.git_icons or {}
-  local make_display = function(entry, opts)
+  local make_display = function(entry)
     local icons = {
       add       = giticons.added     or "+",
       change    = giticons.changed   or "~",
