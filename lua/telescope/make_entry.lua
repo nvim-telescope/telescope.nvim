@@ -1046,7 +1046,7 @@ function make_entry.gen_from_git_status(opts)
     local git_abbrev = {
       ["A"] = icons.add,
       ["M"] = icons.change,
-      ["D"] = icons.change,
+      ["D"] = icons.delete,
       ["?"] = icons.untracked
     }
 
