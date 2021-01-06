@@ -1,7 +1,45 @@
 local themes = require('telescope.themes')
 local builtin = require('telescope.builtin')
 local extensions = require('telescope._extensions').manager
+local config = require('telescope.config')
 local command = {}
+
+local function convert_user_opts(user_opts)
+  local default_opts = config.values
+
+  local _switch = {
+    ['boolean'] = function(key,val)
+      if val == 'false' then
+        user_opts[key] = false
+      end
+      user_opts[key] = true
+    end,
+    ['number'] = function(key,val)
+      user_opts[key] = tonumber(val)
+    end,
+    ['string'] = function(key,val)
+      if val == 'nil' then
+        user_opts[key] = nil
+      end
+    end
+  }
+
+  local _switch_metatable = {
+    __index = function(_,k)
+      print(string.format('Type of %s does not match',k))
+    end
+  }
+
+  setmetatable(_switch,_switch_metatable)
+
+  for key,val in pairs(user_opts) do
+    if default_opts[key]  == nil then
+      print('[Telescope] argument not exists in default options')
+      return
+    end
+    _switch[type(default_opts[key])](key,val)
+  end
+end
 
 -- receive the viml command args
 -- it should be a table value like
@@ -23,6 +61,11 @@ function command.run_command(args)
   local opts = user_opts.opts or {}
   local extension_type = user_opts.extension_type or ''
   local theme = user_opts.theme or ''
+
+  if next(opts) ~= nil then
+    convert_user_opts(opts)
+  end
+  print(vim.inspect(opts))
 
   if string.len(theme) > 0 then
     opts = themes[theme](opts)
