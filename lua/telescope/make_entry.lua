@@ -1033,12 +1033,14 @@ local git_icon_defaults = {
 function make_entry.gen_from_git_status(opts)
   opts = opts or {}
 
+  local col_width = ((opts.git_icons and opts.git_icons.added) and opts.git_icons.added:len() + 2) or 2
   local displayer = entry_display.create {
-  separator = " ", -- NOTE: this is an &nbsp which fixes alignment whilst icons are not being rendered correctly
+  separator = "",
   items = {
-      { width = 3},
-      { width = 3},
+      { width = col_width},
+      { width = col_width},
       { remaining = true },
+      -- { width = 70 },
     }
   }
 
@@ -1056,9 +1058,10 @@ function make_entry.gen_from_git_status(opts)
 
     local x = string.sub(entry.status, 1, 1)
     local y = string.sub(entry.status, -1)
-    local status_x = git_abbrev[x] or ""
-    local status_y = git_abbrev[y] or ""
+    local status_x = git_abbrev[x] or {}
+    local status_y = git_abbrev[y] or {}
 
+    local empty_space = (" ")
     return displayer {
       -- part 1
       -- { string.sub(entry.status, 1, 1), staged },
@@ -1068,8 +1071,8 @@ function make_entry.gen_from_git_status(opts)
       -- { git_abbrev[str_1] or "", hl_staged},
       -- { git_abbrev[str_2] or "", hl_modified},
 
-      { status_x.icon or "", status_x.hl},
-      { status_y.icon or "", status_y.hl},
+      { status_x.icon or empty_space, status_x.hl},
+      { status_y.icon or empty_space, status_y.hl},
       entry.value,
     }
   end
