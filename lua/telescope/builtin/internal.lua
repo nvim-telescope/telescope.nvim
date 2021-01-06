@@ -787,7 +787,8 @@ internal.spell_suggest = function(opts)
       actions.goto_file_selection_edit:replace(function()
         local selection = actions.get_selected_entry()
         actions.close(prompt_bufnr)
-        vim.cmd('normal! "_ciw"' .. selection[1])
+        vim.cmd('normal! ciw' .. selection[1])
+        vim.cmd('stopinsert')
       end)
       return true
     end
