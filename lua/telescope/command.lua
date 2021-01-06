@@ -4,6 +4,8 @@ local extensions = require('telescope._extensions').manager
 local config = require('telescope.config')
 local command = {}
 
+-- convert command line string arguments to
+-- lua number boolean type and nil value
 local function convert_user_opts(user_opts)
   local default_opts = config.values
 
@@ -65,7 +67,6 @@ function command.run_command(args)
   if next(opts) ~= nil then
     convert_user_opts(opts)
   end
-  print(vim.inspect(opts))
 
   if string.len(theme) > 0 then
     opts = themes[theme](opts)
