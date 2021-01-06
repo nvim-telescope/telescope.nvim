@@ -56,7 +56,9 @@ cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
 function! s:telescope_complete(...)
   let l:builtin_list = luaeval('vim.tbl_keys(require("telescope.builtin"))')
   let l:extensions_list = luaeval('vim.tbl_keys(require("telescope._extensions").manager)')
-  return join(extend(l:builtin_list,l:extensions_list),"\n")
+  let l:options_list = luaeval('vim.tbl_keys(require("telescope.config").values)')
+  let l:tmp = extend(l:builtin_list,l:extensions_list)
+  return join(extend(l:tmp,options_list),"\n")
 endfunction
 
 function! s:load_command(builtin,...) abort
