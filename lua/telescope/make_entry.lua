@@ -1019,31 +1019,31 @@ function make_entry.gen_from_autocommands(_)
   end
 end
 
+local git_icon_defaults = {
+  added     = "+",
+  changed   = "~",
+  copied    = ">",
+  deleted   = "-",
+  renamed   = "➡",
+  unmerged  = "‡",
+  untracked = "?"
+}
+
+
 function make_entry.gen_from_git_status(opts)
   opts = opts or {}
 
   local displayer = entry_display.create {
   separator = " ", -- NOTE: this is an &nbsp which fixes alignment whilst icons are not being rendered correctly
   items = {
-      { width = 2},
-      { width = 2},
+      { width = 3},
+      { width = 3},
       { remaining = true },
     }
   }
 
   local make_display = function(entry)
-    local icon_defaults = {
-      added     = "+",
-      changed   = "~",
-      copied    = ">",
-      deleted   = "-",
-      renamed   = "➡",
-      unmerged  = "‡",
-      untracked = "?"
-    }
-
-    local icons = opts.git_icons or icon_defaults
-
+    local icons = opts.git_icons or git_icon_defaults
     local git_abbrev = {
       ["A"] = {icon = icons.added,      hl = "TelescopeResultsDiffAdd"},
       ["U"] = {icon = icons.unmerged,   hl = "TelescopeResultsDiffAdd"},
@@ -1056,7 +1056,6 @@ function make_entry.gen_from_git_status(opts)
 
     local x = string.sub(entry.status, 1, 1)
     local y = string.sub(entry.status, -1)
-
     local status_x = git_abbrev[x] or ""
     local status_y = git_abbrev[y] or ""
 
