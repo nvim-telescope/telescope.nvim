@@ -58,7 +58,7 @@ function! s:telescope_complete(...)
   let l:extensions_list = luaeval('vim.tbl_keys(require("telescope._extensions").manager)')
   let l:options_list = luaeval('vim.tbl_keys(require("telescope.config").values)')
   let l:tmp = extend(l:builtin_list,l:extensions_list)
-  return join(extend(l:tmp,options_list),"\n")
+  return join(extend(l:tmp,l:options_list),"\n")
 endfunction
 
 function! s:load_command(builtin,...) abort
