@@ -66,22 +66,24 @@ function! s:telescope_complete(arg,line,pos)
     endif
   endfor
 
-  let list = [extend(l:builtin_list,l:extensions_list),l:ext_type_list,l:options_list]
+  let list = [extend(l:builtin_list,l:extensions_list),l:options_list]
   let l = split(a:line[:a:pos-1], '\%(\%(\%(^\|[^\\]\)\\\)\@<!\s\)\+', 1)
   let n = len(l) - index(l, 'Telescope') - 2
-  echomsg l
 
-  if len(l) >= 2
-    if index(l:builtin_list, l[1]) >= 0
-      return join(list[2],"\n")
+  if n == 0
+    return join(list[0],"\n")
+  endif
+
+  if n == 1
+    if index(l:extensions_list,l[1]) >= 0
+      return join(l:ext_type_list,"\n")
     endif
+    return join(list[1],"\n")
   endif
 
-  if n > 2
-    return join(list[2],"\n")
+  if n > 1
+    return join(list[1],"\n")
   endif
-
-  return join(list[n],"\n")
 endfunction
 
 function! s:load_command(builtin,...) abort
