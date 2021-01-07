@@ -1,3 +1,5 @@
+local utils = require("telescope/utils")
+
 local Previewer = {}
 Previewer.__index = Previewer
 

@@ -556,10 +556,13 @@ function Picker:find()
   on_lines(nil, nil, nil, 0, 1)
   update_status()
 
+  local send, run, stop = utils.async_queue(on_lines)
+
   -- Register attach
   vim.api.nvim_buf_attach(prompt_bufnr, false, {
-    on_lines = utils.async(on_lines),
+    on_lines = send,
     on_detach = vim.schedule_wrap(function()
+      stop()
       self:_reset_highlights()
 
       on_lines = nil
@@ -574,6 +577,7 @@ function Picker:find()
       collectgarbage(); collectgarbage()
     end),
   })
+  run()
 
   -- TODO: Use WinLeave as well?
   local on_buf_leave = string.format(
@@ -803,10 +807,10 @@ function Picker:set_selection(row)
   if status.preview_win and self.previewer then
     self:_increment("previewed")
 
-    self.previewer:preview(
+    utils.async(function() self.previewer:preview(
       entry,
       status
-    )
+    ) end)()
   end
 end
 
