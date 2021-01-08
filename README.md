@@ -510,6 +510,10 @@ nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope
 " Change an option
 nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({ winblend = 10 }))<cr>
 ```
+or use with command:
+```vim
+Telescope find_files theme=get_dropdown
+```
 
 Themes should work with every `telescope.builtin` function.  If you wish to
 make theme, check out `lua/telescope/themes.lua`.
