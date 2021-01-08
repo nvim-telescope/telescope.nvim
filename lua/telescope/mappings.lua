@@ -44,6 +44,9 @@ mappings.default_mappings = config.values.default_mappings or {
 
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
+
+      -- ["<C-w>h"] = actions.preview_switch_window_left,
+      ["<C-w>l"] = actions.preview_switch_window_right,
     },
   }
 

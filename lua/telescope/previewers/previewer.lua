@@ -10,6 +10,7 @@ function Previewer:new(opts)
     _teardown_func = opts.teardown,
     _send_input = opts.send_input,
     _scroll_fn = opts.scroll_fn,
+    _switch_window = opts.switch_window,
     preview_fn = opts.preview_fn,
   }, Previewer)
 end
@@ -49,6 +50,14 @@ function Previewer:scroll_fn(direction)
     self:_scroll_fn(direction)
   else
     vim.api.nvim_err_writeln("scroll_fn is not defined for this previewer")
+  end
+end
+
+function Previewer:switch_window(winid)
+  if self._switch_window then
+    self:_switch_window(winid)
+  else
+    vim.api.nvim_err_writeln("switch_window is not defined for this previewer")
   end
 end
 

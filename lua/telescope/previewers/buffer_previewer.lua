@@ -159,6 +159,12 @@ previewers.new_buffer_previewer = function(opts)
     end
   end
 
+  if not opts.switch_window then
+    function opts.switch_window(_, winid)
+      vim.cmd(string.format("noautocmd call nvim_set_current_win(%s)", winid))
+    end
+  end
+
   return Previewer:new(opts)
 end
 
