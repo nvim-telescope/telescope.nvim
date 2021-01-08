@@ -1,33 +1,11 @@
 local scroller = {}
 
-local clamp = function(min, max, val)
-  if val >= max then
-    return max
-  elseif val <= min then
-    return min
-  else
-    return val
-  end
-end
-
 local range_calculators = {
   ascending = function(max_results, num_results)
     return 0, math.min(max_results, num_results)
   end,
 
   descending = function(max_results, num_results)
---     if max_results == num_results or not row then
---       return math.max(max_results, num_results)
---     else
---       local x = math.max(max_results - num_results, 0)
---       if row < x then
---         return math.max(max_results, num_results) - 1, true
---       elseif row == max_results then
---         return x, true
---       else
---         return math.max(max_results, num_results)
---       end
---     end
     return math.max(max_results - num_results, 0), max_results
   end,
 }
