@@ -303,6 +303,9 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
       )
     end
   end
+
+  local entry = self.manager:get_entry(self:get_index(row))
+  self.highlighter:hi_multiselect(row, entry)
 end
 
 function Picker:can_select_row(row)
@@ -697,24 +700,48 @@ end
 function Picker:add_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self.multi_select[entry] = true
+
+  self.highlighter:hi_multiselect(row, entry)
+end
+
+function Picker:add_selection(row)
+  local entry = self.manager:get_entry(self:get_index(row))
+  self.multi_select[entry] = true
+
+  self.highlighter:hi_multiselect(row, entry)
+end
+
+function Picker:remove_selection(row)
+  local entry = self.manager:get_entry(self:get_index(row))
+  self.multi_select[entry] = nil
+
+  self.highlighter:hi_multiselect(row, entry)
+end
+
+function Picker:toggle_selection(row)
+  local entry = self.manager:get_entry(self:get_index(row))
+
+  if self.multi_select[entry] then
+    self:remove_selection(row)
+  else
+    self:add_selection(row)
+  end
 end
 
 function Picker:display_multi_select(results_bufnr)
-  if true then return end
-
-  -- for entry, _ in pairs(self.multi_select) do
-  --   local index = self.manager:find_entry(entry)
-  --   if index then
-  --     vim.api.nvim_buf_add_highlight(
-  --       results_bufnr,
-  --       ns_telescope_selection,
-  --       "TelescopeMultiSelection",
-  --       self:get_row(index),
-  --       0,
-  --       -1
-  --     )
-  --   end
-  -- end
+  for entry, _ in pairs(self.multi_select) do
+    local index = self.manager:find_entry(entry)
+    if index then
+      vim.api.nvim_buf_add_highlight(
+        results_bufnr,
+        a.nvim_create_namespace('telescope_selection'),
+        "TelescopeMultiSelection",
+        self:get_row(index),
+        0,
+        -1
+      )
+    end
+  end
 end
 
 function Picker:reset_selection()
@@ -776,6 +803,7 @@ function Picker:set_selection(row)
 
         self.highlighter:hi_display(self._selection_row, '  ', display_highlights)
         self.highlighter:hi_sorter(self._selection_row, prompt, display)
+        self.highlighter:hi_multiselect(self._selection_row, self._selection_entry)
       end
     end
 
@@ -797,9 +825,7 @@ function Picker:set_selection(row)
     self.highlighter:hi_selection(row, caret)
     self.highlighter:hi_display(row, '  ', display_highlights)
     self.highlighter:hi_sorter(row, prompt, display)
-
-    -- TODO: Actually implement this for real TJ, don't leave around half implemented code plz :)
-    -- self:display_multi_select(results_bufnr)
+    self.highlighter:hi_multiselect(row, entry)
   end)
 
   if not set_ok then
