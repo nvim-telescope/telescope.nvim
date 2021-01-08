@@ -3,6 +3,7 @@ local utils = require('telescope.utils')
 local putils = require('telescope.previewers.utils')
 local from_entry = require('telescope.from_entry')
 local Previewer = require('telescope.previewers.previewer')
+local path = require('telescope.path')
 
 local flatten = vim.tbl_flatten
 local buf_delete = utils.buf_delete
@@ -258,7 +259,13 @@ previewers.vimgrep = defaulter(function(opts)
       local win_id = status.preview_win
       local height = vim.api.nvim_win_get_height(win_id)
 
-      local dir = opts.cwd and vim.fn.expand(opts.cwd)..'/' or ''
+      local dir = ''
+      if opts.cwd then
+        dir = vim.fn.expand(opts.cwd)
+        if dir:sub(-1) ~= path.separator then
+          dir = dir..path.separator
+        end
+      end
       local filename = dir..entry.filename
       local lnum = entry.lnum or 0
 
