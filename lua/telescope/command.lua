@@ -23,6 +23,12 @@ local function convert_user_opts(user_opts)
       if val == 'nil' then
         user_opts[key] = nil
       end
+      if val == '""' then
+        user_opts[key] = ''
+      end
+      if val == '"' then
+        user_opts[key] = ''
+      end
     end
   }
 
@@ -72,7 +78,7 @@ function command.run_command(args)
     opts = themes[theme](opts)
   end
 
-  if string.len(extension_type) > 0 then
+  if string.len(extension_type) > 0 and extension_type ~= '"' then
     extensions[cmd][extension_type](opts)
     return
   end
