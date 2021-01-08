@@ -733,7 +733,7 @@ function Picker:set_selection(row)
     if not self:can_select_row(self:get_selection_row()) then
       row = self:get_row(self.manager:num_results())
     else
-      log.debug("Cannot select row:", row, self.manager:num_results(), self.max_results)
+      log.trace("Cannot select row:", row, self.manager:num_results(), self.max_results)
       return
     end
   end

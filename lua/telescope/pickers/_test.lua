@@ -1,5 +1,6 @@
 local assert = require('luassert')
 local builtin = require('telescope.builtin')
+local log = require('telescope.log')
 
 local Job = require("plenary.job")
 local Path = require("plenary.path")
@@ -224,6 +225,9 @@ tester.not_ = function(val)
 end
 
 tester._execute = function(filename)
+  -- Important so that the outputs don't get mixed
+  log.use_console = false
+
   vim.cmd(string.format("luafile %s", filename))
 
   local f = loadfile(filename)
