@@ -725,10 +725,7 @@ function Picker:reset_selection()
 end
 
 function Picker:set_selection(row)
-  -- TODO: Scrolling past max results
-  log.info("Was row: ", self.max_results, self.manager:num_results(), row)
   row = self.scroller(self.max_results, self.manager:num_results(), row)
-  log.info("New row: ", row)
 
   if not self:can_select_row(row) then
     -- If the current selected row exceeds number of currently displayed
@@ -868,7 +865,6 @@ function Picker:entry_adder(index, entry, score, insert)
 
     local line_count = vim.api.nvim_buf_line_count(self.results_bufnr)
     if row > line_count then
-      log.warning("Largerasdfasdf")
       return
     end
 

@@ -1,6 +1,5 @@
 local assert = require('luassert')
 local builtin = require('telescope.builtin')
-local log = require('telescope.log')
 
 local Job = require("plenary.job")
 local Path = require("plenary.path")
@@ -19,11 +18,15 @@ local nvim_feed = function(text, feed_opts)
   vim.api.nvim_feedkeys(text, feed_opts, true)
 end
 
-local writer = function(...)
+local writer = function(val)
+  if type(val) == "table" then
+    val = vim.fn.json_encode(val) .. "\n"
+  end
+
   if tester.debug then
-    print(...)
+    print(val)
   else
-    io.stderr:write(...)
+    io.stderr:write(val)
   end
 end
 
@@ -31,26 +34,24 @@ local execute_test_case = function(location, key, spec)
   local ok, actual = pcall(spec[2])
 
   if not ok then
-    writer(vim.fn.json_encode({
+    writer {
       location = 'Error: ' .. location,
       case = key,
       expected = 'To succeed and return: ' .. tostring(spec[1]),
       actual = actual,
 
       _type = spec._type,
-    }))
+    }
   else
-    writer(vim.fn.json_encode({
+    writer {
       location = location,
       case = key,
       expected = spec[1],
       actual = actual,
 
       _type = spec._type,
-    }))
+    }
   end
-
-  writer("\n")
 end
 
 local end_test_cases = function()
@@ -58,8 +59,7 @@ local end_test_cases = function()
 end
 
 local invalid_test_case = function(k)
-  writer(vim.fn.json_encode({ case = k, expected = '<a valid key>', actual = k }))
-  writer("\n")
+  writer { case = k, expected = '<a valid key>', actual = k }
 
   end_test_cases()
 end
@@ -147,11 +147,14 @@ local get_results_from_file = function(file)
       '-u',
       'scripts/minimal_init.vim',
       '-c',
-      'luafile ' .. file
+      string.format(
+        [[lua require("telescope.pickers._test")._execute("%s")]],
+        file
+      ),
     },
   }
 
-  j:sync()
+  j:sync(1000)
 
   local results = j:stderr_result()
   local result_table = {}
@@ -188,7 +191,6 @@ end
 
 tester.run_string = function(contents)
   local tempname = vim.fn.tempname()
-  log.info("Running test string: ", tempname)
 
   contents = [[
   local tester = require('telescope.pickers._test')
@@ -201,15 +203,10 @@ tester.run_string = function(contents)
   local result_table = get_results_from_file(tempname)
   vim.fn.delete(tempname)
 
-  log.info("Completed string test: ", tempname)
-
   check_results(result_table)
-  -- assert.are.same(result_table.expected, result_table.actual)
 end
 
 tester.run_file = function(filename)
-  log.info("Running test file:", filename)
-
   local file = './lua/tests/pickers/' .. filename .. '.lua'
 
   if not Path:new(file):exists() then
@@ -218,7 +215,6 @@ tester.run_file = function(filename)
 
   local result_table = get_results_from_file(file)
 
-  log.info("Completed file test:", filename)
   check_results(result_table)
 end
 
@@ -226,5 +222,31 @@ tester.not_ = function(val)
   val._type = 'are_not'
   return val
 end
+
+tester._execute = function(filename)
+  vim.cmd(string.format("luafile %s", filename))
+
+  local f = loadfile(filename)
+  if not f then
+    writer {
+      location = 'Error: ' .. filename,
+      case = filename,
+      expected = 'To succeed',
+      actual = nil,
+    }
+  end
+
+  local ok, msg = pcall(f)
+  if not ok then
+    writer {
+      location = "Error: " .. msg,
+      case = msg,
+      expected = msg,
+    }
+  end
+
+  end_test_cases()
+end
+
 
 return tester

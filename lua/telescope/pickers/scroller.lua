@@ -65,12 +65,12 @@ local scroll_calculators = {
 scroller.create = function(scroll_strategy, sorting_strategy)
   local range_fn = range_calculators[sorting_strategy]
   if not range_fn then
-    error("Unknown sorting strategy: " .. sorting_strategy)
+    error(debug.traceback("Unknown sorting strategy: " .. sorting_strategy))
   end
 
   local scroll_fn = scroll_calculators[scroll_strategy]
   if not scroll_fn then
-    error("Unknown scroll strategy: " .. scroll_strategy)
+    error(debug.traceback("Unknown scroll strategy: " .. (scroll_strategy or '')))
   end
 
   local calculator = scroll_fn(range_fn)

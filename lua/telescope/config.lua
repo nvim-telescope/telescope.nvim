@@ -34,7 +34,7 @@ function config.set_defaults(defaults)
 
   set("sorting_strategy", "descending")
   set("selection_strategy", "reset")
-  set("scroll_strategy", nil)
+  set("scroll_strategy", "cycle")
 
   set("layout_strategy", "horizontal")
   set("layout_defaults", {})
