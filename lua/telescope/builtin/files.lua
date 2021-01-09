@@ -1,6 +1,7 @@
 local actions = require('telescope.actions')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
+local path = require('telescope.path')
 local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
 local utils = require('telescope.utils')
@@ -242,30 +243,44 @@ files.current_buffer_fuzzy_find = function(opts)
 end
 
 files.tags = function(opts)
-  local ctags_file = opts.ctags_file or 'tags'
+  local tagfiles = opts.ctags_file and { opts.ctags_file } or
+                   vim.fn.map(vim.fn.tagfiles(), 'expand(fnamemodify(v:val, ":p"))')
 
-  if not vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438) then
-    print('Tags file does not exists. Create one with ctags -R')
+  if vim.tbl_isempty(tagfiles) then
+    print('No tags file found. Create one with ctags -R or verify your &tags option is correctly set.')
     return
   end
 
-  local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438))
-  local stat = assert(vim.loop.fs_fstat(fd))
-  local data = assert(vim.loop.fs_read(fd, stat.size, 0))
-  assert(vim.loop.fs_close(fd))
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_ctags(opts)
+  local finder = finders.new_incremental(opts)
 
-  local results = vim.split(data, '\n')
+  local remaining = #tagfiles
+
+  for _, each in ipairs(tagfiles) do
+    local tags_directory = vim.fn.fnamemodify(each, ":h")
+    local resolve_filename = function(filename)
+        return path.exists(filename) and filename or
+               path.join(tags_directory, filename)
+    end
+    path.read_file_async(each, function(data)
+      for _, line in ipairs(vim.split(data, '\n')) do
+        finder:feed({ line = line, resolve_filename = resolve_filename })
+      end
+      if remaining == 1 then finder:finish() else remaining = remaining - 1 end
+    end)
+  end
 
   pickers.new(opts,{
     prompt = 'Tags',
-    finder = finders.new_table {
-      results = results,
-      entry_maker = opts.entry_maker or make_entry.gen_from_ctags(opts),
-    },
+    finder = finder,
     previewer = previewers.ctags.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function()
       actions._goto_file_selection:enhance {
+        pre = function()
+          local entry = actions.get_selected_entry()
+          entry.filename = entry.resolve_filename(entry.filename)
+        end,
         post = function()
           local selection = actions.get_selected_entry()
 
