@@ -258,8 +258,7 @@ previewers.vimgrep = defaulter(function(opts)
       local win_id = status.preview_win
       local height = vim.api.nvim_win_get_height(win_id)
 
-      local dir = opts.cwd and vim.fn.expand(opts.cwd)..'/' or ''
-      local filename = dir..entry.filename
+      local filename = entry.filename
       local lnum = entry.lnum or 0
 
       local context = math.floor(height / 2)
