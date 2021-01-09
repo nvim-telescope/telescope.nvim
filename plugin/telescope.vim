@@ -60,11 +60,13 @@ function! s:telescope_complete(arg,line,pos)
   let ext_type = v:lua.require('telescope._extensions').manager
   let l:ext_type_list = []
 
-  for val in values(ext_type)
-    if len(val) > 1
-      call extend(l:ext_type_list,keys(val))
-    endif
-  endfor
+  if !empty(ext_type)
+    for val in values(ext_type)
+      if type(val) == 3
+        call extend(l:ext_type_list,keys(val))
+      endif
+    endfor
+  endif
 
   let list = [extend(l:builtin_list,l:extensions_list),l:options_list]
   let l = split(a:line[:a:pos-1], '\%(\%(\%(^\|[^\\]\)\\\)\@<!\s\)\+', 1)
