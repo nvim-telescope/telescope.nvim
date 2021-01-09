@@ -258,14 +258,15 @@ previewers.vimgrep = defaulter(function(opts)
       local win_id = status.preview_win
       local height = vim.api.nvim_win_get_height(win_id)
 
-      local filename = entry.filename
+      local p = from_entry.path(entry, true)
+      if p == nil or p == '' then return end
       local lnum = entry.lnum or 0
 
       local context = math.floor(height / 2)
       local start = math.max(0, lnum - context)
       local finish = lnum + context
 
-      return maker(filename, lnum, start, finish)
+      return maker(p, lnum, start, finish)
     end,
   }
 end, {})
@@ -280,7 +281,8 @@ previewers.qflist = defaulter(function(opts)
       local win_id = status.preview_win
       local height = vim.api.nvim_win_get_height(win_id)
 
-      local filename = entry.filename
+      local p = from_entry.path(entry, true)
+      if p == nil or p == '' then return end
       local lnum = entry.lnum
 
       local start, finish
@@ -293,7 +295,7 @@ previewers.qflist = defaulter(function(opts)
         finish = lnum + context
       end
 
-      return maker(filename, lnum, start, finish)
+      return maker(p, lnum, start, finish)
     end
   }
 end, {})
