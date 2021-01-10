@@ -62,9 +62,9 @@ utils.highlighter = function(bufnr, ft)
 end
 
 --- Attach regex highlighter
-utils.regex_highlighter = function(_, ft)
+utils.regex_highlighter = function(bufnr, ft)
   if has_filetype(ft) then
-    vim.cmd(':ownsyntax ' .. ft)
+    vim.api.nvim_buf_set_option(bufnr, "syntax", ft)
     return true
   end
   return false
