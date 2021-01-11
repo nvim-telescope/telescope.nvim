@@ -8,7 +8,14 @@ docs.test = function()
   local input_dir = "./lua/telescope/"
   local input_files = vim.fn.globpath(input_dir, "**/*.lua", false, true)
 
-  input_files = { "./lua/telescope/init.lua" }
+  -- TODO: Fix the other files so that we can add them here.
+  input_files = {
+    "./lua/telescope/init.lua"
+  }
+
+  table.sort(input_files, function(a, b)
+    return #a < #b
+  end)
 
   local output_file = "./docs/telescope.txt"
   local output_file_handle = io.open(output_file, "w")

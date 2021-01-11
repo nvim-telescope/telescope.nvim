@@ -1,14 +1,14 @@
 ================================================================================
                                                                 *telescope.nvim*
 
-Telescope.nvim is a plugin for fuzzy finding and neovim. It helps you search
-for anything you can imagine (and then write in Lua).
+Telescope.nvim is a plugin for fuzzy finding and neovim. It helps you search,
+filter, find and pick things in Lua.  To find out more:
+https://github.com/nvim-telescope/telescope.nvim
 
-telescope.setup({opts})                                    *telescope.setup()*
-        and other aspects of telescope.
-
-        Parameters: ~
-            {opts} (table)  Configuration opts. Keys: defaults, extensions
+telescope.extensions()                                *telescope.extensions()*
+        Use telescope.extensions to reference any extensions within your
+        configuration. While the docs currently generate this as a function,
+        it's actually a table. Sorry.
 
 
 telescope.load_extension({name})                  *telescope.load_extension()*
@@ -25,9 +25,20 @@ telescope.register_extension({mod})           *telescope.register_extension()*
             {mod} (table)  Module
 
 
-telescope.extensions()                                *telescope.extensions()*
-        While the docs currently generate this as a function, it's actually a
-        table. Sorry.
+telescope.setup({opts})                                    *telescope.setup()*
+        Setup function to be run by user. Configures the defaults, extensions
+        and other aspects of telescope. Valid keys:
+        { "layout_defaults",
+        "use_less", "results_height", "selection_strategy", "sorting_strategy",
+        "results_width", "get_status_text", "buffer_previewer_maker",
+        "prompt_position", "color_devicons", "vimgrep_arguments", "border",
+        "qflist_previewer", "width", "grep_previewer", "file_previewer",
+        "generic_sorter", "borderchars", "winblend", "mappings",
+        "scroll_strategy", "set_env", "prompt_prefix", "file_sorter",
+        "preview_cutoff", "layout_strategy" }
+
+        Parameters: ~
+            {opts} (table)  Configuration opts. Keys: defaults, extensions
 
 
 

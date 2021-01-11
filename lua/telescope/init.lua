@@ -9,14 +9,18 @@ local telescope = {}
 -- ---@pre ]]
 
 ---@brief [[
---- Telescope.nvim is a plugin for fuzzy finding and neovim. It helps you search
---- for anything you can imagine (and then write in Lua).
+--- Telescope.nvim is a plugin for fuzzy finding and neovim. It helps you search,
+--- filter, find and pick things in Lua.
+---
+--- To find out more:
+--- https://github.com/nvim-telescope/telescope.nvim
 ---@brief ]]
 ---@tag telescope.nvim
 
 --- Setup function to be run by user. Configures the defaults, extensions
 --- and other aspects of telescope.
 ---@param opts table: Configuration opts. Keys: defaults, extensions
+---@eval { ["description"] =  'Valid keys:\n' .. vim.inspect(vim.tbl_keys(require('telescope.config').values)) }
 function telescope.setup(opts)
   opts = opts or {}
 
