@@ -2,15 +2,15 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: ''
+labels: bug
 assignees: ''
 
 ---
 
 <!-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-> Please make sure to take the time adhere fully the following template. 
-> So that the team can understand the issue and solve it very quickly, 
-> else the issue will be marked "missing issue template" and 
+> Please make sure to take the time adhere fully the following template.
+> So that the team can understand the issue and solve it very quickly,
+> else the issue will be marked "missing issue template" and
 > close right away!!!!!
 
 TODO:
@@ -41,7 +41,7 @@ TIP: copy the template to your vim buffer
 Example:
 
 1. nvim -nu test.vim
-2. :Telescope live_grep or git_commits 
+2. :Telescope live_grep or git_commits
 3. .... bang here is the issue
 ...
 -->
@@ -60,7 +60,7 @@ Example:
 - git log --pretty=format:'%h' -n 1
 ...
 -->
-- nvim version:
+- nvim --version output: 
 - Operating system: 
 - Telescope commit: 
 
@@ -69,8 +69,8 @@ Example:
 <!-- Configuration -->
 <details><summary>Configuration</summary>
 <p>
-<!-- adopt your telescope configuration to the following template, 
-save it to test.vim then execute `nvim -NU test.vim` --> 
+<!-- adopt your telescope configuration to the following template,
+save it to test.vim then execute `nvim -NU test.vim` -->
 
 ```viml
 set nocompatible hidden laststatus=2
@@ -101,7 +101,7 @@ require('telescope').setup{
       '--column',
       '--smart-case'
     },
-    prompt_position = "bottom", 
+    prompt_position = "bottom",
     prompt_prefix = ">",
     selection_strategy = "reset",
     sorting_strategy = "descending",
