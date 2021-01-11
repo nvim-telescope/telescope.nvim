@@ -8,10 +8,12 @@ previewers.new = function(...)
   return Previewer:new(...)
 end
 
+--- Deprecated previewers
 previewers.new_termopen_previewer = term_previewer.new_termopen_previewer
 previewers.cat                    = term_previewer.cat
 previewers.vimgrep                = term_previewer.vimgrep
 previewers.qflist                 = term_previewer.qflist
+---
 
 previewers.new_buffer_previewer   = buffer_previewer.new_buffer_previewer
 previewers.buffer_previewer_maker = buffer_previewer.file_maker

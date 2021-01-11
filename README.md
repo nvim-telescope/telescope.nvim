@@ -160,9 +160,9 @@ require('telescope').setup{
     color_devicons = true,
     use_less = true,
     set_env = { ['COLORTERM'] = 'truecolor' }, -- default = nil,
-    file_previewer = require'telescope.previewers'.cat.new, -- For buffer previewer use `require'telescope.previewers'.vim_buffer_cat.new`
-    grep_previewer = require'telescope.previewers'.vimgrep.new, -- For buffer previewer use `require'telescope.previewers'.vim_buffer_vimgrep.new`
-    qflist_previewer = require'telescope.previewers'.qflist.new, -- For buffer previewer use `require'telescope.previewers'.vim_buffer_qflist.new`
+    file_previewer = require'telescope.previewers'.vim_buffer_cat.new,
+    grep_previewer = require'telescope.previewers'.vim_buffer_vimgrep.new,
+    qflist_previewer = require'telescope.previewers'.vim_buffer_qflist.new,
 
     -- Developer configurations: Not meant for general override
     buffer_previewer_maker = require'telescope.previewers'.buffer_previewer_maker
@@ -424,18 +424,18 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 
 | Previewers                         | Description                                                     |
 |------------------------------------|-----------------------------------------------------------------|
-| `previewers.cat.new`               | Default previewer for files. Uses `cat`/`bat`                   |
-| `previewers.vimgrep.new`           | Default previewer for grep and similar. Uses `cat`/`bat`        |
-| `previewers.qflist.new`            | Default previewer for qflist. Uses `cat`/`bat`                  |
 | `previewers.vim_buffer_cat.new`    | Experimental previewer for files. Uses vim buffers              |
 | `previewers.vim_buffer_vimgrep.new`| Experimental previewer for grep and similar. Uses vim buffers   |
 | `previewers.vim_buffer_qflist.new` | Experimental previewer for qflist. Uses vim buffers             |
+| `previewers.cat.new` (deprecated)  | Default previewer for files. Uses `cat`/`bat`                   |
+| `previewers.vimgrep.new` (deprecated) | Default previewer for grep and similar. Uses `cat`/`bat`     |
+| `previewers.qflist.new` (deprecated) | Default previewer for qflist. Uses `cat`/`bat`                |
 | .................................. | Your next awesome previewer here :D                             |
 
-By default, telescope.nvim uses `cat`/`bat` for preview. However after telescope's new experimental previewers
-are stable this will change. The new experimental previewers use tree-sitter and vim buffers, provide much
-better performance and are ready for daily usage, but there might be cases where it can't detect a Filetype
-correctly, thus leading to wrong highlights. This is because we can't determine the filetype in the traditional way
+The default previewers are from now on `vim_buffer_` previewers. They use vim buffers for displaying files
+and use tree-sitter or regex for file highlighting.
+These previewers are guessing the filetype of the selected file, so there might be cases where it misses,
+thus leading to wrong highlights. This is because we can't determine the filetype in the traditional way
 (we don't do `bufload`. We read the file async with `vim.loop.fs_` and attach only a highlighter), because we can't
 execute autocommands, otherwise the speed of the previewer would slow down considerably.
 If you want to configure more filetypes take a look at
