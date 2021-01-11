@@ -6,6 +6,7 @@ local Previewer = require('telescope.previewers.previewer')
 local conf = require('telescope.config').values
 
 local pfiletype = require('plenary.filetype')
+local pscan = require('plenary.scandir')
 
 local buf_delete = utils.buf_delete
 local defaulter = utils.make_default_callable
@@ -20,13 +21,20 @@ previewers.file_maker = function(filepath, bufnr, opts)
   local ft = opts.use_ft_detect and pfiletype.detect(filepath)
 
   if opts.bufname ~= filepath then
-    path.read_file_async(vim.fn.expand(filepath), vim.schedule_wrap(function(data)
-      if not vim.api.nvim_buf_is_valid(bufnr) then return end
-      vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(data, '[\r]?\n'))
+    if vim.loop.fs_stat(filepath).type == 'directory' then
+      pscan.ls_async(filepath, { hidden = true, on_exit = vim.schedule_wrap(function(data)
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
+        if opts.callback then opts.callback(bufnr) end
+      end)})
+    else
+      path.read_file_async(vim.fn.expand(filepath), vim.schedule_wrap(function(data)
+        if not vim.api.nvim_buf_is_valid(bufnr) then return end
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(data, '[\r]?\n'))
 
-      if opts.callback then opts.callback(bufnr) end
-      putils.highlighter(bufnr, ft)
-    end))
+        if opts.callback then opts.callback(bufnr) end
+        putils.highlighter(bufnr, ft)
+      end))
+    end
   else
     if opts.callback then opts.callback(bufnr) end
   end
@@ -459,11 +467,19 @@ previewers.git_file_diff = defaulter(function(_)
     end,
 
     define_preview = function(self, entry, status)
-      putils.job_maker({ 'git', '-P', 'diff', entry.value }, self.state.bufnr, {
-        value = entry.value,
-        bufname = self.state.bufname
-      })
-      putils.regex_highlighter(self.state.bufnr, 'diff')
+      if entry.status and entry.status == '??' then
+        local p = from_entry.path(entry, true)
+        if p == nil or p == '' then return end
+        conf.buffer_previewer_maker(p, self.state.bufnr, {
+          bufname = self.state.bufname
+        })
+      else
+        putils.job_maker({ 'git', '-P', 'diff', entry.value }, self.state.bufnr, {
+          value = entry.value,
+          bufname = self.state.bufname
+        })
+        putils.regex_highlighter(self.state.bufnr, 'diff')
+      end
     end
   }
 end, {})
