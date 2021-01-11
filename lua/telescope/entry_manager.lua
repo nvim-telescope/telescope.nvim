@@ -1,131 +1,192 @@
 local log = require("telescope.log")
 
+local LinkedList = require('telescope.algos.linked_list')
+
+--[[
+
+OK, new idea.
+We can do linked list here.
+To convert at the end to quickfix, just run the list.
+...
+
+start node
+end node
+
+if past loop of must have scores,
+  then we can just add to end node and shift end node to current node.
+  etc.
+
+
+  always inserts a row, because we clear everything before?
+
+  can also optimize by keeping worst acceptable score around.
+
+--]]
+
 local EntryManager = {}
 EntryManager.__index = EntryManager
 
-function EntryManager:new(max_results, set_entry, info)
+function EntryManager:new(max_results, set_entry, info, id)
   log.trace("Creating entry_manager...")
 
   info = info or {}
   info.looped = 0
   info.inserted = 0
+  info.find_loop = 0
 
   -- state contains list of
-  --    {
-  --        score = ...
-  --        line = ...
-  --        metadata ? ...
-  --    }
-  local entry_state = {}
-
+  --    { entry, score }
+  --    Stored directly in a table, accessed as [1], [2]
   set_entry = set_entry or function() end
 
   return setmetatable({
-    set_entry = set_entry,
-    max_results = max_results,
-    worst_acceptable_score = math.huge,
-
-    entry_state = entry_state,
+    id = id,
+    linked_states = LinkedList:new { track_at = max_results },
     info = info,
-
-    num_results = function()
-      return #entry_state
-    end,
-
-    get_ordinal = function(em, index)
-      return em:get_entry(index).ordinal
-    end,
-
-    get_entry = function(_, index)
-      return (entry_state[index] or {}).entry
-    end,
-
-    get_score = function(_, index)
-      return (entry_state[index] or {}).score
-    end,
-
-    find_entry = function(_, entry)
-      if entry == nil then
-        return nil
-      end
-
-      for k, v in ipairs(entry_state) do
-        local existing_entry = v.entry
-
-        -- FIXME: This has the problem of assuming that display will not be the same for two different entries.
-        if existing_entry == entry then
-          return k
-        end
-      end
-
-      return nil
-    end,
-
-    _get_state = function()
-      return entry_state
-    end,
+    max_results = max_results,
+    set_entry = set_entry,
+    worst_acceptable_score = math.huge,
   }, self)
 end
 
-function EntryManager:should_save_result(index)
-  return index <= self.max_results
+function EntryManager:num_results()
+  return self.linked_states.size
+end
+
+function EntryManager:get_container(index)
+  local count = 0
+  for val in self.linked_states:iter() do
+    count = count + 1
+
+    if count == index then
+      return val
+    end
+  end
+
+  return {}
+end
+
+function EntryManager:get_entry(index)
+  return self:get_container(index)[1]
+end
+
+function EntryManager:get_score(index)
+  return self:get_container(index)[2]
+end
+
+function EntryManager:get_ordinal(index)
+  return self:get_entry(index).ordinal
+end
+
+function EntryManager:find_entry(entry)
+  local info = self.info
+
+  local count = 0
+  for container in self.linked_states:iter() do
+    count = count + 1
+
+    if container[1] == entry then
+      info.find_loop = info.find_loop + count
+
+      return count
+    end
+  end
+
+  info.find_loop = info.find_loop + count
+  return nil
+end
+
+function EntryManager:_update_score_from_tracked()
+  local linked = self.linked_states
+
+  if linked.tracked then
+    self.worst_acceptable_score = math.min(self.worst_acceptable_score, linked.tracked[2])
+  end
+end
+
+function EntryManager:_insert_container_before(picker, index, linked_node, new_container)
+  self.linked_states:place_before(index, linked_node, new_container)
+  self.set_entry(picker, index, new_container[1], new_container[2], true)
+
+  self:_update_score_from_tracked()
+end
+
+function EntryManager:_insert_container_after(picker, index, linked_node, new_container)
+  self.linked_states:place_after(index, linked_node, new_container)
+  self.set_entry(picker, index, new_container[1], new_container[2], true)
+
+  self:_update_score_from_tracked()
+end
+
+function EntryManager:_append_container(picker, new_container, should_update)
+  self.linked_states:append(new_container)
+  self.worst_acceptable_score = math.min(self.worst_acceptable_score, new_container[2])
+
+  if should_update then
+    self.set_entry(picker, self.linked_states.size, new_container[1], new_container[2])
+  end
 end
 
 function EntryManager:add_entry(picker, score, entry)
-  score = score or 0
-
-  if score >= self.worst_acceptable_score then
-    return
-  end
-
-  for index, item in ipairs(self.entry_state) do
-    self.info.looped = self.info.looped + 1
-
-    if item.score > score then
-      return self:insert(picker, index, {
-        score = score,
-        entry = entry,
-      })
-    end
-
-    -- Don't add results that are too bad.
-    if not self:should_save_result(index) then
+  if picker and picker.id then
+    if picker.request_number ~= self.id then
+      error("ADDING ENTRY TOO LATE!")
       return
     end
   end
 
-  return self:insert(picker, {
-    score = score,
-    entry = entry,
-  })
-end
+  score = score or 0
 
-function EntryManager:insert(picker, index, entry)
-  if entry == nil then
-    entry = index
-    index = #self.entry_state + 1
+  local max_res = self.max_results
+  local worst_score = self.worst_acceptable_score
+  local size = self.linked_states.size
+
+  local info = self.info
+  info.maxed = info.maxed or 0
+
+  local new_container = { entry, score, }
+
+  -- Short circuit for bad scores -- they never need to be displayed.
+  --    Just save them and we'll deal with them later.
+  if score >= worst_score then
+    return self.linked_states:append(new_container)
   end
 
-  -- To insert something, we place at the next available index (or specified index)
-  -- and then shift all the corresponding items one place.
-  local next_entry, last_score
-  repeat
-    self.info.inserted = self.info.inserted + 1
-    next_entry = self.entry_state[index]
-
-    self.set_entry(picker, index, entry.entry, entry.score)
-    self.entry_state[index] = entry
-
-    last_score = entry.score
-
-    index = index + 1
-    entry = next_entry
-  until not next_entry or not self:should_save_result(index)
-
-  if not self:should_save_result(index) then
-    self.worst_acceptable_score = last_score
+  -- Short circuit for first entry.
+  if size == 0 then
+    self.linked_states:prepend(new_container)
+    self.set_entry(picker, 1, entry, score)
+    return
   end
+
+  for index, container, node in self.linked_states:ipairs() do
+    info.looped = info.looped + 1
+
+    if container[2] > score then
+      -- print("Inserting: ", picker, index, node, new_container)
+      return self:_insert_container_before(picker, index, node, new_container)
+    end
+
+    -- Don't add results that are too bad.
+    if index >= max_res then
+      info.maxed = info.maxed + 1
+      return self:_append_container(picker, new_container, false)
+    end
+  end
+
+  if self.linked_states.size >= max_res then
+    self.worst_acceptable_score = math.min(self.worst_acceptable_score, score)
+  end
+
+  return self:_insert_container_after(picker, size + 1, self.linked_states.tail, new_container)
 end
 
+function EntryManager:iter()
+  return coroutine.wrap(function()
+    for val in self.linked_states:iter() do
+      coroutine.yield(val[1])
+    end
+  end)
+end
 
 return EntryManager

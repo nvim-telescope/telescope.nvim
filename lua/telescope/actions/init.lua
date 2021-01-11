@@ -38,6 +38,16 @@ function actions.add_selection(prompt_bufnr)
   current_picker:add_selection(current_picker:get_selection_row())
 end
 
+function actions.remove_selection(prompt_bufnr)
+  local current_picker = actions.get_current_picker(prompt_bufnr)
+  current_picker:remove_selection(current_picker:get_selection_row())
+end
+
+function actions.toggle_selection(prompt_bufnr)
+  local current_picker = actions.get_current_picker(prompt_bufnr)
+  current_picker:toggle_selection(current_picker:get_selection_row())
+end
+
 --- Get the current entry
 function actions.get_selected_entry()
   return state.get_global_key('selected_entry')
@@ -271,6 +281,45 @@ actions.git_staging_toggle = function(prompt_bufnr)
   end
   do_close(prompt_bufnr, true)
   require('telescope.builtin').git_status()
+end
+
+local entry_to_qf = function(entry)
+  return {
+    bufnr = entry.bufnr,
+    filename = entry.filename,
+    lnum = entry.lnum,
+    col = entry.col,
+    text = entry.value,
+  }
+end
+
+actions.send_selected_to_qflist = function(prompt_bufnr)
+  local picker = actions.get_current_picker(prompt_bufnr)
+
+  local qf_entries = {}
+  for entry in pairs(picker.multi_select) do
+    table.insert(qf_entries, entry_to_qf(entry))
+  end
+
+  actions.close(prompt_bufnr)
+
+  vim.fn.setqflist(qf_entries, 'r')
+  vim.cmd [[copen]]
+end
+
+actions.send_to_qflist = function(prompt_bufnr)
+  local picker = actions.get_current_picker(prompt_bufnr)
+  local manager = picker.manager
+
+  local qf_entries = {}
+  for entry in manager:iter() do
+    table.insert(qf_entries, entry_to_qf(entry))
+  end
+
+  actions.close(prompt_bufnr)
+
+  vim.fn.setqflist(qf_entries, 'r')
+  vim.cmd [[copen]]
 end
 
 -- ==================================================

@@ -1,7 +1,8 @@
 local tester = require('telescope.pickers._test')
+local helper = require('telescope.pickers._test_helpers')
 
 tester.builtin_picker('find_files', 'README.md', {
   post_close = {
-    {'README.md', function() return vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":.") end },
+    {'README.md', helper.get_file },
   }
 })

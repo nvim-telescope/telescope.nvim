@@ -221,14 +221,17 @@ function Picker:is_done()
 end
 
 function Picker:clear_extra_rows(results_bufnr)
-  if self:is_done() then return end
+  if self:is_done() then
+    log.trace("Not clearing due to being already complete")
+    return
+  end
 
   if not vim.api.nvim_buf_is_valid(results_bufnr) then
     log.debug("Invalid results_bufnr for clearing:", results_bufnr)
     return
   end
 
-  local worst_line
+  local worst_line, ok, msg
   if self.sorting_strategy == 'ascending' then
     local num_results = self.manager:num_results()
     worst_line = self.max_results - num_results
@@ -237,7 +240,7 @@ function Picker:clear_extra_rows(results_bufnr)
       return
     end
 
-    pcall(vim.api.nvim_buf_set_lines, results_bufnr, num_results, self.max_results, false, {})
+    ok, msg = pcall(vim.api.nvim_buf_set_lines, results_bufnr, num_results, -1, false, {})
   else
     worst_line = self:get_row(self.manager:num_results())
     if worst_line <= 0 then
@@ -245,10 +248,14 @@ function Picker:clear_extra_rows(results_bufnr)
     end
 
     local empty_lines = utils.repeated_table(worst_line, "")
-    pcall(vim.api.nvim_buf_set_lines, results_bufnr, 0, worst_line, false, empty_lines)
+    ok, msg = pcall(vim.api.nvim_buf_set_lines, results_bufnr, 0, worst_line, false, empty_lines)
   end
 
-  log.trace("Clearing:", worst_line)
+  if not ok then
+    log.debug(msg)
+  end
+
+  log.debug("Clearing:", worst_line)
 end
 
 function Picker:highlight_displayed_rows(results_bufnr, prompt)
@@ -296,6 +303,9 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
       )
     end
   end
+
+  local entry = self.manager:get_entry(self:get_index(row))
+  self.highlighter:hi_multiselect(row, entry)
 end
 
 function Picker:can_select_row(row)
@@ -416,13 +426,18 @@ function Picker:find()
 
   local debounced_status = debounce.throttle_leading(update_status, 50)
 
+  self.request_number = 0
   local on_lines = function(_, _, _, first_line, last_line)
+    self.request_number = self.request_number + 1
     self:_reset_track()
 
     if not vim.api.nvim_buf_is_valid(prompt_bufnr) then
       log.debug("ON_LINES: Invalid prompt_bufnr", prompt_bufnr)
       return
     end
+
+    if not first_line then first_line = 0 end
+    if not last_line then last_line = 1 end
 
     if first_line > 0 or last_line > 1 then
       log.debug("ON_LINES: Bad range", first_line, last_line)
@@ -434,13 +449,8 @@ function Picker:find()
       self.sorter:_start(prompt)
     end
 
-    -- TODO: Statusbar possibilities here.
-    -- vim.api.nvim_buf_set_virtual_text(prompt_bufnr, 0, 1, { {"hello", "Error"} }, {})
-
     -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
-
-    self.manager = EntryManager:new(self.max_results, self.entry_adder)
-    -- self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats)
+    self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats, self.request_number)
 
     local process_result = function(entry)
       if self:is_done() then return end
@@ -690,24 +700,48 @@ end
 function Picker:add_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self.multi_select[entry] = true
+
+  self.highlighter:hi_multiselect(row, entry)
+end
+
+function Picker:add_selection(row)
+  local entry = self.manager:get_entry(self:get_index(row))
+  self.multi_select[entry] = true
+
+  self.highlighter:hi_multiselect(row, entry)
+end
+
+function Picker:remove_selection(row)
+  local entry = self.manager:get_entry(self:get_index(row))
+  self.multi_select[entry] = nil
+
+  self.highlighter:hi_multiselect(row, entry)
+end
+
+function Picker:toggle_selection(row)
+  local entry = self.manager:get_entry(self:get_index(row))
+
+  if self.multi_select[entry] then
+    self:remove_selection(row)
+  else
+    self:add_selection(row)
+  end
 end
 
 function Picker:display_multi_select(results_bufnr)
-  if true then return end
-
-  -- for entry, _ in pairs(self.multi_select) do
-  --   local index = self.manager:find_entry(entry)
-  --   if index then
-  --     vim.api.nvim_buf_add_highlight(
-  --       results_bufnr,
-  --       ns_telescope_selection,
-  --       "TelescopeMultiSelection",
-  --       self:get_row(index),
-  --       0,
-  --       -1
-  --     )
-  --   end
-  -- end
+  for entry, _ in pairs(self.multi_select) do
+    local index = self.manager:find_entry(entry)
+    if index then
+      vim.api.nvim_buf_add_highlight(
+        results_bufnr,
+        a.nvim_create_namespace('telescope_selection'),
+        "TelescopeMultiSelection",
+        self:get_row(index),
+        0,
+        -1
+      )
+    end
+  end
 end
 
 function Picker:reset_selection()
@@ -718,25 +752,30 @@ function Picker:reset_selection()
 end
 
 function Picker:set_selection(row)
-  -- TODO: Loop around behavior?
-  -- TODO: Scrolling past max results
   row = self.scroller(self.max_results, self.manager:num_results(), row)
 
   if not self:can_select_row(row) then
     -- If the current selected row exceeds number of currently displayed
-    -- elements we have to reset it. Affectes sorting_strategy = 'row'.
+    -- elements we have to reset it. Affects sorting_strategy = 'row'.
     if not self:can_select_row(self:get_selection_row()) then
       row = self:get_row(self.manager:num_results())
     else
-      log.debug("Cannot select row:", row, self.manager:num_results(), self.max_results)
+      log.trace("Cannot select row:", row, self.manager:num_results(), self.max_results)
       return
     end
   end
 
-  -- local entry = self.manager:get_entry(self.max_results - row + 1)
   local entry = self.manager:get_entry(self:get_index(row))
   local status = state.get_status(self.prompt_bufnr)
-  local results_bufnr = status.results_bufnr
+  local results_bufnr = self.results_bufnr
+
+  if row > a.nvim_buf_line_count(results_bufnr) then
+    error(string.format(
+      "Should not be possible to get row this large %s %s",
+        row,
+        a.nvim_buf_line_count(results_bufnr)
+    ))
+  end
 
   state.set_global_key("selected_entry", entry)
 
@@ -764,6 +803,7 @@ function Picker:set_selection(row)
 
         self.highlighter:hi_display(self._selection_row, '  ', display_highlights)
         self.highlighter:hi_sorter(self._selection_row, prompt, display)
+        self.highlighter:hi_multiselect(self._selection_row, self._selection_entry)
       end
     end
 
@@ -785,9 +825,7 @@ function Picker:set_selection(row)
     self.highlighter:hi_selection(row, caret)
     self.highlighter:hi_display(row, '  ', display_highlights)
     self.highlighter:hi_sorter(row, prompt, display)
-
-    -- TODO: Actually implement this for real TJ, don't leave around half implemented code plz :)
-    -- self:display_multi_select(results_bufnr)
+    self.highlighter:hi_multiselect(row, entry)
   end)
 
   if not set_ok then
@@ -814,7 +852,7 @@ function Picker:set_selection(row)
 end
 
 
-function Picker:entry_adder(index, entry, score)
+function Picker:entry_adder(index, entry, score, insert)
   local row = self:get_row(index)
 
   -- If it's less than 0, then we don't need to show it at all.
@@ -838,15 +876,37 @@ function Picker:entry_adder(index, entry, score)
   self:_increment("displayed")
 
   -- TODO: Don't need to schedule this if we schedule the adder.
+  local offset = insert and 0 or 1
+  local scheduled_request = self.request_number
   vim.schedule(function()
     if not vim.api.nvim_buf_is_valid(self.results_bufnr) then
       log.debug("ON_ENTRY: Invalid buffer")
       return
     end
 
-    local set_ok = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + 1, false, {display})
+    if self.request_number ~= scheduled_request then
+      log.debug("Cancelling request number:", self.request_number, " // ", scheduled_request)
+      return
+    end
+
+    local line_count = vim.api.nvim_buf_line_count(self.results_bufnr)
+    if row > line_count then
+      return
+    end
+
+    if insert then
+      if self.sorting_strategy == 'descending' then
+        vim.api.nvim_buf_set_lines(self.results_bufnr, 0, 1, false, {})
+      end
+    end
+
+    local set_ok, msg = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + offset, false, {display})
     if set_ok and display_highlights then
       self.highlighter:hi_display(row, prefix, display_highlights)
+    end
+
+    if not set_ok then
+      log.debug("Failed to set lines...", msg)
     end
 
     -- This pretty much only fails when people leave newlines in their results.
@@ -893,7 +953,7 @@ function Picker:_track(key, func, ...)
 end
 
 function Picker:_increment(key)
-  self.stats[key] = self.stats[key] + 1
+  self.stats[key] = (self.stats[key] or 0) + 1
 end
 
 

@@ -34,7 +34,7 @@ function config.set_defaults(defaults)
 
   set("sorting_strategy", "descending")
   set("selection_strategy", "reset")
-  set("scroll_strategy", nil)
+  set("scroll_strategy", "cycle")
 
   set("layout_strategy", "horizontal")
   set("layout_defaults", {})
@@ -53,7 +53,7 @@ function config.set_defaults(defaults)
   set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
 
   set("get_status_text", function(self)
-    return string.format("%s / %s", self.stats.processed - self.stats.filtered, self.stats.processed)
+    return string.format("%s / %s", (self.stats.processed or 0) - (self.stats.filtered or 0), self.stats.processed)
   end)
 
   -- Builtin configuration
