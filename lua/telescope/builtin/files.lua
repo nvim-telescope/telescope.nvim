@@ -36,7 +36,7 @@ files.live_grep = function(opts)
 
       prompt = escape_chars(prompt)
 
-      return flatten { conf.vimgrep_arguments, prompt }
+      return flatten { conf.vimgrep_arguments, prompt, '.' }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
     opts.max_results,
@@ -65,7 +65,7 @@ files.grep_string = function(opts)
   pickers.new(opts, {
     prompt_title = 'Find Word',
     finder = finders.new_oneshot_job(
-      flatten { conf.vimgrep_arguments, opts.word_match, search},
+      flatten { conf.vimgrep_arguments, opts.word_match, search, '.' },
       opts
     ),
     previewer = conf.grep_previewer(opts),
