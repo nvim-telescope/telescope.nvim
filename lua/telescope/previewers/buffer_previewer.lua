@@ -14,21 +14,22 @@ local previewers = {}
 
 local ns_previewer = vim.api.nvim_create_namespace('telescope.previewers')
 
-previewers.file_maker = function(filepath, bufnr, bufname, use_ft_detect, callback)
-  if use_ft_detect == nil then use_ft_detect = true end
-  local ft = use_ft_detect and pfiletype.detect(filepath)
+previewers.file_maker = function(filepath, bufnr, opts)
+  opts = opts or {}
+  if opts.use_ft_detect == nil then opts.use_ft_detect = true end
+  local ft = opts.use_ft_detect and pfiletype.detect(filepath)
 
-  if bufname ~= filepath then
+  if opts.bufname ~= filepath then
     path.read_file_async(filepath, vim.schedule_wrap(function(data)
       vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(data, '[\r]?\n'))
 
-      if callback then callback(bufnr) end
+      if opts.callback then opts.callback(bufnr) end
+      if not opts.state or bufnr == opts.state.bufnr then putils.highlighter(bufnr, ft) end
     end))
   else
-    if callback then callback(bufnr) end
+    if opts.callback then opts.callback(bufnr) end
+    if not opts.state or bufnr == opts.state.bufnr then putils.highlighter(bufnr, ft) end
   end
-
-  putils.highlighter(bufnr, ft)
 end
 
 previewers.new_buffer_previewer = function(opts)
@@ -113,7 +114,6 @@ previewers.new_buffer_previewer = function(opts)
       vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
       vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
       vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
-      vim.api.nvim_win_set_option(status.preview_win, 'scrolloff', 999)
       vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)
 
       self.state.winid = status.preview_win
@@ -135,27 +135,14 @@ previewers.new_buffer_previewer = function(opts)
 
   if not opts.scroll_fn then
     function opts.scroll_fn(self, direction)
-      local input = direction > 0 and "d" or "u"
+      if not self.state then return end
+
+      local input = direction > 0 and [[]] or [[]]
       local count = math.abs(direction)
 
-      self:send_input({ count = count, input = input })
-    end
-  end
-
-  if not opts.send_input then
-    function opts.send_input(self, input)
-      if not self.state then
-        return
-      end
-
-      local max_line = vim.fn.getbufinfo(self.state.bufnr)[1].linecount
-      local line = vim.api.nvim_win_get_cursor(self.state.winid)[1]
-      if input.input == 'u' then
-        line = (line - input.count) > 0 and (line - input.count) or 1
-      else
-        line = (line + input.count) <= max_line and (line + input.count) or max_line
-      end
-      vim.api.nvim_win_set_cursor(self.state.winid, { line, 1 })
+      vim.api.nvim_buf_call(self.state.bufnr, function()
+        vim.cmd([[normal! ]] .. count .. input)
+      end)
     end
   end
 
@@ -169,11 +156,12 @@ previewers.cat = defaulter(function(_)
     end,
 
     define_preview = function(self, entry, status)
-      putils.with_preview_window(status, nil, function()
-        local p = from_entry.path(entry, true)
-        if p == nil or p == '' then return end
-        conf.buffer_previewer_maker(p, self.state.bufnr, self.state.bufname)
-      end)
+      local p = from_entry.path(entry, true)
+      if p == nil or p == '' then return end
+      conf.buffer_previewer_maker(p, self.state.bufnr, {
+        bufname = self.state.bufname,
+        state = self.state,
+      })
     end
   }
 end, {})
@@ -197,24 +185,26 @@ previewers.vimgrep = defaulter(function(_)
     end,
 
     define_preview = function(self, entry, status)
-      putils.with_preview_window(status, nil, function()
-        local lnum = entry.lnum or 0
-        local p = from_entry.path(entry, true)
-        if p == nil or p == '' then return end
+      local lnum = entry.lnum or 0
+      local p = from_entry.path(entry, true)
+      if p == nil or p == '' then return end
 
-        if self.state.last_set_bufnr then
-          pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
-        end
+      if self.state.last_set_bufnr then
+        pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
+      end
 
-        conf.buffer_previewer_maker(p, self.state.bufnr, self.state.bufname, true, function(bufnr)
+      conf.buffer_previewer_maker(p, self.state.bufnr, {
+        bufname = self.state.bufname,
+        state = self.state,
+        callback = function(bufnr)
           if lnum ~= 0 then
             pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewLine", lnum - 1, 0, -1)
             pcall(vim.api.nvim_win_set_cursor, self.state.winid, {lnum, 0})
           end
 
           self.state.last_set_bufnr = bufnr
-        end)
-      end)
+        end
+      })
     end
   }
 end, {})
@@ -264,13 +254,14 @@ previewers.ctags = defaulter(function(_)
     end,
 
     define_preview = function(self, entry, status)
-      putils.with_preview_window(status, nil, function()
-        conf.buffer_previewer_maker(entry.filename, self.state.bufnr, self.state.bufname, true, function(bufnr)
+      conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
+        bufname = self.state.bufname,
+        callback = function(bufnr)
           vim.api.nvim_buf_call(bufnr, function()
             determine_jump(entry)(self, bufnr)
           end)
-        end)
-      end)
+        end
+      })
     end
   }
 end, {})
@@ -293,16 +284,17 @@ previewers.builtin = defaulter(function(_)
     end,
 
     define_preview = function(self, entry, status)
-      putils.with_preview_window(status, nil, function()
-        local module_name = vim.fn.fnamemodify(entry.filename, ':t:r')
-        local text
-        if entry.text:sub(1, #module_name) ~= module_name then
-          text = module_name .. '.' .. entry.text
-        else
-          text = entry.text:gsub('_', '.', 1)
-        end
+      local module_name = vim.fn.fnamemodify(entry.filename, ':t:r')
+      local text
+      if entry.text:sub(1, #module_name) ~= module_name then
+        text = module_name .. '.' .. entry.text
+      else
+        text = entry.text:gsub('_', '.', 1)
+      end
 
-        conf.buffer_previewer_maker(entry.filename, self.state.bufnr, self.state.bufname, true, function(bufnr)
+      conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
+        bufname = self.state.bufname,
+        callback = function(bufnr)
           vim.api.nvim_buf_call(bufnr, function()
             pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
             vim.cmd "norm! gg"
@@ -311,10 +303,8 @@ previewers.builtin = defaulter(function(_)
 
             self.state.hl_id = vim.fn.matchadd('TelescopePreviewMatch', text)
           end)
-        end)
-
-
-      end)
+        end
+      })
     end
   }
 end, {})
@@ -337,12 +327,13 @@ previewers.help = defaulter(function(_)
     end,
 
     define_preview = function(self, entry, status)
-      putils.with_preview_window(status, nil, function()
-        local query = entry.cmd
-        query = query:sub(2)
-        query = [[\V]] .. query
+      local query = entry.cmd
+      query = query:sub(2)
+      query = [[\V]] .. query
 
-        conf.buffer_previewer_maker(entry.filename, self.state.bufnr, self.state.bufname, false, function(bufnr)
+      conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
+        bufname = self.state.bufname,
+        callback = function(bufnr)
           vim.api.nvim_buf_call(bufnr, function()
             vim.cmd(':ownsyntax help')
 
@@ -353,8 +344,8 @@ previewers.help = defaulter(function(_)
 
             self.state.hl_id = vim.fn.matchadd('TelescopePreviewMatch', query)
           end)
-        end)
-      end)
+        end
+      })
     end
   }
 end, {})
@@ -366,15 +357,13 @@ previewers.man = defaulter(function(_)
     end,
 
     define_preview = function(self, entry, status)
-      putils.with_preview_window(status, nil, function()
-        local win_width = vim.api.nvim_win_get_width(self.state.winid)
-        putils.job_maker({'man', '-P', 'cat', entry.value}, self.state.bufnr, {
-          env = { ["MANWIDTH"] = win_width },
-          value = entry.value,
-          bufname = self.state.bufname
-        })
-        putils.regex_highlighter(_, 'man')
-       end)
+      local win_width = vim.api.nvim_win_get_width(self.state.winid)
+      putils.job_maker({'man', '-P', 'cat', entry.value}, self.state.bufnr, {
+        env = { ["MANWIDTH"] = win_width },
+        value = entry.value,
+        bufname = self.state.bufname
+      })
+      putils.regex_highlighter(self.state.bufnr, 'man')
     end
   }
 end)
@@ -430,16 +419,14 @@ previewers.git_branch_log = defaulter(function(_)
         end
       end
 
-      putils.with_preview_window(status, nil, function()
-        local cmd = { 'git', '-P', 'log', '--graph', '--pretty=format:%h -%d %s (%cr)',
-          '--abbrev-commit', '--date=relative', entry.value
-        }
-        putils.job_maker(cmd, self.state.bufnr, {
-          value = entry.value,
-          bufname = self.state.bufname,
-          callback = highlight_buffer
-        })
-      end)
+      local cmd = { 'git', '-P', 'log', '--graph', '--pretty=format:%h -%d %s (%cr)',
+        '--abbrev-commit', '--date=relative', entry.value
+      }
+      putils.job_maker(cmd, self.state.bufnr, {
+        value = entry.value,
+        bufname = self.state.bufname,
+        callback = highlight_buffer
+      })
     end
   }
 end, {})
@@ -451,13 +438,11 @@ previewers.git_commit_diff = defaulter(function(_)
     end,
 
     define_preview = function(self, entry, status)
-      putils.with_preview_window(status, nil, function()
-        putils.job_maker({ 'git', '-P', 'diff', entry.value .. '^!' }, self.state.bufnr, {
-          value = entry.value,
-          bufname = self.state.bufname
-        })
-        putils.regex_highlighter(_, 'diff')
-      end)
+      putils.job_maker({ 'git', '-P', 'diff', entry.value .. '^!' }, self.state.bufnr, {
+        value = entry.value,
+        bufname = self.state.bufname
+      })
+      putils.regex_highlighter(self.state.bufnr, 'diff')
     end
   }
 end, {})
@@ -469,13 +454,11 @@ previewers.git_file_diff = defaulter(function(_)
     end,
 
     define_preview = function(self, entry, status)
-      putils.with_preview_window(status, nil, function()
-        putils.job_maker({ 'git', '-P', 'diff', entry.value }, self.state.bufnr, {
-          value = entry.value,
-          bufname = self.state.bufname
-        })
-        putils.regex_highlighter(_, 'diff')
-      end)
+      putils.job_maker({ 'git', '-P', 'diff', entry.value }, self.state.bufnr, {
+        value = entry.value,
+        bufname = self.state.bufname
+      })
+      putils.regex_highlighter(self.state.bufnr, 'diff')
     end
   }
 end, {})
