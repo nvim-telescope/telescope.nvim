@@ -179,79 +179,94 @@ do
     return {filename, lnum, col, text}
   end
 
-  local execute_keys = {
-    path = function(t)
-      return t.cwd .. path.separator .. t.filename, false
-    end,
-
-    filename = function(t)
-      return parse(t)[1], true
-    end,
-
-    lnum = function(t)
-      return parse(t)[2], true
-    end,
-
-    col = function(t)
-      return parse(t)[3], true
-    end,
-
-    text = function(t)
-      return parse(t)[4], true
-    end,
-  }
-
+  --- Special options:
+  ---  - shorten_path: make the path appear short
+  ---  - disable_coordinates: Don't show the line & row numbers
+  ---  - only_sort_text: Only sort via the text. Ignore filename and other items
   function make_entry.gen_from_vimgrep(opts)
+    local mt_vimgrep_entry
+
     opts = opts or {}
 
+    local disable_devicons = opts.disable_devicons
     local shorten_path = opts.shorten_path
     local disable_coordinates = opts.disable_coordinates
-    local disable_devicons = opts.disable_devicons
+    local only_sort_text = opts.only_sort_text
+
+    local execute_keys = {
+      path = function(t)
+        return t.cwd .. path.separator .. t.filename, false
+      end,
+
+      filename = function(t)
+        return parse(t)[1], true
+      end,
+
+      lnum = function(t)
+        return parse(t)[2], true
+      end,
+
+      col = function(t)
+        return parse(t)[3], true
+      end,
+
+      text = function(t)
+        return parse(t)[4], true
+      end,
+    }
+
+    -- For text search only, the ordinal value is actually the text.
+    if only_sort_text then
+      execute_keys.ordinal = function(t)
+        return t.text
+      end
+    end
 
     local display_string = "%s:%s%s"
 
-    local mt_vimgrep_entry = {}
+    mt_vimgrep_entry = {
+      cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd()),
 
-    mt_vimgrep_entry.cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
-    mt_vimgrep_entry.display = function(entry)
-      local display_filename
-      if shorten_path then
-        display_filename = utils.path_shorten(entry.filename)
-      else
-        display_filename = entry.filename
-      end
+      display = function(entry)
+        local display_filename
+        if shorten_path then
+          display_filename = utils.path_shorten(entry.filename)
+        else
+          display_filename = entry.filename
+        end
 
-      local coordinates = ""
-      if not disable_coordinates then
-        coordinates = string.format("%s:%s:", entry.lnum, entry.col)
-      end
+        local coordinates = ""
+        if not disable_coordinates then
+          coordinates = string.format("%s:%s:", entry.lnum, entry.col)
+        end
 
-      local display, hl_group = transform_devicons(
-        entry.filename,
-        string.format(display_string, display_filename,  coordinates, entry.text),
-        disable_devicons
-      )
+        local display, hl_group = transform_devicons(
+          entry.filename,
+          string.format(display_string, display_filename,  coordinates, entry.text),
+          disable_devicons
+        )
 
-      if hl_group then
-        return display, { { {1, 3}, hl_group } }
-      else
-        return display
-      end
-    end
+        if hl_group then
+          return display, { { {1, 3}, hl_group } }
+        else
+          return display
+        end
+      end,
 
-    mt_vimgrep_entry.__index = function(t, k)
-      local raw = rawget(mt_vimgrep_entry, k)
-      if raw then return raw end
+      __index = function(t, k)
+        local raw = rawget(mt_vimgrep_entry, k)
+        if raw then return raw end
 
-      local executor = rawget(execute_keys, k)
-      if executor then
-        local val, save = executor(t)
-        if save then rawset(t, k, val) end
-        return val
-      end
+        local executor = rawget(execute_keys, k)
+        if executor then
+          local val, save = executor(t)
+          if save then rawset(t, k, val) end
+          return val
+        end
 
-      return rawget(t, rawget(lookup_keys, k))
-    end
+        return rawget(t, rawget(lookup_keys, k))
+      end,
+    }
 
     return function(line)
       return setmetatable({line}, mt_vimgrep_entry)
