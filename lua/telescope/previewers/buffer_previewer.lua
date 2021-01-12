@@ -24,11 +24,10 @@ previewers.file_maker = function(filepath, bufnr, opts)
       vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(data, '[\r]?\n'))
 
       if opts.callback then opts.callback(bufnr) end
-      if not opts.state or bufnr == opts.state.bufnr then putils.highlighter(bufnr, ft) end
+      putils.highlighter(bufnr, ft)
     end))
   else
     if opts.callback then opts.callback(bufnr) end
-    if not opts.state or bufnr == opts.state.bufnr then putils.highlighter(bufnr, ft) end
   end
 end
 
@@ -159,8 +158,7 @@ previewers.cat = defaulter(function(_)
       local p = from_entry.path(entry, true)
       if p == nil or p == '' then return end
       conf.buffer_previewer_maker(p, self.state.bufnr, {
-        bufname = self.state.bufname,
-        state = self.state,
+        bufname = self.state.bufname
       })
     end
   }
@@ -195,11 +193,11 @@ previewers.vimgrep = defaulter(function(_)
 
       conf.buffer_previewer_maker(p, self.state.bufnr, {
         bufname = self.state.bufname,
-        state = self.state,
         callback = function(bufnr)
           if lnum ~= 0 then
             pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewLine", lnum - 1, 0, -1)
             pcall(vim.api.nvim_win_set_cursor, self.state.winid, {lnum, 0})
+            vim.api.nvim_buf_call(bufnr, function() vim.cmd"norm! zz" end)
           end
 
           self.state.last_set_bufnr = bufnr
@@ -369,63 +367,61 @@ previewers.man = defaulter(function(_)
 end)
 
 previewers.git_branch_log = defaulter(function(_)
+  local highlight_buffer = function(bufnr, content)
+    for i = 1, #content do
+      local line = content[i]
+      local _, hstart = line:find('[%*%s|]*')
+      if hstart then
+        local hend = hstart + 7
+        if hend < #line then
+          vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, "TelescopeResultsIdentifier", i - 1, hstart - 1, hend)
+        end
+      end
+      local _, cstart = line:find('- %(')
+      if cstart then
+        local cend = string.find(line, '%) ')
+        vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, "TelescopeResultsConstant", i - 1, cstart - 1, cend)
+      end
+      local dstart, _ = line:find(' %(%d')
+      if dstart then
+        vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, "TelescopeResultsSpecialComment", i - 1, dstart, #line)
+      end
+    end
+  end
+
+  local remotes = utils.get_os_command_output{ 'git', 'remote' }
   return previewers.new_buffer_previewer {
     get_buffer_by_name = function(_, entry)
       return entry.value
     end,
 
     define_preview = function(self, entry, status)
-      local highlight_buffer = function(bufnr, content)
+      local current_remote = 1
+
+      local gen_cmd = function(v)
+        return { 'git', '-P', 'log', '--graph', '--pretty=format:%h -%d %s (%cr)',
+        '--abbrev-commit', '--date=relative', v }
+      end
+
+      local handle_results
+      handle_results = function(bufnr, content)
         if content and table.getn(content) == 0 then
-          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "No log found for branch: " .. entry.value })
-        elseif content and table.getn(content) > 1 then
-          for i = 1, #content do
-            local line = content[i]
-            local _, hash_start = line:find('[%*%s|]*')
-            if hash_start then
-              local hash_end = hash_start + 7
-              if hash_end < #line then
-                vim.api.nvim_buf_add_highlight(bufnr,
-                  ns_previewer,
-                  "TelescopeResultsIdentifier",
-                  i - 1,
-                  hash_start - 1,
-                  hash_end
-                )
-              end
-            end
-            local _, cur_start = line:find('- %(')
-            if cur_start then
-              local cur_end = string.find(line, '%) ')
-              vim.api.nvim_buf_add_highlight(bufnr,
-                ns_previewer,
-                "TelescopeResultsConstant",
-                i - 1,
-                cur_start - 1,
-                cur_end
-              )
-            end
-            local date_start, _ = line:find(' %(%d')
-            if date_start then
-              vim.api.nvim_buf_add_highlight(bufnr,
-                ns_previewer,
-                "TelescopeResultsSpecialComment",
-                i - 1,
-                date_start,
-                #line
-              )
-            end
+          if current_remote <= table.getn(remotes) then
+            local value = 'remotes/' .. remotes[current_remote] .. '/' .. entry.value
+            current_remote = current_remote + 1
+            putils.job_maker(gen_cmd(value), bufnr, { callback = handle_results })
+          else
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "No log found for branch: " .. entry.value })
           end
+        elseif content and table.getn(content) > 1 then
+          highlight_buffer(bufnr, content)
         end
       end
 
-      local cmd = { 'git', '-P', 'log', '--graph', '--pretty=format:%h -%d %s (%cr)',
-        '--abbrev-commit', '--date=relative', entry.value
-      }
-      putils.job_maker(cmd, self.state.bufnr, {
+      putils.job_maker(gen_cmd(entry.value), self.state.bufnr, {
         value = entry.value,
         bufname = self.state.bufname,
-        callback = highlight_buffer
+        callback = handle_results
       })
     end
   }

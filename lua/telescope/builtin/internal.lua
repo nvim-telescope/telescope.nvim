@@ -403,17 +403,12 @@ internal.help_tags = function(opts)
 end
 
 internal.man_pages = function(opts)
-  local pages = utils.get_os_command_output(opts.man_cmd or "apropos --sections=1 ''")
-
-  local lines = {}
-  for s in pages:gmatch("[^\r\n]+") do
-    table.insert(lines, s)
-  end
+  local pages = utils.get_os_command_output(opts.man_cmd or { 'apropos', '--sections=1', '' })
 
   pickers.new(opts, {
     prompt_title = 'Man',
     finder    = finders.new_table {
-      results = lines,
+      results = pages,
       entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts),
     },
     previewer = previewers.man.new(opts),

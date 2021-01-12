@@ -155,7 +155,7 @@ local get_results_from_file = function(file)
     },
   }
 
-  j:sync(1000)
+  j:sync(10000)
 
   local results = j:stderr_result()
   local result_table = {}

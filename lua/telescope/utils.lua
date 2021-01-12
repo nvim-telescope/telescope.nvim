@@ -1,4 +1,5 @@
 local pathlib = require('telescope.path')
+local Job     = require('plenary.job')
 
 local utils = {}
 
@@ -193,10 +194,12 @@ function utils.display_termcodes(str)
 end
 
 function utils.get_os_command_output(cmd)
-  local handle = assert(io.popen(cmd, 'r'))
-  local output = assert(handle:read('*a'))
-  assert(handle:close())
-  return output
+  if type(cmd) ~= "table" then
+    print('Telescope: [get_os_command_output]: cmd has to be a table')
+    return {}
+  end
+  local command = table.remove(cmd, 1)
+  return Job:new({ command = command, args = cmd }):sync()
 end
 
 return utils

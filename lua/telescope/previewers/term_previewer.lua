@@ -77,8 +77,8 @@ local cat_maker = function(filename, _, start, _)
   end
 
   if 1 == vim.fn.executable('file') then
-    local output = utils.get_os_command_output('file --mime-type -b ' .. filename)
-    local mime_type = vim.split(output, '/')[1]
+    local output = utils.get_os_command_output{ 'file', '--mime-type', '-b', filename }
+    local mime_type = vim.split(output[1], '/')[1]
     if mime_type ~= "text" then
       return { "echo", "Binary file found. These files cannot be displayed!" }
     end
