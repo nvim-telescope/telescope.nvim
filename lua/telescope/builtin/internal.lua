@@ -334,18 +334,51 @@ end
 
 internal.help_tags = function(opts)
   local all_tag_files = {}
+  local all_tag_lang_files = {}
   local all_help_files = {}
+  local langs = {}
   for _, v in ipairs(vim.fn.globpath(vim.o.runtimepath, 'doc/*', 1, 1)) do
     local split_path = vim.split(v, path.separator, true)
     local filename = split_path[#split_path]
     if filename == 'tags' then
       table.insert(all_tag_files, v)
+    elseif filename:match('^tags%-..$') then
+      local lang = filename:sub(-2)
+      table.insert(langs, lang)
+      if all_tag_lang_files[lang] then
+        table.insert(all_tag_lang_files[lang], v)
+      else
+        all_tag_lang_files[lang] = {v}
+      end
     else
       all_help_files[filename] = v
     end
   end
 
   local delim = string.char(9)
+  local lang_tags = {}
+  for _, lang in ipairs(langs) do
+    lang_tags[lang] = {}
+    for _, file in ipairs(all_tag_lang_files[lang]) do
+      local data = vim.split(path.read_file(file), '\n')
+      for _, line in ipairs(data) do
+        local fields = vim.split(line, delim)
+        if #fields == 3 then
+          lang_tags[lang][fields[1]] = {
+            name = fields[1],
+            filename = all_help_files[fields[2]],
+            cmd = fields[3],
+          }
+        end
+      end
+    end
+  end
+
+  local helplangs = vim.tbl_filter(
+    function(lang) return lang_tags[lang] and true or false end,
+    vim.split(vim.o.helplang, ',')
+  )
+
   local tags = {}
   for _, file in ipairs(all_tag_files) do
     local data = vim.split(path.read_file(file), '\n')
@@ -358,11 +391,21 @@ internal.help_tags = function(opts)
         end
 
         if #matches ~= 0 then
-          table.insert(tags, {
-            name = matches[1],
-            filename = all_help_files[matches[2]],
-            cmd = matches[3]
-          })
+          local found
+          for _, lang in ipairs(helplangs) do
+            if lang_tags[lang][matches[1]] then
+              table.insert(tags, lang_tags[lang][matches[1]])
+              found = true
+              break
+            end
+          end
+          if not found then
+            table.insert(tags, {
+              name = matches[1],
+              filename = all_help_files[matches[2]],
+              cmd = matches[3]
+            })
+          end
         end
       end
     end
