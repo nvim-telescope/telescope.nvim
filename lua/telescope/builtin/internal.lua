@@ -357,7 +357,7 @@ internal.help_tags = function(opts)
           table.insert(matches, match)
         end
 
-        if table.getn(matches) ~= 0 then
+        if #matches ~= 0 then
           table.insert(tags, {
             name = matches[1],
             filename = all_help_files[matches[2]],
