@@ -259,7 +259,11 @@ previewers.vimgrep = defaulter(function(opts)
       local height = vim.api.nvim_win_get_height(win_id)
 
       local p = from_entry.path(entry, true)
-      if p == nil or p == '' or p == '[No Name]' then return end
+      if p == nil or p == '' then return end
+      if entry.bufnr and (p == '[No Name]' or vim.api.nvim_buf_get_option(entry.bufnr, 'buftype') ~= '') then
+        return
+      end
+
       local lnum = entry.lnum or 0
 
       local context = math.floor(height / 2)
