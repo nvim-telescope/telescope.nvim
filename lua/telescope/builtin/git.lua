@@ -74,7 +74,7 @@ git.branches = function(opts)
   for _, v in ipairs(output) do
     if not string.match(v, 'HEAD') and v ~= '' then
       v = string.gsub(v, '.* ', '')
-      v = string.gsub(v, '^remotes/.*/', '')
+      v = string.gsub(v, '^remotes/[^/]*/', '')
       tmp_results[v] = true
     end
   end
