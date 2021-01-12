@@ -115,7 +115,10 @@ files.find_files = function(opts)
       end
     elseif 1 == vim.fn.executable("find") then
       find_command = { 'find', '.', '-type', 'f' }
-      if not hidden then vim.tbl_extend("error", find_command, {'-not', '-path', '*/.*'}) end
+      if not hidden then
+        table.insert(find_command, { '-not', '-path', "*/.*" })
+        find_command = flatten(find_command)
+      end
       if search_dirs then
         table.remove(find_command, 2)
         for _,v in pairs(search_dirs) do
