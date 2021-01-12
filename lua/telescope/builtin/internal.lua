@@ -335,7 +335,7 @@ end
 internal.help_tags = function(opts)
   local all_tag_files = {}
   local all_help_files = {}
-  for _, v in ipairs(vim.split(vim.fn.globpath(vim.o.runtimepath, 'doc/*', 1), '\n')) do
+  for _, v in ipairs(vim.fn.globpath(vim.o.runtimepath, 'doc/*', 1, 1)) do
     local split_path = vim.split(v, path.separator, true)
     local filename = split_path[#split_path]
     if filename == 'tags' then
