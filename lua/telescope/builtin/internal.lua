@@ -333,6 +333,8 @@ internal.vim_options = function(opts)
 end
 
 internal.help_tags = function(opts)
+  opts.ignore_helplang = utils.get_default(opts.ignore_helplang, false)
+
   local en_tag_files = {}
   local translated_tag_files = {}
   local help_files = {}
@@ -342,7 +344,7 @@ internal.help_tags = function(opts)
     local file = split_path[#split_path]
     if file == 'tags' then
       table.insert(en_tag_files, fullpath)
-    elseif file:match('^tags%-..$') then
+    elseif not opts.ignore_helplang and file:match('^tags%-..$') then
       local lang = file:sub(-2)
       if translated_tag_files[lang] then
         table.insert(translated_tag_files[lang], fullpath)
@@ -372,17 +374,19 @@ internal.help_tags = function(opts)
   end
 
   local translated_tags = {}
-  for lang in pairs(translated_tag_files) do
-    translated_tags[lang] = {}
-    iterate_files(translated_tag_files[lang], function(entry)
-      translated_tags[lang][entry.name] = entry
-    end)
+  local helplangs = {}
+  if not opts.ignore_helplang then
+    for lang in pairs(translated_tag_files) do
+      translated_tags[lang] = {}
+      iterate_files(translated_tag_files[lang], function(entry)
+        translated_tags[lang][entry.name] = entry
+      end)
+    end
+    helplangs = vim.tbl_filter(
+      function(lang) return translated_tag_files[lang] end,
+      vim.split(vim.o.helplang, ',', true)
+    )
   end
-
-  local helplangs = vim.tbl_filter(
-    function(lang) return translated_tag_files[lang] end,
-    vim.split(vim.o.helplang, ',', true)
-  )
 
   local tags = {}
   iterate_files(en_tag_files, function(entry)
