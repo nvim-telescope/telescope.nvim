@@ -357,9 +357,9 @@ internal.help_tags = function(opts)
 
   local function iterate_tags(filename, fn)
     local delimiter = string.char(9)
-    local lines = vim.split(path.read_file(filename), '\n')
+    local lines = vim.split(path.read_file(filename), '\n', true)
     for _, line in ipairs(lines) do
-      local fields = vim.split(line, delimiter)
+      local fields = vim.split(line, delimiter, true)
       if #fields == 3 then
         fn{
           name = fields[1],
@@ -383,7 +383,7 @@ internal.help_tags = function(opts)
 
   local helplangs = vim.tbl_filter(
     function(lang) return lang_tags[lang] and true or false end,
-    vim.split(vim.o.helplang, ',')
+    vim.split(vim.o.helplang, ',', true)
   )
 
   local tags = {}
