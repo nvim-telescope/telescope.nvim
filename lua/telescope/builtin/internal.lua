@@ -333,76 +333,72 @@ internal.vim_options = function(opts)
 end
 
 internal.help_tags = function(opts)
-  local all_tag_files = {}
-  local all_tag_lang_files = {}
-  local all_help_files = {}
-  local langs = {}
-  for _, v in ipairs(vim.fn.globpath(vim.o.runtimepath, 'doc/*', 1, 1)) do
-    local split_path = vim.split(v, path.separator, true)
-    local filename = split_path[#split_path]
-    if filename == 'tags' then
-      table.insert(all_tag_files, v)
-    elseif filename:match('^tags%-..$') then
-      local lang = filename:sub(-2)
-      table.insert(langs, lang)
-      if all_tag_lang_files[lang] then
-        table.insert(all_tag_lang_files[lang], v)
+  local en_tag_files = {}
+  local translated_tag_files = {}
+  local help_files = {}
+  local all_files = vim.fn.globpath(vim.o.runtimepath, 'doc/*', 1, 1)
+  for _, fullpath in ipairs(all_files) do
+    local split_path = vim.split(fullpath, path.separator, true)
+    local file = split_path[#split_path]
+    if file == 'tags' then
+      table.insert(en_tag_files, fullpath)
+    elseif file:match('^tags%-..$') then
+      local lang = file:sub(-2)
+      if translated_tag_files[lang] then
+        table.insert(translated_tag_files[lang], fullpath)
       else
-        all_tag_lang_files[lang] = {v}
+        translated_tag_files[lang] = {fullpath}
       end
     else
-      all_help_files[filename] = v
+      help_files[file] = fullpath
     end
   end
 
-  local function iterate_tags(filename, fn)
+  local function iterate_files(files, fn)
     local delimiter = string.char(9)
-    local lines = vim.split(path.read_file(filename), '\n', true)
-    for _, line in ipairs(lines) do
-      local fields = vim.split(line, delimiter, true)
-      if #fields == 3 then
-        fn{
-          name = fields[1],
-          filename = all_help_files[fields[2]],
-          cmd = fields[3],
-        }
+    for _, file in ipairs(files) do
+      local lines = vim.split(path.read_file(file), '\n', true)
+      for _, line in ipairs(lines) do
+        local fields = vim.split(line, delimiter, true)
+        if #fields == 3 then
+          fn{
+            name = fields[1],
+            filename = help_files[fields[2]],
+            cmd = fields[3],
+          }
+        end
       end
     end
   end
 
-  local lang_tags = {}
-  for _, lang in ipairs(langs) do
-    lang_tags[lang] = {}
-    for _, filename in ipairs(all_tag_lang_files[lang]) do
-      lang_tags[lang] = {}
-      iterate_tags(filename, function(entry)
-        lang_tags[lang][entry.name] = entry
-      end)
-    end
+  local translated_tags = {}
+  for lang in pairs(translated_tag_files) do
+    translated_tags[lang] = {}
+    iterate_files(translated_tag_files[lang], function(entry)
+      translated_tags[lang][entry.name] = entry
+    end)
   end
 
   local helplangs = vim.tbl_filter(
-    function(lang) return lang_tags[lang] and true or false end,
+    function(lang) return translated_tag_files[lang] end,
     vim.split(vim.o.helplang, ',', true)
   )
 
   local tags = {}
-  for _, filename in ipairs(all_tag_files) do
-    iterate_tags(filename, function(entry)
-      local found
-      for _, lang in ipairs(helplangs) do
-        local lang_entry = lang_tags[lang][entry.name]
-        if lang_entry then
-          table.insert(tags, lang_entry)
-          found = true
-          break
-        end
+  iterate_files(en_tag_files, function(entry)
+    local found
+    for _, lang in ipairs(helplangs) do
+      local translated = translated_tags[lang][entry.name]
+      if translated then
+        table.insert(tags, translated)
+        found = true
+        break
       end
-      if not found then
-        table.insert(tags, entry)
-      end
-    end)
-  end
+    end
+    if not found then
+      table.insert(tags, entry)
+    end
+  end)
 
   pickers.new(opts, {
     prompt_title = 'Help',
