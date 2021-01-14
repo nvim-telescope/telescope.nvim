@@ -355,22 +355,29 @@ internal.help_tags = function(opts)
     end
   end
 
-  local delim = string.char(9)
+  local function iterate_tags(filename, fn)
+    local delimiter = string.char(9)
+    local lines = vim.split(path.read_file(filename), '\n')
+    for _, line in ipairs(lines) do
+      local fields = vim.split(line, delimiter)
+      if #fields == 3 then
+        fn{
+          name = fields[1],
+          filename = all_help_files[fields[2]],
+          cmd = fields[3],
+        }
+      end
+    end
+  end
+
   local lang_tags = {}
   for _, lang in ipairs(langs) do
     lang_tags[lang] = {}
-    for _, file in ipairs(all_tag_lang_files[lang]) do
-      local data = vim.split(path.read_file(file), '\n')
-      for _, line in ipairs(data) do
-        local fields = vim.split(line, delim)
-        if #fields == 3 then
-          lang_tags[lang][fields[1]] = {
-            name = fields[1],
-            filename = all_help_files[fields[2]],
-            cmd = fields[3],
-          }
-        end
-      end
+    for _, filename in ipairs(all_tag_lang_files[lang]) do
+      lang_tags[lang] = {}
+      iterate_tags(filename, function(entry)
+        lang_tags[lang][entry.name] = entry
+      end)
     end
   end
 
@@ -380,35 +387,21 @@ internal.help_tags = function(opts)
   )
 
   local tags = {}
-  for _, file in ipairs(all_tag_files) do
-    local data = vim.split(path.read_file(file), '\n')
-    for _, line in ipairs(data) do
-      if line ~= '' then
-        local matches = {}
-
-        for match in (line..delim):gmatch("(.-)" .. delim) do
-          table.insert(matches, match)
-        end
-
-        if #matches ~= 0 then
-          local found
-          for _, lang in ipairs(helplangs) do
-            if lang_tags[lang][matches[1]] then
-              table.insert(tags, lang_tags[lang][matches[1]])
-              found = true
-              break
-            end
-          end
-          if not found then
-            table.insert(tags, {
-              name = matches[1],
-              filename = all_help_files[matches[2]],
-              cmd = matches[3]
-            })
-          end
+  for _, filename in ipairs(all_tag_files) do
+    iterate_tags(filename, function(entry)
+      local found
+      for _, lang in ipairs(helplangs) do
+        local lang_entry = lang_tags[lang][entry.name]
+        if lang_entry then
+          table.insert(tags, lang_entry)
+          found = true
+          break
         end
       end
-    end
+      if not found then
+        table.insert(tags, entry)
+      end
+    end)
   end
 
   pickers.new(opts, {
