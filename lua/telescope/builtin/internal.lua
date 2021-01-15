@@ -358,18 +358,21 @@ internal.help_tags = function(opts)
     end
   end
 
-  local function iterate_files(files, fn)
+  local function iterate_files(lang_files, fn)
     local delimiter = string.char(9)
-    for _, file in ipairs(files) do
-      local lines = vim.split(path.read_file(file), '\n', true)
-      for _, line in ipairs(lines) do
-        local fields = vim.split(line, delimiter, true)
-        if #fields == 3 then
-          fn{
-            name = fields[1],
-            filename = help_files[fields[2]],
-            cmd = fields[3],
-          }
+    for lang, files in pairs(lang_files) do
+      for _, file in ipairs(files) do
+        local lines = vim.split(path.read_file(file), '\n', true)
+        for _, line in ipairs(lines) do
+          local fields = vim.split(line, delimiter, true)
+          if #fields == 3 then
+            fn{
+              name = fields[1],
+              filename = help_files[fields[2]],
+              cmd = fields[3],
+              lang = lang,
+            }
+          end
         end
       end
     end
@@ -378,12 +381,12 @@ internal.help_tags = function(opts)
   local translated_tags = {}
   local helplangs = {}
   if not opts.ignore_helplang then
-    for lang in pairs(translated_tag_files) do
-      translated_tags[lang] = {}
-      iterate_files(translated_tag_files[lang], function(entry)
-        translated_tags[lang][entry.name] = entry
-      end)
-    end
+    iterate_files(translated_tag_files, function(entry)
+      if not translated_tags[entry.lang] then
+        translated_tags[entry.lang] = {}
+      end
+      translated_tags[entry.lang][entry.name] = entry
+    end)
     helplangs = vim.tbl_filter(
       function(lang) return translated_tag_files[lang] end,
       vim.split(vim.o.helplang, ',', true)
@@ -391,7 +394,7 @@ internal.help_tags = function(opts)
   end
 
   local tags = {}
-  iterate_files(en_tag_files, function(entry)
+  iterate_files({en = en_tag_files}, function(entry)
     local found
     for _, lang in ipairs(helplangs) do
       local translated = translated_tags[lang][entry.name]
@@ -412,7 +415,7 @@ internal.help_tags = function(opts)
       results = tags,
       entry_maker = function(entry)
         return {
-          value = entry.name,
+          value = entry.name .. '@' .. entry.lang,
           display = entry.name,
           ordinal = entry.name,
           filename = entry.filename,
