@@ -364,14 +364,17 @@ internal.help_tags = function(opts)
       for _, file in ipairs(files) do
         local lines = vim.split(path.read_file(file), '\n', true)
         for _, line in ipairs(lines) do
-          local fields = vim.split(line, delimiter, true)
-          if #fields == 3 then
-            fn{
-              name = fields[1],
-              filename = help_files[fields[2]],
-              cmd = fields[3],
-              lang = lang,
-            }
+          -- TODO: also ignore tagComment starting with ';'
+          if not line:match'^!_TAG_' then
+            local fields = vim.split(line, delimiter, true)
+            if #fields == 3 then
+              fn{
+                name = fields[1],
+                filename = help_files[fields[2]],
+                cmd = fields[3],
+                lang = lang,
+              }
+            end
           end
         end
       end
