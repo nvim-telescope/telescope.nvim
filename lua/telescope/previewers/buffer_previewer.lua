@@ -20,7 +20,8 @@ previewers.file_maker = function(filepath, bufnr, opts)
   local ft = opts.use_ft_detect and pfiletype.detect(filepath)
 
   if opts.bufname ~= filepath then
-    path.read_file_async(filepath, vim.schedule_wrap(function(data)
+    path.read_file_async(vim.fn.expand(filepath), vim.schedule_wrap(function(data)
+      if not vim.api.nvim_buf_is_valid(bufnr) then return end
       vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(data, '[\r]?\n'))
 
       if opts.callback then opts.callback(bufnr) end
@@ -165,6 +166,16 @@ previewers.cat = defaulter(function(_)
 end, {})
 
 previewers.vimgrep = defaulter(function(_)
+  local jump_to_line = function(self, bufnr, lnum)
+    if lnum and lnum > 0 then
+      pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewLine", lnum - 1, 0, -1)
+      pcall(vim.api.nvim_win_set_cursor, self.state.winid, {lnum, 0})
+      vim.api.nvim_buf_call(bufnr, function() vim.cmd"norm! zz" end)
+    end
+
+    self.state.last_set_bufnr = bufnr
+  end
+
   return previewers.new_buffer_previewer {
     setup = function()
       return {
@@ -183,7 +194,6 @@ previewers.vimgrep = defaulter(function(_)
     end,
 
     define_preview = function(self, entry, status)
-      local lnum = entry.lnum or 0
       local p = from_entry.path(entry, true)
       if p == nil or p == '' then return end
 
@@ -191,18 +201,17 @@ previewers.vimgrep = defaulter(function(_)
         pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
       end
 
-      conf.buffer_previewer_maker(p, self.state.bufnr, {
-        bufname = self.state.bufname,
-        callback = function(bufnr)
-          if lnum ~= 0 then
-            pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewLine", lnum - 1, 0, -1)
-            pcall(vim.api.nvim_win_set_cursor, self.state.winid, {lnum, 0})
-            vim.api.nvim_buf_call(bufnr, function() vim.cmd"norm! zz" end)
-          end
-
-          self.state.last_set_bufnr = bufnr
-        end
-      })
+      -- Workaround for unnamed buffer when using builtin.buffer
+      if p == '[No Name]' and entry.bufnr then
+        local lines = vim.api.nvim_buf_get_lines(entry.bufnr, 0, -1, false)
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
+        jump_to_line(self, self.state.bufnr, entry.lnum)
+      else
+        conf.buffer_previewer_maker(p, self.state.bufnr, {
+          bufname = self.state.bufname,
+          callback = function(bufnr) jump_to_line(self, bufnr, entry.lnum) end
+        })
+      end
     end
   }
 end, {})
