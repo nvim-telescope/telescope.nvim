@@ -344,12 +344,14 @@ internal.help_tags = function(opts)
     local file = split_path[#split_path]
     if file == 'tags' then
       table.insert(en_tag_files, fullpath)
-    elseif not opts.ignore_helplang and file:match('^tags%-..$') then
-      local lang = file:sub(-2)
-      if translated_tag_files[lang] then
-        table.insert(translated_tag_files[lang], fullpath)
-      else
-        translated_tag_files[lang] = {fullpath}
+    elseif file:match('^tags%-..$') then
+      if not opts.ignore_helplang then
+        local lang = file:sub(-2)
+        if translated_tag_files[lang] then
+          table.insert(translated_tag_files[lang], fullpath)
+        else
+          translated_tag_files[lang] = {fullpath}
+        end
       end
     else
       help_files[file] = fullpath
