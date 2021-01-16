@@ -359,8 +359,7 @@ internal.help_tags = function(opts)
   local help_files = {}
   local all_files = vim.fn.globpath(vim.o.runtimepath, 'doc/*', 1, 1)
   for _, fullpath in ipairs(all_files) do
-    local split_path = vim.split(fullpath, path.separator, true)
-    local file = split_path[#split_path]
+    local file = utils.path_tail(fullpath)
     if file == 'tags' then
       add_tag_file('en', fullpath)
     elseif file:match('^tags%-..$') then
