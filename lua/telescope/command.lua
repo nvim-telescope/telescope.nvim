@@ -1,8 +1,14 @@
+local fn = vim.fn
 local themes = require('telescope.themes')
 local builtin = require('telescope.builtin')
 local extensions = require('telescope._extensions').manager
 local config = require('telescope.config')
 local command = {}
+
+local bool_type = {
+  ['false'] = false,
+  ['true'] = true
+}
 
 -- convert command line string arguments to
 -- lua number boolean type and nil value
@@ -29,6 +35,9 @@ local function convert_user_opts(user_opts)
       if val == '"' then
         user_opts[key] = ''
       end
+      if bool_type[val] ~= nil then
+        user_opts[key] = bool_type[val]
+      end
     end
   }
 
@@ -41,8 +50,10 @@ local function convert_user_opts(user_opts)
   setmetatable(_switch,_switch_metatable)
 
   for key,val in pairs(user_opts) do
-    if default_opts[key]  ~= nil then
+    if default_opts[key] ~=nil then
       _switch[type(default_opts[key])](key,val)
+    else
+      _switch['string'](key,val)
     end
   end
 end
