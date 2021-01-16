@@ -1,4 +1,3 @@
-local fn = vim.fn
 local themes = require('telescope.themes')
 local builtin = require('telescope.builtin')
 local extensions = require('telescope._extensions').manager
