@@ -404,7 +404,10 @@ end
 
 internal.man_pages = function(opts)
   opts.sections = utils.get_default(opts.sections, '1')
-  opts.man_cmd = utils.get_default(opts.man_cmd, {'apropos', ''})
+  opts.man_cmd = utils.get_default(
+    opts.man_cmd,
+    vim.fn.has'mac' and {'apropos', ' '} or {'apropos', ''}
+  )
 
   local sections = {}
   for _, section in ipairs(vim.split(opts.sections, ',', true)) do
