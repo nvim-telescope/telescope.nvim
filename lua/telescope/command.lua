@@ -50,7 +50,7 @@ local function convert_user_opts(user_opts)
   setmetatable(_switch,_switch_metatable)
 
   for key,val in pairs(user_opts) do
-    if default_opts[key] ~=nil then
+    if default_opts[key] ~= nil then
       _switch[type(default_opts[key])](key,val)
     else
       _switch['string'](key,val)
