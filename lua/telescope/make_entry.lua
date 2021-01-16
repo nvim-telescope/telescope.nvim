@@ -612,29 +612,40 @@ function make_entry.gen_from_packages(opts)
   end
 end
 
-function make_entry.gen_from_apropos()
+function make_entry.gen_from_apropos(opts)
+  local sections = {}
+  for _, section in ipairs(vim.split(opts.sections, ',', true)) do
+    sections[section] = true
+  end
+
   local displayer = entry_display.create {
-    separator = "",
+    separator = ' ',
     items = {
-      { width = 30 },
-      { remaining = true },
+      {},
+      {},
+      {},
     },
   }
 
   local make_display = function(entry)
+    -- Stopgap measure to set `width` for this field. See #414
+    local formatted = ('%-30s'):format(entry.value)
     return displayer {
-      entry.value,
+      {formatted, 'TelescopeResultsFunction'},
+      {'('..entry.section..')', 'TelescopeResultsVariable'},
       entry.description
     }
   end
 
-  return function(result)
-    return {
-      value = result.cmd,
-      description = result.desc,
-      ordinal = result.cmd,
+  return function(line)
+    local cmd, section, desc = line:match'^(.+)%s*%((.+)%)%s*%-%s*(.*)$'
+    return sections[section] and {
+      value = cmd,
+      description = desc,
+      ordinal = cmd,
       display = make_display,
-    }
+      section = section,
+    } or nil
   end
 end
 

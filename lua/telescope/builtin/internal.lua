@@ -408,30 +408,11 @@ internal.man_pages = function(opts)
     opts.man_cmd,
     vim.fn.has'mac' and {'apropos', ' '} or {'apropos', ''}
   )
-
-  local sections = {}
-  for _, section in ipairs(vim.split(opts.sections, ',', true)) do
-    sections[section] = true
-  end
-  local pages = utils.get_os_command_output(opts.man_cmd)
-  local results = {}
-  for _, page in ipairs(pages) do
-    local cmd, section, desc = page:match'^(.+)%s*%((.+)%)%s*%-%s*(.*)$'
-    if sections[section] then
-      table.insert(results, {
-        cmd = cmd,
-        section = section,
-        desc = desc,
-      })
-    end
-  end
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts)
 
   pickers.new(opts, {
     prompt_title = 'Man',
-    finder    = finders.new_table {
-      results = results,
-      entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts),
-    },
+    finder    = finders.new_oneshot_job(opts.man_cmd, opts),
     previewer = previewers.man.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
