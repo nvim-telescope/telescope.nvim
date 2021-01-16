@@ -628,13 +628,11 @@ function make_entry.gen_from_apropos()
     }
   end
 
-  return function(line)
-    local cmd, _, desc = line:match("^(.*)%s+%((.*)%)%s+%-%s(.*)$")
-
+  return function(result)
     return {
-      value = cmd,
-      description = desc,
-      ordinal = cmd,
+      value = result.cmd,
+      description = result.desc,
+      ordinal = result.cmd,
       display = make_display,
     }
   end

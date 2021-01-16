@@ -403,12 +403,30 @@ internal.help_tags = function(opts)
 end
 
 internal.man_pages = function(opts)
-  local pages = utils.get_os_command_output(opts.man_cmd or { 'apropos', '--sections=1', '' })
+  opts.sections = utils.get_default(opts.sections, '1')
+  opts.man_cmd = utils.get_default(opts.man_cmd, {'apropos', ''})
+
+  local sections = {}
+  for _, section in ipairs(vim.split(opts.sections, ',', true)) do
+    sections[section] = true
+  end
+  local pages = utils.get_os_command_output(opts.man_cmd)
+  local results = {}
+  for _, page in ipairs(pages) do
+    local cmd, section, desc = page:match'^(.+)%s*%((.+)%)%s*%-%s*(.*)$'
+    if sections[section] then
+      table.insert(results, {
+        cmd = cmd,
+        section = section,
+        desc = desc,
+      })
+    end
+  end
 
   pickers.new(opts, {
     prompt_title = 'Man',
     finder    = finders.new_table {
-      results = pages,
+      results = results,
       entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts),
     },
     previewer = previewers.man.new(opts),
