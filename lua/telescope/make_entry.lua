@@ -623,28 +623,29 @@ function make_entry.gen_from_apropos(opts)
     items = {
       {},
       {},
-      {},
     },
   }
 
   local make_display = function(entry)
     -- Stopgap measure to set `width` for this field. See #414
-    local formatted = ('%-30s'):format(entry.value)
+    local formatted = ('%-30s'):format(entry.keyword)
     return displayer {
       {formatted, 'TelescopeResultsFunction'},
-      {'('..entry.section..')', 'TelescopeResultsVariable'},
       entry.description
     }
   end
 
   return function(line)
-    local cmd, section, desc = line:match'^(.+)%s*%((.+)%)%s*%-%s*(.*)$'
+    local keyword, desc = line:match'^(.+)%s+%-%s+(.*)$'
+    local section = keyword and keyword:match'%(([^)])%)' or nil
+    local cmd = keyword and keyword:match'(%S+)%(' or nil
     return sections[section] and {
       value = cmd,
       description = desc,
       ordinal = cmd,
       display = make_display,
       section = section,
+      keyword = keyword,
     } or nil
   end
 end
