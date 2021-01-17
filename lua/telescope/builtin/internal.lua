@@ -418,14 +418,15 @@ internal.man_pages = function(opts)
     attach_mappings = function(prompt_bufnr)
       actions._goto_file_selection:replace(function(_, cmd)
         local selection = actions.get_selected_entry()
+        local args = selection.section .. ' ' .. selection.value
 
         actions.close(prompt_bufnr)
         if cmd == 'edit' or cmd == 'new' then
-          vim.cmd('Man ' .. selection.value)
+          vim.cmd('Man ' .. args)
         elseif cmd == 'vnew' then
-          vim.cmd('vert bo Man ' .. selection.value)
+          vim.cmd('vert bo Man ' .. args)
         elseif cmd == 'tabedit' then
-          vim.cmd('tab Man ' .. selection.value)
+          vim.cmd('tab Man ' .. args)
         end
       end)
 
