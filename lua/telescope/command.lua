@@ -4,9 +4,12 @@ local extensions = require('telescope._extensions').manager
 local config = require('telescope.config')
 local command = {}
 
+local arg_value = {
+  ['nil'] = nil,['""'] = '',['"'] = ''
+}
+
 local bool_type = {
-  ['false'] = false,
-  ['true'] = true
+  ['false'] = false,['true'] = true
 }
 
 -- convert command line string arguments to
@@ -18,6 +21,7 @@ local function convert_user_opts(user_opts)
     ['boolean'] = function(key,val)
       if val == 'false' then
         user_opts[key] = false
+        return
       end
       user_opts[key] = true
     end,
@@ -25,15 +29,11 @@ local function convert_user_opts(user_opts)
       user_opts[key] = tonumber(val)
     end,
     ['string'] = function(key,val)
-      if val == 'nil' then
-        user_opts[key] = nil
+      if arg_value[val] ~= nil then
+        user_opts[key] = arg_value[val]
+        return
       end
-      if val == '""' then
-        user_opts[key] = ''
-      end
-      if val == '"' then
-        user_opts[key] = ''
-      end
+
       if bool_type[val] ~= nil then
         user_opts[key] = bool_type[val]
       end
