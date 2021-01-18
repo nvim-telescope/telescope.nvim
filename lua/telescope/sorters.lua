@@ -429,20 +429,11 @@ sorters.get_levenshtein_sorter = function()
   }
 end
 
--- substring matcher
-local function split_string(str, delimiter)
-  local result = {}
-  for match in str:gmatch("[^" .. delimiter .. "]+") do
-    table.insert(result, match)
-  end
-  return result
-end
-
 local substr_highlighter = function(_, prompt, display)
   local highlights = {}
   display = display:lower()
 
-  local search_terms = split_string(prompt, "%s")
+  local search_terms = util.max_split(prompt, "%s")
   local hl_start, hl_end
 
   for _, word in pairs(search_terms) do
@@ -455,15 +446,13 @@ local substr_highlighter = function(_, prompt, display)
   return highlights
 end
 
-sorters.get_substr_matcher = function(opts)
-  opts = opts or {}
-
+sorters.get_substr_matcher = function()
   return Sorter:new {
     highlighter = substr_highlighter,
     scoring_function = function(_, prompt, _, entry)
     local display = entry.ordinal:lower()
 
-    local search_terms = split_string(prompt, "%s")
+    local search_terms = util.max_split(prompt, "%s")
     local matched = 0
     local total_search_terms = 0
     for _, word in pairs(search_terms) do
