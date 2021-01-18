@@ -72,6 +72,7 @@ function Picker:new(opts)
     preview_title = get_default(opts.preview_title, "Preview"),
 
     prompt_prefix = get_default(opts.prompt_prefix, config.values.prompt_prefix),
+    initial_mode = get_default(opts.initial_mode, config.values.initial_mode),
 
     default_text = opts.default_text,
     get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
@@ -626,7 +627,11 @@ function Picker:find()
     vim.api.nvim_buf_set_lines(prompt_bufnr, 0, 1, false, {self.default_text})
   end
 
-  vim.cmd [[startinsert!]]
+  if self.initial_mode == "insert" then
+    vim.cmd [[startinsert!]]
+  elseif self.initial_mode ~= "normal" then
+    error("Invalid setting for initial_mode: " .. self.initial_mode)
+  end
 end
 
 function Picker:hide_preview()

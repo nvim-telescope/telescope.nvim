@@ -48,6 +48,7 @@ function config.set_defaults(defaults)
   set("results_width", 0.8)
 
   set("prompt_prefix", ">")
+  set("initial_mode", "insert")
 
   set("border", {})
   set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
