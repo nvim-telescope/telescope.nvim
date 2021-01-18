@@ -37,6 +37,7 @@ Sorter.__index = Sorter
 function Sorter:new(opts)
   opts = opts or {}
 
+print("DEBUG")
   return setmetatable({
     state = {},
     scoring_function = opts.scoring_function,
@@ -425,6 +426,55 @@ sorters.get_levenshtein_sorter = function()
   return Sorter:new {
     scoring_function = function(_, prompt, line)
       return require('telescope.algos.string_distance')(prompt, line)
+    end
+  }
+end
+
+-- substring matcher
+local substr_highlighter = function(_, prompt, display)
+  local highlights = {}
+  display = display:lower()
+
+  local search_terms = util.split(prompt, "%s")
+  local hl_start, hl_end
+
+  for _, word in pairs(search_terms) do
+    hl_start, hl_end = display:find(word, 1, true)
+    if hl_start then
+      table.insert(highlights, {start = hl_start, finish = hl_end})
+    end
+  end
+
+  return highlights
+end
+
+local function split_string(str, delimiter)
+  local result = {}
+  for match in str:gmatch("[^" .. delimiter .. "]+") do
+    table.insert(result, match)
+  end
+  return result
+end
+
+sorters.get_substr_matcher = function(opts)
+  opts = opts or {}
+
+  return Sorter:new {
+    highlighter = substr_highlighter,
+    scoring_function = function(_, prompt, _, entry)
+    local display = entry.ordinal:lower()
+
+    local search_terms = split_string(prompt, "%s")
+    local matched = 0
+    local total_search_terms = 0
+    for _, word in pairs(search_terms) do
+      total_search_terms = total_search_terms + 1
+      if display:find(word, 1, true) then
+        matched = matched + 1
+      end
+    end
+
+    return matched == total_search_terms and entry.index or -1
     end
   }
 end
