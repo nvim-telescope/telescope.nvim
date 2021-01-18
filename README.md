@@ -139,6 +139,7 @@ require('telescope').setup{
     },
     prompt_position = "bottom",
     prompt_prefix = ">",
+    initial_mode = "insert",
     selection_strategy = "reset",
     sorting_strategy = "descending",
     layout_strategy = "horizontal",
@@ -189,6 +190,7 @@ EOF
 |------------------------|-------------------------------------------------------|----------------------------|
 | `prompt_position`      | Where the prompt should be located.                   | top/bottom                 |
 | `prompt_prefix`        | What should the prompt prefix be.                     | string                     |
+| `initial_mode`         | The initial mode when a prompt is opened.             | insert/normal              |
 | `sorting_strategy`     | Where first selection should be located.              | descending/ascending       |
 | `layout_strategy`      | How the telescope is drawn.                           | [supported layouts](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts) |
 | `winblend`             | How transparent is the telescope window should be.    | NUM                        |
