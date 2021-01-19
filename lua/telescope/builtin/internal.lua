@@ -472,10 +472,16 @@ end
 
 internal.buffers = function(opts)
   local bufnrs = filter(function(b)
-    return
-      (opts.show_all_buffers
-      or vim.api.nvim_buf_is_loaded(b))
-      and 1 == vim.fn.buflisted(b)
+    if 1 ~= vim.fn.buflisted(b) then
+        return false
+    end
+    if not opts.show_all_buffers and not vim.api.nvim_buf_is_loaded(b) then
+      return false
+    end
+    if opts.ignore_current_buffer and b == vim.api.nvim_get_current_buf() then
+      return false
+    end
+    return true
   end, vim.api.nvim_list_bufs())
   if not next(bufnrs) then return end
 
@@ -484,7 +490,7 @@ internal.buffers = function(opts)
   for _, bufnr in ipairs(bufnrs) do
     local flag = bufnr == vim.fn.bufnr('') and '%' or (bufnr == vim.fn.bufnr('#') and '#' or ' ')
 
-    if opts.sort_lastused and flag == "#" then
+    if opts.sort_lastused and not opts.ignore_current_buffer and flag == "#" then
       default_selection_idx = 2
     end
 
