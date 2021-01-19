@@ -202,7 +202,7 @@ previewers.vimgrep = defaulter(function(_)
       end
 
       -- Workaround for unnamed buffer when using builtin.buffer
-      if p == '[No Name]' and entry.bufnr then
+      if entry.bufnr and (p == '[No Name]' or vim.api.nvim_buf_get_option(entry.bufnr, 'buftype') ~= '') then
         local lines = vim.api.nvim_buf_get_lines(entry.bufnr, 0, -1, false)
         vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
         jump_to_line(self, self.state.bufnr, entry.lnum)
