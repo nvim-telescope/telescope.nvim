@@ -2,6 +2,7 @@ local themes = require('telescope.themes')
 local builtin = require('telescope.builtin')
 local extensions = require('telescope._extensions').manager
 local config = require('telescope.config')
+local utils = require('telescope.utils')
 local command = {}
 
 local arg_value = {
@@ -66,7 +67,7 @@ end
 --   opts = {
 --      cwd = '***',
 -- }
-function command.run_command(args)
+local function run_command(args)
   local user_opts = args or {}
   if next(user_opts) == nil and not user_opts.cmd then
     print('[Telescope] your command miss args')
@@ -99,6 +100,34 @@ function command.run_command(args)
   if rawget(extensions,cmd) then
     extensions[cmd][cmd](opts)
   end
+end
+
+function command.load_command(cmd,...)
+  local args = {...}
+  local user_opts = {}
+  user_opts['cmd'] = cmd
+  user_opts.opts = {}
+
+  for _,arg in ipairs(args) do
+    if arg:find('=',1) == nil then
+      user_opts['extension_type'] = arg
+    else
+      local param = utils.split_by_pattern(arg,'[^=]+')
+      if param[1] == 'theme' then
+        user_opts['theme'] = param[2]
+      elseif param[2]:find(',',1) ~= nil then
+        if param[1] == 'search' then
+          user_opts.opts[param[1]] = param[2]
+        else
+          user_opts.opts[param[1]] = utils.split_by_pattern(param[2],'[^,]+')
+        end
+      else
+        user_opts.opts[param[1]] = param[2]
+      end
+    end
+  end
+
+  run_command(user_opts)
 end
 
 return command

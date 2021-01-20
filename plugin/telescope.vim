@@ -88,32 +88,6 @@ function! s:telescope_complete(arg,line,pos)
   endif
 endfunction
 
-function! s:load_command(builtin,...) abort
-  let user_opts = {}
-  let user_opts.cmd = a:builtin
-  let user_opts.opts = {}
-
-  " range command args
-  " if arg in lua code is table type,we split command string by `,` to vimscript
-  " list type.
-  for arg in a:000
-    if stridx(arg,'=') < 0
-      let user_opts.extension_type = arg
-      continue
-    endif
-    " split args by =
-    let arg_list = split(arg,'=')
-    if arg_list[0] == 'find_command' || arg_list[0] == 'vimgrep_arguments'
-      let user_opts.opts[arg_list[0]] = split(arg_list[1],',')
-    elseif arg_list[0] == 'theme'
-      let user_opts.theme = arg_list[1]
-    else
-      let user_opts.opts[arg_list[0]] = arg_list[1]
-    endif
-  endfor
-
-  call v:lua.require('telescope.command').run_command(user_opts)
-endfunction
 
 " Telescope Commands with complete
-command! -nargs=+ -complete=custom,s:telescope_complete Telescope          call s:load_command(<f-args>)
+command! -nargs=+ -complete=custom,s:telescope_complete Telescope    lua require('telescope.command').load_command(<f-args>)
