@@ -112,14 +112,14 @@ function command.load_command(cmd,...)
     if arg:find('=',1) == nil then
       user_opts['extension_type'] = arg
     else
-      local param = utils.split_by_pattern(arg,'[^=]+')
+      local param = vim.split(arg,'=')
       if param[1] == 'theme' then
         user_opts['theme'] = param[2]
       elseif param[2]:find(',',1) ~= nil then
         if param[1] == 'search' then
           user_opts.opts[param[1]] = param[2]
         else
-          user_opts.opts[param[1]] = utils.split_by_pattern(param[2],'[^,]+')
+          user_opts.opts[param[1]] = vim.split(param[2],',')
         end
       else
         user_opts.opts[param[1]] = param[2]

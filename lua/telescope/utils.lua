@@ -149,12 +149,6 @@ function utils.buf_delete(bufnr)
   if start_report < 2 then vim.o.report = start_report end
 end
 
-function utils.split_by_pattern(s,pattern)
-  local split_table = {}
-  for word in s:gmatch(pattern) do table.insert(split_table, word) end
-  return split_table
-end
-
 function utils.max_split(s, pattern, maxsplit)
   pattern = pattern or ' '
   maxsplit = maxsplit or -1
