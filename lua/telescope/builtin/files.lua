@@ -4,7 +4,6 @@ local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
 local utils = require('telescope.utils')
-
 local conf = require('telescope.config').values
 
 local flatten = vim.tbl_flatten
@@ -22,9 +21,17 @@ local escape_chars = function(string)
   })
 end
 
+-- Special keys:
+--  opts.search_dirs -- list of directory to search in
 files.live_grep = function(opts)
-  if opts.cwd then
-    opts.cwd = vim.fn.expand(opts.cwd)
+  local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
+  local search_dirs = opts.search_dirs
+  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd)
+
+  if search_dirs then
+    for i, path in ipairs(search_dirs) do
+      search_dirs[i] = vim.fn.expand(path)
+    end
   end
 
   local live_grepper = finders.new_job(function(prompt)
@@ -36,7 +43,7 @@ files.live_grep = function(opts)
 
       prompt = escape_chars(prompt)
 
-      return flatten { conf.vimgrep_arguments, prompt, '.' }
+      return flatten { vimgrep_arguments, prompt, opts.search_dirs or '.' }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
     opts.max_results,
@@ -53,19 +60,31 @@ end
 
 -- Special keys:
 --  opts.search -- the string to search.
+--  opts.search_dirs -- list of directory to search in
 files.grep_string = function(opts)
   -- TODO: This should probably check your visual selection as well, if you've got one
-  local search = opts.search or vim.fn.expand("<cword>")
 
-  search = escape_chars(search)
-
+  local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
+  local search_dirs = opts.search_dirs
+  local search = escape_chars(opts.search or vim.fn.expand("<cword>"))
+  local word_match = opts.word_match
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
-  opts.word_match = opts.word_match or nil
+
+  if search_dirs then
+    for i, path in ipairs(search_dirs) do
+      search_dirs[i] = vim.fn.expand(path)
+    end
+  end
 
   pickers.new(opts, {
     prompt_title = 'Find Word',
     finder = finders.new_oneshot_job(
-      flatten { conf.vimgrep_arguments, opts.word_match, search, '.' },
+      flatten {
+        vimgrep_arguments,
+        word_match,
+        search,
+        search_dirs or "."
+      },
       opts
     ),
     previewer = conf.grep_previewer(opts),
