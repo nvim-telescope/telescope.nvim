@@ -2,7 +2,6 @@ local themes = require('telescope.themes')
 local builtin = require('telescope.builtin')
 local extensions = require('telescope._extensions').manager
 local config = require('telescope.config')
-local utils = require('telescope.utils')
 local command = {}
 
 local arg_value = {
