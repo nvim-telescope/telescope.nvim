@@ -79,6 +79,5 @@ function! s:telescope_complete(arg,line,pos)
   endif
 endfunction
 
-
 " Telescope Commands with complete
 command! -nargs=+ -complete=custom,s:telescope_complete Telescope    lua require('telescope.command').load_command(<f-args>)
