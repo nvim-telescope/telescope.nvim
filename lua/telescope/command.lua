@@ -101,6 +101,19 @@ local function run_command(args)
   end
 end
 
+function command.get_extensions_subcommand()
+  local exts = require('telescope._extensions').manager
+  local complete_ext_table = {}
+  for _,value in pairs(exts) do
+    if type(value) == "table" then
+      for key,_ in pairs(value) do
+        table.insert(complete_ext_table,key)
+      end
+    end
+  end
+  return complete_ext_table
+end
+
 function command.load_command(cmd,...)
   local args = {...}
   local user_opts = {}

@@ -57,16 +57,7 @@ function! s:telescope_complete(arg,line,pos)
   let l:builtin_list = luaeval('vim.tbl_keys(require("telescope.builtin"))')
   let l:extensions_list = luaeval('vim.tbl_keys(require("telescope._extensions").manager)')
   let l:options_list = luaeval('vim.tbl_keys(require("telescope.config").values)')
-  let ext_type = v:lua.require('telescope._extensions').manager
-  let l:ext_type_list = []
-
-  if !empty(ext_type)
-    for val in values(ext_type)
-      if type(val) == 3
-        call extend(l:ext_type_list,keys(val))
-      endif
-    endfor
-  endif
+  let l:extensions_subcommand_list = luaeval('require("telescope.command").get_extensions_subcommand()')
 
   let list = [extend(l:builtin_list,l:extensions_list),l:options_list]
   let l = split(a:line[:a:pos-1], '\%(\%(\%(^\|[^\\]\)\\\)\@<!\s\)\+', 1)
@@ -78,7 +69,7 @@ function! s:telescope_complete(arg,line,pos)
 
   if n == 1
     if index(l:extensions_list,l[1]) >= 0
-      return join(l:ext_type_list,"\n")
+      return join(l:extensions_subcommand_list,"\n")
     endif
     return join(list[1],"\n")
   endif
