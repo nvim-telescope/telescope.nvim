@@ -53,6 +53,7 @@ previewers.new_buffer_previewer = function(opts)
   local bufname_table = {}
 
   local global_state = require'telescope.state'
+  local preview_window_id
 
   local function get_bufnr(self)
     if not self.state then return nil end
@@ -89,8 +90,10 @@ previewers.new_buffer_previewer = function(opts)
     if opts.keep_last_buf then
       last_nr = global_state.get_global_key('last_preview_bufnr')
       -- Push in another buffer so the last one will not be cleaned up
-      local bufnr = vim.api.nvim_create_buf(false, true)
-      vim.api.nvim_win_set_buf(self.state.winid, bufnr)
+      if preview_window_id then
+        local bufnr = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_win_set_buf(preview_window_id, bufnr)
+      end
     end
 
     set_bufnr(self, nil)
@@ -106,6 +109,7 @@ previewers.new_buffer_previewer = function(opts)
   function opts.preview_fn(self, entry, status)
     if get_bufnr(self) == nil then
       set_bufnr(self, vim.api.nvim_win_get_buf(status.preview_win))
+      preview_window_id = status.preview_win
     end
 
     if opts.get_buffer_by_name and get_bufnr_by_bufname(self, opts.get_buffer_by_name(self, entry)) then
