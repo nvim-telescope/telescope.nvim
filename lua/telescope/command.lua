@@ -120,6 +120,7 @@ function command.get_extensions_subcommand()
 end
 
 function command.load_command(cmd,...)
+  local default_opts = config.values
   local args = {...}
   local user_opts = {}
   user_opts['cmd'] = cmd
@@ -133,8 +134,10 @@ function command.load_command(cmd,...)
       if param[1] == 'theme' then
         user_opts['theme'] = param[2]
       elseif param[2]:find(',',1) ~= nil then
-        if param[1] == 'search' then
-          user_opts.opts[param[1]] = param[2]
+        -- check it exist in default options
+        if default_opts[param[1]] then
+          -- if type is table we split the comma `,`
+          user_opts.opts[param[1]] = type(default_opts[param[1]]) == "table" and vim.split(param[2],',') or param[2]
         else
           user_opts.opts[param[1]] = vim.split(param[2],',')
         end
