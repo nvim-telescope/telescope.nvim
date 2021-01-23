@@ -76,6 +76,8 @@ function Picker:new(opts)
 
     default_text = opts.default_text,
     get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
+    _on_input_filter_cb = opts.on_input_filter_cb,
+    _filter_marker = (opts.on_input_filter_cb and opts.filter_marker) and opts.filter_marker or "",
 
     finder = opts.finder,
     sorter = opts.sorter,
@@ -446,6 +448,15 @@ function Picker:find()
     end
 
     local prompt = self:_get_prompt()
+    if self._on_input_filter_cb then
+      -- separate any filters from the prompt text
+      local original_prompt = prompt
+      prompt = self._on_input_filter_cb(prompt, self._filter_marker)
+      if prompt ~= original_prompt then
+        print(("[%s] Force Update"):format(os.clock()))
+      end
+    end
+
     if self.sorter then
       self.sorter:_start(prompt)
     end
