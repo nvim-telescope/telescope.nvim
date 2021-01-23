@@ -448,13 +448,14 @@ function Picker:find()
     end
 
     local prompt = self:_get_prompt()
+
+    local updated_finder
     if self._on_input_filter_cb then
-      -- separate any filters from the prompt text
-      local original_prompt = prompt
-      prompt = self._on_input_filter_cb(prompt, self._filter_marker)
-      if prompt ~= original_prompt then
-        print(("[%s] Force Update"):format(os.clock()))
-      end
+      prompt, updated_finder = self._on_input_filter_cb(prompt, self._filter_marker)
+    end
+
+    if updated_finder then
+      self.finder = updated_finder
     end
 
     if self.sorter then
