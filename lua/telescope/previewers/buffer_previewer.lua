@@ -21,13 +21,15 @@ previewers.file_maker = function(filepath, bufnr, opts)
   local ft = opts.use_ft_detect and pfiletype.detect(filepath)
 
   if opts.bufname ~= filepath then
-    if vim.loop.fs_stat(filepath).type == 'directory' then
+    filepath = vim.fn.expand(filepath)
+    local stat = vim.loop.fs_stat(filepath) or {}
+    if stat.type == 'directory' then
       pscan.ls_async(filepath, { hidden = true, on_exit = vim.schedule_wrap(function(data)
         vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
         if opts.callback then opts.callback(bufnr) end
       end)})
     else
-      path.read_file_async(vim.fn.expand(filepath), vim.schedule_wrap(function(data)
+      path.read_file_async(filepath, vim.schedule_wrap(function(data)
         if not vim.api.nvim_buf_is_valid(bufnr) then return end
         vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(data, '[\r]?\n'))
 
