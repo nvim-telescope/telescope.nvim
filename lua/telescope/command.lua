@@ -119,6 +119,16 @@ function command.get_extensions_subcommand()
   return complete_ext_table
 end
 
+local split_keywords = {
+  ['find_command'] = true,
+  ['vimgrep_arguments'] = true,
+  ['sections'] = true
+}
+
+function command.register_keyword(keyword)
+  split_keywords[keyword] = true
+end
+
 function command.load_command(cmd,...)
   local args = {...}
   local user_opts = {}
@@ -132,12 +142,8 @@ function command.load_command(cmd,...)
       local param = vim.split(arg,'=')
       if param[1] == 'theme' then
         user_opts['theme'] = param[2]
-      elseif param[2]:find(',',1) ~= nil then
-        if param[1] == 'search' then
-          user_opts.opts[param[1]] = param[2]
-        else
-          user_opts.opts[param[1]] = vim.split(param[2],',')
-        end
+      elseif split_keywords[param[1]] then
+        user_opts.opts[param[1]] = vim.split(param[2],',')
       else
         user_opts.opts[param[1]] = param[2]
       end
