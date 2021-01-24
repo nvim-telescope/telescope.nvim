@@ -202,4 +202,154 @@ function utils.get_os_command_output(cmd)
   return Job:new({ command = command, args = cmd }):sync()
 end
 
+local uv = vim.loop
+local co = coroutine
+
+local Executor = {}
+Executor.__index = Executor
+
+function Executor.new(opts)
+  opts = opts or {}
+
+  local self = setmetatable({}, Executor)
+
+  self.tasks = opts.tasks or {}
+  self.mode = opts.mode or "next"
+  self.index = opts.start_idx or 1
+  self.idle = uv.new_idle()
+
+  return self
+end
+
+function Executor:run()
+  self.idle:start(vim.schedule_wrap(function()
+    if #self.tasks == 0 then
+      self.idle:stop()
+      return
+    end
+
+    if self.mode == "finish" then
+      self:step_finish()
+    else
+      self:step()
+    end
+  end))
+end
+
+function Executor:close()
+  self.idle:stop()
+  self.tasks = {}
+end
+
+function Executor:step_finish()
+  if #self.tasks == 0 then return end
+  local curr_task = self.tasks[self.index]
+  if curr_task == nil then
+    self.index = 1
+    curr_task = self.tasks[self.index]
+  end
+
+  local _, _ = co.resume(curr_task)
+  if co.status(curr_task) == "dead" then
+    table.remove(self.tasks, self.index)
+
+    self.index = self.index + 1
+  end
+end
+
+function Executor:step()
+  if #self.tasks == 0 then return end
+  local curr_task = self.tasks[self.index]
+  if curr_task == nil then
+    self.index = 1
+    curr_task = self.tasks[self.index]
+  end
+
+  local _, _ = co.resume(curr_task[1], unpack(curr_task[2]))
+  if co.status(curr_task[1]) == "dead" then
+    table.remove(self.tasks, self.index)
+  end
+
+  self.index = self.index + 1
+end
+
+function Executor:get_current_task()
+  return self.tasks[self.index]
+end
+
+function Executor:remove_task(idx)
+  table.remove(self.tasks, idx)
+end
+
+function Executor:add(task, ...)
+  table.insert(self.tasks, {task, {...}})
+end
+
+utils.Executor = Executor
+
+List = {}
+
+function List.new()
+  return {first = 0, last = -1}
+end
+
+function List.pushleft(list, value)
+  local first = list.first - 1
+  list.first = first
+  list[first] = value
+end
+
+function List.pushright (list, value)
+  local last = list.last + 1
+  list.last = last
+  list[last] = value
+end
+
+function List.popleft (list)
+  local first = list.first
+  if first > list.last then return nil end
+  local value = list[first]
+  list[first] = nil        -- to allow garbage collection
+  list.first = first + 1
+  return value
+end
+
+function List.is_empty(list)
+  return list.first > list.last
+end
+
+function List.popright (list)
+  local last = list.last
+  if list.first > last then return nil end
+  local value = list[last]
+  list[last] = nil         -- to allow garbage collection
+  list.last = last - 1
+  return value
+end
+
+function List.len(list)
+  return list.last - list.first
+end
+
+utils.List = List
+
+function successive_async(f)
+  local list = List.new()
+
+  local function wrapped(...)
+    if list == nil then return end
+    -- if List.is_empty(list) or list == nil then return end
+
+    List.pushleft(list, {...})
+    local curr = List.popright(list)
+    f(unpack(curr))
+  end
+
+  local function finish()
+    list = nil 
+  end
+
+  return wrapped
+end
+
 return utils

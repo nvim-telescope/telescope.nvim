@@ -1,6 +1,8 @@
 local Job = require('plenary.job')
 
+local co = coroutine
 local make_entry = require('telescope.make_entry')
+local Executor = require('telescope.utils').Executor
 local log = require('telescope.log')
 
 local finders = {}
@@ -33,7 +35,7 @@ local JobFinder = _callable_obj()
 function JobFinder:new(opts)
   opts = opts or {}
 
-> assert(not opts.results, "`results` should be used with finder.new_table")
+  assert(not opts.results, "`results` should be used with finder.new_table")
   assert(not opts.static, "`static` should be used with finder.new_oneshot_job")
 
   local obj = setmetatable({
@@ -179,13 +181,26 @@ function OneshotJobFinder:new(opts)
       num_execution = num_execution + 1
 
       local current_count = num_results
-      for index = 1, current_count do
-        process_result(results[index])
-      end
+      local exe = Executor.new {}
+      exe:add(co.create(function(results)
+        for index = 1, current_count do
+          process_result(results[index])
+          co.yield()
+        end
 
-      if completed then
-        process_complete()
-      end
+        if completed then
+          process_complete()
+        end
+      end), results)
+      exe:run()
+
+      -- for index = 1, current_count do
+      --   process_result(results[index])
+      -- end
+
+      -- if completed then
+      --   process_complete()
+      -- end
     end
   end)
 
@@ -248,12 +263,43 @@ function StaticFinder:new(opts)
   return setmetatable({ results = results }, self)
 end
 
-function StaticFinder:_find(_, process_result, process_complete)
-  for _, v in ipairs(self.results) do
-    process_result(v)
+local static_find = successive_async(function(results, process_result, process_complete)
+  local exe = Executor.new {}
+  exe:add(co.create(function(results)
+    for _, v in ipairs(results) do
+      process_result(v)
+      co.yield()
+    end
+    process_complete()
+  end), results)
+
+  exe:run()
+end)
+
+local function exe_cancel_wrap(fn)
+  local exe = Executor.new {}
+
+  local function wrapped(...)
+    exe:close()
+    exe:add(fn, ...)
+    exe:run()
   end
 
+  return wrapped
+end
+
+-- WIP, cancel previous task when we start a new one
+local static_find_cancel = exe_cancel_wrap(co.create(function(results, process_result, process_complete)
+  for _, v in ipairs(results) do
+    process_result(v)
+    co.yield()
+  end
   process_complete()
+end))
+
+function StaticFinder:_find(_, process_result, process_complete)
+  static_find(self.results, process_result, process_complete)
+  -- static_find_cancel(self.results, process_result, process_complete)
 end
 
 
