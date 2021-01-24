@@ -5,6 +5,7 @@ local a = vim.api
 local log = require('telescope.log')
 local state = require('telescope.state')
 local utils = require('telescope.utils')
+local p_scroller = require('telescope.pickers.scroller')
 
 local action_state = require('telescope.actions.state')
 local action_set = require('telescope.actions.set')
@@ -67,6 +68,22 @@ end
 --- Move the selection to the previous entry
 function actions.move_selection_previous(prompt_bufnr)
   action_set.shift_selection(prompt_bufnr, -1)
+end
+
+function actions.move_to_top(prompt_bufnr)
+  local current_picker = actions.get_current_picker(prompt_bufnr)
+  current_picker:set_selection(p_scroller.top(current_picker.sorting_strategy,
+    current_picker.max_results,
+    current_picker.manager:num_results()
+  ))
+end
+
+function actions.move_to_bottom(prompt_bufnr)
+  local current_picker = actions.get_current_picker(prompt_bufnr)
+  current_picker:set_selection(p_scroller.bottom(current_picker.sorting_strategy,
+    current_picker.max_results,
+    current_picker.manager:num_results()
+  ))
 end
 
 function actions.add_selection(prompt_bufnr)
