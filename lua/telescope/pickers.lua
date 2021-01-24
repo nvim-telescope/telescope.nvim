@@ -1,4 +1,5 @@
 local a = vim.api
+local co = coroutine
 local popup = require('popup')
 
 require('telescope')

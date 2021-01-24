@@ -352,4 +352,19 @@ function successive_async(f)
   return wrapped
 end
 
+function utils.exe_cancel_wrap(fn)
+  local exe = Executor.new {}
+  exe:add(fn)
+
+  local function wrapped(...)
+    print(#{...})
+    exe.idle:stop()
+    exe.tasks[1][1] = fn
+    exe.tasks[1][2] = {...}
+    exe:run()
+  end
+
+  return wrapped
+end
+
 return utils

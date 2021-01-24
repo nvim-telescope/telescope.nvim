@@ -1,6 +1,7 @@
 local Job = require('plenary.job')
 
 local co = coroutine
+local utils = require('telescope.utils')
 local make_entry = require('telescope.make_entry')
 local Executor = require('telescope.utils').Executor
 local log = require('telescope.log')
@@ -16,6 +17,24 @@ local _callable_obj = function()
   return obj
 end
 
+local static_find
+do
+  local exe = Executor.new {}
+  static_find = function(results, process_result, process_complete)
+    if #exe.tasks ~= 0 then
+      exe:close()
+    end
+    exe:add(co.create(function(results)
+      for _, v in ipairs(results) do
+        process_result(v)
+        co.yield()
+      end
+      process_complete()
+    end), results)
+
+    exe:run()
+  end
+end
 
 --[[ =============================================================
 
@@ -104,6 +123,22 @@ function JobFinder:_find(prompt, process_result, process_complete)
   self.job:start()
 end
 
+local job_find
+do
+  -- job_find = exe_cancel_wrap
+  job_find = utils.exe_cancel_wrap(co.create(function(results, process_result, process_complete, current_count, completed)
+    print(current_count)
+    for index = 1, current_count do
+      process_result(results[index])
+      co.yield()
+    end
+
+    if completed then
+      process_complete()
+    end
+  end))
+end
+
 local OneshotJobFinder = _callable_obj()
 
 function OneshotJobFinder:new(opts)
@@ -180,27 +215,21 @@ function OneshotJobFinder:new(opts)
       finder, _, process_result, process_complete = coroutine.yield()
       num_execution = num_execution + 1
 
-      local current_count = num_results
-      local exe = Executor.new {}
-      exe:add(co.create(function(results)
-        for index = 1, current_count do
-          process_result(results[index])
-          co.yield()
-        end
+      static_find(results, process_result, process_complete)
+      -- local current_count = num_results
+      -- job_find(results, process_result, process_complete, current_count, completed)
+      -- local exe = Executor.new {}
+      -- exe:add(co.create(function()
+      --   for index = 1, current_count do
+      --     process_result(results[index])
+      --     co.yield()
+      --   end
 
-        if completed then
-          process_complete()
-        end
-      end), results)
-      exe:run()
-
-      -- for index = 1, current_count do
-      --   process_result(results[index])
-      -- end
-
-      -- if completed then
-      --   process_complete()
-      -- end
+      --   if completed then
+      --     process_complete()
+      --   end
+      -- end))
+      -- exe:run()
     end
   end)
 
@@ -262,40 +291,6 @@ function StaticFinder:new(opts)
 
   return setmetatable({ results = results }, self)
 end
-
-local static_find = successive_async(function(results, process_result, process_complete)
-  local exe = Executor.new {}
-  exe:add(co.create(function(results)
-    for _, v in ipairs(results) do
-      process_result(v)
-      co.yield()
-    end
-    process_complete()
-  end), results)
-
-  exe:run()
-end)
-
-local function exe_cancel_wrap(fn)
-  local exe = Executor.new {}
-
-  local function wrapped(...)
-    exe:close()
-    exe:add(fn, ...)
-    exe:run()
-  end
-
-  return wrapped
-end
-
--- WIP, cancel previous task when we start a new one
-local static_find_cancel = exe_cancel_wrap(co.create(function(results, process_result, process_complete)
-  for _, v in ipairs(results) do
-    process_result(v)
-    co.yield()
-  end
-  process_complete()
-end))
 
 function StaticFinder:_find(_, process_result, process_complete)
   static_find(self.results, process_result, process_complete)
