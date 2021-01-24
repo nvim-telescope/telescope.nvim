@@ -47,6 +47,29 @@ local static_find_no_cancel = function(results, process_result, process_complete
   end))
 end
 
+local job_find
+do
+  local exe = Executor.new {}
+  job_find = function(results, process_result, process_complete, current_count, completed)
+    if #exe.tasks ~= 0 then
+      exe:close()
+    end
+
+    exe:add(co.create(function(results)
+      for index = 1, current_count do
+        process_result(results[index])
+        co.yield()
+      end
+
+      if completed then
+        process_complete()
+      end
+    end), results)
+
+    exe:run()
+  end
+end
+
 --[[ =============================================================
 
     JobFinder
@@ -134,22 +157,6 @@ function JobFinder:_find(prompt, process_result, process_complete)
   self.job:start()
 end
 
-local job_find
-do
-  -- job_find = exe_cancel_wrap
-  job_find = utils.exe_cancel_wrap(co.create(function(results, process_result, process_complete, current_count, completed)
-    print(current_count)
-    for index = 1, current_count do
-      process_result(results[index])
-      co.yield()
-    end
-
-    if completed then
-      process_complete()
-    end
-  end))
-end
-
 local OneshotJobFinder = _callable_obj()
 
 function OneshotJobFinder:new(opts)
@@ -225,22 +232,11 @@ function OneshotJobFinder:new(opts)
     while true do
       finder, _, process_result, process_complete = coroutine.yield()
       num_execution = num_execution + 1
+      local current_count = num_results
 
       -- static_find(results, process_result, process_complete)
       -- static_find_no_cancel(results, process_result, process_complete)
-      local current_count = num_results
-      local exe = Executor.new {}
-      exe:add(co.create(function()
-        for index = 1, current_count do
-          process_result(results[index])
-          co.yield()
-        end
-
-        if completed then
-          process_complete()
-        end
-      end))
-      exe:run()
+      job_find(results, process_result, process_complete, current_count, completed)
     end
   end)
 
@@ -305,7 +301,6 @@ end
 
 function StaticFinder:_find(_, process_result, process_complete)
   static_find(self.results, process_result, process_complete)
-  -- static_find_cancel(self.results, process_result, process_complete)
 end
 
 
