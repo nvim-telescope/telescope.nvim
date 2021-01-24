@@ -202,4 +202,25 @@ function utils.get_os_command_output(cmd)
   return Job:new({ command = command, args = cmd }):sync()
 end
 
+utils.strdisplaywidth = (function()
+  if jit then
+    local ffi = require('ffi')
+    ffi.cdef[[
+      typedef unsigned char char_u;
+      int linetabsize_col(int startcol, char_u *s);
+    ]]
+
+    return function(str, col)
+      local startcol = col or 0
+      local s = ffi.new('char[?]', #str + 1)
+      ffi.copy(s, str)
+      return ffi.C.linetabsize_col(startcol, s) - startcol
+    end
+  else
+    return function(str, col)
+      return #str - (col or 0)
+    end
+  end
+end)()
+
 return utils
