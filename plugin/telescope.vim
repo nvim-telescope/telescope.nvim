@@ -6,6 +6,9 @@ highlight default link TelescopeMultiSelection Type
 " "Normal" in the floating windows created by telescope.
 highlight default link TelescopeNormal Normal
 
+" "Normal" in the preview floating windows created by telescope.
+highlight default link TelescopePreviewNormal Normal
+
 " Border highlight groups.
 "   Use TelescopeBorder to override the default.
 "   Otherwise set them specifically
