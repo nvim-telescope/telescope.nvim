@@ -4,12 +4,20 @@ local entry_display = {}
 
 local function truncate(str, len)
   str = tostring(str) -- We need to make sure its an actually a string and not a number
-  -- TODO: This doesn't handle multi byte chars...
-  if utils.strdisplaywidth(str) > len then
-    str = str:sub(1, len - 1)
-    str = str .. "…"
+  if utils.strdisplaywidth(str) <= len then
+    return str
   end
-  return str
+  local charlen = 0
+  local result = ''
+  while true do
+    local part = utils.strcharpart(str, 0, charlen) ..  '…'
+    if utils.strdisplaywidth(part) > len then
+      break
+    end
+    result = part
+    charlen = charlen + 1
+  end
+  return result
 end
 
 entry_display.create = function(configuration)
