@@ -125,7 +125,7 @@ previewers.new_buffer_previewer = function(opts)
       vim.api.nvim_win_set_buf(status.preview_win, bufnr)
 
       -- TODO(conni2461): We only have to set options once. Right?
-      vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:Normal')
+      vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:TelescopePreviewNormal')
       vim.api.nvim_win_set_option(status.preview_win, 'signcolumn', 'no')
       vim.api.nvim_win_set_option(status.preview_win, 'foldlevel', 100)
       vim.api.nvim_win_set_option(status.preview_win, 'wrap', false)

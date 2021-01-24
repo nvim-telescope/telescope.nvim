@@ -364,7 +364,7 @@ function Picker:find()
     preview_win, preview_opts = popup.create('', popup_opts.preview)
     preview_bufnr = a.nvim_win_get_buf(preview_win)
 
-    a.nvim_win_set_option(preview_win, 'winhl', 'Normal:TelescopeNormal')
+    a.nvim_win_set_option(preview_win, 'winhl', 'Normal:TelescopePreviewNormal')
     a.nvim_win_set_option(preview_win, 'winblend', self.window.winblend)
     local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
     if preview_border_win then
