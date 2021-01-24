@@ -463,7 +463,8 @@ function make_entry.gen_from_buffer(opts)
 
   local icon_width = 0
   if not disable_devicons then
-    icon_width = vim.fn.strdisplaywidth(get_devicons('fname', disable_devicons))
+    local icon, _ = get_devicons('fname', disable_devicons)
+    icon_width = utils.strdisplaywidth(icon)
   end
 
   local displayer = entry_display.create {
