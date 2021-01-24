@@ -36,6 +36,17 @@ do
   end
 end
 
+local static_find_no_cancel = function(results, process_result, process_complete)
+  local exe = Executor.new {}
+  exe:add(co.create(function()
+    for _, v in ipairs(results) do
+      process_result(v)
+      co.yield()
+    end
+    process_complete()
+  end))
+end
+
 --[[ =============================================================
 
     JobFinder
@@ -215,21 +226,21 @@ function OneshotJobFinder:new(opts)
       finder, _, process_result, process_complete = coroutine.yield()
       num_execution = num_execution + 1
 
-      static_find(results, process_result, process_complete)
-      -- local current_count = num_results
-      -- job_find(results, process_result, process_complete, current_count, completed)
-      -- local exe = Executor.new {}
-      -- exe:add(co.create(function()
-      --   for index = 1, current_count do
-      --     process_result(results[index])
-      --     co.yield()
-      --   end
+      -- static_find(results, process_result, process_complete)
+      -- static_find_no_cancel(results, process_result, process_complete)
+      local current_count = num_results
+      local exe = Executor.new {}
+      exe:add(co.create(function()
+        for index = 1, current_count do
+          process_result(results[index])
+          co.yield()
+        end
 
-      --   if completed then
-      --     process_complete()
-      --   end
-      -- end))
-      -- exe:run()
+        if completed then
+          process_complete()
+        end
+      end))
+      exe:run()
     end
   end)
 
