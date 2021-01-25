@@ -144,8 +144,12 @@ function actions.center(_)
   vim.cmd(':normal! zz')
 end
 
-function actions.goto_file_selection_edit(prompt_bufnr)
+function actions.select(prompt_bufnr)
   actions._goto_file_selection(prompt_bufnr, "edit")
+end
+
+function actions.goto_file_selection_edit(prompt_bufnr)
+  actions.select(prompt_bufnr)
 end
 
 function actions.goto_file_selection_split(prompt_bufnr)
