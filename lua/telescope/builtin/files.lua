@@ -185,6 +185,23 @@ local function prepare_match(entry, kind)
   return entries
 end
 
+files.scan_dir = function(opts)
+
+  local scan = require'plenary.scandir'
+
+  local results = scan.scan_dir('/home/brian', { hidden = true })
+
+  pickers.new(opts, {
+    prompt_title = 'Files',
+    finder = finders.new_table {
+      results = results,
+      entry_maker = make_entry.gen_from_file(opts),
+    },
+    sorter = conf.generic_sorter(opts),
+    previewer = conf.file_previewer(opts),
+  }):find()
+end
+
 files.treesitter = function(opts)
   opts.show_line = utils.get_default(opts.show_line, true)
 

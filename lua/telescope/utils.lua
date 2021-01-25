@@ -216,6 +216,7 @@ function Executor.new(opts)
   self.tasks = opts.tasks or {}
   self.mode = opts.mode or "next"
   self.index = opts.start_idx or 1
+  self.run_task_amount = opts.run_task_amount or 1
   self.idle = uv.new_idle()
 
   return self
@@ -228,10 +229,12 @@ function Executor:run()
       return
     end
 
-    if self.mode == "finish" then
-      self:step_finish()
-    else
-      self:step()
+    for _ = 1, self.run_task_amount do
+      if self.mode == "finish" then
+        self:step_finish()
+      else
+        self:step()
+      end
     end
   end))
 end
@@ -333,7 +336,7 @@ end
 
 utils.List = List
 
-function successive_async(f)
+function utils.successive_async(f)
   local list = List.new()
 
   local function wrapped(...)

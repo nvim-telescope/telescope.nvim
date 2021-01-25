@@ -19,7 +19,9 @@ end
 
 local static_find
 do
-  local exe = Executor.new {}
+  local exe = Executor.new {
+    -- run_task_amount = 2000,
+  }
   static_find = function(results, process_result, process_complete)
     if #exe.tasks ~= 0 then
       exe:close()
@@ -49,7 +51,13 @@ end
 
 local job_find
 do
-  local exe = Executor.new {}
+  local exe = Executor.new {
+    -- kind of like fps
+
+    -- run_task_amount = 1000,
+    -- run_task_amount = 3000,
+    -- run_task_amount = 1,
+  }
   job_find = function(results, process_result, process_complete, current_count, completed)
     if #exe.tasks ~= 0 then
       exe:close()
