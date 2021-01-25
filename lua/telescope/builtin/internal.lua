@@ -333,36 +333,62 @@ internal.vim_options = function(opts)
 end
 
 internal.help_tags = function(opts)
-  local all_tag_files = {}
-  local all_help_files = {}
-  for _, v in ipairs(vim.split(vim.fn.globpath(vim.o.runtimepath, 'doc/*', 1), '\n')) do
-    local split_path = vim.split(v, path.separator, true)
-    local filename = split_path[#split_path]
-    if filename == 'tags' then
-      table.insert(all_tag_files, v)
-    else
-      all_help_files[filename] = v
+  opts.lang = utils.get_default(opts.lang, vim.o.helplang)
+  opts.fallback = utils.get_default(opts.fallback, true)
+
+  local langs = vim.split(opts.lang, ',', true)
+  if opts.fallback and not vim.tbl_contains(langs, 'en') then
+    table.insert(langs, 'en')
+  end
+  local langs_map = {}
+  for _, lang in ipairs(langs) do
+    langs_map[lang] = true
+  end
+
+  local tag_files = {}
+  local function add_tag_file(lang, file)
+    if langs_map[lang] then
+      if tag_files[lang] then
+        table.insert(tag_files[lang], file)
+      else
+        tag_files[lang] = {file}
+      end
     end
   end
 
-  local delim = string.char(9)
+  local help_files = {}
+  local all_files = vim.fn.globpath(vim.o.runtimepath, 'doc/*', 1, 1)
+  for _, fullpath in ipairs(all_files) do
+    local file = utils.path_tail(fullpath)
+    if file == 'tags' then
+      add_tag_file('en', fullpath)
+    elseif file:match('^tags%-..$') then
+      local lang = file:sub(-2)
+      add_tag_file(lang, fullpath)
+    else
+      help_files[file] = fullpath
+    end
+  end
+
   local tags = {}
-  for _, file in ipairs(all_tag_files) do
-    local data = vim.split(path.read_file(file), '\n')
-    for _, line in ipairs(data) do
-      if line ~= '' then
-        local matches = {}
-
-        for match in (line..delim):gmatch("(.-)" .. delim) do
-          table.insert(matches, match)
-        end
-
-        if table.getn(matches) ~= 0 then
-          table.insert(tags, {
-            name = matches[1],
-            filename = all_help_files[matches[2]],
-            cmd = matches[3]
-          })
+  local tags_map = {}
+  local delimiter = string.char(9)
+  for _, lang in ipairs(langs) do
+    for _, file in ipairs(tag_files[lang] or {}) do
+      local lines = vim.split(path.read_file(file), '\n', true)
+      for _, line in ipairs(lines) do
+        -- TODO: also ignore tagComment starting with ';'
+        if not line:match'^!_TAG_' then
+          local fields = vim.split(line, delimiter, true)
+          if #fields == 3 and not tags_map[fields[1]] then
+            table.insert(tags, {
+              name = fields[1],
+              filename = help_files[fields[2]],
+              cmd = fields[3],
+              lang = lang,
+            })
+            tags_map[fields[1]] = true
+          end
         end
       end
     end
@@ -374,7 +400,7 @@ internal.help_tags = function(opts)
       results = tags,
       entry_maker = function(entry)
         return {
-          value = entry.name,
+          value = entry.name .. '@' .. entry.lang,
           display = entry.name,
           ordinal = entry.name,
           filename = entry.filename,
