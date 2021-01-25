@@ -20,6 +20,8 @@ local function truncate(str, len)
   return result
 end
 
+entry_display.truncate = truncate
+
 entry_display.create = function(configuration)
   local generator = {}
   for _, v in ipairs(configuration.items) do
