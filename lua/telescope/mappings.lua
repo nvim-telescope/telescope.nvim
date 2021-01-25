@@ -17,9 +17,9 @@ mappings.default_mappings = config.values.default_mappings or {
       ["<Up>"] = actions.move_selection_previous,
 
       ["<CR>"] = actions.select + actions.center,
-      ["<C-x>"] = actions.goto_file_selection_split,
-      ["<C-v>"] = actions.goto_file_selection_vsplit,
-      ["<C-t>"] = actions.goto_file_selection_tabedit,
+      ["<C-x>"] = actions.hselect,
+      ["<C-v>"] = actions.vselect,
+      ["<C-t>"] = actions.tabselect,
 
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
@@ -31,9 +31,9 @@ mappings.default_mappings = config.values.default_mappings or {
     n = {
       ["<esc>"] = actions.close,
       ["<CR>"] = actions.select + actions.center,
-      ["<C-x>"] = actions.goto_file_selection_split,
-      ["<C-v>"] = actions.goto_file_selection_vsplit,
-      ["<C-t>"] = actions.goto_file_selection_tabedit,
+      ["<C-x>"] = actions.hselect,
+      ["<C-v>"] = actions.vselect,
+      ["<C-t>"] = actions.tabselect,
 
       -- TODO: This would be weird if we switch the ordering.
       ["j"] = actions.move_selection_next,

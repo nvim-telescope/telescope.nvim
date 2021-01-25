@@ -148,21 +148,23 @@ function actions.select(prompt_bufnr)
   actions._goto_file_selection(prompt_bufnr, "edit")
 end
 
-function actions.goto_file_selection_edit(prompt_bufnr)
-  actions.select(prompt_bufnr)
-end
-
-function actions.goto_file_selection_split(prompt_bufnr)
+function actions.hselect(prompt_bufnr)
   actions._goto_file_selection(prompt_bufnr, "new")
 end
 
-function actions.goto_file_selection_vsplit(prompt_bufnr)
+function actions.vselect(prompt_bufnr)
   actions._goto_file_selection(prompt_bufnr, "vnew")
 end
 
-function actions.goto_file_selection_tabedit(prompt_bufnr)
+function actions.tabselect(prompt_bufnr)
   actions._goto_file_selection(prompt_bufnr, "tabedit")
 end
+
+-- aliases
+actions.goto_file_selection_edit = actions.select
+actions.goto_file_selection_split = actions.hselect
+actions.goto_file_selection_vsplit = actions.vselect
+actions.goto_file_selection_tabedit = actions.tabselect
 
 function actions.close_pum(_)
   if 0 ~= vim.fn.pumvisible() then

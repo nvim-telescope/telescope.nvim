@@ -278,7 +278,7 @@ require('telescope').setup{
         -- So, to not map "<C-n>", just put
         ["<c-x>"] = false,
         -- Otherwise, just set the mapping to the function that you want it to be.
-        ["<C-i>"] = actions.goto_file_selection_split,
+        ["<C-i>"] = actions.hselect,
         -- Add up multiple actions
         ["<CR>"] = actions.select + actions.center,
         -- You can perform as many actions in a row as you like
@@ -311,12 +311,12 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
     end)
 
     -- You can also enhance an action with pre and post action which will run before of after an action
-    actions.goto_file_selection_split:enhance ({
+    actions.hselect:enhance ({
       pre = function()
-      -- Will run before actions.goto_file_selection_split
+      -- Will run before actions.hselect
       end,
       post = function()
-      -- Will run after actions.goto_file_selection_split
+      -- Will run after actions.hselect
       end,
     })
 
@@ -344,12 +344,12 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
 <!--         -- Code here -->
 <!--       end) -->
 <!--       -- You can also enhance an action with post and post action which will run before of after an action -->
-<!--       actions.goto_file_selection_split:enhance { -->
+<!--       actions.hselect:enhance { -->
 <!--         pre = function() -->
-<!--           -- Will run before actions.goto_file_selection_split -->
+<!--           -- Will run before actions.hselect -->
 <!--         end, -->
 <!--         post = function() -->
-<!--           -- Will run after actions.goto_file_selection_split -->
+<!--           -- Will run after actions.hselect -->
 <!--         end, -->
 <!--       } -->
 <!--       -- Or replace for all commands: edit, new, vnew and tab -->
