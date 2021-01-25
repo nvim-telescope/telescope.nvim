@@ -321,7 +321,7 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
     })
 
     -- Or replace for all commands: edit, new, vnew and tab
-    actions._goto_file_selection:replace(function(_, cmd)
+    actions._select:replace(function(_, cmd)
       print(cmd) -- Will print edit, new, vnew or tab depending on your keystroke
     end)
 
@@ -353,7 +353,7 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
 <!--         end, -->
 <!--       } -->
 <!--       -- Or replace for all commands: edit, new, vnew and tab -->
-<!--       actions._goto_file_selection:replace(function(_, cmd) -->
+<!--       actions._select:replace(function(_, cmd) -->
 <!--         print(cmd) -- Will print edit, new, vnew or tab depending on your keystroke -->
 <!--       end) -->
 <!--       return true -->
