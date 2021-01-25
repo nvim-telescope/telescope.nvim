@@ -290,66 +290,66 @@ end
 
 utils.Executor = Executor
 
-List = {}
+VecDeque = {}
+VecDeque.__index = VecDeque
 
-function List.new()
-  return {first = 0, last = -1}
+function VecDeque.new()
+  return setmetatable({first = 0, last = -1}, VecDeque)
 end
 
-function List.pushleft(list, value)
-  local first = list.first - 1
-  list.first = first
-  list[first] = value
+function VecDeque:pushleft(value)
+  local first = self.first - 1
+  self.first = first
+  self[first] = value
 end
 
-function List.pushright (list, value)
-  local last = list.last + 1
-  list.last = last
-  list[last] = value
+function VecDeque:pushright(value)
+  local last = self.last + 1
+  self.last = last
+  self[last] = value
 end
 
-function List.popleft (list)
-  local first = list.first
-  if first > list.last then return nil end
-  local value = list[first]
-  list[first] = nil        -- to allow garbage collection
-  list.first = first + 1
+function VecDeque:popleft()
+  local first = self.first
+  if first > self.last then return nil end
+  local value = self[first]
+  self[first] = nil        -- to allow garbage collection
+  self.first = first + 1
   return value
 end
 
-function List.is_empty(list)
-  return list.first > list.last
+function VecDeque:is_empty()
+  return self.first > self.last
 end
 
-function List.popright (list)
-  local last = list.last
-  if list.first > last then return nil end
-  local value = list[last]
-  list[last] = nil         -- to allow garbage collection
-  list.last = last - 1
+function VecDeque:popright()
+  local last = self.last
+  if self.first > last then return nil end
+  local value = self[last]
+  self[last] = nil         -- to allow garbage collection
+  self.last = last - 1
   return value
 end
 
-function List.len(list)
-  return list.last - list.first
+function VecDeque:len()
+  return self.last - self.first
 end
 
-utils.List = List
+utils.VecDeque = VecDeque
 
 function utils.successive_async(f)
-  local list = List.new()
+  local vecdeque = VecDeque.new()
 
   local function wrapped(...)
-    if list == nil then return end
-    -- if List.is_empty(list) or list == nil then return end
+    if vecdeque == nil then return end
 
-    List.pushleft(list, {...})
-    local curr = List.popright(list)
+    vecdeque:pushleft({...})
+    local curr = vecdeque:popright()
     f(unpack(curr))
   end
 
   local function finish()
-    list = nil 
+    vecdeque = nil 
   end
 
   return wrapped
