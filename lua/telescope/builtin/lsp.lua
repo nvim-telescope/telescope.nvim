@@ -116,7 +116,7 @@ lsp.code_actions = function(opts)
       end
     },
     attach_mappings = function(prompt_bufnr)
-      actions.select:replace(function()
+      actions.goto_file_selection_edit:replace(function()
         local selection = actions.get_selected_entry()
         actions.close(prompt_bufnr)
         local val = selection.value
