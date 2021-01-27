@@ -8,14 +8,19 @@ entry_display.truncate = function(str, len)
     return str
   end
   local charlen = 0
+  local cur_len = 0
   local result = ''
+  local len_of_dots = utils.strdisplaywidth('…')
   while true do
-    local part = utils.strcharpart(str, 0, charlen) ..  '…'
-    if utils.strdisplaywidth(part) > len then
+    local part = utils.strcharpart(str, charlen, 1)
+    cur_len = cur_len + utils.strdisplaywidth(part)
+    if (cur_len + len_of_dots) > len then
+      result = result .. '…'
       break
     end
-    result = part
+    result = result .. part
     charlen = charlen + 1
+  end
   end
   return result
 end
