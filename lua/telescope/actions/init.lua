@@ -66,7 +66,7 @@ function actions.preview_scrolling_down(prompt_bufnr)
 end
 
 -- TODO: It seems sometimes we get bad styling.
-function actions._select(prompt_bufnr, command)
+function actions._goto_file_selection(prompt_bufnr, command)
   local entry = actions.get_selected_entry(prompt_bufnr)
 
   if not entry then
@@ -144,28 +144,21 @@ function actions.center(_)
   vim.cmd(':normal! zz')
 end
 
-function actions.select(prompt_bufnr)
-  actions._select(prompt_bufnr, "edit")
+function actions.goto_file_selection_edit(prompt_bufnr)
+  actions._goto_file_selection(prompt_bufnr, "edit")
 end
 
-function actions.hselect(prompt_bufnr)
-  actions._select(prompt_bufnr, "new")
+function actions.goto_file_selection_split(prompt_bufnr)
+  actions._goto_file_selection(prompt_bufnr, "new")
 end
 
-function actions.vselect(prompt_bufnr)
-  actions._select(prompt_bufnr, "vnew")
+function actions.goto_file_selection_vsplit(prompt_bufnr)
+  actions._goto_file_selection(prompt_bufnr, "vnew")
 end
 
-function actions.tabselect(prompt_bufnr)
-  actions._select(prompt_bufnr, "tabedit")
+function actions.goto_file_selection_tabedit(prompt_bufnr)
+  actions._goto_file_selection(prompt_bufnr, "tabedit")
 end
-
--- aliases
-actions._goto_file_selection = actions._select
-actions.goto_file_selection_edit = actions.select
-actions.goto_file_selection_split = actions.hselect
-actions.goto_file_selection_vsplit = actions.vselect
-actions.goto_file_selection_tabedit = actions.tabselect
 
 function actions.close_pum(_)
   if 0 ~= vim.fn.pumvisible() then

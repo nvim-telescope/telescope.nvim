@@ -47,7 +47,7 @@ git.commits = function(opts)
     previewer = previewers.git_commit_diff.new(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
-      actions.select:replace(actions.git_checkout)
+      actions.goto_file_selection_edit:replace(actions.git_checkout)
       return true
     end
   }):find()
@@ -67,7 +67,7 @@ git.bcommits = function(opts)
     previewer = previewers.git_commit_diff.new(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
-      actions.select:replace(actions.git_checkout)
+      actions.goto_file_selection_edit:replace(actions.git_checkout)
       return true
     end
   }):find()
@@ -107,7 +107,7 @@ git.branches = function(opts)
     previewer = previewers.git_branch_log.new(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
-      actions.select:replace(actions.git_checkout)
+      actions.goto_file_selection_edit:replace(actions.git_checkout)
       return true
     end
   }):find()
