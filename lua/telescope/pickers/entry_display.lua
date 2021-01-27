@@ -2,7 +2,7 @@ local utils = require('telescope.utils')
 
 local entry_display = {}
 
-local function truncate(str, len)
+entry_display.truncate = function(str, len)
   str = tostring(str) -- We need to make sure its an actually a string and not a number
   if utils.strdisplaywidth(str) <= len then
     return str
@@ -20,8 +20,6 @@ local function truncate(str, len)
   return result
 end
 
-entry_display.truncate = truncate
-
 entry_display.create = function(configuration)
   local generator = {}
   for _, v in ipairs(configuration.items) do
@@ -30,9 +28,9 @@ entry_display.create = function(configuration)
       local format_str = "%" .. justify .. v.width .. "s"
       table.insert(generator, function(item)
         if type(item) == 'table' then
-          return string.format(format_str, truncate(item[1], v.width)), item[2]
+          return string.format(format_str, entry_display.truncate(item[1], v.width)), item[2]
         else
-          return string.format(format_str, truncate(item, v.width))
+          return string.format(format_str, entry_display.truncate(item, v.width))
         end
       end)
     else
