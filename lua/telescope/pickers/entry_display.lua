@@ -21,7 +21,6 @@ entry_display.truncate = function(str, len)
     result = result .. part
     charlen = charlen + 1
   end
-  end
   return result
 end
 
