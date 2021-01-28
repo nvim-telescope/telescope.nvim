@@ -3,9 +3,11 @@
 local a = vim.api
 
 local log = require('telescope.log')
-local path = require('telescope.path')
 local state = require('telescope.state')
 local utils = require('telescope.utils')
+
+local action_state = require('telescope.actions.state')
+local action_set = require('telescope.actions.set')
 
 local transform_mod = require('telescope.actions.mt').transform_mod
 
@@ -15,130 +17,71 @@ local actions = setmetatable({}, {
   end
 })
 
---- Get the current picker object for the prompt
-function actions.get_current_picker(prompt_bufnr)
-  return state.get_status(prompt_bufnr).picker
-end
+local action_is_deprecated = function(name, err)
+  local messager = err and error or log.info
 
---- Move the current selection of a picker {change} rows.
---- Handles not overflowing / underflowing the list.
-function actions.shift_current_selection(prompt_bufnr, change)
-  actions.get_current_picker(prompt_bufnr):move_selection(change)
-end
-
-function actions.move_selection_next(prompt_bufnr)
-  actions.shift_current_selection(prompt_bufnr, 1)
-end
-
-function actions.move_selection_previous(prompt_bufnr)
-  actions.shift_current_selection(prompt_bufnr, -1)
-end
-
-function actions.add_selection(prompt_bufnr)
-  local current_picker = actions.get_current_picker(prompt_bufnr)
-  current_picker:add_selection(current_picker:get_selection_row())
-end
-
-function actions.remove_selection(prompt_bufnr)
-  local current_picker = actions.get_current_picker(prompt_bufnr)
-  current_picker:remove_selection(current_picker:get_selection_row())
-end
-
-function actions.toggle_selection(prompt_bufnr)
-  local current_picker = actions.get_current_picker(prompt_bufnr)
-  current_picker:toggle_selection(current_picker:get_selection_row())
+  return messager(
+    string.format("`actions.%s()` is deprecated."
+      .. "Use require('telescope.actions.state').%s() instead",
+      name,
+      name
+    )
+  )
 end
 
 --- Get the current entry
 function actions.get_selected_entry()
-  return state.get_global_key('selected_entry')
+  -- TODO(1.0): Remove
+  action_is_deprecated("get_selected_entry")
+  return action_state.get_selected_entry()
 end
 
 function actions.get_current_line()
-  return state.get_global_key('current_line')
+  -- TODO(1.0): Remove
+  action_is_deprecated("get_current_line")
+  return action_state.get_current_line()
+end
+
+--- Get the current picker object for the prompt
+function actions.get_current_picker(prompt_bufnr)
+  -- TODO(1.0): Remove
+  action_is_deprecated("get_current_picker")
+  return action_state.get_current_picker(prompt_bufnr)
+end
+
+--- Move the selection to the next entry
+function actions.move_selection_next(prompt_bufnr)
+  action_set.shift_selection(prompt_bufnr, 1)
+end
+
+--- Move the selection to the previous entry
+function actions.move_selection_previous(prompt_bufnr)
+  action_set.shift_selection(prompt_bufnr, -1)
+end
+
+function actions.add_selection(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  current_picker:add_selection(current_picker:get_selection_row())
+end
+
+function actions.remove_selection(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  current_picker:remove_selection(current_picker:get_selection_row())
+end
+
+function actions.toggle_selection(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  current_picker:toggle_selection(current_picker:get_selection_row())
 end
 
 function actions.preview_scrolling_up(prompt_bufnr)
-  actions.get_current_picker(prompt_bufnr).previewer:scroll_fn(-30)
+  -- TODO: Make number configurable.
+  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(-30)
 end
 
 function actions.preview_scrolling_down(prompt_bufnr)
-  actions.get_current_picker(prompt_bufnr).previewer:scroll_fn(30)
-end
-
--- TODO: It seems sometimes we get bad styling.
-function actions._goto_file_selection(prompt_bufnr, command)
-  local entry = actions.get_selected_entry(prompt_bufnr)
-
-  if not entry then
-    print("[telescope] Nothing currently selected")
-    return
-  else
-    local filename, row, col
-    if entry.filename then
-      filename = entry.path or entry.filename
-
-      -- TODO: Check for off-by-one
-      row = entry.row or entry.lnum
-      col = entry.col
-    elseif not entry.bufnr then
-      -- TODO: Might want to remove this and force people
-      -- to put stuff into `filename`
-      local value = entry.value
-      if not value then
-        print("Could not do anything with blank line...")
-        return
-      end
-
-      if type(value) == "table" then
-        value = entry.display
-      end
-
-      local sections = vim.split(value, ":")
-
-      filename = sections[1]
-      row = tonumber(sections[2])
-      col = tonumber(sections[3])
-    end
-
-    local preview_win = state.get_status(prompt_bufnr).preview_win
-    if preview_win then
-      a.nvim_win_set_config(preview_win, {style = ''})
-    end
-
-    local entry_bufnr = entry.bufnr
-
-    actions.close(prompt_bufnr)
-
-    if entry_bufnr then
-      if command == 'edit' then
-        vim.cmd(string.format(":buffer %d", entry_bufnr))
-      elseif command == 'new' then
-        vim.cmd(string.format(":sbuffer %d", entry_bufnr))
-      elseif command == 'vnew' then
-        vim.cmd(string.format(":vert sbuffer %d", entry_bufnr))
-      elseif command == 'tabedit' then
-        vim.cmd(string.format(":tab sb %d", entry_bufnr))
-      end
-    else
-      filename = path.normalize(vim.fn.fnameescape(filename), vim.fn.getcwd())
-
-      local bufnr = vim.api.nvim_get_current_buf()
-      if filename ~= vim.api.nvim_buf_get_name(bufnr) then
-        vim.cmd(string.format(":%s %s", command, filename))
-        bufnr = vim.api.nvim_get_current_buf()
-        a.nvim_buf_set_option(bufnr, "buflisted", true)
-      end
-
-      if row and col then
-        local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, {row, col})
-        if not ok then
-          log.debug("Failed to move to cursor:", err_msg, row, col)
-        end
-      end
-    end
-    vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
-  end
+  -- TODO: Make number configurable.
+  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(30)
 end
 
 function actions.center(_)
@@ -146,19 +89,19 @@ function actions.center(_)
 end
 
 function actions.goto_file_selection_edit(prompt_bufnr)
-  actions._goto_file_selection(prompt_bufnr, "edit")
+  action_set.edit(prompt_bufnr, "edit")
 end
 
 function actions.goto_file_selection_split(prompt_bufnr)
-  actions._goto_file_selection(prompt_bufnr, "new")
+  action_set.edit(prompt_bufnr, "new")
 end
 
 function actions.goto_file_selection_vsplit(prompt_bufnr)
-  actions._goto_file_selection(prompt_bufnr, "vnew")
+  action_set.edit(prompt_bufnr, "vnew")
 end
 
 function actions.goto_file_selection_tabedit(prompt_bufnr)
-  actions._goto_file_selection(prompt_bufnr, "tabedit")
+  action_set.edit(prompt_bufnr, "tabedit")
 end
 
 function actions.close_pum(_)
@@ -168,7 +111,7 @@ function actions.close_pum(_)
 end
 
 local do_close = function(prompt_bufnr, keepinsert)
-  local picker = actions.get_current_picker(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
 
@@ -309,7 +252,7 @@ actions.send_selected_to_qflist = function(prompt_bufnr)
 end
 
 actions.send_to_qflist = function(prompt_bufnr)
-  local picker = actions.get_current_picker(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
   local manager = picker.manager
 
   local qf_entries = {}
