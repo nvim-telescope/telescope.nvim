@@ -241,7 +241,6 @@ describe('actions', function()
 
       -- Sometimes you might want to change the default selection...
       --  but you don't want to prohibit the ability to edit the code...
-
     end)
   end)
 end)

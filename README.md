@@ -327,9 +327,11 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
     end)
 
     return true
-    end,
+  end,
 })
 ```
+
+For more info, see [./developers.md](./developers.md)
 
 ## Pickers
 
