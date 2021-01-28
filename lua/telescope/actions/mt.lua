@@ -126,7 +126,9 @@ end
 action_mt.transform_mod = function(mod)
   local mt = action_mt.create(mod)
 
-  local redirect = {}
+  -- Pass the metatable of the module if applicable.
+  --    This allows for custom errors, lookups, etc.
+  local redirect = setmetatable({}, getmetatable(mod) or {})
 
   for k, _ in pairs(mod) do
     redirect[k] = action_mt.transform(k, mt)

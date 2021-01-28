@@ -1,4 +1,5 @@
 local actions = require('telescope.actions')
+local action_set = require('telescope.actions.set')
 local action_state = require('telescope.actions.state')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
@@ -412,7 +413,7 @@ internal.help_tags = function(opts)
     previewer = previewers.help.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions._goto_file_selection:replace(function(_, cmd)
+      action_set.edit:replace(function(_, cmd)
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         if cmd == 'edit' or cmd == 'new' then
@@ -444,7 +445,7 @@ internal.man_pages = function(opts)
     previewer = previewers.man.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions._goto_file_selection:replace(function(_, cmd)
+      action_set.edit:replace(function(_, cmd)
         local selection = action_state.get_selected_entry()
         local args = selection.section .. ' ' .. selection.value
 
@@ -792,7 +793,7 @@ internal.autocommands = function(opts)
     previewer = previewers.autocommands.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions._goto_file_selection:replace(function(_, vim_cmd)
+      action_set.edit:replace(function(_, vim_cmd)
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         vim.cmd(vim_cmd .. ' ' .. selection.value)

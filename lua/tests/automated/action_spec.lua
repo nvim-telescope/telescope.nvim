@@ -1,4 +1,6 @@
 local actions = require('telescope.actions')
+local action_set = require('telescope.actions.set')
+
 local transform_mod = require('telescope.actions.mt').transform_mod
 
 local eq = function(a, b)
@@ -223,41 +225,23 @@ describe('actions', function()
     a.x:replace(function(bufnr) return string.format("modified: %s", bufnr) end)
     eq("modified: 5", a.x(5))
   end)
-end)
 
-describe('overriding  telescope actions', function()
-  it('should override ', function()
-    -- Reproduce steps:
-    --  In config, we have { ["<CR>"] = actions.select, ... }
-    --  In caller, we have actions._goto:replace(...)
-    --  Person calls `select`, does not see update
-
-    -- Sometimes you might want to change the default selection...
-    --  but you don't want to prohibit the ability to edit the code...
-
-    --[[
-      group_actions
-
-      action_class
-      action_type
-    --]]
-
-    --[[
-      action_gen.edit:replace(...)
-      action_gen.select:replace(...)
-
-      action_union.edit
-      action_union.select
-
-      action_set.edit
-      action_set.select
-    --]]
-
-
-    actions._goto_file_selection:replace(function()
-      return "replacement"
+  describe('action_set', function()
+    it('can replace `action_set.edit`', function()
+      action_set.edit:replace(function(_, arg) return "replaced:" .. arg end)
+      eq("replaced:edit", actions.goto_file_selection_edit())
+      eq("replaced:vnew", actions.goto_file_selection_vsplit())
     end)
 
-    eq("replacement", actions.select())
+    it('handles backwards compat with select and edit files', function()
+      -- Reproduce steps:
+      --  In config, we have { ["<CR>"] = actions.select, ... }
+      --  In caller, we have actions._goto:replace(...)
+      --  Person calls `select`, does not see update
+
+      -- Sometimes you might want to change the default selection...
+      --  but you don't want to prohibit the ability to edit the code...
+
+    end)
   end)
 end)

@@ -4,6 +4,7 @@ local popup = require('popup')
 require('telescope')
 
 local actions = require('telescope.actions')
+local action_set = require('telescope.actions.set')
 local config = require('telescope.config')
 local debounce = require('telescope.debounce')
 local resolve = require('telescope.config.resolve')
@@ -62,7 +63,10 @@ function Picker:new(opts)
   end
 
   -- Reset actions for any replaced / enhanced actions.
+  -- TODO: Think about how we could remember to NOT have to do this...
+  --        I almost forgot once already, cause I'm not smart enough to always do it.
   actions._clear()
+  action_set._clear()
 
   local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
 

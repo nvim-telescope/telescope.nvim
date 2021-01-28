@@ -13,7 +13,11 @@ local transform_mod = require('telescope.actions.mt').transform_mod
 
 local actions = setmetatable({}, {
   __index = function(_, k)
-    error("Actions does not have a value: " .. tostring(k))
+    if k == '_goto_file_selection' then
+      error("_goto_file_selection is now deprecated. Instead use `action_set.edit`")
+    end
+
+    error("Key does not exist for 'telescope.actions': " .. tostring(k))
   end
 })
 
@@ -88,20 +92,39 @@ function actions.center(_)
   vim.cmd(':normal! zz')
 end
 
+function actions.select_default(prompt_bufnr)
+  return action_set.select(prompt_bufnr, "default")
+end
+
+function actions.select_horizontal(prompt_bufnr)
+  return action_set.select(prompt_bufnr, "horizontal")
+end
+
+function actions.select_vertical(prompt_bufnr)
+  return action_set.select(prompt_bufnr, "vertical")
+end
+
+function actions.select_tab(prompt_bufnr)
+  return action_set.select(prompt_bufnr, "tab")
+end
+
+-- TODO: consider adding float!
+-- https://github.com/nvim-telescope/telescope.nvim/issues/365
+
 function actions.goto_file_selection_edit(prompt_bufnr)
-  action_set.edit(prompt_bufnr, "edit")
+  return action_set.edit(prompt_bufnr, "edit")
 end
 
 function actions.goto_file_selection_split(prompt_bufnr)
-  action_set.edit(prompt_bufnr, "new")
+  return action_set.edit(prompt_bufnr, "new")
 end
 
 function actions.goto_file_selection_vsplit(prompt_bufnr)
-  action_set.edit(prompt_bufnr, "vnew")
+  return action_set.edit(prompt_bufnr, "vnew")
 end
 
 function actions.goto_file_selection_tabedit(prompt_bufnr)
-  action_set.edit(prompt_bufnr, "tabedit")
+  return action_set.edit(prompt_bufnr, "tabedit")
 end
 
 function actions.close_pum(_)

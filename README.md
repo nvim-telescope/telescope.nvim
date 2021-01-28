@@ -298,6 +298,7 @@ its `attach_mappings` key to a function, like this
 
 ```lua
 local actions = require('telescope.actions')
+local action_set = require('telescope.actions.set')
 -- Picker specific remapping
 ------------------------------
 require('telescope.builtin').fd({ -- or new custom picker's attach_mappings field:
@@ -321,7 +322,7 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
     })
 
     -- Or replace for all commands: edit, new, vnew and tab
-    actions._goto_file_selection:replace(function(_, cmd)
+    action_set.edit:replace(function(_, cmd)
       print(cmd) -- Will print edit, new, vnew or tab depending on your keystroke
     end)
 
@@ -329,39 +330,6 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
     end,
 })
 ```
-<!-- TODO: Move to wiki page made specifically for creating pickers -->
-<!-- To override a action, you have to use `attach_mappings` like this (prefered method): -->
-
-<!-- ```lua -->
-<!-- function my_custom_picker(results) -->
-<!--   pickers.new(opts, { -->
-<!--     prompt_title = 'Custom Picker', -->
-<!--     finder = finders.new_table(results), -->
-<!--     sorter = sorters.fuzzy_with_index_bias(), -->
-<!--     attach_mappings = function(prompt_bufnr) -->
-<!--       -- This will replace select no mather on which key it is mapped by default -->
-<!--       actions.goto_file_selection_edit:replace(function() -->
-<!--         -- Code here -->
-<!--       end) -->
-<!--       -- You can also enhance an action with post and post action which will run before of after an action -->
-<!--       actions.goto_file_selection_split:enhance { -->
-<!--         pre = function() -->
-<!--           -- Will run before actions.goto_file_selection_split -->
-<!--         end, -->
-<!--         post = function() -->
-<!--           -- Will run after actions.goto_file_selection_split -->
-<!--         end, -->
-<!--       } -->
-<!--       -- Or replace for all commands: edit, new, vnew and tab -->
-<!--       actions._goto_file_selection:replace(function(_, cmd) -->
-<!--         print(cmd) -- Will print edit, new, vnew or tab depending on your keystroke -->
-<!--       end) -->
-<!--       return true -->
-<!--     end, -->
-<!--   }):find() -->
-<!-- end -->
-<!-- ``` -->
-<!-- See `lua/telescope/builtin.lua` for examples on how to `attach_mappings` in the prefered way. -->
 
 ## Pickers
 
