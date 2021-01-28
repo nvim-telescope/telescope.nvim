@@ -1,4 +1,5 @@
 local actions = require('telescope.actions')
+local action_state = require('telescope.actions.state')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local path = require('telescope.path')
@@ -83,7 +84,7 @@ internal.planets = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
 
         print("Enjoy astronomy! You viewed:", selection.display)
@@ -169,7 +170,7 @@ internal.commands = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         local val = selection.value
         local cmd = string.format([[:%s ]], val.name)
@@ -286,7 +287,7 @@ internal.vim_options = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function()
       actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+        local selection = action_state.get_selected_entry()
         local esc = ""
 
         if vim.fn.mode() == "i" then
@@ -412,7 +413,7 @@ internal.help_tags = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions._goto_file_selection:replace(function(_, cmd)
-        local selection = actions.get_selected_entry()
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         if cmd == 'edit' or cmd == 'new' then
           vim.cmd('help ' .. selection.value)
@@ -444,7 +445,7 @@ internal.man_pages = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions._goto_file_selection:replace(function(_, cmd)
-        local selection = actions.get_selected_entry()
+        local selection = action_state.get_selected_entry()
         local args = selection.section .. ' ' .. selection.value
 
         actions.close(prompt_bufnr)
@@ -488,7 +489,7 @@ internal.reloader = function(opts)
 
     attach_mappings = function(prompt_bufnr)
       actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+        local selection = action_state.get_selected_entry()
 
         actions.close(prompt_bufnr)
         require('plenary.reload').reload_module(selection.value)
@@ -567,7 +568,7 @@ internal.colorscheme = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+        local selection = action_state.get_selected_entry()
 
         actions.close(prompt_bufnr)
         vim.cmd("colorscheme " .. selection.value)
@@ -658,7 +659,7 @@ internal.keymaps = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+        local selection = action_state.get_selected_entry()
         vim.api.nvim_feedkeys(
           vim.api.nvim_replace_termcodes(selection.value.lhs, true, false, true),
         "t", true)
@@ -680,7 +681,7 @@ internal.filetypes = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         vim.cmd('setfiletype ' .. selection[1])
       end)
@@ -701,7 +702,7 @@ internal.highlights = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         vim.cmd('hi ' .. selection.value)
       end)
@@ -792,7 +793,7 @@ internal.autocommands = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions._goto_file_selection:replace(function(_, vim_cmd)
-        local selection = actions.get_selected_entry()
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         vim.cmd(vim_cmd .. ' ' .. selection.value)
       end)
@@ -816,7 +817,7 @@ internal.spell_suggest = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         vim.cmd('normal! ciw' .. selection[1])
         vim.cmd('stopinsert')

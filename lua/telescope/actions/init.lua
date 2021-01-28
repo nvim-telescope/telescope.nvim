@@ -135,7 +135,7 @@ function actions.close(prompt_bufnr)
 end
 
 actions.set_command_line = function(prompt_bufnr)
-  local entry = actions.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
 
   actions.close(prompt_bufnr)
   vim.fn.histadd("cmd", entry.value)
@@ -143,8 +143,8 @@ actions.set_command_line = function(prompt_bufnr)
 end
 
 actions.edit_register = function(prompt_bufnr)
-  local entry = actions.get_selected_entry(prompt_bufnr)
-  local picker = actions.get_current_picker(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
 
   vim.fn.inputsave()
   local updated_value = vim.fn.input("Edit [" .. entry.value .. "] ❯ ", entry.content)
@@ -165,7 +165,7 @@ actions.edit_register = function(prompt_bufnr)
 end
 
 actions.paste_register = function(prompt_bufnr)
-  local entry = actions.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
 
   actions.close(prompt_bufnr)
 
@@ -182,21 +182,21 @@ actions.paste_register = function(prompt_bufnr)
 end
 
 actions.run_builtin = function(prompt_bufnr)
-  local entry = actions.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
 
   do_close(prompt_bufnr, true)
   require('telescope.builtin')[entry.text]()
 end
 
 actions.insert_symbol = function(prompt_bufnr)
-  local selection = actions.get_selected_entry()
+  local selection = action_state.get_selected_entry()
   actions.close(prompt_bufnr)
   vim.api.nvim_put({selection.value[1]}, '', true, true)
 end
 
 -- TODO: Think about how to do this.
 actions.insert_value = function(prompt_bufnr)
-  local entry = actions.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
 
   vim.schedule(function()
     actions.close(prompt_bufnr)
@@ -206,15 +206,15 @@ actions.insert_value = function(prompt_bufnr)
 end
 
 actions.git_checkout = function(prompt_bufnr)
-  local cwd = actions.get_current_picker(prompt_bufnr).cwd
-  local selection = actions.get_selected_entry()
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
   actions.close(prompt_bufnr)
   utils.get_os_command_output({ 'git', 'checkout', selection.value }, cwd)
 end
 
 actions.git_staging_toggle = function(prompt_bufnr)
-  local cwd = actions.get_current_picker(prompt_bufnr).cwd
-  local selection = actions.get_selected_entry()
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
 
   -- If parts of the file are staged and unstaged at the same time, stage
   -- changes. Else toggle between staged and unstaged if the file is tracked,
@@ -239,7 +239,7 @@ local entry_to_qf = function(entry)
 end
 
 actions.send_selected_to_qflist = function(prompt_bufnr)
-  local picker = actions.get_current_picker(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
 
   local qf_entries = {}
   for entry in pairs(picker.multi_select) do

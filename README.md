@@ -304,7 +304,7 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
   attach_mappings = function(prompt_bufnr)
     -- This will replace select no mather on which key it is mapped by default
     actions.goto_file_selection_edit:replace(function()
-      local entry = actions.get_selected_entry()
+      local entry = action_state.get_selected_entry()
       actions.close(prompt_bufnr)
       print(vim.inspect(entry))
       -- Code here
