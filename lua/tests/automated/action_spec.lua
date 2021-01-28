@@ -51,6 +51,69 @@ describe('actions', function()
     eq("x", a.x())
   end)
 
+  it('allows overriding an action only in specific cases with if', function()
+    local a = transform_mod {
+      x = function(e) return e * 10 end,
+      y = function() return "y" end,
+    }
+
+    -- actions.file_goto_selection_edit:replace(...)
+    a.x:replace_if(
+      function(e) return e > 0 end,
+      function(e) return (e / 10) end
+    )
+    eq(-100, a.x(-10))
+    eq(10, a.x(100))
+    eq(1, a.x(10))
+
+    a._clear()
+    eq(100, a.x(10))
+  end)
+
+  it('allows overriding an action only in specific cases with mod', function()
+    local a = transform_mod {
+      x = function(e) return e * 10 end,
+      y = function() return "y" end,
+    }
+
+    -- actions.file_goto_selection_edit:replace(...)
+    a.x:replace_map {
+      [function(e) return e > 0 end] = function(e) return (e / 10) end,
+      [function(e) return e == 0 end] = function(e) return (e + 10) end,
+    }
+
+    eq(-100, a.x(-10))
+    eq(10, a.x(100))
+    eq(1, a.x(10))
+    eq(10, a.x(0))
+
+    a._clear()
+    eq(100, a.x(10))
+  end)
+
+  it('continuous replacement', function()
+    local a = transform_mod {
+      x = function() return "cleared" end,
+      y = function() return "y" end,
+    }
+
+    -- Replace original, which becomes new fallback
+    a.x:replace(function() return "negative" end)
+
+    -- actions.file_goto_selection_edit:replace(...)
+    a.x:replace_map {
+      [function(e) return e > 0 end] = function(e) return "positive" end,
+      [function(e) return e == 0 end] = function(e) return "zero" end,
+    }
+
+    eq("positive", a.x(10))
+    eq("zero"    , a.x(0))
+    eq("negative", a.x(-10))
+
+    a._clear()
+    eq("cleared", a.x(10))
+  end)
+
   it('enhance.pre', function()
     local a = transform_mod {
       x = function() return "x" end,
