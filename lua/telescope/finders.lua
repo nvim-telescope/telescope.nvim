@@ -11,6 +11,8 @@ local _callable_obj = function()
   obj.__index = obj
   obj.__call = function(t, ...) return t:_find(...) end
 
+  obj.close = function() end
+
   return obj
 end
 
@@ -33,7 +35,7 @@ local JobFinder = _callable_obj()
 function JobFinder:new(opts)
   opts = opts or {}
 
-> assert(not opts.results, "`results` should be used with finder.new_table")
+  assert(not opts.results, "`results` should be used with finder.new_table")
   assert(not opts.static, "`static` should be used with finder.new_oneshot_job")
 
   local obj = setmetatable({

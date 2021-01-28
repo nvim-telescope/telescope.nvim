@@ -76,7 +76,7 @@ function Picker:new(opts)
 
     default_text = opts.default_text,
     get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
-    _on_input_filter_cb = opts.on_input_filter_cb,
+    _on_input_filter_cb = opts.on_input_filter_cb or function() end,
 
     finder = opts.finder,
     sorter = opts.sorter,
@@ -446,15 +446,15 @@ function Picker:find()
       return
     end
 
-    local prompt = self:_get_prompt()
+    local original_prompt = self:_get_prompt()
+    local on_input_result = self._on_input_filter_cb(original_prompt) or {}
 
-    local updated_finder
-    if self._on_input_filter_cb then
-      prompt, updated_finder = self._on_input_filter_cb(prompt)
-    end
+    local prompt = on_input_result.prompt or original_prompt
+    local finder = on_input_result.updated_finder
 
-    if updated_finder then
-      self.finder = updated_finder
+    if finder then
+      self.finder:close()
+      self.finder = finder
     end
 
     if self.sorter then
