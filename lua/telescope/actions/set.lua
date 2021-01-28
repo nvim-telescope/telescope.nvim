@@ -29,6 +29,24 @@ set.shift_selection = function(prompt_bufnr, change)
   action_state.get_current_picker(prompt_bufnr):move_selection(change)
 end
 
+--- Select the current entry. This is the action set to overwrite common
+--- actions by the user.
+---
+--- By default maps to editing a file.
+---@param prompt_bufnr number: The prompt bufnr
+---@param type string: The type of selection to make
+--          Valid types include: "default", "horizontal", "vertical", "tabedit"
+set.select = function(prompt_bufnr, type)
+  local select_to_edit_map = {
+    default = "edit",
+    horizontal = "new",
+    vertical = "vnew",
+    tab = "tabedit",
+  }
+
+  return set.edit(prompt_bufnr, select_to_edit_map[type])
+end
+
 --- Edit a file based on the current selection.
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param command string: The command to use to open the file.
