@@ -597,7 +597,7 @@ function my_custom_picker(results)
     finder = finders.new_table(results),
     sorter = sorters.fuzzy_with_index_bias(),
     attach_mappings = function(_, map)
-      -- Map "<CR>" in insert mode to the funciton, actions.set_command_line
+      -- Map "<CR>" in insert mode to the function, actions.set_command_line
       map('i', '<CR>', actions.set_command_line)
 
       return true
