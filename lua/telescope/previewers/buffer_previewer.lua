@@ -403,7 +403,9 @@ previewers.git_branch_log = defaulter(function(_)
       local _, cstart = line:find('- %(')
       if cstart then
         local cend = string.find(line, '%) ')
-        vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, "TelescopeResultsConstant", i - 1, cstart - 1, cend)
+        if cend then
+          vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, "TelescopeResultsConstant", i - 1, cstart - 1, cend)
+        end
       end
       local dstart, _ = line:find(' %(%d')
       if dstart then
