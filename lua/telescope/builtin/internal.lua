@@ -403,7 +403,8 @@ internal.help_tags = function(opts)
 end
 
 internal.man_pages = function(opts)
-  opts.sections = utils.get_default(opts.sections, '1')
+  opts.sections = utils.get_default(opts.sections, {'1'})
+  assert(vim.tbl_islist(opts.sections), 'sections should be a list')
   opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
     return vim.fn.has'mac' and {'apropos', ' '} or {'apropos', ''}
   end)

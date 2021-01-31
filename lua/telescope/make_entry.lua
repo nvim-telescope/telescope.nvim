@@ -614,7 +614,7 @@ end
 
 function make_entry.gen_from_apropos(opts)
   local sections = {}
-  for _, section in ipairs(vim.split(opts.sections, ',', true)) do
+  for _, section in ipairs(opts.sections) do
     sections[section] = true
   end
 
