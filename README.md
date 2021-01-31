@@ -536,6 +536,7 @@ enhancements by using compiled C and interfacing directly with Lua.
 - [telescope-vimspector.nvim](https://github.com/nvim-telescope/telescope-vimspector.nvim) - Integration for [vimspector](https://github.com/puremourning/vimspector)
 - [telescope-fzf-writer.nvim](https://github.com/nvim-telescope/telescope-fzf-writer.nvim) - Incorporating some fzf concepts with plenary jobs and telescope
 - [telescope-symbols.nvim](https://github.com/nvim-telescope/telescope-symbols.nvim) - Picking symbols and insert them at point.
+- [telescope-asynctasks.nvim](https://github.com/GustavoKatel/telescope-asynctasks.nvim) - Integration for [asynctasks](https://github.com/skywind3000/asynctasks.vim)
 
 Extensions can be refenced by doing the following:
 
