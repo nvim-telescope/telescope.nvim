@@ -623,7 +623,7 @@ function make_entry.gen_from_apropos(opts)
     separator = ' ',
     items = {
       { width = 30 },
-      {},
+      { remaining = true },
     },
   }
 
