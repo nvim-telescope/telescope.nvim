@@ -16,27 +16,21 @@ local previewers = {}
 local bat_options = {"--style=plain", "--color=always", "--paging=always"}
 local has_less = (vim.fn.executable('less') == 1) and conf.use_less
 
--- TODO(conni2461): Workaround for neovim/neovim#11751. Add only quotes when using else branch.
-local valuate_shell = function()
-  local shell = vim.o.shell
-  if string.find(shell, 'powershell.exe') or string.find(shell, 'cmd.exe') or
-     string.find(shell, 'powershell') or string.find(shell, 'pwsh') then
-    return ''
-  else
-    return "'"
-  end
-end
-
-local add_quotes = valuate_shell()
-
 local get_file_stat = function(filename)
   return vim.loop.fs_stat(vim.fn.expand(filename)) or {}
 end
 
-local function list_dir(dirname)
-    local qdir = add_quotes .. vim.fn.expand(dirname) .. add_quotes
-    return vim.fn.has('win32') == 1 and {'cmd.exe', '/c', 'dir', qdir} or { 'ls', '-la', qdir}
-end
+local list_dir = (function()
+  if vim.fn.has('win32') == 1 then
+    return function(dirname)
+      return { 'cmd.exe', '/c', 'dir', vim.fn.expand(dirname) }
+    end
+  else
+    return function(dirname)
+      return { 'ls', '-la', vim.fn.expand(dirname) }
+    end
+  end
+end)()
 
 local bat_maker = function(filename, lnum, start, finish)
   if get_file_stat(filename).type == 'directory' then
@@ -52,9 +46,9 @@ local bat_maker = function(filename, lnum, start, finish)
 
   if has_less then
     if start then
-      table.insert(command, {"--pager", string.format("%sless -RS +%s%s", add_quotes, start, add_quotes)})
+      table.insert(command, {"--pager", string.format("less -RS +%s", start)})
     else
-      table.insert(command, {"--pager", string.format("%sless -RS%s", add_quotes, add_quotes)})
+      table.insert(command, {"--pager", "less -RS"})
     end
   else
     if start and finish then
@@ -67,7 +61,7 @@ local bat_maker = function(filename, lnum, start, finish)
   end
 
   return flatten {
-    command, bat_options, "--", add_quotes .. vim.fn.expand(filename) .. add_quotes
+    command, bat_options, "--", vim.fn.expand(filename)
   }
 end
 
@@ -86,13 +80,13 @@ local cat_maker = function(filename, _, start, _)
 
   if has_less then
     if start then
-      return { 'less', '-RS', string.format('+%s', start), add_quotes .. vim.fn.expand(filename) .. add_quotes }
+      return { 'less', '-RS', string.format('+%s', start), vim.fn.expand(filename) }
     else
-      return { 'less', '-RS', add_quotes .. vim.fn.expand(filename) .. add_quotes }
+      return { 'less', '-RS', vim.fn.expand(filename) }
     end
   else
     return {
-      "cat", "--", add_quotes .. vim.fn.expand(filename) .. add_quotes
+      "cat", "--", vim.fn.expand(filename)
     }
   end
 end
@@ -185,25 +179,8 @@ previewers.new_termopen_previewer = function(opts)
       env = conf.set_env
     }
 
-    -- TODO(conni2461): Workaround for neovim/neovim#11751.
-    local get_cmd = function(st)
-      local shell = vim.o.shell
-      if string.find(shell, 'powershell.exe') or string.find(shell, 'cmd.exe') or
-         string.find(shell, 'powershell') or string.find(shell, 'pwsh') then
-        return opts.get_command(entry, st)
-      else
-        local env = {}
-        local cmd = opts.get_command(entry, st)
-        if not cmd then return end
-        for k, v in pairs(conf.set_env) do
-          table.insert(env, k .. '=' .. v)
-        end
-        return table.concat(env, ' ') .. ' ' .. table.concat(cmd, ' ')
-      end
-    end
-
     putils.with_preview_window(status, bufnr, function()
-      local cmd = get_cmd(status)
+      local cmd = opts.get_command(entry, status)
       if cmd then set_term_id(self, vim.fn.termopen(cmd, term_opts)) end
     end)
 
