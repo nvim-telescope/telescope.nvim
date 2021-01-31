@@ -358,6 +358,9 @@ previewers.help = defaulter(function(_)
 end, {})
 
 previewers.man = defaulter(function(opts)
+  local pager = utils.get_lazy_default(opts.PAGER, function()
+    return vim.fn.executable('col') == 1 and 'col -bx' or ''
+  end)
   return previewers.new_buffer_previewer {
     get_buffer_by_name = function(_, entry)
       return entry.value
@@ -366,14 +369,14 @@ previewers.man = defaulter(function(opts)
     define_preview = function(self, entry, status)
       local win_width = vim.api.nvim_win_get_width(self.state.winid)
       putils.job_maker({'man', entry.value}, self.state.bufnr, {
-        env = { ["PAGER"] = opts.PAGER, ["MANWIDTH"] = win_width },
+        env = { ["PAGER"] = pager, ["MANWIDTH"] = win_width },
         value = entry.value,
         bufname = self.state.bufname
       })
       putils.regex_highlighter(self.state.bufnr, 'man')
     end
   }
-end, { ["PAGER"] = '' })
+end)
 
 previewers.git_branch_log = defaulter(function(_)
   local highlight_buffer = function(bufnr, content)

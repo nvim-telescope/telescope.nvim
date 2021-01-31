@@ -409,9 +409,6 @@ internal.man_pages = function(opts)
     return vim.fn.has'mac' and {'apropos', ' '} or {'apropos', ''}
   end)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts)
-  opts.PAGER = utils.get_lazy_default(opts.PAGER, function()
-    return vim.fn.executable('col') and 'col -bx' or ''
-  end)
 
   pickers.new(opts, {
     prompt_title = 'Man',
