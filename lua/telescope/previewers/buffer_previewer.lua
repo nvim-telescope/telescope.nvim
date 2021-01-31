@@ -31,7 +31,8 @@ previewers.file_maker = function(filepath, bufnr, opts)
     else
       path.read_file_async(filepath, vim.schedule_wrap(function(data)
         if not vim.api.nvim_buf_is_valid(bufnr) then return end
-        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(data, '[\r]?\n'))
+        local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, vim.split(data, '[\r]?\n'))
+        if not ok then return end
 
         if opts.callback then opts.callback(bufnr) end
         putils.highlighter(bufnr, ft)
