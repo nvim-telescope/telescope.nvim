@@ -622,16 +622,14 @@ function make_entry.gen_from_apropos(opts)
   local displayer = entry_display.create {
     separator = ' ',
     items = {
-      {},
+      { width = 30 },
       {},
     },
   }
 
   local make_display = function(entry)
-    -- Stopgap measure to set `width` for this field. See #414
-    local formatted = ('%-30s'):format(entry.keyword)
     return displayer {
-      {formatted, 'TelescopeResultsFunction'},
+      { entry.keyword, 'TelescopeResultsFunction' },
       entry.description
     }
   end
