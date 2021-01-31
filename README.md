@@ -16,7 +16,7 @@ Community driven built-in [pickers](#pickers), [sorters](#sorters) and [previewe
 - [Files](#file-pickers)
 - [Git](#git-pickers)
 - [LSP](#lsp-pickers)
-- [Treesitter](#treesitter-pickers)
+- [Treesitter](#treesitter-picker)
 
 ![by @glepnir](https://user-images.githubusercontent.com/41671631/100819597-6f737900-3487-11eb-8621-37ec1ffabe4b.gif)
 
@@ -139,6 +139,7 @@ require('telescope').setup{
     },
     prompt_position = "bottom",
     prompt_prefix = ">",
+    initial_mode = "insert",
     selection_strategy = "reset",
     sorting_strategy = "descending",
     layout_strategy = "horizontal",
@@ -189,6 +190,7 @@ EOF
 |------------------------|-------------------------------------------------------|----------------------------|
 | `prompt_position`      | Where the prompt should be located.                   | top/bottom                 |
 | `prompt_prefix`        | What should the prompt prefix be.                     | string                     |
+| `initial_mode`         | The initial mode when a prompt is opened.             | insert/normal              |
 | `sorting_strategy`     | Where first selection should be located.              | descending/ascending       |
 | `layout_strategy`      | How the telescope is drawn.                           | [supported layouts](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts) |
 | `winblend`             | How transparent is the telescope window should be.    | NUM                        |
@@ -300,7 +302,7 @@ local actions = require('telescope.actions')
 ------------------------------
 require('telescope.builtin').fd({ -- or new custom picker's attach_mappings field:
   attach_mappings = function(prompt_bufnr)
-    -- This will replace goto_file_selection_edit no mather on which key it is mapped by default
+    -- This will replace select no mather on which key it is mapped by default
     actions.goto_file_selection_edit:replace(function()
       local entry = actions.get_selected_entry()
       actions.close(prompt_bufnr)
@@ -337,7 +339,7 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
 <!--     finder = finders.new_table(results), -->
 <!--     sorter = sorters.fuzzy_with_index_bias(), -->
 <!--     attach_mappings = function(prompt_bufnr) -->
-<!--       -- This will replace goto_file_selection_edit no mather on which key it is mapped by default -->
+<!--       -- This will replace select no mather on which key it is mapped by default -->
 <!--       actions.goto_file_selection_edit:replace(function() -->
 <!--         -- Code here -->
 <!--       end) -->
@@ -595,7 +597,7 @@ function my_custom_picker(results)
     finder = finders.new_table(results),
     sorter = sorters.fuzzy_with_index_bias(),
     attach_mappings = function(_, map)
-      -- Map "<CR>" in insert mode to the funciton, actions.set_command_line
+      -- Map "<CR>" in insert mode to the function, actions.set_command_line
       map('i', '<CR>', actions.set_command_line)
 
       return true

@@ -1,13 +1,27 @@
+local utils = require('telescope.utils')
+
 local entry_display = {}
 
-local function truncate(str, len)
+entry_display.truncate = function(str, len)
   str = tostring(str) -- We need to make sure its an actually a string and not a number
-  -- TODO: This doesn't handle multi byte chars...
-  if vim.fn.strdisplaywidth(str) > len then
-    str = str:sub(1, len - 1)
-    str = str .. "…"
+  if utils.strdisplaywidth(str) <= len then
+    return str
   end
-  return str
+  local charlen = 0
+  local cur_len = 0
+  local result = ''
+  local len_of_dots = utils.strdisplaywidth('…')
+  while true do
+    local part = utils.strcharpart(str, charlen, 1)
+    cur_len = cur_len + utils.strdisplaywidth(part)
+    if (cur_len + len_of_dots) > len then
+      result = result .. '…'
+      break
+    end
+    result = result .. part
+    charlen = charlen + 1
+  end
+  return result
 end
 
 entry_display.create = function(configuration)
@@ -18,9 +32,9 @@ entry_display.create = function(configuration)
       local format_str = "%" .. justify .. v.width .. "s"
       table.insert(generator, function(item)
         if type(item) == 'table' then
-          return string.format(format_str, truncate(item[1], v.width)), item[2]
+          return string.format(format_str, entry_display.truncate(item[1], v.width)), item[2]
         else
-          return string.format(format_str, truncate(item, v.width))
+          return string.format(format_str, entry_display.truncate(item, v.width))
         end
       end)
     else

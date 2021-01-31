@@ -4,9 +4,12 @@ local extensions = require('telescope._extensions').manager
 local config = require('telescope.config')
 local command = {}
 
+local arg_value = {
+  ['nil'] = nil,['""'] = '',['"'] = ''
+}
+
 local bool_type = {
-  ['false'] = false,
-  ['true'] = true
+  ['false'] = false,['true'] = true
 }
 
 -- convert command line string arguments to
@@ -18,6 +21,7 @@ local function convert_user_opts(user_opts)
     ['boolean'] = function(key,val)
       if val == 'false' then
         user_opts[key] = false
+        return
       end
       user_opts[key] = true
     end,
@@ -25,15 +29,11 @@ local function convert_user_opts(user_opts)
       user_opts[key] = tonumber(val)
     end,
     ['string'] = function(key,val)
-      if val == 'nil' then
-        user_opts[key] = nil
+      if arg_value[val] ~= nil then
+        user_opts[key] = arg_value[val]
+        return
       end
-      if val == '""' then
-        user_opts[key] = ''
-      end
-      if val == '"' then
-        user_opts[key] = ''
-      end
+
       if bool_type[val] ~= nil then
         user_opts[key] = bool_type[val]
       end
@@ -66,7 +66,7 @@ end
 --   opts = {
 --      cwd = '***',
 -- }
-function command.run_command(args)
+local function run_command(args)
   local user_opts = args or {}
   if next(user_opts) == nil and not user_opts.cmd then
     print('[Telescope] your command miss args')
@@ -99,6 +99,58 @@ function command.run_command(args)
   if rawget(extensions,cmd) then
     extensions[cmd][cmd](opts)
   end
+end
+
+-- @Summary get extensions sub command
+-- register extensions dap gh etc.
+-- input in command line `Telescope gh <TAB>`
+-- It will show a list that all extensions sub command list
+-- ['commands','list_breakpoints','variables','issues','gist','pull_request']
+function command.get_extensions_subcommand()
+  local exts = require('telescope._extensions').manager
+  local complete_ext_table = {}
+  for _,value in pairs(exts) do
+    if type(value) == "table" then
+      for key,_ in pairs(value) do
+        table.insert(complete_ext_table,key)
+      end
+    end
+  end
+  return complete_ext_table
+end
+
+local split_keywords = {
+  ['find_command'] = true,
+  ['vimgrep_arguments'] = true,
+  ['sections'] = true
+}
+
+function command.register_keyword(keyword)
+  split_keywords[keyword] = true
+end
+
+function command.load_command(cmd,...)
+  local args = {...}
+  local user_opts = {}
+  user_opts['cmd'] = cmd
+  user_opts.opts = {}
+
+  for _,arg in ipairs(args) do
+    if arg:find('=',1) == nil then
+      user_opts['extension_type'] = arg
+    else
+      local param = vim.split(arg,'=')
+      if param[1] == 'theme' then
+        user_opts['theme'] = param[2]
+      elseif split_keywords[param[1]] then
+        user_opts.opts[param[1]] = vim.split(param[2],',')
+      else
+        user_opts.opts[param[1]] = param[2]
+      end
+    end
+  end
+
+  run_command(user_opts)
 end
 
 return command

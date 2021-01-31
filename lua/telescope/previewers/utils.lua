@@ -72,6 +72,14 @@ end
 
 -- Attach ts highlighter
 utils.ts_highlighter = function(bufnr, ft)
+  if not has_ts then
+    has_ts, _ = pcall(require, 'nvim-treesitter')
+    if has_ts then
+      _, ts_highlight = pcall(require, 'nvim-treesitter.highlight')
+      _, ts_parsers = pcall(require, 'nvim-treesitter.parsers')
+    end
+  end
+
   if has_ts and has_filetype(ft) then
     local lang = ts_parsers.ft_to_lang(ft);
     if ts_parsers.has_parser(lang) then

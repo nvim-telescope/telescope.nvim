@@ -68,7 +68,10 @@ end
 
 path.read_file_async = function(filepath, callback)
   vim.loop.fs_open(filepath, "r", 438, function(err_open, fd)
-    assert(not err_open, err_open)
+    if err_open then
+      print("We tried to open this file but couldn't. We failed with following error message: " .. err_open)
+      return
+    end
     vim.loop.fs_fstat(fd, function(err_fstat, stat)
       assert(not err_fstat, err_fstat)
       if stat.type ~= 'file' then return callback('') end
