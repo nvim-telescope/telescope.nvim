@@ -285,7 +285,7 @@ require('telescope').setup{
         ["<CR>"] = actions.goto_file_selection_edit + actions.center + my_cool_custom_action,
       },
       n = {
-        ["<esc>"] = actions.close
+        ["<esc>"] = actions.close,
         ["<C-i>"] = my_cool_custom_action,
       },
     },
