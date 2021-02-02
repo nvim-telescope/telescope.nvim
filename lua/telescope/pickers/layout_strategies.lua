@@ -205,6 +205,74 @@ layout_strategies.center = function(self, columns, lines)
 end
 
 --[[
+    +--------------+---------------------+
+    |    Prompt    |      Previewer      |
+    +--------------+      Previewer      |
+    |    Result    |      Previewer      |
+    |    Result    |      Previewer      |
+    +--------------+---------------------+
+--]]
+layout_strategies.cursor = function(self, columns, lines)
+  local initial_options = self:_get_initial_window_options()
+  --local preview = initial_options.preview
+  local results = initial_options.results
+  local prompt = initial_options.prompt
+
+  -- This sets the height/width for the whole layout
+  local height = resolve.resolve_height(self.window.results_height)(self, columns, lines)
+  local width = resolve.resolve_width(self.window.width)(self, columns, lines)
+
+  local max_results = (height > lines and lines or height)
+  local max_width = (width > columns and columns or width)
+
+  prompt.height = 1
+  results.height = max_results
+
+  prompt.width = max_width
+  results.width = max_width
+  --preview.width = max_width
+
+  -- border size
+  local bs = 1
+  if is_borderless(self) then
+    bs = 0
+  end
+
+  -- TODO: find a better way to find current cursor position on screen
+  -- Currently, this will not work if the buffer is scrolled
+  local position = vim.fn.nvim_win_get_position(0)
+  local cursor = vim.fn.nvim_win_get_cursor(0)
+  local cursor_line = cursor[1] + position[1]
+  local cursor_col = cursor[2] + position[1]
+
+  --prompt.line = (lines / 2) - ((max_results + (bs * 2)) / 2)
+  prompt.line = cursor_line + bs
+  results.line = prompt.line + 1 + bs
+
+  --preview.line = 1
+  --preview.height = math.floor(prompt.line - (2 + bs))
+
+  --if not self.previewer or columns < self.preview_cutoff then
+    --preview.height = 0
+  --end
+
+  -- TODO: handle width of columns left of current buffer
+  -- TODO: handle cases where there is no space left or no space below
+  prompt.col = cursor_col + 1 + bs
+  results.col = prompt.col
+  --results.col = math.ceil((columns / 2) - (width / 2) - bs)
+  --prompt.col = results.col
+  --preview.col = results.col
+
+  return {
+    --preview = self.previewer and preview.width > 0 and preview,
+    preview = false,
+    results = results,
+    prompt = prompt
+  }
+end
+
+--[[
     +-----------------+
     |    Previewer    |
     |    Previewer    |
