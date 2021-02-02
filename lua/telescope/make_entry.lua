@@ -635,10 +635,8 @@ function make_entry.gen_from_apropos(opts)
   end
 
   return function(line)
-    local keyword, desc = line:match'^(.-)%s+%-%s+(.*)$'
-    local section = keyword and keyword:match'%(([^)]+)%)' or nil
-    local cmd = keyword and keyword:match'(%S+)%s*%(' or nil
-    return sections[section] and {
+    local keyword, cmd, section, desc = line:match'^((.-)%s*%(([^)]+)%).-)%s+%-%s+(.*)$'
+    return keyword and sections[section] and {
       value = cmd,
       description = desc,
       ordinal = cmd,
