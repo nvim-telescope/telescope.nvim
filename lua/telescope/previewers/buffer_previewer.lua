@@ -383,7 +383,7 @@ previewers.man = defaulter(function(opts)
 
     define_preview = function(self, entry, status)
       local win_width = vim.api.nvim_win_get_width(self.state.winid)
-      putils.job_maker({'man', entry.value}, self.state.bufnr, {
+      putils.job_maker({'man', entry.section, entry.value}, self.state.bufnr, {
         env = { ["PAGER"] = pager, ["MANWIDTH"] = win_width },
         value = entry.value,
         bufname = self.state.bufname
