@@ -326,8 +326,8 @@ function Picker:find()
 
   self.original_win_id = a.nvim_get_current_win()
 
-  -- Use autocmd run it before create Telescope window
-  vim.cmd'do User Telescope'
+  -- User autocmd run it before create Telescope window
+  vim.cmd'do User TelescopeFindPre'
 
   -- Create three windows:
   -- 1. Prompt window
