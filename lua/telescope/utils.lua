@@ -295,7 +295,7 @@ function utils.get_visual_selection_range()
 end
 
 function utils.get_visual_selection(delimiter)
-    local delimiter = delimiter or ' '
+    delimiter = delimiter or ' '
     local mode = vim.fn.mode()
     local line_start, column_start, line_end, column_end = utils.get_visual_selection_range()
     local lines = vim.api.nvim_buf_get_lines(0, line_start - 1, line_end, false)
