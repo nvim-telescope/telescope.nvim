@@ -520,6 +520,15 @@ Telescope find_files theme=get_dropdown
 Themes should work with every `telescope.builtin` function.  If you wish to
 make theme, check out `lua/telescope/themes.lua`.
 
+## Autocmds
+
+Telescope user autocmds:
+
+| Event                           | Description                                        |
+|---------------------------------|----------------------------------------------------|
+| `User TelescopeFindPre`         | Do it before create Telescope all the float window |
+| `User TelescopePreviewerLoaded` | Do it after Telescope previewer window create      |
+
 
 ## Extensions
 
