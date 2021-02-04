@@ -304,7 +304,6 @@ actions.send_selected_to_qflist = function(prompt_bufnr)
   actions.close(prompt_bufnr)
 
   vim.fn.setqflist(qf_entries, 'r')
-  vim.cmd [[copen]]
 end
 
 actions.send_to_qflist = function(prompt_bufnr)
@@ -319,6 +318,9 @@ actions.send_to_qflist = function(prompt_bufnr)
   actions.close(prompt_bufnr)
 
   vim.fn.setqflist(qf_entries, 'r')
+end
+
+actions.open_qflist = function(_)
   vim.cmd [[copen]]
 end
 
