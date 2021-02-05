@@ -153,8 +153,19 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     telescope_map(prompt_bufnr, mode, key_bind, key_func, opts)
   end
 
-  if attach_mappings and not attach_mappings(prompt_bufnr, map) then
-    return
+  if attach_mappings then
+    local attach_results = attach_mappings(prompt_bufnr, map)
+
+    if attach_results == nil then
+      error(
+        "Attach mappings must always return a value. `true` means use default mappings, "
+        .. "`false` means only use attached mappings"
+      )
+    end
+
+    if not attach_results then
+      return
+    end
   end
 
   for mode, mode_map in pairs(buffer_keymap or {}) do

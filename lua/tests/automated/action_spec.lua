@@ -238,6 +238,11 @@ describe('actions', function()
       --  In config, we have { ["<CR>"] = actions.select, ... }
       --  In caller, we have actions._goto:replace(...)
       --  Person calls `select`, does not see update
+      action_set.edit:replace(function(_, arg) return "default_to_edit:" .. arg end)
+      eq("default_to_edit:edit", actions.select_default())
+
+      action_set.select:replace(function(_, arg) return "override_with_select:" .. arg end)
+      eq("override_with_select:default", actions.select_default())
 
       -- Sometimes you might want to change the default selection...
       --  but you don't want to prohibit the ability to edit the code...

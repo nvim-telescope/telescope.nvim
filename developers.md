@@ -23,7 +23,7 @@ TODO: Talk about what actions vs actions sets are
 Directly override an action with a new function
 
 ```lua
-actions.goto_file_selection_edit:replace(git_checkout_function)
+actions.select_default:replace(git_checkout_function)
 ```
 
 ### `:replace_if(conditional, function)`
