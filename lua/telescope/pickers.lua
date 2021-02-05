@@ -406,30 +406,8 @@ function Picker:find()
 
   vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
 
-  local selection_strategy = self.selection_strategy or 'reset'
-
-  local update_status = function()
-    local text = self:get_status_text()
-    local current_prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, 0, 1, false)[1]
-    if not current_prompt then
-      return
-    end
-
-    if not vim.api.nvim_win_is_valid(prompt_win) then
-      return
-    end
-
-    local expected_prompt_len = #self.prompt_prefix + 1
-    local prompt_len = #current_prompt < expected_prompt_len and expected_prompt_len or #current_prompt
-
-    local padding = string.rep(" ", vim.api.nvim_win_get_width(prompt_win) - prompt_len - #text - 3)
-    vim.api.nvim_buf_clear_namespace(prompt_bufnr, ns_telescope_prompt, 0, 1)
-    vim.api.nvim_buf_set_virtual_text(prompt_bufnr, ns_telescope_prompt, 0, { {padding .. text, "NonText"} }, {})
-
-    self:_increment("status")
-  end
-
-  local debounced_status = debounce.throttle_leading(update_status, 50)
+  local status_updater = self:get_status_updater(prompt_win, prompt_bufnr)
+  local debounced_status = debounce.throttle_leading(status_updater, 50)
 
   self.request_number = 0
   local on_lines = function(_, _, _, first_line, last_line)
@@ -467,110 +445,8 @@ function Picker:find()
     -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
     self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats, self.request_number)
 
-    local process_result = function(entry)
-      if self:is_done() then return end
-
-      self:_increment("processed")
-
-      if not entry then
-        log.debug("No entry...")
-        return
-      end
-
-      -- TODO: Should we even have valid?
-      if entry.valid == false then
-        return
-      end
-
-      log.trace("Processing result... ", entry)
-
-      for _, v in ipairs(self.file_ignore_patterns or {}) do
-        local file = type(entry.value) == 'string' and entry.value or entry.filename
-        if file then
-          if string.find(file, v) then
-            log.debug("SKPIPING", entry.value, "because", v)
-            return
-          end
-        end
-      end
-
-      local sort_ok
-      local sort_score = 0
-      if self.sorter then
-        sort_ok, sort_score = self:_track("_sort_time", pcall, self.sorter.score, self.sorter, prompt, entry)
-
-        if not sort_ok then
-          log.warn("Sorting failed with:", prompt, entry, sort_score)
-          return
-        end
-
-        if sort_score == -1 then
-          self:_increment("filtered")
-          log.trace("Filtering out result: ", entry)
-          return
-        end
-      end
-
-      self:_track("_add_time", self.manager.add_entry, self.manager, self, sort_score, entry)
-
-      debounced_status()
-    end
-
-    local process_complete = function()
-      if self:is_done() then return end
-
-      -- TODO: Either: always leave one result or make sure we actually clean up the results when nothing matches
-      if selection_strategy == 'row' then
-        if self._selection_row == nil and self.default_selection_index ~= nil then
-          self:set_selection(self:get_row(self.default_selection_index))
-        else
-          self:set_selection(self:get_selection_row())
-        end
-      elseif selection_strategy == 'follow' then
-        if self._selection_row == nil and self.default_selection_index ~= nil then
-          self:set_selection(self:get_row(self.default_selection_index))
-        else
-          local index = self.manager:find_entry(self:get_selection())
-
-          if index then
-            local follow_row = self:get_row(index)
-            self:set_selection(follow_row)
-          else
-            self:set_selection(self:get_reset_row())
-          end
-        end
-      elseif selection_strategy == 'reset' then
-        if self.default_selection_index ~= nil then
-          self:set_selection(self:get_row(self.default_selection_index))
-        else
-          self:set_selection(self:get_reset_row())
-        end
-      else
-        error('Unknown selection strategy: ' .. selection_strategy)
-      end
-
-      local current_line = vim.api.nvim_get_current_line():sub(self.prompt_prefix:len() + 1)
-      state.set_global_key('current_line', current_line)
-
-      self:clear_extra_rows(results_bufnr)
-      self:highlight_displayed_rows(results_bufnr, prompt)
-
-      -- TODO: Cleanup.
-      self.stats._done = vim.loop.hrtime()
-      self.stats.time = (self.stats._done - self.stats._start) / 1e9
-
-      local function do_times(key)
-        self.stats[key] = self.stats["_" .. key] / 1e9
-      end
-
-      do_times("sort_time")
-      do_times("add_time")
-      do_times("highlight_time")
-
-      self:_on_complete()
-
-      update_status()
-    end
+    local process_result = self:get_result_processor(prompt, debounced_status)
+    local process_complete = self:get_result_completor(self.results_bufnr, prompt, status_updater)
 
     local ok, msg = pcall(function()
       self.finder(prompt, process_result, vim.schedule_wrap(process_complete))
@@ -582,7 +458,7 @@ function Picker:find()
   end
 
   on_lines(nil, nil, nil, 0, 1)
-  update_status()
+  status_updater()
 
   -- Register attach
   vim.api.nvim_buf_attach(prompt_bufnr, false, {
@@ -871,7 +747,7 @@ function Picker:set_selection(row)
 end
 
 
-function Picker:entry_adder(index, entry, score, insert)
+function Picker:entry_adder(index, entry, _, insert)
   local row = self:get_row(index)
 
   -- If it's less than 0, then we don't need to show it at all.
@@ -993,6 +869,148 @@ function Picker:close_existing_pickers()
     pcall(actions.close, prompt_bufnr)
   end
 end
+
+function Picker:get_status_updater(prompt_win, prompt_bufnr)
+  return function()
+    local text = self:get_status_text()
+    local current_prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, 0, 1, false)[1]
+    if not current_prompt then
+      return
+    end
+
+    if not vim.api.nvim_win_is_valid(prompt_win) then
+      return
+    end
+
+    local expected_prompt_len = #self.prompt_prefix + 1
+    local prompt_len = #current_prompt < expected_prompt_len and expected_prompt_len or #current_prompt
+
+    local padding = string.rep(" ", vim.api.nvim_win_get_width(prompt_win) - prompt_len - #text - 3)
+    vim.api.nvim_buf_clear_namespace(prompt_bufnr, ns_telescope_prompt, 0, 1)
+    vim.api.nvim_buf_set_virtual_text(
+      prompt_bufnr,
+      ns_telescope_prompt,
+      0,
+      { {padding .. text, "NonText"} },
+      {}
+    )
+
+    self:_increment("status")
+  end
+end
+
+
+function Picker:get_result_processor(prompt, status_updater)
+  return function(entry)
+    if self:is_done() then return end
+
+    self:_increment("processed")
+
+    if not entry then
+      log.debug("No entry...")
+      return
+    end
+
+    -- TODO: Should we even have valid?
+    if entry.valid == false then
+      return
+    end
+
+    log.trace("Processing result... ", entry)
+
+    for _, v in ipairs(self.file_ignore_patterns or {}) do
+      local file = type(entry.value) == 'string' and entry.value or entry.filename
+      if file then
+        if string.find(file, v) then
+          log.debug("SKPIPING", entry.value, "because", v)
+          return
+        end
+      end
+    end
+
+    local sort_ok
+    local sort_score = 0
+    if self.sorter then
+      sort_ok, sort_score = self:_track("_sort_time", pcall, self.sorter.score, self.sorter, prompt, entry)
+
+      if not sort_ok then
+        log.warn("Sorting failed with:", prompt, entry, sort_score)
+        return
+      end
+
+      if sort_score == -1 then
+        self:_increment("filtered")
+        log.trace("Filtering out result: ", entry)
+        return
+      end
+    end
+
+    self:_track("_add_time", self.manager.add_entry, self.manager, self, sort_score, entry)
+
+    status_updater()
+  end
+end
+
+function Picker:get_result_completor(results_bufnr, prompt, status_updater)
+  return function()
+    if self:is_done() then return end
+
+    local selection_strategy = self.selection_strategy or 'reset'
+
+    -- TODO: Either: always leave one result or make sure we actually clean up the results when nothing matches
+    if selection_strategy == 'row' then
+      if self._selection_row == nil and self.default_selection_index ~= nil then
+        self:set_selection(self:get_row(self.default_selection_index))
+      else
+        self:set_selection(self:get_selection_row())
+      end
+    elseif selection_strategy == 'follow' then
+      if self._selection_row == nil and self.default_selection_index ~= nil then
+        self:set_selection(self:get_row(self.default_selection_index))
+      else
+        local index = self.manager:find_entry(self:get_selection())
+
+        if index then
+          local follow_row = self:get_row(index)
+          self:set_selection(follow_row)
+        else
+          self:set_selection(self:get_reset_row())
+        end
+      end
+    elseif selection_strategy == 'reset' then
+      if self.default_selection_index ~= nil then
+        self:set_selection(self:get_row(self.default_selection_index))
+      else
+        self:set_selection(self:get_reset_row())
+      end
+    else
+      error('Unknown selection strategy: ' .. selection_strategy)
+    end
+
+    local current_line = vim.api.nvim_get_current_line():sub(self.prompt_prefix:len() + 1)
+    state.set_global_key('current_line', current_line)
+
+    self:clear_extra_rows(results_bufnr)
+    self:highlight_displayed_rows(results_bufnr, prompt)
+
+    -- TODO: Cleanup.
+    self.stats._done = vim.loop.hrtime()
+    self.stats.time = (self.stats._done - self.stats._start) / 1e9
+
+    local function do_times(key)
+      self.stats[key] = self.stats["_" .. key] / 1e9
+    end
+
+    do_times("sort_time")
+    do_times("add_time")
+    do_times("highlight_time")
+
+    self:_on_complete()
+
+    status_updater()
+  end
+end
+
 
 
 pickers.new = function(opts, defaults)
