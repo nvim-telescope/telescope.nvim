@@ -429,27 +429,31 @@ internal.help_tags = function(opts)
 end
 
 internal.man_pages = function(opts)
-  local pages = utils.get_os_command_output(opts.man_cmd or { 'apropos', '--sections=1', '' })
+  opts.sections = utils.get_default(opts.sections, {'1'})
+  assert(vim.tbl_islist(opts.sections), 'sections should be a list')
+  opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
+    local is_darwin = vim.loop.os_uname().sysname == 'Darwin'
+    return is_darwin and {'apropos', ' '} or {'apropos', ''}
+  end)
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts)
 
   pickers.new(opts, {
     prompt_title = 'Man',
-    finder    = finders.new_table {
-      results = pages,
-      entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts),
-    },
+    finder    = finders.new_oneshot_job(opts.man_cmd, opts),
     previewer = previewers.man.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions._goto_file_selection:replace(function(_, cmd)
         local selection = actions.get_selected_entry()
+        local args = selection.section .. ' ' .. selection.value
 
         actions.close(prompt_bufnr)
         if cmd == 'edit' or cmd == 'new' then
-          vim.cmd('Man ' .. selection.value)
+          vim.cmd('Man ' .. args)
         elseif cmd == 'vnew' then
-          vim.cmd('vert bo Man ' .. selection.value)
+          vim.cmd('vert bo Man ' .. args)
         elseif cmd == 'tabedit' then
-          vim.cmd('tab Man ' .. selection.value)
+          vim.cmd('tab Man ' .. args)
         end
       end)
 
