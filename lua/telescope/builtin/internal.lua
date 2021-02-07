@@ -500,6 +500,66 @@ internal.reloader = function(opts)
   }):find()
 end
 
+internal.windows = function(opts)
+  local show_entry_window = function(prompt_bufnr)
+    local entry = actions.get_selected_entry(prompt_bufnr)
+    actions.close(prompt_bufnr)
+    local winnr = entry.winnr
+    vim.api.nvim_set_current_win(winnr)
+  end
+
+  local winnrs = filter(function(w)
+    if opts.ignore_current_window and w == vim.api.nvim_get_current_win() then
+      return false
+    end
+    return true
+  end, vim.api.nvim_list_wins())
+
+  if not next(winnrs) then return end
+
+  local windows = {}
+  local default_selection_idx = 1
+
+  for _, winnr in ipairs(winnrs) do
+    local flag = winnr == vim.api.nvim_get_current_win() and '%' or ' '
+
+    local bufnr = vim.fn.winbufnr(winnr)
+    local element = {
+      winnr = winnr,
+      bufnr = bufnr,
+      flag = flag,
+      info = vim.fn.getbufinfo(bufnr)[1],
+    }
+
+    if opts.sort_lastused and flag == "%" then
+      local idx = ((windows[1] ~= nil and windows[1].flag == "%") and 2 or 1)
+      table.insert(windows, idx, element)
+    else
+      table.insert(windows, element)
+    end
+  end
+
+  if not opts.winnr_width then
+    local max_winnr = math.max(unpack(winnrs))
+    opts.winnr_width = #tostring(max_winnr)
+  end
+
+  pickers.new(opts, {
+    prompt_title = 'Windows',
+    finder    = finders.new_table {
+      results = windows,
+      entry_maker = opts.entry_maker or make_entry.gen_from_window(opts)
+    },
+    previewer = conf.grep_previewer(opts),
+    sorter = conf.generic_sorter(opts),
+    default_selection_index = default_selection_idx,
+    attach_mappings = function(_)
+      actions.goto_file_selection_edit:replace(show_entry_window)
+      return true
+    end,
+  }):find()
+end
+
 internal.buffers = function(opts)
   local bufnrs = filter(function(b)
     if 1 ~= vim.fn.buflisted(b) then

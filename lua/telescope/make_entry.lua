@@ -456,6 +456,74 @@ function make_entry.gen_from_lsp_symbols(opts)
   end
 end
 
+function make_entry.gen_from_window(opts)
+  opts = opts or {}
+
+  local disable_devicons = opts.disable_devicons
+
+  local icon_width = 0
+  if not disable_devicons then
+    local icon, _ = get_devicons('fname', disable_devicons)
+    icon_width = utils.strdisplaywidth(icon)
+  end
+
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = opts.winnr_width },
+      { width = 4 },
+      { width = icon_width },
+      { remaining = true },
+    },
+  }
+
+  local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
+
+  local make_display = function(entry)
+    local display_bufname
+    if opts.shorten_path then
+      display_bufname = path.shorten(entry.filename)
+    else
+      display_bufname = entry.filename
+    end
+
+    local icon, hl_group = get_devicons(entry.filename, disable_devicons)
+
+    return displayer {
+      {entry.winnr, "TelescopeResultsNumber"},
+      {entry.indicator, "TelescopeResultsComment"},
+      { icon, hl_group },
+      display_bufname .. ":" .. entry.lnum
+      }
+  end
+
+  return function(entry)
+    local bufname = entry.info.name ~= "" and entry.info.name or '[No Name]'
+    -- if bufname is inside the cwd, trim that part of the string
+    bufname = path.normalize(bufname, cwd)
+
+    local hidden = entry.info.hidden == 1 and 'h' or 'a'
+    local readonly = vim.api.nvim_buf_get_option(entry.bufnr, 'readonly') and '=' or ' '
+    local changed = entry.info.changed == 1 and '+' or ' '
+    local indicator = entry.flag .. hidden .. readonly .. changed
+
+    return {
+      valid = true,
+
+      value = bufname,
+      ordinal = entry.winnr .. " : " .. bufname,
+      display = make_display,
+
+      winnr = entry.winnr,
+      bufnr = entry.bufnr,
+      filename = bufname,
+
+      lnum = entry.info.lnum ~= 0 and entry.info.lnum or 1,
+      indicator = indicator,
+    }
+  end
+end
+
 function make_entry.gen_from_buffer(opts)
   opts = opts or {}
 
