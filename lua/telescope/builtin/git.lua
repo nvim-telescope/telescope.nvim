@@ -137,6 +137,26 @@ git.status = function(opts)
   }):find()
 end
 
+git.recents = function(opts)
+  local depth = utils.get_default(opts.depth, 5)
+
+  if opts.cwd then
+    opts.cwd = vim.fn.expand(opts.cwd)
+  end
+
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
+
+  pickers.new(opts, {
+    prompt_title = 'Git Recents',
+    finder = finders.new_oneshot_job(
+      {'git', 'diff', '--name-only', depth and 'HEAD~' .. depth or 'HEAD'},
+      opts
+    ),
+    previewer = conf.file_previewer(opts),
+    sorter = conf.file_sorter(opts),
+  }):find()
+end
+
 local set_opts_cwd = function(opts)
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)

@@ -427,6 +427,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checkouts it out on enter.                 |
 | `builtin.git_branches`              | Lists all branches with log preview and checkout action.                                    |
 | `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multiselection still WIP) |
+| `builtin.git_recents`               | Lists files which is changed recently and edit it on enter.                                 |
 | ..................................  | Your next awesome picker function here :D                                                   |
 
 ### Treesitter Picker

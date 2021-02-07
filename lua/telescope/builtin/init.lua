@@ -33,6 +33,7 @@ builtin.git_commits = require('telescope.builtin.git').commits
 builtin.git_bcommits = require('telescope.builtin.git').bcommits
 builtin.git_branches = require('telescope.builtin.git').branches
 builtin.git_status = require('telescope.builtin.git').status
+builtin.git_recents = require('telescope.builtin.git').recents
 
 builtin.builtin = require('telescope.builtin.internal').builtin
 builtin.planets = require('telescope.builtin.internal').planets
