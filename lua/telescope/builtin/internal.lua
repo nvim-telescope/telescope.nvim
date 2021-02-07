@@ -527,9 +527,11 @@ internal.windows = function(opts)
   for _, winnr in ipairs(winnrs) do
     local flag = winnr == vim.api.nvim_get_current_win() and '%' or ' '
 
+    local tabpage = vim.api.nvim_win_get_tabpage()
     local bufnr = vim.fn.winbufnr(winnr)
     local element = {
       winnr = winnr,
+      tabpage = tabpage,
       bufnr = bufnr,
       flag = flag,
       info = vim.fn.getbufinfo(bufnr)[1],
