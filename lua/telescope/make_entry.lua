@@ -470,6 +470,7 @@ function make_entry.gen_from_window(opts)
   local displayer = entry_display.create {
     separator = " ",
     items = {
+      { width = opts.tabpage_width },
       { width = opts.winnr_width },
       { width = 4 },
       { width = icon_width },
@@ -490,6 +491,7 @@ function make_entry.gen_from_window(opts)
     local icon, hl_group = get_devicons(entry.filename, disable_devicons)
 
     return displayer {
+      {entry.tabpage, "TelescopeResultsNumber"},
       {entry.winnr, "TelescopeResultsNumber"},
       {entry.indicator, "TelescopeResultsComment"},
       { icon, hl_group },
@@ -514,6 +516,7 @@ function make_entry.gen_from_window(opts)
       ordinal = entry.winnr .. " : " .. bufname,
       display = make_display,
 
+      tabpage = entry.tabpage,
       winnr = entry.winnr,
       bufnr = entry.bufnr,
       filename = bufname,

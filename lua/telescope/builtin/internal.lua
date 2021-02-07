@@ -524,10 +524,12 @@ internal.windows = function(opts)
   local windows = {}
   local default_selection_idx = 1
 
+  local max_tabpage = 0
+  local max_winnr = 0
   for _, winnr in ipairs(winnrs) do
     local flag = winnr == vim.api.nvim_get_current_win() and '%' or ' '
 
-    local tabpage = vim.api.nvim_win_get_tabpage()
+    local tabpage = vim.api.nvim_win_get_tabpage(winnr)
     local bufnr = vim.fn.winbufnr(winnr)
     local element = {
       winnr = winnr,
@@ -537,6 +539,13 @@ internal.windows = function(opts)
       info = vim.fn.getbufinfo(bufnr)[1],
     }
 
+    if max_tabpage < tabpage then
+      max_tabpage = tabpage
+    end
+    if max_winnr < winnr then
+      max_winnr = winnr
+    end
+
     if opts.sort_lastused and flag == "%" then
       local idx = ((windows[1] ~= nil and windows[1].flag == "%") and 2 or 1)
       table.insert(windows, idx, element)
@@ -545,8 +554,11 @@ internal.windows = function(opts)
     end
   end
 
+  if not opts.tabpage_width then
+    opts.tabpage_width = #tostring(max_tabpage)
+  end
+
   if not opts.winnr_width then
-    local max_winnr = math.max(unpack(winnrs))
     opts.winnr_width = #tostring(max_winnr)
   end
 
