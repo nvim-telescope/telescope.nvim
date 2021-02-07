@@ -509,6 +509,10 @@ internal.windows = function(opts)
   end
 
   local winnrs = filter(function(w)
+    local win_conf = vim.api.nvim_win_get_config(w)
+    if win_conf.relative ~= '' and not win_conf.focusable then
+      return false
+    end
     if opts.ignore_current_window and w == vim.api.nvim_get_current_win() then
       return false
     end
