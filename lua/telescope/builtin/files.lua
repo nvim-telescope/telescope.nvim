@@ -10,8 +10,6 @@ local flatten = vim.tbl_flatten
 
 local files = {}
 
-local supported_visual_modes = {'v', 'V'}
-
 local escape_chars = function(string)
   return string.gsub(string,  "[%(|%)|\\|%[|%]|%-|%{%}|%?|%+|%*]", {
     ["\\"] = "\\\\", ["-"] = "\\-",
@@ -64,16 +62,10 @@ end
 --  opts.search -- the string to search.
 --  opts.search_dirs -- list of directory to search in
 files.grep_string = function(opts)
+  -- TODO: This should probably check your visual selection as well, if you've got one
 
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
-
-  -- set search from visual mode
-  if vim.tbl_contains(supported_visual_modes, vim.fn.mode()) then
-      opts.search = utils.get_visual_selection(opts.delimiter)
-      vim.api.nvim_command('normal :esc<CR>')
-  end
-
   local search = escape_chars(opts.search or vim.fn.expand("<cword>"))
   local word_match = opts.word_match
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)

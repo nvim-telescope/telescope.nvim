@@ -284,40 +284,96 @@ function utils.strcharpart(str, nchar, charlen)
   return str:sub(nbyte + 1, nbyte + len)
 end
 
-function utils.get_visual_selection_range()
+
+function utils.get_visual_pos(exit_visual_mode)
+    exit_visual_mode = exit_visual_mode or true
+
+    -- get {start: 'v', end: curpos} of visual selection 0-indexed
     local line_v, column_v = unpack(vim.fn.getpos("v"), 2, 3)
     local line_cur, column_cur = unpack(vim.fn.getcurpos(), 2, 3)
+
+    if exit_visual_mode then
+      vim.cmd [[normal :esc<CR>]]
+    end
+
     -- backwards visual selection
-    if line_v > line_cur or (line_v == line_cur and column_cur < column_v) then
-        return line_cur, column_cur, line_v, column_v
+    if line_v > line_cur then
+        line_cur, line_v = line_v, line_cur
+    end
+    if column_v > column_cur then
+        column_cur, column_v = column_v, column_cur
     end
     return line_v, column_v, line_cur, column_cur
 end
 
-function utils.get_visual_selection(delimiter)
+
+-- Recursively resolve beginning or ending byte column for multi-width characters
+--  Example: multi-width Japanese Zenkaku, see change in columns from left to right char
+--  全角
+-- @param line string: buffer line
+-- @param byte_col integer: initial byte column
+-- @param offset integer: resolver char border towards char beginning (-1) or char end (+1)
+-- return byte_col integer: byte column of char beginning or end
+function utils.resolve_col(line, byte_col, offset)
+    local utf_start, _ = vim.str_utfindex(line, math.min(byte_col, #line))
+    local utf_start_offset, _ = vim.str_utfindex(line, math.min(byte_col + offset, #line))
+    if utf_start == utf_start_offset and byte_col + offset <= #line then
+        return utils.resolve_col(line, byte_col + offset, offset)
+    else
+        return byte_col
+    end
+end
+
+function utils.get_visual_selection(delimiter, trim, exit_visual_mode)
     delimiter = delimiter or ' '
-    local mode = vim.fn.mode()
-    local line_start, column_start, line_end, column_end = utils.get_visual_selection_range()
+    trim = trim or true
+    exit_visual_mode = exit_visual_mode or ' '
+
+    local mode = vim.api.nvim_get_mode().mode
+    local line_start, column_start, line_end, column_end = utils.get_visual_pos(exit_visual_mode)
     local lines = vim.api.nvim_buf_get_lines(0, line_start - 1, line_end, false)
 
     local concat = {}
     local first_line = 1
     local last_line = line_end - (line_start - 1)
-    if first_line == last_line then
+
+    if first_line == last_line or mode == '' then
         -- get difference in columns, inclusive
-        column_end = column_end - column_start + 1
+        column_end =  column_end - column_start + 1
     end
     for row=first_line,last_line do
         local line = lines[row]
         if mode ~= 'V' then
-            if row == first_line then
-                line = line:sub(column_start)
+            if row == first_line or mode == '' then
+                -- Recursively get first byte index of utf char for initial byte column selection
+                --  Example: multi-width Japanese Zenkaku, see change in columns from left to right char
+                --  全角
+                local byte_col = utils.resolve_col(line, column_start, -1)
+                line = line:sub(byte_col)
             end
-            if row == last_line then
-                line = line:sub(1, column_end)
+            if row == last_line or mode == '' then
+                -- Recursively get last byte index of utf char for last byte column selection
+                local byte_col = utils.resolve_col(line, column_end, 1)
+                if mode == '' then
+                    -- if column was resolved and not initial char did not surpass column end, extra character required
+                    local char_begin_col = utils.resolve_col(line, byte_col, -1)
+                    if char_begin_col < column_end and byte_col >= column_end and row ~= last_line then
+                        byte_col = utils.resolve_col(line, byte_col+1, 1)
+                    end
+                end
+                -- math.min(byte_col, #line) covers block mode edge case: selection over relative line ends
+                -- |--| <-- indicates selection by row
+                -- 全角
+                -- |-----------|
+                -- 全角全角全角
+                -- + covers potential end-of-line selection
+                line = line:sub(1, math.min(byte_col, #line))
             end
         end
-        table.insert(concat, vim.trim(line))
+        if trim then
+            line = vim.trim(line)
+        end
+        table.insert(concat, line)
     end
     return table.concat(concat, delimiter)
 end
