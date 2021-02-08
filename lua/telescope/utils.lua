@@ -193,13 +193,13 @@ function utils.display_termcodes(str)
   return str:gsub(string.char(9), "<TAB>"):gsub("", "<C-F>"):gsub(" ", "<Space>")
 end
 
-function utils.get_os_command_output(cmd)
+function utils.get_os_command_output(cmd, cwd)
   if type(cmd) ~= "table" then
     print('Telescope: [get_os_command_output]: cmd has to be a table')
     return {}
   end
   local command = table.remove(cmd, 1)
-  return Job:new({ command = command, args = cmd }):sync()
+  return Job:new({ command = command, args = cmd, cwd = cwd }):sync()
 end
 
 utils.strdisplaywidth = (function()

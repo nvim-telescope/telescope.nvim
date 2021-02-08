@@ -393,7 +393,7 @@ previewers.man = defaulter(function(opts)
   }
 end)
 
-previewers.git_branch_log = defaulter(function(_)
+previewers.git_branch_log = defaulter(function(opts)
   local highlight_buffer = function(bufnr, content)
     for i = 1, #content do
       local line = content[i]
@@ -418,7 +418,7 @@ previewers.git_branch_log = defaulter(function(_)
     end
   end
 
-  local remotes = utils.get_os_command_output{ 'git', 'remote' }
+  local remotes = utils.get_os_command_output({ 'git', 'remote' }, opts.cwd)
   return previewers.new_buffer_previewer {
     get_buffer_by_name = function(_, entry)
       return entry.value
@@ -450,13 +450,14 @@ previewers.git_branch_log = defaulter(function(_)
       putils.job_maker(gen_cmd(entry.value), self.state.bufnr, {
         value = entry.value,
         bufname = self.state.bufname,
+        cwd = opts.cwd,
         callback = handle_results
       })
     end
   }
 end, {})
 
-previewers.git_commit_diff = defaulter(function(_)
+previewers.git_commit_diff = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     get_buffer_by_name = function(_, entry)
       return entry.value
@@ -465,21 +466,22 @@ previewers.git_commit_diff = defaulter(function(_)
     define_preview = function(self, entry, status)
       putils.job_maker({ 'git', '-P', 'diff', entry.value .. '^!' }, self.state.bufnr, {
         value = entry.value,
-        bufname = self.state.bufname
+        bufname = self.state.bufname,
+        cwd = opts.cwd
       })
       putils.regex_highlighter(self.state.bufnr, 'diff')
     end
   }
 end, {})
 
-previewers.git_file_diff = defaulter(function(_)
+previewers.git_file_diff = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     get_buffer_by_name = function(_, entry)
       return entry.value
     end,
 
     define_preview = function(self, entry, status)
-      if entry.status and entry.status == '??' then
+      if entry.status and (entry.status == '??' or entry.status == 'A ') then
         local p = from_entry.path(entry, true)
         if p == nil or p == '' then return end
         conf.buffer_previewer_maker(p, self.state.bufnr, {
@@ -488,7 +490,8 @@ previewers.git_file_diff = defaulter(function(_)
       else
         putils.job_maker({ 'git', '-P', 'diff', entry.value }, self.state.bufnr, {
           value = entry.value,
-          bufname = self.state.bufname
+          bufname = self.state.bufname,
+          cwd = opts.cwd
         })
         putils.regex_highlighter(self.state.bufnr, 'diff')
       end

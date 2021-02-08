@@ -83,6 +83,8 @@ function Picker:new(opts)
     previewer = opts.previewer,
     default_selection_index = opts.default_selection_index,
 
+    cwd = opts.cwd,
+
     _completion_callbacks = {},
 
     track = get_default(opts.track, false),
