@@ -615,8 +615,14 @@ end
 
 function make_entry.gen_from_apropos(opts)
   local sections = {}
-  for _, section in ipairs(opts.sections) do
-    sections[section] = true
+  if #opts.sections == 1 and opts.sections[1] == 'ALL' then
+    setmetatable(sections, {
+      __index = function() return true end,
+    })
+  else
+    for _, section in ipairs(opts.sections) do
+      sections[section] = true
+    end
   end
 
   local displayer = entry_display.create {
