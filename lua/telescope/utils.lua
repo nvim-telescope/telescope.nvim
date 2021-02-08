@@ -203,7 +203,7 @@ function utils.get_os_command_output(cmd)
 end
 
 utils.strdisplaywidth = (function()
-  if jit then
+  if jit and pathlib.separator ~= '\\' then
     local ffi = require('ffi')
     ffi.cdef[[
       typedef unsigned char char_u;
@@ -224,7 +224,7 @@ utils.strdisplaywidth = (function()
 end)()
 
 utils.utf_ptr2len = (function()
-  if jit then
+  if jit and pathlib.separator ~= '\\' then
     local ffi = require('ffi')
     ffi.cdef[[
       typedef unsigned char char_u;
