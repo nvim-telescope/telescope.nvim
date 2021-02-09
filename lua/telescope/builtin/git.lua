@@ -36,7 +36,7 @@ git.files = function(opts)
 end
 
 git.commits = function(opts)
-  local results = utils.get_os_command_output({ 'git', 'log', '--pretty=oneline', '--abbrev-commit' })
+  local results = utils.get_os_command_output({ 'git', 'log', '--pretty=oneline', '--abbrev-commit' }, opts.cwd)
 
   pickers.new(opts, {
     prompt_title = 'Git Commits',
@@ -56,7 +56,7 @@ end
 git.bcommits = function(opts)
   local results = utils.get_os_command_output({
     'git', 'log', '--pretty=oneline', '--abbrev-commit', vim.fn.expand('%')
-  })
+  }, opts.cwd)
 
   pickers.new(opts, {
     prompt_title = 'Git BCommits',
@@ -74,9 +74,7 @@ git.bcommits = function(opts)
 end
 
 git.branches = function(opts)
-  -- Does this command in lua (hopefully):
-  -- 'git branch --all | grep -v HEAD | sed "s/.* //;s#remotes/[^/]*/##" | sort -u'
-  local output = utils.get_os_command_output({ 'git', 'branch', '--all' })
+  local output = utils.get_os_command_output({ 'git', 'branch', '--all' }, opts.cwd)
 
   local tmp_results = {}
   for _, v in ipairs(output) do
@@ -97,11 +95,7 @@ git.branches = function(opts)
     finder = finders.new_table {
       results = results,
       entry_maker = function(entry)
-        return {
-          value = entry,
-          ordinal = entry,
-          display = entry,
-        }
+        return { value = entry, ordinal = entry, display = entry, }
       end
     },
     previewer = previewers.git_branch_log.new(opts),
@@ -114,7 +108,7 @@ git.branches = function(opts)
 end
 
 git.status = function(opts)
-  local output = utils.get_os_command_output{ 'git', 'status', '-s' }
+  local output = utils.get_os_command_output({ 'git', 'status', '-s' }, opts.cwd)
 
   if table.getn(output) == 0 then
     print('No changes found')
