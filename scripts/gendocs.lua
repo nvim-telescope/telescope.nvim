@@ -19,11 +19,8 @@ docs.test = function()
     "./lua/telescope/previewers/init.lua",
     "./lua/telescope/config/resolve.lua",
     "./lua/telescope/themes.lua",
+    "./lua/telescope/actions/history.lua",
   }
-
-  table.sort(input_files, function(a, b)
-    return #a < #b
-  end)
 
   local output_file = "./doc/telescope.txt"
   local output_file_handle = io.open(output_file, "w")

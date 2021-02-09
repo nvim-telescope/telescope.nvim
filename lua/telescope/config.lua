@@ -206,15 +206,53 @@ local telescope_defaults = {
     end,
   },
 
-  dynamic_preview_title = {
-    false,
-    [[
+  dynamic_preview_title = { false, [[
     Will change the title of the preview window dynamically, where it
     is supported. Means the preview window will for example show the
     full filename.
 
-    Default: false
-    ]],
+    Default: false]],
+  },
+
+  history_handler = {
+    function(...) return require('telescope.actions.history').get_simple_history(...) end,
+    [[
+    This is a developer setting and is meant for an extension.
+
+    history_handler is a function that defines the behavior of the history.
+    Telescope core ships a rather simple implementation of it, with a unified
+    history across all pickers. Its not sensitive for cwd or picker.
+
+    We also offer an extension (nvim-telescope/telescope-smart-history.nvim)
+    which uses a sqlite3 database to store prompt into with the corresponding
+    metadata, like picker and cwd. This means cycling to previous entry will
+    return an entry that was actually used in this cwd. This is helpful if you
+    work on multiple projects at the same time.
+
+    It can be disabled the same way, by setting history_location to nil.
+
+    Expects function
+    Default: require('telescope.actions.history').get_simple_history]]
+  },
+  history_location = { nil, [[
+    This setting will enable result history. You can scroll though your
+    previous inputs. The mappings to do so are currently not mapped.
+    You can add them like this:
+
+      mappings = {
+        i = {
+          ["<C-n>"] = actions.cycle_history_next,
+          ["<C-p>"] = actions.cycle_history_prev,
+        },
+      },
+
+    Default: nil]]
+  },
+  history_limit = { nil, [[
+    You can set a limit on how many history elements will be stored.
+    Set to nil to disable it otherwise set to a number.
+
+    Default: nil]]
   },
 
   -- Builtin configuration

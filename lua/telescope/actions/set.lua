@@ -72,6 +72,10 @@ end
 --      Valid commands include: "edit", "new", "vedit", "tabedit"
 action_set.edit = function(prompt_bufnr, command)
   local entry = action_state.get_selected_entry()
+  action_state.get_current_history():append(
+    action_state.get_current_line(),
+    action_state.get_current_picker(prompt_bufnr)
+  )
 
   if not entry then
     print("[telescope] Nothing currently selected")
