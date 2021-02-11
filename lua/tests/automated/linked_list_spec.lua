@@ -1,5 +1,7 @@
 local LinkedList = require('telescope.algos.linked_list')
 
+local eq = assert.are.same
+
 describe('LinkedList', function()
   it('can create a list', function()
     local l = LinkedList:new()
@@ -128,6 +130,66 @@ describe('LinkedList', function()
       l:prepend("zeroth")
 
       assert.are.same("first", l.tracked)
+    end)
+
+    describe(':shift()', function()
+      it('should return nil for empty list', function()
+        local l = LinkedList:new()
+
+        eq(nil, l:shift())
+      end)
+
+      it('should return the first element, and then nothing if length 1', function()
+        local l = LinkedList:new { track_at = 2 }
+        l:append('hello')
+
+        eq('hello', l:shift())
+        eq(0, l.size)
+
+        eq(nil, l:shift())
+      end)
+
+      it('should return each element', function()
+        local l = LinkedList:new { track_at = 2 }
+        l:append('hello')
+        l:append('world')
+        l:append('last')
+
+        eq('hello', l:shift())
+        eq('world', l:shift())
+
+        eq(1, l.size)
+      end)
+    end)
+
+    describe(':pop()', function()
+      it('should return nil for empty list', function()
+        local l = LinkedList:new()
+
+        eq(nil, l:pop())
+      end)
+
+      it('should return the first element, and then nothing if length 1', function()
+        local l = LinkedList:new { track_at = 2 }
+        l:append('hello')
+
+        eq('hello', l:pop())
+        eq(0, l.size)
+
+        eq(nil, l:pop())
+      end)
+
+      it('should return each element', function()
+        local l = LinkedList:new { track_at = 2 }
+        l:append('hello')
+        l:append('world')
+        l:append('last')
+
+        eq('last', l:pop())
+        eq('world', l:pop())
+
+        eq(1, l.size)
+      end)
     end)
   end)
 end)

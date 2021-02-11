@@ -83,6 +83,46 @@ function LinkedList:prepend(item)
   end
 end
 
+function LinkedList:shift()
+  if self.size == 0 then
+    return nil
+  end
+
+  local head = self.head
+
+  if head == self.tail then
+    self.tail = nil
+  end
+
+  self.head = head.next
+  if self.head then
+    self.head.prev = nil
+  end
+
+  self.size = self.size - 1
+  return head.item
+end
+
+function LinkedList:pop()
+  if self.size == 0 then
+    return nil
+  end
+
+  local tail = self.tail
+
+  if tail == self.head then
+    self.head = nil
+  end
+
+  self.tail = tail.prev
+  if self.tail then
+    self.tail.next = nil
+  end
+
+  self.size = self.size - 1
+  return tail.item
+end
+
 -- [a, b, c]
 --  b.prev = a
 --  b.next = c

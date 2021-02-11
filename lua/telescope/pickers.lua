@@ -780,7 +780,7 @@ function Picker:entry_adder(index, entry, _, insert)
     end
 
     if self.request_number ~= scheduled_request then
-      log.debug("Cancelling request number:", self.request_number, " // ", scheduled_request)
+      -- log.debug("Cancelling request number:", self.request_number, " // ", scheduled_request)
       return
     end
 
@@ -795,6 +795,9 @@ function Picker:entry_adder(index, entry, _, insert)
       end
     end
 
+    if insert then
+      log.info("Inserting...", display)
+    end
     local set_ok, msg = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + offset, false, {display})
     if set_ok and display_highlights then
       self.highlighter:hi_display(row, prefix, display_highlights)
