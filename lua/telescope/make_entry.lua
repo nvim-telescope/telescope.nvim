@@ -297,6 +297,11 @@ function make_entry.gen_from_git_commits()
 
     local sha, msg = string.match(entry, '([^ ]+) (.+)')
 
+    if not msg then
+      sha = entry
+      msg = "<empty commit message>"
+    end
+
     return {
       value = sha,
       ordinal = sha .. ' ' .. msg,
