@@ -15,6 +15,50 @@ local previewers = {}
 
 local ns_previewer = vim.api.nvim_create_namespace('telescope.previewers')
 
+local color_hash = {
+  ['p'] = 'TelescopePreviewPipe',
+  ['c'] = 'TelescopePreviewCharDev',
+  ['d'] = 'TelescopePreviewDirectory',
+  ['b'] = 'TelescopePreviewBlock',
+  ['l'] = 'TelescopePreviewLink',
+  ['s'] = 'TelescopePreviewSocket',
+  ['.'] = 'TelescopePreviewNormal',
+  ['r'] = 'TelescopePreviewRead',
+  ['w'] = 'TelescopePreviewWrite',
+  ['x'] = 'TelescopePreviewExecute',
+  ['-'] = 'TelescopePreviewHyphen',
+  ['T'] = 'TelescopePreviewSticky',
+  ['S'] = 'TelescopePreviewSticky',
+  [2]   = 'TelescopePreviewSize',
+  [3]   = 'TelescopePreviewUser',
+  [4]   = 'TelescopePreviewGroup',
+  [5]   = 'TelescopePreviewDate',
+}
+color_hash[6]   = function(line)
+  return color_hash[line:sub(1, 1)]
+end
+
+local colorize_ls = function(bufnr, data, sections)
+  local windows_add = path.separator == '\\' and 2 or 0
+  for lnum, line in ipairs(data) do
+    local section = sections[lnum]
+    for i = 1, section[1].end_index - 1 do -- Highlight permissions
+      local c = line:sub(i, i)
+      vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, color_hash[c], lnum - 1, i - 1, i)
+    end
+    for i = 2, #section do -- highlights size, (user, group), date and name
+      local hl_group = color_hash[i + (i ~= 2 and windows_add or 0)]
+      vim.api.nvim_buf_add_highlight(bufnr,
+        ns_previewer,
+        type(hl_group) == "function" and hl_group(line) or hl_group,
+        lnum - 1,
+        section[i].start_index - 1,
+        section[i].end_index - 1
+      )
+    end
+  end
+end
+
 previewers.file_maker = function(filepath, bufnr, opts)
   opts = opts or {}
   if opts.use_ft_detect == nil then opts.use_ft_detect = true end
@@ -24,9 +68,13 @@ previewers.file_maker = function(filepath, bufnr, opts)
     filepath = vim.fn.expand(filepath)
     local stat = vim.loop.fs_stat(filepath) or {}
     if stat.type == 'directory' then
-      pscan.ls_async(filepath, { hidden = true, on_exit = vim.schedule_wrap(function(data)
-        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
-        if opts.callback then opts.callback(bufnr) end
+      pscan.ls_async(filepath, {
+        hidden = true,
+        group_directories_first = true,
+        on_exit = vim.schedule_wrap(function(data, sections)
+          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
+          colorize_ls(bufnr, data, sections)
+          if opts.callback then opts.callback(bufnr) end
       end)})
     else
       path.read_file_async(filepath, vim.schedule_wrap(function(data)
@@ -438,7 +486,7 @@ previewers.git_branch_log = defaulter(function(opts)
           if current_remote <= table.getn(remotes) then
             local value = 'remotes/' .. remotes[current_remote] .. '/' .. entry.value
             current_remote = current_remote + 1
-            putils.job_maker(gen_cmd(value), bufnr, { callback = handle_results })
+            putils.job_maker(gen_cmd(value), bufnr, { cwd = opts.cwd, callback = handle_results })
           else
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "No log found for branch: " .. entry.value })
           end
