@@ -74,7 +74,10 @@ function Picker:new(opts)
 
     finder = opts.finder,
     sorter = opts.sorter or require('telescope.sorters').empty(),
-    previewer = opts.previewer,
+
+    all_previewers = opts.previewer,
+    current_previewer_index = 1,
+
     default_selection_index = opts.default_selection_index,
 
     cwd = opts.cwd,
@@ -123,6 +126,15 @@ function Picker:new(opts)
   }, self)
 
   obj.get_window_options = opts.get_window_options or p_window.get_window_options
+
+  if obj.all_previewers ~= nil and obj.all_previewers ~= false then
+    if obj.all_previewers[1] == nil then
+      obj.all_previewers = { obj.all_previewers }
+    end
+    obj.previewer = obj.all_previewers[1]
+  else
+    obj.previewer = false
+  end
 
   -- TODO: It's annoying that this is create and everything else is "new"
   obj.scroller = p_scroller.create(
@@ -453,7 +465,9 @@ function Picker:find()
 
   self.prompt_bufnr = prompt_bufnr
 
-  local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
+  local preview_border = preview_opts and preview_opts.border
+  self.preview_border = preview_border
+  local preview_border_win = (preview_border and preview_border.win_id) and preview_border.win_id
 
   state.set_status(prompt_bufnr, setmetatable({
     prompt_bufnr = prompt_bufnr,
@@ -816,7 +830,29 @@ function Picker:refresh_previewer()
       self._selection_entry,
       status
     )
+    if self.preview_border then
+      if config.values.dynamic_preview_title == true then
+        self.preview_border:change_title(self.previewer:dynamic_title(self._selection_entry))
+      else
+        self.preview_border:change_title(self.previewer:title())
+      end
+    end
   end
+end
+
+function Picker:cycle_previewers(next)
+  local size = #self.all_previewers
+  if size == 1 then return end
+
+  self.current_previewer_index = self.current_previewer_index + next
+  if self.current_previewer_index > size then
+    self.current_previewer_index = 1
+  elseif self.current_previewer_index < 1 then
+    self.current_previewer_index = size
+  end
+
+  self.previewer = self.all_previewers[self.current_previewer_index]
+  self:refresh_previewer()
 end
 
 function Picker:entry_adder(index, entry, _, insert)

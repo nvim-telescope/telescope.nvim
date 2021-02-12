@@ -7,6 +7,7 @@ local previewers = require('telescope.previewers')
 local utils = require('telescope.utils')
 local entry_display = require('telescope.pickers.entry_display')
 local strings = require('plenary.strings')
+local Path = require('plenary.path')
 
 local conf = require('telescope.config').values
 
@@ -49,7 +50,12 @@ git.commits = function(opts)
       results = results,
       entry_maker = opts.entry_maker or make_entry.gen_from_git_commits(opts),
     },
-    previewer = previewers.git_commit_diff.new(opts),
+    previewer = {
+      previewers.git_commit_diff_to_parent.new(opts),
+      previewers.git_commit_diff_to_head.new(opts),
+      previewers.git_commit_diff_as_was.new(opts),
+      previewers.git_commit_message.new(opts),
+    },
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
       actions.select_default:replace(actions.git_checkout)
@@ -77,9 +83,17 @@ git.stash = function(opts)
     end
   }):find()
 end
+
+local get_current_buf_line = function(winnr)
+  local lnum = vim.api.nvim_win_get_cursor(winnr)[1]
+  return vim.trim(vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(winnr), lnum - 1, lnum, false)[1])
+end
+
 git.bcommits = function(opts)
+  opts.current_line = (not opts.current_file) and get_current_buf_line(0) or nil
+  opts.current_file = opts.current_file or vim.fn.expand('%')
   local results = utils.get_os_command_output({
-    'git', 'log', '--pretty=oneline', '--abbrev-commit', vim.fn.expand('%')
+    'git', 'log', '--pretty=oneline', '--abbrev-commit', opts.current_file
   }, opts.cwd)
 
   pickers.new(opts, {
@@ -88,10 +102,62 @@ git.bcommits = function(opts)
       results = results,
       entry_maker = opts.entry_maker or make_entry.gen_from_git_commits(opts),
     },
-    previewer = previewers.git_commit_diff.new(opts),
+    previewer = {
+      previewers.git_commit_diff_to_parent.new(opts),
+      previewers.git_commit_diff_to_head.new(opts),
+      previewers.git_commit_diff_as_was.new(opts),
+      previewers.git_commit_message.new(opts),
+    },
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
-      actions.select_default:replace(actions.git_checkout)
+      actions.select_default:replace(actions.git_checkout_current_buffer)
+      local transfrom_file = function()
+        return opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd) or ''
+      end
+
+      local get_buffer_of_orig = function(selection)
+        local value = selection.value .. ':' .. transfrom_file()
+        local content = utils.get_os_command_output({ 'git', '--no-pager', 'show', value }, opts.cwd)
+
+        local bufnr = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
+        vim.api.nvim_buf_set_name(bufnr, 'Original')
+        return bufnr
+      end
+
+      local vimdiff = function(selection, command)
+        local ft = vim.bo.filetype
+        vim.cmd("diffthis")
+
+        local bufnr = get_buffer_of_orig(selection)
+        vim.cmd(string.format("%s %s", command, bufnr))
+        vim.bo.filetype = ft
+        vim.cmd("diffthis")
+
+        vim.cmd(string.format(
+          "autocmd WinClosed <buffer=%s> ++nested ++once :lua vim.api.nvim_buf_delete(%s, { force = true })",
+          bufnr,
+          bufnr))
+      end
+
+      actions.select_vertical:replace(function(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        vimdiff(selection, 'leftabove vert sbuffer')
+      end)
+
+      actions.select_horizontal:replace(function(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        vimdiff(selection, 'belowright sbuffer')
+      end)
+
+      actions.select_tab:replace(function(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        vim.cmd('tabedit ' .. transfrom_file())
+        vimdiff(selection, 'leftabove vert sbuffer')
+      end)
       return true
     end
   }):find()

@@ -248,8 +248,7 @@ function make_entry.gen_from_git_stash()
   end
 end
 
-
-function make_entry.gen_from_git_commits()
+function make_entry.gen_from_git_commits(opts)
   local displayer = entry_display.create {
     separator = " ",
     items = {
@@ -281,7 +280,8 @@ function make_entry.gen_from_git_commits()
       value = sha,
       ordinal = sha .. ' ' .. msg,
       msg = msg,
-      display = make_display
+      display = make_display,
+      current_file = opts.current_file
     }
   end
 end

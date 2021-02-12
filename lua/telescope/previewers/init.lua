@@ -53,6 +53,11 @@ local previewers = {}
 ---   - `teardown` function(self): Will be called on cleanup.
 ---   - `preview_fn` function(self, entry, status): Will be called each time
 ---                                                 a new entry was selected.
+---   - `title` function(self): Will return the static title of the previewer.
+---   - `dynamic_title` function(self, entry): Will return the dynamic title of
+---                                            the previewer. Will only be called
+---                                            when config value dynamic_preview_title
+---                                            is true.
 ---   - `send_input` function(self, input): This is meant for
 ---                                         `termopen_previewer` and it can be
 ---                                         used to send input to the terminal
@@ -77,6 +82,11 @@ end
 ---     return { 'bat', entry.path }
 ---   end
 --- </pre>
+---
+--- Additionally you can define:
+--- - `title` a static title for example "File Preview"
+--- - `dyn_title(self, entry)` a dynamic title function which gets called
+--- when config value `dynamic_preview_title = true`
 ---
 --- It's an easy way to get your first previewer going and it integrates well
 --- with `bat` and `less`. Providing out of the box scrolling if the command
@@ -166,6 +176,9 @@ previewers.qflist = term_previewer.qflist
 ---     useful if you have one file but multiple entries. This happens for grep
 ---     and lsp builtins. So to make the cache work only load content if
 ---     `self.state.bufname ~= entry.your_unique_key`
+---   - `title` a static title for example "File Preview"
+---   - `dyn_title(self, entry)` a dynamic title function which gets called
+---     when config value `dynamic_preview_title = true`
 ---
 --- `self.state` table:
 ---   - `self.state.bufnr`
@@ -259,11 +272,35 @@ previewers.vim_buffer_vimgrep = buffer_previewer.vimgrep
 --- case it's configured that way.
 previewers.vim_buffer_qflist = buffer_previewer.qflist
 
+--- A previewer that shows a log of a branch as graph
+previewers.git_branch_log            = buffer_previewer.git_branch_log
 
-previewers.git_branch_log = buffer_previewer.git_branch_log
-previewers.git_commit_diff = buffer_previewer.git_commit_diff
-previewers.git_file_diff = buffer_previewer.git_file_diff
-previewers.git_stash_diff = buffer_previewer.git_stash_diff
+--- A previewer that shows a diff of a stash
+previewers.git_stash_diff            = buffer_previewer.git_stash_diff
+
+--- A previewer that shows a diff of a commit to a parent commit.<br>
+--- The run command is `git --no-pager diff SHA^! -- $CURRENT_FILE`
+---
+--- The current file part is optional. So is only uses it with bcommits.
+previewers.git_commit_diff_to_parent = buffer_previewer.git_commit_diff_to_parent
+
+--- A previewer that shows a diff of a commit to head.<br>
+--- The run command is `git --no-pager diff --cached $SHA -- $CURRENT_FILE`
+---
+--- The current file part is optional. So is only uses it with bcommits.
+previewers.git_commit_diff_to_head   = buffer_previewer.git_commit_diff_to_head
+
+--- A previewer that shows a diff of a commit as it was.<br>
+--- The run command is `git --no-pager show $SHA:$CURRENT_FILE` or `git --no-pager show $SHA`
+previewers.git_commit_diff_as_was    = buffer_previewer.git_commit_diff_as_was
+
+--- A previewer that shows the commit message of a diff.<br>
+--- The run command is `git --no-pager log -n 1 $SHA`
+previewers.git_commit_message        = buffer_previewer.git_commit_message
+
+--- A previewer that shows the current diff of a file. Used in git_status.<br>
+--- The run command is `git --no-pager diff $FILE`
+previewers.git_file_diff             = buffer_previewer.git_file_diff
 
 
 previewers.ctags = buffer_previewer.ctags

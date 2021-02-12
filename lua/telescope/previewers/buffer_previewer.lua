@@ -59,6 +59,25 @@ local colorize_ls = function(bufnr, data, sections)
   end
 end
 
+local search_cb_jump = function(self, bufnr, query)
+  if not query then return end
+  vim.api.nvim_buf_call(bufnr, function()
+    pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
+    vim.cmd "norm! gg"
+    vim.fn.search(query, "W")
+    vim.cmd "norm! zz"
+
+    self.state.hl_id = vim.fn.matchadd('TelescopePreviewMatch', query)
+  end)
+end
+
+local search_teardown = function(self)
+  if self.state and self.state.hl_id then
+    pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+    self.state.hl_id = nil
+  end
+end
+
 previewers.file_maker = function(filepath, bufnr, opts)
   opts = opts or {}
   if opts.use_ft_detect == nil then opts.use_ft_detect = true end
@@ -107,6 +126,8 @@ previewers.new_buffer_previewer = function(opts)
 
   local opt_setup = opts.setup
   local opt_teardown = opts.teardown
+  local opt_title = opts.title
+  local opt_dyn_title = opts.dyn_title
 
   local old_bufs = {}
   local bufname_table = {}
@@ -138,6 +159,24 @@ previewers.new_buffer_previewer = function(opts)
         bufname_table[value] = get_bufnr(self)
       end
     end
+  end
+
+  function opts.title(self)
+    if opt_title then
+      if type(opt_title) == 'function' then
+        return opt_title(self)
+      else
+        return opt_title
+      end
+    end
+    return "Preview"
+  end
+
+  function opts.dyn_title(self, entry)
+    if opt_dyn_title then
+      return opt_dyn_title(self, entry)
+    end
+    return "Preview"
   end
 
   function opts.setup(self)
@@ -228,8 +267,15 @@ previewers.new_buffer_previewer = function(opts)
   return Previewer:new(opts)
 end
 
-previewers.cat = defaulter(function(_)
+previewers.cat = defaulter(function(opts)
+  opts = opts or {}
+  local cwd = opts.cwd or vim.loop.cwd()
   return previewers.new_buffer_previewer {
+    title = "File Preview",
+    dyn_title = function(_, entry)
+      return path.normalize(from_entry.path(entry, true), cwd)
+    end,
+
     get_buffer_by_name = function(_, entry)
       return from_entry.path(entry, true)
     end,
@@ -244,7 +290,10 @@ previewers.cat = defaulter(function(_)
   }
 end, {})
 
-previewers.vimgrep = defaulter(function(_)
+previewers.vimgrep = defaulter(function(opts)
+  opts = opts or {}
+  local cwd = opts.cwd or vim.loop.cwd()
+
   local jump_to_line = function(self, bufnr, lnum)
     if lnum and lnum > 0 then
       pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewLine", lnum - 1, 0, -1)
@@ -256,10 +305,13 @@ previewers.vimgrep = defaulter(function(_)
   end
 
   return previewers.new_buffer_previewer {
+    title = "Grep Preview",
+    dyn_title = function(_, entry)
+      return path.normalize(from_entry.path(entry, true), cwd)
+    end,
+
     setup = function()
-      return {
-        last_set_bufnr = nil
-      }
+      return { last_set_bufnr = nil }
     end,
 
     teardown = function(self)
@@ -326,6 +378,7 @@ previewers.ctags = defaulter(function(_)
   end
 
   return previewers.new_buffer_previewer {
+    title = "Tags Preview",
     teardown = function(self)
       if self.state and self.state.hl_id then
         pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
@@ -354,16 +407,8 @@ end, {})
 
 previewers.builtin = defaulter(function(_)
   return previewers.new_buffer_previewer {
-    setup = function()
-      return {}
-    end,
-
-    teardown = function(self)
-      if self.state and self.state.hl_id then
-        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
-        self.state.hl_id = nil
-      end
-    end,
+    title = "Grep Preview",
+    teardown = search_teardown,
 
     get_buffer_by_name = function(_, entry)
       return entry.filename
@@ -381,14 +426,7 @@ previewers.builtin = defaulter(function(_)
       conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
         bufname = self.state.bufname,
         callback = function(bufnr)
-          vim.api.nvim_buf_call(bufnr, function()
-            pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
-            vim.cmd "norm! gg"
-            vim.fn.search(text, "W")
-            vim.cmd "norm! zz"
-
-            self.state.hl_id = vim.fn.matchadd('TelescopePreviewMatch', text)
-          end)
+          search_cb_jump(self, bufnr, text)
         end
       })
     end
@@ -397,16 +435,8 @@ end, {})
 
 previewers.help = defaulter(function(_)
   return previewers.new_buffer_previewer {
-    setup = function()
-      return {}
-    end,
-
-    teardown = function(self)
-      if self.state and self.state.hl_id then
-        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
-        self.state.hl_id = nil
-      end
-    end,
+    title = "Help Preview",
+    teardown = search_teardown,
 
     get_buffer_by_name = function(_, entry)
       return entry.filename
@@ -420,16 +450,8 @@ previewers.help = defaulter(function(_)
       conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
         bufname = self.state.bufname,
         callback = function(bufnr)
-          vim.api.nvim_buf_call(bufnr, function()
-            vim.cmd(':ownsyntax help')
-
-            pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
-            vim.cmd "norm! gg"
-            vim.fn.search(query, "W")
-            vim.cmd "norm! zz"
-
-            self.state.hl_id = vim.fn.matchadd('TelescopePreviewMatch', query)
-          end)
+          putils.regex_highlighter(bufnr, 'help')
+          search_cb_jump(self, bufnr, query)
         end
       })
     end
@@ -441,6 +463,7 @@ previewers.man = defaulter(function(opts)
     return vim.fn.executable('col') == 1 and 'col -bx' or ''
   end)
   return previewers.new_buffer_previewer {
+    title = "Man Preview",
     get_buffer_by_name = function(_, entry)
       return entry.value
     end,
@@ -483,6 +506,7 @@ previewers.git_branch_log = defaulter(function(opts)
   end
 
   return previewers.new_buffer_previewer {
+    title = "Git Branch Preview",
     get_buffer_by_name = function(_, entry)
       return entry.value
     end,
@@ -506,6 +530,7 @@ end, {})
 
 previewers.git_stash_diff = defaulter(function(opts)
   return previewers.new_buffer_previewer {
+    title = "Git Stash Preview",
     get_buffer_by_name = function(_, entry)
       return entry.value
     end,
@@ -521,25 +546,128 @@ previewers.git_stash_diff = defaulter(function(opts)
   }
 end, {})
 
-previewers.git_commit_diff = defaulter(function(opts)
+previewers.git_commit_diff_to_parent = defaulter(function(opts)
   return previewers.new_buffer_previewer {
+    title = "Git Diff to Parent Preview",
+    teardown = search_teardown,
     get_buffer_by_name = function(_, entry)
       return entry.value
     end,
 
     define_preview = function(self, entry, status)
-      putils.job_maker({ 'git', '--no-pager', 'diff', entry.value .. '^!' }, self.state.bufnr, {
+      local cmd = { 'git', '--no-pager', 'diff', entry.value .. '^!' }
+      if opts.current_file then
+        table.insert(cmd, '--')
+        table.insert(cmd, opts.current_file)
+      end
+
+      putils.job_maker(cmd, self.state.bufnr, {
         value = entry.value,
         bufname = self.state.bufname,
-        cwd = opts.cwd
+        cwd = opts.cwd,
+        callback = function(bufnr)
+          search_cb_jump(self, bufnr, opts.current_line)
+        end
       })
       putils.regex_highlighter(self.state.bufnr, 'diff')
     end
   }
 end, {})
 
+previewers.git_commit_diff_to_head = defaulter(function(opts)
+  return previewers.new_buffer_previewer {
+    title = "Git Diff to Head Preview",
+    teardown = search_teardown,
+
+    get_buffer_by_name = function(_, entry)
+      return entry.value
+    end,
+
+    define_preview = function(self, entry, status)
+      local cmd = { 'git', '--no-pager', 'diff', '--cached', entry.value }
+      if opts.current_file then
+        table.insert(cmd, '--')
+        table.insert(cmd, opts.current_file)
+      end
+
+      putils.job_maker(cmd, self.state.bufnr, {
+        value = entry.value,
+        bufname = self.state.bufname,
+        cwd = opts.cwd,
+        callback = function(bufnr)
+          search_cb_jump(self, bufnr, opts.current_line)
+        end
+      })
+      putils.regex_highlighter(self.state.bufnr, 'diff')
+    end
+  }
+end, {})
+
+previewers.git_commit_diff_as_was = defaulter(function(opts)
+  return previewers.new_buffer_previewer {
+    title = "Git Show Preview",
+    teardown = search_teardown,
+
+    get_buffer_by_name = function(_, entry)
+      return entry.value
+    end,
+
+    define_preview = function(self, entry, status)
+      local cmd = { 'git', '--no-pager', 'show' }
+      local cf = opts.current_file and path.make_relative(opts.current_file, opts.cwd)
+      local value = cf and (entry.value .. ':' .. cf) or (entry.value)
+      local ft = cf and pfiletype.detect(value) or 'diff'
+      table.insert(cmd, value)
+
+      putils.job_maker(cmd, self.state.bufnr, {
+        value = entry.value,
+        bufname = self.state.bufname,
+        cwd = opts.cwd,
+        callback = function(bufnr)
+          search_cb_jump(self, bufnr, opts.current_line)
+        end
+      })
+      putils.highlighter(self.state.bufnr, ft)
+    end
+  }
+end, {})
+
+previewers.git_commit_message = defaulter(function(opts)
+  local hl_map = {
+    'TelescopeResultsIdentifier',
+    'TelescopePreviewUser',
+    'TelescopePreviewDate'
+  }
+  return previewers.new_buffer_previewer {
+    title = "Git Message",
+    get_buffer_by_name = function(_, entry)
+      return entry.value
+    end,
+
+    define_preview = function(self, entry, status)
+      local cmd = { 'git', '--no-pager', 'log', '-n 1', entry.value }
+
+      putils.job_maker(cmd, self.state.bufnr, {
+        value = entry.value,
+        bufname = self.state.bufname,
+        cwd = opts.cwd,
+        callback = function(bufnr, content)
+          if not content then return end
+          for k, v in ipairs(hl_map) do
+            local _, s = content[k]:find('%s')
+            if s then
+              vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, v, k - 1, s, #content[k])
+            end
+          end
+        end
+      })
+    end
+  }
+end, {})
+
 previewers.git_file_diff = defaulter(function(opts)
   return previewers.new_buffer_previewer {
+    title = "Git File Diff Preview",
     get_buffer_by_name = function(_, entry)
       return entry.value
     end,
@@ -565,6 +693,7 @@ end, {})
 
 previewers.autocommands = defaulter(function(_)
   return previewers.new_buffer_previewer {
+    title = "Autocommands Preview",
     teardown = function(self)
       if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
         pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
@@ -623,6 +752,7 @@ end, {})
 
 previewers.highlights = defaulter(function(_)
   return previewers.new_buffer_previewer {
+    title = "Highlights Preview",
     teardown = function(self)
       if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
         vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_previewer, 0, -1)

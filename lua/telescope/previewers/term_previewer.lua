@@ -1,5 +1,6 @@
 local conf = require('telescope.config').values
 local utils = require('telescope.utils')
+local path = require('telescope.path')
 local putils = require('telescope.previewers.utils')
 local from_entry = require('telescope.from_entry')
 local Previewer = require('telescope.previewers.previewer')
@@ -112,6 +113,8 @@ previewers.new_termopen_previewer = function(opts)
 
   local opt_setup = opts.setup
   local opt_teardown = opts.teardown
+  local opt_title = opts.title
+  local opt_dyn_title = opts.dyn_title
 
   local old_bufs = {}
 
@@ -133,6 +136,24 @@ previewers.new_termopen_previewer = function(opts)
   local function set_bufnr(self, value)
     if get_bufnr(self) then table.insert(old_bufs, get_bufnr(self)) end
     if self.state then self.state.termopen_bufnr = value end
+  end
+
+  function opts.title(self)
+    if opt_title then
+      if type(opt_title) == 'function' then
+        return opt_title(self)
+      else
+        return opt_title
+      end
+    end
+    return "Preview"
+  end
+
+  function opts.dyn_title(self, entry)
+    if opt_dyn_title then
+      return opt_dyn_title(self, entry)
+    end
+    return "Preview"
   end
 
   function opts.setup(self)
@@ -210,9 +231,17 @@ previewers.new_termopen_previewer = function(opts)
 end
 
 previewers.cat = defaulter(function(opts)
+  opts = opts or {}
+
   local maker = get_maker(opts)
+  local cwd = opts.cwd or vim.loop.cwd()
 
   return previewers.new_termopen_previewer {
+    title = "File Preview",
+    dyn_title = function(_, entry)
+      return path.normalize(from_entry.path(entry, true), cwd)
+    end,
+
     get_command = function(entry)
       local p = from_entry.path(entry, true)
       if p == nil or p == '' then return end
@@ -223,9 +252,17 @@ previewers.cat = defaulter(function(opts)
 end, {})
 
 previewers.vimgrep = defaulter(function(opts)
+  opts = opts or {}
+
   local maker = get_maker(opts)
+  local cwd = opts.cwd or vim.loop.cwd()
 
   return previewers.new_termopen_previewer {
+    title = "Grep Preview",
+    dyn_title = function(_, entry)
+      return path.normalize(from_entry.path(entry, true), cwd)
+    end,
+
     get_command = function(entry, status)
       local win_id = status.preview_win
       local height = vim.api.nvim_win_get_height(win_id)
@@ -251,8 +288,14 @@ previewers.qflist = defaulter(function(opts)
   opts = opts or {}
 
   local maker = get_maker(opts)
+  local cwd = opts.cwd or vim.loop.cwd()
 
   return previewers.new_termopen_previewer {
+    title = "Grep Preview",
+    dyn_title = function(_, entry)
+      return path.normalize(from_entry.path(entry, true), cwd)
+    end,
+
     get_command = function(entry, status)
       local win_id = status.preview_win
       local height = vim.api.nvim_win_get_height(win_id)
