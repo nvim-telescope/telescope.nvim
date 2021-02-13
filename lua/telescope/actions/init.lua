@@ -66,6 +66,29 @@ function actions.preview_scrolling_down(prompt_bufnr)
   actions.get_current_picker(prompt_bufnr).previewer:scroll_fn(30)
 end
 
+--- Checks if the window contains a normal file buffer.
+---
+--- @param winnr number The window id
+--- @returns boolean True if the window contains a file buffer
+local function is_editing_win(winnr)
+  local bufnr = vim.api.nvim_win_get_buf(winnr)
+
+  local buftype = vim.api.nvim_buf_get_option(bufnr, "buftype")
+  return buftype == ""
+end
+
+--- Tries to find a window, that contains a file buffer.
+---
+--- @returns number The window number, -1 if no widow was found
+local function get_editing_win()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if is_editing_win(win) then
+      return win
+    end
+  end
+  return -1
+end
+
 -- TODO: It seems sometimes we get bad styling.
 function actions._goto_file_selection(prompt_bufnr, command)
   local entry = actions.get_selected_entry(prompt_bufnr)
@@ -109,6 +132,16 @@ function actions._goto_file_selection(prompt_bufnr, command)
     local entry_bufnr = entry.bufnr
 
     actions.close(prompt_bufnr)
+
+    -- Check if the current window contains a file buffer. If not try to find
+    -- one, and set it as current.
+    local current_win = a.nvim_get_current_win()
+    if not is_editing_win(current_win) then
+      local win = get_editing_win()
+      if win ~= -1 then
+        a.nvim_set_current_win(win)
+      end
+    end
 
     if entry_bufnr then
       if command == 'edit' then
