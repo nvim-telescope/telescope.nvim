@@ -324,8 +324,8 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
       end,
     })
 
-    -- Or replace for all commands: edit, new, vnew and tab
-    action_set.edit:replace(function(_, cmd)
+    -- Or replace for all commands: default, horizontal, vertical, tab
+    action_set.select:replace(function(_, type)
       print(cmd) -- Will print edit, new, vnew or tab depending on your keystroke
     end)
 

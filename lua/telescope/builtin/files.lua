@@ -257,7 +257,7 @@ files.current_buffer_fuzzy_find = function(opts)
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function()
-      action_set.edit:enhance {
+      action_set.select:enhance {
         post = function()
           local selection = action_state.get_selected_entry()
           vim.api.nvim_win_set_cursor(0, {selection.lnum, 0})
@@ -293,7 +293,7 @@ files.tags = function(opts)
     previewer = previewers.ctags.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function()
-      action_set.edit:enhance {
+      action_set.select:enhance {
         post = function()
           local selection = action_set.get_selected_entry()
 

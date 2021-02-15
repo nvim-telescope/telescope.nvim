@@ -13,14 +13,20 @@ local transform_mod = require('telescope.actions.mt').transform_mod
 
 local actions = setmetatable({}, {
   __index = function(_, k)
-    if k == '_goto_file_selection' then
-      error("_goto_file_selection is now deprecated. Instead use `action_set.edit`")
+    -- TODO(conni2461): Remove deprecated messages
+    if k:find('goto_file_selection') then
+      error("`" .. k .. "` is removed and no longer usable. " ..
+        "Use `require('telescope.actions').select_` instead. Take a look at developers.md for more Information.")
+    elseif k == '_goto_file_selection' then
+      error("`_goto_file_selection` is deprecated and no longer replaceable. " ..
+        "Use `require('telescope.actions.set').edit` instead. Take a look at developers.md for more Information.")
     end
 
     error("Key does not exist for 'telescope.actions': " .. tostring(k))
   end
 })
 
+-- TODO(conni2461): Remove deprecated messages
 local action_is_deprecated = function(name, err)
   local messager = err and error or log.info
 
@@ -111,19 +117,19 @@ end
 -- TODO: consider adding float!
 -- https://github.com/nvim-telescope/telescope.nvim/issues/365
 
-function actions.goto_file_selection_edit(prompt_bufnr)
+function actions.file_edit(prompt_bufnr)
   return action_set.edit(prompt_bufnr, "edit")
 end
 
-function actions.goto_file_selection_split(prompt_bufnr)
+function actions.file_split(prompt_bufnr)
   return action_set.edit(prompt_bufnr, "new")
 end
 
-function actions.goto_file_selection_vsplit(prompt_bufnr)
+function actions.file_vsplit(prompt_bufnr)
   return action_set.edit(prompt_bufnr, "vnew")
 end
 
-function actions.goto_file_selection_tabedit(prompt_bufnr)
+function actions.file_tab(prompt_bufnr)
   return action_set.edit(prompt_bufnr, "tabedit")
 end
 

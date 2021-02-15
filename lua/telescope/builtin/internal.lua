@@ -413,14 +413,14 @@ internal.help_tags = function(opts)
     previewer = previewers.help.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      action_set.edit:replace(function(_, cmd)
+      action_set.select:replace(function(_, cmd)
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
-        if cmd == 'edit' or cmd == 'new' then
+        if cmd == 'default' or cmd == 'horizontal' then
           vim.cmd('help ' .. selection.value)
-        elseif cmd == 'vnew' then
+        elseif cmd == 'vertical' then
           vim.cmd('vert bo help ' .. selection.value)
-        elseif cmd == 'tabedit' then
+        elseif cmd == 'tab' then
           vim.cmd('tab help ' .. selection.value)
         end
       end)
@@ -445,16 +445,16 @@ internal.man_pages = function(opts)
     previewer = previewers.man.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      action_set.edit:replace(function(_, cmd)
+      action_set.select:replace(function(_, cmd)
         local selection = action_state.get_selected_entry()
         local args = selection.section .. ' ' .. selection.value
 
         actions.close(prompt_bufnr)
-        if cmd == 'edit' or cmd == 'new' then
+        if cmd == 'default' or cmd == 'horizontal' then
           vim.cmd('Man ' .. args)
-        elseif cmd == 'vnew' then
+        elseif cmd == 'vertical' then
           vim.cmd('vert bo Man ' .. args)
-        elseif cmd == 'tabedit' then
+        elseif cmd == 'tab' then
           vim.cmd('tab Man ' .. args)
         end
       end)
@@ -793,10 +793,16 @@ internal.autocommands = function(opts)
     previewer = previewers.autocommands.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      action_set.edit:replace(function(_, vim_cmd)
+      action_set.select:replace(function(_, type)
+        local select_to_edit_map = {
+          default = "edit",
+          horizontal = "new",
+          vertical = "vnew",
+          tab = "tabedit",
+        }
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
-        vim.cmd(vim_cmd .. ' ' .. selection.value)
+        vim.cmd(select_to_edit_map[type] .. ' ' .. selection.value)
       end)
 
       return true
