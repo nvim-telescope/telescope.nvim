@@ -794,15 +794,9 @@ internal.autocommands = function(opts)
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       action_set.select:replace(function(_, type)
-        local select_to_edit_map = {
-          default = "edit",
-          horizontal = "new",
-          vertical = "vnew",
-          tab = "tabedit",
-        }
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
-        vim.cmd(select_to_edit_map[type] .. ' ' .. selection.value)
+        vim.cmd(action_state.select_key_to_edit_key(type) .. ' ' .. selection.value)
       end)
 
       return true

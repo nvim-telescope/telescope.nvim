@@ -37,14 +37,7 @@ end
 ---@param type string: The type of selection to make
 --          Valid types include: "default", "horizontal", "vertical", "tabedit"
 set.select = function(prompt_bufnr, type)
-  local select_to_edit_map = {
-    default = "edit",
-    horizontal = "new",
-    vertical = "vnew",
-    tab = "tabedit",
-  }
-
-  return set.edit(prompt_bufnr, select_to_edit_map[type])
+  return set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
 end
 
 --- Edit a file based on the current selection.

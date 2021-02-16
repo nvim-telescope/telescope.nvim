@@ -17,4 +17,14 @@ function action_state.get_current_picker(prompt_bufnr)
   return global_state.get_status(prompt_bufnr).picker
 end
 
+local select_to_edit_map = {
+  default = "edit",
+  horizontal = "new",
+  vertical = "vnew",
+  tab = "tabedit",
+}
+function action_state.select_key_to_edit_key(type)
+  return select_to_edit_map[type]
+end
+
 return action_state
