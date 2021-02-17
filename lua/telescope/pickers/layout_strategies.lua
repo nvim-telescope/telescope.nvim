@@ -213,7 +213,7 @@ end
 --]]
 layout_strategies.cursor = function(self, columns, lines)
   local initial_options = self:_get_initial_window_options()
-  --local preview = initial_options.preview
+  local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
 
@@ -221,44 +221,41 @@ layout_strategies.cursor = function(self, columns, lines)
   local height = resolve.resolve_height(self.window.results_height)(self, columns, lines)
   local width = resolve.resolve_width(self.window.width)(self, columns, lines)
 
-  local max_results = (height > lines and lines or height)
+  --local max_results = (height > lines and lines or height)
   local max_width = (width > columns and columns or width)
-
-  prompt.height = 1
-  results.height = max_results
-
-  prompt.width = max_width
-  results.width = max_width
-  --preview.width = max_width
 
   -- border size
   local bs = 1
   if is_borderless(self) then
     bs = 0
   end
+  local edge_gap = 1
+
+  prompt.height = 1
+  results.height = height
+  preview.height = height + 2
+
+  local width_left = self.previewer and math.floor(max_width/3) or max_width
+  prompt.width = width_left
+  results.width = width_left
+  preview.width = self.previewer and (2*width_left) or 0
 
   local position = vim.fn.nvim_win_get_position(0)
   local cursor_line = vim.fn.winline() + position[1]
   local cursor_col = vim.fn.wincol() + position[2]
 
-  prompt.line = cursor_line + bs
+  local max_line = (cursor_line + (bs*3) + height + prompt.height) > lines and (cursor_line - (bs*3) - height - prompt.height - 1) or cursor_line
+  prompt.line = max_line + bs
   results.line = prompt.line + (bs*2)
+  preview.line = prompt.line
 
-  --preview.line = 1
-  --preview.height = math.floor(prompt.line - (2 + bs))
-
-  --if not self.previewer or columns < self.preview_cutoff then
-    --preview.height = 0
-  --end
-
-  -- TODO: handle cases where there is no space left or no space below
-  prompt.col = cursor_col
-  results.col = prompt.col
-  --preview.col = results.col
+  local max_col = (cursor_col + max_width + bs + edge_gap) > columns and (columns - max_width - bs - edge_gap) or cursor_col
+  prompt.col = max_col
+  results.col = max_col
+  preview.col = results.col + results.width + bs + bs
 
   return {
-    --preview = self.previewer and preview.width > 0 and preview,
-    preview = false,
+    preview = self.previewer and preview.width > 0 and preview,
     results = results,
     prompt = prompt
   }
