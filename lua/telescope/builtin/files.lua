@@ -97,6 +97,7 @@ end
 files.find_files = function(opts)
   local find_command = opts.find_command
   local hidden = opts.hidden
+  local follow = opts.follow
   local search_dirs = opts.search_dirs
 
   if search_dirs then
@@ -109,6 +110,7 @@ files.find_files = function(opts)
     if 1 == vim.fn.executable("fd") then
       find_command = { 'fd', '--type', 'f' }
       if hidden then table.insert(find_command, '--hidden') end
+      if follow then table.insert(find_command, '-L') end
       if search_dirs then
         table.insert(find_command, '.')
         for _,v in pairs(search_dirs) do
@@ -118,6 +120,7 @@ files.find_files = function(opts)
     elseif 1 == vim.fn.executable("fdfind") then
       find_command = { 'fdfind', '--type', 'f' }
       if hidden then table.insert(find_command, '--hidden') end
+      if follow then table.insert(find_command, '-L') end
       if search_dirs then
         table.insert(find_command, '.')
         for _,v in pairs(search_dirs) do
@@ -127,6 +130,7 @@ files.find_files = function(opts)
     elseif 1 == vim.fn.executable("rg") then
       find_command = { 'rg', '--files' }
       if hidden then table.insert(find_command, '--hidden') end
+      if follow then table.insert(find_command, '-L') end
       if search_dirs then
         for _,v in pairs(search_dirs) do
           table.insert(find_command, v)
@@ -138,6 +142,7 @@ files.find_files = function(opts)
         table.insert(find_command, { '-not', '-path', "*/.*" })
         find_command = flatten(find_command)
       end
+      if follow then table.insert(find_command, '-L') end
       if search_dirs then
         table.remove(find_command, 2)
         for _,v in pairs(search_dirs) do

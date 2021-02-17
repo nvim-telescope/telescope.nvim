@@ -297,6 +297,11 @@ function make_entry.gen_from_git_commits()
 
     local sha, msg = string.match(entry, '([^ ]+) (.+)')
 
+    if not msg then
+      sha = entry
+      msg = "<empty commit message>"
+    end
+
     return {
       value = sha,
       ordinal = sha .. ' ' .. msg,
@@ -615,8 +620,14 @@ end
 
 function make_entry.gen_from_apropos(opts)
   local sections = {}
-  for _, section in ipairs(opts.sections) do
-    sections[section] = true
+  if #opts.sections == 1 and opts.sections[1] == 'ALL' then
+    setmetatable(sections, {
+      __index = function() return true end,
+    })
+  else
+    for _, section in ipairs(opts.sections) do
+      sections[section] = true
+    end
   end
 
   local displayer = entry_display.create {
@@ -921,12 +932,12 @@ function make_entry.gen_from_autocommands(_)
   end
 end
 
-function make_entry.gen_from_git_status(_)
+function make_entry.gen_from_git_status(opts)
   local displayer = entry_display.create {
   separator = " ",
   items = {
-      { width = 1},
-      { width = 1},
+      { width = 1 },
+      { width = 1 },
       { remaining = true },
     }
   }
@@ -941,8 +952,8 @@ function make_entry.gen_from_git_status(_)
     end
 
     return displayer {
-      { string.sub(entry.status, 1, 1), staged},
-      { string.sub(entry.status, -1), modified},
+      { string.sub(entry.status, 1, 1), staged },
+      { string.sub(entry.status, -1), modified },
       entry.value,
     }
   end
@@ -950,12 +961,14 @@ function make_entry.gen_from_git_status(_)
   return function (entry)
     if entry == '' then return nil end
     local mod, file = string.match(entry, '(..).*%s[->%s]?(.+)')
-      return {
-        value = file,
-        status = mod,
-        ordinal = entry,
-        display = make_display,
-      }
+
+    return {
+      value = file,
+      status = mod,
+      ordinal = entry,
+      display = make_display,
+      path = opts.cwd .. path.separator .. file
+    }
   end
 end
 

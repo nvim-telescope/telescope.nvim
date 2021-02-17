@@ -27,6 +27,23 @@ highlight default link TelescopePromptPrefix Identifier
 highlight default link TelescopePreviewLine Visual
 highlight default link TelescopePreviewMatch Search
 
+highlight default link TelescopePreviewPipe Constant
+highlight default link TelescopePreviewCharDev Constant
+highlight default link TelescopePreviewDirectory Directory
+highlight default link TelescopePreviewBlock Constant
+highlight default link TelescopePreviewLink Special
+highlight default link TelescopePreviewSocket Statement
+highlight default link TelescopePreviewNormal Normal
+highlight default link TelescopePreviewRead Constant
+highlight default link TelescopePreviewWrite Statement
+highlight default link TelescopePreviewExecute String
+highlight default link TelescopePreviewHyphen NonText
+highlight default link TelescopePreviewSticky Keyword
+highlight default link TelescopePreviewSize String
+highlight default link TelescopePreviewUser Constant
+highlight default link TelescopePreviewGroup Constant
+highlight default link TelescopePreviewDate Directory
+
 " Used for Picker specific Results highlighting
 highlight default link TelescopeResultsClass Function
 highlight default link TelescopeResultsConstant Constant

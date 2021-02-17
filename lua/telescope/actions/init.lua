@@ -5,6 +5,7 @@ local a = vim.api
 local log = require('telescope.log')
 local path = require('telescope.path')
 local state = require('telescope.state')
+local utils = require('telescope.utils')
 
 local transform_mod = require('telescope.actions.mt').transform_mod
 
@@ -262,22 +263,23 @@ actions.insert_value = function(prompt_bufnr)
 end
 
 actions.git_checkout = function(prompt_bufnr)
-  local selection = actions.get_selected_entry(prompt_bufnr)
+  local cwd = actions.get_current_picker(prompt_bufnr).cwd
+  local selection = actions.get_selected_entry()
   actions.close(prompt_bufnr)
-  local val = selection.value
-  os.execute('git checkout ' .. val)
+  utils.get_os_command_output({ 'git', 'checkout', selection.value }, cwd)
 end
 
 actions.git_staging_toggle = function(prompt_bufnr)
-  local selection = actions.get_selected_entry(prompt_bufnr)
+  local cwd = actions.get_current_picker(prompt_bufnr).cwd
+  local selection = actions.get_selected_entry()
 
   -- If parts of the file are staged and unstaged at the same time, stage
   -- changes. Else toggle between staged and unstaged if the file is tracked,
   -- and between added and untracked if the file is untracked.
   if selection.status:sub(2) == ' ' then
-    os.execute('git restore --staged ' .. selection.value)
+    utils.get_os_command_output({ 'git', 'restore', '--staged', selection.value }, cwd)
   else
-    os.execute('git add ' .. selection.value)
+    utils.get_os_command_output({ 'git', 'add', selection.value }, cwd)
   end
   do_close(prompt_bufnr, true)
   require('telescope.builtin').git_status()
