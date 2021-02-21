@@ -537,14 +537,24 @@ Telescope provides the capabilties to create & register extensions, which improv
 Some extensions provide integration with external tools, outside of the scope of `builtins`. Others provide performance
 enhancements by using compiled C and interfacing directly with Lua.
 
-### Community Extensions
+### Accessing pickers from extensions
 
-Extensions can be refenced by doing the following:
+Pickers from extensions are added to the `:Telescope` command under their respective name.
+For example:
+
+```viml
+" Run the `configurations` picker from nvim-dap
+:Telescope dap configurations
+```
+
+They can also be called directly from lua:
 
 ```lua
--- Run the `configurations` picker from nvim-dap (not yet implemented)
+-- Run the `configurations` picker from nvim-dap
 require('telescope').extensions.dap.configurations()
 ```
+
+### Pre-loading
 
 To pre-load an extension (so that it will override default configurations), you can do:
 
@@ -552,6 +562,8 @@ To pre-load an extension (so that it will override default configurations), you 
 -- This will load fzy_native and have it override the default file sorter
 require('telescope').load_extension('fzy_native')
 ```
+
+### Community Extensions
 
 For a list of community extensions, please consult the wiki: [Extensions](https://github.com/nvim-telescope/telescope.nvim/wiki/Extensions)
 
