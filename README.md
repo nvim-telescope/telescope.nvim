@@ -538,15 +538,6 @@ Some extensions provide integration with external tools, outside of the scope of
 enhancements by using compiled C and interfacing directly with Lua.
 
 ### Community Extensions
-- [telescope-fzy-native.nvim](https://github.com/nvim-telescope/telescope-fzy-native.nvim) - Native FZY sorter that uses compiled C to do the matching
-- [telescope-dap.nvim](https://github.com/nvim-telescope/telescope-dap.nvim) - [`nvim-dap`](https://github.com/mfussenegger/nvim-dap) integration
-- [telescope-packer.nvim](https://github.com/nvim-telescope/telescope-packer.nvim) - A Telescope extension that provides extra functionality for Packer.nvim
-- [telescope-github.nvim](https://github.com/nvim-telescope/telescope-github.nvim) - Integration with github cli
-- [telescope-vimspector.nvim](https://github.com/nvim-telescope/telescope-vimspector.nvim) - Integration for [vimspector](https://github.com/puremourning/vimspector)
-- [telescope-fzf-writer.nvim](https://github.com/nvim-telescope/telescope-fzf-writer.nvim) - Incorporating some fzf concepts with plenary jobs and telescope
-- [telescope-symbols.nvim](https://github.com/nvim-telescope/telescope-symbols.nvim) - Picking symbols and insert them at point.
-- [telescope-asynctasks.nvim](https://github.com/GustavoKatel/telescope-asynctasks.nvim) - Integration for [asynctasks](https://github.com/skywind3000/asynctasks.vim)
-- [telescope-ros.nvim](https://github.com/bi0ha2ard/telescope-ros.nvim) - Pick packages from ROS and ROS2 workspaces
 
 Extensions can be refenced by doing the following:
 
@@ -561,6 +552,8 @@ To pre-load an extension (so that it will override default configurations), you 
 -- This will load fzy_native and have it override the default file sorter
 require('telescope').load_extension('fzy_native')
 ```
+
+For a list of community extensions, please consult the wiki: [Extensions](https://github.com/nvim-telescope/telescope.nvim/wiki/Extensions)
 
 ## API
 <!-- TODO: need to provide working examples for every api -->
