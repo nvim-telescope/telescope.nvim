@@ -16,10 +16,10 @@ mappings.default_mappings = config.values.default_mappings or {
       ["<Down>"] = actions.move_selection_next,
       ["<Up>"] = actions.move_selection_previous,
 
-      ["<CR>"] = actions.goto_file_selection_edit + actions.center,
-      ["<C-x>"] = actions.goto_file_selection_split,
-      ["<C-v>"] = actions.goto_file_selection_vsplit,
-      ["<C-t>"] = actions.goto_file_selection_tabedit,
+      ["<CR>"] = actions.select_default + actions.center,
+      ["<C-x>"] = actions.select_horizontal,
+      ["<C-v>"] = actions.select_vertical,
+      ["<C-t>"] = actions.select_tab,
 
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
@@ -30,10 +30,10 @@ mappings.default_mappings = config.values.default_mappings or {
 
     n = {
       ["<esc>"] = actions.close,
-      ["<CR>"] = actions.goto_file_selection_edit + actions.center,
-      ["<C-x>"] = actions.goto_file_selection_split,
-      ["<C-v>"] = actions.goto_file_selection_vsplit,
-      ["<C-t>"] = actions.goto_file_selection_tabedit,
+      ["<CR>"] = actions.select_default + actions.center,
+      ["<C-x>"] = actions.select_horizontal,
+      ["<C-v>"] = actions.select_vertical,
+      ["<C-t>"] = actions.select_tab,
 
       -- TODO: This would be weird if we switch the ordering.
       ["j"] = actions.move_selection_next,
@@ -153,8 +153,19 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     telescope_map(prompt_bufnr, mode, key_bind, key_func, opts)
   end
 
-  if attach_mappings and not attach_mappings(prompt_bufnr, map) then
-    return
+  if attach_mappings then
+    local attach_results = attach_mappings(prompt_bufnr, map)
+
+    if attach_results == nil then
+      error(
+        "Attach mappings must always return a value. `true` means use default mappings, "
+        .. "`false` means only use attached mappings"
+      )
+    end
+
+    if not attach_results then
+      return
+    end
   end
 
   for mode, mode_map in pairs(buffer_keymap or {}) do

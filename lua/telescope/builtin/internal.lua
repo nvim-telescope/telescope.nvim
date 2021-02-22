@@ -1,4 +1,6 @@
 local actions = require('telescope.actions')
+local action_set = require('telescope.actions.set')
+local action_state = require('telescope.actions.state')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local path = require('telescope.path')
@@ -47,7 +49,7 @@ internal.builtin = function(opts)
     previewer = previewers.builtin.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
-      actions.goto_file_selection_edit:replace(actions.run_builtin)
+      actions.select_default:replace(actions.run_builtin)
       return true
     end
   }):find()
@@ -82,8 +84,8 @@ internal.planets = function(opts)
     previewer = previewers.cat.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
 
         print("Enjoy astronomy! You viewed:", selection.display)
@@ -137,7 +139,7 @@ internal.symbols = function(opts)
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
-      actions.goto_file_selection_edit:replace(actions.insert_symbol)
+      actions.select_default:replace(actions.insert_symbol)
       return true
     end
   }):find()
@@ -168,8 +170,8 @@ internal.commands = function(opts)
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         local val = selection.value
         local cmd = string.format([[:%s ]], val.name)
@@ -285,8 +287,8 @@ internal.vim_options = function(opts)
     -- previewer = previewers.help.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function()
-      actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
         local esc = ""
 
         if vim.fn.mode() == "i" then
@@ -411,14 +413,14 @@ internal.help_tags = function(opts)
     previewer = previewers.help.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions._goto_file_selection:replace(function(_, cmd)
-        local selection = actions.get_selected_entry()
+      action_set.select:replace(function(_, cmd)
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
-        if cmd == 'edit' or cmd == 'new' then
+        if cmd == 'default' or cmd == 'horizontal' then
           vim.cmd('help ' .. selection.value)
-        elseif cmd == 'vnew' then
+        elseif cmd == 'vertical' then
           vim.cmd('vert bo help ' .. selection.value)
-        elseif cmd == 'tabedit' then
+        elseif cmd == 'tab' then
           vim.cmd('tab help ' .. selection.value)
         end
       end)
@@ -443,16 +445,16 @@ internal.man_pages = function(opts)
     previewer = previewers.man.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions._goto_file_selection:replace(function(_, cmd)
-        local selection = actions.get_selected_entry()
+      action_set.select:replace(function(_, cmd)
+        local selection = action_state.get_selected_entry()
         local args = selection.section .. ' ' .. selection.value
 
         actions.close(prompt_bufnr)
-        if cmd == 'edit' or cmd == 'new' then
+        if cmd == 'default' or cmd == 'horizontal' then
           vim.cmd('Man ' .. args)
-        elseif cmd == 'vnew' then
+        elseif cmd == 'vertical' then
           vim.cmd('vert bo Man ' .. args)
-        elseif cmd == 'tabedit' then
+        elseif cmd == 'tab' then
           vim.cmd('tab Man ' .. args)
         end
       end)
@@ -487,8 +489,8 @@ internal.reloader = function(opts)
     sorter = conf.generic_sorter(opts),
 
     attach_mappings = function(prompt_bufnr)
-      actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
 
         actions.close(prompt_bufnr)
         require('plenary.reload').reload_module(selection.value)
@@ -566,8 +568,8 @@ internal.colorscheme = function(opts)
     -- TODO: better preview?
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
 
         actions.close(prompt_bufnr)
         vim.cmd("colorscheme " .. selection.value)
@@ -618,7 +620,7 @@ internal.registers = function(opts)
     -- use levenshtein as n-gram doesn't support <2 char matches
     sorter = sorters.get_levenshtein_sorter(),
     attach_mappings = function(_, map)
-      actions.goto_file_selection_edit:replace(actions.paste_register)
+      actions.select_default:replace(actions.paste_register)
       map('i', '<C-e>', actions.edit_register)
 
       return true
@@ -657,8 +659,8 @@ internal.keymaps = function(opts)
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
         vim.api.nvim_feedkeys(
           vim.api.nvim_replace_termcodes(selection.value.lhs, true, false, true),
         "t", true)
@@ -679,8 +681,8 @@ internal.filetypes = function(opts)
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         vim.cmd('setfiletype ' .. selection[1])
       end)
@@ -700,8 +702,8 @@ internal.highlights = function(opts)
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         vim.cmd('hi ' .. selection.value)
       end)
@@ -791,10 +793,10 @@ internal.autocommands = function(opts)
     previewer = previewers.autocommands.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions._goto_file_selection:replace(function(_, vim_cmd)
-        local selection = actions.get_selected_entry()
+      action_set.select:replace(function(_, type)
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
-        vim.cmd(vim_cmd .. ' ' .. selection.value)
+        vim.cmd(action_state.select_key_to_edit_key(type) .. ' ' .. selection.value)
       end)
 
       return true
@@ -815,8 +817,8 @@ internal.spell_suggest = function(opts)
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         vim.cmd('normal! ciw' .. selection[1])
         vim.cmd('stopinsert')

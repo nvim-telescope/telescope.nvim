@@ -277,12 +277,15 @@ require('telescope').setup{
         -- To disable a keymap, put [map] = false
         -- So, to not map "<C-n>", just put
         ["<c-x>"] = false,
+
         -- Otherwise, just set the mapping to the function that you want it to be.
-        ["<C-i>"] = actions.goto_file_selection_split,
+        ["<C-i>"] = actions.select_horizontal,
+
         -- Add up multiple actions
-        ["<CR>"] = actions.goto_file_selection_edit + actions.center,
+        ["<CR>"] = actions.select_default + actions.center,
+
         -- You can perform as many actions in a row as you like
-        ["<CR>"] = actions.goto_file_selection_edit + actions.center + my_cool_custom_action,
+        ["<CR>"] = actions.select_default+ actions.center + my_cool_custom_action,
       },
       n = {
         ["<esc>"] = actions.close,
@@ -298,70 +301,40 @@ its `attach_mappings` key to a function, like this
 
 ```lua
 local actions = require('telescope.actions')
+local action_set = require('telescope.actions.set')
 -- Picker specific remapping
 ------------------------------
 require('telescope.builtin').fd({ -- or new custom picker's attach_mappings field:
   attach_mappings = function(prompt_bufnr)
     -- This will replace select no mather on which key it is mapped by default
-    actions.goto_file_selection_edit:replace(function()
-      local entry = actions.get_selected_entry()
+    action_set.select:replace(function(prompt_bufnr, type)
+      local entry = action_state.get_selected_entry()
       actions.close(prompt_bufnr)
       print(vim.inspect(entry))
       -- Code here
     end)
 
     -- You can also enhance an action with pre and post action which will run before of after an action
-    actions.goto_file_selection_split:enhance ({
+    action_set.select:enhance({
       pre = function()
-      -- Will run before actions.goto_file_selection_split
+          -- Will run before actions.select_default
       end,
       post = function()
-      -- Will run after actions.goto_file_selection_split
+          -- Will run after actions.select_default
       end,
     })
 
-    -- Or replace for all commands: edit, new, vnew and tab
-    actions._goto_file_selection:replace(function(_, cmd)
+    -- Or replace for all commands: default, horizontal, vertical, tab
+    action_set.select:replace(function(_, type)
       print(cmd) -- Will print edit, new, vnew or tab depending on your keystroke
     end)
 
     return true
-    end,
+  end,
 })
 ```
-<!-- TODO: Move to wiki page made specifically for creating pickers -->
-<!-- To override a action, you have to use `attach_mappings` like this (prefered method): -->
 
-<!-- ```lua -->
-<!-- function my_custom_picker(results) -->
-<!--   pickers.new(opts, { -->
-<!--     prompt_title = 'Custom Picker', -->
-<!--     finder = finders.new_table(results), -->
-<!--     sorter = sorters.fuzzy_with_index_bias(), -->
-<!--     attach_mappings = function(prompt_bufnr) -->
-<!--       -- This will replace select no mather on which key it is mapped by default -->
-<!--       actions.goto_file_selection_edit:replace(function() -->
-<!--         -- Code here -->
-<!--       end) -->
-<!--       -- You can also enhance an action with post and post action which will run before of after an action -->
-<!--       actions.goto_file_selection_split:enhance { -->
-<!--         pre = function() -->
-<!--           -- Will run before actions.goto_file_selection_split -->
-<!--         end, -->
-<!--         post = function() -->
-<!--           -- Will run after actions.goto_file_selection_split -->
-<!--         end, -->
-<!--       } -->
-<!--       -- Or replace for all commands: edit, new, vnew and tab -->
-<!--       actions._goto_file_selection:replace(function(_, cmd) -->
-<!--         print(cmd) -- Will print edit, new, vnew or tab depending on your keystroke -->
-<!--       end) -->
-<!--       return true -->
-<!--     end, -->
-<!--   }):find() -->
-<!-- end -->
-<!-- ``` -->
-<!-- See `lua/telescope/builtin.lua` for examples on how to `attach_mappings` in the prefered way. -->
+For more info, see [./developers.md](./developers.md)
 
 ## Pickers
 
@@ -610,6 +583,12 @@ function my_custom_picker(results)
       -- Map "<CR>" in insert mode to the function, actions.set_command_line
       map('i', '<CR>', actions.set_command_line)
 
+      -- If the return value of `attach_mappings` is true, then the other
+      -- default mappings are still applies.
+      --
+      -- Return false if you don't want any other mappings applied.
+      --
+      -- A return value _must_ be returned. It is an error to not return anything.
       return true
     end,
   }):find()

@@ -87,7 +87,7 @@ function config.set_defaults(defaults)
   -- Otherwise, just set the mapping to the function that you want it to be.
   --
   --            ...,
-  --            ["<C-i>"] = actions.goto_file_selection_split
+  --            ["<C-i>"] = actions.select_default
   --            ...,
   --
   set("mappings", {})

@@ -4,6 +4,7 @@ local popup = require('popup')
 require('telescope')
 
 local actions = require('telescope.actions')
+local action_set = require('telescope.actions.set')
 local config = require('telescope.config')
 local debounce = require('telescope.debounce')
 local resolve = require('telescope.config.resolve')
@@ -20,25 +21,6 @@ local p_scroller = require('telescope.pickers.scroller')
 local EntryManager = require('telescope.entry_manager')
 
 local get_default = utils.get_default
-
--- TODO: Make this work with deep extend I think.
-local extend = function(opts, defaults)
-  local result = {}
-
-  for k, v in pairs(opts or {}) do
-    assert(type(k) == 'string', "Should be string, opts")
-    result[k] = v
-  end
-
-  for k, v in pairs(defaults or {}) do
-    if result[k] == nil then
-      assert(type(k) == 'string', "Should be string, defaults")
-      result[k] = v
-    end
-  end
-
-  return result
-end
 
 local ns_telescope_matching = a.nvim_create_namespace('telescope_matching')
 local ns_telescope_prompt = a.nvim_create_namespace('telescope_prompt')
@@ -62,7 +44,10 @@ function Picker:new(opts)
   end
 
   -- Reset actions for any replaced / enhanced actions.
+  -- TODO: Think about how we could remember to NOT have to do this...
+  --        I almost forgot once already, cause I'm not smart enough to always do it.
   actions._clear()
+  action_set._clear()
 
   local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
 
@@ -1016,7 +1001,31 @@ end
 
 
 pickers.new = function(opts, defaults)
-  return Picker:new(extend(opts, defaults))
+  local result = {}
+
+  for k, v in pairs(opts or {}) do
+    assert(type(k) == 'string', "Should be string, opts")
+    result[k] = v
+  end
+
+  for k, v in pairs(defaults or {}) do
+    if result[k] == nil then
+      assert(type(k) == 'string', "Should be string, defaults")
+      result[k] = v
+    else
+      -- For attach mappings, we want people to be able to pass in another function
+      -- and apply their mappings after we've applied our defaults.
+      if k == 'attach_mappings' then
+        local opt_value = result[k]
+        result[k] = function(...)
+          v(...)
+          return opt_value(...)
+        end
+      end
+    end
+  end
+
+  return Picker:new(result)
 end
 
 function pickers.on_close_prompt(prompt_bufnr)
