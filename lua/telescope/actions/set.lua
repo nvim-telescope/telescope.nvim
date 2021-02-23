@@ -1,7 +1,7 @@
 local a = vim.api
 
 local log = require('telescope.log')
-local utils = require('telescope.utils')
+local state = require('telescope.state')
 local path = require('telescope.path')
 
 local action_state = require('telescope.actions.state')
@@ -38,6 +38,24 @@ end
 --          Valid types include: "default", "horizontal", "vertical", "tabedit"
 set.select = function(prompt_bufnr, type)
   return set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
+end
+
+local edit_buffer
+do
+  local map = {
+    edit = 'buffer',
+    new = 'sbuffer',
+    vnew = 'vert sbuffer',
+    tabedit = 'tab sb',
+  }
+
+  edit_buffer = function(command, bufnr)
+    command = map[command]
+    if command == nil then
+      error('There was no associated buffer command')
+    end
+    vim.cmd(string.format("%s %d", command, bufnr))
+  end
 end
 
 --- Edit a file based on the current selection.
@@ -85,7 +103,7 @@ set.edit = function(prompt_bufnr, command)
   require('telescope.actions').close(prompt_bufnr)
 
   if entry_bufnr then
-    utils.edit_buffer(command, entry_bufnr)
+    edit_buffer(command, entry_bufnr)
   else
     filename = path.normalize(vim.fn.fnameescape(filename), vim.loop.cwd())
 
