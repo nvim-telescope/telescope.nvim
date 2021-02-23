@@ -30,6 +30,13 @@ local lsp_type_highlight = {
   ["Variable"] = "TelescopeResultsVariable",
 }
 
+local lsp_type_diagnostic = {
+    ["I"] = "Information",
+    ["W"] = "Warning",
+    ["E"] = "Error",
+    ["H"] = "Hint"
+}
+
 local make_entry = {}
 
 local transform_devicons
@@ -893,6 +900,71 @@ function make_entry.gen_from_ctags(opts)
     }
   end
 end
+
+function make_entry.gen_from_lsp_diagnostics(opts)
+  opts = opts or {}
+  opts.tail_path = utils.get_default(opts.tail_path, true)
+
+  local displayer = entry_display.create {
+    separator = "▏",
+    items = {
+    -- slightly increased width
+      { width = 11 },
+      { width = 48 },
+      { remaining = true }
+    }
+  }
+
+  local make_display = function(entry)
+    local filename
+    if not opts.hide_filename then
+      filename = entry.filename
+      if opts.tail_path then
+        filename = utils.path_tail(filename)
+      elseif opts.shorten_path then
+        filename = utils.path_shorten(filename)
+      end
+    end
+
+    -- add styling of entries
+    local sign = vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. lsp_type_diagnostic[entry.type])[1].text)
+    local pos = string.format("%3d:%2d", entry.lnum, entry.col)
+
+    local line_info = {
+      table.concat({sign, pos}, " "),
+      "LspDiagnostics" .. lsp_type_diagnostic[entry.type]
+    }
+
+    return displayer {
+      line_info,
+      entry.text:gsub(".* | ", ""),
+      filename,
+    }
+  end
+
+  return function(entry)
+    local filename = entry.filename or vim.api.nvim_buf_get_name(entry.bufnr)
+
+    return {
+      valid = true,
+
+      value = entry,
+      ordinal = (
+        not opts.ignore_filename and filename
+        or ''
+        ) .. ' ' .. entry.text,
+      display = make_display,
+      filename = filename,
+      type = entry.type,
+      lnum = entry.lnum,
+      col = entry.col,
+      text = entry.text,
+      start = entry.start,
+      finish = entry.finish,
+    }
+  end
+end
+
 
 function make_entry.gen_from_autocommands(_)
   local displayer = entry_display.create {

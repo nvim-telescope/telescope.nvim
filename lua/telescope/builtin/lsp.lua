@@ -64,7 +64,10 @@ lsp.document_symbols = function(opts)
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts)
     },
     previewer = conf.qflist_previewer(opts),
-    sorter = conf.generic_sorter(opts),
+    sorter = conf.prefilter_sorter{
+        tag = "symbol_type",
+        sorter = conf.generic_sorter(opts)
+    }
   }):find()
 end
 
@@ -184,6 +187,27 @@ lsp.workspace_symbols = function(opts)
   }):find()
 end
 
+lsp.diagnostics = function(opts)
+    local locations = utils.diagnostics_to_tbl(opts)
+    local filename = vim.api.nvim_buf_get_name(0)
+    for _, value in pairs(locations) do value.filename = filename end
+    if vim.tbl_isempty(locations) then return end
+
+    pickers.new(opts, {
+        prompt_title = 'LSP Diagnostics',
+        finder = finders.new_table {
+        results = locations,
+        entry_maker = opts.entry_maker or make_entry.gen_from_lsp_diagnostics(opts)
+        },
+        previewer = conf.qflist_previewer(opts),
+        sorter = conf.prefilter_sorter{
+            tag = "type",
+            sorter = conf.generic_sorter(opts)
+        }
+    }):find()
+    return locations
+end
+
 local function check_capabilities(feature)
   local clients = vim.lsp.buf_get_clients(0)
 
@@ -211,6 +235,7 @@ local feature_map = {
   ["document_symbols"]  = "document_symbol",
   ["references"]        = "find_references",
   ["workspace_symbols"] = "workspace_symbol",
+  -- ["diagnostics"] = "diagnostics",
 }
 
 local function apply_checks(mod)

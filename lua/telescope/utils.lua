@@ -80,6 +80,40 @@ utils.quickfix_items_to_entries = function(locations)
   return results
 end
 
+utils.diagnostics_to_tbl = function(opts)
+    opts = opts or {}
+
+    local bufnr = vim.api.nvim_get_current_buf()
+    local buffer_diags = vim.lsp.diagnostic.get(bufnr, opts.client_id)
+
+    local items = {}
+    local lsp_diag_type = {[1] = 'E', [2] = 'W', [3] = 'I', [4] = 'H'}
+    local insert_diag = function(diag)
+        local start = diag.range['start']
+        local finish = diag.range['end']
+        local row = start.line
+        local col = start.character
+
+        local line = (vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false) or
+                         {""})[1]
+
+        table.insert(items, {
+            bufnr = bufnr,
+            lnum = row + 1,
+            col = col + 1,
+            start = start,
+            finish = finish,
+            text = vim.trim(line .. " | " .. diag.message),
+            type = lsp_diag_type[diag.severity] or 'E'
+        })
+    end
+
+    for _, diag in ipairs(buffer_diags) do insert_diag(diag) end
+
+    table.sort(items, function(a, b) return a.lnum < b.lnum end)
+    return items
+end
+
 -- TODO: Figure out how to do this... could include in plenary :)
 -- NOTE: Don't use this yet. It will segfault sometimes.
 --
