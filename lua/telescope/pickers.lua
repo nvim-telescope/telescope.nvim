@@ -380,10 +380,9 @@ function Picker:find()
       prompt_prefix = prompt_prefix .. " "
     end
     vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
-
-    a.nvim_buf_add_highlight(prompt_bufnr, ns_telescope_prompt_prefix, 'TelescopePromptPrefix', 0, 0, #prompt_prefix)
   end
   self.prompt_prefix = prompt_prefix
+  self:_reset_prefix_color()
 
   -- Temporarily disabled: Draw the screen ASAP. This makes things feel speedier.
   -- vim.cmd [[redraw]]
@@ -443,6 +442,8 @@ function Picker:find()
       log.warn("Failed with msg: ", msg)
     end
   end
+
+  self.__on_lines = on_lines
 
   on_lines(nil, nil, nil, 0, 1)
   status_updater()
@@ -633,6 +634,59 @@ function Picker:reset_selection()
   self.multi_select = {}
 end
 
+function Picker:_reset_prefix_color(hl_group)
+  self._current_prefix_hl_group = hl_group or nil
+
+  if self.prompt_prefix ~= '' then
+    vim.api.nvim_buf_add_highlight(self.prompt_bufnr,
+      ns_telescope_prompt_prefix,
+      self._current_prefix_hl_group or 'TelescopePromptPrefix',
+      0,
+      0,
+      #self.prompt_prefix
+    )
+  end
+end
+
+-- TODO(conni2461): Maybe _ prefix these next two functions
+-- TODO(conni2461): Next two functions only work together otherwise color doesn't work
+--                  Probably a issue with prompt buffers
+function Picker:change_prompt_prefix(new_prefix, hl_group)
+  if not new_prefix then return end
+
+  if new_prefix ~= '' then
+    if not vim.endswith(new_prefix, " ") then
+      new_prefix = new_prefix .. " "
+    end
+    vim.fn.prompt_setprompt(self.prompt_bufnr, new_prefix)
+  else
+    vim.api.nvim_buf_set_text(self.prompt_bufnr, 0, 0, 0, #self.prompt_prefix, {})
+    vim.api.nvim_buf_set_option(self.prompt_bufnr, 'buftype', '')
+  end
+  self.prompt_prefix = new_prefix
+  self:_reset_prefix_color(hl_group)
+end
+
+function Picker:reset_prompt()
+  vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, -1, false, { self.prompt_prefix })
+  self:_reset_prefix_color(self._current_prefix_hl_group)
+end
+
+--- opts.new_prefix:   Either as string or { new_string, hl_group }
+--- opts.reset_prompt: bool
+function Picker:refresh(finder, opts)
+  opts = opts or {}
+  if opts.new_prefix then
+    local handle = type(opts.new_prefix) == 'table' and unpack or function(x) return x end
+    self:change_prompt_prefix(handle(opts.new_prefix))
+  end
+  if opts.reset_prompt then self:reset_prompt() end
+
+  self.finder:close()
+  self.finder = finder
+  self.__on_lines(nil, nil, nil, 0, 1)
+end
+
 function Picker:set_selection(row)
   row = self.scroller(self.max_results, self.manager:num_results(), row)
 
@@ -648,7 +702,6 @@ function Picker:set_selection(row)
   end
 
   local entry = self.manager:get_entry(self:get_index(row))
-  local status = state.get_status(self.prompt_bufnr)
   local results_bufnr = self.results_bufnr
 
   if row > a.nvim_buf_line_count(results_bufnr) then
@@ -723,16 +776,20 @@ function Picker:set_selection(row)
   self._selection_entry = entry
   self._selection_row = row
 
+  self:refresh_previewer()
+end
+
+function Picker:refresh_previewer()
+  local status = state.get_status(self.prompt_bufnr)
   if status.preview_win and self.previewer then
     self:_increment("previewed")
 
     self.previewer:preview(
-      entry,
+      self._selection_entry,
       status
     )
   end
 end
-
 
 function Picker:entry_adder(index, entry, _, insert)
   local row = self:get_row(index)
@@ -838,6 +895,10 @@ function Picker:_increment(key)
   self.stats[key] = (self.stats[key] or 0) + 1
 end
 
+function Picker:_decrement(key)
+  self.stats[key] = (self.stats[key] or 0) - 1
+end
+
 
 -- TODO: Decide how much we want to use this.
 --  Would allow for better debugging of items.
@@ -923,6 +984,10 @@ function Picker:get_result_processor(prompt, status_updater)
       if not sort_ok then
         log.warn("Sorting failed with:", prompt, entry, sort_score)
         return
+      end
+
+      if entry.ignore_count ~= nil and entry.ignore_count == true then
+        self:_decrement("processed")
       end
 
       if sort_score == -1 then

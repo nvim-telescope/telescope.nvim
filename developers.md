@@ -39,7 +39,7 @@ action_set.select:replace_if(
   end, function(_, type)
     -- type is { "default", "horizontal", "vertical", "tab" }
     local path = actions.get_selected_entry().path
-    actions.refresh(prompt_bufnr, gen_new_finder(vim.fn.expand(path:sub(1, -2))), { reset_prompt = true })
+    action_state.get_current_picker(prompt_bufnr):refresh(gen_new_finder(new_cwd), { reset_prompt = true})
   end
 )
 ```
