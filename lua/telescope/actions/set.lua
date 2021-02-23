@@ -2,7 +2,6 @@ local a = vim.api
 
 local log = require('telescope.log')
 local path = require('telescope.path')
-local state = require('telescope.state')
 
 local action_state = require('telescope.actions.state')
 
