@@ -510,7 +510,7 @@ Telescope provides the capabilties to create & register extensions, which improv
 Some extensions provide integration with external tools, outside of the scope of `builtins`. Others provide performance
 enhancements by using compiled C and interfacing directly with Lua.
 
-### Loading nextensions
+### Loading extensions
 
 To load an extension, use the `load_extension` function as shown in the example below:
 ```lua
