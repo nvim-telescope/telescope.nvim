@@ -1,6 +1,7 @@
 local a = vim.api
 
 local log = require('telescope.log')
+local utils = require('telescope.utils')
 local path = require('telescope.path')
 
 local action_state = require('telescope.actions.state')
@@ -84,15 +85,7 @@ set.edit = function(prompt_bufnr, command)
   require('telescope.actions').close(prompt_bufnr)
 
   if entry_bufnr then
-    if command == 'edit' then
-      vim.cmd(string.format(":buffer %d", entry_bufnr))
-    elseif command == 'new' then
-      vim.cmd(string.format(":sbuffer %d", entry_bufnr))
-    elseif command == 'vnew' then
-      vim.cmd(string.format(":vert sbuffer %d", entry_bufnr))
-    elseif command == 'tabedit' then
-      vim.cmd(string.format(":tab sb %d", entry_bufnr))
-    end
+    utils.edit_buffer(command, entry_bufnr)
   else
     filename = path.normalize(vim.fn.fnameescape(filename), vim.fn.getcwd())
 

@@ -284,4 +284,21 @@ function utils.strcharpart(str, nchar, charlen)
   return str:sub(nbyte + 1, nbyte + len)
 end
 
+do
+  local map = {
+    edit = 'buffer',
+    new = 'sbuffer',
+    vnew = 'vert sbuffer',
+    tabedit = 'tab sb',
+  }
+
+  function utils.edit_buffer(command, bufnr)
+    command = map[command]
+    if command == nil then
+      error('There was no associated buffer command')
+    end
+    vim.cmd(string.format("%s %d", command, bufnr))
+  end
+end
+
 return utils
