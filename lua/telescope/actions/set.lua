@@ -87,7 +87,7 @@ set.edit = function(prompt_bufnr, command)
   if entry_bufnr then
     utils.edit_buffer(command, entry_bufnr)
   else
-    filename = path.normalize(vim.fn.fnameescape(filename), vim.fn.getcwd())
+    filename = path.normalize(vim.fn.fnameescape(filename), vim.loop.cwd())
 
     -- check if we didn't pick a different buffer
     -- prevents restarting lsp server
