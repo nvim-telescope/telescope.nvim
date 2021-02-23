@@ -312,6 +312,8 @@ function Picker:find()
   assert(self.finder, "Finder is required to do picking")
 
   self.original_win_id = a.nvim_get_current_win()
+  state.set_global_key('original_win_id', self.original_win_id)
+  state.set_global_key('original_buf_id', a.nvim_get_current_buf())
 
   -- User autocmd run it before create Telescope window
   vim.cmd'do User TelescopeFindPre'
