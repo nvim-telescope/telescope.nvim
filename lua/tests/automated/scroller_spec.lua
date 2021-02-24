@@ -112,7 +112,14 @@ describe('scroller', function()
     end)
   end)
 
-  describe('should give top and bottom index', function()
+
+  describe('should give top, middle and bottom index', function()
+    it('should handle middle index', function()
+      eq(5, p_scroller.middle(nil, 11, nil))
+      eq(10, p_scroller.middle(nil, 20, nil))
+      eq(12, p_scroller.middle(nil, 25, nil))
+    end)
+
     it('should handle ascending', function()
       eq(0, p_scroller.top('ascending', 20, 1000))
       eq(19, p_scroller.bottom('ascending', 20, 1000))
