@@ -35,6 +35,7 @@ telescope.setup({opts})                                    *telescope.setup()*
 
     Valid keys for {opts.defaults}
 
+                                       *telescope.defaults.scroll_strategy*
     scroll_strategy: ~
         Determines what happens you try to scroll past view of the picker.
 
@@ -42,6 +43,7 @@ telescope.setup({opts})                                    *telescope.setup()*
           - "cycle" (default)
           - "limit"
 
+                                    *telescope.defaults.selection_strategy*
     selection_strategy: ~
         Determines how the cursor acts after each sort iteration.
 
@@ -50,6 +52,7 @@ telescope.setup({opts})                                    *telescope.setup()*
           - "follow"
           - "row"
 
+                                      *telescope.defaults.sorting_strategy*
     sorting_strategy: ~
         Determines the direction "better" results are sorted towards.
 
