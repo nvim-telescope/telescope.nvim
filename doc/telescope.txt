@@ -2,43 +2,61 @@
                                                                 *telescope.nvim*
 
 Telescope.nvim is a plugin for fuzzy finding and neovim. It helps you search,
-filter, find and pick things in Lua.  To find out more:
+filter, find and pick things in Lua.
+
+To find out more:
 https://github.com/nvim-telescope/telescope.nvim
 
 telescope.extensions()                                *telescope.extensions()*
-        Use telescope.extensions to reference any extensions within your
-        configuration. While the docs currently generate this as a function,
-        it's actually a table. Sorry.
+        
 
 
 telescope.load_extension({name})                  *telescope.load_extension()*
-        Load an extension.
+        
 
         Parameters: ~
             {name} (string)  Name of the extension
 
 
 telescope.register_extension({mod})           *telescope.register_extension()*
-        Register an extension. To be used by plugin authors.
+        
 
         Parameters: ~
             {mod} (table)  Module
 
 
 telescope.setup({opts})                                    *telescope.setup()*
-        Setup function to be run by user. Configures the defaults, extensions
-        and other aspects of telescope. Valid keys:
-        { "layout_defaults",
-        "use_less", "results_height", "selection_strategy", "sorting_strategy",
-        "results_width", "get_status_text", "buffer_previewer_maker",
-        "prompt_position", "color_devicons", "vimgrep_arguments", "border",
-        "qflist_previewer", "width", "grep_previewer", "file_previewer",
-        "generic_sorter", "borderchars", "winblend", "mappings",
-        "scroll_strategy", "set_env", "prompt_prefix", "file_sorter",
-        "preview_cutoff", "layout_strategy" }
+        Valid keys:
+        { "prompt_position", "generic_sorter",
+        "preview_cutoff", "results_height", "results_width", "prompt_prefix",
+        "initial_mode", "borderchars", "winblend", "qflist_previewer",
+        "buffer_previewer_maker", "get_status_text", "grep_previewer",
+        "file_previewer", "file_sorter", "vimgrep_arguments", "mappings",
+        "border", "sorting_strategy", "color_devicons", "selection_strategy",
+        "width", "scroll_strategy", "use_less", "layout_strategy",
+        "layout_defaults" }
 
         Parameters: ~
             {opts} (table)  Configuration opts. Keys: defaults, extensions
+
+
+
+================================================================================
+                                                             *telescope.builtin*
+
+A collection of builtin pickers for telesceope.
+
+Meant for both example and for easy startup.
+
+Any of these functions can just be called directly by doing:
+
+:lua require('telescope.builtin').$NAME()
+
+This will use the default configuration options.
+  Other configuration options are still in flux at the moment
+
+builtin.live_grep()                                      *builtin.live_grep()*
+        
 
 
 

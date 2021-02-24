@@ -1,13 +1,15 @@
-RELOAD('docgen')
-
 local docgen = require('docgen')
 
 local docs = {}
 
+--- Wowow
+---@param hello number|table: hello?
+---@eval {["hello"] = 5}
 docs.test = function()
   -- TODO: Fix the other files so that we can add them here.
   local input_files = {
-    "./lua/telescope/init.lua"
+    "./lua/telescope/init.lua",
+    "./lua/telescope/builtin/init.lua",
   }
 
   table.sort(input_files, function(a, b)
