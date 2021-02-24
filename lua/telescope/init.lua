@@ -54,9 +54,6 @@ end
 telescope.extensions = require('telescope._extensions').manager
 
 telescope.__format_setup_keys = function()
-  -- return 'Valid keys:\n' .. vim.inspect(vim.tbl_keys(require('telescope.config').values)) 
-
-
   local descriptions = require('telescope.config').descriptions
 
   local names = vim.tbl_keys(descriptions)
@@ -66,7 +63,6 @@ telescope.__format_setup_keys = function()
   for _, name in ipairs(names) do
     local desc = descriptions[name]
 
-    -- hint: make sure you're considering UNICODE?!?!?!?
     table.insert(result, "")
     table.insert(result, string.format("%s: ~", name))
     table.insert(result, string.format("    %s", desc))

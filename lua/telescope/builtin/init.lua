@@ -2,13 +2,13 @@
 
 ---@brief [[
 --- A collection of builtin pickers for telesceope.
---- 
+---
 --- Meant for both example and for easy startup.
---- 
+---
 --- Any of these functions can just be called directly by doing:
---- 
+---
 --- :lua require('telescope.builtin').$NAME()
---- 
+---
 --- This will use the default configuration options.
 ---   Other configuration options are still in flux at the moment
 ---@brief ]]
