@@ -115,9 +115,14 @@ describe('scroller', function()
 
   describe('should give top, middle and bottom index', function()
     it('should handle middle index', function()
-      eq(5, p_scroller.middle(nil, 11, nil))
-      eq(10, p_scroller.middle(nil, 20, nil))
-      eq(12, p_scroller.middle(nil, 25, nil))
+      eq(5, p_scroller.middle(nil, 11, 100))
+      eq(10, p_scroller.middle(nil, 20, 100))
+      eq(12, p_scroller.middle(nil, 25, 100))
+
+      -- when less entries shown are less than the window height
+      eq(25, p_scroller.middle(nil, 30, 10))
+      eq(50, p_scroller.middle(nil, 60, 20))
+      eq(105, p_scroller.middle(nil, 120, 30))
     end)
 
     it('should handle ascending', function()
