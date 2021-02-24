@@ -114,18 +114,16 @@ describe('scroller', function()
 
 
   describe('should give top, middle and bottom index', function()
-    it('should handle middle index', function()
-      eq(5, p_scroller.middle(nil, 11, nil))
-      eq(10, p_scroller.middle(nil, 20, nil))
-      eq(12, p_scroller.middle(nil, 25, nil))
-    end)
-
     it('should handle ascending', function()
       eq(0, p_scroller.top('ascending', 20, 1000))
       eq(19, p_scroller.bottom('ascending', 20, 1000))
 
       eq(0, p_scroller.top('ascending', 20, 10))
       eq(9, p_scroller.bottom('ascending', 20, 10))
+
+      eq(5, p_scroller.middle('ascending', 11, 100))
+      eq(10, p_scroller.middle('ascending', 20, 100))
+      eq(12, p_scroller.middle('ascending', 25, 100))
     end)
 
     it('should handle descending', function()
@@ -134,6 +132,10 @@ describe('scroller', function()
 
       eq(10, p_scroller.top('descending', 20, 10))
       eq(19, p_scroller.bottom('descending', 20, 10))
+
+      eq(25, p_scroller.middle('descending', 30, 10))
+      eq(50, p_scroller.middle('descending', 60, 20))
+      eq(105, p_scroller.middle('descending', 120, 30))
     end)
   end)
 end)

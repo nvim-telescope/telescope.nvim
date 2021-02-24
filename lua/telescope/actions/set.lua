@@ -28,6 +28,7 @@ local set = setmetatable({}, {
 set.shift_selection = function(prompt_bufnr, change)
   local count = vim.v.count
   count = count == 0 and 1 or count
+  count = a.nvim_get_mode().mode == "n" and count or 1
   action_state.get_current_picker(prompt_bufnr):move_selection(change * count)
 end
 
