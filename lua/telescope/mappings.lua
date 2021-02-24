@@ -39,6 +39,7 @@ mappings.default_mappings = config.values.default_mappings or {
       ["j"] = actions.move_selection_next,
       ["k"] = actions.move_selection_previous,
       ["H"] = actions.move_to_top,
+      ["M"] = actions.move_to_middle,
       ["L"] = actions.move_to_bottom,
 
       ["<Down>"] = actions.move_selection_next,
