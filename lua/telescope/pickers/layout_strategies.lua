@@ -76,6 +76,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
     width_padding = "How many cells to pad the width",
     height_padding = "How many cells to pad the height",
     preview_width = "(Resolvable): Determine preview width",
+    mirror = "For a horizontal layout, flip the location of the results/prompt and preview windows. For a vertical layout, flip the orientation of the results and prompt windows",
   })
 
   local initial_options = self:_get_initial_window_options()
@@ -134,7 +135,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
   end
 
   -- Default value is false, to use the normal horizontal layout
-  if not config.values.layout_mirror_horizontal then
+    if not config.values.layout_defaults.horizontal.mirror then
     results.col = width_padding
     prompt.col = width_padding
     preview.col = results.col + results.width + 2
@@ -279,9 +280,15 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
 
   if self.previewer then
-    preview.line = height_padding
-    results.line = preview.line + preview.height + 2
-    prompt.line = results.line + results.height + 2
+    if not config.values.layout_defaults.vertical.mirror then
+      preview.line = height_padding
+      results.line = preview.line + preview.height + 2
+      prompt.line = results.line + results.height + 2
+    else
+      prompt.line = height_padding
+      results.line = prompt.line + prompt.height + 2
+      preview.line = results.line + results.height + 2
+    end
   else
     results.line = height_padding
     prompt.line = results.line + results.height + 2
