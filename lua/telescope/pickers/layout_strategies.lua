@@ -135,7 +135,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
   end
 
   -- Default value is false, to use the normal horizontal layout
-    if not config.values.layout_defaults.horizontal.mirror then
+  if not config.values.layout_defaults.horizontal.mirror then
     results.col = width_padding
     prompt.col = width_padding
     preview.col = results.col + results.width + 2
