@@ -26,7 +26,9 @@ local set = setmetatable({}, {
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param change number: The amount to shift the selection by
 set.shift_selection = function(prompt_bufnr, change)
-  action_state.get_current_picker(prompt_bufnr):move_selection(change)
+  local count = vim.v.count
+  count = count == 0 and 1 or count
+  action_state.get_current_picker(prompt_bufnr):move_selection(change * count)
 end
 
 --- Select the current entry. This is the action set to overwrite common

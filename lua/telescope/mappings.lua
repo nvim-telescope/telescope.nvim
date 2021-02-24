@@ -38,6 +38,8 @@ mappings.default_mappings = config.values.default_mappings or {
       -- TODO: This would be weird if we switch the ordering.
       ["j"] = actions.move_selection_next,
       ["k"] = actions.move_selection_previous,
+      ["H"] = actions.move_to_top,
+      ["L"] = actions.move_to_bottom,
 
       ["<Down>"] = actions.move_selection_next,
       ["<Up>"] = actions.move_selection_previous,
@@ -110,7 +112,7 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
     )
   else
     local key_id = assign_function(prompt_bufnr, key_func)
-    local prefix = ""
+    local prefix
 
     local map_string
     if opts.expr then
@@ -122,10 +124,14 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
     else
       if mode == "i" and not opts.expr then
         prefix = "<cmd>"
+      elseif mode == "n" then
+        prefix = ":<C-U>"
+      else
+        prefix = ":"
       end
 
       map_string = string.format(
-        "%s:lua require('telescope.mappings').execute_keymap(%s, %s)<CR>",
+        "%slua require('telescope.mappings').execute_keymap(%s, %s)<CR>",
         prefix,
         prompt_bufnr,
         key_id

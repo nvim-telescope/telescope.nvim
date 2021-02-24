@@ -73,4 +73,18 @@ scroller.create = function(scroll_strategy, sorting_strategy)
   end
 end
 
+scroller.top = function(sorting_strategy, max_results, num_results)
+  if sorting_strategy == 'ascending' then
+    return 0
+  end
+  return (num_results > max_results) and 0 or (max_results - num_results)
+end
+
+scroller.bottom = function(sorting_strategy, max_results, num_results)
+  if sorting_strategy == 'ascending' then
+    return math.min(max_results, num_results) - 1
+  end
+  return max_results - 1
+end
+
 return scroller

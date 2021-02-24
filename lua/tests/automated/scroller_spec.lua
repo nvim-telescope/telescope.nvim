@@ -111,4 +111,22 @@ describe('scroller', function()
       eq(0, scroller(23, 112, 23))
     end)
   end)
+
+  describe('should give top and bottom index', function()
+    it('should handle ascending', function()
+      eq(0, p_scroller.top('ascending', 20, 1000))
+      eq(19, p_scroller.bottom('ascending', 20, 1000))
+
+      eq(0, p_scroller.top('ascending', 20, 10))
+      eq(9, p_scroller.bottom('ascending', 20, 10))
+    end)
+
+    it('should handle descending', function()
+      eq(0, p_scroller.top('descending', 20, 1000))
+      eq(19, p_scroller.bottom('descending', 20, 1000))
+
+      eq(10, p_scroller.top('descending', 20, 10))
+      eq(19, p_scroller.bottom('descending', 20, 10))
+    end)
+  end)
 end)
