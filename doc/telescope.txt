@@ -32,23 +32,6 @@ telescope.setup({opts})                                    *telescope.setup()*
         Setup function to be run by user. Configures the defaults, extensions
 
         and other aspects of telescope.
-        Valid Setup Keys:
-
-
-selection_strategy:
-    nevermind, read the source
-        code.
-
-
-sorting_strategy:
-    Sorting strategy determines the direction
-        "better" results are sorted towards.
-
-      Available options are:
-     
-        - "descending"
-      - "ascending"
-
 
         Parameters: ~
             {opts} (table)  Configuration opts. Keys: defaults, extensions
