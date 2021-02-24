@@ -81,7 +81,7 @@ end
 function actions.move_to_middle(prompt_bufnr)
   local current_picker = actions.get_current_picker(prompt_bufnr)
   current_picker:set_selection(p_scroller.middle(
-    nil,
+    current_picker.sorting_strategy,
     current_picker.max_results,
     current_picker.manager:num_results()
   ))
