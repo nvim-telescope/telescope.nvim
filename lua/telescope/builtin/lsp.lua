@@ -1,4 +1,5 @@
 local actions = require('telescope.actions')
+local action_state = require('telescope.actions.state')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
@@ -116,8 +117,8 @@ lsp.code_actions = function(opts)
       end
     },
     attach_mappings = function(prompt_bufnr)
-      actions.goto_file_selection_edit:replace(function()
-        local selection = actions.get_selected_entry()
+      actions.select_default:replace(function()
+        local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         local val = selection.value
 

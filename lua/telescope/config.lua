@@ -54,11 +54,11 @@ function config.set_defaults(defaults)
   set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
 
   set("get_status_text", function(self)
-    return string.format(
-      "%s / %s",
-      (self.stats.processed or 0) - (self.stats.filtered or 0),
-      self.stats.processed or 0
-    )
+    local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
+    local yy = self.stats.processed or 0
+    if xx == 0 and yy == 0 then return "" end
+
+    return string.format("%s / %s", xx, yy)
   end)
 
   -- Builtin configuration
@@ -87,7 +87,7 @@ function config.set_defaults(defaults)
   -- Otherwise, just set the mapping to the function that you want it to be.
   --
   --            ...,
-  --            ["<C-i>"] = actions.goto_file_selection_split
+  --            ["<C-i>"] = actions.select_default
   --            ...,
   --
   set("mappings", {})
@@ -98,9 +98,9 @@ function config.set_defaults(defaults)
 
   set("file_ignore_patterns", nil)
 
-  set("file_previewer", function(...) return require('telescope.previewers').cat.new(...) end)
-  set("grep_previewer", function(...) return require('telescope.previewers').vimgrep.new(...) end)
-  set("qflist_previewer", function(...) return require('telescope.previewers').qflist.new(...) end)
+  set("file_previewer", function(...) return require('telescope.previewers').vim_buffer_cat.new(...) end)
+  set("grep_previewer", function(...) return require('telescope.previewers').vim_buffer_vimgrep.new(...) end)
+  set("qflist_previewer", function(...) return require('telescope.previewers').vim_buffer_qflist.new(...) end)
   set("buffer_previewer_maker", function(...) return require('telescope.previewers').buffer_previewer_maker(...) end)
 end
 

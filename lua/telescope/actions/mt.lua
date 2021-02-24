@@ -1,23 +1,41 @@
 local action_mt = {}
 
+--- Checks all replacement combinations to determine which function to run.
+--- If no replacement can be found, then it will run the original function
+local run_replace_or_original = function(replacements, original_func, ...)
+  for _, replacement_map in ipairs(replacements or {}) do
+    for condition, replacement in pairs(replacement_map) do
+      if condition == true or condition(...) then
+        return replacement(...)
+      end
+    end
+  end
+
+  return original_func(...)
+end
+
 action_mt.create = function(mod)
   local mt = {
     __call = function(t, ...)
       local values = {}
-      for _, v in ipairs(t) do
-        local func = t._replacements[v] or mod[v]
-
-        if t._pre[v] then
-          t._pre[v](...)
+      for _, action_name in ipairs(t) do
+        if t._pre[action_name] then
+          t._pre[action_name](...)
         end
 
-        local result = {func(...)}
+        local result = {
+          run_replace_or_original(
+            t._replacements[action_name],
+            mod[action_name],
+            ...
+          )
+        }
         for _, res in ipairs(result) do
           table.insert(values, res)
         end
 
-        if t._post[v] then
-          t._post[v](...)
+        if t._post[action_name] then
+          t._post[action_name](...)
         end
       end
 
@@ -54,8 +72,33 @@ action_mt.create = function(mod)
   function mt:replace(v)
     assert(#self == 1, "Cannot replace an already combined action")
 
+    return self:replace_map { [true] = v }
+  end
+
+  function mt:replace_if(condition, replacement)
+    assert(#self == 1, "Cannot replace an already combined action")
+
+    return self:replace_map { [condition] = replacement }
+  end
+
+  --- Replace table with
+  -- Example:
+  --
+  -- actions.select:replace_map {
+  --   [function() return filetype == 'lua' end] = actions.file_split,
+  --   [function() return filetype == 'other' end] = actions.file_split_edit,
+  -- }
+  function mt:replace_map(tbl)
+    assert(#self == 1, "Cannot replace an already combined action")
+
     local action_name = self[1]
-    mt._replacements[action_name] = v
+
+    if not mt._replacements[action_name] then
+      mt._replacements[action_name] = {}
+    end
+
+    table.insert(mt._replacements[action_name], 1, tbl)
+    return self
   end
 
   function mt:enhance(opts)
@@ -69,6 +112,8 @@ action_mt.create = function(mod)
     if opts.post then
       mt._post[action_name] = opts.post
     end
+
+    return self
   end
 
   return mt
@@ -81,7 +126,9 @@ end
 action_mt.transform_mod = function(mod)
   local mt = action_mt.create(mod)
 
-  local redirect = {}
+  -- Pass the metatable of the module if applicable.
+  --    This allows for custom errors, lookups, etc.
+  local redirect = setmetatable({}, getmetatable(mod) or {})
 
   for k, _ in pairs(mod) do
     redirect[k] = action_mt.transform(k, mt)

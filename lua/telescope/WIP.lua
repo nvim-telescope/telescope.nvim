@@ -1,6 +1,7 @@
 
 local make_entry = require('telescope.make_entry')
 local actions = require('telescope.actions')
+local action_state = require('telescope.actions.state')
 local finders = require('telescope.finders')
 local previewers = require('telescope.previewers')
 local pickers = require('telescope.pickers')
@@ -70,7 +71,7 @@ WIP.reloader = function(opts)
 
     attach_mappings = function(prompt_bufnr, map)
       local reload_package = function()
-        local selection = actions.get_selected_entry(prompt_bufnr)
+        local selection = action_state.get_selected_entry(prompt_bufnr)
 
         actions.close(prompt_bufnr)
 
