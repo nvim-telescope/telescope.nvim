@@ -81,6 +81,10 @@ scroller.top = function(sorting_strategy, max_results, num_results)
 end
 
 scroller.middle = function(sorting_strategy, max_results, num_results)
+  if sorting_strategy == 'ascending' then
+    return math.floor(max_results / 2)
+  end
+
   return (num_results < max_results)
     and math.floor(max_results - num_results / 2)
     or math.floor(max_results / 2)
