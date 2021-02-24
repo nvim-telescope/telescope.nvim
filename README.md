@@ -18,7 +18,7 @@ Community driven built-in [pickers](#pickers), [sorters](#sorters) and [previewe
 - [LSP](#lsp-pickers)
 - [Treesitter](#treesitter-picker)
 
-![by @glepnir](https://user-images.githubusercontent.com/41671631/100819597-6f737900-3487-11eb-8621-37ec1ffabe4b.gif)
+![Preview](https://i.imgur.com/TTTja6t.gif)
 
 
 <!-- You can read this documentation from start to finish, or you can look at the -->
