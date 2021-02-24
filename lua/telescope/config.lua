@@ -98,9 +98,9 @@ function config.set_defaults(defaults)
 
   set("file_ignore_patterns", nil)
 
-  set("file_previewer", function(...) return require('telescope.previewers').cat.new(...) end)
-  set("grep_previewer", function(...) return require('telescope.previewers').vimgrep.new(...) end)
-  set("qflist_previewer", function(...) return require('telescope.previewers').qflist.new(...) end)
+  set("file_previewer", function(...) return require('telescope.previewers').vim_buffer_cat.new(...) end)
+  set("grep_previewer", function(...) return require('telescope.previewers').vim_buffer_vimgrep.new(...) end)
+  set("qflist_previewer", function(...) return require('telescope.previewers').vim_buffer_qflist.new(...) end)
   set("buffer_previewer_maker", function(...) return require('telescope.previewers').buffer_previewer_maker(...) end)
 end
 
