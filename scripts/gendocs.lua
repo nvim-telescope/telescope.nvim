@@ -1,3 +1,6 @@
+-- Setup telescope with defaults
+require('telescope').setup()
+
 local docgen = require('docgen')
 
 local docs = {}
