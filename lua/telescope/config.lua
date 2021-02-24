@@ -30,6 +30,7 @@ function config.set_defaults(defaults)
   end
 
   local function set(name, default_val, description)
+    -- TODO(doc): Once we have descriptions for all of these, then we can add this back in.
     -- assert(description, "Config values must always have a description")
 
     config.values[name] = get(name, default_val)
@@ -39,18 +40,29 @@ function config.set_defaults(defaults)
   end
 
   set("sorting_strategy", "descending", [[
-    Sorting strategy determines the direction "better" results are sorted towards.
+    Determines the direction "better" results are sorted towards.
 
       Available options are:
-      - "descending"
+      - "descending" (default)
       - "ascending"
   ]])
 
   set("selection_strategy", "reset", [[
-    nevermind, read the source code.
+    Determines how the cursor acts after each sort iteration.
+
+      Available options are:
+      - "reset" (default)
+      - "follow"
+      - "row"
   ]])
 
-  set("scroll_strategy", "cycle")
+  set("scroll_strategy", "cycle", [[
+    Determines what happens you try to scroll past view of the picker.
+
+      Available options are:
+      - "cycle" (default)
+      - "limit"
+  ]])
 
   set("layout_strategy", "horizontal")
   set("layout_defaults", {})

@@ -8,33 +8,57 @@ To find out more:
 https://github.com/nvim-telescope/telescope.nvim
 
 telescope.extensions()                                *telescope.extensions()*
-        Use telescope.extensions to reference any extensions within your
-        configuration.
- While the docs currently generate this as a function,
-        it's actually a table. Sorry.
+    Use telescope.extensions to reference any extensions within your
+    configuration.
+     While the docs currently generate this as a function, it's actually a
+    table. Sorry.
 
 
 telescope.load_extension({name})                  *telescope.load_extension()*
-        Load an extension.
+    Load an extension.
 
-        Parameters: ~
-            {name} (string)  Name of the extension
+    Parameters: ~
+        {name} (string)  Name of the extension
 
 
 telescope.register_extension({mod})           *telescope.register_extension()*
-        Register an extension. To be used by plugin authors.
+    Register an extension. To be used by plugin authors.
 
-        Parameters: ~
-            {mod} (table)  Module
+    Parameters: ~
+        {mod} (table)  Module
 
 
 telescope.setup({opts})                                    *telescope.setup()*
-        Setup function to be run by user. Configures the defaults, extensions
+    Setup function to be run by user. Configures the defaults, extensions
+     and other aspects of telescope.
 
-        and other aspects of telescope.
 
-        Parameters: ~
-            {opts} (table)  Configuration opts. Keys: defaults, extensions
+    Valid keys for {opts.defaults}
+
+    scroll_strategy: ~
+        Determines what happens you try to scroll past view of the picker.
+
+          Available options are:
+          - "cycle" (default)
+          - "limit"
+
+    selection_strategy: ~
+        Determines how the cursor acts after each sort iteration.
+
+          Available options are:
+          - "reset" (default)
+          - "follow"
+          - "row"
+
+    sorting_strategy: ~
+        Determines the direction "better" results are sorted towards.
+
+          Available options are:
+          - "descending" (default)
+          - "ascending"
+
+    Parameters: ~
+        {opts} (table)  Configuration opts. Keys: defaults, extensions
 
 
 
@@ -53,7 +77,7 @@ This will use the default configuration options.
   Other configuration options are still in flux at the moment
 
 builtin.live_grep()                                      *builtin.live_grep()*
-        Live grep means grep as you type.
+    Live grep means grep as you type.
 
 
 
