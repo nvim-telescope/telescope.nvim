@@ -8,29 +8,37 @@ To find out more:
 https://github.com/nvim-telescope/telescope.nvim
 
 telescope.extensions()                                *telescope.extensions()*
+
     Use telescope.extensions to reference any extensions within your
     configuration.
-     While the docs currently generate this as a function, it's actually a
-    table. Sorry.
+    While the docs currently generate this as a function, it's actually a table.
+    Sorry.
+
 
 
 telescope.load_extension({name})                  *telescope.load_extension()*
+
     Load an extension.
+
 
     Parameters: ~
         {name} (string)  Name of the extension
 
 
 telescope.register_extension({mod})           *telescope.register_extension()*
+
     Register an extension. To be used by plugin authors.
+
 
     Parameters: ~
         {mod} (table)  Module
 
 
 telescope.setup({opts})                                    *telescope.setup()*
+
     Setup function to be run by user. Configures the defaults, extensions
-     and other aspects of telescope.
+    and other aspects of telescope.
+
 
 
     Valid keys for {opts.defaults}
@@ -80,7 +88,109 @@ This will use the default configuration options.
   Other configuration options are still in flux at the moment
 
 builtin.live_grep()                                      *builtin.live_grep()*
+
     Live grep means grep as you type.
+
+
+
+
+================================================================================
+                                                              *telescope.layout*
+
+
+Layout strategies are different functions to position telescope.
+
+All layout strategies are functions with the following signature: >
+
+     function(picker, columns, lines)
+       -- Do some calculations here...
+       return {
+         preview = preview_configuration
+         results = results_configuration,
+         prompt = prompt_configuration,
+       }
+     end
+<
+
+    Parameters: ~
+        - picker  : A Picker object. (docs coming soon)
+        - columns : number Columns in the vim window
+        - lines   : number Lines in the vim window
+
+TODO: I would like to make these link to `telescope.layout_strategies.*`, but it's not yet possible.
+
+Available layout strategies include:
+  horizontal:
+  - See |layout_strategies.horizontal|
+
+  vertical:
+  - See |layout_strategies.vertical|
+
+  flex:
+  - See |layout_strategies.flex|
+
+
+layout_strategies.center()                        *layout_strategies.center()*
+
+    Centered layout wih smaller default sizes (I think)
+
+       +--------------+
+       |    Preview   |
+       +--------------+
+       |    Prompt    |
+       +--------------+
+       |    Result    |
+       |    Result    |
+       |    Result    |
+       +--------------+
+
+
+
+
+layout_strategies.flex()                            *layout_strategies.flex()*
+
+    Swap between `horizontal` and `vertical` strategies based on the window
+    width
+      -  Supports `vertical` or `horizontal` features
+
+      Uses:
+       flip_columns
+       flip_lines
+
+
+
+layout_strategies.horizontal()                *layout_strategies.horizontal()*
+
+    Horizontal previewer
+
+      +-------------+--------------+
+      |             |              |
+      |   Results   |              |
+      |             |    Preview   |
+      |             |              |
+      +-------------|              |
+      |   Prompt    |              |
+      +-------------+--------------+
+
+
+
+layout_strategies.vertical()                    *layout_strategies.vertical()*
+
+    Vertical perviewer stacks the items on top of each other.
+
+       +-----------------+
+       |    Previewer    |
+       |    Previewer    |
+       |    Previewer    |
+       +-----------------+
+       |     Result      |
+       |     Result      |
+       |     Result      |
+       +-----------------+
+       |     Prompt      |
+       +-----------------+
+
+
 
 
 
