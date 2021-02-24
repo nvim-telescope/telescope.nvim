@@ -20,6 +20,7 @@ local sorters = require('telescope.sorters')
 local config = {}
 
 config.values = _TelescopeConfigurationValues
+config.descriptions = {}
 
 function config.set_defaults(defaults)
   defaults = defaults or {}
@@ -28,12 +29,27 @@ function config.set_defaults(defaults)
     return first_non_null(defaults[name], config.values[name], default_val)
   end
 
-  local function set(name, default_val)
+  local function set(name, default_val, description)
+    -- assert(description, "Config values must always have a description")
+
     config.values[name] = get(name, default_val)
+    if description then
+      config.descriptions[name] = vim.trim(description)
+    end
   end
 
-  set("sorting_strategy", "descending")
-  set("selection_strategy", "reset")
+  set("sorting_strategy", "descending", [[
+    Sorting strategy determines the direction "better" results are sorted towards.
+
+      Available options are:
+      - "descending"
+      - "ascending"
+  ]])
+
+  set("selection_strategy", "reset", [[
+    nevermind, read the source code.
+  ]])
+
   set("scroll_strategy", "cycle")
 
   set("layout_strategy", "horizontal")

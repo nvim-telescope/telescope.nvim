@@ -25,7 +25,7 @@ local telescope = {}
 --- Setup function to be run by user. Configures the defaults, extensions
 --- and other aspects of telescope.
 ---@param opts table: Configuration opts. Keys: defaults, extensions
----@eval { ["description"] =  'Valid keys:\n' .. vim.inspect(vim.tbl_keys(require('telescope.config').values)) }
+---@eval { ["description"] = require('telescope').__format_setup_keys() }
 function telescope.setup(opts)
   opts = opts or {}
 
@@ -52,5 +52,27 @@ end
 --- Use telescope.extensions to reference any extensions within your configuration.
 --- While the docs currently generate this as a function, it's actually a table. Sorry.
 telescope.extensions = require('telescope._extensions').manager
+
+telescope.__format_setup_keys = function()
+  -- return 'Valid keys:\n' .. vim.inspect(vim.tbl_keys(require('telescope.config').values)) 
+
+  local result = "Valid Setup Keys:\n"
+
+  local descriptions = require('telescope.config').descriptions
+
+  local names = vim.tbl_keys(descriptions)
+  table.sort(names)
+
+  for _, name in ipairs(names) do
+    local desc = descriptions[name]
+
+    -- hint: make sure you're considering UNICODE?!?!?!?
+    result = result .. "\n"
+      .. string.format("\n%s:\n", name)
+      .. string.format("    %s\n", desc)
+  end
+
+  return result
+end
 
 return telescope
