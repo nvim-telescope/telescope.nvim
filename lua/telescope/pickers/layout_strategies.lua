@@ -76,7 +76,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
     width_padding = "How many cells to pad the width",
     height_padding = "How many cells to pad the height",
     preview_width = "(Resolvable): Determine preview width",
-    mirror = "For a horizontal layout, flip the location of the results/prompt and preview windows. For a vertical layout, flip the orientation of the results and prompt windows",
+    mirror = "Flip the location of the results/prompt and preview windows", 
   })
 
   local initial_options = self:_get_initial_window_options()
@@ -237,7 +237,12 @@ end
 ---    +-----------------+
 ---
 layout_strategies.vertical = function(self, max_columns, max_lines)
-  local layout_config = self.layout_config or {}
+  local layout_config = validate_layout_config(self.layout_config or {}, {
+    width_padding = "How many cells to pad the width",
+    height_padding = "How many cells to pad the height",
+    preview_width = "(Resolvable): Determine preview width",
+    mirror = "Flip the locations of the results and prompt windows", 
+  })
   local initial_options = self:_get_initial_window_options()
 
   local preview = initial_options.preview
