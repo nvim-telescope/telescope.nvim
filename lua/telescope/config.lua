@@ -65,6 +65,7 @@ function config.set_defaults(defaults)
   ]])
 
   set("layout_strategy", "horizontal")
+  set("layout_mirror_horizontal", false)
   set("layout_defaults", {})
 
   set("width", 0.75)

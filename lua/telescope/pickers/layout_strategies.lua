@@ -133,9 +133,16 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
     preview.height = 0
   end
 
-  results.col = width_padding
-  prompt.col = width_padding
-  preview.col = results.col + results.width + 2
+  -- Default value is false, to use the normal horizontal layout
+  if not layout_config.layout_mirror_horizontal then
+    results.col = width_padding
+    prompt.col = width_padding
+    preview.col = results.col + results.width + 2
+  else
+    preview.col = width_padding
+    prompt.col = preview.col + preview.width + 2
+    results.col = preview.col + preview.width + 2
+  end
 
   preview.line = height_padding
   if self.window.prompt_position == "top" then
