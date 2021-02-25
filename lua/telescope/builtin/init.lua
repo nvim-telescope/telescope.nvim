@@ -1,15 +1,17 @@
---[[
-A collection of builtin pipelines for telesceope.
+---@tag telescope.builtin
 
-Meant for both example and for easy startup.
-
-Any of these functions can just be called directly by doing:
-
-:lua require('telescope.builtin').__name__()
-
-This will use the default configuration options.
-  Other configuration options still in flux at the moment
---]]
+---@brief [[
+--- A collection of builtin pickers for telesceope.
+---
+--- Meant for both example and for easy startup.
+---
+--- Any of these functions can just be called directly by doing:
+---
+--- :lua require('telescope.builtin').$NAME()
+---
+--- This will use the default configuration options.
+---   Other configuration options are still in flux at the moment
+---@brief ]]
 
 if 1 ~= vim.fn.has('nvim-0.5') then
   vim.api.nvim_err_writeln("This plugins requires neovim 0.5")
@@ -19,7 +21,9 @@ end
 
 local builtin = {}
 
+--- Live grep means grep as you type.
 builtin.live_grep = require('telescope.builtin.files').live_grep
+
 builtin.grep_string = require('telescope.builtin.files').grep_string
 builtin.find_files = require('telescope.builtin.files').find_files
 builtin.fd = builtin.find_files

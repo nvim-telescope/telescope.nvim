@@ -20,6 +20,7 @@ local sorters = require('telescope.sorters')
 local config = {}
 
 config.values = _TelescopeConfigurationValues
+config.descriptions = {}
 
 function config.set_defaults(defaults)
   defaults = defaults or {}
@@ -28,13 +29,40 @@ function config.set_defaults(defaults)
     return first_non_null(defaults[name], config.values[name], default_val)
   end
 
-  local function set(name, default_val)
+  local function set(name, default_val, description)
+    -- TODO(doc): Once we have descriptions for all of these, then we can add this back in.
+    -- assert(description, "Config values must always have a description")
+
     config.values[name] = get(name, default_val)
+    if description then
+      config.descriptions[name] = vim.trim(description)
+    end
   end
 
-  set("sorting_strategy", "descending")
-  set("selection_strategy", "reset")
-  set("scroll_strategy", "cycle")
+  set("sorting_strategy", "descending", [[
+    Determines the direction "better" results are sorted towards.
+
+      Available options are:
+      - "descending" (default)
+      - "ascending"
+  ]])
+
+  set("selection_strategy", "reset", [[
+    Determines how the cursor acts after each sort iteration.
+
+      Available options are:
+      - "reset" (default)
+      - "follow"
+      - "row"
+  ]])
+
+  set("scroll_strategy", "cycle", [[
+    Determines what happens you try to scroll past view of the picker.
+
+      Available options are:
+      - "cycle" (default)
+      - "limit"
+  ]])
 
   set("layout_strategy", "horizontal")
   set("layout_defaults", {})

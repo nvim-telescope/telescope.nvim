@@ -1,28 +1,39 @@
---[[
+---@tag telescope.layout
 
-Layout strategies are different functions to position telescope.
-
-horizontal:
-- Supports `prompt_position`, `preview_cutoff`
-
-vertical:
-
-flex: Swap between `horizontal` and `vertical` strategies based on the window width
-- Supports `vertical` or `horizontal` features
-
-dropdown:
-
-
-Layout strategies are callback functions
-
--- @param self: Picker
--- @param columns: number Columns in the vim window
--- @param lines: number Lines in the vim window
-
-function(self, columns, lines)
-end
-
---]]
+---@brief [[
+---
+--- Layout strategies are different functions to position telescope.
+---
+--- All layout strategies are functions with the following signature: >
+---
+---      function(picker, columns, lines)
+---        -- Do some calculations here...
+---        return {
+---          preview = preview_configuration
+---          results = results_configuration,
+---          prompt = prompt_configuration,
+---        }
+---      end
+--- <
+---
+---     Parameters: ~
+---         - picker  : A Picker object. (docs coming soon)
+---         - columns : number Columns in the vim window
+---         - lines   : number Lines in the vim window
+---
+--- TODO: I would like to make these link to `telescope.layout_strategies.*`, but it's not yet possible.
+---
+--- Available layout strategies include:
+---   horizontal:
+---   - See |layout_strategies.horizontal|
+---
+---   vertical:
+---   - See |layout_strategies.vertical|
+---
+---   flex:
+---   - See |layout_strategies.flex|
+---
+---@brief ]]
 
 local config = require('telescope.config')
 local resolve = require("telescope.config.resolve")
@@ -50,16 +61,16 @@ end
 
 local layout_strategies = {}
 
---[[
-   +-----------------+---------------------+
-   |                 |                     |
-   |     Results     |                     |
-   |                 |       Preview       |
-   |                 |                     |
-   +-----------------|                     |
-   |     Prompt      |                     |
-   +-----------------+---------------------+
---]]
+--- Horizontal previewer
+---
+---   +-------------+--------------+
+---   |             |              |
+---   |   Results   |              |
+---   |             |    Preview   |
+---   |             |              |
+---   +-------------|              |
+---   |   Prompt    |              |
+---   +-------------+--------------+
 layout_strategies.horizontal = function(self, max_columns, max_lines)
   local layout_config = validate_layout_config(self.layout_config or {}, {
     width_padding = "How many cells to pad the width",
@@ -144,19 +155,18 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
 }
 end
 
---[[
-    +--------------+
-    |    Preview   |
-    +--------------+
-    |    Prompt    |
-    +--------------+
-    |    Result    |
-    |    Result    |
-    |    Result    |
-    +--------------+
-
-
---]]
+--- Centered layout wih smaller default sizes (I think)
+---
+---    +--------------+
+---    |    Preview   |
+---    +--------------+
+---    |    Prompt    |
+---    +--------------+
+---    |    Result    |
+---    |    Result    |
+---    |    Result    |
+---    +--------------+
+---
 layout_strategies.center = function(self, columns, lines)
   local initial_options = self:_get_initial_window_options()
   local preview = initial_options.preview
@@ -204,19 +214,20 @@ layout_strategies.center = function(self, columns, lines)
   }
 end
 
---[[
-    +-----------------+
-    |    Previewer    |
-    |    Previewer    |
-    |    Previewer    |
-    +-----------------+
-    |     Result      |
-    |     Result      |
-    |     Result      |
-    +-----------------+
-    |     Prompt      |
-    +-----------------+
---]]
+--- Vertical perviewer stacks the items on top of each other.
+---
+---    +-----------------+
+---    |    Previewer    |
+---    |    Previewer    |
+---    |    Previewer    |
+---    +-----------------+
+---    |     Result      |
+---    |     Result      |
+---    |     Result      |
+---    +-----------------+
+---    |     Prompt      |
+---    +-----------------+
+---
 layout_strategies.vertical = function(self, max_columns, max_lines)
   local layout_config = self.layout_config or {}
   local initial_options = self:_get_initial_window_options()
@@ -276,9 +287,12 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   }
 end
 
--- Uses:
---  flip_columns
---  flip_lines
+--- Swap between `horizontal` and `vertical` strategies based on the window width
+---   -  Supports `vertical` or `horizontal` features
+---
+---   Uses:
+---    flip_columns
+---    flip_lines
 layout_strategies.flex = function(self, max_columns, max_lines)
   local layout_config = self.layout_config or {}
 
