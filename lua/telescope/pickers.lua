@@ -380,10 +380,6 @@ function Picker:find()
   local prompt_prefix = self.prompt_prefix
   if prompt_prefix ~= '' then
     a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
-
-    if not vim.endswith(prompt_prefix, " ") then
-      prompt_prefix = prompt_prefix .. " "
-    end
     vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
   end
   self.prompt_prefix = prompt_prefix
@@ -660,9 +656,6 @@ function Picker:change_prompt_prefix(new_prefix, hl_group)
   if not new_prefix then return end
 
   if new_prefix ~= '' then
-    if not vim.endswith(new_prefix, " ") then
-      new_prefix = new_prefix .. " "
-    end
     vim.fn.prompt_setprompt(self.prompt_bufnr, new_prefix)
   else
     vim.api.nvim_buf_set_text(self.prompt_bufnr, 0, 0, 0, #self.prompt_prefix, {})
@@ -1115,7 +1108,7 @@ end
 
 function Picker:_get_prompt()
   return vim.trim(
-    vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, 1, false)[1]:sub(#self.prompt_prefix)
+    vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, 1, false)[1]:sub(#self.prompt_prefix + 1)
   )
 end
 
