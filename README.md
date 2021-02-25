@@ -477,6 +477,7 @@ We have some built in themes but are looking for more cool options.
 | Themes                   | Description                                                           |
 |--------------------------|-----------------------------------------------------------------------|
 | `themes.get_dropdown`    | A list like centered list. [dropdown](https://i.imgur.com/SorAcXv.png)|
+| `themes.get_cursor`      | A cursor relative list.                                               |
 | ...                      | Your next awesome theme here :D                                       |
 
 
