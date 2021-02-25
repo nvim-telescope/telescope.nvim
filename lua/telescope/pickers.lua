@@ -683,7 +683,7 @@ function Picker:set_selection(row)
   end
 
   if row > a.nvim_buf_line_count(results_bufnr) then
-    log.warn(string.format(
+    log.debug(string.format(
       "Should not be possible to get row this large %s %s",
         row,
         a.nvim_buf_line_count(results_bufnr)
