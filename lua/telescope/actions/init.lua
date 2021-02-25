@@ -357,7 +357,7 @@ actions.send_selected_to_qflist = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
 
   local qf_entries = {}
-  for entry in pairs(picker.multi_select) do
+  for _, entry in ipairs(picker:get_multi_selection()) do
     table.insert(qf_entries, entry_to_qf(entry))
   end
 
