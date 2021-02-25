@@ -65,15 +65,7 @@ function config.set_defaults(defaults)
   ]])
 
   set("layout_strategy", "horizontal")
-  local layout_defaults_table = {
-    horizontal = {
-      mirror = false,
-    },
-    vertical = {
-      mirror = false,
-    },
-  }
-  set("layout_defaults", { layout_defaults_table })
+  set("layout_defaults", {})
 
   set("width", 0.75)
   set("winblend", 0)
