@@ -84,6 +84,7 @@ utils.diagnostics_to_tbl = function(opts)
     opts = opts or {}
 
     local bufnr = vim.api.nvim_get_current_buf()
+    local filename = vim.api.nvim_buf_get_name(bufnr)
     local buffer_diags = vim.lsp.diagnostic.get(bufnr, opts.client_id)
 
     local items = {}
@@ -99,6 +100,7 @@ utils.diagnostics_to_tbl = function(opts)
 
         table.insert(items, {
             bufnr = bufnr,
+            filename = filename,
             lnum = row + 1,
             col = col + 1,
             start = start,
