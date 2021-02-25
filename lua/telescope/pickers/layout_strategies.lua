@@ -240,11 +240,11 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   local layout_config = validate_layout_config(self.layout_config or {}, {
     width_padding = "How many cells to pad the width",
     height_padding = "How many cells to pad the height",
-    preview_width = "(Resolvable): Determine preview width",
+    preview_height = "(Resolvable): Determine preview height",
     mirror = "Flip the locations of the results and prompt windows",
   })
-  local initial_options = self:_get_initial_window_options()
 
+  local initial_options = self:_get_initial_window_options()
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
