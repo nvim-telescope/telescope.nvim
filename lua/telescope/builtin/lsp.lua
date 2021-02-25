@@ -151,8 +151,11 @@ lsp.workspace_symbols = function(opts)
   local params = {query = opts.query or ''}
   local results_lsp = vim.lsp.buf_request_sync(0, "workspace/symbol", params, opts.timeout or 10000)
 
-  if not results_lsp or vim.tbl_isempty(results_lsp) then
-    print("No results from workspace/symbol")
+  -- Clangd returns { { result = {} } } for query=''
+  if not results_lsp or vim.tbl_isempty(results_lsp) or
+     vim.tbl_isempty(results_lsp[1]) or vim.tbl_isempty(results_lsp[1].result) then
+    print("No results from workspace/symbol. Maybe try a different query: " ..
+      "Telescope lsp_workspace_symbols query=example")
     return
   end
 
@@ -166,7 +169,6 @@ lsp.workspace_symbols = function(opts)
   if vim.tbl_isempty(locations) then
     return
   end
-
 
   opts.ignore_filename = utils.get_default(opts.ignore_filename, false)
   opts.hide_filename = utils.get_default(opts.hide_filename, false)
