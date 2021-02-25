@@ -14,12 +14,11 @@ local telescope = {}
 ---
 --- To find out more:
 --- https://github.com/nvim-telescope/telescope.nvim
---
---   :h telescope.setup
---   :h telescope.builtin
---   :h telescope.layout
---   :h telescope.actions
---
+---
+---   :h telescope.setup
+---   :h telescope.builtin
+---   :h telescope.layout
+---   :h telescope.actions
 ---@brief ]]
 
 ---@tag telescope.nvim
