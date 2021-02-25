@@ -221,7 +221,6 @@ layout_strategies.cursor = function(self, columns, lines)
   local height = resolve.resolve_height(self.window.results_height)(self, columns, lines)
   local width = resolve.resolve_width(self.window.width)(self, columns, lines)
 
-  --local max_results = (height > lines and lines or height)
   local max_width = (width > columns and columns or width)
 
   -- border size
@@ -229,30 +228,46 @@ layout_strategies.cursor = function(self, columns, lines)
   if is_borderless(self) then
     bs = 0
   end
-  local edge_gap = 1
 
   prompt.height = 1
   results.height = height
-  preview.height = height + 2
+  preview.height = results.height + prompt.height + bs
 
+  -- If previewer is activated, it should take 2/3 of the space (width)
   local width_left = self.previewer and math.floor(max_width/3) or max_width
   prompt.width = width_left
-  results.width = width_left
+  results.width = prompt.width
   preview.width = self.previewer and (2*width_left) or 0
 
-  local position = vim.fn.nvim_win_get_position(0)
-  local cursor_line = vim.fn.winline() + position[1]
-  local cursor_col = vim.fn.wincol() + position[2]
+  local total_height = preview.height + (bs*2)
+  local total_width = prompt.width + (bs*2) + preview.width + bs
 
-  local max_line = (cursor_line + (bs*3) + height + prompt.height) > lines and (cursor_line - (bs*3) - height - prompt.height - 1) or cursor_line
-  prompt.line = max_line + bs
-  results.line = prompt.line + (bs*2)
+  local position = vim.fn.nvim_win_get_position(0)
+  local top_left = {
+    line = vim.fn.winline() + position[1] + bs,
+    col = vim.fn.wincol() + position[2]
+  }
+  local bot_right = {
+    line = top_left.line + total_height - 1,
+    col = top_left.col + total_width - 1
+  }
+
+  if bot_right.line > lines then
+    -- position above current line
+    top_left.line = top_left.line - total_height - 1
+  end
+  if bot_right.col >= columns then
+    -- cap to the right of the screen
+    top_left.col = columns - total_width
+  end
+
+  prompt.line = top_left.line
+  results.line = prompt.line + bs + 1
   preview.line = prompt.line
 
-  local max_col = (cursor_col + max_width + bs + edge_gap) > columns and (columns - max_width - bs - edge_gap) or cursor_col
-  prompt.col = max_col
-  results.col = max_col
-  preview.col = results.col + results.width + bs + bs
+  prompt.col = top_left.col
+  results.col = prompt.col
+  preview.col = results.col + (bs*2) + results.width
 
   return {
     preview = self.previewer and preview.width > 0 and preview,
