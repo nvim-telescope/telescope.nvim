@@ -19,6 +19,7 @@ Community driven built-in [pickers](#pickers), [sorters](#sorters) and [previewe
 - [Treesitter](#treesitter-picker)
 
 ![Preview](https://i.imgur.com/TTTja6t.gif)
+<sub>For more showcases of Telescope, please visit the [Showcase section](https://github.com/nvim-telescope/telescope.nvim/wiki/Showcase) in the Telescope Wiki</sub>
 
 
 <!-- You can read this documentation from start to finish, or you can look at the -->
