@@ -85,6 +85,11 @@ function config.set_defaults(defaults)
 
     Default: '>'
   ]])
+  set("entry_prefix", "  ", [[
+    Prefix in front of each result entry. Current selection not included.
+
+    Default: '  '
+  ]])
   set("initial_mode", "insert")
 
   set("border", {})

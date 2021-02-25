@@ -141,6 +141,7 @@ require('telescope').setup{
     prompt_position = "bottom",
     prompt_prefix = ">",
     selection_caret = ">",
+    entry_prefix = "  ",
     initial_mode = "insert",
     selection_strategy = "reset",
     sorting_strategy = "descending",
@@ -193,6 +194,7 @@ EOF
 | `prompt_position`      | Where the prompt should be located.                   | top/bottom                 |
 | `prompt_prefix`        | What should the prompt prefix be.                     | string                     |
 | `selection_caret`      | What should the selection caret be.                   | string                     |
+| `entry_prefix`         | What should be shown in front of every entry. (current selection excluded) | string|
 | `initial_mode`         | The initial mode when a prompt is opened.             | insert/normal              |
 | `sorting_strategy`     | Where first selection should be located.              | descending/ascending       |
 | `layout_strategy`      | How the telescope is drawn.                           | [supported layouts](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts) |
@@ -204,7 +206,7 @@ EOF
 | `results_width`        | TODO                                                  | NUM                        |
 | `borderchars`          | The border chars, it gives border telescope window    | dict                       |
 | `color_devicons`       | Whether to color devicons or not                      | boolean                    |
-| `use_less`             | Whether to use less with bat or less/cat if bat not installed | boolean                    |
+| `use_less`             | Whether to use less with bat or less/cat if bat not installed | boolean            |
 | `set_env`              | Set environment variables for previewer               | dict                       |
 | `scroll_strategy`      | How to behave when the when there are no more item next/prev | cycle, nil          |
 | `file_previewer`       | What telescope previewer to use for files.            | [Previewers](#previewers)  |

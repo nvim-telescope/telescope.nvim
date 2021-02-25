@@ -58,6 +58,7 @@ function Picker:new(opts)
 
     prompt_prefix = get_default(opts.prompt_prefix, config.values.prompt_prefix),
     selection_caret = get_default(opts.selection_caret, config.values.selection_caret),
+    entry_prefix = get_default(opts.entry_prefix, config.values.entry_prefix),
     initial_mode = get_default(opts.initial_mode, config.values.initial_mode),
 
     default_text = opts.default_text,
@@ -737,10 +738,10 @@ function Picker:set_selection(row)
       local display, display_highlights = entry_display.resolve(self, self._selection_entry)
 
       if display then
-        display = '  ' .. display
+        display = self.entry_prefix .. display
         a.nvim_buf_set_lines(results_bufnr, self._selection_row, self._selection_row + 1, false, {display})
 
-        self.highlighter:hi_display(self._selection_row, '  ', display_highlights)
+        self.highlighter:hi_display(self._selection_row, self.entry_prefix, display_highlights)
         self.highlighter:hi_sorter(self._selection_row, prompt, display)
         self.highlighter:hi_multiselect(self._selection_row, self._selection_entry)
       end
@@ -814,7 +815,7 @@ function Picker:entry_adder(index, entry, _, insert)
   -- This is the two spaces to manage the '> ' stuff.
   -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
   -- until then, insert two spaces
-  local prefix = '  '
+  local prefix = self.entry_prefix
   display = prefix .. display
 
   self:_increment("displayed")
