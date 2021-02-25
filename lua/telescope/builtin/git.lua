@@ -155,14 +155,14 @@ local set_opts_cwd = function(opts)
   end
 
   -- Find root of git directory and remove trailing newline characters
-  local git_root = vim.fn.systemlist("git -C " .. opts.cwd .. " rev-parse --show-toplevel")[1]
+  local git_root, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
   local use_git_root = utils.get_default(opts.use_git_root, true)
 
-  if vim.v.shell_error ~= 0 then
+  if ret ~= 0 then
     error(opts.cwd .. ' is not a git directory')
   else
     if use_git_root then
-      opts.cwd = git_root
+      opts.cwd = git_root[1]
     end
   end
 end
