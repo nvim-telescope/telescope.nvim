@@ -31,4 +31,26 @@ function themes.get_dropdown(opts)
   return vim.tbl_deep_extend("force", theme_opts, opts)
 end
 
+function themes.get_cursor(opts)
+  opts = opts or {}
+
+  local theme_opts = {
+    theme = 'cursor',
+
+    sorting_strategy = 'ascending',
+    results_title = false,
+    layout_strategy = 'cursor',
+    width = 80,
+    results_height = 6,
+    borderchars = {
+      { '─', '│', '─', '│', '╭', '╮', '╯', '╰'},
+      prompt = {'─', '│', ' ', '│', '╭', '╮', '│', '│'},
+      results = {'─', '│', '─', '│', '├', '┤', '╯', '╰'},
+      preview = { '─', '│', '─', '│', '╭', '╮', '╯', '╰'},
+    },
+  }
+
+  return vim.tbl_deep_extend('force', theme_opts, opts)
+end
+
 return themes
