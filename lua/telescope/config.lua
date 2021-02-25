@@ -75,7 +75,16 @@ function config.set_defaults(defaults)
   set("results_height", 1)
   set("results_width", 0.8)
 
-  set("prompt_prefix", ">")
+  set("prompt_prefix", ">", [[
+    Will be shown in front of the prompt.
+
+    Default: '>'
+  ]])
+  set("selection_caret", ">", [[
+    Will be shown in front of the selection.
+
+    Default: '>'
+  ]])
   set("initial_mode", "insert")
 
   set("border", {})

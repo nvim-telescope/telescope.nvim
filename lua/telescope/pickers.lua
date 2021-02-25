@@ -57,6 +57,7 @@ function Picker:new(opts)
     preview_title = get_default(opts.preview_title, "Preview"),
 
     prompt_prefix = get_default(opts.prompt_prefix, config.values.prompt_prefix),
+    selection_caret = get_default(opts.selection_caret, config.values.selection_caret),
     initial_mode = get_default(opts.initial_mode, config.values.initial_mode),
 
     default_text = opts.default_text,
@@ -112,6 +113,9 @@ function Picker:new(opts)
     preview_cutoff = get_default(opts.preview_cutoff, config.values.preview_cutoff),
   }, self)
 
+  if not vim.endswith(obj.selection_caret, ' ') then
+    obj.selection_caret = obj.selection_caret .. ' '
+  end
 
   obj.scroller = p_scroller.create(
     get_default(opts.scroll_strategy, config.values.scroll_strategy),
@@ -742,12 +746,12 @@ function Picker:set_selection(row)
       end
     end
 
-    local caret = '>'
+    local caret = self.selection_caret
     -- local display = string.format('%s %s', caret,
     --   (a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] or ''):sub(3)
     -- )
     local display, display_highlights = entry_display.resolve(self, entry)
-    display = caret .. ' ' .. display
+    display = caret .. display
 
     -- TODO: You should go back and redraw the highlights for this line from the sorter.
     -- That's the only smart thing to do.
@@ -757,8 +761,9 @@ function Picker:set_selection(row)
     end
     a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {display})
 
-    self.highlighter:hi_selection(row, caret)
-    self.highlighter:hi_display(row, '  ', display_highlights)
+    -- don't highlight the ' ' at the end of caret
+    self.highlighter:hi_selection(row, caret:sub(1, -2))
+    self.highlighter:hi_display(row, caret, display_highlights)
     self.highlighter:hi_sorter(row, prompt, display)
     self.highlighter:hi_multiselect(row, entry)
   end)
