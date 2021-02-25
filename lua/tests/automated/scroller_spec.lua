@@ -1,6 +1,6 @@
 local p_scroller = require('telescope.pickers.scroller')
-local log = require('telescope.log')
 
+local log = require('telescope.log')
 log.use_console = false
 
 local eq = assert.are.same
