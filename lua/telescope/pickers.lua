@@ -704,7 +704,7 @@ function Picker:set_selection(row)
     -- Handle adding '> ' to beginning of selections
     if self._selection_row then
       -- Only change the first couple characters, nvim_buf_set_text leaves the existing highlights
-      a.nvim_buf_set_text(results_bufnr, self._selection_row, 0, self._selection_row, 2, { self.entry_prefix })
+      a.nvim_buf_set_text(results_bufnr, self._selection_row, 0, self._selection_row, #self.entry_prefix, { self.entry_prefix })
       self.highlighter:hi_multiselect(
         self._selection_row,
         self:is_multi_selected(self._selection_entry)

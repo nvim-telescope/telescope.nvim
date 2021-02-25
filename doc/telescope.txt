@@ -131,6 +131,15 @@ actions.add_selection({prompt_bufnr})                *actions.add_selection()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.move_selection_better({prompt_bufnr})*actions.move_selection_better()*
+
+    Move the selection to the entry that has a better score
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
 
     Move the selection to the next entry
@@ -143,6 +152,15 @@ actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
 actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous()*
 
     Move the selection to the previous entry
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
+
+    Move the selection to the entry that has a worse score
 
 
     Parameters: ~
