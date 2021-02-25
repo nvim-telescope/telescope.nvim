@@ -905,12 +905,16 @@ function make_entry.gen_from_lsp_diagnostics(opts)
   opts = opts or {}
   opts.tail_path = utils.get_default(opts.tail_path, true)
 
+  local signs = {}
+  for k, _ in pairs(lsp_type_diagnostic) do
+    signs[k] = vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. lsp_type_diagnostic[k])[1].text)
+  end
+  local line_width = utils.get_default(opts.line_width, 48)
   local displayer = entry_display.create {
     separator = "▏",
     items = {
-    -- slightly increased width
       { width = 11 },
-      { width = 48 },
+      { width = line_width },
       { remaining = true }
     }
   }
@@ -927,17 +931,17 @@ function make_entry.gen_from_lsp_diagnostics(opts)
     end
 
     -- add styling of entries
-    local sign = vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. lsp_type_diagnostic[entry.type])[1].text)
     local pos = string.format("%3d:%2d", entry.lnum, entry.col)
-
     local line_info = {
-      table.concat({sign, pos}, " "),
-      "LspDiagnostics" .. lsp_type_diagnostic[entry.type]
+      string.format("%s %s", signs[entry.type], pos),
+      string.format("LspDiagnostics%s", lsp_type_diagnostic[entry.type])
     }
+    -- remove line break to avoid display issues
+    local text = string.format("%-" .. line_width .."s", entry.text:gsub(".* | ", ""):gsub("[\n]", ""))
 
     return displayer {
       line_info,
-      entry.text:gsub(".* | ", ""),
+      text,
       filename,
     }
   end
@@ -954,6 +958,7 @@ function make_entry.gen_from_lsp_diagnostics(opts)
         or ''
         ) .. ' ' .. entry.text,
       display = make_display,
+      bufnr = entry.bufnr,
       filename = filename,
       type = entry.type,
       lnum = entry.lnum,
