@@ -28,13 +28,12 @@ entry_display.create = function(configuration)
   local generator = {}
   for _, v in ipairs(configuration.items) do
     if v.width then
-      local justify = not v.right_justify and "-" or ""
-      local format_str = "%" .. justify .. v.width .. "s"
+      local justify = v.right_justify
       table.insert(generator, function(item)
         if type(item) == 'table' then
-          return string.format(format_str, entry_display.truncate(item[1], v.width)), item[2]
+          return utils.align_str(entry_display.truncate(item[1], v.width), v.width, justify), item[2]
         else
-          return string.format(format_str, entry_display.truncate(item, v.width))
+          return utils.align_str(entry_display.truncate(item, v.width), v.width, justify)
         end
       end)
     else
