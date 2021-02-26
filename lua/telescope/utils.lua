@@ -284,4 +284,11 @@ function utils.strcharpart(str, nchar, charlen)
   return str:sub(nbyte + 1, nbyte + len)
 end
 
+utils.align_str = function(string, width, right_justify)
+  local str_len = utils.strdisplaywidth(string)
+  return right_justify
+    and string.rep(" ", width - str_len)..string
+    or string..string.rep(" ", width - str_len)
+end
+
 return utils
