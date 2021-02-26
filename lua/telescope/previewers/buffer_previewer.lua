@@ -476,7 +476,7 @@ previewers.git_branch_log = defaulter(function(opts)
       local current_remote = 1
 
       local gen_cmd = function(v)
-        return { 'git', '-P', 'log', '--graph', '--pretty=format:%h -%d %s (%cr)',
+        return { 'git', '--no-pager', 'log', '--graph', '--pretty=format:%h -%d %s (%cr)',
         '--abbrev-commit', '--date=relative', v }
       end
 
@@ -512,7 +512,7 @@ previewers.git_commit_diff = defaulter(function(opts)
     end,
 
     define_preview = function(self, entry, status)
-      putils.job_maker({ 'git', '-P', 'diff', entry.value .. '^!' }, self.state.bufnr, {
+      putils.job_maker({ 'git', '--no-pager', 'diff', entry.value .. '^!' }, self.state.bufnr, {
         value = entry.value,
         bufname = self.state.bufname,
         cwd = opts.cwd
@@ -536,7 +536,7 @@ previewers.git_file_diff = defaulter(function(opts)
           bufname = self.state.bufname
         })
       else
-        putils.job_maker({ 'git', '-P', 'diff', entry.value }, self.state.bufnr, {
+        putils.job_maker({ 'git', '--no-pager', 'diff', entry.value }, self.state.bufnr, {
           value = entry.value,
           bufname = self.state.bufname,
           cwd = opts.cwd
