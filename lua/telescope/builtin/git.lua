@@ -37,7 +37,9 @@ git.files = function(opts)
 end
 
 git.commits = function(opts)
-  local results = utils.get_os_command_output({ 'git', 'log', '--pretty=oneline', '--abbrev-commit' }, opts.cwd)
+  local results = utils.get_os_command_output({
+    'git', 'log', '--pretty=oneline', '--abbrev-commit', '--', '.'
+  }, opts.cwd)
 
   pickers.new(opts, {
     prompt_title = 'Git Commits',
@@ -110,7 +112,7 @@ end
 
 git.status = function(opts)
   local gen_new_finder = function()
-    local output = utils.get_os_command_output({ 'git', 'status', '-s' }, opts.cwd)
+    local output = utils.get_os_command_output({ 'git', 'status', '-s', '--', '.' }, opts.cwd)
 
     if table.getn(output) == 0 then
       print('No changes found')
