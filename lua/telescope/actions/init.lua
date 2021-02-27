@@ -264,7 +264,12 @@ actions.git_checkout = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
   actions.close(prompt_bufnr)
-  utils.get_os_command_output({ 'git', 'checkout', selection.value }, cwd)
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'checkout', selection.value }, cwd)
+  if ret == 0 then
+    print("Checked out: " .. selection.value)
+  else
+    print("Error when checking out: " .. selection.value .. ". Git returned: \"" .. table.concat(stderr, '  ') .. "\"")
+  end
 end
 
 actions.git_staging_toggle = function(prompt_bufnr)

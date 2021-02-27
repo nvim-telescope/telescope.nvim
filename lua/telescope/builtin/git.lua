@@ -79,18 +79,13 @@ end
 git.branches = function(opts)
   local output = utils.get_os_command_output({ 'git', 'branch', '--all' }, opts.cwd)
 
-  local tmp_results = {}
+  local results = {}
   for _, v in ipairs(output) do
     if not string.match(v, 'HEAD') and v ~= '' then
       v = string.gsub(v, '.* ', '')
-      v = string.gsub(v, '^remotes/[^/]*/', '')
-      tmp_results[v] = true
+      v = string.gsub(v, '^remotes/', '')
+      table.insert(results, v)
     end
-  end
-
-  local results = {}
-  for k, _ in pairs(tmp_results) do
-    table.insert(results, k)
   end
 
   pickers.new(opts, {

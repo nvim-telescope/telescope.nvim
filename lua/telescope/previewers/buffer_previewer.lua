@@ -466,40 +466,23 @@ previewers.git_branch_log = defaulter(function(opts)
     end
   end
 
-  local remotes = utils.get_os_command_output({ 'git', 'remote' }, opts.cwd)
   return previewers.new_buffer_previewer {
     get_buffer_by_name = function(_, entry)
       return entry.value
     end,
 
     define_preview = function(self, entry, status)
-      local current_remote = 1
+      local cmd = { 'git', '--no-pager', 'log', '--graph', '--pretty=format:%h -%d %s (%cr)',
+        '--abbrev-commit', '--date=relative', entry.value }
 
-      local gen_cmd = function(v)
-        return { 'git', '--no-pager', 'log', '--graph', '--pretty=format:%h -%d %s (%cr)',
-        '--abbrev-commit', '--date=relative', v }
-      end
-
-      local handle_results
-      handle_results = function(bufnr, content)
-        if content and table.getn(content) == 0 then
-          if current_remote <= table.getn(remotes) then
-            local value = 'remotes/' .. remotes[current_remote] .. '/' .. entry.value
-            current_remote = current_remote + 1
-            putils.job_maker(gen_cmd(value), bufnr, { cwd = opts.cwd, callback = handle_results })
-          else
-            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "No log found for branch: " .. entry.value })
-          end
-        elseif content and table.getn(content) > 1 then
-          highlight_buffer(bufnr, content)
-        end
-      end
-
-      putils.job_maker(gen_cmd(entry.value), self.state.bufnr, {
+      putils.job_maker(cmd, self.state.bufnr, {
         value = entry.value,
         bufname = self.state.bufname,
         cwd = opts.cwd,
-        callback = handle_results
+        callback = function(bufnr, content)
+          if not content then return end
+          highlight_buffer(bufnr, content)
+        end
       })
     end
   }
