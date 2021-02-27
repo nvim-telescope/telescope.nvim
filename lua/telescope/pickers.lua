@@ -57,6 +57,8 @@ function Picker:new(opts)
     preview_title = get_default(opts.preview_title, "Preview"),
 
     prompt_prefix = get_default(opts.prompt_prefix, config.values.prompt_prefix),
+    selection_caret = get_default(opts.selection_caret, config.values.selection_caret),
+    entry_prefix = get_default(opts.entry_prefix, config.values.entry_prefix),
     initial_mode = get_default(opts.initial_mode, config.values.initial_mode),
 
     default_text = opts.default_text,
@@ -111,7 +113,6 @@ function Picker:new(opts)
 
     preview_cutoff = get_default(opts.preview_cutoff, config.values.preview_cutoff),
   }, self)
-
 
   obj.scroller = p_scroller.create(
     get_default(opts.scroll_strategy, config.values.scroll_strategy),
@@ -375,10 +376,6 @@ function Picker:find()
   local prompt_prefix = self.prompt_prefix
   if prompt_prefix ~= '' then
     a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
-
-    if not vim.endswith(prompt_prefix, " ") then
-      prompt_prefix = prompt_prefix .. " "
-    end
     vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
   end
   self.prompt_prefix = prompt_prefix
@@ -655,9 +652,6 @@ function Picker:change_prompt_prefix(new_prefix, hl_group)
   if not new_prefix then return end
 
   if new_prefix ~= '' then
-    if not vim.endswith(new_prefix, " ") then
-      new_prefix = new_prefix .. " "
-    end
     vim.fn.prompt_setprompt(self.prompt_bufnr, new_prefix)
   else
     vim.api.nvim_buf_set_text(self.prompt_bufnr, 0, 0, 0, #self.prompt_prefix, {})
@@ -733,21 +727,21 @@ function Picker:set_selection(row)
       local display, display_highlights = entry_display.resolve(self, self._selection_entry)
 
       if display then
-        display = '  ' .. display
+        display = self.entry_prefix .. display
         a.nvim_buf_set_lines(results_bufnr, self._selection_row, self._selection_row + 1, false, {display})
 
-        self.highlighter:hi_display(self._selection_row, '  ', display_highlights)
+        self.highlighter:hi_display(self._selection_row, self.entry_prefix, display_highlights)
         self.highlighter:hi_sorter(self._selection_row, prompt, display)
         self.highlighter:hi_multiselect(self._selection_row, self._selection_entry)
       end
     end
 
-    local caret = '>'
+    local caret = self.selection_caret
     -- local display = string.format('%s %s', caret,
     --   (a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] or ''):sub(3)
     -- )
     local display, display_highlights = entry_display.resolve(self, entry)
-    display = caret .. ' ' .. display
+    display = caret .. display
 
     -- TODO: You should go back and redraw the highlights for this line from the sorter.
     -- That's the only smart thing to do.
@@ -757,8 +751,9 @@ function Picker:set_selection(row)
     end
     a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {display})
 
-    self.highlighter:hi_selection(row, caret)
-    self.highlighter:hi_display(row, '  ', display_highlights)
+    -- don't highlight the ' ' at the end of caret
+    self.highlighter:hi_selection(row, caret:sub(1, -2))
+    self.highlighter:hi_display(row, caret, display_highlights)
     self.highlighter:hi_sorter(row, prompt, display)
     self.highlighter:hi_multiselect(row, entry)
   end)
@@ -809,7 +804,7 @@ function Picker:entry_adder(index, entry, _, insert)
   -- This is the two spaces to manage the '> ' stuff.
   -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
   -- until then, insert two spaces
-  local prefix = '  '
+  local prefix = self.entry_prefix
   display = prefix .. display
 
   self:_increment("displayed")
@@ -1109,7 +1104,7 @@ end
 
 function Picker:_get_prompt()
   return vim.trim(
-    vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, 1, false)[1]:sub(#self.prompt_prefix)
+    vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, 1, false)[1]:sub(#self.prompt_prefix + 1)
   )
 end
 

@@ -139,7 +139,9 @@ require('telescope').setup{
       '--smart-case'
     },
     prompt_position = "bottom",
-    prompt_prefix = ">",
+    prompt_prefix = "> ",
+    selection_caret = "> ",
+    entry_prefix = "  ",
     initial_mode = "insert",
     selection_strategy = "reset",
     sorting_strategy = "descending",
@@ -191,6 +193,8 @@ EOF
 |------------------------|-------------------------------------------------------|----------------------------|
 | `prompt_position`      | Where the prompt should be located.                   | top/bottom                 |
 | `prompt_prefix`        | What should the prompt prefix be.                     | string                     |
+| `selection_caret`      | What should the selection caret be.                   | string                     |
+| `entry_prefix`         | What should be shown in front of every entry. (current selection excluded) | string|
 | `initial_mode`         | The initial mode when a prompt is opened.             | insert/normal              |
 | `sorting_strategy`     | Where first selection should be located.              | descending/ascending       |
 | `layout_strategy`      | How the telescope is drawn.                           | [supported layouts](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts) |
@@ -202,7 +206,7 @@ EOF
 | `results_width`        | TODO                                                  | NUM                        |
 | `borderchars`          | The border chars, it gives border telescope window    | dict                       |
 | `color_devicons`       | Whether to color devicons or not                      | boolean                    |
-| `use_less`             | Whether to use less with bat or less/cat if bat not installed | boolean                    |
+| `use_less`             | Whether to use less with bat or less/cat if bat not installed | boolean            |
 | `set_env`              | Set environment variables for previewer               | dict                       |
 | `scroll_strategy`      | How to behave when the when there are no more item next/prev | cycle, nil          |
 | `file_previewer`       | What telescope previewer to use for files.            | [Previewers](#previewers)  |
@@ -333,6 +337,14 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
     return true
   end,
 })
+------------------------------
+-- More practical example of adding a new mapping
+require'telescope.builtin'.git_branches({ attach_mappings = function(_, map)
+  map('i', '<c-d>', actions.git_delete_branch) -- this action already exist
+  map('n', '<c-d>', actions.git_delete_branch) -- this action already exist
+  -- for more actions look at lua/telescope/actions/init.lua
+  return true
+end})
 ```
 
 For more info, see [./developers.md](./developers.md)
@@ -400,7 +412,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 |-------------------------------------|---------------------------------------------------------------------------------------------|
 | `builtin.git_commits`               | Lists git commits with diff preview and on enter checkout the commit.                       |
 | `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checkouts it out on enter.                 |
-| `builtin.git_branches`              | Lists all branches with log preview and checkout action.                                    |
+| `builtin.git_branches`              | Lists all branches with log preview, checkout action (<cr>), track action (<c-t>) and rebase action(<c-r>). |
 | `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multiselection still WIP) |
 | ..................................  | Your next awesome picker function here :D                                                   |
 

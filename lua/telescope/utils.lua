@@ -199,7 +199,11 @@ function utils.get_os_command_output(cmd, cwd)
     return {}
   end
   local command = table.remove(cmd, 1)
-  return Job:new({ command = command, args = cmd, cwd = cwd }):sync()
+  local stderr = {}
+  local stdout, ret = Job:new({ command = command, args = cmd, cwd = cwd, on_stderr = function(_, data)
+    table.insert(stderr, data)
+  end }):sync()
+  return stdout, ret, stderr
 end
 
 utils.strdisplaywidth = (function()

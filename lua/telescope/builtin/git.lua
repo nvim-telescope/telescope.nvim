@@ -79,18 +79,13 @@ end
 git.branches = function(opts)
   local output = utils.get_os_command_output({ 'git', 'branch', '--all' }, opts.cwd)
 
-  local tmp_results = {}
+  local results = {}
   for _, v in ipairs(output) do
     if not string.match(v, 'HEAD') and v ~= '' then
       v = string.gsub(v, '.* ', '')
-      v = string.gsub(v, '^remotes/[^/]*/', '')
-      tmp_results[v] = true
+      v = string.gsub(v, '^remotes/', '')
+      table.insert(results, v)
     end
-  end
-
-  local results = {}
-  for k, _ in pairs(tmp_results) do
-    table.insert(results, k)
   end
 
   pickers.new(opts, {
@@ -103,8 +98,13 @@ git.branches = function(opts)
     },
     previewer = previewers.git_branch_log.new(opts),
     sorter = conf.file_sorter(opts),
-    attach_mappings = function()
+    attach_mappings = function(_, map)
       actions.select_default:replace(actions.git_checkout)
+      map('i', '<c-t>', actions.git_track_branch)
+      map('n', '<c-t>', actions.git_track_branch)
+
+      map('i', '<c-r>', actions.git_rebase_branch)
+      map('n', '<c-r>', actions.git_rebase_branch)
       return true
     end
   }):find()
@@ -155,14 +155,14 @@ local set_opts_cwd = function(opts)
   end
 
   -- Find root of git directory and remove trailing newline characters
-  local git_root = vim.fn.systemlist("git -C " .. opts.cwd .. " rev-parse --show-toplevel")[1]
+  local git_root, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
   local use_git_root = utils.get_default(opts.use_git_root, true)
 
-  if vim.v.shell_error ~= 0 then
+  if ret ~= 0 then
     error(opts.cwd .. ' is not a git directory')
   else
     if use_git_root then
-      opts.cwd = git_root
+      opts.cwd = git_root[1]
     end
   end
 end

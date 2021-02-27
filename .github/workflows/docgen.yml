@@ -16,12 +16,6 @@ jobs:
           path: build
           key: ${{ runner.os }}-appimage-${{ hashFiles('todays-date') }}
 
-      - name: Restore cache for tree-sitter
-        uses: actions/cache@v2
-        with:
-          path: _ts
-          key: ${{ runner.os }}-ts-${{ hashFiles('todays-date') }}
-
       - name: Prepare
         run: |
           test -d build || {
@@ -30,41 +24,36 @@ jobs:
             chmod +x nvim.appimage
             mv nvim.appimage ./build/nvim
           }
-          test -d _ts || {
-            # Pining version. Not sure if we should actually do that
-            mkdir -p _ts
-            wget https://github.com/tree-sitter/tree-sitter/releases/download/0.17.3/tree-sitter-linux-x64.gz
-            gzip -d tree-sitter-linux-x64
-            chmod +x tree-sitter-linux-x64
-            mv tree-sitter-linux-x64 ./_ts/tree-sitter
-          }
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
+          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
           git clone --depth 1 https://github.com/tjdevries/tree-sitter-lua ~/.local/share/nvim/site/pack/vendor/start/tree-sitter-lua
           ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
 
       - name: Build parser
         run: |
           # We have to build the parser every single time to keep up with parser changes
-          export PATH="${PWD}/_ts/:${PATH}"
           cd ~/.local/share/nvim/site/pack/vendor/start/tree-sitter-lua
           mkdir -p build parser
-          make build_parser
+          cc -o ./build/parser.so -I./src src/parser.c src/scanner.cc -shared -Os -lstdc++ -fPIC
           ln -s ../build/parser.so parser/lua.so
-          cd
+          cd -
+
+      - name: Generating docs
+        run: |
+          export PATH="${PWD}/build/:${PATH}"
+          make docgen
 
       # inspired by nvim-lspconfigs
-      - name: Generating docs
+      - name: Update documentation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMIT_MSG: |
-            [Actions] Generate Documentation
+            [docgen] Update doc/telescope.txt
             skip-checks: true
         run: |
-          export PATH="${PWD}/build/:${PATH}"
           git config user.email "actions@github"
           git config user.name "Github Actions"
           git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-          make docgen
           git add doc/
           # Only commit and push if we have changes
           git diff --quiet && git diff --staged --quiet || (git commit -m "${COMMIT_MSG}"; git push origin HEAD:${GITHUB_REF})

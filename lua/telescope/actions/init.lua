@@ -264,7 +264,72 @@ actions.git_checkout = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
   actions.close(prompt_bufnr)
-  utils.get_os_command_output({ 'git', 'checkout', selection.value }, cwd)
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'checkout', selection.value }, cwd)
+  if ret == 0 then
+    print("Checked out: " .. selection.value)
+  else
+    print(string.format(
+      'Error when checking out: %s. Git returned: "%s"',
+      selection.value,
+      table.concat(stderr, '  ')
+    ))
+  end
+end
+
+actions.git_track_branch = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+  actions.close(prompt_bufnr)
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'checkout', '--track', selection.value }, cwd)
+  if ret == 0 then
+    print("Tracking branch: " .. selection.value)
+  else
+    print(string.format(
+      'Error when tracking branch: %s. Git returned: "%s"',
+      selection.value,
+      table.concat(stderr, '  ')
+    ))
+  end
+end
+
+actions.git_delete_branch = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+
+  local confirmation = vim.fn.input('Do you really wanna delete branch ' .. selection.value .. '? [Y/n] ')
+  if confirmation ~= '' and string.lower(confirmation) ~= 'y' then return end
+
+  actions.close(prompt_bufnr)
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'branch', '-D', selection.value }, cwd)
+  if ret == 0 then
+    print("Deleted branch: " .. selection.value)
+  else
+    print(string.format(
+      'Error when deleting branch: %s. Git returned: "%s"',
+      selection.value,
+      table.concat(stderr, '  ')
+    ))
+  end
+end
+
+actions.git_rebase_branch = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+
+  local confirmation = vim.fn.input('Do you really wanna delete branch ' .. selection.value .. '? [Y/n] ')
+  if confirmation ~= '' and string.lower(confirmation) ~= 'y' then return end
+
+  actions.close(prompt_bufnr)
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'rebase', selection.value }, cwd)
+  if ret == 0 then
+    print("Rebased branch: " .. selection.value)
+  else
+    print(string.format(
+      'Error when rebasing branch: %s. Git returned: "%s"',
+      selection.value,
+      table.concat(stderr, '  ')
+    ))
+  end
 end
 
 actions.git_staging_toggle = function(prompt_bufnr)

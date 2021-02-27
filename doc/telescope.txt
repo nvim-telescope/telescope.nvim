@@ -7,6 +7,11 @@ filter, find and pick things in Lua.
 To find out more:
 https://github.com/nvim-telescope/telescope.nvim
 
+  :h telescope.setup
+  :h telescope.builtin
+  :h telescope.layout
+  :h telescope.actions
+
 telescope.extensions()                                *telescope.extensions()*
 
     Use telescope.extensions to reference any extensions within your
@@ -43,6 +48,18 @@ telescope.setup({opts})                                    *telescope.setup()*
 
     Valid keys for {opts.defaults}
 
+                                          *telescope.defaults.entry_prefix*
+    entry_prefix: ~
+        Prefix in front of each result entry. Current selection not included.
+
+        Default: '  '
+
+                                         *telescope.defaults.prompt_prefix*
+    prompt_prefix: ~
+        Will be shown in front of the prompt.
+
+        Default: '> '
+
                                        *telescope.defaults.scroll_strategy*
     scroll_strategy: ~
         Determines what happens you try to scroll past view of the picker.
@@ -50,6 +67,12 @@ telescope.setup({opts})                                    *telescope.setup()*
           Available options are:
           - "cycle" (default)
           - "limit"
+
+                                       *telescope.defaults.selection_caret*
+    selection_caret: ~
+        Will be shown in front of the selection.
+
+        Default: '> '
 
                                     *telescope.defaults.selection_strategy*
     selection_strategy: ~
