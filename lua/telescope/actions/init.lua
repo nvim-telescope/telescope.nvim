@@ -81,14 +81,14 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.move_selection_worse(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
-  action_set.shift_selection(prompt_bufnr, p_scroller.worse(picker.scroll_strategy))
+  action_set.shift_selection(prompt_bufnr, p_scroller.worse(picker.sorting_strategy))
 end
 
 --- Move the selection to the entry that has a better score
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.move_selection_better(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
-  action_set.shift_selection(prompt_bufnr, p_scroller.better(picker.scroll_strategy))
+  action_set.shift_selection(prompt_bufnr, p_scroller.better(picker.sorting_strategy))
 end
 
 --- Move to the top of the picker
