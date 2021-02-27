@@ -98,8 +98,13 @@ git.branches = function(opts)
     },
     previewer = previewers.git_branch_log.new(opts),
     sorter = conf.file_sorter(opts),
-    attach_mappings = function()
+    attach_mappings = function(_, map)
       actions.select_default:replace(actions.git_checkout)
+      map('i', '<c-t>', actions.git_track_branch)
+      map('n', '<c-t>', actions.git_track_branch)
+
+      map('i', '<c-r>', actions.git_rebase_branch)
+      map('n', '<c-r>', actions.git_rebase_branch)
       return true
     end
   }):find()

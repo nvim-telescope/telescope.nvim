@@ -337,6 +337,14 @@ require('telescope.builtin').fd({ -- or new custom picker's attach_mappings fiel
     return true
   end,
 })
+------------------------------
+-- More practical example of adding a new mapping
+require'telescope.builtin'.git_branches({ attach_mappings = function(_, map)
+  map('i', '<c-d>', actions.git_delete_branch) -- this action already exist
+  map('n', '<c-d>', actions.git_delete_branch) -- this action already exist
+  -- for more actions look at lua/telescope/actions/init.lua
+  return true
+end})
 ```
 
 For more info, see [./developers.md](./developers.md)
@@ -404,7 +412,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 |-------------------------------------|---------------------------------------------------------------------------------------------|
 | `builtin.git_commits`               | Lists git commits with diff preview and on enter checkout the commit.                       |
 | `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checkouts it out on enter.                 |
-| `builtin.git_branches`              | Lists all branches with log preview and checkout action.                                    |
+| `builtin.git_branches`              | Lists all branches with log preview, checkout action (<cr>), track action (<c-t>) and rebase action(<c-r>). |
 | `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multiselection still WIP) |
 | ..................................  | Your next awesome picker function here :D                                                   |
 
