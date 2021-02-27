@@ -114,10 +114,6 @@ function Picker:new(opts)
     preview_cutoff = get_default(opts.preview_cutoff, config.values.preview_cutoff),
   }, self)
 
-  if not vim.endswith(obj.selection_caret, ' ') then
-    obj.selection_caret = obj.selection_caret .. ' '
-  end
-
   obj.scroller = p_scroller.create(
     get_default(opts.scroll_strategy, config.values.scroll_strategy),
     obj.sorting_strategy

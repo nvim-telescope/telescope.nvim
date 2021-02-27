@@ -43,6 +43,7 @@ jobs:
           export PATH="${PWD}/build/:${PATH}"
           make docgen
 
+      # inspired by nvim-lspconfigs
       - name: Update documentation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
