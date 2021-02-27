@@ -1,4 +1,11 @@
--- Actions functions that are useful for people creating their own mappings.
+---@tag telescope.actions
+
+-- TODO: Add @module to make it so we can have the prefix.
+--@module telescope.actions
+
+---@brief [[
+--- Actions functions that are useful for people creating their own mappings.
+---@brief ]]
 
 local a = vim.api
 
@@ -40,7 +47,6 @@ local action_is_deprecated = function(name, err)
   )
 end
 
---- Get the current entry
 function actions.get_selected_entry()
   -- TODO(1.0): Remove
   action_is_deprecated("get_selected_entry")
@@ -53,7 +59,6 @@ function actions.get_current_line()
   return action_state.get_current_line()
 end
 
---- Get the current picker object for the prompt
 function actions.get_current_picker(prompt_bufnr)
   -- TODO(1.0): Remove
   action_is_deprecated("get_current_picker")
@@ -61,15 +66,33 @@ function actions.get_current_picker(prompt_bufnr)
 end
 
 --- Move the selection to the next entry
+---@param prompt_bufnr number: The prompt bufnr
 function actions.move_selection_next(prompt_bufnr)
   action_set.shift_selection(prompt_bufnr, 1)
 end
 
 --- Move the selection to the previous entry
+---@param prompt_bufnr number: The prompt bufnr
 function actions.move_selection_previous(prompt_bufnr)
   action_set.shift_selection(prompt_bufnr, -1)
 end
 
+--- Move the selection to the entry that has a worse score
+---@param prompt_bufnr number: The prompt bufnr
+function actions.move_selection_worse(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  action_set.shift_selection(prompt_bufnr, p_scroller.worse(picker.sorting_strategy))
+end
+
+--- Move the selection to the entry that has a better score
+---@param prompt_bufnr number: The prompt bufnr
+function actions.move_selection_better(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  action_set.shift_selection(prompt_bufnr, p_scroller.better(picker.sorting_strategy))
+end
+
+--- Move to the top of the picker
+---@param prompt_bufnr number: The prompt bufnr
 function actions.move_to_top(prompt_bufnr)
   local current_picker = actions.get_current_picker(prompt_bufnr)
   current_picker:set_selection(p_scroller.top(current_picker.sorting_strategy,
@@ -78,6 +101,8 @@ function actions.move_to_top(prompt_bufnr)
   ))
 end
 
+--- Move to the middle of the picker
+---@param prompt_bufnr number: The prompt bufnr
 function actions.move_to_middle(prompt_bufnr)
   local current_picker = actions.get_current_picker(prompt_bufnr)
   current_picker:set_selection(p_scroller.middle(
@@ -87,6 +112,8 @@ function actions.move_to_middle(prompt_bufnr)
   ))
 end
 
+--- Move to the bottom of the picker
+---@param prompt_bufnr number: The prompt bufnr
 function actions.move_to_bottom(prompt_bufnr)
   local current_picker = actions.get_current_picker(prompt_bufnr)
   current_picker:set_selection(p_scroller.bottom(current_picker.sorting_strategy,
@@ -95,16 +122,22 @@ function actions.move_to_bottom(prompt_bufnr)
   ))
 end
 
+--- Add current entry to multi select
+---@param prompt_bufnr number: The prompt bufnr
 function actions.add_selection(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:add_selection(current_picker:get_selection_row())
 end
 
+--- Remove current entry from multi select
+---@param prompt_bufnr number: The prompt bufnr
 function actions.remove_selection(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:remove_selection(current_picker:get_selection_row())
 end
 
+--- Toggle current entry status for multi select
+---@param prompt_bufnr number: The prompt bufnr
 function actions.toggle_selection(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:toggle_selection(current_picker:get_selection_row())
@@ -357,7 +390,7 @@ actions.send_selected_to_qflist = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
 
   local qf_entries = {}
-  for entry in pairs(picker.multi_select) do
+  for _, entry in ipairs(picker:get_multi_selection()) do
     table.insert(qf_entries, entry_to_qf(entry))
   end
 

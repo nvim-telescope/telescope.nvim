@@ -118,6 +118,102 @@ builtin.live_grep()                                      *builtin.live_grep()*
 
 
 ================================================================================
+                                                             *telescope.actions*
+
+Actions functions that are useful for people creating their own mappings.
+
+actions.add_selection({prompt_bufnr})                *actions.add_selection()*
+
+    Add current entry to multi select
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_selection_better({prompt_bufnr})*actions.move_selection_better()*
+
+    Move the selection to the entry that has a better score
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
+
+    Move the selection to the next entry
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous()*
+
+    Move the selection to the previous entry
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
+
+    Move the selection to the entry that has a worse score
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_to_bottom({prompt_bufnr})              *actions.move_to_bottom()*
+
+    Move to the bottom of the picker
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_to_middle({prompt_bufnr})              *actions.move_to_middle()*
+
+    Move to the middle of the picker
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_to_top({prompt_bufnr})                    *actions.move_to_top()*
+
+    Move to the top of the picker
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.remove_selection({prompt_bufnr})          *actions.remove_selection()*
+
+    Remove current entry from multi select
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
+
+    Toggle current entry status for multi select
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+
+================================================================================
                                                               *telescope.layout*
 
 

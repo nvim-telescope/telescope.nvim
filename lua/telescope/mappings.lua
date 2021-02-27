@@ -24,8 +24,9 @@ mappings.default_mappings = config.values.default_mappings or {
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
 
-      -- TODO: When we implement multi-select, you can turn this back on :)
-      -- ["<Tab>"] = actions.add_selection,
+      ["<Tab>"] = actions.toggle_selection + actions.move_selection_worse,
+      ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
+      ["<M-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
     },
 
     n = {
@@ -34,6 +35,10 @@ mappings.default_mappings = config.values.default_mappings or {
       ["<C-x>"] = actions.select_horizontal,
       ["<C-v>"] = actions.select_vertical,
       ["<C-t>"] = actions.select_tab,
+
+      ["<Tab>"] = actions.toggle_selection + actions.move_selection_worse,
+      ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
+      ["<M-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
 
       -- TODO: This would be weird if we switch the ordering.
       ["j"] = actions.move_selection_next,

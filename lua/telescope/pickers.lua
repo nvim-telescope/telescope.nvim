@@ -19,6 +19,7 @@ local p_highlights = require('telescope.pickers.highlights')
 local p_scroller = require('telescope.pickers.scroller')
 
 local EntryManager = require('telescope.entry_manager')
+local MultiSelect = require('telescope.pickers.multi')
 
 local get_default = utils.get_default
 
@@ -73,6 +74,7 @@ function Picker:new(opts)
     cwd = opts.cwd,
 
     _completion_callbacks = {},
+    _multi = MultiSelect:new(),
 
     track = get_default(opts.track, false),
     stats = {},
@@ -245,7 +247,7 @@ function Picker:clear_extra_rows(results_bufnr)
     log.debug(msg)
   end
 
-  log.debug("Clearing:", worst_line)
+  log.trace("Clearing:", worst_line)
 end
 
 function Picker:highlight_displayed_rows(results_bufnr, prompt)
@@ -295,7 +297,7 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
   end
 
   local entry = self.manager:get_entry(self:get_index(row))
-  self.highlighter:hi_multiselect(row, entry)
+  self.highlighter:hi_multiselect(row, self:is_multi_selected(entry))
 end
 
 function Picker:can_select_row(row)
@@ -579,56 +581,36 @@ end
 
 function Picker:add_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
-  self.multi_select[entry] = true
+  self._multi:add(entry)
 
-  self.highlighter:hi_multiselect(row, entry)
-end
-
-function Picker:add_selection(row)
-  local entry = self.manager:get_entry(self:get_index(row))
-  self.multi_select[entry] = true
-
-  self.highlighter:hi_multiselect(row, entry)
+  self.highlighter:hi_multiselect(row, true)
 end
 
 function Picker:remove_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
-  self.multi_select[entry] = nil
+  self._multi:drop(entry)
 
-  self.highlighter:hi_multiselect(row, entry)
+  self.highlighter:hi_multiselect(row, false)
+end
+
+function Picker:is_multi_selected(entry)
+  return self._multi:is_selected(entry)
+end
+
+function Picker:get_multi_selection()
+  return self._multi:get()
 end
 
 function Picker:toggle_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
+  self._multi:toggle(entry)
 
-  if self.multi_select[entry] then
-    self:remove_selection(row)
-  else
-    self:add_selection(row)
-  end
-end
-
-function Picker:display_multi_select(results_bufnr)
-  for entry, _ in pairs(self.multi_select) do
-    local index = self.manager:find_entry(entry)
-    if index then
-      vim.api.nvim_buf_add_highlight(
-        results_bufnr,
-        a.nvim_create_namespace('telescope_selection'),
-        "TelescopeMultiSelection",
-        self:get_row(index),
-        0,
-        -1
-      )
-    end
-  end
+  self.highlighter:hi_multiselect(row, self._multi:is_selected(entry))
 end
 
 function Picker:reset_selection()
   self._selection_entry = nil
   self._selection_row = nil
-
-  self.multi_select = {}
 end
 
 function Picker:_reset_prefix_color(hl_group)
@@ -695,45 +677,50 @@ function Picker:set_selection(row)
     end
   end
 
-  local entry = self.manager:get_entry(self:get_index(row))
   local results_bufnr = self.results_bufnr
+  if not a.nvim_buf_is_valid(results_bufnr) then
+    return
+  end
 
   if row > a.nvim_buf_line_count(results_bufnr) then
-    error(string.format(
+    log.debug(string.format(
       "Should not be possible to get row this large %s %s",
         row,
         a.nvim_buf_line_count(results_bufnr)
     ))
-  end
 
-  state.set_global_key("selected_entry", entry)
-
-  if not vim.api.nvim_buf_is_valid(results_bufnr) then
     return
   end
+
+  local entry = self.manager:get_entry(self:get_index(row))
+  state.set_global_key("selected_entry", entry)
 
   -- TODO: Probably should figure out what the rows are that made this happen...
   --        Probably something with setting a row that's too high for this?
   --        Not sure.
   local set_ok, set_errmsg = pcall(function()
-    if not a.nvim_buf_is_valid(results_bufnr) then
-      return
-    end
-
     local prompt = self:_get_prompt()
 
     -- Handle adding '> ' to beginning of selections
     if self._selection_row then
-      local display, display_highlights = entry_display.resolve(self, self._selection_entry)
+      -- Only change the first couple characters, nvim_buf_set_text leaves the existing highlights
+      a.nvim_buf_set_text(
+        results_bufnr,
+        self._selection_row, 0,
+        self._selection_row, #self.entry_prefix,
+        { self.entry_prefix }
+      )
+      self.highlighter:hi_multiselect(
+        self._selection_row,
+        self:is_multi_selected(self._selection_entry)
+      )
 
-      if display then
-        display = self.entry_prefix .. display
-        a.nvim_buf_set_lines(results_bufnr, self._selection_row, self._selection_row + 1, false, {display})
+      -- local display = a.nvim_buf_get_lines(results_bufnr, old_row, old_row + 1, false)[1]
+      -- display = '  ' .. display
+      -- a.nvim_buf_set_lines(results_bufnr, old_row, old_row + 1, false, {display})
 
-        self.highlighter:hi_display(self._selection_row, self.entry_prefix, display_highlights)
-        self.highlighter:hi_sorter(self._selection_row, prompt, display)
-        self.highlighter:hi_multiselect(self._selection_row, self._selection_entry)
-      end
+      -- self.highlighter:hi_display(old_row, '  ', display_highlights)
+      -- self.highlighter:hi_sorter(old_row, prompt, display)
     end
 
     local caret = self.selection_caret
@@ -755,7 +742,8 @@ function Picker:set_selection(row)
     self.highlighter:hi_selection(row, caret:sub(1, -2))
     self.highlighter:hi_display(row, caret, display_highlights)
     self.highlighter:hi_sorter(row, prompt, display)
-    self.highlighter:hi_multiselect(row, entry)
+
+    self.highlighter:hi_multiselect(row, self:is_multi_selected(entry))
   end)
 
   if not set_ok then
@@ -819,7 +807,7 @@ function Picker:entry_adder(index, entry, _, insert)
     end
 
     if self.request_number ~= scheduled_request then
-      log.debug("Cancelling request number:", self.request_number, " // ", scheduled_request)
+      log.trace("Cancelling request number:", self.request_number, " // ", scheduled_request)
       return
     end
 
