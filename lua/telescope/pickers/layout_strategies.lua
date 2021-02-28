@@ -21,7 +21,8 @@
 ---         - columns : number Columns in the vim window
 ---         - lines   : number Lines in the vim window
 ---
---- TODO: I would like to make these link to `telescope.layout_strategies.*`, but it's not yet possible.
+--- TODO: I would like to make these link to `telescope.layout_strategies.*`,
+--- but it's not yet possible.
 ---
 --- Available layout strategies include:
 ---   horizontal:
@@ -32,6 +33,24 @@
 ---
 ---   flex:
 ---   - See |layout_strategies.flex|
+---
+--- Available tweaks to the settings in layout defaults include
+--- (can be applied to horizontal and vertical layouts):
+---   mirror (default is `false`):
+---   - Flip the view of the current layout:
+---     - If using horizontal: if `true`, swaps the location of the
+---       results/prompt window and preview window
+---     - If using vertical: if `true`, swaps the location of the results and
+---       prompt windows
+---
+---   width_padding:
+---   - How many cells to pad the width of Telescope's layout window
+---
+---   height_padding:
+---   - How many cells to pad the height of Telescope's layout window
+---
+---   preview_width:
+---   - Change the width of Telescope's preview window
 ---
 ---@brief ]]
 
@@ -76,6 +95,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
     width_padding = "How many cells to pad the width",
     height_padding = "How many cells to pad the height",
     preview_width = "(Resolvable): Determine preview width",
+    mirror = "Flip the location of the results/prompt and preview windows",
   })
 
   local initial_options = self:_get_initial_window_options()
@@ -133,9 +153,16 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
     preview.height = 0
   end
 
-  results.col = width_padding
-  prompt.col = width_padding
-  preview.col = results.col + results.width + 2
+  -- Default value is false, to use the normal horizontal layout
+  if not layout_config.mirror then
+    results.col = width_padding
+    prompt.col = width_padding
+    preview.col = results.col + results.width + 2
+  else
+    preview.col = width_padding
+    prompt.col = preview.col + preview.width + 2
+    results.col = preview.col + preview.width + 2
+  end
 
   preview.line = height_padding
   if self.window.prompt_position == "top" then
@@ -229,9 +256,14 @@ end
 ---    +-----------------+
 ---
 layout_strategies.vertical = function(self, max_columns, max_lines)
-  local layout_config = self.layout_config or {}
-  local initial_options = self:_get_initial_window_options()
+  local layout_config = validate_layout_config(self.layout_config or {}, {
+    width_padding = "How many cells to pad the width",
+    height_padding = "How many cells to pad the height",
+    preview_height = "(Resolvable): Determine preview height",
+    mirror = "Flip the locations of the results and prompt windows",
+  })
 
+  local initial_options = self:_get_initial_window_options()
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
@@ -272,9 +304,15 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
 
   if self.previewer then
-    preview.line = height_padding
-    results.line = preview.line + preview.height + 2
-    prompt.line = results.line + results.height + 2
+    if not layout_config.mirror then
+      preview.line = height_padding
+      results.line = preview.line + preview.height + 2
+      prompt.line = results.line + results.height + 2
+    else
+      prompt.line = height_padding
+      results.line = prompt.line + prompt.height + 2
+      preview.line = results.line + results.height + 2
+    end
   else
     results.line = height_padding
     prompt.line = results.line + results.height + 2
