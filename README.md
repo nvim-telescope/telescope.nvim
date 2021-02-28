@@ -164,7 +164,7 @@ require('telescope').setup{
     results_height = 1,
     results_width = 0.8,
     border = {},
-    borderchars = { '─', '│', '─', '│', '╭', '╮', '╯', '╰'},
+    borderchars = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' },
     color_devicons = true,
     use_less = true,
     set_env = { ['COLORTERM'] = 'truecolor' }, -- default = nil,
@@ -232,7 +232,7 @@ EOF
 | `generic_sorter`       | The sorter for everything else.                       | [Sorters](#sorters)        |
 | `vimgrep_arguments`    | The command line argument for grep search ... TODO.   | dict                       |
 | `selection_strategy`   | What happens to the selection if the list changes.    | follow/reset/row           |
-| `file_ignore_patterns` | Pattern to be ignored `{ "scratch/.*", "%.env"}`      | dict                       |
+| `file_ignore_patterns` | Pattern to be ignored `{ "scratch/.*", "%.env" }`      | dict                       |
 | `shorten_path`         | Whether to shorten paths or not.                      | boolean                    |
 
 ## Mappings
@@ -295,7 +295,7 @@ require('telescope').setup{
         ["<CR>"] = actions.select_default + actions.center,
 
         -- You can perform as many actions in a row as you like
-        ["<CR>"] = actions.select_default+ actions.center + my_cool_custom_action,
+        ["<CR>"] = actions.select_default + actions.center + my_cool_custom_action,
       },
       n = {
         ["<esc>"] = actions.close,
