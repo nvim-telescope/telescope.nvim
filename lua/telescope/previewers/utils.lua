@@ -34,6 +34,7 @@ utils.job_maker = function(cmd, bufnr, opts)
       command = command,
       args = cmd,
       env = opts.env,
+      cwd = opts.cwd,
       on_exit = vim.schedule_wrap(function(j)
         if not vim.api.nvim_buf_is_valid(bufnr) then return end
         if opts.mode == "append" then

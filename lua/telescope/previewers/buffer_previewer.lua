@@ -15,6 +15,50 @@ local previewers = {}
 
 local ns_previewer = vim.api.nvim_create_namespace('telescope.previewers')
 
+local color_hash = {
+  ['p'] = 'TelescopePreviewPipe',
+  ['c'] = 'TelescopePreviewCharDev',
+  ['d'] = 'TelescopePreviewDirectory',
+  ['b'] = 'TelescopePreviewBlock',
+  ['l'] = 'TelescopePreviewLink',
+  ['s'] = 'TelescopePreviewSocket',
+  ['.'] = 'TelescopePreviewNormal',
+  ['r'] = 'TelescopePreviewRead',
+  ['w'] = 'TelescopePreviewWrite',
+  ['x'] = 'TelescopePreviewExecute',
+  ['-'] = 'TelescopePreviewHyphen',
+  ['T'] = 'TelescopePreviewSticky',
+  ['S'] = 'TelescopePreviewSticky',
+  [2]   = 'TelescopePreviewSize',
+  [3]   = 'TelescopePreviewUser',
+  [4]   = 'TelescopePreviewGroup',
+  [5]   = 'TelescopePreviewDate',
+}
+color_hash[6]   = function(line)
+  return color_hash[line:sub(1, 1)]
+end
+
+local colorize_ls = function(bufnr, data, sections)
+  local windows_add = path.separator == '\\' and 2 or 0
+  for lnum, line in ipairs(data) do
+    local section = sections[lnum]
+    for i = 1, section[1].end_index - 1 do -- Highlight permissions
+      local c = line:sub(i, i)
+      vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, color_hash[c], lnum - 1, i - 1, i)
+    end
+    for i = 2, #section do -- highlights size, (user, group), date and name
+      local hl_group = color_hash[i + (i ~= 2 and windows_add or 0)]
+      vim.api.nvim_buf_add_highlight(bufnr,
+        ns_previewer,
+        type(hl_group) == "function" and hl_group(line) or hl_group,
+        lnum - 1,
+        section[i].start_index - 1,
+        section[i].end_index - 1
+      )
+    end
+  end
+end
+
 previewers.file_maker = function(filepath, bufnr, opts)
   opts = opts or {}
   if opts.use_ft_detect == nil then opts.use_ft_detect = true end
@@ -24,9 +68,13 @@ previewers.file_maker = function(filepath, bufnr, opts)
     filepath = vim.fn.expand(filepath)
     local stat = vim.loop.fs_stat(filepath) or {}
     if stat.type == 'directory' then
-      pscan.ls_async(filepath, { hidden = true, on_exit = vim.schedule_wrap(function(data)
-        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
-        if opts.callback then opts.callback(bufnr) end
+      pscan.ls_async(filepath, {
+        hidden = true,
+        group_directories_first = true,
+        on_exit = vim.schedule_wrap(function(data, sections)
+          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
+          colorize_ls(bufnr, data, sections)
+          if opts.callback then opts.callback(bufnr) end
       end)})
     else
       path.read_file_async(filepath, vim.schedule_wrap(function(data)
@@ -393,7 +441,7 @@ previewers.man = defaulter(function(opts)
   }
 end)
 
-previewers.git_branch_log = defaulter(function(_)
+previewers.git_branch_log = defaulter(function(opts)
   local highlight_buffer = function(bufnr, content)
     for i = 1, #content do
       local line = content[i]
@@ -418,77 +466,63 @@ previewers.git_branch_log = defaulter(function(_)
     end
   end
 
-  local remotes = utils.get_os_command_output{ 'git', 'remote' }
   return previewers.new_buffer_previewer {
     get_buffer_by_name = function(_, entry)
       return entry.value
     end,
 
     define_preview = function(self, entry, status)
-      local current_remote = 1
+      local cmd = { 'git', '--no-pager', 'log', '--graph', '--pretty=format:%h -%d %s (%cr)',
+        '--abbrev-commit', '--date=relative', entry.value }
 
-      local gen_cmd = function(v)
-        return { 'git', '-P', 'log', '--graph', '--pretty=format:%h -%d %s (%cr)',
-        '--abbrev-commit', '--date=relative', v }
-      end
-
-      local handle_results
-      handle_results = function(bufnr, content)
-        if content and table.getn(content) == 0 then
-          if current_remote <= table.getn(remotes) then
-            local value = 'remotes/' .. remotes[current_remote] .. '/' .. entry.value
-            current_remote = current_remote + 1
-            putils.job_maker(gen_cmd(value), bufnr, { callback = handle_results })
-          else
-            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "No log found for branch: " .. entry.value })
-          end
-        elseif content and table.getn(content) > 1 then
-          highlight_buffer(bufnr, content)
-        end
-      end
-
-      putils.job_maker(gen_cmd(entry.value), self.state.bufnr, {
+      putils.job_maker(cmd, self.state.bufnr, {
         value = entry.value,
         bufname = self.state.bufname,
-        callback = handle_results
+        cwd = opts.cwd,
+        callback = function(bufnr, content)
+          if not content then return end
+          highlight_buffer(bufnr, content)
+        end
       })
     end
   }
 end, {})
 
-previewers.git_commit_diff = defaulter(function(_)
+previewers.git_commit_diff = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     get_buffer_by_name = function(_, entry)
       return entry.value
     end,
 
     define_preview = function(self, entry, status)
-      putils.job_maker({ 'git', '-P', 'diff', entry.value .. '^!' }, self.state.bufnr, {
+      putils.job_maker({ 'git', '--no-pager', 'diff', entry.value .. '^!' }, self.state.bufnr, {
         value = entry.value,
-        bufname = self.state.bufname
+        bufname = self.state.bufname,
+        cwd = opts.cwd
       })
       putils.regex_highlighter(self.state.bufnr, 'diff')
     end
   }
 end, {})
 
-previewers.git_file_diff = defaulter(function(_)
+previewers.git_file_diff = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     get_buffer_by_name = function(_, entry)
       return entry.value
     end,
 
     define_preview = function(self, entry, status)
-      if entry.status and entry.status == '??' then
+      if entry.status and (entry.status == '??' or entry.status == 'A ') then
         local p = from_entry.path(entry, true)
         if p == nil or p == '' then return end
         conf.buffer_previewer_maker(p, self.state.bufnr, {
           bufname = self.state.bufname
         })
       else
-        putils.job_maker({ 'git', '-P', 'diff', entry.value }, self.state.bufnr, {
+        putils.job_maker({ 'git', '--no-pager', 'diff', entry.value }, self.state.bufnr, {
           value = entry.value,
-          bufname = self.state.bufname
+          bufname = self.state.bufname,
+          cwd = opts.cwd
         })
         putils.regex_highlighter(self.state.bufnr, 'diff')
       end

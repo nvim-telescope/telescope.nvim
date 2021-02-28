@@ -1,4 +1,5 @@
 local actions = require('telescope.actions')
+local action_state = require('telescope.actions.state')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
@@ -36,7 +37,9 @@ git.files = function(opts)
 end
 
 git.commits = function(opts)
-  local results = utils.get_os_command_output({ 'git', 'log', '--pretty=oneline', '--abbrev-commit' })
+  local results = utils.get_os_command_output({
+    'git', 'log', '--pretty=oneline', '--abbrev-commit', '--', '.'
+  }, opts.cwd)
 
   pickers.new(opts, {
     prompt_title = 'Git Commits',
@@ -47,7 +50,7 @@ git.commits = function(opts)
     previewer = previewers.git_commit_diff.new(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
-      actions.goto_file_selection_edit:replace(actions.git_checkout)
+      actions.select_default:replace(actions.git_checkout)
       return true
     end
   }):find()
@@ -56,7 +59,7 @@ end
 git.bcommits = function(opts)
   local results = utils.get_os_command_output({
     'git', 'log', '--pretty=oneline', '--abbrev-commit', vim.fn.expand('%')
-  })
+  }, opts.cwd)
 
   pickers.new(opts, {
     prompt_title = 'Git BCommits',
@@ -67,29 +70,22 @@ git.bcommits = function(opts)
     previewer = previewers.git_commit_diff.new(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
-      actions.goto_file_selection_edit:replace(actions.git_checkout)
+      actions.select_default:replace(actions.git_checkout)
       return true
     end
   }):find()
 end
 
 git.branches = function(opts)
-  -- Does this command in lua (hopefully):
-  -- 'git branch --all | grep -v HEAD | sed "s/.* //;s#remotes/[^/]*/##" | sort -u'
-  local output = utils.get_os_command_output({ 'git', 'branch', '--all' })
+  local output = utils.get_os_command_output({ 'git', 'branch', '--all' }, opts.cwd)
 
-  local tmp_results = {}
+  local results = {}
   for _, v in ipairs(output) do
     if not string.match(v, 'HEAD') and v ~= '' then
       v = string.gsub(v, '.* ', '')
-      v = string.gsub(v, '^remotes/[^/]*/', '')
-      tmp_results[v] = true
+      v = string.gsub(v, '^remotes/', '')
+      table.insert(results, v)
     end
-  end
-
-  local results = {}
-  for k, _ in pairs(tmp_results) do
-    table.insert(results, k)
   end
 
   pickers.new(opts, {
@@ -97,39 +93,53 @@ git.branches = function(opts)
     finder = finders.new_table {
       results = results,
       entry_maker = function(entry)
-        return {
-          value = entry,
-          ordinal = entry,
-          display = entry,
-        }
+        return { value = entry, ordinal = entry, display = entry, }
       end
     },
     previewer = previewers.git_branch_log.new(opts),
     sorter = conf.file_sorter(opts),
-    attach_mappings = function()
-      actions.goto_file_selection_edit:replace(actions.git_checkout)
+    attach_mappings = function(_, map)
+      actions.select_default:replace(actions.git_checkout)
+      map('i', '<c-t>', actions.git_track_branch)
+      map('n', '<c-t>', actions.git_track_branch)
+
+      map('i', '<c-r>', actions.git_rebase_branch)
+      map('n', '<c-r>', actions.git_rebase_branch)
       return true
     end
   }):find()
 end
 
 git.status = function(opts)
-  local output = utils.get_os_command_output{ 'git', 'status', '-s' }
+  local gen_new_finder = function()
+    local output = utils.get_os_command_output({ 'git', 'status', '-s', '--', '.' }, opts.cwd)
 
-  if table.getn(output) == 0 then
-    print('No changes found')
-    return
+    if table.getn(output) == 0 then
+      print('No changes found')
+      return
+    end
+
+    return finders.new_table {
+      results = output,
+      entry_maker = opts.entry_maker or make_entry.gen_from_git_status(opts)
+    }
   end
+
+  local initial_finder = gen_new_finder()
+  if not initial_finder then return end
 
   pickers.new(opts, {
     prompt_title = 'Git Status',
-    finder = finders.new_table {
-      results = output,
-      entry_maker = make_entry.gen_from_git_status(opts)
-    },
+    finder = initial_finder,
     previewer = previewers.git_file_diff.new(opts),
     sorter = conf.file_sorter(opts),
-    attach_mappings = function(_, map)
+    attach_mappings = function(prompt_bufnr, map)
+      actions.git_staging_toggle:enhance {
+        post = function()
+          action_state.get_current_picker(prompt_bufnr):refresh(gen_new_finder(), { reset_prompt = true })
+        end,
+      }
+
       map('i', '<tab>', actions.git_staging_toggle)
       map('n', '<tab>', actions.git_staging_toggle)
       return true
@@ -145,12 +155,15 @@ local set_opts_cwd = function(opts)
   end
 
   -- Find root of git directory and remove trailing newline characters
-  local git_root = vim.fn.systemlist("git -C " .. opts.cwd .. " rev-parse --show-toplevel")[1]
+  local git_root, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
+  local use_git_root = utils.get_default(opts.use_git_root, true)
 
-  if vim.v.shell_error ~= 0 then
+  if ret ~= 0 then
     error(opts.cwd .. ' is not a git directory')
   else
-    opts.cwd = git_root
+    if use_git_root then
+      opts.cwd = git_root[1]
+    end
   end
 end
 

@@ -73,4 +73,42 @@ scroller.create = function(scroll_strategy, sorting_strategy)
   end
 end
 
+scroller.top = function(sorting_strategy, max_results, num_results)
+  if sorting_strategy == 'ascending' then
+    return 0
+  end
+  return (num_results > max_results) and 0 or (max_results - num_results)
+end
+
+scroller.middle = function(sorting_strategy, max_results, num_results)
+  local mid_pos
+
+  if sorting_strategy == 'ascending' then
+    mid_pos = math.floor(num_results / 2)
+  else
+    mid_pos = math.floor(max_results - num_results / 2)
+  end
+
+  return (num_results < max_results) and mid_pos or math.floor(max_results / 2)
+end
+
+scroller.bottom = function(sorting_strategy, max_results, num_results)
+  if sorting_strategy == 'ascending' then
+    return math.min(max_results, num_results) - 1
+  end
+  return max_results - 1
+end
+
+scroller.better = function(sorting_strategy)
+  if sorting_strategy == 'ascending' then
+    return -1
+  else
+    return 1
+  end
+end
+
+scroller.worse = function(sorting_strategy)
+  return -(scroller.better(sorting_strategy))
+end
+
 return scroller

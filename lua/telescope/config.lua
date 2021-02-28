@@ -20,6 +20,7 @@ local sorters = require('telescope.sorters')
 local config = {}
 
 config.values = _TelescopeConfigurationValues
+config.descriptions = {}
 
 function config.set_defaults(defaults)
   defaults = defaults or {}
@@ -28,13 +29,40 @@ function config.set_defaults(defaults)
     return first_non_null(defaults[name], config.values[name], default_val)
   end
 
-  local function set(name, default_val)
+  local function set(name, default_val, description)
+    -- TODO(doc): Once we have descriptions for all of these, then we can add this back in.
+    -- assert(description, "Config values must always have a description")
+
     config.values[name] = get(name, default_val)
+    if description then
+      config.descriptions[name] = vim.trim(description)
+    end
   end
 
-  set("sorting_strategy", "descending")
-  set("selection_strategy", "reset")
-  set("scroll_strategy", "cycle")
+  set("sorting_strategy", "descending", [[
+    Determines the direction "better" results are sorted towards.
+
+      Available options are:
+      - "descending" (default)
+      - "ascending"
+  ]])
+
+  set("selection_strategy", "reset", [[
+    Determines how the cursor acts after each sort iteration.
+
+      Available options are:
+      - "reset" (default)
+      - "follow"
+      - "row"
+  ]])
+
+  set("scroll_strategy", "cycle", [[
+    Determines what happens you try to scroll past view of the picker.
+
+      Available options are:
+      - "cycle" (default)
+      - "limit"
+  ]])
 
   set("layout_strategy", "horizontal")
   set("layout_defaults", {})
@@ -47,18 +75,32 @@ function config.set_defaults(defaults)
   set("results_height", 1)
   set("results_width", 0.8)
 
-  set("prompt_prefix", ">")
+  set("prompt_prefix", "> ", [[
+    Will be shown in front of the prompt.
+
+    Default: '> '
+  ]])
+  set("selection_caret", "> ", [[
+    Will be shown in front of the selection.
+
+    Default: '> '
+  ]])
+  set("entry_prefix", "  ", [[
+    Prefix in front of each result entry. Current selection not included.
+
+    Default: '  '
+  ]])
   set("initial_mode", "insert")
 
   set("border", {})
   set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
 
   set("get_status_text", function(self)
-    return string.format(
-      "%s / %s",
-      (self.stats.processed or 0) - (self.stats.filtered or 0),
-      self.stats.processed or 0
-    )
+    local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
+    local yy = self.stats.processed or 0
+    if xx == 0 and yy == 0 then return "" end
+
+    return string.format("%s / %s", xx, yy)
   end)
 
   -- Builtin configuration
@@ -87,7 +129,7 @@ function config.set_defaults(defaults)
   -- Otherwise, just set the mapping to the function that you want it to be.
   --
   --            ...,
-  --            ["<C-i>"] = actions.goto_file_selection_split
+  --            ["<C-i>"] = actions.select_default
   --            ...,
   --
   set("mappings", {})
@@ -98,9 +140,9 @@ function config.set_defaults(defaults)
 
   set("file_ignore_patterns", nil)
 
-  set("file_previewer", function(...) return require('telescope.previewers').cat.new(...) end)
-  set("grep_previewer", function(...) return require('telescope.previewers').vimgrep.new(...) end)
-  set("qflist_previewer", function(...) return require('telescope.previewers').qflist.new(...) end)
+  set("file_previewer", function(...) return require('telescope.previewers').vim_buffer_cat.new(...) end)
+  set("grep_previewer", function(...) return require('telescope.previewers').vim_buffer_vimgrep.new(...) end)
+  set("qflist_previewer", function(...) return require('telescope.previewers').vim_buffer_qflist.new(...) end)
   set("buffer_previewer_maker", function(...) return require('telescope.previewers').buffer_previewer_maker(...) end)
 end
 

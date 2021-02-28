@@ -1,5 +1,8 @@
 local p_scroller = require('telescope.pickers.scroller')
 
+local log = require('telescope.log')
+log.use_console = false
+
 local eq = assert.are.same
 
 describe('scroller', function()
@@ -109,6 +112,33 @@ describe('scroller', function()
 
       -- 23 112 23
       eq(0, scroller(23, 112, 23))
+    end)
+  end)
+
+
+  describe('should give top, middle and bottom index', function()
+    it('should handle ascending', function()
+      eq(0, p_scroller.top('ascending', 20, 1000))
+      eq(19, p_scroller.bottom('ascending', 20, 1000))
+
+      eq(0, p_scroller.top('ascending', 20, 10))
+      eq(9, p_scroller.bottom('ascending', 20, 10))
+
+      eq(5, p_scroller.middle('ascending', 11, 100))
+      eq(10, p_scroller.middle('ascending', 20, 100))
+      eq(12, p_scroller.middle('ascending', 25, 100))
+    end)
+
+    it('should handle descending', function()
+      eq(0, p_scroller.top('descending', 20, 1000))
+      eq(19, p_scroller.bottom('descending', 20, 1000))
+
+      eq(10, p_scroller.top('descending', 20, 10))
+      eq(19, p_scroller.bottom('descending', 20, 10))
+
+      eq(25, p_scroller.middle('descending', 30, 10))
+      eq(50, p_scroller.middle('descending', 60, 20))
+      eq(105, p_scroller.middle('descending', 120, 30))
     end)
   end)
 end)

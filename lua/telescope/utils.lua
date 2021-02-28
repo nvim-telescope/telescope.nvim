@@ -193,17 +193,21 @@ function utils.display_termcodes(str)
   return str:gsub(string.char(9), "<TAB>"):gsub("", "<C-F>"):gsub(" ", "<Space>")
 end
 
-function utils.get_os_command_output(cmd)
+function utils.get_os_command_output(cmd, cwd)
   if type(cmd) ~= "table" then
     print('Telescope: [get_os_command_output]: cmd has to be a table')
     return {}
   end
   local command = table.remove(cmd, 1)
-  return Job:new({ command = command, args = cmd }):sync()
+  local stderr = {}
+  local stdout, ret = Job:new({ command = command, args = cmd, cwd = cwd, on_stderr = function(_, data)
+    table.insert(stderr, data)
+  end }):sync()
+  return stdout, ret, stderr
 end
 
 utils.strdisplaywidth = (function()
-  if jit then
+  if jit and pathlib.separator ~= '\\' then
     local ffi = require('ffi')
     ffi.cdef[[
       typedef unsigned char char_u;
@@ -224,7 +228,7 @@ utils.strdisplaywidth = (function()
 end)()
 
 utils.utf_ptr2len = (function()
-  if jit then
+  if jit and pathlib.separator ~= '\\' then
     local ffi = require('ffi')
     ffi.cdef[[
       typedef unsigned char char_u;
@@ -282,6 +286,13 @@ function utils.strcharpart(str, nchar, charlen)
   end
 
   return str:sub(nbyte + 1, nbyte + len)
+end
+
+utils.align_str = function(string, width, right_justify)
+  local str_len = utils.strdisplaywidth(string)
+  return right_justify
+    and string.rep(" ", width - str_len)..string
+    or string..string.rep(" ", width - str_len)
 end
 
 return utils

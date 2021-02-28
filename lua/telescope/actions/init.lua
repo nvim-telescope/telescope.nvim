@@ -1,163 +1,195 @@
--- Actions functions that are useful for people creating their own mappings.
+---@tag telescope.actions
+
+-- TODO: Add @module to make it so we can have the prefix.
+--@module telescope.actions
+
+---@brief [[
+--- Actions functions that are useful for people creating their own mappings.
+---@brief ]]
 
 local a = vim.api
 
 local log = require('telescope.log')
-local path = require('telescope.path')
 local state = require('telescope.state')
+local utils = require('telescope.utils')
+local p_scroller = require('telescope.pickers.scroller')
+
+local action_state = require('telescope.actions.state')
+local action_set = require('telescope.actions.set')
 
 local transform_mod = require('telescope.actions.mt').transform_mod
 
 local actions = setmetatable({}, {
   __index = function(_, k)
-    error("Actions does not have a value: " .. tostring(k))
+    -- TODO(conni2461): Remove deprecated messages
+    if k:find('goto_file_selection') then
+      error("`" .. k .. "` is removed and no longer usable. " ..
+        "Use `require('telescope.actions').select_` instead. Take a look at developers.md for more Information.")
+    elseif k == '_goto_file_selection' then
+      error("`_goto_file_selection` is deprecated and no longer replaceable. " ..
+        "Use `require('telescope.actions.set').edit` instead. Take a look at developers.md for more Information.")
+    end
+
+    error("Key does not exist for 'telescope.actions': " .. tostring(k))
   end
 })
 
---- Get the current picker object for the prompt
-function actions.get_current_picker(prompt_bufnr)
-  return state.get_status(prompt_bufnr).picker
+-- TODO(conni2461): Remove deprecated messages
+local action_is_deprecated = function(name, err)
+  local messager = err and error or log.info
+
+  return messager(
+    string.format("`actions.%s()` is deprecated."
+      .. "Use require('telescope.actions.state').%s() instead",
+      name,
+      name
+    )
+  )
 end
 
---- Move the current selection of a picker {change} rows.
---- Handles not overflowing / underflowing the list.
-function actions.shift_current_selection(prompt_bufnr, change)
-  actions.get_current_picker(prompt_bufnr):move_selection(change)
-end
-
-function actions.move_selection_next(prompt_bufnr)
-  actions.shift_current_selection(prompt_bufnr, 1)
-end
-
-function actions.move_selection_previous(prompt_bufnr)
-  actions.shift_current_selection(prompt_bufnr, -1)
-end
-
-function actions.add_selection(prompt_bufnr)
-  local current_picker = actions.get_current_picker(prompt_bufnr)
-  current_picker:add_selection(current_picker:get_selection_row())
-end
-
-function actions.remove_selection(prompt_bufnr)
-  local current_picker = actions.get_current_picker(prompt_bufnr)
-  current_picker:remove_selection(current_picker:get_selection_row())
-end
-
-function actions.toggle_selection(prompt_bufnr)
-  local current_picker = actions.get_current_picker(prompt_bufnr)
-  current_picker:toggle_selection(current_picker:get_selection_row())
-end
-
---- Get the current entry
 function actions.get_selected_entry()
-  return state.get_global_key('selected_entry')
+  -- TODO(1.0): Remove
+  action_is_deprecated("get_selected_entry")
+  return action_state.get_selected_entry()
 end
 
 function actions.get_current_line()
-  return state.get_global_key('current_line')
+  -- TODO(1.0): Remove
+  action_is_deprecated("get_current_line")
+  return action_state.get_current_line()
+end
+
+function actions.get_current_picker(prompt_bufnr)
+  -- TODO(1.0): Remove
+  action_is_deprecated("get_current_picker")
+  return action_state.get_current_picker(prompt_bufnr)
+end
+
+--- Move the selection to the next entry
+---@param prompt_bufnr number: The prompt bufnr
+function actions.move_selection_next(prompt_bufnr)
+  action_set.shift_selection(prompt_bufnr, 1)
+end
+
+--- Move the selection to the previous entry
+---@param prompt_bufnr number: The prompt bufnr
+function actions.move_selection_previous(prompt_bufnr)
+  action_set.shift_selection(prompt_bufnr, -1)
+end
+
+--- Move the selection to the entry that has a worse score
+---@param prompt_bufnr number: The prompt bufnr
+function actions.move_selection_worse(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  action_set.shift_selection(prompt_bufnr, p_scroller.worse(picker.sorting_strategy))
+end
+
+--- Move the selection to the entry that has a better score
+---@param prompt_bufnr number: The prompt bufnr
+function actions.move_selection_better(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  action_set.shift_selection(prompt_bufnr, p_scroller.better(picker.sorting_strategy))
+end
+
+--- Move to the top of the picker
+---@param prompt_bufnr number: The prompt bufnr
+function actions.move_to_top(prompt_bufnr)
+  local current_picker = actions.get_current_picker(prompt_bufnr)
+  current_picker:set_selection(p_scroller.top(current_picker.sorting_strategy,
+    current_picker.max_results,
+    current_picker.manager:num_results()
+  ))
+end
+
+--- Move to the middle of the picker
+---@param prompt_bufnr number: The prompt bufnr
+function actions.move_to_middle(prompt_bufnr)
+  local current_picker = actions.get_current_picker(prompt_bufnr)
+  current_picker:set_selection(p_scroller.middle(
+    current_picker.sorting_strategy,
+    current_picker.max_results,
+    current_picker.manager:num_results()
+  ))
+end
+
+--- Move to the bottom of the picker
+---@param prompt_bufnr number: The prompt bufnr
+function actions.move_to_bottom(prompt_bufnr)
+  local current_picker = actions.get_current_picker(prompt_bufnr)
+  current_picker:set_selection(p_scroller.bottom(current_picker.sorting_strategy,
+    current_picker.max_results,
+    current_picker.manager:num_results()
+  ))
+end
+
+--- Add current entry to multi select
+---@param prompt_bufnr number: The prompt bufnr
+function actions.add_selection(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  current_picker:add_selection(current_picker:get_selection_row())
+end
+
+--- Remove current entry from multi select
+---@param prompt_bufnr number: The prompt bufnr
+function actions.remove_selection(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  current_picker:remove_selection(current_picker:get_selection_row())
+end
+
+--- Toggle current entry status for multi select
+---@param prompt_bufnr number: The prompt bufnr
+function actions.toggle_selection(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  current_picker:toggle_selection(current_picker:get_selection_row())
 end
 
 function actions.preview_scrolling_up(prompt_bufnr)
-  actions.get_current_picker(prompt_bufnr).previewer:scroll_fn(-30)
+  -- TODO: Make number configurable.
+  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(-30)
 end
 
 function actions.preview_scrolling_down(prompt_bufnr)
-  actions.get_current_picker(prompt_bufnr).previewer:scroll_fn(30)
-end
-
--- TODO: It seems sometimes we get bad styling.
-function actions._goto_file_selection(prompt_bufnr, command)
-  local entry = actions.get_selected_entry(prompt_bufnr)
-
-  if not entry then
-    print("[telescope] Nothing currently selected")
-    return
-  else
-    local filename, row, col
-    if entry.filename then
-      filename = entry.path or entry.filename
-
-      -- TODO: Check for off-by-one
-      row = entry.row or entry.lnum
-      col = entry.col
-    elseif not entry.bufnr then
-      -- TODO: Might want to remove this and force people
-      -- to put stuff into `filename`
-      local value = entry.value
-      if not value then
-        print("Could not do anything with blank line...")
-        return
-      end
-
-      if type(value) == "table" then
-        value = entry.display
-      end
-
-      local sections = vim.split(value, ":")
-
-      filename = sections[1]
-      row = tonumber(sections[2])
-      col = tonumber(sections[3])
-    end
-
-    local preview_win = state.get_status(prompt_bufnr).preview_win
-    if preview_win then
-      a.nvim_win_set_config(preview_win, {style = ''})
-    end
-
-    local entry_bufnr = entry.bufnr
-
-    actions.close(prompt_bufnr)
-
-    if entry_bufnr then
-      if command == 'edit' then
-        vim.cmd(string.format(":buffer %d", entry_bufnr))
-      elseif command == 'new' then
-        vim.cmd(string.format(":sbuffer %d", entry_bufnr))
-      elseif command == 'vnew' then
-        vim.cmd(string.format(":vert sbuffer %d", entry_bufnr))
-      elseif command == 'tabedit' then
-        vim.cmd(string.format(":tab sb %d", entry_bufnr))
-      end
-    else
-      filename = path.normalize(vim.fn.fnameescape(filename), vim.fn.getcwd())
-
-      local bufnr = vim.api.nvim_get_current_buf()
-      if filename ~= vim.api.nvim_buf_get_name(bufnr) then
-        vim.cmd(string.format(":%s %s", command, filename))
-        bufnr = vim.api.nvim_get_current_buf()
-        a.nvim_buf_set_option(bufnr, "buflisted", true)
-      end
-
-      if row and col then
-        local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, {row, col})
-        if not ok then
-          log.debug("Failed to move to cursor:", err_msg, row, col)
-        end
-      end
-    end
-    vim.api.nvim_command("doautocmd filetypedetect BufRead " .. vim.fn.fnameescape(filename))
-  end
+  -- TODO: Make number configurable.
+  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(30)
 end
 
 function actions.center(_)
   vim.cmd(':normal! zz')
 end
 
-function actions.goto_file_selection_edit(prompt_bufnr)
-  actions._goto_file_selection(prompt_bufnr, "edit")
+function actions.select_default(prompt_bufnr)
+  return action_set.select(prompt_bufnr, "default")
 end
 
-function actions.goto_file_selection_split(prompt_bufnr)
-  actions._goto_file_selection(prompt_bufnr, "new")
+function actions.select_horizontal(prompt_bufnr)
+  return action_set.select(prompt_bufnr, "horizontal")
 end
 
-function actions.goto_file_selection_vsplit(prompt_bufnr)
-  actions._goto_file_selection(prompt_bufnr, "vnew")
+function actions.select_vertical(prompt_bufnr)
+  return action_set.select(prompt_bufnr, "vertical")
 end
 
-function actions.goto_file_selection_tabedit(prompt_bufnr)
-  actions._goto_file_selection(prompt_bufnr, "tabedit")
+function actions.select_tab(prompt_bufnr)
+  return action_set.select(prompt_bufnr, "tab")
+end
+
+-- TODO: consider adding float!
+-- https://github.com/nvim-telescope/telescope.nvim/issues/365
+
+function actions.file_edit(prompt_bufnr)
+  return action_set.edit(prompt_bufnr, "edit")
+end
+
+function actions.file_split(prompt_bufnr)
+  return action_set.edit(prompt_bufnr, "new")
+end
+
+function actions.file_vsplit(prompt_bufnr)
+  return action_set.edit(prompt_bufnr, "vnew")
+end
+
+function actions.file_tab(prompt_bufnr)
+  return action_set.edit(prompt_bufnr, "tabedit")
 end
 
 function actions.close_pum(_)
@@ -167,7 +199,7 @@ function actions.close_pum(_)
 end
 
 local do_close = function(prompt_bufnr, keepinsert)
-  local picker = actions.get_current_picker(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
 
@@ -191,7 +223,7 @@ function actions.close(prompt_bufnr)
 end
 
 actions.set_command_line = function(prompt_bufnr)
-  local entry = actions.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
 
   actions.close(prompt_bufnr)
   vim.fn.histadd("cmd", entry.value)
@@ -199,8 +231,8 @@ actions.set_command_line = function(prompt_bufnr)
 end
 
 actions.edit_register = function(prompt_bufnr)
-  local entry = actions.get_selected_entry(prompt_bufnr)
-  local picker = actions.get_current_picker(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
 
   vim.fn.inputsave()
   local updated_value = vim.fn.input("Edit [" .. entry.value .. "] ❯ ", entry.content)
@@ -221,7 +253,7 @@ actions.edit_register = function(prompt_bufnr)
 end
 
 actions.paste_register = function(prompt_bufnr)
-  local entry = actions.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
 
   actions.close(prompt_bufnr)
 
@@ -238,21 +270,21 @@ actions.paste_register = function(prompt_bufnr)
 end
 
 actions.run_builtin = function(prompt_bufnr)
-  local entry = actions.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
 
   do_close(prompt_bufnr, true)
   require('telescope.builtin')[entry.text]()
 end
 
 actions.insert_symbol = function(prompt_bufnr)
-  local selection = actions.get_selected_entry()
+  local selection = action_state.get_selected_entry()
   actions.close(prompt_bufnr)
   vim.api.nvim_put({selection.value[1]}, '', true, true)
 end
 
 -- TODO: Think about how to do this.
 actions.insert_value = function(prompt_bufnr)
-  local entry = actions.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
 
   vim.schedule(function()
     actions.close(prompt_bufnr)
@@ -262,25 +294,86 @@ actions.insert_value = function(prompt_bufnr)
 end
 
 actions.git_checkout = function(prompt_bufnr)
-  local selection = actions.get_selected_entry(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
   actions.close(prompt_bufnr)
-  local val = selection.value
-  os.execute('git checkout ' .. val)
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'checkout', selection.value }, cwd)
+  if ret == 0 then
+    print("Checked out: " .. selection.value)
+  else
+    print(string.format(
+      'Error when checking out: %s. Git returned: "%s"',
+      selection.value,
+      table.concat(stderr, '  ')
+    ))
+  end
+end
+
+actions.git_track_branch = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+  actions.close(prompt_bufnr)
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'checkout', '--track', selection.value }, cwd)
+  if ret == 0 then
+    print("Tracking branch: " .. selection.value)
+  else
+    print(string.format(
+      'Error when tracking branch: %s. Git returned: "%s"',
+      selection.value,
+      table.concat(stderr, '  ')
+    ))
+  end
+end
+
+actions.git_delete_branch = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+
+  local confirmation = vim.fn.input('Do you really wanna delete branch ' .. selection.value .. '? [Y/n] ')
+  if confirmation ~= '' and string.lower(confirmation) ~= 'y' then return end
+
+  actions.close(prompt_bufnr)
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'branch', '-D', selection.value }, cwd)
+  if ret == 0 then
+    print("Deleted branch: " .. selection.value)
+  else
+    print(string.format(
+      'Error when deleting branch: %s. Git returned: "%s"',
+      selection.value,
+      table.concat(stderr, '  ')
+    ))
+  end
+end
+
+actions.git_rebase_branch = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+
+  local confirmation = vim.fn.input('Do you really wanna delete branch ' .. selection.value .. '? [Y/n] ')
+  if confirmation ~= '' and string.lower(confirmation) ~= 'y' then return end
+
+  actions.close(prompt_bufnr)
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'rebase', selection.value }, cwd)
+  if ret == 0 then
+    print("Rebased branch: " .. selection.value)
+  else
+    print(string.format(
+      'Error when rebasing branch: %s. Git returned: "%s"',
+      selection.value,
+      table.concat(stderr, '  ')
+    ))
+  end
 end
 
 actions.git_staging_toggle = function(prompt_bufnr)
-  local selection = actions.get_selected_entry(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
 
-  -- If parts of the file are staged and unstaged at the same time, stage
-  -- changes. Else toggle between staged and unstaged if the file is tracked,
-  -- and between added and untracked if the file is untracked.
   if selection.status:sub(2) == ' ' then
-    os.execute('git restore --staged ' .. selection.value)
+    utils.get_os_command_output({ 'git', 'restore', '--staged', selection.value }, cwd)
   else
-    os.execute('git add ' .. selection.value)
+    utils.get_os_command_output({ 'git', 'add', selection.value }, cwd)
   end
-  do_close(prompt_bufnr, true)
-  require('telescope.builtin').git_status()
 end
 
 local entry_to_qf = function(entry)
@@ -294,10 +387,10 @@ local entry_to_qf = function(entry)
 end
 
 actions.send_selected_to_qflist = function(prompt_bufnr)
-  local picker = actions.get_current_picker(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
 
   local qf_entries = {}
-  for entry in pairs(picker.multi_select) do
+  for _, entry in ipairs(picker:get_multi_selection()) do
     table.insert(qf_entries, entry_to_qf(entry))
   end
 
@@ -307,7 +400,7 @@ actions.send_selected_to_qflist = function(prompt_bufnr)
 end
 
 actions.send_to_qflist = function(prompt_bufnr)
-  local picker = actions.get_current_picker(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
   local manager = picker.manager
 
   local qf_entries = {}

@@ -4,6 +4,7 @@ local popup = require('popup')
 require('telescope')
 
 local actions = require('telescope.actions')
+local action_set = require('telescope.actions.set')
 local config = require('telescope.config')
 local debounce = require('telescope.debounce')
 local resolve = require('telescope.config.resolve')
@@ -18,27 +19,9 @@ local p_highlights = require('telescope.pickers.highlights')
 local p_scroller = require('telescope.pickers.scroller')
 
 local EntryManager = require('telescope.entry_manager')
+local MultiSelect = require('telescope.pickers.multi')
 
 local get_default = utils.get_default
-
--- TODO: Make this work with deep extend I think.
-local extend = function(opts, defaults)
-  local result = {}
-
-  for k, v in pairs(opts or {}) do
-    assert(type(k) == 'string', "Should be string, opts")
-    result[k] = v
-  end
-
-  for k, v in pairs(defaults or {}) do
-    if result[k] == nil then
-      assert(type(k) == 'string', "Should be string, defaults")
-      result[k] = v
-    end
-  end
-
-  return result
-end
 
 local ns_telescope_matching = a.nvim_create_namespace('telescope_matching')
 local ns_telescope_prompt = a.nvim_create_namespace('telescope_prompt')
@@ -62,7 +45,10 @@ function Picker:new(opts)
   end
 
   -- Reset actions for any replaced / enhanced actions.
+  -- TODO: Think about how we could remember to NOT have to do this...
+  --        I almost forgot once already, cause I'm not smart enough to always do it.
   actions._clear()
+  action_set._clear()
 
   local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
 
@@ -72,6 +58,8 @@ function Picker:new(opts)
     preview_title = get_default(opts.preview_title, "Preview"),
 
     prompt_prefix = get_default(opts.prompt_prefix, config.values.prompt_prefix),
+    selection_caret = get_default(opts.selection_caret, config.values.selection_caret),
+    entry_prefix = get_default(opts.entry_prefix, config.values.entry_prefix),
     initial_mode = get_default(opts.initial_mode, config.values.initial_mode),
 
     default_text = opts.default_text,
@@ -83,7 +71,10 @@ function Picker:new(opts)
     previewer = opts.previewer,
     default_selection_index = opts.default_selection_index,
 
+    cwd = opts.cwd,
+
     _completion_callbacks = {},
+    _multi = MultiSelect:new(),
 
     track = get_default(opts.track, false),
     stats = {},
@@ -124,7 +115,6 @@ function Picker:new(opts)
 
     preview_cutoff = get_default(opts.preview_cutoff, config.values.preview_cutoff),
   }, self)
-
 
   obj.scroller = p_scroller.create(
     get_default(opts.scroll_strategy, config.values.scroll_strategy),
@@ -257,7 +247,7 @@ function Picker:clear_extra_rows(results_bufnr)
     log.debug(msg)
   end
 
-  log.debug("Clearing:", worst_line)
+  log.trace("Clearing:", worst_line)
 end
 
 function Picker:highlight_displayed_rows(results_bufnr, prompt)
@@ -307,7 +297,7 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
   end
 
   local entry = self.manager:get_entry(self:get_index(row))
-  self.highlighter:hi_multiselect(row, entry)
+  self.highlighter:hi_multiselect(row, self:is_multi_selected(entry))
 end
 
 function Picker:can_select_row(row)
@@ -388,15 +378,10 @@ function Picker:find()
   local prompt_prefix = self.prompt_prefix
   if prompt_prefix ~= '' then
     a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
-
-    if not vim.endswith(prompt_prefix, " ") then
-      prompt_prefix = prompt_prefix .. " "
-    end
     vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
-
-    a.nvim_buf_add_highlight(prompt_bufnr, ns_telescope_prompt_prefix, 'TelescopePromptPrefix', 0, 0, #prompt_prefix)
   end
   self.prompt_prefix = prompt_prefix
+  self:_reset_prefix_color()
 
   -- Temporarily disabled: Draw the screen ASAP. This makes things feel speedier.
   -- vim.cmd [[redraw]]
@@ -456,6 +441,8 @@ function Picker:find()
       log.warn("Failed with msg: ", msg)
     end
   end
+
+  self.__on_lines = on_lines
 
   on_lines(nil, nil, nil, 0, 1)
   status_updater()
@@ -594,56 +581,86 @@ end
 
 function Picker:add_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
-  self.multi_select[entry] = true
+  self._multi:add(entry)
 
-  self.highlighter:hi_multiselect(row, entry)
-end
-
-function Picker:add_selection(row)
-  local entry = self.manager:get_entry(self:get_index(row))
-  self.multi_select[entry] = true
-
-  self.highlighter:hi_multiselect(row, entry)
+  self.highlighter:hi_multiselect(row, true)
 end
 
 function Picker:remove_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
-  self.multi_select[entry] = nil
+  self._multi:drop(entry)
 
-  self.highlighter:hi_multiselect(row, entry)
+  self.highlighter:hi_multiselect(row, false)
+end
+
+function Picker:is_multi_selected(entry)
+  return self._multi:is_selected(entry)
+end
+
+function Picker:get_multi_selection()
+  return self._multi:get()
 end
 
 function Picker:toggle_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
+  self._multi:toggle(entry)
 
-  if self.multi_select[entry] then
-    self:remove_selection(row)
-  else
-    self:add_selection(row)
-  end
-end
-
-function Picker:display_multi_select(results_bufnr)
-  for entry, _ in pairs(self.multi_select) do
-    local index = self.manager:find_entry(entry)
-    if index then
-      vim.api.nvim_buf_add_highlight(
-        results_bufnr,
-        a.nvim_create_namespace('telescope_selection'),
-        "TelescopeMultiSelection",
-        self:get_row(index),
-        0,
-        -1
-      )
-    end
-  end
+  self.highlighter:hi_multiselect(row, self._multi:is_selected(entry))
 end
 
 function Picker:reset_selection()
   self._selection_entry = nil
   self._selection_row = nil
+end
 
-  self.multi_select = {}
+function Picker:_reset_prefix_color(hl_group)
+  self._current_prefix_hl_group = hl_group or nil
+
+  if self.prompt_prefix ~= '' then
+    vim.api.nvim_buf_add_highlight(self.prompt_bufnr,
+      ns_telescope_prompt_prefix,
+      self._current_prefix_hl_group or 'TelescopePromptPrefix',
+      0,
+      0,
+      #self.prompt_prefix
+    )
+  end
+end
+
+-- TODO(conni2461): Maybe _ prefix these next two functions
+-- TODO(conni2461): Next two functions only work together otherwise color doesn't work
+--                  Probably a issue with prompt buffers
+function Picker:change_prompt_prefix(new_prefix, hl_group)
+  if not new_prefix then return end
+
+  if new_prefix ~= '' then
+    vim.fn.prompt_setprompt(self.prompt_bufnr, new_prefix)
+  else
+    vim.api.nvim_buf_set_text(self.prompt_bufnr, 0, 0, 0, #self.prompt_prefix, {})
+    vim.api.nvim_buf_set_option(self.prompt_bufnr, 'buftype', '')
+  end
+  self.prompt_prefix = new_prefix
+  self:_reset_prefix_color(hl_group)
+end
+
+function Picker:reset_prompt()
+  vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, -1, false, { self.prompt_prefix })
+  self:_reset_prefix_color(self._current_prefix_hl_group)
+end
+
+--- opts.new_prefix:   Either as string or { new_string, hl_group }
+--- opts.reset_prompt: bool
+function Picker:refresh(finder, opts)
+  opts = opts or {}
+  if opts.new_prefix then
+    local handle = type(opts.new_prefix) == 'table' and unpack or function(x) return x end
+    self:change_prompt_prefix(handle(opts.new_prefix))
+  end
+  if opts.reset_prompt then self:reset_prompt() end
+
+  self.finder:close()
+  self.finder = finder
+  self.__on_lines(nil, nil, nil, 0, 1)
 end
 
 function Picker:set_selection(row)
@@ -660,54 +677,58 @@ function Picker:set_selection(row)
     end
   end
 
-  local entry = self.manager:get_entry(self:get_index(row))
-  local status = state.get_status(self.prompt_bufnr)
   local results_bufnr = self.results_bufnr
+  if not a.nvim_buf_is_valid(results_bufnr) then
+    return
+  end
 
   if row > a.nvim_buf_line_count(results_bufnr) then
-    error(string.format(
+    log.debug(string.format(
       "Should not be possible to get row this large %s %s",
         row,
         a.nvim_buf_line_count(results_bufnr)
     ))
-  end
 
-  state.set_global_key("selected_entry", entry)
-
-  if not vim.api.nvim_buf_is_valid(results_bufnr) then
     return
   end
+
+  local entry = self.manager:get_entry(self:get_index(row))
+  state.set_global_key("selected_entry", entry)
 
   -- TODO: Probably should figure out what the rows are that made this happen...
   --        Probably something with setting a row that's too high for this?
   --        Not sure.
   local set_ok, set_errmsg = pcall(function()
-    if not a.nvim_buf_is_valid(results_bufnr) then
-      return
-    end
-
     local prompt = self:_get_prompt()
 
     -- Handle adding '> ' to beginning of selections
     if self._selection_row then
-      local display, display_highlights = entry_display.resolve(self, self._selection_entry)
+      -- Only change the first couple characters, nvim_buf_set_text leaves the existing highlights
+      a.nvim_buf_set_text(
+        results_bufnr,
+        self._selection_row, 0,
+        self._selection_row, #self.entry_prefix,
+        { self.entry_prefix }
+      )
+      self.highlighter:hi_multiselect(
+        self._selection_row,
+        self:is_multi_selected(self._selection_entry)
+      )
 
-      if display then
-        display = '  ' .. display
-        a.nvim_buf_set_lines(results_bufnr, self._selection_row, self._selection_row + 1, false, {display})
+      -- local display = a.nvim_buf_get_lines(results_bufnr, old_row, old_row + 1, false)[1]
+      -- display = '  ' .. display
+      -- a.nvim_buf_set_lines(results_bufnr, old_row, old_row + 1, false, {display})
 
-        self.highlighter:hi_display(self._selection_row, '  ', display_highlights)
-        self.highlighter:hi_sorter(self._selection_row, prompt, display)
-        self.highlighter:hi_multiselect(self._selection_row, self._selection_entry)
-      end
+      -- self.highlighter:hi_display(old_row, '  ', display_highlights)
+      -- self.highlighter:hi_sorter(old_row, prompt, display)
     end
 
-    local caret = '>'
+    local caret = self.selection_caret
     -- local display = string.format('%s %s', caret,
     --   (a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] or ''):sub(3)
     -- )
     local display, display_highlights = entry_display.resolve(self, entry)
-    display = caret .. ' ' .. display
+    display = caret .. display
 
     -- TODO: You should go back and redraw the highlights for this line from the sorter.
     -- That's the only smart thing to do.
@@ -717,10 +738,12 @@ function Picker:set_selection(row)
     end
     a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, {display})
 
-    self.highlighter:hi_selection(row, caret)
-    self.highlighter:hi_display(row, '  ', display_highlights)
+    -- don't highlight the ' ' at the end of caret
+    self.highlighter:hi_selection(row, caret:sub(1, -2))
+    self.highlighter:hi_display(row, caret, display_highlights)
     self.highlighter:hi_sorter(row, prompt, display)
-    self.highlighter:hi_multiselect(row, entry)
+
+    self.highlighter:hi_multiselect(row, self:is_multi_selected(entry))
   end)
 
   if not set_ok then
@@ -736,16 +759,20 @@ function Picker:set_selection(row)
   self._selection_entry = entry
   self._selection_row = row
 
+  self:refresh_previewer()
+end
+
+function Picker:refresh_previewer()
+  local status = state.get_status(self.prompt_bufnr)
   if status.preview_win and self.previewer then
     self:_increment("previewed")
 
     self.previewer:preview(
-      entry,
+      self._selection_entry,
       status
     )
   end
 end
-
 
 function Picker:entry_adder(index, entry, _, insert)
   local row = self:get_row(index)
@@ -765,7 +792,7 @@ function Picker:entry_adder(index, entry, _, insert)
   -- This is the two spaces to manage the '> ' stuff.
   -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
   -- until then, insert two spaces
-  local prefix = '  '
+  local prefix = self.entry_prefix
   display = prefix .. display
 
   self:_increment("displayed")
@@ -780,7 +807,7 @@ function Picker:entry_adder(index, entry, _, insert)
     end
 
     if self.request_number ~= scheduled_request then
-      log.debug("Cancelling request number:", self.request_number, " // ", scheduled_request)
+      log.trace("Cancelling request number:", self.request_number, " // ", scheduled_request)
       return
     end
 
@@ -849,6 +876,10 @@ end
 
 function Picker:_increment(key)
   self.stats[key] = (self.stats[key] or 0) + 1
+end
+
+function Picker:_decrement(key)
+  self.stats[key] = (self.stats[key] or 0) - 1
 end
 
 
@@ -938,6 +969,10 @@ function Picker:get_result_processor(prompt, status_updater)
         return
       end
 
+      if entry.ignore_count ~= nil and entry.ignore_count == true then
+        self:_decrement("processed")
+      end
+
       if sort_score == -1 then
         self:_increment("filtered")
         log.trace("Filtering out result: ", entry)
@@ -1014,7 +1049,31 @@ end
 
 
 pickers.new = function(opts, defaults)
-  return Picker:new(extend(opts, defaults))
+  local result = {}
+
+  for k, v in pairs(opts or {}) do
+    assert(type(k) == 'string', "Should be string, opts")
+    result[k] = v
+  end
+
+  for k, v in pairs(defaults or {}) do
+    if result[k] == nil then
+      assert(type(k) == 'string', "Should be string, defaults")
+      result[k] = v
+    else
+      -- For attach mappings, we want people to be able to pass in another function
+      -- and apply their mappings after we've applied our defaults.
+      if k == 'attach_mappings' then
+        local opt_value = result[k]
+        result[k] = function(...)
+          v(...)
+          return opt_value(...)
+        end
+      end
+    end
+  end
+
+  return Picker:new(result)
 end
 
 function pickers.on_close_prompt(prompt_bufnr)
@@ -1033,7 +1092,7 @@ end
 
 function Picker:_get_prompt()
   return vim.trim(
-    vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, 1, false)[1]:sub(#self.prompt_prefix)
+    vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, 1, false)[1]:sub(#self.prompt_prefix + 1)
   )
 end
 

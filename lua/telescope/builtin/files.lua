@@ -1,10 +1,16 @@
 local actions = require('telescope.actions')
+local action_state = require('telescope.actions.state')
+local action_set = require('telescope.actions.set')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
 local utils = require('telescope.utils')
 local conf = require('telescope.config').values
+
+local scan = require('plenary.scandir')
+local Path = require('plenary.path')
+local os_sep = Path.path.sep
 
 local flatten = vim.tbl_flatten
 
@@ -97,6 +103,7 @@ end
 files.find_files = function(opts)
   local find_command = opts.find_command
   local hidden = opts.hidden
+  local follow = opts.follow
   local search_dirs = opts.search_dirs
 
   if search_dirs then
@@ -109,6 +116,7 @@ files.find_files = function(opts)
     if 1 == vim.fn.executable("fd") then
       find_command = { 'fd', '--type', 'f' }
       if hidden then table.insert(find_command, '--hidden') end
+      if follow then table.insert(find_command, '-L') end
       if search_dirs then
         table.insert(find_command, '.')
         for _,v in pairs(search_dirs) do
@@ -118,6 +126,7 @@ files.find_files = function(opts)
     elseif 1 == vim.fn.executable("fdfind") then
       find_command = { 'fdfind', '--type', 'f' }
       if hidden then table.insert(find_command, '--hidden') end
+      if follow then table.insert(find_command, '-L') end
       if search_dirs then
         table.insert(find_command, '.')
         for _,v in pairs(search_dirs) do
@@ -127,6 +136,7 @@ files.find_files = function(opts)
     elseif 1 == vim.fn.executable("rg") then
       find_command = { 'rg', '--files' }
       if hidden then table.insert(find_command, '--hidden') end
+      if follow then table.insert(find_command, '-L') end
       if search_dirs then
         for _,v in pairs(search_dirs) do
           table.insert(find_command, v)
@@ -138,6 +148,7 @@ files.find_files = function(opts)
         table.insert(find_command, { '-not', '-path', "*/.*" })
         find_command = flatten(find_command)
       end
+      if follow then table.insert(find_command, '-L') end
       if search_dirs then
         table.remove(find_command, 2)
         for _,v in pairs(search_dirs) do
@@ -183,6 +194,84 @@ local function prepare_match(entry, kind)
   end
 
   return entries
+end
+
+files.file_browser = function(opts)
+  opts = opts or {}
+
+  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
+
+  local gen_new_finder = function(path)
+    opts.cwd = path
+    local data = {}
+
+    scan.scan_dir(path, {
+      add_dirs = true,
+      depth = 1,
+      on_insert = function(entry, typ)
+        table.insert(data, typ == 'directory' and (entry .. os_sep) or entry)
+      end
+    })
+    table.insert(data, 1, '../')
+
+    return finders.new_table {
+      results = data,
+      entry_maker = (function()
+        local tele_path = require'telescope.path'
+        local gen = make_entry.gen_from_file(opts)
+        return function(entry)
+          local tmp = gen(entry)
+          tmp.ordinal = tele_path.make_relative(entry, opts.cwd)
+          return tmp
+        end
+      end)()
+    }
+  end
+
+  pickers.new(opts, {
+    prompt_title = 'Find Files',
+    finder = gen_new_finder(opts.cwd),
+    previewer = conf.file_previewer(opts),
+    sorter = conf.file_sorter(opts),
+    attach_mappings = function(prompt_bufnr, map)
+      action_set.select:replace_if(function()
+        return action_state.get_selected_entry().path:sub(-1) == os_sep
+      end, function()
+        local new_cwd = vim.fn.expand(action_state.get_selected_entry().path:sub(1, -2))
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        current_picker.cwd = new_cwd
+        current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true })
+      end)
+
+      local create_new_file = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local file = action_state.get_current_line()
+        if file == "" then
+          print('To create a new file or directory(add ' .. os_sep .. ' at the end of file) ' ..
+                'write the desired new into the prompt and press <C-e>. ' ..
+                'It works for not existing nested input as well.' ..
+                'Example: this' .. os_sep .. 'is' .. os_sep .. 'a' .. os_sep .. 'new_file.lua')
+          return
+        end
+
+        local fpath = current_picker.cwd .. os_sep .. file
+        if string.sub(fpath, -1) ~= os_sep then
+          actions.close(prompt_bufnr)
+          Path:new(fpath):touch({ parents = true })
+          vim.cmd(string.format(':e %s', fpath))
+        else
+          Path:new(fpath:sub(1, -2)):mkdir({ parents = true })
+          local new_cwd = vim.fn.expand(fpath)
+          current_picker.cwd = new_cwd
+          current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true })
+        end
+      end
+
+      map('i', '<C-e>', create_new_file)
+      map('n', '<C-e>', create_new_file)
+      return true
+    end,
+  }):find()
 end
 
 files.treesitter = function(opts)
@@ -251,9 +340,9 @@ files.current_buffer_fuzzy_find = function(opts)
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function()
-      actions._goto_file_selection:enhance {
+      action_set.select:enhance {
         post = function()
-          local selection = actions.get_selected_entry()
+          local selection = action_state.get_selected_entry()
           vim.api.nvim_win_set_cursor(0, {selection.lnum, 0})
         end,
       }
@@ -287,9 +376,9 @@ files.tags = function(opts)
     previewer = previewers.ctags.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function()
-      actions._goto_file_selection:enhance {
+      action_set.select:enhance {
         post = function()
-          local selection = actions.get_selected_entry()
+          local selection = action_state.get_selected_entry()
 
           if selection.scode then
             local scode = string.gsub(selection.scode, '[$]$', '')
