@@ -32,22 +32,22 @@
 ---
 ---   flex:
 ---   - See |layout_strategies.flex|
---- 
---- Available tweaks to the settings in layout defaults include (can be applied to both horizontal and vertical layouts):
----   mirror (default is `false`): 
+---
+--- Available tweaks to the settings in layout defaults include (can be applied to horizontal and vertical layouts):
+---   mirror (default is `false`):
 ---   - Flip the view of the current layout:
----     - If using horizontal: setting mirror to `true` will swap the location of the results/prompt window and preview window
----     - If using vertical: setting mirror to `true` will swap the location of the results and prompt windows
----   
+---     - If using horizontal: if `true`, swaps the location of the results/prompt window and preview window
+---     - If using vertical: if `true, swaps the location of the results and prompt windows
+---
 ---   width_padding:
 ---   - How many cells to pad the width of Telescope's layout window
---- 
+---
 ---   height_padding:
 ---   - How many cells to pad the height of Telescope's layout window
 ---
 ---   preview_width:
 ---   - Change the width of Telescope's preview window
---- 
+---
 ---@brief ]]
 
 local config = require('telescope.config')
