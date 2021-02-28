@@ -40,7 +40,7 @@
 ---   - Flip the view of the current layout:
 ---     - If using horizontal: if `true`, swaps the location of the
 ---       results/prompt window and preview window
----     - If using vertical: if `true, swaps the location of the results and
+---     - If using vertical: if `true`, swaps the location of the results and
 ---       prompt windows
 ---
 ---   width_padding:
