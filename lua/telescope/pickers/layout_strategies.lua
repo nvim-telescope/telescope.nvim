@@ -21,7 +21,8 @@
 ---         - columns : number Columns in the vim window
 ---         - lines   : number Lines in the vim window
 ---
---- TODO: I would like to make these link to `telescope.layout_strategies.*`, but it's not yet possible.
+--- TODO: I would like to make these link to `telescope.layout_strategies.*`,
+--- but it's not yet possible.
 ---
 --- Available layout strategies include:
 ---   horizontal:
@@ -33,11 +34,14 @@
 ---   flex:
 ---   - See |layout_strategies.flex|
 ---
---- Available tweaks to the settings in layout defaults include (can be applied to horizontal and vertical layouts):
+--- Available tweaks to the settings in layout defaults include
+--- (can be applied to horizontal and vertical layouts):
 ---   mirror (default is `false`):
 ---   - Flip the view of the current layout:
----     - If using horizontal: if `true`, swaps the location of the results/prompt window and preview window
----     - If using vertical: if `true, swaps the location of the results and prompt windows
+---     - If using horizontal: if `true`, swaps the location of the
+---       results/prompt window and preview window
+---     - If using vertical: if `true, swaps the location of the results and
+---       prompt windows
 ---
 ---   width_padding:
 ---   - How many cells to pad the width of Telescope's layout window
