@@ -707,7 +707,7 @@ function Picker:set_selection(row)
       a.nvim_buf_set_text(
         results_bufnr,
         self._selection_row, 0,
-        self._selection_row, #self.entry_prefix,
+        self._selection_row, #self.selection_caret,
         { self.entry_prefix }
       )
       self.highlighter:hi_multiselect(
