@@ -2,12 +2,20 @@
 
 ---@brief [[
 --- Provides a Previewer table that has to be implemented by each previewer.
---- To achieve this this module also provides two wrapper that abstract most of
---- the work and make it really easy create new previewers.
+--- To achieve this, this module also provides two wrapper that abstract most
+--- of the work and make it really easy create new previewers.
+---   - `previewers.new_termopen_previewer`
+---   - `previewers.new_buffer_previewer`
 ---
---- Furthermore there are a collections of previewers already defined which
+--- Furthermore, there are a collections of previewers already defined which
 --- can be used for every picker, as long as the entries of the picker provide
---- the necessary fields.
+--- the necessary fields. The more important once are
+---   - `previewers.cat`
+---   - `previewers.vimgrep`
+---   - `previewers.qflist`
+---   - `previewers.vim_buffer_cat`
+---   - `previewers.vim_buffer_vimgrep`
+---   - `previewers.vim_buffer_qflist`
 ---
 --- Previewers can be disabled for any builtin or custom picker by doing
 ---   :Telescope find_files previewer=false
@@ -19,7 +27,7 @@ local buffer_previewer = require('telescope.previewers.buffer_previewer')
 
 local previewers = {}
 
---- This is the base table all previewers have to implement. Its possible to
+--- This is the base table all previewers have to implement. It's possible to
 --- write a wrapper for this because most previewers need to have the same
 --- keys set.
 --- Examples of wrappers are:
@@ -66,11 +74,11 @@ end
 ---     return { 'bat', entry.path }
 ---   end
 ---
---- Its an easy way to get your first previewer going and it integrates well
+--- It's an easy way to get your first previewer going and it integrates well
 --- with `bat` and `less`. Providing out of the box scrolling if the command
 --- uses less.
 ---
---- Furthermore it will forward all `config.set_env` environment variables to
+--- Furthermore, it will forward all `config.set_env` environment variables to
 --- that terminal process.
 ---
 --- While this interface is a good start it was replaced with the way more
@@ -86,7 +94,7 @@ previewers.new_termopen_previewer = term_previewer.new_termopen_previewer
 --- The preferred way of using this previewer is like this
 --- `require('telescope.config').values.cat_previewer`
 --- This will respect user configuration and will use `buffer_previewers` in
---- case its configured that way.
+--- case it's configured that way.
 previewers.cat = term_previewer.cat
 
 --- Provides a `termopen_previewer` which has the ability to display files at
@@ -97,7 +105,7 @@ previewers.cat = term_previewer.cat
 --- The preferred way of using this previewer is like this
 --- `require('telescope.config').values.grep_previewer`
 --- This will respect user configuration and will use `buffer_previewers` in
---- case its configured that way.
+--- case it's configured that way.
 previewers.vimgrep = term_previewer.vimgrep
 
 --- Provides a `termopen_previewer` which has the ability to display files at
@@ -109,7 +117,7 @@ previewers.vimgrep = term_previewer.vimgrep
 --- The preferred way of using this previewer is like this
 --- `require('telescope.config').values.qflist_previewer`
 --- This will respect user configuration and will use buffer previewers in
---- case its configured that way.
+--- case it's configured that way.
 previewers.qflist = term_previewer.qflist
 
 
@@ -158,7 +166,7 @@ previewers.qflist = term_previewer.qflist
 ---   - `self.state.bufnr`
 ---     Is the current buffer number, in which you have to write the loaded
 ---     content.
----     Don't create a buffer yourself, otherwise its not managed by the
+---     Don't create a buffer yourself, otherwise it's not managed by the
 ---     buffer_previewer interface and you will probably be better off
 ---     writing your own interface.
 ---   - self.state.winid
@@ -199,11 +207,10 @@ previewers.qflist = term_previewer.qflist
 ---         -- for example `search` and `matchadd`
 ---       end)
 ---     to achieve that.
----   - If you want to read a file into the buffer its best to use
+---   - If you want to read a file into the buffer it's best to use
 ---     `buffer_previewer_maker`. But access this function with
 ---     `require('telescope.config').values.buffer_previewer_maker`
 ---     because it can be redefined by users.
----@see previewers.new_buffer_previewer
 previewers.new_buffer_previewer = buffer_previewer.new_buffer_previewer
 
 --- A universal way of reading a file into a buffer previewer.
@@ -211,14 +218,7 @@ previewers.new_buffer_previewer = buffer_previewer.new_buffer_previewer
 --- and provides a callback which can be used, to jump to a line in the buffer.
 ---@param filepath string: String to the filepath, will be expanded
 ---@param bufnr number: Where the content will be written
----@param opts table: Offers following keys (can be nil):
----  - use_ft_detect boolean: Use filetype detection, default is true. Use
----                           this if you already know the filetype and want
----                           save the time it takes to detect the filetype.
----                           Useful for help tags.
----  - bufname string: buffer name used for cache
----  - callback function: Run a function after the file was loaded. Use this
----                       to jump to a line or highlight something specific.
+---@param opts table: keys: `use_ft_detect`, `bufname` and `callback`
 previewers.buffer_previewer_maker = buffer_previewer.file_maker
 
 
@@ -229,7 +229,7 @@ previewers.buffer_previewer_maker = buffer_previewer.file_maker
 --- The preferred way of using this previewer is like this
 --- `require('telescope.config').values.file_previewer`
 --- This will respect user configuration and will use `termopen_previewer` in
---- case its configured that way.
+--- case it's configured that way.
 previewers.vim_buffer_cat = buffer_previewer.cat
 
 --- A previewer that is used to display a file and jump to the provided line.
@@ -240,7 +240,7 @@ previewers.vim_buffer_cat = buffer_previewer.cat
 --- The preferred way of using this previewer is like this
 --- `require('telescope.config').values.grep_previewer`
 --- This will respect user configuration and will use `termopen_previewer` in
---- case its configured that way.
+--- case it's configured that way.
 previewers.vim_buffer_vimgrep = buffer_previewer.vimgrep
 
 --- Is the same as `vim_buffer_vimgrep` and only exist for consistency with
@@ -249,7 +249,7 @@ previewers.vim_buffer_vimgrep = buffer_previewer.vimgrep
 --- The preferred way of using this previewer is like this
 --- `require('telescope.config').values.qflist_previewer`
 --- This will respect user configuration and will use `termopen_previewer` in
---- case its configured that way.
+--- case it's configured that way.
 previewers.vim_buffer_qflist = buffer_previewer.qflist
 
 
@@ -267,7 +267,7 @@ previewers.highlights = buffer_previewer.highlights
 
 
 --- A deprecated way of displaying content more easily. Was written at a time,
---- where the buffer_previewer interface wasn't present. Nowadays its easier
+--- where the buffer_previewer interface wasn't present. Nowadays it's easier
 --- to just use this. We will keep it around for backwards compatibility
 --- because some extensions use it.
 --- It doesn't use cache or some other clever tricks.
