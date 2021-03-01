@@ -372,7 +372,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.git_files`                 | Lists Git files in current directory.                                                       |
 | `builtin.grep_string`               | Searches for a string under the cursor in current directory.                                |
 | `builtin.live_grep`                 | Searches in current directory files. (respecting .gitignore)                                |
-| `builtin.file_browser`              | Ivy-like file explorer. Creates files by typing in filename and pressing <C-e>. Press <C-e> without prompt for more info |
+| `builtin.file_browser`              | Ivy-like file explorer. Creates files by typing in filename and pressing `<C-e>`. Press `<C-e>` without prompt for more info |
 
 ### Vim Pickers
 
