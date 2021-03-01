@@ -4,54 +4,55 @@
 ---
 --- Layout strategies are different functions to position telescope.
 ---
---- All layout strategies are functions with the following signature: >
+--- All layout strategies are functions with the following signature:
 ---
----      function(picker, columns, lines)
----        -- Do some calculations here...
----        return {
----          preview = preview_configuration
----          results = results_configuration,
----          prompt = prompt_configuration,
----        }
----      end
---- <
+--- <pre>
+---   function(picker, columns, lines)
+---     -- Do some calculations here...
+---     return {
+---       preview = preview_configuration
+---       results = results_configuration,
+---       prompt = prompt_configuration,
+---     }
+---   end
 ---
----     Parameters: ~
----         - picker  : A Picker object. (docs coming soon)
----         - columns : number Columns in the vim window
----         - lines   : number Lines in the vim window
+---   Parameters: ~
+---     - picker  : A Picker object. (docs coming soon)
+---     - columns : number Columns in the vim window
+---     - lines   : number Lines in the vim window
+---
+--- </pre>
 ---
 --- TODO: I would like to make these link to `telescope.layout_strategies.*`,
 --- but it's not yet possible.
 ---
 --- Available layout strategies include:
----   horizontal:
----   - See |layout_strategies.horizontal|
+---   - horizontal:
+---     - See |layout_strategies.horizontal|
 ---
----   vertical:
----   - See |layout_strategies.vertical|
+---   - vertical:
+---     - See |layout_strategies.vertical|
 ---
----   flex:
----   - See |layout_strategies.flex|
+---   - flex:
+---     - See |layout_strategies.flex|
 ---
 --- Available tweaks to the settings in layout defaults include
 --- (can be applied to horizontal and vertical layouts):
----   mirror (default is `false`):
----   - Flip the view of the current layout:
----     - If using horizontal: if `true`, swaps the location of the
----       results/prompt window and preview window
----     - If using vertical: if `true`, swaps the location of the results and
----       prompt windows
+---   - mirror (default is `false`):
+---     - Flip the view of the current layout:
+---       - If using horizontal: if `true`, swaps the location of the
+---         results/prompt window and preview window
+---       - If using vertical: if `true`, swaps the location of the results and
+---         prompt windows
 ---
----   width_padding:
----   - How many cells to pad the width of Telescope's layout window
+---   - width_padding:
+---     - How many cells to pad the width of Telescope's layout window
 ---
----   height_padding:
----   - How many cells to pad the height of Telescope's layout window
+---   - height_padding:
+---     - How many cells to pad the height of Telescope's layout window
 ---
----   preview_width:
----   - Change the width of Telescope's preview window
----
+---   - preview_width:
+---     - Change the width of Telescope's preview window
 ---@brief ]]
 
 local config = require('telescope.config')
@@ -82,6 +83,7 @@ local layout_strategies = {}
 
 --- Horizontal previewer
 ---
+--- <pre>
 ---   +-------------+--------------+
 ---   |             |              |
 ---   |   Results   |              |
@@ -90,6 +92,7 @@ local layout_strategies = {}
 ---   +-------------|              |
 ---   |   Prompt    |              |
 ---   +-------------+--------------+
+--- </pre>
 layout_strategies.horizontal = function(self, max_columns, max_lines)
   local layout_config = validate_layout_config(self.layout_config or {}, {
     width_padding = "How many cells to pad the width",
@@ -184,6 +187,7 @@ end
 
 --- Centered layout wih smaller default sizes (I think)
 ---
+--- <pre>
 ---    +--------------+
 ---    |    Preview   |
 ---    +--------------+
@@ -193,7 +197,7 @@ end
 ---    |    Result    |
 ---    |    Result    |
 ---    +--------------+
----
+--- </pre>
 layout_strategies.center = function(self, columns, lines)
   local initial_options = self:_get_initial_window_options()
   local preview = initial_options.preview
@@ -243,6 +247,7 @@ end
 
 --- Vertical perviewer stacks the items on top of each other.
 ---
+--- <pre>
 ---    +-----------------+
 ---    |    Previewer    |
 ---    |    Previewer    |
@@ -254,7 +259,7 @@ end
 ---    +-----------------+
 ---    |     Prompt      |
 ---    +-----------------+
----
+--- </pre>
 layout_strategies.vertical = function(self, max_columns, max_lines)
   local layout_config = validate_layout_config(self.layout_config or {}, {
     width_padding = "How many cells to pad the width",
@@ -326,11 +331,11 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
 end
 
 --- Swap between `horizontal` and `vertical` strategies based on the window width
----   -  Supports `vertical` or `horizontal` features
+---  -  Supports `vertical` or `horizontal` features
 ---
----   Uses:
----    flip_columns
----    flip_lines
+--- Uses:
+---  - flip_columns
+---  - flip_lines
 layout_strategies.flex = function(self, max_columns, max_lines)
   local layout_config = self.layout_config or {}
 

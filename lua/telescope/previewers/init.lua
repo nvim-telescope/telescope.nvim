@@ -33,8 +33,10 @@ local previewers = {}
 --- Examples of wrappers are:
 ---   - `new_buffer_previewer`
 ---   - `new_termopen_previewer`
+---
 --- To create a new table do following:
----   `local new_previewer = Previewer:new(opts)`
+---   - `local new_previewer = Previewer:new(opts)`
+---
 --- What `:new` expects is listed below
 ---
 --- The interface provides following set of functions. All of them, besides
@@ -180,14 +182,14 @@ previewers.qflist = term_previewer.qflist
 --- Tips:
 ---   - If you want to display content of a terminal job use:
 ---     `require('telescope.previewers.utils').job_maker(cmd, bufnr, opts)`
----       `cmd` table: for example { 'git', 'diff', entry.value }
----       `bufnr` number: in which the content will be written
----       `opts` table: with following keys
+---       - `cmd` table: for example { 'git', 'diff', entry.value }
+---       - `bufnr` number: in which the content will be written
+---       - `opts` table: with following keys
 ---         - `bufname` string: used for cache
 ---         - `value` string: used for cache
 ---         - `mode` string: either "insert" or "append". "insert" is default
 ---         - `env` table: define environment variables. Example:
----           `{ ['PAGER'] = '', ['MANWIDTH'] = 50 }`
+---           - `{ ['PAGER'] = '', ['MANWIDTH'] = 50 }`
 ---         - `cwd` string: define current working directory for job
 ---         - `callback` function(bufnr, content): will be called when job
 ---           is done. Content will be nil if job is already loaded.
@@ -196,17 +198,19 @@ previewers.qflist = term_previewer.qflist
 ---           Use the returned `bufnr` and not `self.state.bufnr` in callback,
 ---           because state can already be changed at this point in time.
 ---   - If you want to attach a highlighter use:
----     `require('telescope.previewers.utils').highlighter(bufnr, ft)`
----       This will prioritize tree sitter highlighting if available for
----       environment and language.
----     `require('telescope.previewers.utils').regex_highlighter(bufnr, ft)`
----     `require('telescope.previewers.utils').ts_highlighter(bufnr, ft)`
+---     - `require('telescope.previewers.utils').highlighter(bufnr, ft)`
+---       - This will prioritize tree sitter highlighting if available for
+---         environment and language.
+---     - `require('telescope.previewers.utils').regex_highlighter(bufnr, ft)`
+---     - `require('telescope.previewers.utils').ts_highlighter(bufnr, ft)`
 ---   - If you want to use `vim.fn.search` or similar you need to run it in
 ---     that specific buffer context. Do
+--- <pre>
 ---       vim.api.nvim_buf_call(bufnr, function()
 ---         -- for example `search` and `matchadd`
 ---       end)
 ---     to achieve that.
+--- </pre>
 ---   - If you want to read a file into the buffer it's best to use
 ---     `buffer_previewer_maker`. But access this function with
 ---     `require('telescope.config').values.buffer_previewer_maker`
