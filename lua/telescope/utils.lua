@@ -1,3 +1,5 @@
+local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
+
 local pathlib = require('telescope.path')
 local Job     = require('plenary.job')
 
@@ -294,5 +296,51 @@ utils.align_str = function(string, width, right_justify)
     and string.rep(" ", width - str_len)..string
     or string..string.rep(" ", width - str_len)
 end
+
+utils.transform_devicons = (function()
+  if has_devicons then
+    return function(filename, display, disable_devicons)
+      local conf = require('telescope.config').values
+      if disable_devicons or not filename then
+        return display
+      end
+
+      local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, '%a+$'), { default = true })
+      local icon_display = (icon or ' ') .. ' ' .. display
+
+      if conf.color_devicons then
+        return icon_display, icon_highlight
+      else
+        return icon_display
+      end
+    end
+  else
+    return function(_, display, _)
+      return display
+    end
+  end
+end)()
+
+utils.get_devicons = (function()
+  if has_devicons then
+    return function(filename, disable_devicons)
+      local conf = require('telescope.config').values
+      if disable_devicons or not filename then
+        return ''
+      end
+
+      local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, '%a+$'), { default = true })
+      if conf.color_devicons then
+        return icon, icon_highlight
+      else
+        return icon
+      end
+    end
+  else
+    return function(_, _)
+      return ''
+    end
+  end
+end)()
 
 return utils
