@@ -31,10 +31,10 @@ local lsp_type_highlight = {
 }
 
 local lsp_type_diagnostic = {
-    ["I"] = "Information",
-    ["W"] = "Warning",
-    ["E"] = "Error",
-    ["H"] = "Hint"
+  [1] = "Error",
+  [2] = "Warning",
+  [3] = "Information",
+  [4] = "Hint"
 }
 
 local make_entry = {}
@@ -906,9 +906,10 @@ function make_entry.gen_from_lsp_diagnostics(opts)
   opts.tail_path = utils.get_default(opts.tail_path, true)
 
   local signs = {}
-  for k, _ in pairs(lsp_type_diagnostic) do
-    signs[k] = vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. lsp_type_diagnostic[k])[1].text)
+  for _, v in pairs(lsp_type_diagnostic) do
+    signs[v] = vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. v)[1].text)
   end
+  -- expose line width for longer msg if opts.hide_filename
   local line_width = utils.get_default(opts.line_width, 48)
   local displayer = entry_display.create {
     separator = "▏",
@@ -934,7 +935,7 @@ function make_entry.gen_from_lsp_diagnostics(opts)
     local pos = string.format("%3d:%2d", entry.lnum, entry.col)
     local line_info = {
       string.format("%s %s", signs[entry.type], pos),
-      string.format("LspDiagnostics%s", lsp_type_diagnostic[entry.type])
+      string.format("LspDiagnosticsDefault%s", entry.type)
     }
     -- remove line break to avoid display issues
     local text = string.format("%-" .. line_width .."s", entry.text:gsub(".* | ", ""):gsub("[\n]", ""))

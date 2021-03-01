@@ -91,7 +91,7 @@ function Sorter:score(prompt, entry)
   end
 
   local score = (filter_score == FILTERED and FILTERED or
-        self:scoring_function(prompt or "", ordinal, entry))
+    self:scoring_function(prompt or "", ordinal, entry))
 
   if score == FILTERED then
     self:_mark_discarded(prompt, ordinal)
@@ -475,43 +475,43 @@ sorters.get_substr_matcher = function()
 end
 
 local substr_matcher = function(_, prompt, line, _)
-      local display = line:lower()
-      local search_terms = util.max_split(prompt, "%s")
-      local matched = 0
-      local total_search_terms = 0
-      for _, word in pairs(search_terms) do
-        total_search_terms = total_search_terms + 1
-        if display:find(word, 1, true) then
-          matched = matched + 1
-        end
-      end
-
-      return matched == total_search_terms and 0 or FILTERED
+  local display = line:lower()
+  local search_terms = util.max_split(prompt, "%s")
+  local matched = 0
+  local total_search_terms = 0
+  for _, word in pairs(search_terms) do
+    total_search_terms = total_search_terms + 1
+    if display:find(word, 1, true) then
+      matched = matched + 1
     end
+  end
+
+  return matched == total_search_terms and 0 or FILTERED
+end
 
 local filter_function = function(opts)
-    local scoring_function = vim.F.if_nil(opts.filter_function, substr_matcher)
-    local tag = vim.F.if_nil(opts.tag, "ordinal")
-    local delimiter = vim.F.if_nil(opts.delimiter, ":")
+  local scoring_function = vim.F.if_nil(opts.filter_function, substr_matcher)
+  local tag = vim.F.if_nil(opts.tag, "ordinal")
+  local delimiter = vim.F.if_nil(opts.delimiter, ":")
 
-    return function(_, prompt, entry)
-       local filter = "^(" .. delimiter .. "(%S+)" .. "[" .. delimiter .. "%s]" .. ")"
-       local matched = prompt:match(filter)
+  return function(_, prompt, entry)
+    local filter = "^(" .. delimiter .. "(%S+)" .. "[" .. delimiter .. "%s]" .. ")"
+    local matched = prompt:match(filter)
 
-       if matched == nil then
-           return 0, prompt
-       end
-       -- clear prompt of tag
-       prompt = prompt:sub(#matched + 1, -1)
-       local query = vim.trim(matched:gsub(delimiter, ""))
-       return scoring_function(_, query, entry[tag], _), prompt
+    if matched == nil then
+      return 0, prompt
     end
+    -- clear prompt of tag
+    prompt = prompt:sub(#matched + 1, -1)
+    local query = vim.trim(matched:gsub(delimiter, ""))
+    return scoring_function(_, query, entry[tag], _), prompt
+  end
 end
 
 sorters.prefilter = function(opts)
-    local sorter = opts.sorter
-    sorter.filter_function = filter_function(opts)
-    return sorter
+  local sorter = opts.sorter
+  sorter.filter_function = filter_function(opts)
+  return sorter
 end
 
 return sorters
