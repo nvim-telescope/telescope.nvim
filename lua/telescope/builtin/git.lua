@@ -105,6 +105,12 @@ git.branches = function(opts)
 
       map('i', '<c-r>', actions.git_rebase_branch)
       map('n', '<c-r>', actions.git_rebase_branch)
+
+      map('i', '<c-d>', actions.git_delete_branch)
+      map('n', '<c-d>', actions.git_delete_branch)
+
+      map('i', '<c-u>', false)
+      map('n', '<c-u>', false)
       return true
     end
   }):find()
