@@ -143,32 +143,50 @@ function actions.toggle_selection(prompt_bufnr)
   current_picker:toggle_selection(current_picker:get_selection_row())
 end
 
+--- Scroll the preview window up
+---@param prompt_bufnr number: The prompt bufnr
 function actions.preview_scrolling_up(prompt_bufnr)
   -- TODO: Make number configurable.
   action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(-30)
 end
 
+--- Scroll the preview window down
+---@param prompt_bufnr number: The prompt bufnr
 function actions.preview_scrolling_down(prompt_bufnr)
   -- TODO: Make number configurable.
   action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(30)
 end
 
+--- Center the window. Often called after |actions.close| to center the screen
+---@param prompt_bufnr number: The prompt bufnr
 function actions.center(_)
   vim.cmd(':normal! zz')
 end
 
+--- Perform the default action on the currently selected item.
+--- For example: For files, this will open in the current window.
+---@param prompt_bufnr number: The prompt bufnr
 function actions.select_default(prompt_bufnr)
   return action_set.select(prompt_bufnr, "default")
 end
 
+--- Perform the horizontal action on the currently selected item.
+--- For example: For files, this will open in a horizontal split
+---@param prompt_bufnr number: The prompt bufnr
 function actions.select_horizontal(prompt_bufnr)
   return action_set.select(prompt_bufnr, "horizontal")
 end
 
+--- Perform the vertical action on the currently selected item.
+--- For example: For files, this will open in a vertical split
+---@param prompt_bufnr number: The prompt bufnr
 function actions.select_vertical(prompt_bufnr)
   return action_set.select(prompt_bufnr, "vertical")
 end
 
+--- Perform the tabedit action on the current selected item.
+--- For example: For files, this will open in a new tab
+---@param prompt_bufnr number: The prompt bufnr
 function actions.select_tab(prompt_bufnr)
   return action_set.select(prompt_bufnr, "tab")
 end
@@ -192,6 +210,8 @@ function actions.file_tab(prompt_bufnr)
   return action_set.edit(prompt_bufnr, "tabedit")
 end
 
+--- Close the ins-completion popup-menu if it is open
+---@param prompt_bufnr number: The prompt bufnr
 function actions.close_pum(_)
   if 0 ~= vim.fn.pumvisible() then
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<c-y>", true, true, true), 'n', true)
@@ -218,6 +238,8 @@ local do_close = function(prompt_bufnr, keepinsert)
   pcall(a.nvim_set_current_win, original_win_id)
 end
 
+--- Close the current telescope picker.
+---@param prompt_bufnr number: The prompt bufnr
 function actions.close(prompt_bufnr)
   do_close(prompt_bufnr, false)
 end
@@ -293,6 +315,8 @@ actions.insert_value = function(prompt_bufnr)
   return entry.value
 end
 
+--- Checkout the currently selected item.
+---@param prompt_bufnr number: The prompt bufnr
 actions.git_checkout = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -386,6 +410,8 @@ local entry_to_qf = function(entry)
   }
 end
 
+--- Send the current multi-selection to the quickfix list.
+---@param prompt_bufnr number: The prompt bufnr
 actions.send_selected_to_qflist = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
 
@@ -399,6 +425,8 @@ actions.send_selected_to_qflist = function(prompt_bufnr)
   vim.fn.setqflist(qf_entries, 'r')
 end
 
+--- Send all the currently valid results to the quickfix list
+---@param prompt_bufnr number: The prompt bufnr
 actions.send_to_qflist = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local manager = picker.manager
@@ -413,6 +441,8 @@ actions.send_to_qflist = function(prompt_bufnr)
   vim.fn.setqflist(qf_entries, 'r')
 end
 
+--- Open the quickfix list. Generally useful after setting quickfix list
+---@param prompt_bufnr number: The prompt bufnr
 actions.open_qflist = function(_)
   vim.cmd [[copen]]
 end
