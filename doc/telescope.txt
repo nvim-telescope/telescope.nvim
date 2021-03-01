@@ -122,72 +122,63 @@ builtin.live_grep()                                      *builtin.live_grep()*
 
 Actions functions that are useful for people creating their own mappings.
 
-actions.add_selection({prompt_bufnr})                *actions.add_selection()*
+actions.center({prompt_bufnr})                              *actions.center()*
 
-    Add current entry to multi select
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_selection_better({prompt_bufnr})*actions.move_selection_better()*
-
-    Move the selection to the entry that has a better score
+    Center the window. Often called after |actions.close| to center the screen
 
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
+actions.close({prompt_bufnr})                                *actions.close()*
 
-    Move the selection to the next entry
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous()*
-
-    Move the selection to the previous entry
+    Close the current telescope picker.
 
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
+actions.close_pum({prompt_bufnr})                        *actions.close_pum()*
 
-    Move the selection to the entry that has a worse score
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_to_bottom({prompt_bufnr})              *actions.move_to_bottom()*
-
-    Move to the bottom of the picker
+    Close the ins-completion popup-menu if it is open
 
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_to_middle({prompt_bufnr})              *actions.move_to_middle()*
+actions.git_checkout({prompt_bufnr})                  *actions.git_checkout()*
 
-    Move to the middle of the picker
+    Checkout the currently selected item.
 
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_to_top({prompt_bufnr})                    *actions.move_to_top()*
+actions.open_qflist({prompt_bufnr})                    *actions.open_qflist()*
 
-    Move to the top of the picker
+    Open the quickfix list. Generally useful after setting quickfix list
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.preview_scrolling_down({prompt_bufnr})*actions.preview_scrolling_down()*
+
+    Scroll the preview window down
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.preview_scrolling_up({prompt_bufnr})  *actions.preview_scrolling_up()*
+
+    Scroll the preview window up
 
 
     Parameters: ~
@@ -197,6 +188,64 @@ actions.move_to_top({prompt_bufnr})                    *actions.move_to_top()*
 actions.remove_selection({prompt_bufnr})          *actions.remove_selection()*
 
     Remove current entry from multi select
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_default({prompt_bufnr})              *actions.select_default()*
+
+    Perform the default action on the currently selected item.
+    For example: For files, this will open in the current window.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_horizontal({prompt_bufnr})        *actions.select_horizontal()*
+
+    Perform the horizontal action on the currently selected item.
+    For example: For files, this will open in a horizontal split
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_tab({prompt_bufnr})                      *actions.select_tab()*
+
+    Perform the tabedit action on the current selected item.
+    For example: For files, this will open in a new tab
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_vertical({prompt_bufnr})            *actions.select_vertical()*
+
+    Perform the vertical action on the currently selected item.
+    For example: For files, this will open in a vertical split
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.send_selected_to_qflist({prompt_bufnr})*actions.send_selected_to_qflist()*
+
+    Send the current multi-selection to the quickfix list.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.send_to_qflist({prompt_bufnr})              *actions.send_to_qflist()*
+
+    Send all the currently valid results to the quickfix list
 
 
     Parameters: ~
