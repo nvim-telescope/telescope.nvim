@@ -82,9 +82,11 @@ git.branches = function(opts)
   local results = {}
   for _, v in ipairs(output) do
     if not string.match(v, 'HEAD') and v ~= '' then
-      v = string.gsub(v, '.* ', '')
-      v = string.gsub(v, '^remotes/', '')
-      table.insert(results, v)
+      if vim.startswith(v, '*') then
+        table.insert(results, 1, v)
+      else
+        table.insert(results, v)
+      end
     end
   end
 
@@ -93,7 +95,14 @@ git.branches = function(opts)
     finder = finders.new_table {
       results = results,
       entry_maker = function(entry)
-        return { value = entry, ordinal = entry, display = entry, }
+        local addition = vim.startswith(entry, '*') and '* ' or '  '
+        entry = entry:gsub('[* ] ', '')
+        entry = entry:gsub('^remotes/', '')
+        return {
+          value = entry,
+          ordinal = addition .. entry,
+          display = addition .. entry
+        }
       end
     },
     previewer = previewers.git_branch_log.new(opts),
