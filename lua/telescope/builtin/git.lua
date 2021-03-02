@@ -127,7 +127,10 @@ end
 
 git.status = function(opts)
   local gen_new_finder = function()
-    local output = utils.get_os_command_output({ 'git', 'status', '-s', '--', '.' }, opts.cwd)
+    local git_cmd = {'git', 'status', '-s', '--', '.'}
+    if opts.expand_dir then table.insert(git_cmd, #git_cmd - 1, '-u') end
+
+    local output = utils.get_os_command_output(git_cmd, opts.cwd)
 
     if table.getn(output) == 0 then
       print('No changes found')
