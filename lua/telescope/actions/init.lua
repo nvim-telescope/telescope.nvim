@@ -143,32 +143,56 @@ function actions.toggle_selection(prompt_bufnr)
   current_picker:toggle_selection(current_picker:get_selection_row())
 end
 
+--- Scroll the preview window up
+---@param prompt_bufnr number: The prompt bufnr
 function actions.preview_scrolling_up(prompt_bufnr)
   -- TODO: Make number configurable.
   action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(-30)
 end
 
+--- Scroll the preview window down
+---@param prompt_bufnr number: The prompt bufnr
 function actions.preview_scrolling_down(prompt_bufnr)
   -- TODO: Make number configurable.
   action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(30)
 end
 
+--- Center the cursor in the window, normally used after selecting a file to edit
 function actions.center(_)
   vim.cmd(':normal! zz')
 end
 
+--- Select the file to use
+--- This can be used to overwrite common user actions
+--- Default action will edit this file in the current window
+---@param prompt_bufnr number: The prompt bufnr
 function actions.select_default(prompt_bufnr)
   return action_set.select(prompt_bufnr, "default")
 end
 
+--- Select the file to use
+--- This can be used to overwrite common user actions
+--- Default action will edit this file in a new horizontal split
+---@param prompt_bufnr number: The prompt bufnr
 function actions.select_horizontal(prompt_bufnr)
+--- Select the file to action in the current window
+--- Default action will edit this file
+---@param prompt_bufnr number: The prompt bufnr
   return action_set.select(prompt_bufnr, "horizontal")
 end
 
+--- Select the file to use
+--- This can be used to overwrite common user actions
+--- Default action will edit this file in a new vertical split
+---@param prompt_bufnr number: The prompt bufnr
 function actions.select_vertical(prompt_bufnr)
   return action_set.select(prompt_bufnr, "vertical")
 end
 
+--- Select the file to use
+--- This can be used to overwrite common user actions
+--- Default action will edit this file in a new tab
+---@param prompt_bufnr number: The prompt bufnr
 function actions.select_tab(prompt_bufnr)
   return action_set.select(prompt_bufnr, "tab")
 end
@@ -176,18 +200,26 @@ end
 -- TODO: consider adding float!
 -- https://github.com/nvim-telescope/telescope.nvim/issues/365
 
+--- Edit the selected file in the current window
+---@param prompt_bufnr number: The prompt bufnr
 function actions.file_edit(prompt_bufnr)
   return action_set.edit(prompt_bufnr, "edit")
 end
 
+--- Edit the selected file in a new horizontal split
+---@param prompt_bufnr number: The prompt bufnr
 function actions.file_split(prompt_bufnr)
   return action_set.edit(prompt_bufnr, "new")
 end
 
+--- Edit the selected file in a new vertical split
+---@param prompt_bufnr number: The prompt bufnr
 function actions.file_vsplit(prompt_bufnr)
   return action_set.edit(prompt_bufnr, "vnew")
 end
 
+--- Edit the selected file in a new tab
+---@param prompt_bufnr number: The prompt bufnr
 function actions.file_tab(prompt_bufnr)
   return action_set.edit(prompt_bufnr, "tabedit")
 end
@@ -198,6 +230,9 @@ function actions.close_pum(_)
   end
 end
 
+--- Close the Telescope window, normally called after an action
+---@param prompt_bufnr number: The prompt bufnr
+---@param keepinsert boolean: Remain in INSERT mode
 local do_close = function(prompt_bufnr, keepinsert)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
