@@ -131,7 +131,7 @@ end
 
 function command.load_command(cmd,...)
   local args = {...}
-  if next(args) == nil then
+  if cmd == nil then
     run_command({cmd = 'builtin'})
     return
   end
