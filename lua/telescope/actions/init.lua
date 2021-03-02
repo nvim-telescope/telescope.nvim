@@ -175,9 +175,6 @@ end
 --- Default action will edit this file in a new horizontal split
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.select_horizontal(prompt_bufnr)
---- Select the file to action in the current window
---- Default action will edit this file
----@param prompt_bufnr number: The prompt bufnr
   return action_set.select(prompt_bufnr, "horizontal")
 end
 
