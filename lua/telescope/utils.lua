@@ -299,6 +299,10 @@ end
 
 utils.transform_devicons = (function()
   if has_devicons then
+    if not devicons.has_loaded() then
+      devicons.setup()
+    end
+
     return function(filename, display, disable_devicons)
       local conf = require('telescope.config').values
       if disable_devicons or not filename then
@@ -323,6 +327,10 @@ end)()
 
 utils.get_devicons = (function()
   if has_devicons then
+    if not devicons.has_loaded() then
+      devicons.setup()
+    end
+
     return function(filename, disable_devicons)
       local conf = require('telescope.config').values
       if disable_devicons or not filename then
