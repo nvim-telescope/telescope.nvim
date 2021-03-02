@@ -127,8 +127,12 @@ end
 
 git.status = function(opts)
   local gen_new_finder = function()
+    local expand_dir = utils.if_nil(opts.expand_dir, true, opts.expand_dir)
     local git_cmd = {'git', 'status', '-s', '--', '.'}
-    if opts.expand_dir then table.insert(git_cmd, #git_cmd - 1, '-u') end
+
+    if expand_dir then
+      table.insert(git_cmd, table.getn(git_cmd) - 1, '-u')
+    end
 
     local output = utils.get_os_command_output(git_cmd, opts.cwd)
 
