@@ -1,3 +1,6 @@
+local action_state = require"telescope.actions.state"
+local state = require"telescope.state"
+
 local action_mt = {}
 
 --- Checks all replacement combinations to determine which function to run.
@@ -17,25 +20,40 @@ end
 action_mt.create = function(mod)
   local mt = {
     __call = function(t, ...)
+      local args = {...}
+      local picker = action_state.get_current_picker(args[1])
+      local items = { state.get_global_key("selected_entry") or "" }
+
       local values = {}
       for _, action_name in ipairs(t) do
-        if t._pre[action_name] then
-          t._pre[action_name](...)
+        if string.match(action_name, '^select_*')
+          and picker ~= nil
+          and #picker:get_multi_selection() ~= 0
+        then
+          items = picker:get_multi_selection()
         end
 
-        local result = {
-          run_replace_or_original(
-            t._replacements[action_name],
-            mod[action_name],
-            ...
-          )
-        }
-        for _, res in ipairs(result) do
-          table.insert(values, res)
-        end
+        for _, entry in ipairs(items) do
+          state.set_global_key('selected_entry', entry)
 
-        if t._post[action_name] then
-          t._post[action_name](...)
+          if t._pre[action_name] then
+            t._pre[action_name](...)
+          end
+
+          local result = {
+            run_replace_or_original(
+              t._replacements[action_name],
+              mod[action_name],
+              ...
+            )
+          }
+          for _, res in ipairs(result) do
+            table.insert(values, res)
+          end
+
+          if t._post[action_name] then
+            t._post[action_name](...)
+          end
         end
       end
 

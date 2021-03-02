@@ -413,16 +413,6 @@ actions.send_to_qflist = function(prompt_bufnr)
   vim.fn.setqflist(qf_entries, 'r')
 end
 
-actions.open_selected_files = function(prompt_bufnr)
-  local picker = action_state.get_current_picker(prompt_bufnr)
-
-  actions.close(prompt_bufnr)
-
-  for _, files in ipairs(picker:get_multi_selection()) do
-    vim.cmd(":silent edit "..files[1])
-  end
-end
-
 actions.open_qflist = function(_)
   vim.cmd [[copen]]
 end
