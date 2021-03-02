@@ -131,6 +131,11 @@ end
 
 function command.load_command(cmd,...)
   local args = {...}
+  if cmd == nil then
+    run_command({cmd = 'builtin'})
+    return
+  end
+
   local user_opts = {}
   user_opts['cmd'] = cmd
   user_opts.opts = {}
