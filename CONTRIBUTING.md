@@ -1,6 +1,6 @@
 # Documentation
 
-is generating docs based on the tree sitter syntax tree. TJ wrote a grammar that includes the documentation in this syntax tree so we can do take this function header documentation and transform it into vim documentation. All documentation will be exported that is part of the returning module. So example:
+We are generating docs based on the tree sitter syntax tree. TJ wrote a grammar that includes the documentation in this syntax tree so we can do take this function header documentation and transform it into vim documentation. All documentation that is part of the returning module will be exported. So example:
 
 ```lua
 local m = {}
@@ -25,6 +25,9 @@ return m
 ```
 
 This will export function `a` with header documentation and the return value. Module function `b` and local function `c` will not be exported.
+
+For a more in-depth look at how to write documentation take a look at this guide: [how to](https://github.com/tjdevries/tree-sitter-lua/blob/master/HOWTO.md)
+This guide contains all annotations and we will update it when we add new annotations.
 
 ## What is missing?
 

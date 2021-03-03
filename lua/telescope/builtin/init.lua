@@ -1,7 +1,7 @@
 ---@tag telescope.builtin
 
 ---@brief [[
---- A collection of builtin pickers for telesceope.
+--- A collection of builtin pickers for telescope.
 ---
 --- Meant for both example and for easy startup.
 ---

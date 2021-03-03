@@ -4,15 +4,19 @@
 Telescope.nvim is a plugin for fuzzy finding and neovim. It helps you search,
 filter, find and pick things in Lua.
 
-To find out more: https://github.com/nvim-telescope/telescope.nvim
+To find out more:
+https://github.com/nvim-telescope/telescope.nvim
 
-:h telescope.setup :h telescope.builtin :h telescope.layout :h
-telescope.actions
+  :h telescope.setup
+  :h telescope.builtin
+  :h telescope.layout
+  :h telescope.actions
 
 telescope.extensions()                                *telescope.extensions()*
     Use telescope.extensions to reference any extensions within your
-    configuration. While the docs currently generate this as a function, it's
-    actually a table. Sorry.
+    configuration.
+    While the docs currently generate this as a function, it's actually a
+    table. Sorry.
 
 
 
@@ -37,48 +41,50 @@ telescope.setup({opts})                                    *telescope.setup()*
     other aspects of telescope.
 
 
-
     Valid keys for {opts.defaults}
 
-    *telescope.defaults.entry_prefix* entry_prefix: ~ Prefix in front of each
-    result entry. Current selection not included.
+                                          *telescope.defaults.entry_prefix*
+    entry_prefix: ~
+        Prefix in front of each result entry. Current selection not included.
 
- Default: ' '
+            Default: '  '
 
-    *telescope.defaults.prompt_prefix* prompt_prefix: ~ Will be shown in front
-    of the prompt.
+                                         *telescope.defaults.prompt_prefix*
+    prompt_prefix: ~
+        Will be shown in front of the prompt.
 
- Default: '> '
+            Default: '> '
 
-    *telescope.defaults.scroll_strategy* scroll_strategy: ~ Determines what
-    happens you try to scroll past view of the picker.
+                                       *telescope.defaults.scroll_strategy*
+    scroll_strategy: ~
+        Determines what happens you try to scroll past view of the picker.
 
- Available options
-    are:
- - "cycle" (default)
- - "limit"
+            Available options are:
+            - "cycle" (default)
+            - "limit"
 
-    *telescope.defaults.selection_caret* selection_caret: ~ Will be shown in
-    front of the selection.
+                                       *telescope.defaults.selection_caret*
+    selection_caret: ~
+        Will be shown in front of the selection.
 
- Default: '> '
+            Default: '> '
 
-    *telescope.defaults.selection_strategy* selection_strategy: ~ Determines
-    how the cursor acts after each sort iteration.
+                                    *telescope.defaults.selection_strategy*
+    selection_strategy: ~
+        Determines how the cursor acts after each sort iteration.
 
- Available options are:
- -
-    "reset" (default)
- - "follow"
- - "row"
+            Available options are:
+            - "reset" (default)
+            - "follow"
+            - "row"
 
-    *telescope.defaults.sorting_strategy* sorting_strategy: ~ Determines the
-    direction "better" results are sorted towards.
+                                      *telescope.defaults.sorting_strategy*
+    sorting_strategy: ~
+        Determines the direction "better" results are sorted towards.
 
- Available options are:
- -
-    "descending" (default)
- - "ascending"
+            Available options are:
+            - "descending" (default)
+            - "ascending"
 
     Parameters: ~
         {opts} (table)  Configuration opts. Keys: defaults, extensions
@@ -88,7 +94,7 @@ telescope.setup({opts})                                    *telescope.setup()*
 ================================================================================
                                                              *telescope.builtin*
 
-A collection of builtin pickers for telesceope.
+A collection of builtin pickers for telescope.
 
 Meant for both example and for easy startup.
 
@@ -192,85 +198,378 @@ actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
 
 
 ================================================================================
+                                                          *telescope.previewers*
+
+Provides a Previewer table that has to be implemented by each previewer. To
+achieve this, this module also provides two wrappers that abstract most of the
+work and make it really easy create new previewers.
+  - `previewers.new_termopen_previewer`
+  - `previewers.new_buffer_previewer`
+
+Furthermore, there are a collection of previewers already defined which can be
+used for every picker, as long as the entries of the picker provide the
+necessary fields. The more important once are
+  - `previewers.cat`
+  - `previewers.vimgrep`
+  - `previewers.qflist`
+  - `previewers.vim_buffer_cat`
+  - `previewers.vim_buffer_vimgrep`
+  - `previewers.vim_buffer_qflist`
+
+Previewers can be disabled for any builtin or custom picker by doing :Telescope
+find_files previewer=false
+
+previewers.Previewer()                                *previewers.Previewer()*
+    This is the base table all previewers have to implement. It's possible to
+    write a wrapper for this because most previewers need to have the same keys
+    set. Examples of wrappers are:
+      - `new_buffer_previewer`
+      - `new_termopen_previewer`
+
+    To create a new table do following:
+      - `local new_previewer = Previewer:new(opts)`
+
+    What `:new` expects is listed below
+
+    The interface provides following set of functions. All of them, besides
+    `new`, will be handled by telescope pickers.
+    - `:new(opts)`
+    - `:preview(entry, status)`
+    - `:teardown()`
+    - `:send_input(input)`
+    - `:scroll_fn(direction)`
+
+    `Previewer:new()` expects a table as input with following keys:
+      - `setup` function(self): Will be called the first time preview will be 
+        called.
+      - `teardown` function(self): Will be called on cleanup.
+      - `preview_fn` function(self, entry, status): Will be called each time a
+        new entry was selected.
+      - `send_input` function(self, input): This is meant for 
+        `termopen_previewer` and it can be used to send input to the terminal 
+        application, like less.
+      - `scroll_fn` function(self, direction): Used to make scrolling work.
+
+
+
+previewers.buffer_previewer_maker({opts}, {bufnr}, {filepath})*previewers.buffer_previewer_maker()*
+    A universal way of reading a file into a buffer previewer. It handles async
+    reading, cache, highlighting, displaying directories and provides a
+    callback which can be used, to jump to a line in the buffer.
+
+
+    Parameters: ~
+        {opts} (table)  keys: `use_ft_detect`, `bufname` and `callback`
+        {bufnr} (number)  Where the content will be written
+        {filepath} (string)  String to the filepath, will be expanded
+
+
+previewers.cat()                                            *previewers.cat()*
+    Provides a `termopen_previewer` which has the ability to display files. It
+    will always show the top of the file and has support for `bat`(prioritized)
+    and `cat`. Each entry has to provide either the field `path` or `filename`
+    in order to make this previewer work.
+
+    The preferred way of using this previewer is like this
+    `require('telescope.config').values.cat_previewer` This will respect user
+    configuration and will use `buffer_previewers` in case it's configured that
+    way.
+
+
+
+previewers.display_content()                    *previewers.display_content()*
+    A deprecated way of displaying content more easily. Was written at a time,
+    where the buffer_previewer interface wasn't present. Nowadays it's easier
+    to just use this. We will keep it around for backwards compatibility
+    because some extensions use it. It doesn't use cache or some other clever
+    tricks.
+
+
+
+previewers.new()                                            *previewers.new()*
+    A shorthand for creating a new Previewer. The provided table will be
+    forwarded to `Previewer:new(...)`
+
+
+
+previewers.new_buffer_previewer()          *previewers.new_buffer_previewer()*
+    An interface to instantiate a new `buffer_previewer`. That means that the
+    content actually lives inside a vim buffer which enables us more control
+    over the actual content. For example, we can use `vim.fn.search` to jump to
+    a specific line or reuse buffers/already opened files more easily. This
+    interface is more complex than `termopen_previewer` but offers more
+    flexibility over your content. It was designed to display files but was
+    extended to also display the output of terminal commands.
+
+    In the following options, state table and general tips are mentioned to
+    make your experience with this previewer more seamless.
+
+
+    options:
+      - `define_preview = function(self, entry, status)` (required) Is called
+        for each selected entry, after each selection_move (up or down) and is
+        meant to handle things like reading file, jump to line or attach a
+        highlighter.
+      - `setup = function(self)` (optional) Is called once at the beginning,
+        before the preview for the first entry is displayed. You can return a
+        table of vars that will be available in `self.state` in each
+        `define_preview` call.
+      - `teardown = function(self)` (optional) Will be called at the end, when
+        the picker is being closed and is meant to cleanup everything that was
+        allocated by the previewer. The `buffer_previewer` will automatically
+        cleanup all created buffers. So you only need to handle things that
+        were introduced by you.
+      - `keep_last_buf = true` (optional) Will not delete the last selected
+        buffer. This would allow you to reuse that buffer in the select action.
+        For example, that buffer can be opened in a new split, rather than
+        recreating that buffer in an action. To access the last buffer number: 
+        `require('telescope.state').get_global_key("last_preview_bufnr")`
+      - `get_buffer_by_name = function(self, entry)` Allows you to set a unique
+        name for each buffer. This is used for caching purpose.
+        `self.state.bufname` will be nil if the entry was never loaded or the
+        unique name when it was loaded once. For example, useful if you have
+        one file but multiple entries. This happens for grep and lsp builtins.
+        So to make the cache work only load content if `self.state.bufname ~=
+        entry.your_unique_key`
+
+    `self.state` table:
+      - `self.state.bufnr` Is the current buffer number, in which you have to
+        write the loaded content. Don't create a buffer yourself, otherwise
+        it's not managed by the buffer_previewer interface and you will
+        probably be better off writing your own interface.
+      - self.state.winid Current window id. Useful if you want to set the
+        cursor to a provided line number.
+      - self.state.bufname Will return the current buffer name, if
+        `get_buffer_by_name` is defined. nil will be returned if the entry was
+        never loaded or when `get_buffer_by_name` is not set.
+
+    Tips:
+      - If you want to display content of a terminal job, use: 
+        `require('telescope.previewers.utils').job_maker(cmd, bufnr, opts)`
+          - `cmd` table: for example { 'git', 'diff', entry.value }
+          - `bufnr` number: in which the content will be written
+          - `opts` table: with following keys
+            - `bufname` string: used for cache
+            - `value` string: used for cache
+            - `mode` string: either "insert" or "append". "insert" is default
+            - `env` table: define environment variables. Example:
+              - `{ ['PAGER'] = '', ['MANWIDTH'] = 50 }`
+            - `cwd` string: define current working directory for job
+            - `callback` function(bufnr, content): will be called when job is
+              done. Content will be nil if job is already loaded. So you can do
+              highlighting only the first time the previewer is created for
+              that entry. Use the returned `bufnr` and not `self.state.bufnr`
+              in callback, because state can already be changed at this point
+              in time.
+      - If you want to attach a highlighter use:
+        - `require('telescope.previewers.utils').highlighter(bufnr, ft)`
+          - This will prioritize tree sitter highlighting if available for 
+            environment and language.
+        - `require('telescope.previewers.utils').regex_highlighter(bufnr, ft)`
+        - `require('telescope.previewers.utils').ts_highlighter(bufnr, ft)`
+      - If you want to use `vim.fn.search` or similar you need to run it in 
+        that specific buffer context. Do
+          vim.api.nvim_buf_call(bufnr, function()
+            -- for example `search` and `matchadd`
+          end)
+        to achieve that.
+      - If you want to read a file into the buffer it's best to use 
+        `buffer_previewer_maker`. But access this function with 
+        `require('telescope.config').values.buffer_previewer_maker` because it
+        can be redefined by users.
+
+
+
+previewers.new_termopen_previewer()      *previewers.new_termopen_previewer()*
+    Is a wrapper around Previewer and helps with creating a new
+    `termopen_previewer`.
+
+    It requires you to specify one table entry `get_command(entry, status)`.
+    This `get_command` function has to return the terminal command that will be
+    executed for each entry. Example: get_command = function(entry, status) 
+    return { 'bat', entry.path } end
+
+    It's an easy way to get your first previewer going and it integrates well
+    with `bat` and `less`. Providing out of the box scrolling if the command
+    uses less.
+
+    Furthermore, it will forward all `config.set_env` environment variables to
+    that terminal process.
+
+    While this interface is a good start, it was replaced with the way more
+    flexible `buffer_previewer` and is now deprecated.
+
+
+
+previewers.qflist()                                      *previewers.qflist()*
+    Provides a `termopen_previewer` which has the ability to display files at
+    the provided line or range. It has support for `bat`(prioritized) and
+    `cat`. Each entry has to provide either the field `path` or `filename`,
+    `lnum` and a `start` and `finish` range in order to make this previewer
+    work.
+
+    The preferred way of using this previewer is like this
+    `require('telescope.config').values.qflist_previewer` This will respect
+    user configuration and will use buffer previewers in case it's configured
+    that way.
+
+
+
+previewers.vim_buffer_cat()                      *previewers.vim_buffer_cat()*
+    A previewer that is used to display a file. It uses the `buffer_previewer`
+    interface and won't jump to the line. To integrate this one into your own
+    picker make sure that the field `path` or `filename` is set for each entry.
+    The preferred way of using this previewer is like this
+    `require('telescope.config').values.file_previewer` This will respect user
+    configuration and will use `termopen_previewer` in case it's configured
+    that way.
+
+
+
+previewers.vim_buffer_qflist()                *previewers.vim_buffer_qflist()*
+    Is the same as `vim_buffer_vimgrep` and only exist for consistency with
+    `term_previewers`.
+
+    The preferred way of using this previewer is like this
+    `require('telescope.config').values.qflist_previewer` This will respect
+    user configuration and will use `termopen_previewer` in case it's
+    configured that way.
+
+
+
+previewers.vim_buffer_vimgrep()              *previewers.vim_buffer_vimgrep()*
+    A previewer that is used to display a file and jump to the provided line.
+    It uses the `buffer_previewer` interface. To integrate this one into your
+    own picker make sure that the field `path` or `filename` and `lnum` is set
+    in each entry. If the latter is not present, it will default to the first
+    line. The preferred way of using this previewer is like this
+    `require('telescope.config').values.grep_previewer` This will respect user
+    configuration and will use `termopen_previewer` in case it's configured
+    that way.
+
+
+
+previewers.vimgrep()                                    *previewers.vimgrep()*
+    Provides a `termopen_previewer` which has the ability to display files at
+    the provided line. It has support for `bat`(prioritized) and `cat`. Each
+    entry has to provide either the field `path` or `filename` and a `lnum`
+    field in order to make this previewer work.
+
+    The preferred way of using this previewer is like this
+    `require('telescope.config').values.grep_previewer` This will respect user
+    configuration and will use `buffer_previewers` in case it's configured that
+    way.
+
+
+
+
+================================================================================
                                                               *telescope.layout*
 
 Layout strategies are different functions to position telescope.
 
-All layout strategies are functions with the following signature: >
+All layout strategies are functions with the following signature:
 
-function(picker, columns, lines)
-       -- Do some calculations here... return { preview = preview_configuration
-         results = results_configuration, prompt = prompt_configuration, } end
-         <
+  function(picker, columns, lines)
+    -- Do some calculations here...
+    return {
+      preview = preview_configuration
+      results = results_configuration,
+      prompt = prompt_configuration,
+    }
+  end
 
-Parameters: ~
-        - picker : A Picker object. (docs coming soon)
-        - columns : number Columns in the vim window
-        - lines : number Lines in the vim window
+  Parameters: ~
+    - picker  : A Picker object. (docs coming soon)
+    - columns : number Columns in the vim window
+    - lines   : number Lines in the vim window
+
 
 TODO: I would like to make these link to `telescope.layout_strategies.*`, but
 it's not yet possible.
 
-Available layout strategies include: horizontal:
-  - See |layout_strategies.horizontal|
+Available layout strategies include:
+  - horizontal:
+    - See |layout_strategies.horizontal|
 
-vertical:
-  - See |layout_strategies.vertical|
+  - vertical:
+    - See |layout_strategies.vertical|
 
-flex:
-  - See |layout_strategies.flex|
+  - flex:
+    - See |layout_strategies.flex|
 
 Available tweaks to the settings in layout defaults include (can be applied to
-horizontal and vertical layouts): mirror (default is `false`):
-  - Flip the view of the current layout:
-    - If using horizontal: if `true`, swaps the location of the results/prompt
-      window and preview window
-    - If using vertical: if `true`, swaps the location of the results and 
-      prompt windows
+horizontal and vertical layouts):
+  - mirror (default is `false`):
+    - Flip the view of the current layout:
+      - If using horizontal: if `true`, swaps the location of the 
+        results/prompt window and preview window
+      - If using vertical: if `true`, swaps the location of the results and 
+        prompt windows
 
-width_padding:
-  - How many cells to pad the width of Telescope's layout window
+  - width_padding:
+    - How many cells to pad the width of Telescope's layout window
 
-height_padding:
-  - How many cells to pad the height of Telescope's layout window
+  - height_padding:
+    - How many cells to pad the height of Telescope's layout window
 
-preview_width:
-  - Change the width of Telescope's preview window
-
+  - preview_width:
+    - Change the width of Telescope's preview window
 
 layout_strategies.center()                        *layout_strategies.center()*
     Centered layout wih smaller default sizes (I think)
 
-    +--------------+ | Preview | +--------------+ | Prompt | +--------------+ |
-    Result | | Result | | Result | +--------------+
-
+       +--------------+
+       |    Preview   |
+       +--------------+
+       |    Prompt    |
+       +--------------+
+       |    Result    |
+       |    Result    |
+       |    Result    |
+       +--------------+
 
 
 
 layout_strategies.flex()                            *layout_strategies.flex()*
     Swap between `horizontal` and `vertical` strategies based on the window
     width
-      - Supports `vertical` or `horizontal` features
+     - Supports `vertical` or `horizontal` features
 
-    Uses: flip_columns flip_lines
+    Uses:
+     - flip_columns
+     - flip_lines
 
 
 
 layout_strategies.horizontal()                *layout_strategies.horizontal()*
     Horizontal previewer
 
-    +-------------+--------------+ | | | | Results | | | | Preview | | | | 
-    +-------------| | | Prompt | | +-------------+--------------+
+      +-------------+--------------+
+      |             |              |
+      |   Results   |              |
+      |             |    Preview   |
+      |             |              |
+      +-------------|              |
+      |   Prompt    |              |
+      +-------------+--------------+
 
 
 
 layout_strategies.vertical()                    *layout_strategies.vertical()*
     Vertical perviewer stacks the items on top of each other.
 
-    +-----------------+ | Previewer | | Previewer | | Previewer | 
-    +-----------------+ | Result | | Result | | Result | +-----------------+ | 
-    Prompt | +-----------------+
-
+       +-----------------+
+       |    Previewer    |
+       |    Previewer    |
+       |    Previewer    |
+       +-----------------+
+       |     Result      |
+       |     Result      |
+       |     Result      |
+       +-----------------+
+       |     Prompt      |
+       +-----------------+
 
 
 
