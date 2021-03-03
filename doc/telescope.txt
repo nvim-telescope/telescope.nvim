@@ -4,25 +4,19 @@
 Telescope.nvim is a plugin for fuzzy finding and neovim. It helps you search,
 filter, find and pick things in Lua.
 
-To find out more:
-https://github.com/nvim-telescope/telescope.nvim
+To find out more: https://github.com/nvim-telescope/telescope.nvim
 
-  :h telescope.setup
-  :h telescope.builtin
-  :h telescope.layout
-  :h telescope.actions
+:h telescope.setup :h telescope.builtin :h telescope.layout :h
+telescope.actions
 
 telescope.extensions()                                *telescope.extensions()*
-
     Use telescope.extensions to reference any extensions within your
-    configuration.
-    While the docs currently generate this as a function, it's actually a table.
-    Sorry.
+    configuration. While the docs currently generate this as a function, it's
+    actually a table. Sorry.
 
 
 
 telescope.load_extension({name})                  *telescope.load_extension()*
-
     Load an extension.
 
 
@@ -31,7 +25,6 @@ telescope.load_extension({name})                  *telescope.load_extension()*
 
 
 telescope.register_extension({mod})           *telescope.register_extension()*
-
     Register an extension. To be used by plugin authors.
 
 
@@ -40,56 +33,52 @@ telescope.register_extension({mod})           *telescope.register_extension()*
 
 
 telescope.setup({opts})                                    *telescope.setup()*
-
-    Setup function to be run by user. Configures the defaults, extensions
-    and other aspects of telescope.
+    Setup function to be run by user. Configures the defaults, extensions and
+    other aspects of telescope.
 
 
 
     Valid keys for {opts.defaults}
 
-                                          *telescope.defaults.entry_prefix*
-    entry_prefix: ~
-        Prefix in front of each result entry. Current selection not included.
+    *telescope.defaults.entry_prefix* entry_prefix: ~ Prefix in front of each
+    result entry. Current selection not included.
 
-        Default: '  '
+ Default: ' '
 
-                                         *telescope.defaults.prompt_prefix*
-    prompt_prefix: ~
-        Will be shown in front of the prompt.
+    *telescope.defaults.prompt_prefix* prompt_prefix: ~ Will be shown in front
+    of the prompt.
 
-        Default: '> '
+ Default: '> '
 
-                                       *telescope.defaults.scroll_strategy*
-    scroll_strategy: ~
-        Determines what happens you try to scroll past view of the picker.
+    *telescope.defaults.scroll_strategy* scroll_strategy: ~ Determines what
+    happens you try to scroll past view of the picker.
 
-          Available options are:
-          - "cycle" (default)
-          - "limit"
+ Available options
+    are:
+ - "cycle" (default)
+ - "limit"
 
-                                       *telescope.defaults.selection_caret*
-    selection_caret: ~
-        Will be shown in front of the selection.
+    *telescope.defaults.selection_caret* selection_caret: ~ Will be shown in
+    front of the selection.
 
-        Default: '> '
+ Default: '> '
 
-                                    *telescope.defaults.selection_strategy*
-    selection_strategy: ~
-        Determines how the cursor acts after each sort iteration.
+    *telescope.defaults.selection_strategy* selection_strategy: ~ Determines
+    how the cursor acts after each sort iteration.
 
-          Available options are:
-          - "reset" (default)
-          - "follow"
-          - "row"
+ Available options are:
+ -
+    "reset" (default)
+ - "follow"
+ - "row"
 
-                                      *telescope.defaults.sorting_strategy*
-    sorting_strategy: ~
-        Determines the direction "better" results are sorted towards.
+    *telescope.defaults.sorting_strategy* sorting_strategy: ~ Determines the
+    direction "better" results are sorted towards.
 
-          Available options are:
-          - "descending" (default)
-          - "ascending"
+ Available options are:
+ -
+    "descending" (default)
+ - "ascending"
 
     Parameters: ~
         {opts} (table)  Configuration opts. Keys: defaults, extensions
@@ -107,11 +96,10 @@ Any of these functions can just be called directly by doing:
 
 :lua require('telescope.builtin').$NAME()
 
-This will use the default configuration options.
-  Other configuration options are still in flux at the moment
+This will use the default configuration options. Other configuration options
+are still in flux at the moment
 
 builtin.live_grep()                                      *builtin.live_grep()*
-
     Live grep means grep as you type.
 
 
@@ -123,7 +111,6 @@ builtin.live_grep()                                      *builtin.live_grep()*
 Actions functions that are useful for people creating their own mappings.
 
 actions.add_selection({prompt_bufnr})                *actions.add_selection()*
-
     Add current entry to multi select
 
 
@@ -132,7 +119,6 @@ actions.add_selection({prompt_bufnr})                *actions.add_selection()*
 
 
 actions.move_selection_better({prompt_bufnr})*actions.move_selection_better()*
-
     Move the selection to the entry that has a better score
 
 
@@ -141,7 +127,6 @@ actions.move_selection_better({prompt_bufnr})*actions.move_selection_better()*
 
 
 actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
-
     Move the selection to the next entry
 
 
@@ -150,7 +135,6 @@ actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
 
 
 actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous()*
-
     Move the selection to the previous entry
 
 
@@ -159,7 +143,6 @@ actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous(
 
 
 actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
-
     Move the selection to the entry that has a worse score
 
 
@@ -168,7 +151,6 @@ actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
 
 
 actions.move_to_bottom({prompt_bufnr})              *actions.move_to_bottom()*
-
     Move to the bottom of the picker
 
 
@@ -177,7 +159,6 @@ actions.move_to_bottom({prompt_bufnr})              *actions.move_to_bottom()*
 
 
 actions.move_to_middle({prompt_bufnr})              *actions.move_to_middle()*
-
     Move to the middle of the picker
 
 
@@ -186,7 +167,6 @@ actions.move_to_middle({prompt_bufnr})              *actions.move_to_middle()*
 
 
 actions.move_to_top({prompt_bufnr})                    *actions.move_to_top()*
-
     Move to the top of the picker
 
 
@@ -195,7 +175,6 @@ actions.move_to_top({prompt_bufnr})                    *actions.move_to_top()*
 
 
 actions.remove_selection({prompt_bufnr})          *actions.remove_selection()*
-
     Remove current entry from multi select
 
 
@@ -204,7 +183,6 @@ actions.remove_selection({prompt_bufnr})          *actions.remove_selection()*
 
 
 actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
-
     Toggle current entry status for multi select
 
 
@@ -216,117 +194,82 @@ actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
 ================================================================================
                                                               *telescope.layout*
 
-
 Layout strategies are different functions to position telescope.
 
 All layout strategies are functions with the following signature: >
 
-     function(picker, columns, lines)
-       -- Do some calculations here...
-       return {
-         preview = preview_configuration
-         results = results_configuration,
-         prompt = prompt_configuration,
-       }
-     end
-<
+function(picker, columns, lines)
+       -- Do some calculations here... return { preview = preview_configuration
+         results = results_configuration, prompt = prompt_configuration, } end
+         <
 
-    Parameters: ~
-        - picker  : A Picker object. (docs coming soon)
+Parameters: ~
+        - picker : A Picker object. (docs coming soon)
         - columns : number Columns in the vim window
-        - lines   : number Lines in the vim window
+        - lines : number Lines in the vim window
 
-TODO: I would like to make these link to `telescope.layout_strategies.*`,
-but it's not yet possible.
+TODO: I would like to make these link to `telescope.layout_strategies.*`, but
+it's not yet possible.
 
-Available layout strategies include:
-  horizontal:
+Available layout strategies include: horizontal:
   - See |layout_strategies.horizontal|
 
-  vertical:
+vertical:
   - See |layout_strategies.vertical|
 
-  flex:
+flex:
   - See |layout_strategies.flex|
 
-Available tweaks to the settings in layout defaults include
-(can be applied to horizontal and vertical layouts):
-  mirror (default is `false`):
+Available tweaks to the settings in layout defaults include (can be applied to
+horizontal and vertical layouts): mirror (default is `false`):
   - Flip the view of the current layout:
-    - If using horizontal: if `true`, swaps the location of the
-      results/prompt window and preview window
-    - If using vertical: if `true`, swaps the location of the results and
+    - If using horizontal: if `true`, swaps the location of the results/prompt
+      window and preview window
+    - If using vertical: if `true`, swaps the location of the results and 
       prompt windows
 
-  width_padding:
+width_padding:
   - How many cells to pad the width of Telescope's layout window
 
-  height_padding:
+height_padding:
   - How many cells to pad the height of Telescope's layout window
 
-  preview_width:
+preview_width:
   - Change the width of Telescope's preview window
 
 
 layout_strategies.center()                        *layout_strategies.center()*
-
     Centered layout wih smaller default sizes (I think)
 
-       +--------------+
-       |    Preview   |
-       +--------------+
-       |    Prompt    |
-       +--------------+
-       |    Result    |
-       |    Result    |
-       |    Result    |
-       +--------------+
+    +--------------+ | Preview | +--------------+ | Prompt | +--------------+ |
+    Result | | Result | | Result | +--------------+
 
 
 
 
 layout_strategies.flex()                            *layout_strategies.flex()*
-
     Swap between `horizontal` and `vertical` strategies based on the window
     width
-      -  Supports `vertical` or `horizontal` features
+      - Supports `vertical` or `horizontal` features
 
-      Uses:
-       flip_columns
-       flip_lines
+    Uses: flip_columns flip_lines
 
 
 
 layout_strategies.horizontal()                *layout_strategies.horizontal()*
-
     Horizontal previewer
 
-      +-------------+--------------+
-      |             |              |
-      |   Results   |              |
-      |             |    Preview   |
-      |             |              |
-      +-------------|              |
-      |   Prompt    |              |
-      +-------------+--------------+
+    +-------------+--------------+ | | | | Results | | | | Preview | | | | 
+    +-------------| | | Prompt | | +-------------+--------------+
 
 
 
 layout_strategies.vertical()                    *layout_strategies.vertical()*
-
     Vertical perviewer stacks the items on top of each other.
 
-       +-----------------+
-       |    Previewer    |
-       |    Previewer    |
-       |    Previewer    |
-       +-----------------+
-       |     Result      |
-       |     Result      |
-       |     Result      |
-       +-----------------+
-       |     Prompt      |
-       +-----------------+
+    +-----------------+ | Previewer | | Previewer | | Previewer | 
+    +-----------------+ | Result | | Result | | Result | +-----------------+ | 
+    Prompt | +-----------------+
 
 
 
