@@ -161,6 +161,7 @@ function config.set_defaults(defaults)
   set("default_mappings", nil)
 
   set("generic_sorter", sorters.get_generic_fuzzy_sorter)
+  set("prefilter_sorter", sorters.prefilter)
   set("file_sorter", sorters.get_fuzzy_file)
 
   set("file_ignore_patterns", nil)

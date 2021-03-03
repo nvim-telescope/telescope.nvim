@@ -409,6 +409,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.lsp_workspace_symbols`     | Searches in LSP all workspace symbols.                                                      |
 | `builtin.lsp_code_actions`          | Lists LSP action to be trigged on enter.                                                    |
 | `builtin.lsp_range_code_actions`    | Lists LSP range code action to be trigged on enter.                                         |
+| `builtin.lsp_diagnostics`           | Lists LSP Diagnostics in the current document.                                              |
 | ..................................  | Your next awesome picker function here :D                                                   |
 
 ### Git Pickers

@@ -252,16 +252,16 @@ previewers.Previewer()                                *previewers.Previewer()*
 
 
 
-previewers.buffer_previewer_maker({opts}, {bufnr}, {filepath})*previewers.buffer_previewer_maker()*
+previewers.buffer_previewer_maker({filepath}, {bufnr}, {opts})*previewers.buffer_previewer_maker()*
     A universal way of reading a file into a buffer previewer. It handles async
     reading, cache, highlighting, displaying directories and provides a
     callback which can be used, to jump to a line in the buffer.
 
 
     Parameters: ~
-        {opts} (table)  keys: `use_ft_detect`, `bufname` and `callback`
-        {bufnr} (number)  Where the content will be written
         {filepath} (string)  String to the filepath, will be expanded
+        {bufnr} (number)  Where the content will be written
+        {opts} (table)  keys: `use_ft_detect`, `bufname` and `callback`
 
 
 previewers.cat()                                            *previewers.cat()*

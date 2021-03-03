@@ -64,6 +64,7 @@ builtin.spell_suggest = require('telescope.builtin.internal').spell_suggest
 builtin.lsp_references = require('telescope.builtin.lsp').references
 builtin.lsp_document_symbols = require('telescope.builtin.lsp').document_symbols
 builtin.lsp_code_actions = require('telescope.builtin.lsp').code_actions
+builtin.lsp_diagnostics = require('telescope.builtin.lsp').diagnostics
 builtin.lsp_range_code_actions = require('telescope.builtin.lsp').range_code_actions
 builtin.lsp_workspace_symbols = require('telescope.builtin.lsp').workspace_symbols
 

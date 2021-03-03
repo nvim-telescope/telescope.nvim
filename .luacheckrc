@@ -18,6 +18,7 @@ globals = {
   "TelescopeCachedTails",
   "TelescopeCachedNgrams",
   "_TelescopeConfigurationValues",
+  "__TelescopeKeymapStore",
 }
 
 -- Global objects defined by the C code

@@ -64,7 +64,10 @@ lsp.document_symbols = function(opts)
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts)
     },
     previewer = conf.qflist_previewer(opts),
-    sorter = conf.generic_sorter(opts),
+    sorter = conf.prefilter_sorter{
+      tag = "symbol_type",
+      sorter = conf.generic_sorter(opts)
+    }
   }):find()
 end
 
@@ -180,7 +183,32 @@ lsp.workspace_symbols = function(opts)
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts)
     },
     previewer = conf.qflist_previewer(opts),
-    sorter = conf.generic_sorter(opts),
+    sorter = conf.prefilter_sorter{
+      tag = "symbol_type",
+      sorter = conf.generic_sorter(opts)
+    }
+  }):find()
+end
+
+lsp.diagnostics = function(opts)
+  local locations = utils.diagnostics_to_tbl(opts)
+
+  if vim.tbl_isempty(locations) then
+    print('No diagnostics found')
+    return
+  end
+
+  pickers.new(opts, {
+    prompt_title = 'LSP Diagnostics',
+    finder = finders.new_table {
+      results = locations,
+      entry_maker = opts.entry_maker or make_entry.gen_from_lsp_diagnostics(opts)
+    },
+    previewer = conf.qflist_previewer(opts),
+    sorter = conf.prefilter_sorter{
+      tag = "type",
+      sorter = conf.generic_sorter(opts)
+    }
   }):find()
 end
 

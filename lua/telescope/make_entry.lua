@@ -27,6 +27,13 @@ local lsp_type_highlight = {
   ["Variable"] = "TelescopeResultsVariable",
 }
 
+local lsp_type_diagnostic = {
+  [1] = "Error",
+  [2] = "Warning",
+  [3] = "Information",
+  [4] = "Hint"
+}
+
 local make_entry = {}
 
 do
@@ -846,6 +853,77 @@ function make_entry.gen_from_ctags(opts)
     }
   end
 end
+
+function make_entry.gen_from_lsp_diagnostics(opts)
+  opts = opts or {}
+  opts.tail_path = utils.get_default(opts.tail_path, true)
+
+  local signs = {}
+  for _, v in pairs(lsp_type_diagnostic) do
+    signs[v] = vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. v)[1].text)
+  end
+  -- expose line width for longer msg if opts.hide_filename
+  local line_width = utils.get_default(opts.line_width, 48)
+  local displayer = entry_display.create {
+    separator = "▏",
+    items = {
+      { width = 11 },
+      { width = line_width },
+      { remaining = true }
+    }
+  }
+
+  local make_display = function(entry)
+    local filename
+    if not opts.hide_filename then
+      filename = entry.filename
+      if opts.tail_path then
+        filename = utils.path_tail(filename)
+      elseif opts.shorten_path then
+        filename = utils.path_shorten(filename)
+      end
+    end
+
+    -- add styling of entries
+    local pos = string.format("%3d:%2d", entry.lnum, entry.col)
+    local line_info = {
+      string.format("%s %s", signs[entry.type], pos),
+      string.format("LspDiagnosticsDefault%s", entry.type)
+    }
+    -- remove line break to avoid display issues
+    local text = string.format("%-" .. line_width .."s", entry.text:gsub(".* | ", ""):gsub("[\n]", ""))
+
+    return displayer {
+      line_info,
+      text,
+      filename,
+    }
+  end
+
+  return function(entry)
+    local filename = entry.filename or vim.api.nvim_buf_get_name(entry.bufnr)
+
+    return {
+      valid = true,
+
+      value = entry,
+      ordinal = (
+        not opts.ignore_filename and filename
+        or ''
+        ) .. ' ' .. entry.text,
+      display = make_display,
+      bufnr = entry.bufnr,
+      filename = filename,
+      type = entry.type,
+      lnum = entry.lnum,
+      col = entry.col,
+      text = entry.text,
+      start = entry.start,
+      finish = entry.finish,
+    }
+  end
+end
+
 
 function make_entry.gen_from_autocommands(_)
   local displayer = entry_display.create {
