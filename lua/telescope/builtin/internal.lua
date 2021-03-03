@@ -725,8 +725,7 @@ internal.autocommands = function(opts)
   local event, group, ft_pat, cmd, source_file, source_lnum
   local current_event, current_group, current_ft
 
-  local cmd_output = vim.fn.execute("verb autocmd *", "silent")
-  for line in cmd_output:gmatch("[^\r\n]+") do
+  local inner_loop = function(line)
     -- capture group and event
     group, event = line:match("^(" .. pattern.GROUP .. ")%s+(" .. pattern.EVENT .. ")")
     -- ..or just an event
@@ -740,7 +739,7 @@ internal.autocommands = function(opts)
         current_event = event
         current_group = group
       end
-      goto line_parsed
+      return
     end
 
     -- non event/group lines
@@ -754,13 +753,13 @@ internal.autocommands = function(opts)
       -- is there a command on the same line?
       cmd = line:match(pattern.INDENT .. "%S+%s+(.+)")
 
-      goto line_parsed
+      return
     end
 
     if current_ft and cmd == nil then
       -- trim leading spaces
       cmd = line:gsub("^%s+", "")
-      goto line_parsed
+      return
     end
 
     if current_ft and cmd then
@@ -778,8 +777,11 @@ internal.autocommands = function(opts)
         cmd = nil
       end
     end
+  end
 
-    ::line_parsed::
+  local cmd_output = vim.fn.execute("verb autocmd *", "silent")
+  for line in cmd_output:gmatch("[^\r\n]+") do
+    inner_loop(line)
   end
 
   -- print(vim.inspect(autocmd_table))
