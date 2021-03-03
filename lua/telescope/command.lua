@@ -104,16 +104,17 @@ end
 -- @Summary get extensions sub command
 -- register extensions dap gh etc.
 -- input in command line `Telescope gh <TAB>`
--- It will show a list that all extensions sub command list
--- ['commands','list_breakpoints','variables','issues','gist','pull_request']
+-- Returns a list for each extension.
 function command.get_extensions_subcommand()
   local exts = require('telescope._extensions').manager
   local complete_ext_table = {}
-  for _,value in pairs(exts) do
+  for cmd,value in pairs(exts) do
     if type(value) == "table" then
+      local subcmds = {}
       for key,_ in pairs(value) do
-        table.insert(complete_ext_table,key)
+        table.insert(subcmds, key)
       end
+      complete_ext_table[cmd] = subcmds
     end
   end
   return complete_ext_table
