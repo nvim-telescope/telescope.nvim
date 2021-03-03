@@ -131,63 +131,60 @@ actions.add_selection({prompt_bufnr})                *actions.add_selection()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_selection_better({prompt_bufnr})*actions.move_selection_better()*
+actions.center()                                            *actions.center()*
 
-    Move the selection to the entry that has a better score
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
+    Center the cursor in the window, normally used after selecting a file to
+    edit
 
 
-actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
 
-    Move the selection to the next entry
+actions.file_edit({prompt_bufnr})                        *actions.file_edit()*
+    Edit the selected file in the current window
 
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous()*
+actions.file_split({prompt_bufnr})                      *actions.file_split()*
 
-    Move the selection to the previous entry
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
-
-    Move the selection to the entry that has a worse score
+    Edit the selected file in a new horizontal split
 
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_to_bottom({prompt_bufnr})              *actions.move_to_bottom()*
+actions.file_tab({prompt_bufnr})                          *actions.file_tab()*
 
-    Move to the bottom of the picker
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_to_middle({prompt_bufnr})              *actions.move_to_middle()*
-
-    Move to the middle of the picker
+    Edit the selected file in a new tab
 
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_to_top({prompt_bufnr})                    *actions.move_to_top()*
+actions.file_vsplit({prompt_bufnr})                    *actions.file_vsplit()*
 
-    Move to the top of the picker
+    Edit the selected file in a new vertical split
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.preview_scrolling_down({prompt_bufnr})*actions.preview_scrolling_down()*
+
+    Scroll the preview window down
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.preview_scrolling_up({prompt_bufnr})  *actions.preview_scrolling_up()*
+
+    Scroll the preview window up
 
 
     Parameters: ~
@@ -197,6 +194,50 @@ actions.move_to_top({prompt_bufnr})                    *actions.move_to_top()*
 actions.remove_selection({prompt_bufnr})          *actions.remove_selection()*
 
     Remove current entry from multi select
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_default({prompt_bufnr})              *actions.select_default()*
+
+    Select the file to use
+    This can be used to overwrite common user actions
+    Default action will edit this file in the current window
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_horizontal({prompt_bufnr})        *actions.select_horizontal()*
+
+    Select the file to use
+    This can be used to overwrite common user actions
+    Default action will edit this file in a new horizontal split
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_tab({prompt_bufnr})                      *actions.select_tab()*
+
+    Select the file to use
+    This can be used to overwrite common user actions
+    Default action will edit this file in a new tab
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_vertical({prompt_bufnr})            *actions.select_vertical()*
+
+    Select the file to use
+    This can be used to overwrite common user actions
+    Default action will edit this file in a new vertical split
 
 
     Parameters: ~
