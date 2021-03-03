@@ -82,9 +82,11 @@ git.branches = function(opts)
   local results = {}
   for _, v in ipairs(output) do
     if not string.match(v, 'HEAD') and v ~= '' then
-      v = string.gsub(v, '.* ', '')
-      v = string.gsub(v, '^remotes/', '')
-      table.insert(results, v)
+      if vim.startswith(v, '*') then
+        table.insert(results, 1, v)
+      else
+        table.insert(results, v)
+      end
     end
   end
 
@@ -93,7 +95,14 @@ git.branches = function(opts)
     finder = finders.new_table {
       results = results,
       entry_maker = function(entry)
-        return { value = entry, ordinal = entry, display = entry, }
+        local addition = vim.startswith(entry, '*') and '* ' or '  '
+        entry = entry:gsub('[* ] ', '')
+        entry = entry:gsub('^remotes/', '')
+        return {
+          value = entry,
+          ordinal = addition .. entry,
+          display = addition .. entry
+        }
       end
     },
     previewer = previewers.git_branch_log.new(opts),
@@ -105,6 +114,12 @@ git.branches = function(opts)
 
       map('i', '<c-r>', actions.git_rebase_branch)
       map('n', '<c-r>', actions.git_rebase_branch)
+
+      map('i', '<c-d>', actions.git_delete_branch)
+      map('n', '<c-d>', actions.git_delete_branch)
+
+      map('i', '<c-u>', false)
+      map('n', '<c-u>', false)
       return true
     end
   }):find()
@@ -112,7 +127,14 @@ end
 
 git.status = function(opts)
   local gen_new_finder = function()
-    local output = utils.get_os_command_output({ 'git', 'status', '-s', '--', '.' }, opts.cwd)
+    local expand_dir = utils.if_nil(opts.expand_dir, true, opts.expand_dir)
+    local git_cmd = {'git', 'status', '-s', '--', '.'}
+
+    if expand_dir then
+      table.insert(git_cmd, table.getn(git_cmd) - 1, '-u')
+    end
+
+    local output = utils.get_os_command_output(git_cmd, opts.cwd)
 
     if table.getn(output) == 0 then
       print('No changes found')

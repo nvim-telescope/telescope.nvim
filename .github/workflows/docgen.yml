@@ -1,12 +1,14 @@
 name: Generate docs
 
-on: push
+on:
+  push:
+    branches-ignore:
+      - master
 
 jobs:
   build-sources:
     name: Generate docs
     runs-on: ubuntu-20.04
-    if: github.ref != 'master'
     steps:
       - uses: actions/checkout@v2
       - run: date +%F > todays-date

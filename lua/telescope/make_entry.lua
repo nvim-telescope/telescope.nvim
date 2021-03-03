@@ -1,6 +1,3 @@
-local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
-
-local conf = require('telescope.config').values
 local entry_display = require('telescope.pickers.entry_display')
 local path = require('telescope.path')
 local utils = require('telescope.utils')
@@ -38,50 +35,6 @@ local lsp_type_diagnostic = {
 }
 
 local make_entry = {}
-
-local transform_devicons
-local get_devicons
-if has_devicons then
-  if not devicons.has_loaded() then
-    devicons.setup()
-  end
-
-  transform_devicons = function(filename, display, disable_devicons)
-    if disable_devicons or not filename then
-      return display
-    end
-
-    local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, '%a+$'), { default = true })
-    local icon_display = (icon or ' ') .. ' ' .. display
-
-    if conf.color_devicons then
-      return icon_display, icon_highlight
-    else
-      return icon_display
-    end
-  end
-
-  get_devicons = function(filename, disable_devicons)
-    if disable_devicons or not filename then
-      return ''
-    end
-
-    local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, '%a+$'), { default = true })
-    if conf.color_devicons then
-      return icon, icon_highlight
-    else
-      return icon
-    end
-  end
-else
-  transform_devicons = function(_, display, _)
-    return display
-  end
-
-  get_devicons = function(_, _)
-    return ''
-  end
-end
 
 do
   local lookup_keys = {
@@ -131,7 +84,7 @@ do
         display = utils.path_shorten(display)
       end
 
-      display, hl_group = transform_devicons(entry.value, display, disable_devicons)
+      display, hl_group = utils.transform_devicons(entry.value, display, disable_devicons)
 
       if hl_group then
         return display, { { {1, 3}, hl_group } }
@@ -247,7 +200,7 @@ do
           coordinates = string.format("%s:%s:", entry.lnum, entry.col)
         end
 
-        local display, hl_group = transform_devicons(
+        local display, hl_group = utils.transform_devicons(
           entry.filename,
           string.format(display_string, display_filename,  coordinates, entry.text),
           disable_devicons
@@ -475,7 +428,7 @@ function make_entry.gen_from_buffer(opts)
 
   local icon_width = 0
   if not disable_devicons then
-    local icon, _ = get_devicons('fname', disable_devicons)
+    local icon, _ = utils.get_devicons('fname', disable_devicons)
     icon_width = utils.strdisplaywidth(icon)
   end
 
@@ -499,7 +452,7 @@ function make_entry.gen_from_buffer(opts)
       display_bufname = entry.filename
     end
 
-    local icon, hl_group = get_devicons(entry.filename, disable_devicons)
+    local icon, hl_group = utils.get_devicons(entry.filename, disable_devicons)
 
     return displayer {
       {entry.bufnr, "TelescopeResultsNumber"},

@@ -12,6 +12,30 @@ local function first_non_null(...)
   end
 end
 
+local dedent = function(str, leave_indent)
+  -- find minimum common indent across lines
+  local indent = nil
+  for line in str:gmatch('[^\n]+') do
+    local line_indent = line:match('^%s+') or ''
+    if indent == nil or #line_indent < #indent then
+      indent = line_indent
+    end
+  end
+  if indent == nil or #indent == 0 then
+    -- no minimum common indent
+    return str
+  end
+  local left_indent = (' '):rep(leave_indent or 0)
+  -- create a pattern for the indent
+  indent = indent:gsub('%s', '[ \t]')
+  -- strip it from the first line
+  str = str:gsub('^'..indent, left_indent)
+  -- strip it from the remaining lines
+  str = str:gsub('[\n]'..indent, '\n' .. left_indent)
+  return str
+end
+
+
 local sorters = require('telescope.sorters')
 
 -- TODO: Add other major configuration points here.
@@ -35,33 +59,34 @@ function config.set_defaults(defaults)
 
     config.values[name] = get(name, default_val)
     if description then
-      config.descriptions[name] = vim.trim(description)
+      -- TODO(conni2461): trim is wrong. We need to do dedent here
+      config.descriptions[name] = dedent(vim.trim(description))
     end
   end
 
   set("sorting_strategy", "descending", [[
     Determines the direction "better" results are sorted towards.
 
-      Available options are:
-      - "descending" (default)
-      - "ascending"
+    Available options are:
+    - "descending" (default)
+    - "ascending"
   ]])
 
   set("selection_strategy", "reset", [[
     Determines how the cursor acts after each sort iteration.
 
-      Available options are:
-      - "reset" (default)
-      - "follow"
-      - "row"
+    Available options are:
+    - "reset" (default)
+    - "follow"
+    - "row"
   ]])
 
   set("scroll_strategy", "cycle", [[
     Determines what happens you try to scroll past view of the picker.
 
-      Available options are:
-      - "cycle" (default)
-      - "limit"
+    Available options are:
+    - "cycle" (default)
+    - "limit"
   ]])
 
   set("layout_strategy", "horizontal")

@@ -648,6 +648,9 @@ All `telescope.nvim` functions are wrapped in `vim` commands for easy access, it
 supports tab completions and settings options.
 
 ```viml
+" Show all builtin pickers
+:Telescope
+
 " Tab completion
 :Telescope |<tab>
 :Telescope find_files
