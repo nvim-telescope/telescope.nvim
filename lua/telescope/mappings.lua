@@ -57,13 +57,14 @@ mappings.default_mappings = config.values.default_mappings or {
     },
   }
 
-local keymap_store = setmetatable({}, {
+__TelescopeKeymapStore = __TelescopeKeymapStore or setmetatable({}, {
   __index = function(t, k)
     rawset(t, k, {})
 
     return rawget(t, k)
   end
 })
+local keymap_store = __TelescopeKeymapStore
 
 local _mapping_key_id = 0
 local get_next_id = function()
