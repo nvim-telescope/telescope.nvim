@@ -511,6 +511,7 @@ end
 sorters.prefilter = function(opts)
   local sorter = opts.sorter
   sorter.filter_function = filter_function(opts)
+  sorter._was_discarded = function() return false end
   return sorter
 end
 
