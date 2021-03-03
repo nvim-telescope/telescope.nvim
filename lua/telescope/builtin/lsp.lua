@@ -9,6 +9,36 @@ local conf = require('telescope.config').values
 
 local lsp = {}
 
+local lsp_tag_filter = function (locations, query_text, opts)
+  local new_locations, new_finder
+
+  local matched = query_text:match('^(:(%S+):)')
+  if matched then
+    query_text = query_text:sub(#matched + 1)
+    new_locations = vim.tbl_filter(function(item)
+      return item.kind:lower() == matched:sub(2, #matched - 1):lower()
+    end, locations)
+
+    new_finder = finders.new_table {
+      results = new_locations,
+      entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts)
+    }
+
+    return {
+      prompt = query_text,
+      updated_finder = new_finder
+    }
+  end
+
+  return {
+    prompt = query_text,
+    updated_finder = finders.new_table {
+      results = locations,
+      entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts)
+    }
+  }
+end
+
 lsp.references = function(opts)
   opts.shorten_path = utils.get_default(opts.shorten_path, true)
 
@@ -59,6 +89,9 @@ lsp.document_symbols = function(opts)
   opts.ignore_filename = opts.ignore_filename or true
   pickers.new(opts, {
     prompt_title = 'LSP Document Symbols',
+    on_input_filter_cb = function(query_text)
+      return lsp_tag_filter(locations, query_text, opts)
+    end,
     finder    = finders.new_table {
       results = locations,
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts)
@@ -175,6 +208,9 @@ lsp.workspace_symbols = function(opts)
 
   pickers.new(opts, {
     prompt_title = 'LSP Workspace Symbols',
+    on_input_filter_cb = function(query_text)
+      return lsp_tag_filter(locations, query_text, opts)
+    end,
     finder    = finders.new_table {
       results = locations,
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts)
