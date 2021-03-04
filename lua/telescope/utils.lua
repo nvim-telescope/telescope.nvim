@@ -95,7 +95,7 @@ utils.diagnostics_to_tbl = function(opts)
     local row = start.line
     local col = start.character
 
-    local line = (vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false) or {""})[1]
+    local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1] or ""
 
     local buffer_diag = {
       bufnr = bufnr,
