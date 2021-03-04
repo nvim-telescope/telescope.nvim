@@ -867,7 +867,7 @@ function make_entry.gen_from_lsp_diagnostics(opts)
     { width = 9 },
     { remaining = true }
   }
-  local line_width = utils.get_default(opts.line_width, 40)
+  local line_width = utils.get_default(opts.line_width, 47)
   if not opts.hide_filename then table.insert(layout, 2, {width = line_width}) end
   local displayer = entry_display.create {
     separator = "▏",

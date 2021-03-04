@@ -200,7 +200,7 @@ lsp.diagnostics = function(opts)
 
   opts.hide_filename = utils.get_default(opts.hide_filename, true)
   pickers.new(opts, {
-    prompt_title = 'LSP Diagnostics',
+    prompt_title = 'LSP Document Diagnostics',
     finder = finders.new_table {
       results = locations,
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_diagnostics(opts)
@@ -216,6 +216,7 @@ end
 lsp.workspace_diagnostics = function(opts)
   opts = utils.get_default(opts, {})
   opts.hide_filename = utils.get_default(opts.hide_filename, false)
+  opts.prompt_title = 'LSP Workspace Diagnostics'
   opts.get_all = true
   lsp.diagnostics(opts)
 end
