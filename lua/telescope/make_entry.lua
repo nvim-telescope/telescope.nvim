@@ -862,15 +862,16 @@ function make_entry.gen_from_lsp_diagnostics(opts)
   for _, v in pairs(lsp_type_diagnostic) do
     signs[v] = vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. v)[1].text)
   end
-  -- expose line width for longer msg if opts.hide_filename
-  local line_width = utils.get_default(opts.line_width, 48)
+
+  local layout = {
+    { width = 9 },
+    { remaining = true }
+  }
+  local line_width = utils.get_default(opts.line_width, 50)
+  if not opts.hide_filename then table.insert(layout, 2, {width = line_width}) end
   local displayer = entry_display.create {
     separator = "▏",
-    items = {
-      { width = 11 },
-      { width = line_width },
-      { remaining = true }
-    }
+    items = layout
   }
 
   local make_display = function(entry)
@@ -891,7 +892,7 @@ function make_entry.gen_from_lsp_diagnostics(opts)
       string.format("LspDiagnosticsDefault%s", entry.type)
     }
     -- remove line break to avoid display issues
-    local text = string.format("%-" .. line_width .."s", entry.text:gsub(".* | ", ""):gsub("[\n]", ""))
+    local text = entry.text:gsub(".* | ", ""):gsub("[\n]", "")
 
     return displayer {
       line_info,
@@ -912,7 +913,6 @@ function make_entry.gen_from_lsp_diagnostics(opts)
         or ''
         ) .. ' ' .. entry.text,
       display = make_display,
-      bufnr = entry.bufnr,
       filename = filename,
       type = entry.type,
       lnum = entry.lnum,

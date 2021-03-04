@@ -198,6 +198,7 @@ lsp.diagnostics = function(opts)
     return
   end
 
+  opts.hide_filename = utils.get_default(opts.hide_filename, true)
   pickers.new(opts, {
     prompt_title = 'LSP Diagnostics',
     finder = finders.new_table {
