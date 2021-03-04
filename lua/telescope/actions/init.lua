@@ -145,12 +145,14 @@ end
 
 function actions.preview_scrolling_up(prompt_bufnr)
   -- TODO: Make number configurable.
-  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(-30)
+  local lines = vim.api.nvim_win_get_height(state.get_status(prompt_bufnr).preview_win)
+  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(math.floor(-(lines / 2)))
 end
 
 function actions.preview_scrolling_down(prompt_bufnr)
   -- TODO: Make number configurable.
-  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(30)
+  local lines = vim.api.nvim_win_get_height(state.get_status(prompt_bufnr).preview_win)
+  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(math.floor(lines / 2))
 end
 
 function actions.center(_)
