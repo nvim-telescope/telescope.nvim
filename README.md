@@ -398,7 +398,6 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.highlights`                | Lists all highlights.                                                                       |
 | `builtin.current_buffer_fuzzy_find` | Searches in current buffer lines.                                                           |
 | `builtin.current_buffer_tags`       | Lists Tags in current buffer.                                                               |
-| ..................................  | Your next awesome picker function here :D                                                   |
 
 ### LSP Pickers
 
@@ -411,7 +410,6 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.lsp_range_code_actions`    | Lists LSP range code action to be trigged on enter.                                         |
 | `builtin.lsp_document_diagnostics`  | Lists LSP Diagnostics in the current document.                                              |
 | `builtin.lsp_workspace_diagnostics` | Lists LSP Diagnostics in the workspace if supported and otherwise open buffers.             |
-| ..................................  | Your next awesome picker function here :D                                                   |
 
 ### Git Pickers
 
@@ -421,14 +419,12 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checkouts it out on enter.                 |
 | `builtin.git_branches`              | Lists all branches with log preview, checkout action (<cr>), track action (<c-t>) and rebase action(<c-r>). |
 | `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multiselection still WIP) |
-| ..................................  | Your next awesome picker function here :D                                                   |
 
 ### Treesitter Picker
 
 | Functions                           | Description                                                                                 |
 |-------------------------------------|---------------------------------------------------------------------------------------------|
 | `builtin.treesitter`                | Lists Function names, variables, from Treesitter!                                           |
-| ..................................  | Your next awesome picker function here :D                                                   |
 
 ### Lists Picker
 
@@ -438,19 +434,17 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.builtin`                   | Lists Built-in pickers and run them on enter.                                               |
 | `builtin.reloader`                  | Lists lua modules and reload them on enter.                                                 |
 | `builtin.symbols`                   | Lists symbols inside a file `data/telescope-sources/*.json` found in your rtp. More info and symbol sources can be found [here](https://github.com/nvim-telescope/telescope-symbols.nvim) |
-| ..................................  | Your next awesome picker function here :D                                                   |
 
 ## Previewers
 
 | Previewers                         | Description                                                     |
 |------------------------------------|-----------------------------------------------------------------|
-| `previewers.vim_buffer_cat.new`    | Experimental previewer for files. Uses vim buffers              |
-| `previewers.vim_buffer_vimgrep.new`| Experimental previewer for grep and similar. Uses vim buffers   |
-| `previewers.vim_buffer_qflist.new` | Experimental previewer for qflist. Uses vim buffers             |
-| `previewers.cat.new` (deprecated)  | Default previewer for files. Uses `cat`/`bat`                   |
-| `previewers.vimgrep.new` (deprecated) | Default previewer for grep and similar. Uses `cat`/`bat`     |
-| `previewers.qflist.new` (deprecated) | Default previewer for qflist. Uses `cat`/`bat`                |
-| .................................. | Your next awesome previewer here :D                             |
+| `previewers.vim_buffer_cat.new`    | Default previewer for files. Uses vim buffers                   |
+| `previewers.vim_buffer_vimgrep.new`| Default previewer for grep and similar. Uses vim buffers        |
+| `previewers.vim_buffer_qflist.new` | Default previewer for qflist. Uses vim buffers                  |
+| `previewers.cat.new`               | Deprecated previewer for files. Uses `cat`/`bat`                |
+| `previewers.vimgrep.new`           | Deprecated previewer for grep and similar. Uses `cat`/`bat`     |
+| `previewers.qflist.new`            | Deprecated previewer for qflist. Uses `cat`/`bat`               |
 
 The default previewers are from now on `vim_buffer_` previewers. They use vim buffers for displaying files
 and use tree-sitter or regex for file highlighting.
@@ -475,7 +469,6 @@ autocmd User TelescopePreviewerLoaded setlocal wrap
 | `sorters.get_levenshtein_sorter`   | Using Levenshtein distance algorithm (don't use :D)             |
 | `sorters.get_fzy_sorter`           | Using fzy algorithm                                             |
 | `sorters.fuzzy_with_index_bias`    | Used to list stuff with consideration to when the item is added |
-| .................................. | Your next awesome sorter here :D                                |
 
 A `Sorter` is called by the `Picker` on each item returned by the `Finder`. It
 return a number, which is equivalent to the "distance" between the current
@@ -497,7 +490,6 @@ We have some built in themes but are looking for more cool options.
 | Themes                   | Description                                                           |
 |--------------------------|-----------------------------------------------------------------------|
 | `themes.get_dropdown`    | A list like centered list. [dropdown](https://i.imgur.com/SorAcXv.png)|
-| ...                      | Your next awesome theme here :D                                       |
 
 
 To use a theme, simply append it to a built-in function:
@@ -723,7 +715,4 @@ To checkout the default values of the highlight groups, checkout `plugin/telesco
 ## Contributing
 
 All contributions are welcome! Just open a pull request.
-<!-- TODO: add plugin documentation -->
-When approved,
-  changes in the user interface and new built-in functions
-  will need to be reflected in the documentation and in `README.md`.
+Please read [CONTRIBUTING.md](./COONTRIBUTING.md)
