@@ -1,3 +1,8 @@
+if exists('g:loaded_telescope')
+  finish
+endif
+let g:loaded_telescope = 1
+
 " Sets the highlight for selected items within the picker.
 highlight default link TelescopeSelection Visual
 highlight default link TelescopeSelectionCaret TelescopeSelection
