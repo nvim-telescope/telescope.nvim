@@ -213,6 +213,13 @@ lsp.diagnostics = function(opts)
   }):find()
 end
 
+lsp.workspace_diagnostics = function(opts)
+  opts = utils.get_default(opts, {})
+  opts.hide_filename = utils.get_default(opts.hide_filename, false)
+  opts.get_all = true
+  lsp.diagnostics(opts)
+end
+
 local function check_capabilities(feature)
   local clients = vim.lsp.buf_get_clients(0)
 

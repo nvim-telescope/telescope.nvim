@@ -891,12 +891,10 @@ function make_entry.gen_from_lsp_diagnostics(opts)
       string.format("%s %s", signs[entry.type], pos),
       string.format("LspDiagnosticsDefault%s", entry.type)
     }
-    -- remove line break to avoid display issues
-    local text = entry.text:gsub(".* | ", ""):gsub("[\n]", "")
 
     return displayer {
       line_info,
-      text,
+      entry.text,
       filename,
     }
   end
