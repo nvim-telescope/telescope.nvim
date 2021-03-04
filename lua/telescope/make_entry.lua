@@ -858,16 +858,25 @@ function make_entry.gen_from_lsp_diagnostics(opts)
   opts = opts or {}
   opts.tail_path = utils.get_default(opts.tail_path, true)
 
-  local signs = {}
-  for _, v in pairs(lsp_type_diagnostic) do
-    signs[v] = vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. v)[1].text)
+  local signs
+  if not opts.no_sign then
+    signs = {}
+    for _, v in pairs(lsp_type_diagnostic) do
+      -- pcall to catch entirely unbound or cleared out sign hl group
+      local status, sign = pcall(
+        function() return vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. v)[1].text) end)
+      if not status then
+        sign = v:sub(1,1)
+      end
+      signs[v] = sign
+    end
   end
 
   local layout = {
-    { width = 9 },
+    { width = utils.if_nil(signs, 8, 10) },
     { remaining = true }
   }
-  local line_width = utils.get_default(opts.line_width, 47)
+  local line_width = utils.get_default(opts.line_width, 45)
   if not opts.hide_filename then table.insert(layout, 2, {width = line_width}) end
   local displayer = entry_display.create {
     separator = "▏",
@@ -886,10 +895,10 @@ function make_entry.gen_from_lsp_diagnostics(opts)
     end
 
     -- add styling of entries
-    local pos = string.format("%3d:%2d", entry.lnum, entry.col)
+    local pos = string.format("%4d:%2d", entry.lnum, entry.col)
     local line_info = {
-      string.format("%s %s", signs[entry.type], pos),
-      string.format("LspDiagnosticsDefault%s", entry.type)
+      (signs and signs[entry.type] .. " " or "") .. pos,
+      "LspDiagnosticsDefault" .. entry.type
     }
 
     return displayer {
