@@ -84,36 +84,42 @@ end
 
 utils.diagnostics_to_tbl = function(opts)
   opts = opts or {}
-
-  local bufnr = vim.api.nvim_get_current_buf()
-  local filename = vim.api.nvim_buf_get_name(bufnr)
-  local buffer_diags = vim.lsp.diagnostic.get(bufnr, opts.client_id)
-
   local items = {}
+  local current_buf = vim.api.nvim_get_current_buf()
   local lsp_type_diagnostic = {[1] = "Error", [2] = "Warning", [3] = "Information", [4] = "Hint"}
-  local insert_diag = function(diag)
+
+  local preprocess_diag = function(diag, bufnr)
+    local filename = vim.api.nvim_buf_get_name(bufnr)
     local start = diag.range['start']
     local finish = diag.range['end']
     local row = start.line
     local col = start.character
 
-    local line = (vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false) or {""})[1]
-
-    table.insert(items, {
+    local buffer_diag = {
       bufnr = bufnr,
       filename = filename,
       lnum = row + 1,
       col = col + 1,
       start = start,
       finish = finish,
-      text = vim.trim(line .. " | " .. diag.message),
+    -- remove line break to avoid display issues
+      text = vim.trim(diag.message:gsub("[\n]", "")),
       type = lsp_type_diagnostic[diag.severity] or lsp_type_diagnostic[1]
-    })
+    }
+    table.sort(buffer_diag, function(a, b) return a.lnum < b.lnum end)
+    return buffer_diag
   end
 
-  for _, diag in ipairs(buffer_diags) do insert_diag(diag) end
-
-  table.sort(items, function(a, b) return a.lnum < b.lnum end)
+  local buffer_diags = opts.get_all and vim.lsp.diagnostic.get_all() or
+    {[current_buf] = vim.lsp.diagnostic.get(current_buf, opts.client_id)}
+  for bufnr, diags in pairs(buffer_diags) do
+    for _, diag in pairs(diags) do
+      -- workspace diagnostics may include empty tables for unused bufnr
+      if not vim.tbl_isempty(diag) then
+        table.insert(items, preprocess_diag(diag, bufnr))
+      end
+    end
+  end
   return items
 end
 
