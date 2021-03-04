@@ -206,6 +206,7 @@ files.file_browser = function(opts)
     local data = {}
 
     scan.scan_dir(path, {
+      hidden = opts.hidden or false,
       add_dirs = true,
       depth = 1,
       on_insert = function(entry, typ)
