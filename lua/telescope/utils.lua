@@ -95,8 +95,6 @@ utils.diagnostics_to_tbl = function(opts)
     local row = start.line
     local col = start.character
 
-    local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1] or ""
-
     local buffer_diag = {
       bufnr = bufnr,
       filename = filename,
@@ -104,7 +102,8 @@ utils.diagnostics_to_tbl = function(opts)
       col = col + 1,
       start = start,
       finish = finish,
-      text = vim.trim(line .. " | " .. diag.message),
+    -- remove line break to avoid display issues
+      text = vim.trim(diag.message:gsub("[\n]", "")),
       type = lsp_type_diagnostic[diag.severity] or lsp_type_diagnostic[1]
     }
     table.sort(buffer_diag, function(a, b) return a.lnum < b.lnum end)
@@ -115,7 +114,10 @@ utils.diagnostics_to_tbl = function(opts)
     {[current_buf] = vim.lsp.diagnostic.get(current_buf, opts.client_id)}
   for bufnr, diags in pairs(buffer_diags) do
     for _, diag in pairs(diags) do
-      table.insert(items, preprocess_diag(diag, bufnr))
+      -- workspace diagnostics may include empty tables for unused bufnr
+      if not vim.tbl_isempty(diag) then
+        table.insert(items, preprocess_diag(diag, bufnr))
+      end
     end
   end
   return items
