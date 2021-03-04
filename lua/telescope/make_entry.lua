@@ -862,7 +862,13 @@ function make_entry.gen_from_lsp_diagnostics(opts)
   if not opts.no_sign then
     signs = {}
     for _, v in pairs(lsp_type_diagnostic) do
-      signs[v] = vim.trim(utils.get_default(vim.fn.sign_getdefined("LspDiagnosticsSign" .. v)[1].text, v:sub(1,1)))
+      -- pcall to catch entirely unbound or cleared out sign hl group
+      local status, sign = pcall(
+        function() return vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. v)[1].text) end)
+      if not status then
+        sign = v:sub(1,1)
+      end
+      signs[v] = sign
     end
   end
 
