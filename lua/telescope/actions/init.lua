@@ -144,13 +144,11 @@ function actions.toggle_selection(prompt_bufnr)
 end
 
 function actions.preview_scrolling_up(prompt_bufnr)
-  -- TODO: Make number configurable.
-  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(-30)
+  action_set.scroll_previewer(prompt_bufnr, -1)
 end
 
 function actions.preview_scrolling_down(prompt_bufnr)
-  -- TODO: Make number configurable.
-  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(30)
+  action_set.scroll_previewer(prompt_bufnr, 1)
 end
 
 function actions.center(_)
@@ -413,6 +411,16 @@ actions.send_to_qflist = function(prompt_bufnr)
   vim.fn.setqflist(qf_entries, 'r')
 end
 
+actions.smart_send_to_qflist = function(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  if table.getn(picker:get_multi_selection()) > 0 then
+    actions.send_selected_to_qflist(prompt_bufnr)
+  else
+    actions.send_to_qflist(prompt_bufnr)
+  end
+end
+
+--- Open the quickfix list
 actions.open_qflist = function(_)
   vim.cmd [[copen]]
 end

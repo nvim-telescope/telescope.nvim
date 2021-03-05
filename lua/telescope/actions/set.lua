@@ -2,6 +2,7 @@ local a = vim.api
 
 local log = require('telescope.log')
 local path = require('telescope.path')
+local state = require('telescope.state')
 
 local action_state = require('telescope.actions.state')
 
@@ -122,6 +123,18 @@ set.edit = function(prompt_bufnr, command)
       end
     end
   end
+end
+
+--- Scrolls the previewer up or down
+---@param prompt_bufnr number: The prompt bufnr
+---@param direction number: The direction of the scrolling
+--      Valid directions include: "1", "-1"
+set.scroll_previewer = function (prompt_bufnr, direction)
+  local status = state.get_status(prompt_bufnr)
+  local default_speed = vim.api.nvim_win_get_height(status.preview_win) / 2
+  local speed = status.picker.layout_config.scroll_speed or default_speed
+
+  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(math.floor(speed * direction))
 end
 
 -- ==================================================
