@@ -386,8 +386,88 @@ files.file_browser = function(opts)
         end
       end
 
-      map("i", "<C-e>", create_new_file)
-      map("n", "<C-e>", create_new_file)
+      local rename_file = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local old_name = Path:new(action_state.get_selected_entry()[1])
+
+        if old_name.filename == '../' then
+          print('Please select a file!')
+          return
+        end
+
+        local new_name = vim.fn.input("Insert a new name: ", old_name:make_relative())
+
+        old_name:rename({ new_name = new_name })
+        current_picker:refresh(gen_new_finder(current_picker.cwd), { reset_prompt = true })
+      end
+
+      local marked_files = {}
+      local mark_files = function ()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local entries = current_picker:get_multi_selection()
+
+        local selected = {}
+        for _, entry in ipairs(entries) do
+          table.insert(selected, Path:new(entry[1]))
+        end
+
+        marked_files = selected
+
+        print("File has been copied!")
+      end
+
+      local move_file = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+
+        for _, file in ipairs(marked_files) do
+          local filename = file.filename:sub(#file:parents() + 2)
+
+          local success = file:rename({
+            new_name = Path:new({ current_picker.cwd, filename }).filename
+          })
+
+          if not success then
+            print("Files already exists!")
+            return
+          end
+        end
+
+        print("File has been moved!")
+        current_picker:refresh(gen_new_finder(current_picker.cwd), { reset_prompt = true })
+      end
+
+      local copy_file = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+
+        for _, file in ipairs(marked_files) do
+          local filename = file.filename:sub(#file:parents() + 2)
+
+          local success = file:copy({
+            destination = Path:new({
+              current_picker.cwd, filename
+            }).filename
+          })
+
+          if not success then
+            print("Files already exists!")
+            return
+          end
+        end
+
+        print("File has been copied!")
+        current_picker:refresh(gen_new_finder(current_picker.cwd), { reset_prompt = true })
+      end
+
+      map('i', '<C-e>', create_new_file)
+      map('n', '<C-e>', create_new_file)
+      map('i', '<C-r>', rename_file)
+      map('n', '<C-r>', rename_file)
+      map('i', '<A-y>', mark_files)
+      map('n', '<A-y>', mark_files)
+      map('i', '<A-m>', move_file)
+      map('n', '<A-m>', move_file)
+      map('i', '<A-p>', copy_file)
+      map('n', '<A-p>', copy_file)
       return true
     end,
   }):find()
