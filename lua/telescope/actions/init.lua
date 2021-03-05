@@ -143,21 +143,16 @@ function actions.toggle_selection(prompt_bufnr)
   current_picker:toggle_selection(current_picker:get_selection_row())
 end
 
-local get_scroll_speed = function(prompt_bufnr)
-  local status = state.get_status(prompt_bufnr)
-  local default_speed = vim.api.nvim_win_get_height(status.preview_win) / 2
-
-  return status.picker.layout_config.scroll_speed or default_speed
-end
-
+--- Scrolls the previewer up
+---@param prompt_bufnr number: The prompt bufnr
 function actions.preview_scrolling_up(prompt_bufnr)
-  local speed = get_scroll_speed(prompt_bufnr)
-  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(-math.floor(speed))
+  action_set.scroll_previewer(prompt_bufnr, -1)
 end
 
+--- Scrolls the previewer down
+---@param prompt_bufnr number: The prompt bufnr
 function actions.preview_scrolling_down(prompt_bufnr)
-  local speed = get_scroll_speed(prompt_bufnr)
-  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(math.floor(speed))
+  action_set.scroll_previewer(prompt_bufnr, 1)
 end
 
 function actions.center(_)
