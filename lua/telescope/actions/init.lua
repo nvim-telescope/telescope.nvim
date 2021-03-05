@@ -143,14 +143,10 @@ function actions.toggle_selection(prompt_bufnr)
   current_picker:toggle_selection(current_picker:get_selection_row())
 end
 
---- Scrolls the previewer up
----@param prompt_bufnr number: The prompt bufnr
 function actions.preview_scrolling_up(prompt_bufnr)
   action_set.scroll_previewer(prompt_bufnr, -1)
 end
 
---- Scrolls the previewer down
----@param prompt_bufnr number: The prompt bufnr
 function actions.preview_scrolling_down(prompt_bufnr)
   action_set.scroll_previewer(prompt_bufnr, 1)
 end
@@ -424,6 +420,7 @@ actions.smart_send_to_qflist = function(prompt_bufnr)
   end
 end
 
+--- Open the quickfix list
 actions.open_qflist = function(_)
   vim.cmd [[copen]]
 end

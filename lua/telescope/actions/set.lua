@@ -128,7 +128,7 @@ end
 --- Scrolls the previewer up or down
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param direction number: The direction of the scrolling
---      Valid directions include: 1 or -1
+--      Valid directions include: "1", "-1"
 set.scroll_previewer = function (prompt_bufnr, direction)
   local status = state.get_status(prompt_bufnr)
   local default_speed = vim.api.nvim_win_get_height(status.preview_win) / 2
