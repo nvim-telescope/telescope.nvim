@@ -180,6 +180,11 @@ actions.move_to_top({prompt_bufnr})                    *actions.move_to_top()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.open_qflist()                                  *actions.open_qflist()*
+    Open the quickfix list
+
+
+
 actions.remove_selection({prompt_bufnr})          *actions.remove_selection()*
     Remove current entry from multi select
 
@@ -515,6 +520,9 @@ horizontal and vertical layouts):
 
   - preview_width:
     - Change the width of Telescope's preview window
+
+  - scroll_speed:
+    - Change the scrolling speed of the previewer
 
 layout_strategies.center()                        *layout_strategies.center()*
     Centered layout wih smaller default sizes (I think)
