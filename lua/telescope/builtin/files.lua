@@ -401,8 +401,7 @@ files.file_browser = function(opts)
         current_picker:refresh(gen_new_finder(current_picker.cwd), { reset_prompt = true })
       end
 
-      local marked_files = {}
-      local mark_files = function ()
+      local get_marked_files = function ()
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         local entries = current_picker:get_multi_selection()
 
@@ -411,15 +410,13 @@ files.file_browser = function(opts)
           table.insert(selected, Path:new(entry[1]))
         end
 
-        marked_files = selected
-
-        print("File has been copied!")
+        return selected
       end
 
       local move_file = function()
         local current_picker = action_state.get_current_picker(prompt_bufnr)
 
-        for _, file in ipairs(marked_files) do
+        for _, file in ipairs(get_marked_files()) do
           local filename = file.filename:sub(#file:parents() + 2)
 
           local success = file:rename({
@@ -427,19 +424,19 @@ files.file_browser = function(opts)
           })
 
           if not success then
-            print("Files already exists!")
+            print("The file is already exists!")
             return
           end
         end
 
-        print("File has been moved!")
+        print("The file has been moved!")
         current_picker:refresh(gen_new_finder(current_picker.cwd), { reset_prompt = true })
       end
 
       local copy_file = function()
         local current_picker = action_state.get_current_picker(prompt_bufnr)
 
-        for _, file in ipairs(marked_files) do
+        for _, file in ipairs(get_marked_files()) do
           local filename = file.filename:sub(#file:parents() + 2)
 
           local success = file:copy({
@@ -449,25 +446,45 @@ files.file_browser = function(opts)
           })
 
           if not success then
-            print("Files already exists!")
+            print("The file is already exists!")
             return
           end
         end
 
-        print("File has been copied!")
+        print("The file has been copied!")
         current_picker:refresh(gen_new_finder(current_picker.cwd), { reset_prompt = true })
+      end
+
+      local remove_file = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local marked_files = get_marked_files()
+
+        print("These files are going to be deleted:")
+        for _, file in ipairs(marked_files) do
+          print(file.filename)
+        end
+
+        local confirm = vim.fn.confirm("You're about to do a destructive action. Proceed? [y/N]: ", "&Yes\n&No", "No")
+
+        if confirm == 1 then
+          for _, file in ipairs(marked_files) do
+            file:rm({ recursive = file:is_dir() })
+          end
+          print("\nThe file has been removed!")
+          current_picker:refresh(gen_new_finder(current_picker.cwd), { reset_prompt = true })
+        end
       end
 
       map('i', '<C-e>', create_new_file)
       map('n', '<C-e>', create_new_file)
       map('i', '<C-r>', rename_file)
       map('n', '<C-r>', rename_file)
-      map('i', '<A-y>', mark_files)
-      map('n', '<A-y>', mark_files)
       map('i', '<A-m>', move_file)
       map('n', '<A-m>', move_file)
       map('i', '<A-p>', copy_file)
       map('n', '<A-p>', copy_file)
+      map('i', '<A-d>', remove_file)
+      map('n', '<A-d>', remove_file)
       return true
     end,
   }):find()
