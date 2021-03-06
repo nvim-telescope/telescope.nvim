@@ -405,12 +405,18 @@ files.file_browser = function(opts)
 
       local get_marked_files = function ()
         local current_picker = action_state.get_current_picker(prompt_bufnr)
-        local entries = current_picker:get_multi_selection()
+        local multi_selected = current_picker:get_multi_selection()
+        local entries
 
-        local selected = {}
-        for _, entry in ipairs(entries) do
-          table.insert(selected, Path:new(entry[1]))
+        if vim.tbl_isempty(multi_selected) then
+          entries = { action_state.get_selected_entry() }
+        else
+          entries = multi_selected
         end
+
+        local selected = vim.tbl_map(function(entry)
+          return Path:new(entry[1])
+        end, entries)
 
         return selected
       end
