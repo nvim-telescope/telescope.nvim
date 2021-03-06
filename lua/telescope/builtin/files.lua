@@ -269,35 +269,36 @@ files.file_browser = function(opts)
 
   opts.depth = opts.depth or 1
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
-  opts.new_finder = opts.new_finder
-    or function(path)
-      opts.cwd = path
-      local data = {}
+  opts.new_finder = opts.new_finder or function(path)
+    opts.cwd = path
+    local data = {}
 
-      scan.scan_dir(path, {
-        hidden = opts.hidden or false,
-        add_dirs = true,
-        depth = opts.depth,
-        on_insert = function(entry, typ)
-          table.insert(data, typ == "directory" and (entry .. os_sep) or entry)
-        end,
-      })
-      table.insert(data, 1, ".." .. os_sep)
+    if not vim.loop.fs_access(path, "X") then
+      print("You don't have access to this directory")
+      return nil
+    end
 
-      local maker = function()
-        local mt = {}
-        mt.cwd = opts.cwd
-        mt.display = function(entry)
-          local hl_group
-          local display = utils.transform_path(opts, entry.value)
-          if is_dir(entry.value) then
-            display = display .. os_sep
-            if not opts.disable_devicons then
-              display = (opts.dir_icon or "") .. " " .. display
-              hl_group = "Default"
-            end
-          else
-            display, hl_group = utils.transform_devicons(entry.value, display, opts.disable_devicons)
+    scan.scan_dir(path, {
+      hidden = opts.hidden or false,
+      add_dirs = true,
+      depth = opts.depth,
+      on_insert = function(entry, typ)
+        table.insert(data, typ == 'directory' and (entry .. os_sep) or entry)
+      end
+    })
+    table.insert(data, 1, '..' .. os_sep)
+
+    local maker = function()
+      local mt = {}
+      mt.cwd = opts.cwd
+      mt.display = function(entry)
+        local hl_group
+        local display = utils.transform_path(opts, entry.value)
+        if is_dir(entry.value) then
+          display = display .. os_sep
+          if not opts.disable_devicons then
+            display = (opts.dir_icon or "") .. " " .. display
+            hl_group = "Default"
           end
 
           if hl_group then
@@ -346,7 +347,7 @@ files.file_browser = function(opts)
       action_set.select:replace_if(function()
         return is_dir(action_state.get_selected_entry().path)
       end, function()
-        local new_cwd = vim.fn.expand(action_state.get_selected_entry().path:sub(1, -2))
+        local new_cwd = vim.loop.fs_realpath(action_state.get_selected_entry().path)
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         current_picker.cwd = new_cwd
         current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
@@ -379,8 +380,9 @@ files.file_browser = function(opts)
           Path:new(fpath):touch { parents = true }
           vim.cmd(string.format(":e %s", fpath))
         else
-          Path:new(fpath:sub(1, -2)):mkdir { parents = true }
-          local new_cwd = vim.fn.expand(fpath)
+          -- TODO(conni2461): I think when doing realpath we don't have to worry about :sub(1, -2) anymore
+          Path:new(fpath:sub(1, -2)):mkdir({ parents = true })
+          local new_cwd = vim.loop.fs_realpath(fpath)
           current_picker.cwd = new_cwd
           current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
         end
