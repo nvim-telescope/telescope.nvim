@@ -380,7 +380,7 @@ local entry_to_qf = function(entry)
     filename = entry.filename,
     lnum = entry.lnum,
     col = entry.col,
-    text = entry.value,
+    text = entry.text or entry.value.text or entry.value,
   }
 end
 
@@ -413,7 +413,7 @@ end
 
 actions.smart_send_to_qflist = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
-  if table.getn(picker:get_multi_selection()) > 0 then
+  if #(picker:get_multi_selection()) > 0 then
     actions.send_selected_to_qflist(prompt_bufnr)
   else
     actions.send_to_qflist(prompt_bufnr)
