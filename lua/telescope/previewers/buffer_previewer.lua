@@ -65,7 +65,7 @@ previewers.file_maker = function(filepath, bufnr, opts)
   local ft = opts.use_ft_detect and pfiletype.detect(filepath)
 
   if opts.bufname ~= filepath then
-    filepath = vim.fn.expand(filepath)
+    if not vim.in_fast_event() then filepath = vim.fn.expand(filepath) end
     local stat = vim.loop.fs_stat(filepath) or {}
     if stat.type == 'directory' then
       pscan.ls_async(filepath, {
