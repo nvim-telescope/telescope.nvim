@@ -380,7 +380,7 @@ local entry_to_qf = function(entry)
     filename = entry.filename,
     lnum = entry.lnum,
     col = entry.col,
-    text = entry.value,
+    text = entry.text or entry.value.text or entry.value,
   }
 end
 
