@@ -39,6 +39,7 @@ function Sorter:new(opts)
 
   return setmetatable({
     state = {},
+    tags = opts.tags,
     filter_function = opts.filter_function,
     scoring_function = opts.scoring_function,
     highlighter = opts.highlighter,
@@ -87,6 +88,7 @@ function Sorter:score(prompt, entry)
 
   local filter_score
   if self.filter_function ~= nil then
+    if self.tags then self.tags:insert(entry) end
     filter_score, prompt = self:filter_function(prompt, entry)
   end
 
@@ -510,6 +512,8 @@ end
 
 sorters.prefilter = function(opts)
   local sorter = opts.sorter
+  sorter.tags = util.create_set(opts.tag)
+  sorter._delimiter = vim.F.if_nil(opts.delimiter, ':')
   sorter.filter_function = filter_function(opts)
   sorter._was_discarded = function() return false end
   return sorter

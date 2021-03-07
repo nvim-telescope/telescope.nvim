@@ -420,6 +420,33 @@ actions.smart_send_to_qflist = function(prompt_bufnr)
   end
 end
 
+actions.complete = function(prompt_bufnr)
+  local tags = action_state.get_current_picker(prompt_bufnr).sorter.tags
+  local delimiter = action_state.get_current_picker(prompt_bufnr).sorter._delimiter
+
+  if not tags then return end
+
+  local symbols = {}
+  -- :sub(2, -1): remove preceding ">"
+  local line = vim.api.nvim_buf_get_lines(prompt_bufnr, 0, 1, false)[1]:sub(2,-1) or ""
+  for t, _ in pairs(tags) do
+    table.insert(symbols, string.format('%s%s%s ', delimiter, t:lower(), delimiter))
+  end
+
+  local filtered_symbols
+  -- retrigger completion with already selected tag anew
+  -- trim and add space since we can match [[:pattern: ]]  with or without space at the end
+  if vim.tbl_contains(symbols, vim.trim(line) .. " ") then
+    filtered_symbols = symbols
+  else
+    filtered_symbols = utils.filter_completion(line, symbols)
+  end
+  local col = vim.api.nvim_win_get_cursor(0)[2] + 1
+
+  vim.fn.complete(col - #line, filtered_symbols)
+
+end
+
 --- Open the quickfix list
 actions.open_qflist = function(_)
   vim.cmd [[copen]]
