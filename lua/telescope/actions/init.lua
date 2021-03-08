@@ -422,11 +422,11 @@ end
 
 actions.complete_tag = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
-  local tags = utils.get_default(current_picker.sorter.tags, {})
+  local tags = current_picker.sorter.tags
   local delimiter = current_picker.sorter._delimiter
 
-  if vim.tbl_isempty(tags) then
-    print('No tags found or associated with picker.')
+  if not tags then
+    print('No tag pre-filtering set for this picker')
     return
   end
 
@@ -453,7 +453,7 @@ actions.complete_tag = function(prompt_bufnr)
   end
 
   if vim.tbl_isempty(filtered_tags) then
-    print('No matches found.')
+    print('No matches found')
     return
   end
 
