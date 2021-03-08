@@ -427,8 +427,7 @@ actions.complete = function(prompt_bufnr)
   if not tags then return end
 
   local symbols = {}
-  -- :sub(2, -1): remove preceding ">"
-  local line = vim.api.nvim_buf_get_lines(prompt_bufnr, 0, 1, false)[1]:sub(2,-1) or ""
+  local line = action_state.get_current_line()
   for t, _ in pairs(tags) do
     table.insert(symbols, string.format('%s%s%s ', delimiter, t:lower(), delimiter))
   end
