@@ -392,7 +392,7 @@ utils.get_devicons = (function()
   end
 end)()
 
-function utils.create_set(tag)
+function utils.create_tag_set(tag)
   tag = vim.F.if_nil(tag, 'ordinal')
   local set = {}
   return setmetatable(set, {
@@ -403,18 +403,6 @@ function utils.create_set(tag)
       end
     }
   })
-end
-
-function utils.filter_completion(line, symbols)
-  -- match residuals
-  local matches = {}
-  for _, val in pairs(symbols) do
-    local start, _ = val:find(line)
-    if start then
-      table.insert(matches, val)
-    end
-  end
-  return matches
 end
 
 return utils

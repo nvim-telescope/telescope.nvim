@@ -478,7 +478,7 @@ end
 
 local substr_matcher = function(_, prompt, line, _)
   local display = line:lower()
-  local search_terms = util.max_split(prompt, "%s")
+  local search_terms = util.max_split(prompt:lower(), "%s")
   local matched = 0
   local total_search_terms = 0
   for _, word in pairs(search_terms) do
@@ -494,10 +494,9 @@ end
 local filter_function = function(opts)
   local scoring_function = vim.F.if_nil(opts.filter_function, substr_matcher)
   local tag = vim.F.if_nil(opts.tag, "ordinal")
-  local delimiter = vim.F.if_nil(opts.delimiter, ":")
 
   return function(_, prompt, entry)
-    local filter = "^(" .. delimiter .. "(%S+)" .. "[" .. delimiter .. "%s]" .. ")"
+    local filter = "^(" .. opts.delimiter .. "(%S+)" .. "[" .. opts.delimiter .. "%s]" .. ")"
     local matched = prompt:match(filter)
 
     if matched == nil then
@@ -505,15 +504,16 @@ local filter_function = function(opts)
     end
     -- clear prompt of tag
     prompt = prompt:sub(#matched + 1, -1)
-    local query = vim.trim(matched:gsub(delimiter, ""))
+    local query = vim.trim(matched:gsub(opts.delimiter, ""))
     return scoring_function(_, query, entry[tag], _), prompt
   end
 end
 
 sorters.prefilter = function(opts)
   local sorter = opts.sorter
-  sorter.tags = util.create_set(opts.tag)
-  sorter._delimiter = vim.F.if_nil(opts.delimiter, ':')
+  opts.delimiter = util.get_default(opts.delimiter, ':')
+  sorter._delimiter = opts.delimiter
+  sorter.tags = util.create_tag_set(opts.tag)
   sorter.filter_function = filter_function(opts)
   sorter._was_discarded = function() return false end
   return sorter
