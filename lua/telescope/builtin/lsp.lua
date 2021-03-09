@@ -276,6 +276,7 @@ local feature_map = {
   ["code_actions"]      = "code_action",
   ["document_symbols"]  = "document_symbol",
   ["references"]        = "find_references",
+  ["definitions"]        = "definition",
   ["workspace_symbols"] = "workspace_symbol",
 }
 
