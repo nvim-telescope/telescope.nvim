@@ -50,15 +50,12 @@ lsp.definitions = function(opts)
     end
   end
 
-  local locations = vim.lsp.util.locations_to_items(flattened_results)
-
-  if vim.tbl_isempty(locations) then
+  if #flattened_results == 0 then
     return
-  end
-
-  if #locations == 1 then
+  elseif #flattened_results == 1 then
     vim.lsp.util.jump_to_location(flattened_results[1])
   else
+    local locations = vim.lsp.util.locations_to_items(flattened_results)
     pickers.new(opts, {
       prompt_title = 'LSP Definitions',
       finder = finders.new_table {
@@ -69,7 +66,6 @@ lsp.definitions = function(opts)
       sorter = conf.generic_sorter(opts),
     }):find()
   end
-end
 
 lsp.document_symbols = function(opts)
   local params = vim.lsp.util.make_position_params()
