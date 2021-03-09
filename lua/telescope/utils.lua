@@ -392,5 +392,4 @@ utils.get_devicons = (function()
   end
 end)()
 
-
 return utils
