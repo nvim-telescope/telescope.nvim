@@ -420,6 +420,49 @@ actions.smart_send_to_qflist = function(prompt_bufnr)
   end
 end
 
+actions.complete_tag = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local tags = current_picker.sorter.tags
+  local delimiter = current_picker.sorter._delimiter
+
+  if not tags then
+    print('No tag pre-filtering set for this picker')
+    return
+  end
+
+  -- format tags to match filter_function
+  local prefilter_tags = {}
+  for tag, _ in pairs(tags) do
+    table.insert(prefilter_tags, string.format('%s%s%s ', delimiter, tag:lower(), delimiter))
+  end
+
+  local line = action_state.get_current_line()
+  local filtered_tags = {}
+  -- retrigger completion with already selected tag anew
+  -- trim and add space since we can match [[:pattern: ]]  with or without space at the end
+  if vim.tbl_contains(prefilter_tags, vim.trim(line) .. " ") then
+    filtered_tags = prefilter_tags
+  else
+    -- match tag by substring
+    for _, tag in pairs(prefilter_tags) do
+      local start, _ = tag:find(line)
+      if start then
+        table.insert(filtered_tags, tag)
+      end
+    end
+  end
+
+  if vim.tbl_isempty(filtered_tags) then
+    print('No matches found')
+    return
+  end
+
+  -- incremental completion by substituting string starting from col - #line byte offset
+  local col = vim.api.nvim_win_get_cursor(0)[2] + 1
+  vim.fn.complete(col - #line, filtered_tags)
+
+end
+
 --- Open the quickfix list
 actions.open_qflist = function(_)
   vim.cmd [[copen]]

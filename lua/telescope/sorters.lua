@@ -39,6 +39,7 @@ function Sorter:new(opts)
 
   return setmetatable({
     state = {},
+    tags = opts.tags,
     filter_function = opts.filter_function,
     scoring_function = opts.scoring_function,
     highlighter = opts.highlighter,
@@ -87,6 +88,7 @@ function Sorter:score(prompt, entry)
 
   local filter_score
   if self.filter_function ~= nil then
+    if self.tags then self.tags:insert(entry) end
     filter_score, prompt = self:filter_function(prompt, entry)
   end
 
@@ -476,7 +478,7 @@ end
 
 local substr_matcher = function(_, prompt, line, _)
   local display = line:lower()
-  local search_terms = util.max_split(prompt, "%s")
+  local search_terms = util.max_split(prompt:lower(), "%s")
   local matched = 0
   local total_search_terms = 0
   for _, word in pairs(search_terms) do
@@ -492,10 +494,9 @@ end
 local filter_function = function(opts)
   local scoring_function = vim.F.if_nil(opts.filter_function, substr_matcher)
   local tag = vim.F.if_nil(opts.tag, "ordinal")
-  local delimiter = vim.F.if_nil(opts.delimiter, ":")
 
   return function(_, prompt, entry)
-    local filter = "^(" .. delimiter .. "(%S+)" .. "[" .. delimiter .. "%s]" .. ")"
+    local filter = "^(" .. opts.delimiter .. "(%S+)" .. "[" .. opts.delimiter .. "%s]" .. ")"
     local matched = prompt:match(filter)
 
     if matched == nil then
@@ -503,13 +504,29 @@ local filter_function = function(opts)
     end
     -- clear prompt of tag
     prompt = prompt:sub(#matched + 1, -1)
-    local query = vim.trim(matched:gsub(delimiter, ""))
+    local query = vim.trim(matched:gsub(opts.delimiter, ""))
     return scoring_function(_, query, entry[tag], _), prompt
   end
 end
 
+local function create_tag_set(tag)
+  tag = vim.F.if_nil(tag, 'ordinal')
+  local set = {}
+  return setmetatable(set, {
+    __index = {
+      insert = function(set_, entry)
+        local value = entry[tag]
+        if not set_[value] then set_[value] = true end
+      end
+    }
+  })
+end
+
 sorters.prefilter = function(opts)
   local sorter = opts.sorter
+  opts.delimiter = util.get_default(opts.delimiter, ':')
+  sorter._delimiter = opts.delimiter
+  sorter.tags = create_tag_set(opts.tag)
   sorter.filter_function = filter_function(opts)
   sorter._was_discarded = function() return false end
   return sorter
