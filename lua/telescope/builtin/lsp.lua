@@ -38,6 +38,36 @@ lsp.references = function(opts)
   }):find()
 end
 
+lsp.definitions = function(opts)
+  opts = opts or {}
+
+  local params = vim.lsp.util.make_position_params()
+  local result = vim.lsp.buf_request_sync(0, "textDocument/definition", params, opts.timeout or 10000)
+  local flattened_results = {}
+  for _, server_results in pairs(result) do
+    if server_results.result then
+      vim.list_extend(flattened_results, server_results.result)
+    end
+  end
+
+  if #flattened_results == 0 then
+    return
+  elseif #flattened_results == 1 then
+    vim.lsp.util.jump_to_location(flattened_results[1])
+  else
+    local locations = vim.lsp.util.locations_to_items(flattened_results)
+    pickers.new(opts, {
+      prompt_title = 'LSP Definitions',
+      finder = finders.new_table {
+        results = locations,
+        entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
+      },
+      previewer = conf.qflist_previewer(opts),
+      sorter = conf.generic_sorter(opts),
+    }):find()
+  end
+end
+
 lsp.document_symbols = function(opts)
   local params = vim.lsp.util.make_position_params()
   local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/documentSymbol", params, opts.timeout or 10000)
@@ -246,6 +276,7 @@ local feature_map = {
   ["code_actions"]      = "code_action",
   ["document_symbols"]  = "document_symbol",
   ["references"]        = "find_references",
+  ["definitions"]       = "goto_definition",
   ["workspace_symbols"] = "workspace_symbol",
 }
 

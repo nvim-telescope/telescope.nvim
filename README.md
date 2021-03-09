@@ -410,6 +410,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.lsp_range_code_actions`    | Lists LSP range code action to be trigged on enter.                                         |
 | `builtin.lsp_document_diagnostics`  | Lists LSP Diagnostics in the current document.                                              |
 | `builtin.lsp_workspace_diagnostics` | Lists LSP Diagnostics in the workspace if supported and otherwise open buffers.             |
+| `builtin.lsp_definitions`           | Goto definition if there is only one. If there are multiple, open them up in telescope     |
 
 ### Git Pickers
 
