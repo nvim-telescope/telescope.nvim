@@ -392,17 +392,5 @@ utils.get_devicons = (function()
   end
 end)()
 
-function utils.create_tag_set(tag)
-  tag = vim.F.if_nil(tag, 'ordinal')
-  local set = {}
-  return setmetatable(set, {
-    __index = {
-      insert = function(set_, entry)
-        local value = entry[tag]
-        if not set_[value] then set_[value] = true end
-      end
-    }
-  })
-end
 
 return utils

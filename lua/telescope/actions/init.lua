@@ -457,7 +457,7 @@ actions.complete_tag = function(prompt_bufnr)
     return
   end
 
-  -- col - #line bytes are replaced by accepted match
+  -- incremental completion by substituting string starting from col - #line byte offset
   local col = vim.api.nvim_win_get_cursor(0)[2] + 1
   vim.fn.complete(col - #line, filtered_tags)
 

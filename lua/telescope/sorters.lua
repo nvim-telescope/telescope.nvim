@@ -509,11 +509,24 @@ local filter_function = function(opts)
   end
 end
 
+local function create_tag_set(tag)
+  tag = vim.F.if_nil(tag, 'ordinal')
+  local set = {}
+  return setmetatable(set, {
+    __index = {
+      insert = function(set_, entry)
+        local value = entry[tag]
+        if not set_[value] then set_[value] = true end
+      end
+    }
+  })
+end
+
 sorters.prefilter = function(opts)
   local sorter = opts.sorter
   opts.delimiter = util.get_default(opts.delimiter, ':')
   sorter._delimiter = opts.delimiter
-  sorter.tags = util.create_tag_set(opts.tag)
+  sorter.tags = create_tag_set(opts.tag)
   sorter.filter_function = filter_function(opts)
   sorter._was_discarded = function() return false end
   return sorter
