@@ -66,6 +66,7 @@ lsp.definitions = function(opts)
       sorter = conf.generic_sorter(opts),
     }):find()
   end
+end
 
 lsp.document_symbols = function(opts)
   local params = vim.lsp.util.make_position_params()
