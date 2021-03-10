@@ -13,6 +13,10 @@
 ---   Other configuration options are still in flux at the moment
 ---@brief ]]
 
+-- TODO(conni2461): Making this ascending for now. I have to decide later if this
+-- is better or worse
+---@config { ['function_order'] = 'ascending' }
+
 if 1 ~= vim.fn.has('nvim-0.5') then
   vim.api.nvim_err_writeln("This plugins requires neovim 0.5")
   vim.api.nvim_err_writeln("Please update your neovim.")
@@ -25,6 +29,19 @@ local builtin = {}
 builtin.live_grep = require('telescope.builtin.files').live_grep
 
 builtin.grep_string = require('telescope.builtin.files').grep_string
+
+--- Lists files in current directory using `fd`, `ripgrep` or `find`.
+--- It will not show directories or gitignored files (when using `fd` or `ripgrep`).
+--- Later can be enabled with a different `find_command`.
+---@param opts table: Configure behavior of `find_files`.
+---@field find_command table: Specify your find command as a table of strings.
+---@field hidden boolean: Enable or disable hidden files. Default is false.
+---@field follow boolean: Enable or disable if symbolic links should be followed. Default is false.
+---@field cwd string: Specify the path on which find_files should run.
+---@field search_dirs table: Specify multiple search directories as table of paths.
+---@field entry_maker function: How entries are generated. Can be changed if you want a different display output.
+---@field disable_devicons boolen: Enable or disable devicons in front of each entry. Default is true if nvim-web-devicons is installed.
+---@field shorten_path boolean: Enable or disable if paths should be shortened. Default is false.
 builtin.find_files = require('telescope.builtin.files').find_files
 builtin.fd = builtin.find_files
 builtin.file_browser = require('telescope.builtin.files').file_browser

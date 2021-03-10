@@ -7,6 +7,9 @@
 --- Actions functions that are useful for people creating their own mappings.
 ---@brief ]]
 
+-- TODO(conni2461): Keeping ascending here as well. Not sure tho
+---@config { ['function_order'] = 'ascending' }
+
 local a = vim.api
 
 local log = require('telescope.log')

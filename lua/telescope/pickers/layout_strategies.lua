@@ -58,6 +58,8 @@
 ---     - Change the scrolling speed of the previewer
 ---@brief ]]
 
+---@config { ['function_order'] = 'ascending' }
+
 local config = require('telescope.config')
 local resolve = require("telescope.config.resolve")
 
