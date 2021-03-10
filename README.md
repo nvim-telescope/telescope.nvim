@@ -716,4 +716,4 @@ To checkout the default values of the highlight groups, checkout `plugin/telesco
 ## Contributing
 
 All contributions are welcome! Just open a pull request.
-Please read [CONTRIBUTING.md](./COONTRIBUTING.md)
+Please read [CONTRIBUTING.md](./CONTRIBUTING.md)
