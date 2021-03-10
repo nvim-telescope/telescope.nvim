@@ -451,8 +451,6 @@ function Picker:find()
   vim.api.nvim_buf_attach(prompt_bufnr, false, {
     on_lines = on_lines,
     on_detach = vim.schedule_wrap(function()
-      self:_reset_highlights()
-
       on_lines = nil
 
       -- TODO: Can we add a "cleanup" / "teardown" function that completely removes these.
