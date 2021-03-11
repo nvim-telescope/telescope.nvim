@@ -273,12 +273,12 @@ files.file_browser = function(opts)
     opts.cwd = path
     local data = {}
 
-    if not vim.loop.fs_access(path, "X") then
+    if not vim.loop.fs_access(new_opts.path, "X") then
       print("You don't have access to this directory")
       return nil
     end
 
-    scan.scan_dir(path, {
+    scan.scan_dir(new_opts.path, {
       hidden = opts.hidden or false,
       add_dirs = true,
       depth = opts.depth,
@@ -400,7 +400,9 @@ files.file_browser = function(opts)
         local new_name = vim.fn.input("Insert a new name: ", old_name:make_relative())
 
         old_name:rename({ new_name = new_name })
-        current_picker:refresh(gen_new_finder(current_picker.cwd), { reset_prompt = true })
+        current_picker:refresh(gen_new_finder({
+          path = current_picker.cwd,
+        }), { reset_prompt = true })
       end
 
       local get_marked_files = function ()
@@ -438,7 +440,9 @@ files.file_browser = function(opts)
         end
 
         print("The file has been moved!")
-        current_picker:refresh(gen_new_finder(current_picker.cwd), { reset_prompt = true })
+        current_picker:refresh(gen_new_finder({
+          path = current_picker.cwd,
+        }), { reset_prompt = true })
       end
 
       local copy_file = function()
@@ -460,7 +464,9 @@ files.file_browser = function(opts)
         end
 
         print("The file has been copied!")
-        current_picker:refresh(gen_new_finder(current_picker.cwd), { reset_prompt = true })
+        current_picker:refresh(gen_new_finder({
+          path = current_picker.cwd,
+        }), { reset_prompt = true })
       end
 
       local remove_file = function()
@@ -479,8 +485,35 @@ files.file_browser = function(opts)
             file:rm({ recursive = file:is_dir() })
           end
           print("\nThe file has been removed!")
-          current_picker:refresh(gen_new_finder(current_picker.cwd), { reset_prompt = true })
+          current_picker:refresh(gen_new_finder({
+            path = current_picker.cwd,
+          }), { reset_prompt = true })
         end
+      end
+
+      local toggle_hidden = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        current_picker:refresh(gen_new_finder({
+          path = current_picker.cwd,
+          hidden = not opts.hidden,
+        }), { reset_prompt = true })
+      end
+
+      local goto_prev_dir = function(bypass)
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local parent_dir = Path:new(current_picker.cwd):parents()
+
+        if not bypass then
+          if vim.loop.cwd() == current_picker.cwd then
+            print("You can't go up any further!")
+            return
+          end
+        end
+
+        current_picker:refresh(gen_new_finder({
+          path = parent_dir,
+        }), { reset_prompt = true })
+        current_picker.cwd = parent_dir
       end
 
       map('i', '<C-e>', create_new_file)
@@ -490,6 +523,10 @@ files.file_browser = function(opts)
       map('n', 'm', move_file)
       map('n', 'y', copy_file)
       map('n', 'd', remove_file)
+      map('n', '<S-h>', toggle_hidden)
+      map('n', 'l', actions.select_default)
+      map('n', 'h', function() goto_prev_dir(false) end)
+      map('n', '<BS>', function() goto_prev_dir(true) end)
       return true
     end,
   }):find()
