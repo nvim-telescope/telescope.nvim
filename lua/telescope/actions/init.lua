@@ -152,7 +152,7 @@ function actions.close_pum(_)
   end
 end
 
-local do_close = function(prompt_bufnr, keepinsert)
+actions._close = function(prompt_bufnr, keepinsert)
   local picker = actions.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
@@ -173,7 +173,7 @@ local do_close = function(prompt_bufnr, keepinsert)
 end
 
 function actions.close(prompt_bufnr)
-  do_close(prompt_bufnr, false)
+  actions._close(prompt_bufnr, false)
 end
 
 actions.set_command_line = function(prompt_bufnr)
