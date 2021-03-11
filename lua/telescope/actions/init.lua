@@ -430,17 +430,9 @@ end
 local smart_send = function(prompt_bufnr, mode)
   local picker = action_state.get_current_picker(prompt_bufnr)
   if table.getn(picker:get_multi_selection()) > 0 then
-    if mode == 'r' then
-      actions.send_selected_to_qflist(prompt_bufnr)
-    else
-      actions.add_selected_to_qflist(prompt_bufnr)
-    end
+    send_selected_to_qf(prompt_bufnr, mode)
   else
-    if mode == 'r' then
-      actions.send_to_qflist(prompt_bufnr)
-    else
-      actions.add_to_qflist(prompt_bufnr)
-    end
+    send_all_to_qf(prompt_bufnr, mode)
   end
 end
 
