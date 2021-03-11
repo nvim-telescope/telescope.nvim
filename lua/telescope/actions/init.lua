@@ -465,7 +465,7 @@ end
 
 --- Open the quickfix list
 actions.open_qflist = function(_)
-  vim.cmd [[copen]]
+  vim.cmd [[cwindow]]
 end
 
 -- ==================================================
