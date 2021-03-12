@@ -384,7 +384,7 @@ local entry_to_qf = function(entry)
   }
 end
 
-actions.send_selected_to_qflist = function(prompt_bufnr)
+local send_selected_to_qf = function(prompt_bufnr, mode)
   local picker = action_state.get_current_picker(prompt_bufnr)
 
   local qf_entries = {}
@@ -394,10 +394,10 @@ actions.send_selected_to_qflist = function(prompt_bufnr)
 
   actions.close(prompt_bufnr)
 
-  vim.fn.setqflist(qf_entries, 'r')
+  vim.fn.setqflist(qf_entries, mode)
 end
 
-actions.send_to_qflist = function(prompt_bufnr)
+local send_all_to_qf = function(prompt_bufnr, mode)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local manager = picker.manager
 
@@ -408,16 +408,40 @@ actions.send_to_qflist = function(prompt_bufnr)
 
   actions.close(prompt_bufnr)
 
-  vim.fn.setqflist(qf_entries, 'r')
+  vim.fn.setqflist(qf_entries, mode)
+end
+
+actions.send_selected_to_qflist = function(prompt_bufnr)
+  send_selected_to_qf(prompt_bufnr, 'r')
+end
+
+actions.add_selected_to_qflist = function(prompt_bufnr)
+  send_selected_to_qf(prompt_bufnr, 'a')
+end
+
+actions.send_to_qflist = function(prompt_bufnr)
+  send_all_to_qf(prompt_bufnr, 'r')
+end
+
+actions.add_to_qflist = function(prompt_bufnr)
+  send_all_to_qf(prompt_bufnr, 'a')
+end
+
+local smart_send = function(prompt_bufnr, mode)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  if table.getn(picker:get_multi_selection()) > 0 then
+    send_selected_to_qf(prompt_bufnr, mode)
+  else
+    send_all_to_qf(prompt_bufnr, mode)
+  end
 end
 
 actions.smart_send_to_qflist = function(prompt_bufnr)
-  local picker = action_state.get_current_picker(prompt_bufnr)
-  if table.getn(picker:get_multi_selection()) > 0 then
-    actions.send_selected_to_qflist(prompt_bufnr)
-  else
-    actions.send_to_qflist(prompt_bufnr)
-  end
+  smart_send(prompt_bufnr, 'r')
+end
+
+actions.smart_add_to_qflist = function(prompt_bufnr)
+  smart_send(prompt_bufnr, 'a')
 end
 
 actions.complete_tag = function(prompt_bufnr)
