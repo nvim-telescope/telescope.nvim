@@ -244,6 +244,12 @@ files.file_browser = function(opts)
         current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true })
       end)
 
+      local change_working_directory = function(prompt_bufnr)
+	local dir = actions.get_selected_entry(prompt_bufnr).value
+      	vim.fn.execute("cd " .. dir, "silent")
+      end
+      map('n', 'C', change_working_directory)
+
       local create_new_file = function()
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         local file = action_state.get_current_line()
