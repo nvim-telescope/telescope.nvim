@@ -248,7 +248,7 @@ files.file_browser = function(opts)
 	local dir = actions.get_selected_entry(prompt_bufnr).value
 	vim.fn.execute("cd " .. dir, "silent")
       end
-      map('n', 'C', change_working_directory)
+      map('n', 'cd', change_working_directory)
 
       local create_new_file = function()
         local current_picker = action_state.get_current_picker(prompt_bufnr)
