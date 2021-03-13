@@ -7,6 +7,7 @@ local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
 local utils = require('telescope.utils')
 local conf = require('telescope.config').values
+local config = require('telescope.config')
 
 local scan = require('plenary.scandir')
 local Path = require('plenary.path')
@@ -236,10 +237,11 @@ files.file_browser = function(opts)
       path = Path:new(Path:new(path:parents()):parents())
     end
 
-    return path.filename .. ': '
+    return path.filename .. config.values.prompt_prefix
   end
 
   pickers.new(opts, {
+    prompt_title = 'File Browser',
     prompt_prefix = get_prefix(opts.cwd),
     finder = gen_new_finder(opts.cwd),
     previewer = conf.file_previewer(opts),
