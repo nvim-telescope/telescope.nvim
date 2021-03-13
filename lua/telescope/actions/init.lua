@@ -59,7 +59,7 @@ function actions.get_current_line()
   return action_state.get_current_line()
 end
 
-function action_state.get_current_picker(prompt_bufnr)
+function actions.get_current_picker(prompt_bufnr)
   -- TODO(1.0): Remove
   action_is_deprecated("get_current_picker")
   return action_state.get_current_picker(prompt_bufnr)
