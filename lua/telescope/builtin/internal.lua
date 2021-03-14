@@ -238,7 +238,7 @@ internal.oldfiles = function(opts)
       local match = string.match(buffer, '%s*(%d+)')
       if match then
         local file = vim.api.nvim_buf_get_name(match)
-        if vim.fn.filereadable(file) == 1 then
+        if vim.loop.fs_lstat(file) then
           table.insert(results, file)
         end
       end
@@ -246,14 +246,15 @@ internal.oldfiles = function(opts)
   end
 
   for k,file in ipairs(vim.v.oldfiles) do
-    if vim.fn.filereadable(file) == 1 and vim.fn.index(results, file) == -1 then
+    if vim.loop.fs_lstat(file) and vim.fn.index(results, file) == -1 then
       table.insert(results, file)
     end
   end
 
   if opts.cwd_only then
+    local cwd = vim.loop.cwd()
     results = vim.tbl_filter(function(file)
-      return vim.fn.matchstrpos(file, vim.fn.getcwd())[2] ~= -1
+      return vim.fn.matchstrpos(file, cwd)[2] ~= -1
     end, results)
   end
 
