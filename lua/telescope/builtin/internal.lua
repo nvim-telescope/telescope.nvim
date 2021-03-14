@@ -251,6 +251,12 @@ internal.oldfiles = function(opts)
     end
   end
 
+  if opts.cwd_only then
+    results = vim.tbl_filter(function(file)
+      return vim.fn.matchstrpos(file, vim.fn.getcwd())[2] ~= -1
+    end, results)
+  end
+
   pickers.new(opts, {
     prompt_title = 'Oldfiles',
     finder = finders.new_table{
