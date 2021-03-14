@@ -231,9 +231,26 @@ internal.loclist = function(opts)
 end
 
 internal.oldfiles = function(opts)
-  local results = vim.tbl_filter(function(val)
-    return 0 ~= vim.fn.filereadable(val)
-  end, vim.v.oldfiles)
+  local results = {}
+
+  if opts.include_current_session then
+    for k,buffer in ipairs(vim.split(vim.fn.execute(':buffers! t'), "\n")) do
+      local match = string.match(buffer, '%s*(%d+)')
+      if match then
+        local file = vim.api.nvim_buf_get_name(match)
+        if vim.fn.filereadable(file) == 1 then
+          table.insert(results, file)
+        end
+      end
+    end
+  end
+
+  for k,file in ipairs(vim.v.oldfiles) do
+    if vim.fn.filereadable(file) == 1 and vim.fn.index(results, file) == -1 then
+      table.insert(results, file)
+    end
+  end
+
   pickers.new(opts, {
     prompt_title = 'Oldfiles',
     finder = finders.new_table{
