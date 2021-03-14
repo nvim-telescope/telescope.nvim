@@ -263,6 +263,9 @@ internal.command_history = function(opts)
 
     attach_mappings = function(_, map)
       map('i', '<CR>', actions.set_command_line)
+      map('n', '<CR>', actions.set_command_line)
+      map('n', '<C-e>', actions.edit_command_line)
+      map('i', '<C-e>', actions.edit_command_line)
 
       -- TODO: Find a way to insert the text... it seems hard.
       -- map('i', '<C-i>', actions.insert_value, { expr = true })

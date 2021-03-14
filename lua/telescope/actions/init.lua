@@ -220,6 +220,12 @@ function actions.close(prompt_bufnr)
   do_close(prompt_bufnr, false)
 end
 
+actions.edit_command_line = function(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
+  actions.close(prompt_bufnr)
+  a.nvim_feedkeys(a.nvim_replace_termcodes(":" .. entry.value , true, false, true), "t", true)
+end
+
 actions.set_command_line = function(prompt_bufnr)
   local entry = action_state.get_selected_entry(prompt_bufnr)
 
