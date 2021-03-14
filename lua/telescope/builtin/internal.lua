@@ -299,7 +299,7 @@ internal.vim_options = function(opts)
         -- TODO: Make this actually work.
 
         -- actions.close(prompt_bufnr)
-        -- vim.api.nvim_win_set_var(vim.fn.nvim_get_current_win(), "telescope", 1)
+        -- vim.api.nvim_win_set_var(vim.api.nvim_get_current_win(), "telescope", 1)
         -- print(prompt_bufnr)
         -- print(vim.fn.bufnr())
         -- vim.cmd([[ autocmd BufEnter <buffer> ++nested ++once startinsert!]])
@@ -317,10 +317,10 @@ internal.vim_options = function(opts)
         -- float_opts.col = 2
         -- float_opts.height = 10
         -- float_opts.width = string.len(selection.last_set_from)+15
-        -- local buf = vim.fn.nvim_create_buf(false, true)
-        -- vim.fn.nvim_buf_set_lines(buf, 0, 0, false,
+        -- local buf = vim.api.nvim_create_buf(false, true)
+        -- vim.api.nvim_buf_set_lines(buf, 0, 0, false,
         --                           {"default value: abcdef", "last set from: " .. selection.last_set_from})
-        -- local status_win = vim.fn.nvim_open_win(buf, false, float_opts)
+        -- local status_win = vim.api.nvim_open_win(buf, false, float_opts)
         -- -- vim.api.nvim_win_set_option(status_win, "winblend", 100)
         -- vim.api.nvim_win_set_option(status_win, "winhl", "Normal:PmenuSel")
         -- -- vim.api.nvim_set_current_win(status_win)
