@@ -231,6 +231,8 @@ internal.loclist = function(opts)
 end
 
 internal.oldfiles = function(opts)
+  opts.include_current_session = utils.get_default(opts.include_current_session, true)
+
   local results = {}
 
   if opts.include_current_session then
