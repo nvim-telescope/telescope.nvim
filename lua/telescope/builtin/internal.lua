@@ -240,7 +240,7 @@ internal.oldfiles = function(opts)
       local match = string.match(buffer, '%s*(%d+)')
       if match then
         local file = vim.api.nvim_buf_get_name(match)
-        if vim.loop.fs_lstat(file) then
+        if vim.loop.fs_stat(file) then
           table.insert(results, file)
         end
       end
@@ -248,7 +248,7 @@ internal.oldfiles = function(opts)
   end
 
   for _, file in ipairs(vim.v.oldfiles) do
-    if vim.loop.fs_lstat(file) and vim.fn.index(results, file) == -1 then
+    if vim.loop.fs_stat(file) and vim.fn.index(results, file) == -1 then
       table.insert(results, file)
     end
   end
