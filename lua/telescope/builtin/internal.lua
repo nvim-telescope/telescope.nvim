@@ -237,10 +237,10 @@ internal.oldfiles = function(opts)
 
   if opts.include_current_session then
     for _, buffer in ipairs(vim.split(vim.fn.execute(':buffers! t'), "\n")) do
-      local match = string.match(buffer, '%s*(%d+)')
+      local match = tonumber(string.match(buffer, '%s*(%d+)'))
       if match then
         local file = vim.api.nvim_buf_get_name(match)
-        if vim.loop.fs_stat(file) then
+        if vim.loop.fs_stat(file) and match ~= vim.api.nvim_get_current_buf() then
           table.insert(results, file)
         end
       end
