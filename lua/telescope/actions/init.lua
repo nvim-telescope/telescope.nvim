@@ -196,7 +196,7 @@ function actions.close_pum(_)
   end
 end
 
-local do_close = function(prompt_bufnr, keepinsert)
+actions._close = function(prompt_bufnr, keepinsert)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
@@ -217,7 +217,7 @@ local do_close = function(prompt_bufnr, keepinsert)
 end
 
 function actions.close(prompt_bufnr)
-  do_close(prompt_bufnr, false)
+  actions._close(prompt_bufnr, false)
 end
 
 actions.edit_command_line = function(prompt_bufnr)
@@ -276,7 +276,7 @@ end
 actions.run_builtin = function(prompt_bufnr)
   local entry = action_state.get_selected_entry(prompt_bufnr)
 
-  do_close(prompt_bufnr, true)
+actions._close(prompt_bufnr, true)
   require('telescope.builtin')[entry.text]()
 end
 
