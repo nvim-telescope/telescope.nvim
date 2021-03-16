@@ -560,6 +560,12 @@ internal.buffers = function(opts)
   }):find()
 end
 
+function colorscheme_previewer (opts)
+	get_command = opts.get_command or function (entry)
+		vim.cmd ([[ colorscheme ]]..entry)
+	end
+end
+
 internal.colorscheme = function(opts)
   local colors = vim.list_extend(opts.colors or {}, vim.fn.getcompletion('', 'color'))
 
@@ -569,6 +575,7 @@ internal.colorscheme = function(opts)
       results = colors
     },
     -- TODO: better preview?
+    previewer = colorscheme_previewer(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
