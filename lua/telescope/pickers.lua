@@ -631,6 +631,10 @@ function Picker:add_selection(row)
   self.highlighter:hi_multiselect(row, true)
 end
 
+function Picker:reset_multi_selection()
+  self._multi:drop()
+end
+
 function Picker:remove_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:drop(entry)

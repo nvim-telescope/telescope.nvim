@@ -388,23 +388,6 @@ files.file_browser = function(opts)
         end
       end
 
-      local rename_file = function()
-        local current_picker = action_state.get_current_picker(prompt_bufnr)
-        local old_name = Path:new(action_state.get_selected_entry()[1])
-
-        if old_name.filename == '../' then
-          print('Please select a file!')
-          return
-        end
-
-        local new_name = vim.fn.input("Insert a new name: ", old_name:make_relative())
-
-        old_name:rename({ new_name = new_name })
-        current_picker:refresh(gen_new_finder({
-          path = current_picker.cwd,
-        }), { reset_prompt = true })
-      end
-
       local get_marked_files = function ()
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         local multi_selected = current_picker:get_multi_selection()
@@ -423,26 +406,40 @@ files.file_browser = function(opts)
         return selected
       end
 
+      local rename_file = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local old_name = Path:new(action_state.get_selected_entry()[1])
+
+        if old_name.filename == '../' then
+          print('Please select a file!')
+          return
+        end
+
+        local new_name = vim.fn.input("Insert a new name: ", old_name:make_relative())
+
+        old_name:rename({ new_name = new_name })
+        current_picker:refresh(gen_new_finder({
+          path = current_picker.cwd,
+        }), { reset_prompt = true })
+        current_picker:reset_multi_selection()
+      end
+
       local move_file = function()
         local current_picker = action_state.get_current_picker(prompt_bufnr)
 
         for _, file in ipairs(get_marked_files()) do
           local filename = file.filename:sub(#file:parents() + 2)
 
-          local success = file:rename({
+          file:rename({
             new_name = Path:new({ current_picker.cwd, filename }).filename
           })
-
-          if not success then
-            print("The file is already exists!")
-            return
-          end
         end
 
         print("The file has been moved!")
         current_picker:refresh(gen_new_finder({
           path = current_picker.cwd,
         }), { reset_prompt = true })
+        current_picker:reset_multi_selection()
       end
 
       local copy_file = function()
@@ -451,22 +448,18 @@ files.file_browser = function(opts)
         for _, file in ipairs(get_marked_files()) do
           local filename = file.filename:sub(#file:parents() + 2)
 
-          local success = file:copy({
+          file:copy({
             destination = Path:new({
               current_picker.cwd, filename
             }).filename
           })
-
-          if not success then
-            print("The file is already exists!")
-            return
-          end
         end
 
         print("The file has been copied!")
         current_picker:refresh(gen_new_finder({
           path = current_picker.cwd,
         }), { reset_prompt = true })
+        current_picker:reset_multi_selection()
       end
 
       local remove_file = function()
@@ -478,7 +471,8 @@ files.file_browser = function(opts)
           print(file.filename)
         end
 
-        local confirm = vim.fn.confirm("You're about to do a destructive action. Proceed? [y/N]: ", "&Yes\n&No", "No")
+        local confirm = vim.fn.confirm("You're about to perform a destructive action."
+                                     .." Proceed? [y/N]: ", "&Yes\n&No", "No")
 
         if confirm == 1 then
           for _, file in ipairs(marked_files) do
@@ -488,6 +482,7 @@ files.file_browser = function(opts)
           current_picker:refresh(gen_new_finder({
             path = current_picker.cwd,
           }), { reset_prompt = true })
+          current_picker:reset_multi_selection()
         end
       end
 
