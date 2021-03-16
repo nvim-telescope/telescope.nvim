@@ -560,14 +560,28 @@ internal.buffers = function(opts)
   }):find()
 end
 
-function colorscheme_previewer (opts)
-	get_command = opts.get_command or function (entry)
-		vim.cmd ([[ colorscheme ]]..entry)
+local colorscheme_previewer = previewers.new({
+	setup = function (self)
+		-- save original colorscheme
+		vim.api.nvim_err_writeln("Ln")
+	end,
+	preview_fn  = function(self, entry, status)
+		print("chosen entry:", entry)
+		vim.cmd("colorscheme " .. entry)
+		vim.api.nvim_err_writeln("preview_fn is not defined for this previewer")
+	end,
+	scroll_fn = function(self, dir)
+		vim.api.nvim_err_writeln("scroll_fn is not defined for this previewer")
+	end,
+	teardown = function (self)
+	-- restore original colorscheme
+		print ("TEARDOWN")
 	end
-end
+
+})
 
 internal.colorscheme = function(opts)
-  local colors = vim.list_extend(opts.colors or {}, vim.fn.getcompletion('', 'color'))
+  -- local colors = vim.list_extend(opts.colors or {}, vim.fn.getcompletion('', 'color'))
 
   pickers.new(opts,{
     prompt = 'Change Colorscheme',
@@ -575,7 +589,7 @@ internal.colorscheme = function(opts)
       results = colors
     },
     -- TODO: better preview?
-    previewer = colorscheme_previewer(opts),
+    previewer = colorscheme_previewer,
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
