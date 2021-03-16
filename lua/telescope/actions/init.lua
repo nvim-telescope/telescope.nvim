@@ -197,7 +197,7 @@ function actions.close_pum(_)
 end
 
 actions._close = function(prompt_bufnr, keepinsert)
-  local picker = actions.get_current_picker(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
 
