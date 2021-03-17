@@ -248,7 +248,7 @@ internal.oldfiles = function(opts)
   end
 
   for _, file in ipairs(vim.v.oldfiles) do
-    if vim.loop.fs_stat(file) and vim.fn.index(results, file) == -1 then
+    if vim.loop.fs_stat(file) and not vim.tbl_contains(results, file) then
       table.insert(results, file)
     end
   end
