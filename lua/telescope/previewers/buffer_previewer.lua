@@ -112,8 +112,10 @@ previewers.new_buffer_previewer = function(opts)
   end
 
   local function set_bufnr(self, value)
-    if get_bufnr(self) then table.insert(old_bufs, get_bufnr(self)) end
-    if self.state then self.state.bufnr = value end
+    if self.state then
+      self.state.bufnr = value
+      table.insert(old_bufs, value)
+    end
   end
 
   local function get_bufnr_by_bufname(self, value)
@@ -122,8 +124,12 @@ previewers.new_buffer_previewer = function(opts)
   end
 
   local function set_bufname(self, value)
-    if get_bufnr(self) then bufname_table[value] = get_bufnr(self) end
-    if self.state then self.state.bufname = value end
+    if self.state then
+      self.state.bufname = value
+      if value then
+        bufname_table[value] = get_bufnr(self)
+      end
+    end
   end
 
   function opts.setup(self)
