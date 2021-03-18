@@ -952,6 +952,7 @@ function Picker:get_result_processor(prompt, status_updater)
       if file then
         if string.find(file, v) then
           log.debug("SKPIPING", entry.value, "because", v)
+          self:_decrement("processed")
           return
         end
       end
