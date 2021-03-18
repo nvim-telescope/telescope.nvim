@@ -88,6 +88,7 @@ function config.set_defaults(defaults)
   set("layout_strategy", "horizontal")
   set("layout_defaults", {})
 
+  set("externalize", false)
   set("width", 0.75)
   set("winblend", 0)
   set("prompt_position", "bottom")

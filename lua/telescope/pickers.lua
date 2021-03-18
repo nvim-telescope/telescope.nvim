@@ -99,6 +99,7 @@ function Picker:new(opts)
       -- TODO: If it's a list, of length 2, then it's a range of min to max?
       height = get_default(opts.height, 0.8),
       width = get_default(opts.width, config.values.width),
+      externalize = get_default(opts.externalize, config.values.externalize),
 
       get_preview_width = get_default(opts.preview_width, config.values.get_preview_width),
 
@@ -133,30 +134,41 @@ function Picker:new(opts)
 end
 
 function Picker:_get_initial_window_options()
-  local popup_border = resolve.win_option(self.window.border)
-  local popup_borderchars = resolve.win_option(self.window.borderchars)
+  local popup_border, popup_borderchars
+  if not self.window.externalize then
+    popup_border = resolve.win_option(self.window.border)
+    popup_borderchars = resolve.win_option(self.window.borderchars)
+  end
+
+  -- local preview, results, prompt
 
   local preview = {
     title = self.preview_title,
-    border = popup_border.preview,
-    borderchars = popup_borderchars.preview,
     enter = false,
     highlight = false
   }
+  if not self.window.externalize then
+    preview.border = popup_border.preview
+    preview.borderchars = popup_borderchars.preview
+  end
 
   local results = {
     title = self.results_title,
-    border = popup_border.results,
-    borderchars = popup_borderchars.results,
     enter = false,
   }
+  if not self.window.externalize then
+    results.border = popup_border.preview
+    results.borderchars = popup_borderchars.preview
+  end
 
   local prompt = {
     title = self.prompt_title,
-    border = popup_border.prompt,
-    borderchars = popup_borderchars.prompt,
     enter = true
   }
+  if not self.window.externalize then
+    prompt.border = popup_border.preview
+    prompt.borderchars = popup_borderchars.preview
+  end
 
   return {
     preview = preview,
@@ -337,6 +349,45 @@ function Picker:find()
     popup_opts.preview.minheight = popup_opts.preview.height
   end
 
+  local preview_win, preview_opts, preview_bufnr
+  if popup_opts.preview then
+    preview_win, preview_opts = popup.create('', popup_opts.preview)
+    preview_bufnr = a.nvim_win_get_buf(preview_win)
+
+    a.nvim_win_set_option(preview_win, 'winhl', 'Normal:TelescopePreviewNormal')
+    a.nvim_win_set_option(preview_win, 'winblend', self.window.winblend)
+
+    local preview_border_win
+    if not self.window.externalize then
+      preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
+      if preview_border_win then
+        vim.api.nvim_win_set_option(preview_border_win, 'winhl', 'Normal:TelescopePreviewBorder')
+      end
+    end
+
+  end
+
+  -- TODO: We need to center this and make it prettier...
+  local prompt_win, prompt_opts = popup.create('', popup_opts.prompt)
+  local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
+  a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
+  a.nvim_win_set_option(prompt_win, 'winblend', self.window.winblend)
+
+  local prompt_border_win
+  if not self.window.externalize then
+    prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
+    if prompt_border_win then vim.api.nvim_win_set_option(prompt_border_win, 'winhl', 'Normal:TelescopePromptBorder') end
+  end
+
+  -- Prompt prefix
+  local prompt_prefix = self.prompt_prefix
+  if prompt_prefix ~= '' then
+    a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
+    vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
+  end
+  self.prompt_prefix = prompt_prefix
+  self:_reset_prefix_color()
+
   local results_win, results_opts = popup.create('', popup_opts.results)
   local results_bufnr = a.nvim_win_get_buf(results_win)
 
@@ -347,41 +398,15 @@ function Picker:find()
   a.nvim_win_set_option(results_win, 'wrap', false)
   a.nvim_win_set_option(results_win, 'winhl', 'Normal:TelescopeNormal')
   a.nvim_win_set_option(results_win, 'winblend', self.window.winblend)
-  local results_border_win = results_opts.border and results_opts.border.win_id
-  if results_border_win then
-    vim.api.nvim_win_set_option(results_border_win, 'winhl', 'Normal:TelescopeResultsBorder')
-  end
 
-
-  local preview_win, preview_opts, preview_bufnr
-  if popup_opts.preview then
-    preview_win, preview_opts = popup.create('', popup_opts.preview)
-    preview_bufnr = a.nvim_win_get_buf(preview_win)
-
-    a.nvim_win_set_option(preview_win, 'winhl', 'Normal:TelescopePreviewNormal')
-    a.nvim_win_set_option(preview_win, 'winblend', self.window.winblend)
-    local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
-    if preview_border_win then
-      vim.api.nvim_win_set_option(preview_border_win, 'winhl', 'Normal:TelescopePreviewBorder')
+  local results_border_win
+  if not self.window.externalize then
+    results_border_win = results_opts.border and results_opts.border.win_id
+    if results_border_win then
+      vim.api.nvim_win_set_option(results_border_win, 'winhl', 'Normal:TelescopeResultsBorder')
     end
   end
 
-  -- TODO: We need to center this and make it prettier...
-  local prompt_win, prompt_opts = popup.create('', popup_opts.prompt)
-  local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
-  a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
-  a.nvim_win_set_option(prompt_win, 'winblend', self.window.winblend)
-  local prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
-  if prompt_border_win then vim.api.nvim_win_set_option(prompt_border_win, 'winhl', 'Normal:TelescopePromptBorder') end
-
-  -- Prompt prefix
-  local prompt_prefix = self.prompt_prefix
-  if prompt_prefix ~= '' then
-    a.nvim_buf_set_option(prompt_bufnr, 'buftype', 'prompt')
-    vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
-  end
-  self.prompt_prefix = prompt_prefix
-  self:_reset_prefix_color()
 
   -- Temporarily disabled: Draw the screen ASAP. This makes things feel speedier.
   -- vim.cmd [[redraw]]
@@ -478,22 +503,28 @@ function Picker:find()
 
   self.prompt_bufnr = prompt_bufnr
 
-  local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
+  local preview_border_win
+  if not self.window.externalize then
+    preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
+  end
 
-  state.set_status(prompt_bufnr, setmetatable({
+  local statustable = setmetatable({
     prompt_bufnr = prompt_bufnr,
     prompt_win = prompt_win,
-    prompt_border_win = prompt_border_win,
 
     results_bufnr = results_bufnr,
     results_win = results_win,
-    results_border_win = results_border_win,
 
     preview_bufnr = preview_bufnr,
     preview_win = preview_win,
-    preview_border_win = preview_border_win,
     picker = self,
-  }, { __mode = 'kv' }))
+  }, { __mode = 'kv' })
+  if not self.window.externalize then
+    statustable.results_border_win = results_border_win
+    statustable.prompt_border_win = prompt_border_win
+    statustable.preview_border_win = preview_border_win
+  end
+  state.set_status(prompt_bufnr, statustable)
 
   mappings.apply_keymap(prompt_bufnr, self.attach_mappings, config.values.mappings)
 
@@ -509,22 +540,32 @@ function Picker:find()
   elseif self.initial_mode ~= "normal" then
     error("Invalid setting for initial_mode: " .. self.initial_mode)
   end
+
+  if self.window.externalize then
+    a.nvim_win_set_config(results_win, {external = true, width=width, height=height})
+    a.nvim_win_set_config(prompt_win, {external = true, width=width, height=height})
+    a.nvim_win_set_config(preview_win, {external = true, width=width, height=height})
+  end
 end
+
+
 
 function Picker:hide_preview()
   -- 1. Hide the window (and border)
   -- 2. Resize prompt & results windows accordingly
 end
 
-
-function Picker.close_windows(status)
+function Picker.close_windows(self, status)
   local prompt_win = status.prompt_win
   local results_win = status.results_win
   local preview_win = status.preview_win
 
-  local prompt_border_win = status.prompt_border_win
-  local results_border_win = status.results_border_win
-  local preview_border_win = status.preview_border_win
+  local prompt_border_win, results_border_win, preview_border_win
+  if not self.window.externalize then
+    prompt_border_win = status.prompt_border_win
+    results_border_win = status.results_border_win
+    preview_border_win = status.preview_border_win
+  end
 
   local function del_win(name, win_id, force, bdelete)
     if not vim.api.nvim_win_is_valid(win_id) then
@@ -551,9 +592,11 @@ function Picker.close_windows(status)
   del_win("results_win", results_win, true, true)
   del_win("preview_win", preview_win, true, true)
 
-  del_win("prompt_border_win", prompt_border_win, true, true)
-  del_win("results_border_win", results_border_win, true, true)
-  del_win("preview_border_win", preview_border_win, true, true)
+  if not self.window.externalize then
+    del_win("prompt_border_win", prompt_border_win, true, true)
+    del_win("results_border_win", results_border_win, true, true)
+    del_win("preview_border_win", preview_border_win, true, true)
+  end
 
   -- vim.cmd(string.format("bdelete! %s", status.prompt_bufnr))
 
@@ -1089,7 +1132,7 @@ function pickers.on_close_prompt(prompt_bufnr)
   -- TODO: This is an attempt to clear all the memory stuff we may have left.
   -- vim.api.nvim_buf_detach(prompt_bufnr)
 
-  picker.close_windows(status)
+  picker.close_windows(picker, status)
 end
 
 function Picker:_get_prompt()
