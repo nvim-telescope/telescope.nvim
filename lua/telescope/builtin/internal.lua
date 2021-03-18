@@ -562,26 +562,38 @@ end
 
 local colorscheme_previewer = previewers.new({
 	setup = function (self)
+		local state = {}
+		-- print("initial colorscheme:", state.original)
+		state.original = vim.cmd "colorscheme"
+		-- print(state.original)
 		-- save original colorscheme
-		vim.api.nvim_err_writeln("Ln")
+		-- vim.api.nvim_err_writeln("Ln")
+		return state
 	end,
 	preview_fn  = function(self, entry, status)
-		print("chosen entry:", entry)
-		vim.cmd("colorscheme " .. entry)
-		vim.api.nvim_err_writeln("preview_fn is not defined for this previewer")
+		-- print("chosen entry:", entry[1])
+		-- print("current ",  print(vim.cmd "colorscheme"))
+		vim.cmd("colorscheme " .. entry[1])
+		-- vim.api.nvim_err_writeln("preview_fn is not defined for this previewer")
 	end,
-	scroll_fn = function(self, dir)
-		vim.api.nvim_err_writeln("scroll_fn is not defined for this previewer")
-	end,
+	-- scroll_fn = function(self, dir)
+	-- 	vim.api.nvim_err_writeln("scroll_fn is not defined for this previewer")
+	-- end,
 	teardown = function (self)
-	-- restore original colorscheme
-		print ("TEARDOWN")
+      local entry = action_state.get_selected_entry()
+	  if entry ~= self.state.original then
+		-- vim.cmd("colorscheme " .. self.state.original)
+	  end
+
+		-- restore original colorscheme
+		-- print ("TEARDOWN")
+		-- vim.cmd()
 	end
 
 })
 
 internal.colorscheme = function(opts)
-  -- local colors = vim.list_extend(opts.colors or {}, vim.fn.getcompletion('', 'color'))
+  local colors = vim.list_extend(opts.colors or {}, vim.fn.getcompletion('', 'color'))
 
   pickers.new(opts,{
     prompt = 'Change Colorscheme',
