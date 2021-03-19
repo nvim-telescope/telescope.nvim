@@ -23,6 +23,7 @@ local builtin = {}
 
 --- Live grep means grep as you type.
 builtin.live_grep = require('telescope.builtin.files').live_grep
+builtin.live_grep_raw = require('telescope.builtin.files').live_grep_raw
 
 builtin.grep_string = require('telescope.builtin.files').grep_string
 builtin.find_files = require('telescope.builtin.files').find_files

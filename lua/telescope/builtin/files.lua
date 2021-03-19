@@ -64,6 +64,54 @@ files.live_grep = function(opts)
   }):find()
 end
 
+files.live_grep_raw = function(opts)
+  opts.vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
+  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd)
+
+  local tbl_clone = function(original)
+    local copy = {}
+    for key, value in pairs(original) do
+      copy[key] = value
+    end
+    return copy
+  end
+
+  local cmd_generator = function(prompt)
+    if not prompt or prompt == "" then
+      return nil
+    end
+
+    local query = prompt
+    local args = tbl_clone(opts.vimgrep_arguments)
+    local single_quoted = prompt:match("'(.*)'")
+    local double_quoted = prompt:match('"(.*)"')
+    local path = '.'
+
+    if single_quoted then
+      query = single_quoted
+    elseif double_quoted then
+      query = double_quoted
+    end
+
+    if single_quoted or double_quoted then
+      local before_args = prompt:match("(.-)['\"]")
+      -- local after_args = prompt:match("['\"](.-)")
+      for arg in before_args:gmatch("%S+") do
+        table.insert(args, arg)
+      end
+    end
+
+    return vim.tbl_flatten { args, query, path }
+  end
+
+  pickers.new(opts, {
+    prompt_title = 'Live Grep Raw',
+    finder = finders.new_job(cmd_generator, opts.entry_maker, opts.max_results, opts.cwd),
+    previewer = conf.grep_previewer(opts),
+  }):find()
+end
+
 -- Special keys:
 --  opts.search -- the string to search.
 --  opts.search_dirs -- list of directory to search in
