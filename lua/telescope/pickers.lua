@@ -499,7 +499,8 @@ function Picker:find()
   pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')
 
   if self.default_text then
-    vim.api.nvim_buf_set_lines(prompt_bufnr, 0, 1, false, {self.default_text})
+    local default_text = string.format('%s%s', self.prompt_prefix, self.default_text)
+    vim.api.nvim_buf_set_lines(prompt_bufnr, 0, 1, false, {default_text})
   end
 
   if self.initial_mode == "insert" then
