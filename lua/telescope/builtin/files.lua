@@ -86,7 +86,7 @@ files.live_grep_raw = function(opts)
     local args = tbl_clone(opts.vimgrep_arguments)
     local single_quoted = prompt:match("'(.*)'")
     local double_quoted = prompt:match('"(.*)"')
-    local path = '.'
+    local paths = {}
 
     if single_quoted then
       query = single_quoted
@@ -106,9 +106,14 @@ files.live_grep_raw = function(opts)
           -- Path cannot come before query
         end
       end
+      for path in after_args:gmatch("%S+") do
+        if not path:match('^-') then
+          table.insert(paths, path)
+        end
+      end
     end
 
-    return vim.tbl_flatten { args, '--', query, path }
+    return vim.tbl_flatten { args, '--', query, paths }
   end
 
   pickers.new(opts, {
