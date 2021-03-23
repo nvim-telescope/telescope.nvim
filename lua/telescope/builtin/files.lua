@@ -96,13 +96,19 @@ files.live_grep_raw = function(opts)
 
     if single_quoted or double_quoted then
       local before_args = prompt:match("(.-)['\"]")
-      -- local after_args = prompt:match("['\"](.-)")
-      for arg in before_args:gmatch("%S+") do
-        table.insert(args, arg)
+      local after_args = prompt:match(".*['\"](.*)")
+      local all_args = before_args .. ' ' .. after_args
+      for arg in all_args:gmatch("%S+") do
+        if arg:match('^-') then
+          table.insert(args, arg)
+        else
+          -- Show graceful grep error
+          -- Path cannot come before query
+        end
       end
     end
 
-    return vim.tbl_flatten { args, query, path }
+    return vim.tbl_flatten { args, '--', query, path }
   end
 
   pickers.new(opts, {
