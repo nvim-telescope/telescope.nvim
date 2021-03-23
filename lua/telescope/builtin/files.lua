@@ -49,7 +49,7 @@ files.live_grep = function(opts)
 
       prompt = escape_chars(prompt)
 
-      return flatten { vimgrep_arguments, prompt, opts.search_dirs or '.' }
+      return flatten { vimgrep_arguments, prompt, opts.search_dirs or nil }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
     opts.max_results,
