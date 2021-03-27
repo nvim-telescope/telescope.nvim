@@ -201,7 +201,7 @@ function OneshotJobFinder:new(opts)
 
       local exe = Executor.new {
         -- how many tasks to run for each loop
-        run_task_amount = 100,
+        run_task_amount = 1,
       }
 
       exe:add(co.create(function()

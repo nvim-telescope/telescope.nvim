@@ -433,6 +433,8 @@ function Picker:find()
       -- adjust polling rate based on number of entries
       await(as.util.sleep(50)) -- polling rate
       local _, _, _, first_line, last_line = await(rx.last())
+      -- these next two lines are extremely important
+      -- they will cancel the previous find
       cancel_tx()
       cancel_tx, cancel_rx = channel.oneshot()
       await(as.scheduler())
