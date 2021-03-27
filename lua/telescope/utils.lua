@@ -2,6 +2,8 @@ local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 
 local pathlib = require('telescope.path')
 local Job     = require('plenary.job')
+local co = coroutine
+local uv = vim.loop
 
 local utils = {}
 
@@ -391,5 +393,90 @@ utils.get_devicons = (function()
     end
   end
 end)()
+
+local Executor = {}
+Executor.__index = Executor
+
+function Executor.new(opts)
+  opts = opts or {}
+
+  local self = setmetatable({}, Executor)
+
+  self.tasks = opts.tasks or {}
+  self.mode = opts.mode or "next"
+  self.index = opts.start_idx or 1
+  self.run_task_amount = opts.run_task_amount or 1
+  self.idle = uv.new_idle()
+
+  return self
+end
+
+function Executor:run()
+  self.idle:start(vim.schedule_wrap(function()
+    if #self.tasks == 0 then
+      self.idle:stop()
+      return
+    end
+
+    for _ = 1, self.run_task_amount do
+      if self.mode == "finish" then
+        self:step_finish()
+      else
+        self:step()
+      end
+    end
+  end))
+end
+
+function Executor:close()
+  self.idle:stop()
+  self.tasks = {}
+end
+
+function Executor:step_finish()
+  if #self.tasks == 0 then return end
+  local curr_task = self.tasks[self.index]
+  if curr_task == nil then
+    self.index = 1
+    curr_task = self.tasks[self.index]
+  end
+
+  local _, _ = co.resume(curr_task)
+  if co.status(curr_task) == "dead" then
+    table.remove(self.tasks, self.index)
+
+    self.index = self.index + 1
+  end
+end
+
+function Executor:step()
+  if #self.tasks == 0 then return end
+  local curr_task = self.tasks[self.index]
+  if curr_task == nil then
+    self.index = 1
+    curr_task = self.tasks[self.index]
+  end
+
+  local _, _ = co.resume(curr_task[1], unpack(curr_task[2]))
+  if co.status(curr_task[1]) == "dead" then
+    table.remove(self.tasks, self.index)
+  end
+
+  self.index = self.index + 1
+end
+
+function Executor:get_current_task()
+  return self.tasks[self.index]
+end
+
+function Executor:remove_task(idx)
+  table.remove(self.tasks, idx)
+end
+
+function Executor:add(task, ...)
+  table.insert(self.tasks, {task, {...}})
+end
+
+utils.Executor = Executor
 
 return utils

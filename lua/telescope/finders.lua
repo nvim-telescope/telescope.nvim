@@ -2,10 +2,13 @@ local Job = require('plenary.job')
 
 local make_entry = require('telescope.make_entry')
 local log = require('telescope.log')
+local co = coroutine
 local a = require('plenary.async_lib')
 local async = a.async
 local await = a.await
 local channel = a.util.channel
+local utils = require('telescope.utils')
+local Executor = utils.Executor
 
 local finders = {}
 
@@ -180,37 +183,45 @@ function OneshotJobFinder:new(opts)
 
     job:start()
 
-    local cancelled = false
-
-    local update_cancelled = async(function()
-      await(cancel_rx())
-      cancelled = true
-    end)
-
-    a.run(update_cancelled())
-
+    local counter = 0
     while true do
       cancelled = false
-      finder, _, process_result, process_complete = coroutine.yield()
+      finder, _, process_result, process_complete, cancel_rx = coroutine.yield()
       num_execution = num_execution + 1
       local current_count = num_results
 
-      local loop = async(function()
+      local update_cancelled = async(function()
+        await(cancel_rx())
+        -- print('cancelled!', counter)
+        counter = counter + 1
+        cancelled = true
+      end)
+
+      a.run(update_cancelled())
+
+      local exe = Executor.new {
+        -- how many tasks to run for each loop
+        run_task_amount = 100,
+      }
+
+      exe:add(co.create(function()
         for index = 1, current_count do
-          if cancelled then return end
+          if cancelled then
+            -- print('canelling')
+            return
+          end
 
           process_result(results[index])
-          await(a.util.sleep(1))
-        end
 
-        if cancelled then return end
+          co.yield()
+        end
 
         if completed then
           process_complete()
         end
-      end)
+      end))
 
-      a.run(loop(results, process_result, process_complete, current_count, completed))
+      exe:run()
     end
   end)
 

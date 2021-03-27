@@ -429,14 +429,12 @@ function Picker:find()
     local cancel_tx, cancel_rx = channel.oneshot()
 
     while not should_stop do
-      cancel_tx()
-
-      cancel_tx, cancel_rx = channel.oneshot()
-
       -- this creates a new timer, should be able to reuse it
       -- adjust polling rate based on number of entries
       await(as.util.sleep(50)) -- polling rate
       local _, _, _, first_line, last_line = await(rx.last())
+      cancel_tx()
+      cancel_tx, cancel_rx = channel.oneshot()
       await(as.scheduler())
 
       self.request_number = self.request_number + 1
@@ -471,7 +469,8 @@ function Picker:find()
       end
 
       -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
-      self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats, self.request_number)
+      -- self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats, self.request_number)
+      self.manager = EntryManager:new(self.max_results, nil, self.stats, self.request_number)
 
       local process_result = self:get_result_processor(prompt, debounced_status)
       local process_complete = self:get_result_completor(self.results_bufnr, prompt, status_updater)
@@ -1010,6 +1009,12 @@ end
 
 function Picker:get_result_completor(results_bufnr, prompt, status_updater)
   return function()
+    local counter = 0
+    for entry in self.manager:iter() do
+      self:entry_adder(counter, entry, nil, false)
+      counter = counter + 1
+    end
+
     if self:is_done() then return end
 
     local selection_strategy = self.selection_strategy or 'reset'
