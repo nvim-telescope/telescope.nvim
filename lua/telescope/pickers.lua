@@ -26,6 +26,10 @@ local get_default = utils.get_default
 local ns_telescope_matching = a.nvim_create_namespace('telescope_matching')
 local ns_telescope_prompt = a.nvim_create_namespace('telescope_prompt')
 local ns_telescope_prompt_prefix = a.nvim_create_namespace('telescope_prompt_prefix')
+local as = require('plenary.async_lib')
+local async = as.async
+local await = as.await
+local channel = as.util.channel
 
 local pickers = {}
 
@@ -395,74 +399,94 @@ function Picker:find()
   local debounced_status = debounce.throttle_leading(status_updater, 50)
 
   self.request_number = 0
-  local on_lines = function(_, _, _, first_line, last_line)
-    self.request_number = self.request_number + 1
-    self:_reset_track()
-
-    if not vim.api.nvim_buf_is_valid(prompt_bufnr) then
-      log.debug("ON_LINES: Invalid prompt_bufnr", prompt_bufnr)
-      return
-    end
-
-    if not first_line then first_line = 0 end
-    if not last_line then last_line = 1 end
-
-    if first_line > 0 or last_line > 1 then
-      log.debug("ON_LINES: Bad range", first_line, last_line)
-      return
-    end
-
-    local original_prompt = self:_get_prompt()
-    local on_input_result = self._on_input_filter_cb(original_prompt) or {}
-
-    local prompt = on_input_result.prompt or original_prompt
-    local finder = on_input_result.updated_finder
-
-    if finder then
-      self.finder:close()
-      self.finder = finder
-    end
-
-    if self.sorter then
-      self.sorter:_start(prompt)
-    end
-
-    -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
-    self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats, self.request_number)
-
-    local process_result = self:get_result_processor(prompt, debounced_status)
-    local process_complete = self:get_result_completor(self.results_bufnr, prompt, status_updater)
-
-    local ok, msg = pcall(function()
-      self.finder(prompt, process_result, vim.schedule_wrap(process_complete))
-    end)
-
-    if not ok then
-      log.warn("Failed with msg: ", msg)
-    end
-  end
-
   self.__on_lines = on_lines
 
-  on_lines(nil, nil, nil, 0, 1)
+  -- on_lines(nil, nil, nil, 0, 1)
   status_updater()
+
+  local tx, rx = channel.mpsc()
+  local should_stop = false
 
   -- Register attach
   vim.api.nvim_buf_attach(prompt_bufnr, false, {
-    on_lines = on_lines,
-    on_detach = vim.schedule_wrap(function()
-      on_lines = nil
-
-      -- TODO: Can we add a "cleanup" / "teardown" function that completely removes these.
+    on_lines = function(...)
+      tx.send(...)
+    end,
+    on_detach = function()
+      should_stop = true
+      -- -- TODO: Can we add a "cleanup" / "teardown" function that completely removes these.
       self.finder = nil
       self.previewer = nil
       self.sorter = nil
       self.manager = nil
 
-      -- TODO: Should we actually do this?
+      -- -- TODO: Should we actually do this?
       collectgarbage(); collectgarbage()
-    end),
+    end,
   })
+
+  local main_loop = async(function()
+    local cancel_tx, cancel_rx = channel.oneshot()
+
+    while not should_stop do
+      cancel_tx()
+
+      cancel_tx, cancel_rx = channel.oneshot()
+
+      -- this creates a new timer, should be able to reuse it
+      -- adjust polling rate based on number of entries
+      await(as.util.sleep(50)) -- polling rate
+      local _, _, _, first_line, last_line = await(rx.last())
+      await(as.scheduler())
+
+      self.request_number = self.request_number + 1
+      self:_reset_track()
+
+      if not vim.api.nvim_buf_is_valid(prompt_bufnr) then
+        log.debug("ON_LINES: Invalid prompt_bufnr", prompt_bufnr)
+        return
+      end
+
+      if not first_line then first_line = 0 end
+      if not last_line then last_line = 1 end
+
+      if first_line > 0 or last_line > 1 then
+        log.debug("ON_LINES: Bad range", first_line, last_line)
+        return
+      end
+
+      local original_prompt = self:_get_prompt()
+      local on_input_result = self._on_input_filter_cb(original_prompt) or {}
+
+      local prompt = on_input_result.prompt or original_prompt
+      local finder = on_input_result.updated_finder
+
+      if finder then
+        self.finder:close()
+        self.finder = finder
+      end
+
+      if self.sorter then
+        self.sorter:_start(prompt)
+      end
+
+      -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
+      self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats, self.request_number)
+
+      local process_result = self:get_result_processor(prompt, debounced_status)
+      local process_complete = self:get_result_completor(self.results_bufnr, prompt, status_updater)
+
+      local ok, msg = pcall(function()
+        self.finder(prompt, process_result, vim.schedule_wrap(process_complete), cancel_rx)
+      end)
+
+      if not ok then
+        log.warn("Failed with msg: ", msg)
+      end
+    end
+  end)
+
+  as.run(main_loop())
 
   -- TODO: Use WinLeave as well?
   local on_buf_leave = string.format(
