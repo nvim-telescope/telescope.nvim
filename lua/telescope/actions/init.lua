@@ -196,7 +196,7 @@ function actions.close_pum(_)
   end
 end
 
-local do_close = function(prompt_bufnr, keepinsert)
+actions._close = function(prompt_bufnr, keepinsert)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
@@ -217,7 +217,13 @@ local do_close = function(prompt_bufnr, keepinsert)
 end
 
 function actions.close(prompt_bufnr)
-  do_close(prompt_bufnr, false)
+  actions._close(prompt_bufnr, false)
+end
+
+actions.edit_command_line = function(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
+  actions.close(prompt_bufnr)
+  a.nvim_feedkeys(a.nvim_replace_termcodes(":" .. entry.value , true, false, true), "t", true)
 end
 
 actions.set_command_line = function(prompt_bufnr)
@@ -270,7 +276,7 @@ end
 actions.run_builtin = function(prompt_bufnr)
   local entry = action_state.get_selected_entry(prompt_bufnr)
 
-  do_close(prompt_bufnr, true)
+actions._close(prompt_bufnr, true)
   require('telescope.builtin')[entry.text]()
 end
 
@@ -384,7 +390,7 @@ local entry_to_qf = function(entry)
   }
 end
 
-actions.send_selected_to_qflist = function(prompt_bufnr)
+local send_selected_to_qf = function(prompt_bufnr, mode)
   local picker = action_state.get_current_picker(prompt_bufnr)
 
   local qf_entries = {}
@@ -394,10 +400,10 @@ actions.send_selected_to_qflist = function(prompt_bufnr)
 
   actions.close(prompt_bufnr)
 
-  vim.fn.setqflist(qf_entries, 'r')
+  vim.fn.setqflist(qf_entries, mode)
 end
 
-actions.send_to_qflist = function(prompt_bufnr)
+local send_all_to_qf = function(prompt_bufnr, mode)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local manager = picker.manager
 
@@ -408,16 +414,40 @@ actions.send_to_qflist = function(prompt_bufnr)
 
   actions.close(prompt_bufnr)
 
-  vim.fn.setqflist(qf_entries, 'r')
+  vim.fn.setqflist(qf_entries, mode)
+end
+
+actions.send_selected_to_qflist = function(prompt_bufnr)
+  send_selected_to_qf(prompt_bufnr, 'r')
+end
+
+actions.add_selected_to_qflist = function(prompt_bufnr)
+  send_selected_to_qf(prompt_bufnr, 'a')
+end
+
+actions.send_to_qflist = function(prompt_bufnr)
+  send_all_to_qf(prompt_bufnr, 'r')
+end
+
+actions.add_to_qflist = function(prompt_bufnr)
+  send_all_to_qf(prompt_bufnr, 'a')
+end
+
+local smart_send = function(prompt_bufnr, mode)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  if table.getn(picker:get_multi_selection()) > 0 then
+    send_selected_to_qf(prompt_bufnr, mode)
+  else
+    send_all_to_qf(prompt_bufnr, mode)
+  end
 end
 
 actions.smart_send_to_qflist = function(prompt_bufnr)
-  local picker = action_state.get_current_picker(prompt_bufnr)
-  if table.getn(picker:get_multi_selection()) > 0 then
-    actions.send_selected_to_qflist(prompt_bufnr)
-  else
-    actions.send_to_qflist(prompt_bufnr)
-  end
+  smart_send(prompt_bufnr, 'r')
+end
+
+actions.smart_add_to_qflist = function(prompt_bufnr)
+  smart_send(prompt_bufnr, 'a')
 end
 
 actions.complete_tag = function(prompt_bufnr)

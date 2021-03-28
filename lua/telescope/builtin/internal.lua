@@ -231,9 +231,37 @@ internal.loclist = function(opts)
 end
 
 internal.oldfiles = function(opts)
-  local results = vim.tbl_filter(function(val)
-    return 0 ~= vim.fn.filereadable(val)
-  end, vim.v.oldfiles)
+  opts.include_current_session = utils.get_default(opts.include_current_session, true)
+
+  local current_buffer = vim.api.nvim_get_current_buf()
+  local current_file = vim.api.nvim_buf_get_name(current_buffer)
+  local results = {}
+
+  if opts.include_current_session then
+    for _, buffer in ipairs(vim.split(vim.fn.execute(':buffers! t'), "\n")) do
+      local match = tonumber(string.match(buffer, '%s*(%d+)'))
+      if match then
+        local file = vim.api.nvim_buf_get_name(match)
+        if vim.loop.fs_stat(file) and match ~= current_buffer then
+          table.insert(results, file)
+        end
+      end
+    end
+  end
+
+  for _, file in ipairs(vim.v.oldfiles) do
+    if vim.loop.fs_stat(file) and not vim.tbl_contains(results, file) and file ~= current_file then
+      table.insert(results, file)
+    end
+  end
+
+  if opts.cwd_only then
+    local cwd = vim.loop.cwd()
+    results = vim.tbl_filter(function(file)
+      return vim.fn.matchstrpos(file, cwd)[2] ~= -1
+    end, results)
+  end
+
   pickers.new(opts, {
     prompt_title = 'Oldfiles',
     finder = finders.new_table{
@@ -263,6 +291,9 @@ internal.command_history = function(opts)
 
     attach_mappings = function(_, map)
       map('i', '<CR>', actions.set_command_line)
+      map('n', '<CR>', actions.set_command_line)
+      map('n', '<C-e>', actions.edit_command_line)
+      map('i', '<C-e>', actions.edit_command_line)
 
       -- TODO: Find a way to insert the text... it seems hard.
       -- map('i', '<C-i>', actions.insert_value, { expr = true })
@@ -299,7 +330,7 @@ internal.vim_options = function(opts)
         -- TODO: Make this actually work.
 
         -- actions.close(prompt_bufnr)
-        -- vim.api.nvim_win_set_var(vim.fn.nvim_get_current_win(), "telescope", 1)
+        -- vim.api.nvim_win_set_var(vim.api.nvim_get_current_win(), "telescope", 1)
         -- print(prompt_bufnr)
         -- print(vim.fn.bufnr())
         -- vim.cmd([[ autocmd BufEnter <buffer> ++nested ++once startinsert!]])
@@ -317,10 +348,10 @@ internal.vim_options = function(opts)
         -- float_opts.col = 2
         -- float_opts.height = 10
         -- float_opts.width = string.len(selection.last_set_from)+15
-        -- local buf = vim.fn.nvim_create_buf(false, true)
-        -- vim.fn.nvim_buf_set_lines(buf, 0, 0, false,
+        -- local buf = vim.api.nvim_create_buf(false, true)
+        -- vim.api.nvim_buf_set_lines(buf, 0, 0, false,
         --                           {"default value: abcdef", "last set from: " .. selection.last_set_from})
-        -- local status_win = vim.fn.nvim_open_win(buf, false, float_opts)
+        -- local status_win = vim.api.nvim_open_win(buf, false, float_opts)
         -- -- vim.api.nvim_win_set_option(status_win, "winblend", 100)
         -- vim.api.nvim_win_set_option(status_win, "winhl", "Normal:PmenuSel")
         -- -- vim.api.nvim_set_current_win(status_win)

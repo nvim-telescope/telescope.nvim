@@ -41,6 +41,14 @@ function Highlighter:hi_display(row, prefix, display_highlights)
 end
 
 function Highlighter:clear_display()
+  if not self
+      or not self.picker
+      or not self.picker.results_bufnr 
+      or not vim.api.nvim_buf_is_valid(self.picker.results_bufnr)
+        then
+    return
+  end
+
   a.nvim_buf_clear_namespace(self.picker.results_bufnr, ns_telescope_entry, 0, -1)
 end
 
