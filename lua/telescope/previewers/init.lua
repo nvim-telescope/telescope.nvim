@@ -257,6 +257,16 @@ previewers.vim_buffer_vimgrep = buffer_previewer.vimgrep
 --- case it's configured that way.
 previewers.vim_buffer_qflist = buffer_previewer.qflist
 
+-- Provides a preview of a single buffer, highlighting the line number of search
+-- results from the same buffer.
+--
+-- Line number highlights will follow the `TelescopeResultsSpecialComment` highlight
+-- group, or can be overridden by passing `lnum_highlight_group` as a key to the
+-- `opts` passed to the picker.
+--
+-- Empty lines from the search can also be skipped by passing `skip_empty_lines` as
+-- a key to `opts`.
+previewers.buffer_search_previewer = buffer_previewer.buffer_search_previewer
 
 previewers.git_branch_log = buffer_previewer.git_branch_log
 previewers.git_commit_diff = buffer_previewer.git_commit_diff
