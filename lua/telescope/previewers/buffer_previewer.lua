@@ -279,38 +279,6 @@ previewers.vimgrep = defaulter(function(_)
   }
 end, {})
 
-previewers.buffer_search_previewer = defaulter(function(_)
-  local determine_jump = function(entry)
-    return function(self)
-      pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
-      pcall(vim.api.nvim_buf_add_highlight, entry.bufnr, ns_previewer, 'TelescopePreviewLine', entry.lnum - 1, 0, -1)
-
-      vim.api.nvim_win_set_cursor(self.state.winid, { entry.lnum, 0 })
-      vim.cmd('norm! zz')
-    end
-  end
-
-  return previewers.new_buffer_previewer {
-    get_buffer_by_name = function(_, entry)
-      -- All entries will specify the same buffer
-      return entry.bufname
-    end,
-    define_preview = function(self, entry, _)
-      conf.buffer_previewer_maker(
-        entry.bufname,
-        self.state.bufnr,
-        {
-          bufname = self.state.bufname,
-          callback = function(bufnr)
-            vim.api.nvim_buf_call(bufnr, function()
-              determine_jump(entry)(self)
-            end)
-          end
-        })
-      end
-    }
-end, {})
-
 previewers.qflist = previewers.vimgrep
 
 previewers.ctags = defaulter(function(_)

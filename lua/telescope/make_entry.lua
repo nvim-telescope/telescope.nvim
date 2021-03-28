@@ -684,7 +684,7 @@ function make_entry.gen_from_buffer_lines(opts)
   local displayer = entry_display.create {
     separator = ' │ ',
     items = {
-      { width = 4 },
+      { width = 5 },
       { remaining = true },
     },
   }

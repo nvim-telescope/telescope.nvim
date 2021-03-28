@@ -345,7 +345,7 @@ files.current_buffer_fuzzy_find = function(opts)
       entry_maker = opts.entry_maker or make_entry.gen_from_buffer_lines(opts),
     },
     sorter = conf.generic_sorter(opts),
-    previewer = previewers.buffer_search_previewer.new(opts),
+    previewer = conf.grep_previewer(opts),
     attach_mappings = function()
       action_set.select:enhance {
         post = function()
@@ -407,7 +407,11 @@ files.tags = function(opts)
 end
 
 files.current_buffer_tags = function(opts)
-  return files.tags(vim.tbl_extend("force", {prompt_title = 'Current Buffer Tags', only_current_file = true, hide_filename = true}, opts))
+  return files.tags(vim.tbl_extend("force", {
+    prompt_title = 'Current Buffer Tags',
+    only_current_file = true,
+    hide_filename = true
+  }, opts))
 end
 
 local function apply_checks(mod)
