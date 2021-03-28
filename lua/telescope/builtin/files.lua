@@ -49,7 +49,13 @@ files.live_grep = function(opts)
 
       prompt = escape_chars(prompt)
 
-      return flatten { vimgrep_arguments, prompt, opts.search_dirs or nil }
+      local default_search_dir = nil
+
+      if vim.fn.has('win32') == 1 then
+        default_search_dir = '.'
+      end
+
+      return flatten { vimgrep_arguments, prompt, opts.search_dirs or default_search_dir }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
     opts.max_results,
