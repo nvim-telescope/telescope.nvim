@@ -409,9 +409,7 @@ function Picker:find()
 
   -- Register attach
   vim.api.nvim_buf_attach(prompt_bufnr, false, {
-    on_lines = function(...)
-      tx.send(...)
-    end,
+    on_lines = tx.send,
     on_detach = function()
       should_stop = true
       -- -- TODO: Can we add a "cleanup" / "teardown" function that completely removes these.
