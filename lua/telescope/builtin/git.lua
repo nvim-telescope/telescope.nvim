@@ -5,6 +5,7 @@ local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
 local utils = require('telescope.utils')
+local entry_display = require('telescope.pickers.entry_display')
 
 local conf = require('telescope.config').values
 
@@ -77,17 +78,70 @@ git.bcommits = function(opts)
 end
 
 git.branches = function(opts)
-  local output = utils.get_os_command_output({ 'git', 'branch', '--all' }, opts.cwd)
+  local format = '{'
+              ..   '"head":%(if:equals=*)%(HEAD)%(then)true%(else)false%(end)'
+              ..   ',"refname":"%(refname)"'
+              ..   ',"authorname":"%(authorname)"'
+              ..   '%(if)%(upstream)%(then)'
+              ..     ',"upstream":"%(upstream:lstrip=2)"'
+              ..   '%(else)'
+              ..     ',"upstream":""'
+              ..   '%(end)'
+              ..   ',"committerdate":"%(committerdate:format-local:%Y/%m/%d %H:%M:%S)"'
+              .. '}'
+  local output = utils.get_os_command_output({ 'git', 'for-each-ref', '--format', format }, opts.cwd)
 
   local results = {}
-  for _, v in ipairs(output) do
-    if not string.match(v, 'HEAD') and v ~= '' then
-      if vim.startswith(v, '*') then
-        table.insert(results, 1, v)
-      else
-        table.insert(results, v)
-      end
+  local widths = {
+    name = 0,
+    authorname = 0,
+    upstream = 0,
+    committerdate = 0,
+  }
+  local register_entry = function(entry, trim_refname_prefix)
+    entry.name = string.sub(entry.refname, string.len(trim_refname_prefix)+1)
+    for key, value in pairs(widths) do
+      widths[key] = math.max(value, vim.fn.strdisplaywidth(entry[key]))
     end
+    if string.len(entry.upstream) > 0 then
+      widths.upstream_indicator = 2
+    end
+    table.insert(results, entry)
+  end
+  for _, v in ipairs(output) do
+    local entry = vim.fn.json_decode(v)
+    if entry.head then
+      goto continue
+    elseif vim.startswith(entry.refname, 'refs/remotes/') then
+      register_entry(entry, 'refs/remotes/')
+    elseif vim.startswith(entry.refname, 'refs/heads/') then
+      register_entry(entry, 'refs/heads/')
+    end
+    ::continue::
+  end
+  if #results == 0 then
+    return
+  end
+
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = widths.name },
+      { width = widths.authorname },
+      { width = widths.upstream_indicator },
+      { width = widths.upstream },
+      { width = widths.committerdate },
+    }
+  }
+
+  local make_display = function(entry)
+    return displayer {
+      {entry.name, 'TelescopeResultsIdentifier'},
+      {entry.authorname},
+      {string.len(entry.upstream) > 0 and '=>' or ''},
+      {entry.upstream, 'TelescopeResultsIdentifier'},
+      {entry.committerdate}
+    }
   end
 
   pickers.new(opts, {
@@ -95,14 +149,10 @@ git.branches = function(opts)
     finder = finders.new_table {
       results = results,
       entry_maker = function(entry)
-        local addition = vim.startswith(entry, '*') and '* ' or '  '
-        entry = entry:gsub('[* ] ', '')
-        entry = entry:gsub('^remotes/', '')
-        return {
-          value = entry,
-          ordinal = addition .. entry,
-          display = addition .. entry
-        }
+        entry.value = entry.name
+        entry.ordinal = entry.name
+        entry.display = make_display
+        return entry
       end
     },
     previewer = previewers.git_branch_log.new(opts),
