@@ -22,7 +22,7 @@ git.files = function(opts)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
 
   pickers.new(opts, {
-    prompt_title = 'Git File',
+    prompt_title = 'Git Files',
     finder = finders.new_oneshot_job(
       vim.tbl_flatten( {
         "git", "ls-files", "--exclude-standard", "--cached",
