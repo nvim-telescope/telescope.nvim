@@ -111,12 +111,13 @@ git.branches = function(opts)
   for _, v in ipairs(output) do
     local entry = vim.fn.json_decode(v)
     if entry.head then
-      -- noop
+      goto continue
     elseif vim.startswith(entry.refname, 'refs/remotes/') then
       register_entry(entry, 'refs/remotes/')
     elseif vim.startswith(entry.refname, 'refs/heads/') then
       register_entry(entry, 'refs/heads/')
     end
+    ::continue::
   end
   if #results == 0 then
     return

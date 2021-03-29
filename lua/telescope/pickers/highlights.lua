@@ -43,7 +43,7 @@ end
 function Highlighter:clear_display()
   if not self
       or not self.picker
-      or not self.picker.results_bufnr 
+      or not self.picker.results_bufnr
       or not vim.api.nvim_buf_is_valid(self.picker.results_bufnr)
         then
     return
