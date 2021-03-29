@@ -904,7 +904,7 @@ end
 function Picker:get_status_updater(prompt_win, prompt_bufnr)
   return function()
     local text = self:get_status_text()
-    if not vim.api.nvim_buf_is_valid(prompt_bufnr) then return end
+    if self.closed == true or not vim.api.nvim_buf_is_valid(prompt_bufnr) then return end
     local current_prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, 0, 1, false)[1]
     if not current_prompt then
       return

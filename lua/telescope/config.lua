@@ -59,7 +59,6 @@ function config.set_defaults(defaults)
 
     config.values[name] = get(name, default_val)
     if description then
-      -- TODO(conni2461): trim is wrong. We need to do dedent here
       config.descriptions[name] = dedent(description)
     end
   end
