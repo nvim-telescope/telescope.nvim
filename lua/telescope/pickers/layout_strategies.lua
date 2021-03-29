@@ -342,17 +342,17 @@ end
 ---  - flip_columns
 ---  - flip_lines
 layout_strategies.flex = function(self, max_columns, max_lines)
-  local layout_config = self.layout_config or {}
+  local layout_config = config.values.layout_defaults or {}
 
-  local flip_columns = layout_config.flip_columns or 100
-  local flip_lines = layout_config.flip_lines or 20
+  local flip_columns  = layout_config.flip_columns or 100
+  local flip_lines    = layout_config.flip_lines or 20
 
   if max_columns < flip_columns and max_lines > flip_lines then
     -- TODO: This feels a bit like a hack.... cause you wouldn't be able to pass this to flex easily.
-    self.layout_config = (config.values.layout_defaults or {})['vertical']
+    self.layout_config = layout_config['vertical']
     return layout_strategies.vertical(self, max_columns, max_lines)
   else
-    self.layout_config = (config.values.layout_defaults or {})['horizontal']
+    self.layout_config = layout_config['horizontal']
     return layout_strategies.horizontal(self, max_columns, max_lines)
   end
 end
