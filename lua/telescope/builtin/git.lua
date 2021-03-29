@@ -101,7 +101,7 @@ git.branches = function(opts)
   local parse_line = function(line)
     local index = 1
     local entry = vim.fn.json_decode(line)
-    local prefix = ''
+    local prefix
     if vim.startswith(entry.refname, 'refs/remotes/') then
       prefix = 'refs/remotes/'
     elseif vim.startswith(entry.refname, 'refs/heads/') then
