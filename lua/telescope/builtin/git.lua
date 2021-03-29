@@ -79,7 +79,7 @@ end
 
 git.branches = function(opts)
   local format = '{'
-              ..   '"head":%(if:equals=*)%(HEAD)%(then)true%(else)false%(end)'
+              ..   '"head":"%(HEAD)"'
               ..   ',"refname":"%(refname)"'
               ..   ',"authorname":"%(authorname)"'
               ..   '%(if)%(upstream)%(then)'
@@ -98,26 +98,32 @@ git.branches = function(opts)
     upstream = 0,
     committerdate = 0,
   }
-  local register_entry = function(entry, trim_refname_prefix)
-    entry.name = string.sub(entry.refname, string.len(trim_refname_prefix)+1)
+  local parse_line = function(line)
+    local index = 1
+    local entry = vim.fn.json_decode(line)
+    local prefix = ''
+    if vim.startswith(entry.refname, 'refs/remotes/') then
+      prefix = 'refs/remotes/'
+    elseif vim.startswith(entry.refname, 'refs/heads/') then
+      prefix = 'refs/heads/'
+    else
+      return
+    end
+    if entry.head ~= '*' then
+      index = #results + 1
+    end
+
+    entry.name = string.sub(entry.refname, string.len(prefix)+1)
     for key, value in pairs(widths) do
       widths[key] = math.max(value, vim.fn.strdisplaywidth(entry[key]))
     end
     if string.len(entry.upstream) > 0 then
       widths.upstream_indicator = 2
     end
-    table.insert(results, entry)
+    table.insert(results, index, entry)
   end
-  for _, v in ipairs(output) do
-    local entry = vim.fn.json_decode(v)
-    if entry.head then
-      goto continue
-    elseif vim.startswith(entry.refname, 'refs/remotes/') then
-      register_entry(entry, 'refs/remotes/')
-    elseif vim.startswith(entry.refname, 'refs/heads/') then
-      register_entry(entry, 'refs/heads/')
-    end
-    ::continue::
+  for _, line in ipairs(output) do
+    parse_line(line)
   end
   if #results == 0 then
     return
