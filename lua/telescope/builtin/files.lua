@@ -51,7 +51,7 @@ files.live_grep = function(opts)
 
       local default_search_dir = nil
 
-      if vim.fn.has('win32') == 1 then
+      if os_sep == '\\' then
         default_search_dir = '.'
       end
 
