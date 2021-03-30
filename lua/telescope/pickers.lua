@@ -1009,7 +1009,7 @@ end
 
 function Picker:get_result_completor(results_bufnr, prompt, status_updater)
   return function()
-    local counter = 0
+    local counter = 1
     for entry in self.manager:iter() do
       self:entry_adder(counter, entry, nil, false)
       counter = counter + 1
