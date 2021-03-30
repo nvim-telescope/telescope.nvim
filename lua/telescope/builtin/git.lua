@@ -78,18 +78,12 @@ git.bcommits = function(opts)
 end
 
 git.branches = function(opts)
-  local format = '{'
-              ..   '"head":%(if:equals=*)%(HEAD)%(then)true%(else)false%(end)'
-              ..   ',"refname":"%(refname)"'
-              ..   ',"authorname":"%(authorname)"'
-              ..   '%(if)%(upstream)%(then)'
-              ..     ',"upstream":"%(upstream:lstrip=2)"'
-              ..   '%(else)'
-              ..     ',"upstream":""'
-              ..   '%(end)'
-              ..   ',"committerdate":"%(committerdate:format-local:%Y/%m/%d %H:%M:%S)"'
-              .. '}'
-  local output = utils.get_os_command_output({ 'git', 'for-each-ref', '--format', format }, opts.cwd)
+  local format = '%(HEAD)'
+              .. '%(refname)'
+              .. '%(authorname)'
+              .. '%(upstream:lstrip=2)'
+              .. '%(committerdate:format-local:%Y/%m/%d%H:%M:%S)'
+  local output = utils.get_os_command_output({ 'git', 'for-each-ref', '--perl', '--format', format }, opts.cwd)
 
   local results = {}
   local widths = {
@@ -108,9 +102,19 @@ git.branches = function(opts)
     end
     table.insert(results, entry)
   end
+  local unescape_single_quote = function(v)
+      return string.gsub(v, "\\([\\'])", "%1")
+  end
   for _, v in ipairs(output) do
-    local entry = vim.fn.json_decode(v)
-    if entry.head then
+    local fields = vim.fn.split(string.sub(v, 2, -2), "''", true)
+    local entry = {
+      head = fields[1],
+      refname = unescape_single_quote(fields[2]),
+      authorname = unescape_single_quote(fields[3]),
+      upstream = unescape_single_quote(fields[4]),
+      committerdate = fields[5],
+    }
+    if entry.head == '*' then
       goto continue
     elseif vim.startswith(entry.refname, 'refs/remotes/') then
       register_entry(entry, 'refs/remotes/')
