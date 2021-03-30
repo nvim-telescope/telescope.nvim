@@ -23,44 +23,44 @@ telescope.setup({opts})                                    *telescope.setup()*
     entry_prefix: ~
         Prefix in front of each result entry. Current selection not included.
 
-            Default: '  '
+        Default: '  '
 
                                          *telescope.defaults.prompt_prefix*
     prompt_prefix: ~
         Will be shown in front of the prompt.
 
-            Default: '> '
+        Default: '> '
 
                                        *telescope.defaults.scroll_strategy*
     scroll_strategy: ~
         Determines what happens you try to scroll past view of the picker.
 
-            Available options are:
-            - "cycle" (default)
-            - "limit"
+        Available options are:
+        - "cycle" (default)
+        - "limit"
 
                                        *telescope.defaults.selection_caret*
     selection_caret: ~
         Will be shown in front of the selection.
 
-            Default: '> '
+        Default: '> '
 
                                     *telescope.defaults.selection_strategy*
     selection_strategy: ~
         Determines how the cursor acts after each sort iteration.
 
-            Available options are:
-            - "reset" (default)
-            - "follow"
-            - "row"
+        Available options are:
+        - "reset" (default)
+        - "follow"
+        - "row"
 
                                       *telescope.defaults.sorting_strategy*
     sorting_strategy: ~
         Determines the direction "better" results are sorted towards.
 
-            Available options are:
-            - "descending" (default)
-            - "ascending"
+        Available options are:
+        - "descending" (default)
+        - "ascending"
 
     Parameters: ~
         {opts} (table)  Configuration opts. Keys: defaults, extensions
@@ -269,8 +269,10 @@ previewers.new_termopen_previewer()      *previewers.new_termopen_previewer()*
 
     It requires you to specify one table entry `get_command(entry, status)`.
     This `get_command` function has to return the terminal command that will be
-    executed for each entry. Example: get_command = function(entry, status) 
-    return { 'bat', entry.path } end
+    executed for each entry. Example:
+      get_command = function(entry, status)
+        return { 'bat', entry.path }
+      end
 
     It's an easy way to get your first previewer going and it integrates well
     with `bat` and `less`. Providing out of the box scrolling if the command
