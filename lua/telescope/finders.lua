@@ -121,31 +121,21 @@ function LiveFinder:new(opts)
     curr_buf = opts.curr_buf,
     fn = opts.fn,
     entry_maker = opts.entry_maker or make_entry.from_string,
-    fn_command = opts.fn_command,
-    cwd = opts.cwd,
-    writer = opts.writer,
-
-    -- Maximum number of results to process.
-    --  Particularly useful for live updating large queries.
-    maximum_results = opts.maximum_results,
   }, self)
 
   return obj
 end
 
 function LiveFinder:_find(prompt, process_result, process_complete)
-  local fn = async(function()
+  a.scope(function()
     local results = await(self.fn(self.curr_buf, prompt))
     for _, result in ipairs(results) do
-      dump("processing result", result)
-      process_result(result)
+      process_result(self.entry_maker(result))
     end
 
     await(a.scheduler())
     process_complete()
   end)
-
-  a.util.run(fn())
 end
 
 local OneshotJobFinder = _callable_obj()
