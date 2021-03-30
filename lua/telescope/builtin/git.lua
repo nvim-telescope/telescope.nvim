@@ -96,7 +96,7 @@ git.branches = function(opts)
       return string.gsub(v, "\\([\\'])", "%1")
   end
   local parse_line = function(line)
-    local fields = vim.fn.split(string.sub(line, 2, -2), "''", true)
+    local fields = vim.split(string.sub(line, 2, -2), "''", true)
     local entry = {
       head = fields[1],
       refname = unescape_single_quote(fields[2]),
