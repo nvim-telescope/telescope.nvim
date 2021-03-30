@@ -92,21 +92,11 @@ git.branches = function(opts)
     upstream = 0,
     committerdate = 0,
   }
-  local register_entry = function(entry, trim_refname_prefix)
-    entry.name = string.sub(entry.refname, string.len(trim_refname_prefix)+1)
-    for key, value in pairs(widths) do
-      widths[key] = math.max(value, vim.fn.strdisplaywidth(entry[key]))
-    end
-    if string.len(entry.upstream) > 0 then
-      widths.upstream_indicator = 2
-    end
-    table.insert(results, entry)
-  end
   local unescape_single_quote = function(v)
       return string.gsub(v, "\\([\\'])", "%1")
   end
-  for _, v in ipairs(output) do
-    local fields = vim.fn.split(string.sub(v, 2, -2), "''", true)
+  local parse_line = function(line)
+    local fields = vim.fn.split(string.sub(line, 2, -2), "''", true)
     local entry = {
       head = fields[1],
       refname = unescape_single_quote(fields[2]),
@@ -114,14 +104,30 @@ git.branches = function(opts)
       upstream = unescape_single_quote(fields[4]),
       committerdate = fields[5],
     }
-    if entry.head == '*' then
-      goto continue
-    elseif vim.startswith(entry.refname, 'refs/remotes/') then
-      register_entry(entry, 'refs/remotes/')
+    local prefix
+    if vim.startswith(entry.refname, 'refs/remotes/') then
+      prefix = 'refs/remotes/'
     elseif vim.startswith(entry.refname, 'refs/heads/') then
-      register_entry(entry, 'refs/heads/')
+      prefix = 'refs/heads/'
+    else
+      return
     end
-    ::continue::
+    local index = 1
+    if entry.head ~= '*' then
+      index = #results + 1
+    end
+
+    entry.name = string.sub(entry.refname, string.len(prefix)+1)
+    for key, value in pairs(widths) do
+      widths[key] = math.max(value, vim.fn.strdisplaywidth(entry[key]))
+    end
+    if string.len(entry.upstream) > 0 then
+      widths.upstream_indicator = 2
+    end
+    table.insert(results, index, entry)
+  end
+  for _, line in ipairs(output) do
+    parse_line(line)
   end
   if #results == 0 then
     return
