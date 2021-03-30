@@ -450,7 +450,7 @@ function Picker:find()
   -- Register attach
   vim.api.nvim_buf_attach(prompt_bufnr, false, {
     on_lines = on_lines,
-    on_detach = vim.schedule_wrap(function()
+    on_detach = function()
       on_lines = nil
 
       -- TODO: Can we add a "cleanup" / "teardown" function that completely removes these.
@@ -459,9 +459,11 @@ function Picker:find()
       self.sorter = nil
       self.manager = nil
 
+      self.closed = true
+
       -- TODO: Should we actually do this?
       collectgarbage(); collectgarbage()
-    end),
+    end,
   })
 
   -- TODO: Use WinLeave as well?
@@ -902,6 +904,7 @@ end
 function Picker:get_status_updater(prompt_win, prompt_bufnr)
   return function()
     local text = self:get_status_text()
+    if self.closed or not vim.api.nvim_buf_is_valid(prompt_bufnr) then return end
     local current_prompt = vim.api.nvim_buf_get_lines(prompt_bufnr, 0, 1, false)[1]
     if not current_prompt then
       return
@@ -931,7 +934,7 @@ end
 
 function Picker:get_result_processor(prompt, status_updater)
   return function(entry)
-    if self:is_done() then return end
+    if self.closed or self:is_done() then return end
 
     self:_increment("processed")
 
@@ -951,7 +954,8 @@ function Picker:get_result_processor(prompt, status_updater)
       local file = type(entry.value) == 'string' and entry.value or entry.filename
       if file then
         if string.find(file, v) then
-          log.debug("SKPIPING", entry.value, "because", v)
+          log.debug("SKIPPING", entry.value, "because", v)
+          self:_decrement("processed")
           return
         end
       end
@@ -986,7 +990,7 @@ end
 
 function Picker:get_result_completor(results_bufnr, prompt, status_updater)
   return function()
-    if self:is_done() then return end
+    if self.closed == true or self:is_done() then return end
 
     local selection_strategy = self.selection_strategy or 'reset'
 

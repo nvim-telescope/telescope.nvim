@@ -66,28 +66,36 @@ previewers.file_maker = function(filepath, bufnr, opts)
 
   if opts.bufname ~= filepath then
     if not vim.in_fast_event() then filepath = vim.fn.expand(filepath) end
-    local stat = vim.loop.fs_stat(filepath) or {}
-    if stat.type == 'directory' then
-      pscan.ls_async(filepath, {
-        hidden = true,
-        group_directories_first = true,
-        on_exit = vim.schedule_wrap(function(data, sections)
-          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
-          colorize_ls(bufnr, data, sections)
-          if opts.callback then opts.callback(bufnr) end
-      end)})
-    else
-      path.read_file_async(filepath, vim.schedule_wrap(function(data)
-        if not vim.api.nvim_buf_is_valid(bufnr) then return end
-        local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, vim.split(data, '[\r]?\n'))
-        if not ok then return end
+    vim.loop.fs_stat(filepath, function(_, stat)
+      if not stat then return end
+      if stat.type == 'directory' then
+        pscan.ls_async(filepath, {
+          hidden = true,
+          group_directories_first = true,
+          on_exit = vim.schedule_wrap(function(data, sections)
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
+            colorize_ls(bufnr, data, sections)
+            if opts.callback then opts.callback(bufnr) end
+        end)})
+      else
+        path.read_file_async(filepath, vim.schedule_wrap(function(data)
+          if not vim.api.nvim_buf_is_valid(bufnr) then return end
+          local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, vim.split(data, '[\r]?\n'))
+          if not ok then return end
 
-        if opts.callback then opts.callback(bufnr) end
-        putils.highlighter(bufnr, ft)
-      end))
-    end
+          if opts.callback then opts.callback(bufnr) end
+          putils.highlighter(bufnr, ft)
+        end))
+      end
+    end)
   else
-    if opts.callback then opts.callback(bufnr) end
+    if opts.callback then
+      if vim.in_fast_event() then
+        vim.schedule(function() opts.callback(bufnr) end)
+      else
+        opts.callback(bufnr)
+      end
+    end
   end
 end
 
@@ -112,8 +120,10 @@ previewers.new_buffer_previewer = function(opts)
   end
 
   local function set_bufnr(self, value)
-    if get_bufnr(self) then table.insert(old_bufs, get_bufnr(self)) end
-    if self.state then self.state.bufnr = value end
+    if self.state then
+      self.state.bufnr = value
+      table.insert(old_bufs, value)
+    end
   end
 
   local function get_bufnr_by_bufname(self, value)
@@ -122,8 +132,12 @@ previewers.new_buffer_previewer = function(opts)
   end
 
   local function set_bufname(self, value)
-    if get_bufnr(self) then bufname_table[value] = get_bufnr(self) end
-    if self.state then self.state.bufname = value end
+    if self.state then
+      self.state.bufname = value
+      if value then
+        bufname_table[value] = get_bufnr(self)
+      end
+    end
   end
 
   function opts.setup(self)
