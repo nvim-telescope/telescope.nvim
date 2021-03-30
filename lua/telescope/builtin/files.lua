@@ -90,17 +90,21 @@ files.grep_string = function(opts)
     end
   end
 
+  local args = flatten {
+    vimgrep_arguments,
+    word_match,
+    search,
+  }
+
+  if search_dirs then
+    table.insert(args, search_dirs)
+  elseif os_sep == '\\' then
+    table.insert(args, '.')
+  end
+
   pickers.new(opts, {
     prompt_title = 'Find Word',
-    finder = finders.new_oneshot_job(
-      flatten {
-        vimgrep_arguments,
-        word_match,
-        search,
-        search_dirs or "."
-      },
-      opts
-    ),
+    finder = finders.new_oneshot_job(args, opts),
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
   }):find()
