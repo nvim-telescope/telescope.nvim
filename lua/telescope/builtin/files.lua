@@ -49,13 +49,15 @@ files.live_grep = function(opts)
 
       prompt = escape_chars(prompt)
 
-      local default_search_dir = nil
+      local args = flatten { vimgrep_arguments, prompt }
 
-      if os_sep == '\\' then
-        default_search_dir = '.'
+      if search_dirs then
+        table.insert(args, search_dirs)
+      elseif os_sep == '\\' then
+        table.insert(args, '.')
       end
 
-      return flatten { vimgrep_arguments, prompt, opts.search_dirs or default_search_dir }
+      return args
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
     opts.max_results,
