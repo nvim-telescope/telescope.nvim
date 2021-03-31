@@ -548,14 +548,12 @@ function Picker:find()
   end
 end
 
-
-
 function Picker:hide_preview()
   -- 1. Hide the window (and border)
   -- 2. Resize prompt & results windows accordingly
 end
 
-function Picker.close_windows(self, status)
+function Picker:close_windows(status)
   local prompt_win = status.prompt_win
   local results_win = status.results_win
   local preview_win = status.preview_win
@@ -1132,7 +1130,7 @@ function pickers.on_close_prompt(prompt_bufnr)
   -- TODO: This is an attempt to clear all the memory stuff we may have left.
   -- vim.api.nvim_buf_detach(prompt_bufnr)
 
-  picker.close_windows(picker, status)
+  picker:close_windows(status)
 end
 
 function Picker:_get_prompt()

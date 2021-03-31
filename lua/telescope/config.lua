@@ -88,7 +88,14 @@ function config.set_defaults(defaults)
   set("layout_strategy", "horizontal")
   set("layout_defaults", {})
 
-  set("externalize", false)
+  set("externalize", false, [[
+    Displays the prompt, result, and preview windows as external windows if set to true.
+    Only available when using an UI with ui-multigrid support.
+
+    Available options are:
+    - "false" (default)
+    - "true"]])
+
   set("width", 0.75)
   set("winblend", 0)
   set("prompt_position", "bottom")
