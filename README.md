@@ -456,6 +456,30 @@ require('telescope').setup{
   }
 }
 ```
+Example of finder processing json result.
+```lua
+local function do_preprocess(line)
+  local result = {}
+  local pJson = json.decode(line)
+  for _, v in ipairs(pJson) do
+    -- optionally pick only fields you are interested in.
+    table.insert(result, v)
+  end
+  return result
+end
+```
+Usage
+```lua
+Finder:new{
+  entry_maker     = function(line) end,
+  fn_command      = function() { command = "", args  = { "ls-files" } } end,
+  fn_preprocess   = do_preprocess,
+  static          = false,
+  maximum_results = false
+}
+```
+ 
+
 
 Themes should work with every `telescope.builtin` function. If you wish to make
 a theme, check out `lua/telescope/themes.lua`.
