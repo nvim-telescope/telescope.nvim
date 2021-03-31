@@ -37,6 +37,8 @@ local JobFinder = _callable_obj()
 ---
 ---@param opts table Keys:
 --     fn_command function The function to call
+--     fn_preprocess function The optional function to be called for each line before calling entry_maker.
+--       Allows for creating multiple entries (table) from single line.
 function JobFinder:new(opts)
   opts = opts or {}
 
@@ -70,7 +72,8 @@ function JobFinder:_find(prompt, process_result, process_complete)
     if not line or line == "" then
       return
     end
-    -- If fn_preprocess is available use on the line, afterwards run entry_maker on each of the result.
+    -- If fn_preprocess is defined, call it for each line producing multiple results.
+    -- Call entry_maker on each result.
     if self.fn_preprocess ~= nil then
       local lines = self.fn_preprocess(line)
       for _, item in ipairs (lines) do
@@ -180,8 +183,9 @@ end
 --- One shot job
 ---@param command_list string[]: Command list to execute.
 ---@param opts table: stuff
---         @key entry_maker function Optional: function(line: string) => table
---         @key cwd string
+---        @key entry_maker function Optional: function(line: string) => table
+---        @key cwd string
+---        @key fn_preprocess function Optional: function(line: string) => table
 finders.new_oneshot_job = function(command_list, opts)
   opts = opts or {}
 
