@@ -119,7 +119,7 @@ git.branches = function(opts)
 
     entry.name = string.sub(entry.refname, string.len(prefix)+1)
     for key, value in pairs(widths) do
-      widths[key] = math.max(value, vim.fn.strdisplaywidth(entry[key]))
+      widths[key] = math.max(value, utils.strdisplaywidth(entry[key] or ''))
     end
     if string.len(entry.upstream) > 0 then
       widths.upstream_indicator = 2
