@@ -1,7 +1,3 @@
-local uv = vim.loop
-
-local log = require('telescope.log')
-
 local async_lib = require('plenary.async_lib')
 local async = async_lib.async
 local await = async_lib.await
