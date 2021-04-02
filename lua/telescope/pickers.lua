@@ -359,19 +359,13 @@ function Picker:find()
   local debounced_status = debounce.throttle_leading(status_updater, 50)
 
   local tx, rx = channel.mpsc()
-  -- local should_stop = false
+  self.__on_lines = tx.send
 
-  -- local on_lines = function(_, _, _, first_line, last_line)
   local main_loop = async(function()
-    -- local cancel_tx, cancel_rx = channel.oneshot()
-
     while true do
-      await(async_util.sleep(10))
-      local _, _, _, first_line, last_line = await(rx.last())
-      -- cancel_tx()
-
       await(async_lib.scheduler())
 
+      local _, _, _, first_line, last_line = await(rx.last())
       self:_reset_track()
 
       if not vim.api.nvim_buf_is_valid(prompt_bufnr) then
@@ -409,7 +403,7 @@ function Picker:find()
       local process_complete = self:get_result_completor(self.results_bufnr, prompt, status_updater)
 
       local ok, msg = pcall(function()
-        self.finder(prompt, process_result, vim.schedule_wrap(process_complete))
+        self.finder(prompt, process_result, vim.schedule_wrap(process_complete), self)
       end)
 
       if not ok then
@@ -781,6 +775,8 @@ function Picker:entry_adder(index, entry, _, insert)
       return
     end
 
+    -- TODO: Does this every get called?
+    -- local line_count = vim.api.nvim_win_get_height(self.results_win)
     local line_count = vim.api.nvim_buf_line_count(self.results_bufnr)
     if row > line_count then
       return
