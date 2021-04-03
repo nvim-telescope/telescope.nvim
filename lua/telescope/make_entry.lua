@@ -698,9 +698,7 @@ function make_entry.gen_from_buffer_lines(opts)
 
   return function(entry)
     if opts.skip_empty_lines and string.match(entry.line, '^$') then
-      return {
-        valid = false,
-      }
+      return
     end
 
     return {
@@ -708,7 +706,6 @@ function make_entry.gen_from_buffer_lines(opts)
       ordinal = entry.line,
       display = make_display,
       filename = entry.filename,
-      bufname = entry.bufname,
       lnum = entry.lnum,
       line = entry.line,
     }

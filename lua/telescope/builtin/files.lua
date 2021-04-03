@@ -319,23 +319,18 @@ end
 files.current_buffer_fuzzy_find = function(opts)
   -- All actions are on the current buffer
   local bufnr = vim.api.nvim_get_current_buf()
-  local bufname = vim.api.nvim_buf_get_name(bufnr)
-  local filename = vim.fn.expand(bufname)
+  local filename = vim.fn.expand(vim.api.nvim_buf_get_name(bufnr))
 
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
   local lines_with_numbers = {}
 
   for lnum, line in ipairs(lines) do
-    table.insert(
-      lines_with_numbers,
-      {
-        lnum = lnum,
-        line = line,
-        bufnr = bufnr,
-        bufname = bufname,
-        filename = filename,
-      }
-    )
+    table.insert(lines_with_numbers, {
+      lnum = lnum,
+      line = line,
+      bufnr = bufnr,
+      filename = filename,
+    })
   end
 
   pickers.new(opts, {
