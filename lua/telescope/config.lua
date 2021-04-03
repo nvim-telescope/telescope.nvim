@@ -59,8 +59,7 @@ function config.set_defaults(defaults)
 
     config.values[name] = get(name, default_val)
     if description then
-      -- TODO(conni2461): trim is wrong. We need to do dedent here
-      config.descriptions[name] = dedent(vim.trim(description))
+      config.descriptions[name] = dedent(description)
     end
   end
 
@@ -69,8 +68,7 @@ function config.set_defaults(defaults)
 
     Available options are:
     - "descending" (default)
-    - "ascending"
-  ]])
+    - "ascending"]])
 
   set("selection_strategy", "reset", [[
     Determines how the cursor acts after each sort iteration.
@@ -78,16 +76,14 @@ function config.set_defaults(defaults)
     Available options are:
     - "reset" (default)
     - "follow"
-    - "row"
-  ]])
+    - "row"]])
 
   set("scroll_strategy", "cycle", [[
     Determines what happens you try to scroll past view of the picker.
 
     Available options are:
     - "cycle" (default)
-    - "limit"
-  ]])
+    - "limit"]])
 
   set("layout_strategy", "horizontal")
   set("layout_defaults", {})
@@ -103,18 +99,15 @@ function config.set_defaults(defaults)
   set("prompt_prefix", "> ", [[
     Will be shown in front of the prompt.
 
-    Default: '> '
-  ]])
+    Default: '> ']])
   set("selection_caret", "> ", [[
     Will be shown in front of the selection.
 
-    Default: '> '
-  ]])
+    Default: '> ']])
   set("entry_prefix", "  ", [[
     Prefix in front of each result entry. Current selection not included.
 
-    Default: '  '
-  ]])
+    Default: '  ']])
   set("initial_mode", "insert")
 
   set("border", {})
