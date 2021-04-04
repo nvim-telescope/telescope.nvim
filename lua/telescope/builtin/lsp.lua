@@ -125,16 +125,13 @@ lsp.code_actions = function(opts)
 
   for _, response in pairs(results_lsp) do
     local results = response.result
-    if not results or #results == 0 then
-      goto continue
+    if results then
+      for _, result in pairs(results) do
+        result.idx = idx
+        idx = idx + 1
+        table.insert(all_results, result)
+      end
     end
-
-    for _, result in pairs(results) do
-      result.idx = idx
-      idx = idx + 1
-      table.insert(all_results, result)
-    end
-    ::continue::
   end
 
   if #all_results == 0 then
