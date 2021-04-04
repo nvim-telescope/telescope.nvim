@@ -680,6 +680,38 @@ function make_entry.gen_from_highlights()
   end
 end
 
+function make_entry.gen_from_buffer_lines(opts)
+  local displayer = entry_display.create {
+    separator = ' │ ',
+    items = {
+      { width = 5 },
+      { remaining = true },
+    },
+  }
+
+  local make_display = function(entry)
+    return displayer {
+      { entry.lnum, opts.lnum_highlight_group or 'TelescopeResultsSpecialComment' },
+      entry.line
+    }
+  end
+
+  return function(entry)
+    if opts.skip_empty_lines and string.match(entry.line, '^$') then
+      return
+    end
+
+    return {
+      valid = true,
+      ordinal = entry.line,
+      display = make_display,
+      filename = entry.filename,
+      lnum = entry.lnum,
+      line = entry.line,
+    }
+  end
+end
+
 function make_entry.gen_from_vimoptions()
   local process_one_opt = function(o)
     local ok, value_origin
