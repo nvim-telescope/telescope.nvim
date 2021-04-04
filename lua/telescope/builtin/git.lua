@@ -15,7 +15,7 @@ git.files = function(opts)
   local show_untracked = utils.get_default(opts.show_untracked, true)
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
   if show_untracked and recurse_submodules then
-    error("Git does not suppurt both --others and --recurse-submodules")
+    error("Git does not support both --others and --recurse-submodules")
   end
 
   -- By creating the entry maker after the cwd options,
