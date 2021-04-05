@@ -83,10 +83,9 @@ end
 -- TODO: Consider doing something that makes it so we can skip the filter checks
 --          if we're not discarding. Also, that means we don't have to check otherwise as well :)
 function Sorter:score(prompt, entry, cb)
-  if not entry or not entry.ordinal then return -1 end
+  if not entry or not entry.ordinal then return end
 
   local ordinal = entry.ordinal
-
   if self:_was_discarded(prompt, ordinal) then
     return
   end
@@ -97,18 +96,21 @@ function Sorter:score(prompt, entry, cb)
     filter_score, prompt = self:filter_function(prompt, entry)
   end
 
-  local score = (filter_score == FILTERED and FILTERED or
-    self:scoring_function(prompt or "", ordinal, entry))
-
-  if score == FILTERED then
-    self:_mark_discarded(prompt, ordinal)
-  end
-
-  if score == FILTERED then
+  if filter_score == FILTERED then
     return
   end
 
-  cb(score, entry)
+  local score = self:scoring_function(prompt or "", ordinal, entry)
+  if score == FILTERED then
+    self:_mark_discarded(prompt, ordinal)
+    return
+  end
+
+  if cb then
+    cb(score, entry)
+  else
+    return score
+  end
 end
 
 function Sorter:_was_discarded(prompt, ordinal)
