@@ -22,7 +22,7 @@ return function(opts)
     end
   end
 
-  return void(async(function(_, process_result, on_complete)
+  return void(async(function(_, process_result, process_complete)
     for i, v in ipairs(results) do
       if process_result(v) then break end
 
@@ -31,6 +31,6 @@ return function(opts)
       end
     end
 
-    on_complete()
+    process_complete()
   end))
 end
