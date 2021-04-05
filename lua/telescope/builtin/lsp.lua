@@ -121,20 +121,19 @@ lsp.code_actions = function(opts)
   end
 
   local idx = 1
-  local all_results = {}
+  local results = {}
 
   for _, response in pairs(results_lsp) do
-    local results = response.result
-    if results then
-      for _, result in pairs(results) do
+    if response.result then
+      for _, result in pairs(response.result) do
         result.idx = idx
         idx = idx + 1
-        table.insert(all_results, result)
+        table.insert(results, result)
       end
     end
   end
 
-  if #all_results == 0 then
+  if #results == 0 then
     print("No code actions available")
     return
   end
@@ -142,7 +141,7 @@ lsp.code_actions = function(opts)
   pickers.new(opts, {
     prompt_title = 'LSP Code Actions',
     finder    = finders.new_table {
-      results = all_results,
+      results = results,
       entry_maker = function(line)
         return {
           valid = line ~= nil,
