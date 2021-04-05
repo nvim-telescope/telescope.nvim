@@ -899,6 +899,11 @@ end
 
 
 function Picker:get_result_processor(prompt, status_updater)
+  local score_cb = function(score, entry)
+    self.manager:add_entry(self, score, entry)
+    status_updater()
+  end
+
   return function(entry)
     if self.closed or self:is_done() then return end
 
@@ -914,8 +919,9 @@ function Picker:get_result_processor(prompt, status_updater)
       return
     end
 
+    -- TODO: Probably should asyncify this / cache this / do something because this probably takes
+    -- a ton of time on large results.
     log.trace("Processing result... ", entry)
-
     for _, v in ipairs(self.file_ignore_patterns or {}) do
       local file = type(entry.value) == 'string' and entry.value or entry.filename
       if file then
@@ -927,30 +933,33 @@ function Picker:get_result_processor(prompt, status_updater)
       end
     end
 
-    local sort_ok
-    local sort_score = 0
-    if self.sorter then
-      sort_ok, sort_score = self:_track("_sort_time", pcall, self.sorter.score, self.sorter, prompt, entry)
+    return self.sorter:score(prompt, entry, score_cb)
 
-      if not sort_ok then
-        log.warn("Sorting failed with:", prompt, entry, sort_score)
-        return
-      end
+    -- local sort_ok
+    -- local sort_score = 0
 
-      if entry.ignore_count ~= nil and entry.ignore_count == true then
-        self:_decrement("processed")
-      end
+    -- if self.sorter then
+    --   sort_ok, sort_score = self:_track("_sort_time", pcall, self.sorter.score, self.sorter, prompt, entry)
 
-      if sort_score == -1 then
-        self:_increment("filtered")
-        log.trace("Filtering out result: ", entry)
-        return
-      end
-    end
+    --   if not sort_ok then
+    --     log.warn("Sorting failed with:", prompt, entry, sort_score)
+    --     return
+    --   end
 
-    self:_track("_add_time", self.manager.add_entry, self.manager, self, sort_score, entry)
+    --   if entry.ignore_count ~= nil and entry.ignore_count == true then
+    --     self:_decrement("processed")
+    --   end
 
-    status_updater()
+    --   if sort_score == -1 then
+    --     self:_increment("filtered")
+    --     log.trace("Filtering out result: ", entry)
+    --     return
+    --   end
+    -- end
+
+    -- self:_track("_add_time", self.manager.add_entry, self.manager, self, sort_score, entry)
+
+    -- status_updater()
   end
 end
 

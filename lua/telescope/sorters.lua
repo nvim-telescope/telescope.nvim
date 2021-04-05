@@ -32,8 +32,11 @@ Sorter.__index = Sorter
 ---
 --- Lower number is better (because it's like a closer match)
 --- But, any number below 0 means you want that line filtered out.
---- @field scoring_function function Function that has the interface:
---      (sorter, prompt, line): number
+---@field scoring_function function: Function that has the interface: (sorter, prompt, line): number
+---@field tags table: I actually don't know :)
+---@field filter_function function: Function that can filter results
+---@field highlighter function: Highlights results to display them pretty
+---@field discard boolean: Whether this is a discardable style sorter or not.
 function Sorter:new(opts)
   opts = opts or {}
 
@@ -77,7 +80,7 @@ end
 
 -- TODO: Consider doing something that makes it so we can skip the filter checks
 --          if we're not discarding. Also, that means we don't have to check otherwise as well :)
-function Sorter:score(prompt, entry)
+function Sorter:score(prompt, entry, cb)
   if not entry or not entry.ordinal then return -1 end
 
   local ordinal = entry.ordinal
@@ -99,7 +102,11 @@ function Sorter:score(prompt, entry)
     self:_mark_discarded(prompt, ordinal)
   end
 
-  return score
+  if score == FILTERED then
+    return
+  end
+
+  cb(score, entry)
 end
 
 function Sorter:_was_discarded(prompt, ordinal)
