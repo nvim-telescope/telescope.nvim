@@ -5,7 +5,7 @@ local log = require('telescope.log')
 
 local async_static_finder = require('telescope.finders.async_static_finder')
 local async_oneshot_finder = require('telescope.finders.async_oneshot_finder')
-local async_job_finder = require('telescope.finders.async_job_finder')
+-- local async_job_finder = require('telescope.finders.async_job_finder')
 
 local finders = {}
 
@@ -119,14 +119,12 @@ finders._new = function(opts)
 end
 
 finders.new_job = function(command_generator, entry_maker, maximum_results, cwd)
-  if false then
-    return async_job_finder {
-      command_generator = command_generator,
-      entry_maker = entry_maker,
-      maximum_results = maximum_results,
-      cwd = cwd,
-    }
-  end
+  -- return async_job_finder {
+  --   command_generator = command_generator,
+  --   entry_maker = entry_maker,
+  --   maximum_results = maximum_results,
+  --   cwd = cwd,
+  -- }
 
   return JobFinder:new {
     fn_command = function(_, prompt)

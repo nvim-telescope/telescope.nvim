@@ -3,7 +3,7 @@ local Job = require('plenary.job')
 
 local async_lib = require('plenary.async_lib')
 local async = async_lib.async
-local await = async_lib.await
+-- local await = async_lib.await
 local void = async_lib.void
 
 local make_entry = require('telescope.make_entry')
