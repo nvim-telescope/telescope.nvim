@@ -21,7 +21,7 @@ return function(opts)
 
   local job_started = false
   local job_completed = false
-  return void(async(function(prompt, process_result, process_complete, picker)
+  return void(async(function(prompt, process_result, process_complete)
     if not job_started then
       local job_opts = fn_command()
 
@@ -46,10 +46,6 @@ return function(opts)
           local v = entry_maker(line)
           results[num_results] = v
           process_result(v)
-
-          -- if num_results % AWAITABLE == 0 then
-          --   await(async_lib.scheduler())
-          -- end
         end),
 
         on_exit = function()
@@ -64,14 +60,12 @@ return function(opts)
 
     local current_count = num_results
     for index = 1, current_count do
-      process_result(results[index])
+      if process_result(results[index]) then
+        break
+      end
 
       if index % AWAITABLE == 0 then
         await(async_lib.scheduler())
-
-        if picker and prompt ~= picker:_get_prompt() then
-          break
-        end
       end
     end
 

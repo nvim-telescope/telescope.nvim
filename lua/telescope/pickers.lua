@@ -79,6 +79,7 @@ function Picker:new(opts)
 
     cwd = opts.cwd,
 
+    _find_id = 0,
     _completion_callbacks = {},
     _multi = MultiSelect:new(),
 
@@ -272,6 +273,13 @@ function Picker:can_select_row(row)
   end
 end
 
+function Picker:_next_find_id()
+  local find_id = self._find_id + 1
+  self._find_id = find_id
+
+  return find_id
+end
+
 function Picker:find()
   self:close_existing_pickers()
   self:reset_selection()
@@ -281,7 +289,7 @@ function Picker:find()
   self.original_win_id = a.nvim_get_current_win()
 
   -- User autocmd run it before create Telescope window
-  vim.cmd'do User TelescopeFindPre'
+  vim.cmd [[doautocmd User TelescopeFindPre']]
 
   -- Create three windows:
   -- 1. Prompt window
@@ -399,11 +407,12 @@ function Picker:find()
       -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
       self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats)
 
-      local process_result = self:get_result_processor(prompt, debounced_status)
-      local process_complete = self:get_result_completor(self.results_bufnr, prompt, status_updater)
+      local find_id = self:_next_find_id()
+      local process_result = self:get_result_processor(find_id, prompt, debounced_status)
+      local process_complete = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
 
       local ok, msg = pcall(function()
-        self.finder(prompt, process_result, vim.schedule_wrap(process_complete), self)
+        self.finder(prompt, process_result, vim.schedule_wrap(process_complete))
       end)
 
       if not ok then
@@ -665,6 +674,8 @@ function Picker:set_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   state.set_global_key("selected_entry", entry)
 
+  if not entry then return end
+
   -- TODO: Probably should figure out what the rows are that made this happen...
   --        Probably something with setting a row that's too high for this?
   --        Not sure.
@@ -745,6 +756,8 @@ function Picker:refresh_previewer()
 end
 
 function Picker:entry_adder(index, entry, _, insert)
+  if not entry then return end
+
   local row = self:get_row(index)
 
   -- If it's less than 0, then we don't need to show it at all.
@@ -898,24 +911,22 @@ function Picker:get_status_updater(prompt_win, prompt_bufnr)
 end
 
 
-function Picker:get_result_processor(prompt, status_updater)
+function Picker:get_result_processor(find_id, prompt, status_updater)
   local score_cb = function(score, entry)
     self.manager:add_entry(self, score, entry)
     status_updater()
   end
 
   return function(entry)
-    if self.closed or self:is_done() then return end
+    if find_id ~= self._find_id
+        or self.closed
+        or self:is_done() then
+      return true
+    end
 
     self:_increment("processed")
 
-    if not entry then
-      log.debug("No entry...")
-      return
-    end
-
-    -- TODO: Should we even have valid?
-    if entry.valid == false then
+    if not entry or entry.valid == false then
       return
     end
 
@@ -933,7 +944,7 @@ function Picker:get_result_processor(prompt, status_updater)
       end
     end
 
-    return self.sorter:score(prompt, entry, score_cb)
+    self.sorter:score(prompt, entry, score_cb)
 
     -- local sort_ok
     -- local sort_score = 0
@@ -963,7 +974,7 @@ function Picker:get_result_processor(prompt, status_updater)
   end
 end
 
-function Picker:get_result_completor(results_bufnr, prompt, status_updater)
+function Picker:get_result_completor(results_bufnr, find_id, prompt, status_updater)
   return function()
     if self.closed == true or self:is_done() then return end
 

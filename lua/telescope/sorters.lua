@@ -37,10 +37,12 @@ Sorter.__index = Sorter
 ---@field filter_function function: Function that can filter results
 ---@field highlighter function: Highlights results to display them pretty
 ---@field discard boolean: Whether this is a discardable style sorter or not.
+---@field score function: Override the score function if desired.
 function Sorter:new(opts)
   opts = opts or {}
 
   return setmetatable({
+    score = opts.score,
     state = {},
     tags = opts.tags,
     filter_function = opts.filter_function,
@@ -86,7 +88,7 @@ function Sorter:score(prompt, entry, cb)
   local ordinal = entry.ordinal
 
   if self:_was_discarded(prompt, ordinal) then
-    return FILTERED
+    return
   end
 
   local filter_score

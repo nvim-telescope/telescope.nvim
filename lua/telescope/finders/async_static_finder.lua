@@ -22,16 +22,12 @@ return function(opts)
     end
   end
 
-  return void(async(function(prompt, on_result, on_complete, picker)
+  return void(async(function(_, process_result, on_complete)
     for i, v in ipairs(results) do
-      on_result(v)
+      if process_result(v) then break end
 
       if i % 1000 == 0 then
         await(async_lib.scheduler())
-
-        if picker and prompt ~= picker:_get_prompt() then
-          break
-        end
       end
     end
 
