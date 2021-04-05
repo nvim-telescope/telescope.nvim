@@ -22,15 +22,20 @@ return function(opts)
     end
   end
 
-  return void(async(function(_, process_result, process_complete)
-    for i, v in ipairs(results) do
-      if process_result(v) then break end
+  return setmetatable({
+    results = results,
+    close = function() end,
+  }, {
+    __call = void(async(function(_, _, process_result, process_complete)
+      for i, v in ipairs(results) do
+        if process_result(v) then break end
 
-      if i % 1000 == 0 then
-        await(async_lib.scheduler())
+        if i % 1000 == 0 then
+          await(async_lib.scheduler())
+        end
       end
-    end
 
-    process_complete()
-  end))
+      process_complete()
+    end)),
+  })
 end

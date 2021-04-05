@@ -25,49 +25,49 @@ return function(opts)
   end
 
   local job
-  return void(async(function(prompt, process_result, process_complete, picker)
-    print("are we callin anything?", job)
-    if job and not job.is_shutdown then
-      log.debug("Shutting down old job")
-      job:shutdown()
-    end
+  return setmetatable({
+    close = function() end,
+  }, {
+    __call = void(async(function(prompt, process_result, process_complete)
+      print("are we callin anything?", job)
+      if job and not job.is_shutdown then
+        log.debug("Shutting down old job")
+        job:shutdown()
+      end
 
-    local job_opts = fn_command(prompt)
-    if not job_opts then return end
+      local job_opts = fn_command(prompt)
+      if not job_opts then return end
 
-    local writer = nil
-    if job_opts.writer and Job.is_job(job_opts.writer) then
-      writer = job_opts.writer
-    elseif opts.writer then
-      writer = Job:new(job_opts.writer)
-    end
+      local writer = nil
+      if job_opts.writer and Job.is_job(job_opts.writer) then
+        writer = job_opts.writer
+      elseif opts.writer then
+        writer = Job:new(job_opts.writer)
+      end
 
-    job = Job:new {
-      command = job_opts.command,
-      args = job_opts.args,
-      cwd = job_opts.cwd or opts.cwd,
-      maximum_results = opts.maximum_results,
-      writer = writer,
-      enable_recording = false,
+      job = Job:new {
+        command = job_opts.command,
+        args = job_opts.args,
+        cwd = job_opts.cwd or opts.cwd,
+        maximum_results = opts.maximum_results,
+        writer = writer,
+        enable_recording = false,
 
-      on_stdout = vim.schedule_wrap(function(_, line)
-        if picker and prompt ~= picker:_get_prompt() then
-          -- TODO: Should make ez cancel for job.
-          return
-        end
+        on_stdout = vim.schedule_wrap(function(_, line)
+          if not line or line == "" then
+            return
+          end
 
-        if not line or line == "" then
-          return
-        end
+          -- TODO: shutdown job here.
+          process_result(entry_maker(line))
+        end),
 
-        process_result(entry_maker(line))
-      end),
+        on_exit = function()
+          process_complete()
+        end,
+      }
 
-      on_exit = function()
-        process_complete()
-      end,
-    }
-
-    job:start()
-  end))
+      job:start()
+    end)),
+  })
 end

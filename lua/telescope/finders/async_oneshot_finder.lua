@@ -21,56 +21,61 @@ return function(opts)
 
   local job_started = false
   local job_completed = false
-  return void(async(function(prompt, process_result, process_complete)
-    if not job_started then
-      local job_opts = fn_command()
+  return setmetatable({
+    close = function() end,
+    results = results,
+  }, {
+    __call = void(async(function(_, prompt, process_result, process_complete)
+      if not job_started then
+        local job_opts = fn_command()
 
-      local writer
-      if job_opts.writer and Job.is_job(job_opts.writer) then
-        writer = job_opts.writer
-      elseif job_opts.writer then
-        writer = Job:new(job_opts.writer)
+        local writer
+        if job_opts.writer and Job.is_job(job_opts.writer) then
+          writer = job_opts.writer
+        elseif job_opts.writer then
+          writer = Job:new(job_opts.writer)
+        end
+
+        local job = Job:new {
+          command = job_opts.command,
+          args = job_opts.args,
+          cwd = job_opts.cwd or cwd,
+          maximum_results = opts.maximum_results,
+          writer = writer,
+          enable_recording = false,
+
+          on_stdout = vim.schedule_wrap(function(_, line)
+            num_results = num_results + 1
+
+            local v = entry_maker(line)
+            results[num_results] = v
+            process_result(v)
+          end),
+
+          on_exit = function()
+            process_complete()
+            job_completed = true
+          end,
+        }
+
+        job:start()
+        job_started = true
       end
 
-      local job = Job:new {
-        command = job_opts.command,
-        args = job_opts.args,
-        cwd = job_opts.cwd or cwd,
-        maximum_results = opts.maximum_results,
-        writer = writer,
-        enable_recording = false,
+      local current_count = num_results
+      for index = 1, current_count do
+        if process_result(results[index]) then
+          break
+        end
 
-        on_stdout = vim.schedule_wrap(function(_, line)
-          num_results = num_results + 1
-
-          local v = entry_maker(line)
-          results[num_results] = v
-          process_result(v)
-        end),
-
-        on_exit = function()
-          process_complete()
-          job_completed = true
-        end,
-      }
-
-      job:start()
-      job_started = true
-    end
-
-    local current_count = num_results
-    for index = 1, current_count do
-      if process_result(results[index]) then
-        break
+        if index % AWAITABLE == 0 then
+          await(async_lib.scheduler())
+        end
       end
 
-      if index % AWAITABLE == 0 then
-        await(async_lib.scheduler())
+      if job_completed then
+        process_complete()
       end
-    end
-
-    if job_completed then
-      process_complete()
-    end
-  end))
+    end)),
+  })
 end

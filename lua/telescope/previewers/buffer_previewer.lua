@@ -544,7 +544,7 @@ previewers.git_file_diff = defaulter(function(opts)
   }
 end, {})
 
-previewers.autocommands = defaulter(function(opts)
+previewers.autocommands = defaulter(function(_)
   return previewers.new_buffer_previewer {
     teardown = function(self)
       if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
@@ -559,7 +559,7 @@ previewers.autocommands = defaulter(function(opts)
     define_preview = function(self, entry, status)
       local results = vim.tbl_filter(function (x)
         return x.group == entry.group
-      end, opts.results)
+      end, status.picker.finder.results)
 
       if self.state.last_set_bufnr then
         pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
