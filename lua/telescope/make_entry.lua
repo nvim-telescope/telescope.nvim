@@ -685,7 +685,7 @@ function make_entry.gen_from_buffer_lines(opts)
     separator = ' │ ',
     items = {
       { width = 5 },
-      { dynamic_highlight = true, },
+      { remaining = true, },
     },
   }
 
