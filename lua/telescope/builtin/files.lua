@@ -346,50 +346,52 @@ files.current_buffer_fuzzy_find = function(opts)
     })
   end
 
-  local parser = vim.treesitter.get_parser(bufnr, filetype)
-  local query = vim.treesitter.get_query(filetype, "highlights")
+  local ok, parser = pcall(vim.treesitter.get_parser, bufnr, filetype)
+  if ok then
+    local query = vim.treesitter.get_query(filetype, "highlights")
 
-  local root = parser:parse()[1]:root()
+    local root = parser:parse()[1]:root()
 
-  local highlighter = vim.treesitter.highlighter.new(parser)
-  local highlighter_query = highlighter:get_query(filetype)
+    local highlighter = vim.treesitter.highlighter.new(parser)
+    local highlighter_query = highlighter:get_query(filetype)
 
-  local line_highlights = setmetatable({}, {
-    __index = function(t, k)
-      local obj = {}
-      rawset(t, k, obj)
-      return obj
-    end,
-  })
-  for id, node, metadata in query:iter_captures(root, bufnr, 0, -1) do
-    local hl = highlighter_query.hl_cache[id]
-    if hl then
-      local row1, col1, row2, col2 = node:range()
+    local line_highlights = setmetatable({}, {
+      __index = function(t, k)
+        local obj = {}
+        rawset(t, k, obj)
+        return obj
+      end,
+    })
+    for id, node, metadata in query:iter_captures(root, bufnr, 0, -1) do
+      local hl = highlighter_query.hl_cache[id]
+      if hl then
+        local row1, col1, row2, col2 = node:range()
 
-      if row1 == row2 then
-        local row = row1 + 1
+        if row1 == row2 then
+          local row = row1 + 1
 
-        for index = col1, col2 do
-          line_highlights[row][index] = hl
-        end
-      else
-        local row = row1 + 1
-        for index = col1, #lines[row] do
+          for index = col1, col2 do
             line_highlights[row][index] = hl
-        end
+          end
+        else
+          local row = row1 + 1
+          for index = col1, #lines[row] do
+              line_highlights[row][index] = hl
+          end
 
-        while row < row2 + 1 do
-          row = row + 1
+          while row < row2 + 1 do
+            row = row + 1
 
-          for index = 0, #lines[row] do
-            line_highlights[row][index] = hl
+            for index = 0, #lines[row] do
+              line_highlights[row][index] = hl
+            end
           end
         end
       end
     end
-  end
 
-  opts.line_highlights = line_highlights
+    opts.line_highlights = line_highlights
+  end
 
   pickers.new(opts, {
     prompt_title = 'Current Buffer Fuzzy',
