@@ -685,14 +685,30 @@ function make_entry.gen_from_buffer_lines(opts)
     separator = ' │ ',
     items = {
       { width = 5 },
-      { remaining = true },
+      { remaining = true, },
     },
   }
 
   local make_display = function(entry)
+
     return displayer {
       { entry.lnum, opts.lnum_highlight_group or 'TelescopeResultsSpecialComment' },
-      entry.line
+      {
+        entry.line, function()
+          if not opts.line_highlights then return {} end
+
+          local line_hl = opts.line_highlights[entry.lnum] or {}
+          -- TODO: We could probably squash these together if the are the same...
+          --        But I don't think that it's worth it at the moment.
+          local result = {}
+
+          for col, hl in pairs(line_hl) do
+            table.insert(result, { {col, col+1}, hl })
+          end
+
+          return result
+        end
+      },
     }
   end
 
