@@ -693,7 +693,7 @@ function make_entry.gen_from_buffer_lines(opts)
 
     return displayer {
       { entry.lnum, opts.lnum_highlight_group or 'TelescopeResultsSpecialComment' },
-      { 
+      {
         entry.line, function()
           if not opts.line_highlights then return {} end
 
