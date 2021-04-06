@@ -365,6 +365,7 @@ function Picker:find()
 
   local status_updater = self:get_status_updater(prompt_win, prompt_bufnr)
   local debounced_status = debounce.throttle_leading(status_updater, 50)
+  -- local debounced_status = status_updater
 
   local tx, rx = channel.mpsc()
   self.__on_lines = tx.send
@@ -829,11 +830,6 @@ function Picker:_reset_track()
 
   self.stats.filtered = 0
   self.stats.highlights = 0
-
-  self.stats._sort_time = 0
-  self.stats._add_time = 0
-  self.stats._highlight_time = 0
-  self.stats._start = vim.loop.hrtime()
 end
 
 function Picker:_track(key, func, ...)
@@ -912,9 +908,13 @@ end
 
 
 function Picker:get_result_processor(find_id, prompt, status_updater)
-  local score_cb = function(score, entry)
+  local cb_add = function(score, entry)
     self.manager:add_entry(self, score, entry)
     status_updater()
+  end
+
+  local cb_filter = function(_)
+    self:_increment("filtered")
   end
 
   return function(entry)
@@ -944,33 +944,7 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
       end
     end
 
-    self.sorter:score(prompt, entry, score_cb)
-
-    -- local sort_ok
-    -- local sort_score = 0
-
-    -- if self.sorter then
-    --   sort_ok, sort_score = self:_track("_sort_time", pcall, self.sorter.score, self.sorter, prompt, entry)
-
-    --   if not sort_ok then
-    --     log.warn("Sorting failed with:", prompt, entry, sort_score)
-    --     return
-    --   end
-
-    --   if entry.ignore_count ~= nil and entry.ignore_count == true then
-    --     self:_decrement("processed")
-    --   end
-
-    --   if sort_score == -1 then
-    --     self:_increment("filtered")
-    --     log.trace("Filtering out result: ", entry)
-    --     return
-    --   end
-    -- end
-
-    -- self:_track("_add_time", self.manager.add_entry, self.manager, self, sort_score, entry)
-
-    -- status_updater()
+    self.sorter:score(prompt, entry, cb_add, cb_filter)
   end
 end
 
@@ -1016,17 +990,6 @@ function Picker:get_result_completor(results_bufnr, find_id, prompt, status_upda
     self:clear_extra_rows(results_bufnr)
     self:highlight_displayed_rows(results_bufnr, prompt)
 
-    -- TODO: Cleanup.
-    self.stats._done = vim.loop.hrtime()
-    self.stats.time = (self.stats._done - self.stats._start) / 1e9
-
-    local function do_times(key)
-      self.stats[key] = self.stats["_" .. key] / 1e9
-    end
-
-    do_times("sort_time")
-    do_times("add_time")
-    do_times("highlight_time")
 
     self:_on_complete()
 
