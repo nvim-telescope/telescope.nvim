@@ -73,11 +73,6 @@ entry_display.create = function(configuration)
       end
     end
 
-    -- if #self > table.getn(generator) then
-    --   table.insert(results, "too long")
-    --   table.insert(highlights, { { 16, 17, }, "error" })
-    -- end
-
     if configuration.separator_hl then
       local width = #configuration.separator or 1
 
