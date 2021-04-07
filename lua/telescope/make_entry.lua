@@ -694,7 +694,7 @@ function make_entry.gen_from_buffer_lines(opts)
     return displayer {
       { entry.lnum, opts.lnum_highlight_group or 'TelescopeResultsSpecialComment' },
       {
-        entry.line, function()
+        entry.text, function()
           if not opts.line_highlights then return {} end
 
           local line_hl = opts.line_highlights[entry.lnum] or {}
@@ -713,17 +713,17 @@ function make_entry.gen_from_buffer_lines(opts)
   end
 
   return function(entry)
-    if opts.skip_empty_lines and string.match(entry.line, '^$') then
+    if opts.skip_empty_lines and string.match(entry.text, '^$') then
       return
     end
 
     return {
       valid = true,
-      ordinal = entry.line,
+      ordinal = entry.text,
       display = make_display,
       filename = entry.filename,
       lnum = entry.lnum,
-      line = entry.line,
+      text = entry.text,
     }
   end
 end
