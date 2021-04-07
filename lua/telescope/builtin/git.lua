@@ -136,6 +136,7 @@ git.branches = function(opts)
   local displayer = entry_display.create {
     separator = " ",
     items = {
+      { width = 1 },
       { width = widths.name },
       { width = widths.authorname },
       { width = widths.upstream_indicator },
@@ -146,6 +147,7 @@ git.branches = function(opts)
 
   local make_display = function(entry)
     return displayer {
+      {entry.head},
       {entry.name, 'TelescopeResultsIdentifier'},
       {entry.authorname},
       {string.len(entry.upstream) > 0 and '=>' or ''},
