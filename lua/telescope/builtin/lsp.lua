@@ -132,8 +132,40 @@ lsp.code_actions = function(opts)
     return
   end
 
-  for i,x in ipairs(results) do
+  for i, x in ipairs(results) do
     x.idx = i
+  end
+
+  --[[
+  -- actions is (Command | CodeAction)[] | null
+  -- CodeAction
+  --      title: String
+  --      kind?: CodeActionKind
+  --      diagnostics?: Diagnostic[]
+  --      isPreferred?: boolean
+  --      edit?: WorkspaceEdit
+  --      command?: Command
+  --
+  -- Command
+  --      title: String
+  --      command: String
+  --      arguments?: any[]
+  --]]
+  local transform_action = opts.transform_action or function(action)
+    return action
+  end
+
+  local execute_action = opts.execute_action or function(action)
+    if action.edit or type(action.command) == "table" then
+      if action.edit then
+        vim.lsp.util.apply_workspace_edit(action.edit)
+      end
+      if type(action.command) == "table" then
+        vim.lsp.buf.execute_command(action.command)
+      end
+    else
+      vim.lsp.buf.execute_command(action)
+    end
   end
 
   pickers.new(opts, {
@@ -153,18 +185,9 @@ lsp.code_actions = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
-        local val = selection.value
+        local action = selection.value
 
-        if val.edit or type(val.command) == "table" then
-          if val.edit then
-            vim.lsp.util.apply_workspace_edit(val.edit)
-          end
-          if type(val.command) == "table" then
-            vim.lsp.buf.execute_command(val.command)
-          end
-        else
-          vim.lsp.buf.execute_command(val)
-        end
+        execute_action(transform_action(action))
       end)
 
       return true
