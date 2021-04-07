@@ -78,18 +78,12 @@ git.bcommits = function(opts)
 end
 
 git.branches = function(opts)
-  local format = '{'
-              ..   '"head":%(if:equals=*)%(HEAD)%(then)true%(else)false%(end)'
-              ..   ',"refname":"%(refname)"'
-              ..   ',"authorname":"%(authorname)"'
-              ..   '%(if)%(upstream)%(then)'
-              ..     ',"upstream":"%(upstream:lstrip=2)"'
-              ..   '%(else)'
-              ..     ',"upstream":""'
-              ..   '%(end)'
-              ..   ',"committerdate":"%(committerdate:format-local:%Y/%m/%d %H:%M:%S)"'
-              .. '}'
-  local output = utils.get_os_command_output({ 'git', 'for-each-ref', '--format', format }, opts.cwd)
+  local format = '%(HEAD)'
+              .. '%(refname)'
+              .. '%(authorname)'
+              .. '%(upstream:lstrip=2)'
+              .. '%(committerdate:format-local:%Y/%m/%d%H:%M:%S)'
+  local output = utils.get_os_command_output({ 'git', 'for-each-ref', '--perl', '--format', format }, opts.cwd)
 
   local results = {}
   local widths = {
@@ -98,26 +92,42 @@ git.branches = function(opts)
     upstream = 0,
     committerdate = 0,
   }
-  local register_entry = function(entry, trim_refname_prefix)
-    entry.name = string.sub(entry.refname, string.len(trim_refname_prefix)+1)
+  local unescape_single_quote = function(v)
+      return string.gsub(v, "\\([\\'])", "%1")
+  end
+  local parse_line = function(line)
+    local fields = vim.split(string.sub(line, 2, -2), "''", true)
+    local entry = {
+      head = fields[1],
+      refname = unescape_single_quote(fields[2]),
+      authorname = unescape_single_quote(fields[3]),
+      upstream = unescape_single_quote(fields[4]),
+      committerdate = fields[5],
+    }
+    local prefix
+    if vim.startswith(entry.refname, 'refs/remotes/') then
+      prefix = 'refs/remotes/'
+    elseif vim.startswith(entry.refname, 'refs/heads/') then
+      prefix = 'refs/heads/'
+    else
+      return
+    end
+    local index = 1
+    if entry.head ~= '*' then
+      index = #results + 1
+    end
+
+    entry.name = string.sub(entry.refname, string.len(prefix)+1)
     for key, value in pairs(widths) do
-      widths[key] = math.max(value, vim.fn.strdisplaywidth(entry[key]))
+      widths[key] = math.max(value, utils.strdisplaywidth(entry[key] or ''))
     end
     if string.len(entry.upstream) > 0 then
       widths.upstream_indicator = 2
     end
-    table.insert(results, entry)
+    table.insert(results, index, entry)
   end
-  for _, v in ipairs(output) do
-    local entry = vim.fn.json_decode(v)
-    if entry.head then
-      goto continue
-    elseif vim.startswith(entry.refname, 'refs/remotes/') then
-      register_entry(entry, 'refs/remotes/')
-    elseif vim.startswith(entry.refname, 'refs/heads/') then
-      register_entry(entry, 'refs/heads/')
-    end
-    ::continue::
+  for _, line in ipairs(output) do
+    parse_line(line)
   end
   if #results == 0 then
     return
@@ -126,6 +136,7 @@ git.branches = function(opts)
   local displayer = entry_display.create {
     separator = " ",
     items = {
+      { width = 1 },
       { width = widths.name },
       { width = widths.authorname },
       { width = widths.upstream_indicator },
@@ -136,6 +147,7 @@ git.branches = function(opts)
 
   local make_display = function(entry)
     return displayer {
+      {entry.head},
       {entry.name, 'TelescopeResultsIdentifier'},
       {entry.authorname},
       {string.len(entry.upstream) > 0 and '=>' or ''},
