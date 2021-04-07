@@ -889,8 +889,7 @@ function Picker:get_status_updater(prompt_win, prompt_bufnr)
       return
     end
 
-    local expected_prompt_len = #self.prompt_prefix + 1
-    local prompt_len = #current_prompt < expected_prompt_len and expected_prompt_len or #current_prompt
+    local prompt_len = #current_prompt
 
     local padding = string.rep(" ", vim.api.nvim_win_get_width(prompt_win) - prompt_len - #text - 3)
     vim.api.nvim_buf_clear_namespace(prompt_bufnr, ns_telescope_prompt, 0, 1)
@@ -901,6 +900,14 @@ function Picker:get_status_updater(prompt_win, prompt_bufnr)
       { {padding .. text, "NonText"} },
       {}
     )
+
+    -- TODO: Wait for bfredl
+    -- vim.api.nvim_buf_set_extmark(prompt_bufnr, ns_telescope_prompt, 0, 0, {
+    --   end_line      = 0,
+    --   -- end_col       = start_column + #text,
+    --   virt_text     = { { text, "NonText", } },
+    --   virt_text_pos = "eol",
+    -- })
 
     self:_increment("status")
   end
