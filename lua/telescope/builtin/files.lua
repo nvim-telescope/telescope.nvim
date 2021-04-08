@@ -340,9 +340,9 @@ files.current_buffer_fuzzy_find = function(opts)
   for lnum, line in ipairs(lines) do
     table.insert(lines_with_numbers, {
       lnum = lnum,
-      line = line,
       bufnr = bufnr,
       filename = filename,
+      text = line,
     })
   end
 
