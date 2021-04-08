@@ -147,7 +147,7 @@ finders.new_job = function(command_generator, entry_maker, maximum_results, cwd)
   }
 end
 
---- One shot jump
+--- One shot job
 ---@param command_list string[]: Command list to execute.
 ---@param opts table: stuff
 ---         @key entry_maker function Optional: function(line: string) => table

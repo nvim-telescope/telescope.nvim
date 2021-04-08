@@ -33,7 +33,7 @@ Sorter.__index = Sorter
 --- Lower number is better (because it's like a closer match)
 --- But, any number below 0 means you want that line filtered out.
 ---@field scoring_function function: Function that has the interface: (sorter, prompt, line): number
----@field tags table: I actually don't know :)
+---@field tags table: Unique tags collected at filtering for tag completion
 ---@field filter_function function: Function that can filter results
 ---@field highlighter function: Highlights results to display them pretty
 ---@field discard boolean: Whether this is a discardable style sorter or not.
