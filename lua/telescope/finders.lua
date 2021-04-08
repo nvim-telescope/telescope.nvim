@@ -156,7 +156,6 @@ finders.new_oneshot_job = function(command_list, opts)
   opts = opts or {}
 
   assert(not opts.results, "`results` should be used with finder.new_table")
-  assert(not opts.static, "`static` should be used with finder.new_oneshot_job")
 
   command_list = vim.deepcopy(command_list)
   local command = table.remove(command_list, 1)

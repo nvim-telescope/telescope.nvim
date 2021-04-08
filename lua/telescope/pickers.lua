@@ -640,7 +640,7 @@ function Picker:refresh(finder, opts)
   self.finder = finder
 
   -- TODO: Need to do on_lines
-  -- self.__on_lines(nil, nil, nil, 0, 1)
+  self.__on_lines(nil, nil, nil, 0, 1)
 end
 
 function Picker:set_selection(row)
@@ -944,7 +944,7 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
       local file = type(entry.value) == 'string' and entry.value or entry.filename
       if file then
         if string.find(file, v) then
-          log.debug("SKIPPING", entry.value, "because", v)
+          log.trace("SKIPPING", entry.value, "because", v)
           self:_decrement("processed")
           return
         end

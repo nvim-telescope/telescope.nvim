@@ -212,8 +212,7 @@ files.file_browser = function(opts)
   opts = opts or {}
 
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
-
-  local gen_new_finder = function(path)
+  opts.new_finder = opts.new_finder or function(path)
     opts.cwd = path
     local data = {}
 
@@ -242,8 +241,8 @@ files.file_browser = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title = 'Find Files',
-    finder = gen_new_finder(opts.cwd),
+    prompt_title = 'File Browser',
+    finder = opts.new_finder(opts.cwd),
     previewer = conf.file_previewer(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function(prompt_bufnr, map)
@@ -253,7 +252,7 @@ files.file_browser = function(opts)
         local new_cwd = vim.fn.expand(action_state.get_selected_entry().path:sub(1, -2))
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         current_picker.cwd = new_cwd
-        current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true })
+        current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
       end)
 
       local create_new_file = function()
@@ -276,7 +275,7 @@ files.file_browser = function(opts)
           Path:new(fpath:sub(1, -2)):mkdir({ parents = true })
           local new_cwd = vim.fn.expand(fpath)
           current_picker.cwd = new_cwd
-          current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true })
+          current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
         end
       end
 

@@ -22,7 +22,7 @@ return function(opts)
   local job_started = false
   local job_completed = false
   return setmetatable({
-    close = function() end,
+    close = function() results = nil; job_started = false end,
     results = results,
   }, {
     __call = void(async(function(_, prompt, process_result, process_complete)
