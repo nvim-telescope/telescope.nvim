@@ -211,6 +211,7 @@ end
 files.file_browser = function(opts)
   opts = opts or {}
 
+  opts.depth = opts.depth or 1
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
   opts.new_finder = opts.new_finder or function(path)
     opts.cwd = path
@@ -219,7 +220,7 @@ files.file_browser = function(opts)
     scan.scan_dir(path, {
       hidden = opts.hidden or false,
       add_dirs = true,
-      depth = 1,
+      depth = opts.depth,
       on_insert = function(entry, typ)
         table.insert(data, typ == 'directory' and (entry .. os_sep) or entry)
       end

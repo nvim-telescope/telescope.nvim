@@ -637,7 +637,7 @@ function Picker:refresh(finder, opts)
   if opts.reset_prompt then self:reset_prompt() end
 
   self.finder:close()
-  self.finder = finder
+  if finder then self.finder = finder end
 
   -- TODO: Need to do on_lines
   self.__on_lines(nil, nil, nil, 0, 1)
