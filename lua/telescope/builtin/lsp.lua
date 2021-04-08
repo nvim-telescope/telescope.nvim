@@ -142,7 +142,7 @@ lsp.code_actions = function(opts)
         }
 
         for key, value in pairs(widths) do
-          widths[key] = math.max(value, vim.fn.strdisplaywidth(entry[key]))
+          widths[key] = math.max(value, utils.strdisplaywidth(entry[key]))
         end
 
         table.insert(results, entry)
@@ -159,7 +159,7 @@ lsp.code_actions = function(opts)
   local displayer = entry_display.create {
     separator = " ",
     items = {
-      { width = widths.idx },
+      { width = widths.idx + 1 }, -- +1 for ":" suffix
       { width = widths.command_title },
       { width = widths.client_name },
     },
@@ -167,7 +167,7 @@ lsp.code_actions = function(opts)
 
   local function make_display(entry)
     return displayer {
-      {entry.idx, "TelescopePromptPrefix"},
+      {entry.idx .. ":", "TelescopePromptPrefix"},
       {entry.command_title},
       {entry.client_name, "TelescopeResultsComment"},
     }
