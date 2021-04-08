@@ -32,12 +32,17 @@ Sorter.__index = Sorter
 ---
 --- Lower number is better (because it's like a closer match)
 --- But, any number below 0 means you want that line filtered out.
---- @field scoring_function function Function that has the interface:
---      (sorter, prompt, line): number
+---@field scoring_function function: Function that has the interface: (sorter, prompt, line): number
+---@field tags table: Unique tags collected at filtering for tag completion
+---@field filter_function function: Function that can filter results
+---@field highlighter function: Highlights results to display them pretty
+---@field discard boolean: Whether this is a discardable style sorter or not.
+---@field score function: Override the score function if desired.
 function Sorter:new(opts)
   opts = opts or {}
 
   return setmetatable({
+    score = opts.score,
     state = {},
     tags = opts.tags,
     filter_function = opts.filter_function,
@@ -77,13 +82,12 @@ end
 
 -- TODO: Consider doing something that makes it so we can skip the filter checks
 --          if we're not discarding. Also, that means we don't have to check otherwise as well :)
-function Sorter:score(prompt, entry)
-  if not entry or not entry.ordinal then return -1 end
+function Sorter:score(prompt, entry, cb_add, cb_filter)
+  if not entry or not entry.ordinal then return end
 
   local ordinal = entry.ordinal
-
   if self:_was_discarded(prompt, ordinal) then
-    return FILTERED
+    return cb_filter(entry)
   end
 
   local filter_score
@@ -92,14 +96,21 @@ function Sorter:score(prompt, entry)
     filter_score, prompt = self:filter_function(prompt, entry)
   end
 
-  local score = (filter_score == FILTERED and FILTERED or
-    self:scoring_function(prompt or "", ordinal, entry))
-
-  if score == FILTERED then
-    self:_mark_discarded(prompt, ordinal)
+  if filter_score == FILTERED then
+    return cb_filter(entry)
   end
 
-  return score
+  local score = self:scoring_function(prompt or "", ordinal, entry)
+  if score == FILTERED then
+    self:_mark_discarded(prompt, ordinal)
+    return cb_filter(entry)
+  end
+
+  if cb_add then
+    return cb_add(score, entry)
+  else
+    return score
+  end
 end
 
 function Sorter:_was_discarded(prompt, ordinal)

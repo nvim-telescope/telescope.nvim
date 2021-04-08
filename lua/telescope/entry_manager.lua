@@ -26,7 +26,7 @@ if past loop of must have scores,
 local EntryManager = {}
 EntryManager.__index = EntryManager
 
-function EntryManager:new(max_results, set_entry, info, id)
+function EntryManager:new(max_results, set_entry, info)
   log.trace("Creating entry_manager...")
 
   info = info or {}
@@ -40,7 +40,6 @@ function EntryManager:new(max_results, set_entry, info, id)
   set_entry = set_entry or function() end
 
   return setmetatable({
-    id = id,
     linked_states = LinkedList:new { track_at = max_results },
     info = info,
     max_results = max_results,
@@ -128,13 +127,6 @@ function EntryManager:_append_container(picker, new_container, should_update)
 end
 
 function EntryManager:add_entry(picker, score, entry)
-  if picker and picker.id then
-    if picker.request_number ~= self.id then
-      error("ADDING ENTRY TOO LATE!")
-      return
-    end
-  end
-
   score = score or 0
 
   local max_res = self.max_results

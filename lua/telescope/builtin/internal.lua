@@ -815,8 +815,6 @@ internal.autocommands = function(opts)
     inner_loop(line)
   end
 
-  -- print(vim.inspect(autocmd_table))
-
   pickers.new(opts,{
     prompt_title = 'autocommands',
     finder = finders.new_table {
