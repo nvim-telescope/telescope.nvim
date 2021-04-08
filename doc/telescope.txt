@@ -25,6 +25,15 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: '  '
 
+                                           *telescope.defaults.externalize*
+    externalize: ~
+        Displays the prompt, result, and preview windows as external windows if set to true.
+        Only available when using an UI with ui-multigrid support.
+
+        Available options are:
+        - "false" (default)
+        - "true"
+
                                          *telescope.defaults.prompt_prefix*
     prompt_prefix: ~
         Will be shown in front of the prompt.
