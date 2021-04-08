@@ -639,7 +639,6 @@ function Picker:refresh(finder, opts)
   self.finder:close()
   if finder then self.finder = finder end
 
-  -- TODO: Need to do on_lines
   self.__on_lines(nil, nil, nil, 0, 1)
 end
 
