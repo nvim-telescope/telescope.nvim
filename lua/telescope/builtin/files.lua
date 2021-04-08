@@ -7,6 +7,7 @@ local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
 local utils = require('telescope.utils')
 local conf = require('telescope.config').values
+local config = require('telescope.config')
 
 local scan = require('plenary.scandir')
 local Path = require('plenary.path')
@@ -241,8 +242,19 @@ files.file_browser = function(opts)
     }
   end
 
+  local function get_prefix(path)
+    path = Path:new(vim.fn.fnamemodify(path, ':p'))
+
+    if path.filename:match('%.%.') then
+      path = Path:new(Path:new(path:parents()):parents())
+    end
+
+    return path.filename .. config.values.prompt_prefix
+  end
+
   pickers.new(opts, {
-    prompt_title = 'Find Files',
+    prompt_title = 'File Browser',
+    prompt_prefix = get_prefix(opts.cwd),
     finder = gen_new_finder(opts.cwd),
     previewer = conf.file_previewer(opts),
     sorter = conf.file_sorter(opts),
@@ -253,7 +265,7 @@ files.file_browser = function(opts)
         local new_cwd = vim.fn.expand(action_state.get_selected_entry().path:sub(1, -2))
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         current_picker.cwd = new_cwd
-        current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true })
+        current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true, new_prefix = get_prefix(new_cwd) })
       end)
 
       local create_new_file = function()
@@ -276,7 +288,7 @@ files.file_browser = function(opts)
           Path:new(fpath:sub(1, -2)):mkdir({ parents = true })
           local new_cwd = vim.fn.expand(fpath)
           current_picker.cwd = new_cwd
-          current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true })
+          current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true, new_prefix = get_prefix(new_cwd) })
         end
       end
 
