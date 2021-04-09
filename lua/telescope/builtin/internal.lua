@@ -862,6 +862,47 @@ internal.spell_suggest = function(opts)
   }):find()
 end
 
+internal.tagstack = function(opts)
+  opts = opts or {}
+  local tagstack = vim.fn.gettagstack()
+  if vim.tbl_isempty(tagstack.items) then
+    print("No tagstack available")
+    return
+  end
+
+  for _, value in pairs(tagstack.items) do
+    value.valid = true
+    value.bufnr = value.from[1]
+    value.lnum = value.from[2]
+    value.col = value.from[3]
+    value.filename = vim.fn.bufname(value.from[1])
+
+    value.text = vim.api.nvim_buf_get_lines(
+      value.bufnr,
+      value.lnum - 1,
+      value.lnum,
+      false
+    )[1]
+  end
+
+  -- reverse the list
+  local tags = {}
+  for i = #tagstack.items, 1, -1 do
+    tags[#tags+1] = tagstack.items[i]
+  end
+
+  pickers.new(opts, {
+      prompt_title = 'TagStack',
+      finder = finders.new_table {
+        results = tags,
+        entry_maker = make_entry.gen_from_quickfix(opts),
+      },
+      previewer = previewers.vim_buffer_qflist.new(opts),
+      sorter = conf.generic_sorter(opts),
+    }):find()
+end
+
+
 local function apply_checks(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)

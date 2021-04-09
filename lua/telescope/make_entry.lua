@@ -317,6 +317,7 @@ function make_entry.gen_from_quickfix(opts)
         ) .. ' ' .. entry.text,
       display = make_display,
 
+      bufnr = entry.bufnr,
       filename = filename,
       lnum = entry.lnum,
       col = entry.col,

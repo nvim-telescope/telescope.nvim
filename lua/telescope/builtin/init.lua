@@ -60,6 +60,7 @@ builtin.filetypes = require('telescope.builtin.internal').filetypes
 builtin.highlights = require('telescope.builtin.internal').highlights
 builtin.autocommands = require('telescope.builtin.internal').autocommands
 builtin.spell_suggest = require('telescope.builtin.internal').spell_suggest
+builtin.tagstack = require('telescope.builtin.internal').tagstack
 
 builtin.lsp_references = require('telescope.builtin.lsp').references
 builtin.lsp_definitions = require('telescope.builtin.lsp').definitions
