@@ -5,6 +5,7 @@ local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
+local sorters = require('telescope.sorters')
 local utils = require('telescope.utils')
 local conf = require('telescope.config').values
 
@@ -128,6 +129,7 @@ files.live_grep_raw = function(opts)
     prompt_title = 'Live Grep Raw',
     finder = finders.new_job(cmd_generator, opts.entry_maker, opts.max_results, opts.cwd),
     previewer = conf.grep_previewer(opts),
+    sorter = sorters.grep_highlighter_only(opts),
   }):find()
 end
 
