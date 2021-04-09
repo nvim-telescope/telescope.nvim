@@ -658,6 +658,15 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: nil
 
+                                  *telescope.defaults.get_selection_window*
+    get_selection_window: ~
+          Function that takes function(picker, entry) and returns a window id.
+          The window ID will be used to decide what window the chosen file will
+          be opened in and the cursor placed in upon leaving the picker.
+
+          Default: `function() return 0 end`
+
+
                                         *telescope.defaults.file_previewer*
     file_previewer: ~
         Function pointer to the default file_previewer. It is mostly used
