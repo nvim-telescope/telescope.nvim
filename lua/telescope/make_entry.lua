@@ -1029,7 +1029,6 @@ local git_icon_defaults = {
   untracked = "?"
 }
 
-
 function make_entry.gen_from_git_status(opts)
   opts = opts or {}
 
@@ -1040,22 +1039,22 @@ function make_entry.gen_from_git_status(opts)
       { width = col_width},
       { width = col_width},
       { remaining = true },
-      -- { width = 70 },
     }
   }
 
-  local make_display = function(entry)
-    local icons = opts.git_icons or git_icon_defaults
-    local git_abbrev = {
-      ["A"] = {icon = icons.added,      hl = "TelescopeResultsDiffAdd"},
-      ["U"] = {icon = icons.unmerged,   hl = "TelescopeResultsDiffAdd"},
-      ["M"] = {icon = icons.changed,    hl = "TelescopeResultsDiffChange"},
-      ["C"] = {icon = icons.copied,     hl = "TelescopeResultsDiffChange"},
-      ["R"] = {icon = icons.renamed,    hl = "TelescopeResultsDiffChange"},
-      ["D"] = {icon = icons.deleted,    hl = "TelescopeResultsDiffDelete"},
-      ["?"] = {icon = icons.untracked,  hl = "TelescopeResultsDiffUntracked"},
-    }
+  local icons = vim.tbl_extend("keep", opts.git_icons or {}, git_icon_defaults)
 
+  local git_abbrev = {
+    ["A"] = {icon = icons.added,      hl = "TelescopeResultsDiffAdd"},
+    ["U"] = {icon = icons.unmerged,   hl = "TelescopeResultsDiffAdd"},
+    ["M"] = {icon = icons.changed,    hl = "TelescopeResultsDiffChange"},
+    ["C"] = {icon = icons.copied,     hl = "TelescopeResultsDiffChange"},
+    ["R"] = {icon = icons.renamed,    hl = "TelescopeResultsDiffChange"},
+    ["D"] = {icon = icons.deleted,    hl = "TelescopeResultsDiffDelete"},
+    ["?"] = {icon = icons.untracked,  hl = "TelescopeResultsDiffUntracked"},
+  }
+
+  local make_display = function(entry)
     local x = string.sub(entry.status, 1, 1)
     local y = string.sub(entry.status, -1)
     local status_x = git_abbrev[x] or {}
@@ -1063,14 +1062,6 @@ function make_entry.gen_from_git_status(opts)
 
     local empty_space = (" ")
     return displayer {
-      -- part 1
-      -- { string.sub(entry.status, 1, 1), staged },
-      -- { string.sub(entry.status, -1), modified },
-
-      -- part 2
-      -- { git_abbrev[str_1] or "", hl_staged},
-      -- { git_abbrev[str_2] or "", hl_modified},
-
       { status_x.icon or empty_space, status_x.hl},
       { status_y.icon or empty_space, status_y.hl},
       entry.value,
