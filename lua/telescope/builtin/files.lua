@@ -49,7 +49,15 @@ files.live_grep = function(opts)
 
       prompt = escape_chars(prompt)
 
-      return flatten { vimgrep_arguments, prompt, opts.search_dirs or '.' }
+      local args = flatten { vimgrep_arguments, prompt }
+
+      if search_dirs then
+        table.insert(args, search_dirs)
+      elseif os_sep == '\\' then
+        table.insert(args, '.')
+      end
+
+      return args
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
     opts.max_results,
@@ -141,17 +149,21 @@ files.grep_string = function(opts)
     end
   end
 
+  local args = flatten {
+    vimgrep_arguments,
+    word_match,
+    search,
+  }
+
+  if search_dirs then
+    table.insert(args, search_dirs)
+  elseif os_sep == '\\' then
+    table.insert(args, '.')
+  end
+
   pickers.new(opts, {
     prompt_title = 'Find Word',
-    finder = finders.new_oneshot_job(
-      flatten {
-        vimgrep_arguments,
-        word_match,
-        search,
-        search_dirs or "."
-      },
-      opts
-    ),
+    finder = finders.new_oneshot_job(args, opts),
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
   }):find()
@@ -258,16 +270,16 @@ end
 files.file_browser = function(opts)
   opts = opts or {}
 
+  opts.depth = opts.depth or 1
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
-
-  local gen_new_finder = function(path)
+  opts.new_finder = opts.new_finder or function(path)
     opts.cwd = path
     local data = {}
 
     scan.scan_dir(path, {
       hidden = opts.hidden or false,
       add_dirs = true,
-      depth = 1,
+      depth = opts.depth,
       on_insert = function(entry, typ)
         table.insert(data, typ == 'directory' and (entry .. os_sep) or entry)
       end
@@ -289,8 +301,8 @@ files.file_browser = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title = 'Find Files',
-    finder = gen_new_finder(opts.cwd),
+    prompt_title = 'File Browser',
+    finder = opts.new_finder(opts.cwd),
     previewer = conf.file_previewer(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function(prompt_bufnr, map)
@@ -300,7 +312,7 @@ files.file_browser = function(opts)
         local new_cwd = vim.fn.expand(action_state.get_selected_entry().path:sub(1, -2))
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         current_picker.cwd = new_cwd
-        current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true })
+        current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
       end)
 
       local create_new_file = function()
@@ -323,7 +335,7 @@ files.file_browser = function(opts)
           Path:new(fpath:sub(1, -2)):mkdir({ parents = true })
           local new_cwd = vim.fn.expand(fpath)
           current_picker.cwd = new_cwd
-          current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true })
+          current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
         end
       end
 
@@ -376,34 +388,83 @@ files.treesitter = function(opts)
 end
 
 files.current_buffer_fuzzy_find = function(opts)
+  -- All actions are on the current buffer
+  local bufnr = vim.api.nvim_get_current_buf()
+  local filename = vim.fn.expand(vim.api.nvim_buf_get_name(bufnr))
+  local filetype = vim.api.nvim_buf_get_option(bufnr, "filetype")
+
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
   local lines_with_numbers = {}
-  for k, v in ipairs(lines) do
-    table.insert(lines_with_numbers, {k, v})
+
+  for lnum, line in ipairs(lines) do
+    table.insert(lines_with_numbers, {
+      lnum = lnum,
+      bufnr = bufnr,
+      filename = filename,
+      text = line,
+    })
   end
 
-  local bufnr = vim.api.nvim_get_current_buf()
+  local ok, parser = pcall(vim.treesitter.get_parser, bufnr, filetype)
+  if ok then
+    local query = vim.treesitter.get_query(filetype, "highlights")
+
+    local root = parser:parse()[1]:root()
+
+    local highlighter = vim.treesitter.highlighter.new(parser)
+    local highlighter_query = highlighter:get_query(filetype)
+
+    local line_highlights = setmetatable({}, {
+      __index = function(t, k)
+        local obj = {}
+        rawset(t, k, obj)
+        return obj
+      end,
+    })
+    for id, node in query:iter_captures(root, bufnr, 0, -1) do
+      local hl = highlighter_query.hl_cache[id]
+      if hl then
+        local row1, col1, row2, col2 = node:range()
+
+        if row1 == row2 then
+          local row = row1 + 1
+
+          for index = col1, col2 do
+            line_highlights[row][index] = hl
+          end
+        else
+          local row = row1 + 1
+          for index = col1, #lines[row] do
+              line_highlights[row][index] = hl
+          end
+
+          while row < row2 + 1 do
+            row = row + 1
+
+            for index = 0, #lines[row] do
+              line_highlights[row][index] = hl
+            end
+          end
+        end
+      end
+    end
+
+    opts.line_highlights = line_highlights
+  end
 
   pickers.new(opts, {
     prompt_title = 'Current Buffer Fuzzy',
     finder = finders.new_table {
       results = lines_with_numbers,
-      entry_maker = function(enumerated_line)
-        return {
-          bufnr = bufnr,
-          display = enumerated_line[2],
-          ordinal = enumerated_line[2],
-
-          lnum = enumerated_line[1],
-        }
-      end
+      entry_maker = opts.entry_maker or make_entry.gen_from_buffer_lines(opts),
     },
     sorter = conf.generic_sorter(opts),
+    previewer = conf.grep_previewer(opts),
     attach_mappings = function()
       action_set.select:enhance {
         post = function()
           local selection = action_state.get_selected_entry()
-          vim.api.nvim_win_set_cursor(0, {selection.lnum, 0})
+          vim.api.nvim_win_set_cursor(0, { selection.lnum, 0 })
         end,
       }
 
@@ -460,7 +521,11 @@ files.tags = function(opts)
 end
 
 files.current_buffer_tags = function(opts)
-  return files.tags(vim.tbl_extend("force", {prompt_title = 'Current Buffer Tags', only_current_file = true, hide_filename = true}, opts))
+  return files.tags(vim.tbl_extend("force", {
+    prompt_title = 'Current Buffer Tags',
+    only_current_file = true,
+    hide_filename = true,
+  }, opts))
 end
 
 local function apply_checks(mod)

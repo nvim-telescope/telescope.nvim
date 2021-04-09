@@ -100,7 +100,12 @@ describe('telescope', function()
     describe('fzy', function()
       local sorter = require'telescope.sorters'.get_fzy_sorter()
       local function score(prompt, line)
-        return sorter:score(prompt, {ordinal = line})
+        return sorter:score(
+          prompt,
+          {ordinal = line},
+          function(val) return val end,
+          function() return -1 end
+        )
       end
 
       describe("matches", function()

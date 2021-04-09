@@ -72,9 +72,11 @@ end
 --- It requires you to specify one table entry `get_command(entry, status)`.
 --- This `get_command` function has to return the terminal command that will be
 --- executed for each entry. Example:
+--- <pre>
 ---   get_command = function(entry, status)
 ---     return { 'bat', entry.path }
 ---   end
+--- </pre>
 ---
 --- It's an easy way to get your first previewer going and it integrates well
 --- with `bat` and `less`. Providing out of the box scrolling if the command

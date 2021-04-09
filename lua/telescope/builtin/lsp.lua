@@ -184,22 +184,20 @@ lsp.workspace_symbols = function(opts)
   local params = {query = opts.query or ''}
   local results_lsp = vim.lsp.buf_request_sync(0, "workspace/symbol", params, opts.timeout or 10000)
 
-  -- Clangd returns { { result = {} } } for query=''
-  if not results_lsp or vim.tbl_isempty(results_lsp) or
-     vim.tbl_isempty(results_lsp[1]) or vim.tbl_isempty(results_lsp[1].result) then
-    print("No results from workspace/symbol. Maybe try a different query: " ..
-      "Telescope lsp_workspace_symbols query=example")
-    return
-  end
-
   local locations = {}
-  for _, server_results in pairs(results_lsp) do
-    if server_results.result then
-      vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
+
+  if results_lsp and not vim.tbl_isempty(results_lsp) then
+    for _, server_results in pairs(results_lsp) do
+      -- Some LSPs (like Clangd and intelephense) might return { { result = {} } }, so make sure we have result
+      if server_results and server_results.result and not vim.tbl_isempty(server_results.result) then
+        vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
+      end
     end
   end
 
   if vim.tbl_isempty(locations) then
+    print("No results from workspace/symbol. Maybe try a different query: " ..
+      "Telescope lsp_workspace_symbols query=example")
     return
   end
 

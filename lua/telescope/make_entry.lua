@@ -680,6 +680,54 @@ function make_entry.gen_from_highlights()
   end
 end
 
+function make_entry.gen_from_buffer_lines(opts)
+  local displayer = entry_display.create {
+    separator = ' │ ',
+    items = {
+      { width = 5 },
+      { remaining = true, },
+    },
+  }
+
+  local make_display = function(entry)
+
+    return displayer {
+      { entry.lnum, opts.lnum_highlight_group or 'TelescopeResultsSpecialComment' },
+      {
+        entry.text, function()
+          if not opts.line_highlights then return {} end
+
+          local line_hl = opts.line_highlights[entry.lnum] or {}
+          -- TODO: We could probably squash these together if the are the same...
+          --        But I don't think that it's worth it at the moment.
+          local result = {}
+
+          for col, hl in pairs(line_hl) do
+            table.insert(result, { {col, col+1}, hl })
+          end
+
+          return result
+        end
+      },
+    }
+  end
+
+  return function(entry)
+    if opts.skip_empty_lines and string.match(entry.text, '^$') then
+      return
+    end
+
+    return {
+      valid = true,
+      ordinal = entry.text,
+      display = make_display,
+      filename = entry.filename,
+      lnum = entry.lnum,
+      text = entry.text,
+    }
+  end
+end
+
 function make_entry.gen_from_vimoptions()
   local process_one_opt = function(o)
     local ok, value_origin

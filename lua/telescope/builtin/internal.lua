@@ -683,7 +683,7 @@ internal.keymaps = function(opts)
         return {
           valid = line ~= "",
           value = line,
-          ordinal = line.lhs .. line.rhs,
+          ordinal = utils.display_termcodes(line.lhs) .. line.rhs,
           display = line.mode .. ' ' .. utils.display_termcodes(line.lhs) .. ' ' .. line.rhs
         }
       end
@@ -814,8 +814,6 @@ internal.autocommands = function(opts)
   for line in cmd_output:gmatch("[^\r\n]+") do
     inner_loop(line)
   end
-
-  -- print(vim.inspect(autocmd_table))
 
   pickers.new(opts,{
     prompt_title = 'autocommands',
