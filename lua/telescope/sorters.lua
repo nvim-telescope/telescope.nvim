@@ -54,7 +54,7 @@ function Sorter:new(opts)
     init    = opts.init,
     start   = opts.start,
     finish  = opts.finish,
-    destory = opts.destroy,
+    destroy = opts.destroy,
 
     filter_function = opts.filter_function,
     scoring_function = opts.scoring_function,
