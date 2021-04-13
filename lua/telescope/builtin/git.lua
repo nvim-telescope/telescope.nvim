@@ -177,6 +177,9 @@ git.branches = function(opts)
       map('i', '<c-r>', actions.git_rebase_branch)
       map('n', '<c-r>', actions.git_rebase_branch)
 
+      map('i', '<c-a>', actions.git_create_branch)
+      map('n', '<c-a>', actions.git_create_branch)
+
       map('i', '<c-d>', actions.git_delete_branch)
       map('n', '<c-d>', actions.git_delete_branch)
 
