@@ -241,7 +241,7 @@ lsp.dynamic_workspace_symbols = function(opts)
 
   pickers.new(opts, {
     prompt_title = 'LSP Dynamic Workspace Symbols',
-    finder    = finders.new_live {
+    finder    = finders.new_dynamic {
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
       fn = get_workspace_symbols_requester(curr_bufnr),
     },

@@ -215,7 +215,7 @@ finders.new_table = function(t)
   return async_static_finder(t)
 end
 
-finders.new_live = function(t)
+finders.new_dynamic = function(t)
   return DynamicFinder:new(t)
 end
 
