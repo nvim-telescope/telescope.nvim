@@ -2,6 +2,8 @@ local Job = require('plenary.job')
 
 local make_entry = require('telescope.make_entry')
 local log = require('telescope.log')
+local a = require('plenary.async_lib')
+local await, async = a.await, a.async
 
 local async_static_finder = require('telescope.finders.async_static_finder')
 local async_oneshot_finder = require('telescope.finders.async_oneshot_finder')
@@ -116,6 +118,7 @@ function LiveFinder:new(opts)
   assert(not opts.static, "`static` should be used with finder.new_oneshot_job")
 
   local obj = setmetatable({
+    curr_buf = opts.curr_buf,
     fn = opts.fn,
     entry_maker = opts.entry_maker or make_entry.from_string,
     fn_command = opts.fn_command,
@@ -130,7 +133,19 @@ function LiveFinder:new(opts)
   return obj
 end
 
-function LiveFinder:_find(opts)
+function LiveFinder:_find(prompt, process_result, process_complete)
+  local fn = async(function()
+    local results = await(self.fn(self.curr_buf, prompt))
+    for _, result in ipairs(results) do
+      dump("processing result", result)
+      process_result(result)
+    end
+
+    await(a.scheduler())
+    process_complete()
+  end)
+
+  a.util.run(fn())
 end
 
 local OneshotJobFinder = _callable_obj()
@@ -366,6 +381,10 @@ end
 --  entry_maker function, the function to convert results to entries.
 finders.new_table = function(t)
   return async_static_finder(t)
+end
+
+finders.new_live = function(t)
+  return LiveFinder:new(t)
 end
 
 return finders

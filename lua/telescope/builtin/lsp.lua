@@ -4,6 +4,9 @@ local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
 local utils = require('telescope.utils')
+local a = require('plenary.async_lib')
+local async, await = a.async, a.await
+local channel = a.util.channel
 
 local conf = require('telescope.config').values
 
@@ -209,6 +212,58 @@ lsp.workspace_symbols = function(opts)
     finder    = finders.new_table {
       results = locations,
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts)
+    },
+    previewer = conf.qflist_previewer(opts),
+    sorter = conf.prefilter_sorter{
+      tag = "symbol_type",
+      sorter = conf.generic_sorter(opts)
+    }
+  }):find()
+end
+
+local function get_workspace_symbols_requester()
+  local cancel = function() end
+
+  return async(function(prompt_bufnr, prompt)
+    -- cancel()
+
+    local tx, rx = channel.oneshot()
+    cancel = vim.lsp.buf_request(prompt_bufnr, "workspace/symbol", {query = prompt}, tx)
+
+    local err, _, results_lsp = await(rx())
+    assert(not err, err)
+    -- dump(results_lsp)
+    -- assert(not err, err)
+    -- dump(await(rx()))
+
+    local locations = vim.lsp.util.symbols_to_items(results_lsp, prompt_bufnr) or {}
+    -- dump(locations)
+    -- local locations vim.tbl_map(function(result)
+    --   return 
+    -- end, results_lsp)
+    -- dump(locations)
+    -- return locations
+    return locations
+    -- local locations = {}
+    -- for _, server_results in pairs(results_lsp) do
+    --   if server_results.result then
+    --     vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
+    --   end
+    -- end
+
+    -- return locations
+  end)
+end
+
+lsp.live_workspace_symbols = function(opts)
+  local curr_buf = vim.api.nvim_get_current_buf()
+
+  pickers.new(opts, {
+    prompt_title = 'LSP Workspace Symbols',
+    finder    = finders.new_live {
+      curr_buf = curr_buf,
+      entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
+      fn = get_workspace_symbols_requester(),
     },
     previewer = conf.qflist_previewer(opts),
     sorter = conf.prefilter_sorter{
