@@ -2,6 +2,8 @@ local Job = require('plenary.job')
 
 local make_entry = require('telescope.make_entry')
 local log = require('telescope.log')
+local a = require('plenary.async_lib')
+local await = a.await
 
 local async_static_finder = require('telescope.finders.async_static_finder')
 local async_oneshot_finder = require('telescope.finders.async_oneshot_finder')
@@ -19,7 +21,6 @@ local _callable_obj = function()
 
   return obj
 end
-
 
 --[[ =============================================================
 
@@ -108,6 +109,35 @@ function JobFinder:_find(prompt, process_result, process_complete)
   self.job:start()
 end
 
+local DynamicFinder = _callable_obj()
+
+function DynamicFinder:new(opts)
+  opts = opts or {}
+
+  assert(not opts.results, "`results` should be used with finder.new_table")
+  assert(not opts.static, "`static` should be used with finder.new_oneshot_job")
+
+  local obj = setmetatable({
+    curr_buf = opts.curr_buf,
+    fn = opts.fn,
+    entry_maker = opts.entry_maker or make_entry.from_string,
+  }, self)
+
+  return obj
+end
+
+function DynamicFinder:_find(prompt, process_result, process_complete)
+  a.scope(function()
+    local results = await(self.fn(prompt))
+
+    for _, result in ipairs(results) do
+      if process_result(self.entry_maker(result)) then return end
+    end
+
+    process_complete()
+  end)
+end
+
 --- Return a new Finder
 --
 -- Use at your own risk.
@@ -183,6 +213,10 @@ end
 --  entry_maker function, the function to convert results to entries.
 finders.new_table = function(t)
   return async_static_finder(t)
+end
+
+finders.new_dynamic = function(t)
+  return DynamicFinder:new(t)
 end
 
 return finders

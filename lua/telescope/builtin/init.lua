@@ -40,6 +40,7 @@ builtin.git_branches = require('telescope.builtin.git').branches
 builtin.git_status = require('telescope.builtin.git').status
 
 builtin.builtin = require('telescope.builtin.internal').builtin
+
 builtin.planets = require('telescope.builtin.internal').planets
 builtin.symbols = require('telescope.builtin.internal').symbols
 builtin.commands = require('telescope.builtin.internal').commands
@@ -70,5 +71,6 @@ builtin.lsp_document_diagnostics = require('telescope.builtin.lsp').diagnostics
 builtin.lsp_workspace_diagnostics = require('telescope.builtin.lsp').workspace_diagnostics
 builtin.lsp_range_code_actions = require('telescope.builtin.lsp').range_code_actions
 builtin.lsp_workspace_symbols = require('telescope.builtin.lsp').workspace_symbols
+builtin.lsp_dynamic_workspace_symbols = require('telescope.builtin.lsp').dynamic_workspace_symbols
 
 return builtin
