@@ -58,6 +58,17 @@ do
   end
 end
 
+function make_entry.gen_from_node(_)
+  return function(node)
+    local display = node.leaf or node.branch_name
+    node.display = display
+    node.ordinal = display
+    node.is_leaf = node.leaf and true or false
+
+    return node
+  end
+end
+
 do
   local lookup_keys = {
     ordinal = 1,

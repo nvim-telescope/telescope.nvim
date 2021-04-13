@@ -377,4 +377,8 @@ finders.new_live = function(t)
   return DynamicFinder:new(t)
 end
 
+finders.new_tree = function(t)
+  return StaticFinder:new_tree(t)
+end
+
 return finders
