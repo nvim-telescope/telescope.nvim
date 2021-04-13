@@ -370,7 +370,6 @@ function Picker:find()
   local tx, rx = channel.mpsc()
   self.__on_lines = tx.send
 
-  local status = {}
   local main_loop = async(function()
     while true do
       await(async_lib.scheduler())
@@ -437,8 +436,6 @@ function Picker:find()
       self.manager = nil
 
       self.closed = true
-
-      status.should_stop = true
 
       -- TODO: Should we actually do this?
       collectgarbage(); collectgarbage()
