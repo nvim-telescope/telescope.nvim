@@ -232,7 +232,7 @@ local function get_workspace_symbols_requester(bufnr)
     local err, _, results_lsp = await(rx())
     assert(not err, err)
 
-    local locations = vim.lsp.util.symbols_to_items(results_lsp, bufnr) or {}
+    local locations = vim.lsp.util.symbols_to_items(results_lsp or {}, bufnr) or {}
     return locations
   end)
 end
