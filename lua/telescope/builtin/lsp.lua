@@ -221,37 +221,32 @@ lsp.workspace_symbols = function(opts)
   }):find()
 end
 
-local function get_workspace_symbols_requester()
+local function get_workspace_symbols_requester(bufnr)
   local cancel = function() end
 
-  return async(function(prompt_bufnr, prompt)
+  return async(function(prompt)
     local tx, rx = channel.oneshot()
-    cancel = vim.lsp.buf_request(prompt_bufnr, "workspace/symbol", {query = prompt}, tx)
+    cancel = vim.lsp.buf_request(bufnr, "workspace/symbol", {query = prompt}, tx)
 
     local err, _, results_lsp = await(rx())
     assert(not err, err)
 
-    local locations = vim.lsp.util.symbols_to_items(results_lsp, prompt_bufnr) or {}
+    local locations = vim.lsp.util.symbols_to_items(results_lsp, bufnr) or {}
     return locations
   end)
 end
 
-lsp.live_workspace_symbols = function(opts)
-  local curr_buf = vim.api.nvim_get_current_buf()
+lsp.dynamic_workspace_symbols = function(opts)
+  local curr_bufnr = vim.api.nvim_get_current_buf()
 
   pickers.new(opts, {
-    prompt_title = 'LSP Live Workspace Symbols',
+    prompt_title = 'LSP Dynamic Workspace Symbols',
     finder    = finders.new_live {
-      curr_buf = curr_buf,
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
-      fn = get_workspace_symbols_requester(),
+      fn = get_workspace_symbols_requester(curr_bufnr),
     },
     previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter()
-    -- sorter = conf.prefilter_sorter{
-    --   tag = "symbol_type",
-    --   sorter = conf.generic_sorter(opts)
-    -- }
   }):find()
 end
 

@@ -109,9 +109,9 @@ function JobFinder:_find(prompt, process_result, process_complete)
   self.job:start()
 end
 
-local LiveFinder = _callable_obj()
+local DynamicFinder = _callable_obj()
 
-function LiveFinder:new(opts)
+function DynamicFinder:new(opts)
   opts = opts or {}
 
   assert(not opts.results, "`results` should be used with finder.new_table")
@@ -126,9 +126,9 @@ function LiveFinder:new(opts)
   return obj
 end
 
-function LiveFinder:_find(prompt, process_result, process_complete, status)
+function DynamicFinder:_find(prompt, process_result, process_complete, status)
   a.scope(function()
-    local results = await(self.fn(self.curr_buf, prompt))
+    local results = await(self.fn(prompt))
 
     for _, result in ipairs(results) do
       if status.should_stop then
@@ -378,7 +378,7 @@ finders.new_table = function(t)
 end
 
 finders.new_live = function(t)
-  return LiveFinder:new(t)
+  return DynamicFinder:new(t)
 end
 
 return finders

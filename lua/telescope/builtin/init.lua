@@ -70,6 +70,6 @@ builtin.lsp_document_diagnostics = require('telescope.builtin.lsp').diagnostics
 builtin.lsp_workspace_diagnostics = require('telescope.builtin.lsp').workspace_diagnostics
 builtin.lsp_range_code_actions = require('telescope.builtin.lsp').range_code_actions
 builtin.lsp_workspace_symbols = require('telescope.builtin.lsp').workspace_symbols
-builtin.lsp_live_workspace_symbols = require('telescope.builtin.lsp').live_workspace_symbols
+builtin.lsp_dynamic_workspace_symbols = require('telescope.builtin.lsp').dynamic_workspace_symbols
 
 return builtin
