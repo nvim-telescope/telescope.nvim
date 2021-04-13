@@ -126,10 +126,14 @@ function LiveFinder:new(opts)
   return obj
 end
 
-function LiveFinder:_find(prompt, process_result, process_complete)
+function LiveFinder:_find(prompt, process_result, process_complete, status)
   a.scope(function()
     local results = await(self.fn(self.curr_buf, prompt))
+
     for _, result in ipairs(results) do
+      if status.should_stop then
+        return
+      end
       process_result(self.entry_maker(result))
     end
 

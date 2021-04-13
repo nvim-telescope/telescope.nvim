@@ -370,6 +370,7 @@ function Picker:find()
   local tx, rx = channel.mpsc()
   self.__on_lines = tx.send
 
+  local status = {}
   local main_loop = async(function()
     while true do
       await(async_lib.scheduler())
@@ -381,6 +382,9 @@ function Picker:find()
         log.debug("ON_LINES: Invalid prompt_bufnr", prompt_bufnr)
         return
       end
+
+      status.should_stop = true
+      status = {should_stop = false}
 
       if not first_line then first_line = 0 end
       if not last_line then last_line = 1 end
@@ -413,7 +417,7 @@ function Picker:find()
       local process_complete = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
 
       local ok, msg = pcall(function()
-        self.finder(prompt, process_result, vim.schedule_wrap(process_complete))
+        self.finder(prompt, process_result, vim.schedule_wrap(process_complete), status)
       end)
 
       if not ok then
@@ -436,6 +440,8 @@ function Picker:find()
       self.manager = nil
 
       self.closed = true
+
+      status.should_stop = true
 
       -- TODO: Should we actually do this?
       collectgarbage(); collectgarbage()
