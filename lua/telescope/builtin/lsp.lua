@@ -226,7 +226,8 @@ local function get_workspace_symbols_requester(bufnr)
 
   return async(function(prompt)
     local tx, rx = channel.oneshot()
-    cancel = vim.lsp.buf_request(bufnr, "workspace/symbol", {query = prompt}, tx)
+    cancel()
+    _, cancel = vim.lsp.buf_request(bufnr, "workspace/symbol", {query = prompt}, tx)
 
     local err, _, results_lsp = await(rx())
     assert(not err, err)
