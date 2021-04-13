@@ -3,7 +3,7 @@ local Job = require('plenary.job')
 local make_entry = require('telescope.make_entry')
 local log = require('telescope.log')
 local a = require('plenary.async_lib')
-local await, async = a.await, a.async
+local await = a.await
 
 local async_static_finder = require('telescope.finders.async_static_finder')
 local async_oneshot_finder = require('telescope.finders.async_oneshot_finder')
