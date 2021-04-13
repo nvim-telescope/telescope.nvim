@@ -383,9 +383,6 @@ function Picker:find()
         return
       end
 
-      status.should_stop = true
-      status = {should_stop = false}
-
       if not first_line then first_line = 0 end
       if not last_line then last_line = 1 end
 
@@ -417,7 +414,7 @@ function Picker:find()
       local process_complete = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
 
       local ok, msg = pcall(function()
-        self.finder(prompt, process_result, vim.schedule_wrap(process_complete), status)
+        self.finder(prompt, process_result, vim.schedule_wrap(process_complete))
       end)
 
       if not ok then

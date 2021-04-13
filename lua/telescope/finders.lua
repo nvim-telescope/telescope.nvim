@@ -126,18 +126,14 @@ function DynamicFinder:new(opts)
   return obj
 end
 
-function DynamicFinder:_find(prompt, process_result, process_complete, status)
+function DynamicFinder:_find(prompt, process_result, process_complete)
   a.scope(function()
     local results = await(self.fn(prompt))
 
     for _, result in ipairs(results) do
-      if status.should_stop then
-        return
-      end
-      process_result(self.entry_maker(result))
+      if process_result(self.entry_maker(result)) then return end
     end
 
-    await(a.scheduler())
     process_complete()
   end)
 end
