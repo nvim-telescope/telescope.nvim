@@ -9,16 +9,6 @@ local make_entry = require('telescope.make_entry')
 
 local Job = require('plenary.job')
 
-local get_printer = function(message)
-  local counter = 0
-  return function()
-    print(string.format("%s: The counte is %s", message, counter))
-    counter = counter + 1
-  end
-end
-
-local printer = get_printer("should stop")
-
 return function(opts)
   opts = opts or {}
 
