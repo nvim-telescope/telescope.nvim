@@ -1019,6 +1019,48 @@ function make_entry.gen_from_autocommands(_)
   end
 end
 
+function make_entry.gen_from_commands(_)
+  local displayer = entry_display.create {
+    separator = "▏",
+    items = {
+      { width = 25 },
+      { width = 4 },
+      { width = 4 },
+      { width = 11 },
+      { remaining = true },
+    },
+  }
+
+  local make_display = function(entry)
+    local attrs = ""
+    if entry.bang then attrs = attrs .. "!" end
+    if entry.bar then attrs = attrs .. "|" end
+    if entry.register then attrs = attrs .. '"' end
+    return displayer {
+      {entry.name, "TelescopeResultsIdentifier"},
+      attrs,
+      entry.nargs,
+      entry.complete or "",
+      entry.definition,
+    }
+  end
+
+  return function(entry)
+    return {
+      name          = entry.name,
+      bang          = entry.bang,
+      nargs         = entry.nargs,
+      complete      = entry.complete,
+      definition    = entry.definition,
+      --
+      value         = entry,
+      valid         = true,
+      ordinal       = entry.name,
+      display       = make_display,
+    }
+  end
+end
+
 local git_icon_defaults = {
   added     = "+",
   changed   = "~",
