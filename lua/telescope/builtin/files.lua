@@ -13,6 +13,7 @@ local Path = require('plenary.path')
 local os_sep = Path.path.sep
 
 local flatten = vim.tbl_flatten
+local filter = vim.tbl_filter
 
 local files = {}
 
@@ -29,10 +30,28 @@ end
 
 -- Special keys:
 --  opts.search_dirs -- list of directory to search in
+--  opts.grep_open_files -- boolean to restrict search to open files
 files.live_grep = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
-  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd)
+  local grep_open_files = opts.grep_open_files
+  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
+
+  local filelist = {}
+
+  if grep_open_files then
+   local bufnrs = filter(function(b)
+      if 1 ~= vim.fn.buflisted(b) then return false end
+      return true
+    end, vim.api.nvim_list_bufs())
+    if not next(bufnrs) then return end
+
+    local tele_path = require'telescope.path'
+    for _, bufnr in ipairs(bufnrs) do
+      local file = vim.api.nvim_buf_get_name(bufnr)
+      table.insert(filelist, tele_path.make_relative(file, opts.cwd))
+    end
+  end
 
   if search_dirs then
     for i, path in ipairs(search_dirs) do
@@ -49,15 +68,19 @@ files.live_grep = function(opts)
 
       prompt = escape_chars(prompt)
 
-      local args = flatten { vimgrep_arguments, prompt }
+      local search_list = {}
 
       if search_dirs then
-        table.insert(args, search_dirs)
+        table.insert(search_list, search_dirs)
       elseif os_sep == '\\' then
-        table.insert(args, '.')
+        table.insert(search_list, '.')
       end
 
-      return args
+      if grep_open_files then
+        search_list = filelist
+      end
+
+      return flatten { vimgrep_arguments, prompt, search_list }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
     opts.max_results,
@@ -71,6 +94,7 @@ files.live_grep = function(opts)
     sorter = conf.generic_sorter(opts),
   }):find()
 end
+
 
 -- Special keys:
 --  opts.search -- the string to search.
