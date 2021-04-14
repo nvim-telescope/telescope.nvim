@@ -5,6 +5,7 @@ local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
+local sorters = require('telescope.sorters')
 local utils = require('telescope.utils')
 local conf = require('telescope.config').values
 
@@ -69,6 +70,66 @@ files.live_grep = function(opts)
     finder = live_grepper,
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
+  }):find()
+end
+
+files.live_grep_raw = function(opts)
+  opts.vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
+  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd)
+
+  local tbl_clone = function(original)
+    local copy = {}
+    for key, value in pairs(original) do
+      copy[key] = value
+    end
+    return copy
+  end
+
+  local cmd_generator = function(prompt)
+    if not prompt or prompt == "" then
+      return nil
+    end
+
+    local query = prompt
+    local args = tbl_clone(opts.vimgrep_arguments)
+    local single_quoted = prompt:match("'(.*)'")
+    local double_quoted = prompt:match('"(.*)"')
+    local paths = {}
+
+    if single_quoted then
+      query = single_quoted
+    elseif double_quoted then
+      query = double_quoted
+    end
+
+    if single_quoted or double_quoted then
+      local before_args = prompt:match("(.-)['\"]")
+      local after_args = prompt:match(".*['\"](.*)")
+      local all_args = before_args .. ' ' .. after_args
+      for arg in all_args:gmatch("%S+") do
+        if arg:match('^-') then
+          table.insert(args, arg)
+        else
+          -- Show graceful grep error
+          -- Path cannot come before query
+        end
+      end
+      for path in after_args:gmatch("%S+") do
+        if not path:match('^-') then
+          table.insert(paths, path)
+        end
+      end
+    end
+
+    return vim.tbl_flatten { args, '--', query, paths }
+  end
+
+  pickers.new(opts, {
+    prompt_title = 'Live Grep Raw',
+    finder = finders.new_job(cmd_generator, opts.entry_maker, opts.max_results, opts.cwd),
+    previewer = conf.grep_previewer(opts),
+    sorter = sorters.grep_highlighter_only(opts),
   }):find()
 end
 

@@ -440,6 +440,18 @@ sorters.highlighter_only = function(opts)
   }
 end
 
+sorters.grep_highlighter_only = function(opts)
+  opts = opts or {}
+
+  return Sorter:new {
+    scoring_function = function() return 0 end,
+
+    highlighter = function(_, prompt, display)
+      return {}
+    end,
+  }
+end
+
 -- Bad & Dumb Sorter
 sorters.get_levenshtein_sorter = function()
   return Sorter:new {
