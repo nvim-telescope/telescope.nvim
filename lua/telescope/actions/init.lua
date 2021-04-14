@@ -306,10 +306,17 @@ actions.git_create_branch = function(prompt_bufnr)
   if new_branch == "" then
     print('Please enter the name of the new branch to create')
   else
+    local confirmation = vim.fn.input(string.format('Create new branch "%s"? [y/n]: ', new_branch))
+    if string.len(confirmation) == 0 or string.sub(string.lower(confirmation), 0, 1) ~= 'y' then
+      print(string.format('Didn\'t create branch "%s"', new_branch))
+      return
+    end
+
     actions.close(prompt_bufnr)
+
     local _, ret, stderr = utils.get_os_command_output({ 'git', 'checkout', '-b', new_branch }, cwd)
     if ret == 0 then
-      print(string.format('Switched to a new branch: "%s"', new_branch))
+      print(string.format('Switched to a new branch: %s', new_branch))
     else
       print(string.format(
         'Error when creating new branch: %s Git returned "%s"',
