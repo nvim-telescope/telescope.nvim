@@ -374,6 +374,14 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.live_grep`                 | Searches in current directory files. (respecting .gitignore)                                |
 | `builtin.file_browser`              | Ivy-like file explorer. Creates files by typing in filename and pressing `<C-e>`. Press `<C-e>` without prompt for more info |
 
+#### Options for builtin.live_grep
+
+| Keys                   | Description                                           | Options      |
+|------------------------|-------------------------------------------------------|--------------|
+| `grep_open_files`      | Restrict live_grep to currently open files.           | boolean      |
+| `search_dirs`          | List of directories to search in.                     | list         |
+
+
 ### Vim Pickers
 
 | Functions                           | Description                                                                                 |
