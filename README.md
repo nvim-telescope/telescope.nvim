@@ -40,7 +40,7 @@ Community driven built-in [pickers](#pickers), [sorters](#sorters) and [previewe
 - [Gallery](https://github.com/nvim-telescope/telescope.nvim/wiki/Gallery)
 - [FAQ](#faq)
 - [Configuration recipes](https://github.com/nvim-telescope/telescope.nvim/wiki/Configuration-Recipes)
-- [Contributing](#contribution)
+- [Contributing](#contributing)
 
 ## Getting Started
 
@@ -113,7 +113,7 @@ This section should help you explore available options to configure and
 customize your `telescope.nvim`.
 
 Unlike most vim plugins, `telescope.nvim` can be customized either by applying
-customizations globally or individual pre picker.
+customizations globally or individual per picker.
 
 - **Global Customization** affecting all pickers can be done through the
   main `setup()` method (see defaults below)
@@ -190,7 +190,7 @@ require('telescope').setup{
 EOF
 ```
 
-<!-- TODO: move some options to Options affecting Behaviour -->
+<!-- TODO: move some options to Options affecting behavior -->
 
 ### Options affecting Presentation
 
@@ -374,6 +374,14 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.live_grep`                 | Searches in current directory files. (respecting .gitignore)                                |
 | `builtin.file_browser`              | Ivy-like file explorer. Creates files by typing in filename and pressing `<C-e>`. Press `<C-e>` without prompt for more info |
 
+#### Options for builtin.live_grep
+
+| Keys                   | Description                                           | Options      |
+|------------------------|-------------------------------------------------------|--------------|
+| `grep_open_files`      | Restrict live_grep to currently open files.           | boolean      |
+| `search_dirs`          | List of directories to search in.                     | list         |
+
+
 ### Vim Pickers
 
 | Functions                           | Description                                                                                 |
@@ -419,7 +427,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.git_commits`               | Lists git commits with diff preview and on enter checkout the commit.                       |
 | `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checkouts it out on enter.                 |
 | `builtin.git_branches`              | Lists all branches with log preview, checkout action (<cr>), track action (<c-t>) and rebase action(<c-r>). |
-| `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multiselection still WIP) |
+| `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multi-selection still WIP) |
 
 ### Treesitter Picker
 
@@ -472,7 +480,7 @@ autocmd User TelescopePreviewerLoaded setlocal wrap
 | `sorters.fuzzy_with_index_bias`    | Used to list stuff with consideration to when the item is added |
 
 A `Sorter` is called by the `Picker` on each item returned by the `Finder`. It
-return a number, which is equivalent to the "distance" between the current
+returns a number, which is equivalent to the "distance" between the current
 `prompt` and the `entry` returned by a `finder`.
 
 <!-- TODO review -->
@@ -511,15 +519,15 @@ make a theme, check out `lua/telescope/themes.lua`.
 
 Telescope user autocmds:
 
-| Event                           | Description                                        |
-|---------------------------------|----------------------------------------------------|
-| `User TelescopeFindPre`         | Do it before create Telescope all the float window |
-| `User TelescopePreviewerLoaded` | Do it after Telescope previewer window create      |
+| Event                           | Description                                             |
+|---------------------------------|---------------------------------------------------------|
+| `User TelescopeFindPre`         | Do it before Telescope creates all the floating windows |
+| `User TelescopePreviewerLoaded` | Do it after Telescope previewer window is created       |
 
 
 ## Extensions
 
-Telescope provides the capabilties to create & register extensions, which improve telescope in a variety of ways.
+Telescope provides the capabilities to create & register extensions, which improve telescope in a variety of ways.
 
 Some extensions provide integration with external tools, outside of the scope of `builtins`. Others provide performance
 enhancements by using compiled C and interfacing directly with Lua.
@@ -669,9 +677,8 @@ supports tab completions and settings options.
 
 ### How to change some defaults in built-in functions?
 
-All options available from the setup function (see [Configuration options]()) and
-some other functions can be easily changed in custom pickers or built-in
-functions.
+All options available from the setup function (see [Configuration options](#customization)
+and some other functions can be easily changed in custom pickers or built-in functions.
 <!-- TODO: insert a list of available options like previewer and prompt prefix -->
 
 ```lua
@@ -685,7 +692,7 @@ nnoremap <leader>fg :Telescope live_grep prompt_prefix=🔍<CR>
 
 ### How to change Telescope Highlights group?
 
-There are 10 highlights group you can play around with in order to meet your needs:
+There are 10 highlight groups you can play around with in order to meet your needs:
 
 ```viml
 highlight TelescopeSelection      guifg=#D79921 gui=bold " selected item

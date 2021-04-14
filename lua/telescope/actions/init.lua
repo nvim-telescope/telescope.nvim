@@ -297,6 +297,38 @@ actions.insert_value = function(prompt_bufnr)
   return entry.value
 end
 
+--- Create and checkout a new git branch if it doesn't already exist
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_create_branch = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local new_branch = action_state.get_current_line()
+
+  if new_branch == "" then
+    print('Please enter the name of the new branch to create')
+  else
+    local confirmation = vim.fn.input(string.format('Create new branch "%s"? [y/n]: ', new_branch))
+    if string.len(confirmation) == 0 or string.sub(string.lower(confirmation), 0, 1) ~= 'y' then
+      print(string.format('Didn\'t create branch "%s"', new_branch))
+      return
+    end
+
+    actions.close(prompt_bufnr)
+
+    local _, ret, stderr = utils.get_os_command_output({ 'git', 'checkout', '-b', new_branch }, cwd)
+    if ret == 0 then
+      print(string.format('Switched to a new branch: %s', new_branch))
+    else
+      print(string.format(
+        'Error when creating new branch: %s Git returned "%s"',
+        new_branch,
+        table.concat(stderr, '  ')
+      ))
+    end
+  end
+end
+
+--- Checkout an existing git branch
+---@param prompt_bufnr number: The prompt bufnr
 actions.git_checkout = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -313,6 +345,8 @@ actions.git_checkout = function(prompt_bufnr)
   end
 end
 
+--- Tell git to track the currently selected remote branch in Telescope
+---@param prompt_bufnr number: The prompt bufnr
 actions.git_track_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -329,6 +363,8 @@ actions.git_track_branch = function(prompt_bufnr)
   end
 end
 
+--- Delete the currently selected branch
+---@param prompt_bufnr number: The prompt bufnr
 actions.git_delete_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -349,6 +385,8 @@ actions.git_delete_branch = function(prompt_bufnr)
   end
 end
 
+--- Rebase to selected git branch
+---@param prompt_bufnr number: The prompt bufnr
 actions.git_rebase_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -369,6 +407,8 @@ actions.git_rebase_branch = function(prompt_bufnr)
   end
 end
 
+--- Stage/unstage selected file
+---@param prompt_bufnr number: The prompt bufnr
 actions.git_staging_toggle = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()

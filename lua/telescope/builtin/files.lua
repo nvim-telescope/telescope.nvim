@@ -13,6 +13,7 @@ local Path = require('plenary.path')
 local os_sep = Path.path.sep
 
 local flatten = vim.tbl_flatten
+local filter = vim.tbl_filter
 
 local files = {}
 
@@ -29,10 +30,28 @@ end
 
 -- Special keys:
 --  opts.search_dirs -- list of directory to search in
+--  opts.grep_open_files -- boolean to restrict search to open files
 files.live_grep = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
-  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd)
+  local grep_open_files = opts.grep_open_files
+  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
+
+  local filelist = {}
+
+  if grep_open_files then
+   local bufnrs = filter(function(b)
+      if 1 ~= vim.fn.buflisted(b) then return false end
+      return true
+    end, vim.api.nvim_list_bufs())
+    if not next(bufnrs) then return end
+
+    local tele_path = require'telescope.path'
+    for _, bufnr in ipairs(bufnrs) do
+      local file = vim.api.nvim_buf_get_name(bufnr)
+      table.insert(filelist, tele_path.make_relative(file, opts.cwd))
+    end
+  end
 
   if search_dirs then
     for i, path in ipairs(search_dirs) do
@@ -49,15 +68,19 @@ files.live_grep = function(opts)
 
       prompt = escape_chars(prompt)
 
-      local args = flatten { vimgrep_arguments, prompt }
+      local search_list = {}
 
       if search_dirs then
-        table.insert(args, search_dirs)
+        table.insert(search_list, search_dirs)
       elseif os_sep == '\\' then
-        table.insert(args, '.')
+        table.insert(search_list, '.')
       end
 
-      return args
+      if grep_open_files then
+        search_list = filelist
+      end
+
+      return flatten { vimgrep_arguments, prompt, search_list }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
     opts.max_results,
@@ -71,6 +94,7 @@ files.live_grep = function(opts)
     sorter = conf.generic_sorter(opts),
   }):find()
 end
+
 
 -- Special keys:
 --  opts.search -- the string to search.
@@ -211,16 +235,16 @@ end
 files.file_browser = function(opts)
   opts = opts or {}
 
+  opts.depth = opts.depth or 1
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
-
-  local gen_new_finder = function(path)
+  opts.new_finder = opts.new_finder or function(path)
     opts.cwd = path
     local data = {}
 
     scan.scan_dir(path, {
       hidden = opts.hidden or false,
       add_dirs = true,
-      depth = 1,
+      depth = opts.depth,
       on_insert = function(entry, typ)
         table.insert(data, typ == 'directory' and (entry .. os_sep) or entry)
       end
@@ -242,8 +266,8 @@ files.file_browser = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title = 'Find Files',
-    finder = gen_new_finder(opts.cwd),
+    prompt_title = 'File Browser',
+    finder = opts.new_finder(opts.cwd),
     previewer = conf.file_previewer(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function(prompt_bufnr, map)
@@ -253,7 +277,7 @@ files.file_browser = function(opts)
         local new_cwd = vim.fn.expand(action_state.get_selected_entry().path:sub(1, -2))
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         current_picker.cwd = new_cwd
-        current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true })
+        current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
       end)
 
       local create_new_file = function()
@@ -276,7 +300,7 @@ files.file_browser = function(opts)
           Path:new(fpath:sub(1, -2)):mkdir({ parents = true })
           local new_cwd = vim.fn.expand(fpath)
           current_picker.cwd = new_cwd
-          current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true })
+          current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
         end
       end
 
@@ -332,6 +356,7 @@ files.current_buffer_fuzzy_find = function(opts)
   -- All actions are on the current buffer
   local bufnr = vim.api.nvim_get_current_buf()
   local filename = vim.fn.expand(vim.api.nvim_buf_get_name(bufnr))
+  local filetype = vim.api.nvim_buf_get_option(bufnr, "filetype")
 
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
   local lines_with_numbers = {}
@@ -339,10 +364,57 @@ files.current_buffer_fuzzy_find = function(opts)
   for lnum, line in ipairs(lines) do
     table.insert(lines_with_numbers, {
       lnum = lnum,
-      line = line,
       bufnr = bufnr,
       filename = filename,
+      text = line,
     })
+  end
+
+  local ok, parser = pcall(vim.treesitter.get_parser, bufnr, filetype)
+  if ok then
+    local query = vim.treesitter.get_query(filetype, "highlights")
+
+    local root = parser:parse()[1]:root()
+
+    local highlighter = vim.treesitter.highlighter.new(parser)
+    local highlighter_query = highlighter:get_query(filetype)
+
+    local line_highlights = setmetatable({}, {
+      __index = function(t, k)
+        local obj = {}
+        rawset(t, k, obj)
+        return obj
+      end,
+    })
+    for id, node in query:iter_captures(root, bufnr, 0, -1) do
+      local hl = highlighter_query.hl_cache[id]
+      if hl then
+        local row1, col1, row2, col2 = node:range()
+
+        if row1 == row2 then
+          local row = row1 + 1
+
+          for index = col1, col2 do
+            line_highlights[row][index] = hl
+          end
+        else
+          local row = row1 + 1
+          for index = col1, #lines[row] do
+              line_highlights[row][index] = hl
+          end
+
+          while row < row2 + 1 do
+            row = row + 1
+
+            for index = 0, #lines[row] do
+              line_highlights[row][index] = hl
+            end
+          end
+        end
+      end
+    end
+
+    opts.line_highlights = line_highlights
   end
 
   pickers.new(opts, {

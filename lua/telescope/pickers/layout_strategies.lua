@@ -61,6 +61,40 @@
 local config = require('telescope.config')
 local resolve = require("telescope.config.resolve")
 
+local function get_initial_window_options(picker)
+  local popup_border = resolve.win_option(picker.window.border)
+  local popup_borderchars = resolve.win_option(picker.window.borderchars)
+
+  local preview = {
+    title = picker.preview_title,
+    border = popup_border.preview,
+    borderchars = popup_borderchars.preview,
+    enter = false,
+    highlight = false
+  }
+
+  local results = {
+    title = picker.results_title,
+    border = popup_border.results,
+    borderchars = popup_borderchars.results,
+    enter = false,
+  }
+
+  local prompt = {
+    title = picker.prompt_title,
+    border = popup_border.prompt,
+    borderchars = popup_borderchars.prompt,
+    enter = true
+  }
+
+  return {
+    preview = preview,
+    results = results,
+    prompt = prompt,
+  }
+end
+
+
 -- Check if there are any borders. Right now it's a little raw as
 -- there are a few things that contribute to the border
 local is_borderless = function(opts)
@@ -105,7 +139,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
     scroll_speed = "The speed when scrolling through the previewer",
   })
 
-  local initial_options = self:_get_initial_window_options()
+  local initial_options = get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
@@ -203,7 +237,7 @@ end
 ---    +--------------+
 --- </pre>
 layout_strategies.center = function(self, columns, lines)
-  local initial_options = self:_get_initial_window_options()
+  local initial_options = get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
@@ -273,7 +307,7 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
     scroll_speed = "The speed when scrolling through the previewer",
   })
 
-  local initial_options = self:_get_initial_window_options()
+  local initial_options = get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt

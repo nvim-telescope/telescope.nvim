@@ -317,6 +317,7 @@ function make_entry.gen_from_quickfix(opts)
         ) .. ' ' .. entry.text,
       display = make_display,
 
+      bufnr = entry.bufnr,
       filename = filename,
       lnum = entry.lnum,
       col = entry.col,
@@ -685,29 +686,45 @@ function make_entry.gen_from_buffer_lines(opts)
     separator = ' │ ',
     items = {
       { width = 5 },
-      { remaining = true },
+      { remaining = true, },
     },
   }
 
   local make_display = function(entry)
+
     return displayer {
       { entry.lnum, opts.lnum_highlight_group or 'TelescopeResultsSpecialComment' },
-      entry.line
+      {
+        entry.text, function()
+          if not opts.line_highlights then return {} end
+
+          local line_hl = opts.line_highlights[entry.lnum] or {}
+          -- TODO: We could probably squash these together if the are the same...
+          --        But I don't think that it's worth it at the moment.
+          local result = {}
+
+          for col, hl in pairs(line_hl) do
+            table.insert(result, { {col, col+1}, hl })
+          end
+
+          return result
+        end
+      },
     }
   end
 
   return function(entry)
-    if opts.skip_empty_lines and string.match(entry.line, '^$') then
+    if opts.skip_empty_lines and string.match(entry.text, '^$') then
       return
     end
 
     return {
       valid = true,
-      ordinal = entry.line,
+      ordinal = entry.text,
       display = make_display,
       filename = entry.filename,
       lnum = entry.lnum,
-      line = entry.line,
+      text = entry.text,
     }
   end
 end
@@ -1002,28 +1019,51 @@ function make_entry.gen_from_autocommands(_)
   end
 end
 
+local git_icon_defaults = {
+  added     = "+",
+  changed   = "~",
+  copied    = ">",
+  deleted   = "-",
+  renamed   = "➡",
+  unmerged  = "‡",
+  untracked = "?"
+}
+
 function make_entry.gen_from_git_status(opts)
+  opts = opts or {}
+
+  local col_width = ((opts.git_icons and opts.git_icons.added) and opts.git_icons.added:len() + 2) or 2
   local displayer = entry_display.create {
-  separator = " ",
+  separator = "",
   items = {
-      { width = 1 },
-      { width = 1 },
+      { width = col_width},
+      { width = col_width},
       { remaining = true },
     }
   }
 
+  local icons = vim.tbl_extend("keep", opts.git_icons or {}, git_icon_defaults)
+
+  local git_abbrev = {
+    ["A"] = {icon = icons.added,      hl = "TelescopeResultsDiffAdd"},
+    ["U"] = {icon = icons.unmerged,   hl = "TelescopeResultsDiffAdd"},
+    ["M"] = {icon = icons.changed,    hl = "TelescopeResultsDiffChange"},
+    ["C"] = {icon = icons.copied,     hl = "TelescopeResultsDiffChange"},
+    ["R"] = {icon = icons.renamed,    hl = "TelescopeResultsDiffChange"},
+    ["D"] = {icon = icons.deleted,    hl = "TelescopeResultsDiffDelete"},
+    ["?"] = {icon = icons.untracked,  hl = "TelescopeResultsDiffUntracked"},
+  }
+
   local make_display = function(entry)
-    local modified = "TelescopeResultsDiffChange"
-    local staged = "TelescopeResultsDiffAdd"
+    local x = string.sub(entry.status, 1, 1)
+    local y = string.sub(entry.status, -1)
+    local status_x = git_abbrev[x] or {}
+    local status_y = git_abbrev[y] or {}
 
-    if entry.status == "??" then
-      modified = "TelescopeResultsDiffDelete"
-      staged = "TelescopeResultsDiffDelete"
-    end
-
+    local empty_space = (" ")
     return displayer {
-      { string.sub(entry.status, 1, 1), staged },
-      { string.sub(entry.status, -1), modified },
+      { status_x.icon or empty_space, status_x.hl},
+      { status_y.icon or empty_space, status_y.hl},
       entry.value,
     }
   end

@@ -2,6 +2,12 @@ local Job = require('plenary.job')
 
 local make_entry = require('telescope.make_entry')
 local log = require('telescope.log')
+local a = require('plenary.async_lib')
+local await = a.await
+
+local async_static_finder = require('telescope.finders.async_static_finder')
+local async_oneshot_finder = require('telescope.finders.async_oneshot_finder')
+-- local async_job_finder = require('telescope.finders.async_job_finder')
 
 local finders = {}
 
@@ -15,7 +21,6 @@ local _callable_obj = function()
 
   return obj
 end
-
 
 --[[ =============================================================
 
@@ -104,163 +109,34 @@ function JobFinder:_find(prompt, process_result, process_complete)
   self.job:start()
 end
 
-local OneshotJobFinder = _callable_obj()
+local DynamicFinder = _callable_obj()
 
-function OneshotJobFinder:new(opts)
+function DynamicFinder:new(opts)
   opts = opts or {}
 
   assert(not opts.results, "`results` should be used with finder.new_table")
   assert(not opts.static, "`static` should be used with finder.new_oneshot_job")
 
   local obj = setmetatable({
-    fn_command = opts.fn_command,
+    curr_buf = opts.curr_buf,
+    fn = opts.fn,
     entry_maker = opts.entry_maker or make_entry.from_string,
-
-    cwd = opts.cwd,
-    writer = opts.writer,
-
-    maximum_results = opts.maximum_results,
-
-    _started = false,
   }, self)
-
-  obj._find = coroutine.wrap(function(finder, _, process_result, process_complete)
-    local num_execution = 1
-    local num_results = 0
-
-    local results = setmetatable({}, {
-      __newindex = function(t, k, v)
-        rawset(t, k, v)
-        process_result(v)
-      end
-    })
-
-    local job_opts = finder:fn_command(_)
-    if not job_opts then
-      error(debug.traceback("expected `job_opts` from fn_command"))
-    end
-
-    local writer = nil
-    if job_opts.writer and Job.is_job(job_opts.writer) then
-      writer = job_opts.writer
-    elseif job_opts.writer then
-      writer = Job:new(job_opts.writer)
-    end
-
-    local on_output = function(_, line)
-      -- This will call the metamethod, process_result
-      num_results = num_results + 1
-      results[num_results] = finder.entry_maker(line)
-    end
-
-    local completed = false
-    local job = Job:new {
-      command = job_opts.command,
-      args = job_opts.args,
-      cwd = job_opts.cwd or finder.cwd,
-
-      maximum_results = finder.maximum_results,
-
-      writer = writer,
-
-      enable_recording = false,
-
-      on_stdout = on_output,
-      on_stderr = on_output,
-
-      on_exit = function()
-        process_complete()
-        completed = true
-      end,
-    }
-
-    job:start()
-
-    while true do
-      finder, _, process_result, process_complete = coroutine.yield()
-      num_execution = num_execution + 1
-
-      local current_count = num_results
-      for index = 1, current_count do
-        process_result(results[index])
-      end
-
-      if completed then
-        process_complete()
-      end
-    end
-  end)
 
   return obj
 end
 
-function OneshotJobFinder:old_find(_, process_result, process_complete)
-  local first_run = false
+function DynamicFinder:_find(prompt, process_result, process_complete)
+  a.scope(function()
+    local results = await(self.fn(prompt))
 
-  if not self._started then
-    first_run = true
-
-    self._started = true
-
-  end
-
-  -- First time we get called, start on up that job.
-  -- Every time after that, just use the results LUL
-  if not first_run then
-    return
-  end
-end
-
-
-
---[[ =============================================================
-Static Finders
-
-A static finder has results that never change.
-They are passed in directly as a result.
--- ============================================================= ]]
-local StaticFinder = _callable_obj()
-
-function StaticFinder:new(opts)
-  assert(opts, "Options are required. See documentation for usage")
-
-  local input_results
-  if vim.tbl_islist(opts) then
-    input_results = opts
-  else
-    input_results = opts.results
-  end
-
-  local entry_maker = opts.entry_maker or make_entry.gen_from_string()
-
-  assert(input_results)
-  assert(input_results, "Results are required for static finder")
-  assert(type(input_results) == 'table', "self.results must be a table")
-
-  local results = {}
-  for k, v in ipairs(input_results) do
-    local entry = entry_maker(v)
-
-    if entry then
-      entry.index = k
-      table.insert(results, entry)
+    for _, result in ipairs(results) do
+      if process_result(self.entry_maker(result)) then return end
     end
-  end
 
-  return setmetatable({ results = results }, self)
+    process_complete()
+  end)
 end
-
-function StaticFinder:_find(_, process_result, process_complete)
-  for _, v in ipairs(self.results) do
-    process_result(v)
-  end
-
-  process_complete()
-end
-
-
--- local
-
 
 --- Return a new Finder
 --
@@ -268,15 +144,18 @@ end
 -- This opts dictionary is likely to change, but you are welcome to use it right now.
 -- I will try not to change it needlessly, but I will change it sometimes and I won't feel bad.
 finders._new = function(opts)
-  if opts.results then
-    print("finder.new is deprecated with `results`. You should use `finder.new_table`")
-    return StaticFinder:new(opts)
-  end
-
+  assert(not opts.results, "finder.new is deprecated with `results`. You should use `finder.new_table`")
   return JobFinder:new(opts)
 end
 
 finders.new_job = function(command_generator, entry_maker, maximum_results, cwd)
+  -- return async_job_finder {
+  --   command_generator = command_generator,
+  --   entry_maker = entry_maker,
+  --   maximum_results = maximum_results,
+  --   cwd = cwd,
+  -- }
+
   return JobFinder:new {
     fn_command = function(_, prompt)
       local command_list = command_generator(prompt)
@@ -298,18 +177,20 @@ finders.new_job = function(command_generator, entry_maker, maximum_results, cwd)
   }
 end
 
----@param command_list string[] Command list to execute.
----@param opts table
+--- One shot job
+---@param command_list string[]: Command list to execute.
+---@param opts table: stuff
 ---         @key entry_maker function Optional: function(line: string) => table
 ---         @key cwd string
 finders.new_oneshot_job = function(command_list, opts)
   opts = opts or {}
 
-  command_list = vim.deepcopy(command_list)
+  assert(not opts.results, "`results` should be used with finder.new_table")
 
+  command_list = vim.deepcopy(command_list)
   local command = table.remove(command_list, 1)
 
-  return OneshotJobFinder:new {
+  return async_oneshot_finder {
     entry_maker = opts.entry_maker or make_entry.gen_from_string(),
 
     cwd = opts.cwd,
@@ -331,7 +212,11 @@ end
 --  results table, the results to run on
 --  entry_maker function, the function to convert results to entries.
 finders.new_table = function(t)
-  return StaticFinder:new(t)
+  return async_static_finder(t)
+end
+
+finders.new_dynamic = function(t)
+  return DynamicFinder:new(t)
 end
 
 return finders

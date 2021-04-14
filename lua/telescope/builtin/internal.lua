@@ -544,6 +544,9 @@ internal.buffers = function(opts)
     if opts.ignore_current_buffer and b == vim.api.nvim_get_current_buf() then
       return false
     end
+    if opts.only_cwd and not string.find(vim.api.nvim_buf_get_name(b), vim.loop.cwd()) then
+      return false
+    end
     return true
   end, vim.api.nvim_list_bufs())
   if not next(bufnrs) then return end
@@ -815,8 +818,6 @@ internal.autocommands = function(opts)
     inner_loop(line)
   end
 
-  -- print(vim.inspect(autocmd_table))
-
   pickers.new(opts,{
     prompt_title = 'autocommands',
     finder = finders.new_table {
@@ -860,6 +861,47 @@ internal.spell_suggest = function(opts)
     end
   }):find()
 end
+
+internal.tagstack = function(opts)
+  opts = opts or {}
+  local tagstack = vim.fn.gettagstack()
+  if vim.tbl_isempty(tagstack.items) then
+    print("No tagstack available")
+    return
+  end
+
+  for _, value in pairs(tagstack.items) do
+    value.valid = true
+    value.bufnr = value.from[1]
+    value.lnum = value.from[2]
+    value.col = value.from[3]
+    value.filename = vim.fn.bufname(value.from[1])
+
+    value.text = vim.api.nvim_buf_get_lines(
+      value.bufnr,
+      value.lnum - 1,
+      value.lnum,
+      false
+    )[1]
+  end
+
+  -- reverse the list
+  local tags = {}
+  for i = #tagstack.items, 1, -1 do
+    tags[#tags+1] = tagstack.items[i]
+  end
+
+  pickers.new(opts, {
+      prompt_title = 'TagStack',
+      finder = finders.new_table {
+        results = tags,
+        entry_maker = make_entry.gen_from_quickfix(opts),
+      },
+      previewer = previewers.vim_buffer_qflist.new(opts),
+      sorter = conf.generic_sorter(opts),
+    }):find()
+end
+
 
 local function apply_checks(mod)
   for k, v in pairs(mod) do
