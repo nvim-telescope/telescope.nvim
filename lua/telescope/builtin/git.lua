@@ -240,11 +240,14 @@ local set_opts_cwd = function(opts)
   end
 
   -- Find root of git directory and remove trailing newline characters
-  local git_root, ret = utils.get_os_command_output({ "git", "rev-parse", "--git-dir" }, opts.cwd)
+  local git_root, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
   local use_git_root = utils.get_default(opts.use_git_root, true)
 
   if ret ~= 0 then
-    error(opts.cwd .. ' is not a git directory')
+    local is_worktree, ret = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
+    if is_worktree == "false" then
+        error(opts.cwd .. ' is not a git directory')
+    end
   else
     if use_git_root then
       opts.cwd = git_root[1]
