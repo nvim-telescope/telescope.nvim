@@ -38,6 +38,10 @@ Sorter.__index = Sorter
 ---@field highlighter function: Highlights results to display them pretty
 ---@field discard boolean: Whether this is a discardable style sorter or not.
 ---@field score function: Override the score function if desired.
+---@field init function: Function to run when creating sorter
+---@field start function: Function to run on every new prompt
+---@field finish function: Function to run after every new prompt
+---@field destroy function: Functo to run when destroying sorter
 function Sorter:new(opts)
   opts = opts or {}
 
@@ -45,6 +49,13 @@ function Sorter:new(opts)
     score = opts.score,
     state = {},
     tags = opts.tags,
+
+    -- State management
+    init    = opts.init,
+    start   = opts.start,
+    finish  = opts.finish,
+    destroy = opts.destroy,
+
     filter_function = opts.filter_function,
     scoring_function = opts.scoring_function,
     highlighter = opts.highlighter,
@@ -56,12 +67,22 @@ function Sorter:new(opts)
   }, Sorter)
 end
 
+function Sorter:_init()
+  if self.init then self:init() end
+end
+
+function Sorter:_destroy()
+  if self.destroy then self:destroy() end
+end
+
 -- TODO: We could make this a bit smarter and cache results "as we go" and where they got filtered.
 --          Then when we hit backspace, we don't have to re-caculate everything.
 --          Prime did a lot of the hard work already, but I don't want to copy as much memory around
 --              as he did in his example.
 --              Example can be found in ./scratch/prime_prompt_cache.lua
 function Sorter:_start(prompt)
+  if self.start then self:start(prompt) end
+
   if not self.discard then
     return
   end
@@ -78,6 +99,10 @@ function Sorter:_start(prompt)
   end
 
   self._discard_state.prompt = prompt
+end
+
+function Sorter:_finish(prompt)
+  if self.finish then self:finish(prompt) end
 end
 
 -- TODO: Consider doing something that makes it so we can skip the filter checks

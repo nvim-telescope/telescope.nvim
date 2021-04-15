@@ -401,9 +401,7 @@ function Picker:find()
         self.finder = finder
       end
 
-      if self.sorter then
-        self.sorter:_start(prompt)
-      end
+      if self.sorter then self.sorter:_start(prompt) end
 
       -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
       self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats)
@@ -422,9 +420,6 @@ function Picker:find()
     end
   end)
 
-  -- on_lines(nil, nil, nil, 0, 1)
-  status_updater()
-
   -- Register attach
   vim.api.nvim_buf_attach(prompt_bufnr, false, {
     on_lines = tx.send,
@@ -442,7 +437,9 @@ function Picker:find()
     end,
   })
 
+  if self.sorter then self.sorter:_init() end
   async_lib.run(main_loop())
+  status_updater()
 
   -- TODO: Use WinLeave as well?
   local on_buf_leave = string.format(
@@ -993,13 +990,13 @@ function Picker:get_result_completor(results_bufnr, find_id, prompt, status_upda
     local current_line = vim.api.nvim_get_current_line():sub(self.prompt_prefix:len() + 1)
     state.set_global_key('current_line', current_line)
 
+    status_updater()
+
     self:clear_extra_rows(results_bufnr)
     self:highlight_displayed_rows(results_bufnr, prompt)
-
+    if self.sorter then self.sorter:_finish(prompt) end
 
     self:_on_complete()
-
-    status_updater()
   end
 end
 
@@ -1037,12 +1034,13 @@ function pickers.on_close_prompt(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
 
+  if picker.sorter then
+    picker.sorter:_destroy()
+  end
+
   if picker.previewer then
     picker.previewer:teardown()
   end
-
-  -- TODO: This is an attempt to clear all the memory stuff we may have left.
-  -- vim.api.nvim_buf_detach(prompt_bufnr)
 
   picker.close_windows(status)
 end
