@@ -159,14 +159,8 @@ internal.commands = function(opts)
 
         return commands
       end)(),
-      entry_maker = function(line)
-        return {
-          valid = line ~= "",
-          value = line,
-          ordinal = line.name,
-          display = line.name
-        }
-      end
+
+      entry_maker = opts.entry_maker or make_entry.gen_from_commands(opts),
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
