@@ -465,6 +465,12 @@ sorters.highlighter_only = function(opts)
   }
 end
 
+sorters.empty = function()
+  return Sorter:new {
+    scoring_function = function() return 0 end,
+  }
+end
+
 -- Bad & Dumb Sorter
 sorters.get_levenshtein_sorter = function()
   return Sorter:new {

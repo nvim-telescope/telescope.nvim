@@ -73,7 +73,7 @@ function Picker:new(opts)
     _on_input_filter_cb = opts.on_input_filter_cb or function() end,
 
     finder = opts.finder,
-    sorter = opts.sorter,
+    sorter = opts.sorter or require('telescope.sorters').empty(),
     previewer = opts.previewer,
     default_selection_index = opts.default_selection_index,
 
