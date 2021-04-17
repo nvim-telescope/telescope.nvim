@@ -2,6 +2,8 @@ local entry_display = require('telescope.pickers.entry_display')
 local path = require('telescope.path')
 local utils = require('telescope.utils')
 
+local Path = require('plenary.path')
+
 local get_default = utils.get_default
 
 local treesitter_type_highlight = {
@@ -155,7 +157,11 @@ do
 
     local execute_keys = {
       path = function(t)
-        return t.cwd .. path.separator .. t.filename, false
+        if Path:new(t.filename):is_absolute() then
+          return t.filename, false
+        else
+          return t.cwd .. path.separator .. t.filename, false
+        end
       end,
 
       filename = function(t)
