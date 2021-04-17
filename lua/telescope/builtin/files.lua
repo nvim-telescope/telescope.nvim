@@ -51,9 +51,7 @@ files.live_grep = function(opts)
       local file = vim.api.nvim_buf_get_name(bufnr)
       table.insert(filelist, tele_path.make_relative(file, opts.cwd))
     end
-  end
-
-  if search_dirs then
+  elseif search_dirs then
     for i, path in ipairs(search_dirs) do
       search_dirs[i] = vim.fn.expand(path)
     end
