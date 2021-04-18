@@ -297,6 +297,36 @@ internal.command_history = function(opts)
   }):find()
 end
 
+internal.search_history = function(opts)
+  local search_string = vim.fn.execute('history search')
+  local search_list = vim.split(search_string, "\n")
+
+  local results = {}
+  for i = #search_list, 3, -1 do
+    local item = search_list[i]
+    local _, finish = string.find(item, "%d+ +")
+    table.insert(results, string.sub(item, finish + 1))
+  end
+
+  pickers.new(opts, {
+    prompt_title = 'Search History',
+    finder = finders.new_table(results),
+    sorter = conf.generic_sorter(opts),
+
+    attach_mappings = function(_, map)
+      map('i', '<CR>', actions.set_search_line)
+      map('n', '<CR>', actions.set_search_line)
+      map('n', '<C-e>', actions.edit_search_line)
+      map('i', '<C-e>', actions.edit_search_line)
+
+      -- TODO: Find a way to insert the text... it seems hard.
+      -- map('i', '<C-i>', actions.insert_value, { expr = true })
+
+      return true
+    end,
+  }):find()
+end
+
 internal.vim_options = function(opts)
   -- Load vim options.
   local vim_opts = loadfile(utils.data_directory() .. path.separator .. 'options' ..
