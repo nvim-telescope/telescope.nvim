@@ -104,12 +104,12 @@ end
 
 local function validate_layout_config(options, values)
   for k, _ in pairs(options) do
-    if not values[k] then
-      error(string.format(
+    if values[k] == nil then
+      error(debug.traceback(string.format(
         "Unsupported layout_config key: %s\n%s",
         k,
         vim.inspect(values)
-      ))
+      )))
     end
   end
 
@@ -117,6 +117,40 @@ local function validate_layout_config(options, values)
 end
 
 local layout_strategies = {}
+
+layout_strategies._format = function(name)
+  local strategy_config = layout_strategies._configurations[name]
+  if vim.tbl_isempty(strategy_config) then
+    return {}
+  end
+
+  local results = {"<pre>", "`picker.layout_config` options:"}
+
+  -- TODO: Should make this sorted, otherwise annoyint diffs...
+  for k, v in pairs(strategy_config) do
+    table.insert(results, string.format('  - %s: %s', k, v))
+  end
+
+  table.insert(results, "</pre>")
+  return results
+end
+
+layout_strategies._configurations = {}
+
+local function make_documented_layout(name, layout_config, layout)
+  -- Save configuration data to be used by documentation
+  layout_strategies._configurations[name] = layout_config
+
+  -- Return new function that always validates configuration
+  return function(self, max_columns, max_lines, override_layout)
+    return layout(
+      self,
+      max_columns,
+      max_lines,
+      validate_layout_config(override_layout or self.layout_config or {}, layout_config)
+    )
+  end
+end
 
 --- Horizontal previewer
 ---
@@ -130,15 +164,15 @@ local layout_strategies = {}
 ---   |   Prompt    |              |
 ---   +-------------+--------------+
 --- </pre>
-layout_strategies.horizontal = function(self, max_columns, max_lines)
-  local layout_config = validate_layout_config(self.layout_config or {}, {
-    width_padding = "How many cells to pad the width",
-    height_padding = "How many cells to pad the height",
-    preview_width = "(Resolvable): Determine preview width",
-    mirror = "Flip the location of the results/prompt and preview windows",
-    scroll_speed = "The speed when scrolling through the previewer",
-  })
-
+---@eval { ["description"] = require('telescope.pickers.layout_strategies')._format("horizontal") }
+---
+layout_strategies.horizontal = make_documented_layout("horizontal", {
+  width_padding = "How many cells to pad the width",
+  height_padding = "How many cells to pad the height",
+  preview_width = "(Resolvable): Determine preview width",
+  mirror = "Flip the location of the results/prompt and preview windows",
+  scroll_speed = "The speed when scrolling through the previewer",
+}, function(self, max_columns, max_lines, layout_config)
   local initial_options = get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
@@ -220,8 +254,8 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
     preview = self.previewer and preview.width > 0 and preview,
     results = results,
     prompt = prompt
-}
-end
+  }
+end)
 
 --- Centered layout wih smaller default sizes (I think)
 ---
@@ -236,7 +270,9 @@ end
 ---    |    Result    |
 ---    +--------------+
 --- </pre>
-layout_strategies.center = function(self, columns, lines)
+---@eval { ["description"] = require('telescope.pickers.layout_strategies')._format("center") }
+---
+layout_strategies.center = make_documented_layout("center", {}, function(self, columns, lines, _)
   local initial_options = get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
@@ -281,7 +317,7 @@ layout_strategies.center = function(self, columns, lines)
     results = results,
     prompt = prompt
   }
-end
+end)
 
 --- Vertical perviewer stacks the items on top of each other.
 ---
@@ -298,14 +334,15 @@ end
 ---    |     Prompt      |
 ---    +-----------------+
 --- </pre>
-layout_strategies.vertical = function(self, max_columns, max_lines)
-  local layout_config = validate_layout_config(self.layout_config or {}, {
-    width_padding = "How many cells to pad the width",
-    height_padding = "How many cells to pad the height",
-    preview_height = "(Resolvable): Determine preview height",
-    mirror = "Flip the locations of the results and prompt windows",
-    scroll_speed = "The speed when scrolling through the previewer",
-  })
+---@eval { ["description"] = require('telescope.pickers.layout_strategies')._format("vertical") }
+---
+layout_strategies.vertical = make_documented_layout("vertical", {
+  width_padding = "How many cells to pad the width",
+  height_padding = "How many cells to pad the height",
+  preview_height = "(Resolvable): Determine preview height",
+  mirror = "Flip the locations of the results and prompt windows",
+  scroll_speed = "The speed when scrolling through the previewer",
+}, function(self, max_columns, max_lines, layout_config)
 
   local initial_options = get_initial_window_options(self)
   local preview = initial_options.preview
@@ -367,32 +404,38 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
     results = results,
     prompt = prompt
   }
-end
+end)
 
 --- Swap between `horizontal` and `vertical` strategies based on the window width
 ---  -  Supports `vertical` or `horizontal` features
 ---
---- Uses:
----  - flip_columns
----  - flip_lines
-layout_strategies.flex = function(self, max_columns, max_lines)
-  local layout_config = self.layout_config or {}
-
+---@eval { ["description"] = require('telescope.pickers.layout_strategies')._format("flex") }
+---
+layout_strategies.flex = make_documented_layout("flex", {
+  flip_columns  = "Minimum value of columns before flexing",
+  flip_lines = "Minimum value of lines before flexing",
+  vertical = "Configuration for vertical",
+  horizontal = "Configuration for horizontal",
+}, function(self, max_columns, max_lines, layout_config)
   local flip_columns = layout_config.flip_columns or 100
   local flip_lines = layout_config.flip_lines or 20
 
   if max_columns < flip_columns and max_lines > flip_lines then
-    -- TODO: This feels a bit like a hack.... cause you wouldn't be able to pass this to flex easily.
-    self.layout_config = (config.values.layout_defaults or {})['vertical']
-    return layout_strategies.vertical(self, max_columns, max_lines)
+    return layout_strategies.vertical(
+      self, max_columns, max_lines,
+      layout_config.vertical or (config.values.layout_defaults or {})['vertical']
+    )
   else
-    self.layout_config = (config.values.layout_defaults or {})['horizontal']
-    return layout_strategies.horizontal(self, max_columns, max_lines)
+    return layout_strategies.horizontal(
+      self, max_columns, max_lines,
+      layout_config.horizontal or (config.values.layout_defaults or {})['horizontal']
+    )
   end
-end
+end)
 
+-- TODO: This doesn't even work anyway... :)
 layout_strategies.current_buffer = function(self, _, _)
-  local initial_options = self:_get_initial_window_options()
+  local initial_options = get_initial_window_options(self)
 
   local window_width = vim.api.nvim_win_get_width(0)
   local window_height = vim.api.nvim_win_get_height(0)
