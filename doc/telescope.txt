@@ -571,11 +571,11 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
       +-------------+--------------+
 
     `picker.layout_config` options:
-      - scroll_speed: The speed when scrolling through the previewer
-      - preview_width: (Resolvable): Determine preview width
-      - width_padding: How many cells to pad the width
       - height_padding: How many cells to pad the height
+      - preview_width: (Resolvable): Determine preview width
       - mirror: Flip the location of the results/prompt and preview windows
+      - width_padding: How many cells to pad the width
+      - scroll_speed: The speed when scrolling through the previewer
 
 
 layout_strategies.center()                        *layout_strategies.center()*
@@ -609,11 +609,11 @@ layout_strategies.vertical()                    *layout_strategies.vertical()*
        +-----------------+
 
     `picker.layout_config` options:
-      - preview_height: (Resolvable): Determine preview height
-      - scroll_speed: The speed when scrolling through the previewer
-      - width_padding: How many cells to pad the width
       - height_padding: How many cells to pad the height
       - mirror: Flip the locations of the results and prompt windows
+      - scroll_speed: The speed when scrolling through the previewer
+      - width_padding: How many cells to pad the width
+      - preview_height: (Resolvable): Determine preview height
 
 
 layout_strategies.flex()                            *layout_strategies.flex()*
@@ -623,10 +623,10 @@ layout_strategies.flex()                            *layout_strategies.flex()*
 
 
     `picker.layout_config` options:
-      - flip_columns: Minimum value of columns before flexing
-      - flip_lines: Minimum value of lines before flexing
-      - vertical: Configuration for vertical
       - horizontal: Configuration for horizontal
+      - flip_columns: Minimum value of columns before flexing
+      - vertical: Configuration for vertical
+      - flip_lines: Minimum value of lines before flexing
 
 
 
