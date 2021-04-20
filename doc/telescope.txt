@@ -196,6 +196,30 @@ actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
+    Create and checkout a new git branch if it doesn't already exist
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_checkout({prompt_bufnr})                  *actions.git_checkout()*
+    Checkout an existing git branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_delete_branch({prompt_bufnr})        *actions.git_delete_branch()*
+    Delete the currently selected branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 actions.open_qflist()                                  *actions.open_qflist()*
     Open the quickfix list
 
