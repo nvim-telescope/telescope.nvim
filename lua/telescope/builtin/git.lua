@@ -11,11 +11,53 @@ local conf = require('telescope.config').values
 
 local git = {}
 
+local function check_version(required)
+  if not git.version then
+    local version = utils.get_os_command_output({
+      'git', '--version'
+    }, vim.loop.cwd())
+
+    -- Builds from source are X.X.GIT
+    version = string.match(version[1], '%d+%.%d+%.%w+')
+
+    local parts = vim.split(version, '%.')
+
+    git.version = {}
+    git.version.major = tonumber(parts[1])
+    git.version.minor = tonumber(parts[2])
+
+    if parts[3] == 'GIT' then
+      git.version.patch = 0
+    else
+      git.version.patch = tonumber(parts[3])
+    end
+  end
+
+  if git.version.major < required[1] then
+    return false
+  end
+
+  if git.version.minor and git.version.minor < required[2] then
+    return false
+  end
+
+  if git.version[3] and git.version.patch < required[3] then
+    return false
+  end
+
+  return true
+end
+
 git.files = function(opts)
   local show_untracked = utils.get_default(opts.show_untracked, true)
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
   if show_untracked and recurse_submodules then
-    error("Git does not support both --others and --recurse-submodules")
+    error('Git does not support both --others and --recurse-submodules')
+  end
+
+  local deduplicate = utils.get_default(opts.deduplicate, false)
+  if deduplicate and not check_version({2, 31}) then
+    error('The --deduplicate option for ls-files requires git version 2.31+')
   end
 
   -- By creating the entry maker after the cwd options,
@@ -26,9 +68,10 @@ git.files = function(opts)
     prompt_title = 'Git Files',
     finder = finders.new_oneshot_job(
       vim.tbl_flatten( {
-        "git", "ls-files", "--exclude-standard", "--cached",
-        show_untracked and "--others" or nil,
-        recurse_submodules and "--recurse-submodules" or nil
+        'git', 'ls-files', '--exclude-standard', '--cached',
+        show_untracked and '--others' or nil,
+        recurse_submodules and '--recurse-submodules' or nil,
+        deduplicate and '--deduplicate' or nil
       } ),
       opts
     ),
