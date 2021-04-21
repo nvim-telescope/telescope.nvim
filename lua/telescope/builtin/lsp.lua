@@ -3,6 +3,7 @@ local action_state = require('telescope.actions.state')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
+local entry_display = require('telescope.pickers.entry_display')
 local utils = require('telescope.utils')
 local a = require('plenary.async_lib')
 local async, await = a.async, a.await
@@ -131,20 +132,56 @@ lsp.code_actions = function(opts)
     return
   end
 
-  local _, response = next(results_lsp)
-  if not response then
+  local idx = 1
+  local results = {}
+  local widths = {
+    idx = 0,
+    command_title = 0,
+    client_name = 0,
+  }
+
+  for client_id, response in pairs(results_lsp) do
+    if response.result then
+      local client = vim.lsp.get_client_by_id(client_id)
+
+      for _, result in pairs(response.result) do
+        local entry = {
+          idx = idx,
+          command_title = result.title,
+          client_name = client and client.name or "",
+          command = result,
+        }
+
+        for key, value in pairs(widths) do
+          widths[key] = math.max(value, utils.strdisplaywidth(entry[key]))
+        end
+
+        table.insert(results, entry)
+        idx = idx + 1
+      end
+    end
+  end
+
+  if #results == 0 then
     print("No code actions available")
     return
   end
 
-  local results = response.result
-  if not results or #results == 0 then
-    print("No code actions available")
-    return
-  end
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = widths.idx + 1 }, -- +1 for ":" suffix
+      { width = widths.command_title },
+      { width = widths.client_name },
+    },
+  }
 
-  for i,x in ipairs(results) do
-    x.idx = i
+  local function make_display(entry)
+    return displayer {
+      {entry.idx .. ":", "TelescopePromptPrefix"},
+      {entry.command_title},
+      {entry.client_name, "TelescopeResultsComment"},
+    }
   end
 
   pickers.new(opts, {
@@ -154,9 +191,12 @@ lsp.code_actions = function(opts)
       entry_maker = function(line)
         return {
           valid = line ~= nil,
-          value = line,
-          ordinal = line.idx .. line.title,
-          display = line.idx .. ': ' .. line.title
+          value = line.command,
+          ordinal = line.idx .. line.command_title,
+          command_title = line.command_title,
+          idx = line.idx,
+          client_name = line.client_name,
+          display = make_display,
         }
       end
     },
