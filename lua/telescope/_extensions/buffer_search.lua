@@ -4,7 +4,7 @@ if not has_telescope then
   error('This plugins requires nvim-telescope/telescope.nvim')
 end
 
-local actions = require('telescope.actions')
+-- local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')
 local action_set = require('telescope.actions.set')
 local make_entry = require('telescope.make_entry')
@@ -14,7 +14,7 @@ local sorters = require("telescope.sorters")
 local conf = require("telescope.config").values
 
 require('telescope').setup {}
-local prev_working_prompt = ''
+-- local prev_working_prompt = ''
 local get_str_matcher = function()
   return sorters.new {
     highlighter = function(_, prompt, display)
