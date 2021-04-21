@@ -21,22 +21,36 @@ end
 
 local builtin = {}
 
---- Live grep means grep as you type.
+--- Search for a string in your current working directory and get results
+--- live as you type
 builtin.live_grep = require('telescope.builtin.files').live_grep
-
+--- Searches for the string under your cursor in your current working directory
 builtin.grep_string = require('telescope.builtin.files').grep_string
+--- Lists files in your current working directory
 builtin.find_files = require('telescope.builtin.files').find_files
 builtin.fd = builtin.find_files
+--- Lists files and folders in your current working directory
+---   * Open files or navigate the filesystem directory by directory
+---   * Create new files and folders by pressing <C-e> (creates file by defualt,
+---     for folders add a '/' at the end of the name)
 builtin.file_browser = require('telescope.builtin.files').file_browser
 builtin.treesitter = require('telescope.builtin.files').treesitter
+--- Fuzzy search for something in your current buffer
 builtin.current_buffer_fuzzy_find = require('telescope.builtin.files').current_buffer_fuzzy_find
+--- Lists tags in your current working directory with preview
 builtin.tags = require('telescope.builtin.files').tags
+--- Lists tags for your current buffer with preview
 builtin.current_buffer_tags = require('telescope.builtin.files').current_buffer_tags
 
+--- Lists files not ignored by git in your current directory
 builtin.git_files = require('telescope.builtin.git').files
+--- Lists commits for current directory, with diff preview and checkout on <cr>
 builtin.git_commits = require('telescope.builtin.git').commits
+--- Lists commits for current buffer, with diff preview and checkout on <cr>
 builtin.git_bcommits = require('telescope.builtin.git').bcommits
+--- List branches for current directory, with log preview
 builtin.git_branches = require('telescope.builtin.git').branches
+--- Lists git status for current directory
 builtin.git_status = require('telescope.builtin.git').status
 
 builtin.builtin = require('telescope.builtin.internal').builtin
