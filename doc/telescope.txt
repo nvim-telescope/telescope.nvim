@@ -106,7 +106,66 @@ This will use the default configuration options. Other configuration options
 are still in flux at the moment
 
 builtin.live_grep()                                      *builtin.live_grep()*
-    Live grep means grep as you type.
+    Search for a string in your current working directory and get results live
+    as you type
+
+
+
+builtin.grep_string()                                  *builtin.grep_string()*
+    Searches for the string under your cursor in your current working directory
+
+
+
+builtin.find_files()                                    *builtin.find_files()*
+    Lists files in your current working directory
+
+
+
+builtin.file_browser()                                *builtin.file_browser()*
+    Lists files and folders in your current working directory * Open files or
+    navigate the filesystem directory by directory * Create new files and
+    folders by pressing <C-e> (creates file by defualt, for folders add a '/'
+    at the end of the name)
+
+
+
+builtin.current_buffer_fuzzy_find()      *builtin.current_buffer_fuzzy_find()*
+    Fuzzy search for something in your current buffer
+
+
+
+builtin.tags()                                                *builtin.tags()*
+    Lists tags in your current working directory with preview
+
+
+
+builtin.current_buffer_tags()                  *builtin.current_buffer_tags()*
+    Lists tags for your current buffer with preview
+
+
+
+builtin.git_files()                                      *builtin.git_files()*
+    Lists files not ignored by git in your current directory
+
+
+
+builtin.git_commits()                                  *builtin.git_commits()*
+    Lists commits for current directory, with diff preview and checkout on <cr>
+
+
+
+builtin.git_bcommits()                                *builtin.git_bcommits()*
+    Lists commits for current buffer, with diff preview and checkout on <cr>
+
+
+
+builtin.git_branches()                                *builtin.git_branches()*
+    List branches for current directory, with log preview
+
+
+
+builtin.git_status()                                    *builtin.git_status()*
+    Lists git status for current directory
 
 
 
@@ -115,22 +174,6 @@ builtin.live_grep()                                      *builtin.live_grep()*
                                                              *telescope.actions*
 
 Actions functions that are useful for people creating their own mappings.
-
-actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
-    Move the selection to the next entry
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous()*
-    Move the selection to the previous entry
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
 
 actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
     Move the selection to the entry that has a worse score
@@ -190,6 +233,54 @@ actions.remove_selection({prompt_bufnr})          *actions.remove_selection()*
 
 actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
     Toggle current entry status for multi select
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
+    Create and checkout a new git branch if it doesn't already exist
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_checkout({prompt_bufnr})                  *actions.git_checkout()*
+    Checkout an existing git branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_track_branch({prompt_bufnr})          *actions.git_track_branch()*
+    Tell git to track the currently selected remote branch in Telescope
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_delete_branch({prompt_bufnr})        *actions.git_delete_branch()*
+    Delete the currently selected branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_rebase_branch({prompt_bufnr})        *actions.git_rebase_branch()*
+    Rebase to selected git branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_staging_toggle({prompt_bufnr})      *actions.git_staging_toggle()*
+    Stage/unstage selected file
 
 
     Parameters: ~
