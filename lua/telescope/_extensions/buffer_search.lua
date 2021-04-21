@@ -14,7 +14,7 @@ local sorters = require("telescope.sorters")
 local conf = require("telescope.config").values
 
 require('telescope').setup {}
-
+local prev_working_prompt = ''
 local get_str_matcher = function()
   return sorters.new {
     highlighter = function(_, prompt, display)
@@ -31,18 +31,14 @@ local get_str_matcher = function()
     end,
     scoring_function = function(_, prompt, _, entry)
       local display = entry.ordinal:lower()
-
-      -- local search_terms = util.max_split(prompt, "%s")
-      local search_terms = {prompt}
-      local matched = 0
-      local total_search_terms = 0
       local prompt_lua_style =  string.gsub(prompt,'\\', '%%') -- convert eg. \s to %s -lua readable format
-      if display:find(prompt_lua_style, 1, false) then --true -disables regex
+      local run_ok, retval = pcall(string.find, display, prompt_lua_style, 1, false) --true -disables regex
+      -- if display:find(prompt_lua_style, 1, false) then --true -disables regex
+      if run_ok and retval then
         return entry.index
       else
         return -1
       end
-      return matched == total_search_terms and entry.index or -1
     end
   }
 end
@@ -118,7 +114,6 @@ local current_buffer_regex_find = function(opts)
       results = lines_with_numbers,
       entry_maker = opts.entry_maker or make_entry.gen_from_buffer_lines(opts),
     },
-    prompt =  string.gsub([[prompt]],'\\', '%%'), -- convert eg. \s to %s -lua readable format
     sorter = get_str_matcher(opts),
     previewer = conf.grep_previewer(opts),
     attach_mappings = function()
