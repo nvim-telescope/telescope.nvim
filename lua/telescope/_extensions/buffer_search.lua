@@ -47,7 +47,7 @@ local get_str_matcher = function()
   }
 end
 -- copy pasted from tele/lua/builtin/files.lua
-local current_buffer_fuzzy_find = function(opts)
+local current_buffer_regex_find = function(opts)
   -- All actions are on the current buffer
   local bufnr = vim.api.nvim_get_current_buf()
   local filename = vim.fn.expand(vim.api.nvim_buf_get_name(bufnr))
@@ -135,4 +135,4 @@ local current_buffer_fuzzy_find = function(opts)
 end
 
 
-return telescope.register_extension {exports = {buffer_search = current_buffer_fuzzy_find}}
+return telescope.register_extension {exports = {buffer_search = current_buffer_regex_find}}
