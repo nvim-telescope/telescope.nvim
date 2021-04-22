@@ -1,3 +1,15 @@
+---@tag telescope.actions.set
+
+---@brief [[
+--- Telescope action sets are used to provide an interface for managing
+--- actions that all primarily do the same thing, but with slight tweaks.
+---
+--- For example, when editing files you may want it in the current split,
+--- a vertical split, etc. Instead of making users have to overwrite EACH
+--- of those every time they want to change this behavior, they can instead
+--- replace the `set` itself and then it will work great and they're done.
+---@brief ]]
+
 local a = vim.api
 
 local log = require('telescope.log')
@@ -8,14 +20,7 @@ local action_state = require('telescope.actions.state')
 
 local transform_mod = require('telescope.actions.mt').transform_mod
 
---- Telescope action sets are used to provide an interface for managing
---- actions that all primarily do the same thing, but with slight tweaks.
----
---- For example, when editing files you may want it in the current split,
---- a vertical split, etc. Instead of making users have to overwrite EACH
---- of those every time they want to change this behavior, they can instead
---- replace the `set` itself and then it will work great and they're done.
-local set = setmetatable({}, {
+local action_set = setmetatable({}, {
   __index = function(_, k)
     error("'telescope.actions.set' does not have a value: " .. tostring(k))
   end
@@ -25,7 +30,7 @@ local set = setmetatable({}, {
 --- Handles not overflowing / underflowing the list.
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param change number: The amount to shift the selection by
-set.shift_selection = function(prompt_bufnr, change)
+action_set.shift_selection = function(prompt_bufnr, change)
   local count = vim.v.count
   count = count == 0 and 1 or count
   count = a.nvim_get_mode().mode == "n" and count or 1
@@ -39,8 +44,8 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param type string: The type of selection to make
 --          Valid types include: "default", "horizontal", "vertical", "tabedit"
-set.select = function(prompt_bufnr, type)
-  return set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
+action_set.select = function(prompt_bufnr, type)
+  return action_set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
 end
 
 local edit_buffer
@@ -65,7 +70,7 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param command string: The command to use to open the file.
 --      Valid commands include: "edit", "new", "vedit", "tabedit"
-set.edit = function(prompt_bufnr, command)
+action_set.edit = function(prompt_bufnr, command)
   local entry = action_state.get_selected_entry()
 
   if not entry then
@@ -129,7 +134,7 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
-set.scroll_previewer = function (prompt_bufnr, direction)
+action_set.scroll_previewer = function (prompt_bufnr, direction)
   local status = state.get_status(prompt_bufnr)
   local default_speed = vim.api.nvim_win_get_height(status.preview_win) / 2
   local speed = status.picker.layout_config.scroll_speed or default_speed
@@ -140,5 +145,5 @@ end
 -- ==================================================
 -- Transforms modules and sets the corect metatables.
 -- ==================================================
-set = transform_mod(set)
-return set
+action_set = transform_mod(action_set)
+return action_set
