@@ -386,7 +386,7 @@ function Picker:find()
       if not last_line then last_line = 1 end
 
       if first_line > 0 or last_line > 1 then
-        log.debug("ON_LINES: Bad range", first_line, last_line)
+        log.debug("ON_LINES: Bad range", first_line, last_line, self:_get_prompt())
         return
       end
 
@@ -618,9 +618,15 @@ function Picker:change_prompt_prefix(new_prefix, hl_group)
   self:_reset_prefix_color(hl_group)
 end
 
-function Picker:reset_prompt()
-  vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, -1, false, { self.prompt_prefix })
+function Picker:reset_prompt(text)
+  local prompt_text = self.prompt_prefix .. (text or '')
+  vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, -1, false, { prompt_text })
+
   self:_reset_prefix_color(self._current_prefix_hl_group)
+
+  if text then
+    vim.api.nvim_win_set_cursor(self.prompt_win, {1, #prompt_text})
+  end
 end
 
 --- opts.new_prefix:   Either as string or { new_string, hl_group }
