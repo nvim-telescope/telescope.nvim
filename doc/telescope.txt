@@ -116,22 +116,6 @@ builtin.live_grep()                                      *builtin.live_grep()*
 
 Actions functions that are useful for people creating their own mappings.
 
-actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
-    Move the selection to the next entry
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous()*
-    Move the selection to the previous entry
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
 actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
     Move the selection to the entry that has a worse score
 
@@ -190,6 +174,54 @@ actions.remove_selection({prompt_bufnr})          *actions.remove_selection()*
 
 actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
     Toggle current entry status for multi select
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
+    Create and checkout a new git branch if it doesn't already exist
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_checkout({prompt_bufnr})                  *actions.git_checkout()*
+    Checkout an existing git branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_track_branch({prompt_bufnr})          *actions.git_track_branch()*
+    Tell git to track the currently selected remote branch in Telescope
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_delete_branch({prompt_bufnr})        *actions.git_delete_branch()*
+    Delete the currently selected branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_rebase_branch({prompt_bufnr})        *actions.git_rebase_branch()*
+    Rebase to selected git branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_staging_toggle({prompt_bufnr})      *actions.git_staging_toggle()*
+    Stage/unstage selected file
 
 
     Parameters: ~
