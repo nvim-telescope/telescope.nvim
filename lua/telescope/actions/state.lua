@@ -1,3 +1,11 @@
+---@tag telescope.actions.state
+
+---@brief [[
+--- Functions to be used to determine the current state of telescope.
+---
+--- Generally used from within other |telescope.actions|
+---@brief ]]
+
 local global_state = require('telescope.state')
 
 local action_state = {}

@@ -1,3 +1,15 @@
+---@tag telescope.actions.set
+
+---@brief [[
+--- Telescope action sets are used to provide an interface for managing
+--- actions that all primarily do the same thing, but with slight tweaks.
+---
+--- For example, when editing files you may want it in the current split,
+--- a vertical split, etc. Instead of making users have to overwrite EACH
+--- of those every time they want to change this behavior, they can instead
+--- replace the `set` itself and then it will work great and they're done.
+---@brief ]]
+
 local a = vim.api
 
 local log = require('telescope.log')
@@ -8,13 +20,6 @@ local action_state = require('telescope.actions.state')
 
 local transform_mod = require('telescope.actions.mt').transform_mod
 
---- Telescope action sets are used to provide an interface for managing
---- actions that all primarily do the same thing, but with slight tweaks.
----
---- For example, when editing files you may want it in the current split,
---- a vertical split, etc. Instead of making users have to overwrite EACH
---- of those every time they want to change this behavior, they can instead
---- replace the `set` itself and then it will work great and they're done.
 local set = setmetatable({}, {
   __index = function(_, k)
     error("'telescope.actions.set' does not have a value: " .. tostring(k))
