@@ -234,6 +234,19 @@ actions.set_command_line = function(prompt_bufnr)
   vim.cmd(entry.value)
 end
 
+actions.edit_search_line = function(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
+  actions.close(prompt_bufnr)
+  a.nvim_feedkeys(a.nvim_replace_termcodes("/" .. entry.value , true, false, true), "t", true)
+end
+
+actions.set_search_line = function(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
+
+  actions.close(prompt_bufnr)
+  a.nvim_feedkeys(a.nvim_replace_termcodes("/" .. entry.value .. "<CR>", true, false, true), "t", true)
+end
+
 actions.edit_register = function(prompt_bufnr)
   local entry = action_state.get_selected_entry(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
