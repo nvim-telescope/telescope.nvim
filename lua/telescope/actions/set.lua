@@ -44,9 +44,18 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param type string: The type of selection to make
 --          Valid types include: "default", "horizontal", "vertical", "tabedit"
-action_set.select = function(prompt_bufnr, type)
-  return action_set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
-end
+action_set.select = {
+  -- Will not be called if `select_default` is replaced rather than `action_set.select` because we never get here
+  pre = function(prompt_bufnr)
+    action_state.get_current_history():append(
+      action_state.get_current_line(),
+      action_state.get_current_picker(prompt_bufnr)
+    )
+  end,
+  action = function(prompt_bufnr, type)
+    return action_set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
+  end
+}
 
 local edit_buffer
 do
@@ -72,10 +81,6 @@ end
 --      Valid commands include: "edit", "new", "vedit", "tabedit"
 action_set.edit = function(prompt_bufnr, command)
   local entry = action_state.get_selected_entry()
-  action_state.get_current_history():append(
-    action_state.get_current_line(),
-    action_state.get_current_picker(prompt_bufnr)
-  )
 
   if not entry then
     print("[telescope] Nothing currently selected")
