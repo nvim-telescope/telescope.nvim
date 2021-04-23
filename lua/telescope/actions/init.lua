@@ -376,8 +376,9 @@ actions.git_track_branch = function(prompt_bufnr)
   end
 end
 
---- Delete the currently selected branch
----@param prompt_bufnr number: The prompt bufnr
+-- TODO: add this function header back once the treesitter max-query bug is resolved
+-- Delete the currently selected branch
+-- @param prompt_bufnr number: The prompt bufnr
 actions.git_delete_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -398,8 +399,9 @@ actions.git_delete_branch = function(prompt_bufnr)
   end
 end
 
---- Rebase to selected git branch
----@param prompt_bufnr number: The prompt bufnr
+-- TODO: add this function header back once the treesitter max-query bug is resolved
+-- Rebase to selected git branch
+-- @param prompt_bufnr number: The prompt bufnr
 actions.git_rebase_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -420,8 +422,9 @@ actions.git_rebase_branch = function(prompt_bufnr)
   end
 end
 
---- Stage/unstage selected file
----@param prompt_bufnr number: The prompt bufnr
+-- TODO: add this function header back once the treesitter max-query bug is resolved
+-- Stage/unstage selected file
+-- @param prompt_bufnr number: The prompt bufnr
 actions.git_staging_toggle = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
