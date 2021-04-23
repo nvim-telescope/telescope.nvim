@@ -3,6 +3,7 @@ local action_state = require('telescope.actions.state')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
+local entry_display = require('telescope.pickers.entry_display')
 local utils = require('telescope.utils')
 local a = require('plenary.async_lib')
 local async, await = a.async, a.await
@@ -41,11 +42,11 @@ lsp.references = function(opts)
   }):find()
 end
 
-lsp.definitions = function(opts)
+local function list_or_jump(action, title, opts)
   opts = opts or {}
 
   local params = vim.lsp.util.make_position_params()
-  local result = vim.lsp.buf_request_sync(0, "textDocument/definition", params, opts.timeout or 10000)
+  local result = vim.lsp.buf_request_sync(0, action, params, opts.timeout or 10000)
   local flattened_results = {}
   for _, server_results in pairs(result) do
     if server_results.result then
@@ -60,7 +61,7 @@ lsp.definitions = function(opts)
   else
     local locations = vim.lsp.util.locations_to_items(flattened_results)
     pickers.new(opts, {
-      prompt_title = 'LSP Definitions',
+      prompt_title = title,
       finder = finders.new_table {
         results = locations,
         entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
@@ -69,6 +70,14 @@ lsp.definitions = function(opts)
       sorter = conf.generic_sorter(opts),
     }):find()
   end
+end
+
+lsp.definitions = function(opts)
+  return list_or_jump("textDocument/definition",  'LSP Definitions', opts)
+end
+
+lsp.implementations = function(opts)
+  return list_or_jump("textDocument/implementation",  'LSP Implementations', opts)
 end
 
 lsp.document_symbols = function(opts)
@@ -123,20 +132,56 @@ lsp.code_actions = function(opts)
     return
   end
 
-  local _, response = next(results_lsp)
-  if not response then
+  local idx = 1
+  local results = {}
+  local widths = {
+    idx = 0,
+    command_title = 0,
+    client_name = 0,
+  }
+
+  for client_id, response in pairs(results_lsp) do
+    if response.result then
+      local client = vim.lsp.get_client_by_id(client_id)
+
+      for _, result in pairs(response.result) do
+        local entry = {
+          idx = idx,
+          command_title = result.title,
+          client_name = client and client.name or "",
+          command = result,
+        }
+
+        for key, value in pairs(widths) do
+          widths[key] = math.max(value, utils.strdisplaywidth(entry[key]))
+        end
+
+        table.insert(results, entry)
+        idx = idx + 1
+      end
+    end
+  end
+
+  if #results == 0 then
     print("No code actions available")
     return
   end
 
-  local results = response.result
-  if not results or #results == 0 then
-    print("No code actions available")
-    return
-  end
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = widths.idx + 1 }, -- +1 for ":" suffix
+      { width = widths.command_title },
+      { width = widths.client_name },
+    },
+  }
 
-  for i,x in ipairs(results) do
-    x.idx = i
+  local function make_display(entry)
+    return displayer {
+      {entry.idx .. ":", "TelescopePromptPrefix"},
+      {entry.command_title},
+      {entry.client_name, "TelescopeResultsComment"},
+    }
   end
 
   pickers.new(opts, {
@@ -146,9 +191,12 @@ lsp.code_actions = function(opts)
       entry_maker = function(line)
         return {
           valid = line ~= nil,
-          value = line,
-          ordinal = line.idx .. line.title,
-          display = line.idx .. ': ' .. line.title
+          value = line.command,
+          ordinal = line.idx .. line.command_title,
+          command_title = line.command_title,
+          idx = line.idx,
+          client_name = line.client_name,
+          display = make_display,
         }
       end
     },
@@ -308,6 +356,7 @@ local feature_map = {
   ["document_symbols"]  = "document_symbol",
   ["references"]        = "find_references",
   ["definitions"]       = "goto_definition",
+  ["implementations"]   = "implementation",
   ["workspace_symbols"] = "workspace_symbol",
 }
 
