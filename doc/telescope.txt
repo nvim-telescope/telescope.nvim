@@ -244,8 +244,8 @@ actions.git_checkout({prompt_bufnr})                  *actions.git_checkout()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_delete_branch({prompt_bufnr})        *actions.git_delete_branch()*
-    Delete the currently selected branch
+actions.git_track_branch({prompt_bufnr})          *actions.git_track_branch()*
+    Tell git to track the currently selected remote branch in Telescope
 
 
     Parameters: ~
