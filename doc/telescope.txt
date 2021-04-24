@@ -144,6 +144,18 @@ action_set.scroll_previewer({prompt_bufnr}, {direction})*action_set.scroll_previ
 
 
 ================================================================================
+                                                         *telescope.builtin.git*
+
+Git pickers
+
+
+================================================================================
+                                                         *telescope.builtin.lsp*
+
+LSP pickers
+
+
+================================================================================
                                                              *telescope.actions*
 
 Actions functions that are useful for people creating their own mappings.
@@ -280,31 +292,6 @@ options you want to use. Here's an example with the live_grep picker:
 This will use the default configuration options. Other configuration options
 are still in flux at the moment
 
-builtin.git_files()                                      *builtin.git_files()*
-    Lists files not ignored by git in your current directory
-
-
-
-builtin.git_commits()                                  *builtin.git_commits()*
-    Lists commits for current directory, with diff preview and checkout on <cr>
-
-
-
-builtin.git_bcommits()                                *builtin.git_bcommits()*
-    Lists commits for current buffer, with diff preview and checkout on <cr>
-
-
-
-builtin.git_branches()                                *builtin.git_branches()*
-    List branches for current directory, with log preview
-
-
-
-builtin.git_status()                                    *builtin.git_status()*
-    Lists git status for current directory
-
-
-
 
 ================================================================================
                                                        *telescope.actions.state*
@@ -330,6 +317,12 @@ action_state.get_current_picker({prompt_bufnr})*action_state.get_current_picker(
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
 
+
+
+================================================================================
+                                                       *telescope.builtin.files*
+
+File pickers
 
 
 ================================================================================
