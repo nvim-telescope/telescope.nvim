@@ -1,3 +1,8 @@
+---@tag telescope.builtin.lsp
+
+---@brief [[
+---  LSP pickers
+---@brief ]]
 local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')
 local finders = require('telescope.finders')

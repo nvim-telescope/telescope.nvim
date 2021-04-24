@@ -1,3 +1,8 @@
+---@tag telescope.builtin.git
+
+---@brief [[
+---  Git pickers
+---@brief ]]
 local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')
 local finders = require('telescope.finders')
@@ -11,6 +16,10 @@ local conf = require('telescope.config').values
 
 local git = {}
 
+--- Lists files not ignored by git in your current directory
+--- - Picker-specific options:
+---   - `show_untracked`: boolean that if true, adds the `--others` flag to the search (default true)
+---   - `recurse_submodules`: boolean that if true, adds the `--recurse-submodules` flag to the search (default false)
 git.files = function(opts)
   local show_untracked = utils.get_default(opts.show_untracked, true)
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
@@ -37,6 +46,7 @@ git.files = function(opts)
   }):find()
 end
 
+--- Lists commits for current directory, with diff preview and checkout on <cr>
 git.commits = function(opts)
   local results = utils.get_os_command_output({
     'git', 'log', '--pretty=oneline', '--abbrev-commit', '--', '.'
@@ -57,6 +67,7 @@ git.commits = function(opts)
   }):find()
 end
 
+--- Lists commits for current buffer, with diff preview and checkout on <cr>
 git.bcommits = function(opts)
   local results = utils.get_os_command_output({
     'git', 'log', '--pretty=oneline', '--abbrev-commit', vim.fn.expand('%')
@@ -77,6 +88,12 @@ git.bcommits = function(opts)
   }):find()
 end
 
+--- List branches for current directory, with log preview
+--- - Picker-specific default keymaps:
+---   - `<C-t>`: tracks currently selected branch
+---   - `<C-r>`: rebases currently selected branch
+---   - `<C-a>`: creates a new branch, with confirmation prompt before creation
+---   - `<C-d>`: deletes the currently selected branch, with confirmation prompt before deletion
 git.branches = function(opts)
   local format = '%(HEAD)'
               .. '%(refname)'
@@ -188,6 +205,9 @@ git.branches = function(opts)
   }):find()
 end
 
+--- Lists git status for current directory
+--- - Picker-specific default keymaps:
+---   - `<Tab>`: stages or unstages the currently selected file
 git.status = function(opts)
   local gen_new_finder = function()
     local expand_dir = utils.if_nil(opts.expand_dir, true, opts.expand_dir)
