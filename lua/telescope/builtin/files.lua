@@ -1,3 +1,8 @@
+---@tag telescope.builtin.files
+
+---@brief [[
+---  File pickers
+---@brief ]]
 local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')
 local action_set = require('telescope.actions.set')
@@ -30,8 +35,8 @@ end
 
 --- Search for a string in your current working directory and get results live as you type
 --- - Picker-specific options:
----   - `grep_open_files`: boolean to restrict search to open files only
----   - `search_dirs`: table of strings containing directories to search in
+---   - `grep_open_files`: boolean to restrict search to open files only, mutually exclusive with `search_dirs`
+---   - `search_dirs`: table of strings containing directories to search in, mutually exclusive with `grep_open_files`
 ---   - `vimgrep_arguments`: command line arguments to pass to the program specified by the `find_command` option
 files.live_grep = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
