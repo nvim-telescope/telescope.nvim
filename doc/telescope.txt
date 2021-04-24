@@ -133,7 +133,6 @@ action_set.edit({prompt_bufnr}, {command})                 *action_set.edit()*
         {command}      (string)  The command to use to open the file.
 
 
-
 action_set.scroll_previewer({prompt_bufnr}, {direction})*action_set.scroll_previewer()*
     Scrolls the previewer up or down
 
@@ -143,69 +142,27 @@ action_set.scroll_previewer({prompt_bufnr}, {direction})*action_set.scroll_previ
         {direction}    (number)  The direction of the scrolling
 
 
-builtin.grep_string()                                  *builtin.grep_string()*
-    Searches for the string under your cursor in your current working directory
-
-
-
-builtin.find_files()                                    *builtin.find_files()*
-    Lists files in your current working directory
-
-
-
-builtin.file_browser()                                *builtin.file_browser()*
-    Lists files and folders in your current working directory * Open files or
-    navigate the filesystem directory by directory * Create new files and
-    folders by pressing <C-e> (creates file by defualt, for folders add a '/'
-    at the end of the name)
-
-
-
-builtin.current_buffer_fuzzy_find()      *builtin.current_buffer_fuzzy_find()*
-    Fuzzy search for something in your current buffer
-
-
-
-builtin.tags()                                                *builtin.tags()*
-    Lists tags in your current working directory with preview
-
-
-
-builtin.current_buffer_tags()                  *builtin.current_buffer_tags()*
-    Lists tags for your current buffer with preview
-
-
-
-builtin.git_files()                                      *builtin.git_files()*
-    Lists files not ignored by git in your current directory
-
-
-
-builtin.git_commits()                                  *builtin.git_commits()*
-    Lists commits for current directory, with diff preview and checkout on <cr>
-
-
-
-builtin.git_bcommits()                                *builtin.git_bcommits()*
-    Lists commits for current buffer, with diff preview and checkout on <cr>
-
-
-
-builtin.git_branches()                                *builtin.git_branches()*
-    List branches for current directory, with log preview
-
-
-
-builtin.git_status()                                    *builtin.git_status()*
-    Lists git status for current directory
-
-
-
 
 ================================================================================
                                                              *telescope.actions*
 
 Actions functions that are useful for people creating their own mappings.
+
+actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
+    Move the selection to the next entry
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous()*
+    Move the selection to the previous entry
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
 
 actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
     Move the selection to the entry that has a worse score
@@ -295,7 +252,6 @@ actions.git_track_branch({prompt_bufnr})          *actions.git_track_branch()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-
 actions.open_qflist()                                  *actions.open_qflist()*
     Open the quickfix list
 
@@ -317,7 +273,66 @@ This will use the default configuration options. Other configuration options
 are still in flux at the moment
 
 builtin.live_grep()                                      *builtin.live_grep()*
-    Live grep means grep as you type.
+    Search for a string in your current working directory and get results live
+    as you type
+
+
+
+builtin.grep_string()                                  *builtin.grep_string()*
+    Searches for the string under your cursor in your current working directory
+
+
+
+builtin.find_files()                                    *builtin.find_files()*
+    Lists files in your current working directory
+
+
+
+builtin.file_browser()                                *builtin.file_browser()*
+    Lists files and folders in your current working directory * Open files or
+    navigate the filesystem directory by directory * Create new files and
+    folders by pressing <C-e> (creates file by defualt, for folders add a '/'
+    at the end of the name)
+
+
+
+builtin.current_buffer_fuzzy_find()      *builtin.current_buffer_fuzzy_find()*
+    Fuzzy search for something in your current buffer
+
+
+
+builtin.tags()                                                *builtin.tags()*
+    Lists tags in your current working directory with preview
+
+
+
+builtin.current_buffer_tags()                  *builtin.current_buffer_tags()*
+    Lists tags for your current buffer with preview
+
+
+
+builtin.git_files()                                      *builtin.git_files()*
+    Lists files not ignored by git in your current directory
+
+
+
+builtin.git_commits()                                  *builtin.git_commits()*
+    Lists commits for current directory, with diff preview and checkout on <cr>
+
+
+
+builtin.git_bcommits()                                *builtin.git_bcommits()*
+    Lists commits for current buffer, with diff preview and checkout on <cr>
+
+
+
+builtin.git_branches()                                *builtin.git_branches()*
+    List branches for current directory, with log preview
+
+
+
+builtin.git_status()                                    *builtin.git_status()*
+    Lists git status for current directory
 
 
 
