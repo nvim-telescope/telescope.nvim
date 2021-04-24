@@ -15,7 +15,7 @@ git.files = function(opts)
   local show_untracked = utils.get_default(opts.show_untracked, true)
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
   if show_untracked and recurse_submodules then
-    error("Git does not suppurt both --others and --recurse-submodules")
+    error("Git does not support both --others and --recurse-submodules")
   end
 
   -- By creating the entry maker after the cwd options,
@@ -244,7 +244,10 @@ local set_opts_cwd = function(opts)
   local use_git_root = utils.get_default(opts.use_git_root, true)
 
   if ret ~= 0 then
-    error(opts.cwd .. ' is not a git directory')
+    local is_worktree = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
+    if is_worktree == "false" then
+        error(opts.cwd .. ' is not a git directory')
+    end
   else
     if use_git_root then
       opts.cwd = git_root[1]

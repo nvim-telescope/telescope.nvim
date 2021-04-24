@@ -62,6 +62,7 @@ builtin.quickfix = require('telescope.builtin.internal').quickfix
 builtin.loclist = require('telescope.builtin.internal').loclist
 builtin.oldfiles = require('telescope.builtin.internal').oldfiles
 builtin.command_history = require('telescope.builtin.internal').command_history
+builtin.search_history = require('telescope.builtin.internal').search_history
 builtin.vim_options = require('telescope.builtin.internal').vim_options
 builtin.help_tags = require('telescope.builtin.internal').help_tags
 builtin.man_pages = require('telescope.builtin.internal').man_pages
@@ -79,6 +80,7 @@ builtin.tagstack = require('telescope.builtin.internal').tagstack
 
 builtin.lsp_references = require('telescope.builtin.lsp').references
 builtin.lsp_definitions = require('telescope.builtin.lsp').definitions
+builtin.lsp_implementations = require('telescope.builtin.lsp').implementations
 builtin.lsp_document_symbols = require('telescope.builtin.lsp').document_symbols
 builtin.lsp_code_actions = require('telescope.builtin.lsp').code_actions
 builtin.lsp_document_diagnostics = require('telescope.builtin.lsp').diagnostics

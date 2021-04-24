@@ -234,6 +234,19 @@ actions.set_command_line = function(prompt_bufnr)
   vim.cmd(entry.value)
 end
 
+actions.edit_search_line = function(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
+  actions.close(prompt_bufnr)
+  a.nvim_feedkeys(a.nvim_replace_termcodes("/" .. entry.value , true, false, true), "t", true)
+end
+
+actions.set_search_line = function(prompt_bufnr)
+  local entry = action_state.get_selected_entry(prompt_bufnr)
+
+  actions.close(prompt_bufnr)
+  a.nvim_feedkeys(a.nvim_replace_termcodes("/" .. entry.value .. "<CR>", true, false, true), "t", true)
+end
+
 actions.edit_register = function(prompt_bufnr)
   local entry = action_state.get_selected_entry(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
@@ -363,8 +376,9 @@ actions.git_track_branch = function(prompt_bufnr)
   end
 end
 
---- Delete the currently selected branch
----@param prompt_bufnr number: The prompt bufnr
+-- TODO: add this function header back once the treesitter max-query bug is resolved
+-- Delete the currently selected branch
+-- @param prompt_bufnr number: The prompt bufnr
 actions.git_delete_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -385,8 +399,9 @@ actions.git_delete_branch = function(prompt_bufnr)
   end
 end
 
---- Rebase to selected git branch
----@param prompt_bufnr number: The prompt bufnr
+-- TODO: add this function header back once the treesitter max-query bug is resolved
+-- Rebase to selected git branch
+-- @param prompt_bufnr number: The prompt bufnr
 actions.git_rebase_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -407,8 +422,9 @@ actions.git_rebase_branch = function(prompt_bufnr)
   end
 end
 
---- Stage/unstage selected file
----@param prompt_bufnr number: The prompt bufnr
+-- TODO: add this function header back once the treesitter max-query bug is resolved
+-- Stage/unstage selected file
+-- @param prompt_bufnr number: The prompt bufnr
 actions.git_staging_toggle = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()

@@ -391,6 +391,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.commands`                  | Lists Available plugin/user commands and run it.                                            |
 | `builtin.tags`                      | Lists Tags in current directory with preview (ctags -R)                                     |
 | `builtin.command_history`           | Lists Commands previously ran and run it on enter.                                          |
+| `builtin.search_history`            | Lists Searches previously ran and run it on enter.                                          |
 | `builtin.help_tags`                 | Lists Available help tags and open help document.                                           |
 | `builtin.man_pages`                 | Lists Man entries.                                                                          |
 | `builtin.marks`                     | Lists Markers and their value.                                                              |
