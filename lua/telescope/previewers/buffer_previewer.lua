@@ -184,8 +184,10 @@ previewers.new_buffer_previewer = function(opts)
     else
       local bufnr = vim.api.nvim_create_buf(false, true)
       set_bufnr(self, bufnr)
-
-      vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+      
+      vim.schedule(function()
+        vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+      end)
 
       -- TODO(conni2461): We only have to set options once. Right?
       vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:TelescopePreviewNormal')
