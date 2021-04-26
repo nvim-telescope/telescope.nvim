@@ -248,7 +248,7 @@ local function prepare_match(entry, kind)
 end
 
 --- Lists files and folders in your current working directory, open files and navigate your filesystem
---- - Important default keymaps:
+--- - Picker-specific default keymaps:
 ---   - `<CR>`: opens the currently selected file, or navigates to the currently selected directory
 ---   - `<C-e>`: creates new file in the current directory, creates a new directory if the name contains a trailing '/'
 --- - Picker-specific options:

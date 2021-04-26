@@ -38,15 +38,10 @@ builtin.current_buffer_fuzzy_find = require('telescope.builtin.files').current_b
 builtin.tags = require('telescope.builtin.files').tags
 builtin.current_buffer_tags = require('telescope.builtin.files').current_buffer_tags
 
---- Lists files not ignored by git in your current directory
 builtin.git_files = require('telescope.builtin.git').files
---- Lists commits for current directory, with diff preview and checkout on <cr>
 builtin.git_commits = require('telescope.builtin.git').commits
---- Lists commits for current buffer, with diff preview and checkout on <cr>
 builtin.git_bcommits = require('telescope.builtin.git').bcommits
---- List branches for current directory, with log preview
 builtin.git_branches = require('telescope.builtin.git').branches
---- Lists git status for current directory
 builtin.git_status = require('telescope.builtin.git').status
 
 builtin.builtin = require('telescope.builtin.internal').builtin
