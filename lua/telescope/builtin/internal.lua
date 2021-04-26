@@ -1,3 +1,8 @@
+---@tag telescope.builtin.files.internal
+
+---@brief [[
+---  Vim-related and various internal pickers
+---@brief ]]
 local actions = require('telescope.actions')
 local action_set = require('telescope.actions.set')
 local action_state = require('telescope.actions.state')
@@ -18,6 +23,8 @@ local internal = {}
 -- TODO: What the heck should we do for accepting this.
 --  vim.fn.setreg("+", "nnoremap $TODO :lua require('telescope.builtin').<whatever>()<CR>")
 -- TODO: Can we just do the names instead?
+
+--- Launch a menu to select any of the builtin Telescope pickers
 internal.builtin = function(opts)
   opts.hide_filename = utils.get_default(opts.hide_filename, true)
   opts.ignore_filename = utils.get_default(opts.ignore_filename, true)
@@ -55,6 +62,7 @@ internal.builtin = function(opts)
   }):find()
 end
 
+--- Use the telescope...
 internal.planets = function(opts)
   local show_pluto = opts.show_pluto or false
 
@@ -96,6 +104,7 @@ internal.planets = function(opts)
   }:find()
 end
 
+--- Lists symbols inside of data/telescope-sources/*.json found in your runtime path. Check README for more info
 internal.symbols = function(opts)
   local files = vim.api.nvim_get_runtime_file('data/telescope-sources/*.json', true)
   if table.getn(files) == 0 then
@@ -145,6 +154,7 @@ internal.symbols = function(opts)
   }):find()
 end
 
+--- TODO
 internal.commands = function(opts)
   pickers.new(opts, {
     prompt_title = 'Commands',
@@ -183,6 +193,7 @@ internal.commands = function(opts)
   }):find()
 end
 
+--- TODO
 internal.quickfix = function(opts)
   local locations = vim.fn.getqflist()
 
@@ -201,6 +212,7 @@ internal.quickfix = function(opts)
   }):find()
 end
 
+--- TODO
 internal.loclist = function(opts)
   local locations = vim.fn.getloclist(0)
   local filename = vim.api.nvim_buf_get_name(0)
@@ -224,6 +236,7 @@ internal.loclist = function(opts)
   }):find()
 end
 
+--- TODO
 internal.oldfiles = function(opts)
   opts.include_current_session = utils.get_default(opts.include_current_session, true)
 
@@ -267,6 +280,9 @@ internal.oldfiles = function(opts)
   }):find()
 end
 
+--- Lists commands that were executed recently, and reruns them on <CR>
+--- - Picker-specific keymaps:
+---   - `<C-e>`: open the command line with the text of the currently selected result populated in it
 internal.command_history = function(opts)
   local history_string = vim.fn.execute('history cmd')
   local history_list = vim.split(history_string, "\n")
@@ -297,6 +313,9 @@ internal.command_history = function(opts)
   }):find()
 end
 
+--- Lists searches that were executed recently, and reruns them on <CR>
+--- - Picker-specific keymaps:
+---   - `<C-e>`: open a search window with the text of the currently selected search result populated in it
 internal.search_history = function(opts)
   local search_string = vim.fn.execute('history search')
   local search_list = vim.split(search_string, "\n")
@@ -327,6 +346,7 @@ internal.search_history = function(opts)
   }):find()
 end
 
+--- TODO
 internal.vim_options = function(opts)
   -- Load vim options.
   local vim_opts = loadfile(utils.data_directory() .. path.separator .. 'options' ..
@@ -389,6 +409,7 @@ internal.vim_options = function(opts)
   }):find()
 end
 
+--- TODO
 internal.help_tags = function(opts)
   opts.lang = utils.get_default(opts.lang, vim.o.helplang)
   opts.fallback = utils.get_default(opts.fallback, true)
@@ -485,6 +506,7 @@ internal.help_tags = function(opts)
   }):find()
 end
 
+--- TODO
 internal.man_pages = function(opts)
   opts.sections = utils.get_default(opts.sections, {'1'})
   assert(vim.tbl_islist(opts.sections), 'sections should be a list')
@@ -519,6 +541,7 @@ internal.man_pages = function(opts)
   }):find()
 end
 
+--- TODO
 internal.reloader = function(opts)
   local package_list = vim.tbl_keys(package.loaded)
 
@@ -557,6 +580,7 @@ internal.reloader = function(opts)
   }):find()
 end
 
+--- TODO
 internal.buffers = function(opts)
   local bufnrs = filter(function(b)
     if 1 ~= vim.fn.buflisted(b) then
@@ -615,6 +639,7 @@ internal.buffers = function(opts)
   }):find()
 end
 
+--- TODO
 internal.colorscheme = function(opts)
   local colors = vim.list_extend(opts.colors or {}, vim.fn.getcompletion('', 'color'))
 
@@ -638,6 +663,7 @@ internal.colorscheme = function(opts)
   }):find()
 end
 
+--- TODO
 internal.marks = function(opts)
   local marks = vim.api.nvim_exec("marks", true)
   local marks_table = vim.fn.split(marks, "\n")
@@ -656,6 +682,9 @@ internal.marks = function(opts)
   }):find()
 end
 
+--- Lists vim registers, pastes the contents of the register on <cr>
+--- - Picker-specific keymaps:
+---   - `<C-e>`: edit the contents of the currently selected register
 internal.registers = function(opts)
   local registers_table = {"\"", "_", "#", "=", "_", "/", "*", "+", ":", ".", "%"}
 
@@ -687,6 +716,7 @@ internal.registers = function(opts)
 end
 
 -- TODO: make filtering include the mapping and the action
+--- Lists normal mode keymappings
 internal.keymaps = function(opts)
   local modes = {"n", "i", "c"}
   local keymaps_table = {}
@@ -729,6 +759,7 @@ internal.keymaps = function(opts)
   }):find()
 end
 
+--- TODO
 internal.filetypes = function(opts)
   local filetypes = vim.fn.getcompletion('', 'filetype')
 
@@ -749,6 +780,7 @@ internal.filetypes = function(opts)
   }):find()
 end
 
+--- TODO
 internal.highlights = function(opts)
   local highlights = vim.fn.getcompletion('', 'highlight')
 
@@ -771,6 +803,7 @@ internal.highlights = function(opts)
   }):find()
 end
 
+--- TODO
 internal.autocommands = function(opts)
   local autocmd_table = {}
 
@@ -862,6 +895,7 @@ internal.autocommands = function(opts)
   }):find()
 end
 
+--- TODO
 internal.spell_suggest = function(opts)
   if not vim.wo.spell then return false end
 
@@ -886,6 +920,7 @@ internal.spell_suggest = function(opts)
   }):find()
 end
 
+--- TODO
 internal.tagstack = function(opts)
   opts = opts or {}
   local tagstack = vim.fn.gettagstack()
