@@ -410,16 +410,17 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 
 ### LSP Pickers
 
-| Functions                           | Description                                                                                 |
-|-------------------------------------|---------------------------------------------------------------------------------------------|
-| `builtin.lsp_references`            | Searches in LSP references.                                                                 |
-| `builtin.lsp_document_symbols`      | Searches in LSP Document Symbols in the current document.                                   |
-| `builtin.lsp_workspace_symbols`     | Searches in LSP all workspace symbols.                                                      |
-| `builtin.lsp_code_actions`          | Lists LSP action to be trigged on enter.                                                    |
-| `builtin.lsp_range_code_actions`    | Lists LSP range code action to be trigged on enter.                                         |
-| `builtin.lsp_document_diagnostics`  | Lists LSP Diagnostics in the current document.                                              |
-| `builtin.lsp_workspace_diagnostics` | Lists LSP Diagnostics in the workspace if supported and otherwise open buffers.             |
-| `builtin.lsp_definitions`           | Goto definition if there is only one. If there are multiple, open them up in telescope     |
+| Functions                                   | Description                                                                                 |
+|---------------------------------------------|---------------------------------------------------------------------------------------------|
+| `builtin.lsp_references`                    | Searches in LSP references.                                                                 |
+| `builtin.lsp_document_symbols`              | Searches in LSP Document Symbols in the current document.                                   |
+| `builtin.lsp_workspace_symbols`             | Searches in LSP all workspace symbols.                                                      |
+| `builtin.lsp_dynamic_workspace_symbols`     | Searches in LSP all workspace symbols asynchronously                                        |
+| `builtin.lsp_code_actions`                  | Lists LSP action to be trigged on enter.                                                    |
+| `builtin.lsp_range_code_actions`            | Lists LSP range code action to be trigged on enter.                                         |
+| `builtin.lsp_document_diagnostics`          | Lists LSP Diagnostics in the current document.                                              |
+| `builtin.lsp_workspace_diagnostics`         | Lists LSP Diagnostics in the workspace if supported and otherwise open buffers.             |
+| `builtin.lsp_definitions`                   | Goto definition if there is only one. If there are multiple, open them up in telescope      |
 
 ### Git Pickers
 
