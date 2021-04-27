@@ -154,7 +154,7 @@ internal.symbols = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists available plugin/user commands and runs them on <cr>
 internal.commands = function(opts)
   pickers.new(opts, {
     prompt_title = 'Commands',
