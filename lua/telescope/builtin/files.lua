@@ -368,6 +368,11 @@ files.current_buffer_fuzzy_find = function(opts)
     })
   end
 
+  local ts_ok, ts_parsers = pcall(require, 'nvim-treesitter.parsers')
+  if ts_ok then
+    filetype = ts_parsers.ft_to_lang(filetype)
+  end
+
   local ok, parser = pcall(vim.treesitter.get_parser, bufnr, filetype)
   if ok then
     local query = vim.treesitter.get_query(filetype, "highlights")
