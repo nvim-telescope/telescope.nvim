@@ -240,6 +240,38 @@ do
   end
 end
 
+function make_entry.gen_from_git_stash()
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = 50 },
+      { remaining = true }
+      }
+    }
+
+  local make_display = function(entry)
+    return displayer {
+      -- {entry.value, "TelescopeResultsIdentifier"},
+      entry.msg
+    }
+  end
+
+  return function(entry)
+    if entry == "" then
+      return nil
+    end
+    local splitted = vim.split(entry, ':')
+    local msg = splitted[2]
+    return {
+      value = splitted[1],
+      ordinal = msg,
+      msg = msg,
+      display = make_display
+    }
+  end
+end
+
+
 function make_entry.gen_from_git_commits()
   local displayer = entry_display.create {
     separator = " ",
