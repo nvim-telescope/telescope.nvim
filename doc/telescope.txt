@@ -594,6 +594,12 @@ previewers.display_content()                    *previewers.display_content()*
 
 
 ================================================================================
+                                              *telescope.builtin.files.internal*
+
+Vim-related and various internal pickers
+
+
+================================================================================
                                                               *telescope.layout*
 
 Layout strategies are different functions to position telescope.
