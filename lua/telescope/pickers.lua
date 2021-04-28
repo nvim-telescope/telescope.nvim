@@ -1051,10 +1051,9 @@ function pickers.on_close_prompt(prompt_bufnr)
   picker.close_windows(status)
 end
 
+--- Get the prompt text without the prompt prefix.
 function Picker:_get_prompt()
-  return vim.trim(
-    vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, 1, false)[1]:sub(#self.prompt_prefix + 1)
-  )
+  return vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, 1, false)[1]:sub(#self.prompt_prefix + 1)
 end
 
 function Picker:_reset_highlights()
