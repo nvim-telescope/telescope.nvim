@@ -373,9 +373,9 @@ files.current_buffer_fuzzy_find = function(opts)
     filetype = ts_parsers.ft_to_lang(filetype)
   end
 
-  local ok, parser = pcall(vim.treesitter.get_parser, bufnr, filetype)
+  local parser_ok, parser = pcall(vim.treesitter.get_parser, bufnr, filetype)
   local query_ok, query = pcall(vim.treesitter.get_query, filetype, "highlights")
-  if ok and query_ok then
+  if parser_ok and query_ok then
     local root = parser:parse()[1]:root()
 
     local highlighter = vim.treesitter.highlighter.new(parser)
