@@ -146,13 +146,13 @@ action_set.scroll_previewer({prompt_bufnr}, {direction})*action_set.scroll_previ
 ================================================================================
                                                          *telescope.builtin.git*
 
-Git pickers
+Git-related pickers
 
 
 ================================================================================
                                                          *telescope.builtin.lsp*
 
-LSP pickers
+Neovim builtin LSP-related pickers
 
 
 ================================================================================
@@ -273,8 +273,10 @@ actions.open_qflist()                                  *actions.open_qflist()*
 ================================================================================
                                                              *telescope.builtin*
 
-A collection of builtin pickers for telescope, meant for both example and for
-easy startup.
+Telescope Builtins is a collection of community maintained pickers to support
+common workflows. It can be used as reference when writing PRs, Telescope
+extensions, your own custom pickers, or just as a discovery tool for all of the
+amazing pickers already shipped with Telescope!
 
 Any of these functions can just be called directly by doing:
 
@@ -322,7 +324,7 @@ action_state.get_current_picker({prompt_bufnr})*action_state.get_current_picker(
 ================================================================================
                                                        *telescope.builtin.files*
 
-File pickers
+File-related pickers
 
 
 ================================================================================
