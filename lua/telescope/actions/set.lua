@@ -10,7 +10,7 @@
 --- replace the `set` itself and then it will work great and they're done.
 ---
 --- The first two arguments of all action sets are:
----     function(prompt_bufnr, entry, ...)
+---     function(prompt_bufnr, context, ...)
 ---
 ---@brief ]]
 
@@ -48,8 +48,8 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param type string: The type of selection to make
 --          Valid types include: "default", "horizontal", "vertical", "tabedit"
-action_set.select = function(prompt_bufnr, entry, type)
-  return action_set.edit(prompt_bufnr, entry, action_state.select_key_to_edit_key(type))
+action_set.select = function(prompt_bufnr, context, type)
+  return action_set.edit(prompt_bufnr, context, action_state.select_key_to_edit_key(type))
 end
 
 local edit_buffer
@@ -74,8 +74,8 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param command string: The command to use to open the file.
 --      Valid commands include: "edit", "new", "vedit", "tabedit"
-action_set.edit = function(prompt_bufnr, entry, command)
-  entry = entry or action_state.get_selected_entry()
+action_set.edit = function(prompt_bufnr, context, command)
+  local entry = context.entry or action_state.get_selected_entry()
 
   if not entry then
     print("[telescope] Nothing currently selected")

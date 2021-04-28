@@ -232,7 +232,7 @@ mappings.execute_keymap = function(prompt_bufnr, keymap_identifier)
   --    Then we could remove all the cases where we're getting the entry in actions.
   --    ...
   --    Hmmm or we don't do that, so that it's not surprising?
-  key_func(prompt_bufnr)
+  key_func(prompt_bufnr, {})
 end
 
 mappings.clear = function(prompt_bufnr)

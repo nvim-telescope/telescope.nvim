@@ -7,17 +7,17 @@
 --- Actions functions that are useful for people creating their own mappings.
 ---
 --- All actions follow the same signature:
----     function(prompt_bufnr, entry)
+---     function(prompt_bufnr, context)
 ---
 ---         prompt_bufnr: The bufnr for the prompt
----         entry: The entry to perform the action on.
----
+---         context: Table, Valid keys:
+---             index: The multi-selection index, if applicable
+---             entry: The entry to perform the action on.
 ---
 ---@brief ]]
 
 local a = vim.api
 
-local log = require('telescope.log')
 local state = require('telescope.state')
 local utils = require('telescope.utils')
 local p_scroller = require('telescope.pickers.scroller')
@@ -35,28 +35,28 @@ local actions = setmetatable({}, {
 
 --- Move the selection to the next entry
 ---@param prompt_bufnr number: The prompt bufnr
-function actions.move_selection_next(prompt_bufnr, entry)
-  action_set.shift_selection(prompt_bufnr, entry, 1)
+function actions.move_selection_next(prompt_bufnr, context)
+  action_set.shift_selection(prompt_bufnr, context, 1)
 end
 
 --- Move the selection to the previous entry
 ---@param prompt_bufnr number: The prompt bufnr
-function actions.move_selection_previous(prompt_bufnr, entry)
-  action_set.shift_selection(prompt_bufnr, entry, -1)
+function actions.move_selection_previous(prompt_bufnr, context)
+  action_set.shift_selection(prompt_bufnr, context, -1)
 end
 
 --- Move the selection to the entry that has a worse score
 ---@param prompt_bufnr number: The prompt bufnr
-function actions.move_selection_worse(prompt_bufnr, entry)
+function actions.move_selection_worse(prompt_bufnr, context)
   local picker = action_state.get_current_picker()
-  action_set.shift_selection(prompt_bufnr, entry, p_scroller.worse(picker.sorting_strategy))
+  action_set.shift_selection(prompt_bufnr, context, p_scroller.worse(picker.sorting_strategy))
 end
 
 --- Move the selection to the entry that has a better score
 ---@param prompt_bufnr number: The prompt bufnr
-function actions.move_selection_better(prompt_bufnr, entry)
+function actions.move_selection_better(prompt_bufnr, context)
   local picker = action_state.get_current_picker()
-  action_set.shift_selection(prompt_bufnr, entry, p_scroller.better(picker.sorting_strategy))
+  action_set.shift_selection(prompt_bufnr, context, p_scroller.better(picker.sorting_strategy))
 end
 
 --- Move to the top of the picker
@@ -111,12 +111,12 @@ function actions.toggle_selection(prompt_bufnr)
   current_picker:toggle_selection(current_picker:get_selection_row())
 end
 
-function actions.preview_scrolling_up(prompt_bufnr, entry)
-  action_set.scroll_previewer(prompt_bufnr, entry, -1)
+function actions.preview_scrolling_up(prompt_bufnr, context)
+  action_set.scroll_previewer(prompt_bufnr, context, -1)
 end
 
-function actions.preview_scrolling_down(prompt_bufnr, entry)
-  action_set.scroll_previewer(prompt_bufnr, entry, 1)
+function actions.preview_scrolling_down(prompt_bufnr, context)
+  action_set.scroll_previewer(prompt_bufnr, context, 1)
 end
 
 function actions.center(_)
@@ -124,50 +124,50 @@ function actions.center(_)
 end
 
 --- THIS DOESNT ACTUALLY EXIST YET
-function actions.select_multi_default(prompt_bufnr)
-  local picker = action_state.get_current_picker()
-  local manager = picker.manager
+-- function actions.select_multi_default(prompt_bufnr)
+--   local picker = action_state.get_current_picker()
+--   local manager = picker.manager
 
-  for entry in manager:iter() do
-    action_set.select(prompt_bufnr, entry)
-  end
+--   for entry in manager:iter() do
+--     action_set.select(prompt_bufnr, context)
+--   end
 
-  actions.close(prompt_bufnr)
+--   actions.close(prompt_bufnr)
+-- end
+
+function actions.select_default(prompt_bufnr, context)
+  return action_set.select(prompt_bufnr, context, "default")
 end
 
-function actions.select_default(prompt_bufnr, entry)
-  return action_set.select(prompt_bufnr, entry, "default")
+function actions.select_horizontal(prompt_bufnr, context)
+  return action_set.select(prompt_bufnr, context, "horizontal")
 end
 
-function actions.select_horizontal(prompt_bufnr, entry)
-  return action_set.select(prompt_bufnr, entry, "horizontal")
+function actions.select_vertical(prompt_bufnr, context)
+  return action_set.select(prompt_bufnr, context, "vertical")
 end
 
-function actions.select_vertical(prompt_bufnr, entry)
-  return action_set.select(prompt_bufnr, entry, "vertical")
-end
-
-function actions.select_tab(prompt_bufnr, entry)
-  return action_set.select(prompt_bufnr, entry, "tab")
+function actions.select_tab(prompt_bufnr, context)
+  return action_set.select(prompt_bufnr, context, "tab")
 end
 
 -- TODO: consider adding float!
 -- https://github.com/nvim-telescope/telescope.nvim/issues/365
 
-function actions.file_edit(prompt_bufnr, entry)
-  return action_set.edit(prompt_bufnr, entry, "edit")
+function actions.file_edit(prompt_bufnr, context)
+  return action_set.edit(prompt_bufnr, context, "edit")
 end
 
-function actions.file_split(prompt_bufnr, entry)
-  return action_set.edit(prompt_bufnr, entry, "new")
+function actions.file_split(prompt_bufnr, context)
+  return action_set.edit(prompt_bufnr, context, "new")
 end
 
-function actions.file_vsplit(prompt_bufnr, entry)
-  return action_set.edit(prompt_bufnr, entry, "vnew")
+function actions.file_vsplit(prompt_bufnr, context)
+  return action_set.edit(prompt_bufnr, context, "vnew")
 end
 
-function actions.file_tab(prompt_bufnr, entry)
-  return action_set.edit(prompt_bufnr, entry, "tabedit")
+function actions.file_tab(prompt_bufnr, context)
+  return action_set.edit(prompt_bufnr, context, "tabedit")
 end
 
 function actions.close_pum(_)
@@ -204,35 +204,35 @@ function actions.close(prompt_bufnr)
   actions._close(prompt_bufnr, false)
 end
 
-actions.edit_command_line = function(prompt_bufnr, entry)
-  entry = entry or action_state.get_selected_entry(prompt_bufnr)
+actions.edit_command_line = function(prompt_bufnr, context)
+  local entry = context.entry or action_state.get_selected_entry(prompt_bufnr)
   actions.close(prompt_bufnr)
   a.nvim_feedkeys(a.nvim_replace_termcodes(":" .. entry.value , true, false, true), "t", true)
 end
 
-actions.set_command_line = function(prompt_bufnr, entry)
-  entry = entry or action_state.get_selected_entry()
+actions.set_command_line = function(prompt_bufnr, context)
+  local entry = context.entry or action_state.get_selected_entry()
 
   actions.close(prompt_bufnr)
   vim.fn.histadd("cmd", entry.value)
   vim.cmd(entry.value)
 end
 
-actions.edit_search_line = function(prompt_bufnr, entry)
-  entry = entry or action_state.get_selected_entry()
+actions.edit_search_line = function(prompt_bufnr, context)
+  local entry = context.entry or action_state.get_selected_entry()
   actions.close(prompt_bufnr)
   a.nvim_feedkeys(a.nvim_replace_termcodes("/" .. entry.value , true, false, true), "t", true)
 end
 
-actions.set_search_line = function(prompt_bufnr, entry)
-  entry = entry or action_state.get_selected_entry()
+actions.set_search_line = function(prompt_bufnr, context)
+  local entry = context.entry or action_state.get_selected_entry()
 
   actions.close(prompt_bufnr)
   a.nvim_feedkeys(a.nvim_replace_termcodes("/" .. entry.value .. "<CR>", true, false, true), "t", true)
 end
 
-actions.edit_register = function(prompt_bufnr, entry)
-  entry = entry or action_state.get_selected_entry()
+actions.edit_register = function(prompt_bufnr, context)
+  local entry = context.entry or action_state.get_selected_entry()
   local picker = action_state.get_current_picker()
 
   vim.fn.inputsave()
@@ -253,8 +253,8 @@ actions.edit_register = function(prompt_bufnr, entry)
   -- print(vim.inspect(picker.finder.results))
 end
 
-actions.paste_register = function(prompt_bufnr, entry)
-  entry = entry or action_state.get_selected_entry()
+actions.paste_register = function(prompt_bufnr, context)
+  local entry = context.entry or action_state.get_selected_entry()
 
   actions.close(prompt_bufnr)
 
@@ -270,8 +270,8 @@ actions.paste_register = function(prompt_bufnr, entry)
   end
 end
 
-actions.run_builtin = function(prompt_bufnr, entry)
-  entry = entry or action_state.get_selected_entry()
+actions.run_builtin = function(prompt_bufnr, context)
+  local entry = context.entry or action_state.get_selected_entry()
 
   actions._close(prompt_bufnr, true)
   require('telescope.builtin')[entry.text]()
@@ -284,8 +284,8 @@ actions.insert_symbol = function(prompt_bufnr)
 end
 
 -- TODO: Think about how to do this.
-actions.insert_value = function(prompt_bufnr, entry)
-  entry = entry or action_state.get_selected_entry()
+actions.insert_value = function(prompt_bufnr, context)
+  local entry = context.entry or action_state.get_selected_entry()
 
   vim.schedule(function()
     actions.close(prompt_bufnr)
@@ -345,8 +345,8 @@ end
 
 --- Tell git to track the currently selected remote branch in Telescope
 ---@param prompt_bufnr number: The prompt bufnr
-actions.git_track_branch = function(prompt_bufnr, entry)
-  entry = entry or action_state.get_selected_entry()
+actions.git_track_branch = function(prompt_bufnr, context)
+  local entry = context.entry or action_state.get_selected_entry()
 
   local cwd = action_state.get_current_picker().cwd
   actions.close(prompt_bufnr)
@@ -365,8 +365,8 @@ end
 -- TODO: add this function header back once the treesitter max-query bug is resolved
 -- Delete the currently selected branch
 -- @param prompt_bufnr number: The prompt bufnr
-actions.git_delete_branch = function(prompt_bufnr, entry)
-  entry = entry or action_state.get_selected_entry()
+actions.git_delete_branch = function(prompt_bufnr, context)
+  local entry = context.entry or action_state.get_selected_entry()
 
   local cwd = action_state.get_current_picker().cwd
 
@@ -389,8 +389,8 @@ end
 -- TODO: add this function header back once the treesitter max-query bug is resolved
 -- Rebase to selected git branch
 -- @param prompt_bufnr number: The prompt bufnr
-actions.git_rebase_branch = function(prompt_bufnr, entry)
-  entry = entry or action_state.get_selected_entry()
+actions.git_rebase_branch = function(prompt_bufnr, context)
+  local entry = context.entry or action_state.get_selected_entry()
 
   local cwd = action_state.get_current_picker().cwd
 
@@ -413,8 +413,8 @@ end
 -- TODO: add this function header back once the treesitter max-query bug is resolved
 -- Stage/unstage selected file
 -- @param prompt_bufnr number: The prompt bufnr
-actions.git_staging_toggle = function(prompt_bufnr, entry)
-  entry = entry or action_state.get_selected_entry()
+actions.git_staging_toggle = function(prompt_bufnr, context)
+  local entry = context.entry or action_state.get_selected_entry()
 
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   if entry.status:sub(2) == ' ' then
