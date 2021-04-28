@@ -228,6 +228,10 @@ mappings.execute_keymap = function(prompt_bufnr, keymap_identifier)
     )
   )
 
+  -- TODO(multi_action): Shoudl we just pass the entry here by default?
+  --    Then we could remove all the cases where we're getting the entry in actions.
+  --    ...
+  --    Hmmm or we don't do that, so that it's not surprising?
   key_func(prompt_bufnr)
 end
 

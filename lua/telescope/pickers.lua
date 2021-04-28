@@ -343,6 +343,7 @@ function Picker:find()
   -- TODO: We need to center this and make it prettier...
   local prompt_win, prompt_opts = popup.create('', popup_opts.prompt)
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
+  a.nvim_buf_set_name(prompt_bufnr, self.prompt_title)
   a.nvim_win_set_option(prompt_win, 'winhl', 'Normal:TelescopeNormal')
   a.nvim_win_set_option(prompt_win, 'winblend', self.window.winblend)
   local prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
@@ -1044,7 +1045,7 @@ end
 
 
 function Picker:teardown()
-  log.warn("CLEARING PICKER NOW")
+  log.trace("Clearing picker now")
 
   if self.sorter then
     self.sorter:_destroy()
@@ -1057,9 +1058,6 @@ function Picker:teardown()
   for k, _ in pairs(self) do
     self[k] = nil
   end
-
-  collectgarbage()
-  collectgarbage()
 end
 
 pickers._Picker = Picker
