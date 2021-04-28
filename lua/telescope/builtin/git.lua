@@ -1,7 +1,7 @@
 ---@tag telescope.builtin.git
 
 ---@brief [[
----  Git pickers
+---  Git-related pickers
 ---@brief ]]
 local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')

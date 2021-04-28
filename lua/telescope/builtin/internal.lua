@@ -24,7 +24,7 @@ local internal = {}
 --  vim.fn.setreg("+", "nnoremap $TODO :lua require('telescope.builtin').<whatever>()<CR>")
 -- TODO: Can we just do the names instead?
 
---- Launch a menu to select any of the builtin Telescope pickers
+--- Lists all of the community maintained pickers built into Telescope
 internal.builtin = function(opts)
   opts.hide_filename = utils.get_default(opts.hide_filename, true)
   opts.ignore_filename = utils.get_default(opts.ignore_filename, true)

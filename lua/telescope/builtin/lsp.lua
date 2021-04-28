@@ -1,7 +1,7 @@
 ---@tag telescope.builtin.lsp
 
 ---@brief [[
----  LSP pickers
+---  Neovim builtin LSP-related pickers
 ---@brief ]]
 local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')
@@ -18,7 +18,7 @@ local conf = require('telescope.config').values
 
 local lsp = {}
 
---- Searches in LSP for references
+--- Lists LSP references for word under the cursor
 --- - Picker-specific options:
 ---   - `shorten_path`: boolean where if true, will shorten path shown
 lsp.references = function(opts)
@@ -80,17 +80,17 @@ local function list_or_jump(action, title, opts)
   end
 end
 
---- Goto the definition if there's only one, otherwise show all options in Telescope
+--- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
 lsp.definitions = function(opts)
   return list_or_jump("textDocument/definition",  'LSP Definitions', opts)
 end
 
---- Goto implementation if there's only one, otherwise show all options in Telescope
+--- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
 lsp.implementations = function(opts)
   return list_or_jump("textDocument/implementation",  'LSP Implementations', opts)
 end
 
---- Searches for LSP document symbols in the current buffer
+--- Lists LSP document symbols in the current buffer
 --- - Picker-specific options:
 ---   - `ignore_filename`: string with file to ignore
 lsp.document_symbols = function(opts)
@@ -126,7 +126,7 @@ lsp.document_symbols = function(opts)
   }):find()
 end
 
---- Lists any LSP actions for the current line, that can be triggered with <cr>
+--- Lists any LSP actions for the word under the cursor, that can be triggered with <cr>
 lsp.code_actions = function(opts)
   local params = opts.params or vim.lsp.util.make_range_params()
 
@@ -238,13 +238,13 @@ lsp.code_actions = function(opts)
   }):find()
 end
 
---- Lists any LSP actions for a certain range, that can be triggered with <cr>
+--- Lists any LSP actions for a given range, that can be triggered with <cr>
 lsp.range_code_actions = function(opts)
  opts.params = vim.lsp.util.make_given_range_params()
  lsp.code_actions(opts)
 end
 
---- Searches for LSP document symbols in the current workspace
+--- Lists LSP document symbols in the current workspace
 --- - Picker-specific options:
 ---   - `shorten_path`: boolean where if true, will shorten path shown
 ---   - `ignore_filename`: string with file to ignore
@@ -304,7 +304,7 @@ local function get_workspace_symbols_requester(bufnr)
   end)
 end
 
---- Searches LSP for all workspace symbols asynchronously
+--- Lists LSP for all workspace symbols asynchronously
 lsp.dynamic_workspace_symbols = function(opts)
   local curr_bufnr = vim.api.nvim_get_current_buf()
 
@@ -319,7 +319,7 @@ lsp.dynamic_workspace_symbols = function(opts)
   }):find()
 end
 
---- Searches LSP diagnostics in the current buffer
+--- Lists LSP diagnostics for the current buffer
 lsp.diagnostics = function(opts)
   local locations = utils.diagnostics_to_tbl(opts)
 
@@ -343,7 +343,7 @@ lsp.diagnostics = function(opts)
   }):find()
 end
 
---- Searches LSP diagnostics in the workspace if supported, otherwise searches in open buffers
+--- Lists LSP diagnostics for the current workspace if supported, otherwise searches in all open buffers
 lsp.workspace_diagnostics = function(opts)
   opts = utils.get_default(opts, {})
   opts.hide_filename = utils.get_default(opts.hide_filename, false)

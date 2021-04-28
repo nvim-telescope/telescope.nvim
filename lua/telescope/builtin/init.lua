@@ -1,7 +1,9 @@
 ---@tag telescope.builtin
 
 ---@brief [[
---- A collection of builtin pickers for telescope, meant for both example and for easy startup.
+--- Telescope Builtins is a collection of community maintained pickers to support common workflows. It can be used as
+--- reference when writing PRs, Telescope extensions, your own custom pickers, or just as a discovery tool for all of
+--- the amazing pickers already shipped with Telescope!
 ---
 --- Any of these functions can just be called directly by doing:
 ---

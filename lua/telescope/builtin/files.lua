@@ -1,7 +1,7 @@
 ---@tag telescope.builtin.files
 
 ---@brief [[
----  File pickers
+---  File-related pickers
 ---@brief ]]
 local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')
@@ -243,8 +243,8 @@ local function prepare_match(entry, kind)
   return entries
 end
 
---- Ivy-like file explorer. Lists files and folders in your current working directory, open files, navigate your
---- filesystem, and create new files and folders
+--- Lists files and folders in your current working directory, open files, navigate your filesystem, and create new
+--- files and folders
 --- - Picker-specific default keymaps:
 ---   - `<cr>`: opens the currently selected file, or navigates to the currently selected directory
 ---   - `<C-e>`: creates new file in the current directory, creates a new directory if the name contains a trailing '/'
@@ -462,7 +462,8 @@ files.current_buffer_fuzzy_find = function(opts)
   }):find()
 end
 
---- Lists all of the tags for the current directory, with a preview (ctags -R)
+--- Lists tags in current directory with tag location file preview (users are required to run ctags -R to generate tags
+--- or update when introducing new changes)
 --- - Picker-specific options:
 ---   - `ctags_file`: specify a particular ctags file to use
 files.tags = function(opts)
