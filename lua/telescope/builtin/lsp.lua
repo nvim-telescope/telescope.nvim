@@ -343,7 +343,7 @@ lsp.diagnostics = function(opts)
   }):find()
 end
 
---- Searches LSP diagnostics in the workspace if supported, otherwise searches in open buffers 
+--- Searches LSP diagnostics in the workspace if supported, otherwise searches in open buffers
 lsp.workspace_diagnostics = function(opts)
   opts = utils.get_default(opts, {})
   opts.hide_filename = utils.get_default(opts.hide_filename, false)
