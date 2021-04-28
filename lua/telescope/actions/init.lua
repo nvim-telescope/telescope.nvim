@@ -21,49 +21,9 @@ local transform_mod = require('telescope.actions.mt').transform_mod
 
 local actions = setmetatable({}, {
   __index = function(_, k)
-    -- TODO(conni2461): Remove deprecated messages
-    if k:find('goto_file_selection') then
-      error("`" .. k .. "` is removed and no longer usable. " ..
-        "Use `require('telescope.actions').select_` instead. Take a look at developers.md for more Information.")
-    elseif k == '_goto_file_selection' then
-      error("`_goto_file_selection` is deprecated and no longer replaceable. " ..
-        "Use `require('telescope.actions.set').edit` instead. Take a look at developers.md for more Information.")
-    end
-
     error("Key does not exist for 'telescope.actions': " .. tostring(k))
   end
 })
-
--- TODO(conni2461): Remove deprecated messages
-local action_is_deprecated = function(name, err)
-  local messager = err and error or log.info
-
-  return messager(
-    string.format("`actions.%s()` is deprecated."
-      .. "Use require('telescope.actions.state').%s() instead",
-      name,
-      name
-    )
-  )
-end
-
-function actions.get_selected_entry()
-  -- TODO(1.0): Remove
-  action_is_deprecated("get_selected_entry")
-  return action_state.get_selected_entry()
-end
-
-function actions.get_current_line()
-  -- TODO(1.0): Remove
-  action_is_deprecated("get_current_line")
-  return action_state.get_current_line()
-end
-
-function actions.get_current_picker(prompt_bufnr)
-  -- TODO(1.0): Remove
-  action_is_deprecated("get_current_picker")
-  return action_state.get_current_picker(prompt_bufnr)
-end
 
 --- Move the selection to the next entry
 ---@param prompt_bufnr number: The prompt bufnr
@@ -155,6 +115,17 @@ function actions.center(_)
   vim.cmd(':normal! zz')
 end
 
+function actions.select_multi_default(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  local manager = picker.manager
+
+  for entry in manager:iter() do
+    action_set.select(entry)
+  end
+
+  actions.close(prompt_bufnr)
+end
+
 function actions.select_default(prompt_bufnr)
   return action_set.select(prompt_bufnr, "default")
 end
@@ -197,31 +168,36 @@ function actions.close_pum(_)
 end
 
 actions._close = function(prompt_bufnr, keepinsert)
+  log.warn("Closing:", prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
 
-  if picker.previewer then
-    picker.previewer:teardown()
-  end
+  -- TODO: I don't think I want this here, because it will get cleared
+  -- when we do a NEW picker.
+  -- picker:teardown()
 
   actions.close_pum(prompt_bufnr)
   if not keepinsert then
     vim.cmd [[stopinsert]]
   end
 
-  vim.api.nvim_win_close(prompt_win, true)
+  if prompt_win and a.nvim_win_is_valid(prompt_win) then
+    vim.api.nvim_win_close(prompt_win, true)
+    pcall(a.nvim_set_current_win, original_win_id)
+  end
 
-  pcall(vim.cmd, string.format([[silent bdelete! %s]], prompt_bufnr))
-  pcall(a.nvim_set_current_win, original_win_id)
+  if prompt_bufnr and a.nvim_buf_is_valid(prompt_bufnr) then
+    pcall(a.nvim_buf_delete, prompt_bufnr, { force = true })
+  end
 end
 
 function actions.close(prompt_bufnr)
   actions._close(prompt_bufnr, false)
 end
 
-actions.edit_command_line = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry(prompt_bufnr)
+actions.edit_command_line = function(prompt_bufnr, entry)
+  entry = entry or action_state.get_selected_entry(prompt_bufnr)
   actions.close(prompt_bufnr)
   a.nvim_feedkeys(a.nvim_replace_termcodes(":" .. entry.value , true, false, true), "t", true)
 end

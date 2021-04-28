@@ -1,3 +1,5 @@
+require('telescope')
+
 local a = vim.api
 local popup = require('popup')
 
@@ -7,8 +9,6 @@ local async_util = async_lib.util
 local async = async_lib.async
 local await = async_lib.await
 local channel = async_util.channel
-
-require('telescope')
 
 local actions = require('telescope.actions')
 local action_set = require('telescope.actions.set')
@@ -281,6 +281,8 @@ function Picker:_next_find_id()
 end
 
 function Picker:find()
+  state.set_current_picker(self)
+
   self:close_existing_pickers()
   self:reset_selection()
 
@@ -421,21 +423,7 @@ function Picker:find()
   end)
 
   -- Register attach
-  vim.api.nvim_buf_attach(prompt_bufnr, false, {
-    on_lines = tx.send,
-    on_detach = function()
-      -- TODO: Can we add a "cleanup" / "teardown" function that completely removes these.
-      self.finder = nil
-      self.previewer = nil
-      self.sorter = nil
-      self.manager = nil
-
-      self.closed = true
-
-      -- TODO: Should we actually do this?
-      collectgarbage(); collectgarbage()
-    end,
-  })
+  vim.api.nvim_buf_attach(prompt_bufnr, false, { on_lines = tx.send })
 
   if self.sorter then self.sorter:_init() end
   async_lib.run(main_loop())
@@ -491,56 +479,6 @@ function Picker:hide_preview()
   -- 2. Resize prompt & results windows accordingly
 end
 
-
-function Picker.close_windows(status)
-  local prompt_win = status.prompt_win
-  local results_win = status.results_win
-  local preview_win = status.preview_win
-
-  local prompt_border_win = status.prompt_border_win
-  local results_border_win = status.results_border_win
-  local preview_border_win = status.preview_border_win
-
-  local function del_win(name, win_id, force, bdelete)
-    if not vim.api.nvim_win_is_valid(win_id) then
-      return
-    end
-
-    local bufnr = vim.api.nvim_win_get_buf(win_id)
-    if bdelete
-        and vim.api.nvim_buf_is_valid(bufnr)
-        and not vim.api.nvim_buf_get_option(bufnr, 'buflisted') then
-      vim.cmd(string.format("silent! bdelete! %s", bufnr))
-    end
-
-    if not vim.api.nvim_win_is_valid(win_id) then
-      return
-    end
-
-    if not pcall(vim.api.nvim_win_close, win_id, force) then
-      log.trace("Unable to close window: ", name, "/", win_id)
-    end
-  end
-
-  del_win("prompt_win", prompt_win, true)
-  del_win("results_win", results_win, true, true)
-  del_win("preview_win", preview_win, true, true)
-
-  del_win("prompt_border_win", prompt_border_win, true, true)
-  del_win("results_border_win", results_border_win, true, true)
-  del_win("preview_border_win", preview_border_win, true, true)
-
-  -- vim.cmd(string.format("bdelete! %s", status.prompt_bufnr))
-
-  -- Major hack?? Why do I have to od this.
-  --    Probably because we're currently IN the buffer.
-  --    Should wait to do this until after we're done.
-  vim.defer_fn(function()
-    del_win("prompt_win", prompt_win, true)
-  end, 10)
-
-  state.clear_status(status.prompt_bufnr)
-end
 
 function Picker:get_selection()
   return self._selection_entry
@@ -872,9 +810,16 @@ function Picker:_on_complete()
   end
 end
 
+--- TODO: Can we remove this?
 function Picker:close_existing_pickers()
   for _, prompt_bufnr in ipairs(state.get_existing_prompts()) do
-    pcall(actions.close, prompt_bufnr)
+    error("Shouldn't happen -- close_existing_pickers: " .. tostring(prompt_bufnr))
+    -- pcall(actions.close, prompt_bufnr)
+    -- local prompt_picker = (state.get_status(prompt_bufnr) or {}).picker
+    -- if prompt_picker then
+    --   log.warn("Tearing down picker...")
+    --   prompt_picker:teardown()
+    -- end
   end
 end
 
@@ -1036,21 +981,6 @@ pickers.new = function(opts, defaults)
   return Picker:new(result)
 end
 
-function pickers.on_close_prompt(prompt_bufnr)
-  local status = state.get_status(prompt_bufnr)
-  local picker = status.picker
-
-  if picker.sorter then
-    picker.sorter:_destroy()
-  end
-
-  if picker.previewer then
-    picker.previewer:teardown()
-  end
-
-  picker.close_windows(status)
-end
-
 --- Get the prompt text without the prompt prefix.
 function Picker:_get_prompt()
   return vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, 1, false)[1]:sub(#self.prompt_prefix + 1)
@@ -1060,7 +990,78 @@ function Picker:_reset_highlights()
   self.highlighter:clear_display()
 end
 
-pickers._Picker = Picker
+function pickers.on_close_prompt(prompt_bufnr)
+  pickers.close_windows(state.get_status(prompt_bufnr))
+end
 
+function pickers.close_windows(status)
+  local prompt_win = status.prompt_win
+  local results_win = status.results_win
+  local preview_win = status.preview_win
+
+  local prompt_border_win = status.prompt_border_win
+  local results_border_win = status.results_border_win
+  local preview_border_win = status.preview_border_win
+
+  local function del_win(name, win_id, force, bdelete)
+    if not vim.api.nvim_win_is_valid(win_id) then
+      return
+    end
+
+    local bufnr = vim.api.nvim_win_get_buf(win_id)
+    if bdelete
+        and vim.api.nvim_buf_is_valid(bufnr)
+        and not vim.api.nvim_buf_get_option(bufnr, 'buflisted') then
+      a.nvim_buf_delete(bufnr, { force = true })
+    end
+
+    if not vim.api.nvim_win_is_valid(win_id) then
+      return
+    end
+
+    if not pcall(vim.api.nvim_win_close, win_id, force) then
+      log.trace("Unable to close window: ", name, "/", win_id)
+    end
+  end
+
+  del_win("prompt_win", prompt_win, true)
+  del_win("results_win", results_win, true, true)
+  del_win("preview_win", preview_win, true, true)
+
+  del_win("prompt_border_win", prompt_border_win, true, true)
+  del_win("results_border_win", results_border_win, true, true)
+  del_win("preview_border_win", preview_border_win, true, true)
+
+  -- Major hack?? Why do I have to od this.
+  --    Probably because we're currently IN the buffer.
+  --    Should wait to do this until after we're done.
+  vim.defer_fn(function()
+    del_win("prompt_win", prompt_win, true)
+  end, 10)
+
+  state.clear_status(status.prompt_bufnr)
+end
+
+
+function Picker:teardown()
+  log.warn("CLEARING PICKER NOW")
+
+  if self.sorter then
+    self.sorter:_destroy()
+  end
+
+  if self.previewer then
+    self.previewer:teardown()
+  end
+
+  for k, _ in pairs(self) do
+    self[k] = nil
+  end
+
+  collectgarbage()
+  collectgarbage()
+end
+
+pickers._Picker = Picker
 
 return pickers
