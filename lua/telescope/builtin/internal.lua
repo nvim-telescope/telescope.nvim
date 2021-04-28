@@ -612,26 +612,6 @@ internal.buffers = function(opts)
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
     default_selection_index = default_selection_idx,
-    attach_mappings = function(prompt_bufnr, map)
-      local delete_buf = function()
-        local current_picker = action_state.get_current_picker(prompt_bufnr)
-        local multi_selection = current_picker:get_multi_selection()
-
-        if vim.tbl_isempty(multi_selection) then
-          local selection = action_state.get_selected_entry()
-          actions.close(prompt_bufnr)
-          vim.api.nvim_buf_delete(selection.bufnr, {force = true})
-        else
-          actions.close(prompt_bufnr)
-          for _, selection in ipairs(multi_selection) do
-            vim.api.nvim_buf_delete(selection.bufnr, {force = true})
-          end
-        end
-      end
-      map('i', '<C-r>', delete_buf)
-      map('n', '<C-r>', delete_buf)
-      return true
-    end
   }):find()
 end
 
