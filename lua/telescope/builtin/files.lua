@@ -247,7 +247,7 @@ files.file_browser = function(opts)
         table.insert(data, typ == 'directory' and (entry .. os_sep) or entry)
       end
     })
-    table.insert(data, 1, '../')
+    table.insert(data, 1, '..' .. os_sep)
 
     return finders.new_table {
       results = data,
