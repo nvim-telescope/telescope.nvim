@@ -554,8 +554,9 @@ actions.open_qflist = function(_)
   vim.cmd [[copen]]
 end
 
---- Delete the selected buffer or all the buffers selected using multi selection.
----@param prompt_bufnr number: The prompt bufnr
+-- TODO: add this function header back once the treesitter max-query bug is resolved
+-- Delete the selected buffer or all the buffers selected using multi selection.
+-- @param prompt_bufnr number: The prompt bufnr
 actions.delete_buffer = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local multi_selection = current_picker:get_multi_selection()

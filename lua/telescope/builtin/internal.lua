@@ -612,6 +612,10 @@ internal.buffers = function(opts)
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
     default_selection_index = default_selection_idx,
+    attach_mappings = function(_, map)
+      map('i', '<M-w>', actions.delete_buffer)
+      map('n', '<M-w>', actions.delete_buffer)
+    end,
   }):find()
 end
 
