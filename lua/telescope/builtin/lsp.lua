@@ -126,7 +126,7 @@ lsp.document_symbols = function(opts)
   }):find()
 end
 
---- Lists any LSP actions for the current line, that can be triggered with <CR>
+--- Lists any LSP actions for the current line, that can be triggered with <cr>
 lsp.code_actions = function(opts)
   local params = opts.params or vim.lsp.util.make_range_params()
 
@@ -238,7 +238,7 @@ lsp.code_actions = function(opts)
   }):find()
 end
 
---- Lists any LSP actions for a certain range, that can be triggered with <CR>
+--- Lists any LSP actions for a certain range, that can be triggered with <cr>
 lsp.range_code_actions = function(opts)
  opts.params = vim.lsp.util.make_given_range_params()
  lsp.code_actions(opts)
@@ -319,7 +319,7 @@ lsp.dynamic_workspace_symbols = function(opts)
   }):find()
 end
 
---- Searches LSP for all diagnostics in the current buffer
+--- Searches LSP diagnostics in the current buffer
 lsp.diagnostics = function(opts)
   local locations = utils.diagnostics_to_tbl(opts)
 
@@ -343,7 +343,7 @@ lsp.diagnostics = function(opts)
   }):find()
 end
 
---- Searches LSP for all diagnostics in the current workspace
+--- Searches LSP diagnostics in the workspace if supported, otherwise searches in open buffers 
 lsp.workspace_diagnostics = function(opts)
   opts = utils.get_default(opts, {})
   opts.hide_filename = utils.get_default(opts.hide_filename, false)

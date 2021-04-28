@@ -33,11 +33,10 @@ local escape_chars = function(string)
   })
 end
 
---- Search for a string in your current working directory and get results live as you type
+--- Search for a string in your current working directory and get results live as you type (respecting .gitignore)
 --- - Picker-specific options:
 ---   - `grep_open_files`: boolean to restrict search to open files only, mutually exclusive with `search_dirs`
 ---   - `search_dirs`: table of strings containing directories to search in, mutually exclusive with `grep_open_files`
----   - `vimgrep_arguments`: command line arguments to pass to the program specified by the `find_command` option
 files.live_grep = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
@@ -105,8 +104,6 @@ end
 --- - Picker-specific options:
 ---   - `search`: the string to search
 ---   - `search_dirs`: table of strings containing directories to search in
----   - `vimgrep_arguments`: command line arguments to pass to the program specified by the `find_command` option
---    - `word_match`: TODO
 files.grep_string = function(opts)
   -- TODO: This should probably check your visual selection as well, if you've got one
 
@@ -147,7 +144,6 @@ end
 --- Lists files in your current working directory
 --- - Picker-specific options:
 ---   - `find_command`: command line arguments for `find_files` to use specifically for the search, overrides default
----     `vimgrep_arguments` key in your Telescope configuration
 --    - `follow`: TODO
 ---   - `hidden`: boolean that determines whether to show hidden files or not
 ---   - `search_dirs`: table of strings containing directories to search in
@@ -247,9 +243,10 @@ local function prepare_match(entry, kind)
   return entries
 end
 
---- Lists files and folders in your current working directory, open files and navigate your filesystem
+--- Ivy-like file explorer. Lists files and folders in your current working directory, open files, navigate your
+--- filesystem, and create new files and folders
 --- - Picker-specific default keymaps:
----   - `<CR>`: opens the currently selected file, or navigates to the currently selected directory
+---   - `<cr>`: opens the currently selected file, or navigates to the currently selected directory
 ---   - `<C-e>`: creates new file in the current directory, creates a new directory if the name contains a trailing '/'
 --- - Picker-specific options:
 ---   - `search_dirs`: table of strings containing directories to search in

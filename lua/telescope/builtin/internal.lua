@@ -193,7 +193,7 @@ internal.commands = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists items in the quickfix list
 internal.quickfix = function(opts)
   local locations = vim.fn.getqflist()
 
@@ -212,7 +212,7 @@ internal.quickfix = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists items from the current window's location list
 internal.loclist = function(opts)
   local locations = vim.fn.getloclist(0)
   local filename = vim.api.nvim_buf_get_name(0)
@@ -236,7 +236,7 @@ internal.loclist = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists previously open files
 internal.oldfiles = function(opts)
   opts.include_current_session = utils.get_default(opts.include_current_session, true)
 
@@ -280,7 +280,7 @@ internal.oldfiles = function(opts)
   }):find()
 end
 
---- Lists commands that were executed recently, and reruns them on <CR>
+--- Lists commands that were executed recently, and reruns them on <cr>
 --- - Picker-specific keymaps:
 ---   - `<C-e>`: open the command line with the text of the currently selected result populated in it
 internal.command_history = function(opts)
@@ -313,7 +313,7 @@ internal.command_history = function(opts)
   }):find()
 end
 
---- Lists searches that were executed recently, and reruns them on <CR>
+--- Lists searches that were executed recently, and reruns them on <cr>
 --- - Picker-specific keymaps:
 ---   - `<C-e>`: open a search window with the text of the currently selected search result populated in it
 internal.search_history = function(opts)
@@ -346,7 +346,7 @@ internal.search_history = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists vim options, allows you to edit the current value on <cr>
 internal.vim_options = function(opts)
   -- Load vim options.
   local vim_opts = loadfile(utils.data_directory() .. path.separator .. 'options' ..
@@ -409,7 +409,7 @@ internal.vim_options = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists available help tags and opens a new window with the relevant help info on <cr>
 internal.help_tags = function(opts)
   opts.lang = utils.get_default(opts.lang, vim.o.helplang)
   opts.fallback = utils.get_default(opts.fallback, true)
@@ -506,7 +506,7 @@ internal.help_tags = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists manpage entries, opens them in a help window on <cr>
 internal.man_pages = function(opts)
   opts.sections = utils.get_default(opts.sections, {'1'})
   assert(vim.tbl_islist(opts.sections), 'sections should be a list')
@@ -541,7 +541,7 @@ internal.man_pages = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists lua modules and reloads them on <cr>
 internal.reloader = function(opts)
   local package_list = vim.tbl_keys(package.loaded)
 
@@ -580,7 +580,7 @@ internal.reloader = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists open buffers in current neovim instance
 internal.buffers = function(opts)
   local bufnrs = filter(function(b)
     if 1 ~= vim.fn.buflisted(b) then
@@ -639,7 +639,7 @@ internal.buffers = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists available colorschemes and applies them on <cr>
 internal.colorscheme = function(opts)
   local colors = vim.list_extend(opts.colors or {}, vim.fn.getcompletion('', 'color'))
 
@@ -663,7 +663,7 @@ internal.colorscheme = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists vim marks and their value
 internal.marks = function(opts)
   local marks = vim.api.nvim_exec("marks", true)
   local marks_table = vim.fn.split(marks, "\n")
@@ -759,7 +759,7 @@ internal.keymaps = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists all available filetypes
 internal.filetypes = function(opts)
   local filetypes = vim.fn.getcompletion('', 'filetype')
 
@@ -780,7 +780,7 @@ internal.filetypes = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists all available highlights
 internal.highlights = function(opts)
   local highlights = vim.fn.getcompletion('', 'highlight')
 
@@ -803,7 +803,7 @@ internal.highlights = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists vim autocommands and goes to their declaration on <cr>
 internal.autocommands = function(opts)
   local autocmd_table = {}
 
@@ -895,7 +895,7 @@ internal.autocommands = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists spelling suggestions for the current word under the cursor, replaces word with selected suggestion on <cr>
 internal.spell_suggest = function(opts)
   if not vim.wo.spell then return false end
 
@@ -920,7 +920,7 @@ internal.spell_suggest = function(opts)
   }):find()
 end
 
---- TODO
+--- Lists the tag stack for the current window
 internal.tagstack = function(opts)
   opts = opts or {}
   local tagstack = vim.fn.gettagstack()
