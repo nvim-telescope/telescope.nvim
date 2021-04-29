@@ -615,6 +615,7 @@ internal.buffers = function(opts)
     attach_mappings = function(_, map)
       map('i', '<M-w>', actions.delete_buffer)
       map('n', '<M-w>', actions.delete_buffer)
+      return true
     end,
   }):find()
 end
