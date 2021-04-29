@@ -138,6 +138,8 @@ end
 --   end or nil)
 utils.path_shorten = pathlib.shorten
 
+utils.path_relative = pathlib.make_relative
+
 utils.path_tail = (function()
   local os_sep = utils.get_separator()
   local match_string = '[^' .. os_sep .. ']*$'
