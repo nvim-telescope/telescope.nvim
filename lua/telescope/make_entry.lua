@@ -369,11 +369,14 @@ function make_entry.gen_from_lsp_symbols(opts)
       msg = vim.trim(msg)
     else
       local filename = ""
-      opts.tail_path = get_default(opts.tail_path, true)
 
       if not opts.hide_filename then -- hide the filename entirely
         filename = entry.filename
-        if opts.tail_path then
+        if opts.relative_path then
+          -- path relative to LSP root
+          local lsp_workspaces = vim.api.nvim_buf_call(vim.fn.bufnr('#'), vim.lsp.buf.list_workspace_folders)
+          filename = vim.tbl_isempty(lsp_workspaces) and filename or utils.path_relative(filename, lsp_workspaces[1])
+        elseif opts.tail_path then
           filename = utils.path_tail(filename)
         elseif opts.shorten_path then
           filename = utils.path_shorten(filename)

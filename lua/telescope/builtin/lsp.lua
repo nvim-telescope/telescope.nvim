@@ -230,7 +230,9 @@ lsp.range_code_actions = function(opts)
 end
 
 lsp.workspace_symbols = function(opts)
-  opts.shorten_path = utils.get_default(opts.shorten_path, true)
+  opts.relative_path = opts.relative_path or utils.get_default(opts.relative_path, true)
+  opts.tail_path     = opts.tail_path or utils.get_default(opts.tail_path, false)
+  opts.shorten_path  = opts.shorten_path or utils.get_default(opts.shorten_path, false)
 
   local params = {query = opts.query or ''}
   local results_lsp = vim.lsp.buf_request_sync(0, "workspace/symbol", params, opts.timeout or 10000)
