@@ -71,7 +71,7 @@ git.stash = function(opts)
     previewer = previewers.git_stash_diff.new(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
-      actions.select_default:replace(actions.git_checkout)
+      actions.select_default:replace(actions.git_apply_stash)
       return true
     end
   }):find()
