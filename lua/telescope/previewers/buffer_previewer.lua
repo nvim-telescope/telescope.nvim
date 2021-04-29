@@ -508,8 +508,8 @@ previewers.git_stash_diff = defaulter(function(opts)
       return entry.value
     end,
 
-    define_preview = function(self, entry, status)
-      putils.job_maker({ 'git', '--no-pager', 'stash', 'show', entry.value }, self.state.bufnr, {
+    define_preview = function(self, entry, _)
+      putils.job_maker({ 'git', '--no-pager', 'stash', 'show', '-p',  entry.value }, self.state.bufnr, {
         value = entry.value,
         bufname = self.state.bufname,
         cwd = opts.cwd
