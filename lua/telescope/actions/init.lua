@@ -481,12 +481,20 @@ actions.add_selected_to_qflist = function(prompt_bufnr)
   send_selected_to_qf(prompt_bufnr, 'a')
 end
 
+actions.send_selected_to_new_qflist = function(prompt_bufnr)
+  send_selected_to_qf(prompt_bufnr, ' ')
+end
+
 actions.send_to_qflist = function(prompt_bufnr)
   send_all_to_qf(prompt_bufnr, 'r')
 end
 
 actions.add_to_qflist = function(prompt_bufnr)
   send_all_to_qf(prompt_bufnr, 'a')
+end
+
+actions.send_to_new_qflist = function(prompt_bufnr)
+  send_all_to_qf(prompt_bufnr, ' ')
 end
 
 local smart_send = function(prompt_bufnr, mode)
