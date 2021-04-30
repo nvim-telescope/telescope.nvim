@@ -16,7 +16,7 @@ local conf = require('telescope.config').values
 
 local git = {}
 
---- Lists files not ignored by git in your current directory
+--- Fuzzy search through the output of `git ls-files` command, respects .gitignore, optionally ignores untracked files
 --- - Picker-specific options:
 ---   - `show_untracked`: boolean that if true, adds the `--others` flag to the search (default true)
 ---   - `recurse_submodules`: boolean that if true, adds the `--recurse-submodules` flag to the search (default false)

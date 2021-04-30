@@ -141,7 +141,7 @@ end
 
 -- TODO: Maybe just change this to `find`.
 -- TODO: Support `find` and maybe let people do other stuff with it as well.
---- Lists files in your current working directory
+--- Lists files in your current working directory, respects .gitignore
 --- - Picker-specific options:
 ---   - `find_command`: command line arguments for `find_files` to use specifically for the search, overrides default
 --    - `follow`: TODO
