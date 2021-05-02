@@ -928,7 +928,7 @@ end
 
 internal.jumplist = function(opts)
   opts = opts or {}
-  local jumplist = vim.api.nvim_eval('getjumplist()')[1]
+  local jumplist = vim.fn.getjumplist()[1]
 
   for _, value in ipairs(jumplist) do
     value.text = ''
@@ -937,7 +937,7 @@ internal.jumplist = function(opts)
   -- reverse the list
   local sorted_jumplist = {}
   for i = #jumplist, 1, -1 do
-    sorted_jumplist[#sorted_jumplist+1] = jumplist[i]
+    table.insert(sorted_jumplist, jumplist[i])
   end
 
   pickers.new(opts, {
