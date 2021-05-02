@@ -10,10 +10,6 @@ docs.test = function()
   local input_files = {
     "./lua/telescope/init.lua",
     "./lua/telescope/builtin/init.lua",
-    "./lua/telescope/builtin/files.lua",
-    "./lua/telescope/builtin/git.lua",
-    "./lua/telescope/builtin/internal.lua",
-    "./lua/telescope/builtin/lsp.lua",
     "./lua/telescope/pickers/layout_strategies.lua",
     "./lua/telescope/actions/init.lua",
     "./lua/telescope/actions/state.lua",

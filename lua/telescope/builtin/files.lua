@@ -1,8 +1,3 @@
----@tag telescope.builtin.files
-
----@brief [[
----  File-related pickers
----@brief ]]
 local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')
 local action_set = require('telescope.actions.set')
@@ -33,10 +28,6 @@ local escape_chars = function(string)
   })
 end
 
---- Search for a string in your current working directory and get results live as you type (respecting .gitignore)
---- - Picker-specific options:
----   - `grep_open_files`: boolean to restrict search to open files only, mutually exclusive with `search_dirs`
----   - `search_dirs`: table of strings containing directories to search in, mutually exclusive with `grep_open_files`
 files.live_grep = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
@@ -100,10 +91,6 @@ files.live_grep = function(opts)
 end
 
 
---- Searches for the string under your cursor in your current working directory
---- - Picker-specific options:
----   - `search`: the string to search
----   - `search_dirs`: table of strings containing directories to search in
 files.grep_string = function(opts)
   -- TODO: This should probably check your visual selection as well, if you've got one
 
@@ -141,12 +128,6 @@ end
 
 -- TODO: Maybe just change this to `find`.
 -- TODO: Support `find` and maybe let people do other stuff with it as well.
---- Lists files in your current working directory, respects .gitignore
---- - Picker-specific options:
----   - `find_command`: command line arguments for `find_files` to use specifically for the search, overrides default
---    - `follow`: TODO
----   - `hidden`: boolean that determines whether to show hidden files or not
----   - `search_dirs`: table of strings containing directories to search in
 files.find_files = function(opts)
   local find_command = opts.find_command
   local hidden = opts.hidden
@@ -243,13 +224,6 @@ local function prepare_match(entry, kind)
   return entries
 end
 
---- Lists files and folders in your current working directory, open files, navigate your filesystem, and create new
---- files and folders
---- - Picker-specific default keymaps:
----   - `<cr>`: opens the currently selected file, or navigates to the currently selected directory
----   - `<C-e>`: creates new file in the current directory, creates a new directory if the name contains a trailing '/'
---- - Picker-specific options:
----   - `search_dirs`: table of strings containing directories to search in
 files.file_browser = function(opts)
   opts = opts or {}
 
@@ -330,10 +304,6 @@ files.file_browser = function(opts)
 end
 
 
---- Lists function names, variables, and other symbols from treesitter queries
---  TODO: finish docs for opts.show_line
---  - Picker-specific options:
---    - `show_line`: TODO
 files.treesitter = function(opts)
   opts.show_line = utils.get_default(opts.show_line, true)
 
@@ -375,7 +345,6 @@ files.treesitter = function(opts)
   }):find()
 end
 
---- Live fuzzy search inside of the currently open buffer
 files.current_buffer_fuzzy_find = function(opts)
   -- All actions are on the current buffer
   local bufnr = vim.api.nvim_get_current_buf()
@@ -462,10 +431,6 @@ files.current_buffer_fuzzy_find = function(opts)
   }):find()
 end
 
---- Lists tags in current directory with tag location file preview (users are required to run ctags -R to generate tags
---- or update when introducing new changes)
---- - Picker-specific options:
----   - `ctags_file`: specify a particular ctags file to use
 files.tags = function(opts)
   local ctags_file = opts.ctags_file or 'tags'
 
@@ -513,7 +478,6 @@ files.tags = function(opts)
   }):find()
 end
 
---- Lists all of the tags for the currently open buffer, with a preview
 files.current_buffer_tags = function(opts)
   return files.tags(vim.tbl_extend("force", {
     prompt_title = 'Current Buffer Tags',
