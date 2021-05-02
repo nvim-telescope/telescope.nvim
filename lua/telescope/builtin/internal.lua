@@ -926,6 +926,30 @@ internal.tagstack = function(opts)
     }):find()
 end
 
+internal.jumplist = function(opts)
+  opts = opts or {}
+  local jumplist = vim.api.nvim_eval('getjumplist()')[1]
+
+  for _, value in ipairs(jumplist) do
+    value.text = ''
+  end
+
+  -- reverse the list
+  local sorted_jumplist = {}
+  for i = #jumplist, 1, -1 do
+    sorted_jumplist[#sorted_jumplist+1] = jumplist[i]
+  end
+
+  pickers.new(opts, {
+      prompt_title = 'Jumplist',
+      finder = finders.new_table {
+        results = sorted_jumplist,
+        entry_maker = make_entry.gen_from_jumplist(opts),
+      },
+      previewer = previewers.vim_buffer_qflist.new(opts),
+      sorter = conf.generic_sorter(opts),
+    }):find()
+end
 
 local function apply_checks(mod)
   for k, v in pairs(mod) do
