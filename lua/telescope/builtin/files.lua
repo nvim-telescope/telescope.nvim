@@ -28,6 +28,9 @@ local escape_chars = function(string)
   })
 end
 
+-- Special keys:
+--  opts.search_dirs -- list of directory to search in
+--  opts.grep_open_files -- boolean to restrict search to open files
 files.live_grep = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
@@ -90,7 +93,9 @@ files.live_grep = function(opts)
   }):find()
 end
 
-
+-- Special keys:
+--  opts.search -- the string to search.
+--  opts.search_dirs -- list of directory to search in
 files.grep_string = function(opts)
   -- TODO: This should probably check your visual selection as well, if you've got one
 

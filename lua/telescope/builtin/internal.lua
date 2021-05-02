@@ -18,7 +18,6 @@ local internal = {}
 -- TODO: What the heck should we do for accepting this.
 --  vim.fn.setreg("+", "nnoremap $TODO :lua require('telescope.builtin').<whatever>()<CR>")
 -- TODO: Can we just do the names instead?
-
 internal.builtin = function(opts)
   opts.hide_filename = utils.get_default(opts.hide_filename, true)
   opts.ignore_filename = utils.get_default(opts.ignore_filename, true)
