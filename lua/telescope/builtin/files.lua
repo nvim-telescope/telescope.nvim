@@ -303,7 +303,7 @@ files.file_browser = function(opts)
   }):find()
 end
 
-
+--  TODO: finish docs for opts.show_line
 files.treesitter = function(opts)
   opts.show_line = utils.get_default(opts.show_line, true)
 
