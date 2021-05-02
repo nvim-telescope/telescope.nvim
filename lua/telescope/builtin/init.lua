@@ -50,7 +50,7 @@ builtin.grep_string = require('telescope.builtin.files').grep_string
 
 --- Lists files in your current working directory, respects .gitignore
 ---@param opts table: options to pass to the picker
----@field find_command table: command line arguments for `find_files` to use specifically for the search, overrides default
+---@field find_command table: command line arguments for `find_files` to use for the search, overrides default config
 --TODO @field follow boolean:
 ---@field hidden boolean: determines whether to show hidden files or not
 ---@field search_dirs table: directory/directories to search in
@@ -62,7 +62,7 @@ builtin.fd = builtin.find_files
 --- files and folders
 --- - Default keymaps:
 ---   - <cr> type: opens the currently selected file, or navigates to the currently selected directory
----   - <C-e> type: creates new file in the current directory, creates a new directory if the name contains a trailing '/'
+---   - <C-e> type: creates new file in current directory, creates new directory if the name contains a trailing '/'
 ---@param opts table: options to pass to the picker
 ---@field search_dirs table: directory/directories to search in
 builtin.file_browser = require('telescope.builtin.files').file_browser
