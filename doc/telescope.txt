@@ -144,18 +144,6 @@ action_set.scroll_previewer({prompt_bufnr}, {direction})*action_set.scroll_previ
 
 
 ================================================================================
-                                                         *telescope.builtin.git*
-
-Git-related pickers
-
-
-================================================================================
-                                                         *telescope.builtin.lsp*
-
-Neovim builtin LSP-related pickers
-
-
-================================================================================
                                                              *telescope.actions*
 
 Actions functions that are useful for people creating their own mappings.
@@ -294,6 +282,149 @@ options you want to use. Here's an example with the live_grep picker:
 This will use the default configuration options. Other configuration options
 are still in flux at the moment
 
+builtin.keymaps({opts})                                    *builtin.keymaps()*
+    Lists normal mode keymappings
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.filetypes({opts})                                *builtin.filetypes()*
+    Lists all available filetypes
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.highlights({opts})                              *builtin.highlights()*
+    Lists all available highlights
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.autocommands({opts})                          *builtin.autocommands()*
+    Lists vim autocommands and goes to their declaration on <cr>
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.spell_suggest({opts})                        *builtin.spell_suggest()*
+    Lists spelling suggestions for the current word under the cursor, replaces
+    word with selected suggestion on <cr>
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.tagstack({opts})                                  *builtin.tagstack()*
+    Lists the tag stack for the current window
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.lsp_references({opts})                      *builtin.lsp_references()*
+    -----------------------------------------------
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {shorten_path} (boolean)  if true, will shorten path shown
+
+
+builtin.lsp_definitions({opts})                    *builtin.lsp_definitions()*
+    Goto the definition of the word under the cursor, if there's only one,
+    otherwise show all options in Telescope
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
+    Goto the implementation of the word under the cursor if there's only one,
+    otherwise show all options in Telescope
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.lsp_document_symbols({opts})          *builtin.lsp_document_symbols()*
+    Lists LSP document symbols in the current buffer
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {ignore_filename} (type)  string with file to ignore
+
+
+builtin.lsp_code_actions({opts})                  *builtin.lsp_code_actions()*
+    Lists any LSP actions for the word under the cursor, that can be triggered
+    with <cr>
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.lsp_range_code_actions({opts})      *builtin.lsp_range_code_actions()*
+    Lists any LSP actions for a given range, that can be triggered with <cr>
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
+    Lists LSP document symbols in the current workspace
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {shorten_path}    (boolean)  if true, will shorten path shown
+        {ignore_filename} (string)   file(s) to ignore
+
+
+builtin.lsp_dynamic_workspace_symbols({opts})*builtin.lsp_dynamic_workspace_symbols()*
+    Lists LSP for all workspace symbols asynchronously
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
+    Lists LSP diagnostics for the current buffer
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
+    Lists LSP diagnostics for the current workspace if supported, otherwise
+    searches in all open buffers
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
 
 ================================================================================
                                                        *telescope.actions.state*
@@ -319,12 +450,6 @@ action_state.get_current_picker({prompt_bufnr})*action_state.get_current_picker(
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
 
-
-
-================================================================================
-                                                       *telescope.builtin.files*
-
-File-related pickers
 
 
 ================================================================================
@@ -593,12 +718,6 @@ previewers.display_content()                    *previewers.display_content()*
     tricks.
 
 
-
-
-================================================================================
-                                              *telescope.builtin.files.internal*
-
-Vim-related and various internal pickers
 
 
 ================================================================================
