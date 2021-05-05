@@ -236,14 +236,14 @@ function utils.display_termcodes(str)
   return str:gsub(string.char(9), "<TAB>"):gsub("", "<C-F>"):gsub(" ", "<Space>")
 end
 
-function utils.get_os_command_output(cmd, cwd)
+function utils.get_os_command_output(cmd, cwd, env)
   if type(cmd) ~= "table" then
     print('Telescope: [get_os_command_output]: cmd has to be a table')
     return {}
   end
   local command = table.remove(cmd, 1)
   local stderr = {}
-  local stdout, ret = Job:new({ command = command, args = cmd, cwd = cwd, on_stderr = function(_, data)
+  local stdout, ret = Job:new({ command = command, args = cmd, cwd = cwd, env = env, on_stderr = function(_, data)
     table.insert(stderr, data)
   end }):sync()
   return stdout, ret, stderr
