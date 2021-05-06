@@ -19,7 +19,12 @@ lsp.references = function(opts)
   local params = vim.lsp.util.make_position_params()
   params.context = { includeDeclaration = true }
 
-  local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/references", params, opts.timeout or 10000)
+  local results_lsp, err = vim.lsp.buf_request_sync(0, "textDocument/references", params, opts.timeout or 10000)
+  if err then
+    vim.api.nvim_err_writeln("Error when finding references: " .. err)
+    return
+  end
+
   local locations = {}
   for _, server_results in pairs(results_lsp) do
     if server_results.result then
@@ -46,7 +51,11 @@ local function list_or_jump(action, title, opts)
   opts = opts or {}
 
   local params = vim.lsp.util.make_position_params()
-  local result = vim.lsp.buf_request_sync(0, action, params, opts.timeout or 10000)
+  local result, err = vim.lsp.buf_request_sync(0, action, params, opts.timeout or 10000)
+  if err then
+    vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err)
+    return
+  end
   local flattened_results = {}
   for _, server_results in pairs(result) do
     if server_results.result then
@@ -82,7 +91,11 @@ end
 
 lsp.document_symbols = function(opts)
   local params = vim.lsp.util.make_position_params()
-  local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/documentSymbol", params, opts.timeout or 10000)
+  local results_lsp, err = vim.lsp.buf_request_sync(0, "textDocument/documentSymbol", params, opts.timeout or 10000)
+  if err then
+    vim.api.nvim_err_writeln("Error when finding document symbols: " .. err)
+    return
+  end
 
   if not results_lsp or vim.tbl_isempty(results_lsp) then
     print("No results from textDocument/documentSymbol")
@@ -233,7 +246,11 @@ lsp.workspace_symbols = function(opts)
   opts.shorten_path = utils.get_default(opts.shorten_path, true)
 
   local params = {query = opts.query or ''}
-  local results_lsp = vim.lsp.buf_request_sync(0, "workspace/symbol", params, opts.timeout or 10000)
+  local results_lsp, err = vim.lsp.buf_request_sync(0, "workspace/symbol", params, opts.timeout or 10000)
+  if err then
+    vim.api.nvim_err_writeln("Error when finding workspace symbols: " .. err)
+    return
+  end
 
   local locations = {}
 
