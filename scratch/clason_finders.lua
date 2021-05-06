@@ -60,7 +60,11 @@ finders.lsp_references = function(opts)
   local params = vim.lsp.util.make_position_params()
   params.context = { includeDeclaration = false }
 
-  local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/references", params)
+  local results_lsp, err = vim.lsp.buf_request_sync(0, "textDocument/references", params)
+  if err then
+    vim.api.nvim_err_writeln("Error when finding references: " .. err)
+    return
+  end
   local locations = {}
   for _, server_results in pairs(results_lsp) do
     vim.list_extend(locations, vim.lsp.util.locations_to_items(server_results.result) or {})
@@ -83,7 +87,11 @@ end
 -- fuzzy find in document symbols
 finders.lsp_document_symbols = function(opts)
   local params = vim.lsp.util.make_position_params()
-  local results_lsp = vim.lsp.buf_request_sync(0, "textDocument/documentSymbol", params)
+  local results_lsp, err = vim.lsp.buf_request_sync(0, "textDocument/documentSymbol", params)
+  if err then
+    vim.api.nvim_err_writeln("Error when finding document symbols: " .. err)
+    return
+  end
   local locations = {}
   for _, server_results in pairs(results_lsp) do
     vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
@@ -106,7 +114,11 @@ end
 -- fuzzy find in all workspace symbols (may need longer timeout!)
 finders.lsp_workspace_symbols = function(opts)
   local params = {query = ''}
-  local results_lsp = vim.lsp.buf_request_sync(0, "workspace/symbol", params, 1000)
+  local results_lsp, err = vim.lsp.buf_request_sync(0, "workspace/symbol", params, 1000)
+  if err then
+    vim.api.nvim_err_writeln("Error when finding symbols: " .. err)
+    return
+  end
   local locations = {}
   for _, server_results in pairs(results_lsp) do
     vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
