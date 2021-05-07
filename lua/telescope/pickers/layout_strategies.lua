@@ -154,19 +154,17 @@ local function validate_layout_config(strategy, options, values)
     end
   end
 
-  -- Check that options has the correct form
+  -- Check that options has the correct form for this strategy
   key_check(options,values)
-  for k, _ in pairs(layout_list) do
-    if options[k] ~= nil then
-      if type(options[k]) ~= 'table' then
-        error(string.format(
-          'Unsupported layout_config for the %s strategy: %s\n%s\nShould be a table',
-          k,
-          vim.inspect(options[k])
-        ))
-      else
-        key_check(options[k],values)
-      end
+  if options[strategy] ~= nil then
+    if type(options[strategy]) ~= 'table' then
+      error(string.format(
+        'Unsupported layout_config for the %s strategy: %s\n%s\nShould be a table',
+        strategy,
+        vim.inspect(options[strategy])
+      ))
+    else
+      key_check(options[strategy],values)
     end
   end
 
@@ -279,7 +277,8 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
 end
 
 --- Centered layout with a combined block of the prompt
---  and results aligned to the middle of the screen.
+--- and results aligned to the middle of the screen.
+--- The preview window is then placed in the space above.
 ---
 --- <pre>
 ---    ┌──────────────┐
