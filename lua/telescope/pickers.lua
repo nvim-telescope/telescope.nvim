@@ -95,7 +95,7 @@ function Picker:new(opts)
     layout_strategy = layout_strategy,
     layout_config = get_default(
       opts.layout_config,
-      (config.values.layout_defaults or {})[layout_strategy]
+      config.values.layout_defaults
     ) or {},
 
     window = {
@@ -108,6 +108,7 @@ function Picker:new(opts)
 
       get_preview_width = get_default(opts.preview_width, config.values.get_preview_width),
 
+      -- TODO: figure out the intention of this option. It doesn't currently do anything
       results_width = get_default(opts.results_width, config.values.results_width),
       results_height = get_default(opts.results_height, config.values.results_height),
 

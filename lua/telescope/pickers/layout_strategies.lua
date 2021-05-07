@@ -95,24 +95,27 @@ local function get_initial_window_options(picker)
 end
 
 -- Get the width to be used for a given strategy
-local function get_width_opt(picker, strat)
+local function get_width_opt(picker, layout_config, strat)
   if picker.window.width ~= nil then
     return picker.window.width
-  elseif picker.layout_config[strat] ~= nil and picker.layout_config[strat].width ~=nil then
+  elseif layout_config[strat] ~= nil and layout_config[strat].width ~=nil then
     return picker.layout_config[strat].width
-  elseif picker.layout_config.width ~= nil then
-    return picker.layout_config.width
+  elseif layout_config.width ~= nil then
+    return layout_config.width
   end
+
+  -- TODO: provide more information in this error.
+  error('Unsupported width options provided.')
 end
 
 -- Get the height to be used for a given strategy
-local function get_height_opt(picker, strat)
+local function get_height_opt(picker, layout_config, strat)
   if picker.window.width ~= nil then
     return picker.window.width
-  elseif picker.layout_config[strat] ~= nil and picker.layout_config[strat].width ~=nil then
-    return picker.layout_config[strat].width
-  elseif picker.layout_config.width ~= nil then
-    return picker.layout_config.width
+  elseif layout_config[strat] ~= nil and layout_config[strat].width ~=nil then
+    return layout_config[strat].width
+  elseif layout_config.width ~= nil then
+    return layout_config.width
   end
 end
 
@@ -122,19 +125,62 @@ local is_borderless = function(opts)
   return opts.window.border == false
 end
 
+-- TODO: make an automatic way to create this list
+--      could just use layout_strategies???
+local layout_list = {horizontal=1,vertical=1,flex=1,center=1,current_buffer=1}
 
-local function validate_layout_config(options, values)
-  for k, _ in pairs(options) do
-    if not values[k] then
-      error(string.format(
-        "Unsupported layout_config key: %s\n%s",
-        k,
-        vim.inspect(values)
-      ))
+local function validate_layout_config(strategy, options, values)
+  local result = {}
+  -- Define a function to check that the keys in options match those
+  -- in values or those in layout_list
+  local function key_check(opts,vals,strat)
+    for k, _ in pairs(opts) do
+      if not vals[k] and not layout_list[k] then
+        if strat == nil then
+          error(string.format(
+            "Unsupported layout_config key: %s\n%s",
+            k,
+            vim.inspect(vals)
+          ))
+        else
+          error(string.format(
+            "Unsupported layout_config key for the %s strategy: %s\n%s",
+            strat,
+            k,
+            vim.inspect(vals)
+          ))
+        end
+      end
     end
   end
 
-  return options
+  -- Check that options has the correct form
+  key_check(options,values)
+  for k, _ in pairs(layout_list) do
+    if options[k] ~= nil then
+      if type(options[k]) ~= 'table' then
+        error(string.format(
+          'Unsupported layout_config for the %s strategy: %s\n%s\nShould be a table',
+          k,
+          vim.inspect(options[k])
+        ))
+      else
+        key_check(options[k],values)
+      end
+    end
+  end
+
+  -- Create the output table
+  for k, _ in pairs(values) do
+    -- Prioritise values that are specific to this strategy
+    if options[strategy] ~= nil and options[strategy][k] ~= nil then
+      result[k] = options[strategy][k]
+    elseif values[k] ~= nil then
+      result[k] = options[k]
+    end
+  end
+
+  return result
 end
 
 local layout_strategies = {}
@@ -152,9 +198,9 @@ local layout_strategies = {}
 ---   +-------------+--------------+
 --- </pre>
 layout_strategies.horizontal = function(self, max_columns, max_lines)
-  local layout_config = validate_layout_config(self.layout_config or {}, {
-    width_padding = "How many cells to pad the width",
-    height_padding = "How many cells to pad the height",
+  local layout_config = validate_layout_config('horizontal',self.layout_config or {}, {
+    width = "How wide the picker is",
+    height = "How tall the picker is",
     preview_width = "(Resolvable): Determine preview width",
     mirror = "Flip the location of the results/prompt and preview windows",
     scroll_speed = "The speed when scrolling through the previewer",
@@ -167,11 +213,11 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
 
   -- TODO: Test with 120 width terminal
   -- TODO: Test with self.width
-  local width_opt = get_width_opt(self,'horizontal')
+  local width_opt = get_width_opt(self,layout_config,'horizontal')
   local picker_width = resolve.resolve_width(width_opt)(self,max_columns,max_lines)
   local width_padding = math.floor((max_columns - picker_width)/2)
 
-  local height_opt = get_height_opt(self,'horizontal')
+  local height_opt = get_height_opt(self,layout_config,'horizontal')
   local picker_height = resolve.resolve_height(height_opt)(self,max_columns,max_lines)
   local height_padding = math.floor((max_lines - picker_height)/2)
 
@@ -232,11 +278,12 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
 }
 end
 
---- Centered layout with prompt in the middle of the screen
---- and results aligned below it.
+--- Centered layout with a combined block of the prompt
+--  and results aligned to the middle of the screen.
 ---
 --- <pre>
 ---    ┌──────────────┐
+---    |    Preview   |
 ---    |    Preview   |
 ---    └──────────────┘
 ---    ┌──────────────┐
@@ -244,22 +291,30 @@ end
 ---    ├──────────────┤
 ---    |    Result    |
 ---    |    Result    |
----    |    Result    |
 ---    └──────────────┘
+---
+---
 --- </pre>
 layout_strategies.center = function(self, max_columns, max_lines)
+  local layout_config = validate_layout_config('center',self.layout_config or {}, {
+    width = "How wide the picker is",
+    preview_height = "(Resolvable): Determine preview height",
+    mirror = "Flip the locations of the results and prompt windows",
+    scroll_speed = "The speed when scrolling through the previewer",
+  })
   local initial_options = get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
 
-  -- This sets the height/width for the whole layout
-  local width_opt = get_width_opt(self,'center')
+  -- This sets the width for the whole layout
+  local width_opt = get_width_opt(self,layout_config,'center')
   local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
-  local height_opt = get_height_opt(self,'center')
-  local height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
 
-  local max_results = (height > max_lines and max_lines or height)
+  -- This sets the number of results displayed
+  local res_height = resolve.resolve_height(self.window.results_height)(self, max_columns, max_lines)
+
+  local max_results = (res_height > max_lines and max_lines or res_height)
   local max_width = (width > max_columns and max_columns or width)
 
   prompt.height = 1
@@ -275,6 +330,8 @@ layout_strategies.center = function(self, max_columns, max_lines)
     bs = 0
   end
 
+  -- Align the prompt and results so halfway up the screen is
+  -- in the middle of this combined block
   prompt.line = (max_lines / 2) - ((max_results + (bs * 2)) / 2)
   results.line = prompt.line + 1 + (bs)
 
@@ -312,9 +369,9 @@ end
 ---    +-----------------+
 --- </pre>
 layout_strategies.vertical = function(self, max_columns, max_lines)
-  local layout_config = validate_layout_config(self.layout_config or {}, {
-    width_padding = "How many cells to pad the width",
-    height_padding = "How many cells to pad the height",
+  local layout_config = validate_layout_config('vertical',self.layout_config or {}, {
+    width = "How many cells to pad the width",
+    height = "How many cells to pad the height",
     preview_height = "(Resolvable): Determine preview height",
     mirror = "Flip the locations of the results and prompt windows",
     scroll_speed = "The speed when scrolling through the previewer",
@@ -325,11 +382,11 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   local results = initial_options.results
   local prompt = initial_options.prompt
 
-  local width_opt = get_width_opt(self,'horizontal')
+  local width_opt = get_width_opt(self,layout_config,'horizontal')
   local picker_width = resolve.resolve_width(width_opt)(self,max_columns,max_lines)
   local width_padding = math.floor((max_columns - picker_width)/2)
 
-  local height_opt = get_height_opt(self,'horizontal')
+  local height_opt = get_height_opt(self,layout_config,'horizontal')
   local picker_height = resolve.resolve_height(height_opt)(self,max_columns,max_lines)
   local height_padding = math.floor((max_lines - picker_height)/2)
 
@@ -345,7 +402,7 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   preview.height = 0
   if self.previewer then
     preview.height = resolve.resolve_height(
-      layout_config.preview_height or (max_lines - 15)
+      layout_config.preview_height or 0.5
     )(self, max_columns, picker_height)
 
     preview_total = preview.height + 2

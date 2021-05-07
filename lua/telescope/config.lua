@@ -88,12 +88,12 @@ function config.set_defaults(defaults)
   set("layout_strategy", "horizontal")
   set("layout_defaults", {})
 
-  set("width", 0.75)
+  -- set("width", 0.75)
   set("winblend", 0)
   set("prompt_position", "bottom")
   set("preview_cutoff", 120)
 
-  set("results_height", 1)
+  set("results_height", 5)
   set("results_width", 0.8)
 
   set("prompt_prefix", "> ", [[
