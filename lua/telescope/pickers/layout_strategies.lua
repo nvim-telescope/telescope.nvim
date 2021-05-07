@@ -94,6 +94,16 @@ local function get_initial_window_options(picker)
   }
 end
 
+-- Get the width to be used for a given strategy
+local function get_width_opt(picker, strat)
+  if picker.window.width ~= nil then
+    return picker.window.width
+  elseif picker.layout_config[strat] ~= nil and picker.layout_config[strat].width ~=nil then
+    return picker.layout_config[strat].width
+  elseif picker.layout_config.width ~= nil then
+    return picker.layout_config.width
+  end
+end
 
 -- Check if there are any borders. Right now it's a little raw as
 -- there are a few things that contribute to the border
@@ -146,6 +156,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
 
   -- TODO: Test with 120 width terminal
   -- TODO: Test with self.width
+  local width_opt = get_width_opt(self)
   local width_padding = resolve.resolve_width(layout_config.width_padding or function(_, cols)
     if cols < self.preview_cutoff then
       return 2
@@ -158,11 +169,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
   local picker_width = max_columns - 2 * width_padding
 
   local height_padding = resolve.resolve_height(layout_config.height_padding or function(_, _, lines)
-    if lines < 40 then
-      return 4
-    else
-      return math.floor(0.1 * lines)
-    end
+    return math.max(math.floor(0.1 * lines),4)
   end)(self, max_columns, max_lines)
   local picker_height = max_lines - 2 * height_padding
 
@@ -223,18 +230,20 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
 }
 end
 
---- Centered layout wih smaller default sizes (I think)
+--- Centered layout with prompt in the middle of the screen
+--- and results aligned below it.
 ---
 --- <pre>
----    +--------------+
+---    ┌──────────────┐
 ---    |    Preview   |
----    +--------------+
+---    └──────────────┘
+---    ┌──────────────┐
 ---    |    Prompt    |
----    +--------------+
+---    ├──────────────┤
 ---    |    Result    |
 ---    |    Result    |
 ---    |    Result    |
----    +--------------+
+---    └──────────────┘
 --- </pre>
 layout_strategies.center = function(self, columns, lines)
   local initial_options = get_initial_window_options(self)
@@ -242,9 +251,11 @@ layout_strategies.center = function(self, columns, lines)
   local results = initial_options.results
   local prompt = initial_options.prompt
 
+  local width_opt = get_width_opt(self,'center')
+
   -- This sets the height/width for the whole layout
   local height = resolve.resolve_height(self.window.results_height)(self, columns, lines)
-  local width = resolve.resolve_width(self.window.width)(self, columns, lines)
+  local width = resolve.resolve_width(width_opt)(self, columns, lines)
 
   local max_results = (height > lines and lines or height)
   local max_width = (width > columns and columns or width)
@@ -283,7 +294,7 @@ layout_strategies.center = function(self, columns, lines)
   }
 end
 
---- Vertical perviewer stacks the items on top of each other.
+--- Vertical previewer stacks the items on top of each other.
 ---
 --- <pre>
 ---    +-----------------+

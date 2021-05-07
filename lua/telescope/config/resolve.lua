@@ -40,7 +40,7 @@ height =
 
     3. function(picker, columns, lines)
         -> returns one of the above options
-        return max.min(110, max_rows * .5)
+        return math.min(110, max_rows * .5)
 
         if columns > 120 then
             return 110
@@ -88,8 +88,7 @@ That's the next step to scrolling.
 local get_default = require('telescope.utils').get_default
 
 local resolver = {}
-
-local _resolve_map = {
+local _simple_resolve_map = {
   -- Booleans
   [function(val) return val == false end] = function(selector, val)
     return function(...)
@@ -127,6 +126,28 @@ local _resolve_map = {
     return val
   end,
 }
+
+-- Make a copy of the "simple" _resolve_map that we can add to to make the "full" _resolve_map.
+local _resolve_map = require('luassert.util').deepcopy(_simple_resolve_map)
+
+-- Add padding option
+_resolve_map[function(val) return type(val) == 'table' and val['padding'] ~= nil end] = function(selector, val)
+  local resolve_pad = function(value)
+    for k, v in pairs(_simple_resolve_map) do
+      if k(value) then
+        return v(selector, value)
+      end
+    end
+
+    error('invalid configuration option for padding:' .. tostring(value))
+  end
+
+  return function(...)
+    local selected = select(selector, ...)
+    local padding = resolve_pad(val['padding'])
+    return math.floor(selected - 2 * padding(...))
+  end
+end
 
 resolver.resolve_height = function(val)
   for k, v in pairs(_resolve_map) do
