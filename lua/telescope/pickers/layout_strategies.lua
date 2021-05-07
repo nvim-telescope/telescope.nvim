@@ -105,6 +105,17 @@ local function get_width_opt(picker, strat)
   end
 end
 
+-- Get the height to be used for a given strategy
+local function get_height_opt(picker, strat)
+  if picker.window.width ~= nil then
+    return picker.window.width
+  elseif picker.layout_config[strat] ~= nil and picker.layout_config[strat].width ~=nil then
+    return picker.layout_config[strat].width
+  elseif picker.layout_config.width ~= nil then
+    return picker.layout_config.width
+  end
+end
+
 -- Check if there are any borders. Right now it's a little raw as
 -- there are a few things that contribute to the border
 local is_borderless = function(opts)
@@ -156,22 +167,13 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
 
   -- TODO: Test with 120 width terminal
   -- TODO: Test with self.width
-  local width_opt = get_width_opt(self)
-  local width_padding = resolve.resolve_width(layout_config.width_padding or function(_, cols)
-    if cols < self.preview_cutoff then
-      return 2
-    elseif cols < 150 then
-      return 5
-    else
-      return 10
-    end
-  end)(self, max_columns, max_lines)
-  local picker_width = max_columns - 2 * width_padding
+  local width_opt = get_width_opt(self,'horizontal')
+  local picker_width = resolve.resolve_width(width_opt)(self,max_columns,max_lines)
+  local width_padding = math.floor((max_columns - picker_width)/2)
 
-  local height_padding = resolve.resolve_height(layout_config.height_padding or function(_, _, lines)
-    return math.max(math.floor(0.1 * lines),4)
-  end)(self, max_columns, max_lines)
-  local picker_height = max_lines - 2 * height_padding
+  local height_opt = get_height_opt(self,'horizontal')
+  local picker_height = resolve.resolve_height(height_opt)(self,max_columns,max_lines)
+  local height_padding = math.floor((max_lines - picker_height)/2)
 
   if self.previewer then
     preview.width = resolve.resolve_width(layout_config.preview_width or function(_, cols)
@@ -245,20 +247,20 @@ end
 ---    |    Result    |
 ---    └──────────────┘
 --- </pre>
-layout_strategies.center = function(self, columns, lines)
+layout_strategies.center = function(self, max_columns, max_lines)
   local initial_options = get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
 
-  local width_opt = get_width_opt(self,'center')
-
   -- This sets the height/width for the whole layout
-  local height = resolve.resolve_height(self.window.results_height)(self, columns, lines)
-  local width = resolve.resolve_width(width_opt)(self, columns, lines)
+  local width_opt = get_width_opt(self,'center')
+  local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
+  local height_opt = get_height_opt(self,'center')
+  local height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
 
-  local max_results = (height > lines and lines or height)
-  local max_width = (width > columns and columns or width)
+  local max_results = (height > max_lines and max_lines or height)
+  local max_width = (width > max_columns and max_columns or width)
 
   prompt.height = 1
   results.height = max_results
@@ -273,17 +275,17 @@ layout_strategies.center = function(self, columns, lines)
     bs = 0
   end
 
-  prompt.line = (lines / 2) - ((max_results + (bs * 2)) / 2)
+  prompt.line = (max_lines / 2) - ((max_results + (bs * 2)) / 2)
   results.line = prompt.line + 1 + (bs)
 
   preview.line = 1
   preview.height = math.floor(prompt.line - (2 + bs))
 
-  if not self.previewer or columns < self.preview_cutoff then
+  if not self.previewer or max_columns < self.preview_cutoff then
     preview.height = 0
   end
 
-  results.col = math.ceil((columns / 2) - (width / 2) - bs)
+  results.col = math.ceil((max_columns / 2) - (width / 2) - bs)
   prompt.col = results.col
   preview.col = results.col
 
@@ -323,25 +325,21 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   local results = initial_options.results
   local prompt = initial_options.prompt
 
-  local width_padding = resolve.resolve_width(
-    layout_config.width_padding or math.ceil((1 - self.window.width) * 0.5 * max_columns)
-  )(self, max_columns, max_lines)
+  local width_opt = get_width_opt(self,'horizontal')
+  local picker_width = resolve.resolve_width(width_opt)(self,max_columns,max_lines)
+  local width_padding = math.floor((max_columns - picker_width)/2)
 
-  local width = max_columns - width_padding * 2
+  local height_opt = get_height_opt(self,'horizontal')
+  local picker_height = resolve.resolve_height(height_opt)(self,max_columns,max_lines)
+  local height_padding = math.floor((max_lines - picker_height)/2)
+
   if not self.previewer then
     preview.width = 0
   else
-    preview.width = width
+    preview.width = picker_width
   end
-  results.width = width
-  prompt.width = width
-
-  -- Height
-  local height_padding = math.max(
-    1,
-    resolve.resolve_height(layout_config.height_padding or 3)(self, max_columns, max_lines)
-  )
-  local picker_height = max_lines - 2 * height_padding
+  results.width = picker_width
+  prompt.width = picker_width
 
   local preview_total = 0
   preview.height = 0
@@ -403,7 +401,7 @@ layout_strategies.flex = function(self, max_columns, max_lines)
 end
 
 layout_strategies.current_buffer = function(self, _, _)
-  local initial_options = self:_get_initial_window_options()
+  local initial_options = get_initial_window_options(self)
 
   local window_width = vim.api.nvim_win_get_width(0)
   local window_height = vim.api.nvim_win_get_height(0)
