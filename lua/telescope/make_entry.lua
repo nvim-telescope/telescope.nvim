@@ -249,6 +249,8 @@ function make_entry.gen_from_git_stash()
 end
 
 function make_entry.gen_from_git_commits(opts)
+  opts = opts or {}
+
   local displayer = entry_display.create {
     separator = " ",
     items = {

@@ -138,7 +138,6 @@ require('telescope').setup{
       '--column',
       '--smart-case'
     },
-    prompt_position = "bottom",
     prompt_prefix = "> ",
     selection_caret = "> ",
     entry_prefix = "  ",
@@ -146,7 +145,7 @@ require('telescope').setup{
     selection_strategy = "reset",
     sorting_strategy = "descending",
     layout_strategy = "horizontal",
-    layout_defaults = {
+    layout_config = {
       horizontal = {
         mirror = false,
       },
@@ -159,10 +158,6 @@ require('telescope').setup{
     generic_sorter =  require'telescope.sorters'.get_generic_fuzzy_sorter,
     shorten_path = true,
     winblend = 0,
-    width = 0.75,
-    preview_cutoff = 120,
-    results_height = 1,
-    results_width = 0.8,
     border = {},
     borderchars = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' },
     color_devicons = true,
@@ -196,19 +191,14 @@ EOF
 
 | Keys                   | Description                                           | Options                    |
 |------------------------|-------------------------------------------------------|----------------------------|
-| `prompt_position`      | Where the prompt should be located.                   | top/bottom                 |
 | `prompt_prefix`        | What should the prompt prefix be.                     | string                     |
 | `selection_caret`      | What should the selection caret be.                   | string                     |
 | `entry_prefix`         | What should be shown in front of every entry. (current selection excluded) | string|
 | `initial_mode`         | The initial mode when a prompt is opened.             | insert/normal              |
 | `sorting_strategy`     | Where first selection should be located.              | descending/ascending       |
 | `layout_strategy`      | How the telescope is drawn.                           | [supported layouts](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts) |
-| `winblend`             | How transparent is the telescope window should be.    | NUM                        |
-| `layout_defaults`      | Extra settings for fine-tuning how your layout looks  | [supported settings](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts#layout-defaults) |
-| `width`                | TODO                                                  | NUM                        |
-| `preview_cutoff`       | TODO                                                  | NUM                        |
-| `results_height`       | TODO                                                  | NUM                        |
-| `results_width`        | TODO                                                  | NUM                        |
+| `winblend`             | How transparent is the telescope window should be.    | number                        |
+| `layout_config`        | Extra settings for fine-tuning how your layout looks  | [supported settings](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts#layout-defaults) |
 | `borderchars`          | The border chars, it gives border telescope window    | dict                       |
 | `color_devicons`       | Whether to color devicons or not                      | boolean                    |
 | `use_less`             | Whether to use less with bat or less/cat if bat not installed | boolean            |
@@ -446,7 +436,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.current_buffer_fuzzy_find` | Live fuzzy search inside of the currently open buffer                                                                                                       |
 | `builtin.current_buffer_tags`       | Lists all of the tags for the currently open buffer, with a preview                                                                                         |
 
-### LSP Pickers
+### Neovim LSP Pickers
 
 | Functions                                   | Description                                                                                                       |
 |---------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
@@ -644,7 +634,6 @@ Picker:new{
   selection_strategy      = "reset", -- follow, reset, row
   border                  = {},
   borderchars             = {"─", "│", "─", "│", "┌", "┐", "┘", "└"},
-  preview_cutoff          = 120,
   default_selection_index = 1, -- Change the index of the initial selection row
 }
 ```
@@ -677,24 +666,37 @@ end
 ### Layout (display)
 <!-- TODO need some work -->
 
-`Resolvable`:
-1. 0 <= number < 1:
-    - This means total height as a percentage
-2. 1 <= number:
-    - This means total height as a fixed number
-3. function(picker, columns, lines):
-    - returns one of the above options
-    - `return max.min(110, max_rows * .5)`
+Layout can be configured by choosing a specific `layout_strategy` and
+specifying a particular `layout_config` for that strategy.
+For more details on available strategies and configuration options,
+see `:help telescope.layout`.
 
-```lua
-layout_strategies.horizontal = function(self, max_columns, max_lines)
-  local layout_config = validate_layout_config(self.layout_config or {}, {
-    width_padding = "How many cells to pad the width",
-    height_padding = "How many cells to pad the height",
-    preview_width = "(Resolvable): Determine preview width",
-  })
-  ...
-end
+Some options for configuring sizes in layouts are "resolvable".
+This means that they can take different forms, and will be interpreted differently according to which form they take.
+For example, if we wanted to set the `width` of a picker using the `vertical`
+layout strategy to 50% of the screen width, we would specify that width
+as `0.5`, but if we wanted to specify the `width` to be exactly 80
+characters wide, we would specify it as `80`.
+For more details on resolving sizes, see `:help telescope.resolve`.
+
+As an example, if we wanted to specify the layout strategy and width,
+but only for this instance, we could do something like:
+```
+:lua require('telescope.builtin').find_files({layout_strategy='vertical',layout_config={width=0.5}})
+```
+or if we wanted to change the width for every time we use the `vertical`
+layout strategy, we could add the following to our `setup()` call:
+```
+require('telescope').setup({
+  defaults = {
+    layout_config = {
+      vertical = { width = 0.5 }
+      -- other layout configuration here
+    },
+    -- other defaults configuration here
+  },
+  -- other configuration values here
+})
 ```
 
 ## Vim Commands
