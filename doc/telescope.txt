@@ -616,11 +616,11 @@ horizontal and vertical layouts):
       - If using vertical: if `true`, swaps the location of the results and 
         prompt windows
 
-  - width_padding:
-    - How many cells to pad the width of Telescope's layout window
+  - width:
+    - How wide to make Telescope's layout window
 
-  - height_padding:
-    - How many cells to pad the height of Telescope's layout window
+  - height:
+    - How tall to make Telescope's layout window
 
   - preview_width:
     - Change the width of Telescope's preview window
