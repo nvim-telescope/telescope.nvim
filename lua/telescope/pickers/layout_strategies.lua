@@ -186,14 +186,22 @@ local layout_strategies = {}
 --- Horizontal previewer
 ---
 --- <pre>
----   +-------------+--------------+
----   |             |              |
----   |   Results   |              |
----   |             |    Preview   |
----   |             |              |
----   +-------------|              |
----   |   Prompt    |              |
----   +-------------+--------------+
+--- ┌──────────────────────────────────────────────────┐
+--- │                                                  │
+--- │    ┌───────────────────┐┌───────────────────┐    │
+--- │    │                   ││                   │    │
+--- │    │                   ││                   │    │
+--- │    │                   ││                   │    │
+--- │    │      Results      ││                   │    │
+--- │    │                   ││      Preview      │    │
+--- │    │                   ││                   │    │
+--- │    │                   ││                   │    │
+--- │    └───────────────────┘│                   │    │
+--- │    ┌───────────────────┐│                   │    │
+--- │    │      Prompt       ││                   │    │
+--- │    └───────────────────┘└───────────────────┘    │
+--- │                                                  │
+--- └──────────────────────────────────────────────────┘
 --- </pre>
 layout_strategies.horizontal = function(self, max_columns, max_lines)
   local layout_config = validate_layout_config('horizontal',self.layout_config or {}, {
@@ -278,21 +286,27 @@ end
 
 --- Centered layout with a combined block of the prompt
 --- and results aligned to the middle of the screen.
---- The preview window is then placed in the space above.
+--- The preview window is then placed in the remaining space above.
+--- Particularly useful for creating dropdown menus
+--- (try using `theme=get_dropdown`).
 ---
 --- <pre>
----    ┌──────────────┐
----    |    Preview   |
----    |    Preview   |
----    └──────────────┘
----    ┌──────────────┐
----    |    Prompt    |
----    ├──────────────┤
----    |    Result    |
----    |    Result    |
----    └──────────────┘
----
----
+--- ┌──────────────────────────────────────────────────┐
+--- │    ┌────────────────────────────────────────┐    │
+--- │    |                 Preview                |    │
+--- │    |                 Preview                |    │
+--- │    └────────────────────────────────────────┘    │
+--- │    ┌────────────────────────────────────────┐    │
+--- │    |                 Prompt                 |    │
+--- │    ├────────────────────────────────────────┤    │
+--- │    |                 Result                 |    │
+--- │    |                 Result                 |    │
+--- │    └────────────────────────────────────────┘    │
+--- │                                                  │
+--- │                                                  │
+--- │                                                  │
+--- │                                                  │
+--- └──────────────────────────────────────────────────┘
 --- </pre>
 layout_strategies.center = function(self, max_columns, max_lines)
   local layout_config = validate_layout_config('center',self.layout_config or {}, {
@@ -352,19 +366,25 @@ layout_strategies.center = function(self, max_columns, max_lines)
 end
 
 --- Vertical previewer stacks the items on top of each other.
+--- Particularly useful with thinner windows.
 ---
 --- <pre>
----    +-----------------+
----    |    Previewer    |
----    |    Previewer    |
----    |    Previewer    |
----    +-----------------+
----    |     Result      |
----    |     Result      |
----    |     Result      |
----    +-----------------+
----    |     Prompt      |
----    +-----------------+
+--- ┌──────────────────────────────────────────────────┐
+--- │                                                  │
+--- │    ┌────────────────────────────────────────┐    │
+--- │    |                 Preview                |    │
+--- │    |                 Preview                |    │
+--- │    |                 Preview                |    │
+--- │    └────────────────────────────────────────┘    │
+--- │    ┌────────────────────────────────────────┐    │
+--- │    |                 Result                 |    │
+--- │    |                 Result                 |    │
+--- │    └────────────────────────────────────────┘    │
+--- │    ┌────────────────────────────────────────┐    │
+--- │    |                 Prompt                 |    │
+--- │    └────────────────────────────────────────┘    │
+--- │                                                  │
+--- └──────────────────────────────────────────────────┘
 --- </pre>
 layout_strategies.vertical = function(self, max_columns, max_lines)
   local layout_config = validate_layout_config('vertical',self.layout_config or {}, {
