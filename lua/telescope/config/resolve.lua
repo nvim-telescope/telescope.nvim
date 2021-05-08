@@ -1,4 +1,4 @@
---- @tag telescope.resolve
+---@tag telescope.resolve
 
 ---@brief [[
 --- Provides "resolver functions" to allow more customisable inputs for options.
