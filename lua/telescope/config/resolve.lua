@@ -1,3 +1,8 @@
+--- @tag telescope.resolve
+
+---@brief [[
+--- Provides "resolver functions" to allow more customisable inputs for options.
+---@brief ]]
 
 --[[
 
@@ -149,6 +154,22 @@ _resolve_map[function(val) return type(val) == 'table' and val['padding'] ~= nil
   end
 end
 
+
+--- Converts input to a function that returns the height.
+--- The input must take one of four forms:
+--- 1. 0 <= number < 1
+---     This means total height as a percentage.
+--- 2. 1 <= number
+---     This means total height as a fixed number.
+--- 3. function
+---     Must have signature:
+---       function(self, max_columns, max_lines): number
+--- 4. table of the form:
+---       {padding = `foo`}
+---     where `foo` has one of the previous three forms.
+---     The height is then set to be the remaining space after padding.
+--- The returned function will have signature:
+---     function(self, max_columns, max_lines): number
 resolver.resolve_height = function(val)
   for k, v in pairs(_resolve_map) do
     if k(val) then
@@ -159,6 +180,21 @@ resolver.resolve_height = function(val)
   error('invalid configuration option for height:' .. tostring(val))
 end
 
+--- Converts input to a function that returns the width.
+--- The input must take one of four forms:
+--- 1. 0 <= number < 1
+---     This means total width as a percentage.
+--- 2. 1 <= number
+---     This means total width as a fixed number.
+--- 3. function
+---     Must have signature:
+---       function(self, max_columns, max_lines): number
+--- 4. table of the form:
+---       {padding = `foo`}
+---     where `foo` has one of the previous three forms.
+---     The height is then set to be the remaining space after padding.
+--- The returned function will have signature:
+---     function(self, max_columns, max_lines): number
 resolver.resolve_width = function(val)
   for k, v in pairs(_resolve_map) do
     if k(val) then

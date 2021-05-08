@@ -45,11 +45,11 @@
 ---       - If using vertical: if `true`, swaps the location of the results and
 ---         prompt windows
 ---
----   - width_padding:
----     - How many cells to pad the width of Telescope's layout window
+---   - width:
+---     - How wide to make Telescope's layout window
 ---
----   - height_padding:
----     - How many cells to pad the height of Telescope's layout window
+---   - height:
+---     - How tall to make Telescope's layout window
 ---
 ---   - preview_width:
 ---     - Change the width of Telescope's preview window
@@ -105,7 +105,7 @@ local function get_width_opt(picker, layout_config, strat)
   end
 
   -- TODO: provide more information in this error.
-  error('Unsupported width options provided.')
+  error('No supported width options provided.')
 end
 
 -- Get the height to be used for a given strategy
@@ -117,6 +117,9 @@ local function get_height_opt(picker, layout_config, strat)
   elseif layout_config.width ~= nil then
     return layout_config.width
   end
+
+  -- TODO: provide more information in this error
+  error('No supported width options provided.')
 end
 
 -- Check if there are any borders. Right now it's a little raw as
