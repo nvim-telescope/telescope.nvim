@@ -249,13 +249,6 @@ function make_entry.gen_from_git_stash()
       }
     }
 
-  local make_display = function(entry)
-    return displayer {
-      -- {entry.value, "TelescopeResultsIdentifier"},
-      entry.msg
-    }
-  end
-
   return function(entry)
     if entry == "" then
       return nil
@@ -266,7 +259,7 @@ function make_entry.gen_from_git_stash()
       value = splitted[1],
       ordinal = msg,
       msg = msg,
-      display = make_display
+      display = splitted[2]
     }
   end
 end
