@@ -339,9 +339,9 @@ function make_entry.gen_from_lsp_symbols(opts)
   local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
 
   local display_items = {
-    { width = 25 },       -- symbol
-    { width = 8 },        -- symbol type
-    { remaining = true }, -- filename{:optional_lnum+col} OR content preview
+    { width = opts.symbol_width or 25 },     -- symbol
+    { width = opts.symbol_type_width or 8 }, -- symbol type
+    { remaining = true },                    -- filename{:optional_lnum+col} OR content preview
   }
 
   if opts.ignore_filename and opts.show_line then
