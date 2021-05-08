@@ -298,7 +298,6 @@ layout_strategies.center = function(self, max_columns, max_lines)
   local layout_config = validate_layout_config('center',self.layout_config or {}, {
     width = "How wide the picker is",
     preview_height = "(Resolvable): Determine preview height",
-    mirror = "Flip the locations of the results and prompt windows",
     scroll_speed = "The speed when scrolling through the previewer",
   })
   local initial_options = get_initial_window_options(self)

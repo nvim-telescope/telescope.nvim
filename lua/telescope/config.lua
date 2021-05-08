@@ -86,7 +86,15 @@ function config.set_defaults(defaults)
     - "limit"]])
 
   set("layout_strategy", "horizontal")
-  set("layout_defaults", {})
+  set("layout_defaults", {
+    width = 0.8,
+    horizontal = {
+      height = 0.9,
+    },
+    vertical = {
+      height = 0.9,
+    },
+  })
 
   -- set("width", 0.75)
   set("winblend", 0)
