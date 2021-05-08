@@ -340,7 +340,7 @@ actions.git_create_branch = function(prompt_bufnr)
   end
 end
 
---- Applies an existing git stash 
+--- Applies an existing git stash
 ---@param prompt_bufnr number: The prompt bufnr
 actions.git_apply_stash = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()

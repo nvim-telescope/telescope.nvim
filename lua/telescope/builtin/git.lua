@@ -59,7 +59,7 @@ end
 
 git.stash = function(opts)
   local results = utils.get_os_command_output({
-    'git', '--no-pager', 'stash', 'list', 
+    'git', '--no-pager', 'stash', 'list',
   }, opts.cwd)
 
   pickers.new(opts, {
