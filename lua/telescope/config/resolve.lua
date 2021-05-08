@@ -128,7 +128,7 @@ local _simple_resolve_map = {
 }
 
 -- Make a copy of the "simple" _resolve_map that we can add to to make the "full" _resolve_map.
-local _resolve_map = require('luassert.util').deepcopy(_simple_resolve_map)
+local _resolve_map = vim.deepcopy(_simple_resolve_map)
 
 -- Add padding option
 _resolve_map[function(val) return type(val) == 'table' and val['padding'] ~= nil end] = function(selector, val)
