@@ -47,9 +47,11 @@
 ---
 ---   - width:
 ---     - How wide to make Telescope's layout window
+---     - Resolvable: see |resolve.resolve_width()|
 ---
 ---   - height:
 ---     - How tall to make Telescope's layout window
+---     - Resolvable: see |resolve.resolve_height()|
 ---
 ---   - preview_width:
 ---     - Change the width of Telescope's preview window
