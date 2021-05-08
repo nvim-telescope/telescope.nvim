@@ -643,22 +643,27 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
 
 
 layout_strategies.center()                        *layout_strategies.center()*
-    Centered layout wih smaller default sizes (I think)
+    Centered layout with a combined block of the prompt and results aligned to
+    the middle of the screen. The preview window is then placed in the space
+    above.
 
-       +--------------+
+       ┌──────────────┐
        |    Preview   |
-       +--------------+
+       |    Preview   |
+       └──────────────┘
+       ┌──────────────┐
        |    Prompt    |
-       +--------------+
+       ├──────────────┤
        |    Result    |
        |    Result    |
-       |    Result    |
-       +--------------+
+       └──────────────┘
+
+
 
 
 
 layout_strategies.vertical()                    *layout_strategies.vertical()*
-    Vertical perviewer stacks the items on top of each other.
+    Vertical previewer stacks the items on top of each other.
 
        +-----------------+
        |    Previewer    |
