@@ -834,6 +834,8 @@ function make_entry.gen_from_vimoptions()
   end
 end
 
+--- Special options:
+---  - only_sort_tags: Only sort via tag name. Ignore filename and other items
 function make_entry.gen_from_ctags(opts)
   opts = opts or {}
 
@@ -893,10 +895,17 @@ function make_entry.gen_from_ctags(opts)
       return nil
     end
 
+    local ordinal
+
+    if opts.only_sort_tags then
+      ordinal = tag
+    else
+      ordinal = file .. ': ' .. tag
+    end
+
     return {
       valid = true,
-
-      ordinal = file .. ': ' .. tag,
+      ordinal = ordinal,
       display = make_display,
       scode = scode,
       tag = tag,
