@@ -241,24 +241,15 @@ do
 end
 
 function make_entry.gen_from_git_stash()
-  local displayer = entry_display.create {
-    separator = " ",
-    items = {
-      { width = 50 },
-      { remaining = true }
-      }
-    }
-
   return function(entry)
     if entry == "" then
       return nil
     end
     local splitted = vim.split(entry, ':')
-    local msg = splitted[2]
     return {
       value = splitted[1],
-      ordinal = msg,
-      msg = msg,
+      ordinal = splitted[2],
+      msg = splitted[2],
       display = splitted[2]
     }
   end
