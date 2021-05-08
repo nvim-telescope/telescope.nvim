@@ -305,6 +305,44 @@ action_state.get_current_picker({prompt_bufnr})*action_state.get_current_picker(
 
 
 ================================================================================
+Provides "resolver functions" to allow more customisable inputs for options.
+
+resolver.resolve_height()                          *resolver.resolve_height()*
+    Converts input to a function that returns the height. The input must take
+    one of four forms:
+    1. 0 <= number < 1 This means total height as a percentage.
+    2. 1 <= number This means total height as a fixed number.
+    3. function Must have signature: function(self, max_columns, max_lines):
+       number
+    4. table of the form: {padding = `foo`} where `foo` has one of the previous
+       three forms. The height is then set to be the remaining space after
+       padding. The returned function will have signature: function(self,
+       max_columns, max_lines): number
+
+
+
+resolver.resolve_width()                            *resolver.resolve_width()*
+    Converts input to a function that returns the width. The input must take
+    one of four forms:
+    1. 0 <= number < 1 This means total width as a percentage.
+    2. 1 <= number This means total width as a fixed number.
+    3. function Must have signature: function(self, max_columns, max_lines):
+       number
+    4. table of the form: {padding = `foo`} where `foo` has one of the previous
+       three forms. The height is then set to be the remaining space after
+       padding. The returned function will have signature: function(self,
+       max_columns, max_lines): number
+
+
+
+resolver.win_option()                                  *resolver.win_option()*
+    Win option always returns a table with preview, results, and prompt. It
+    handles many different ways. Some examples are as follows:
+
+
+
+
+================================================================================
                                                           *telescope.previewers*
 
 Provides a Previewer table that has to be implemented by each previewer. To
@@ -618,9 +656,11 @@ horizontal and vertical layouts):
 
   - width:
     - How wide to make Telescope's layout window
+    - Resolvable: see |resolve.resolve_width()|
 
   - height:
     - How tall to make Telescope's layout window
+    - Resolvable: see |resolve.resolve_height()|
 
   - preview_width:
     - Change the width of Telescope's preview window
