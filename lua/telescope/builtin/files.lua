@@ -97,12 +97,14 @@ end
 -- Special keys:
 --  opts.search -- the string to search.
 --  opts.search_dirs -- list of directory to search in
+--  opts.use_regex -- special characters won't be escaped
 files.grep_string = function(opts)
   -- TODO: This should probably check your visual selection as well, if you've got one
 
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
-  local search = escape_chars(opts.search or vim.fn.expand("<cword>"))
+  local word = opts.search or vim.fn.expand("<cword>")
+  local search = opts.use_regex and word or escape_chars(word)
   local word_match = opts.word_match
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
 
