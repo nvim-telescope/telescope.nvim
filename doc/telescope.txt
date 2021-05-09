@@ -102,6 +102,10 @@ vertical split, etc. Instead of making users have to overwrite EACH of those
 every time they want to change this behavior, they can instead replace the
 `set` itself and then it will work great and they're done.
 
+The first two arguments of all action sets are: function(prompt_bufnr, context,
+...)
+
+
 action_set.shift_selection({prompt_bufnr}, {change})*action_set.shift_selection()*
     Move the current selection of a picker {change} rows. Handles not
     overflowing / underflowing the list.
@@ -148,12 +152,10 @@ action_set.scroll_previewer({prompt_bufnr}, {direction})*action_set.scroll_previ
 
 Actions functions that are useful for people creating their own mappings.
 
-actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
-    Move the selection to the next entry
+All actions follow the same signature: function(prompt_bufnr, context)
 
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
+prompt_bufnr: The bufnr for the prompt context: Table, Valid keys: index: The
+multi-selection index, if applicable entry: The entry to perform the action on.
 
 
 actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous()*
@@ -228,6 +230,11 @@ actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.select_default()                            *actions.select_default()*
+    THIS DOESNT ACTUALLY EXIST YET
+
+
+
 actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
     Create and checkout a new git branch if it doesn't already exist
 
@@ -250,6 +257,14 @@ actions.git_track_branch({prompt_bufnr})          *actions.git_track_branch()*
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.send_selected_to_qflist()          *actions.send_selected_to_qflist()*
+    TODO: These would be good candidates for thinking about how to add them one
+    at a time OR with the list of items.
+
+    Very cool
+
 
 
 actions.open_qflist()                                  *actions.open_qflist()*
@@ -295,12 +310,9 @@ action_state.get_current_line()              *action_state.get_current_line()*
 
 
 
-action_state.get_current_picker({prompt_bufnr})*action_state.get_current_picker()*
+action_state.get_current_picker()          *action_state.get_current_picker()*
     Gets the current picker
 
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
 
 

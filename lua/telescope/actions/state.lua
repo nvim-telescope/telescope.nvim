@@ -21,9 +21,8 @@ function action_state.get_current_line()
 end
 
 --- Gets the current picker
----@param prompt_bufnr number: The prompt bufnr
-function action_state.get_current_picker(prompt_bufnr)
-  return global_state.get_status(prompt_bufnr).picker
+function action_state.get_current_picker()
+  return global_state.get_current_picker()
 end
 
 local select_to_edit_map = {

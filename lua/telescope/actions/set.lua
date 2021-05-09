@@ -8,6 +8,10 @@
 --- a vertical split, etc. Instead of making users have to overwrite EACH
 --- of those every time they want to change this behavior, they can instead
 --- replace the `set` itself and then it will work great and they're done.
+---
+--- The first two arguments of all action sets are:
+---     function(prompt_bufnr, context, ...)
+---
 ---@brief ]]
 
 local a = vim.api
@@ -30,11 +34,11 @@ local action_set = setmetatable({}, {
 --- Handles not overflowing / underflowing the list.
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param change number: The amount to shift the selection by
-action_set.shift_selection = function(prompt_bufnr, change)
+action_set.shift_selection = function(prompt_bufnr, _, change)
   local count = vim.v.count
   count = count == 0 and 1 or count
   count = a.nvim_get_mode().mode == "n" and count or 1
-  action_state.get_current_picker(prompt_bufnr):move_selection(change * count)
+  action_state.get_current_picker():move_selection(change * count)
 end
 
 --- Select the current entry. This is the action set to overwrite common
@@ -44,8 +48,8 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param type string: The type of selection to make
 --          Valid types include: "default", "horizontal", "vertical", "tabedit"
-action_set.select = function(prompt_bufnr, type)
-  return action_set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
+action_set.select = function(prompt_bufnr, context, type)
+  return action_set.edit(prompt_bufnr, context, action_state.select_key_to_edit_key(type))
 end
 
 local edit_buffer
@@ -70,8 +74,8 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param command string: The command to use to open the file.
 --      Valid commands include: "edit", "new", "vedit", "tabedit"
-action_set.edit = function(prompt_bufnr, command)
-  local entry = action_state.get_selected_entry()
+action_set.edit = function(prompt_bufnr, context, command)
+  local entry = context.entry or action_state.get_selected_entry()
 
   if not entry then
     print("[telescope] Nothing currently selected")
@@ -133,12 +137,12 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
-action_set.scroll_previewer = function (prompt_bufnr, direction)
+action_set.scroll_previewer = function (prompt_bufnr, _, direction)
   local status = state.get_status(prompt_bufnr)
   local default_speed = vim.api.nvim_win_get_height(status.preview_win) / 2
   local speed = status.picker.layout_config.scroll_speed or default_speed
 
-  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(math.floor(speed * direction))
+  action_state.get_current_picker().previewer:scroll_fn(math.floor(speed * direction))
 end
 
 -- ==================================================
