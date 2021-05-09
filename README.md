@@ -389,7 +389,8 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.buffers`                   | Lists Open buffers in the current vim instance.                                             |
 | `builtin.oldfiles`                  | Lists Previously open files.                                                                |
 | `builtin.commands`                  | Lists Available plugin/user commands and run it.                                            |
-| `builtin.tags`                      | Lists Tags in current directory with preview (ctags -R)                                     |
+| `builtin.tags`                      | Lists Tags in current directory with preview (ctags -R).                                    |
+| `builtin.tagstack`                  | Lists Tagstack entries.                                                                     |
 | `builtin.command_history`           | Lists Commands previously ran and run it on enter.                                          |
 | `builtin.search_history`            | Lists Searches previously ran and run it on enter.                                          |
 | `builtin.help_tags`                 | Lists Available help tags and open help document.                                           |
@@ -398,6 +399,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.colorscheme`               | Lists Colorscheme and switch to it on enter.                                                |
 | `builtin.quickfix`                  | Lists items from quickfix.                                                                  |
 | `builtin.loclist`                   | Lists items from current window's location list.                                            |
+| `builtin.jumplist`                  | Lists Jump List entries.                                                                    |
 | `builtin.vim_options`               | Lists vim options and on enter edit the options value.                                      |
 | `builtin.registers`                 | Lists vim registers and edit or paste selection.                                            |
 | `builtin.autocommands`              | Lists vim autocommands and go to their declaration.                                         |

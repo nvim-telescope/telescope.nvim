@@ -917,16 +917,37 @@ internal.tagstack = function(opts)
   end
 
   pickers.new(opts, {
-      prompt_title = 'TagStack',
-      finder = finders.new_table {
-        results = tags,
-        entry_maker = make_entry.gen_from_quickfix(opts),
-      },
-      previewer = previewers.vim_buffer_qflist.new(opts),
-      sorter = conf.generic_sorter(opts),
-    }):find()
+    prompt_title = 'TagStack',
+    finder = finders.new_table {
+      results = tags,
+      entry_maker = make_entry.gen_from_quickfix(opts),
+    },
+    previewer = conf.qflist_previewer(opts),
+    sorter = conf.generic_sorter(opts),
+  }):find()
 end
 
+internal.jumplist = function(opts)
+  opts = opts or {}
+  local jumplist = vim.fn.getjumplist()[1]
+
+  -- reverse the list
+  local sorted_jumplist = {}
+  for i = #jumplist, 1, -1 do
+    jumplist[i].text = ''
+    table.insert(sorted_jumplist, jumplist[i])
+  end
+
+  pickers.new(opts, {
+    prompt_title = 'Jumplist',
+    finder = finders.new_table {
+      results = sorted_jumplist,
+      entry_maker = make_entry.gen_from_jumplist(opts),
+    },
+    previewer = conf.qflist_previewer(opts),
+    sorter = conf.generic_sorter(opts),
+  }):find()
+end
 
 local function apply_checks(mod)
   for k, v in pairs(mod) do

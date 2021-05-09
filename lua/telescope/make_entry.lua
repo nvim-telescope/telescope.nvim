@@ -1139,5 +1139,61 @@ function make_entry.gen_from_git_status(opts)
   end
 end
 
+function make_entry.gen_from_jumplist(opts)
+  opts = opts or {}
+  opts.tail_path = get_default(opts.tail_path, true)
+
+  local displayer = entry_display.create {
+    separator = "▏",
+    items = {
+      { width = 10 },
+      { remaining = true },
+    }
+  }
+
+  local make_display = function(entry)
+    local filename
+    if not opts.hide_filename then
+      filename = entry.filename
+      if opts.tail_path then
+        filename = utils.path_tail(filename)
+      elseif opts.shorten_path then
+        filename = utils.path_shorten(filename)
+      end
+    end
+
+    local line_info = {table.concat({entry.lnum, entry.col}, ":"), "TelescopeResultsLineNr"}
+
+    return displayer {
+      line_info,
+      filename,
+    }
+  end
+
+  return function(entry)
+    if not vim.api.nvim_buf_is_valid(entry.bufnr) then
+      return
+    end
+
+    local filename = entry.filename or vim.api.nvim_buf_get_name(entry.bufnr)
+
+    return {
+      valid = true,
+
+      value = entry,
+      ordinal = (
+        not opts.ignore_filename and filename
+        or ''
+        ) .. ' ' .. entry.text,
+      display = make_display,
+
+      bufnr = entry.bufnr,
+      filename = filename,
+      lnum = entry.lnum,
+      col = entry.col,
+    }
+  end
+end
+
 
 return make_entry
