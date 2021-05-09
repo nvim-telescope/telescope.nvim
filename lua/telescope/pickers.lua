@@ -498,8 +498,16 @@ function Picker:delete_selection()
   local original_selection_strategy = self.selection_strategy
   self.selection_strategy = "row"
 
+  local actual_index
   local selection = self:get_selection()
-  table.remove(self.finder.results, selection.index)
+  for index, entry in ipairs(self.finder.results) do
+    if entry.index == selection.index then
+      actual_index = index
+      break
+    end
+  end
+
+  table.remove(self.finder.results, actual_index)
   self:__on_lines(nil, nil, nil, 0, 1)
 
   vim.schedule(function()
