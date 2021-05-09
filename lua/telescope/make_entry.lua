@@ -1162,6 +1162,10 @@ function make_entry.gen_from_jumplist(opts)
   end
 
   return function(entry)
+    if not vim.api.nvim_buf_is_valid(entry.bufnr) then
+      return
+    end
+
     local filename = entry.filename or vim.api.nvim_buf_get_name(entry.bufnr)
 
     return {
