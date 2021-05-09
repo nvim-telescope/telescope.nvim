@@ -502,7 +502,7 @@ function Picker.close_windows(status)
   local preview_border_win = status.preview_border_win
 
   local function del_win(name, win_id, force, bdelete)
-    if not vim.api.nvim_win_is_valid(win_id) then
+    if win_id == nil or not vim.api.nvim_win_is_valid(win_id) then
       return
     end
 
