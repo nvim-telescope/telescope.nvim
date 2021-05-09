@@ -491,6 +491,23 @@ function Picker:hide_preview()
   -- 2. Resize prompt & results windows accordingly
 end
 
+-- WIP
+-- TODO(dhruvmanila): update the selection when we're at the last row or the
+-- first depending on the sorting_strategy
+function Picker:delete_selection()
+  local original_selection_strategy = self.selection_strategy
+  self.selection_strategy = "row"
+
+  local row = self:get_selection_row()
+  local index = self:get_index(row)
+  table.remove(self.finder.results, index)
+  self:__on_lines(nil, nil, nil, 0, 1)
+
+  vim.schedule(function()
+    self.selection_strategy = original_selection_strategy
+  end)
+end
+
 
 function Picker.close_windows(status)
   local prompt_win = status.prompt_win
