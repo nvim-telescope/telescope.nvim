@@ -248,9 +248,8 @@ function make_entry.gen_from_git_stash()
     local splitted = vim.split(entry, ':')
     return {
       value = splitted[1],
-      ordinal = splitted[2],
-      msg = splitted[2],
-      display = splitted[2]
+      ordinal = splitted[3],
+      display = splitted[3]
     }
   end
 end

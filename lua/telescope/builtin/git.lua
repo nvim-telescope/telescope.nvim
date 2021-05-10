@@ -66,7 +66,7 @@ git.stash = function(opts)
     prompt_title = 'Git Stash',
     finder = finders.new_table {
       results = results,
-      entry_maker = opts.entry_maker or make_entry.gen_from_git_stash(opts),
+      entry_maker = opts.entry_maker or make_entry.gen_from_git_stash(),
     },
     previewer = previewers.git_stash_diff.new(opts),
     sorter = conf.file_sorter(opts),
