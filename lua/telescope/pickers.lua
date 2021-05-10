@@ -491,24 +491,28 @@ function Picker:hide_preview()
   -- 2. Resize prompt & results windows accordingly
 end
 
--- WIP
--- TODO(dhruvmanila): update the selection when we're at the last row or the
--- first depending on the sorting_strategy
-function Picker:delete_selection()
+-- A simple interface to remove an entry from the results window without closing
+-- telescope.
+-- @param delete_cb function
+function Picker:delete_selection(delete_cb)
   local original_selection_strategy = self.selection_strategy
   self.selection_strategy = "row"
 
-  local actual_index
+  local selection_index
   local selection = self:get_selection()
   for index, entry in ipairs(self.finder.results) do
-    if entry.index == selection.index then
-      actual_index = index
+    if entry == selection then
+      selection_index = index
       break
     end
   end
 
-  table.remove(self.finder.results, actual_index)
+  table.remove(self.finder.results, selection_index)
   self:__on_lines(nil, nil, nil, 0, 1)
+
+  if delete_cb and type(delete_cb) == "function" then
+    delete_cb(selection)
+  end
 
   vim.schedule(function()
     self.selection_strategy = original_selection_strategy
