@@ -1,3 +1,8 @@
+if !has('nvim-0.5')
+  echoerr "Telescope.nvim requires at least nvim-0.5. Please update or uninstall"
+  finish
+end
+
 if exists('g:loaded_telescope')
   finish
 endif

@@ -113,19 +113,18 @@ action_set.edit = function(prompt_bufnr, command)
   if entry_bufnr then
     edit_buffer(command, entry_bufnr)
   else
-
     -- check if we didn't pick a different buffer
     -- prevents restarting lsp server
     if vim.api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
       filename = path.normalize(vim.fn.fnameescape(filename), vim.loop.cwd())
       vim.cmd(string.format("%s %s", command, filename))
     end
+  end
 
-    if row and col then
-      local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, {row, col})
-      if not ok then
-        log.debug("Failed to move to cursor:", err_msg, row, col)
-      end
+  if row and col then
+    local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, {row, col})
+    if not ok then
+      log.debug("Failed to move to cursor:", err_msg, row, col)
     end
   end
 end
