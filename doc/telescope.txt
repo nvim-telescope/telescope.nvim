@@ -236,6 +236,14 @@ actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.git_apply_stash({prompt_bufnr})            *actions.git_apply_stash()*
+    Applies an existing git stash
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 actions.git_checkout({prompt_bufnr})                  *actions.git_checkout()*
     Checkout an existing git branch
 
