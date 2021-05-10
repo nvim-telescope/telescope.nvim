@@ -358,10 +358,9 @@ actions.git_checkout = function(prompt_bufnr)
   end
 end
 
---- Switch to git branch
---- If the branch already exists in local, switch to that.
---- If the branch is only in remote, create new branch tracking remote and switch to new one.
----@param prompt_bufnr number: The prompt bufnr
+-- TODO: add this function header back once the treesitter max-query bug is resolved
+--
+--
 actions.git_switch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
