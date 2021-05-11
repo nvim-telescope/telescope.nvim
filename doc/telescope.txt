@@ -406,7 +406,13 @@ builtin.tags({opts})                                          *builtin.tags()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {ctags_file} (string)  specify a particular ctags file to use
+        {ctags_file}    (string)   specify a particular ctags file to use
+        {show_line}     (boolean)  if true, shows matching lines (default is
+                                   false)
+        {shorten_path}  (boolean)  if true, makes file paths shown in picker
+                                   use one letter for folders (default is true)
+        {hide_filename} (boolean)  if true, hides the name of the file in the
+                                   current picker (default is false)
 
 
 builtin.current_buffer_tags({opts})            *builtin.current_buffer_tags()*
@@ -669,12 +675,10 @@ builtin.tagstack({opts})                                  *builtin.tagstack()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {show_line}     (boolean)  if true, shows matching lines (default is
-                                   false)
         {shorten_path}  (boolean)  if true, makes file paths shown in picker
                                    use one letter for folders (default is true)
         {hide_filename} (boolean)  if true, hides the name of the file in the
-                                   current picker (default is false)
+                                   current picker (default is true)
 
 
 builtin.jumplist({opts})                                  *builtin.jumplist()*
