@@ -372,7 +372,7 @@ builtin.lsp_document_symbols({opts})          *builtin.lsp_document_symbols()*
 
 
 builtin.lsp_code_actions({opts})                  *builtin.lsp_code_actions()*
-    Lists any LSP actions for the word under the cursor, that can be triggered
+    Lists any LSP actions for the word under the cursor which can be triggered
     with <cr>
 
 
@@ -401,7 +401,7 @@ builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
 
 
 builtin.lsp_dynamic_workspace_symbols({opts})*builtin.lsp_dynamic_workspace_symbols()*
-    Lists LSP for all workspace symbols asynchronously
+    Dynamically lists LSP for all workspace symbols
 
 
     Parameters: ~
