@@ -184,7 +184,7 @@ previewers.new_buffer_previewer = function(opts)
     else
       local bufnr = vim.api.nvim_create_buf(false, true)
       set_bufnr(self, bufnr)
-      
+
       vim.schedule(function()
         vim.api.nvim_win_set_buf(status.preview_win, bufnr)
       end)
