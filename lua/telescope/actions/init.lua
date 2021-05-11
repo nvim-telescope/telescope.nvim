@@ -380,7 +380,7 @@ end
 -- If the branch already exists in local, switch to that.
 -- If the branch is only in remote, create new branch tracking remote and switch to new one.
 --@param prompt_bufnr number: The prompt bufnr
-actions.git_switch = function(prompt_bufnr)
+actions.git_switch_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
   actions.close(prompt_bufnr)
