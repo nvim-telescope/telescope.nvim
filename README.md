@@ -414,7 +414,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.lsp_references`                    | Lists LSP references for word under the cursor                                                                    |
 | `builtin.lsp_document_symbols`              | Lists LSP document symbols in the current buffer                                                                  |
 | `builtin.lsp_workspace_symbols`             | Lists LSP document symbols in the current workspace                                                               |
-| `builtin.lsp_dynamic_workspace_symbols`     | Lists LSP for all workspace symbols asynchronously                                                                |
+| `builtin.lsp_dynamic_workspace_symbols`     | Dynamically Lists LSP for all workspace symbols                                                                   |
 | `builtin.lsp_code_actions`                  | Lists any LSP actions for the word under the cursor, that can be triggered with <cr>                              |
 | `builtin.lsp_range_code_actions`            | Lists any LSP actions for a given range, that can be triggered with <cr>                                          |
 | `builtin.lsp_document_diagnostics`          | Lists LSP diagnostics for the current buffer                                                                      |

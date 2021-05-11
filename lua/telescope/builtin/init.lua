@@ -51,7 +51,7 @@ builtin.grep_string = require('telescope.builtin.files').grep_string
 --- Lists files in your current working directory, respects .gitignore
 ---@param opts table: options to pass to the picker
 ---@field find_command table: command line arguments for `find_files` to use for the search, overrides default config
---TODO @field follow boolean:
+---@field follow boolean: if true, follows symlinks (i.e. uses `-L` flag for the `find` command)
 ---@field hidden boolean: determines whether to show hidden files or not
 ---@field search_dirs table: directory/directories to search in
 builtin.find_files = require('telescope.builtin.files').find_files
@@ -63,12 +63,15 @@ builtin.fd = builtin.find_files
 --- - Default keymaps:
 ---   - <cr> type: opens the currently selected file, or navigates to the currently selected directory
 ---   - <C-e> type: creates new file in current directory, creates new directory if the name contains a trailing '/'
+---     - Note: you can create files nested into several directories with <C-e>, i.e. `lua/telescope/init.lua` would
+---       create the file `init.lua` inside of `lua/telescope` and will create the necessary folders (similar to how
+---       `mkdir -p` would work) if they do not already exist
 ---@param opts table: options to pass to the picker
 ---@field search_dirs table: directory/directories to search in
 builtin.file_browser = require('telescope.builtin.files').file_browser
 
 --- Lists function names, variables, and other symbols from treesitter queries
---TODO @field show_line type:
+---@field show_line boolean: if true, shows matching lines
 builtin.treesitter = require('telescope.builtin.files').treesitter
 
 --- Live fuzzy search inside of the currently open buffer
@@ -248,7 +251,7 @@ builtin.lsp_implementations = require('telescope.builtin.lsp').implementations
 ---@field ignore_filename type: string with file to ignore
 builtin.lsp_document_symbols = require('telescope.builtin.lsp').document_symbols
 
---- Lists any LSP actions for the word under the cursor, that can be triggered with <cr>
+--- Lists any LSP actions for the word under the cursor which can be triggered with <cr>
 ---@param opts table: options to pass to the picker
 builtin.lsp_code_actions = require('telescope.builtin.lsp').code_actions
 
@@ -262,7 +265,7 @@ builtin.lsp_range_code_actions = require('telescope.builtin.lsp').range_code_act
 ---@field ignore_filename string: file(s) to ignore
 builtin.lsp_workspace_symbols = require('telescope.builtin.lsp').workspace_symbols
 
---- Lists LSP for all workspace symbols asynchronously
+--- Dynamically lists LSP for all workspace symbols
 ---@param opts table: options to pass to the picker
 builtin.lsp_dynamic_workspace_symbols = require('telescope.builtin.lsp').dynamic_workspace_symbols
 
