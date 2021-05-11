@@ -288,29 +288,7 @@ options you want to use. Here's an example with the live_grep picker:
  })
 
 This will use the default configuration options. Other configuration options
-are still in flux at the moment Pickers for finding files, folders, tags, and
-text Pickers for interacting with Git
-
-Telescope provides a number of pickers that can be used to fuzzy find through
-the result of a number of Git commands.
-
-Pickers for a variety of Vim features
-
-Telescope provides a number of pickers that can be used to fuzzy find through a
-number of Vim's internal features, such as the currently active autocommands,
-the jumplist, and more!
-
-Pickers for Neovim's builtin LSP
-
-For the `*_symbols` and `*_diagnostics` LSP pickers, there is a special
-filtering that you can use to specify your search. When in insert mode while
-the picker is open, type `:` and then press `<C-l>` to get an autocomplete menu
-filled with all of the possible filters you can use.
-
-i.e. while using the `lsp_document_symbols` picker, adding `:methods:` to your
-query filters out any document document symbols that are not recognized as
-methods by treesitter.
-
+are still in flux at the moment
 
 builtin.live_grep({opts})                                *builtin.live_grep()*
     Search for a string in your current working directory and get results live
@@ -424,8 +402,8 @@ builtin.current_buffer_tags({opts})            *builtin.current_buffer_tags()*
 
 
 builtin.git_files({opts})                                *builtin.git_files()*
-    Fuzzy search through the output of `git ls-files` command, respects
-    .gitignore, optionally ignores untracked files
+    Telescope provides a number of pickers that can be used to fuzzy find
+    through the result of a number of Git commands.
 
 
     Parameters: ~
@@ -480,7 +458,9 @@ builtin.git_status({opts})                              *builtin.git_status()*
 
 
 builtin.builtin({opts})                                    *builtin.builtin()*
-    Lists all of the community maintained pickers built into Telescope
+    Telescope provides a number of pickers that can be used to fuzzy find
+    through a number of Vim's internal features, such as the currently active
+    autocommands, the jumplist, and more!
 
 
     Parameters: ~
@@ -690,7 +670,14 @@ builtin.jumplist({opts})                                  *builtin.jumplist()*
 
 
 builtin.lsp_references({opts})                      *builtin.lsp_references()*
-    Lists LSP references for word under the cursor
+    For the `*_symbols` and `*_diagnostics` LSP pickers, there is a special
+    filtering that you can use to specify your search. When in insert mode
+    while the picker is open, type `:` and then press `<C-l>` to get an
+    autocomplete menu filled with all of the possible filters you can use.
+
+    i.e. while using the `lsp_document_symbols` picker, adding `:methods:` to
+    your query filters out any document document symbols that are not
+    recognized as methods by treesitter.
 
 
     Parameters: ~
