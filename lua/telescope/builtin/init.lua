@@ -169,11 +169,11 @@ builtin.symbols = require('telescope.builtin.internal').symbols
 ---@param opts table: options to pass to the picker
 builtin.commands = require('telescope.builtin.internal').commands
 
---- Lists items in the quickfix list
+--- Lists items in the quickfix list, jumps to location on <cr>
 ---@param opts table: options to pass to the picker
 builtin.quickfix = require('telescope.builtin.internal').quickfix
 
---- Lists items from the current window's location list
+--- Lists items from the current window's location list, jumps to location on <cr>
 ---@param opts table: options to pass to the picker
 builtin.loclist = require('telescope.builtin.internal').loclist
 
@@ -253,6 +253,9 @@ builtin.spell_suggest = require('telescope.builtin.internal').spell_suggest
 ---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is true)
 ---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.tagstack = require('telescope.builtin.internal').tagstack
+
+--- Lists items from Vim's jumplist, jumps to location on <cr>
+---@param opts table: options to pass to the picker
 builtin.jumplist = require('telescope.builtin.internal').jumplist
 
 --------------------------------------------------
