@@ -36,10 +36,7 @@ local builtin = {}
 -- File-related Pickers
 --
 --------------------------------------------------
----@tag telescope.builtin.files
----@brief [[
 --- Pickers for finding files, folders, tags, and text
----@brief ]]
 
 --- Search for a string in your current working directory and get results live as you type (respecting .gitignore)
 ---@param opts table: options to pass to the picker
@@ -103,14 +100,10 @@ builtin.current_buffer_tags = require('telescope.builtin.files').current_buffer_
 -- Git-related Pickers
 --
 --------------------------------------------------
----@tag telescope.builtin.git
----@brief [[
 --- Pickers for interacting with Git
 ---
 --- Telescope provides a number of pickers that can be used to fuzzy find through the result of a number of Git
 --- commands.
----
----@brief ]]
 
 --- Fuzzy search through the output of `git ls-files` command, respects .gitignore, optionally ignores untracked files
 ---@param opts table: options to pass to the picker
@@ -148,14 +141,10 @@ builtin.git_stash = require('telescope.builtin.git').stash
 -- Internal and Vim-related Pickers
 --
 --------------------------------------------------
----@tag telescope.builtin.internal
----@brief [[
 --- Pickers for a variety of Vim features
 ---
 --- Telescope provides a number of pickers that can be used to fuzzy find through a number of Vim's internal features,
 --- such as the currently active autocommands, the jumplist, and more!
----
----@brief ]]
 
 --- Lists all of the community maintained pickers built into Telescope
 ---@param opts table: options to pass to the picker
@@ -266,8 +255,6 @@ builtin.jumplist = require('telescope.builtin.internal').jumplist
 -- LSP-related Pickers
 --
 --------------------------------------------------
----@tag telescope.builtin.lsp
----@brief [[
 --- Pickers for Neovim's builtin LSP
 ---
 --- For the `*_symbols` and `*_diagnostics` LSP pickers, there is a special filtering that you can use to specify your
@@ -276,8 +263,6 @@ builtin.jumplist = require('telescope.builtin.internal').jumplist
 ---
 --- i.e. while using the `lsp_document_symbols` picker, adding `:methods:` to your query filters out any document
 --- document symbols that are not recognized as methods by treesitter.
----
----@brief ]]
 
 --- Lists LSP references for word under the cursor
 ---@param opts table: options to pass to the picker
