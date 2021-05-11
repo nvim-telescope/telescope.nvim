@@ -199,9 +199,11 @@ git.branches = function(opts)
       map('i', '<c-a>', actions.git_create_branch)
       map('n', '<c-a>', actions.git_create_branch)
 
+      map('i', '<c-s>', actions.git_switch_branch)
+      map('n', '<c-s>', actions.git_switch_branch)
+
       map('i', '<c-d>', actions.git_delete_branch)
       map('n', '<c-d>', actions.git_delete_branch)
-
       return true
     end
   }):find()

@@ -375,6 +375,32 @@ actions.git_checkout = function(prompt_bufnr)
   end
 end
 
+-- TODO: add this function header back once the treesitter max-query bug is resolved
+-- Switch to git branch
+-- If the branch already exists in local, switch to that.
+-- If the branch is only in remote, create new branch tracking remote and switch to new one.
+--@param prompt_bufnr number: The prompt bufnr
+actions.git_switch = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+  actions.close(prompt_bufnr)
+  local pattern = '^refs/remotes/%w+/'
+  local branch = selection.value
+  if string.match(selection.refname, pattern) then
+    branch = string.gsub(selection.refname, pattern, '')
+  end
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'switch', branch }, cwd)
+  if ret == 0 then
+    print("Switched to: " .. branch)
+  else
+    print(string.format(
+      'Error when switching to: %s. Git returned: "%s"',
+      selection.value,
+      table.concat(stderr, '  ')
+    ))
+  end
+end
+
 --- Tell git to track the currently selected remote branch in Telescope
 ---@param prompt_bufnr number: The prompt bufnr
 actions.git_track_branch = function(prompt_bufnr)
