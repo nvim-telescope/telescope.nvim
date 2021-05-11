@@ -57,6 +57,25 @@ git.commits = function(opts)
   }):find()
 end
 
+git.stash = function(opts)
+  local results = utils.get_os_command_output({
+    'git', '--no-pager', 'stash', 'list',
+  }, opts.cwd)
+
+  pickers.new(opts, {
+    prompt_title = 'Git Stash',
+    finder = finders.new_table {
+      results = results,
+      entry_maker = opts.entry_maker or make_entry.gen_from_git_stash(),
+    },
+    previewer = previewers.git_stash_diff.new(opts),
+    sorter = conf.file_sorter(opts),
+    attach_mappings = function()
+      actions.select_default:replace(actions.git_apply_stash)
+      return true
+    end
+  }):find()
+end
 git.bcommits = function(opts)
   local results = utils.get_os_command_output({
     'git', 'log', '--pretty=oneline', '--abbrev-commit', vim.fn.expand('%')

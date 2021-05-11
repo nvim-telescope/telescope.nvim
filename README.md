@@ -431,6 +431,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checkouts it out on enter.                 |
 | `builtin.git_branches`              | Lists all branches with log preview, checkout action (<cr>), track action (<c-t>) and rebase action(<c-r>). |
 | `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multi-selection still WIP) |
+| `builtin.git_stash`                 | Lists stash items in current repository with ability to apply them on <CR>                  |
 
 ### Treesitter Picker
 

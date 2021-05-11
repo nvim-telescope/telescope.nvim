@@ -263,6 +263,7 @@ previewers.vim_buffer_qflist = buffer_previewer.qflist
 previewers.git_branch_log = buffer_previewer.git_branch_log
 previewers.git_commit_diff = buffer_previewer.git_commit_diff
 previewers.git_file_diff = buffer_previewer.git_file_diff
+previewers.git_stash_diff = buffer_previewer.git_stash_diff
 
 
 previewers.ctags = buffer_previewer.ctags
