@@ -38,6 +38,7 @@ builtin.git_commits = require('telescope.builtin.git').commits
 builtin.git_bcommits = require('telescope.builtin.git').bcommits
 builtin.git_branches = require('telescope.builtin.git').branches
 builtin.git_status = require('telescope.builtin.git').status
+builtin.git_stash = require('telescope.builtin.git').stash
 
 builtin.builtin = require('telescope.builtin.internal').builtin
 
