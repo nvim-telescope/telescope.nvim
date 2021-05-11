@@ -226,6 +226,7 @@ builtin.spell_suggest = require('telescope.builtin.internal').spell_suggest
 --- Lists the tag stack for the current window
 ---@param opts table: options to pass to the picker
 builtin.tagstack = require('telescope.builtin.internal').tagstack
+builtin.jumplist = require('telescope.builtin.internal').jumplist
 
 
 --------------------------------------------------
