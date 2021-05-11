@@ -88,6 +88,9 @@ builtin.current_buffer_fuzzy_find = require('telescope.builtin.files').current_b
 --- or update when introducing new changes)
 ---@param opts table: options to pass to the picker
 ---@field ctags_file string: specify a particular ctags file to use
+---@field show_line boolean: if true, shows matching lines (default is false)
+---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is true)
+---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.tags = require('telescope.builtin.files').tags
 
 --- Lists all of the tags for the currently open buffer, with a preview
@@ -250,9 +253,8 @@ builtin.spell_suggest = require('telescope.builtin.internal').spell_suggest
 
 --- Lists the tag stack for the current window
 ---@param opts table: options to pass to the picker
----@field show_line boolean: if true, shows matching lines (default is false)
 ---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is true)
----@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
+---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is true)
 builtin.tagstack = require('telescope.builtin.internal').tagstack
 
 --- Lists items from Vim's jumplist, jumps to location on <cr>
