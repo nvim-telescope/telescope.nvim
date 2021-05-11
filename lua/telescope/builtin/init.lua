@@ -36,9 +36,14 @@ local builtin = {}
 -- File-related Pickers
 --
 --------------------------------------------------
+---@tag telescope.builtin.files
+---@brief [[
+--- Pickers for finding files, folders, tags, and text
+---@brief ]]
+
 --- Search for a string in your current working directory and get results live as you type (respecting .gitignore)
 ---@param opts table: options to pass to the picker
----@field grep_open_files boolean: restrict search to open files only, mutually exclusive with `search_dirs`
+---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
 ---@field search_dirs table: directory/directories to search in, mutually exclusive with `grep_open_files`
 builtin.live_grep = require('telescope.builtin.files').live_grep
 
@@ -46,13 +51,14 @@ builtin.live_grep = require('telescope.builtin.files').live_grep
 ---@param opts table: options to pass to the picker
 ---@field search string: the query to search
 ---@field search_dirs table: directory/directories to search in
+---@field use_regex boolean: if true, special characters won't be escaped, allows for using regex (default is false)
 builtin.grep_string = require('telescope.builtin.files').grep_string
 
 --- Lists files in your current working directory, respects .gitignore
 ---@param opts table: options to pass to the picker
 ---@field find_command table: command line arguments for `find_files` to use for the search, overrides default config
 ---@field follow boolean: if true, follows symlinks (i.e. uses `-L` flag for the `find` command)
----@field hidden boolean: determines whether to show hidden files or not
+---@field hidden boolean: determines whether to show hidden files or not (default is false)
 ---@field search_dirs table: directory/directories to search in
 builtin.find_files = require('telescope.builtin.files').find_files
 
@@ -71,7 +77,7 @@ builtin.fd = builtin.find_files
 builtin.file_browser = require('telescope.builtin.files').file_browser
 
 --- Lists function names, variables, and other symbols from treesitter queries
----@field show_line boolean: if true, shows matching lines
+---@field show_line boolean: if true, shows matching lines (default is false)
 builtin.treesitter = require('telescope.builtin.files').treesitter
 
 --- Live fuzzy search inside of the currently open buffer
@@ -94,10 +100,19 @@ builtin.current_buffer_tags = require('telescope.builtin.files').current_buffer_
 -- Git-related Pickers
 --
 --------------------------------------------------
+---@tag telescope.builtin.git
+---@brief [[
+--- Pickers for interacting with Git
+---
+--- Telescope provides a number of pickers that can be used to fuzzy find through the result of a number of Git
+--- commands.
+---
+---@brief ]]
+
 --- Fuzzy search through the output of `git ls-files` command, respects .gitignore, optionally ignores untracked files
 ---@param opts table: options to pass to the picker
----@field show_untracked boolean: if true, adds the `--others` flag to the search (default true)
----@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to the search (default false)
+---@field show_untracked boolean: if true, adds the `--others` flag to the search (default is true)
+---@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to the search (default is false)
 builtin.git_files = require('telescope.builtin.git').files
 
 --- Lists commits for current directory, with diff preview and checkout on <cr>
@@ -129,6 +144,15 @@ builtin.git_status = require('telescope.builtin.git').status
 -- Internal and Vim-related Pickers
 --
 --------------------------------------------------
+---@tag telescope.builtin.internal
+---@brief [[
+--- Pickers for a variety of Vim features
+---
+--- Telescope provides a number of pickers that can be used to fuzzy find through a number of Vim's internal features,
+--- such as the currently active autocommands, the jumplist, and more!
+---
+---@brief ]]
+
 --- Lists all of the community maintained pickers built into Telescope
 ---@param opts table: options to pass to the picker
 builtin.builtin = require('telescope.builtin.internal').builtin
@@ -225,18 +249,33 @@ builtin.spell_suggest = require('telescope.builtin.internal').spell_suggest
 
 --- Lists the tag stack for the current window
 ---@param opts table: options to pass to the picker
+---@field show_line boolean: if true, shows matching lines (default is false)
+---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is true)
+---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.tagstack = require('telescope.builtin.internal').tagstack
 builtin.jumplist = require('telescope.builtin.internal').jumplist
-
 
 --------------------------------------------------
 --
 -- LSP-related Pickers
 --
 --------------------------------------------------
+---@tag telescope.builtin.lsp
+---@brief [[
+--- Pickers for Neovim's builtin LSP
+---
+--- For the `*_symbols` and `*_diagnostics` LSP pickers, there is a special filtering that you can use to specify your
+--- search. When in insert mode while the picker is open, type `:` and then press `<C-l>` to get an autocomplete menu
+--- filled with all of the possible filters you can use.
+---
+--- i.e. while using the `lsp_document_symbols` picker, adding `:methods:` to your query filters out any document
+--- document symbols that are not recognized as methods by treesitter.
+---
+---@brief ]]
+
 --- Lists LSP references for word under the cursor
 ---@param opts table: options to pass to the picker
----@field shorten_path boolean: if true, will shorten path shown
+---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is false)
 builtin.lsp_references = require('telescope.builtin.lsp').references
 
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
@@ -247,11 +286,6 @@ builtin.lsp_definitions = require('telescope.builtin.lsp').definitions
 ---@param opts table: options to pass to the picker
 builtin.lsp_implementations = require('telescope.builtin.lsp').implementations
 
---- Lists LSP document symbols in the current buffer
----@param opts table: options to pass to the picker
----@field ignore_filename type: string with file to ignore
-builtin.lsp_document_symbols = require('telescope.builtin.lsp').document_symbols
-
 --- Lists any LSP actions for the word under the cursor which can be triggered with <cr>
 ---@param opts table: options to pass to the picker
 builtin.lsp_code_actions = require('telescope.builtin.lsp').code_actions
@@ -260,22 +294,31 @@ builtin.lsp_code_actions = require('telescope.builtin.lsp').code_actions
 ---@param opts table: options to pass to the picker
 builtin.lsp_range_code_actions = require('telescope.builtin.lsp').range_code_actions
 
+--- Lists LSP document symbols in the current buffer
+---@param opts table: options to pass to the picker
+---@field ignore_filename type: string with file to ignore
+builtin.lsp_document_symbols = require('telescope.builtin.lsp').document_symbols
+
 --- Lists LSP document symbols in the current workspace
 ---@param opts table: options to pass to the picker
----@field shorten_path boolean: if true, will shorten path shown
+---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is false)
 ---@field ignore_filename string: file(s) to ignore
+---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.lsp_workspace_symbols = require('telescope.builtin.lsp').workspace_symbols
 
 --- Dynamically lists LSP for all workspace symbols
 ---@param opts table: options to pass to the picker
+---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.lsp_dynamic_workspace_symbols = require('telescope.builtin.lsp').dynamic_workspace_symbols
 
 --- Lists LSP diagnostics for the current buffer
 ---@param opts table: options to pass to the picker
+---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.lsp_document_diagnostics = require('telescope.builtin.lsp').diagnostics
 
 --- Lists LSP diagnostics for the current workspace if supported, otherwise searches in all open buffers
 ---@param opts table: options to pass to the picker
+---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.lsp_workspace_diagnostics = require('telescope.builtin.lsp').workspace_diagnostics
 
 return builtin
