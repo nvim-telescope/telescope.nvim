@@ -240,6 +240,21 @@ do
   end
 end
 
+function make_entry.gen_from_git_stash()
+  return function(entry)
+    if entry == "" then
+      return nil
+    end
+    local splitted = vim.split(entry, ':')
+    return {
+      value = splitted[1],
+      ordinal = splitted[3],
+      display = splitted[3]
+    }
+  end
+end
+
+
 function make_entry.gen_from_git_commits()
   local displayer = entry_display.create {
     separator = " ",

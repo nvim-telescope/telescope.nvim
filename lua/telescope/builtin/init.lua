@@ -137,6 +137,7 @@ builtin.git_branches = require('telescope.builtin.git').branches
 ---   - <Tab>: stages or unstages the currently selected file
 ---@param opts table: options to pass to the picker
 builtin.git_status = require('telescope.builtin.git').status
+builtin.git_stash = require('telescope.builtin.git').stash
 
 
 --------------------------------------------------
