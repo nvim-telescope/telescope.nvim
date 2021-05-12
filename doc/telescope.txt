@@ -290,17 +290,20 @@ options you want to use. Here's an example with the live_grep picker:
 This will use the default configuration options. Other configuration options
 are still in flux at the moment
 
-(respecting .gitignore)
----@param opts table: options to pass to the picker
----@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
----@field search_dirs table: directory/directories to search in, mutually exclusive with `grep_open_files`
-builtin.live_grep()*(respecting .gitignore)
----@param opts table: options to pass to the picker
----@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
----@field search_dirs table: directory/directories to search in, mutually exclusive with `grep_open_files`
-builtin.live_grep()*
-    -----------------------------------------------
+builtin.live_grep({opts})                                *builtin.live_grep()*
+    Search for a string in your current working directory and get results live
+    as you type (respecting .gitignore)
 
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {grep_open_files} (boolean)  if true, restrict search to open files
+                                     only, mutually exclusive with
+                                     `search_dirs`
+        {search_dirs}     (table)    directory/directories to search in,
+                                     mutually exclusive with `grep_open_files`
 
 
 builtin.grep_string({opts})                            *builtin.grep_string()*
@@ -402,7 +405,8 @@ builtin.current_buffer_tags({opts})            *builtin.current_buffer_tags()*
 
 
 builtin.git_files({opts})                                *builtin.git_files()*
-    -----------------------------------------------
+    Fuzzy search through the output of `git ls-files` command, respects
+    .gitignore, optionally ignores untracked files
 
 
     Parameters: ~
@@ -457,7 +461,7 @@ builtin.git_status({opts})                              *builtin.git_status()*
 
 
 builtin.builtin({opts})                                    *builtin.builtin()*
-    -----------------------------------------------
+    Lists all of the community maintained pickers built into Telescope
 
 
     Parameters: ~
@@ -667,7 +671,7 @@ builtin.jumplist({opts})                                  *builtin.jumplist()*
 
 
 builtin.lsp_references({opts})                      *builtin.lsp_references()*
-    -----------------------------------------------
+    Lists LSP references for word under the cursor
 
 
     Parameters: ~
