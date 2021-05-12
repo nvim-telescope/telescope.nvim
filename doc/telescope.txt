@@ -290,20 +290,17 @@ options you want to use. Here's an example with the live_grep picker:
 This will use the default configuration options. Other configuration options
 are still in flux at the moment
 
-builtin.live_grep({opts})                                *builtin.live_grep()*
-    Search for a string in your current working directory and get results live
-    as you type (respecting .gitignore)
+(respecting .gitignore)
+---@param opts table: options to pass to the picker
+---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
+---@field search_dirs table: directory/directories to search in, mutually exclusive with `grep_open_files`
+builtin.live_grep()*(respecting .gitignore)
+---@param opts table: options to pass to the picker
+---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
+---@field search_dirs table: directory/directories to search in, mutually exclusive with `grep_open_files`
+builtin.live_grep()*
+    -----------------------------------------------
 
-
-    Parameters: ~
-        {opts} (table)  options to pass to the picker
-
-    Fields: ~
-        {grep_open_files} (boolean)  if true, restrict search to open files
-                                     only, mutually exclusive with
-                                     `search_dirs`
-        {search_dirs}     (table)    directory/directories to search in,
-                                     mutually exclusive with `grep_open_files`
 
 
 builtin.grep_string({opts})                            *builtin.grep_string()*
@@ -341,10 +338,10 @@ builtin.file_browser({opts})                          *builtin.file_browser()*
     Lists files and folders in your current working directory, open files,
     navigate your filesystem, and create new files and folders
     - Default keymaps:
-      - <cr> type: opens the currently selected file, or navigates to the
-        currently selected directory
-      - <C-e> type: creates new file in current directory, creates new
-        directory if the name contains a trailing '/'
+      - <cr>: opens the currently selected file, or navigates to the currently
+        selected directory
+      - <C-e>: creates new file in current directory, creates new directory if
+        the name contains a trailing '/'
         - Note: you can create files nested into several directories with
           <C-e>, i.e. `lua/telescope/init.lua` would create the file `init.lua`
           inside of `lua/telescope` and will create the necessary folders
@@ -363,7 +360,8 @@ builtin.treesitter()                                    *builtin.treesitter()*
 
 
     Fields: ~
-        {show_line} (boolean)  if true, shows matching lines (default is false)
+        {show_line} (boolean)  if true, shows the row:column that the result is
+                               found at (default is true)
 
 
 builtin.current_buffer_fuzzy_find({opts})*builtin.current_buffer_fuzzy_find()*
@@ -374,7 +372,13 @@ builtin.current_buffer_fuzzy_find({opts})*builtin.current_buffer_fuzzy_find()*
         {opts} (table)  options to pass to the picker
 
 
-builtin.tags({opts})                                          *builtin.tags()*
+(i.e. { previewer = false, show_line = true} or { previewer = true, show_line = false })
+---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is true)
+---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
+builtin.tags({opts})*(i.e. { previewer = false, show_line = true} or { previewer = true, show_line = false })
+---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is true)
+---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
+builtin.tags()*
     Lists tags in current directory with tag location file preview (users are
     required to run ctags -R to generate tags or update when introducing new
     changes)
@@ -384,13 +388,9 @@ builtin.tags({opts})                                          *builtin.tags()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {ctags_file}    (string)   specify a particular ctags file to use
-        {show_line}     (boolean)  if true, shows matching lines (default is
-                                   false)
-        {shorten_path}  (boolean)  if true, makes file paths shown in picker
-                                   use one letter for folders (default is true)
-        {hide_filename} (boolean)  if true, hides the name of the file in the
-                                   current picker (default is false)
+        {ctags_file} (string)   specify a particular ctags file to use
+        {show_line}  (boolean)  if true, shows the text for the tag (default is
+                                true). Typically you would want to use
 
 
 builtin.current_buffer_tags({opts})            *builtin.current_buffer_tags()*
@@ -402,8 +402,7 @@ builtin.current_buffer_tags({opts})            *builtin.current_buffer_tags()*
 
 
 builtin.git_files({opts})                                *builtin.git_files()*
-    Telescope provides a number of pickers that can be used to fuzzy find
-    through the result of a number of Git commands.
+    -----------------------------------------------
 
 
     Parameters: ~
@@ -458,9 +457,7 @@ builtin.git_status({opts})                              *builtin.git_status()*
 
 
 builtin.builtin({opts})                                    *builtin.builtin()*
-    Telescope provides a number of pickers that can be used to fuzzy find
-    through a number of Vim's internal features, such as the currently active
-    autocommands, the jumplist, and more!
+    -----------------------------------------------
 
 
     Parameters: ~
@@ -670,14 +667,7 @@ builtin.jumplist({opts})                                  *builtin.jumplist()*
 
 
 builtin.lsp_references({opts})                      *builtin.lsp_references()*
-    For the `*_symbols` and `*_diagnostics` LSP pickers, there is a special
-    filtering that you can use to specify your search. When in insert mode
-    while the picker is open, type `:` and then press `<C-l>` to get an
-    autocomplete menu filled with all of the possible filters you can use.
-
-    i.e. while using the `lsp_document_symbols` picker, adding `:methods:` to
-    your query filters out any document document symbols that are not
-    recognized as methods by treesitter.
+    -----------------------------------------------
 
 
     Parameters: ~
@@ -725,6 +715,9 @@ builtin.lsp_range_code_actions({opts})      *builtin.lsp_range_code_actions()*
 
 builtin.lsp_document_symbols({opts})          *builtin.lsp_document_symbols()*
     Lists LSP document symbols in the current buffer
+    - Default keymaps:
+      - <C-l>: show autocompletion menu to prefilter your query by type of
+        symbol you want to see (i.e. `:variable:`)
 
 
     Parameters: ~
@@ -736,6 +729,9 @@ builtin.lsp_document_symbols({opts})          *builtin.lsp_document_symbols()*
 
 builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
     Lists LSP document symbols in the current workspace
+    - Default keymaps:
+      - <C-l>: show autocompletion menu to prefilter your query by type of
+        symbol you want to see (i.e. `:variable:`)
 
 
     Parameters: ~
@@ -752,6 +748,9 @@ builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
 
 builtin.lsp_dynamic_workspace_symbols({opts})*builtin.lsp_dynamic_workspace_symbols()*
     Dynamically lists LSP for all workspace symbols
+    - Default keymaps:
+      - <C-l>: show autocompletion menu to prefilter your query by type of
+        symbol you want to see (i.e. `:variable:`)
 
 
     Parameters: ~
@@ -764,6 +763,9 @@ builtin.lsp_dynamic_workspace_symbols({opts})*builtin.lsp_dynamic_workspace_symb
 
 builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
     Lists LSP diagnostics for the current buffer
+    - Default keymaps:
+      - <C-l>: show autocompletion menu to prefilter your query with the
+        diagnostic you want to see (i.e. `:warning:`)
 
 
     Parameters: ~
@@ -777,6 +779,9 @@ builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
 builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
     Lists LSP diagnostics for the current workspace if supported, otherwise
     searches in all open buffers
+    - Default keymaps:
+      - <C-l>: show autocompletion menu to prefilter your query with the
+        diagnostic you want to see (i.e. `:warning:`)
 
 
     Parameters: ~
