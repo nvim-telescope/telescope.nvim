@@ -422,6 +422,15 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.lsp_implementations`               | Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope |
 | `builtin.lsp_definitions`                   | Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope    |
 
+#### Pre-filtering option for LSP pickers
+
+For the `*_symbols` and `*_diagnostics` LSP pickers, there is a special filtering that you can use to specify your
+search. When in insert mode while the picker is open, type `:` and then press `<C-l>` to get an autocomplete menu
+filled with all of the possible filters you can use.
+
+i.e. while using the `lsp_document_symbols` picker, adding `:methods:` to your query filters out any document
+document symbols that are not recognized as methods by treesitter.
+
 ### Git Pickers
 
 | Functions                           | Description                                                                                                 |
