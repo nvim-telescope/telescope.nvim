@@ -671,7 +671,8 @@ horizontal and vertical layouts):
     - Change the scrolling speed of the previewer
 
 layout_strategies.horizontal()                *layout_strategies.horizontal()*
-    Horizontal previewer
+    Horizontal previewer has two columns, one for the preview and one for the
+    prompt and results.
 
     ┌──────────────────────────────────────────────────┐
     │                                                  │

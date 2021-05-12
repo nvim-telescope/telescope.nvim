@@ -60,8 +60,9 @@
 ---     - Change the scrolling speed of the previewer
 ---@brief ]]
 
-local config = require('telescope.config')
-local resolve = require("telescope.config.resolve")
+local resolve = require('telescope.config.resolve')
+
+local get_default = require('telescope.utils').get_default
 
 local function get_initial_window_options(picker)
   local popup_border = resolve.win_option(picker.window.border)
@@ -96,33 +97,6 @@ local function get_initial_window_options(picker)
   }
 end
 
--- Get the width to be used for a given strategy
-local function get_width_opt(picker, layout_config, strat)
-  if picker.window.width ~= nil then
-    return picker.window.width
-  elseif layout_config[strat] ~= nil and layout_config[strat].width ~=nil then
-    return picker.layout_config[strat].width
-  elseif layout_config.width ~= nil then
-    return layout_config.width
-  end
-
-  -- TODO: provide more information in this error.
-  error('No supported width options provided.')
-end
-
--- Get the height to be used for a given strategy
-local function get_height_opt(picker, layout_config, strat)
-  if picker.window.width ~= nil then
-    return picker.window.width
-  elseif layout_config[strat] ~= nil and layout_config[strat].width ~=nil then
-    return layout_config[strat].width
-  elseif layout_config.width ~= nil then
-    return layout_config.width
-  end
-
-  -- TODO: provide more information in this error
-  error('No supported width options provided.')
-end
 
 -- Check if there are any borders. Right now it's a little raw as
 -- there are a few things that contribute to the border
@@ -178,7 +152,7 @@ local function validate_layout_config(strategy, options, values)
     -- Prioritise values that are specific to this strategy
     if options[strategy] ~= nil and options[strategy][k] ~= nil then
       result[k] = options[strategy][k]
-    elseif values[k] ~= nil then
+    elseif options[k] ~= nil then
       result[k] = options[k]
     end
   end
@@ -188,7 +162,8 @@ end
 
 local layout_strategies = {}
 
---- Horizontal previewer
+--- Horizontal previewer has two columns, one for the preview
+--- and one for the prompt and results.
 ---
 --- <pre>
 --- ┌──────────────────────────────────────────────────┐
@@ -224,11 +199,11 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
 
   -- TODO: Test with 120 width terminal
   -- TODO: Test with self.width
-  local width_opt = get_width_opt(self,layout_config,'horizontal')
+  local width_opt = get_default(self.window.width,layout_config.width)
   local picker_width = resolve.resolve_width(width_opt)(self,max_columns,max_lines)
   local width_padding = math.floor((max_columns - picker_width)/2)
 
-  local height_opt = get_height_opt(self,layout_config,'horizontal')
+  local height_opt = get_default(self.window.height,layout_config.height)
   local picker_height = resolve.resolve_height(height_opt)(self,max_columns,max_lines)
   local height_padding = math.floor((max_lines - picker_height)/2)
 
@@ -325,7 +300,7 @@ layout_strategies.center = function(self, max_columns, max_lines)
   local prompt = initial_options.prompt
 
   -- This sets the width for the whole layout
-  local width_opt = get_width_opt(self,layout_config,'center')
+  local width_opt = get_default(self.window.width,layout_config.width)
   local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
 
   -- This sets the number of results displayed
@@ -405,11 +380,11 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   local results = initial_options.results
   local prompt = initial_options.prompt
 
-  local width_opt = get_width_opt(self,layout_config,'horizontal')
+  local width_opt = get_default(self.window.width,layout_config.width)
   local picker_width = resolve.resolve_width(width_opt)(self,max_columns,max_lines)
   local width_padding = math.floor((max_columns - picker_width)/2)
 
-  local height_opt = get_height_opt(self,layout_config,'horizontal')
+  local height_opt = get_default(self.window.height,layout_config.height)
   local picker_height = resolve.resolve_height(height_opt)(self,max_columns,max_lines)
   local height_padding = math.floor((max_lines - picker_height)/2)
 
@@ -471,11 +446,8 @@ layout_strategies.flex = function(self, max_columns, max_lines)
   local flip_lines = layout_config.flip_lines or 20
 
   if max_columns < flip_columns and max_lines > flip_lines then
-    -- TODO: This feels a bit like a hack.... cause you wouldn't be able to pass this to flex easily.
-    self.layout_config = (config.values.layout_defaults or {})['vertical']
     return layout_strategies.vertical(self, max_columns, max_lines)
   else
-    self.layout_config = (config.values.layout_defaults or {})['horizontal']
     return layout_strategies.horizontal(self, max_columns, max_lines)
   end
 end
