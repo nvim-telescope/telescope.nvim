@@ -84,8 +84,7 @@ builtin.current_buffer_fuzzy_find = require('telescope.builtin.files').current_b
 --- or update when introducing new changes)
 ---@param opts table: options to pass to the picker
 ---@field ctags_file string: specify a particular ctags file to use
----@field show_line boolean: if true, shows the text for the tag (default is true). Typically you would want to use
---- this without a previewer (i.e. { previewer = false, show_line = true} or { previewer = true, show_line = false })
+---@field show_line boolean: if true, shows the content of the line the tag is found on in the picker (default is true)
 ---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is true)
 ---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.tags = require('telescope.builtin.files').tags
