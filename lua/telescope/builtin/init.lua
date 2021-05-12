@@ -31,11 +31,12 @@ end
 local builtin = {}
 
 
---------------------------------------------------
+--
 --
 -- File-related Pickers
 --
---------------------------------------------------
+--
+
 --- Search for a string in your current working directory and get results live as you type (respecting .gitignore)
 ---@param opts table: options to pass to the picker
 ---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
@@ -94,11 +95,11 @@ builtin.tags = require('telescope.builtin.files').tags
 builtin.current_buffer_tags = require('telescope.builtin.files').current_buffer_tags
 
 
---------------------------------------------------
+--
 --
 -- Git-related Pickers
 --
---------------------------------------------------
+--
 --- Fuzzy search through the output of `git ls-files` command, respects .gitignore, optionally ignores untracked files
 ---@param opts table: options to pass to the picker
 ---@field show_untracked boolean: if true, adds the `--others` flag to the search (default is true)
@@ -130,11 +131,11 @@ builtin.git_status = require('telescope.builtin.git').status
 builtin.git_stash = require('telescope.builtin.git').stash
 
 
---------------------------------------------------
+--
 --
 -- Internal and Vim-related Pickers
 --
---------------------------------------------------
+--
 --- Lists all of the community maintained pickers built into Telescope
 ---@param opts table: options to pass to the picker
 builtin.builtin = require('telescope.builtin.internal').builtin
@@ -239,11 +240,11 @@ builtin.tagstack = require('telescope.builtin.internal').tagstack
 ---@param opts table: options to pass to the picker
 builtin.jumplist = require('telescope.builtin.internal').jumplist
 
---------------------------------------------------
+--
 --
 -- LSP-related Pickers
 --
---------------------------------------------------
+--
 --- Lists LSP references for word under the cursor
 ---@param opts table: options to pass to the picker
 ---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is false)
