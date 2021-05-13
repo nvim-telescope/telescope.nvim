@@ -421,11 +421,12 @@ builtin.git_files({opts})                                *builtin.git_files()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {show_untracked}     (boolean)  if true, adds `--others` flag to the
-                                        command (default is true)
+        {show_untracked}     (boolean)  if true, adds `--others` flag to
+                                        command and shows untracked files
+                                        (default is true)
         {recurse_submodules} (boolean)  if true, adds the
-                                        `--recurse-submodules` flag to the
-                                        command (default is false)
+                                        `--recurse-submodules` flag to command
+                                        (default is false)
 
 
 builtin.git_commits({opts})                            *builtin.git_commits()*
