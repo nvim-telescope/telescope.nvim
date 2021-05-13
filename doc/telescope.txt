@@ -269,20 +269,560 @@ actions.open_qflist()                                  *actions.open_qflist()*
 ================================================================================
                                                              *telescope.builtin*
 
-A collection of builtin pickers for telescope.
-
-Meant for both example and for easy startup.
+Telescope Builtins is a collection of community maintained pickers to support
+common workflows. It can be used as reference when writing PRs, Telescope
+extensions, your own custom pickers, or just as a discovery tool for all of the
+amazing pickers already shipped with Telescope!
 
 Any of these functions can just be called directly by doing:
 
-:lua require('telescope.builtin').$NAME()
+:lua require('telescope.builtin').$NAME_OF_PICKER()
+
+To use any of Telescope's default options or any picker-specific options, call
+your desired picker by passing a lua table to the picker with all of the
+options you want to use. Here's an example with the live_grep picker:
+
+:lua require('telescope.builtin').live_grep({
+   prompt_title = 'find string in open buffers...',
+   grep_open_files = true
+ })
 
 This will use the default configuration options. Other configuration options
 are still in flux at the moment
 
-builtin.live_grep()                                      *builtin.live_grep()*
-    Live grep means grep as you type.
+builtin.live_grep({opts})                                *builtin.live_grep()*
+    Search for a string in your current working directory and get results live
+    as you type (respecting .gitignore)
 
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {grep_open_files} (boolean)  if true, restrict search to open files
+                                     only, mutually exclusive with
+                                     `search_dirs`
+        {search_dirs}     (table)    directory/directories to search in,
+                                     mutually exclusive with `grep_open_files`
+
+
+builtin.grep_string({opts})                            *builtin.grep_string()*
+    Searches for the string under your cursor in your current working directory
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {search}      (string)   the query to search
+        {search_dirs} (table)    directory/directories to search in
+        {use_regex}   (boolean)  if true, special characters won't be escaped,
+                                 allows for using regex (default is false)
+
+
+builtin.find_files({opts})                              *builtin.find_files()*
+    Lists files in your current working directory, respects .gitignore
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {find_command} (table)    command line arguments for `find_files` to
+                                  use for the search, overrides default config
+        {follow}       (boolean)  if true, follows symlinks (i.e. uses `-L`
+                                  flag for the `find` command)
+        {hidden}       (boolean)  determines whether to show hidden files or
+                                  not (default is false)
+        {search_dirs}  (table)    directory/directories to search in
+
+
+builtin.fd()                                                    *builtin.fd()*
+    This is an alias for the `find_files` picker
+
+
+
+builtin.file_browser({opts})                          *builtin.file_browser()*
+    Lists files and folders in your current working directory, open files,
+    navigate your filesystem, and create new files and folders
+    - Default keymaps:
+      - `<cr>`: opens the currently selected file, or navigates to the
+        currently selected directory
+      - `<C-e>`: creates new file in current directory, creates new directory
+        if the name contains a trailing '/'
+        - Note: you can create files nested into several directories with
+          `<C-e>`, i.e. `lua/telescope/init.lua` would create the file
+          `init.lua` inside of `lua/telescope` and will create the necessary
+          folders (similar to how `mkdir -p` would work) if they do not already
+          exist
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {search_dirs} (table)  directory/directories to search in
+
+
+builtin.treesitter()                                    *builtin.treesitter()*
+    Lists function names, variables, and other symbols from treesitter queries
+
+
+    Fields: ~
+        {show_line} (boolean)  if true, shows the row:column that the result is
+                               found at (default is true)
+
+
+builtin.current_buffer_fuzzy_find({opts})*builtin.current_buffer_fuzzy_find()*
+    Live fuzzy search inside of the currently open buffer
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.tags({opts})                                          *builtin.tags()*
+    Lists tags in current directory with tag location file preview (users are
+    required to run ctags -R to generate tags or update when introducing new
+    changes)
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {ctags_file}    (string)   specify a particular ctags file to use
+        {show_line}     (boolean)  if true, shows the content of the line the
+                                   tag is found on in the picker (default is
+                                   true)
+        {shorten_path}  (boolean)  if true, makes file paths shown in picker
+                                   use one letter for folders (default is true)
+        {hide_filename} (boolean)  if true, hides the name of the file in the
+                                   current picker (default is false)
+
+
+builtin.current_buffer_tags({opts})            *builtin.current_buffer_tags()*
+    Lists all of the tags for the currently open buffer, with a preview
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.git_files({opts})                                *builtin.git_files()*
+    Fuzzy search for files tracked by Git. This command lists the output of the
+    `git ls-files` command, respects .gitignore, and optionally ignores
+    untracked files
+    - Default keymaps:
+      - `<cr>`: opens the currently selected file
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {show_untracked}     (boolean)  if true, adds `--others` flag to
+                                        command and shows untracked files
+                                        (default is true)
+        {recurse_submodules} (boolean)  if true, adds the
+                                        `--recurse-submodules` flag to command
+                                        (default is false)
+
+
+builtin.git_commits({opts})                            *builtin.git_commits()*
+    Lists commits for current directory with diff preview
+    - Default keymaps:
+      - `<cr>`: checks out the currently selected commit
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.git_bcommits({opts})                          *builtin.git_bcommits()*
+    Lists commits for current buffer with diff preview
+    - Default keymaps:
+      - `<cr>`: checks out the currently selected commit
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.git_branches({opts})                          *builtin.git_branches()*
+    List branches for current directory, with output from `git log --oneline`
+    shown in the preview window
+    - Default keymaps:
+      - `<cr>`: checks out the currently selected branch
+      - `<C-t>`: tracks currently selected branch
+      - `<C-r>`: rebases currently selected branch
+      - `<C-a>`: creates a new branch, with confirmation prompt before creation
+      - `<C-d>`: deletes the currently selected branch, with confirmation
+        prompt before deletion
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.git_status({opts})                              *builtin.git_status()*
+    Lists git status for current directory
+    - Default keymaps:
+      - `<Tab>`: stages or unstages the currently selected file
+      - `<cr>`: opens the currently selected file
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.git_stash({opts})                                *builtin.git_stash()*
+    Lists stash items in current repository
+    - Default keymaps:
+      - `<cr>`: runs `git apply` for currently selected stash
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.builtin({opts})                                    *builtin.builtin()*
+    Lists all of the community maintained pickers built into Telescope
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.planets({opts})                                    *builtin.planets()*
+    Use the telescope...
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.symbols({opts})                                    *builtin.symbols()*
+    Lists symbols inside of data/telescope-sources/*.json found in your runtime
+    path. Check README for more info
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.commands({opts})                                  *builtin.commands()*
+    Lists available plugin/user commands and runs them on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.quickfix({opts})                                  *builtin.quickfix()*
+    Lists items in the quickfix list, jumps to location on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.loclist({opts})                                    *builtin.loclist()*
+    Lists items from the current window's location list, jumps to location on
+    `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.oldfiles({opts})                                  *builtin.oldfiles()*
+    Lists previously open files, opens on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.command_history({opts})                    *builtin.command_history()*
+    Lists commands that were executed recently, and reruns them on `<cr>`
+    - Default keymaps:
+      - `<C-e>`: open the command line with the text of the currently selected
+        result populated in it
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.search_history({opts})                      *builtin.search_history()*
+    Lists searches that were executed recently, and reruns them on `<cr>`
+    - Default keymaps:
+      - `<C-e>`: open a search window with the text of the currently selected
+        search result populated in it
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.vim_options({opts})                            *builtin.vim_options()*
+    Lists vim options, allows you to edit the current value on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.help_tags({opts})                                *builtin.help_tags()*
+    Lists available help tags and opens a new window with the relevant help
+    info on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.man_pages({opts})                                *builtin.man_pages()*
+    Lists manpage entries, opens them in a help window on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.reloader({opts})                                  *builtin.reloader()*
+    Lists lua modules and reloads them on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.buffers({opts})                                    *builtin.buffers()*
+    Lists open buffers in current neovim instance, opens selected buffer on
+    `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.colorscheme({opts})                            *builtin.colorscheme()*
+    Lists available colorschemes and applies them on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.marks({opts})                                        *builtin.marks()*
+    Lists vim marks and their value, jumps to the mark on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.registers({opts})                                *builtin.registers()*
+    Lists vim registers, pastes the contents of the register on `<cr>`
+    - Default keymaps:
+      - `<C-e>`: edit the contents of the currently selected register
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.keymaps({opts})                                    *builtin.keymaps()*
+    Lists normal mode keymappings, runs the selected keymap on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.filetypes({opts})                                *builtin.filetypes()*
+    Lists all available filetypes, sets currently open buffer's filetype to
+    selected filetype in Telescope on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.highlights({opts})                              *builtin.highlights()*
+    Lists all available highlights
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.autocommands({opts})                          *builtin.autocommands()*
+    Lists vim autocommands and goes to their declaration on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.spell_suggest({opts})                        *builtin.spell_suggest()*
+    Lists spelling suggestions for the current word under the cursor, replaces
+    word with selected suggestion on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.tagstack({opts})                                  *builtin.tagstack()*
+    Lists the tag stack for the current window, jumps to tag on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {shorten_path}  (boolean)  if true, makes file paths shown in picker
+                                   use one letter for folders (default is true)
+        {hide_filename} (boolean)  if true, hides the name of the file in the
+                                   current picker (default is true)
+
+
+builtin.jumplist({opts})                                  *builtin.jumplist()*
+    Lists items from Vim's jumplist, jumps to location on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.lsp_references({opts})                      *builtin.lsp_references()*
+    Lists LSP references for word under the cursor, jumps to reference on
+    `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {shorten_path} (boolean)  if true, makes file paths shown in picker use
+                                  one letter for folders (default is false)
+
+
+builtin.lsp_definitions({opts})                    *builtin.lsp_definitions()*
+    Goto the definition of the word under the cursor, if there's only one,
+    otherwise show all options in Telescope
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
+    Goto the implementation of the word under the cursor if there's only one,
+    otherwise show all options in Telescope
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.lsp_code_actions({opts})                  *builtin.lsp_code_actions()*
+    Lists any LSP actions for the word under the cursor which can be triggered
+    with `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.lsp_range_code_actions({opts})      *builtin.lsp_range_code_actions()*
+    Lists any LSP actions for a given range, that can be triggered with `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.lsp_document_symbols({opts})          *builtin.lsp_document_symbols()*
+    Lists LSP document symbols in the current buffer
+    - Default keymaps:
+      - `<C-l>`: show autocompletion menu to prefilter your query by type of
+        symbol you want to see (i.e. `:variable:`)
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {ignore_filename} (type)  string with file to ignore
+
+
+builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
+    Lists LSP document symbols in the current workspace
+    - Default keymaps:
+      - `<C-l>`: show autocompletion menu to prefilter your query by type of
+        symbol you want to see (i.e. `:variable:`)
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {shorten_path}    (boolean)  if true, makes file paths shown in picker
+                                     use one letter for folders (default is
+                                     false)
+        {ignore_filename} (string)   file(s) to ignore
+        {hide_filename}   (boolean)  if true, hides the name of the file in the
+                                     current picker (default is false)
+
+
+builtin.lsp_dynamic_workspace_symbols({opts})*builtin.lsp_dynamic_workspace_symbols()*
+    Dynamically lists LSP for all workspace symbols
+    - Default keymaps:
+      - `<C-l>`: show autocompletion menu to prefilter your query by type of
+        symbol you want to see (i.e. `:variable:`)
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {hide_filename} (boolean)  if true, hides the name of the file in the
+                                   current picker (default is false)
+
+
+builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
+    Lists LSP diagnostics for the current buffer
+    - Default keymaps:
+      - `<C-l>`: show autocompletion menu to prefilter your query with the
+        diagnostic you want to see (i.e. `:warning:`)
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {hide_filename} (boolean)  if true, hides the name of the file in the
+                                   current picker (default is false)
+
+
+builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
+    Lists LSP diagnostics for the current workspace if supported, otherwise
+    searches in all open buffers
+    - Default keymaps:
+      - `<C-l>`: show autocompletion menu to prefilter your query with the
+        diagnostic you want to see (i.e. `:warning:`)
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {hide_filename} (boolean)  if true, hides the name of the file in the
+                                   current picker (default is false)
 
 
 

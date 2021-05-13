@@ -245,7 +245,7 @@ Many familiar mapping patterns are setup as defaults.
 | `<C-n>/<Down>` | Next item                        |
 | `<C-p>/<Up>`   | Previous item                    |
 | `j/k`          | Next/previous (in normal mode)   |
-| `<CR>`         | Confirm selection                |
+| `<cr>`         | Confirm selection                |
 | `<C-x>`        | go to file selection as a split  |
 | `<C-v>`        | go to file selection as a vsplit |
 | `<C-t>`        | go to a file in a new tab        |
@@ -292,10 +292,10 @@ require('telescope').setup{
         ["<C-i>"] = actions.select_horizontal,
 
         -- Add up multiple actions
-        ["<CR>"] = actions.select_default + actions.center,
+        ["<cr>"] = actions.select_default + actions.center,
 
         -- You can perform as many actions in a row as you like
-        ["<CR>"] = actions.select_default + actions.center + my_cool_custom_action,
+        ["<cr>"] = actions.select_default + actions.center + my_cool_custom_action,
       },
       n = {
         ["<esc>"] = actions.close,
@@ -366,13 +366,13 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 
 ### File Pickers
 
-| Functions                           | Description                                                                                 |
-|-------------------------------------|---------------------------------------------------------------------------------------------|
-| `builtin.find_files`                | Lists Files in current directory.                                                           |
-| `builtin.git_files`                 | Lists Git files in current directory.                                                       |
-| `builtin.grep_string`               | Searches for a string under the cursor in current directory.                                |
-| `builtin.live_grep`                 | Searches in current directory files. (respecting .gitignore)                                |
-| `builtin.file_browser`              | Ivy-like file explorer. Creates files by typing in filename and pressing `<C-e>`. Press `<C-e>` without prompt for more info |
+| Functions                           | Description                                                                                                                       |
+|-------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| `builtin.find_files`                | Lists files in your current working directory, respects .gitignore                                                                |
+| `builtin.git_files`                 | Fuzzy search through the output of `git ls-files` command, respects .gitignore, optionally ignores untracked files                |
+| `builtin.grep_string`               | Searches for the string under your cursor in your current working directory                                                       |
+| `builtin.live_grep`                 | Search for a string in your current working directory and get results live as you type (respecting .gitignore)                    |
+| `builtin.file_browser`              | Lists files and folders in your current working directory, open files, navigate your filesystem, and create new files and folders |
 
 #### Options for builtin.live_grep
 
@@ -381,57 +381,65 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `grep_open_files`      | Restrict live_grep to currently open files, mutually exclusive with `search_dirs`  | boolean      |
 | `search_dirs`          | List of directories to search in, mutually exclusive with `grep_open_files`        | list         |
 
-
 ### Vim Pickers
 
-| Functions                           | Description                                                                                 |
-|-------------------------------------|---------------------------------------------------------------------------------------------|
-| `builtin.buffers`                   | Lists Open buffers in the current vim instance.                                             |
-| `builtin.oldfiles`                  | Lists Previously open files.                                                                |
-| `builtin.commands`                  | Lists Available plugin/user commands and run it.                                            |
-| `builtin.tags`                      | Lists Tags in current directory with preview (ctags -R).                                    |
-| `builtin.tagstack`                  | Lists Tagstack entries.                                                                     |
-| `builtin.command_history`           | Lists Commands previously ran and run it on enter.                                          |
-| `builtin.search_history`            | Lists Searches previously ran and run it on enter.                                          |
-| `builtin.help_tags`                 | Lists Available help tags and open help document.                                           |
-| `builtin.man_pages`                 | Lists Man entries.                                                                          |
-| `builtin.marks`                     | Lists Markers and their value.                                                              |
-| `builtin.colorscheme`               | Lists Colorscheme and switch to it on enter.                                                |
-| `builtin.quickfix`                  | Lists items from quickfix.                                                                  |
-| `builtin.loclist`                   | Lists items from current window's location list.                                            |
-| `builtin.jumplist`                  | Lists Jump List entries.                                                                    |
-| `builtin.vim_options`               | Lists vim options and on enter edit the options value.                                      |
-| `builtin.registers`                 | Lists vim registers and edit or paste selection.                                            |
-| `builtin.autocommands`              | Lists vim autocommands and go to their declaration.                                         |
-| `builtin.spell_suggest`             | Lists spelling suggestions for <cword>.                                                     |
-| `builtin.keymaps`                   | Lists normal-mode mappings.                                                                 |
-| `builtin.filetypes`                 | Lists all filetypes.                                                                        |
-| `builtin.highlights`                | Lists all highlights.                                                                       |
-| `builtin.current_buffer_fuzzy_find` | Searches in current buffer lines.                                                           |
-| `builtin.current_buffer_tags`       | Lists Tags in current buffer.                                                               |
+| Functions                           | Description                                                                                                                                                 |
+|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `builtin.buffers`                   | Lists open buffers in current neovim instance                                                                                                               |
+| `builtin.oldfiles`                  | Lists previously open files                                                                                                                                 |
+| `builtin.commands`                  | Lists available plugin/user commands and runs them on `<cr>`                                                                                                  |
+| `builtin.tags`                      | Lists tags in current directory with tag location file preview (users are required to run ctags -R to generate tags or update when introducing new changes) |
+| `builtin.command_history`           | Lists commands that were executed recently, and reruns them on `<cr>`                                                                                         |
+| `builtin.search_history`            | Lists searches that were executed recently, and reruns them on `<cr>`                                                                                         |
+| `builtin.help_tags`                 | Lists available help tags and opens a new window with the relevant help info on `<cr>`                                                                        |
+| `builtin.man_pages`                 | Lists manpage entries, opens them in a help window on `<cr>`                                                                                                  |
+| `builtin.marks`                     | Lists vim marks and their value                                                                                                                             |
+| `builtin.colorscheme`               | Lists available colorschemes and applies them on `<cr>`                                                                                                       |
+| `builtin.quickfix`                  | Lists items in the quickfix list                                                                                                                            |
+| `builtin.loclist`                   | Lists items from the current window's location list                                                                                                         |
+| `builtin.vim_options`               | Lists vim options, allows you to edit the current value on `<cr>`                                                                                             |
+| `builtin.registers`                 | Lists vim registers, pastes the contents of the register on `<cr>`                                                                                            |
+| `builtin.autocommands`              | Lists vim autocommands and goes to their declaration on `<cr>`                                                                                                |
+| `builtin.spell_suggest`             | Lists spelling suggestions for the current word under the cursor, replaces word with selected suggestion on `<cr>`                                            |
+| `builtin.keymaps`                   | Lists normal mode keymappings                                                                                                                               |
+| `builtin.filetypes`                 | Lists all available filetypes                                                                                                                               |
+| `builtin.highlights`                | Lists all available highlights                                                                                                                              |
+| `builtin.current_buffer_fuzzy_find` | Live fuzzy search inside of the currently open buffer                                                                                                       |
+| `builtin.current_buffer_tags`       | Lists all of the tags for the currently open buffer, with a preview                                                                                         |
 
-### LSP Pickers
+### Neovim LSP Pickers
 
-| Functions                           | Description                                                                                 |
-|-------------------------------------|---------------------------------------------------------------------------------------------|
-| `builtin.lsp_references`            | Searches in LSP references.                                                                 |
-| `builtin.lsp_document_symbols`      | Searches in LSP Document Symbols in the current document.                                   |
-| `builtin.lsp_workspace_symbols`     | Searches in LSP all workspace symbols.                                                      |
-| `builtin.lsp_code_actions`          | Lists LSP action to be trigged on enter.                                                    |
-| `builtin.lsp_range_code_actions`    | Lists LSP range code action to be trigged on enter.                                         |
-| `builtin.lsp_document_diagnostics`  | Lists LSP Diagnostics in the current document.                                              |
-| `builtin.lsp_workspace_diagnostics` | Lists LSP Diagnostics in the workspace if supported and otherwise open buffers.             |
-| `builtin.lsp_definitions`           | Goto definition if there is only one. If there are multiple, open them up in telescope     |
+| Functions                                   | Description                                                                                                       |
+|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| `builtin.lsp_references`                    | Lists LSP references for word under the cursor                                                                    |
+| `builtin.lsp_document_symbols`              | Lists LSP document symbols in the current buffer                                                                  |
+| `builtin.lsp_workspace_symbols`             | Lists LSP document symbols in the current workspace                                                               |
+| `builtin.lsp_dynamic_workspace_symbols`     | Dynamically Lists LSP for all workspace symbols                                                                   |
+| `builtin.lsp_code_actions`                  | Lists any LSP actions for the word under the cursor, that can be triggered with `<cr>`                              |
+| `builtin.lsp_range_code_actions`            | Lists any LSP actions for a given range, that can be triggered with `<cr>`                                          |
+| `builtin.lsp_document_diagnostics`          | Lists LSP diagnostics for the current buffer                                                                      |
+| `builtin.lsp_workspace_diagnostics`         | Lists LSP diagnostics for the current workspace if supported, otherwise searches in all open buffers              |
+| `builtin.lsp_implementations`               | Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope |
+| `builtin.lsp_definitions`                   | Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope    |
+
+#### Pre-filtering option for LSP pickers
+
+For the `*_symbols` and `*_diagnostics` LSP pickers, there is a special filtering that you can use to specify your
+search. When in insert mode while the picker is open, type `:` and then press `<C-l>` to get an autocomplete menu
+filled with all of the possible filters you can use.
+
+i.e. while using the `lsp_document_symbols` picker, adding `:methods:` to your query filters out any document
+document symbols that are not recognized as methods by treesitter.
 
 ### Git Pickers
 
-| Functions                           | Description                                                                                 |
-|-------------------------------------|---------------------------------------------------------------------------------------------|
-| `builtin.git_commits`               | Lists git commits with diff preview and on enter checkout the commit.                       |
-| `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checkouts it out on enter.                 |
-| `builtin.git_branches`              | Lists all branches with log preview, checkout action (<cr>), track action (<c-t>) and rebase action(<c-r>). |
-| `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multi-selection still WIP) |
-| `builtin.git_stash`                 | Lists stash items in current repository with ability to apply them on <CR>                  |
+| Functions                           | Description                                                                                                   |
+|-------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| `builtin.git_commits`               | Lists git commits with diff preview and on enter checkout the commit.                                         |
+| `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checkouts it out on enter.                                   |
+| `builtin.git_branches`              | Lists all branches with log preview, checkout action `<cr>`, track action `<C-t>` and rebase action`<C-r>`    |
+| `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multi-selection still WIP)                  |
+| `builtin.git_stash`                 | Lists stash items in current repository with ability to apply them on `<cr>`                                  |
 
 ### Treesitter Picker
 
@@ -441,11 +449,11 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 
 ### Lists Picker
 
-| Functions                           | Description                                                                                 |
-|-------------------------------------|---------------------------------------------------------------------------------------------|
-| `builtin.planets`                   | Use the telescope.                                                                          |
-| `builtin.builtin`                   | Lists Built-in pickers and run them on enter.                                               |
-| `builtin.reloader`                  | Lists lua modules and reload them on enter.                                                 |
+| Functions                           | Description                                                                                                                                                                               |
+|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `builtin.planets`                   | Use the telescope...                                                                                                                                                                      |
+| `builtin.builtin`                   | Lists Built-in pickers and run them on enter.                                                                                                                                             |
+| `builtin.reloader`                  | Lists lua modules and reload them on enter.                                                                                                                                               |
 | `builtin.symbols`                   | Lists symbols inside a file `data/telescope-sources/*.json` found in your rtp. More info and symbol sources can be found [here](https://github.com/nvim-telescope/telescope-symbols.nvim) |
 
 ## Previewers
@@ -611,8 +619,8 @@ function my_custom_picker(results)
     finder = finders.new_table(results),
     sorter = sorters.fuzzy_with_index_bias(),
     attach_mappings = function(_, map)
-      -- Map "<CR>" in insert mode to the function, actions.set_command_line
-      map('i', '<CR>', actions.set_command_line)
+      -- Map "<cr>" in insert mode to the function, actions.set_command_line
+      map('i', '<cr>', actions.set_command_line)
 
       -- If the return value of `attach_mappings` is true, then the other
       -- default mappings are still applies.
@@ -687,11 +695,11 @@ and some other functions can be easily changed in custom pickers or built-in fun
 
 ```lua
 -- Disable preview for find files
-nnoremap <leader>ff :lua require('telescope.builtin').find_files({previewer = false})<CR>
+nnoremap <leader>ff :lua require('telescope.builtin').find_files({previewer = false})<cr>
 
 -- Change change prompt prefix for find_files builtin function:
-nnoremap <leader>fg :lua require('telescope.builtin').live_grep({ prompt_prefix=🔍 })<CR>
-nnoremap <leader>fg :Telescope live_grep prompt_prefix=🔍<CR>
+nnoremap <leader>fg :lua require('telescope.builtin').live_grep({ prompt_prefix=🔍 })<cr>
+nnoremap <leader>fg :Telescope live_grep prompt_prefix=🔍<cr>
 ```
 
 ### How to change Telescope Highlights group?

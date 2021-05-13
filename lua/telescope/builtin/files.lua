@@ -93,7 +93,6 @@ files.live_grep = function(opts)
   }):find()
 end
 
-
 -- Special keys:
 --  opts.search -- the string to search.
 --  opts.search_dirs -- list of directory to search in
@@ -135,7 +134,7 @@ files.grep_string = function(opts)
 end
 
 -- TODO: Maybe just change this to `find`.
---          Support `find` and maybe let people do other stuff with it as well.
+-- TODO: Support `find` and maybe let people do other stuff with it as well.
 files.find_files = function(opts)
   local find_command = opts.find_command
   local hidden = opts.hidden
@@ -311,6 +310,7 @@ files.file_browser = function(opts)
   }):find()
 end
 
+--  TODO: finish docs for opts.show_line
 files.treesitter = function(opts)
   opts.show_line = utils.get_default(opts.show_line, true)
 
