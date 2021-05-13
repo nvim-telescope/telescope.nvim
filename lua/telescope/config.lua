@@ -85,7 +85,11 @@ function config.set_defaults(defaults)
     - "cycle" (default)
     - "limit"]])
 
-  set("layout_strategy", "horizontal")
+  set("layout_strategy", "horizontal", [[
+    Determines the default layout of Telescope pickers.
+    See |telescope.layout| for details of the available strategies.
+
+    Default: 'horizontal']])
   set("layout_defaults", {
     width = 0.8,
     horizontal = {
@@ -94,7 +98,34 @@ function config.set_defaults(defaults)
     vertical = {
       height = 0.9,
     },
-  })
+    center = {
+      width = 0.5
+    }
+  },[[
+    Determines the default configuration values for layout strategies.
+    See |telescope.layout| for details of the configurations options for
+    each strategy.
+
+    Allows setting defaults for all strategies as top level options and
+    for overriding for specific options.
+    For example, the default values below set the default width to 80% of
+    the screen width for all strategies except 'center', which has width
+    of 50% of the screen width.
+
+    Default:
+    {
+      width = 0.8,
+      horizontal = {
+        height = 0.9,
+      },
+      vertical = {
+        height = 0.9,
+      },
+      center = {
+        width = 0.5
+      }
+    }
+  ]])
 
   -- set("width", 0.75)
   set("winblend", 0)
