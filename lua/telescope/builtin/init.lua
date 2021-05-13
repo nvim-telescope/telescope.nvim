@@ -104,8 +104,8 @@ builtin.current_buffer_tags = require('telescope.builtin.files').current_buffer_
 --- - Default keymaps:
 ---   - `<cr>`: opens the currently selected file
 ---@param opts table: options to pass to the picker
----@field show_untracked boolean: if true, adds `--others` flag to command & won't show untracked files (default true)
----@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to command (default is false)
+---@field show_untracked boolean: if true, adds `--others` flag to the command (default is true)
+---@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to the command (default is false)
 builtin.git_files = require('telescope.builtin.git').files
 
 --- Lists commits for current directory with diff preview
@@ -120,7 +120,7 @@ builtin.git_commits = require('telescope.builtin.git').commits
 ---@param opts table: options to pass to the picker
 builtin.git_bcommits = require('telescope.builtin.git').bcommits
 
---- List branches for current directory, with log preview
+--- List branches for current directory, with output from `git log --oneline` shown in the preview window
 --- - Default keymaps:
 ---   - `<cr>`: checks out the currently selected branch
 ---   - `<C-t>`: tracks currently selected branch
