@@ -30,7 +30,6 @@ end
 
 local builtin = {}
 
-
 --
 --
 -- File-related Pickers
@@ -58,14 +57,15 @@ builtin.grep_string = require('telescope.builtin.files').grep_string
 ---@field search_dirs table: directory/directories to search in
 builtin.find_files = require('telescope.builtin.files').find_files
 
+--- This is an alias for the `find_files` picker
 builtin.fd = builtin.find_files
 
 --- Lists files and folders in your current working directory, open files, navigate your filesystem, and create new
 --- files and folders
 --- - Default keymaps:
----   - <cr>: opens the currently selected file, or navigates to the currently selected directory
----   - <C-e>: creates new file in current directory, creates new directory if the name contains a trailing '/'
----     - Note: you can create files nested into several directories with <C-e>, i.e. `lua/telescope/init.lua` would
+---   - `<cr>`: opens the currently selected file, or navigates to the currently selected directory
+---   - `<C-e>`: creates new file in current directory, creates new directory if the name contains a trailing '/'
+---     - Note: you can create files nested into several directories with `<C-e>`, i.e. `lua/telescope/init.lua` would
 ---       create the file `init.lua` inside of `lua/telescope` and will create the necessary folders (similar to how
 ---       `mkdir -p` would work) if they do not already exist
 ---@param opts table: options to pass to the picker
@@ -93,48 +93,62 @@ builtin.tags = require('telescope.builtin.files').tags
 ---@param opts table: options to pass to the picker
 builtin.current_buffer_tags = require('telescope.builtin.files').current_buffer_tags
 
-
 --
 --
 -- Git-related Pickers
 --
 --
---- Fuzzy search through the output of `git ls-files` command, respects .gitignore, optionally ignores untracked files
+
+--- Fuzzy search for files tracked by Git. This command lists the output of the `git ls-files` command, respects
+--- .gitignore, and optionally ignores untracked files
+--- - Default keymaps:
+---   - `<cr>`: opens the currently selected file
 ---@param opts table: options to pass to the picker
----@field show_untracked boolean: if true, adds the `--others` flag to the search (default is true)
----@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to the search (default is false)
+---@field show_untracked boolean: if true, adds `--others` flag to command & won't show untracked files (default true)
+---@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to command (default is false)
 builtin.git_files = require('telescope.builtin.git').files
 
---- Lists commits for current directory, with diff preview and checkout on <cr>
+--- Lists commits for current directory with diff preview
+--- - Default keymaps:
+---   - `<cr>`: checks out the currently selected commit
 ---@param opts table: options to pass to the picker
 builtin.git_commits = require('telescope.builtin.git').commits
 
---- Lists commits for current buffer, with diff preview and checkout on <cr>
+--- Lists commits for current buffer with diff preview
+--- - Default keymaps:
+---   - `<cr>`: checks out the currently selected commit
 ---@param opts table: options to pass to the picker
 builtin.git_bcommits = require('telescope.builtin.git').bcommits
 
 --- List branches for current directory, with log preview
 --- - Default keymaps:
----   - <C-t>: tracks currently selected branch
----   - <C-r>: rebases currently selected branch
----   - <C-a>: creates a new branch, with confirmation prompt before creation
----   - <C-d>: deletes the currently selected branch, with confirmation prompt before deletion
+---   - `<cr>`: checks out the currently selected branch
+---   - `<C-t>`: tracks currently selected branch
+---   - `<C-r>`: rebases currently selected branch
+---   - `<C-a>`: creates a new branch, with confirmation prompt before creation
+---   - `<C-d>`: deletes the currently selected branch, with confirmation prompt before deletion
 ---@param opts table: options to pass to the picker
 builtin.git_branches = require('telescope.builtin.git').branches
 
 --- Lists git status for current directory
 --- - Default keymaps:
----   - <Tab>: stages or unstages the currently selected file
+---   - `<Tab>`: stages or unstages the currently selected file
+---   - `<cr>`: opens the currently selected file
 ---@param opts table: options to pass to the picker
 builtin.git_status = require('telescope.builtin.git').status
-builtin.git_stash = require('telescope.builtin.git').stash
 
+--- Lists stash items in current repository
+--- - Default keymaps:
+---   - `<cr>`: runs `git apply` for currently selected stash
+---@param opts table: options to pass to the picker
+builtin.git_stash = require('telescope.builtin.git').stash
 
 --
 --
 -- Internal and Vim-related Pickers
 --
 --
+
 --- Lists all of the community maintained pickers built into Telescope
 ---@param opts table: options to pass to the picker
 builtin.builtin = require('telescope.builtin.internal').builtin
@@ -147,73 +161,73 @@ builtin.planets = require('telescope.builtin.internal').planets
 ---@param opts table: options to pass to the picker
 builtin.symbols = require('telescope.builtin.internal').symbols
 
---- Lists available plugin/user commands and runs them on <cr>
+--- Lists available plugin/user commands and runs them on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.commands = require('telescope.builtin.internal').commands
 
---- Lists items in the quickfix list, jumps to location on <cr>
+--- Lists items in the quickfix list, jumps to location on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.quickfix = require('telescope.builtin.internal').quickfix
 
---- Lists items from the current window's location list, jumps to location on <cr>
+--- Lists items from the current window's location list, jumps to location on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.loclist = require('telescope.builtin.internal').loclist
 
---- Lists previously open files
+--- Lists previously open files, opens on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.oldfiles = require('telescope.builtin.internal').oldfiles
 
---- Lists commands that were executed recently, and reruns them on <cr>
+--- Lists commands that were executed recently, and reruns them on `<cr>`
 --- - Default keymaps:
----   - <C-e>: open the command line with the text of the currently selected result populated in it
+---   - `<C-e>`: open the command line with the text of the currently selected result populated in it
 ---@param opts table: options to pass to the picker
 builtin.command_history = require('telescope.builtin.internal').command_history
 
---- Lists searches that were executed recently, and reruns them on <cr>
+--- Lists searches that were executed recently, and reruns them on `<cr>`
 --- - Default keymaps:
----   - <C-e>: open a search window with the text of the currently selected search result populated in it
+---   - `<C-e>`: open a search window with the text of the currently selected search result populated in it
 ---@param opts table: options to pass to the picker
 builtin.search_history = require('telescope.builtin.internal').search_history
 
---- Lists vim options, allows you to edit the current value on <cr>
+--- Lists vim options, allows you to edit the current value on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.vim_options = require('telescope.builtin.internal').vim_options
 
---- Lists available help tags and opens a new window with the relevant help info on <cr>
+--- Lists available help tags and opens a new window with the relevant help info on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.help_tags = require('telescope.builtin.internal').help_tags
 
---- Lists manpage entries, opens them in a help window on <cr>
+--- Lists manpage entries, opens them in a help window on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.man_pages = require('telescope.builtin.internal').man_pages
 
---- Lists lua modules and reloads them on <cr>
+--- Lists lua modules and reloads them on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.reloader = require('telescope.builtin.internal').reloader
 
---- Lists open buffers in current neovim instance
+--- Lists open buffers in current neovim instance, opens selected buffer on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.buffers = require('telescope.builtin.internal').buffers
 
---- Lists available colorschemes and applies them on <cr>
+--- Lists available colorschemes and applies them on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.colorscheme = require('telescope.builtin.internal').colorscheme
 
---- Lists vim marks and their value
+--- Lists vim marks and their value, jumps to the mark on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.marks = require('telescope.builtin.internal').marks
 
---- Lists vim registers, pastes the contents of the register on <cr>
+--- Lists vim registers, pastes the contents of the register on `<cr>`
 --- - Default keymaps:
----   - <C-e>: edit the contents of the currently selected register
+---   - `<C-e>`: edit the contents of the currently selected register
 ---@param opts table: options to pass to the picker
 builtin.registers = require('telescope.builtin.internal').registers
 
---- Lists normal mode keymappings
+--- Lists normal mode keymappings, runs the selected keymap on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.keymaps = require('telescope.builtin.internal').keymaps
 
---- Lists all available filetypes
+--- Lists all available filetypes, sets currently open buffer's filetype to selected filetype in Telescope on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.filetypes = require('telescope.builtin.internal').filetypes
 
@@ -221,21 +235,21 @@ builtin.filetypes = require('telescope.builtin.internal').filetypes
 ---@param opts table: options to pass to the picker
 builtin.highlights = require('telescope.builtin.internal').highlights
 
---- Lists vim autocommands and goes to their declaration on <cr>
+--- Lists vim autocommands and goes to their declaration on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.autocommands = require('telescope.builtin.internal').autocommands
 
---- Lists spelling suggestions for the current word under the cursor, replaces word with selected suggestion on <cr>
+--- Lists spelling suggestions for the current word under the cursor, replaces word with selected suggestion on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.spell_suggest = require('telescope.builtin.internal').spell_suggest
 
---- Lists the tag stack for the current window
+--- Lists the tag stack for the current window, jumps to tag on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is true)
 ---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is true)
 builtin.tagstack = require('telescope.builtin.internal').tagstack
 
---- Lists items from Vim's jumplist, jumps to location on <cr>
+--- Lists items from Vim's jumplist, jumps to location on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.jumplist = require('telescope.builtin.internal').jumplist
 
@@ -244,7 +258,8 @@ builtin.jumplist = require('telescope.builtin.internal').jumplist
 -- LSP-related Pickers
 --
 --
---- Lists LSP references for word under the cursor
+
+--- Lists LSP references for word under the cursor, jumps to reference on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is false)
 builtin.lsp_references = require('telescope.builtin.lsp').references
@@ -257,24 +272,24 @@ builtin.lsp_definitions = require('telescope.builtin.lsp').definitions
 ---@param opts table: options to pass to the picker
 builtin.lsp_implementations = require('telescope.builtin.lsp').implementations
 
---- Lists any LSP actions for the word under the cursor which can be triggered with <cr>
+--- Lists any LSP actions for the word under the cursor which can be triggered with `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.lsp_code_actions = require('telescope.builtin.lsp').code_actions
 
---- Lists any LSP actions for a given range, that can be triggered with <cr>
+--- Lists any LSP actions for a given range, that can be triggered with `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.lsp_range_code_actions = require('telescope.builtin.lsp').range_code_actions
 
 --- Lists LSP document symbols in the current buffer
 --- - Default keymaps:
----   - <C-l>: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
+---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
 ---@field ignore_filename type: string with file to ignore
 builtin.lsp_document_symbols = require('telescope.builtin.lsp').document_symbols
 
 --- Lists LSP document symbols in the current workspace
 --- - Default keymaps:
----   - <C-l>: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
+---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
 ---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is false)
 ---@field ignore_filename string: file(s) to ignore
@@ -283,21 +298,21 @@ builtin.lsp_workspace_symbols = require('telescope.builtin.lsp').workspace_symbo
 
 --- Dynamically lists LSP for all workspace symbols
 --- - Default keymaps:
----   - <C-l>: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
+---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
 ---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.lsp_dynamic_workspace_symbols = require('telescope.builtin.lsp').dynamic_workspace_symbols
 
 --- Lists LSP diagnostics for the current buffer
 --- - Default keymaps:
----   - <C-l>: show autocompletion menu to prefilter your query with the diagnostic you want to see (i.e. `:warning:`)
+---   - `<C-l>`: show autocompletion menu to prefilter your query with the diagnostic you want to see (i.e. `:warning:`)
 ---@param opts table: options to pass to the picker
 ---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.lsp_document_diagnostics = require('telescope.builtin.lsp').diagnostics
 
 --- Lists LSP diagnostics for the current workspace if supported, otherwise searches in all open buffers
 --- - Default keymaps:
----   - <C-l>: show autocompletion menu to prefilter your query with the diagnostic you want to see (i.e. `:warning:`)
+---   - `<C-l>`: show autocompletion menu to prefilter your query with the diagnostic you want to see (i.e. `:warning:`)
 ---@param opts table: options to pass to the picker
 ---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.lsp_workspace_diagnostics = require('telescope.builtin.lsp').workspace_diagnostics
