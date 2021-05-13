@@ -421,12 +421,11 @@ builtin.git_files({opts})                                *builtin.git_files()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {show_untracked}     (boolean)  if true, adds `--others` flag to
-                                        command & won't show untracked files
-                                        (default true)
+        {show_untracked}     (boolean)  if true, adds `--others` flag to the
+                                        command (default is true)
         {recurse_submodules} (boolean)  if true, adds the
-                                        `--recurse-submodules` flag to command
-                                        (default is false)
+                                        `--recurse-submodules` flag to the
+                                        command (default is false)
 
 
 builtin.git_commits({opts})                            *builtin.git_commits()*
@@ -450,7 +449,8 @@ builtin.git_bcommits({opts})                          *builtin.git_bcommits()*
 
 
 builtin.git_branches({opts})                          *builtin.git_branches()*
-    List branches for current directory, with log preview
+    List branches for current directory, with output from `git log --oneline`
+    shown in the preview window
     - Default keymaps:
       - `<cr>`: checks out the currently selected branch
       - `<C-t>`: tracks currently selected branch
