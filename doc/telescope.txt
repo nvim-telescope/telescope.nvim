@@ -337,18 +337,24 @@ builtin.find_files({opts})                              *builtin.find_files()*
         {search_dirs}  (table)    directory/directories to search in
 
 
+builtin.fd()                                                    *builtin.fd()*
+    This is an alias for the `find_files` picker
+
+
+
 builtin.file_browser({opts})                          *builtin.file_browser()*
     Lists files and folders in your current working directory, open files,
     navigate your filesystem, and create new files and folders
     - Default keymaps:
-      - <cr>: opens the currently selected file, or navigates to the currently
-        selected directory
-      - <C-e>: creates new file in current directory, creates new directory if
-        the name contains a trailing '/'
+      - `<cr>`: opens the currently selected file, or navigates to the
+        currently selected directory
+      - `<C-e>`: creates new file in current directory, creates new directory
+        if the name contains a trailing '/'
         - Note: you can create files nested into several directories with
-          <C-e>, i.e. `lua/telescope/init.lua` would create the file `init.lua`
-          inside of `lua/telescope` and will create the necessary folders
-          (similar to how `mkdir -p` would work) if they do not already exist
+          `<C-e>`, i.e. `lua/telescope/init.lua` would create the file
+          `init.lua` inside of `lua/telescope` and will create the necessary
+          folders (similar to how `mkdir -p` would work) if they do not already
+          exist
 
 
     Parameters: ~
@@ -404,23 +410,29 @@ builtin.current_buffer_tags({opts})            *builtin.current_buffer_tags()*
 
 
 builtin.git_files({opts})                                *builtin.git_files()*
-    Fuzzy search through the output of `git ls-files` command, respects
-    .gitignore, optionally ignores untracked files
+    Fuzzy search for files tracked by Git. This command lists the output of the
+    `git ls-files` command, respects .gitignore, and optionally ignores
+    untracked files
+    - Default keymaps:
+      - `<cr>`: opens the currently selected file
 
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {show_untracked}     (boolean)  if true, adds the `--others` flag to
-                                        the search (default is true)
+        {show_untracked}     (boolean)  if true, adds `--others` flag to
+                                        command & won't show untracked files
+                                        (default true)
         {recurse_submodules} (boolean)  if true, adds the
-                                        `--recurse-submodules` flag to the
-                                        search (default is false)
+                                        `--recurse-submodules` flag to command
+                                        (default is false)
 
 
 builtin.git_commits({opts})                            *builtin.git_commits()*
-    Lists commits for current directory, with diff preview and checkout on <cr>
+    Lists commits for current directory with diff preview
+    - Default keymaps:
+      - `<cr>`: checks out the currently selected commit
 
 
     Parameters: ~
@@ -428,7 +440,9 @@ builtin.git_commits({opts})                            *builtin.git_commits()*
 
 
 builtin.git_bcommits({opts})                          *builtin.git_bcommits()*
-    Lists commits for current buffer, with diff preview and checkout on <cr>
+    Lists commits for current buffer with diff preview
+    - Default keymaps:
+      - `<cr>`: checks out the currently selected commit
 
 
     Parameters: ~
@@ -438,11 +452,12 @@ builtin.git_bcommits({opts})                          *builtin.git_bcommits()*
 builtin.git_branches({opts})                          *builtin.git_branches()*
     List branches for current directory, with log preview
     - Default keymaps:
-      - <C-t>: tracks currently selected branch
-      - <C-r>: rebases currently selected branch
-      - <C-a>: creates a new branch, with confirmation prompt before creation
-      - <C-d>: deletes the currently selected branch, with confirmation prompt
-        before deletion
+      - `<cr>`: checks out the currently selected branch
+      - `<C-t>`: tracks currently selected branch
+      - `<C-r>`: rebases currently selected branch
+      - `<C-a>`: creates a new branch, with confirmation prompt before creation
+      - `<C-d>`: deletes the currently selected branch, with confirmation
+        prompt before deletion
 
 
     Parameters: ~
@@ -452,7 +467,18 @@ builtin.git_branches({opts})                          *builtin.git_branches()*
 builtin.git_status({opts})                              *builtin.git_status()*
     Lists git status for current directory
     - Default keymaps:
-      - <Tab>: stages or unstages the currently selected file
+      - `<Tab>`: stages or unstages the currently selected file
+      - `<cr>`: opens the currently selected file
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.git_stash({opts})                                *builtin.git_stash()*
+    Lists stash items in current repository
+    - Default keymaps:
+      - `<cr>`: runs `git apply` for currently selected stash
 
 
     Parameters: ~
@@ -485,7 +511,7 @@ builtin.symbols({opts})                                    *builtin.symbols()*
 
 
 builtin.commands({opts})                                  *builtin.commands()*
-    Lists available plugin/user commands and runs them on <cr>
+    Lists available plugin/user commands and runs them on `<cr>`
 
 
     Parameters: ~
@@ -493,7 +519,7 @@ builtin.commands({opts})                                  *builtin.commands()*
 
 
 builtin.quickfix({opts})                                  *builtin.quickfix()*
-    Lists items in the quickfix list, jumps to location on <cr>
+    Lists items in the quickfix list, jumps to location on `<cr>`
 
 
     Parameters: ~
@@ -502,7 +528,7 @@ builtin.quickfix({opts})                                  *builtin.quickfix()*
 
 builtin.loclist({opts})                                    *builtin.loclist()*
     Lists items from the current window's location list, jumps to location on
-    <cr>
+    `<cr>`
 
 
     Parameters: ~
@@ -510,7 +536,7 @@ builtin.loclist({opts})                                    *builtin.loclist()*
 
 
 builtin.oldfiles({opts})                                  *builtin.oldfiles()*
-    Lists previously open files
+    Lists previously open files, opens on `<cr>`
 
 
     Parameters: ~
@@ -518,9 +544,9 @@ builtin.oldfiles({opts})                                  *builtin.oldfiles()*
 
 
 builtin.command_history({opts})                    *builtin.command_history()*
-    Lists commands that were executed recently, and reruns them on <cr>
+    Lists commands that were executed recently, and reruns them on `<cr>`
     - Default keymaps:
-      - <C-e>: open the command line with the text of the currently selected
+      - `<C-e>`: open the command line with the text of the currently selected
         result populated in it
 
 
@@ -529,9 +555,9 @@ builtin.command_history({opts})                    *builtin.command_history()*
 
 
 builtin.search_history({opts})                      *builtin.search_history()*
-    Lists searches that were executed recently, and reruns them on <cr>
+    Lists searches that were executed recently, and reruns them on `<cr>`
     - Default keymaps:
-      - <C-e>: open a search window with the text of the currently selected
+      - `<C-e>`: open a search window with the text of the currently selected
         search result populated in it
 
 
@@ -540,7 +566,7 @@ builtin.search_history({opts})                      *builtin.search_history()*
 
 
 builtin.vim_options({opts})                            *builtin.vim_options()*
-    Lists vim options, allows you to edit the current value on <cr>
+    Lists vim options, allows you to edit the current value on `<cr>`
 
 
     Parameters: ~
@@ -549,7 +575,7 @@ builtin.vim_options({opts})                            *builtin.vim_options()*
 
 builtin.help_tags({opts})                                *builtin.help_tags()*
     Lists available help tags and opens a new window with the relevant help
-    info on <cr>
+    info on `<cr>`
 
 
     Parameters: ~
@@ -557,7 +583,7 @@ builtin.help_tags({opts})                                *builtin.help_tags()*
 
 
 builtin.man_pages({opts})                                *builtin.man_pages()*
-    Lists manpage entries, opens them in a help window on <cr>
+    Lists manpage entries, opens them in a help window on `<cr>`
 
 
     Parameters: ~
@@ -565,7 +591,7 @@ builtin.man_pages({opts})                                *builtin.man_pages()*
 
 
 builtin.reloader({opts})                                  *builtin.reloader()*
-    Lists lua modules and reloads them on <cr>
+    Lists lua modules and reloads them on `<cr>`
 
 
     Parameters: ~
@@ -573,7 +599,8 @@ builtin.reloader({opts})                                  *builtin.reloader()*
 
 
 builtin.buffers({opts})                                    *builtin.buffers()*
-    Lists open buffers in current neovim instance
+    Lists open buffers in current neovim instance, opens selected buffer on
+    `<cr>`
 
 
     Parameters: ~
@@ -581,7 +608,7 @@ builtin.buffers({opts})                                    *builtin.buffers()*
 
 
 builtin.colorscheme({opts})                            *builtin.colorscheme()*
-    Lists available colorschemes and applies them on <cr>
+    Lists available colorschemes and applies them on `<cr>`
 
 
     Parameters: ~
@@ -589,7 +616,7 @@ builtin.colorscheme({opts})                            *builtin.colorscheme()*
 
 
 builtin.marks({opts})                                        *builtin.marks()*
-    Lists vim marks and their value
+    Lists vim marks and their value, jumps to the mark on `<cr>`
 
 
     Parameters: ~
@@ -597,9 +624,9 @@ builtin.marks({opts})                                        *builtin.marks()*
 
 
 builtin.registers({opts})                                *builtin.registers()*
-    Lists vim registers, pastes the contents of the register on <cr>
+    Lists vim registers, pastes the contents of the register on `<cr>`
     - Default keymaps:
-      - <C-e>: edit the contents of the currently selected register
+      - `<C-e>`: edit the contents of the currently selected register
 
 
     Parameters: ~
@@ -607,7 +634,7 @@ builtin.registers({opts})                                *builtin.registers()*
 
 
 builtin.keymaps({opts})                                    *builtin.keymaps()*
-    Lists normal mode keymappings
+    Lists normal mode keymappings, runs the selected keymap on `<cr>`
 
 
     Parameters: ~
@@ -615,7 +642,8 @@ builtin.keymaps({opts})                                    *builtin.keymaps()*
 
 
 builtin.filetypes({opts})                                *builtin.filetypes()*
-    Lists all available filetypes
+    Lists all available filetypes, sets currently open buffer's filetype to
+    selected filetype in Telescope on `<cr>`
 
 
     Parameters: ~
@@ -631,7 +659,7 @@ builtin.highlights({opts})                              *builtin.highlights()*
 
 
 builtin.autocommands({opts})                          *builtin.autocommands()*
-    Lists vim autocommands and goes to their declaration on <cr>
+    Lists vim autocommands and goes to their declaration on `<cr>`
 
 
     Parameters: ~
@@ -640,7 +668,7 @@ builtin.autocommands({opts})                          *builtin.autocommands()*
 
 builtin.spell_suggest({opts})                        *builtin.spell_suggest()*
     Lists spelling suggestions for the current word under the cursor, replaces
-    word with selected suggestion on <cr>
+    word with selected suggestion on `<cr>`
 
 
     Parameters: ~
@@ -648,7 +676,7 @@ builtin.spell_suggest({opts})                        *builtin.spell_suggest()*
 
 
 builtin.tagstack({opts})                                  *builtin.tagstack()*
-    Lists the tag stack for the current window
+    Lists the tag stack for the current window, jumps to tag on `<cr>`
 
 
     Parameters: ~
@@ -662,7 +690,7 @@ builtin.tagstack({opts})                                  *builtin.tagstack()*
 
 
 builtin.jumplist({opts})                                  *builtin.jumplist()*
-    Lists items from Vim's jumplist, jumps to location on <cr>
+    Lists items from Vim's jumplist, jumps to location on `<cr>`
 
 
     Parameters: ~
@@ -670,7 +698,8 @@ builtin.jumplist({opts})                                  *builtin.jumplist()*
 
 
 builtin.lsp_references({opts})                      *builtin.lsp_references()*
-    Lists LSP references for word under the cursor
+    Lists LSP references for word under the cursor, jumps to reference on
+    `<cr>`
 
 
     Parameters: ~
@@ -701,7 +730,7 @@ builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
 
 builtin.lsp_code_actions({opts})                  *builtin.lsp_code_actions()*
     Lists any LSP actions for the word under the cursor which can be triggered
-    with <cr>
+    with `<cr>`
 
 
     Parameters: ~
@@ -709,7 +738,7 @@ builtin.lsp_code_actions({opts})                  *builtin.lsp_code_actions()*
 
 
 builtin.lsp_range_code_actions({opts})      *builtin.lsp_range_code_actions()*
-    Lists any LSP actions for a given range, that can be triggered with <cr>
+    Lists any LSP actions for a given range, that can be triggered with `<cr>`
 
 
     Parameters: ~
@@ -719,7 +748,7 @@ builtin.lsp_range_code_actions({opts})      *builtin.lsp_range_code_actions()*
 builtin.lsp_document_symbols({opts})          *builtin.lsp_document_symbols()*
     Lists LSP document symbols in the current buffer
     - Default keymaps:
-      - <C-l>: show autocompletion menu to prefilter your query by type of
+      - `<C-l>`: show autocompletion menu to prefilter your query by type of
         symbol you want to see (i.e. `:variable:`)
 
 
@@ -733,7 +762,7 @@ builtin.lsp_document_symbols({opts})          *builtin.lsp_document_symbols()*
 builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
     Lists LSP document symbols in the current workspace
     - Default keymaps:
-      - <C-l>: show autocompletion menu to prefilter your query by type of
+      - `<C-l>`: show autocompletion menu to prefilter your query by type of
         symbol you want to see (i.e. `:variable:`)
 
 
@@ -752,7 +781,7 @@ builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
 builtin.lsp_dynamic_workspace_symbols({opts})*builtin.lsp_dynamic_workspace_symbols()*
     Dynamically lists LSP for all workspace symbols
     - Default keymaps:
-      - <C-l>: show autocompletion menu to prefilter your query by type of
+      - `<C-l>`: show autocompletion menu to prefilter your query by type of
         symbol you want to see (i.e. `:variable:`)
 
 
@@ -767,7 +796,7 @@ builtin.lsp_dynamic_workspace_symbols({opts})*builtin.lsp_dynamic_workspace_symb
 builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
     Lists LSP diagnostics for the current buffer
     - Default keymaps:
-      - <C-l>: show autocompletion menu to prefilter your query with the
+      - `<C-l>`: show autocompletion menu to prefilter your query with the
         diagnostic you want to see (i.e. `:warning:`)
 
 
@@ -783,7 +812,7 @@ builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
     Lists LSP diagnostics for the current workspace if supported, otherwise
     searches in all open buffers
     - Default keymaps:
-      - <C-l>: show autocompletion menu to prefilter your query with the
+      - `<C-l>`: show autocompletion menu to prefilter your query with the
         diagnostic you want to see (i.e. `:warning:`)
 
 
