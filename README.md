@@ -156,12 +156,12 @@ require('telescope').setup{
     file_sorter =  require'telescope.sorters'.get_fuzzy_file,
     file_ignore_patterns = {},
     generic_sorter =  require'telescope.sorters'.get_generic_fuzzy_sorter,
-    shorten_path = true,
     winblend = 0,
     border = {},
     borderchars = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' },
     color_devicons = true,
     use_less = true,
+    path_display = {},
     set_env = { ['COLORTERM'] = 'truecolor' }, -- default = nil,
     file_previewer = require'telescope.previewers'.vim_buffer_cat.new,
     grep_previewer = require'telescope.previewers'.vim_buffer_vimgrep.new,
@@ -204,6 +204,7 @@ EOF
 | `color_devicons`       | Whether to color devicons or not                      | boolean                    |
 | `use_less`             | Whether to use less with bat or less/cat if bat not installed | boolean            |
 | `set_env`              | Set environment variables for previewer               | dict                       |
+| `path_display`         | How file paths are displayed                          | [supported settings](https://github.com/nvim-telescope/telescope.nvim/wiki/Path-Display-Configuration) |
 | `file_previewer`       | What telescope previewer to use for files.            | [Previewers](#previewers)  |
 | `grep_previewer`       | What telescope previewer to use for grep and similar  | [Previewers](#previewers)  |
 | `qflist_previewer`     | What telescope previewer to use for qflist            | [Previewers](#previewers)  |
@@ -223,7 +224,6 @@ EOF
 | `vimgrep_arguments`    | The command line argument for grep search ... TODO.   | dict                       |
 | `selection_strategy`   | What happens to the selection if the list changes.    | follow/reset/row/closest   |
 | `file_ignore_patterns` | Pattern to be ignored `{ "scratch/.*", "%.env" }`      | dict                       |
-| `shorten_path`         | Whether to shorten paths or not.                      | boolean                    |
 
 ### Customize Default Builtin behavior
 

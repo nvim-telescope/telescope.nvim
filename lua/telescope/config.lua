@@ -177,6 +177,20 @@ local telescope_defaults = {
     Default: true]]
   },
 
+  path_display = { {}, [[
+    Determines how file paths are displayed
+
+    path_display can be set to an array with a combination of:
+    - "hidden"    hide file names
+    - "tail"      only display the file name, and not the path
+    - "absolute"  display absolute paths
+    - "shorten"   only display the first character of each directory in the path
+
+    path_display can also be set to 'hidden' string to hide file names
+
+    Default: {}]]
+  },
+
   borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" } },
 
   get_status_text = {

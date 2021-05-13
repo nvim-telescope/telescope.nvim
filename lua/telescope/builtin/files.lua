@@ -492,7 +492,7 @@ files.current_buffer_tags = function(opts)
   return files.tags(vim.tbl_extend("force", {
     prompt_title = 'Current Buffer Tags',
     only_current_file = true,
-    hide_filename = true,
+    path_display = 'hidden',
   }, opts))
 end
 
