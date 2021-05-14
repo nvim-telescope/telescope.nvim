@@ -146,7 +146,7 @@ require('telescope').setup{
     selection_strategy = "reset",
     sorting_strategy = "descending",
     layout_strategy = "horizontal",
-    layout_defaults = {
+    layout_config = {
       horizontal = {
         mirror = false,
       },
@@ -204,7 +204,7 @@ EOF
 | `sorting_strategy`     | Where first selection should be located.              | descending/ascending       |
 | `layout_strategy`      | How the telescope is drawn.                           | [supported layouts](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts) |
 | `winblend`             | How transparent is the telescope window should be.    | NUM                        |
-| `layout_defaults`      | Extra settings for fine-tuning how your layout looks  | [supported settings](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts#layout-defaults) |
+| `layout_config`        | Extra settings for fine-tuning how your layout looks  | [supported settings](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts#layout-defaults) |
 | `width`                | TODO                                                  | NUM                        |
 | `preview_cutoff`       | TODO                                                  | NUM                        |
 | `results_height`       | TODO                                                  | NUM                        |

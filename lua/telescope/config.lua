@@ -90,7 +90,7 @@ function config.set_defaults(defaults)
     See |telescope.layout| for details of the available strategies.
 
     Default: 'horizontal']])
-  set("layout_defaults", {
+  set("layout_config", {
     width = 0.8,
     horizontal = {
       height = 0.9,

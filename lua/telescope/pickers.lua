@@ -95,7 +95,7 @@ function Picker:new(opts)
     layout_strategy = layout_strategy,
     layout_config = get_default(
       opts.layout_config,
-      config.values.layout_defaults
+      config.values.layout_config
     ) or {},
 
     window = {
