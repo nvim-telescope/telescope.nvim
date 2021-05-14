@@ -25,8 +25,8 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: '  '
 
-                                       *telescope.defaults.layout_defaults*
-    layout_defaults: ~
+                                         *telescope.defaults.layout_config*
+    layout_config: ~
           Determines the default configuration values for layout strategies.
           See |telescope.layout| for details of the configurations options for
           each strategy.
