@@ -1,19 +1,19 @@
-local utils = require('telescope.utils')
+local strings = require('plenary.strings')
 
 local entry_display = {}
 
 entry_display.truncate = function(str, len)
   str = tostring(str) -- We need to make sure its an actually a string and not a number
-  if utils.strdisplaywidth(str) <= len then
+  if strings.strdisplaywidth(str) <= len then
     return str
   end
   local charlen = 0
   local cur_len = 0
   local result = ''
-  local len_of_dots = utils.strdisplaywidth('…')
+  local len_of_dots = strings.strdisplaywidth('…')
   while true do
-    local part = utils.strcharpart(str, charlen, 1)
-    cur_len = cur_len + utils.strdisplaywidth(part)
+    local part = strings.strcharpart(str, charlen, 1)
+    cur_len = cur_len + strings.strdisplaywidth(part)
     if (cur_len + len_of_dots) > len then
       result = result .. '…'
       break
@@ -31,9 +31,9 @@ entry_display.create = function(configuration)
       local justify = v.right_justify
       table.insert(generator, function(item)
         if type(item) == 'table' then
-          return utils.align_str(entry_display.truncate(item[1], v.width), v.width, justify), item[2]
+          return strings.align_str(entry_display.truncate(item[1], v.width), v.width, justify), item[2]
         else
-          return utils.align_str(entry_display.truncate(item, v.width), v.width, justify)
+          return strings.align_str(entry_display.truncate(item, v.width), v.width, justify)
         end
       end)
     else
