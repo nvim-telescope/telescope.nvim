@@ -508,7 +508,7 @@ function Picker:delete_selection(delete_cb)
   end
 
   table.remove(self.finder.results, selection_index)
-  self:__on_lines(nil, nil, nil, 0, 1)
+  self:refresh()
 
   if delete_cb and type(delete_cb) == "function" then
     delete_cb(selection)
@@ -667,10 +667,10 @@ function Picker:refresh(finder, opts)
   end
   if opts.reset_prompt then self:reset_prompt() end
 
-  self.finder:close()
   if finder then
-      self.finder = finder
-      self._multi = MultiSelect:new()
+    self.finder:close()
+    self.finder = finder
+    self._multi = MultiSelect:new()
   end
 
   self.__on_lines(nil, nil, nil, 0, 1)
