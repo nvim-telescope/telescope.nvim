@@ -736,3 +736,9 @@ To checkout the default values of the highlight groups, checkout `plugin/telesco
 
 All contributions are welcome! Just open a pull request.
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+## Related Projects
+
+- [fzf.vim](https://github.com/junegunn/fzf.vim)
+- [denite.nvim](https://github.com/Shougo/denite.nvim)
+- [vim-clap](https://github.com/liuchengxu/vim-clap)
