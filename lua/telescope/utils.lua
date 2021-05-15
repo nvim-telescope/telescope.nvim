@@ -377,6 +377,22 @@ function utils.get_os_command_output(cmd, cwd)
   return stdout, ret, stderr
 end
 
+utils.strdisplaywidth = function()
+  error("strdisplaywidth deprecated. please use plenary.strings.strdisplaywidth")
+end
+
+utils.utf_ptr2len = function()
+  error("utf_ptr2len deprecated. please use plenary.strings.utf_ptr2len")
+end
+
+utils.strcharpart = function()
+  error("strcharpart deprecated. please use plenary.strings.strcharpart")
+end
+
+utils.align_str = function()
+  error("align_str deprecated. please use plenary.strings.align_str")
+end
+
 utils.transform_devicons = (function()
   if has_devicons then
     if not devicons.has_loaded() then
