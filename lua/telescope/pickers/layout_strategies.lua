@@ -61,38 +61,7 @@
 local config = require('telescope.config')
 local resolve = require("telescope.config.resolve")
 
-local function get_initial_window_options(picker)
-  local popup_border = resolve.win_option(picker.window.border)
-  local popup_borderchars = resolve.win_option(picker.window.borderchars)
-
-  local preview = {
-    title = picker.preview_title,
-    border = popup_border.preview,
-    borderchars = popup_borderchars.preview,
-    enter = false,
-    highlight = false
-  }
-
-  local results = {
-    title = picker.results_title,
-    border = popup_border.results,
-    borderchars = popup_borderchars.results,
-    enter = false,
-  }
-
-  local prompt = {
-    title = picker.prompt_title,
-    border = popup_border.prompt,
-    borderchars = popup_borderchars.prompt,
-    enter = true
-  }
-
-  return {
-    preview = preview,
-    results = results,
-    prompt = prompt,
-  }
-end
+local p_window = require('telescope.pickers.window')
 
 
 -- Check if there are any borders. Right now it's a little raw as
@@ -139,7 +108,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
     scroll_speed = "The speed when scrolling through the previewer",
   })
 
-  local initial_options = get_initial_window_options(self)
+  local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
@@ -237,7 +206,7 @@ end
 ---    +--------------+
 --- </pre>
 layout_strategies.center = function(self, columns, lines)
-  local initial_options = get_initial_window_options(self)
+  local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
@@ -307,7 +276,7 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
     scroll_speed = "The speed when scrolling through the previewer",
   })
 
-  local initial_options = get_initial_window_options(self)
+  local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
@@ -444,6 +413,69 @@ layout_strategies.current_buffer = function(self, _, _)
     preview = preview.width > 0 and preview,
     results = results,
     prompt = prompt,
+  }
+end
+
+layout_strategies.bottom_pane = function(self, max_columns, max_lines)
+  local layout_config = validate_layout_config(self.layout_config or {}, {
+    height = "The height of the layout",
+  })
+
+  local initial_options = p_window.get_initial_window_options(self)
+  local results = initial_options.results
+  local prompt = initial_options.prompt
+  local preview = initial_options.preview
+
+  local result_height = layout_config.height or 25
+
+  local prompt_width = max_columns
+  local col = 0
+
+  local has_border = not not self.window.border
+  if has_border then
+    col = 1
+    prompt_width = prompt_width - 2
+  end
+
+  local result_width
+  if self.previewer then
+    result_width = math.floor(prompt_width / 2)
+
+    local base_col = result_width + 1
+    if has_border then
+      preview = vim.tbl_deep_extend("force", {
+        col = base_col + 2,
+        line = max_lines - result_height + 1,
+        width = prompt_width - result_width - 2,
+        height = result_height - 1,
+      }, preview)
+    else
+      preview = vim.tbl_deep_extend("force", {
+        col = base_col,
+        line = max_lines - result_height,
+        width = prompt_width - result_width,
+        height = result_height,
+      }, preview)
+    end
+  else
+    preview = nil
+    result_width = prompt_width
+  end
+
+  return {
+    preview = preview,
+    prompt = vim.tbl_deep_extend("force", prompt, {
+      line = max_lines - result_height - 1,
+      col = col,
+      height = 1,
+      width = prompt_width,
+    }),
+    results = vim.tbl_deep_extend("force", results, {
+      line = max_lines - result_height,
+      col = col,
+      height = result_height,
+      width = result_width,
+    }),
   }
 end
 

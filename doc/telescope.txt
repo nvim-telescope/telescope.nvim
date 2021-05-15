@@ -92,6 +92,37 @@ telescope.extensions()                                *telescope.extensions()*
 
 
 ================================================================================
+                                                              *telescope.themes*
+
+Themes are ways to combine several elements of styling together.
+
+They are helpful for managing the several differnt UI aspects for telescope and
+provide a simple interface for users to get a particular "style" of picker.
+
+themes.get_dropdown()                                  *themes.get_dropdown()*
+    Dropdown style theme.
+
+    Usage:
+
+        `local builtin = require('telescope.builtin')`
+        `local themes = require('telescope.themes')`
+        `builtin.find_files(themes.get_dropdown())`
+
+
+
+themes.get_ivy()                                            *themes.get_ivy()*
+    Ivy style theme.
+
+    Usage:
+
+        `local builtin = require('telescope.builtin')`
+        `local themes = require('telescope.themes')`
+        `builtin.find_files(themes.get_ivy())`
+
+
+
+
+================================================================================
                                                          *telescope.actions.set*
 
 Telescope action sets are used to provide an interface for managing actions
