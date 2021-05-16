@@ -152,17 +152,20 @@ end
 
 --- Converts input to a function that returns the height.
 --- The input must take one of four forms:
---- 1. 0 <= number < 1
+--- 1. 0 <= number < 1 <br>
 ---     This means total height as a percentage.
---- 2. 1 <= number
+--- 2. 1 <= number <br>
 ---     This means total height as a fixed number.
---- 3. function
+--- 3. function <br>
 ---     Must have signature:
 ---       function(self, max_columns, max_lines): number
 --- 4. table of the form:
----       {padding = `foo`}
----     where `foo` has one of the previous three forms.
+---       {padding = `foo`} <br>
+---     where `foo` has one of the previous three forms. <br>
 ---     The height is then set to be the remaining space after padding.
+---     For example, if the window has height 50, and the input is {padding = 5},
+---     the height returned will be `40 = 50 - 2*5`
+---
 --- The returned function will have signature:
 ---     function(self, max_columns, max_lines): number
 resolver.resolve_height = function(val)
@@ -177,17 +180,20 @@ end
 
 --- Converts input to a function that returns the width.
 --- The input must take one of four forms:
---- 1. 0 <= number < 1
+--- 1. 0 <= number < 1 <br>
 ---     This means total width as a percentage.
---- 2. 1 <= number
+--- 2. 1 <= number <br>
 ---     This means total width as a fixed number.
---- 3. function
+--- 3. function <br>
 ---     Must have signature:
 ---       function(self, max_columns, max_lines): number
 --- 4. table of the form:
----       {padding = `foo`}
----     where `foo` has one of the previous three forms.
----     The height is then set to be the remaining space after padding.
+---       {padding = `foo`} <br>
+---     where `foo` has one of the previous three forms. <br>
+---     The width is then set to be the remaining space after padding.
+---     For example, if the window has width 100, and the input is {padding = 5},
+---     the width returned will be `90 = 100 - 2*5`
+---
 --- The returned function will have signature:
 ---     function(self, max_columns, max_lines): number
 resolver.resolve_width = function(val)
