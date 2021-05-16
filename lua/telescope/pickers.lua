@@ -101,7 +101,7 @@ function Picker:new(opts)
     window = {
       -- TODO: This won't account for different layouts...
       -- TODO: If it's a list, of length 2, then it's a range of min to max?
-      height = get_default(opts.height, config.value.height),
+      height = get_default(opts.height, config.values.height),
       width = get_default(opts.width, config.values.width),
 
       get_preview_width = get_default(opts.preview_width, config.values.get_preview_width),
