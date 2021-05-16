@@ -569,7 +569,7 @@ internal.buffers = function(opts)
     if opts.ignore_current_buffer and b == vim.api.nvim_get_current_buf() then
       return false
     end
-    if opts.only_cwd and not string.find(vim.api.nvim_buf_get_name(b), vim.loop.cwd()) then
+    if opts.only_cwd and not string.find(vim.api.nvim_buf_get_name(b), vim.loop.cwd(), 1, true) then
       return false
     end
     return true
