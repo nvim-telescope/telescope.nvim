@@ -136,6 +136,45 @@ local function validate_layout_config(strategy, options, values)
   return result
 end
 
+layout_strategies._format = function(name)
+  local strategy_config = layout_strategies._configurations[name]
+  if vim.tbl_isempty(strategy_config) then
+    return {}
+  end
+
+  local results = {"<pre>", "`picker.layout_config` options:"}
+
+  -- TODO: Should make this sorted, otherwise annoyint diffs...
+  for k, v in pairs(strategy_config) do
+    table.insert(results, string.format('  - %s: %s', k, v))
+  end
+
+  table.insert(results, "</pre>")
+  return results
+end
+
+layout_strategies._configurations = {}
+
+local function make_documented_layout(name, layout_config, layout)
+  -- Save configuration data to be used by documentation
+  layout_strategies._configurations[name] = layout_config
+
+  -- Return new function that always validates configuration
+  return function(self, max_columns, max_lines, override_layout)
+    if layout == 'flex' then
+      layout_config = override_layout or self.layout_config or {}
+    else
+      layout_config = validate_layout_config(name,override_layout or self.layout_config or {}, layout_config)
+    end
+    return layout(
+      self,
+      max_columns,
+      max_lines,
+      layout_config
+    )
+  end
+end
+
 --- Horizontal layout has two columns, one for the preview
 --- and one for the prompt and results.
 ---
@@ -157,15 +196,15 @@ end
 --- │                                                  │
 --- └──────────────────────────────────────────────────┘
 --- </pre>
-layout_strategies.horizontal = function(self, max_columns, max_lines)
-  local layout_config = validate_layout_config('horizontal',self.layout_config or {}, {
+---@eval { ["description"] = require('telescope.pickers.layout_strategies')._format("horizontal") }
+---
+layout_strategies.horizontal = make_documented_layout('horizontal', {
     width = "How wide the picker is",
     height = "How tall the picker is",
     preview_width = "(Resolvable): Determine preview width",
     mirror = "Flip the location of the results/prompt and preview windows",
     scroll_speed = "The speed when scrolling through the previewer",
-  })
-
+  }, function(self, max_columns, max_lines,layout_config)
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
@@ -236,7 +275,7 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
     results = results,
     prompt = prompt
 }
-end
+end)
 
 --- Centered layout with a combined block of the prompt
 --- and results aligned to the middle of the screen.
@@ -262,11 +301,12 @@ end
 --- │                                                  │
 --- └──────────────────────────────────────────────────┘
 --- </pre>
-layout_strategies.center = function(self, max_columns, max_lines)
-  local layout_config = validate_layout_config('center',self.layout_config or {}, {
+---@eval { ["description"] = require('telescope.pickers.layout_strategies')._format("center") }
+---
+layout_strategies.center = make_documented_layout('center',{
     width = "How wide the picker is",
     scroll_speed = "The speed when scrolling through the previewer",
-  })
+  }, function(self, max_columns, max_lines,layout_config)
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
@@ -316,7 +356,7 @@ layout_strategies.center = function(self, max_columns, max_lines)
     results = results,
     prompt = prompt
   }
-end
+end)
 
 --- Vertical layout stacks the items on top of each other.
 --- Particularly useful with thinner windows.
@@ -339,14 +379,15 @@ end
 --- │                                                  │
 --- └──────────────────────────────────────────────────┘
 --- </pre>
-layout_strategies.vertical = function(self, max_columns, max_lines)
-  local layout_config = validate_layout_config('vertical',self.layout_config or {}, {
+---@eval { ["description"] = require('telescope.pickers.layout_strategies')._format("horizontal") }
+---
+layout_strategies.vertical = make_documented_layout('vertical', {
     width = "How many cells to pad the width",
     height = "How many cells to pad the height",
     preview_height = "(Resolvable): Determine preview height",
     mirror = "Flip the locations of the results and prompt windows",
     scroll_speed = "The speed when scrolling through the previewer",
-  })
+  }, function(self, max_columns, max_lines, layout_config)
 
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
@@ -404,7 +445,7 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
     results = results,
     prompt = prompt
   }
-end
+end)
 
 --- Flex layout swaps between `horizontal` and `vertical` strategies based on the window width
 ---  -  Supports `vertical` or `horizontal` features
@@ -412,9 +453,7 @@ end
 --- Uses:
 ---  - flip_columns
 ---  - flip_lines
-layout_strategies.flex = function(self, max_columns, max_lines)
-  local layout_config = self.layout_config or {}
-
+layout_strategies.flex = make_documented_layout('flex',{},function(self, max_columns, max_lines, layout_config)
   local flip_columns = layout_config.flip_columns or 100
   local flip_lines = layout_config.flip_lines or 20
 
@@ -423,9 +462,9 @@ layout_strategies.flex = function(self, max_columns, max_lines)
   else
     return layout_strategies.horizontal(self, max_columns, max_lines)
   end
-end
+end)
 
-layout_strategies.current_buffer = function(self, _, _)
+layout_strategies.current_buffer = make_documented_layout('current_buffer',{},function(self, _, _, _)
   local initial_options = p_window.get_initial_window_options(self)
 
   local window_width = vim.api.nvim_win_get_width(0)
@@ -479,16 +518,11 @@ layout_strategies.current_buffer = function(self, _, _)
     results = results,
     prompt = prompt,
   }
-end
+end)
 
-layout_strategies.bottom_pane = function(self, max_columns, max_lines)
-  local layout_config = validate_layout_config(
-    "bottom_pane",
-    self.layout_config or {},
-    {
-      height = "The height of the layout",
-    }
-  )
+layout_strategies.bottom_pane = make_documented_layout('bottom_pane', {
+    height = "The height of the layout",
+  }, function(self, max_columns, max_lines, layout_config)
 
   local initial_options = p_window.get_initial_window_options(self)
   local results = initial_options.results
@@ -546,6 +580,6 @@ layout_strategies.bottom_pane = function(self, max_columns, max_lines)
       width = result_width,
     }),
   }
-end
+end)
 
 return layout_strategies
