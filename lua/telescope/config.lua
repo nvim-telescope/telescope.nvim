@@ -95,16 +95,20 @@ function config.set_defaults(defaults)
 
     Default: 'horizontal']])
   set("layout_config", {
-    width = 0.8,
     horizontal = {
+      width = 0.8,
       height = 0.9,
     },
     vertical = {
+      width = 0.8,
       height = 0.9,
     },
     center = {
       width = 0.5
-    }
+    },
+    bottom_pane = {
+      height = 0.5
+    },
   },[[
     Determines the default configuration values for layout strategies.
     See |telescope.layout| for details of the configurations options for

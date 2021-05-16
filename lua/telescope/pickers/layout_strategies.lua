@@ -474,16 +474,20 @@ layout_strategies.current_buffer = function(self, _, _)
 end
 
 layout_strategies.bottom_pane = function(self, max_columns, max_lines)
-  local layout_config = validate_layout_config(self.layout_config or {}, {
-    height = "The height of the layout",
-  })
+  local layout_config = validate_layout_config(
+    "bottom_pane",
+    self.layout_config or {},
+    {
+      height = "The height of the layout",
+    }
+  )
 
   local initial_options = p_window.get_initial_window_options(self)
   local results = initial_options.results
   local prompt = initial_options.prompt
   local preview = initial_options.preview
 
-  local result_height = layout_config.height or 25
+  local result_height = resolve.resolve_height(layout_config.height)(self,max_columns,max_lines) or 25
 
   local prompt_width = max_columns
   local col = 0
