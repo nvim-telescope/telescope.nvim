@@ -104,9 +104,7 @@ local is_borderless = function(opts)
   return opts.window.border == false
 end
 
--- TODO: make an automatic way to create this list
---      could just use layout_strategies???
-local layout_list = {horizontal=1,vertical=1,flex=1,center=1,current_buffer=1}
+local layout_strategies = {}
 
 local function validate_layout_config(strategy, options, values)
   local result = {}
@@ -114,7 +112,7 @@ local function validate_layout_config(strategy, options, values)
   -- in values or those in layout_list
   local function key_check(opts,vals,strat)
     for k, _ in pairs(opts) do
-      if not vals[k] and not layout_list[k] then
+      if not vals[k] and not layout_strategies[k] then
         if strat == nil then
           error(string.format(
             "Unsupported layout_config key: %s\n%s",
@@ -159,8 +157,6 @@ local function validate_layout_config(strategy, options, values)
 
   return result
 end
-
-local layout_strategies = {}
 
 --- Horizontal previewer has two columns, one for the preview
 --- and one for the prompt and results.

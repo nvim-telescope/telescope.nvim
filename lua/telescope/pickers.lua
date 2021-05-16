@@ -100,16 +100,12 @@ function Picker:new(opts)
 
     window = {
       -- TODO: This won't account for different layouts...
-      -- TODO: If it's between 0 and 1, it's a percentage.
-      -- TODO: If it's a single number, it's always that many columns
       -- TODO: If it's a list, of length 2, then it's a range of min to max?
-      height = get_default(opts.height, 0.8),
+      height = get_default(opts.height, config.value.height),
       width = get_default(opts.width, config.values.width),
 
       get_preview_width = get_default(opts.preview_width, config.values.get_preview_width),
 
-      -- TODO: figure out the intention of this option. It doesn't currently do anything
-      results_width = get_default(opts.results_width, config.values.results_width),
       results_height = get_default(opts.results_height, config.values.results_height),
 
       winblend = get_default(opts.winblend, config.values.winblend),

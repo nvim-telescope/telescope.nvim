@@ -49,6 +49,10 @@ config.descriptions = {}
 function config.set_defaults(defaults)
   defaults = defaults or {}
 
+  if defaults.layout_default then
+    error("'layout_default' is no longer a valid key. See 'layout_config'")
+  end
+
   local function get(name, default_val)
     return first_non_null(defaults[name], config.values[name], default_val)
   end

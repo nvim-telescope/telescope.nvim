@@ -93,52 +93,47 @@ That's the next step to scrolling.
 local get_default = require('telescope.utils').get_default
 
 local resolver = {}
-local _simple_resolve_map = {
-  -- Booleans
-  [function(val) return val == false end] = function(selector, val)
-    return function(...)
-      return val
-    end
-  end,
+local _resolve_map = {}
 
-  -- Percentages
-  [function(val) return type(val) == 'number' and val >= 0 and val < 1 end] = function(selector, val)
-    return function(...)
-      local selected = select(selector, ...)
-      return math.floor(val * selected)
-    end
-  end,
-
-  -- Numbers
-  [function(val) return type(val) == 'number' and val >= 1 end] = function(selector, val)
-    return function(...)
-      local selected = select(selector, ...)
-      return math.min(val, selected)
-    end
-  end,
-
-
-  -- Tables TODO:
-  -- ... {70, max}
-
-
-  -- function:
-  --    Function must have same signature as get_window_layout
-  --        function(self, max_columns, max_lines): number
-  --
-  --    Resulting number is used for this configuration value.
-  [function(val) return type(val) == 'function' end] = function(selector, val)
+-- Booleans
+_resolve_map[function(val) return val == false end] = function(_, val)
+  return function(...)
     return val
-  end,
-}
+  end
+end
 
--- Make a copy of the "simple" _resolve_map that we can add to to make the "full" _resolve_map.
-local _resolve_map = vim.deepcopy(_simple_resolve_map)
+-- Percentages
+_resolve_map[function(val) return type(val) == 'number' and val >= 0 and val < 1 end] = function(selector, val)
+  return function(...)
+    local selected = select(selector, ...)
+    return math.floor(val * selected)
+  end
+end
+
+-- Numbers
+_resolve_map[function(val) return type(val) == 'number' and val >= 1 end] = function(selector, val)
+  return function(...)
+    local selected = select(selector, ...)
+    return math.min(val, selected)
+  end
+end
+
+-- Tables TODO:
+-- ... {70, max}
+
+-- function:
+--    Function must have same signature as get_window_layout
+--        function(self, max_columns, max_lines): number
+--
+--    Resulting number is used for this configuration value.
+_resolve_map[function(val) return type(val) == 'function' end] = function(_, val)
+  return val
+end
 
 -- Add padding option
 _resolve_map[function(val) return type(val) == 'table' and val['padding'] ~= nil end] = function(selector, val)
   local resolve_pad = function(value)
-    for k, v in pairs(_simple_resolve_map) do
+    for k, v in pairs(_resolve_map) do
       if k(value) then
         return v(selector, value)
       end
