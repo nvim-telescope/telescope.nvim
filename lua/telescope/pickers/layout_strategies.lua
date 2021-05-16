@@ -53,11 +53,20 @@
 ---     - How tall to make Telescope's layout window
 ---     - Resolvable: see |resolver.resolve_height()|
 ---
----   - preview_width:
----     - Change the width of Telescope's preview window
----
 ---   - scroll_speed:
 ---     - Change the scrolling speed of the previewer
+---
+--- The horizontal layout also has:
+---   - preview_width:
+---     - Change the width of Telescope's preview window
+---     - Resolvable: see |resolver.resolve_width()| <br>
+---         Note that percentages are measured relative to the size of the whole layout.
+---
+--- Similarly, the vertical layout has:
+---   - preview_height:
+---     - Change the height of Telescope's preview window
+---     - Resolvable: see |resolver.resolve_height()| <br>
+---         Note that percentages are measured relative to the size of the whole layout.
 ---@brief ]]
 
 local resolve = require('telescope.config.resolve')
@@ -127,7 +136,7 @@ local function validate_layout_config(strategy, options, values)
   return result
 end
 
---- Horizontal previewer has two columns, one for the preview
+--- Horizontal layout has two columns, one for the preview
 --- and one for the prompt and results.
 ---
 --- <pre>
@@ -256,7 +265,6 @@ end
 layout_strategies.center = function(self, max_columns, max_lines)
   local layout_config = validate_layout_config('center',self.layout_config or {}, {
     width = "How wide the picker is",
-    preview_height = "(Resolvable): Determine preview height",
     scroll_speed = "The speed when scrolling through the previewer",
   })
   local initial_options = p_window.get_initial_window_options(self)
@@ -310,7 +318,7 @@ layout_strategies.center = function(self, max_columns, max_lines)
   }
 end
 
---- Vertical previewer stacks the items on top of each other.
+--- Vertical layout stacks the items on top of each other.
 --- Particularly useful with thinner windows.
 ---
 --- <pre>
@@ -398,7 +406,7 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   }
 end
 
---- Swap between `horizontal` and `vertical` strategies based on the window width
+--- Flex layout swaps between `horizontal` and `vertical` strategies based on the window width
 ---  -  Supports `vertical` or `horizontal` features
 ---
 --- Uses:
@@ -418,7 +426,7 @@ layout_strategies.flex = function(self, max_columns, max_lines)
 end
 
 layout_strategies.current_buffer = function(self, _, _)
-  local initial_options = get_initial_window_options(self)
+  local initial_options = p_window.get_initial_window_options(self)
 
   local window_width = vim.api.nvim_win_get_width(0)
   local window_height = vim.api.nvim_win_get_height(0)
