@@ -93,16 +93,17 @@ files.live_grep = function(opts)
   }):find()
 end
 
-
 -- Special keys:
 --  opts.search -- the string to search.
 --  opts.search_dirs -- list of directory to search in
+--  opts.use_regex -- special characters won't be escaped
 files.grep_string = function(opts)
   -- TODO: This should probably check your visual selection as well, if you've got one
 
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
-  local search = escape_chars(opts.search or vim.fn.expand("<cword>"))
+  local word = opts.search or vim.fn.expand("<cword>")
+  local search = opts.use_regex and word or escape_chars(word)
   local word_match = opts.word_match
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
 
@@ -133,7 +134,7 @@ files.grep_string = function(opts)
 end
 
 -- TODO: Maybe just change this to `find`.
---          Support `find` and maybe let people do other stuff with it as well.
+-- TODO: Support `find` and maybe let people do other stuff with it as well.
 files.find_files = function(opts)
   local find_command = opts.find_command
   local hidden = opts.hidden
@@ -309,6 +310,7 @@ files.file_browser = function(opts)
   }):find()
 end
 
+--  TODO: finish docs for opts.show_line
 files.treesitter = function(opts)
   opts.show_line = utils.get_default(opts.show_line, true)
 

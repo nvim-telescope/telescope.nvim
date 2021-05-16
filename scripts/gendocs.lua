@@ -16,6 +16,7 @@ docs.test = function()
     "./lua/telescope/actions/set.lua",
     "./lua/telescope/previewers/init.lua",
     "./lua/telescope/config/resolve.lua",
+    "./lua/telescope/themes.lua",
   }
 
   table.sort(input_files, function(a, b)

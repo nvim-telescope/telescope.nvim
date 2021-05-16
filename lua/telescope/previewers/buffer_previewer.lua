@@ -185,7 +185,9 @@ previewers.new_buffer_previewer = function(opts)
       local bufnr = vim.api.nvim_create_buf(false, true)
       set_bufnr(self, bufnr)
 
-      vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+      vim.schedule(function()
+        vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+      end)
 
       -- TODO(conni2461): We only have to set options once. Right?
       vim.api.nvim_win_set_option(status.preview_win, 'winhl', 'Normal:TelescopePreviewNormal')
@@ -498,6 +500,23 @@ previewers.git_branch_log = defaulter(function(opts)
           highlight_buffer(bufnr, content)
         end
       })
+    end
+  }
+end, {})
+
+previewers.git_stash_diff = defaulter(function(opts)
+  return previewers.new_buffer_previewer {
+    get_buffer_by_name = function(_, entry)
+      return entry.value
+    end,
+
+    define_preview = function(self, entry, _)
+      putils.job_maker({ 'git', '--no-pager', 'stash', 'show', '-p',  entry.value }, self.state.bufnr, {
+        value = entry.value,
+        bufname = self.state.bufname,
+        cwd = opts.cwd
+      })
+      putils.regex_highlighter(self.state.bufnr, 'diff')
     end
   }
 end, {})

@@ -499,7 +499,7 @@ function Picker.close_windows(status)
   local preview_border_win = status.preview_border_win
 
   local function del_win(name, win_id, force, bdelete)
-    if not vim.api.nvim_win_is_valid(win_id) then
+    if win_id == nil or not vim.api.nvim_win_is_valid(win_id) then
       return
     end
 
@@ -637,7 +637,10 @@ function Picker:refresh(finder, opts)
   if opts.reset_prompt then self:reset_prompt() end
 
   self.finder:close()
-  if finder then self.finder = finder end
+  if finder then
+      self.finder = finder
+      self._multi = MultiSelect:new()
+  end
 
   self.__on_lines(nil, nil, nil, 0, 1)
 end
