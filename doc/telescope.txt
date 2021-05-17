@@ -925,10 +925,12 @@ Provides "resolver functions" to allow more customisable inputs for options.
 resolver.resolve_height()                          *resolver.resolve_height()*
     Converts input to a function that returns the height. The input must take
     one of four forms:
-    1. 0 <= number < 1 <br> This means total height as a percentage.
-    2. 1 <= number <br> This means total height as a fixed number.
-    3. function <br> Must have signature: function(self, max_columns,
-       max_lines): number
+    1. 0 <= number < 1
+       This means total height as a percentage.
+    2. 1 <= number
+       This means total height as a fixed number.
+    3. function
+       Must have signature: function(self, max_columns, max_lines): number
     4. table of the form: {padding = `foo`} <br> where `foo` has one of the
        previous three forms. <br> The height is then set to be the remaining
        space after padding. For example, if the window has height 50, and the
@@ -942,10 +944,12 @@ resolver.resolve_height()                          *resolver.resolve_height()*
 resolver.resolve_width()                            *resolver.resolve_width()*
     Converts input to a function that returns the width. The input must take
     one of four forms:
-    1. 0 <= number < 1 <br> This means total width as a percentage.
-    2. 1 <= number <br> This means total width as a fixed number.
-    3. function <br> Must have signature: function(self, max_columns,
-       max_lines): number
+    1. 0 <= number < 1
+       This means total width as a percentage.
+    2. 1 <= number
+       This means total width as a fixed number.
+    3. function
+       Must have signature: function(self, max_columns, max_lines): number
     4. table of the form: {padding = `foo`} <br> where `foo` has one of the
        previous three forms. <br> The width is then set to be the remaining
        space after padding. For example, if the window has width 100, and the
@@ -1289,14 +1293,16 @@ horizontal and vertical layouts):
 The horizontal layout also has:
   - preview_width:
     - Change the width of Telescope's preview window
-    - Resolvable: see |resolver.resolve_width()| <br> Note that percentages are
-      measured relative to the size of the whole layout.
+    - Resolvable: see |resolver.resolve_width()|
+      Note that percentages are measured relative to the size of the whole
+      layout.
 
 Similarly, the vertical layout has:
   - preview_height:
     - Change the height of Telescope's preview window
-    - Resolvable: see |resolver.resolve_height()| <br> Note that percentages
-      are measured relative to the size of the whole layout.
+    - Resolvable: see |resolver.resolve_height()|
+      Note that percentages are measured relative to the size of the whole
+      layout.
 
 layout_strategies.horizontal()                *layout_strategies.horizontal()*
     Horizontal layout has two columns, one for the preview and one for the
@@ -1320,10 +1326,10 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
     └──────────────────────────────────────────────────┘
 
     `picker.layout_config` options:
-      - height: How tall the picker is
       - scroll_speed: The speed when scrolling through the previewer
-      - preview_width: (Resolvable): Determine preview width
       - width: How wide the picker is
+      - height: How tall the picker is
+      - preview_width: (Resolvable): Determine preview width
       - mirror: Flip the location of the results/prompt and preview windows
 
 
@@ -1352,6 +1358,7 @@ layout_strategies.center()                        *layout_strategies.center()*
 
     `picker.layout_config` options:
       - scroll_speed: The speed when scrolling through the previewer
+      - results_height: How tall the results section is
       - width: How wide the picker is
 
 
@@ -1377,10 +1384,10 @@ layout_strategies.vertical()                    *layout_strategies.vertical()*
     └──────────────────────────────────────────────────┘
 
     `picker.layout_config` options:
-      - height: How tall the picker is
       - scroll_speed: The speed when scrolling through the previewer
-      - preview_width: (Resolvable): Determine preview width
       - width: How wide the picker is
+      - height: How tall the picker is
+      - preview_width: (Resolvable): Determine preview width
       - mirror: Flip the location of the results/prompt and preview windows
 
 
