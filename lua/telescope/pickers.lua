@@ -497,23 +497,33 @@ end
 function Picker:delete_selection(delete_cb)
   local original_selection_strategy = self.selection_strategy
   self.selection_strategy = "row"
+  delete_cb = (delete_cb and type(delete_cb) == "function") and delete_cb or function() end
 
-  local selection_index
-  local selection = self:get_selection()
-  for index, entry in ipairs(self.finder.results) do
-    if entry == selection then
-      selection_index = index
-      break
+  local delete_selections = self._multi:get()
+  if vim.tbl_isempty(delete_selections) then
+    table.insert(delete_selections, self:get_selection())
+  end
+
+  local selection_index = {}
+  for result_index, result_entry in ipairs(self.finder.results) do
+    if vim.tbl_contains(delete_selections, result_entry) then
+      table.insert(selection_index, result_index)
     end
   end
 
-  table.remove(self.finder.results, selection_index)
-  self:refresh()
-
-  if delete_cb and type(delete_cb) == "function" then
+  -- Sort in reverse order as removing an entry from the table shifts down the
+  -- other elements to close the hole.
+  table.sort(selection_index, function(x, y) return x > y end)
+  for _, index in ipairs(selection_index) do
+    local selection = table.remove(self.finder.results, index)
     delete_cb(selection)
   end
 
+  if #delete_selections > 1 then
+    self._multi = MultiSelect:new()
+  end
+
+  self:refresh()
   vim.schedule(function()
     self.selection_strategy = original_selection_strategy
   end)
