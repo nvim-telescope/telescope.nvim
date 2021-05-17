@@ -1,3 +1,5 @@
+local log = require('telescope.log')
+
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
 
@@ -50,7 +52,12 @@ function config.set_defaults(defaults)
   defaults = defaults or {}
 
   if defaults.layout_default then
-    error("'layout_default' is no longer a valid key. See 'layout_config'")
+    if defaults.layout_config == nil then
+      log.info("Using 'layout_default' in setup() is deprecated. Use 'layout_config' instead.")
+      defaults.layout_config = defaults.layout_default
+    else
+      error("Using 'layout_default' in setup() is deprecated. Remove this key and use 'layout_config' instead.")
+    end
   end
 
   local function get(name, default_val)
