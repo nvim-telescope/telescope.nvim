@@ -102,20 +102,9 @@ function config.set_defaults(defaults)
 
     Default: 'horizontal']])
   set("layout_config", {
-    horizontal = {
-      width = 0.8,
-      height = 0.9,
-    },
-    vertical = {
-      width = 0.8,
-      height = 0.9,
-    },
-    center = {
-      width = 0.5
-    },
-    bottom_pane = {
-      height = 0.5
-    },
+    width = 0.8,
+    height = 0.9,
+    results_height = 0.3,
   },[[
     Determines the default configuration values for layout strategies.
     See |telescope.layout| for details of the configurations options for
@@ -146,9 +135,6 @@ function config.set_defaults(defaults)
   set("winblend", 0)
   set("prompt_position", "bottom")
   set("preview_cutoff", 120)
-
-  set("results_height", 5)
-  set("results_width", 0.8)
 
   set("prompt_prefix", "> ", [[
     Will be shown in front of the prompt.

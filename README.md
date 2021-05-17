@@ -162,7 +162,6 @@ require('telescope').setup{
     width = 0.75,
     preview_cutoff = 120,
     results_height = 1,
-    results_width = 0.8,
     border = {},
     borderchars = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' },
     color_devicons = true,
@@ -208,7 +207,6 @@ EOF
 | `width`                | TODO                                                  | NUM                        |
 | `preview_cutoff`       | TODO                                                  | NUM                        |
 | `results_height`       | TODO                                                  | NUM                        |
-| `results_width`        | TODO                                                  | NUM                        |
 | `borderchars`          | The border chars, it gives border telescope window    | dict                       |
 | `color_devicons`       | Whether to color devicons or not                      | boolean                    |
 | `use_less`             | Whether to use less with bat or less/cat if bat not installed | boolean            |

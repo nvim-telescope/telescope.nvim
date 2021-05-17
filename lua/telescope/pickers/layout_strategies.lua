@@ -83,14 +83,23 @@ local is_borderless = function(opts)
 end
 
 local layout_strategies = {}
+layout_strategies._configurations = {}
 
 local function validate_layout_config(strategy, options, values)
   local result = {}
   -- Define a function to check that the keys in options match those
-  -- in values or those in layout_list
+  -- in one of the layout configurations
   local function key_check(opts,vals,strat)
+    local found
     for k, _ in pairs(opts) do
-      if not vals[k] and not layout_strategies[k] then
+      found = false
+      for _, strat_keys in pairs(layout_strategies._configurations) do
+        if strat_keys[k] ~= nil or layout_strategies[k] ~= nil then
+          found = true
+          break
+        end
+      end
+      if not found then
         if strat == nil then
           error(string.format(
             "Unsupported layout_config key: %s\n%s",
@@ -125,7 +134,7 @@ local function validate_layout_config(strategy, options, values)
 
   -- Create the output table
   for k, _ in pairs(values) do
-    -- Prioritise values that are specific to this strategy
+    -- Prioritise options that are specific to this strategy
     if options[strategy] ~= nil and options[strategy][k] ~= nil then
       result[k] = options[strategy][k]
     elseif options[k] ~= nil then
@@ -152,8 +161,6 @@ layout_strategies._format = function(name)
   table.insert(results, "</pre>")
   return results
 end
-
-layout_strategies._configurations = {}
 
 local function make_documented_layout(name, layout_config, layout)
   -- Save configuration data to be used by documentation
@@ -306,6 +313,7 @@ end)
 layout_strategies.center = make_documented_layout('center',{
     width = "How wide the picker is",
     scroll_speed = "The speed when scrolling through the previewer",
+    results_height = "How tall the results section is",
   }, function(self, max_columns, max_lines,layout_config)
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
@@ -317,7 +325,9 @@ layout_strategies.center = make_documented_layout('center',{
   local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
 
   -- This sets the number of results displayed
-  local res_height = resolve.resolve_height(self.window.results_height)(self, max_columns, max_lines)
+  local res_height_opt = get_default(self.window.results_height,layout_config.results_height)
+  local res_height = resolve.resolve_height(res_height_opt)(self, max_columns, max_lines)
+  print(res_height_opt,res_height)
 
   local max_results = (res_height > max_lines and max_lines or res_height)
   local max_width = (width > max_columns and max_columns or width)
