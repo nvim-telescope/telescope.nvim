@@ -37,18 +37,12 @@ telescope.setup({opts})                                    *telescope.setup()*
           the screen width for all strategies except 'center', which has width
           of 50% of the screen width.
 
-          Default:
-          {
-            width = 0.8,
+          Default: {
+            height = 0.9,
             horizontal = {
-              height = 0.9,
+              prompt_position = "bottom"
             },
-            vertical = {
-              height = 0.9,
-            },
-            center = {
-              width = 0.5
-            }
+            width = 0.8
           }
 
 
@@ -1242,7 +1236,7 @@ Layout strategies are different functions to position telescope.
 
 All layout strategies are functions with the following signature:
 
-  function(picker, columns, lines)
+  function(picker, columns, lines, layout_config)
     -- Do some calculations here...
     return {
       preview = preview_configuration
@@ -1252,57 +1246,20 @@ All layout strategies are functions with the following signature:
   end
 
   Parameters: ~
-    - picker  : A Picker object. (docs coming soon)
-    - columns : number Columns in the vim window
-    - lines   : number Lines in the vim window
+    - picker        : A Picker object. (docs coming soon)
+    - columns       : (number) Columns in the vim window
+    - lines         : (number) Lines in the vim window
+    - layout_config : (table) The configuration values specific to the picker.
 
 
-TODO: I would like to make these link to `telescope.layout_strategies.*`, but
-it's not yet possible.
+This means you can create your own layout strategy if you want! Just be aware
+for now that we may change some APIs or interfaces, so they may break if you
+create your own.
 
-Available layout strategies include:
-  - horizontal:
-    - See |layout_strategies.horizontal|
+A good method for creating your own would be to copy one of the strategies that
+most resembles what you want from
+"./lua/telescope/pickers/layout_strategies.lua" in the telescope repo.
 
-  - vertical:
-    - See |layout_strategies.vertical|
-
-  - flex:
-    - See |layout_strategies.flex|
-
-Available tweaks to the settings in layout defaults include (can be applied to
-horizontal and vertical layouts):
-  - mirror (default is `false`):
-    - Flip the view of the current layout:
-      - If using horizontal: if `true`, swaps the location of the 
-        results/prompt window and preview window
-      - If using vertical: if `true`, swaps the location of the results and 
-        prompt windows
-
-  - width:
-    - How wide to make Telescope's layout window
-    - Resolvable: see |resolver.resolve_width()|
-
-  - height:
-    - How tall to make Telescope's layout window
-    - Resolvable: see |resolver.resolve_height()|
-
-  - scroll_speed:
-    - Change the scrolling speed of the previewer
-
-The horizontal layout also has:
-  - preview_width:
-    - Change the width of Telescope's preview window
-    - Resolvable: see |resolver.resolve_width()|
-      Note that percentages are measured relative to the size of the whole
-      layout.
-
-Similarly, the vertical layout has:
-  - preview_height:
-    - Change the height of Telescope's preview window
-    - Resolvable: see |resolver.resolve_height()|
-      Note that percentages are measured relative to the size of the whole
-      layout.
 
 layout_strategies.horizontal()                *layout_strategies.horizontal()*
     Horizontal layout has two columns, one for the preview and one for the
@@ -1325,12 +1282,24 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
     │                                                  │
     └──────────────────────────────────────────────────┘
 
-    `picker.layout_config` options:
-      - scroll_speed: The speed when scrolling through the previewer
-      - width: How wide the picker is
-      - height: How tall the picker is
-      - preview_width: (Resolvable): Determine preview width
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The speed when scrolling through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - preview_cutoff: When columns are less than this value, the preview will be disabled
+      - preview_width:
+        - Change the width of Telescope's preview window
+        - See |resolver.resolve_width()|
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
 
 
 layout_strategies.center()                        *layout_strategies.center()*
@@ -1356,10 +1325,18 @@ layout_strategies.center()                        *layout_strategies.center()*
     │                                                  │
     └──────────────────────────────────────────────────┘
 
-    `picker.layout_config` options:
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
       - scroll_speed: The speed when scrolling through the previewer
-      - results_height: How tall the results section is
-      - width: How wide the picker is
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - preview_cutoff: When columns are less than this value, the preview will be disabled
 
 
 layout_strategies.vertical()                    *layout_strategies.vertical()*
@@ -1383,22 +1360,50 @@ layout_strategies.vertical()                    *layout_strategies.vertical()*
     │                                                  │
     └──────────────────────────────────────────────────┘
 
-    `picker.layout_config` options:
-      - scroll_speed: The speed when scrolling through the previewer
-      - width: How wide the picker is
-      - height: How tall the picker is
-      - preview_width: (Resolvable): Determine preview width
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The speed when scrolling through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - preview_height:
+        - Change the height of Telescope's preview window
+        - See |resolver.resolve_height()|
 
 
 layout_strategies.flex()                            *layout_strategies.flex()*
     Flex layout swaps between `horizontal` and `vertical` strategies based on
     the window width
-     - Supports `vertical` or `horizontal` features
+     - Supports |layout_strategies.vertical| or |layout_strategies.horizontal|
+       features
 
-    Uses:
-     - flip_columns
-     - flip_lines
+
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The speed when scrolling through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - flip_columns: The number of columns required to move to horizontal mode
+      - flip_lines: The number of lines required to move to horizontal mode
+      - horizontal: Options to pass when switching to horizontal layout
+      - vertical: Options to pass when switching to vertical layout
+
+
+layout_strategies.bottom_pane()              *layout_strategies.bottom_pane()*
+    Bottom pane can be used to create layouts similar to "ivy".
+
+    For an easy ivy configuration, see |themes.get_ivy()|
 
 
 

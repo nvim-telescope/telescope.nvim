@@ -159,9 +159,7 @@ require('telescope').setup{
     generic_sorter =  require'telescope.sorters'.get_generic_fuzzy_sorter,
     shorten_path = true,
     winblend = 0,
-    width = 0.75,
     preview_cutoff = 120,
-    results_height = 1,
     border = {},
     borderchars = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' },
     color_devicons = true,
@@ -206,7 +204,6 @@ EOF
 | `layout_config`        | Extra settings for fine-tuning how your layout looks  | [supported settings](https://github.com/nvim-telescope/telescope.nvim/wiki/Layouts#layout-defaults) |
 | `width`                | TODO                                                  | NUM                        |
 | `preview_cutoff`       | TODO                                                  | NUM                        |
-| `results_height`       | TODO                                                  | NUM                        |
 | `borderchars`          | The border chars, it gives border telescope window    | dict                       |
 | `color_devicons`       | Whether to color devicons or not                      | boolean                    |
 | `use_less`             | Whether to use less with bat or less/cat if bat not installed | boolean            |

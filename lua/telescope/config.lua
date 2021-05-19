@@ -61,6 +61,9 @@ function config.set_defaults(defaults)
   end
 
   local function get(name, default_val)
+    if name == "layout_config" then
+      return vim.tbl_deep_extend("force", default_val or {}, defaults[name] or {}, config.values[name] or {})
+    end
     return first_non_null(defaults[name], config.values[name], default_val)
   end
 
@@ -101,39 +104,33 @@ function config.set_defaults(defaults)
     See |telescope.layout| for details of the available strategies.
 
     Default: 'horizontal']])
-  set("layout_config", {
+
+  local layout_config_defaults = {
     width = 0.8,
     height = 0.9,
-    results_height = 0.3,
-  },[[
+
+    horizontal = {
+      prompt_position = "bottom",
+    },
+  }
+
+  local layout_config_description = string.format([[
     Determines the default configuration values for layout strategies.
     See |telescope.layout| for details of the configurations options for
     each strategy.
 
     Allows setting defaults for all strategies as top level options and
     for overriding for specific options.
-    For example, the default values below set the default width to 80% of
+    For example, the default values below set the default width to 80%% of
     the screen width for all strategies except 'center', which has width
-    of 50% of the screen width.
+    of 50%% of the screen width.
 
-    Default:
-    {
-      width = 0.8,
-      horizontal = {
-        height = 0.9,
-      },
-      vertical = {
-        height = 0.9,
-      },
-      center = {
-        width = 0.5
-      }
-    }
-  ]])
+    Default: %s
+  ]], vim.inspect(layout_config_defaults, { newline = "\n    ", indent = "  " }))
 
-  -- set("width", 0.75)
+  set("layout_config", layout_config_defaults, layout_config_description)
+
   set("winblend", 0)
-  set("prompt_position", "bottom")
   set("preview_cutoff", 120)
 
   set("prompt_prefix", "> ", [[
@@ -190,6 +187,8 @@ function config.set_defaults(defaults)
   --            ["<C-i>"] = actions.select_default
   --            ...,
   --
+
+  -- Hmmm, these don't make sense really?
   set("mappings", {})
   set("default_mappings", nil)
 

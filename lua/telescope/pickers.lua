@@ -14,6 +14,7 @@ local actions = require('telescope.actions')
 local action_set = require('telescope.actions.set')
 local config = require('telescope.config')
 local debounce = require('telescope.debounce')
+local deprecated = require('telescope.deprecated')
 local log = require('telescope.log')
 local mappings = require('telescope.mappings')
 local state = require('telescope.state')
@@ -56,6 +57,8 @@ function Picker:new(opts)
   actions._clear()
   action_set._clear()
 
+  deprecated.picker_window_options(opts)
+
   local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
 
   local obj = setmetatable({
@@ -93,25 +96,10 @@ function Picker:new(opts)
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
     layout_strategy = layout_strategy,
-    layout_config = get_default(
-      opts.layout_config,
-      config.values.layout_config
-    ) or {},
+    layout_config = vim.tbl_deep_extend("keep", opts.layout_config or {}, config.values.layout_config or {}),
 
     window = {
-      -- TODO: This won't account for different layouts...
-      -- TODO: If it's a list, of length 2, then it's a range of min to max?
-      height = get_default(opts.height, config.values.height),
-      width = get_default(opts.width, config.values.width),
-
-      get_preview_width = get_default(opts.preview_width, config.values.get_preview_width),
-
-      results_height = get_default(opts.results_height, config.values.results_height),
-
       winblend = get_default(opts.winblend, config.values.winblend),
-      prompt_position = get_default(opts.prompt_position, config.values.prompt_position),
-
-      -- Border config
       border = get_default(opts.border, config.values.border),
       borderchars = get_default(opts.borderchars, config.values.borderchars),
     },
