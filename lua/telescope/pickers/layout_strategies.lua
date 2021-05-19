@@ -29,7 +29,7 @@
 --- your own.
 ---
 --- A good method for creating your own would be to copy one of the strategies that most
---- resembles what you want from "./lua/telescope/pickers/layout_strategies.lua" in the 
+--- resembles what you want from "./lua/telescope/pickers/layout_strategies.lua" in the
 --- telescope repo.
 ---
 ---@brief ]]
@@ -49,6 +49,8 @@ end
 local layout_strategies = {}
 layout_strategies._configurations = {}
 
+--@param strategy_config table: table with keys for each option for a strategy
+--@return table: table with keys for each option (for this strategy) and with keys for each layout_strategy
 local get_valid_configuration_keys = function(strategy_config)
   local valid_configuration_keys = {}
 
@@ -63,12 +65,20 @@ local get_valid_configuration_keys = function(strategy_config)
   return valid_configuration_keys
 end
 
-local function validate_layout_config(strategy_name, configuration, values)
+--@param strategy_name string: the name of the layout_strategy we are validating for
+--@param configuration table: table with keys for each option available
+--@param values table: table containing all of the non-default options we want to set
+--@param default_layout_config: table with the default values to configure layouts
+--@return table: table containing the combined options (defaults and non-defaults)
+local function validate_layout_config(strategy_name, configuration, values, default_layout_config)
   assert(strategy_name, "It is required to have a strategy name for validation.")
   local valid_configuration_keys = get_valid_configuration_keys(configuration)
 
+  -- If no default_layout_config provided, check Telescope's config values
+  default_layout_config = default_layout_config or require('telescope.config').values.layout_config
+
   local result = {}
-  local set_value = function(k)
+  local get_value = function(k)
     -- skip "private" items
     if string.sub(k, 1, 1) == "_" then return end
 
@@ -82,14 +92,12 @@ local function validate_layout_config(strategy_name, configuration, values)
     if layout_strategies[k]
         and strategy_name ~= k
         and type(val) == 'table' then
-      val = vim.tbl_deep_extend("force", require('telescope.config').values.layout_config[k], val)
+      val = vim.tbl_deep_extend("force", default_layout_config[k], val)
     end
 
     if val == nil and values[k] ~= nil then
       val = values[k]
     end
-
-    result[k] = val
 
     return val
   end
@@ -103,19 +111,20 @@ local function validate_layout_config(strategy_name, configuration, values)
       ))
     end
 
-    set_value(k)
+    result[k] = get_value(k)
   end
 
   -- And then set other valid keys via "inheritance" style extension
   for k in pairs(valid_configuration_keys) do
     if result[k] == nil then
-      set_value(k)
+      result[k] = get_value(k)
     end
   end
 
   return result
 end
 
+-- List of options that are shared by more than one layout.
 local shared_options = {
   width = { "How wide to make Telescope's entire layout", "See |resolver.resolve_width()|" },
   height = { "How tall to make Telescope's entire layout", "See |resolver.resolve_height()|" },
@@ -169,6 +178,12 @@ layout_strategies._format = function(name)
   return results
 end
 
+--@param name string: the name to be assigned to the layout
+--@param layout_config table: table where keys are the available options for the layout
+--@param layout function: function with signature
+--          function(self, max_columns, max_lines, layout_config): table
+--        the returned table is the sizing and location information for the parts of the picker
+--@retun function: wrapped function that inputs a validated layout_config into the `layout` function
 local function make_documented_layout(name, layout_config, layout)
   -- Save configuration data to be used by documentation
   layout_strategies._configurations[name] = layout_config
@@ -214,7 +229,7 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
     preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|", },
     preview_cutoff = "When columns are less than this value, the preview will be disabled",
     prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
-}), function(self, max_columns, max_lines,layout_config)
+}), function(self, max_columns, max_lines, layout_config)
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
