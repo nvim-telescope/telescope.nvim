@@ -1,9 +1,9 @@
 -- local tester = require('telescope.pickers._test')
 local config = require('telescope.config')
 local resolve = require('telescope.config.resolve')
-local calculators = require('telescope.pickers.layout_strategies')
+local layout_strats = require('telescope.pickers.layout_strategies')
 
-local validate_layout_config = calculators._validate_layout_config
+local validate_layout_config = layout_strats._validate_layout_config
 
 local eq = assert.are.same
 
@@ -30,4 +30,21 @@ describe('layout_strategies', function()
 
   test_height('should call functions: simple', 5, function() return 5 end)
   test_height('should call functions: percentage', 15, function(_, _, lines) return 0.1 * lines end, { max_lines = 150 })
+
+  local test_defaults_key = function(should, key, strat, output, ours, theirs, override)
+    ours = ours or {}
+    theirs = theirs or {}
+    override = override or {}
+
+    it(should, function()
+      local default = config.set_defaults({layout_config=theirs}, {layout_config=ours}).get('layout_config')
+      local layout_config = validate_layout_config(strat, layout_strats._configurations[strat], override, default)
+      eq(output,layout_config[key])
+    end)
+  end
+
+  test_defaults_key("should use ours if theirs and override don't give the key",
+    'height','horizontal',50,
+    {height=50},{width=50},{width=100}
+  )
 end)

@@ -92,6 +92,10 @@ function config.set_defaults(user_defaults,tele_defaults)
   for key, info in pairs(tele_defaults) do
     set(key, info[1], info[2])
   end
+
+  local M = {}
+  M.get = get
+  return M
 end
 
 telescope_defaults["sorting_strategy"] = { "descending", [[
