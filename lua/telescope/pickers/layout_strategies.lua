@@ -304,7 +304,7 @@ end)
 --- and results aligned to the middle of the screen.
 --- The preview window is then placed in the remaining space above.
 --- Particularly useful for creating dropdown menus
---- (try using `theme=get_dropdown`).
+--- (see |telescope.themes| and |themes.get_dropdown()|`).
 ---
 --- <pre>
 --- ┌──────────────────────────────────────────────────┐

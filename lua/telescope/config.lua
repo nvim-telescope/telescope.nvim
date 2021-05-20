@@ -48,13 +48,25 @@ local config = {}
 config.values = _TelescopeConfigurationValues
 config.descriptions = {}
 
-function config.set_defaults(defaults)
-  defaults = defaults or {}
+-- A table of all the usual defaults for telescope.
+-- Keys will be the name of the default,
+-- values will be a list where:
+-- - first entry is the value
+-- - second entry is the description of the option
+local telescope_defaults = {}
 
-  if defaults.layout_default then
-    if defaults.layout_config == nil then
+-- @param user_defaults table: a table where keys are the names of options,
+--    and values are the ones the user wants
+-- @param tele_defaults table: (optional) a table containing all of the defaults
+--    for telescope [defaults to `telescope_defaults`]
+function config.set_defaults(user_defaults,tele_defaults)
+  user_defaults = user_defaults or {}
+  tele_defaults = tele_defaults or telescope_defaults
+
+  if user_defaults.layout_default then
+    if user_defaults.layout_config == nil then
       log.info("Using 'layout_default' in setup() is deprecated. Use 'layout_config' instead.")
-      defaults.layout_config = defaults.layout_default
+      user_defaults.layout_config = user_defaults.layout_default
     else
       error("Using 'layout_default' in setup() is deprecated. Remove this key and use 'layout_config' instead.")
     end
@@ -62,9 +74,9 @@ function config.set_defaults(defaults)
 
   local function get(name, default_val)
     if name == "layout_config" then
-      return vim.tbl_deep_extend("force", default_val or {}, defaults[name] or {}, config.values[name] or {})
+      return vim.tbl_deep_extend("force", default_val or {}, user_defaults[name] or {}, config.values[name] or {})
     end
-    return first_non_null(defaults[name], config.values[name], default_val)
+    return first_non_null(user_defaults[name], config.values[name], default_val)
   end
 
   local function set(name, default_val, description)
@@ -77,44 +89,49 @@ function config.set_defaults(defaults)
     end
   end
 
-  set("sorting_strategy", "descending", [[
+  for key, info in pairs(tele_defaults) do
+    set(key, info[1], info[2])
+  end
+end
+
+telescope_defaults["sorting_strategy"] = { "descending", [[
     Determines the direction "better" results are sorted towards.
 
     Available options are:
     - "descending" (default)
-    - "ascending"]])
+    - "ascending"]]}
 
-  set("selection_strategy", "reset", [[
+telescope_defaults["selection_strategy"] = { "reset", [[
     Determines how the cursor acts after each sort iteration.
 
     Available options are:
     - "reset" (default)
     - "follow"
-    - "row"]])
+    - "row"]]}
 
-  set("scroll_strategy", "cycle", [[
+telescope_defaults["scroll_strategy"] = {"cycle", [[
     Determines what happens you try to scroll past view of the picker.
 
     Available options are:
     - "cycle" (default)
-    - "limit"]])
+    - "limit"]]}
 
-  set("layout_strategy", "horizontal", [[
+telescope_defaults["layout_strategy"] = {"horizontal", [[
     Determines the default layout of Telescope pickers.
     See |telescope.layout| for details of the available strategies.
 
-    Default: 'horizontal']])
+    Default: 'horizontal']]}
 
-  local layout_config_defaults = {
+local layout_config_defaults = {
     width = 0.8,
     height = 0.9,
 
     horizontal = {
       prompt_position = "bottom",
     },
-  }
+}
 
-  local layout_config_description = string.format([[
+local layout_config_description = string.format([[
     Determines the default configuration values for layout strategies.
     See |telescope.layout| for details of the configurations options for
     each strategy.
@@ -126,49 +143,49 @@ function config.set_defaults(defaults)
     of 50%% of the screen width.
 
     Default: %s
-  ]], vim.inspect(layout_config_defaults, { newline = "\n    ", indent = "  " }))
+]], vim.inspect(layout_config_defaults, { newline = "\n    ", indent = "  " }))
 
-  set("layout_config", layout_config_defaults, layout_config_description)
+telescope_defaults["layout_config"] = {layout_config_defaults, layout_config_description}
 
-  set("winblend", 0)
-  set("preview_cutoff", 120)
+telescope_defaults["winblend"] = {0}
+telescope_defaults["preview_cutoff"] = {120}
 
-  set("prompt_prefix", "> ", [[
+telescope_defaults["prompt_prefix"] = {"> ", [[
     Will be shown in front of the prompt.
 
-    Default: '> ']])
-  set("selection_caret", "> ", [[
+    Default: '> ']]}
+telescope_defaults["selection_caret"] = {"> ", [[
     Will be shown in front of the selection.
 
-    Default: '> ']])
-  set("entry_prefix", "  ", [[
+    Default: '> ']]}
+telescope_defaults["entry_prefix"] = {"  ", [[
     Prefix in front of each result entry. Current selection not included.
 
-    Default: '  ']])
-  set("initial_mode", "insert")
+    Default: '  ']]}
+telescope_defaults["initial_mode"] = {"insert"}
 
-  set("border", {})
-  set("borderchars", { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
+telescope_defaults["border"] = {{}}
+telescope_defaults["borderchars"] = {{ '─', '│', '─', '│', '╭', '╮', '╯', '╰'}}
 
-  set("get_status_text", function(self)
+telescope_defaults["get_status_text"] = {function(self)
     local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
     local yy = self.stats.processed or 0
     if xx == 0 and yy == 0 then return "" end
 
     return string.format("%s / %s", xx, yy)
-  end)
+  end}
 
   -- Builtin configuration
 
   -- List that will be executed.
   --    Last argument will be the search term (passed in during execution)
-  set("vimgrep_arguments",
+telescope_defaults["vimgrep_arguments"] = {
       {'rg', '--color=never', '--no-heading', '--with-filename', '--line-number', '--column', '--smart-case'}
-  )
-  set("use_less", true)
-  set("color_devicons", true)
+  }
+telescope_defaults["use_less"] = {true}
+telescope_defaults["color_devicons"] = {true}
 
-  set("set_env", nil)
+telescope_defaults["set_env"] = {nil}
 
   -- TODO: Add motions to keybindings
 
@@ -189,20 +206,19 @@ function config.set_defaults(defaults)
   --
 
   -- Hmmm, these don't make sense really?
-  set("mappings", {})
-  set("default_mappings", nil)
+telescope_defaults["mappings"] = {{}}
+telescope_defaults["default_mappings"] = {nil}
 
-  set("generic_sorter", sorters.get_generic_fuzzy_sorter)
-  set("prefilter_sorter", sorters.prefilter)
-  set("file_sorter", sorters.get_fuzzy_file)
+telescope_defaults["generic_sorter"] = {sorters.get_generic_fuzzy_sorter}
+telescope_defaults["prefilter_sorter"] = {sorters.prefilter}
+telescope_defaults["file_sorter"] = {sorters.get_fuzzy_file}
 
-  set("file_ignore_patterns", nil)
+telescope_defaults["file_ignore_patterns"] = {nil}
 
-  set("file_previewer", function(...) return require('telescope.previewers').vim_buffer_cat.new(...) end)
-  set("grep_previewer", function(...) return require('telescope.previewers').vim_buffer_vimgrep.new(...) end)
-  set("qflist_previewer", function(...) return require('telescope.previewers').vim_buffer_qflist.new(...) end)
-  set("buffer_previewer_maker", function(...) return require('telescope.previewers').buffer_previewer_maker(...) end)
-end
+telescope_defaults["file_previewer"] = {function(...) return require('telescope.previewers').vim_buffer_cat.new(...) end}
+telescope_defaults["grep_previewer"] = {function(...) return require('telescope.previewers').vim_buffer_vimgrep.new(...) end}
+telescope_defaults["qflist_previewer"] = {function(...) return require('telescope.previewers').vim_buffer_qflist.new(...) end}
+telescope_defaults["buffer_previewer_maker"] = {function(...) return require('telescope.previewers').buffer_previewer_maker(...) end}
 
 function config.clear_defaults()
   for k, _ in pairs(config.values) do

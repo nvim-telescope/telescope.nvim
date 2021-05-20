@@ -1,5 +1,5 @@
 -- local tester = require('telescope.pickers._test')
-
+local config = require('telescope.config')
 local resolve = require('telescope.config.resolve')
 local calculators = require('telescope.pickers.layout_strategies')
 
@@ -17,9 +17,9 @@ describe('layout_strategies', function()
 
     local max_columns, max_lines = opts.max_columns or 100, opts.max_lines or 100
     it(should, function()
-      local config = validate_layout_config("horizontal", { height = true }, { height = input })
+      local layout_config = validate_layout_config("horizontal", { height = true }, { height = input })
 
-      eq(output, resolve.resolve_height(config.height)({}, max_columns, max_lines))
+      eq(output, resolve.resolve_height(layout_config.height)({}, max_columns, max_lines))
     end)
   end
 

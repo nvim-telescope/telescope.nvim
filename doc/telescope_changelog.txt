@@ -27,7 +27,7 @@ can configure how telescope's windows are configured.
 
     These keys are removed:
         - {results_height}: This key is no longer valid. Instead, use `height`
-          and the corresponding `preivew_*` options for the layout strategy to
+          and the corresponding `preview_*` options for the layout strategy to
           get the correct results height. This simplifies the configuration
           for many of the existing strategies.
 
