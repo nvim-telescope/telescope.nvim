@@ -99,6 +99,15 @@ local function validate_layout_config(strategy_name, configuration, values, defa
       val = values[k]
     end
 
+    if val == nil then
+      if default_layout_config[strategy_name] ~= nil
+        and default_layout_config[strategy_name][k] ~= nil then
+        val = default_layout_config[strategy_name][k]
+      else
+        val = default_layout_config[k]
+      end
+    end
+
     return val
   end
 

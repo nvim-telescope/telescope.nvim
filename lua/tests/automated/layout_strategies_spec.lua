@@ -37,14 +37,20 @@ describe('layout_strategies', function()
     override = override or {}
 
     it(should, function()
-      local default = config.set_defaults({layout_config=theirs}, {layout_config=ours}).get('layout_config')
-      local layout_config = validate_layout_config(strat, layout_strats._configurations[strat], override, default)
-      eq(output,layout_config[key])
+      config.clear_defaults()
+      config.set_defaults({layout_config=theirs}, {layout_config={ours,'testing'}})
+      local layout_config = validate_layout_config(strat, layout_strats._configurations[strat], override)
+      eq(output, layout_config[key])
     end)
   end
 
   test_defaults_key("should use ours if theirs and override don't give the key",
     'height','horizontal',50,
-    {height=50},{width=50},{width=100}
+    {height=50},{width=100},{width=120}
+  )
+
+  test_defaults_key("should use theirs if override doesn't give the key",
+    'height','horizontal',100,
+    {height=50},{height=100},{width=120}
   )
 end)
