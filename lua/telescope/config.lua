@@ -215,10 +215,14 @@ telescope_defaults["file_sorter"] = {sorters.get_fuzzy_file}
 
 telescope_defaults["file_ignore_patterns"] = {nil}
 
-telescope_defaults["file_previewer"] = {function(...) return require('telescope.previewers').vim_buffer_cat.new(...) end}
-telescope_defaults["grep_previewer"] = {function(...) return require('telescope.previewers').vim_buffer_vimgrep.new(...) end}
-telescope_defaults["qflist_previewer"] = {function(...) return require('telescope.previewers').vim_buffer_qflist.new(...) end}
-telescope_defaults["buffer_previewer_maker"] = {function(...) return require('telescope.previewers').buffer_previewer_maker(...) end}
+telescope_defaults["file_previewer"] = {
+  function(...) return require('telescope.previewers').vim_buffer_cat.new(...) end}
+telescope_defaults["grep_previewer"] = {
+  function(...) return require('telescope.previewers').vim_buffer_vimgrep.new(...) end}
+telescope_defaults["qflist_previewer"] = {
+  function(...) return require('telescope.previewers').vim_buffer_qflist.new(...) end}
+telescope_defaults["buffer_previewer_maker"] = {
+  function(...) return require('telescope.previewers').buffer_previewer_maker(...) end}
 
 function config.clear_defaults()
   for k, _ in pairs(config.values) do
