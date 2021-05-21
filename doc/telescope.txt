@@ -630,13 +630,15 @@ builtin.reloader({opts})                                  *builtin.reloader()*
         {opts} (table)  options to pass to the picker
 
 
-builtin.buffers({opts}, {show_all_buffers}, {ignore_current_buffer}, {only_cwd})*builtin.buffers()*
+builtin.buffers({opts})                                    *builtin.buffers()*
     Lists open buffers in current neovim instance, opens selected buffer on
     `<cr>`
 
 
     Parameters: ~
-        {opts}                  (table)    options to pass to the picker
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
         {show_all_buffers}      (boolean)  if true, show all buffers, including
                                            unloaded buffers (default true)
         {ignore_current_buffer} (boolean)  if true, don't show the current
