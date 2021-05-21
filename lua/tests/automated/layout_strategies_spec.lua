@@ -38,7 +38,7 @@ describe('layout_strategies', function()
 
     it(should, function()
       config.clear_defaults()
-      config.set_defaults({layout_config=theirs}, {layout_config={ours,'testing'}})
+      config.set_defaults({layout_config=theirs}, {layout_config={ours,'description'}})
       local layout_config = validate_layout_config(strat, layout_strats._configurations[strat], override)
       eq(output, layout_config[key])
     end)
@@ -46,11 +46,50 @@ describe('layout_strategies', function()
 
   test_defaults_key("should use ours if theirs and override don't give the key",
     'height','horizontal',50,
-    {height=50},{width=100},{width=120}
+    {height=50}, {width=100}, {width=120}
+  )
+
+  test_defaults_key("should use ours if theirs and override don't give the key for this strategy",
+    'height','horizontal',50,
+    {height=50}, {vertical={height=100}}, {vertical={height=120}}
   )
 
   test_defaults_key("should use theirs if override doesn't give the key",
     'height','horizontal',100,
-    {height=50},{height=100},{width=120}
+    {height=50}, {height=100}, {width=120}
   )
+
+  test_defaults_key("should use override if key given",
+    'height','horizontal',120,
+    {height=50}, {height=100}, {height=120}
+  )
+
+  test_defaults_key("should use override if key given for this strategy",
+    'height','horizontal',120,
+    {height=50}, {height=100}, {horizontal={height=120}}
+  )
+
+  -- This fails currently.
+  -- I think because of the use of `vim.tbl_deep_extend` in the `get` function
+  -- of `config.set_defaults`.
+  test_defaults_key("should use theirs if override doesn't give key (even if ours has strategy specific)",
+    'height','horizontal',100,
+    {horizontal={height=50}}, {height=100}, {width=120}
+  )
+
+  test_defaults_key("should use override (even if ours has strategy specific)",
+    'height','horizontal',120,
+    {horizontal={height=50}}, {height=100}, {height=120}
+  )
+
+  test_defaults_key("should use override (even if theirs has strategy specific)",
+    'height','horizontal',120,
+    {height=50}, {horizontal={height=100}}, {height=120}
+  )
+
+  test_defaults_key("should use override (even if theirs has strategy specific)",
+    'height','horizontal',120,
+    {horizontal={height=50}}, {horizontal={height=100}}, {height=120}
+  )
+
 end)
