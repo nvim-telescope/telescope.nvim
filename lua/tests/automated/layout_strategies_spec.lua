@@ -69,9 +69,6 @@ describe('layout_strategies', function()
     {height=50}, {height=100}, {horizontal={height=120}}
   )
 
-  -- This fails currently.
-  -- I think because of the use of `vim.tbl_deep_extend` in the `get` function
-  -- of `config.set_defaults`.
   test_defaults_key("should use theirs if override doesn't give key (even if ours has strategy specific)",
     'height','horizontal',100,
     {horizontal={height=50}}, {height=100}, {width=120}
@@ -87,7 +84,7 @@ describe('layout_strategies', function()
     {height=50}, {horizontal={height=100}}, {height=120}
   )
 
-  test_defaults_key("should use override (even if theirs has strategy specific)",
+  test_defaults_key("should use override (even if ours and theirs have strategy specific)",
     'height','horizontal',120,
     {horizontal={height=50}}, {horizontal={height=100}}, {height=120}
   )

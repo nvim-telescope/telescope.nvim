@@ -37,6 +37,26 @@ local dedent = function(str, leave_indent)
   return str
 end
 
+-- A function that creates an amended copy of the `base` table,
+-- by replacing keys at "level 2" that match keys in "level 1" in `priority`,
+-- and then performs a deep_extend.
+-- May give unexpected results if used with tables of "depth"
+-- greater than 2.
+local smarter_depth_2_extend = function(priority, base)
+  local result = {}
+  for key, val in pairs(base) do
+    if type(val) ~= 'table' then
+      result[key] = first_non_null(priority[key],val)
+    else
+      result[key] = {}
+      for k, v in pairs(val) do
+        result[key][k] = first_non_null(priority[k],v)
+      end
+    end
+  end
+  result = vim.tbl_deep_extend("keep",priority,result)
+  return result
+end
 
 local sorters = require('telescope.sorters')
 
@@ -44,6 +64,8 @@ local sorters = require('telescope.sorters')
 -- selection_strategy
 
 local config = {}
+
+config.smarter_depth_2_extend = smarter_depth_2_extend
 
 config.values = _TelescopeConfigurationValues
 config.descriptions = {}
@@ -74,7 +96,12 @@ function config.set_defaults(user_defaults,tele_defaults)
 
   local function get(name, default_val)
     if name == "layout_config" then
-      return vim.tbl_deep_extend("force", default_val or {}, user_defaults[name] or {}, config.values[name] or {})
+      return smarter_depth_2_extend(
+        user_defaults[name] or {},
+        vim.tbl_deep_extend("keep",
+          config.values[name] or {},
+          default_val or {}
+      ))
     end
     return first_non_null(user_defaults[name], config.values[name], default_val)
   end
