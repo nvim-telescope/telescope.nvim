@@ -29,13 +29,6 @@ local lsp_type_highlight = {
   ["Variable"] = "TelescopeResultsVariable",
 }
 
-local lsp_type_diagnostic = {
-  [1] = "Error",
-  [2] = "Warning",
-  [3] = "Information",
-  [4] = "Hint"
-}
-
 local make_entry = {}
 
 do
@@ -936,18 +929,21 @@ end
 function make_entry.gen_from_lsp_diagnostics(opts)
   opts = opts or {}
   opts.tail_path = utils.get_default(opts.tail_path, true)
+  local lsp_type_diagnostic = vim.lsp.protocol.DiagnosticSeverity
 
   local signs
   if not opts.no_sign then
     signs = {}
-    for _, v in pairs(lsp_type_diagnostic) do
+    for severity, _ in pairs(lsp_type_diagnostic) do
       -- pcall to catch entirely unbound or cleared out sign hl group
-      local status, sign = pcall(
-        function() return vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. v)[1].text) end)
-      if not status then
-        sign = v:sub(1,1)
+      if type(severity) == 'string' then
+        local status, sign = pcall(
+          function() return vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. severity)[1].text) end)
+        if not status then
+          sign = severity:sub(1,1)
+        end
+        signs[severity] = sign
       end
-      signs[v] = sign
     end
   end
 
