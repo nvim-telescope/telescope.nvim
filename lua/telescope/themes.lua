@@ -83,4 +83,36 @@ function themes.get_ivy(opts)
   }, opts)
 end
 
+--- Silent style theme.
+--- <pre>
+---
+--- Usage:
+---
+---     `local builtin = require('telescope.builtin')`
+---     `local themes = require('telescope.themes')`
+---     `builtin.find_files(themes.get_silent())`
+--- </pre>
+function themes.get_silent(opts)
+  opts = opts or {}
+
+  local theme_opts = {
+    theme = "silent",
+    sorting_strategy = "ascending",
+    results_title = false,
+    preview_title = false,
+    previewer = false,
+    width = 45,
+    results_height = 10,
+    layout_strategy = "center",
+    borderchars = {
+      { "─", "│", "─", "│", "╭", "╮", "╯", "╰"},
+      prompt = {"─", "│", " ", "│", "╭", "╮", "│", "│"},
+      results = {"─", "│", "─", "│", "├", "┤", "╯", "╰"},
+      preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰"},
+    },
+  }
+
+  return vim.tbl_deep_extend("force", theme_opts, opts)
+end
+
 return themes
