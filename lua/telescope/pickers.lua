@@ -649,6 +649,8 @@ function Picker:refresh(finder, opts)
 end
 
 function Picker:set_selection(row)
+  if not self.manager then return end
+
   row = self.scroller(self.max_results, self.manager:num_results(), row)
 
   if not self:can_select_row(row) then

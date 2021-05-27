@@ -508,11 +508,11 @@ We have some built in themes but are looking for more cool options.
 
 ![dropdown](https://i.imgur.com/SorAcXv.png)
 
-| Themes                   | Description                                                                  |
-|--------------------------|------------------------------------------------------------------------------|
-| `themes.get_dropdown`    | A list like centered list. [dropdown](https://i.imgur.com/SorAcXv.png)       |
+| Themes                   | Description                                                           |
+|--------------------------|-----------------------------------------------------------------------|
+| `themes.get_dropdown`    | A list like centered list. [dropdown](https://i.imgur.com/SorAcXv.png)|
+| `themes.get_ivy`         | Bottom panel overlay. [Ivy #771](https://github.com/nvim-telescope/telescope.nvim/pull/771)|
 | `themes.get_silent`      | Small list for quick operations. [silent](https://imgur.com/gallery/tMFWwRN) |
-
 
 To use a theme, simply append it to a built-in function:
 ```vim
