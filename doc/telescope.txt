@@ -330,6 +330,11 @@ actions.open_qflist()                                  *actions.open_qflist()*
 
 
 
+actions.open_loclist()                                *actions.open_loclist()*
+    Open the location list
+
+
+
 
 ================================================================================
                                                              *telescope.builtin*
