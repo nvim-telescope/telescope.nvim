@@ -286,7 +286,7 @@ require('telescope').setup{
       i = {
         -- To disable a keymap, put [map] = false
         -- So, to not map "<C-n>", just put
-        ["<c-x>"] = false,
+        ["<C-n>"] = false,
 
         -- Otherwise, just set the mapping to the function that you want it to be.
         ["<C-i>"] = actions.select_horizontal,
