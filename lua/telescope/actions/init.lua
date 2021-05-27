@@ -489,7 +489,7 @@ local entry_to_qf = function(entry)
   }
 end
 
-local send_selected_to_qf = function(prompt_bufnr, mode)
+local send_selected_to_qf = function(prompt_bufnr, mode, target)
   local picker = action_state.get_current_picker(prompt_bufnr)
 
   local qf_entries = {}
@@ -499,10 +499,14 @@ local send_selected_to_qf = function(prompt_bufnr, mode)
 
   actions.close(prompt_bufnr)
 
-  vim.fn.setqflist(qf_entries, mode)
+  if target == 'loclist' then
+    vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
+  else
+    vim.fn.setqflist(qf_entries, mode)
+  end
 end
 
-local send_all_to_qf = function(prompt_bufnr, mode)
+local send_all_to_qf = function(prompt_bufnr, mode, target)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local manager = picker.manager
 
@@ -513,7 +517,11 @@ local send_all_to_qf = function(prompt_bufnr, mode)
 
   actions.close(prompt_bufnr)
 
-  vim.fn.setqflist(qf_entries, mode)
+  if target == 'loclist' then
+    vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
+  else
+    vim.fn.setqflist(qf_entries, mode)
+  end
 end
 
 --- Sends the selected entries to the quickfix list, replacing the previous entries.
@@ -536,12 +544,28 @@ actions.add_to_qflist = function(prompt_bufnr)
   send_all_to_qf(prompt_bufnr, 'a')
 end
 
-local smart_send = function(prompt_bufnr, mode)
+actions.send_selected_to_loclist = function(prompt_bufnr)
+  send_selected_to_qf(prompt_bufnr, 'r', 'loclist')
+end
+
+actions.add_selected_to_loclist = function(prompt_bufnr)
+  send_selected_to_qf(prompt_bufnr, 'a', 'loclist')
+end
+
+actions.send_to_loclist = function(prompt_bufnr)
+  send_all_to_qf(prompt_bufnr, 'r', 'loclist')
+end
+
+actions.add_to_loclist = function(prompt_bufnr)
+  send_all_to_qf(prompt_bufnr, 'a', 'loclist')
+end
+
+local smart_send = function(prompt_bufnr, mode, target)
   local picker = action_state.get_current_picker(prompt_bufnr)
   if table.getn(picker:get_multi_selection()) > 0 then
-    send_selected_to_qf(prompt_bufnr, mode)
+    send_selected_to_qf(prompt_bufnr, mode, target)
   else
-    send_all_to_qf(prompt_bufnr, mode)
+    send_all_to_qf(prompt_bufnr, mode, target)
   end
 end
 
@@ -555,6 +579,14 @@ end
 --- If no entry was selected, adds all entries.
 actions.smart_add_to_qflist = function(prompt_bufnr)
   smart_send(prompt_bufnr, 'a')
+end
+
+actions.smart_send_to_loclist = function(prompt_bufnr)
+  smart_send(prompt_bufnr, 'r', 'loclist')
+end
+
+actions.smart_add_to_loclist = function(prompt_bufnr)
+  smart_send(prompt_bufnr, 'a', 'loclist')
 end
 
 actions.complete_tag = function(prompt_bufnr)
@@ -603,6 +635,11 @@ end
 --- Open the quickfix list
 actions.open_qflist = function(_)
   vim.cmd [[copen]]
+end
+
+--- Open the location list
+actions.open_loclist = function(_)
+  vim.cmd [[lopen]]
 end
 
 -- ==================================================

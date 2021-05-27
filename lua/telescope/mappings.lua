@@ -28,7 +28,9 @@ mappings.default_mappings = config.values.default_mappings or {
       ["<S-Tab>"] = actions.toggle_selection + actions.move_selection_better,
       ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
       ["<M-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
-      ["<C-l>"] = actions.complete_tag
+      ["<C-l>"] = actions.send_to_loclist + actions.open_loclist,
+      ["<M-l>"] = actions.send_selected_to_loclist + actions.open_loclist,
+      -- ["<C-l>"] = actions.complete_tag
     },
 
     n = {
@@ -42,6 +44,8 @@ mappings.default_mappings = config.values.default_mappings or {
       ["<S-Tab>"] = actions.toggle_selection + actions.move_selection_better,
       ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
       ["<M-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
+      ["<C-l>"] = actions.send_to_loclist + actions.open_loclist,
+      ["<M-l>"] = actions.send_selected_to_loclist + actions.open_loclist,
 
       -- TODO: This would be weird if we switch the ordering.
       ["j"] = actions.move_selection_next,
