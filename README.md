@@ -511,6 +511,7 @@ We have some built in themes but are looking for more cool options.
 | Themes                   | Description                                                           |
 |--------------------------|-----------------------------------------------------------------------|
 | `themes.get_dropdown`    | A list like centered list. [dropdown](https://i.imgur.com/SorAcXv.png)|
+| `themes.get_ivy`         | Bottom panel overlay. [Ivy #771](https://github.com/nvim-telescope/telescope.nvim/pull/771)|
 
 
 To use a theme, simply append it to a built-in function:
