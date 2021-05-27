@@ -516,18 +516,22 @@ local send_all_to_qf = function(prompt_bufnr, mode)
   vim.fn.setqflist(qf_entries, mode)
 end
 
+--- Sends the selected entries to the quickfix list, replacing the previous entries.
 actions.send_selected_to_qflist = function(prompt_bufnr)
   send_selected_to_qf(prompt_bufnr, 'r')
 end
 
+--- Adds the selected entries to the quickfix list, keeping the previous entries.
 actions.add_selected_to_qflist = function(prompt_bufnr)
   send_selected_to_qf(prompt_bufnr, 'a')
 end
 
+--- Sends all entries to the quickfix list, replacing the previous entries.
 actions.send_to_qflist = function(prompt_bufnr)
   send_all_to_qf(prompt_bufnr, 'r')
 end
 
+--- Adds all entries to the quickfix list, keeping the previous entries.
 actions.add_to_qflist = function(prompt_bufnr)
   send_all_to_qf(prompt_bufnr, 'a')
 end
@@ -541,10 +545,14 @@ local smart_send = function(prompt_bufnr, mode)
   end
 end
 
+--- Sends the selected entries to the quickfix list, replacing the previous entries.
+--- If no entry was selected, sends all entries.
 actions.smart_send_to_qflist = function(prompt_bufnr)
   smart_send(prompt_bufnr, 'r')
 end
 
+--- Adds the selected entries to the quickfix list, keeping the previous entries.
+--- If no entry was selected, adds all entries.
 actions.smart_add_to_qflist = function(prompt_bufnr)
   smart_send(prompt_bufnr, 'a')
 end
