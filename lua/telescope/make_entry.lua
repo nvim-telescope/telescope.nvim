@@ -424,7 +424,7 @@ function make_entry.gen_from_lsp_symbols(opts)
     if not opts.ignore_filename and filename then
       ordinal = filename .. " "
     end
-    ordinal = ordinal ..  symbol_name .. " " .. symbol_type
+    ordinal = ordinal ..  symbol_name .. " " .. (symbol_type or "unknown")
     return {
       valid = true,
 
@@ -562,7 +562,7 @@ function make_entry.gen_from_treesitter(opts)
 
       value = entry.node,
       kind = entry.kind,
-      ordinal = node_text .. " " .. entry.kind,
+      ordinal = node_text .. " " .. (entry.kind or "unknown"),
       display = make_display,
 
       node_text = node_text,
