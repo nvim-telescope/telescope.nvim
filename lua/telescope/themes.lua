@@ -48,6 +48,15 @@ function themes.get_dropdown(opts)
   return vim.tbl_deep_extend("force", theme_opts, opts)
 end
 
+--- Cursor style theme. Only to be used with cursor layout.
+--- <pre>
+---
+--- Usage:
+---
+---     `local builtin = require('telescope.builtin')`
+---     `local themes = require('telescope.themes')`
+---     `builtin.lsp_code_actions(themes.get_cursor())`
+--- </pre>
 function themes.get_cursor(opts)
   opts = opts or {}
 

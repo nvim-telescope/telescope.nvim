@@ -251,14 +251,18 @@ layout_strategies.center = function(self, columns, lines)
   }
 end
 
---[[
-    +--------------+---------------------+
-    |    Prompt    |      Previewer      |
-    +--------------+      Previewer      |
-    |    Result    |      Previewer      |
-    |    Result    |      Previewer      |
-    +--------------+---------------------+
---]]
+--- Cursor layout dynamically positioned below the cursor if possible.
+---
+--- <pre>
+---    █ 
+---    +--------------+---------------------+
+---    |    Prompt    |      Previewer      |
+---    +--------------+      Previewer      |
+---    |    Result    |      Previewer      |
+---    |    Result    |      Previewer      |
+---    +--------------+---------------------+
+---                                        (█: when there is no space available)
+--- </pre>
 layout_strategies.cursor = function(self, columns, lines)
   local initial_options = self:_get_initial_window_options()
   local preview = initial_options.preview
