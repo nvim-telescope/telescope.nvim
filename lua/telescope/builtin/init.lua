@@ -73,6 +73,8 @@ builtin.fd = builtin.find_files
 builtin.file_browser = require('telescope.builtin.files').file_browser
 
 --- Lists function names, variables, and other symbols from treesitter queries
+--- - Default keymaps:
+---   - `<C-l>`: show autocompletion menu to prefilter your query by kind of ts node you want to see (i.e. `:var:`)
 ---@field show_line boolean: if true, shows the row:column that the result is found at (default is true)
 builtin.treesitter = require('telescope.builtin.files').treesitter
 
