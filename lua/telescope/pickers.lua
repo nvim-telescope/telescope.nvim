@@ -497,7 +497,7 @@ end
 --- selections made using multi-select. It can be used to define actions
 --- such as deleting buffers or files.
 ---
---- Example usage: >
+--- Example usage:
 --- <pre>
 --- actions.delete_something = function(prompt_bufnr)
 ---    local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -506,7 +506,9 @@ end
 ---    end)
 --- end
 --- </pre>
---- <
+---
+--- Example usage in telescope:
+---   - `actions.delete_buffer()`
 ---@param delete_cb function: called with each deleted selection
 function Picker:delete_selection(delete_cb)
   vim.validate { delete_cb = { delete_cb, "f" } }
