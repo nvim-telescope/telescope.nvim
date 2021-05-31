@@ -491,17 +491,19 @@ function Picker:hide_preview()
   -- 2. Resize prompt & results windows accordingly
 end
 
--- A simple interface to remove an entry from the results window without closing
--- telescope.
--- @param delete_cb function
+---A simple interface to remove an entry from the results window without closing
+---telescope. The `delete_cb` function will be called with each deleted selection.
+---@param delete_cb function
 function Picker:delete_selection(delete_cb)
+  vim.validate { delete_cb = { delete_cb, "f" } }
   local original_selection_strategy = self.selection_strategy
   self.selection_strategy = "row"
-  delete_cb = (delete_cb and type(delete_cb) == "function") and delete_cb or function() end
 
   local delete_selections = self._multi:get()
+  local used_multi_select = true
   if vim.tbl_isempty(delete_selections) then
     table.insert(delete_selections, self:get_selection())
+    used_multi_select = false
   end
 
   local selection_index = {}
@@ -519,7 +521,7 @@ function Picker:delete_selection(delete_cb)
     delete_cb(selection)
   end
 
-  if #delete_selections > 1 then
+  if used_multi_select then
     self._multi = MultiSelect:new()
   end
 
