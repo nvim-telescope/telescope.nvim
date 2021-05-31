@@ -369,6 +369,15 @@ actions.open_loclist()                                *actions.open_loclist()*
 
 
 
+actions.delete_buffer({prompt_bufnr})                *actions.delete_buffer()*
+    Delete the selected buffer or all the buffers selected using multi
+    selection.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 
 ================================================================================
                                                              *telescope.builtin*
@@ -1011,13 +1020,13 @@ previewers.Previewer()                                *previewers.Previewer()*
     - `:scroll_fn(direction)`
 
     `Previewer:new()` expects a table as input with following keys:
-      - `setup` function(self): Will be called the first time preview will be 
+      - `setup` function(self): Will be called the first time preview will be
         called.
       - `teardown` function(self): Will be called on cleanup.
       - `preview_fn` function(self, entry, status): Will be called each time a
         new entry was selected.
-      - `send_input` function(self, input): This is meant for 
-        `termopen_previewer` and it can be used to send input to the terminal 
+      - `send_input` function(self, input): This is meant for
+        `termopen_previewer` and it can be used to send input to the terminal
         application, like less.
       - `scroll_fn` function(self, direction): Used to make scrolling work.
 
@@ -1122,7 +1131,7 @@ previewers.new_buffer_previewer()          *previewers.new_buffer_previewer()*
       - `keep_last_buf = true` (optional) Will not delete the last selected
         buffer. This would allow you to reuse that buffer in the select action.
         For example, that buffer can be opened in a new split, rather than
-        recreating that buffer in an action. To access the last buffer number: 
+        recreating that buffer in an action. To access the last buffer number:
         `require('telescope.state').get_global_key("last_preview_bufnr")`
       - `get_buffer_by_name = function(self, entry)` Allows you to set a unique
         name for each buffer. This is used for caching purpose.
@@ -1144,7 +1153,7 @@ previewers.new_buffer_previewer()          *previewers.new_buffer_previewer()*
         never loaded or when `get_buffer_by_name` is not set.
 
     Tips:
-      - If you want to display content of a terminal job, use: 
+      - If you want to display content of a terminal job, use:
         `require('telescope.previewers.utils').job_maker(cmd, bufnr, opts)`
           - `cmd` table: for example { 'git', 'diff', entry.value }
           - `bufnr` number: in which the content will be written
@@ -1163,18 +1172,18 @@ previewers.new_buffer_previewer()          *previewers.new_buffer_previewer()*
               in time.
       - If you want to attach a highlighter use:
         - `require('telescope.previewers.utils').highlighter(bufnr, ft)`
-          - This will prioritize tree sitter highlighting if available for 
+          - This will prioritize tree sitter highlighting if available for
             environment and language.
         - `require('telescope.previewers.utils').regex_highlighter(bufnr, ft)`
         - `require('telescope.previewers.utils').ts_highlighter(bufnr, ft)`
-      - If you want to use `vim.fn.search` or similar you need to run it in 
+      - If you want to use `vim.fn.search` or similar you need to run it in
         that specific buffer context. Do
           vim.api.nvim_buf_call(bufnr, function()
             -- for example `search` and `matchadd`
           end)
         to achieve that.
-      - If you want to read a file into the buffer it's best to use 
-        `buffer_previewer_maker`. But access this function with 
+      - If you want to read a file into the buffer it's best to use
+        `buffer_previewer_maker`. But access this function with
         `require('telescope.config').values.buffer_previewer_maker` because it
         can be redefined by users.
 
@@ -1275,9 +1284,9 @@ Available tweaks to the settings in layout defaults include (can be applied to
 horizontal and vertical layouts):
   - mirror (default is `false`):
     - Flip the view of the current layout:
-      - If using horizontal: if `true`, swaps the location of the 
+      - If using horizontal: if `true`, swaps the location of the
         results/prompt window and preview window
-      - If using vertical: if `true`, swaps the location of the results and 
+      - If using vertical: if `true`, swaps the location of the results and
         prompt windows
 
   - width_padding:
