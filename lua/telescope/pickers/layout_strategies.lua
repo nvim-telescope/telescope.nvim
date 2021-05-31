@@ -254,7 +254,7 @@ end
 --- Cursor layout dynamically positioned below the cursor if possible.
 ---
 --- <pre>
----    █ 
+---    █
 ---    +--------------+---------------------+
 ---    |    Prompt    |      Previewer      |
 ---    +--------------+      Previewer      |
