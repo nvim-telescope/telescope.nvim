@@ -491,9 +491,23 @@ function Picker:hide_preview()
   -- 2. Resize prompt & results windows accordingly
 end
 
----A simple interface to remove an entry from the results window without closing
----telescope. The `delete_cb` function will be called with each deleted selection.
----@param delete_cb function
+-- TODO: update multi-select with the correct tag name when available
+--- A simple interface to remove an entry from the results window without
+--- closing telescope. This either deletes the current selection or all the
+--- selections made using multi-select. It can be used to define actions
+--- such as deleting buffers or files.
+---
+--- Example usage: >
+--- <pre>
+--- actions.delete_something = function(prompt_bufnr)
+---    local current_picker = action_state.get_current_picker(prompt_bufnr)
+---    current_picker:delete_selection(function(selection)
+---      -- delete the selection outside of telescope
+---    end)
+--- end
+--- </pre>
+--- <
+---@param delete_cb function: called with each deleted selection
 function Picker:delete_selection(delete_cb)
   vim.validate { delete_cb = { delete_cb, "f" } }
   local original_selection_strategy = self.selection_strategy
