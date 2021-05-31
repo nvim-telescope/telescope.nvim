@@ -177,8 +177,7 @@ utils.diagnostics_to_tbl = function(opts)
       end
       return a.bufnr < b.bufnr
     end
-    end
-  )
+  end)
 
   return items
 end
