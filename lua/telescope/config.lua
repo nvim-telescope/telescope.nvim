@@ -12,6 +12,30 @@ local function first_non_null(...)
   end
 end
 
+local dedent = function(str, leave_indent)
+  -- find minimum common indent across lines
+  local indent = nil
+  for line in str:gmatch('[^\n]+') do
+    local line_indent = line:match('^%s+') or ''
+    if indent == nil or #line_indent < #indent then
+      indent = line_indent
+    end
+  end
+  if indent == nil or #indent == 0 then
+    -- no minimum common indent
+    return str
+  end
+  local left_indent = (' '):rep(leave_indent or 0)
+  -- create a pattern for the indent
+  indent = indent:gsub('%s', '[ \t]')
+  -- strip it from the first line
+  str = str:gsub('^'..indent, left_indent)
+  -- strip it from the remaining lines
+  str = str:gsub('[\n]'..indent, '\n' .. left_indent)
+  return str
+end
+
+
 local sorters = require('telescope.sorters')
 
 -- TODO: Add other major configuration points here.
@@ -20,6 +44,7 @@ local sorters = require('telescope.sorters')
 local config = {}
 
 config.values = _TelescopeConfigurationValues
+config.descriptions = {}
 
 function config.set_defaults(defaults)
   defaults = defaults or {}
@@ -28,13 +53,37 @@ function config.set_defaults(defaults)
     return first_non_null(defaults[name], config.values[name], default_val)
   end
 
-  local function set(name, default_val)
+  local function set(name, default_val, description)
+    -- TODO(doc): Once we have descriptions for all of these, then we can add this back in.
+    -- assert(description, "Config values must always have a description")
+
     config.values[name] = get(name, default_val)
+    if description then
+      config.descriptions[name] = dedent(description)
+    end
   end
 
-  set("sorting_strategy", "descending")
-  set("selection_strategy", "reset")
-  set("scroll_strategy", "cycle")
+  set("sorting_strategy", "descending", [[
+    Determines the direction "better" results are sorted towards.
+
+    Available options are:
+    - "descending" (default)
+    - "ascending"]])
+
+  set("selection_strategy", "reset", [[
+    Determines how the cursor acts after each sort iteration.
+
+    Available options are:
+    - "reset" (default)
+    - "follow"
+    - "row"]])
+
+  set("scroll_strategy", "cycle", [[
+    Determines what happens you try to scroll past view of the picker.
+
+    Available options are:
+    - "cycle" (default)
+    - "limit"]])
 
   set("layout_strategy", "horizontal")
   set("layout_defaults", {})
@@ -47,7 +96,18 @@ function config.set_defaults(defaults)
   set("results_height", 1)
   set("results_width", 0.8)
 
-  set("prompt_prefix", ">")
+  set("prompt_prefix", "> ", [[
+    Will be shown in front of the prompt.
+
+    Default: '> ']])
+  set("selection_caret", "> ", [[
+    Will be shown in front of the selection.
+
+    Default: '> ']])
+  set("entry_prefix", "  ", [[
+    Prefix in front of each result entry. Current selection not included.
+
+    Default: '  ']])
   set("initial_mode", "insert")
 
   set("border", {})
@@ -94,6 +154,7 @@ function config.set_defaults(defaults)
   set("default_mappings", nil)
 
   set("generic_sorter", sorters.get_generic_fuzzy_sorter)
+  set("prefilter_sorter", sorters.prefilter)
   set("file_sorter", sorters.get_fuzzy_file)
 
   set("file_ignore_patterns", nil)

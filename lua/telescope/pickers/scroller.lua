@@ -99,4 +99,16 @@ scroller.bottom = function(sorting_strategy, max_results, num_results)
   return max_results - 1
 end
 
+scroller.better = function(sorting_strategy)
+  if sorting_strategy == 'ascending' then
+    return -1
+  else
+    return 1
+  end
+end
+
+scroller.worse = function(sorting_strategy)
+  return -(scroller.better(sorting_strategy))
+end
+
 return scroller

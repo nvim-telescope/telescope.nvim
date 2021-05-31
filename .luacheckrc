@@ -13,11 +13,13 @@ ignore = {
 }
 
 globals = {
+  "_",
   "TelescopeGlobalState",
   "TelescopeCachedUppers",
   "TelescopeCachedTails",
   "TelescopeCachedNgrams",
   "_TelescopeConfigurationValues",
+  "__TelescopeKeymapStore",
 }
 
 -- Global objects defined by the C code

@@ -1,3 +1,11 @@
+---@tag telescope.actions.state
+
+---@brief [[
+--- Functions to be used to determine the current state of telescope.
+---
+--- Generally used from within other |telescope.actions|
+---@brief ]]
+
 local global_state = require('telescope.state')
 
 local action_state = {}
@@ -13,6 +21,7 @@ function action_state.get_current_line()
 end
 
 --- Gets the current picker
+---@param prompt_bufnr number: The prompt bufnr
 function action_state.get_current_picker(prompt_bufnr)
   return global_state.get_status(prompt_bufnr).picker
 end

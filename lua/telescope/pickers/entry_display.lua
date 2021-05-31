@@ -28,13 +28,12 @@ entry_display.create = function(configuration)
   local generator = {}
   for _, v in ipairs(configuration.items) do
     if v.width then
-      local justify = not v.right_justify and "-" or ""
-      local format_str = "%" .. justify .. v.width .. "s"
+      local justify = v.right_justify
       table.insert(generator, function(item)
         if type(item) == 'table' then
-          return string.format(format_str, entry_display.truncate(item[1], v.width)), item[2]
+          return utils.align_str(entry_display.truncate(item[1], v.width), v.width, justify), item[2]
         else
-          return string.format(format_str, entry_display.truncate(item, v.width))
+          return utils.align_str(entry_display.truncate(item, v.width), v.width, justify)
         end
       end)
     else
@@ -60,8 +59,16 @@ entry_display.create = function(configuration)
             hl_start = hl_start + #results[j] + (#configuration.separator or 1)
           end
           local hl_end = hl_start + #str:gsub('%s*$', '')
-          table.insert(highlights, { { hl_start, hl_end }, hl })
+
+          if type(hl) == "function" then
+            for _, hl_res in ipairs(hl()) do
+              table.insert(highlights, { { hl_res[1][1] + hl_start, hl_res[1][2] + hl_start }, hl_res[2] })
+            end
+          else
+            table.insert(highlights, { { hl_start, hl_end }, hl })
+          end
         end
+
         table.insert(results, str)
       end
     end
@@ -76,6 +83,7 @@ entry_display.create = function(configuration)
         table.insert(highlights, { { hl_start, hl_end }, configuration.separator_hl })
       end
     end
+
     local final_str = table.concat(results, configuration.separator or "│")
     if configuration.hl_chars then
       for i = 1, #final_str do

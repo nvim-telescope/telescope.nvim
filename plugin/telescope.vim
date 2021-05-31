@@ -1,3 +1,13 @@
+if !has('nvim-0.5')
+  echoerr "Telescope.nvim requires at least nvim-0.5. Please update or uninstall"
+  finish
+end
+
+if exists('g:loaded_telescope')
+  finish
+endif
+let g:loaded_telescope = 1
+
 " Sets the highlight for selected items within the picker.
 highlight default link TelescopeSelection Visual
 highlight default link TelescopeSelectionCaret TelescopeSelection
@@ -64,6 +74,7 @@ highlight default link TelescopeResultsSpecialComment SpecialComment
 highlight default link TelescopeResultsDiffChange DiffChange
 highlight default link TelescopeResultsDiffAdd DiffAdd
 highlight default link TelescopeResultsDiffDelete DiffDelete
+highlight default link TelescopeResultsDiffUntracked NonText
 
 " This is like "<C-R>" in your terminal.
 "   To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)
@@ -77,7 +88,7 @@ function! s:telescope_complete(arg,line,pos)
   let l:builtin_list = luaeval('vim.tbl_keys(require("telescope.builtin"))')
   let l:extensions_list = luaeval('vim.tbl_keys(require("telescope._extensions").manager)')
   let l:options_list = luaeval('vim.tbl_keys(require("telescope.config").values)')
-  let l:extensions_subcommand_list = luaeval('require("telescope.command").get_extensions_subcommand()')
+  let l:extensions_subcommand_dict = luaeval('require("telescope.command").get_extensions_subcommand()')
 
   let list = [extend(l:builtin_list,l:extensions_list),l:options_list]
   let l = split(a:line[:a:pos-1], '\%(\%(\%(^\|[^\\]\)\\\)\@<!\s\)\+', 1)
@@ -89,7 +100,7 @@ function! s:telescope_complete(arg,line,pos)
 
   if n == 1
     if index(l:extensions_list,l[1]) >= 0
-      return join(l:extensions_subcommand_list,"\n")
+      return join(get(l:extensions_subcommand_dict, l[1], []),"\n")
     endif
     return join(list[1],"\n")
   endif
@@ -100,4 +111,4 @@ function! s:telescope_complete(arg,line,pos)
 endfunction
 
 " Telescope Commands with complete
-command! -nargs=+ -complete=custom,s:telescope_complete Telescope    lua require('telescope.command').load_command(<f-args>)
+command! -nargs=* -complete=custom,s:telescope_complete Telescope    lua require('telescope.command').load_command(<f-args>)

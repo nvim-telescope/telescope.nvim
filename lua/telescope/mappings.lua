@@ -24,8 +24,11 @@ mappings.default_mappings = config.values.default_mappings or {
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
 
-      -- TODO: When we implement multi-select, you can turn this back on :)
-      -- ["<Tab>"] = actions.add_selection,
+      ["<Tab>"] = actions.toggle_selection + actions.move_selection_worse,
+      ["<S-Tab>"] = actions.toggle_selection + actions.move_selection_better,
+      ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
+      ["<M-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
+      ["<C-l>"] = actions.complete_tag
     },
 
     n = {
@@ -34,6 +37,11 @@ mappings.default_mappings = config.values.default_mappings or {
       ["<C-x>"] = actions.select_horizontal,
       ["<C-v>"] = actions.select_vertical,
       ["<C-t>"] = actions.select_tab,
+
+      ["<Tab>"] = actions.toggle_selection + actions.move_selection_worse,
+      ["<S-Tab>"] = actions.toggle_selection + actions.move_selection_better,
+      ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
+      ["<M-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
 
       -- TODO: This would be weird if we switch the ordering.
       ["j"] = actions.move_selection_next,
@@ -50,13 +58,14 @@ mappings.default_mappings = config.values.default_mappings or {
     },
   }
 
-local keymap_store = setmetatable({}, {
+__TelescopeKeymapStore = __TelescopeKeymapStore or setmetatable({}, {
   __index = function(t, k)
     rawset(t, k, {})
 
     return rawget(t, k)
   end
 })
+local keymap_store = __TelescopeKeymapStore
 
 local _mapping_key_id = 0
 local get_next_id = function()

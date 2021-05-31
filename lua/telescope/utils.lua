@@ -1,3 +1,5 @@
+local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
+
 local pathlib = require('telescope.path')
 local Job     = require('plenary.job')
 
@@ -78,6 +80,47 @@ utils.quickfix_items_to_entries = function(locations)
   end
 
   return results
+end
+
+utils.diagnostics_to_tbl = function(opts)
+  opts = opts or {}
+  local items = {}
+  local current_buf = vim.api.nvim_get_current_buf()
+  local lsp_type_diagnostic = {[1] = "Error", [2] = "Warning", [3] = "Information", [4] = "Hint"}
+
+  local preprocess_diag = function(diag, bufnr)
+    local filename = vim.api.nvim_buf_get_name(bufnr)
+    local start = diag.range['start']
+    local finish = diag.range['end']
+    local row = start.line
+    local col = start.character
+
+    local buffer_diag = {
+      bufnr = bufnr,
+      filename = filename,
+      lnum = row + 1,
+      col = col + 1,
+      start = start,
+      finish = finish,
+    -- remove line break to avoid display issues
+      text = vim.trim(diag.message:gsub("[\n]", "")),
+      type = lsp_type_diagnostic[diag.severity] or lsp_type_diagnostic[1]
+    }
+    table.sort(buffer_diag, function(a, b) return a.lnum < b.lnum end)
+    return buffer_diag
+  end
+
+  local buffer_diags = opts.get_all and vim.lsp.diagnostic.get_all() or
+    {[current_buf] = vim.lsp.diagnostic.get(current_buf, opts.client_id)}
+  for bufnr, diags in pairs(buffer_diags) do
+    for _, diag in pairs(diags) do
+      -- workspace diagnostics may include empty tables for unused bufnr
+      if not vim.tbl_isempty(diag) then
+        table.insert(items, preprocess_diag(diag, bufnr))
+      end
+    end
+  end
+  return items
 end
 
 -- TODO: Figure out how to do this... could include in plenary :)
@@ -199,7 +242,11 @@ function utils.get_os_command_output(cmd, cwd)
     return {}
   end
   local command = table.remove(cmd, 1)
-  return Job:new({ command = command, args = cmd, cwd = cwd }):sync()
+  local stderr = {}
+  local stdout, ret = Job:new({ command = command, args = cmd, cwd = cwd, on_stderr = function(_, data)
+    table.insert(stderr, data)
+  end }):sync()
+  return stdout, ret, stderr
 end
 
 utils.strdisplaywidth = (function()
@@ -212,13 +259,14 @@ utils.strdisplaywidth = (function()
 
     return function(str, col)
       local startcol = col or 0
+      str = tostring(str)
       local s = ffi.new('char[?]', #str + 1)
       ffi.copy(s, str)
       return ffi.C.linetabsize_col(startcol, s) - startcol
     end
   else
     return function(str, col)
-      return #str - (col or 0)
+      return #(tostring(str)) - (col or 0)
     end
   end
 end)()
@@ -283,5 +331,66 @@ function utils.strcharpart(str, nchar, charlen)
 
   return str:sub(nbyte + 1, nbyte + len)
 end
+
+utils.align_str = function(string, width, right_justify)
+  local str_len = utils.strdisplaywidth(string)
+  return right_justify
+    and string.rep(" ", width - str_len)..string
+    or string..string.rep(" ", width - str_len)
+end
+
+utils.transform_devicons = (function()
+  if has_devicons then
+    if not devicons.has_loaded() then
+      devicons.setup()
+    end
+
+    return function(filename, display, disable_devicons)
+      local conf = require('telescope.config').values
+      if disable_devicons or not filename then
+        return display
+      end
+
+      local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, '%a+$'), { default = true })
+      local icon_display = (icon or ' ') .. ' ' .. display
+
+      if conf.color_devicons then
+        return icon_display, icon_highlight
+      else
+        return icon_display
+      end
+    end
+  else
+    return function(_, display, _)
+      return display
+    end
+  end
+end)()
+
+utils.get_devicons = (function()
+  if has_devicons then
+    if not devicons.has_loaded() then
+      devicons.setup()
+    end
+
+    return function(filename, disable_devicons)
+      local conf = require('telescope.config').values
+      if disable_devicons or not filename then
+        return ''
+      end
+
+      local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, '%a+$'), { default = true })
+      if conf.color_devicons then
+        return icon, icon_highlight
+      else
+        return icon
+      end
+    end
+  else
+    return function(_, _)
+      return ''
+    end
+  end
+end)()
 
 return utils

@@ -1,0 +1,61 @@
+name: Generate docs
+
+on:
+  push:
+    branches-ignore:
+      - master
+
+jobs:
+  build-sources:
+    name: Generate docs
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: date +%F > todays-date
+      - name: Restore cache for today's nightly.
+        uses: actions/cache@v2
+        with:
+          path: build
+          key: ${{ runner.os }}-appimage-${{ hashFiles('todays-date') }}
+
+      - name: Prepare
+        run: |
+          test -d build || {
+            mkdir -p build
+            wget https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
+            chmod +x nvim.appimage
+            mv nvim.appimage ./build/nvim
+          }
+          mkdir -p ~/.local/share/nvim/site/pack/vendor/start
+          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
+          git clone --depth 1 https://github.com/tjdevries/tree-sitter-lua ~/.local/share/nvim/site/pack/vendor/start/tree-sitter-lua
+          ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
+
+      - name: Build parser
+        run: |
+          # We have to build the parser every single time to keep up with parser changes
+          cd ~/.local/share/nvim/site/pack/vendor/start/tree-sitter-lua
+          mkdir -p build parser
+          cc -o ./build/parser.so -I./src src/parser.c src/scanner.cc -shared -Os -lstdc++ -fPIC
+          ln -s ../build/parser.so parser/lua.so
+          cd -
+
+      - name: Generating docs
+        run: |
+          export PATH="${PWD}/build/:${PATH}"
+          make docgen
+
+      # inspired by nvim-lspconfigs
+      - name: Update documentation
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_MSG: |
+            [docgen] Update doc/telescope.txt
+            skip-checks: true
+        run: |
+          git config user.email "actions@github"
+          git config user.name "Github Actions"
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          git add doc/
+          # Only commit and push if we have changes
+          git diff --quiet && git diff --staged --quiet || (git commit -m "${COMMIT_MSG}"; git push origin HEAD:${GITHUB_REF})

@@ -1,31 +1,68 @@
---[[
+---@tag telescope.layout
 
-Layout strategies are different functions to position telescope.
-
-horizontal:
-- Supports `prompt_position`, `preview_cutoff`
-
-vertical:
-
-flex: Swap between `horizontal` and `vertical` strategies based on the window width
-- Supports `vertical` or `horizontal` features
-
-dropdown:
-
-
-Layout strategies are callback functions
-
--- @param self: Picker
--- @param columns: number Columns in the vim window
--- @param lines: number Lines in the vim window
-
-function(self, columns, lines)
-end
-
---]]
+---@brief [[
+---
+--- Layout strategies are different functions to position telescope.
+---
+--- All layout strategies are functions with the following signature:
+---
+--- <pre>
+---   function(picker, columns, lines)
+---     -- Do some calculations here...
+---     return {
+---       preview = preview_configuration
+---       results = results_configuration,
+---       prompt = prompt_configuration,
+---     }
+---   end
+---
+---   Parameters: ~
+---     - picker  : A Picker object. (docs coming soon)
+---     - columns : number Columns in the vim window
+---     - lines   : number Lines in the vim window
+---
+--- </pre>
+---
+--- TODO: I would like to make these link to `telescope.layout_strategies.*`,
+--- but it's not yet possible.
+---
+--- Available layout strategies include:
+---   - horizontal:
+---     - See |layout_strategies.horizontal|
+---
+---   - vertical:
+---     - See |layout_strategies.vertical|
+---
+---   - flex:
+---     - See |layout_strategies.flex|
+---
+--- Available tweaks to the settings in layout defaults include
+--- (can be applied to horizontal and vertical layouts):
+---   - mirror (default is `false`):
+---     - Flip the view of the current layout:
+---       - If using horizontal: if `true`, swaps the location of the
+---         results/prompt window and preview window
+---       - If using vertical: if `true`, swaps the location of the results and
+---         prompt windows
+---
+---   - width_padding:
+---     - How many cells to pad the width of Telescope's layout window
+---
+---   - height_padding:
+---     - How many cells to pad the height of Telescope's layout window
+---
+---   - preview_width:
+---     - Change the width of Telescope's preview window
+---
+---   - scroll_speed:
+---     - Change the scrolling speed of the previewer
+---@brief ]]
 
 local config = require('telescope.config')
 local resolve = require("telescope.config.resolve")
+
+local p_window = require('telescope.pickers.window')
+
 
 -- Check if there are any borders. Right now it's a little raw as
 -- there are a few things that contribute to the border
@@ -49,24 +86,28 @@ end
 
 local layout_strategies = {}
 
---[[
-   +-----------------+---------------------+
-   |                 |                     |
-   |     Results     |                     |
-   |                 |       Preview       |
-   |                 |                     |
-   +-----------------|                     |
-   |     Prompt      |                     |
-   +-----------------+---------------------+
---]]
+--- Horizontal previewer
+---
+--- <pre>
+---   +-------------+--------------+
+---   |             |              |
+---   |   Results   |              |
+---   |             |    Preview   |
+---   |             |              |
+---   +-------------|              |
+---   |   Prompt    |              |
+---   +-------------+--------------+
+--- </pre>
 layout_strategies.horizontal = function(self, max_columns, max_lines)
   local layout_config = validate_layout_config(self.layout_config or {}, {
     width_padding = "How many cells to pad the width",
     height_padding = "How many cells to pad the height",
     preview_width = "(Resolvable): Determine preview width",
+    mirror = "Flip the location of the results/prompt and preview windows",
+    scroll_speed = "The speed when scrolling through the previewer",
   })
 
-  local initial_options = self:_get_initial_window_options()
+  local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
@@ -121,9 +162,16 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
     preview.height = 0
   end
 
-  results.col = width_padding
-  prompt.col = width_padding
-  preview.col = results.col + results.width + 2
+  -- Default value is false, to use the normal horizontal layout
+  if not layout_config.mirror then
+    results.col = width_padding
+    prompt.col = width_padding
+    preview.col = results.col + results.width + 2
+  else
+    preview.col = width_padding
+    prompt.col = preview.col + preview.width + 2
+    results.col = preview.col + preview.width + 2
+  end
 
   preview.line = height_padding
   if self.window.prompt_position == "top" then
@@ -143,21 +191,21 @@ layout_strategies.horizontal = function(self, max_columns, max_lines)
 }
 end
 
---[[
-    +--------------+
-    |    Preview   |
-    +--------------+
-    |    Prompt    |
-    +--------------+
-    |    Result    |
-    |    Result    |
-    |    Result    |
-    +--------------+
-
-
---]]
+--- Centered layout wih smaller default sizes (I think)
+---
+--- <pre>
+---    +--------------+
+---    |    Preview   |
+---    +--------------+
+---    |    Prompt    |
+---    +--------------+
+---    |    Result    |
+---    |    Result    |
+---    |    Result    |
+---    +--------------+
+--- </pre>
 layout_strategies.center = function(self, columns, lines)
-  local initial_options = self:_get_initial_window_options()
+  local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
@@ -276,23 +324,31 @@ layout_strategies.cursor = function(self, columns, lines)
   }
 end
 
---[[
-    +-----------------+
-    |    Previewer    |
-    |    Previewer    |
-    |    Previewer    |
-    +-----------------+
-    |     Result      |
-    |     Result      |
-    |     Result      |
-    +-----------------+
-    |     Prompt      |
-    +-----------------+
---]]
+--- Vertical perviewer stacks the items on top of each other.
+---
+--- <pre>
+---    +-----------------+
+---    |    Previewer    |
+---    |    Previewer    |
+---    |    Previewer    |
+---    +-----------------+
+---    |     Result      |
+---    |     Result      |
+---    |     Result      |
+---    +-----------------+
+---    |     Prompt      |
+---    +-----------------+
+--- </pre>
 layout_strategies.vertical = function(self, max_columns, max_lines)
-  local layout_config = self.layout_config or {}
-  local initial_options = self:_get_initial_window_options()
+  local layout_config = validate_layout_config(self.layout_config or {}, {
+    width_padding = "How many cells to pad the width",
+    height_padding = "How many cells to pad the height",
+    preview_height = "(Resolvable): Determine preview height",
+    mirror = "Flip the locations of the results and prompt windows",
+    scroll_speed = "The speed when scrolling through the previewer",
+  })
 
+  local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
@@ -333,9 +389,15 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
 
   if self.previewer then
-    preview.line = height_padding
-    results.line = preview.line + preview.height + 2
-    prompt.line = results.line + results.height + 2
+    if not layout_config.mirror then
+      preview.line = height_padding
+      results.line = preview.line + preview.height + 2
+      prompt.line = results.line + results.height + 2
+    else
+      prompt.line = height_padding
+      results.line = prompt.line + prompt.height + 2
+      preview.line = results.line + results.height + 2
+    end
   else
     results.line = height_padding
     prompt.line = results.line + results.height + 2
@@ -348,9 +410,12 @@ layout_strategies.vertical = function(self, max_columns, max_lines)
   }
 end
 
--- Uses:
---  flip_columns
---  flip_lines
+--- Swap between `horizontal` and `vertical` strategies based on the window width
+---  -  Supports `vertical` or `horizontal` features
+---
+--- Uses:
+---  - flip_columns
+---  - flip_lines
 layout_strategies.flex = function(self, max_columns, max_lines)
   local layout_config = self.layout_config or {}
 
@@ -420,6 +485,69 @@ layout_strategies.current_buffer = function(self, _, _)
     preview = preview.width > 0 and preview,
     results = results,
     prompt = prompt,
+  }
+end
+
+layout_strategies.bottom_pane = function(self, max_columns, max_lines)
+  local layout_config = validate_layout_config(self.layout_config or {}, {
+    height = "The height of the layout",
+  })
+
+  local initial_options = p_window.get_initial_window_options(self)
+  local results = initial_options.results
+  local prompt = initial_options.prompt
+  local preview = initial_options.preview
+
+  local result_height = layout_config.height or 25
+
+  local prompt_width = max_columns
+  local col = 0
+
+  local has_border = not not self.window.border
+  if has_border then
+    col = 1
+    prompt_width = prompt_width - 2
+  end
+
+  local result_width
+  if self.previewer then
+    result_width = math.floor(prompt_width / 2)
+
+    local base_col = result_width + 1
+    if has_border then
+      preview = vim.tbl_deep_extend("force", {
+        col = base_col + 2,
+        line = max_lines - result_height + 1,
+        width = prompt_width - result_width - 2,
+        height = result_height - 1,
+      }, preview)
+    else
+      preview = vim.tbl_deep_extend("force", {
+        col = base_col,
+        line = max_lines - result_height,
+        width = prompt_width - result_width,
+        height = result_height,
+      }, preview)
+    end
+  else
+    preview = nil
+    result_width = prompt_width
+  end
+
+  return {
+    preview = preview,
+    prompt = vim.tbl_deep_extend("force", prompt, {
+      line = max_lines - result_height - 1,
+      col = col,
+      height = 1,
+      width = prompt_width,
+    }),
+    results = vim.tbl_deep_extend("force", results, {
+      line = max_lines - result_height,
+      col = col,
+      height = result_height,
+      width = result_width,
+    }),
   }
 end
 

@@ -11,6 +11,7 @@ require('telescope.builtin').lsp_references()
 require('telescope.builtin').builtin()
 require('telescope.builtin').fd()
 require('telescope.builtin').command_history()
+require('telescope.builtin').search_history()
 require('telescope.builtin').live_grep()
 require('telescope.builtin').loclist()
 
