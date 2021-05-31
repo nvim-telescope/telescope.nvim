@@ -264,7 +264,7 @@ end
 ---                                        (█: when there is no space available)
 --- </pre>
 layout_strategies.cursor = function(self, columns, lines)
-  local initial_options = self:_get_initial_window_options()
+  local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
@@ -294,7 +294,7 @@ layout_strategies.cursor = function(self, columns, lines)
   local total_height = preview.height + (bs*2)
   local total_width = prompt.width + (bs*2) + preview.width + bs
 
-  local position = vim.fn.nvim_win_get_position(0)
+  local position = vim.api.nvim_win_get_position(0)
   local top_left = {
     line = vim.fn.winline() + position[1] + bs,
     col = vim.fn.wincol() + position[2]
