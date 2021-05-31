@@ -309,8 +309,8 @@ builtin.lsp_dynamic_workspace_symbols = require('telescope.builtin.lsp').dynamic
 ---@param opts table: options to pass to the picker
 ---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 ---@field severity string or number: filter diagnostics by severity name or id (i.e. 'error' or 1)
----@field severity_threshold string or number: filter for diagnostics equal or more severe wrt severity name or id
----@field severity_bound string or number: filter for diagnostics equal or less severe relative to severity name or id
+---@field severity_limit string or number: filter for diagnostics equal or more severe wrt severity name or id
+---@field severity_bound string or number: filter for diagnostics equal or less severe wrt severity name or id
 ---@field no_sign bool: hide LspDiagnosticSigns from Results (default is false)
 ---@field line_width number: set length of diagnostic entry text in Results
 builtin.lsp_document_diagnostics = require('telescope.builtin.lsp').diagnostics
@@ -321,8 +321,8 @@ builtin.lsp_document_diagnostics = require('telescope.builtin.lsp').diagnostics
 ---@param opts table: options to pass to the picker
 ---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 ---@field severity string or number: filter diagnostics by severity name or id (i.e. 'error' or 1)
----@field severity_threshold string or number: filter for diagnostics equal or more severe wrt severity name or id
----@field severity_bound string or number: filter for diagnostics equal or less severe relative to severity name or id
+---@field severity_limit string or number: filter for diagnostics equal or more severe wrt severity name or id
+---@field severity_bound string or number: filter for diagnostics equal or less severe wrt severity name or id
 ---@field no_sign bool: hide LspDiagnosticSigns from Results (default is false)
 ---@field line_width number: set length of diagnostic entry text in Results
 builtin.lsp_workspace_diagnostics = require('telescope.builtin.lsp').workspace_diagnostics

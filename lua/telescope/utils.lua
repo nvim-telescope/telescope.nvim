@@ -95,8 +95,8 @@ end
 local filter_diag_severity = function(opts, severity)
   if opts.severity ~= nil then
     return opts.severity == severity
-  elseif opts.severity_threshold ~= nil then
-    return severity <= opts.severity_threshold
+  elseif opts.severity_limit ~= nil then
+    return severity <= opts.severity_limit
   elseif opts.severity_bound ~= nil then
     return severity >= opts.severity_bound
   else
@@ -111,11 +111,11 @@ utils.diagnostics_to_tbl = function(opts)
   local current_buf = vim.api.nvim_get_current_buf()
 
   opts.severity = convert_diagnostic_type(opts.severity)
-  opts.severity_threshold = convert_diagnostic_type(opts.severity_threshold)
+  opts.severity_limit = convert_diagnostic_type(opts.severity_limit)
   opts.severity_bound = convert_diagnostic_type(opts.severity_bound)
 
   local validate_severity = 0
-  for _, v in pairs({opts.severity, opts.severity_threshold, opts.severity_bound}) do
+  for _, v in pairs({opts.severity, opts.severity_limit, opts.severity_bound}) do
     if v ~= nil then
       validate_severity = validate_severity + 1
     end
