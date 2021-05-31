@@ -470,6 +470,9 @@ builtin.file_browser({opts})                          *builtin.file_browser()*
 
 builtin.treesitter()                                    *builtin.treesitter()*
     Lists function names, variables, and other symbols from treesitter queries
+    - Default keymaps:
+      - `<C-l>`: show autocompletion menu to prefilter your query by kind of ts
+        node you want to see (i.e. `:var:`)
 
 
     Fields: ~

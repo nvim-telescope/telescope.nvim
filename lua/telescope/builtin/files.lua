@@ -348,7 +348,10 @@ files.treesitter = function(opts)
       entry_maker = opts.entry_maker or make_entry.gen_from_treesitter(opts)
     },
     previewer = conf.grep_previewer(opts),
-    sorter = conf.generic_sorter(opts),
+    sorter = conf.prefilter_sorter{
+      tag = "kind",
+      sorter = conf.generic_sorter(opts)
+    }
   }):find()
 end
 
