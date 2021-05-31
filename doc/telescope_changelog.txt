@@ -34,4 +34,8 @@ can configure how telescope's windows are configured.
     You should get error messages when you try and use any of the above keys now.
 
 
+TODO:
+- prompt_position
+- preview_cutoff
+
  vim:tw=78:ts=8:ft=help:norl:

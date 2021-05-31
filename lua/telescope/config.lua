@@ -156,6 +156,7 @@ telescope_defaults["layout_strategy"] = {"horizontal", [[
 local layout_config_defaults = {
     width = 0.8,
     height = 0.9,
+    preview_cutoff = 120,
 
     horizontal = {
       prompt_position = "bottom",
@@ -179,7 +180,6 @@ local layout_config_description = string.format([[
 telescope_defaults["layout_config"] = {layout_config_defaults, layout_config_description}
 
 telescope_defaults["winblend"] = {0}
-telescope_defaults["preview_cutoff"] = {120}
 
 telescope_defaults["prompt_prefix"] = {"> ", [[
     Will be shown in front of the prompt.

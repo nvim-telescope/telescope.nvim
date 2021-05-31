@@ -103,8 +103,6 @@ function Picker:new(opts)
       border = get_default(opts.border, config.values.border),
       borderchars = get_default(opts.borderchars, config.values.borderchars),
     },
-
-    preview_cutoff = get_default(opts.preview_cutoff, config.values.preview_cutoff),
   }, self)
 
   obj.get_window_options = opts.get_window_options or p_window.get_window_options

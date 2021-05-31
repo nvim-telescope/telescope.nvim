@@ -114,7 +114,9 @@ local function validate_layout_config(strategy_name, configuration, values, defa
   -- Always set the values passed first.
   for k in pairs(values) do
     if not valid_configuration_keys[k] then
-      error(string.format(
+      -- TODO: At some popint we'll move to error here,
+      --    but it's a bit annoying to just straight up crash everyone's stuff.
+      vim.api.nvim_err_writeln(string.format(
         "Unsupported layout_config key for the %s strategy: %s\n%s",
         strategy_name, k, vim.inspect(values)
       ))
@@ -254,7 +256,7 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
 
   if self.previewer then
     preview.width = resolve.resolve_width(layout_config.preview_width or function(_, cols)
-      if not self.previewer or cols < self.preview_cutoff then
+      if not self.previewer or cols < layout_config.preview_cutoff then
         return 0
       elseif cols < 150 then
         return math.floor(cols * 0.4)
@@ -371,7 +373,7 @@ layout_strategies.center = make_documented_layout("center", vim.tbl_extend("erro
   preview.line = 1
   preview.height = math.floor(prompt.line - (2 + bs))
 
-  if not self.previewer or max_columns < self.preview_cutoff then
+  if not self.previewer or max_columns < layout_config.preview_cutoff then
     preview.height = 0
   end
 
