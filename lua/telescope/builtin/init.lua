@@ -207,6 +207,9 @@ builtin.reloader = require('telescope.builtin.internal').reloader
 
 --- Lists open buffers in current neovim instance, opens selected buffer on `<cr>`
 ---@param opts table: options to pass to the picker
+---@field show_all_buffers boolean: if true, show all buffers, including unloaded buffers (default true)
+---@field ignore_current_buffer boolean: if true, don't show the current buffer in the list (default false)
+---@field only_cwd boolean: if true, only show buffers in the current working directory (default false)
 builtin.buffers = require('telescope.builtin.internal').buffers
 
 --- Lists available colorschemes and applies them on `<cr>`

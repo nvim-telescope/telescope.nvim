@@ -672,6 +672,15 @@ builtin.buffers({opts})                                    *builtin.buffers()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
+    Fields: ~
+        {show_all_buffers}      (boolean)  if true, show all buffers, including
+                                           unloaded buffers (default true)
+        {ignore_current_buffer} (boolean)  if true, don't show the current
+                                           buffer in the list (default false)
+        {only_cwd}              (boolean)  if true, only show buffers in the
+                                           current working directory (default
+                                           false)
+
 
 builtin.colorscheme({opts})                            *builtin.colorscheme()*
     Lists available colorschemes and applies them on `<cr>`
