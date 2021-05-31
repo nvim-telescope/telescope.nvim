@@ -313,6 +313,28 @@ actions.add_to_qflist()                              *actions.add_to_qflist()*
 
 
 
+actions.send_selected_to_loclist()        *actions.send_selected_to_loclist()*
+    Sends the selected entries to the location list, replacing the previous
+    entries.
+
+
+
+actions.add_selected_to_loclist()          *actions.add_selected_to_loclist()*
+    Adds the selected entries to the location list, keeping the previous
+    entries.
+
+
+
+actions.send_to_loclist()                          *actions.send_to_loclist()*
+    Sends all entries to the location list, replacing the previous entries.
+
+
+
+actions.add_to_loclist()                            *actions.add_to_loclist()*
+    Adds all entries to the location list, keeping the previous entries.
+
+
+
 actions.smart_send_to_qflist()                *actions.smart_send_to_qflist()*
     Sends the selected entries to the quickfix list, replacing the previous
     entries. If no entry was selected, sends all entries.
@@ -325,8 +347,25 @@ actions.smart_add_to_qflist()                  *actions.smart_add_to_qflist()*
 
 
 
+actions.smart_send_to_loclist()              *actions.smart_send_to_loclist()*
+    Sends the selected entries to the location list, replacing the previous
+    entries. If no entry was selected, sends all entries.
+
+
+
+actions.smart_add_to_loclist()                *actions.smart_add_to_loclist()*
+    Adds the selected entries to the location list, keeping the previous
+    entries. If no entry was selected, adds all entries.
+
+
+
 actions.open_qflist()                                  *actions.open_qflist()*
     Open the quickfix list
+
+
+
+actions.open_loclist()                                *actions.open_loclist()*
+    Open the location list
 
 
 
