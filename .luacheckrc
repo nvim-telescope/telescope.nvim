@@ -19,6 +19,7 @@ globals = {
   "TelescopeCachedTails",
   "TelescopeCachedNgrams",
   "_TelescopeConfigurationValues",
+  "_TelescopeConfigurationPickers",
   "__TelescopeKeymapStore",
 }
 
