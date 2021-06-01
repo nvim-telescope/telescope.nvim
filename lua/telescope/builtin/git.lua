@@ -265,8 +265,8 @@ local set_opts_cwd = function(opts)
   local use_git_root = utils.get_default(opts.use_git_root, true)
 
   if ret ~= 0 then
-    local is_worktree = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
-    if is_worktree == "false" then
+    local output = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
+    if output[1] ~= "true" then
         error(opts.cwd .. ' is not a git directory')
     end
   else
