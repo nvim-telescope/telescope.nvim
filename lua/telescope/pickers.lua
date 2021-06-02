@@ -1069,6 +1069,12 @@ function Picker:get_result_completor(results_bufnr, find_id, prompt, status_upda
       else
         self:set_selection(self:get_reset_row())
       end
+    elseif selection_strategy == 'closest' then
+      if prompt == "" and self.default_selection_index ~= nil then
+        self:set_selection(self:get_row(self.default_selection_index))
+      else
+        self:set_selection(self:get_reset_row())
+      end
     else
       error('Unknown selection strategy: ' .. selection_strategy)
     end
