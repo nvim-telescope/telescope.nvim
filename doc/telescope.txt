@@ -164,6 +164,7 @@ telescope.setup({opts})                                    *telescope.setup()*
         - "reset" (default)
         - "follow"
         - "row"
+        - "closest"
 
                                       *telescope.defaults.sorting_strategy*
     sorting_strategy: ~
