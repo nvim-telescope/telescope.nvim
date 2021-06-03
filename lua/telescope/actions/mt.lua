@@ -60,7 +60,6 @@ action_mt.create = function(mod)
     _post = {},
   }
 
-  mt.type = "action"
   mt.__index = mt
 
   mt.clear = function()

@@ -126,6 +126,8 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
       return
     elseif key_func.type == "action_key" then
       key_func = actions[key_func[1]]
+    elseif key_func.type == "action" then
+      key_func = key_func[1]
     end
   end
 
