@@ -212,6 +212,8 @@ builtin.reloader = require('telescope.builtin.internal').reloader
 ---@field show_all_buffers boolean: if true, show all buffers, including unloaded buffers (default true)
 ---@field ignore_current_buffer boolean: if true, don't show the current buffer in the list (default false)
 ---@field only_cwd boolean: if true, only show buffers in the current working directory (default false)
+---@field sort_lastused boolean: if true, sort the shown buffers so that the last used one is selected (default false)
+---@field bufnr_width number: Defines the width of the buffer numbers in front of the filenames
 builtin.buffers = require('telescope.builtin.internal').buffers
 
 --- Lists available colorschemes and applies them on `<cr>`

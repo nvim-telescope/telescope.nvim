@@ -722,6 +722,11 @@ builtin.buffers({opts})                                    *builtin.buffers()*
         {only_cwd}              (boolean)  if true, only show buffers in the
                                            current working directory (default
                                            false)
+        {sort_lastused}         (boolean)  if true, sort the shown buffers so
+                                           that the last used one is selected
+                                           (default false)
+        {bufnr_width}           (number)   Defines the width of the buffer
+                                           numbers in front of the filenames
 
 
 builtin.colorscheme({opts})                            *builtin.colorscheme()*
