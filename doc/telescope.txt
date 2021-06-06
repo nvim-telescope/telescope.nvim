@@ -465,7 +465,8 @@ builtin.file_browser({opts})                          *builtin.file_browser()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {search_dirs} (table)  directory/directories to search in
+        {cwd}   (string)  directory path to browse (default is cwd)
+        {depth} (number)  file tree depth to display (default is 1)
 
 
 builtin.treesitter()                                    *builtin.treesitter()*
