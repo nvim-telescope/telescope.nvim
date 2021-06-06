@@ -46,10 +46,9 @@ files.live_grep = function(opts)
     end, vim.api.nvim_list_bufs())
     if not next(bufnrs) then return end
 
-    local tele_path = require'telescope.path'
     for _, bufnr in ipairs(bufnrs) do
       local file = vim.api.nvim_buf_get_name(bufnr)
-      table.insert(filelist, tele_path.make_relative(file, opts.cwd))
+      table.insert(filelist, Path:new(file):make_relative(opts.cwd))
     end
   elseif search_dirs then
     for i, path in ipairs(search_dirs) do
@@ -249,11 +248,10 @@ files.file_browser = function(opts)
     return finders.new_table {
       results = data,
       entry_maker = (function()
-        local tele_path = require'telescope.path'
         local gen = make_entry.gen_from_file(opts)
         return function(entry)
           local tmp = gen(entry)
-          tmp.ordinal = tele_path.make_relative(entry, opts.cwd)
+          tmp.ordinal = Path:new(entry):make_relative(opts.cwd)
           return tmp
         end
       end)()

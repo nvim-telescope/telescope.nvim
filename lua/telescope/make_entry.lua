@@ -1,9 +1,7 @@
 local entry_display = require('telescope.pickers.entry_display')
-local path = require('telescope.path')
 local utils = require('telescope.utils')
 local strings = require('plenary.strings')
-
-local Path = require('plenary.path')
+local path = require('plenary.path')
 
 local treesitter_type_highlight = {
   ["associated"] = "TSConstant",
@@ -88,7 +86,7 @@ do
       if raw then return raw end
 
       if k == "path" then
-        local retpath = t.cwd .. path.separator .. t.value
+        local retpath = t.cwd .. path.path.sep .. t.value
         if not vim.loop.fs_access(retpath, "R", nil) then
           retpath = t.value
         end
@@ -143,10 +141,10 @@ do
 
     local execute_keys = {
       path = function(t)
-        if Path:new(t.filename):is_absolute() then
+        if path:new(t.filename):is_absolute() then
           return t.filename, false
         else
-          return t.cwd .. path.separator .. t.filename, false
+          return t.cwd .. path.path.sep .. t.filename, false
         end
       end,
 
@@ -1106,10 +1104,9 @@ function make_entry.gen_from_git_status(opts)
       status = mod,
       ordinal = entry,
       display = make_display,
-      path = opts.cwd .. path.separator .. file
+      path = opts.cwd .. path.path.sep .. file
     }
   end
 end
-
 
 return make_entry

@@ -1,12 +1,12 @@
 local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 
-local pathlib = require('telescope.path')
+local pathlib = require('plenary.path')
 local Job     = require('plenary.job')
 
 local utils = {}
 
 utils.get_separator = function()
-  return pathlib.separator
+  return pathlib.path.sep
 end
 
 utils.if_nil = function(x, was_nil, was_not_nil)
@@ -251,21 +251,6 @@ utils.diagnostics_to_tbl = function(opts)
   return items
 end
 
--- TODO: Figure out how to do this... could include in plenary :)
--- NOTE: Don't use this yet. It will segfault sometimes.
---
--- opts.shorten_path and function(value)
---     local result = {
---       valid = true,
---       display = utils.path_shorten(value),
---       ordinal = value,
---       value = value
---     }
-
---     return result
---   end or nil)
-utils.path_shorten = pathlib.shorten
-
 utils.path_tail = (function()
   local os_sep = utils.get_separator()
   local match_string = '[^' .. os_sep .. ']*$'
@@ -397,7 +382,7 @@ function utils.data_directory()
   local sourced_file = require('plenary.debug_utils').sourced_filepath()
   local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h")
 
-  return base_directory .. pathlib.separator .. 'data' .. pathlib.separator
+  return base_directory .. pathlib.path.sep .. 'data' .. pathlib.path.sep
 end
 
 function utils.display_termcodes(str)
