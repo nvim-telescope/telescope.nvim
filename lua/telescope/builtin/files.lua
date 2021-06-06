@@ -107,12 +107,6 @@ files.grep_string = function(opts)
   local word_match = opts.word_match
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
 
-  if search_dirs then
-    for i, path in ipairs(search_dirs) do
-      search_dirs[i] = vim.fn.expand(path)
-    end
-  end
-
   local args = flatten {
     vimgrep_arguments,
     word_match,
@@ -120,7 +114,9 @@ files.grep_string = function(opts)
   }
 
   if search_dirs then
-    table.insert(args, search_dirs)
+    for _, path in ipairs(search_dirs) do
+      table.insert(args, vim.fn.expand(path))
+    end
   elseif os_sep == '\\' then
     table.insert(args, '.')
   end
