@@ -14,9 +14,39 @@
 ---
 --- <pre>
 --- :lua require('telescope.builtin').live_grep({
----    prompt_title = 'find string in open buffers...',
----    grep_open_files = true
----  })
+---   prompt_title = 'find string in open buffers...',
+---   grep_open_files = true
+--- })
+--- -- or with dropdown theme
+--- :lua require('telescope.builtin').find_files(require('telescope.themes').get_dropdown{
+---   previewer = false
+--- })
+--- </pre>
+---
+--- You can also pass default configurations to builtin pickers. These options will also be added if
+--- the picker is executed with `Telescope find_files`.
+---
+--- <pre>
+--- require("telescope").setup {
+---   pickers = {
+---     buffers = {
+---       show_all_buffers = true,
+---       sort_lastused = true,
+---       theme = "dropdown",
+---       previewer = false,
+---       mappings = {
+---         i = {
+---           ["<c-d>"] = require("telescope.actions").delete_buffer,
+---           -- or right hand side can also be a the name of the action as string
+---           ["<c-d>"] = "delete_buffer",
+---         },
+---         n = {
+---           ["<c-d>"] = require("telescope.actions").delete_buffer,
+---         }
+---       }
+---     }
+---   }
+--- }
 --- </pre>
 ---
 --- This will use the default configuration options. Other configuration options are still in flux at the moment
@@ -325,4 +355,46 @@ builtin.lsp_document_diagnostics = require('telescope.builtin.lsp').diagnostics
 ---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.lsp_workspace_diagnostics = require('telescope.builtin.lsp').workspace_diagnostics
 
+local apply_config = function(mod)
+  local pickers_conf = require('telescope.config').pickers
+  for k, v in pairs(mod) do
+    local pconf = vim.deepcopy(pickers_conf[k] or {})
+    if pconf.theme then
+      local theme = pconf.theme
+      pconf.theme = nil
+      pconf = require("telescope.themes")["get_" .. theme](pconf)
+    end
+    if pconf.mappings then
+      local mappings = pconf.mappings
+      pconf.mappings = nil
+      pconf.attach_mappings = function(_, map)
+        for mode, tbl in pairs(mappings) do
+          for key, action in pairs(tbl) do
+            map(mode, key, action)
+          end
+        end
+        return true
+      end
+    end
+    mod[k] = function(opts)
+      opts = opts or {}
+      if pconf.attach_mappings and opts.attach_mappings then
+        local attach_mappings = pconf.attach_mappings
+        pconf.attach_mappings = nil
+        local opts_attach = opts.attach_mappings
+        opts.attach_mappings = function(prompt_bufnr, map)
+          attach_mappings(prompt_bufnr, map)
+          return opts_attach(prompt_bufnr, map)
+        end
+      end
+
+      v(vim.tbl_extend("force", pconf, opts))
+    end
+  end
+
+  return mod
+end
+
+-- We can't do this in one statement because tree-sitter-lua docgen gets confused if we do
+builtin = apply_config(builtin)
 return builtin

@@ -1,5 +1,6 @@
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
+_TelescopeConfigurationPickers = _TelescopeConfigurationPickers or {}
 
 local function first_non_null(...)
   local n = select('#', ...)
@@ -45,6 +46,15 @@ local config = {}
 
 config.values = _TelescopeConfigurationValues
 config.descriptions = {}
+config.pickers = _TelescopeConfigurationPickers
+
+function config.set_pickers(pickers)
+  pickers = pickers or {}
+
+  for k, v in pairs(pickers) do
+    config.pickers[k] = v
+  end
+end
 
 function config.set_defaults(defaults)
   defaults = defaults or {}

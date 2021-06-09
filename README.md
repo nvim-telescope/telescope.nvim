@@ -235,6 +235,45 @@ EOF
 | `file_ignore_patterns` | Pattern to be ignored `{ "scratch/.*", "%.env" }`      | dict                       |
 | `shorten_path`         | Whether to shorten paths or not.                      | boolean                    |
 
+### Customize Default Builtin behavior
+
+You can customize each default builtin behavior by adding the prefered options
+into the table that is passed into `require("telescope").setup()`.
+
+Example:
+
+```lua
+require("telescope").setup {
+  defaults = {
+    -- Your defaults config goes in here
+  },
+  pickers = {
+    -- Your special builtin config goes in here
+    buffers = {
+      sort_lastused = true,
+      theme = "dropdown",
+      previewer = false,
+      mappings = {
+        i = {
+          ["<c-d>"] = require("telescope.actions").delete_buffer,
+          -- or right hand side can also be a the name of the action as string
+          ["<c-d>"] = "delete_buffer",
+        },
+        n = {
+          ["<c-d>"] = require("telescope.actions").delete_buffer,
+        }
+      }
+    },
+    find_files = {
+      theme = "dropdown"
+    }
+  },
+  extensions = {
+    -- your extension config goes in here
+  }
+}
+```
+
 ## Mappings
 
 Mappings are fully customizable.
