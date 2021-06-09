@@ -71,7 +71,7 @@ builtin.fd = builtin.find_files
 ---@param opts table: options to pass to the picker
 ---@field cwd string: directory path to browse (default is cwd)
 ---@field depth number: file tree depth to display (default is 1)
----@field relative boolean: file tree at open buffer location (default is false)
+---@field relative boolean: browse directory of currently opened buffer (default is false)
 builtin.file_browser = require('telescope.builtin.files').file_browser
 
 --- Lists function names, variables, and other symbols from treesitter queries
