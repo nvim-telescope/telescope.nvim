@@ -387,9 +387,37 @@ your desired picker by passing a lua table to the picker with all of the
 options you want to use. Here's an example with the live_grep picker:
 
 :lua require('telescope.builtin').live_grep({
-   prompt_title = 'find string in open buffers...',
-   grep_open_files = true
- })
+  prompt_title = 'find string in open buffers...',
+  grep_open_files = true
+})
+-- or with dropdown theme
+:lua require('telescope.builtin').find_files(require('telescope.themes').get_dropdown{
+  previewer = false
+})
+
+You can also pass default configurations to builtin pickers. These options will
+also be added if the picker is executed with `Telescope find_files`.
+
+require("telescope").setup {
+  pickers = {
+    buffers = {
+      show_all_buffers = true,
+      sort_lastused = true,
+      theme = "dropdown",
+      previewer = false,
+      mappings = {
+        i = {
+          ["<c-d>"] = require("telescope.actions").delete_buffer,
+          -- or right hand side can also be a the name of the action as string
+          ["<c-d>"] = "delete_buffer",
+        },
+        n = {
+          ["<c-d>"] = require("telescope.actions").delete_buffer,
+        }
+      }
+    }
+  }
+}
 
 This will use the default configuration options. Other configuration options
 are still in flux at the moment
