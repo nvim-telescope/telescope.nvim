@@ -81,7 +81,7 @@ local telescope_defaults = {}
 --    and values are the ones the user wants
 -- @param tele_defaults table: (optional) a table containing all of the defaults
 --    for telescope [defaults to `telescope_defaults`]
-function config.set_defaults(user_defaults,tele_defaults)
+function config.set_defaults(user_defaults, tele_defaults)
   user_defaults = user_defaults or {}
   tele_defaults = tele_defaults or telescope_defaults
 

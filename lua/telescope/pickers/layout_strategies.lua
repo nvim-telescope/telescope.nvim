@@ -338,6 +338,7 @@ end)
 ---@eval { ["description"] = require("telescope.pickers.layout_strategies")._format("center") }
 ---
 layout_strategies.center = make_documented_layout("center", vim.tbl_extend("error", shared_options, {
+  -- TODO: Should this be based on rows here?
   preview_cutoff = "When columns are less than this value, the preview will be disabled",
 }), function(self, max_columns, max_lines,layout_config)
   local initial_options = p_window.get_initial_window_options(self)
