@@ -75,7 +75,9 @@ config.descriptions = {}
 -- values will be a list where:
 -- - first entry is the value
 -- - second entry is the description of the option
-local telescope_defaults = {}
+local telescope_defaults = {
+  sorting_strategy = { ... }
+}
 
 -- @param user_defaults table: a table where keys are the names of options,
 --    and values are the ones the user wants
@@ -156,11 +158,13 @@ telescope_defaults["layout_strategy"] = {"horizontal", [[
 local layout_config_defaults = {
     width = 0.8,
     height = 0.9,
-    preview_cutoff = 120,
 
     horizontal = {
       prompt_position = "bottom",
+      preview_cutoff = 120,
     },
+
+    -- vertical = {},
 }
 
 local layout_config_description = string.format([[
@@ -206,39 +210,59 @@ telescope_defaults["get_status_text"] = {function(self)
     return string.format("%s / %s", xx, yy)
   end}
 
-  -- Builtin configuration
+-- Builtin configuration
 
-  -- List that will be executed.
-  --    Last argument will be the search term (passed in during execution)
+-- List that will be executed.
+--    Last argument will be the search term (passed in during execution)
 telescope_defaults["vimgrep_arguments"] = {
-      {'rg', '--color=never', '--no-heading', '--with-filename', '--line-number', '--column', '--smart-case'}
-  }
+  {'rg', '--color=never', '--no-heading', '--with-filename', '--line-number', '--column', '--smart-case'}
+}
 telescope_defaults["use_less"] = {true}
 telescope_defaults["color_devicons"] = {true}
 
 telescope_defaults["set_env"] = {nil}
 
-  -- TODO: Add motions to keybindings
+telescope_defaults["mappings"] = {{}, [[
+Your mappings to override telescope's default mappings.
 
-  -- To disable a keymap, put [map] = false
-  --        So, to not map "<C-n>", just put
-  --
-  --            ...,
-  --            ["<C-n>"] = false,
-  --            ...,
-  --
-  --        Into your config.
-  --
-  -- Otherwise, just set the mapping to the function that you want it to be.
-  --
-  --            ...,
-  --            ["<C-i>"] = actions.select_default
-  --            ...,
-  --
+Format is:
+{
+  mode = { ..keys }
+}
 
-  -- Hmmm, these don't make sense really?
-telescope_defaults["mappings"] = {{}}
-telescope_defaults["default_mappings"] = {nil}
+where {mode} is the one character letter for a mode ('i' for insert, 'n' for normal).
+
+For example:
+
+mappings = {
+  i = {
+    ["<esc>"] = actions.close,
+  },
+}
+
+
+To disable a keymap, put [map] = false
+      So, to not map "<C-n>", just put
+
+          ...,
+          ["<C-n>"] = false,
+          ...,
+
+      Into your config.
+
+
+otherwise, just set the mapping to the function that you want it to be.
+
+          ...,
+          ["<C-i>"] = actions.select_default
+          ...,
+]]}
+
+telescope_defaults["default_mappings"] = {nil, [[
+Not recommended to use except for advanced users.
+
+Will allow you to completely remove all of telescope's default maps and use your own.
+]]}
 
 telescope_defaults["generic_sorter"] = {sorters.get_generic_fuzzy_sorter}
 telescope_defaults["prefilter_sorter"] = {sorters.prefilter}

@@ -1,5 +1,5 @@
 -- Setup telescope with defaults
-RELOAD('telescope')
+if RELOAD then RELOAD('telescope') end
 require('telescope').setup()
 
 local docgen = require('docgen')

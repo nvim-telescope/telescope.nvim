@@ -52,7 +52,10 @@ layout_strategies._configurations = {}
 --@param strategy_config table: table with keys for each option for a strategy
 --@return table: table with keys for each option (for this strategy) and with keys for each layout_strategy
 local get_valid_configuration_keys = function(strategy_config)
-  local valid_configuration_keys = {}
+  local valid_configuration_keys = {
+    -- There are a few keys we should say are valid to start with.
+    preview_cutoff = true,
+  }
 
   for key in pairs(strategy_config) do
     valid_configuration_keys[key] = true
