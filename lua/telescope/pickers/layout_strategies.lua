@@ -241,7 +241,8 @@ end
 ---
 layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_extend("error", shared_options, {
     preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|", },
-    preview_cutoff = "When columns are less than this value, the preview will be disabled",
+    preview_cutoff = {"Decides whether to display preview based on size of window.",
+      "See |resolver.resolve_cutoff|"},
     prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
 }), function(self, max_columns, max_lines, layout_config)
   local initial_options = p_window.get_initial_window_options(self)
@@ -257,11 +258,11 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
   local picker_height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
   local height_padding = math.floor((max_lines - picker_height)/2)
 
-  if self.previewer then
+  local prev_cutoff_func = resolve.resolve_cutoff(layout_config.preview_cutoff)
+  local has_preview = self.previewer and prev_cutoff_func(self, max_columns, max_lines)
+  if has_preview then
     preview.width = resolve.resolve_width(layout_config.preview_width or function(_, cols)
-      if not self.previewer or cols < layout_config.preview_cutoff then
-        return 0
-      elseif cols < 150 then
+      if cols < 150 then
         return math.floor(cols * 0.4)
       elseif cols < 200 then
         return 80
@@ -279,7 +280,7 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
   prompt.height = 1
   results.height = picker_height - prompt.height - 2
 
-  if self.previewer then
+  if has_preview then
     preview.height = picker_height
   else
     preview.height = 0
@@ -342,7 +343,8 @@ end)
 ---
 layout_strategies.center = make_documented_layout("center", vim.tbl_extend("error", shared_options, {
   -- TODO: Should this be based on rows here?
-  preview_cutoff = "When columns are less than this value, the preview will be disabled",
+  preview_cutoff = {"Decides whether to display preview based on size of window.",
+    "See |resolver.resolve_cutoff|"},
 }), function(self, max_columns, max_lines,layout_config)
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
@@ -375,9 +377,12 @@ layout_strategies.center = make_documented_layout("center", vim.tbl_extend("erro
   results.line = prompt.line + 1 + (bs)
 
   preview.line = 1
-  preview.height = math.floor(prompt.line - (2 + bs))
 
-  if not self.previewer or max_columns < layout_config.preview_cutoff then
+  local prev_cutoff_func = resolve.resolve_cutoff(layout_config.preview_cutoff)
+  local has_preview = self.previewer and prev_cutoff_func(self, max_columns, max_lines)
+  if has_preview then
+    preview.height = math.floor(prompt.line - (2 + bs))
+  else
     preview.height = 0
   end
 
@@ -386,7 +391,7 @@ layout_strategies.center = make_documented_layout("center", vim.tbl_extend("erro
   preview.col = results.col
 
   return {
-    preview = self.previewer and preview.width > 0 and preview,
+    preview = self.previewer and preview.height > 0 and preview,
     results = results,
     prompt = prompt
   }
@@ -416,7 +421,10 @@ end)
 ---@eval { ["description"] = require("telescope.pickers.layout_strategies")._format("vertical") }
 ---
 layout_strategies.vertical = make_documented_layout("vertical", vim.tbl_extend("error", shared_options, {
-  preview_height = { "Change the height of Telescope's preview window", "See |resolver.resolve_height()|" },
+  preview_height = { "Change the height of Telescope's preview window",
+    "See |resolver.resolve_height()|" },
+  preview_cutoff = {"Decides whether to display preview based on size of window.",
+    "See |resolver.resolve_cutoff|"},
 }), function(self, max_columns, max_lines, layout_config)
 
   local initial_options = p_window.get_initial_window_options(self)
@@ -425,24 +433,26 @@ layout_strategies.vertical = make_documented_layout("vertical", vim.tbl_extend("
   local prompt = initial_options.prompt
 
   local width_opt = layout_config.width
-  local picker_width = resolve.resolve_width(width_opt)(self,max_columns,max_lines)
+  local picker_width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
   local width_padding = math.floor((max_columns - picker_width)/2)
 
   local height_opt = layout_config.height
-  local picker_height = resolve.resolve_height(height_opt)(self,max_columns,max_lines)
+  local picker_height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
   local height_padding = math.floor((max_lines - picker_height)/2)
 
-  if not self.previewer then
-    preview.width = 0
-  else
+  local prev_cutoff_func = resolve.resolve_cutoff(layout_config.preview_cutoff)
+  local has_preview = self.previewer and prev_cutoff_func(self, max_columns, max_lines)
+  if has_preview then
     preview.width = picker_width
+  else
+    preview.width = 0
   end
   results.width = picker_width
   prompt.width = picker_width
 
   local preview_total = 0
   preview.height = 0
-  if self.previewer then
+  if has_preview then
     preview.height = resolve.resolve_height(
       layout_config.preview_height or 0.5
     )(self, max_columns, picker_height)
@@ -455,7 +465,7 @@ layout_strategies.vertical = make_documented_layout("vertical", vim.tbl_extend("
 
   results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
 
-  if self.previewer then
+  if has_preview then
     if not layout_config.mirror then
       preview.line = height_padding
       results.line = preview.line + preview.height + 2
@@ -471,7 +481,7 @@ layout_strategies.vertical = make_documented_layout("vertical", vim.tbl_extend("
   end
 
   return {
-    preview = self.previewer and preview.width > 0 and preview,
+    preview = self.previewer and preview.height > 0 and preview,
     results = results,
     prompt = prompt
   }
@@ -568,7 +578,7 @@ layout_strategies.bottom_pane = make_documented_layout('bottom_pane', vim.tbl_ex
   local prompt = initial_options.prompt
   local preview = initial_options.preview
 
-  local result_height = resolve.resolve_height(layout_config.height)(self,max_columns,max_lines) or 25
+  local result_height = resolve.resolve_height(layout_config.height)(self, max_columns, max_lines) or 25
 
   local prompt_width = max_columns
   local col = 0

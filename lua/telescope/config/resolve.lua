@@ -93,17 +93,17 @@ That's the next step to scrolling.
 local get_default = require('telescope.utils').get_default
 
 local resolver = {}
-local _resolve_map = {}
+local _resolve_len = {}
 
 -- Booleans
-_resolve_map[function(val) return val == false end] = function(_, val)
+_resolve_len[function(val) return val == false end] = function(_, val)
   return function(...)
     return val
   end
 end
 
 -- Percentages
-_resolve_map[function(val) return type(val) == 'number' and val >= 0 and val < 1 end] = function(selector, val)
+_resolve_len[function(val) return type(val) == 'number' and val >= 0 and val < 1 end] = function(selector, val)
   return function(...)
     local selected = select(selector, ...)
     return math.floor(val * selected)
@@ -111,7 +111,7 @@ _resolve_map[function(val) return type(val) == 'number' and val >= 0 and val < 1
 end
 
 -- Numbers
-_resolve_map[function(val) return type(val) == 'number' and val >= 1 end] = function(selector, val)
+_resolve_len[function(val) return type(val) == 'number' and val >= 1 end] = function(selector, val)
   return function(...)
     local selected = select(selector, ...)
     return math.min(val, selected)
@@ -126,20 +126,20 @@ end
 --        function(self, max_columns, max_lines): number
 --
 --    Resulting number is used for this configuration value.
-_resolve_map[function(val) return type(val) == 'function' end] = function(_, val)
+_resolve_len[function(val) return type(val) == 'function' end] = function(_, val)
   return val
 end
 
 -- Add padding option
-_resolve_map[function(val) return type(val) == 'table' and val['padding'] ~= nil end] = function(selector, val)
+_resolve_len[function(val) return type(val) == 'table' and val['padding'] ~= nil end] = function(selector, val)
   local resolve_pad = function(value)
-    for k, v in pairs(_resolve_map) do
+    for k, v in pairs(_resolve_len) do
       if k(value) then
         return v(selector, value)
       end
     end
 
-    error('invalid configuration option for padding:' .. tostring(value))
+    error('invalid configuration option for padding: ' .. tostring(value))
   end
 
   return function(...)
@@ -169,13 +169,13 @@ end
 --- The returned function will have signature:
 ---     function(self, max_columns, max_lines): number
 resolver.resolve_height = function(val)
-  for k, v in pairs(_resolve_map) do
+  for k, v in pairs(_resolve_len) do
     if k(val) then
       return v(3, val)
     end
   end
 
-  error('invalid configuration option for height:' .. tostring(val))
+  error('invalid configuration option for height: ' .. tostring(val))
 end
 
 --- Converts input to a function that returns the width.
@@ -197,13 +197,73 @@ end
 --- The returned function will have signature:
 ---     function(self, max_columns, max_lines): number
 resolver.resolve_width = function(val)
-  for k, v in pairs(_resolve_map) do
+  for k, v in pairs(_resolve_len) do
     if k(val) then
       return v(2, val)
     end
   end
 
-  error('invalid configuration option for width:' .. tostring(val))
+  error('invalid configuration option for width: ' .. tostring(val))
+end
+
+
+
+local _resolve_cut = {}
+
+-- Booleans
+_resolve_cut[function(val) return val == false or val == true end] = function(val)
+  return function()
+    return val
+  end
+end
+
+-- Columns
+_resolve_cut[function(val) return type(val) == 'table' and val['columns'] ~= nil end] = function(val)
+  return function(_,max_columns,_)
+    return (val.columns <= max_columns)
+  end
+end
+
+-- Lines
+_resolve_cut[function(val) return type(val) == 'table' and val['lines'] ~= nil end] = function(val)
+  return function(_,_,max_lines)
+    return (val.lines <= max_lines)
+  end
+end
+
+--- Function
+_resolve_cut[function(val) return type(val) == 'function' end] = function(_, val)
+  return val
+end
+
+--- Converts input to a function that returns a boolean.
+--- The input must take one of four forms:
+--- 1. boolean:
+---     The cutoff is then a function that always returns the given boolean.
+--- 2. table of the form:
+---       {columns = `foo`} <br>
+---     where `foo` is a number >= 1. <br>
+---     The cutoff is then a function that is true when `max_columns` is greater than
+---     or equal to `foo` and is false otherwise.
+--- 3. table of the form:
+---       {lines = `foo`} <br>
+---     where `foo` is a number >= 1. <br>
+---     The cutoff is then a function that is true when `max_lines` is greater than
+---     or equal to `foo` and is false otherwise.
+--- 4. function <br>
+---     Must have signature:
+---       function(self, max_columns, max_lines): boolean
+---
+--- The returned function will have signature:
+---     function(self, max_columns, max_lines): boolean
+resolver.resolve_cutoff = function(val)
+  for k, v in pairs(_resolve_cut) do
+    if k(val) then
+      return v(val)
+    end
+  end
+
+  error('invalid configuration option for cutoff: ' .. tostring(val))
 end
 
 --- Win option always returns a table with preview, results, and prompt.
