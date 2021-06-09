@@ -232,6 +232,10 @@ function utils.data_directory()
   return base_directory .. pathlib.separator .. 'data' .. pathlib.separator
 end
 
+function utils.get_current_buffer_dir()
+	return vim.fn.expand('%:p:h')
+end
+
 function utils.display_termcodes(str)
   return str:gsub(string.char(9), "<TAB>"):gsub("", "<C-F>"):gsub(" ", "<Space>")
 end

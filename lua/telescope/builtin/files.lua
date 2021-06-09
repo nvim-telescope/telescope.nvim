@@ -231,7 +231,10 @@ files.file_browser = function(opts)
   opts = opts or {}
 
   opts.depth = opts.depth or 1
-  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
+	opts.relative = opts.relative or false
+	opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
+	opts.cwd = utils.get_current_buffer_dir() and opts.relative or opts.cwd
+
   opts.new_finder = opts.new_finder or function(path)
     opts.cwd = path
     local data = {}
