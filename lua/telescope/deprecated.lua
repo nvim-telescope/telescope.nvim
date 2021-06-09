@@ -20,7 +20,9 @@ deprecated.picker_window_options = function(opts)
   end
 
   if opts.results_width then
-    table.insert(messages, "'opts.results_width' actually didn't do anything. Please see ':help telescope.changelog-823'")
+    table.insert(messages,
+      "'opts.results_width' actually didn't do anything. Please see ':help telescope.changelog-823'"
+    )
   end
 
   if opts.prompt_position then
@@ -30,7 +32,9 @@ deprecated.picker_window_options = function(opts)
   end
 
   if opts.preview_cutoff then
-    table.insert(messages, "'opts.preview_cutoff' is no longer valid. Please use 'layout_config.preview_cutoff' instead.")
+    table.insert(messages,
+      "'opts.preview_cutoff' is no longer valid. Please use 'layout_config.preview_cutoff' instead."
+    )
   end
 
   if #messages > 0 then
