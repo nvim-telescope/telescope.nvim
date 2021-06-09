@@ -839,18 +839,21 @@ builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {hide_filename}  (boolean)  if true, hides the name of the file in the
-                                    current picker (default is false)
-        {severity}       (string)   filter diagnostics by severity name
-                                    (string) or id (number)
-        {severity_limit} (string)   filter for diagnostics equal or more severe
-                                    wrt severity name (string) or id (number)
-        {severity_bound} (string)   filter for diagnostics equal or less severe
-                                    wrt severity name (string) or id (number)
-        {no_sign}        (bool)     hide LspDiagnosticSigns from Results
-                                    (default is false)
-        {line_width}     (number)   set length of diagnostic entry text in
-                                    Results
+        {hide_filename}  (boolean)        if true, hides the name of the file
+                                          in the current picker (default is
+                                          false)
+        {severity}       (string|number)  filter diagnostics by severity name
+                                          (string) or id (number)
+        {severity_limit} (string|number)  filter for diagnostics equal or more
+                                          severe wrt severity name (string) or
+                                          id (number)
+        {severity_bound} (string|number)  filter for diagnostics equal or less
+                                          severe wrt severity name (string) or
+                                          id (number)
+        {no_sign}        (bool)           hide LspDiagnosticSigns from Results
+                                          (default is false)
+        {line_width}     (number)         set length of diagnostic entry text
+                                          in Results
 
 
 builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
@@ -868,18 +871,21 @@ builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {hide_filename}  (boolean)  if true, hides the name of the file in the
-                                    current picker (default is false)
-        {severity}       (string)   filter diagnostics by severity name
-                                    (string) or id (number)
-        {severity_limit} (string)   filter for diagnostics equal or more severe
-                                    wrt severity name (string) or id (number)
-        {severity_bound} (string)   filter for diagnostics equal or less severe
-                                    wrt severity name (string) or id (number)
-        {no_sign}        (bool)     hide LspDiagnosticSigns from Results
-                                    (default is false)
-        {line_width}     (number)   set length of diagnostic entry text in
-                                    Results
+        {hide_filename}  (boolean)        if true, hides the name of the file
+                                          in the current picker (default is
+                                          false)
+        {severity}       (string|number)  filter diagnostics by severity name
+                                          (string) or id (number)
+        {severity_limit} (string|number)  filter for diagnostics equal or more
+                                          severe wrt severity name (string) or
+                                          id (number)
+        {severity_bound} (string|number)  filter for diagnostics equal or less
+                                          severe wrt severity name (string) or
+                                          id (number)
+        {no_sign}        (bool)           hide LspDiagnosticSigns from Results
+                                          (default is false)
+        {line_width}     (number)         set length of diagnostic entry text
+                                          in Results
 
 
 
