@@ -346,8 +346,9 @@ end
 
 internal.vim_options = function(opts)
   -- Load vim options.
-  local vim_opts = loadfile(utils.data_directory() .. Path.path.sep .. 'options' ..
-                            Path.path.sep .. 'options.lua')().options
+  local vim_opts = loadfile(
+    Path:new({utils.data_directory(), 'options', 'options.lua'}):absolute()
+  )().options
 
   pickers.new(opts, {
     prompt = 'options',

@@ -284,7 +284,7 @@ files.file_browser = function(opts)
           return
         end
 
-        local fpath = current_picker.cwd .. os_sep .. file
+        local fpath = Path:new({current_picker.cwd, file})
         if string.sub(fpath, -1) ~= os_sep then
           actions.close(prompt_bufnr)
           Path:new(fpath):touch({ parents = true })

@@ -1,12 +1,12 @@
 local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 
-local pathlib = require('plenary.path')
+local Path = require('plenary.path')
 local Job     = require('plenary.job')
 
 local utils = {}
 
 utils.get_separator = function()
-  return pathlib.path.sep
+  return Path.path.sep
 end
 
 utils.if_nil = function(x, was_nil, was_not_nil)
@@ -382,7 +382,7 @@ function utils.data_directory()
   local sourced_file = require('plenary.debug_utils').sourced_filepath()
   local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h")
 
-  return base_directory .. pathlib.path.sep .. 'data' .. pathlib.path.sep
+  return Path:new({base_directory, 'data'}):absolute() .. Path.path.sep
 end
 
 function utils.display_termcodes(str)
