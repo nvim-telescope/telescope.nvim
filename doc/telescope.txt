@@ -369,6 +369,15 @@ actions.open_loclist()                                *actions.open_loclist()*
 
 
 
+actions.delete_buffer({prompt_bufnr})                *actions.delete_buffer()*
+    Delete the selected buffer or all the buffers selected using multi
+    selection.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 
 ================================================================================
                                                              *telescope.builtin*

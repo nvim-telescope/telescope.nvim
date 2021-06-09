@@ -491,6 +491,62 @@ function Picker:hide_preview()
   -- 2. Resize prompt & results windows accordingly
 end
 
+-- TODO: update multi-select with the correct tag name when available
+--- A simple interface to remove an entry from the results window without
+--- closing telescope. This either deletes the current selection or all the
+--- selections made using multi-select. It can be used to define actions
+--- such as deleting buffers or files.
+---
+--- Example usage:
+--- <pre>
+--- actions.delete_something = function(prompt_bufnr)
+---    local current_picker = action_state.get_current_picker(prompt_bufnr)
+---    current_picker:delete_selection(function(selection)
+---      -- delete the selection outside of telescope
+---    end)
+--- end
+--- </pre>
+---
+--- Example usage in telescope:
+---   - `actions.delete_buffer()`
+---@param delete_cb function: called with each deleted selection
+function Picker:delete_selection(delete_cb)
+  vim.validate { delete_cb = { delete_cb, "f" } }
+  local original_selection_strategy = self.selection_strategy
+  self.selection_strategy = "row"
+
+  local delete_selections = self._multi:get()
+  local used_multi_select = true
+  if vim.tbl_isempty(delete_selections) then
+    table.insert(delete_selections, self:get_selection())
+    used_multi_select = false
+  end
+
+  local selection_index = {}
+  for result_index, result_entry in ipairs(self.finder.results) do
+    if vim.tbl_contains(delete_selections, result_entry) then
+      table.insert(selection_index, result_index)
+    end
+  end
+
+  -- Sort in reverse order as removing an entry from the table shifts down the
+  -- other elements to close the hole.
+  table.sort(selection_index, function(x, y) return x > y end)
+  for _, index in ipairs(selection_index) do
+    local selection = table.remove(self.finder.results, index)
+    delete_cb(selection)
+  end
+
+  if used_multi_select then
+    self._multi = MultiSelect:new()
+  end
+
+  self:refresh()
+  vim.schedule(function()
+    self.selection_strategy = original_selection_strategy
+  end)
+end
+
 
 function Picker.close_windows(status)
   local prompt_win = status.prompt_win
@@ -639,10 +695,10 @@ function Picker:refresh(finder, opts)
   end
   if opts.reset_prompt then self:reset_prompt() end
 
-  self.finder:close()
   if finder then
-      self.finder = finder
-      self._multi = MultiSelect:new()
+    self.finder:close()
+    self.finder = finder
+    self._multi = MultiSelect:new()
   end
 
   self.__on_lines(nil, nil, nil, 0, 1)

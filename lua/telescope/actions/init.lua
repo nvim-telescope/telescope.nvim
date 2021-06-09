@@ -650,6 +650,15 @@ actions.open_loclist = function(_)
   vim.cmd [[lopen]]
 end
 
+--- Delete the selected buffer or all the buffers selected using multi selection.
+---@param prompt_bufnr number: The prompt bufnr
+actions.delete_buffer = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  current_picker:delete_selection(function(selection)
+    vim.api.nvim_buf_delete(selection.bufnr, { force = true })
+  end)
+end
+
 -- ==================================================
 -- Transforms modules and sets the corect metatables.
 -- ==================================================
