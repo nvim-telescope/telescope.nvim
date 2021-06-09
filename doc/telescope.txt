@@ -45,9 +45,23 @@ telescope.setup({opts})                                    *telescope.setup()*
         of 50% of the screen width.
 
         Default: {
+          center = {
+            height = 0.5,
+            preview_cutoff = {
+              lines = 40
+            }
+          },
           height = 0.9,
           horizontal = {
-            preview_cutoff = 120,
+            preview_cutoff = {
+              columns = 120
+            },
+            prompt_position = "bottom"
+          },
+          vertical = {
+            preview_cutoff = {
+              lines = 40
+            },
             prompt_position = "bottom"
           },
           width = 0.8
@@ -999,6 +1013,25 @@ resolver.resolve_width()                            *resolver.resolve_width()*
 
 
 
+resolver.resolve_cutoff()                          *resolver.resolve_cutoff()*
+    Converts input to a function that returns a boolean. The input must take
+    one of four forms:
+    1. boolean: The cutoff is then a function that always returns the given
+       boolean.
+    2. table of the form: {columns = `foo`} <br> where `foo` is a number >= 1.
+       <br> The cutoff is then a function that is true when `max_columns` is
+       greater than or equal to `foo` and is false otherwise.
+    3. table of the form: {lines = `foo`} <br> where `foo` is a number >= 1.
+       <br> The cutoff is then a function that is true when `max_lines` is
+       greater than or equal to `foo` and is false otherwise.
+    4. function
+       Must have signature: function(self, max_columns, max_lines): boolean
+
+    The returned function will have signature: function(self, max_columns,
+    max_lines): boolean
+
+
+
 resolver.win_option()                                  *resolver.win_option()*
     Win option always returns a table with preview, results, and prompt. It
     handles many different ways. Some examples are as follows:
@@ -1338,7 +1371,9 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
         - See |resolver.resolve_width()|
 
     `picker.layout_config` unique options:
-      - preview_cutoff: When columns are less than this value, the preview will be disabled
+      - preview_cutoff:
+        - Decides whether to display preview based on size of window.
+        - See |resolver.resolve_cutoff|
       - preview_width:
         - Change the width of Telescope's preview window
         - See |resolver.resolve_width()|
@@ -1381,7 +1416,9 @@ layout_strategies.center()                        *layout_strategies.center()*
         - See |resolver.resolve_width()|
 
     `picker.layout_config` unique options:
-      - preview_cutoff: When columns are less than this value, the preview will be disabled
+      - preview_cutoff:
+        - Decides whether to display preview based on size of window.
+        - See |resolver.resolve_cutoff|
 
 
 layout_strategies.vertical()                    *layout_strategies.vertical()*
@@ -1416,6 +1453,9 @@ layout_strategies.vertical()                    *layout_strategies.vertical()*
         - See |resolver.resolve_width()|
 
     `picker.layout_config` unique options:
+      - preview_cutoff:
+        - Decides whether to display preview based on size of window.
+        - See |resolver.resolve_cutoff|
       - preview_height:
         - Change the height of Telescope's preview window
         - See |resolver.resolve_height()|
