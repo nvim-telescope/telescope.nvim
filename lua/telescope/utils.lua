@@ -233,7 +233,7 @@ function utils.data_directory()
 end
 
 function utils.get_current_buffer_dir()
-	return vim.fn.expand('%:p:h')
+  return vim.fn.expand('%:p:h')
 end
 
 function utils.display_termcodes(str)
