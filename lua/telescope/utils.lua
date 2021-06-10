@@ -82,7 +82,7 @@ utils.quickfix_items_to_entries = function(locations)
   return results
 end
 
-utils.filter_symbols = function(opts, results)
+utils.filter_symbols = function(results, opts)
   if opts.symbols == nil then
     return results
   end
@@ -92,34 +92,46 @@ utils.filter_symbols = function(opts, results)
   if type(opts.symbols) == "string" then
     opts.symbols = string.lower(opts.symbols)
     if vim.tbl_contains(valid_symbols, opts.symbols) then
-      for _, result in ipairs(results) do
+      for _, result in pairs(results) do
         if string.lower(result.kind) == opts.symbols then
           table.insert(filtered_symbols, result)
         end
       end
+    else
+      print(string.format("%s is not a valid symbol per `vim.lsp.protocol.SymbolKind`", opts.symbols))
     end
   elseif type(opts.symbols) == "table" then
     opts.symbols = vim.tbl_map(string.lower, opts.symbols)
-    for _, symbol in ipairs(opts.symbols) do
+    local mismatched_symbols = {}
+    for _, symbol in pairs(opts.symbols) do
       if vim.tbl_contains(valid_symbols, symbol) then
         for _, result in pairs(results) do
           if string.lower(result.kind) == symbol then
             table.insert(filtered_symbols, result)
           end
         end
+      else
+        table.insert(mismatched_symbols, symbol)
+        mismatched_symbols = table.concat(mismatched_symbols, ", ")
+        print(string.format("%s are not valid symbols per `vim.lsp.protocol.SymbolKind`", mismatched_symbols))
       end
     end
   else
-    return filtered_symbols
+    print("Please pass filtering symbols as either a string or a list of strings")
+    return
   end
 
+  local current_buf = vim.api.nvim_get_current_buf()
   if not vim.tbl_isempty(filtered_symbols) then
     -- filter adequately for workspace symbols
-    for _, symbol in ipairs(filtered_symbols) do
-      symbol['bufnr'] = vim.uri_to_bufnr(vim.uri_from_fname(symbol.filename))
+    local filename_to_bufnr = {}
+    for _, symbol in pairs(filtered_symbols) do
+      if filename_to_bufnr[symbol.filename] == nil then
+        filename_to_bufnr[symbol.filename] = vim.uri_to_bufnr(vim.uri_from_fname(symbol.filename))
+      end
+      symbol['bufnr'] = filename_to_bufnr[symbol.filename]
     end
     table.sort(filtered_symbols, function(a, b)
-      local current_buf = vim.api.nvim_get_current_buf()
       if a.bufnr == b.bufnr then
         return a.lnum < b.lnum
       end
@@ -131,8 +143,12 @@ utils.filter_symbols = function(opts, results)
       end
       return a.bufnr < b.bufnr
     end)
-  end
   return filtered_symbols
+  end
+  -- only account for string|table as function otherwise already printed message and returned nil
+  local symbols = type(opts.symbols) == 'string' and opts.symbols or table.concat(opts.symbols, ', ')
+  print(string.format("%s symbol(s) were not part of the query results", symbols))
+  return
 end
 
 local convert_diagnostic_type = function(severity)

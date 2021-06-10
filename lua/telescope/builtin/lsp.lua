@@ -107,7 +107,11 @@ lsp.document_symbols = function(opts)
     vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
   end
 
-  locations = utils.filter_symbols(opts, locations)
+  locations = utils.filter_symbols(locations, opts)
+  if locations == nil then
+    -- error message already printed in `utils.filter_symbols`
+    return
+  end
 
   if vim.tbl_isempty(locations) then
     return
@@ -265,7 +269,11 @@ lsp.workspace_symbols = function(opts)
     end
   end
 
-  locations = utils.filter_symbols(opts, locations)
+  locations = utils.filter_symbols(locations, opts)
+  if locations == nil then
+    -- error message already printed in `utils.filter_symbols`
+    return
+  end
 
   if vim.tbl_isempty(locations) then
     print("No results from workspace/symbol. Maybe try a different query: " ..
