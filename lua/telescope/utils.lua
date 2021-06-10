@@ -82,11 +82,48 @@ utils.quickfix_items_to_entries = function(locations)
   return results
 end
 
+local convert_diagnostic_type = function(severity)
+  -- convert from string to int
+  if type(severity) == 'string' then
+    -- make sure that e.g. error is uppercased to Error
+    return vim.lsp.protocol.DiagnosticSeverity[severity:gsub("^%l", string.upper)]
+  end
+  -- otherwise keep original value, incl. nil
+  return severity
+end
+
+local filter_diag_severity = function(opts, severity)
+  if opts.severity ~= nil then
+    return opts.severity == severity
+  elseif opts.severity_limit ~= nil then
+    return severity <= opts.severity_limit
+  elseif opts.severity_bound ~= nil then
+    return severity >= opts.severity_bound
+  else
+    return true
+  end
+end
+
 utils.diagnostics_to_tbl = function(opts)
   opts = opts or {}
   local items = {}
+  local lsp_type_diagnostic = vim.lsp.protocol.DiagnosticSeverity
   local current_buf = vim.api.nvim_get_current_buf()
-  local lsp_type_diagnostic = {[1] = "Error", [2] = "Warning", [3] = "Information", [4] = "Hint"}
+
+  opts.severity = convert_diagnostic_type(opts.severity)
+  opts.severity_limit = convert_diagnostic_type(opts.severity_limit)
+  opts.severity_bound = convert_diagnostic_type(opts.severity_bound)
+
+  local validate_severity = 0
+  for _, v in pairs({opts.severity, opts.severity_limit, opts.severity_bound}) do
+    if v ~= nil then
+      validate_severity = validate_severity + 1
+    end
+    if validate_severity > 1 then
+      print('Please pass valid severity parameters')
+      return {}
+    end
+  end
 
   local preprocess_diag = function(diag, bufnr)
     local filename = vim.api.nvim_buf_get_name(bufnr)
@@ -102,11 +139,10 @@ utils.diagnostics_to_tbl = function(opts)
       col = col + 1,
       start = start,
       finish = finish,
-    -- remove line break to avoid display issues
+      -- remove line break to avoid display issues
       text = vim.trim(diag.message:gsub("[\n]", "")),
       type = lsp_type_diagnostic[diag.severity] or lsp_type_diagnostic[1]
     }
-    table.sort(buffer_diag, function(a, b) return a.lnum < b.lnum end)
     return buffer_diag
   end
 
@@ -116,10 +152,33 @@ utils.diagnostics_to_tbl = function(opts)
     for _, diag in pairs(diags) do
       -- workspace diagnostics may include empty tables for unused bufnr
       if not vim.tbl_isempty(diag) then
-        table.insert(items, preprocess_diag(diag, bufnr))
+        if filter_diag_severity(opts, diag.severity) then
+          table.insert(items, preprocess_diag(diag, bufnr))
+        end
       end
     end
   end
+
+  -- sort results by bufnr (prioritize cur buf), severity, lnum
+  table.sort(items, function(a, b)
+    if a.bufnr == b.bufnr then
+      if a.type == b.type then
+        return a.lnum < b.lnum
+      else
+        return a.type < b.type
+      end
+    else
+      -- prioritize for current bufnr
+      if a.bufnr == current_buf then
+        return true
+      end
+      if b.bufnr == current_buf then
+        return false
+      end
+      return a.bufnr < b.bufnr
+    end
+  end)
+
   return items
 end
 
