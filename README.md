@@ -446,7 +446,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.current_buffer_fuzzy_find` | Live fuzzy search inside of the currently open buffer                                                                                                       |
 | `builtin.current_buffer_tags`       | Lists all of the tags for the currently open buffer, with a preview                                                                                         |
 
-### Neovim LSP Pickers
+### LSP Pickers
 
 | Functions                                   | Description                                                                                                       |
 |---------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
