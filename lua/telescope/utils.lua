@@ -82,6 +82,59 @@ utils.quickfix_items_to_entries = function(locations)
   return results
 end
 
+utils.filter_symbols = function(opts, results)
+  if opts.symbols == nil then
+    return results
+  end
+  local valid_symbols = vim.tbl_map(string.lower, vim.lsp.protocol.SymbolKind)
+
+  local filtered_symbols = {}
+  if type(opts.symbols) == "string" then
+    opts.symbols = string.lower(opts.symbols)
+    if vim.tbl_contains(valid_symbols, opts.symbols) then
+      for _, result in ipairs(results) do
+        if string.lower(result.kind) == opts.symbols then
+          table.insert(filtered_symbols, result)
+        end
+      end
+    end
+  elseif type(opts.symbols) == "table" then
+    opts.symbols = vim.tbl_map(string.lower, opts.symbols)
+    for _, symbol in ipairs(opts.symbols) do
+      if vim.tbl_contains(valid_symbols, symbol) then
+        for _, result in pairs(results) do
+          if string.lower(result.kind) == symbol then
+            table.insert(filtered_symbols, result)
+          end
+        end
+      end
+    end
+  else
+    return filtered_symbols
+  end
+
+  if not vim.tbl_isempty(filtered_symbols) then
+    -- filter adequately for workspace symbols
+    for _, symbol in ipairs(filtered_symbols) do
+      symbol['bufnr'] = vim.uri_to_bufnr(vim.uri_from_fname(symbol.filename))
+    end
+    table.sort(filtered_symbols, function(a, b)
+      local current_buf = vim.api.nvim_get_current_buf()
+      if a.bufnr == b.bufnr then
+        return a.lnum < b.lnum
+      end
+      if a.bufnr == current_buf then
+        return true
+      end
+      if b.bufnr == current_buf then
+        return false
+      end
+      return a.bufnr < b.bufnr
+    end)
+  end
+  return filtered_symbols
+end
+
 local convert_diagnostic_type = function(severity)
   -- convert from string to int
   if type(severity) == 'string' then

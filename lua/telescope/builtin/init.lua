@@ -323,6 +323,7 @@ builtin.lsp_range_code_actions = require('telescope.builtin.lsp').range_code_act
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
 ---@field ignore_filename type: string with file to ignore
+---@field symbols string|table: filter results by symbol kind(s)
 builtin.lsp_document_symbols = require('telescope.builtin.lsp').document_symbols
 
 --- Lists LSP document symbols in the current workspace
@@ -332,6 +333,7 @@ builtin.lsp_document_symbols = require('telescope.builtin.lsp').document_symbols
 ---@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is false)
 ---@field ignore_filename string: file(s) to ignore
 ---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
+---@field symbols string|table: filter results by symbol kind(s)
 builtin.lsp_workspace_symbols = require('telescope.builtin.lsp').workspace_symbols
 
 --- Dynamically lists LSP for all workspace symbols
@@ -349,8 +351,8 @@ builtin.lsp_dynamic_workspace_symbols = require('telescope.builtin.lsp').dynamic
 ---@param opts table: options to pass to the picker
 ---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 ---@field severity string|number: filter diagnostics by severity name (string) or id (number)
----@field severity_limit string|number: filter for diagnostics equal or more severe wrt severity name (string) or id (number)
----@field severity_bound string|number: filter for diagnostics equal or less severe wrt severity name (string) or id (number)
+---@field severity_limit string|number: keep diagnostics equal or more severe wrt severity name (string) or id (number)
+---@field severity_bound string|number: keep diagnostics equal or less severe wrt severity name (string) or id (number)
 ---@field no_sign bool: hide LspDiagnosticSigns from Results (default is false)
 ---@field line_width number: set length of diagnostic entry text in Results
 builtin.lsp_document_diagnostics = require('telescope.builtin.lsp').diagnostics
@@ -363,8 +365,8 @@ builtin.lsp_document_diagnostics = require('telescope.builtin.lsp').diagnostics
 ---@param opts table: options to pass to the picker
 ---@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 ---@field severity string|number: filter diagnostics by severity name (string) or id (number)
----@field severity_limit string|number: filter for diagnostics equal or more severe wrt severity name (string) or id (number)
----@field severity_bound string|number: filter for diagnostics equal or less severe wrt severity name (string) or id (number)
+---@field severity_limit string|number: keep diagnostics equal or more severe wrt severity name (string) or id (number)
+---@field severity_bound string|number: keep diagnostics equal or less severe wrt severity name (string) or id (number)
 ---@field no_sign bool: hide LspDiagnosticSigns from Results (default is false)
 ---@field line_width number: set length of diagnostic entry text in Results
 builtin.lsp_workspace_diagnostics = require('telescope.builtin.lsp').workspace_diagnostics
