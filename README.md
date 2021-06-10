@@ -626,24 +626,37 @@ end
 ### Layout (display)
 <!-- TODO need some work -->
 
-`Resolvable`:
-1. 0 <= number < 1:
-    - This means total height as a percentage
-2. 1 <= number:
-    - This means total height as a fixed number
-3. function(picker, columns, lines):
-    - returns one of the above options
-    - `return max.min(110, max_rows * .5)`
+Layout can be configured by choosing a specific `layout_strategy` and
+specifying a particular `layout_config` for that strategy.
+For more details on available strategies and configuration options,
+see `:help telescope.layout`.
 
-```lua
-layout_strategies.horizontal = function(self, max_columns, max_lines)
-  local layout_config = validate_layout_config(self.layout_config or {}, {
-    width_padding = "How many cells to pad the width",
-    height_padding = "How many cells to pad the height",
-    preview_width = "(Resolvable): Determine preview width",
-  })
-  ...
-end
+Some options for configuring sizes in layouts are "resolvable".
+This means that they can take different forms, and will be interpreted differently according to which form they take.
+For example, if we wanted to set the `width` of a picker using the `vertical`
+layout strategy to 50% of the screen width, we would specify that width
+as `0.5`, but if we wanted to specify the `width` to be exactly 80
+characters wide, we would specify it as `80`.
+For more details on resolving sizes, see `:help telescope.resolve`.
+
+As an example, if we wanted to specify the layout strategy and width,
+but only for this instance, we could do something like:
+```
+:lua require('telescope.builtin').find_files({layout_strategy='vertical',layout_config={width=0.5}})
+```
+or if we wanted to change the width for every time we use the `vertical`
+layout strategy, we could add the following to our `setup()` call:
+```
+require('telescope').setup({
+  defaults = {
+    layout_config = {
+      vertical = { width = 0.5 }
+      -- other layout configuration here
+    },
+    -- other defaults configuration here
+  },
+  -- other configuration values here
+})
 ```
 
 ## Vim Commands
