@@ -164,7 +164,13 @@ local layout_config_defaults = {
       preview_cutoff = 120,
     },
 
-    -- vertical = {},
+    vertical = {
+      preview_cutoff = 40,
+    },
+
+    center = {
+      preview_cutoff = 40,
+    },
 }
 
 local layout_config_description = string.format([[
