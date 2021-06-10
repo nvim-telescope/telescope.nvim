@@ -107,6 +107,12 @@ lsp.document_symbols = function(opts)
     vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
   end
 
+  locations = utils.filter_symbols(locations, opts)
+  if locations == nil then
+    -- error message already printed in `utils.filter_symbols`
+    return
+  end
+
   if vim.tbl_isempty(locations) then
     return
   end
@@ -261,6 +267,12 @@ lsp.workspace_symbols = function(opts)
         vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
       end
     end
+  end
+
+  locations = utils.filter_symbols(locations, opts)
+  if locations == nil then
+    -- error message already printed in `utils.filter_symbols`
+    return
   end
 
   if vim.tbl_isempty(locations) then
