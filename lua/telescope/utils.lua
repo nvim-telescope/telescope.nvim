@@ -92,7 +92,7 @@ utils.filter_symbols = function(results, opts)
   if type(opts.symbols) == "string" then
     opts.symbols = string.lower(opts.symbols)
     if vim.tbl_contains(valid_symbols, opts.symbols) then
-      for _, result in pairs(results) do
+      for _, result in ipairs(results) do
         if string.lower(result.kind) == opts.symbols then
           table.insert(filtered_symbols, result)
         end
@@ -103,9 +103,9 @@ utils.filter_symbols = function(results, opts)
   elseif type(opts.symbols) == "table" then
     opts.symbols = vim.tbl_map(string.lower, opts.symbols)
     local mismatched_symbols = {}
-    for _, symbol in pairs(opts.symbols) do
+    for _, symbol in ipairs(opts.symbols) do
       if vim.tbl_contains(valid_symbols, symbol) then
-        for _, result in pairs(results) do
+        for _, result in ipairs(results) do
           if string.lower(result.kind) == symbol then
             table.insert(filtered_symbols, result)
           end
@@ -125,7 +125,7 @@ utils.filter_symbols = function(results, opts)
   if not vim.tbl_isempty(filtered_symbols) then
     -- filter adequately for workspace symbols
     local filename_to_bufnr = {}
-    for _, symbol in pairs(filtered_symbols) do
+    for _, symbol in ipairs(filtered_symbols) do
       if filename_to_bufnr[symbol.filename] == nil then
         filename_to_bufnr[symbol.filename] = vim.uri_to_bufnr(vim.uri_from_fname(symbol.filename))
       end
@@ -184,7 +184,7 @@ utils.diagnostics_to_tbl = function(opts)
   opts.severity_bound = convert_diagnostic_type(opts.severity_bound)
 
   local validate_severity = 0
-  for _, v in pairs({opts.severity, opts.severity_limit, opts.severity_bound}) do
+  for _, v in ipairs({opts.severity, opts.severity_limit, opts.severity_bound}) do
     if v ~= nil then
       validate_severity = validate_severity + 1
     end
@@ -218,7 +218,7 @@ utils.diagnostics_to_tbl = function(opts)
   local buffer_diags = opts.get_all and vim.lsp.diagnostic.get_all() or
     {[current_buf] = vim.lsp.diagnostic.get(current_buf, opts.client_id)}
   for bufnr, diags in pairs(buffer_diags) do
-    for _, diag in pairs(diags) do
+    for _, diag in ipairs(diags) do
       -- workspace diagnostics may include empty tables for unused bufnr
       if not vim.tbl_isempty(diag) then
         if filter_diag_severity(opts, diag.severity) then
