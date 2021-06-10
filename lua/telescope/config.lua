@@ -161,18 +161,10 @@ local layout_config_defaults = {
 
     horizontal = {
       prompt_position = "bottom",
-      preview_cutoff = {columns = 120},
+      preview_cutoff = 120,
     },
 
-    vertical = {
-      prompt_position = "bottom",
-      preview_cutoff = {lines = 40},
-    },
-
-    center = {
-      preview_cutoff = {lines = 40},
-      height = 0.5
-    },
+    -- vertical = {},
 }
 
 local layout_config_description = string.format([[

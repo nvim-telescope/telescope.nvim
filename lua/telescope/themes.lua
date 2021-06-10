@@ -35,7 +35,7 @@ function themes.get_dropdown(opts)
     sorting_strategy = "ascending",
     layout_strategy = "center",
     layout_config = {
-      preview_cutoff = true, -- Preview should always show (unless previewer = false)
+      preview_cutoff = 1, -- Preview should always show (unless previewer = false)
 
       width = function(_, max_columns, _)
         return math.min(max_columns - 3, 80)
