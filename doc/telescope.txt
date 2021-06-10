@@ -45,10 +45,16 @@ telescope.setup({opts})                                    *telescope.setup()*
         of 50% of the screen width.
 
         Default: {
+          center = {
+            preview_cutoff = 40
+          },
           height = 0.9,
           horizontal = {
             preview_cutoff = 120,
             prompt_position = "bottom"
+          },
+          vertical = {
+            preview_cutoff = 40
           },
           width = 0.8
         }
@@ -1381,7 +1387,7 @@ layout_strategies.center()                        *layout_strategies.center()*
         - See |resolver.resolve_width()|
 
     `picker.layout_config` unique options:
-      - preview_cutoff: When columns are less than this value, the preview will be disabled
+      - preview_cutoff: When lines are less than this value, the preview will be disabled
 
 
 layout_strategies.vertical()                    *layout_strategies.vertical()*
@@ -1416,6 +1422,7 @@ layout_strategies.vertical()                    *layout_strategies.vertical()*
         - See |resolver.resolve_width()|
 
     `picker.layout_config` unique options:
+      - preview_cutoff: When lines are less than this value, the preview will be disabled
       - preview_height:
         - Change the height of Telescope's preview window
         - See |resolver.resolve_height()|
