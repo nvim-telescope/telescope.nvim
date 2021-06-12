@@ -70,7 +70,7 @@ files.live_grep = function(opts)
 
       if search_dirs then
         table.insert(search_list, search_dirs)
-      elseif os_sep == '\\' then
+      else
         table.insert(search_list, '.')
       end
 
@@ -117,7 +117,7 @@ files.grep_string = function(opts)
     for _, path in ipairs(search_dirs) do
       table.insert(args, vim.fn.expand(path))
     end
-  elseif os_sep == '\\' then
+  else
     table.insert(args, '.')
   end
 
