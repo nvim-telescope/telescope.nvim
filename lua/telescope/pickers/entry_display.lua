@@ -1,28 +1,7 @@
 local strings = require('plenary.strings')
 
 local entry_display = {}
-
-entry_display.truncate = function(str, len)
-  str = tostring(str) -- We need to make sure its an actually a string and not a number
-  if strings.strdisplaywidth(str) <= len then
-    return str
-  end
-  local charlen = 0
-  local cur_len = 0
-  local result = ''
-  local len_of_dots = strings.strdisplaywidth('…')
-  while true do
-    local part = strings.strcharpart(str, charlen, 1)
-    cur_len = cur_len + strings.strdisplaywidth(part)
-    if (cur_len + len_of_dots) > len then
-      result = result .. '…'
-      break
-    end
-    result = result .. part
-    charlen = charlen + 1
-  end
-  return result
-end
+entry_display.truncate = strings.truncate
 
 entry_display.create = function(configuration)
   local generator = {}
