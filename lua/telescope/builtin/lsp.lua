@@ -5,6 +5,7 @@ local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
 local entry_display = require('telescope.pickers.entry_display')
 local utils = require('telescope.utils')
+local strings = require('plenary.strings')
 local a = require('plenary.async_lib')
 local async, await = a.async, a.await
 local channel = a.util.channel
@@ -172,7 +173,7 @@ lsp.code_actions = function(opts)
         }
 
         for key, value in pairs(widths) do
-          widths[key] = math.max(value, utils.strdisplaywidth(entry[key]))
+          widths[key] = math.max(value, strings.strdisplaywidth(entry[key]))
         end
 
         table.insert(results, entry)

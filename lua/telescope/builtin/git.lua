@@ -6,6 +6,7 @@ local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
 local utils = require('telescope.utils')
 local entry_display = require('telescope.pickers.entry_display')
+local strings = require('plenary.strings')
 
 local conf = require('telescope.config').values
 
@@ -138,7 +139,7 @@ git.branches = function(opts)
 
     entry.name = string.sub(entry.refname, string.len(prefix)+1)
     for key, value in pairs(widths) do
-      widths[key] = math.max(value, utils.strdisplaywidth(entry[key] or ''))
+      widths[key] = math.max(value, strings.strdisplaywidth(entry[key] or ''))
     end
     if string.len(entry.upstream) > 0 then
       widths.upstream_indicator = 2
