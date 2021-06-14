@@ -14,7 +14,10 @@ path.make_relative = function(filepath, cwd)
       offset = 1
     end
 
-    filepath = filepath:sub(#cwd + 1 + offset, #filepath)
+    -- only cut of cwd if filepath actually contains a path separator after cwd
+    if filepath:sub(#cwd + 1, #cwd + 1) == path.separator then
+      filepath = filepath:sub(#cwd + 1 + offset, #filepath)
+    end
   end
 
   return filepath
