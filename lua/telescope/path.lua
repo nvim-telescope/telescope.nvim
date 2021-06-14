@@ -55,7 +55,7 @@ path.smart = (function()
       for _, p in pairs(paths) do
         if (p ~= filepath) then
           local _dirs = vim.split(p, "/")
-          for i = 0, #dirs do
+          for i = 0, math.min(#dirs, #_dirs) do
             if (dirs[i] ~= _dirs[i]) then
               if i > max then
                 max = i
