@@ -19,6 +19,15 @@ telescope.setup({opts})                                    *telescope.setup()*
 
     Valid keys for {opts.defaults}
 
+                                 *telescope.defaults.dynamic_preview_title*
+    dynamic_preview_title: ~
+          Will change the title of the preview window dynamically, where it
+          is supported. Means the preview window will for example show the
+          full filename.
+
+          Default: false
+
+
                                           *telescope.defaults.entry_prefix*
     entry_prefix: ~
         Prefix in front of each result entry. Current selection not included.
@@ -283,8 +292,42 @@ actions.git_checkout({prompt_bufnr})                  *actions.git_checkout()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.git_switch_branch({prompt_bufnr})        *actions.git_switch_branch()*
+    Switch to git branch.
+    If the branch already exists in local, switch to that. If the branch is
+    only in remote, create new branch tracking remote and switch to new one.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 actions.git_track_branch({prompt_bufnr})          *actions.git_track_branch()*
     Tell git to track the currently selected remote branch in Telescope
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_delete_branch({prompt_bufnr})        *actions.git_delete_branch()*
+    Delete the currently selected branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_rebase_branch({prompt_bufnr})        *actions.git_rebase_branch()*
+    Rebase to selected git branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_checkout_current_buffer({prompt_bufnr})*actions.git_checkout_current_buffer()*
+    Stage/unstage selected file
 
 
     Parameters: ~
@@ -372,6 +415,24 @@ actions.open_loclist()                                *actions.open_loclist()*
 actions.delete_buffer({prompt_bufnr})                *actions.delete_buffer()*
     Delete the selected buffer or all the buffers selected using multi
     selection.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.cycle_previewers_next({prompt_bufnr})*actions.cycle_previewers_next()*
+    Cycle to the next previewer if there is one available.
+    This action is not mapped on default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.cycle_previewers_prev({prompt_bufnr})*actions.cycle_previewers_prev()*
+    Cycle to the previous previewer if there is one available.
+    This action is not mapped on default.
 
 
     Parameters: ~
@@ -583,15 +644,26 @@ builtin.git_commits({opts})                            *builtin.git_commits()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
+    Fields: ~
+        {cwd} (string)  specify the path of the repo
+
 
 builtin.git_bcommits({opts})                          *builtin.git_bcommits()*
     Lists commits for current buffer with diff preview
-    - Default keymaps:
+    - Default keymaps or your overriden `select_` keys:
       - `<cr>`: checks out the currently selected commit
+      - `<c-v>`: opens a diff in a vertical split
+      - `<c-x>`: opens a diff in a horizontal split
+      - `<c-t>`: opens a diff in a new tab
 
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {cwd}          (string)  specify the path of the repo
+        {current_file} (string)  specify the current file that should be used
+                                 for bcommits (default: current buffer)
 
 
 builtin.git_branches({opts})                          *builtin.git_branches()*
@@ -1094,6 +1166,10 @@ previewers.Previewer()                                *previewers.Previewer()*
       - `teardown` function(self): Will be called on cleanup.
       - `preview_fn` function(self, entry, status): Will be called each time a
         new entry was selected.
+      - `title` function(self): Will return the static title of the previewer.
+      - `dynamic_title` function(self, entry): Will return the dynamic title of
+        the previewer. Will only be called when config value
+        dynamic_preview_title is true.
       - `send_input` function(self, input): This is meant for 
         `termopen_previewer` and it can be used to send input to the terminal 
         application, like less.
@@ -1117,6 +1193,11 @@ previewers.new_termopen_previewer()      *previewers.new_termopen_previewer()*
       get_command = function(entry, status)
         return { 'bat', entry.path }
       end
+
+    Additionally you can define:
+    - `title` a static title for example "File Preview"
+    - `dyn_title(self, entry)` a dynamic title function which gets called when
+      config value `dynamic_preview_title = true`
 
     It's an easy way to get your first previewer going and it integrates well
     with `bat` and `less`. Providing out of the box scrolling if the command
@@ -1209,6 +1290,9 @@ previewers.new_buffer_previewer()          *previewers.new_buffer_previewer()*
         one file but multiple entries. This happens for grep and lsp builtins.
         So to make the cache work only load content if `self.state.bufname ~=
         entry.your_unique_key`
+      - `title` a static title for example "File Preview"
+      - `dyn_title(self, entry)` a dynamic title function which gets called 
+        when config value `dynamic_preview_title = true`
 
     `self.state` table:
       - `self.state.bufnr` Is the current buffer number, in which you have to
@@ -1301,6 +1385,51 @@ previewers.vim_buffer_qflist()                *previewers.vim_buffer_qflist()*
     `require('telescope.config').values.qflist_previewer` This will respect
     user configuration and will use `termopen_previewer` in case it's
     configured that way.
+
+
+
+previewers.git_branch_log()                      *previewers.git_branch_log()*
+    A previewer that shows a log of a branch as graph
+
+
+
+previewers.git_stash_diff()                      *previewers.git_stash_diff()*
+    A previewer that shows a diff of a stash
+
+
+
+previewers.git_commit_diff_to_parent()*previewers.git_commit_diff_to_parent()*
+    A previewer that shows a diff of a commit to a parent commit.
+    The run command is `git --no-pager diff SHA^! -- $CURRENT_FILE`
+
+    The current file part is optional. So is only uses it with bcommits.
+
+
+
+previewers.git_commit_diff_to_head()    *previewers.git_commit_diff_to_head()*
+    A previewer that shows a diff of a commit to head.
+    The run command is `git --no-pager diff --cached $SHA -- $CURRENT_FILE`
+
+    The current file part is optional. So is only uses it with bcommits.
+
+
+
+previewers.git_commit_diff_as_was()      *previewers.git_commit_diff_as_was()*
+    A previewer that shows a diff of a commit as it was.
+    The run command is `git --no-pager show $SHA:$CURRENT_FILE` or `git
+    --no-pager show $SHA`
+
+
+
+previewers.git_commit_message()              *previewers.git_commit_message()*
+    A previewer that shows the commit message of a diff.
+    The run command is `git --no-pager log -n 1 $SHA`
+
+
+
+previewers.git_file_diff()                        *previewers.git_file_diff()*
+    A previewer that shows the current diff of a file. Used in git_status.
+    The run command is `git --no-pager diff $FILE`
 
 
 
