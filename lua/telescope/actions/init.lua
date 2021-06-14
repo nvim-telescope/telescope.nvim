@@ -202,7 +202,9 @@ actions._close = function(prompt_bufnr, keepinsert)
   local original_win_id = picker.original_win_id
 
   if picker.previewer then
-    picker.previewer:teardown()
+    for _, v in ipairs(picker.all_previewers) do
+      v:teardown()
+    end
   end
 
   actions.close_pum(prompt_bufnr)
@@ -375,11 +377,10 @@ actions.git_checkout = function(prompt_bufnr)
   end
 end
 
--- TODO: add this function header back once the treesitter max-query bug is resolved
--- Switch to git branch
--- If the branch already exists in local, switch to that.
--- If the branch is only in remote, create new branch tracking remote and switch to new one.
---@param prompt_bufnr number: The prompt bufnr
+--- Switch to git branch.<br>
+--- If the branch already exists in local, switch to that.
+--- If the branch is only in remote, create new branch tracking remote and switch to new one.
+---@param prompt_bufnr number: The prompt bufnr
 actions.git_switch_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -419,9 +420,8 @@ actions.git_track_branch = function(prompt_bufnr)
   end
 end
 
--- TODO: add this function header back once the treesitter max-query bug is resolved
--- Delete the currently selected branch
--- @param prompt_bufnr number: The prompt bufnr
+--- Delete the currently selected branch
+---@param prompt_bufnr number: The prompt bufnr
 actions.git_delete_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -442,9 +442,8 @@ actions.git_delete_branch = function(prompt_bufnr)
   end
 end
 
--- TODO: add this function header back once the treesitter max-query bug is resolved
--- Rebase to selected git branch
--- @param prompt_bufnr number: The prompt bufnr
+--- Rebase to selected git branch
+---@param prompt_bufnr number: The prompt bufnr
 actions.git_rebase_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -465,9 +464,15 @@ actions.git_rebase_branch = function(prompt_bufnr)
   end
 end
 
--- TODO: add this function header back once the treesitter max-query bug is resolved
--- Stage/unstage selected file
--- @param prompt_bufnr number: The prompt bufnr
+--- Stage/unstage selected file
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_checkout_current_buffer = function(prompt_bufnr)
+  local cwd = actions.get_current_picker(prompt_bufnr).cwd
+  local selection = actions.get_selected_entry()
+  actions.close(prompt_bufnr)
+  utils.get_os_command_output({ 'git', 'checkout', selection.value, '--', selection.file }, cwd)
+end
+
 actions.git_staging_toggle = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -657,6 +662,20 @@ actions.delete_buffer = function(prompt_bufnr)
   current_picker:delete_selection(function(selection)
     vim.api.nvim_buf_delete(selection.bufnr, { force = true })
   end)
+end
+
+--- Cycle to the next previewer if there is one available.<br>
+--- This action is not mapped on default.
+---@param prompt_bufnr number: The prompt bufnr
+actions.cycle_previewers_next = function(prompt_bufnr)
+  actions.get_current_picker(prompt_bufnr):cycle_previewers(1)
+end
+
+--- Cycle to the previous previewer if there is one available.<br>
+--- This action is not mapped on default.
+---@param prompt_bufnr number: The prompt bufnr
+actions.cycle_previewers_prev = function(prompt_bufnr)
+  actions.get_current_picker(prompt_bufnr):cycle_previewers(-1)
 end
 
 -- ==================================================

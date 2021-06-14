@@ -147,6 +147,14 @@ function config.set_defaults(defaults)
 
   set("file_ignore_patterns", nil)
 
+  set("dynamic_preview_title", false, [[
+    Will change the title of the preview window dynamically, where it
+    is supported. Means the preview window will for example show the
+    full filename.
+
+    Default: false
+  ]])
+
   set("file_previewer", function(...) return require('telescope.previewers').vim_buffer_cat.new(...) end)
   set("grep_previewer", function(...) return require('telescope.previewers').vim_buffer_vimgrep.new(...) end)
   set("qflist_previewer", function(...) return require('telescope.previewers').vim_buffer_qflist.new(...) end)

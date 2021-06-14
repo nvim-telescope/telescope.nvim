@@ -145,12 +145,18 @@ builtin.git_files = require('telescope.builtin.git').files
 --- - Default keymaps:
 ---   - `<cr>`: checks out the currently selected commit
 ---@param opts table: options to pass to the picker
+---@field cwd string: specify the path of the repo
 builtin.git_commits = require('telescope.builtin.git').commits
 
 --- Lists commits for current buffer with diff preview
---- - Default keymaps:
+--- - Default keymaps or your overriden `select_` keys:
 ---   - `<cr>`: checks out the currently selected commit
+---   - `<c-v>`: opens a diff in a vertical split
+---   - `<c-x>`: opens a diff in a horizontal split
+---   - `<c-t>`: opens a diff in a new tab
 ---@param opts table: options to pass to the picker
+---@field cwd string: specify the path of the repo
+---@field current_file string: specify the current file that should be used for bcommits (default: current buffer)
 builtin.git_bcommits = require('telescope.builtin.git').bcommits
 
 --- List branches for current directory, with output from `git log --oneline` shown in the preview window
