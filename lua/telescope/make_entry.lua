@@ -69,6 +69,7 @@ do
 
     local disable_devicons = opts.disable_devicons
     local shorten_path = opts.shorten_path
+    local smart_path = opts.smart_path
 
     local mt_file_entry = {}
 
@@ -78,6 +79,8 @@ do
       local display = path.make_relative(entry.value, cwd)
       if shorten_path then
         display = utils.path_shorten(display)
+      elseif smart_path then
+        display = utils.path_smart(display)
       end
 
       display, hl_group = utils.transform_devicons(entry.value, display, disable_devicons)
@@ -137,6 +140,7 @@ do
 
   --- Special options:
   ---  - shorten_path: make the path appear short
+  ---  - smart_path: make the path appear relative to each other
   ---  - disable_coordinates: Don't show the line & row numbers
   ---  - only_sort_text: Only sort via the text. Ignore filename and other items
   function make_entry.gen_from_vimgrep(opts)
@@ -146,6 +150,7 @@ do
 
     local disable_devicons = opts.disable_devicons
     local shorten_path = opts.shorten_path
+    local smart_path = opts.smart_path
     local disable_coordinates = opts.disable_coordinates
     local only_sort_text = opts.only_sort_text
 
@@ -191,6 +196,8 @@ do
         local display_filename
         if shorten_path then
           display_filename = utils.path_shorten(entry.filename)
+        elseif smart_path then
+          display_filename = utils.path_smart(entry.filename)
         else
           display_filename = entry.filename
         end
@@ -307,6 +314,8 @@ function make_entry.gen_from_quickfix(opts)
         filename = utils.path_tail(filename)
       elseif opts.shorten_path then
         filename = utils.path_shorten(filename)
+      elseif opts.smart_path then
+        filename = utils.path_smart(filename)
       end
     end
 
@@ -386,6 +395,8 @@ function make_entry.gen_from_lsp_symbols(opts)
           filename = utils.path_tail(filename)
         elseif opts.shorten_path then
           filename = utils.path_shorten(filename)
+        elseif opts.smart_path then
+          filename = utils.path_smart(filename)
         end
       end
 
@@ -464,6 +475,8 @@ function make_entry.gen_from_buffer(opts)
     local display_bufname
     if opts.shorten_path then
       display_bufname = path.shorten(entry.filename)
+    elseif opts.smart_path then
+      display_bufname = path.smart(entry.filename)
     else
       display_bufname = entry.filename
     end
@@ -870,6 +883,8 @@ function make_entry.gen_from_ctags(opts)
     if not opts.hide_filename then
       if opts.shorten_path then
         filename = path.shorten(entry.filename)
+      elseif opts.smart_path then
+        filename = path.smart(entry.filename)
       else
         filename = entry.filename
       end
@@ -967,6 +982,8 @@ function make_entry.gen_from_lsp_diagnostics(opts)
         filename = utils.path_tail(filename)
       elseif opts.shorten_path then
         filename = utils.path_shorten(filename)
+      elseif opts.smart_path then
+        filename = utils.path_smart(filename)
       end
     end
 
@@ -1171,6 +1188,8 @@ function make_entry.gen_from_jumplist(opts)
         filename = utils.path_tail(filename)
       elseif opts.shorten_path then
         filename = utils.path_shorten(filename)
+      elseif opts.smart_path then
+        filename = utils.path_smart(filename)
       end
     end
 

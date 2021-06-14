@@ -44,6 +44,42 @@ path.shorten = (function()
   end
 end)()
 
+path.smart = (function()
+  local paths = {}
+  return function(filepath)
+    local final = filepath
+    if (#paths ~= 0) then
+      local max = 1
+      local dirs = vim.split(filepath, "/")
+      for _, p in pairs(paths) do
+        local _dirs = vim.split(p, "/")
+        for i = 0, #_dirs do
+          if (dirs[i] ~= _dirs[i]) then
+            if i > max then
+              max = i
+            end
+          end
+        end
+      end
+      local final_table = nil
+      if (max == #dirs) then
+        final_table = dirs[#dirs]
+      else
+        final_table = table.unpack(dirs, max, #dirs)
+      end
+      final = table.concat(final_table, "/")
+    else
+      final = table.concat(table.unpack(filepath, #final - 1, #final), "/")
+    end
+    table.insert(paths, filepath)
+    if (final == filepath) then
+      return final
+    else
+      return "../" .. final
+    end
+  end
+end)()
+
 path.normalize = function(filepath, cwd)
   filepath = path.make_relative(filepath, cwd)
 
