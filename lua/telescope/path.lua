@@ -7,17 +7,11 @@ path.home = vim.fn.expand("~")
 path.make_relative = function(filepath, cwd)
   if not cwd or not filepath then return filepath end
 
+  if cwd:sub(#cwd, #cwd) ~= path.separator then
+    cwd = cwd .. path.separator
+  end
   if filepath:sub(1, #cwd) == cwd  then
-    local offset =  0
-    -- if  cwd does ends in the os separator, we need to take it off
-    if cwd:sub(#cwd, #cwd) ~= path.separator then
-      offset = 1
-    end
-
-    -- only cut of cwd if filepath actually contains a path separator after cwd
-    if filepath:sub(#cwd + 1, #cwd + 1) == path.separator then
-      filepath = filepath:sub(#cwd + 1 + offset, #filepath)
-    end
+    filepath = filepath:sub(#cwd + 1, #filepath)
   end
 
   return filepath
