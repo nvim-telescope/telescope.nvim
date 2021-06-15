@@ -62,7 +62,7 @@ path.smart = (function()
           end
         end
       end
-      if (max == #dirs) then
+      if (max == #dirs and #dirs > 1) then
         final = dirs[#dirs - 1] .. '/' .. dirs[#dirs]
       elseif #dirs ~= 0 then
         final = unpack(dirs, max - 1, #dirs)
@@ -71,8 +71,10 @@ path.smart = (function()
     table.insert(paths, filepath)
     if (final == filepath) then
       return final
-    else
+    elseif final then
       return "../" .. final
+    else
+      return filepath
     end
   end
 end)()
