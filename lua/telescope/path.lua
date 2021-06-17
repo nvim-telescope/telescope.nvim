@@ -63,9 +63,7 @@ path.smart = (function()
           end
         end
       end
-      if (max == #dirs and #dirs > 1) then
-        final = dirs[#dirs - 1] .. '/' .. dirs[#dirs]
-      elseif #dirs ~= 0 then
+      if #dirs ~= 0 then
         final = ''
         for k, v in pairs(dirs) do
           if k >= max - 1 then
