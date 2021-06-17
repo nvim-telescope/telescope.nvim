@@ -64,6 +64,10 @@ path.smart = (function()
         end
       end
       if #dirs ~= 0 then
+        -- Q: Should we preserve the logic if the results are the same? 1 more maybe?
+        if (max == 1) then
+          max = #dirs - 2
+        end
         final = ''
         for k, v in pairs(dirs) do
           if k >= max - 1 then
@@ -76,9 +80,7 @@ path.smart = (function()
       paths[filepath] = ''
       table.insert(paths, filepath)
     end
-    if (final == filepath) then
-      return final
-    elseif final then
+    if (final and final ~= filepath) then
       return "../" .. final
     else
       return filepath
