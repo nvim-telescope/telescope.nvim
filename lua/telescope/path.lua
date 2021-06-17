@@ -51,29 +51,24 @@ path.smart = (function()
     local final = filepath
     if (#paths ~= 0) then
       local dirs = vim.split(filepath, "/")
-      local diff_counts = { }
+      local max = 1
       for _, p in pairs(paths) do
         if (#p > 0 and p ~= filepath) then
           local _dirs = vim.split(p, "/")
-          local differs = 1
           for i = 1, math.min(#dirs, #_dirs) do
-            if (dirs[i] ~= _dirs[i]) and i > differs then
-              differs = i
+            if (dirs[i] ~= _dirs[i]) and i > max then
+              max = i
               break
             end
           end
-          if differs > 1 then
-            table.insert(diff_counts, differs)
-          end
         end
       end
-      local max = math.max(unpack(diff_counts))
       if (max == #dirs and #dirs > 1) then
         final = dirs[#dirs - 1] .. '/' .. dirs[#dirs]
       elseif #dirs ~= 0 then
         final = ''
         for k, v in pairs(dirs) do
-          if k >= max then
+          if k >= max - 1 then
             final = final .. (#final > 0 and '/' or '') .. v
           end
         end
