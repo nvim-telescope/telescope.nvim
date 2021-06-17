@@ -289,12 +289,12 @@ function config.set_defaults(user_defaults, tele_defaults)
   user_defaults = user_defaults or {}
   tele_defaults = tele_defaults or telescope_defaults
 
-  if user_defaults.layout_default then
+  if user_defaults.layout_defaults then
     if user_defaults.layout_config == nil then
-      log.info "Using 'layout_default' in setup() is deprecated. Use 'layout_config' instead."
-      user_defaults.layout_config = user_defaults.layout_default
+      log.info "Using 'layout_defaults' in setup() is deprecated. Use 'layout_config' instead."
+      user_defaults.layout_config = user_defaults.layout_defaults
     else
-      error "Using 'layout_default' in setup() is deprecated. Remove this key and use 'layout_config' instead."
+      error "Using 'layout_defaults' in setup() is deprecated. Remove this key and use 'layout_config' instead."
     end
   end
 
