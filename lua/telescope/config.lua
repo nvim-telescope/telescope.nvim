@@ -58,14 +58,182 @@ function config.set_pickers(pickers)
   end
 end
 
+local layout_config_defaults = {
+    width = 0.8,
+    height = 0.9,
+
+    horizontal = {
+      prompt_position = "bottom",
+      preview_cutoff = 120,
+    },
+
+    vertical = {
+      preview_cutoff = 40,
+    },
+
+    center = {
+      preview_cutoff = 40,
+    },
+}
+
+local layout_config_description = string.format([[
+    Determines the default configuration values for layout strategies.
+    See |telescope.layout| for details of the configurations options for
+    each strategy.
+
+    Allows setting defaults for all strategies as top level options and
+    for overriding for specific options.
+    For example, the default values below set the default width to 80%% of
+    the screen width for all strategies except 'center', which has width
+    of 50%% of the screen width.
+
+    Default: %s
+]], vim.inspect(layout_config_defaults, { newline = "\n    ", indent = "  " }))
+
+
 -- A table of all the usual defaults for telescope.
 -- Keys will be the name of the default,
 -- values will be a list where:
 -- - first entry is the value
 -- - second entry is the description of the option
+
 local telescope_defaults = {
-  sorting_strategy = { ... }
+
+sorting_strategy = { "descending", [[
+    Determines the direction "better" results are sorted towards.
+
+    Available options are:
+    - "descending" (default)
+    - "ascending"]]},
+
+selection_strategy = { "reset", [[
+    Determines how the cursor acts after each sort iteration.
+
+    Available options are:
+    - "reset" (default)
+    - "follow"
+    - "row"]]},
+
+scroll_strategy = {"cycle", [[
+    Determines what happens you try to scroll past view of the picker.
+
+    Available options are:
+    - "cycle" (default)
+    - "limit"]]},
+
+layout_strategy = {"horizontal", [[
+    Determines the default layout of Telescope pickers.
+    See |telescope.layout| for details of the available strategies.
+
+    Default: 'horizontal']]},
+
+layout_config = {layout_config_defaults, layout_config_description},
+
+winblend = {0},
+
+prompt_prefix = {"> ", [[
+    Will be shown in front of the prompt.
+
+    Default: '> ']]},
+selection_caret = {"> ", [[
+    Will be shown in front of the selection.
+
+    Default: '> ']]},
+entry_prefix = {"  ", [[
+    Prefix in front of each result entry. Current selection not included.
+
+    Default: '  ']]},
+initial_mode = {"insert"},
+
+border = {{}},
+borderchars = {{ '─', '│', '─', '│', '╭', '╮', '╯', '╰'}},
+
+get_status_text = {function(self)
+    local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
+    local yy = self.stats.processed or 0
+    if xx == 0 and yy == 0 then return "" end
+
+    return string.format("%s / %s", xx, yy)
+  end},
+
+dynamic_preview_title = { false, [[
+Will change the title of the preview window dynamically, where it
+is supported. Means the preview window will for example show the
+full filename.
+
+Default: false
+]]},
+
+-- Builtin configuration
+
+-- List that will be executed.
+--    Last argument will be the search term (passed in during execution)
+vimgrep_arguments = {
+  {'rg', '--color=never', '--no-heading', '--with-filename', '--line-number', '--column', '--smart-case'}
+},
+use_less = {true},
+color_devicons = {true},
+
+set_env = {nil},
+
+mappings = {{}, [[
+Your mappings to override telescope's default mappings.
+
+Format is:
+{
+  mode = { ..keys }
 }
+
+where {mode} is the one character letter for a mode ('i' for insert, 'n' for normal).
+
+For example:
+
+mappings = {
+  i = {
+    ["<esc>"] = actions.close,
+  },
+}
+
+
+To disable a keymap, put [map] = false
+      So, to not map "<C-n>", just put
+
+          ...,
+          ["<C-n>"] = false,
+          ...,
+
+      Into your config.
+
+
+otherwise, just set the mapping to the function that you want it to be.
+
+          ...,
+          ["<C-i>"] = actions.select_default
+          ...,
+]]},
+
+default_mappings = {nil, [[
+Not recommended to use except for advanced users.
+
+Will allow you to completely remove all of telescope's default maps and use your own.
+]]},
+
+generic_sorter = {sorters.get_generic_fuzzy_sorter},
+prefilter_sorter = {sorters.prefilter},
+file_sorter = {sorters.get_fuzzy_file},
+
+file_ignore_patterns = {nil},
+
+file_previewer = {
+  function(...) return require('telescope.previewers').vim_buffer_cat.new(...) end},
+grep_previewer = {
+  function(...) return require('telescope.previewers').vim_buffer_vimgrep.new(...) end},
+qflist_previewer = {
+  function(...) return require('telescope.previewers').vim_buffer_qflist.new(...) end},
+buffer_previewer_maker = {
+  function(...) return require('telescope.previewers').buffer_previewer_maker(...) end},
+}
+
 
 -- @param user_defaults table: a table where keys are the names of options,
 --    and values are the ones the user wants
@@ -114,172 +282,6 @@ function config.set_defaults(user_defaults, tele_defaults)
   M.get = get
   return M
 end
-
-telescope_defaults["sorting_strategy"] = { "descending", [[
-    Determines the direction "better" results are sorted towards.
-
-    Available options are:
-    - "descending" (default)
-    - "ascending"]]}
-
-telescope_defaults["selection_strategy"] = { "reset", [[
-    Determines how the cursor acts after each sort iteration.
-
-    Available options are:
-    - "reset" (default)
-    - "follow"
-    - "row"]]}
-
-telescope_defaults["scroll_strategy"] = {"cycle", [[
-    Determines what happens you try to scroll past view of the picker.
-
-    Available options are:
-    - "cycle" (default)
-    - "limit"]]}
-
-telescope_defaults["layout_strategy"] = {"horizontal", [[
-    Determines the default layout of Telescope pickers.
-    See |telescope.layout| for details of the available strategies.
-
-    Default: 'horizontal']]}
-
-local layout_config_defaults = {
-    width = 0.8,
-    height = 0.9,
-
-    horizontal = {
-      prompt_position = "bottom",
-      preview_cutoff = 120,
-    },
-
-    vertical = {
-      preview_cutoff = 40,
-    },
-
-    center = {
-      preview_cutoff = 40,
-    },
-}
-
-local layout_config_description = string.format([[
-    Determines the default configuration values for layout strategies.
-    See |telescope.layout| for details of the configurations options for
-    each strategy.
-
-    Allows setting defaults for all strategies as top level options and
-    for overriding for specific options.
-    For example, the default values below set the default width to 80%% of
-    the screen width for all strategies except 'center', which has width
-    of 50%% of the screen width.
-
-    Default: %s
-]], vim.inspect(layout_config_defaults, { newline = "\n    ", indent = "  " }))
-
-telescope_defaults["layout_config"] = {layout_config_defaults, layout_config_description}
-
-telescope_defaults["winblend"] = {0}
-
-telescope_defaults["prompt_prefix"] = {"> ", [[
-    Will be shown in front of the prompt.
-
-    Default: '> ']]}
-telescope_defaults["selection_caret"] = {"> ", [[
-    Will be shown in front of the selection.
-
-    Default: '> ']]}
-telescope_defaults["entry_prefix"] = {"  ", [[
-    Prefix in front of each result entry. Current selection not included.
-
-    Default: '  ']]}
-telescope_defaults["initial_mode"] = {"insert"}
-
-telescope_defaults["border"] = {{}}
-telescope_defaults["borderchars"] = {{ '─', '│', '─', '│', '╭', '╮', '╯', '╰'}}
-
-telescope_defaults["get_status_text"] = {function(self)
-    local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
-    local yy = self.stats.processed or 0
-    if xx == 0 and yy == 0 then return "" end
-
-    return string.format("%s / %s", xx, yy)
-  end}
-
-telescope_defaults["dynamic_preview_title"] = { false, [[
-Will change the title of the preview window dynamically, where it
-is supported. Means the preview window will for example show the
-full filename.
-
-Default: false
-]]}
-
--- Builtin configuration
-
--- List that will be executed.
---    Last argument will be the search term (passed in during execution)
-telescope_defaults["vimgrep_arguments"] = {
-  {'rg', '--color=never', '--no-heading', '--with-filename', '--line-number', '--column', '--smart-case'}
-}
-telescope_defaults["use_less"] = {true}
-telescope_defaults["color_devicons"] = {true}
-
-telescope_defaults["set_env"] = {nil}
-
-telescope_defaults["mappings"] = {{}, [[
-Your mappings to override telescope's default mappings.
-
-Format is:
-{
-  mode = { ..keys }
-}
-
-where {mode} is the one character letter for a mode ('i' for insert, 'n' for normal).
-
-For example:
-
-mappings = {
-  i = {
-    ["<esc>"] = actions.close,
-  },
-}
-
-
-To disable a keymap, put [map] = false
-      So, to not map "<C-n>", just put
-
-          ...,
-          ["<C-n>"] = false,
-          ...,
-
-      Into your config.
-
-
-otherwise, just set the mapping to the function that you want it to be.
-
-          ...,
-          ["<C-i>"] = actions.select_default
-          ...,
-]]}
-
-telescope_defaults["default_mappings"] = {nil, [[
-Not recommended to use except for advanced users.
-
-Will allow you to completely remove all of telescope's default maps and use your own.
-]]}
-
-telescope_defaults["generic_sorter"] = {sorters.get_generic_fuzzy_sorter}
-telescope_defaults["prefilter_sorter"] = {sorters.prefilter}
-telescope_defaults["file_sorter"] = {sorters.get_fuzzy_file}
-
-telescope_defaults["file_ignore_patterns"] = {nil}
-
-telescope_defaults["file_previewer"] = {
-  function(...) return require('telescope.previewers').vim_buffer_cat.new(...) end}
-telescope_defaults["grep_previewer"] = {
-  function(...) return require('telescope.previewers').vim_buffer_vimgrep.new(...) end}
-telescope_defaults["qflist_previewer"] = {
-  function(...) return require('telescope.previewers').vim_buffer_qflist.new(...) end}
-telescope_defaults["buffer_previewer_maker"] = {
-  function(...) return require('telescope.previewers').buffer_previewer_maker(...) end}
 
 function config.clear_defaults()
   for k, _ in pairs(config.values) do

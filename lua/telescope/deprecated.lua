@@ -4,7 +4,7 @@ local deprecated = {}
 deprecated.picker_window_options = function(opts)
   local messages = {}
 
-  -- Deprecated: PR:823, 2021/05/17
+  -- Deprecated: PR:922, 2021/05/17
   -- Can be removed in a few weeks.
 
   if opts.width then
@@ -16,12 +16,12 @@ deprecated.picker_window_options = function(opts)
   end
 
   if opts.results_height then
-    table.insert(messages, "'opts.results_height' is no longer valid. Please see ':help telescope.changelog-823'")
+    table.insert(messages, "'opts.results_height' is no longer valid. Please see ':help telescope.changelog-922'")
   end
 
   if opts.results_width then
     table.insert(messages,
-      "'opts.results_width' actually didn't do anything. Please see ':help telescope.changelog-823'"
+      "'opts.results_width' actually didn't do anything. Please see ':help telescope.changelog-922'"
     )
   end
 

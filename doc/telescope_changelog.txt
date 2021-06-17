@@ -3,10 +3,10 @@
 
 # Changelog
 
-                                                     *telescope.changelog-823*
+                                                     *telescope.changelog-922*
 
 Date: May 17, 2021
-PR: https://github.com/nvim-telescope/telescope.nvim/pull/823
+PR: https://github.com/nvim-telescope/telescope.nvim/pull/922
 
 A lot of new and breaking changes here as we work to clean up the way users
 can configure how telescope's windows are configured.
