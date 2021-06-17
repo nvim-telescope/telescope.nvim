@@ -1067,8 +1067,8 @@ builtin.lsp_document_symbols({opts})          *builtin.lsp_document_symbols()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {ignore_filename} (type)    string with file to ignore
-        {symbols}         (string)  table
+        {ignore_filename} (type)          string with file to ignore
+        {symbols}         (string|table)  filter results by symbol kind(s)
 
 
 builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
@@ -1082,13 +1082,14 @@ builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {shorten_path}    (boolean)  if true, makes file paths shown in picker
-                                     use one letter for folders (default is
-                                     false)
-        {ignore_filename} (string)   file(s) to ignore
-        {hide_filename}   (boolean)  if true, hides the name of the file in the
-                                     current picker (default is false)
-        {symbols}         (string)   table
+        {shorten_path}    (boolean)       if true, makes file paths shown in
+                                          picker use one letter for folders
+                                          (default is false)
+        {ignore_filename} (string)        file(s) to ignore
+        {hide_filename}   (boolean)       if true, hides the name of the file
+                                          in the current picker (default is
+                                          false)
+        {symbols}         (string|table)  filter results by symbol kind(s)
 
 
 builtin.lsp_dynamic_workspace_symbols({opts})*builtin.lsp_dynamic_workspace_symbols()*
@@ -1120,15 +1121,21 @@ builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {hide_filename}  (boolean)  if true, hides the name of the file in the
-                                    current picker (default is false)
-        {severity}       (string)   number
-        {severity_limit} (string)   number
-        {severity_bound} (string)   number
-        {no_sign}        (bool)     hide LspDiagnosticSigns from Results
-                                    (default is false)
-        {line_width}     (number)   set length of diagnostic entry text in
-                                    Results
+        {hide_filename}  (boolean)        if true, hides the name of the file
+                                          in the current picker (default is
+                                          false)
+        {severity}       (string|number)  filter diagnostics by severity name
+                                          (string) or id (number)
+        {severity_limit} (string|number)  keep diagnostics equal or more severe
+                                          wrt severity name (string) or id
+                                          (number)
+        {severity_bound} (string|number)  keep diagnostics equal or less severe
+                                          wrt severity name (string) or id
+                                          (number)
+        {no_sign}        (bool)           hide LspDiagnosticSigns from Results
+                                          (default is false)
+        {line_width}     (number)         set length of diagnostic entry text
+                                          in Results
 
 
 builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
@@ -1146,15 +1153,21 @@ builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {hide_filename}  (boolean)  if true, hides the name of the file in the
-                                    current picker (default is false)
-        {severity}       (string)   number
-        {severity_limit} (string)   number
-        {severity_bound} (string)   number
-        {no_sign}        (bool)     hide LspDiagnosticSigns from Results
-                                    (default is false)
-        {line_width}     (number)   set length of diagnostic entry text in
-                                    Results
+        {hide_filename}  (boolean)        if true, hides the name of the file
+                                          in the current picker (default is
+                                          false)
+        {severity}       (string|number)  filter diagnostics by severity name
+                                          (string) or id (number)
+        {severity_limit} (string|number)  keep diagnostics equal or more severe
+                                          wrt severity name (string) or id
+                                          (number)
+        {severity_bound} (string|number)  keep diagnostics equal or less severe
+                                          wrt severity name (string) or id
+                                          (number)
+        {no_sign}        (bool)           hide LspDiagnosticSigns from Results
+                                          (default is false)
+        {line_width}     (number)         set length of diagnostic entry text
+                                          in Results
 
 
 
