@@ -65,7 +65,7 @@ path.smart = (function()
       end
       if #dirs ~= 0 then
         -- Q: Should we preserve the logic if the results are the same? 1 more maybe?
-        if (max == 1 and #dirs > 2) then
+        if (max == 1 and #dirs >= 2) then
           max = #dirs - 2
         end
         final = ''
