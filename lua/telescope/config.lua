@@ -1,12 +1,12 @@
-local strings = require('plenary.strings')
-local log = require('telescope.log')
+local strings = require "plenary.strings"
+local log = require "telescope.log"
 
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
 _TelescopeConfigurationPickers = _TelescopeConfigurationPickers or {}
 
 local function first_non_null(...)
-  local n = select('#', ...)
+  local n = select("#", ...)
   for i = 1, n do
     local value = select(i, ...)
 
@@ -24,20 +24,20 @@ end
 local smarter_depth_2_extend = function(priority, base)
   local result = {}
   for key, val in pairs(base) do
-    if type(val) ~= 'table' then
-      result[key] = first_non_null(priority[key],val)
+    if type(val) ~= "table" then
+      result[key] = first_non_null(priority[key], val)
     else
       result[key] = {}
       for k, v in pairs(val) do
-        result[key][k] = first_non_null(priority[k],v)
+        result[key][k] = first_non_null(priority[k], v)
       end
     end
   end
-  result = vim.tbl_deep_extend("keep",priority,result)
+  result = vim.tbl_deep_extend("keep", priority, result)
   return result
 end
 
-local sorters = require('telescope.sorters')
+local sorters = require "telescope.sorters"
 
 -- TODO: Add other major configuration points here.
 -- selection_strategy
@@ -59,21 +59,21 @@ function config.set_pickers(pickers)
 end
 
 local layout_config_defaults = {
-    width = 0.8,
-    height = 0.9,
+  width = 0.8,
+  height = 0.9,
 
-    horizontal = {
-      prompt_position = "bottom",
-      preview_cutoff = 120,
-    },
+  horizontal = {
+    prompt_position = "bottom",
+    preview_cutoff = 120,
+  },
 
-    vertical = {
-      preview_cutoff = 40,
-    },
+  vertical = {
+    preview_cutoff = 40,
+  },
 
-    center = {
-      preview_cutoff = 40,
-    },
+  center = {
+    preview_cutoff = 40,
+  },
 }
 
 local layout_config_description = string.format([[
@@ -88,8 +88,10 @@ local layout_config_description = string.format([[
     of 50%% of the screen width.
 
     Default: %s
-]], vim.inspect(layout_config_defaults, { newline = "\n    ", indent = "  " }))
-
+]], vim.inspect(
+  layout_config_defaults,
+  { newline = "\n    ", indent = "  " }
+))
 
 -- A table of all the usual defaults for telescope.
 -- Keys will be the name of the default,
@@ -99,84 +101,113 @@ local layout_config_description = string.format([[
 
 local telescope_defaults = {
 
-sorting_strategy = { "descending", [[
+  sorting_strategy = {
+    "descending",
+    [[
     Determines the direction "better" results are sorted towards.
 
     Available options are:
     - "descending" (default)
-    - "ascending"]]},
+    - "ascending"]],
+  },
 
-selection_strategy = { "reset", [[
+  selection_strategy = {
+    "reset",
+    [[
     Determines how the cursor acts after each sort iteration.
 
     Available options are:
     - "reset" (default)
     - "follow"
-    - "row"]]},
+    - "row"]],
+  },
 
-scroll_strategy = {"cycle", [[
+  scroll_strategy = {
+    "cycle",
+    [[
     Determines what happens you try to scroll past view of the picker.
 
     Available options are:
     - "cycle" (default)
-    - "limit"]]},
+    - "limit"]],
+  },
 
-layout_strategy = {"horizontal", [[
+  layout_strategy = {
+    "horizontal",
+    [[
     Determines the default layout of Telescope pickers.
     See |telescope.layout| for details of the available strategies.
 
-    Default: 'horizontal']]},
+    Default: 'horizontal']],
+  },
 
-layout_config = {layout_config_defaults, layout_config_description},
+  layout_config = { layout_config_defaults, layout_config_description },
 
-winblend = {0},
+  winblend = { 0 },
 
-prompt_prefix = {"> ", [[
+  prompt_prefix = { "> ", [[
     Will be shown in front of the prompt.
 
-    Default: '> ']]},
-selection_caret = {"> ", [[
+    Default: '> ']]
+  },
+
+  selection_caret = { "> ", [[
     Will be shown in front of the selection.
 
-    Default: '> ']]},
-entry_prefix = {"  ", [[
+    Default: '> ']]
+  },
+
+  entry_prefix = { "  ", [[
     Prefix in front of each result entry. Current selection not included.
 
-    Default: '  ']]},
-initial_mode = {"insert"},
+    Default: '  ']]
+  },
 
-border = {{}},
-borderchars = {{ '─', '│', '─', '│', '╭', '╮', '╯', '╰'}},
+  initial_mode = { "insert" },
 
-get_status_text = {function(self)
-    local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
-    local yy = self.stats.processed or 0
-    if xx == 0 and yy == 0 then return "" end
+  border = { {} },
 
-    return string.format("%s / %s", xx, yy)
-  end},
+  borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" } },
 
-dynamic_preview_title = { false, [[
+  get_status_text = {
+    function(self)
+      local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
+      local yy = self.stats.processed or 0
+      if xx == 0 and yy == 0 then
+        return ""
+      end
+
+      return string.format("%s / %s", xx, yy)
+    end,
+  },
+
+  dynamic_preview_title = {
+    false,
+    [[
 Will change the title of the preview window dynamically, where it
 is supported. Means the preview window will for example show the
 full filename.
 
 Default: false
-]]},
+]],
+  },
 
--- Builtin configuration
+  -- Builtin configuration
 
--- List that will be executed.
---    Last argument will be the search term (passed in during execution)
-vimgrep_arguments = {
-  {'rg', '--color=never', '--no-heading', '--with-filename', '--line-number', '--column', '--smart-case'}
-},
-use_less = {true},
-color_devicons = {true},
+  -- List that will be executed.
+  --    Last argument will be the search term (passed in during execution)
+  vimgrep_arguments = {
+    { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
+  },
 
-set_env = {nil},
+  use_less = { true },
 
-mappings = {{}, [[
+  color_devicons = { true },
+
+  set_env = { nil },
+
+  mappings = {
+    {}, [[
 Your mappings to override telescope's default mappings.
 
 Format is:
@@ -210,30 +241,45 @@ otherwise, just set the mapping to the function that you want it to be.
           ...,
           ["<C-i>"] = actions.select_default
           ...,
-]]},
+]],
+  },
 
-default_mappings = {nil, [[
+  default_mappings = {
+    nil,
+    [[
 Not recommended to use except for advanced users.
 
 Will allow you to completely remove all of telescope's default maps and use your own.
-]]},
+]],
+  },
 
-generic_sorter = {sorters.get_generic_fuzzy_sorter},
-prefilter_sorter = {sorters.prefilter},
-file_sorter = {sorters.get_fuzzy_file},
+  generic_sorter = { sorters.get_generic_fuzzy_sorter },
+  prefilter_sorter = { sorters.prefilter },
+  file_sorter = { sorters.get_fuzzy_file },
 
-file_ignore_patterns = {nil},
+  file_ignore_patterns = { nil },
 
-file_previewer = {
-  function(...) return require('telescope.previewers').vim_buffer_cat.new(...) end},
-grep_previewer = {
-  function(...) return require('telescope.previewers').vim_buffer_vimgrep.new(...) end},
-qflist_previewer = {
-  function(...) return require('telescope.previewers').vim_buffer_qflist.new(...) end},
-buffer_previewer_maker = {
-  function(...) return require('telescope.previewers').buffer_previewer_maker(...) end},
+  file_previewer = {
+    function(...)
+      return require("telescope.previewers").vim_buffer_cat.new(...)
+    end,
+  },
+  grep_previewer = {
+    function(...)
+      return require("telescope.previewers").vim_buffer_vimgrep.new(...)
+    end,
+  },
+  qflist_previewer = {
+    function(...)
+      return require("telescope.previewers").vim_buffer_qflist.new(...)
+    end,
+  },
+  buffer_previewer_maker = {
+    function(...)
+      return require("telescope.previewers").buffer_previewer_maker(...)
+    end,
+  },
 }
-
 
 -- @param user_defaults table: a table where keys are the names of options,
 --    and values are the ones the user wants
@@ -245,10 +291,10 @@ function config.set_defaults(user_defaults, tele_defaults)
 
   if user_defaults.layout_default then
     if user_defaults.layout_config == nil then
-      log.info("Using 'layout_default' in setup() is deprecated. Use 'layout_config' instead.")
+      log.info "Using 'layout_default' in setup() is deprecated. Use 'layout_config' instead."
       user_defaults.layout_config = user_defaults.layout_default
     else
-      error("Using 'layout_default' in setup() is deprecated. Remove this key and use 'layout_config' instead.")
+      error "Using 'layout_default' in setup() is deprecated. Remove this key and use 'layout_config' instead."
     end
   end
 
@@ -256,10 +302,8 @@ function config.set_defaults(user_defaults, tele_defaults)
     if name == "layout_config" then
       return smarter_depth_2_extend(
         user_defaults[name] or {},
-        vim.tbl_deep_extend("keep",
-          config.values[name] or {},
-          default_val or {}
-      ))
+        vim.tbl_deep_extend("keep", config.values[name] or {}, default_val or {})
+      )
     end
     return first_non_null(user_defaults[name], config.values[name], default_val)
   end
@@ -290,6 +334,5 @@ function config.clear_defaults()
 end
 
 config.set_defaults()
-
 
 return config
