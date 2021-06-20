@@ -26,6 +26,14 @@ if past loop of must have scores,
 local EntryManager = {}
 EntryManager.__index = EntryManager
 
+--- Create a new EntryManager object
+---@param max_results number: the number of results to keep sorted at the head of the linked list
+---@param set_entry any: TODO: not sure what this is for
+---@param info table: (optional) table containing information to keep track of
+---   @key looped number: number of existing entries checked when adding new entries
+---   @key inserted number: TODO: figure out if this is used anywhere
+---   @key find_loop number: number of entries checked when trying to find an entry
+---@return any
 function EntryManager:new(max_results, set_entry, info)
   log.trace("Creating entry_manager...")
 
@@ -48,10 +56,15 @@ function EntryManager:new(max_results, set_entry, info)
   }, self)
 end
 
+--- Get the number of entries in the manager
+---@return number
 function EntryManager:num_results()
   return self.linked_states.size
 end
 
+--- Get the container in the EntryManager corresponding to `index`
+---@param index number
+---@return table: contains the entry at index 1 and the score at index 2
 function EntryManager:get_container(index)
   local count = 0
   for val in self.linked_states:iter() do
@@ -65,18 +78,28 @@ function EntryManager:get_container(index)
   return {}
 end
 
+--- Get the entry in the EntryManager corresponding to `index`
+---@param index number
+---@return table: table with information about the given entry
 function EntryManager:get_entry(index)
   return self:get_container(index)[1]
 end
 
+--- Get the score in the EntryManager corresponding to `index`
+---@param index number
+---@return number
 function EntryManager:get_score(index)
   return self:get_container(index)[2]
 end
 
+--TODO: documentation
 function EntryManager:get_ordinal(index)
   return self:get_entry(index).ordinal
 end
 
+--- Get the index of the given entry in the EntryManager
+---@param entry table: table with information about the given entry
+---@return integer/nil: the index of the entry if is present, nil otherwise
 function EntryManager:find_entry(entry)
   local info = self.info
 
@@ -95,6 +118,7 @@ function EntryManager:find_entry(entry)
   return nil
 end
 
+--- Update the `worst_acceptable_score` based on the score of the tracked entry
 function EntryManager:_update_score_from_tracked()
   local linked = self.linked_states
 
@@ -103,6 +127,13 @@ function EntryManager:_update_score_from_tracked()
   end
 end
 
+--- Insert the `new_container` before the `linked_node` which is in position `index` in the
+--- associated linked list of the EntryManager and update tracked information accordingly
+---@note: this is basically a wrapper for `linked_list.place_before`
+---@param picker table: the associated picker for the entry manager
+---@param index number: the position to place the entry
+---@param linked_node table: the node currently in the `index` position of the linked list
+---@param new_container table: the container to be inserted into the linked list
 function EntryManager:_insert_container_before(picker, index, linked_node, new_container)
   self.linked_states:place_before(index, linked_node, new_container)
   self.set_entry(picker, index, new_container[1], new_container[2], true)
@@ -110,6 +141,13 @@ function EntryManager:_insert_container_before(picker, index, linked_node, new_c
   self:_update_score_from_tracked()
 end
 
+--- Insert the `new_container` after the `linked_node` which is in position `index` in the
+--- associated linked list of the EntryManager and update tracked information accordingly
+---@note: this is basically a wrapper for `linked_list.place_after`
+---@param picker table: the associated picker for the entry manager
+---@param index number: the position to place the entry
+---@param linked_node table: the node currently in the `index` position of the linked list
+---@param new_container table: the container to be inserted into the linked list
 function EntryManager:_insert_container_after(picker, index, linked_node, new_container)
   self.linked_states:place_after(index, linked_node, new_container)
   self.set_entry(picker, index, new_container[1], new_container[2], true)
@@ -117,6 +155,11 @@ function EntryManager:_insert_container_after(picker, index, linked_node, new_co
   self:_update_score_from_tracked()
 end
 
+--- Append the `new_container` to the end of the linked list associated to the EntryManager.
+--- If `should_update` is `true`, then the tracked information is updated.
+---@param picker table: the associated picker for the entry manager
+---@param new_container table: the container to be appended to the linked list
+---@param should_update boolean
 function EntryManager:_append_container(picker, new_container, should_update)
   self.linked_states:append(new_container)
   self.worst_acceptable_score = math.min(self.worst_acceptable_score, new_container[2])
@@ -126,6 +169,17 @@ function EntryManager:_append_container(picker, new_container, should_update)
   end
 end
 
+-- Adds `new_container` to the associated linked list.
+-- If `score` is less than `worst_acceptable_score` then
+-- `new_container` is placed in the position that puts it
+-- in order. Otherwise, `new_container` is simply appended
+-- to the linked list.
+-- The `worst_acceptable_score` and `info.maxed` are updated
+-- when needed.
+---@param picker table: the associated picker for the entry manager
+---@param score number: the score of the entry to be added
+---@param entry table: the entry to be added to the manager
+---@return nil
 function EntryManager:add_entry(picker, score, entry)
   score = score or 0
 
@@ -173,6 +227,7 @@ function EntryManager:add_entry(picker, score, entry)
   return self:_insert_container_after(picker, size + 1, self.linked_states.tail, new_container)
 end
 
+--- Get an iterator for the entries in the associated linked list
 function EntryManager:iter()
   return coroutine.wrap(function()
     for val in self.linked_states:iter() do
