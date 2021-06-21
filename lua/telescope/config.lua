@@ -1,5 +1,6 @@
 local strings = require "plenary.strings"
 local log = require "telescope.log"
+local sorters = require "telescope.sorters"
 
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
@@ -37,14 +38,10 @@ local smarter_depth_2_extend = function(priority, base)
   return result
 end
 
-local sorters = require "telescope.sorters"
-
 -- TODO: Add other major configuration points here.
 -- selection_strategy
 
 local config = {}
-
-config.smarter_depth_2_extend = smarter_depth_2_extend
 
 config.values = _TelescopeConfigurationValues
 config.descriptions = {}
@@ -184,12 +181,12 @@ local telescope_defaults = {
   dynamic_preview_title = {
     false,
     [[
-Will change the title of the preview window dynamically, where it
-is supported. Means the preview window will for example show the
-full filename.
+    Will change the title of the preview window dynamically, where it
+    is supported. Means the preview window will for example show the
+    full filename.
 
-Default: false
-]],
+    Default: false
+    ]],
   },
 
   -- Builtin configuration
@@ -208,25 +205,26 @@ Default: false
 
   mappings = {
     {}, [[
-Your mappings to override telescope's default mappings.
+    Your mappings to override telescope's default mappings.
 
-Format is:
-{
-  mode = { ..keys }
-}
+    Format is:
+    {
+      mode = { ..keys }
+    }
 
-where {mode} is the one character letter for a mode ('i' for insert, 'n' for normal).
+    where {mode} is the one character letter for a mode
+    ('i' for insert, 'n' for normal).
 
-For example:
+    For example:
 
-mappings = {
-  i = {
-    ["<esc>"] = actions.close,
-  },
-}
+    mappings = {
+      i = {
+        ["<esc>"] = actions.close,
+      },
+    }
 
 
-To disable a keymap, put [map] = false
+    To disable a keymap, put [map] = false
       So, to not map "<C-n>", just put
 
           ...,
@@ -236,21 +234,22 @@ To disable a keymap, put [map] = false
       Into your config.
 
 
-otherwise, just set the mapping to the function that you want it to be.
+    otherwise, just set the mapping to the function that you want it to be.
 
-          ...,
-          ["<C-i>"] = actions.select_default
-          ...,
-]],
+        ...,
+        ["<C-i>"] = actions.select_default
+        ...,
+    ]],
   },
 
   default_mappings = {
     nil,
     [[
-Not recommended to use except for advanced users.
+    Not recommended to use except for advanced users.
 
-Will allow you to completely remove all of telescope's default maps and use your own.
-]],
+    Will allow you to completely remove all of telescope's default maps
+    and use your own.
+    ]],
   },
 
   generic_sorter = { sorters.get_generic_fuzzy_sorter },

@@ -530,23 +530,6 @@ end, {})
 
 previewers.git_stash_diff = defaulter(function(opts)
   return previewers.new_buffer_previewer {
-    get_buffer_by_name = function(_, entry)
-      return entry.value
-    end,
-
-    define_preview = function(self, entry, _)
-      putils.job_maker({ 'git', '--no-pager', 'stash', 'show', '-p',  entry.value }, self.state.bufnr, {
-        value = entry.value,
-        bufname = self.state.bufname,
-        cwd = opts.cwd
-      })
-      putils.regex_highlighter(self.state.bufnr, 'diff')
-    end
-  }
-end, {})
-
-previewers.git_commit_diff = defaulter(function(opts)
-  return previewers.new_buffer_previewer {
     title = "Git Stash Preview",
     get_buffer_by_name = function(_, entry)
       return entry.value

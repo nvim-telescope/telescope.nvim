@@ -159,8 +159,7 @@ end
 --- 3. function <br>
 ---     Must have signature:
 ---       function(self, max_columns, max_lines): number
---- 4. table of the form:
----       {padding = `foo`} <br>
+--- 4. table of the form: {padding = `foo`} <br>
 ---     where `foo` has one of the previous three forms. <br>
 ---     The height is then set to be the remaining space after padding.
 ---     For example, if the window has height 50, and the input is {padding = 5},
@@ -187,8 +186,7 @@ end
 --- 3. function <br>
 ---     Must have signature:
 ---       function(self, max_columns, max_lines): number
---- 4. table of the form:
----       {padding = `foo`} <br>
+--- 4. table of the form: {padding = `foo`} <br>
 ---     where `foo` has one of the previous three forms. <br>
 ---     The width is then set to be the remaining space after padding.
 ---     For example, if the window has width 100, and the input is {padding = 5},

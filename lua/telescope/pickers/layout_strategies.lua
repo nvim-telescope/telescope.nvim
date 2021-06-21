@@ -117,7 +117,7 @@ local function validate_layout_config(strategy_name, configuration, values, defa
   -- Always set the values passed first.
   for k in pairs(values) do
     if not valid_configuration_keys[k] then
-      -- TODO: At some popint we'll move to error here,
+      -- TODO: At some point we'll move to error here,
       --    but it's a bit annoying to just straight up crash everyone's stuff.
       vim.api.nvim_err_writeln(string.format(
         "Unsupported layout_config key for the %s strategy: %s\n%s",
@@ -143,7 +143,7 @@ local shared_options = {
   width = { "How wide to make Telescope's entire layout", "See |resolver.resolve_width()|" },
   height = { "How tall to make Telescope's entire layout", "See |resolver.resolve_height()|" },
   mirror = "Flip the location of the results/prompt and preview windows",
-  scroll_speed = "The speed when scrolling through the previewer",
+  scroll_speed = "The number of lines to scroll through the previewer",
 }
 
 -- Used for generating vim help documentation.
@@ -621,68 +621,5 @@ layout_strategies.bottom_pane = make_documented_layout('bottom_pane', vim.tbl_ex
 end)
 
 layout_strategies._validate_layout_config = validate_layout_config
-
-layout_strategies.bottom_pane = function(self, max_columns, max_lines)
-  local layout_config = validate_layout_config(self.layout_config or {}, {
-    height = "The height of the layout",
-  })
-
-  local initial_options = p_window.get_initial_window_options(self)
-  local results = initial_options.results
-  local prompt = initial_options.prompt
-  local preview = initial_options.preview
-
-  local result_height = layout_config.height or 25
-
-  local prompt_width = max_columns
-  local col = 0
-
-  local has_border = not not self.window.border
-  if has_border then
-    col = 1
-    prompt_width = prompt_width - 2
-  end
-
-  local result_width
-  if self.previewer then
-    result_width = math.floor(prompt_width / 2)
-
-    local base_col = result_width + 1
-    if has_border then
-      preview = vim.tbl_deep_extend("force", {
-        col = base_col + 2,
-        line = max_lines - result_height + 1,
-        width = prompt_width - result_width - 2,
-        height = result_height - 1,
-      }, preview)
-    else
-      preview = vim.tbl_deep_extend("force", {
-        col = base_col,
-        line = max_lines - result_height,
-        width = prompt_width - result_width,
-        height = result_height,
-      }, preview)
-    end
-  else
-    preview = nil
-    result_width = prompt_width
-  end
-
-  return {
-    preview = preview,
-    prompt = vim.tbl_deep_extend("force", prompt, {
-      line = max_lines - result_height - 1,
-      col = col,
-      height = 1,
-      width = prompt_width,
-    }),
-    results = vim.tbl_deep_extend("force", results, {
-      line = max_lines - result_height,
-      col = col,
-      height = result_height,
-      width = result_width,
-    }),
-  }
-end
 
 return layout_strategies
