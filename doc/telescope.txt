@@ -23,7 +23,8 @@ telescope.setup({opts})                                    *telescope.setup()*
     default_mappings: ~
         Not recommended to use except for advanced users.
 
-        Will allow you to completely remove all of telescope's default maps and use your own.
+        Will allow you to completely remove all of telescope's default maps
+        and use your own.
 
 
                                  *telescope.defaults.dynamic_preview_title*
@@ -85,7 +86,8 @@ telescope.setup({opts})                                    *telescope.setup()*
           mode = { ..keys }
         }
 
-        where {mode} is the one character letter for a mode ('i' for insert, 'n' for normal).
+        where {mode} is the one character letter for a mode
+        ('i' for insert, 'n' for normal).
 
         For example:
 
@@ -97,20 +99,20 @@ telescope.setup({opts})                                    *telescope.setup()*
 
 
         To disable a keymap, put [map] = false
-              So, to not map "<C-n>", just put
+          So, to not map "<C-n>", just put
 
-                  ...,
-                  ["<C-n>"] = false,
-                  ...,
+              ...,
+              ["<C-n>"] = false,
+              ...,
 
-              Into your config.
+          Into your config.
 
 
         otherwise, just set the mapping to the function that you want it to be.
 
-                  ...,
-                  ["<C-i>"] = actions.select_default
-                  ...,
+            ...,
+            ["<C-i>"] = actions.select_default
+            ...,
 
 
                                          *telescope.defaults.prompt_prefix*
@@ -1211,10 +1213,11 @@ resolver.resolve_height()                          *resolver.resolve_height()*
        This means total height as a fixed number.
     3. function
        Must have signature: function(self, max_columns, max_lines): number
-    4. table of the form: {padding = `foo`} <br> where `foo` has one of the
-       previous three forms. <br> The height is then set to be the remaining
-       space after padding. For example, if the window has height 50, and the
-       input is {padding = 5}, the height returned will be `40 = 50 - 2*5`
+    4. table of the form: {padding = `foo`}
+       where `foo` has one of the previous three forms.
+       The height is then set to be the remaining space after padding. For
+       example, if the window has height 50, and the input is {padding = 5}, 
+       the height returned will be `40 = 50 - 2*5`
 
     The returned function will have signature: function(self, max_columns,
     max_lines): number
@@ -1230,10 +1233,11 @@ resolver.resolve_width()                            *resolver.resolve_width()*
        This means total width as a fixed number.
     3. function
        Must have signature: function(self, max_columns, max_lines): number
-    4. table of the form: {padding = `foo`} <br> where `foo` has one of the
-       previous three forms. <br> The width is then set to be the remaining
-       space after padding. For example, if the window has width 100, and the
-       input is {padding = 5}, the width returned will be `90 = 100 - 2*5`
+    4. table of the form: {padding = `foo`}
+       where `foo` has one of the previous three forms.
+       The width is then set to be the remaining space after padding. For
+       example, if the window has width 100, and the input is {padding = 5}, 
+       the width returned will be `90 = 100 - 2*5`
 
     The returned function will have signature: function(self, max_columns,
     max_lines): number
@@ -1630,7 +1634,7 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
-      - scroll_speed: The speed when scrolling through the previewer
+      - scroll_speed: The number of lines to scroll through the previewer
       - width:
         - How wide to make Telescope's entire layout
         - See |resolver.resolve_width()|
@@ -1673,7 +1677,7 @@ layout_strategies.center()                        *layout_strategies.center()*
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
-      - scroll_speed: The speed when scrolling through the previewer
+      - scroll_speed: The number of lines to scroll through the previewer
       - width:
         - How wide to make Telescope's entire layout
         - See |resolver.resolve_width()|
@@ -1708,7 +1712,7 @@ layout_strategies.vertical()                    *layout_strategies.vertical()*
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
-      - scroll_speed: The speed when scrolling through the previewer
+      - scroll_speed: The number of lines to scroll through the previewer
       - width:
         - How wide to make Telescope's entire layout
         - See |resolver.resolve_width()|
@@ -1734,7 +1738,7 @@ layout_strategies.flex()                            *layout_strategies.flex()*
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
-      - scroll_speed: The speed when scrolling through the previewer
+      - scroll_speed: The number of lines to scroll through the previewer
       - width:
         - How wide to make Telescope's entire layout
         - See |resolver.resolve_width()|
