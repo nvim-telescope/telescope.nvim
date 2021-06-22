@@ -36,6 +36,7 @@
 
 local resolve = require('telescope.config.resolve')
 local p_window = require('telescope.pickers.window')
+local if_nil = vim.F.if_nil
 
 local get_border_size = function(opts)
   if opts.window.border == false then
@@ -71,14 +72,14 @@ end
 --@param strategy_name string: the name of the layout_strategy we are validating for
 --@param configuration table: table with keys for each option available
 --@param values table: table containing all of the non-default options we want to set
---@param default_layout_config: table with the default values to configure layouts
+--@param default_layout_config table: table with the default values to configure layouts
 --@return table: table containing the combined options (defaults and non-defaults)
 local function validate_layout_config(strategy_name, configuration, values, default_layout_config)
   assert(strategy_name, "It is required to have a strategy name for validation.")
   local valid_configuration_keys = get_valid_configuration_keys(configuration)
 
   -- If no default_layout_config provided, check Telescope's config values
-  default_layout_config = default_layout_config or require('telescope.config').values.layout_config
+  default_layout_config = if_nil(default_layout_config, require('telescope.config').values.layout_config)
 
   local result = {}
   local get_value = function(k)
@@ -209,7 +210,7 @@ local function make_documented_layout(name, layout_config, layout)
       max_columns,
       max_lines,
       validate_layout_config(
-        name, layout_config, vim.tbl_deep_extend("keep", override_layout or {}, self.layout_config or {})
+        name, layout_config, vim.tbl_deep_extend("keep", if_nil(override_layout, {}), if_nil(self.layout_config, {}))
       )
     )
   end
@@ -258,7 +259,7 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
   local height_padding = math.floor((max_lines - picker_height)/2)
 
   if self.previewer and max_columns >= layout_config.preview_cutoff then
-    preview.width = resolve.resolve_width(layout_config.preview_width or function(_, cols)
+    preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, cols)
       if cols < 150 then
         return math.floor(cols * 0.4)
       elseif cols < 200 then
@@ -266,7 +267,7 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
       else
         return 120
       end
-    end)(self, picker_width, max_lines)
+    end))(self, picker_width, max_lines)
   else
     preview.width = 0
   end
@@ -443,7 +444,7 @@ layout_strategies.vertical = make_documented_layout("vertical", vim.tbl_extend("
   preview.height = 0
   if self.previewer and max_lines >= layout_config.preview_cutoff then
     preview.height = resolve.resolve_height(
-      layout_config.preview_height or 0.5
+      if_nil(layout_config.preview_height, 0.5)
     )(self, max_columns, picker_height)
 
     preview_total = preview.height + 2
@@ -487,8 +488,8 @@ layout_strategies.flex = make_documented_layout('flex', vim.tbl_extend("error", 
   vertical = "Options to pass when switching to vertical layout",
   horizontal = "Options to pass when switching to horizontal layout",
 }), function(self, max_columns, max_lines, layout_config)
-  local flip_columns = layout_config.flip_columns or 100
-  local flip_lines = layout_config.flip_lines or 20
+  local flip_columns = if_nil(layout_config.flip_columns, 100)
+  local flip_lines = if_nil(layout_config.flip_lines, 20)
 
   if max_columns < flip_columns and max_lines > flip_lines then
     return layout_strategies.vertical(self, max_columns, max_lines, layout_config.vertical)
@@ -567,7 +568,7 @@ layout_strategies.bottom_pane = make_documented_layout('bottom_pane', vim.tbl_ex
   local prompt = initial_options.prompt
   local preview = initial_options.preview
 
-  local result_height = resolve.resolve_height(layout_config.height)(self,max_columns,max_lines) or 25
+  local result_height = if_nil(resolve.resolve_height(layout_config.height)(self,max_columns,max_lines), 25)
 
   local prompt_width = max_columns
   local col = 0

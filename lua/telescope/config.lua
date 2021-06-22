@@ -1,6 +1,7 @@
 local strings = require "plenary.strings"
 local log = require "telescope.log"
 local sorters = require "telescope.sorters"
+local if_nil = vim.F.if_nil
 
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
@@ -48,7 +49,7 @@ config.descriptions = {}
 config.pickers = _TelescopeConfigurationPickers
 
 function config.set_pickers(pickers)
-  pickers = pickers or {}
+  pickers = if_nil(pickers, {})
 
   for k, v in pairs(pickers) do
     config.pickers[k] = v
@@ -162,7 +163,11 @@ local telescope_defaults = {
 
   initial_mode = { "insert" },
 
-  border = { {} },
+  border = { true, [[
+    Boolean defining if borders are added to Telescope windows.
+    
+    Default: true]]
+  },
 
   borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" } },
 
@@ -219,7 +224,7 @@ local telescope_defaults = {
 
     mappings = {
       i = {
-        ["<esc>"] = actions.close,
+        ["<esc>"] = require('telescope.actions').close,
       },
     }
 
@@ -227,9 +232,9 @@ local telescope_defaults = {
     To disable a keymap, put [map] = false
       So, to not map "<C-n>", just put
 
-          ...,
-          ["<C-n>"] = false,
-          ...,
+        ...,
+        ["<C-n>"] = false,
+        ...,
 
       Into your config.
 
@@ -237,7 +242,22 @@ local telescope_defaults = {
     otherwise, just set the mapping to the function that you want it to be.
 
         ...,
-        ["<C-i>"] = actions.select_default
+        ["<C-i>"] = require('telescope.actions').select_default,
+        ...,
+
+    If the function you want is part of `telescope.actions`, then you can simply give a string.
+      For example, the previous option is equivalent to:
+
+        ...,
+        ["<C-i>"] = "select_default",
+        ...,
+
+    You can also add other mappings using tables with `type = "command"`.
+      For example:
+
+        ...,
+        ["jj"] = { "<esc>", type = "command" },
+        ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },)
         ...,
     ]],
   },
@@ -285,8 +305,8 @@ local telescope_defaults = {
 -- @param tele_defaults table: (optional) a table containing all of the defaults
 --    for telescope [defaults to `telescope_defaults`]
 function config.set_defaults(user_defaults, tele_defaults)
-  user_defaults = user_defaults or {}
-  tele_defaults = tele_defaults or telescope_defaults
+  user_defaults = if_nil(user_defaults, {})
+  tele_defaults = if_nil(tele_defaults, telescope_defaults)
 
   if user_defaults.layout_defaults then
     if user_defaults.layout_config == nil then
@@ -300,8 +320,8 @@ function config.set_defaults(user_defaults, tele_defaults)
   local function get(name, default_val)
     if name == "layout_config" then
       return smarter_depth_2_extend(
-        user_defaults[name] or {},
-        vim.tbl_deep_extend("keep", config.values[name] or {}, default_val or {})
+        if_nil(user_defaults[name], {}),
+        vim.tbl_deep_extend("keep", if_nil(config.values[name], {}), if_nil(default_val, {}))
       )
     end
     return first_non_null(user_defaults[name], config.values[name], default_val)

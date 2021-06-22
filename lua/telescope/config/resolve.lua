@@ -204,8 +204,8 @@ resolver.resolve_width = function(val)
   error('invalid configuration option for width:' .. tostring(val))
 end
 
---- Win option always returns a table with preview, results, and prompt.
---- It handles many different ways. Some examples are as follows:
+-- Win option always returns a table with preview, results, and prompt.
+-- It handles many different ways. Some examples are as follows:
 --
 -- -- Disable
 -- borderschars = false
