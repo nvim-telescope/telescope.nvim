@@ -165,7 +165,7 @@ local telescope_defaults = {
 
   border = { true, [[
     Boolean defining if borders are added to Telescope windows.
-    
+
     Default: true]]
   },
 
