@@ -19,6 +19,12 @@ telescope.setup({opts})                                    *telescope.setup()*
 
     Valid keys for {opts.defaults}
 
+                                                *telescope.defaults.border*
+    border: ~
+        Boolean defining if borders are added to Telescope windows.
+
+        Default: true
+
                                       *telescope.defaults.default_mappings*
     default_mappings: ~
         Not recommended to use except for advanced users.
@@ -93,7 +99,7 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         mappings = {
           i = {
-            ["<esc>"] = actions.close,
+            ["<esc>"] = require('telescope.actions').close,
           },
         }
 
@@ -101,9 +107,9 @@ telescope.setup({opts})                                    *telescope.setup()*
         To disable a keymap, put [map] = false
           So, to not map "<C-n>", just put
 
-              ...,
-              ["<C-n>"] = false,
-              ...,
+            ...,
+            ["<C-n>"] = false,
+            ...,
 
           Into your config.
 
@@ -111,7 +117,22 @@ telescope.setup({opts})                                    *telescope.setup()*
         otherwise, just set the mapping to the function that you want it to be.
 
             ...,
-            ["<C-i>"] = actions.select_default
+            ["<C-i>"] = require('telescope.actions').select_default,
+            ...,
+
+        If the function you want is part of `telescope.actions`, then you can simply give a string.
+          For example, the previous option is equivalent to:
+
+            ...,
+            ["<C-i>"] = "select_default",
+            ...,
+
+        You can also add other mappings using tables with `type = "command"`.
+          For example:
+
+            ...,
+            ["jj"] = { "<esc>", type = "command" },
+            ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },)
             ...,
 
 
@@ -559,7 +580,7 @@ require("telescope").setup {
       mappings = {
         i = {
           ["<c-d>"] = require("telescope.actions").delete_buffer,
-          -- or right hand side can also be a the name of the action as string
+          -- or right hand side can also be the name of the action as string
           ["<c-d>"] = "delete_buffer",
         },
         n = {
@@ -1241,12 +1262,6 @@ resolver.resolve_width()                            *resolver.resolve_width()*
 
     The returned function will have signature: function(self, max_columns,
     max_lines): number
-
-
-
-resolver.win_option()                                  *resolver.win_option()*
-    Win option always returns a table with preview, results, and prompt. It
-    handles many different ways. Some examples are as follows:
 
 
 
