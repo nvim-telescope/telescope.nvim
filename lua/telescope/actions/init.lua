@@ -202,7 +202,9 @@ actions._close = function(prompt_bufnr, keepinsert)
   local original_win_id = picker.original_win_id
 
   if picker.previewer then
-    picker.previewer:teardown()
+    for _, v in ipairs(picker.all_previewers) do
+      v:teardown()
+    end
   end
 
   actions.close_pum(prompt_bufnr)
@@ -340,6 +342,23 @@ actions.git_create_branch = function(prompt_bufnr)
   end
 end
 
+--- Applies an existing git stash
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_apply_stash = function(prompt_bufnr)
+  local selection = action_state.get_selected_entry()
+  actions.close(prompt_bufnr)
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'stash', 'apply', '--index', selection.value })
+  if ret == 0 then
+    print("applied: " .. selection.value)
+  else
+    print(string.format(
+      'Error when applying: %s. Git returned: "%s"',
+      selection.value,
+      table.concat(stderr, '  ')
+    ))
+  end
+end
+
 --- Checkout an existing git branch
 ---@param prompt_bufnr number: The prompt bufnr
 actions.git_checkout = function(prompt_bufnr)
@@ -352,6 +371,31 @@ actions.git_checkout = function(prompt_bufnr)
   else
     print(string.format(
       'Error when checking out: %s. Git returned: "%s"',
+      selection.value,
+      table.concat(stderr, '  ')
+    ))
+  end
+end
+
+--- Switch to git branch.<br>
+--- If the branch already exists in local, switch to that.
+--- If the branch is only in remote, create new branch tracking remote and switch to new one.
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_switch_branch = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+  actions.close(prompt_bufnr)
+  local pattern = '^refs/remotes/%w+/'
+  local branch = selection.value
+  if string.match(selection.refname, pattern) then
+    branch = string.gsub(selection.refname, pattern, '')
+  end
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'switch', branch }, cwd)
+  if ret == 0 then
+    print("Switched to: " .. branch)
+  else
+    print(string.format(
+      'Error when switching to: %s. Git returned: "%s"',
       selection.value,
       table.concat(stderr, '  ')
     ))
@@ -376,9 +420,8 @@ actions.git_track_branch = function(prompt_bufnr)
   end
 end
 
--- TODO: add this function header back once the treesitter max-query bug is resolved
--- Delete the currently selected branch
--- @param prompt_bufnr number: The prompt bufnr
+--- Delete the currently selected branch
+---@param prompt_bufnr number: The prompt bufnr
 actions.git_delete_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -399,9 +442,8 @@ actions.git_delete_branch = function(prompt_bufnr)
   end
 end
 
--- TODO: add this function header back once the treesitter max-query bug is resolved
--- Rebase to selected git branch
--- @param prompt_bufnr number: The prompt bufnr
+--- Rebase to selected git branch
+---@param prompt_bufnr number: The prompt bufnr
 actions.git_rebase_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -422,9 +464,15 @@ actions.git_rebase_branch = function(prompt_bufnr)
   end
 end
 
--- TODO: add this function header back once the treesitter max-query bug is resolved
--- Stage/unstage selected file
--- @param prompt_bufnr number: The prompt bufnr
+--- Stage/unstage selected file
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_checkout_current_buffer = function(prompt_bufnr)
+  local cwd = actions.get_current_picker(prompt_bufnr).cwd
+  local selection = actions.get_selected_entry()
+  actions.close(prompt_bufnr)
+  utils.get_os_command_output({ 'git', 'checkout', selection.value, '--', selection.file }, cwd)
+end
+
 actions.git_staging_toggle = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -446,7 +494,7 @@ local entry_to_qf = function(entry)
   }
 end
 
-local send_selected_to_qf = function(prompt_bufnr, mode)
+local send_selected_to_qf = function(prompt_bufnr, mode, target)
   local picker = action_state.get_current_picker(prompt_bufnr)
 
   local qf_entries = {}
@@ -456,10 +504,14 @@ local send_selected_to_qf = function(prompt_bufnr, mode)
 
   actions.close(prompt_bufnr)
 
-  vim.fn.setqflist(qf_entries, mode)
+  if target == 'loclist' then
+    vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
+  else
+    vim.fn.setqflist(qf_entries, mode)
+  end
 end
 
-local send_all_to_qf = function(prompt_bufnr, mode)
+local send_all_to_qf = function(prompt_bufnr, mode, target)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local manager = picker.manager
 
@@ -470,40 +522,84 @@ local send_all_to_qf = function(prompt_bufnr, mode)
 
   actions.close(prompt_bufnr)
 
-  vim.fn.setqflist(qf_entries, mode)
+  if target == 'loclist' then
+    vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
+  else
+    vim.fn.setqflist(qf_entries, mode)
+  end
 end
 
+--- Sends the selected entries to the quickfix list, replacing the previous entries.
 actions.send_selected_to_qflist = function(prompt_bufnr)
   send_selected_to_qf(prompt_bufnr, 'r')
 end
 
+--- Adds the selected entries to the quickfix list, keeping the previous entries.
 actions.add_selected_to_qflist = function(prompt_bufnr)
   send_selected_to_qf(prompt_bufnr, 'a')
 end
 
+--- Sends all entries to the quickfix list, replacing the previous entries.
 actions.send_to_qflist = function(prompt_bufnr)
   send_all_to_qf(prompt_bufnr, 'r')
 end
 
+--- Adds all entries to the quickfix list, keeping the previous entries.
 actions.add_to_qflist = function(prompt_bufnr)
   send_all_to_qf(prompt_bufnr, 'a')
 end
 
-local smart_send = function(prompt_bufnr, mode)
+ --- Sends the selected entries to the location list, replacing the previous entries.
+actions.send_selected_to_loclist = function(prompt_bufnr)
+  send_selected_to_qf(prompt_bufnr, 'r', 'loclist')
+end
+
+ --- Adds the selected entries to the location list, keeping the previous entries.
+actions.add_selected_to_loclist = function(prompt_bufnr)
+  send_selected_to_qf(prompt_bufnr, 'a', 'loclist')
+end
+
+ --- Sends all entries to the location list, replacing the previous entries.
+actions.send_to_loclist = function(prompt_bufnr)
+  send_all_to_qf(prompt_bufnr, 'r', 'loclist')
+end
+
+ --- Adds all entries to the location list, keeping the previous entries.
+actions.add_to_loclist = function(prompt_bufnr)
+  send_all_to_qf(prompt_bufnr, 'a', 'loclist')
+end
+
+local smart_send = function(prompt_bufnr, mode, target)
   local picker = action_state.get_current_picker(prompt_bufnr)
   if table.getn(picker:get_multi_selection()) > 0 then
-    send_selected_to_qf(prompt_bufnr, mode)
+    send_selected_to_qf(prompt_bufnr, mode, target)
   else
-    send_all_to_qf(prompt_bufnr, mode)
+    send_all_to_qf(prompt_bufnr, mode, target)
   end
 end
 
+--- Sends the selected entries to the quickfix list, replacing the previous entries.
+--- If no entry was selected, sends all entries.
 actions.smart_send_to_qflist = function(prompt_bufnr)
   smart_send(prompt_bufnr, 'r')
 end
 
+--- Adds the selected entries to the quickfix list, keeping the previous entries.
+--- If no entry was selected, adds all entries.
 actions.smart_add_to_qflist = function(prompt_bufnr)
   smart_send(prompt_bufnr, 'a')
+end
+
+--- Sends the selected entries to the location list, replacing the previous entries.
+--- If no entry was selected, sends all entries.
+actions.smart_send_to_loclist = function(prompt_bufnr)
+  smart_send(prompt_bufnr, 'r', 'loclist')
+end
+
+--- Adds the selected entries to the location list, keeping the previous entries.
+--- If no entry was selected, adds all entries.
+actions.smart_add_to_loclist = function(prompt_bufnr)
+  smart_send(prompt_bufnr, 'a', 'loclist')
 end
 
 actions.complete_tag = function(prompt_bufnr)
@@ -552,6 +648,34 @@ end
 --- Open the quickfix list
 actions.open_qflist = function(_)
   vim.cmd [[copen]]
+end
+
+--- Open the location list
+actions.open_loclist = function(_)
+  vim.cmd [[lopen]]
+end
+
+--- Delete the selected buffer or all the buffers selected using multi selection.
+---@param prompt_bufnr number: The prompt bufnr
+actions.delete_buffer = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  current_picker:delete_selection(function(selection)
+    vim.api.nvim_buf_delete(selection.bufnr, { force = true })
+  end)
+end
+
+--- Cycle to the next previewer if there is one available.<br>
+--- This action is not mapped on default.
+---@param prompt_bufnr number: The prompt bufnr
+actions.cycle_previewers_next = function(prompt_bufnr)
+  actions.get_current_picker(prompt_bufnr):cycle_previewers(1)
+end
+
+--- Cycle to the previous previewer if there is one available.<br>
+--- This action is not mapped on default.
+---@param prompt_bufnr number: The prompt bufnr
+actions.cycle_previewers_prev = function(prompt_bufnr)
+  actions.get_current_picker(prompt_bufnr):cycle_previewers(-1)
 end
 
 -- ==================================================
