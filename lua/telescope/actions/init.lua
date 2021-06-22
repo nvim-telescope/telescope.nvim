@@ -143,6 +143,87 @@ function actions.toggle_selection(prompt_bufnr)
   current_picker:toggle_selection(current_picker:get_selection_row())
 end
 
+--- Apply `f` to entries of current picker and returns list of mapped entries
+--- `f` takes (entry, index, row) as viable arguments in order
+---@param prompt_bufnr number: The prompt bufnr
+---@param f function: function to apply on entries of picker
+---@return table: result from mapped entries
+function actions.map_entries(prompt_bufnr, f)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local results = {}
+  local index = 1
+  local row, result
+    -- indices are 1-indexed, rows are 0-indexed
+  for entry in current_picker.manager:iter() do
+    row = current_picker:get_row(index)
+    -- assign result to variable as function w/o return value
+    -- results in error upon table.insert as it's not technically nil but 'empty'
+    result = f(entry, index, row)
+    table.insert(results, result)
+    index = index + 1
+  end
+  return results
+end
+
+--- Apply `f` to multi selections of current picker and returns list of mapped selections.
+---@param prompt_bufnr number: The prompt bufnr
+---@param f function: function to apply on multi selection of picker
+---@return table: result from `f` applied to multi selections
+function actions.map_selections(prompt_bufnr, f)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local results = {}
+  local result
+  for _, selection in ipairs(current_picker:get_multi_selection()) do
+    result = f(selection)
+    -- assign result to variable as function w/o return value
+    -- results in error upon table.insert as it's not technically nil but 'empty'
+    table.insert(results, result)
+  end
+  return results
+end
+
+--- Multi select all entries, possibly including entries not visible in results popup.
+---@param prompt_bufnr number: The prompt bufnr
+function actions.select_all(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  -- indices are 1-indexed, rows are 0-indexed
+  local select_all = function(entry, _, row)
+    if not current_picker._multi:is_selected(entry) then
+      current_picker._multi:add(entry)
+      if current_picker:can_select_row(row) then
+        current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
+      end
+    end
+  end
+  actions.map_entries(prompt_bufnr, select_all)
+end
+
+--- Drop all entries from multi selection.
+---@param prompt_bufnr number: The prompt bufnr
+function actions.drop_all(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local drop_all = function(entry, idx, row)
+    current_picker._multi:drop(entry)
+    if current_picker:can_select_row(row) then
+      current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
+    end
+  end
+  actions.map_entries(prompt_bufnr, drop_all)
+end
+
+--- Toggle multi selection for all entries.
+---@param prompt_bufnr number: The prompt bufnr
+function actions.toggle_all(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local toggle_all = function(entry, idx, row)
+    current_picker._multi:toggle(entry)
+    if current_picker:can_select_row(row) then
+      current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
+    end
+  end
+  actions.map_entries(prompt_bufnr, toggle_all)
+end
+
 function actions.preview_scrolling_up(prompt_bufnr)
   action_set.scroll_previewer(prompt_bufnr, -1)
 end
@@ -464,8 +545,6 @@ actions.git_rebase_branch = function(prompt_bufnr)
   end
 end
 
---- Stage/unstage selected file
----@param prompt_bufnr number: The prompt bufnr
 actions.git_checkout_current_buffer = function(prompt_bufnr)
   local cwd = actions.get_current_picker(prompt_bufnr).cwd
   local selection = actions.get_selected_entry()
@@ -473,6 +552,8 @@ actions.git_checkout_current_buffer = function(prompt_bufnr)
   utils.get_os_command_output({ 'git', 'checkout', selection.value, '--', selection.file }, cwd)
 end
 
+--- Stage/unstage selected file
+---@param prompt_bufnr number: The prompt bufnr
 actions.git_staging_toggle = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
@@ -661,6 +742,46 @@ actions.delete_buffer = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:delete_selection(function(selection)
     vim.api.nvim_buf_delete(selection.bufnr, { force = true })
+  end)
+end
+
+--- Replace multi-selected buffers with previous buffers in the list, respectively.
+--- Falls back to empty unlisted scratch buffer as placeholder if no valid buffers found.
+--- See also: https://github.com/moll/vim-bbye
+---@param prompt_bufnr number: The prompt bufnr
+actions.bbye_buffer = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local selected_buf = actions.map_selections(prompt_bufnr, function(selection) return selection.bufnr end)
+
+  local replacement_buffers = {}
+  for entry in current_picker.manager:iter() do
+    if not vim.tbl_contains(selected_buf, entry.bufnr) then
+      table.insert(replacement_buffers, entry.bufnr)
+    end
+  end
+  table.sort(replacement_buffers, function(x, y) return x < y end)
+
+  current_picker:delete_selection(function(selection)
+    local bufnr = selection.bufnr
+    -- get associated window(s)
+    local winids = vim.fn.win_findbuf(bufnr)
+
+    local selection_replacements = {}
+    for _, buf in ipairs(replacement_buffers) do
+      if buf < bufnr then
+        table.insert(selection_replacements, buf)
+      end
+    end
+
+    for _, winid in ipairs(winids) do
+      local new_buf = vim.F.if_nil(
+        table.remove(selection_replacements),
+        vim.api.nvim_create_buf(false, true)
+      )
+      vim.api.nvim_win_set_buf(winid, new_buf)
+    end
+    -- remove buffer at last
+    vim.api.nvim_buf_delete(bufnr, { force = true })
   end)
 end
 
