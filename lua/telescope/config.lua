@@ -1,5 +1,5 @@
 local strings = require "plenary.strings"
-local log = require "telescope.log"
+local deprecated = require "telescope.deprecated"
 local sorters = require "telescope.sorters"
 local if_nil = vim.F.if_nil
 
@@ -308,14 +308,10 @@ function config.set_defaults(user_defaults, tele_defaults)
   user_defaults = if_nil(user_defaults, {})
   tele_defaults = if_nil(tele_defaults, telescope_defaults)
 
-  if user_defaults.layout_defaults then
-    if user_defaults.layout_config == nil then
-      log.info "Using 'layout_defaults' in setup() is deprecated. Use 'layout_config' instead."
-      user_defaults.layout_config = user_defaults.layout_defaults
-    else
-      error "Using 'layout_defaults' in setup() is deprecated. Remove this key and use 'layout_config' instead."
-    end
-  end
+  -- Check if using layout keywords outside of `layout_config`
+  deprecated.picker_window_options(user_defaults)
+  -- Check if using `layout_defaults` instead of `layout_config`
+  user_defaults = deprecated.layout_configuration(user_defaults)
 
   local function get(name, default_val)
     if name == "layout_config" then

@@ -1,10 +1,11 @@
+local log = require "telescope.log"
 
 local deprecated = {}
 
 deprecated.picker_window_options = function(opts)
   local messages = {}
 
-  -- Deprecated: PR:922, 2021/05/17
+  -- Deprecated: PR:922, 2021/06/25
   -- Can be removed in a few weeks.
 
   if opts.width then
@@ -41,6 +42,18 @@ deprecated.picker_window_options = function(opts)
     table.insert(messages, 1, "Deprecated window options. Please see ':help telescope.changelog'")
     vim.api.nvim_err_write(table.concat(messages, "\n \n   ") .. "\n \nPress <Enter> to continue\n")
   end
+end
+
+deprecated.layout_configuration = function(user_defaults)
+  if user_defaults.layout_defaults then
+    if user_defaults.layout_config == nil then
+      log.warn "Using 'layout_defaults' in setup() is deprecated. Use 'layout_config' instead."
+      user_defaults.layout_config = user_defaults.layout_defaults
+    else
+      error "Using 'layout_defaults' in setup() is deprecated. Remove this key and use 'layout_config' instead."
+    end
+  end
+  return user_defaults
 end
 
 return deprecated
