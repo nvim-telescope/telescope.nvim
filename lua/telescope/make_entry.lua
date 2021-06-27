@@ -666,7 +666,7 @@ function make_entry.gen_from_registers(_)
     local content = entry.content
     return displayer {
       {'[' .. entry.value .. ']', "TelescopeResultsNumber"},
-      type(content) == 'string' and content:gsub('\n',' | ') or content,
+      type(content) == 'string' and content:gsub('\n','\\n') or content,
     }
   end
 
