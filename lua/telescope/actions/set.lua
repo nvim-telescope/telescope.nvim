@@ -78,6 +78,9 @@ action_set.edit = function(prompt_bufnr, command)
     return
   end
 
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  local win_id = picker.get_selection_window(picker, entry)
+
   local filename, row, col
 
   if entry.filename then
@@ -109,6 +112,11 @@ action_set.edit = function(prompt_bufnr, command)
   local entry_bufnr = entry.bufnr
 
   require('telescope.actions').close(prompt_bufnr)
+
+  local current_win = a.nvim_get_current_win()
+  if current_win ~= win_id then
+    vim.api.nvim_set_current_win(win_id)
+  end
 
   if entry_bufnr then
     edit_buffer(command, entry_bufnr)

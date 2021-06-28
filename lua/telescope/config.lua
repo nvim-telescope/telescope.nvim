@@ -159,6 +159,14 @@ function config.set_defaults(defaults)
   set("grep_previewer", function(...) return require('telescope.previewers').vim_buffer_vimgrep.new(...) end)
   set("qflist_previewer", function(...) return require('telescope.previewers').vim_buffer_qflist.new(...) end)
   set("buffer_previewer_maker", function(...) return require('telescope.previewers').buffer_previewer_maker(...) end)
+
+  set("get_selection_window", function() return 0 end, [[
+    Function that takes function(picker, entry) and returns a window id.
+    The window ID will be used to decide what window the chosen file will
+    be opened in and the cursor placed in upon leaving the picker.
+
+    Default: `function() return 0 end`
+  ]])
 end
 
 function config.clear_defaults()
