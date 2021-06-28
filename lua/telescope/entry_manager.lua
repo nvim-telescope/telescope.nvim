@@ -28,7 +28,7 @@ EntryManager.__index = EntryManager
 
 --- Create a new EntryManager object
 ---@param max_results number: the number of results to keep sorted at the head of the linked list
----@param set_entry any: TODO: not sure what this is for
+---@param set_entry function: handler function for object using the EntryManager
 ---@param info table: (optional) table containing information to keep track of
 ---   @key looped number: number of existing entries checked when adding new entries
 ---   @key inserted number: TODO: figure out if this is used anywhere

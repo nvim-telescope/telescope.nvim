@@ -716,6 +716,9 @@ end
 -- TODO(conni2461): Maybe _ prefix these next two functions
 -- TODO(conni2461): Next two functions only work together otherwise color doesn't work
 --                  Probably a issue with prompt buffers
+--- Change the prefix in the prompt to be `new_prefix` and apply `hl_group`
+---@param new_prefix string: the string to be used as the new prefix
+---@param hl_group string: the name of the chosen highlight
 function Picker:change_prompt_prefix(new_prefix, hl_group)
   if not new_prefix then return end
 
@@ -729,6 +732,8 @@ function Picker:change_prompt_prefix(new_prefix, hl_group)
   self:_reset_prefix_color(hl_group)
 end
 
+--- Reset the prompt to the provided `text`
+---@param text string
 function Picker:reset_prompt(text)
   local prompt_text = self.prompt_prefix .. (text or '')
   vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, -1, false, { prompt_text })
@@ -759,6 +764,8 @@ function Picker:refresh(finder, opts)
   self.__on_lines(nil, nil, nil, 0, 1)
 end
 
+---Set the selection to the provided `row`
+---@param row number
 function Picker:set_selection(row)
   if not self.manager then return end
 
@@ -862,6 +869,7 @@ function Picker:set_selection(row)
   self:refresh_previewer()
 end
 
+--- Refresh the previewer based on the current `status` of the picker
 function Picker:refresh_previewer()
   local status = state.get_status(self.prompt_bufnr)
   if status.preview_win and self.previewer then
@@ -896,6 +904,10 @@ function Picker:cycle_previewers(next)
   self:refresh_previewer()
 end
 
+--- Handler for when entries are added by `self.manager`
+---@param index number: the index to add the entry at
+---@param entry table: the entry that has been added to the manager
+---@param insert boolean: whether the entry has been "inserted" or not
 function Picker:entry_adder(index, entry, _, insert)
   if not entry then return end
 
@@ -961,6 +973,7 @@ function Picker:entry_adder(index, entry, _, insert)
 end
 
 
+--- Reset tracked information for this picker
 function Picker:_reset_track()
   self.stats.processed = 0
   self.stats.displayed = 0
@@ -972,6 +985,12 @@ function Picker:_reset_track()
   self.stats.highlights = 0
 end
 
+--- Evaluate a given `func` with inputs `...`.
+--- If `self.track` is truthy, then add the amount of time taken to `self.stats[key]`
+---@param key any
+---@param func any
+---@return any
+---@return any
 function Picker:_track(key, func, ...)
   local start, final
   if self.track then
@@ -989,10 +1008,14 @@ function Picker:_track(key, func, ...)
   return res1, res2
 end
 
+--- Increment the count of the tracked info at `self.stats[key]`
+---@param key string
 function Picker:_increment(key)
   self.stats[key] = (self.stats[key] or 0) + 1
 end
 
+--- Decrement the count of the tracked info at `self.stats[key]`
+---@param key string
 function Picker:_decrement(key)
   self.stats[key] = (self.stats[key] or 0) - 1
 end
@@ -1004,6 +1027,8 @@ function Picker:register_completion_callback(cb)
   table.insert(self._completion_callbacks, cb)
 end
 
+-- TODO: document what the purpose of this is
+--  Currently only used in `Picker: get_result_completor`
 function Picker:_on_complete()
   for _, v in ipairs(self._completion_callbacks) do
     pcall(v, self)
@@ -1016,6 +1041,7 @@ function Picker:close_existing_pickers()
   end
 end
 
+-- TODO: document what the purpose of this is
 function Picker:get_status_updater(prompt_win, prompt_bufnr)
   return function()
     local text = self:get_status_text()
@@ -1054,6 +1080,7 @@ function Picker:get_status_updater(prompt_win, prompt_bufnr)
 end
 
 
+-- TODO: document what the purpose of this is
 function Picker:get_result_processor(find_id, prompt, status_updater)
   local cb_add = function(score, entry)
     self.manager:add_entry(self, score, entry)
@@ -1095,6 +1122,7 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
   end
 end
 
+-- TODO: document what the purpose of this is
 function Picker:get_result_completor(results_bufnr, find_id, prompt, status_updater)
   return function()
     if self.closed == true or self:is_done() then return end
@@ -1152,6 +1180,11 @@ end
 
 
 
+--- Wrapper function for `Picker:new` that incorporates user provided `opts`
+--- with the telescope `defaults`
+---@param opts table
+---@param defaults table
+---@return any
 pickers.new = function(opts, defaults)
   local result = {}
 
@@ -1180,6 +1213,8 @@ pickers.new = function(opts, defaults)
   return Picker:new(result)
 end
 
+--- Close the picker which has prompt with buffer number `prompt_bufnr`
+---@param prompt_bufnr number
 function pickers.on_close_prompt(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
@@ -1200,6 +1235,7 @@ function Picker:_get_prompt()
   return vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, 1, false)[1]:sub(#self.prompt_prefix + 1)
 end
 
+--- Wrapper function for `Higlighter.clear_display` which uses `vim.api.nvim_buf_clear_namespace`
 function Picker:_reset_highlights()
   self.highlighter:clear_display()
 end
