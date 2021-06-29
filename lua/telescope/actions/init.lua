@@ -15,6 +15,7 @@ local utils = require('telescope.utils')
 local p_scroller = require('telescope.pickers.scroller')
 
 local action_state = require('telescope.actions.state')
+local action_utils = require('telescope.actions.utils')
 local action_set = require('telescope.actions.set')
 
 local transform_mod = require('telescope.actions.mt').transform_mod
@@ -159,7 +160,7 @@ function actions.map_entries(prompt_bufnr, f)
     -- assign result to variable as function w/o return value
     -- results in error upon table.insert as it's not technically nil but 'empty'
     result = f(entry, index, row)
-    table.insert(results, result)
+    results[index] = result
     index = index + 1
   end
   return results
@@ -195,33 +196,33 @@ function actions.select_all(prompt_bufnr)
       end
     end
   end
-  actions.map_entries(prompt_bufnr, select_all)
+  action_utils.map_entries(prompt_bufnr, select_all)
 end
 
 --- Drop all entries from multi selection.
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.drop_all(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
-  local drop_all = function(entry, idx, row)
+  local drop_all = function(entry, _, row)
     current_picker._multi:drop(entry)
     if current_picker:can_select_row(row) then
       current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
     end
   end
-  actions.map_entries(prompt_bufnr, drop_all)
+  action_utils.map_entries(prompt_bufnr, drop_all)
 end
 
 --- Toggle multi selection for all entries.
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.toggle_all(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
-  local toggle_all = function(entry, idx, row)
+  local toggle_all = function(entry, _, row)
     current_picker._multi:toggle(entry)
     if current_picker:can_select_row(row) then
       current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
     end
   end
-  actions.map_entries(prompt_bufnr, toggle_all)
+  action_utils.map_entries(prompt_bufnr, toggle_all)
 end
 
 function actions.preview_scrolling_up(prompt_bufnr)
