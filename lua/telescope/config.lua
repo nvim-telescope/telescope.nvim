@@ -310,6 +310,7 @@ function config.set_defaults(user_defaults, tele_defaults)
 
   -- Check if using layout keywords outside of `layout_config`
   deprecated.picker_window_options(user_defaults)
+
   -- Check if using `layout_defaults` instead of `layout_config`
   user_defaults = deprecated.layout_configuration(user_defaults)
 

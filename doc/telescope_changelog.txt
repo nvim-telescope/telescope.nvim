@@ -8,8 +8,15 @@
 Date: May 17, 2021
 PR: https://github.com/nvim-telescope/telescope.nvim/pull/922
 
-A lot of new and breaking changes here as we work to clean up the way users
-can configure how telescope's windows are configured.
+This is one of our largest breaking changes thus far, so I (TJ) am adding some
+information here so that you can more easily update (without having to track
+down the commit, etc.).
+
+The goal of these breaking changes is to greatly simplify the way
+configuration for layouts happen. This should make it much easier to configure
+each picker, layout_strategy, and more. Please report any bugs or behavior
+that is broken / confusing upstream and we can try and make the configuration
+better.
 
 |telescope.setup()| has changed `layout_defaults` -> `layout_config`.
     This makes it so that the setup and the pickers share the same key,
