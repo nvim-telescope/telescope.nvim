@@ -99,7 +99,7 @@ function Picker:new(opts)
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
     layout_strategy = layout_strategy,
-    layout_config = vim.tbl_deep_extend("keep", opts.layout_config or {}, config.values.layout_config or {}),
+    layout_config = config.smarter_depth_2_extend(opts.layout_config or {}, config.values.layout_config or {}),
 
     window = {
       winblend = get_default(opts.winblend, config.values.winblend),
