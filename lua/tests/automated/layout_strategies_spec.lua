@@ -89,4 +89,14 @@ describe('layout_strategies', function()
     {horizontal={height=50}}, {horizontal={height=100}}, {height=120}
   )
 
+  test_defaults_key("should handle user config overriding a table with a number",
+    'height','horizontal',120,
+    {height={padding=5}},{height=120},{}
+  )
+
+  test_defaults_key("should handle user oneshot overriding a table with a number",
+    'height','horizontal',120,
+    {},{height={padding=5}},{height=120}
+  )
+
 end)
