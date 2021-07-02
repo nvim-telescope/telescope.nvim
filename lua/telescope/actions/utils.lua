@@ -1,7 +1,7 @@
 ---@tag telescope.actions.utils
 
 ---@brief [[
---- Utilities to wrap functions around picker selection and entries.
+--- Utilities to wrap functions around picker selections and entries.
 ---
 --- Generally used from within other |telescope.actions|
 ---@brief ]]
@@ -10,12 +10,15 @@ local action_state = require('telescope.actions.state')
 
 local utils = {}
 
---- Apply `f` to entries of current picker and returns list of mapped entries
---- `f` takes (entry, index, row) as viable arguments in order
+--- Apply `f` to the entries of the current picker and return a table of mapped entries.
+--- - Note: mapped entries may include results not visible in the results popup.
 ---@param prompt_bufnr number: The prompt bufnr
----@param f function: function to apply on entries of picker
----@return table: result from mapped entries
+---@param f function: Function to apply on entries of picker that takes (entry, index, row) as possible arguments
+---@return table: Result from `f` applied to entries
 function utils.map_entries(prompt_bufnr, f)
+  vim.validate{
+    f = {f, "function"}
+  }
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local results = {}
   local index = 1
@@ -32,11 +35,14 @@ function utils.map_entries(prompt_bufnr, f)
   return results
 end
 
---- Apply `f` to multi selections of current picker and returns list of mapped selections.
+--- Apply `f` to the multi selections of the current picker and return a table of mapped selections.
 ---@param prompt_bufnr number: The prompt bufnr
----@param f function: function to apply on multi selection of picker
----@return table: result from `f` applied to multi selections
+---@param f function: Function to apply on multi selection of picker
+---@return table: Result from `f` applied to selections
 function utils.map_selections(prompt_bufnr, f)
+  vim.validate{
+    f = {f, "function"}
+  }
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local results = {}
   local result

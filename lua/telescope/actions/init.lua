@@ -144,7 +144,8 @@ function actions.toggle_selection(prompt_bufnr)
   current_picker:toggle_selection(current_picker:get_selection_row())
 end
 
---- Multi select all entries, possibly including entries not visible in results popup.
+--- Multi select all entries.
+--- - Note: selected entries may include results not visible in the results popup.
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.select_all(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -160,7 +161,7 @@ function actions.select_all(prompt_bufnr)
   action_utils.map_entries(prompt_bufnr, select_all)
 end
 
---- Drop all entries from multi selection.
+--- Drop all entries from the current multi selection.
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.drop_all(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -174,6 +175,7 @@ function actions.drop_all(prompt_bufnr)
 end
 
 --- Toggle multi selection for all entries.
+--- - Note: toggled entries may include results not visible in the results popup.
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.toggle_all(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -704,46 +706,6 @@ actions.delete_buffer = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:delete_selection(function(selection)
     vim.api.nvim_buf_delete(selection.bufnr, { force = true })
-  end)
-end
-
---- Replace multi-selected buffers with previous buffers in the list, respectively.
---- Falls back to empty unlisted scratch buffer as placeholder if no valid buffers found.
---- See also: https://github.com/moll/vim-bbye
----@param prompt_bufnr number: The prompt bufnr
-actions.bbye_buffer = function(prompt_bufnr)
-  local current_picker = action_state.get_current_picker(prompt_bufnr)
-  local selected_buf = actions.map_selections(prompt_bufnr, function(selection) return selection.bufnr end)
-
-  local replacement_buffers = {}
-  for entry in current_picker.manager:iter() do
-    if not vim.tbl_contains(selected_buf, entry.bufnr) then
-      table.insert(replacement_buffers, entry.bufnr)
-    end
-  end
-  table.sort(replacement_buffers, function(x, y) return x < y end)
-
-  current_picker:delete_selection(function(selection)
-    local bufnr = selection.bufnr
-    -- get associated window(s)
-    local winids = vim.fn.win_findbuf(bufnr)
-
-    local selection_replacements = {}
-    for _, buf in ipairs(replacement_buffers) do
-      if buf < bufnr then
-        table.insert(selection_replacements, buf)
-      end
-    end
-
-    for _, winid in ipairs(winids) do
-      local new_buf = vim.F.if_nil(
-        table.remove(selection_replacements),
-        vim.api.nvim_create_buf(false, true)
-      )
-      vim.api.nvim_win_set_buf(winid, new_buf)
-    end
-    -- remove buffer at last
-    vim.api.nvim_buf_delete(bufnr, { force = true })
   end)
 end
 
