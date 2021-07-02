@@ -221,7 +221,7 @@ EOF
 | `file_sorter`          | The sorter for file lists.                            | [Sorters](#sorters)        |
 | `generic_sorter`       | The sorter for everything else.                       | [Sorters](#sorters)        |
 | `vimgrep_arguments`    | The command line argument for grep search ... TODO.   | dict                       |
-| `selection_strategy`   | What happens to the selection if the list changes.    | follow/reset/row           |
+| `selection_strategy`   | What happens to the selection if the list changes.    | follow/reset/row/closest   |
 | `file_ignore_patterns` | Pattern to be ignored `{ "scratch/.*", "%.env" }`      | dict                       |
 | `shorten_path`         | Whether to shorten paths or not.                      | boolean                    |
 

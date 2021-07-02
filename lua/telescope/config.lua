@@ -124,7 +124,8 @@ local telescope_defaults = {
     Available options are:
     - "reset" (default)
     - "follow"
-    - "row"]],
+    - "row"
+    - "closest"]],
   },
 
   scroll_strategy = {
