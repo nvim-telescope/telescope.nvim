@@ -35,7 +35,13 @@ local smarter_depth_2_extend = function(priority, base)
       end
     end
   end
-  result = vim.tbl_deep_extend("keep", priority, result)
+  for key, val in pairs(priority) do
+    if type(val) ~= "table" then
+      result[key] = first_non_null(val,result[key])
+    else
+      result[key] = vim.tbl_extend("keep",val,result[key] or {})
+    end
+  end
   return result
 end
 
@@ -43,6 +49,7 @@ end
 -- selection_strategy
 
 local config = {}
+config.smarter_depth_2_extend = smarter_depth_2_extend
 
 config.values = _TelescopeConfigurationValues
 config.descriptions = {}
