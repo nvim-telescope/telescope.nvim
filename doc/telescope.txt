@@ -371,6 +371,34 @@ actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.select_all({prompt_bufnr})                      *actions.select_all()*
+    Multi select all entries.
+    - Note: selected entries may include results not visible in the results
+      popup.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.drop_all({prompt_bufnr})                          *actions.drop_all()*
+    Drop all entries from the current multi selection.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.toggle_all({prompt_bufnr})                      *actions.toggle_all()*
+    Toggle multi selection for all entries.
+    - Note: toggled entries may include results not visible in the results
+      popup.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
     Create and checkout a new git branch if it doesn't already exist
 
@@ -429,7 +457,7 @@ actions.git_rebase_branch({prompt_bufnr})        *actions.git_rebase_branch()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_checkout_current_buffer({prompt_bufnr})*actions.git_checkout_current_buffer()*
+actions.git_staging_toggle({prompt_bufnr})      *actions.git_staging_toggle()*
     Stage/unstage selected file
 
 
@@ -1192,6 +1220,70 @@ builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
                                           (default is false)
         {line_width}     (number)         set length of diagnostic entry text
                                           in Results
+
+
+
+================================================================================
+                                                       *telescope.actions.utils*
+
+Utilities to wrap functions around picker selections and entries.
+
+Generally used from within other |telescope.actions|
+
+utils.map_entries({prompt_bufnr}, {f})                   *utils.map_entries()*
+    Apply `f` to the entries of the current picker.
+    - Notes:
+      - Mapped entries may include results not visible in the results popup.
+      - Indices are 1-indexed, whereas rows are 0-indexed.
+    - Warning: `map_entries` has no return value.
+      - The below example showcases how to collect results
+    Usage:
+        local action_state = require "telescope.actions.state"
+        local action_utils = require "telescope.actions.utils"
+        function entry_value_by_row()
+          local prompt_bufnr = vim.api.nvim_get_current_buf()
+          local current_picker = action_state.get_current_picker(prompt_bufnr)
+          local results = {}
+            action_utils.map_entries(prompt_bufnr, function(entry, index, row)
+            results[row] = entry.value
+          end)
+          return results
+        end
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)    The prompt bufnr
+        {f}            (function)  Function to map onto entries of picker that
+                                   takes (entry, index, row) as viable
+                                   arguments
+
+
+utils.map_selections({prompt_bufnr}, {f})             *utils.map_selections()*
+    Apply `f` to the multi selections of the current picker and return a table
+    of mapped selections.
+    - Notes:
+      - Mapped selections may include results not visible in the results popup.
+      - Selected entries are returned in order of their selection.
+    - Warning: `map_selections` has no return value.
+      - The below example showcases how to collect results
+    Usage:
+        local action_state = require "telescope.actions.state"
+        local action_utils = require "telescope.actions.utils"
+        function selection_by_index()
+          local prompt_bufnr = vim.api.nvim_get_current_buf()
+          local current_picker = action_state.get_current_picker(prompt_bufnr)
+          local results = {}
+            action_utils.map_selections(prompt_bufnr, function(entry, index)
+            results[index] = entry.value
+          end)
+          return results
+        end
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)    The prompt bufnr
+        {f}            (function)  Function to map onto selection of picker
+                                   that takes (selection) as a viable argument
 
 
 

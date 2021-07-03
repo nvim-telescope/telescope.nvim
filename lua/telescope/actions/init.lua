@@ -15,6 +15,7 @@ local utils = require('telescope.utils')
 local p_scroller = require('telescope.pickers.scroller')
 
 local action_state = require('telescope.actions.state')
+local action_utils = require('telescope.actions.utils')
 local action_set = require('telescope.actions.set')
 
 local transform_mod = require('telescope.actions.mt').transform_mod
@@ -141,6 +142,46 @@ end
 function actions.toggle_selection(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:toggle_selection(current_picker:get_selection_row())
+end
+
+--- Multi select all entries.
+--- - Note: selected entries may include results not visible in the results popup.
+---@param prompt_bufnr number: The prompt bufnr
+function actions.select_all(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  action_utils.map_entries(prompt_bufnr, function(entry, _, row)
+    if not current_picker._multi:is_selected(entry) then
+      current_picker._multi:add(entry)
+      if current_picker:can_select_row(row) then
+        current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
+      end
+    end
+  end)
+end
+
+--- Drop all entries from the current multi selection.
+---@param prompt_bufnr number: The prompt bufnr
+function actions.drop_all(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  action_utils.map_entries(prompt_bufnr, function(entry, _, row)
+    current_picker._multi:drop(entry)
+    if current_picker:can_select_row(row) then
+      current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
+    end
+  end)
+end
+
+--- Toggle multi selection for all entries.
+--- - Note: toggled entries may include results not visible in the results popup.
+---@param prompt_bufnr number: The prompt bufnr
+function actions.toggle_all(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  action_utils.map_entries(prompt_bufnr, function(entry, _, row)
+    current_picker._multi:toggle(entry)
+    if current_picker:can_select_row(row) then
+      current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
+    end
+  end)
 end
 
 function actions.preview_scrolling_up(prompt_bufnr)
@@ -464,8 +505,6 @@ actions.git_rebase_branch = function(prompt_bufnr)
   end
 end
 
---- Stage/unstage selected file
----@param prompt_bufnr number: The prompt bufnr
 actions.git_checkout_current_buffer = function(prompt_bufnr)
   local cwd = actions.get_current_picker(prompt_bufnr).cwd
   local selection = actions.get_selected_entry()
@@ -473,6 +512,8 @@ actions.git_checkout_current_buffer = function(prompt_bufnr)
   utils.get_os_command_output({ 'git', 'checkout', selection.value, '--', selection.file }, cwd)
 end
 
+--- Stage/unstage selected file
+---@param prompt_bufnr number: The prompt bufnr
 actions.git_staging_toggle = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()

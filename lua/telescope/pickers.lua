@@ -264,7 +264,7 @@ function Picker:can_select_row(row)
   if self.sorting_strategy == 'ascending' then
     return row <= self.manager:num_results()
   else
-    return row <= self.max_results and row >= self.max_results - self.manager:num_results()
+    return row >= 0 and row <= self.max_results and row >= self.max_results - self.manager:num_results()
   end
 end
 
