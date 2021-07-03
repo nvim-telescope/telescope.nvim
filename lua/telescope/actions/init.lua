@@ -149,29 +149,26 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.select_all(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
-  -- indices are 1-indexed, rows are 0-indexed
-  local select_all = function(entry, _, row)
+  action_utils.map_entries(prompt_bufnr, function(entry, _, row)
     if not current_picker._multi:is_selected(entry) then
       current_picker._multi:add(entry)
       if current_picker:can_select_row(row) then
         current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
       end
     end
-  end
-  action_utils.map_entries(prompt_bufnr, select_all)
+  end)
 end
 
 --- Drop all entries from the current multi selection.
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.drop_all(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
-  local drop_all = function(entry, _, row)
+  action_utils.map_entries(prompt_bufnr, function(entry, _, row)
     current_picker._multi:drop(entry)
     if current_picker:can_select_row(row) then
       current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
     end
-  end
-  action_utils.map_entries(prompt_bufnr, drop_all)
+  end)
 end
 
 --- Toggle multi selection for all entries.
@@ -179,13 +176,12 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.toggle_all(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
-  local toggle_all = function(entry, _, row)
+  action_utils.map_entries(prompt_bufnr, function(entry, _, row)
     current_picker._multi:toggle(entry)
     if current_picker:can_select_row(row) then
       current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
     end
-  end
-  action_utils.map_entries(prompt_bufnr, toggle_all)
+  end)
 end
 
 function actions.preview_scrolling_up(prompt_bufnr)
