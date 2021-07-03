@@ -21,6 +21,7 @@ local internal = {}
 internal.builtin = function(opts)
   opts.hide_filename = utils.get_default(opts.hide_filename, true)
   opts.ignore_filename = utils.get_default(opts.ignore_filename, true)
+  opts.include_extensions = utils.get_default(opts.include_extensions, false)
 
   local objs = {}
 
@@ -32,8 +33,23 @@ internal.builtin = function(opts)
     })
   end
 
+  local title = 'Telescope Builtin'
+
+  if opts.include_extensions then
+    title = 'Telescope Pickers'
+    for ext, funcs in pairs(require'telescope'.extensions) do
+      for func_name, func_obj in pairs(funcs) do
+        local debug_info = debug.getinfo(func_obj)
+        table.insert(objs, {
+          filename = string.sub(debug_info.source, 2),
+          text = string.format("%s : %s", ext, func_name),
+        })
+      end
+    end
+  end
+
   pickers.new(opts, {
-    prompt_title = 'Telescope Builtin',
+    prompt_title = title,
     finder    = finders.new_table {
       results = objs,
       entry_maker = function(entry)
