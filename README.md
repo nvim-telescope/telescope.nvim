@@ -128,7 +128,7 @@ As an example of using the `setup()` method, the following code configures
 
 ```lua
 require('telescope').setup{
-  defaults = {
+  config = {
     vimgrep_arguments = {
       'rg',
       '--color=never',
