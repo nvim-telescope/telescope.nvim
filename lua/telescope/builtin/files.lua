@@ -137,6 +137,10 @@ files.find_files = function(opts)
   local follow = opts.follow
   local search_dirs = opts.search_dirs
 
+  if opts.path then
+    search_dirs = {opts.path}
+  end
+
   if search_dirs then
     for k,v in pairs(search_dirs) do
       search_dirs[k] = vim.fn.expand(v)
