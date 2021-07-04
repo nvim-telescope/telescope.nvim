@@ -332,8 +332,17 @@ end
 actions.run_builtin = function(prompt_bufnr)
   local entry = action_state.get_selected_entry(prompt_bufnr)
 
-actions._close(prompt_bufnr, true)
-  require('telescope.builtin')[entry.text]()
+  actions._close(prompt_bufnr, true)
+  if string.match(entry.text," : ") then
+    -- Call appropriate function from extensions
+    local split_string = vim.split(entry.text," : ")
+    local ext = split_string[1]
+    local func = split_string[2]
+    require('telescope').extensions[ext][func]()
+  else
+    -- Call appropriate telescope builtin
+    require('telescope.builtin')[entry.text]()
+  end
 end
 
 actions.insert_symbol = function(prompt_bufnr)
