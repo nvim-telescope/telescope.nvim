@@ -445,13 +445,20 @@ function Picker:find()
   -- TODO: Use WinLeave as well?
   local on_buf_leave = string.format(
     [[  autocmd BufLeave <buffer> ++nested ++once :silent lua require('telescope.pickers').on_close_prompt(%s)]],
+    prompt_bufnr)
+
+  local on_vim_resize = string.format(
+    [[  autocmd VimResized <buffer> ++nested :silent lua require('telescope.pickers').on_resize_window(%s)]],
     prompt_bufnr
   )
 
   vim.cmd [[augroup PickerInsert]]
   vim.cmd [[  au!]]
   vim.cmd(on_buf_leave)
+  vim.cmd(on_vim_resize)
   vim.cmd [[augroup END]]
+
+  self.prompt_bufnr = prompt_bufnr
 
   local preview_border = preview_opts and preview_opts.border
   self.preview_border = preview_border
@@ -481,6 +488,38 @@ function Picker:find()
 
   tx.send()
   main_loop()
+end
+
+function Picker:recalculate_layout()
+  local line_count = vim.o.lines - vim.o.cmdheight
+  if vim.o.laststatus ~= 0 then
+    line_count = line_count - 1
+  end
+
+  local popup_opts = self:get_window_options(vim.o.columns, line_count)
+  -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
+  popup_opts.results.minheight = popup_opts.results.height
+  popup_opts.prompt.minheight = popup_opts.prompt.height
+  if popup_opts.preview then
+    popup_opts.preview.minheight = popup_opts.preview.height
+  end
+
+  local status = state.get_status(self.prompt_bufnr)
+  local prompt_win = status.prompt_win
+  local results_win = status.results_win
+  local preview_win = status.preview_win
+  popup.resize(results_win, popup_opts.results)
+
+  if popup_opts.preview then
+    popup.resize(preview_win, popup_opts.preview)
+  end
+
+  popup.resize(prompt_win, popup_opts.prompt)
+
+  -- Temporarily disabled: Draw the screen ASAP. This makes things feel speedier.
+  -- vim.cmd [[redraw]]
+
+  self.max_results = popup_opts.results.height
 end
 
 function Picker:hide_preview()
@@ -1168,6 +1207,22 @@ function pickers.on_close_prompt(prompt_bufnr)
   end
 
   picker.close_windows(status)
+end
+
+function pickers.on_resize_window(prompt_bufnr)
+  print("resizing" .. prompt_bufnr)
+  local status = state.get_status(prompt_bufnr)
+  local picker = status.picker
+
+  -- if picker.sorter then
+  --   picker.sorter:_destroy()
+  -- end
+
+  -- if picker.previewer then
+  --   picker.previewer:teardown()
+  -- end
+
+  picker:recalculate_layout()
 end
 
 --- Get the prompt text without the prompt prefix.
