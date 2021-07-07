@@ -47,5 +47,43 @@ better.
 
     You should get error messages when you try and use any of the above keys now.
 
+                                                     *telescope.changelog-839*
+
+Date: July 7, 2021
+PR: https://github.com/nvim-telescope/telescope.nvim/pull/839
+
+Small breaking change regarding `shorten_path` and `hide_filename`.
+This allows to configure path displays on a global level and offers a way for
+extension developers to make use of the same configuration, offering a better
+overall experience.
+
+The new way to configure to configure path displays is with:
+    `path_display`: It is a table and accepts multiple values:
+        - "hidden"    hide file names
+        - "tail"      only display the file name, and not the path
+        - "absolute"  display absolute paths
+        - "shorten"   only display the first character of each directory in
+                      the path
+    see |telescope.defaults.path_display|
+
+Example would be for a global configuration:
+  require("telescope").setup{
+    defaults = {
+      path_display = {
+        "shorten_path",
+        "absolute",
+      },
+    }
+  }
+
+You can also still pass this to a single builtin call:
+    require("telescope.builtin").find_files {
+      path_display = { "shorten_path" }
+    }
+
+For extension developers there is a new util function that can be used to
+display a path:
+    local filename = utils.transform_path(opts, entry.filename)
+
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -8,6 +8,20 @@ deprecated.picker_window_options = function(opts)
   -- Deprecated: PR:922, 2021/06/25
   -- Can be removed in a few weeks.
 
+  if opts.shorten_path then
+    table.insert(messages,
+      "'opts.shorten_path' is no longer valid. Please use 'opts.path_display' instead. " ..
+      "Please See ':help telescope.changelog-839'"
+    )
+  end
+
+  if opts.hide_filename then
+    table.insert(messages,
+      "'opts.hide_filename' is no longer valid. Please use 'opts.path_display' instead. " ..
+      "Please See ':help telescope.changelog-839'"
+    )
+  end
+
   if opts.width then
     table.insert(messages, "'opts.width' is no longer valid. Please use 'layout_config.width' instead")
   end

@@ -118,8 +118,6 @@ builtin.current_buffer_fuzzy_find = require('telescope.builtin.files').current_b
 ---@param opts table: options to pass to the picker
 ---@field ctags_file string: specify a particular ctags file to use
 ---@field show_line boolean: if true, shows the content of the line the tag is found on in the picker (default is true)
----@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is true)
----@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.tags = require('telescope.builtin.files').tags
 
 --- Lists all of the tags for the currently open buffer, with a preview
@@ -289,8 +287,6 @@ builtin.spell_suggest = require('telescope.builtin.internal').spell_suggest
 
 --- Lists the tag stack for the current window, jumps to tag on `<cr>`
 ---@param opts table: options to pass to the picker
----@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is true)
----@field hide_filename boolean: if true, hides the name of the file in the current picker (default is true)
 builtin.tagstack = require('telescope.builtin.internal').tagstack
 
 --- Lists items from Vim's jumplist, jumps to location on `<cr>`
@@ -305,7 +301,6 @@ builtin.jumplist = require('telescope.builtin.internal').jumplist
 
 --- Lists LSP references for word under the cursor, jumps to reference on `<cr>`
 ---@param opts table: options to pass to the picker
----@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is false)
 builtin.lsp_references = require('telescope.builtin.lsp').references
 
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
@@ -336,9 +331,7 @@ builtin.lsp_document_symbols = require('telescope.builtin.lsp').document_symbols
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
----@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is false)
 ---@field ignore_filename string: file(s) to ignore
----@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 ---@field symbols string|table: filter results by symbol kind(s)
 builtin.lsp_workspace_symbols = require('telescope.builtin.lsp').workspace_symbols
 
@@ -346,7 +339,6 @@ builtin.lsp_workspace_symbols = require('telescope.builtin.lsp').workspace_symbo
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
----@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.lsp_dynamic_workspace_symbols = require('telescope.builtin.lsp').dynamic_workspace_symbols
 
 --- Lists LSP diagnostics for the current buffer
@@ -355,7 +347,6 @@ builtin.lsp_dynamic_workspace_symbols = require('telescope.builtin.lsp').dynamic
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query with the diagnostic you want to see (i.e. `:warning:`)
 ---@param opts table: options to pass to the picker
----@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 ---@field severity string|number: filter diagnostics by severity name (string) or id (number)
 ---@field severity_limit string|number: keep diagnostics equal or more severe wrt severity name (string) or id (number)
 ---@field severity_bound string|number: keep diagnostics equal or less severe wrt severity name (string) or id (number)
@@ -369,7 +360,6 @@ builtin.lsp_document_diagnostics = require('telescope.builtin.lsp').diagnostics
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query with the diagnostic you want to see (i.e. `:warning:`)
 ---@param opts table: options to pass to the picker
----@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 ---@field severity string|number: filter diagnostics by severity name (string) or id (number)
 ---@field severity_limit string|number: keep diagnostics equal or more severe wrt severity name (string) or id (number)
 ---@field severity_bound string|number: keep diagnostics equal or less severe wrt severity name (string) or id (number)

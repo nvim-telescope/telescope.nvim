@@ -184,7 +184,8 @@ local telescope_defaults = {
     - "hidden"    hide file names
     - "tail"      only display the file name, and not the path
     - "absolute"  display absolute paths
-    - "shorten"   only display the first character of each directory in the path
+    - "shorten"   only display the first character of each directory in
+                  the path
 
     path_display can also be set to 'hidden' string to hide file names
 
@@ -261,13 +262,15 @@ local telescope_defaults = {
       Into your config.
 
 
-    otherwise, just set the mapping to the function that you want it to be.
+    otherwise, just set the mapping to the function that you want it to
+    be.
 
         ...,
         ["<C-i>"] = require('telescope.actions').select_default,
         ...,
 
-    If the function you want is part of `telescope.actions`, then you can simply give a string.
+    If the function you want is part of `telescope.actions`, then you can
+    simply give a string.
       For example, the previous option is equivalent to:
 
         ...,

@@ -818,12 +818,15 @@ function make_entry.gen_from_ctags(opts)
   local current_file = path.normalize(vim.fn.expand('%'), cwd)
 
   local display_items = {
-    { width = 30 },
     { remaining = true },
   }
+  local hidden = utils.is_path_hidden(opts)
+  if not hidden then
+    table.insert(display_items, 1, { width = 30 })
+  end
 
   if opts.show_line then
-    table.insert(display_items, 2, { width = 30 })
+    table.insert(display_items, 1, { width = 30 })
   end
 
   local displayer = entry_display.create {
@@ -839,11 +842,18 @@ function make_entry.gen_from_ctags(opts)
       scode = entry.scode
     end
 
-    return displayer {
-      filename,
-      entry.tag,
-      scode,
-    }
+    if hidden then
+      return displayer {
+        entry.tag,
+        scode,
+      }
+    else
+      return displayer {
+        filename,
+        entry.tag,
+        scode,
+      }
+    end
   end
 
   return function(line)
