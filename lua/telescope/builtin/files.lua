@@ -214,7 +214,7 @@ files.find_files = function(opts)
       local change_working_directory = function ()
         local entry = action_state.get_selected_entry(prompt_bufnr).value
         local dir = vim.fn.fnamemodify(entry, ":p:h")
-        vim.fn.execute("lcd " .. dir, "silent")
+        vim.fn.execute("cd " .. dir, "silent")
       end
       map('n', 'cd', change_working_directory)
 
@@ -288,7 +288,7 @@ files.file_browser = function(opts)
 
       local change_working_directory = function()
         local dir = action_state.get_selected_entry(prompt_bufnr).value
-        vim.fn.execute("lcd " .. dir, "silent")
+        vim.fn.execute("cd " .. dir, "silent")
       end
 
       local create_new_file = function()
