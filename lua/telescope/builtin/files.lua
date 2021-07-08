@@ -314,8 +314,8 @@ files.file_browser = function(opts)
           current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
         end
       end
-
-			map('n', 'cd', change_working_directory)
+      
+      map('n', 'cd', change_working_directory)
       map('i', '<C-e>', create_new_file)
       map('n', '<C-e>', create_new_file)
       return true
