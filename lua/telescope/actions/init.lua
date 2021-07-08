@@ -141,7 +141,7 @@ end
 -- For file_browser this corresponds directly to the selection
 -- For find_files this sets it to the directory containing current selection
 function actions.set_cwd_to_selection(path)
-	vim.fn.execute("cd " .. path, "silent")
+	vim.fn.execute("lcd " .. path, "silent")
 end
 
 --- Toggle current entry status for multi select
