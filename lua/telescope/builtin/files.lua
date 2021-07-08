@@ -178,6 +178,17 @@ files.find_files = function(opts)
     ),
     previewer = conf.file_previewer(opts),
     sorter = conf.file_sorter(opts),
+    attach_mappings = function(prompt_bufnr, map)
+
+			local change_working_directory = function ()
+				local entry = actions.get_selected_entry(prompt_bufnr).value
+				local dir = vim.fn.fnamemodify(entry, ":p:h")
+				actions.set_cwd_to_selection(dir)
+			end
+
+			map('n', 'cd', change_working_directory)
+			return true
+		end
   }):find()
 end
 
@@ -244,11 +255,10 @@ files.file_browser = function(opts)
         current_picker:refresh(gen_new_finder(new_cwd), { reset_prompt = true })
       end)
 
-      local change_working_directory = function()
-	local dir = actions.get_selected_entry(prompt_bufnr).value
-	vim.fn.execute("cd " .. dir, "silent")
-      end
-      map('n', 'cd', change_working_directory)
+			local change_working_directory = function()
+				local dir = actions.get_selected_entry(prompt_bufnr).value
+				actions.set_cwd_to_selection(dir)
+			end
 
       local create_new_file = function()
         local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -274,6 +284,7 @@ files.file_browser = function(opts)
         end
       end
 
+			map('n', 'cd', change_working_directory)
       map('i', '<C-e>', create_new_file)
       map('n', '<C-e>', create_new_file)
       return true

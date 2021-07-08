@@ -136,6 +136,13 @@ function actions.remove_selection(prompt_bufnr)
   current_picker:remove_selection(current_picker:get_selection_row())
 end
 
+-- Set working directory to the current selection's dir
+-- For file_browser this corresponds directly to the selection
+-- For find_files this sets it to the directory containing current selection
+function actions.set_cwd_to_selection(path)
+	vim.fn.execute("cd " .. path, "silent")
+end
+
 --- Toggle current entry status for multi select
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.toggle_selection(prompt_bufnr)
