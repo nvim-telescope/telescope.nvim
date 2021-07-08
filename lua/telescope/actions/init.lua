@@ -680,6 +680,55 @@ actions.smart_add_to_loclist = function(prompt_bufnr)
   smart_send(prompt_bufnr, 'a', 'loclist')
 end
 
+actions.hop = function(prompt_bufnr, opts)
+  opts = opts or {}
+  local escape = 27
+  local default_keys = {
+    "a", "s", "d", "f", "g", "h", "j", "k", "l", ";",
+    "q", "w", "e", "r", "t", "u", "v", "w",
+    "A", "S", "D", "F", "G", "H", "J", "K", "L", "W", "E", "R", "T", "U"}
+  opts.keys = vim.F.if_nil(opts.keys, default_keys)
+  opts.hl_group = vim.F.if_nil(opts.hl_group, "Search")
+
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local max_results = current_picker.max_results
+  local num_results = current_picker.manager:num_results()
+  local results_bufnr = current_picker.results_bufnr
+  local sorting_strategy = current_picker.sorting_strategy
+
+  local ns = vim.api.nvim_create_namespace "teleshopping"
+  local keyline = {}
+
+  for i = 1, math.min(num_results, max_results, #opts.keys) do
+    local key = opts.keys[i]
+    local linenr = sorting_strategy == "descending" and max_results - i or i
+    vim.api.nvim_buf_set_extmark(
+      results_bufnr,
+      ns,
+      linenr,
+      0,
+      { virt_text = { { key, opts.hl_group } }, virt_text_pos = "overlay" }
+    )
+    keyline[key] = linenr
+  end
+  -- ensure marks are drawn before getchar is executed
+  vim.cmd [[redraw]]
+
+  local char = vim.fn.getchar()
+  local key = vim.fn.nr2char(char)
+
+  -- TODO fix error of buffer previewer
+  if char ~= escape and keyline[key] ~= nil then
+    current_picker:set_selection(keyline[key])
+    if opts.callback then
+      opts.callback()
+    end
+  end
+
+  vim.api.nvim_buf_clear_namespace(results_bufnr, ns, 0, -1)
+end
+
+
 actions.complete_tag = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local tags = current_picker.sorter.tags
