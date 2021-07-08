@@ -21,6 +21,7 @@ local internal = {}
 internal.builtin = function(opts)
   opts.hide_filename = utils.get_default(opts.hide_filename, true)
   opts.ignore_filename = utils.get_default(opts.ignore_filename, true)
+  opts.include_extensions = utils.get_default(opts.include_extensions, false)
 
   local objs = {}
 
@@ -32,8 +33,23 @@ internal.builtin = function(opts)
     })
   end
 
+  local title = 'Telescope Builtin'
+
+  if opts.include_extensions then
+    title = 'Telescope Pickers'
+    for ext, funcs in pairs(require'telescope'.extensions) do
+      for func_name, func_obj in pairs(funcs) do
+        local debug_info = debug.getinfo(func_obj)
+        table.insert(objs, {
+          filename = string.sub(debug_info.source, 2),
+          text = string.format("%s : %s", ext, func_name),
+        })
+      end
+    end
+  end
+
   pickers.new(opts, {
-    prompt_title = 'Telescope Builtin',
+    prompt_title = title,
     finder    = finders.new_table {
       results = objs,
       entry_maker = function(entry)
@@ -159,14 +175,8 @@ internal.commands = function(opts)
 
         return commands
       end)(),
-      entry_maker = function(line)
-        return {
-          valid = line ~= "",
-          value = line,
-          ordinal = line.name,
-          display = line.name
-        }
-      end
+
+      entry_maker = opts.entry_maker or make_entry.gen_from_commands(opts),
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
@@ -257,6 +267,7 @@ internal.oldfiles = function(opts)
 
   if opts.cwd_only then
     local cwd = vim.loop.cwd()
+    cwd = cwd:gsub([[\]],[[\\]])
     results = vim.tbl_filter(function(file)
       return vim.fn.matchstrpos(file, cwd)[2] ~= -1
     end, results)
@@ -294,6 +305,36 @@ internal.command_history = function(opts)
       map('n', '<CR>', actions.set_command_line)
       map('n', '<C-e>', actions.edit_command_line)
       map('i', '<C-e>', actions.edit_command_line)
+
+      -- TODO: Find a way to insert the text... it seems hard.
+      -- map('i', '<C-i>', actions.insert_value, { expr = true })
+
+      return true
+    end,
+  }):find()
+end
+
+internal.search_history = function(opts)
+  local search_string = vim.fn.execute('history search')
+  local search_list = vim.split(search_string, "\n")
+
+  local results = {}
+  for i = #search_list, 3, -1 do
+    local item = search_list[i]
+    local _, finish = string.find(item, "%d+ +")
+    table.insert(results, string.sub(item, finish + 1))
+  end
+
+  pickers.new(opts, {
+    prompt_title = 'Search History',
+    finder = finders.new_table(results),
+    sorter = conf.generic_sorter(opts),
+
+    attach_mappings = function(_, map)
+      map('i', '<CR>', actions.set_search_line)
+      map('n', '<CR>', actions.set_search_line)
+      map('n', '<C-e>', actions.edit_search_line)
+      map('i', '<C-e>', actions.edit_search_line)
 
       -- TODO: Find a way to insert the text... it seems hard.
       -- map('i', '<C-i>', actions.insert_value, { expr = true })
@@ -538,10 +579,14 @@ internal.buffers = function(opts)
     if 1 ~= vim.fn.buflisted(b) then
         return false
     end
-    if not opts.show_all_buffers and not vim.api.nvim_buf_is_loaded(b) then
+    -- only hide unloaded buffers if opts.show_all_buffers is false, keep them listed if true or nil
+    if opts.show_all_buffers == false and not vim.api.nvim_buf_is_loaded(b) then
       return false
     end
     if opts.ignore_current_buffer and b == vim.api.nvim_get_current_buf() then
+      return false
+    end
+    if opts.only_cwd and not string.find(vim.api.nvim_buf_get_name(b), vim.loop.cwd(), 1, true) then
       return false
     end
     return true
@@ -683,7 +728,7 @@ internal.keymaps = function(opts)
         return {
           valid = line ~= "",
           value = line,
-          ordinal = line.lhs .. line.rhs,
+          ordinal = utils.display_termcodes(line.lhs) .. line.rhs,
           display = line.mode .. ' ' .. utils.display_termcodes(line.lhs) .. ' ' .. line.rhs
         }
       end
@@ -815,8 +860,6 @@ internal.autocommands = function(opts)
     inner_loop(line)
   end
 
-  -- print(vim.inspect(autocmd_table))
-
   pickers.new(opts,{
     prompt_title = 'autocommands',
     finder = finders.new_table {
@@ -858,6 +901,68 @@ internal.spell_suggest = function(opts)
       end)
       return true
     end
+  }):find()
+end
+
+internal.tagstack = function(opts)
+  opts = opts or {}
+  local tagstack = vim.fn.gettagstack()
+  if vim.tbl_isempty(tagstack.items) then
+    print("No tagstack available")
+    return
+  end
+
+  for _, value in pairs(tagstack.items) do
+    value.valid = true
+    value.bufnr = value.from[1]
+    value.lnum = value.from[2]
+    value.col = value.from[3]
+    value.filename = vim.fn.bufname(value.from[1])
+
+    value.text = vim.api.nvim_buf_get_lines(
+      value.bufnr,
+      value.lnum - 1,
+      value.lnum,
+      false
+    )[1]
+  end
+
+  -- reverse the list
+  local tags = {}
+  for i = #tagstack.items, 1, -1 do
+    tags[#tags+1] = tagstack.items[i]
+  end
+
+  pickers.new(opts, {
+    prompt_title = 'TagStack',
+    finder = finders.new_table {
+      results = tags,
+      entry_maker = make_entry.gen_from_quickfix(opts),
+    },
+    previewer = conf.qflist_previewer(opts),
+    sorter = conf.generic_sorter(opts),
+  }):find()
+end
+
+internal.jumplist = function(opts)
+  opts = opts or {}
+  local jumplist = vim.fn.getjumplist()[1]
+
+  -- reverse the list
+  local sorted_jumplist = {}
+  for i = #jumplist, 1, -1 do
+    jumplist[i].text = ''
+    table.insert(sorted_jumplist, jumplist[i])
+  end
+
+  pickers.new(opts, {
+    prompt_title = 'Jumplist',
+    finder = finders.new_table {
+      results = sorted_jumplist,
+      entry_maker = make_entry.gen_from_jumplist(opts),
+    },
+    previewer = conf.qflist_previewer(opts),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 

@@ -1,3 +1,8 @@
+if !has('nvim-0.5')
+  echoerr "Telescope.nvim requires at least nvim-0.5. Please update or uninstall"
+  finish
+end
+
 if exists('g:loaded_telescope')
   finish
 endif
@@ -69,6 +74,7 @@ highlight default link TelescopeResultsSpecialComment SpecialComment
 highlight default link TelescopeResultsDiffChange DiffChange
 highlight default link TelescopeResultsDiffAdd DiffAdd
 highlight default link TelescopeResultsDiffDelete DiffDelete
+highlight default link TelescopeResultsDiffUntracked NonText
 
 " This is like "<C-R>" in your terminal.
 "   To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)

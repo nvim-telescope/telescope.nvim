@@ -111,51 +111,60 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
   if opts.silent == nil then opts.silent = true end
 
   if type(key_func) == "string" then
-    a.nvim_buf_set_keymap(
+    key_func = actions[key_func]
+  elseif type(key_func) == "table" then
+    if key_func.type == "command" then
+      a.nvim_buf_set_keymap(
+        prompt_bufnr,
+        mode,
+        key_bind,
+        key_func[1],
+        opts or {
+          silent = true
+        }
+      )
+      return
+    elseif key_func.type == "action_key" then
+      key_func = actions[key_func[1]]
+    elseif key_func.type == "action" then
+      key_func = key_func[1]
+    end
+  end
+
+  local key_id = assign_function(prompt_bufnr, key_func)
+  local prefix
+
+  local map_string
+  if opts.expr then
+    map_string = string.format(
+      [[luaeval("require('telescope.mappings').execute_keymap(%s, %s)")]],
       prompt_bufnr,
-      mode,
-      key_bind,
-      key_func,
-      opts or {
-        silent = true
-      }
+      key_id
     )
   else
-    local key_id = assign_function(prompt_bufnr, key_func)
-    local prefix
-
-    local map_string
-    if opts.expr then
-      map_string = string.format(
-        [[luaeval("require('telescope.mappings').execute_keymap(%s, %s)")]],
-        prompt_bufnr,
-        key_id
-      )
+    if mode == "i" and not opts.expr then
+      prefix = "<cmd>"
+    elseif mode == "n" then
+      prefix = ":<C-U>"
     else
-      if mode == "i" and not opts.expr then
-        prefix = "<cmd>"
-      elseif mode == "n" then
-        prefix = ":<C-U>"
-      else
-        prefix = ":"
-      end
-
-      map_string = string.format(
-        "%slua require('telescope.mappings').execute_keymap(%s, %s)<CR>",
-        prefix,
-        prompt_bufnr,
-        key_id
-      )
+      prefix = ":"
     end
 
-    a.nvim_buf_set_keymap(
+    map_string = string.format(
+      "%slua require('telescope.mappings').execute_keymap(%s, %s)<CR>",
+      prefix,
       prompt_bufnr,
-      mode,
-      key_bind,
-      map_string,
-      opts
+      key_id
     )
   end
+
+  a.nvim_buf_set_keymap(
+    prompt_bufnr,
+    mode,
+    key_bind,
+    map_string,
+    opts
+  )
 end
 
 mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)

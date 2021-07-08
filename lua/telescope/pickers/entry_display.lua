@@ -1,28 +1,7 @@
-local utils = require('telescope.utils')
+local strings = require('plenary.strings')
 
 local entry_display = {}
-
-entry_display.truncate = function(str, len)
-  str = tostring(str) -- We need to make sure its an actually a string and not a number
-  if utils.strdisplaywidth(str) <= len then
-    return str
-  end
-  local charlen = 0
-  local cur_len = 0
-  local result = ''
-  local len_of_dots = utils.strdisplaywidth('…')
-  while true do
-    local part = utils.strcharpart(str, charlen, 1)
-    cur_len = cur_len + utils.strdisplaywidth(part)
-    if (cur_len + len_of_dots) > len then
-      result = result .. '…'
-      break
-    end
-    result = result .. part
-    charlen = charlen + 1
-  end
-  return result
-end
+entry_display.truncate = strings.truncate
 
 entry_display.create = function(configuration)
   local generator = {}
@@ -31,9 +10,9 @@ entry_display.create = function(configuration)
       local justify = v.right_justify
       table.insert(generator, function(item)
         if type(item) == 'table' then
-          return utils.align_str(entry_display.truncate(item[1], v.width), v.width, justify), item[2]
+          return strings.align_str(entry_display.truncate(item[1], v.width), v.width, justify), item[2]
         else
-          return utils.align_str(entry_display.truncate(item, v.width), v.width, justify)
+          return strings.align_str(entry_display.truncate(item, v.width), v.width, justify)
         end
       end)
     else
@@ -59,8 +38,16 @@ entry_display.create = function(configuration)
             hl_start = hl_start + #results[j] + (#configuration.separator or 1)
           end
           local hl_end = hl_start + #str:gsub('%s*$', '')
-          table.insert(highlights, { { hl_start, hl_end }, hl })
+
+          if type(hl) == "function" then
+            for _, hl_res in ipairs(hl()) do
+              table.insert(highlights, { { hl_res[1][1] + hl_start, hl_res[1][2] + hl_start }, hl_res[2] })
+            end
+          else
+            table.insert(highlights, { { hl_start, hl_end }, hl })
+          end
         end
+
         table.insert(results, str)
       end
     end
@@ -75,6 +62,7 @@ entry_display.create = function(configuration)
         table.insert(highlights, { { hl_start, hl_end }, configuration.separator_hl })
       end
     end
+
     local final_str = table.concat(results, configuration.separator or "│")
     if configuration.hl_chars then
       for i = 1, #final_str do

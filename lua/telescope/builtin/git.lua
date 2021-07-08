@@ -5,6 +5,9 @@ local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
 local utils = require('telescope.utils')
+local entry_display = require('telescope.pickers.entry_display')
+local strings = require('plenary.strings')
+local Path = require('plenary.path')
 
 local conf = require('telescope.config').values
 
@@ -14,7 +17,7 @@ git.files = function(opts)
   local show_untracked = utils.get_default(opts.show_untracked, true)
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
   if show_untracked and recurse_submodules then
-    error("Git does not suppurt both --others and --recurse-submodules")
+    error("Git does not support both --others and --recurse-submodules")
   end
 
   -- By creating the entry maker after the cwd options,
@@ -47,7 +50,12 @@ git.commits = function(opts)
       results = results,
       entry_maker = opts.entry_maker or make_entry.gen_from_git_commits(opts),
     },
-    previewer = previewers.git_commit_diff.new(opts),
+    previewer = {
+      previewers.git_commit_diff_to_parent.new(opts),
+      previewers.git_commit_diff_to_head.new(opts),
+      previewers.git_commit_diff_as_was.new(opts),
+      previewers.git_commit_message.new(opts),
+    },
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
       actions.select_default:replace(actions.git_checkout)
@@ -56,9 +64,36 @@ git.commits = function(opts)
   }):find()
 end
 
-git.bcommits = function(opts)
+git.stash = function(opts)
   local results = utils.get_os_command_output({
-    'git', 'log', '--pretty=oneline', '--abbrev-commit', vim.fn.expand('%')
+    'git', '--no-pager', 'stash', 'list',
+  }, opts.cwd)
+
+  pickers.new(opts, {
+    prompt_title = 'Git Stash',
+    finder = finders.new_table {
+      results = results,
+      entry_maker = opts.entry_maker or make_entry.gen_from_git_stash(),
+    },
+    previewer = previewers.git_stash_diff.new(opts),
+    sorter = conf.file_sorter(opts),
+    attach_mappings = function()
+      actions.select_default:replace(actions.git_apply_stash)
+      return true
+    end
+  }):find()
+end
+
+local get_current_buf_line = function(winnr)
+  local lnum = vim.api.nvim_win_get_cursor(winnr)[1]
+  return vim.trim(vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(winnr), lnum - 1, lnum, false)[1])
+end
+
+git.bcommits = function(opts)
+  opts.current_line = (not opts.current_file) and get_current_buf_line(0) or nil
+  opts.current_file = opts.current_file or vim.fn.expand('%')
+  local results = utils.get_os_command_output({
+    'git', 'log', '--pretty=oneline', '--abbrev-commit', opts.current_file
   }, opts.cwd)
 
   pickers.new(opts, {
@@ -67,27 +102,144 @@ git.bcommits = function(opts)
       results = results,
       entry_maker = opts.entry_maker or make_entry.gen_from_git_commits(opts),
     },
-    previewer = previewers.git_commit_diff.new(opts),
+    previewer = {
+      previewers.git_commit_diff_to_parent.new(opts),
+      previewers.git_commit_diff_to_head.new(opts),
+      previewers.git_commit_diff_as_was.new(opts),
+      previewers.git_commit_message.new(opts),
+    },
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
-      actions.select_default:replace(actions.git_checkout)
+      actions.select_default:replace(actions.git_checkout_current_buffer)
+      local transfrom_file = function()
+        return opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd) or ''
+      end
+
+      local get_buffer_of_orig = function(selection)
+        local value = selection.value .. ':' .. transfrom_file()
+        local content = utils.get_os_command_output({ 'git', '--no-pager', 'show', value }, opts.cwd)
+
+        local bufnr = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
+        vim.api.nvim_buf_set_name(bufnr, 'Original')
+        return bufnr
+      end
+
+      local vimdiff = function(selection, command)
+        local ft = vim.bo.filetype
+        vim.cmd("diffthis")
+
+        local bufnr = get_buffer_of_orig(selection)
+        vim.cmd(string.format("%s %s", command, bufnr))
+        vim.bo.filetype = ft
+        vim.cmd("diffthis")
+
+        vim.cmd(string.format(
+          "autocmd WinClosed <buffer=%s> ++nested ++once :lua vim.api.nvim_buf_delete(%s, { force = true })",
+          bufnr,
+          bufnr))
+      end
+
+      actions.select_vertical:replace(function(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        vimdiff(selection, 'leftabove vert sbuffer')
+      end)
+
+      actions.select_horizontal:replace(function(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        vimdiff(selection, 'belowright sbuffer')
+      end)
+
+      actions.select_tab:replace(function(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        vim.cmd('tabedit ' .. transfrom_file())
+        vimdiff(selection, 'leftabove vert sbuffer')
+      end)
       return true
     end
   }):find()
 end
 
 git.branches = function(opts)
-  local output = utils.get_os_command_output({ 'git', 'branch', '--all' }, opts.cwd)
+  local format = '%(HEAD)'
+              .. '%(refname)'
+              .. '%(authorname)'
+              .. '%(upstream:lstrip=2)'
+              .. '%(committerdate:format-local:%Y/%m/%d%H:%M:%S)'
+  local output = utils.get_os_command_output({ 'git', 'for-each-ref', '--perl', '--format', format }, opts.cwd)
 
   local results = {}
-  for _, v in ipairs(output) do
-    if not string.match(v, 'HEAD') and v ~= '' then
-      if vim.startswith(v, '*') then
-        table.insert(results, 1, v)
-      else
-        table.insert(results, v)
-      end
+  local widths = {
+    name = 0,
+    authorname = 0,
+    upstream = 0,
+    committerdate = 0,
+  }
+  local unescape_single_quote = function(v)
+      return string.gsub(v, "\\([\\'])", "%1")
+  end
+  local parse_line = function(line)
+    local fields = vim.split(string.sub(line, 2, -2), "''", true)
+    local entry = {
+      head = fields[1],
+      refname = unescape_single_quote(fields[2]),
+      authorname = unescape_single_quote(fields[3]),
+      upstream = unescape_single_quote(fields[4]),
+      committerdate = fields[5],
+    }
+    local prefix
+    if vim.startswith(entry.refname, 'refs/remotes/') then
+      prefix = 'refs/remotes/'
+    elseif vim.startswith(entry.refname, 'refs/heads/') then
+      prefix = 'refs/heads/'
+    else
+      return
     end
+    local index = 1
+    if entry.head ~= '*' then
+      index = #results + 1
+    end
+
+    entry.name = string.sub(entry.refname, string.len(prefix)+1)
+    for key, value in pairs(widths) do
+      widths[key] = math.max(value, strings.strdisplaywidth(entry[key] or ''))
+    end
+    if string.len(entry.upstream) > 0 then
+      widths.upstream_indicator = 2
+    end
+    table.insert(results, index, entry)
+  end
+  for _, line in ipairs(output) do
+    parse_line(line)
+  end
+  if #results == 0 then
+    return
+  end
+
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = 1 },
+      { width = widths.name },
+      { width = widths.authorname },
+      { width = widths.upstream_indicator },
+      { width = widths.upstream },
+      { width = widths.committerdate },
+    }
+  }
+
+  local make_display = function(entry)
+    return displayer {
+      {entry.head},
+      {entry.name, 'TelescopeResultsIdentifier'},
+      {entry.authorname},
+      {string.len(entry.upstream) > 0 and '=>' or ''},
+      {entry.upstream, 'TelescopeResultsIdentifier'},
+      {entry.committerdate}
+    }
   end
 
   pickers.new(opts, {
@@ -95,14 +247,10 @@ git.branches = function(opts)
     finder = finders.new_table {
       results = results,
       entry_maker = function(entry)
-        local addition = vim.startswith(entry, '*') and '* ' or '  '
-        entry = entry:gsub('[* ] ', '')
-        entry = entry:gsub('^remotes/', '')
-        return {
-          value = entry,
-          ordinal = addition .. entry,
-          display = addition .. entry
-        }
+        entry.value = entry.name
+        entry.ordinal = entry.name
+        entry.display = make_display
+        return entry
       end
     },
     previewer = previewers.git_branch_log.new(opts),
@@ -115,11 +263,14 @@ git.branches = function(opts)
       map('i', '<c-r>', actions.git_rebase_branch)
       map('n', '<c-r>', actions.git_rebase_branch)
 
+      map('i', '<c-a>', actions.git_create_branch)
+      map('n', '<c-a>', actions.git_create_branch)
+
+      map('i', '<c-s>', actions.git_switch_branch)
+      map('n', '<c-s>', actions.git_switch_branch)
+
       map('i', '<c-d>', actions.git_delete_branch)
       map('n', '<c-d>', actions.git_delete_branch)
-
-      map('i', '<c-u>', false)
-      map('n', '<c-u>', false)
       return true
     end
   }):find()
@@ -181,7 +332,10 @@ local set_opts_cwd = function(opts)
   local use_git_root = utils.get_default(opts.use_git_root, true)
 
   if ret ~= 0 then
-    error(opts.cwd .. ' is not a git directory')
+    local output = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
+    if output[1] ~= "true" then
+        error(opts.cwd .. ' is not a git directory')
+    end
   else
     if use_git_root then
       opts.cwd = git_root[1]

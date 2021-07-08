@@ -37,6 +37,7 @@ function telescope.setup(opts)
   end
 
   require('telescope.config').set_defaults(opts.defaults)
+  require('telescope.config').set_pickers(opts.pickers)
   _extensions.set_config(opts.extensions)
 end
 

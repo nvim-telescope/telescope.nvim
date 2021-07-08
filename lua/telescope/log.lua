@@ -1,5 +1,6 @@
+local user = vim.loop.os_getenv("USER")
 
 return require('plenary.log').new {
   plugin = 'telescope',
-  level = (vim.loop.os_getenv("USER") == 'tj' and 'debug') or 'warn',
+  level = ((user == 'tj' or user == 'tjdevries') and 'debug') or 'warn',
 }

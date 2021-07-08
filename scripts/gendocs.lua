@@ -1,4 +1,5 @@
 -- Setup telescope with defaults
+if RELOAD then RELOAD('telescope') end
 require('telescope').setup()
 
 local docgen = require('docgen')
@@ -12,7 +13,12 @@ docs.test = function()
     "./lua/telescope/builtin/init.lua",
     "./lua/telescope/pickers/layout_strategies.lua",
     "./lua/telescope/actions/init.lua",
+    "./lua/telescope/actions/state.lua",
+    "./lua/telescope/actions/set.lua",
+    "./lua/telescope/actions/utils.lua",
     "./lua/telescope/previewers/init.lua",
+    "./lua/telescope/config/resolve.lua",
+    "./lua/telescope/themes.lua",
   }
 
   table.sort(input_files, function(a, b)

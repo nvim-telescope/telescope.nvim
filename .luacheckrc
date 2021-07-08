@@ -13,11 +13,13 @@ ignore = {
 }
 
 globals = {
+  "_",
   "TelescopeGlobalState",
   "TelescopeCachedUppers",
   "TelescopeCachedTails",
   "TelescopeCachedNgrams",
   "_TelescopeConfigurationValues",
+  "_TelescopeConfigurationPickers",
   "__TelescopeKeymapStore",
 }
 
