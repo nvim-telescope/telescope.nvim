@@ -114,13 +114,15 @@ telescope.setup({opts})                                    *telescope.setup()*
           Into your config.
 
 
-        otherwise, just set the mapping to the function that you want it to be.
+        otherwise, just set the mapping to the function that you want it to
+        be.
 
             ...,
             ["<C-i>"] = require('telescope.actions').select_default,
             ...,
 
-        If the function you want is part of `telescope.actions`, then you can simply give a string.
+        If the function you want is part of `telescope.actions`, then you can
+        simply give a string.
           For example, the previous option is equivalent to:
 
             ...,
@@ -135,6 +137,21 @@ telescope.setup({opts})                                    *telescope.setup()*
             ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },)
             ...,
 
+
+                                          *telescope.defaults.path_display*
+    path_display: ~
+        Determines how file paths are displayed
+
+        path_display can be set to an array with a combination of:
+        - "hidden"    hide file names
+        - "tail"      only display the file name, and not the path
+        - "absolute"  display absolute paths
+        - "shorten"   only display the first character of each directory in
+                      the path
+
+        path_display can also be set to 'hidden' string to hide file names
+
+        Default: {}
 
                                          *telescope.defaults.prompt_prefix*
     prompt_prefix: ~
@@ -728,14 +745,9 @@ builtin.tags({opts})                                          *builtin.tags()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {ctags_file}    (string)   specify a particular ctags file to use
-        {show_line}     (boolean)  if true, shows the content of the line the
-                                   tag is found on in the picker (default is
-                                   true)
-        {shorten_path}  (boolean)  if true, makes file paths shown in picker
-                                   use one letter for folders (default is true)
-        {hide_filename} (boolean)  if true, hides the name of the file in the
-                                   current picker (default is false)
+        {ctags_file} (string)   specify a particular ctags file to use
+        {show_line}  (boolean)  if true, shows the content of the line the tag
+                                is found on in the picker (default is true)
 
 
 builtin.current_buffer_tags({opts})            *builtin.current_buffer_tags()*
@@ -1045,12 +1057,6 @@ builtin.tagstack({opts})                                  *builtin.tagstack()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
-    Fields: ~
-        {shorten_path}  (boolean)  if true, makes file paths shown in picker
-                                   use one letter for folders (default is true)
-        {hide_filename} (boolean)  if true, hides the name of the file in the
-                                   current picker (default is true)
-
 
 builtin.jumplist({opts})                                  *builtin.jumplist()*
     Lists items from Vim's jumplist, jumps to location on `<cr>`
@@ -1067,10 +1073,6 @@ builtin.lsp_references({opts})                      *builtin.lsp_references()*
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
-
-    Fields: ~
-        {shorten_path} (boolean)  if true, makes file paths shown in picker use
-                                  one letter for folders (default is false)
 
 
 builtin.lsp_definitions({opts})                    *builtin.lsp_definitions()*
@@ -1134,13 +1136,7 @@ builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {shorten_path}    (boolean)       if true, makes file paths shown in
-                                          picker use one letter for folders
-                                          (default is false)
         {ignore_filename} (string)        file(s) to ignore
-        {hide_filename}   (boolean)       if true, hides the name of the file
-                                          in the current picker (default is
-                                          false)
         {symbols}         (string|table)  filter results by symbol kind(s)
 
 
@@ -1153,10 +1149,6 @@ builtin.lsp_dynamic_workspace_symbols({opts})*builtin.lsp_dynamic_workspace_symb
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
-
-    Fields: ~
-        {hide_filename} (boolean)  if true, hides the name of the file in the
-                                   current picker (default is false)
 
 
 builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
@@ -1173,9 +1165,6 @@ builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {hide_filename}  (boolean)        if true, hides the name of the file
-                                          in the current picker (default is
-                                          false)
         {severity}       (string|number)  filter diagnostics by severity name
                                           (string) or id (number)
         {severity_limit} (string|number)  keep diagnostics equal or more severe
@@ -1205,9 +1194,6 @@ builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {hide_filename}  (boolean)        if true, hides the name of the file
-                                          in the current picker (default is
-                                          false)
         {severity}       (string|number)  filter diagnostics by severity name
                                           (string) or id (number)
         {severity_limit} (string|number)  keep diagnostics equal or more severe
