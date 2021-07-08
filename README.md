@@ -46,7 +46,7 @@ Community driven built-in [pickers](#pickers), [sorters](#sorters) and [previewe
 
 This section should guide to run your first built-in pickers :smile:.
 
-[Neovim (v0.5)](https://github.com/neovim/neovim/releases/tag/v0.5.0)
+[Neovim (v0.5)](https://github.com/neovim/neovim/releases/tag/v0.5.0) or newer
   is required for `telescope.nvim` to work.
 
 ### Optional dependences
