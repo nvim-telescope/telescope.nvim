@@ -104,7 +104,11 @@ end
 ---@param picker table: the current picker object
 ---@return string: the next history item
 function histories.History:get_next(line, picker)
-  if not self.enabled then return end
+  if not self.enabled then
+    print("You are cycling to next the history item but history is disabled.",
+          "Read ':help telescope.defaults.history_handler'")
+    return false
+  end
   if self._pre_get then self._pre_get(self, line, picker) end
 
   local next_idx = self.index + 1
@@ -121,7 +125,11 @@ end
 ---@param picker table: the current picker object
 ---@return string: the previous history item
 function histories.History:get_prev(line, picker)
-  if not self.enabled then return end
+  if not self.enabled then
+    print("You are cycling to previous the history item but history is disabled.",
+          "Read ':help telescope.defaults.history_handler'")
+    return false
+  end
   if self._pre_get then self._pre_get(self, line, picker) end
 
   local next_idx = self.index - 1

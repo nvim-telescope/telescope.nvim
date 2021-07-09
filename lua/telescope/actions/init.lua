@@ -196,21 +196,53 @@ function actions.center(_)
   vim.cmd(':normal! zz')
 end
 
-function actions.select_default(prompt_bufnr)
-  return action_set.select(prompt_bufnr, "default")
-end
+actions.select_default = {
+  pre = function(prompt_bufnr)
+    action_state.get_current_history():append(
+      action_state.get_current_line(),
+      action_state.get_current_picker(prompt_bufnr)
+    )
+  end,
+  action = function(prompt_bufnr)
+    return action_set.select(prompt_bufnr, "default")
+  end
+}
 
-function actions.select_horizontal(prompt_bufnr)
-  return action_set.select(prompt_bufnr, "horizontal")
-end
+actions.select_horizontal = {
+  pre = function(prompt_bufnr)
+    action_state.get_current_history():append(
+      action_state.get_current_line(),
+      action_state.get_current_picker(prompt_bufnr)
+    )
+  end,
+  action = function(prompt_bufnr)
+    return action_set.select(prompt_bufnr, "horizontal")
+  end
+}
 
-function actions.select_vertical(prompt_bufnr)
-  return action_set.select(prompt_bufnr, "vertical")
-end
+actions.select_vertical = {
+  pre = function(prompt_bufnr)
+    action_state.get_current_history():append(
+      action_state.get_current_line(),
+      action_state.get_current_picker(prompt_bufnr)
+    )
+  end,
+  action = function(prompt_bufnr)
+    return action_set.select(prompt_bufnr, "vertical")
+  end
+}
 
-function actions.select_tab(prompt_bufnr)
-  return action_set.select(prompt_bufnr, "tab")
-end
+actions.select_tab = {
+  pre = function(prompt_bufnr)
+    action_state.get_current_history():append(
+      action_state.get_current_line(),
+      action_state.get_current_picker(prompt_bufnr)
+    )
+  end,
+  action = function(prompt_bufnr)
+    return action_set.select(prompt_bufnr, "tab")
+  end
+}
 
 -- TODO: consider adding float!
 -- https://github.com/nvim-telescope/telescope.nvim/issues/365
@@ -702,8 +734,10 @@ actions.cycle_history_next = function(prompt_bufnr)
   local line = action_state.get_current_line()
 
   local entry = history:get_next(line, current_picker)
+  if entry == false then return end
+
   current_picker:reset_prompt()
-  if entry then
+  if entry ~= nil then
     current_picker:set_prompt(entry)
   end
 end
@@ -714,7 +748,8 @@ actions.cycle_history_prev = function(prompt_bufnr)
   local line = action_state.get_current_line()
 
   local entry = history:get_prev(line, current_picker)
-  if entry then
+  if entry == false then return end
+  if entry ~= nil then
     current_picker:reset_prompt()
     current_picker:set_prompt(entry)
   end

@@ -11,14 +11,14 @@ docs.test = function()
   local input_files = {
     "./lua/telescope/init.lua",
     "./lua/telescope/builtin/init.lua",
+    "./lua/telescope/themes.lua",
     "./lua/telescope/pickers/layout_strategies.lua",
+    "./lua/telescope/config/resolve.lua",
     "./lua/telescope/actions/init.lua",
     "./lua/telescope/actions/state.lua",
     "./lua/telescope/actions/set.lua",
     "./lua/telescope/actions/utils.lua",
     "./lua/telescope/previewers/init.lua",
-    "./lua/telescope/config/resolve.lua",
-    "./lua/telescope/themes.lua",
     "./lua/telescope/actions/history.lua",
   }
 
