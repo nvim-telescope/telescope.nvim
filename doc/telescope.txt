@@ -49,9 +49,9 @@ telescope.setup({opts})                                    *telescope.setup()*
 
                                                *telescope.defaults.history*
     history: ~
-          This field handles the configuration for prompt history. It can either
-          be a table or false.
-          If its false then history is disabled.
+          This field handles the configuration for prompt history.
+          By default it is a table, with default values (more below).
+          To disable history, set it to either false or nil.
 
           Currently mappings still need to be added, Example:
             mappings = {
@@ -62,22 +62,20 @@ telescope.setup({opts})                                    *telescope.setup()*
             },
 
           Fields:
-            - path:    the path to the telescope history as string
+            - path:    The path to the telescope history as string.
                        default: stdpath("data")/telescope_history
-            - limit:   the amount of entries that will be written in the history
-                       if limit is set to nil it will grown unbound
+            - limit:   The amount of entries that will be written in the
+                       history.
+                       Warning: If limit is set to nil it will grown unbound.
                        default: 100
-            - handler: is a developer setting that is meant for extensions.
-                       You can replace the actual implementation of the history
-                       and provide your own. One example of this is
-                       nvim-telescope/telescope-smart-history.nvim which allows
-                       context sensitive (cwd + picker) history.
+            - handler: A lua function that implements the history.
+                       This is meant as a developer setting for extensions to
+                       override the history handling, e.g.,
+                       https://github.com/nvim-telescope/telescope-smart-history.nvim,
+                       which allows context sensitive (cwd + picker) history.
 
                        Default:
                        require('telescope.actions.history').get_simple_history
-
-                       Is a simple history implementation that is not context
-                       sensitive, it writes all history in one text file.
 
 
                                          *telescope.defaults.layout_config*
