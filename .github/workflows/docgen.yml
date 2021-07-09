@@ -21,10 +21,7 @@ jobs:
       - name: Prepare
         run: |
           test -d build || {
-            mkdir -p build
-            wget https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
-            chmod +x nvim.appimage
-            mv nvim.appimage ./build/nvim
+            bash .github/workflows/scripts/setup-appimage.bash
           }
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
