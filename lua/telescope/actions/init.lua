@@ -358,7 +358,7 @@ actions.paste_register = function(prompt_bufnr)
     if reg_type:byte(1, 1) == 0x16 then
       reg_type = "b" .. reg_type:sub(2, -1)
     end
-    vim.api.nvim_put({entry.content}, reg_type, true, true)
+    vim.api.nvim_paste(entry.content, true, -1)
   end
 end
 
