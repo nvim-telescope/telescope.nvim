@@ -19,7 +19,7 @@ jobs:
       - name: Prepare
         run: |
           sudo apt update
-          sudo apt install fd-find
+          sudo apt install fd-find --yes
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
           git clone --depth 1 https://github.com/nvim-lua/popup.nvim ~/.local/share/nvim/site/pack/vendor/start/popup.nvim
@@ -48,7 +48,7 @@ jobs:
       - name: Prepare
         run: |
           sudo apt update
-          sudo apt install fd-find fuse --yes
+          sudo apt install fd-find --yes
           test -d build || {
             bash .github/workflows/scripts/setup-appimage.bash
           }
