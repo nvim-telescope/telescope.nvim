@@ -2,6 +2,7 @@ local strings = require "plenary.strings"
 local deprecated = require "telescope.deprecated"
 local sorters = require "telescope.sorters"
 local if_nil = vim.F.if_nil
+local os_sep = require("plenary.path").path.sep
 
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
@@ -206,15 +207,48 @@ local telescope_defaults = {
     end,
   },
 
-  dynamic_preview_title = {
-    false,
-    [[
+  dynamic_preview_title = { false, [[
     Will change the title of the preview window dynamically, where it
     is supported. Means the preview window will for example show the
     full filename.
 
-    Default: false
-    ]],
+    Default: false]],
+  },
+
+  history = { {
+    path = vim.fn.stdpath("data") .. os_sep .. "telescope_history",
+    limit = 100,
+    handler = function(...) return require('telescope.actions.history').get_simple_history(...) end,
+  }, [[
+    This field handles the configuration for prompt history.
+    By default it is a table, with default values (more below).
+    To disable history, set it to either false or nil.
+
+    Currently mappings still need to be added, Example:
+      mappings = {
+        i = {
+          ["<C-Down>"] = require('telescope.actions').cycle_history_next,
+          ["<C-Up>"] = require('telescope.actions').cycle_history_prev,
+        },
+      },
+
+    Fields:
+      - path:    The path to the telescope history as string.
+                 default: stdpath("data")/telescope_history
+      - limit:   The amount of entries that will be written in the
+                 history.
+                 Warning: If limit is set to nil it will grown unbound.
+                 default: 100
+      - handler: A lua function that implements the history.
+                 This is meant as a developer setting for extensions to
+                 override the history handling, e.g.,
+                 https://github.com/nvim-telescope/telescope-smart-history.nvim,
+                 which allows context sensitive (cwd + picker) history.
+
+                 Default:
+                 require('telescope.actions.history').get_simple_history
+  ]],
+
   },
 
   -- Builtin configuration
@@ -341,6 +375,16 @@ function config.set_defaults(user_defaults, tele_defaults)
 
   local function get(name, default_val)
     if name == "layout_config" then
+      return smarter_depth_2_extend(
+        if_nil(user_defaults[name], {}),
+        vim.tbl_deep_extend("keep", if_nil(config.values[name], {}), if_nil(default_val, {}))
+      )
+    end
+    if name == "history" then
+      if not user_defaults[name] or not config.values[name] then
+        return false
+      end
+
       return smarter_depth_2_extend(
         if_nil(user_defaults[name], {}),
         vim.tbl_deep_extend("keep", if_nil(config.values[name], {}), if_nil(default_val, {}))

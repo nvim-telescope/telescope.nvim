@@ -41,12 +41,42 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: false
 
-
                                           *telescope.defaults.entry_prefix*
     entry_prefix: ~
         Prefix in front of each result entry. Current selection not included.
 
         Default: '  '
+
+                                               *telescope.defaults.history*
+    history: ~
+          This field handles the configuration for prompt history.
+          By default it is a table, with default values (more below).
+          To disable history, set it to either false or nil.
+
+          Currently mappings still need to be added, Example:
+            mappings = {
+              i = {
+                ["<C-Down>"] = require('telescope.actions').cycle_history_next,
+                ["<C-Up>"] = require('telescope.actions').cycle_history_prev,
+              },
+            },
+
+          Fields:
+            - path:    The path to the telescope history as string.
+                       default: stdpath("data")/telescope_history
+            - limit:   The amount of entries that will be written in the
+                       history.
+                       Warning: If limit is set to nil it will grown unbound.
+                       default: 100
+            - handler: A lua function that implements the history.
+                       This is meant as a developer setting for extensions to
+                       override the history handling, e.g.,
+                       https://github.com/nvim-telescope/telescope-smart-history.nvim,
+                       which allows context sensitive (cwd + picker) history.
+
+                       Default:
+                       require('telescope.actions.history').get_simple_history
+
 
                                          *telescope.defaults.layout_config*
     layout_config: ~
@@ -217,374 +247,6 @@ telescope.extensions()                                *telescope.extensions()*
     While the docs currently generate this as a function, it's actually a
     table. Sorry.
 
-
-
-
-================================================================================
-                                                              *telescope.themes*
-
-Themes are ways to combine several elements of styling together.
-
-They are helpful for managing the several differnt UI aspects for telescope and
-provide a simple interface for users to get a particular "style" of picker.
-
-themes.get_dropdown()                                  *themes.get_dropdown()*
-    Dropdown style theme.
-
-    Usage:
-
-        `local builtin = require('telescope.builtin')`
-        `local themes = require('telescope.themes')`
-        `builtin.find_files(themes.get_dropdown())`
-
-
-
-themes.get_ivy()                                            *themes.get_ivy()*
-    Ivy style theme.
-
-    Usage:
-
-        `local builtin = require('telescope.builtin')`
-        `local themes = require('telescope.themes')`
-        `builtin.find_files(themes.get_ivy())`
-
-
-
-
-================================================================================
-                                                         *telescope.actions.set*
-
-Telescope action sets are used to provide an interface for managing actions
-that all primarily do the same thing, but with slight tweaks.
-
-For example, when editing files you may want it in the current split, a
-vertical split, etc. Instead of making users have to overwrite EACH of those
-every time they want to change this behavior, they can instead replace the
-`set` itself and then it will work great and they're done.
-
-action_set.shift_selection({prompt_bufnr}, {change})*action_set.shift_selection()*
-    Move the current selection of a picker {change} rows. Handles not
-    overflowing / underflowing the list.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-        {change}       (number)  The amount to shift the selection by
-
-
-action_set.select({prompt_bufnr}, {type})                *action_set.select()*
-    Select the current entry. This is the action set to overwrite common
-    actions by the user.
-
-    By default maps to editing a file.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-        {type}         (string)  The type of selection to make
-
-
-action_set.edit({prompt_bufnr}, {command})                 *action_set.edit()*
-    Edit a file based on the current selection.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-        {command}      (string)  The command to use to open the file.
-
-
-action_set.scroll_previewer({prompt_bufnr}, {direction})*action_set.scroll_previewer()*
-    Scrolls the previewer up or down
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-        {direction}    (number)  The direction of the scrolling
-
-
-
-================================================================================
-                                                             *telescope.actions*
-
-Actions functions that are useful for people creating their own mappings.
-
-actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
-    Move the selection to the next entry
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous()*
-    Move the selection to the previous entry
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
-    Move the selection to the entry that has a worse score
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_selection_better({prompt_bufnr})*actions.move_selection_better()*
-    Move the selection to the entry that has a better score
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_to_top({prompt_bufnr})                    *actions.move_to_top()*
-    Move to the top of the picker
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_to_middle({prompt_bufnr})              *actions.move_to_middle()*
-    Move to the middle of the picker
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_to_bottom({prompt_bufnr})              *actions.move_to_bottom()*
-    Move to the bottom of the picker
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.add_selection({prompt_bufnr})                *actions.add_selection()*
-    Add current entry to multi select
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.remove_selection({prompt_bufnr})          *actions.remove_selection()*
-    Remove current entry from multi select
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
-    Toggle current entry status for multi select
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.select_all({prompt_bufnr})                      *actions.select_all()*
-    Multi select all entries.
-    - Note: selected entries may include results not visible in the results
-      popup.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.drop_all({prompt_bufnr})                          *actions.drop_all()*
-    Drop all entries from the current multi selection.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.toggle_all({prompt_bufnr})                      *actions.toggle_all()*
-    Toggle multi selection for all entries.
-    - Note: toggled entries may include results not visible in the results
-      popup.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
-    Create and checkout a new git branch if it doesn't already exist
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_apply_stash({prompt_bufnr})            *actions.git_apply_stash()*
-    Applies an existing git stash
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_checkout({prompt_bufnr})                  *actions.git_checkout()*
-    Checkout an existing git branch
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_switch_branch({prompt_bufnr})        *actions.git_switch_branch()*
-    Switch to git branch.
-    If the branch already exists in local, switch to that. If the branch is
-    only in remote, create new branch tracking remote and switch to new one.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_track_branch({prompt_bufnr})          *actions.git_track_branch()*
-    Tell git to track the currently selected remote branch in Telescope
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_delete_branch({prompt_bufnr})        *actions.git_delete_branch()*
-    Delete the currently selected branch
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_rebase_branch({prompt_bufnr})        *actions.git_rebase_branch()*
-    Rebase to selected git branch
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_staging_toggle({prompt_bufnr})      *actions.git_staging_toggle()*
-    Stage/unstage selected file
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.send_selected_to_qflist()          *actions.send_selected_to_qflist()*
-    Sends the selected entries to the quickfix list, replacing the previous
-    entries.
-
-
-
-actions.add_selected_to_qflist()            *actions.add_selected_to_qflist()*
-    Adds the selected entries to the quickfix list, keeping the previous
-    entries.
-
-
-
-actions.send_to_qflist()                            *actions.send_to_qflist()*
-    Sends all entries to the quickfix list, replacing the previous entries.
-
-
-
-actions.add_to_qflist()                              *actions.add_to_qflist()*
-    Adds all entries to the quickfix list, keeping the previous entries.
-
-
-
-actions.send_selected_to_loclist()        *actions.send_selected_to_loclist()*
-    Sends the selected entries to the location list, replacing the previous
-    entries.
-
-
-
-actions.add_selected_to_loclist()          *actions.add_selected_to_loclist()*
-    Adds the selected entries to the location list, keeping the previous
-    entries.
-
-
-
-actions.send_to_loclist()                          *actions.send_to_loclist()*
-    Sends all entries to the location list, replacing the previous entries.
-
-
-
-actions.add_to_loclist()                            *actions.add_to_loclist()*
-    Adds all entries to the location list, keeping the previous entries.
-
-
-
-actions.smart_send_to_qflist()                *actions.smart_send_to_qflist()*
-    Sends the selected entries to the quickfix list, replacing the previous
-    entries. If no entry was selected, sends all entries.
-
-
-
-actions.smart_add_to_qflist()                  *actions.smart_add_to_qflist()*
-    Adds the selected entries to the quickfix list, keeping the previous
-    entries. If no entry was selected, adds all entries.
-
-
-
-actions.smart_send_to_loclist()              *actions.smart_send_to_loclist()*
-    Sends the selected entries to the location list, replacing the previous
-    entries. If no entry was selected, sends all entries.
-
-
-
-actions.smart_add_to_loclist()                *actions.smart_add_to_loclist()*
-    Adds the selected entries to the location list, keeping the previous
-    entries. If no entry was selected, adds all entries.
-
-
-
-actions.open_qflist()                                  *actions.open_qflist()*
-    Open the quickfix list
-
-
-
-actions.open_loclist()                                *actions.open_loclist()*
-    Open the location list
-
-
-
-actions.delete_buffer({prompt_bufnr})                *actions.delete_buffer()*
-    Delete the selected buffer or all the buffers selected using multi
-    selection.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.cycle_previewers_next({prompt_bufnr})*actions.cycle_previewers_next()*
-    Cycle to the next previewer if there is one available.
-    This action is not mapped on default.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.cycle_previewers_prev({prompt_bufnr})*actions.cycle_previewers_prev()*
-    Cycle to the previous previewer if there is one available.
-    This action is not mapped on default.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
 
 
@@ -1210,6 +872,628 @@ builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
 
 
 ================================================================================
+                                                              *telescope.themes*
+
+Themes are ways to combine several elements of styling together.
+
+They are helpful for managing the several differnt UI aspects for telescope and
+provide a simple interface for users to get a particular "style" of picker.
+
+themes.get_dropdown()                                  *themes.get_dropdown()*
+    Dropdown style theme.
+
+    Usage:
+
+        `local builtin = require('telescope.builtin')`
+        `local themes = require('telescope.themes')`
+        `builtin.find_files(themes.get_dropdown())`
+
+
+
+themes.get_ivy()                                            *themes.get_ivy()*
+    Ivy style theme.
+
+    Usage:
+
+        `local builtin = require('telescope.builtin')`
+        `local themes = require('telescope.themes')`
+        `builtin.find_files(themes.get_ivy())`
+
+
+
+
+================================================================================
+                                                              *telescope.layout*
+
+Layout strategies are different functions to position telescope.
+
+All layout strategies are functions with the following signature:
+
+  function(picker, columns, lines, layout_config)
+    -- Do some calculations here...
+    return {
+      preview = preview_configuration
+      results = results_configuration,
+      prompt = prompt_configuration,
+    }
+  end
+
+  Parameters: ~
+    - picker        : A Picker object. (docs coming soon)
+    - columns       : (number) Columns in the vim window
+    - lines         : (number) Lines in the vim window
+    - layout_config : (table) The configuration values specific to the picker.
+
+
+This means you can create your own layout strategy if you want! Just be aware
+for now that we may change some APIs or interfaces, so they may break if you
+create your own.
+
+A good method for creating your own would be to copy one of the strategies that
+most resembles what you want from
+"./lua/telescope/pickers/layout_strategies.lua" in the telescope repo.
+
+
+layout_strategies.horizontal()                *layout_strategies.horizontal()*
+    Horizontal layout has two columns, one for the preview and one for the
+    prompt and results.
+
+    ┌──────────────────────────────────────────────────┐
+    │                                                  │
+    │    ┌───────────────────┐┌───────────────────┐    │
+    │    │                   ││                   │    │
+    │    │                   ││                   │    │
+    │    │                   ││                   │    │
+    │    │      Results      ││                   │    │
+    │    │                   ││      Preview      │    │
+    │    │                   ││                   │    │
+    │    │                   ││                   │    │
+    │    └───────────────────┘│                   │    │
+    │    ┌───────────────────┐│                   │    │
+    │    │      Prompt       ││                   │    │
+    │    └───────────────────┘└───────────────────┘    │
+    │                                                  │
+    └──────────────────────────────────────────────────┘
+
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The number of lines to scroll through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - preview_cutoff: When columns are less than this value, the preview will be disabled
+      - preview_width:
+        - Change the width of Telescope's preview window
+        - See |resolver.resolve_width()|
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
+
+
+layout_strategies.center()                        *layout_strategies.center()*
+    Centered layout with a combined block of the prompt and results aligned to
+    the middle of the screen. The preview window is then placed in the
+    remaining space above. Particularly useful for creating dropdown menus (see
+    |telescope.themes| and |themes.get_dropdown()|`).
+
+    ┌──────────────────────────────────────────────────┐
+    │    ┌────────────────────────────────────────┐    │
+    │    |                 Preview                |    │
+    │    |                 Preview                |    │
+    │    └────────────────────────────────────────┘    │
+    │    ┌────────────────────────────────────────┐    │
+    │    |                 Prompt                 |    │
+    │    ├────────────────────────────────────────┤    │
+    │    |                 Result                 |    │
+    │    |                 Result                 |    │
+    │    └────────────────────────────────────────┘    │
+    │                                                  │
+    │                                                  │
+    │                                                  │
+    │                                                  │
+    └──────────────────────────────────────────────────┘
+
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The number of lines to scroll through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - preview_cutoff: When lines are less than this value, the preview will be disabled
+
+
+layout_strategies.vertical()                    *layout_strategies.vertical()*
+    Vertical layout stacks the items on top of each other. Particularly useful
+    with thinner windows.
+
+    ┌──────────────────────────────────────────────────┐
+    │                                                  │
+    │    ┌────────────────────────────────────────┐    │
+    │    |                 Preview                |    │
+    │    |                 Preview                |    │
+    │    |                 Preview                |    │
+    │    └────────────────────────────────────────┘    │
+    │    ┌────────────────────────────────────────┐    │
+    │    |                 Result                 |    │
+    │    |                 Result                 |    │
+    │    └────────────────────────────────────────┘    │
+    │    ┌────────────────────────────────────────┐    │
+    │    |                 Prompt                 |    │
+    │    └────────────────────────────────────────┘    │
+    │                                                  │
+    └──────────────────────────────────────────────────┘
+
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The number of lines to scroll through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - preview_cutoff: When lines are less than this value, the preview will be disabled
+      - preview_height:
+        - Change the height of Telescope's preview window
+        - See |resolver.resolve_height()|
+      - prompt_position:
+        - (unimplemented, but we plan on supporting)
+
+
+layout_strategies.flex()                            *layout_strategies.flex()*
+    Flex layout swaps between `horizontal` and `vertical` strategies based on
+    the window width
+     - Supports |layout_strategies.vertical| or |layout_strategies.horizontal|
+       features
+
+
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The number of lines to scroll through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - flip_columns: The number of columns required to move to horizontal mode
+      - flip_lines: The number of lines required to move to horizontal mode
+      - horizontal: Options to pass when switching to horizontal layout
+      - vertical: Options to pass when switching to vertical layout
+
+
+layout_strategies.bottom_pane()              *layout_strategies.bottom_pane()*
+    Bottom pane can be used to create layouts similar to "ivy".
+
+    For an easy ivy configuration, see |themes.get_ivy()|
+
+
+
+
+================================================================================
+                                                             *telescope.resolve*
+
+Provides "resolver functions" to allow more customisable inputs for options.
+
+resolver.resolve_height()                          *resolver.resolve_height()*
+    Converts input to a function that returns the height. The input must take
+    one of four forms:
+    1. 0 <= number < 1
+       This means total height as a percentage.
+    2. 1 <= number
+       This means total height as a fixed number.
+    3. function
+       Must have signature: function(self, max_columns, max_lines): number
+    4. table of the form: {padding = `foo`}
+       where `foo` has one of the previous three forms.
+       The height is then set to be the remaining space after padding. For
+       example, if the window has height 50, and the input is {padding = 5}, 
+       the height returned will be `40 = 50 - 2*5`
+
+    The returned function will have signature: function(self, max_columns,
+    max_lines): number
+
+
+
+resolver.resolve_width()                            *resolver.resolve_width()*
+    Converts input to a function that returns the width. The input must take
+    one of four forms:
+    1. 0 <= number < 1
+       This means total width as a percentage.
+    2. 1 <= number
+       This means total width as a fixed number.
+    3. function
+       Must have signature: function(self, max_columns, max_lines): number
+    4. table of the form: {padding = `foo`}
+       where `foo` has one of the previous three forms.
+       The width is then set to be the remaining space after padding. For
+       example, if the window has width 100, and the input is {padding = 5}, 
+       the width returned will be `90 = 100 - 2*5`
+
+    The returned function will have signature: function(self, max_columns,
+    max_lines): number
+
+
+
+
+================================================================================
+                                                             *telescope.actions*
+
+Actions functions that are useful for people creating their own mappings.
+
+actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
+    Move the selection to the next entry
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous()*
+    Move the selection to the previous entry
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
+    Move the selection to the entry that has a worse score
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_selection_better({prompt_bufnr})*actions.move_selection_better()*
+    Move the selection to the entry that has a better score
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_to_top({prompt_bufnr})                    *actions.move_to_top()*
+    Move to the top of the picker
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_to_middle({prompt_bufnr})              *actions.move_to_middle()*
+    Move to the middle of the picker
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_to_bottom({prompt_bufnr})              *actions.move_to_bottom()*
+    Move to the bottom of the picker
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.add_selection({prompt_bufnr})                *actions.add_selection()*
+    Add current entry to multi select
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.remove_selection({prompt_bufnr})          *actions.remove_selection()*
+    Remove current entry from multi select
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
+    Toggle current entry status for multi select
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_all({prompt_bufnr})                      *actions.select_all()*
+    Multi select all entries.
+    - Note: selected entries may include results not visible in the results
+      popup.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.drop_all({prompt_bufnr})                          *actions.drop_all()*
+    Drop all entries from the current multi selection.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.toggle_all({prompt_bufnr})                      *actions.toggle_all()*
+    Toggle multi selection for all entries.
+    - Note: toggled entries may include results not visible in the results
+      popup.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
+    Create and checkout a new git branch if it doesn't already exist
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_apply_stash({prompt_bufnr})            *actions.git_apply_stash()*
+    Applies an existing git stash
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_checkout({prompt_bufnr})                  *actions.git_checkout()*
+    Checkout an existing git branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_switch_branch({prompt_bufnr})        *actions.git_switch_branch()*
+    Switch to git branch.
+    If the branch already exists in local, switch to that. If the branch is
+    only in remote, create new branch tracking remote and switch to new one.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_track_branch({prompt_bufnr})          *actions.git_track_branch()*
+    Tell git to track the currently selected remote branch in Telescope
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_delete_branch({prompt_bufnr})        *actions.git_delete_branch()*
+    Delete the currently selected branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_rebase_branch({prompt_bufnr})        *actions.git_rebase_branch()*
+    Rebase to selected git branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_staging_toggle({prompt_bufnr})      *actions.git_staging_toggle()*
+    Stage/unstage selected file
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.send_selected_to_qflist()          *actions.send_selected_to_qflist()*
+    Sends the selected entries to the quickfix list, replacing the previous
+    entries.
+
+
+
+actions.add_selected_to_qflist()            *actions.add_selected_to_qflist()*
+    Adds the selected entries to the quickfix list, keeping the previous
+    entries.
+
+
+
+actions.send_to_qflist()                            *actions.send_to_qflist()*
+    Sends all entries to the quickfix list, replacing the previous entries.
+
+
+
+actions.add_to_qflist()                              *actions.add_to_qflist()*
+    Adds all entries to the quickfix list, keeping the previous entries.
+
+
+
+actions.send_selected_to_loclist()        *actions.send_selected_to_loclist()*
+    Sends the selected entries to the location list, replacing the previous
+    entries.
+
+
+
+actions.add_selected_to_loclist()          *actions.add_selected_to_loclist()*
+    Adds the selected entries to the location list, keeping the previous
+    entries.
+
+
+
+actions.send_to_loclist()                          *actions.send_to_loclist()*
+    Sends all entries to the location list, replacing the previous entries.
+
+
+
+actions.add_to_loclist()                            *actions.add_to_loclist()*
+    Adds all entries to the location list, keeping the previous entries.
+
+
+
+actions.smart_send_to_qflist()                *actions.smart_send_to_qflist()*
+    Sends the selected entries to the quickfix list, replacing the previous
+    entries. If no entry was selected, sends all entries.
+
+
+
+actions.smart_add_to_qflist()                  *actions.smart_add_to_qflist()*
+    Adds the selected entries to the quickfix list, keeping the previous
+    entries. If no entry was selected, adds all entries.
+
+
+
+actions.smart_send_to_loclist()              *actions.smart_send_to_loclist()*
+    Sends the selected entries to the location list, replacing the previous
+    entries. If no entry was selected, sends all entries.
+
+
+
+actions.smart_add_to_loclist()                *actions.smart_add_to_loclist()*
+    Adds the selected entries to the location list, keeping the previous
+    entries. If no entry was selected, adds all entries.
+
+
+
+actions.open_qflist()                                  *actions.open_qflist()*
+    Open the quickfix list
+
+
+
+actions.open_loclist()                                *actions.open_loclist()*
+    Open the location list
+
+
+
+actions.delete_buffer({prompt_bufnr})                *actions.delete_buffer()*
+    Delete the selected buffer or all the buffers selected using multi
+    selection.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.cycle_previewers_next({prompt_bufnr})*actions.cycle_previewers_next()*
+    Cycle to the next previewer if there is one available.
+    This action is not mapped on default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.cycle_previewers_prev({prompt_bufnr})*actions.cycle_previewers_prev()*
+    Cycle to the previous previewer if there is one available.
+    This action is not mapped on default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+
+================================================================================
+                                                       *telescope.actions.state*
+
+Functions to be used to determine the current state of telescope.
+
+Generally used from within other |telescope.actions|
+
+action_state.get_selected_entry()          *action_state.get_selected_entry()*
+    Get the current entry
+
+
+
+action_state.get_current_line()              *action_state.get_current_line()*
+    Gets the current line
+
+
+
+action_state.get_current_picker({prompt_bufnr})*action_state.get_current_picker()*
+    Gets the current picker
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+
+================================================================================
+                                                         *telescope.actions.set*
+
+Telescope action sets are used to provide an interface for managing actions
+that all primarily do the same thing, but with slight tweaks.
+
+For example, when editing files you may want it in the current split, a
+vertical split, etc. Instead of making users have to overwrite EACH of those
+every time they want to change this behavior, they can instead replace the
+`set` itself and then it will work great and they're done.
+
+action_set.shift_selection({prompt_bufnr}, {change})*action_set.shift_selection()*
+    Move the current selection of a picker {change} rows. Handles not
+    overflowing / underflowing the list.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {change}       (number)  The amount to shift the selection by
+
+
+action_set.select({prompt_bufnr}, {type})                *action_set.select()*
+    Select the current entry. This is the action set to overwrite common
+    actions by the user.
+
+    By default maps to editing a file.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {type}         (string)  The type of selection to make
+
+
+action_set.edit({prompt_bufnr}, {command})                 *action_set.edit()*
+    Edit a file based on the current selection.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {command}      (string)  The command to use to open the file.
+
+
+action_set.scroll_previewer({prompt_bufnr}, {direction})*action_set.scroll_previewer()*
+    Scrolls the previewer up or down
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {direction}    (number)  The direction of the scrolling
+
+
+
+================================================================================
                                                        *telescope.actions.utils*
 
 Utilities to wrap functions around picker selections and entries.
@@ -1270,78 +1554,6 @@ utils.map_selections({prompt_bufnr}, {f})             *utils.map_selections()*
         {prompt_bufnr} (number)    The prompt bufnr
         {f}            (function)  Function to map onto selection of picker
                                    that takes (selection) as a viable argument
-
-
-
-================================================================================
-                                                       *telescope.actions.state*
-
-Functions to be used to determine the current state of telescope.
-
-Generally used from within other |telescope.actions|
-
-action_state.get_selected_entry()          *action_state.get_selected_entry()*
-    Get the current entry
-
-
-
-action_state.get_current_line()              *action_state.get_current_line()*
-    Gets the current line
-
-
-
-action_state.get_current_picker({prompt_bufnr})*action_state.get_current_picker()*
-    Gets the current picker
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-
-================================================================================
-                                                             *telescope.resolve*
-
-Provides "resolver functions" to allow more customisable inputs for options.
-
-resolver.resolve_height()                          *resolver.resolve_height()*
-    Converts input to a function that returns the height. The input must take
-    one of four forms:
-    1. 0 <= number < 1
-       This means total height as a percentage.
-    2. 1 <= number
-       This means total height as a fixed number.
-    3. function
-       Must have signature: function(self, max_columns, max_lines): number
-    4. table of the form: {padding = `foo`}
-       where `foo` has one of the previous three forms.
-       The height is then set to be the remaining space after padding. For
-       example, if the window has height 50, and the input is {padding = 5}, 
-       the height returned will be `40 = 50 - 2*5`
-
-    The returned function will have signature: function(self, max_columns,
-    max_lines): number
-
-
-
-resolver.resolve_width()                            *resolver.resolve_width()*
-    Converts input to a function that returns the width. The input must take
-    one of four forms:
-    1. 0 <= number < 1
-       This means total width as a percentage.
-    2. 1 <= number
-       This means total width as a fixed number.
-    3. function
-       Must have signature: function(self, max_columns, max_lines): number
-    4. table of the form: {padding = `foo`}
-       where `foo` has one of the previous three forms.
-       The width is then set to be the remaining space after padding. For
-       example, if the window has width 100, and the input is {padding = 5}, 
-       the width returned will be `90 = 100 - 2*5`
-
-    The returned function will have signature: function(self, max_columns,
-    max_lines): number
-
 
 
 
@@ -1671,183 +1883,108 @@ previewers.display_content()                    *previewers.display_content()*
 
 
 ================================================================================
-                                                              *telescope.layout*
+                                                     *telescope.actions.history*
 
-Layout strategies are different functions to position telescope.
+A base implementation of a prompt history that provides a simple history and
+can be replaced with a custom implementation.
 
-All layout strategies are functions with the following signature:
+For example: We provide a extension for a smart history that uses sql.nvim to
+map histories to metadata, like the calling picker or cwd.
 
-  function(picker, columns, lines, layout_config)
-    -- Do some calculations here...
-    return {
-      preview = preview_configuration
-      results = results_configuration,
-      prompt = prompt_configuration,
-    }
-  end
+So you have a history for:
+- find_files project_1
+- grep_string project_1
+- live_grep project_1
+- find_files project_2
+- grep_string project_2
+- live_grep project_2
+- etc
 
-  Parameters: ~
-    - picker        : A Picker object. (docs coming soon)
-    - columns       : (number) Columns in the vim window
-    - lines         : (number) Lines in the vim window
-    - layout_config : (table) The configuration values specific to the picker.
+See github.com/nvim-telescope/telescope-smart-history.nvim
 
-
-This means you can create your own layout strategy if you want! Just be aware
-for now that we may change some APIs or interfaces, so they may break if you
-create your own.
-
-A good method for creating your own would be to copy one of the strategies that
-most resembles what you want from
-"./lua/telescope/pickers/layout_strategies.lua" in the telescope repo.
+histories.History()                                      *histories.History()*
+    Manages prompt history
 
 
-layout_strategies.horizontal()                *layout_strategies.horizontal()*
-    Horizontal layout has two columns, one for the preview and one for the
-    prompt and results.
-
-    ┌──────────────────────────────────────────────────┐
-    │                                                  │
-    │    ┌───────────────────┐┌───────────────────┐    │
-    │    │                   ││                   │    │
-    │    │                   ││                   │    │
-    │    │                   ││                   │    │
-    │    │      Results      ││                   │    │
-    │    │                   ││      Preview      │    │
-    │    │                   ││                   │    │
-    │    │                   ││                   │    │
-    │    └───────────────────┘│                   │    │
-    │    ┌───────────────────┐│                   │    │
-    │    │      Prompt       ││                   │    │
-    │    └───────────────────┘└───────────────────┘    │
-    │                                                  │
-    └──────────────────────────────────────────────────┘
-
-    `picker.layout_config` shared options:
-      - height:
-        - How tall to make Telescope's entire layout
-        - See |resolver.resolve_height()|
-      - mirror: Flip the location of the results/prompt and preview windows
-      - scroll_speed: The number of lines to scroll through the previewer
-      - width:
-        - How wide to make Telescope's entire layout
-        - See |resolver.resolve_width()|
-
-    `picker.layout_config` unique options:
-      - preview_cutoff: When columns are less than this value, the preview will be disabled
-      - preview_width:
-        - Change the width of Telescope's preview window
-        - See |resolver.resolve_width()|
-      - prompt_position:
-        - Where to place prompt window.
-        - Available Values: 'bottom', 'top'
+    Fields: ~
+        {enabled} (boolean)  Will indicate if History is enabled or disabled
+        {path}    (string)   Will point to the location of the history file
+        {limit}   (string)   Will have the limit of the history. Can be nil, if
+                             limit is disabled.
+        {content} (table)    History table. Needs to be filled by your own
+                             History implementation
+        {index}   (number)   Used to keep track of the next or previous index.
+                             Default is #content + 1
 
 
-layout_strategies.center()                        *layout_strategies.center()*
-    Centered layout with a combined block of the prompt and results aligned to
-    the middle of the screen. The preview window is then placed in the
-    remaining space above. Particularly useful for creating dropdown menus (see
-    |telescope.themes| and |themes.get_dropdown()|`).
-
-    ┌──────────────────────────────────────────────────┐
-    │    ┌────────────────────────────────────────┐    │
-    │    |                 Preview                |    │
-    │    |                 Preview                |    │
-    │    └────────────────────────────────────────┘    │
-    │    ┌────────────────────────────────────────┐    │
-    │    |                 Prompt                 |    │
-    │    ├────────────────────────────────────────┤    │
-    │    |                 Result                 |    │
-    │    |                 Result                 |    │
-    │    └────────────────────────────────────────┘    │
-    │                                                  │
-    │                                                  │
-    │                                                  │
-    │                                                  │
-    └──────────────────────────────────────────────────┘
-
-    `picker.layout_config` shared options:
-      - height:
-        - How tall to make Telescope's entire layout
-        - See |resolver.resolve_height()|
-      - mirror: Flip the location of the results/prompt and preview windows
-      - scroll_speed: The number of lines to scroll through the previewer
-      - width:
-        - How wide to make Telescope's entire layout
-        - See |resolver.resolve_width()|
-
-    `picker.layout_config` unique options:
-      - preview_cutoff: When lines are less than this value, the preview will be disabled
+histories.History:new({opts})                        *histories.History:new()*
+    Create a new History
 
 
-layout_strategies.vertical()                    *layout_strategies.vertical()*
-    Vertical layout stacks the items on top of each other. Particularly useful
-    with thinner windows.
+    Parameters: ~
+        {opts} (table)  Defines the behavior of History
 
-    ┌──────────────────────────────────────────────────┐
-    │                                                  │
-    │    ┌────────────────────────────────────────┐    │
-    │    |                 Preview                |    │
-    │    |                 Preview                |    │
-    │    |                 Preview                |    │
-    │    └────────────────────────────────────────┘    │
-    │    ┌────────────────────────────────────────┐    │
-    │    |                 Result                 |    │
-    │    |                 Result                 |    │
-    │    └────────────────────────────────────────┘    │
-    │    ┌────────────────────────────────────────┐    │
-    │    |                 Prompt                 |    │
-    │    └────────────────────────────────────────┘    │
-    │                                                  │
-    └──────────────────────────────────────────────────┘
-
-    `picker.layout_config` shared options:
-      - height:
-        - How tall to make Telescope's entire layout
-        - See |resolver.resolve_height()|
-      - mirror: Flip the location of the results/prompt and preview windows
-      - scroll_speed: The number of lines to scroll through the previewer
-      - width:
-        - How wide to make Telescope's entire layout
-        - See |resolver.resolve_width()|
-
-    `picker.layout_config` unique options:
-      - preview_cutoff: When lines are less than this value, the preview will be disabled
-      - preview_height:
-        - Change the height of Telescope's preview window
-        - See |resolver.resolve_height()|
-      - prompt_position:
-        - (unimplemented, but we plan on supporting)
+    Fields: ~
+        {init}    (function)  Will be called after handling configuration
+                              (required)
+        {append}  (function)  How to append a new prompt item (required)
+        {reset}   (function)  What happens on reset. Will be called when
+                              telescope closes (required)
+        {pre_get} (function)  Will be called before a next or previous item
+                              will be returned (optional)
 
 
-layout_strategies.flex()                            *layout_strategies.flex()*
-    Flex layout swaps between `horizontal` and `vertical` strategies based on
-    the window width
-     - Supports |layout_strategies.vertical| or |layout_strategies.horizontal|
-       features
+histories.new()                                              *histories.new()*
+    Shorthand to create a new history
 
 
-    `picker.layout_config` shared options:
-      - height:
-        - How tall to make Telescope's entire layout
-        - See |resolver.resolve_height()|
-      - mirror: Flip the location of the results/prompt and preview windows
-      - scroll_speed: The number of lines to scroll through the previewer
-      - width:
-        - How wide to make Telescope's entire layout
-        - See |resolver.resolve_width()|
 
-    `picker.layout_config` unique options:
-      - flip_columns: The number of columns required to move to horizontal mode
-      - flip_lines: The number of lines required to move to horizontal mode
-      - horizontal: Options to pass when switching to horizontal layout
-      - vertical: Options to pass when switching to vertical layout
+histories.History:reset()                          *histories.History:reset()*
+    Will reset the history index to the default initial state. Will happen
+    after the picker closed
 
 
-layout_strategies.bottom_pane()              *layout_strategies.bottom_pane()*
-    Bottom pane can be used to create layouts similar to "ivy".
 
-    For an easy ivy configuration, see |themes.get_ivy()|
+histories.History:append({line}, {picker}, {no_reset})*histories.History:append()*
+    Append a new line to the history
+
+
+    Parameters: ~
+        {line}     (string)   current line that will be appended
+        {picker}   (table)    the current picker object
+        {no_reset} (boolean)  On default it will reset the state at the end. If
+                              you don't want to do this set to true
+
+
+histories.History:get_next({line}, {picker})    *histories.History:get_next()*
+    Will return the next history item. Can be nil if there are no next items
+
+
+    Parameters: ~
+        {line}   (string)  the current line
+        {picker} (table)   the current picker object
+
+    Return: ~
+        string: the next history item
+
+
+histories.History:get_prev({line}, {picker})    *histories.History:get_prev()*
+    Will return the previous history item. Can be nil if there are no previous
+    items
+
+
+    Parameters: ~
+        {line}   (string)  the current line
+        {picker} (table)   the current picker object
+
+    Return: ~
+        string: the previous history item
+
+
+histories.get_simple_history()                *histories.get_simple_history()*
+    A simple implementation of history.
+
+    It will keep one unified history across all pickers.
 
 
 
