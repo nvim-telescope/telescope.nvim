@@ -59,7 +59,7 @@ histories.History.__index = histories.History
 ---@field pre_get function: Will be called before a next or previous item will be returned (optional)
 function histories.History:new(opts)
   local obj = {}
-  if not conf.history or type(conf.history) ~= "table" then
+  if conf.history == false or type(conf.history) ~= "table" then
     obj.enabled = false
     return setmetatable(obj, self)
   end

@@ -222,7 +222,7 @@ local telescope_defaults = {
   }, [[
     This field handles the configuration for prompt history.
     By default it is a table, with default values (more below).
-    To disable history, set it to either false or nil.
+    To disable history, set it to false.
 
     Currently mappings still need to be added, Example:
       mappings = {
@@ -381,7 +381,7 @@ function config.set_defaults(user_defaults, tele_defaults)
       )
     end
     if name == "history" then
-      if not user_defaults[name] or not config.values[name] then
+      if user_defaults[name] == false or config.values[name] == false then
         return false
       end
 
