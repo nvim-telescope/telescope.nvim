@@ -59,15 +59,15 @@ histories.History.__index = histories.History
 ---@field pre_get function: Will be called before a next or previous item will be returned (optional)
 function histories.History:new(opts)
   local obj = {}
-  if not conf.history_location then
+  if conf.history == false or type(conf.history) ~= "table" then
     obj.enabled = false
     return setmetatable(obj, self)
   end
   obj.enabled = true
-  if conf.history_limit then
-    obj.limit = conf.history_limit
+  if conf.history.limit then
+    obj.limit = conf.history.limit
   end
-  obj.path = vim.fn.expand(conf.history_location)
+  obj.path = vim.fn.expand(conf.history.path)
   obj.content = {}
   obj.index = 1
 
@@ -106,7 +106,7 @@ end
 function histories.History:get_next(line, picker)
   if not self.enabled then
     print("You are cycling to next the history item but history is disabled.",
-          "Read ':help telescope.defaults.history_handler'")
+          "Read ':help telescope.defaults.history'")
     return false
   end
   if self._pre_get then self._pre_get(self, line, picker) end
@@ -127,7 +127,7 @@ end
 function histories.History:get_prev(line, picker)
   if not self.enabled then
     print("You are cycling to previous the history item but history is disabled.",
-          "Read ':help telescope.defaults.history_handler'")
+          "Read ':help telescope.defaults.history'")
     return false
   end
   if self._pre_get then self._pre_get(self, line, picker) end

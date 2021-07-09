@@ -2,6 +2,7 @@ local strings = require "plenary.strings"
 local deprecated = require "telescope.deprecated"
 local sorters = require "telescope.sorters"
 local if_nil = vim.F.if_nil
+local os_sep = require("plenary.path").path.sep
 
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
@@ -214,45 +215,42 @@ local telescope_defaults = {
     Default: false]],
   },
 
-  history_handler = {
-    function(...) return require('telescope.actions.history').get_simple_history(...) end,
-    [[
-    This is a developer setting and is meant for an extension.
+  history = { {
+    path = vim.fn.stdpath("data") .. os_sep .. "telescope_history",
+    limit = 100,
+    handler = function(...) return require('telescope.actions.history').get_simple_history(...) end,
+  }, [[
+    This field handles the configuration for prompt history. It can either
+    be a table or false.
+    If its false then history is disabled.
 
-    history_handler is a function that defines the behavior of the history.
-    Telescope core ships a rather simple implementation of it, with a unified
-    history across all pickers. Its not sensitive for cwd or picker.
-
-    We also offer an extension (nvim-telescope/telescope-smart-history.nvim)
-    which uses a sqlite3 database to store prompt into with the corresponding
-    metadata, like picker and cwd. This means cycling to previous entry will
-    return an entry that was actually used in this cwd. This is helpful if you
-    work on multiple projects at the same time.
-
-    It can be disabled the same way, by setting history_location to nil.
-
-    Expects function
-    Default: require('telescope.actions.history').get_simple_history]]
-  },
-  history_location = { nil, [[
-    This setting will enable result history. You can scroll though your
-    previous inputs. The mappings to do so are currently not mapped.
-    You can add them like this:
-
+    Currently mappings still need to be added, Example:
       mappings = {
         i = {
-          ["<C-Down>"] = actions.cycle_history_next,
-          ["<C-Up>"] = actions.cycle_history_prev,
+          ["<C-Down>"] = require('telescope.actions').cycle_history_next,
+          ["<C-Up>"] = require('telescope.actions').cycle_history_prev,
         },
       },
 
-    Default: nil]]
-  },
-  history_limit = { nil, [[
-    You can set a limit on how many history elements will be stored.
-    Set to nil to disable it otherwise set to a number.
+    Fields:
+      - path:    the path to the telescope history as string
+                 default: stdpath("data")/telescope_history
+      - limit:   the amount of entries that will be written in the history
+                 if limit is set to nil it will grown unbound
+                 default: 100
+      - handler: is a developer setting that is meant for extensions.
+                 You can replace the actual implementation of the history
+                 and provide your own. One example of this is
+                 nvim-telescope/telescope-smart-history.nvim which allows
+                 context sensitive (cwd + picker) history.
 
-    Default: nil]]
+                 Default:
+                 require('telescope.actions.history').get_simple_history
+
+                 Is a simple history implementation that is not context
+                 sensitive, it writes all history in one text file.
+  ]],
+
   },
 
   -- Builtin configuration
@@ -379,6 +377,16 @@ function config.set_defaults(user_defaults, tele_defaults)
 
   local function get(name, default_val)
     if name == "layout_config" then
+      return smarter_depth_2_extend(
+        if_nil(user_defaults[name], {}),
+        vim.tbl_deep_extend("keep", if_nil(config.values[name], {}), if_nil(default_val, {}))
+      )
+    end
+    if name == "history" then
+      if user_defaults[name] == false or config.values[name] == false then
+        return false
+      end
+
       return smarter_depth_2_extend(
         if_nil(user_defaults[name], {}),
         vim.tbl_deep_extend("keep", if_nil(config.values[name], {}), if_nil(default_val, {}))

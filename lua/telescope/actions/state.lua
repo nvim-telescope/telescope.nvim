@@ -40,8 +40,13 @@ end
 function action_state.get_current_history()
   local history = global_state.get_global_key("history")
   if not history then
-    history = conf.history_handler()
-    global_state.set_global_key("history", history)
+    if conf.history == false or type(conf.history) ~= "table" then
+      history = require('telescope.actions.history').get_simple_history()
+      global_state.set_global_key("history", history)
+    else
+      history = conf.history.handler()
+      global_state.set_global_key("history", history)
+    end
   end
 
   return history
