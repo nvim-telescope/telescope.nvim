@@ -924,7 +924,7 @@ internal.tagstack = function(opts)
       value.lnum - 1,
       value.lnum,
       false
-    )[1]
+    )[1] or ''
   end
 
   -- reverse the list
