@@ -86,4 +86,18 @@ path.read_file_async = function(filepath, callback)
   end)
 end
 
+path.filename_first = function()
+    return function(filepath)
+        iterator = string.gmatch(filepath, "(.-)([^\\/]-%.?([^%.\\/]*))$")
+        result = filepath
+        for key, value in iterator do
+            if key ~= '' then
+                result = value .. " :" .. key
+            end
+        end
+        return result
+    end
+end
+
+
 return path

@@ -310,6 +310,10 @@ utils.transform_path = function(opts, path)
     if vim.tbl_contains(path_display, "shorten") then
       transformed_path = pathlib.shorten(transformed_path)
     end
+
+    if vim.tbl_contains(path_display, "filename_first") then
+      transformed_path = pathlib.filename_first(transformed_path)
+    end
   end
 
   return transformed_path
@@ -446,7 +450,7 @@ utils.transform_devicons = (function()
       end
 
       local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, '%a+$'), { default = true })
-      local icon_display = (icon or ' ') .. ' ' .. display
+      local icon_display = (icon or ' ') .. ' ' .. display(filename)
 
       if conf.color_devicons then
         return icon_display, icon_highlight
