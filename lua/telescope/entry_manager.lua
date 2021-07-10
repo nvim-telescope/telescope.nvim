@@ -136,7 +136,7 @@ end
 ---@param new_container table: the container to be inserted into the linked list
 function EntryManager:_insert_container_before(picker, index, linked_node, new_container)
   self.linked_states:place_before(index, linked_node, new_container)
-  self.set_entry(picker, index, new_container[1], new_container[2])
+  self.set_entry(picker, index, new_container[1], new_container[2], true)
 
   self:_update_score_from_tracked()
 end
@@ -150,7 +150,7 @@ end
 ---@param new_container table: the container to be inserted into the linked list
 function EntryManager:_insert_container_after(picker, index, linked_node, new_container)
   self.linked_states:place_after(index, linked_node, new_container)
-  self.set_entry(picker, index, new_container[1], new_container[2])
+  self.set_entry(picker, index, new_container[1], new_container[2], true)
 
   self:_update_score_from_tracked()
 end
