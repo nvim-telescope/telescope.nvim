@@ -568,18 +568,15 @@ function Picker:delete_selection(delete_cb)
   end)
 end
 
-<<<<<<< HEAD
 function Picker:set_prompt(str)
   -- TODO(conni2461): As soon as prompt_buffers are fix use this:
   -- vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, 1, false, { str })
   vim.api.nvim_feedkeys(str, 'n', false)
 end
 
-=======
 --- Closes the windows for the prompt, results and preview
 ---@param status table: table containing information on the picker
 --- and associated windows. Generally obtained from `state.get_status`
->>>>>>> 13f4f6f (docs: functions in `entry_manager.lua` and some in `pickers.lua`)
 function Picker.close_windows(status)
   local prompt_win = status.prompt_win
   local results_win = status.results_win
