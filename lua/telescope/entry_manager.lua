@@ -90,14 +90,16 @@ function EntryManager:get_score(index)
   return self:get_container(index)[2]
 end
 
---TODO: documentation
+--- Get the `ordinal` (text to be filtered on) corresponding to `index`
+---@param index number
+---@return string
 function EntryManager:get_ordinal(index)
   return self:get_entry(index).ordinal
 end
 
 --- Get the index of the given entry in the EntryManager
 ---@param entry table: table with information about the given entry
----@return integer/nil: the index of the entry if is present, nil otherwise
+---@return number|nil: the index of the entry if is present, nil otherwise
 function EntryManager:find_entry(entry)
   local info = self.info
 
@@ -167,13 +169,13 @@ function EntryManager:_append_container(picker, new_container, should_update)
   end
 end
 
--- Adds `new_container` to the associated linked list.
--- If `score` is less than `worst_acceptable_score` then
--- `new_container` is placed in the position that puts it
--- in order. Otherwise, `new_container` is simply appended
--- to the linked list.
--- The `worst_acceptable_score` and `info.maxed` are updated
--- when needed.
+--- Adds `new_container` to the associated linked list.
+--- If `score` is less than `worst_acceptable_score` then
+--- `new_container` is placed in the position that puts it
+--- in order. Otherwise, `new_container` is simply appended
+--- to the linked list.
+--- The `worst_acceptable_score` and `info.maxed` are updated
+--- when needed.
 ---@param picker table: the associated picker for the entry manager
 ---@param score number: the score of the entry to be added
 ---@param entry table: the entry to be added to the manager

@@ -1034,13 +1034,18 @@ function Picker:_on_complete()
   end
 end
 
+--- Close all open Telescope pickers
 function Picker:close_existing_pickers()
   for _, prompt_bufnr in ipairs(state.get_existing_prompts()) do
-    pcall(actions.close, prompt_bufnr)
+    pcall(actions._close, prompt_bufnr, true)
   end
 end
 
--- TODO: document what the purpose of this is
+--- Returns a function that sets virtual text for the count indicator
+--- e.g. "10/50" as "filtered"/"processed"
+---@param prompt_win number
+---@param prompt_bufnr number
+---@return function
 function Picker:get_status_updater(prompt_win, prompt_bufnr)
   return function()
     local text = self:get_status_text()
@@ -1079,7 +1084,13 @@ function Picker:get_status_updater(prompt_win, prompt_bufnr)
 end
 
 
--- TODO: document what the purpose of this is
+--- Returns a function that will process an element.
+--- Returned function handles updating the "filtered" and "processed" counts
+--- as appropriate and runs the sorters score function
+---@param find_id number
+---@param prompt string
+---@param status_updater function
+---@return function
 function Picker:get_result_processor(find_id, prompt, status_updater)
   local cb_add = function(score, entry)
     self.manager:add_entry(self, score, entry)
@@ -1121,7 +1132,11 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
   end
 end
 
--- TODO: document what the purpose of this is
+--- Handles updating the picker after all the entries are scored/processed.
+---@param results_bufnr number
+---@param find_id number
+---@param prompt string
+---@param status_updater function
 function Picker:get_result_completor(results_bufnr, find_id, prompt, status_updater)
   return function()
     if self.closed == true or self:is_done() then return end
