@@ -70,7 +70,7 @@ Example would be for a global configuration:
   require("telescope").setup{
     defaults = {
       path_display = {
-        "shorten_path",
+        "shorten",
         "absolute",
       },
     }
@@ -78,7 +78,7 @@ Example would be for a global configuration:
 
 You can also still pass this to a single builtin call:
     require("telescope.builtin").find_files {
-      path_display = { "shorten_path" }
+      path_display = { "shorten" }
     }
 
 For extension developers there is a new util function that can be used to
