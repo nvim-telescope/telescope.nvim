@@ -951,7 +951,8 @@ internal.jumplist = function(opts)
   -- reverse the list
   local sorted_jumplist = {}
   for i = #jumplist, 1, -1 do
-    jumplist[i].text = vim.api.nvim_buf_get_lines(jumplist[i].bufnr, jumplist[i].lnum, jumplist[i].lnum+1, false)[1] or ''
+    jumplist[i].text = vim.api.nvim_buf_get_lines(jumplist[i].bufnr, jumplist[i].lnum, jumplist[i].lnum+1,
+      false)[1] or ''
     table.insert(sorted_jumplist, jumplist[i])
   end
 
