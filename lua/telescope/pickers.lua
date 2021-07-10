@@ -907,8 +907,7 @@ end
 --- Handler for when entries are added by `self.manager`
 ---@param index number: the index to add the entry at
 ---@param entry table: the entry that has been added to the manager
----@param insert boolean: whether the entry has been "inserted" or not
-function Picker:entry_adder(index, entry, _, insert)
+function Picker:entry_adder(index, entry)
   if not entry then return end
 
   local row = self:get_row(index)

@@ -31,7 +31,6 @@ EntryManager.__index = EntryManager
 ---@param set_entry function: handler function for object using the EntryManager
 ---@param info table: (optional) table containing information to keep track of
 ---   @key looped number: number of existing entries checked when adding new entries
----   @key inserted number: TODO: figure out if this is used anywhere
 ---   @key find_loop number: number of entries checked when trying to find an entry
 ---@return any
 function EntryManager:new(max_results, set_entry, info)
@@ -39,7 +38,6 @@ function EntryManager:new(max_results, set_entry, info)
 
   info = info or {}
   info.looped = 0
-  info.inserted = 0
   info.find_loop = 0
 
   -- state contains list of
@@ -136,7 +134,7 @@ end
 ---@param new_container table: the container to be inserted into the linked list
 function EntryManager:_insert_container_before(picker, index, linked_node, new_container)
   self.linked_states:place_before(index, linked_node, new_container)
-  self.set_entry(picker, index, new_container[1], new_container[2], true)
+  self.set_entry(picker, index, new_container[1], new_container[2])
 
   self:_update_score_from_tracked()
 end
@@ -150,7 +148,7 @@ end
 ---@param new_container table: the container to be inserted into the linked list
 function EntryManager:_insert_container_after(picker, index, linked_node, new_container)
   self.linked_states:place_after(index, linked_node, new_container)
-  self.set_entry(picker, index, new_container[1], new_container[2], true)
+  self.set_entry(picker, index, new_container[1], new_container[2])
 
   self:_update_score_from_tracked()
 end
