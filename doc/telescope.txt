@@ -51,7 +51,7 @@ telescope.setup({opts})                                    *telescope.setup()*
     history: ~
           This field handles the configuration for prompt history.
           By default it is a table, with default values (more below).
-          To disable history, set it to either false or nil.
+          To disable history, set it to false.
 
           Currently mappings still need to be added, Example:
             mappings = {
