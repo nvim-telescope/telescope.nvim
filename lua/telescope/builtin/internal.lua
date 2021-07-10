@@ -951,7 +951,7 @@ internal.jumplist = function(opts)
   -- reverse the list
   local sorted_jumplist = {}
   for i = #jumplist, 1, -1 do
-    jumplist[i].text = ''
+    jumplist[i].text = vim.api.nvim_buf_get_lines(jumplist[i].bufnr, jumplist[i].lnum, jumplist[i].lnum+1, false)[1] or ''
     table.insert(sorted_jumplist, jumplist[i])
   end
 
@@ -959,7 +959,7 @@ internal.jumplist = function(opts)
     prompt_title = 'Jumplist',
     finder = finders.new_table {
       results = sorted_jumplist,
-      entry_maker = make_entry.gen_from_jumplist(opts),
+      entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),
