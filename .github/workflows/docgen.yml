@@ -21,7 +21,8 @@ jobs:
       - name: Prepare
         run: |
           test -d build || {
-            bash .github/workflows/scripts/setup-appimage.bash
+            chmod +x ./.github/workflows/scripts/setup-appimage.sh
+            ./.github/workflows/scripts/setup-appimage.sh
           }
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
