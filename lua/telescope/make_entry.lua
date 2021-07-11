@@ -444,7 +444,7 @@ function make_entry.gen_from_buffer(opts)
   return function(entry)
     local bufname = entry.info.name ~= "" and entry.info.name or '[No Name]'
     -- if bufname is inside the cwd, trim that part of the string
-    bufname = Path.normalize(bufname, cwd)
+    bufname = Path:new(bufname):normalize(cwd)
 
     local hidden = entry.info.hidden == 1 and 'h' or 'a'
     local readonly = vim.api.nvim_buf_get_option(entry.bufnr, 'readonly') and '=' or ' '
@@ -813,7 +813,7 @@ function make_entry.gen_from_ctags(opts)
   opts = opts or {}
 
   local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
-  local current_file = Path.normalize(vim.fn.expand('%'), cwd)
+  local current_file = Path:new(vim.fn.expand('%')):normalize(cwd)
 
   local display_items = {
     { remaining = true },
