@@ -273,7 +273,7 @@ previewers.cat = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "File Preview",
     dyn_title = function(_, entry)
-      return path.normalize(from_entry.path(entry, true), cwd)
+      return Path:new(from_entry.path(entry, true)):normalize(cwd)
     end,
 
     get_buffer_by_name = function(_, entry)
@@ -307,7 +307,7 @@ previewers.vimgrep = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
-      return path.normalize(from_entry.path(entry, true), cwd)
+      return Path:new(from_entry.path(entry, true)):normalize(cwd)
     end,
 
     setup = function()
@@ -614,7 +614,7 @@ previewers.git_commit_diff_as_was = defaulter(function(opts)
 
     define_preview = function(self, entry, status)
       local cmd = { 'git', '--no-pager', 'show' }
-      local cf = opts.current_file and path.make_relative(opts.current_file, opts.cwd)
+      local cf = opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd)
       local value = cf and (entry.value .. ':' .. cf) or (entry.value)
       local ft = cf and pfiletype.detect(value) or 'diff'
       table.insert(cmd, value)
