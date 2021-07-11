@@ -289,11 +289,11 @@ utils.transform_path = function(opts, path)
       else
         cwd = vim.loop.cwd();
       end
-      transformed_path = pathlib.make_relative(transformed_path, cwd)
+      transformed_path = Path:new(transformed_path):make_relative(cwd)
     end
 
     if vim.tbl_contains(path_display, "shorten") then
-      transformed_path = pathlib.shorten(transformed_path)
+      transformed_path = Path:new(transformed_path):shorten()
     end
   end
 
