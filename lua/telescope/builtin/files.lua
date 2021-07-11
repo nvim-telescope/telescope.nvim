@@ -31,6 +31,7 @@ end
 -- Special keys:
 --  opts.search_dirs -- list of directory to search in
 --  opts.grep_open_files -- boolean to restrict search to open files
+--  opts.use_regex -- special characters won't be escaped
 files.live_grep = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
@@ -64,7 +65,7 @@ files.live_grep = function(opts)
         return nil
       end
 
-      prompt = escape_chars(prompt)
+      prompt = opts.use_regex and prompt or escape_chars(prompt)
 
       local search_list = {}
 
