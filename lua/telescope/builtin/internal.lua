@@ -906,31 +906,30 @@ end
 
 internal.tagstack = function(opts)
   opts = opts or {}
-  local tagstack = vim.fn.gettagstack()
-  if vim.tbl_isempty(tagstack.items) then
+  local tagstack = vim.fn.gettagstack().items
+
+  local tags = {}
+  for i = #tagstack, 1, -1 do
+    local tag = tagstack[i]
+    tag.bufnr = tag.from[1]
+    if vim.api.nvim_buf_is_valid(tag.bufnr) then
+      tags[#tags + 1] = tag
+      tag.filename = vim.fn.bufname(tag.bufnr)
+      tag.lnum = tag.from[2]
+      tag.col = tag.from[3]
+
+      tag.text = vim.api.nvim_buf_get_lines(
+        tag.bufnr,
+        tag.lnum - 1,
+        tag.lnum,
+        false
+      )[1] or ''
+    end
+  end
+
+  if vim.tbl_isempty(tags) then
     print("No tagstack available")
     return
-  end
-
-  for _, value in pairs(tagstack.items) do
-    value.valid = true
-    value.bufnr = value.from[1]
-    value.lnum = value.from[2]
-    value.col = value.from[3]
-    value.filename = vim.fn.bufname(value.from[1])
-
-    value.text = vim.api.nvim_buf_get_lines(
-      value.bufnr,
-      value.lnum - 1,
-      value.lnum,
-      false
-    )[1]
-  end
-
-  -- reverse the list
-  local tags = {}
-  for i = #tagstack.items, 1, -1 do
-    tags[#tags+1] = tagstack.items[i]
   end
 
   pickers.new(opts, {
