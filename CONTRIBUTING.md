@@ -58,7 +58,7 @@ The other option would be setting up https://github.com/tjdevries/tree-sitter-lu
 - Install Treesitter, either with package manager or with github release
 - Install plugin as usual
 - cd to plugin
-- `mkdir -p build parser` sadly does doesn't exist
+- `mkdir -p build parser` sadly those don't exist
 - `make build_parser`
 - `ln -s ../build/parser.so parser/lua.so` We need the shared object in parser/ so it gets picked up by neovim. Either copy or symbolic link
 - Make sure that nvim-treesitter lua parser is not installed and also delete the lua queries in that repository. `queries/lua/*`. If you are not doing that you will have a bad time!

@@ -48,6 +48,20 @@ action_set.select = function(prompt_bufnr, type)
   return action_set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
 end
 
+-- goal: currently we have a workaround in actions/init.lua where we do this for all files
+-- action_set.select = {
+--   -- Will not be called if `select_default` is replaced rather than `action_set.select` because we never get here
+--   pre = function(prompt_bufnr)
+--     action_state.get_current_history():append(
+--       action_state.get_current_line(),
+--       action_state.get_current_picker(prompt_bufnr)
+--     )
+--   end,
+--   action = function(prompt_bufnr, type)
+--     return action_set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
+--   end
+-- }
+
 local edit_buffer
 do
   local map = {

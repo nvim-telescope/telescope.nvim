@@ -14,9 +14,39 @@
 ---
 --- <pre>
 --- :lua require('telescope.builtin').live_grep({
----    prompt_title = 'find string in open buffers...',
----    grep_open_files = true
----  })
+---   prompt_title = 'find string in open buffers...',
+---   grep_open_files = true
+--- })
+--- -- or with dropdown theme
+--- :lua require('telescope.builtin').find_files(require('telescope.themes').get_dropdown{
+---   previewer = false
+--- })
+--- </pre>
+---
+--- You can also pass default configurations to builtin pickers. These options will also be added if
+--- the picker is executed with `Telescope find_files`.
+---
+--- <pre>
+--- require("telescope").setup {
+---   pickers = {
+---     buffers = {
+---       show_all_buffers = true,
+---       sort_lastused = true,
+---       theme = "dropdown",
+---       previewer = false,
+---       mappings = {
+---         i = {
+---           ["<c-d>"] = require("telescope.actions").delete_buffer,
+---           -- or right hand side can also be the name of the action as string
+---           ["<c-d>"] = "delete_buffer",
+---         },
+---         n = {
+---           ["<c-d>"] = require("telescope.actions").delete_buffer,
+---         }
+---       }
+---     }
+---   }
+--- }
 --- </pre>
 ---
 --- This will use the default configuration options. Other configuration options are still in flux at the moment
@@ -69,10 +99,13 @@ builtin.fd = builtin.find_files
 ---       create the file `init.lua` inside of `lua/telescope` and will create the necessary folders (similar to how
 ---       `mkdir -p` would work) if they do not already exist
 ---@param opts table: options to pass to the picker
----@field search_dirs table: directory/directories to search in
+---@field cwd string: directory path to browse (default is cwd)
+---@field depth number: file tree depth to display (default is 1)
 builtin.file_browser = require('telescope.builtin.files').file_browser
 
 --- Lists function names, variables, and other symbols from treesitter queries
+--- - Default keymaps:
+---   - `<C-l>`: show autocompletion menu to prefilter your query by kind of ts node you want to see (i.e. `:var:`)
 ---@field show_line boolean: if true, shows the row:column that the result is found at (default is true)
 builtin.treesitter = require('telescope.builtin.files').treesitter
 
@@ -85,8 +118,6 @@ builtin.current_buffer_fuzzy_find = require('telescope.builtin.files').current_b
 ---@param opts table: options to pass to the picker
 ---@field ctags_file string: specify a particular ctags file to use
 ---@field show_line boolean: if true, shows the content of the line the tag is found on in the picker (default is true)
----@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is true)
----@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.tags = require('telescope.builtin.files').tags
 
 --- Lists all of the tags for the currently open buffer, with a preview
@@ -112,12 +143,18 @@ builtin.git_files = require('telescope.builtin.git').files
 --- - Default keymaps:
 ---   - `<cr>`: checks out the currently selected commit
 ---@param opts table: options to pass to the picker
+---@field cwd string: specify the path of the repo
 builtin.git_commits = require('telescope.builtin.git').commits
 
 --- Lists commits for current buffer with diff preview
---- - Default keymaps:
+--- - Default keymaps or your overriden `select_` keys:
 ---   - `<cr>`: checks out the currently selected commit
+---   - `<c-v>`: opens a diff in a vertical split
+---   - `<c-x>`: opens a diff in a horizontal split
+---   - `<c-t>`: opens a diff in a new tab
 ---@param opts table: options to pass to the picker
+---@field cwd string: specify the path of the repo
+---@field current_file string: specify the current file that should be used for bcommits (default: current buffer)
 builtin.git_bcommits = require('telescope.builtin.git').bcommits
 
 --- List branches for current directory, with output from `git log --oneline` shown in the preview window
@@ -207,6 +244,11 @@ builtin.reloader = require('telescope.builtin.internal').reloader
 
 --- Lists open buffers in current neovim instance, opens selected buffer on `<cr>`
 ---@param opts table: options to pass to the picker
+---@field show_all_buffers boolean: if true, show all buffers, including unloaded buffers (default true)
+---@field ignore_current_buffer boolean: if true, don't show the current buffer in the list (default false)
+---@field only_cwd boolean: if true, only show buffers in the current working directory (default false)
+---@field sort_lastused boolean: if true, sort the shown buffers so that the last used one is selected (default false)
+---@field bufnr_width number: Defines the width of the buffer numbers in front of the filenames
 builtin.buffers = require('telescope.builtin.internal').buffers
 
 --- Lists available colorschemes and applies them on `<cr>`
@@ -245,8 +287,6 @@ builtin.spell_suggest = require('telescope.builtin.internal').spell_suggest
 
 --- Lists the tag stack for the current window, jumps to tag on `<cr>`
 ---@param opts table: options to pass to the picker
----@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is true)
----@field hide_filename boolean: if true, hides the name of the file in the current picker (default is true)
 builtin.tagstack = require('telescope.builtin.internal').tagstack
 
 --- Lists items from Vim's jumplist, jumps to location on `<cr>`
@@ -261,7 +301,6 @@ builtin.jumplist = require('telescope.builtin.internal').jumplist
 
 --- Lists LSP references for word under the cursor, jumps to reference on `<cr>`
 ---@param opts table: options to pass to the picker
----@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is false)
 builtin.lsp_references = require('telescope.builtin.lsp').references
 
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
@@ -285,36 +324,89 @@ builtin.lsp_range_code_actions = require('telescope.builtin.lsp').range_code_act
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
 ---@field ignore_filename type: string with file to ignore
+---@field symbols string|table: filter results by symbol kind(s)
 builtin.lsp_document_symbols = require('telescope.builtin.lsp').document_symbols
 
 --- Lists LSP document symbols in the current workspace
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
----@field shorten_path boolean: if true, makes file paths shown in picker use one letter for folders (default is false)
 ---@field ignore_filename string: file(s) to ignore
----@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
+---@field symbols string|table: filter results by symbol kind(s)
 builtin.lsp_workspace_symbols = require('telescope.builtin.lsp').workspace_symbols
 
 --- Dynamically lists LSP for all workspace symbols
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
----@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
 builtin.lsp_dynamic_workspace_symbols = require('telescope.builtin.lsp').dynamic_workspace_symbols
 
 --- Lists LSP diagnostics for the current buffer
+--- - Fields:
+---   - `All severity flags can be passed as `string` or `number` as per `:vim.lsp.protocol.DiagnosticSeverity:`
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query with the diagnostic you want to see (i.e. `:warning:`)
 ---@param opts table: options to pass to the picker
----@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
+---@field severity string|number: filter diagnostics by severity name (string) or id (number)
+---@field severity_limit string|number: keep diagnostics equal or more severe wrt severity name (string) or id (number)
+---@field severity_bound string|number: keep diagnostics equal or less severe wrt severity name (string) or id (number)
+---@field no_sign bool: hide LspDiagnosticSigns from Results (default is false)
+---@field line_width number: set length of diagnostic entry text in Results
 builtin.lsp_document_diagnostics = require('telescope.builtin.lsp').diagnostics
 
 --- Lists LSP diagnostics for the current workspace if supported, otherwise searches in all open buffers
+--- - Fields:
+---   - `All severity flags can be passed as `string` or `number` as per `:vim.lsp.protocol.DiagnosticSeverity:`
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query with the diagnostic you want to see (i.e. `:warning:`)
 ---@param opts table: options to pass to the picker
----@field hide_filename boolean: if true, hides the name of the file in the current picker (default is false)
+---@field severity string|number: filter diagnostics by severity name (string) or id (number)
+---@field severity_limit string|number: keep diagnostics equal or more severe wrt severity name (string) or id (number)
+---@field severity_bound string|number: keep diagnostics equal or less severe wrt severity name (string) or id (number)
+---@field no_sign bool: hide LspDiagnosticSigns from Results (default is false)
+---@field line_width number: set length of diagnostic entry text in Results
 builtin.lsp_workspace_diagnostics = require('telescope.builtin.lsp').workspace_diagnostics
 
+local apply_config = function(mod)
+  local pickers_conf = require('telescope.config').pickers
+  for k, v in pairs(mod) do
+    local pconf = vim.deepcopy(pickers_conf[k] or {})
+    if pconf.theme then
+      local theme = pconf.theme
+      pconf.theme = nil
+      pconf = require("telescope.themes")["get_" .. theme](pconf)
+    end
+    if pconf.mappings then
+      local mappings = pconf.mappings
+      pconf.mappings = nil
+      pconf.attach_mappings = function(_, map)
+        for mode, tbl in pairs(mappings) do
+          for key, action in pairs(tbl) do
+            map(mode, key, action)
+          end
+        end
+        return true
+      end
+    end
+    mod[k] = function(opts)
+      opts = opts or {}
+      if pconf.attach_mappings and opts.attach_mappings then
+        local attach_mappings = pconf.attach_mappings
+        pconf.attach_mappings = nil
+        local opts_attach = opts.attach_mappings
+        opts.attach_mappings = function(prompt_bufnr, map)
+          attach_mappings(prompt_bufnr, map)
+          return opts_attach(prompt_bufnr, map)
+        end
+      end
+
+      v(vim.tbl_extend("force", pconf, opts))
+    end
+  end
+
+  return mod
+end
+
+-- We can't do this in one statement because tree-sitter-lua docgen gets confused if we do
+builtin = apply_config(builtin)
 return builtin

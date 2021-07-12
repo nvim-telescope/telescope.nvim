@@ -19,8 +19,9 @@ local internal = {}
 --  vim.fn.setreg("+", "nnoremap $TODO :lua require('telescope.builtin').<whatever>()<CR>")
 -- TODO: Can we just do the names instead?
 internal.builtin = function(opts)
-  opts.hide_filename = utils.get_default(opts.hide_filename, true)
+  opts.path_display = utils.get_default(opts.path_display, "hidden")
   opts.ignore_filename = utils.get_default(opts.ignore_filename, true)
+  opts.include_extensions = utils.get_default(opts.include_extensions, false)
 
   local objs = {}
 
@@ -32,8 +33,23 @@ internal.builtin = function(opts)
     })
   end
 
+  local title = 'Telescope Builtin'
+
+  if opts.include_extensions then
+    title = 'Telescope Pickers'
+    for ext, funcs in pairs(require'telescope'.extensions) do
+      for func_name, func_obj in pairs(funcs) do
+        local debug_info = debug.getinfo(func_obj)
+        table.insert(objs, {
+          filename = string.sub(debug_info.source, 2),
+          text = string.format("%s : %s", ext, func_name),
+        })
+      end
+    end
+  end
+
   pickers.new(opts, {
-    prompt_title = 'Telescope Builtin',
+    prompt_title = title,
     finder    = finders.new_table {
       results = objs,
       entry_maker = function(entry)
@@ -563,7 +579,8 @@ internal.buffers = function(opts)
     if 1 ~= vim.fn.buflisted(b) then
         return false
     end
-    if not opts.show_all_buffers and not vim.api.nvim_buf_is_loaded(b) then
+    -- only hide unloaded buffers if opts.show_all_buffers is false, keep them listed if true or nil
+    if opts.show_all_buffers == false and not vim.api.nvim_buf_is_loaded(b) then
       return false
     end
     if opts.ignore_current_buffer and b == vim.api.nvim_get_current_buf() then
@@ -889,31 +906,30 @@ end
 
 internal.tagstack = function(opts)
   opts = opts or {}
-  local tagstack = vim.fn.gettagstack()
-  if vim.tbl_isempty(tagstack.items) then
+  local tagstack = vim.fn.gettagstack().items
+
+  local tags = {}
+  for i = #tagstack, 1, -1 do
+    local tag = tagstack[i]
+    tag.bufnr = tag.from[1]
+    if vim.api.nvim_buf_is_valid(tag.bufnr) then
+      tags[#tags + 1] = tag
+      tag.filename = vim.fn.bufname(tag.bufnr)
+      tag.lnum = tag.from[2]
+      tag.col = tag.from[3]
+
+      tag.text = vim.api.nvim_buf_get_lines(
+        tag.bufnr,
+        tag.lnum - 1,
+        tag.lnum,
+        false
+      )[1] or ''
+    end
+  end
+
+  if vim.tbl_isempty(tags) then
     print("No tagstack available")
     return
-  end
-
-  for _, value in pairs(tagstack.items) do
-    value.valid = true
-    value.bufnr = value.from[1]
-    value.lnum = value.from[2]
-    value.col = value.from[3]
-    value.filename = vim.fn.bufname(value.from[1])
-
-    value.text = vim.api.nvim_buf_get_lines(
-      value.bufnr,
-      value.lnum - 1,
-      value.lnum,
-      false
-    )[1]
-  end
-
-  -- reverse the list
-  local tags = {}
-  for i = #tagstack.items, 1, -1 do
-    tags[#tags+1] = tagstack.items[i]
   end
 
   pickers.new(opts, {
@@ -934,15 +950,18 @@ internal.jumplist = function(opts)
   -- reverse the list
   local sorted_jumplist = {}
   for i = #jumplist, 1, -1 do
-    jumplist[i].text = ''
-    table.insert(sorted_jumplist, jumplist[i])
+    if vim.api.nvim_buf_is_valid(jumplist[i].bufnr) then
+      jumplist[i].text = vim.api.nvim_buf_get_lines(jumplist[i].bufnr, jumplist[i].lnum, jumplist[i].lnum+1,
+        false)[1] or ''
+      table.insert(sorted_jumplist, jumplist[i])
+    end
   end
 
   pickers.new(opts, {
     prompt_title = 'Jumplist',
     finder = finders.new_table {
       results = sorted_jumplist,
-      entry_maker = make_entry.gen_from_jumplist(opts),
+      entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),

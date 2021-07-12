@@ -70,7 +70,7 @@ files.live_grep = function(opts)
 
       if search_dirs then
         table.insert(search_list, search_dirs)
-      elseif os_sep == '\\' then
+      else
         table.insert(search_list, '.')
       end
 
@@ -107,12 +107,6 @@ files.grep_string = function(opts)
   local word_match = opts.word_match
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
 
-  if search_dirs then
-    for i, path in ipairs(search_dirs) do
-      search_dirs[i] = vim.fn.expand(path)
-    end
-  end
-
   local args = flatten {
     vimgrep_arguments,
     word_match,
@@ -120,8 +114,10 @@ files.grep_string = function(opts)
   }
 
   if search_dirs then
-    table.insert(args, search_dirs)
-  elseif os_sep == '\\' then
+    for _, path in ipairs(search_dirs) do
+      table.insert(args, vim.fn.expand(path))
+    end
+  else
     table.insert(args, '.')
   end
 
@@ -348,7 +344,10 @@ files.treesitter = function(opts)
       entry_maker = opts.entry_maker or make_entry.gen_from_treesitter(opts)
     },
     previewer = conf.grep_previewer(opts),
-    sorter = conf.generic_sorter(opts),
+    sorter = conf.prefilter_sorter{
+      tag = "kind",
+      sorter = conf.generic_sorter(opts)
+    }
   }):find()
 end
 
@@ -493,7 +492,7 @@ files.current_buffer_tags = function(opts)
   return files.tags(vim.tbl_extend("force", {
     prompt_title = 'Current Buffer Tags',
     only_current_file = true,
-    hide_filename = true,
+    path_display = 'hidden',
   }, opts))
 end
 

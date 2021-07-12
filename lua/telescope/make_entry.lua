@@ -1,10 +1,9 @@
 local entry_display = require('telescope.pickers.entry_display')
 local path = require('telescope.path')
 local utils = require('telescope.utils')
+local strings = require('plenary.strings')
 
 local Path = require('plenary.path')
-
-local get_default = utils.get_default
 
 local treesitter_type_highlight = {
   ["associated"] = "TSConstant",
@@ -27,13 +26,6 @@ local lsp_type_highlight = {
   ["Property"] = "TelescopeResultsOperator",
   ["Struct"]   = "TelescopeResultsStruct",
   ["Variable"] = "TelescopeResultsVariable",
-}
-
-local lsp_type_diagnostic = {
-  [1] = "Error",
-  [2] = "Warning",
-  [3] = "Information",
-  [4] = "Hint"
 }
 
 local make_entry = {}
@@ -74,17 +66,13 @@ do
     local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
 
     local disable_devicons = opts.disable_devicons
-    local shorten_path = opts.shorten_path
 
     local mt_file_entry = {}
 
     mt_file_entry.cwd = cwd
     mt_file_entry.display = function(entry)
       local hl_group
-      local display = path.make_relative(entry.value, cwd)
-      if shorten_path then
-        display = utils.path_shorten(display)
-      end
+      local display = utils.transform_path(opts, entry.value)
 
       display, hl_group = utils.transform_devicons(entry.value, display, disable_devicons)
 
@@ -142,7 +130,6 @@ do
   end
 
   --- Special options:
-  ---  - shorten_path: make the path appear short
   ---  - disable_coordinates: Don't show the line & row numbers
   ---  - only_sort_text: Only sort via the text. Ignore filename and other items
   function make_entry.gen_from_vimgrep(opts)
@@ -151,7 +138,6 @@ do
     opts = opts or {}
 
     local disable_devicons = opts.disable_devicons
-    local shorten_path = opts.shorten_path
     local disable_coordinates = opts.disable_coordinates
     local only_sort_text = opts.only_sort_text
 
@@ -194,12 +180,7 @@ do
       cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd()),
 
       display = function(entry)
-        local display_filename
-        if shorten_path then
-          display_filename = utils.path_shorten(entry.filename)
-        else
-          display_filename = entry.filename
-        end
+        local display_filename = utils.transform_path(opts, entry.filename)
 
         local coordinates = ""
         if not disable_coordinates then
@@ -254,8 +235,9 @@ function make_entry.gen_from_git_stash()
   end
 end
 
+function make_entry.gen_from_git_commits(opts)
+  opts = opts or {}
 
-function make_entry.gen_from_git_commits()
   local displayer = entry_display.create {
     separator = " ",
     items = {
@@ -287,14 +269,14 @@ function make_entry.gen_from_git_commits()
       value = sha,
       ordinal = sha .. ' ' .. msg,
       msg = msg,
-      display = make_display
+      display = make_display,
+      current_file = opts.current_file
     }
   end
 end
 
 function make_entry.gen_from_quickfix(opts)
   opts = opts or {}
-  opts.tail_path = get_default(opts.tail_path, true)
 
   local displayer = entry_display.create {
     separator = "▏",
@@ -306,15 +288,7 @@ function make_entry.gen_from_quickfix(opts)
   }
 
   local make_display = function(entry)
-    local filename
-    if not opts.hide_filename then
-      filename = entry.filename
-      if opts.tail_path then
-        filename = utils.path_tail(filename)
-      elseif opts.shorten_path then
-        filename = utils.path_shorten(filename)
-      end
-    end
+    local filename = utils.transform_path(opts, entry.filename)
 
     local line_info = {table.concat({entry.lnum, entry.col}, ":"), "TelescopeResultsLineNr"}
 
@@ -383,17 +357,7 @@ function make_entry.gen_from_lsp_symbols(opts)
         )[1] or ''
       msg = vim.trim(msg)
     else
-      local filename = ""
-      opts.tail_path = get_default(opts.tail_path, true)
-
-      if not opts.hide_filename then -- hide the filename entirely
-        filename = entry.filename
-        if opts.tail_path then
-          filename = utils.path_tail(filename)
-        elseif opts.shorten_path then
-          filename = utils.path_shorten(filename)
-        end
-      end
+      local filename = utils.transform_path(opts, entry.filename)
 
       if opts.show_line then -- show inline line info
         filename = filename .. " [" ..entry.lnum .. ":" .. entry.col .. "]"
@@ -451,7 +415,7 @@ function make_entry.gen_from_buffer(opts)
   local icon_width = 0
   if not disable_devicons then
     local icon, _ = utils.get_devicons('fname', disable_devicons)
-    icon_width = utils.strdisplaywidth(icon)
+    icon_width = strings.strdisplaywidth(icon)
   end
 
   local displayer = entry_display.create {
@@ -467,12 +431,7 @@ function make_entry.gen_from_buffer(opts)
   local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
 
   local make_display = function(entry)
-    local display_bufname
-    if opts.shorten_path then
-      display_bufname = path.shorten(entry.filename)
-    else
-      display_bufname = entry.filename
-    end
+    local display_bufname = utils.transform_path(opts, entry.filename)
 
     local icon, hl_group = utils.get_devicons(entry.filename, disable_devicons)
 
@@ -670,9 +629,10 @@ function make_entry.gen_from_registers(_)
   }
 
   local make_display = function(entry)
+    local content = entry.content
     return displayer {
       {'[' .. entry.value .. ']', "TelescopeResultsNumber"},
-      entry.content,
+      type(content) == 'string' and content:gsub('\n','\\n') or content,
     }
   end
 
@@ -858,12 +818,15 @@ function make_entry.gen_from_ctags(opts)
   local current_file = path.normalize(vim.fn.expand('%'), cwd)
 
   local display_items = {
-    { width = 30 },
     { remaining = true },
   }
+  local hidden = utils.is_path_hidden(opts)
+  if not hidden then
+    table.insert(display_items, 1, { width = 30 })
+  end
 
   if opts.show_line then
-    table.insert(display_items, 2, { width = 30 })
+    table.insert(display_items, 1, { width = 30 })
   end
 
   local displayer = entry_display.create {
@@ -872,25 +835,25 @@ function make_entry.gen_from_ctags(opts)
   }
 
   local make_display = function(entry)
-    local filename
-    if not opts.hide_filename then
-      if opts.shorten_path then
-        filename = path.shorten(entry.filename)
-      else
-        filename = entry.filename
-      end
-    end
+    local filename = utils.transform_path(opts, entry.filename)
 
     local scode
     if opts.show_line then
       scode = entry.scode
     end
 
-    return displayer {
-      filename,
-      entry.tag,
-      scode,
-    }
+    if hidden then
+      return displayer {
+        entry.tag,
+        scode,
+      }
+    else
+      return displayer {
+        filename,
+        entry.tag,
+        scode,
+      }
+    end
   end
 
   return function(line)
@@ -935,19 +898,21 @@ end
 
 function make_entry.gen_from_lsp_diagnostics(opts)
   opts = opts or {}
-  opts.tail_path = utils.get_default(opts.tail_path, true)
+  local lsp_type_diagnostic = vim.lsp.protocol.DiagnosticSeverity
 
   local signs
   if not opts.no_sign then
     signs = {}
-    for _, v in pairs(lsp_type_diagnostic) do
+    for severity, _ in pairs(lsp_type_diagnostic) do
       -- pcall to catch entirely unbound or cleared out sign hl group
-      local status, sign = pcall(
-        function() return vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. v)[1].text) end)
-      if not status then
-        sign = v:sub(1,1)
+      if type(severity) == 'string' then
+        local status, sign = pcall(
+          function() return vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. severity)[1].text) end)
+        if not status then
+          sign = severity:sub(1,1)
+        end
+        signs[severity] = sign
       end
-      signs[v] = sign
     end
   end
 
@@ -956,22 +921,14 @@ function make_entry.gen_from_lsp_diagnostics(opts)
     { remaining = true }
   }
   local line_width = utils.get_default(opts.line_width, 45)
-  if not opts.hide_filename then table.insert(layout, 2, {width = line_width}) end
+  if not utils.is_path_hidden(opts) then table.insert(layout, 2, {width = line_width}) end
   local displayer = entry_display.create {
     separator = "▏",
     items = layout
   }
 
   local make_display = function(entry)
-    local filename
-    if not opts.hide_filename then
-      filename = entry.filename
-      if opts.tail_path then
-        filename = utils.path_tail(filename)
-      elseif opts.shorten_path then
-        filename = utils.path_shorten(filename)
-      end
-    end
+    local filename = utils.transform_path(opts, entry.filename)
 
     -- add styling of entries
     local pos = string.format("%4d:%2d", entry.lnum, entry.col)
@@ -1150,62 +1107,6 @@ function make_entry.gen_from_git_status(opts)
       ordinal = entry,
       display = make_display,
       path = opts.cwd .. path.separator .. file
-    }
-  end
-end
-
-function make_entry.gen_from_jumplist(opts)
-  opts = opts or {}
-  opts.tail_path = get_default(opts.tail_path, true)
-
-  local displayer = entry_display.create {
-    separator = "▏",
-    items = {
-      { width = 10 },
-      { remaining = true },
-    }
-  }
-
-  local make_display = function(entry)
-    local filename
-    if not opts.hide_filename then
-      filename = entry.filename
-      if opts.tail_path then
-        filename = utils.path_tail(filename)
-      elseif opts.shorten_path then
-        filename = utils.path_shorten(filename)
-      end
-    end
-
-    local line_info = {table.concat({entry.lnum, entry.col}, ":"), "TelescopeResultsLineNr"}
-
-    return displayer {
-      line_info,
-      filename,
-    }
-  end
-
-  return function(entry)
-    if not vim.api.nvim_buf_is_valid(entry.bufnr) then
-      return
-    end
-
-    local filename = entry.filename or vim.api.nvim_buf_get_name(entry.bufnr)
-
-    return {
-      valid = true,
-
-      value = entry,
-      ordinal = (
-        not opts.ignore_filename and filename
-        or ''
-        ) .. ' ' .. entry.text,
-      display = make_display,
-
-      bufnr = entry.bufnr,
-      filename = filename,
-      lnum = entry.lnum,
-      col = entry.col,
     }
   end
 end
