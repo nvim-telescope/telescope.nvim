@@ -187,7 +187,6 @@ files.find_files = function(opts)
         end
       end
     elseif 1 == vim.fn.executable("where") then
-      print('using the `where` function')
       find_command = { 'where', '/r', '.', '*'}
       if hidden then
         print('The `hidden` key is not available for the Windows `where` command in `find_files`.')
