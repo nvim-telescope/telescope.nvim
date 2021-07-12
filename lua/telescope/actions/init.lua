@@ -353,12 +353,7 @@ actions.paste_register = function(prompt_bufnr)
   -- ensure that the buffer can be written to
   if vim.api.nvim_buf_get_option(vim.api.nvim_get_current_buf(), "modifiable") then
     print("Paste!")
-    -- substitute "^V" for "b"
-    local reg_type = vim.fn.getregtype(entry.value)
-    if reg_type:byte(1, 1) == 0x16 then
-      reg_type = "b" .. reg_type:sub(2, -1)
-    end
-    vim.api.nvim_put({entry.content}, reg_type, true, true)
+    vim.api.nvim_paste(entry.content, true, -1)
   end
 end
 
