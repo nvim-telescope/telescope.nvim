@@ -306,22 +306,6 @@ builtin.live_grep({opts})                                *builtin.live_grep()*
     Search for a string in your current working directory and get results live
     as you type (respecting .gitignore)
 
-<<<<<<< HEAD
-themes.get_cursor()                                      *themes.get_cursor()*
-    Cursor style theme. Only to be used with cursor layout.
-
-    Usage:
-
-        `local builtin = require('telescope.builtin')`
-        `local themes = require('telescope.themes')`
-        `builtin.lsp_code_actions(themes.get_cursor())`
-
-
-
-themes.get_ivy()                                            *themes.get_ivy()*
-    Ivy style theme.
-=======
->>>>>>> 5692edd004fed1dbd55c90775c34a051298724e7
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
@@ -906,6 +890,17 @@ themes.get_dropdown()                                  *themes.get_dropdown()*
 
 
 
+themes.get_cursor()                                      *themes.get_cursor()*
+    Cursor style theme.
+
+    Usage:
+
+        `local builtin = require('telescope.builtin')`
+        `local themes = require('telescope.themes')`
+        `builtin.lsp_code_actions(themes.get_cursor())`
+
+
+
 themes.get_ivy()                                            *themes.get_ivy()*
     Ivy style theme.
 
@@ -1026,6 +1021,29 @@ layout_strategies.center()                        *layout_strategies.center()*
 
     `picker.layout_config` unique options:
       - preview_cutoff: When lines are less than this value, the preview will be disabled
+
+
+layout_strategies.cursor()                        *layout_strategies.cursor()*
+    Cursor layout dynamically positioned below the cursor if possible. If there
+    is no place below the cursor it will be placed above.
+
+    ┌──────────────────────────────────────────────────┐
+    │                                                  │
+    │   █                                              │
+    │   ┌──────────────┐┌─────────────────────┐        │
+    │   │    Prompt    ││      Preview        │        │
+    │   ├──────────────┤│      Preview        │        │
+    │   │    Result    ││      Preview        │        │
+    │   │    Result    ││      Preview        │        │
+    │   └──────────────┘└─────────────────────┘        │
+    │                                         █        │
+    │                                                  │
+    │                                                  │
+    │                                                  │
+    │                                                  │
+    │                                                  │
+    └──────────────────────────────────────────────────┘
+
 
 
 layout_strategies.vertical()                    *layout_strategies.vertical()*
@@ -1975,25 +1993,6 @@ histories.History:append({line}, {picker}, {no_reset})*histories.History:append(
 histories.History:get_next({line}, {picker})    *histories.History:get_next()*
     Will return the next history item. Can be nil if there are no next items
 
-<<<<<<< HEAD
-layout_strategies.cursor()                        *layout_strategies.cursor()*
-    Cursor layout dynamically positioned below the cursor if possible.
-
-       █
-       +--------------+---------------------+
-       |    Prompt    |      Previewer      |
-       +--------------+      Previewer      |
-       |    Result    |      Previewer      |
-       |    Result    |      Previewer      |
-       +--------------+---------------------+
-                                           (█: when there is no space available)
-
-
-
-layout_strategies.vertical()                    *layout_strategies.vertical()*
-    Vertical perviewer stacks the items on top of each other.
-=======
->>>>>>> 5692edd004fed1dbd55c90775c34a051298724e7
 
     Parameters: ~
         {line}   (string)  the current line
