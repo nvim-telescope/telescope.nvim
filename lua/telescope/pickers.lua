@@ -886,6 +886,8 @@ function Picker:entry_adder(index, entry, _, insert)
     if insert then
       if self.sorting_strategy == 'descending' then
         vim.api.nvim_buf_set_lines(self.results_bufnr, 0, 1, false, {})
+      else
+        vim.api.nvim_buf_set_lines(self.results_bufnr, self.max_results - 1, self.max_results, false, {})
       end
     end
 
