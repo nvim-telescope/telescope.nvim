@@ -173,7 +173,7 @@ files.find_files = function(opts)
           table.insert(find_command, v)
         end
       end
-    elseif 1 == vim.fn.executable("find") then
+    elseif 1 == vim.fn.executable("find") and not vim.fn.has('win32') then
       find_command = { 'find', '.', '-type', 'f' }
       if not hidden then
         table.insert(find_command, { '-not', '-path', "*/.*" })
@@ -184,6 +184,26 @@ files.find_files = function(opts)
         table.remove(find_command, 2)
         for _,v in pairs(search_dirs) do
           table.insert(find_command, 2, v)
+        end
+      end
+    elseif 1 == vim.fn.executable("where") then
+      print('using the `where` function')
+      find_command = { 'where', '/r', '.', '*'}
+      if hidden then
+        print('The `hidden` key is not available for the Windows `where` command in `find_files`.')
+      end
+      if follow then
+        print('The `follow` key is not available for the Windows `where` command in `find_files`.')
+      end
+      if search_dirs then
+        table.remove(find_command, 3)
+        local dir_num = 1
+        for _,v in pairs(search_dirs) do
+          if dir_num == 1 then
+            table.insert(find_command, 3, v)
+          else
+            print('Multiple `search_dirs` are not available for the Windows `where` command in `find_files`.')
+          end
         end
       end
     end
