@@ -704,6 +704,7 @@ end
 ---     },
 ---   }
 --- </pre>
+---@param prompt_bufnr number: The prompt bufnr
 ---@param opts table: options to pass to hop
 ---@field keys table: table of chars in order to hop to, roughly defaults to lower and upper-cased home row
 ---@field sign_hl string|table: hl group to link hop chars to; if table, must be two groups that are alternated between
@@ -782,12 +783,41 @@ actions._hop = function(prompt_bufnr, opts)
 
   vim.api.nvim_buf_clear_namespace(results_bufnr, ns, 0, -1)
   vim.api.nvim_buf_clear_namespace(results_bufnr, ns_line_hl, 0, -1)
+  return key
 end
 
 --- Hop.nvim-style single char motion to entry in results buffer.
 --- - Note: corresponds to default version of action, see actions._hop for configurable counterpart
 actions.hop = function(prompt_bufnr)
   actions._hop(prompt_bufnr, {})
+end
+
+--- Levers `actions._hop` to sequentially do `callback` on entry until escape keys are registered.
+--- - Note: as an example, see `actions.hop_toggle_selection`
+---@param prompt_bufnr number: The prompt bufnr
+---@param opts table: See `actions._hop`, barring escape_keys
+---@field escape_keys table: table of keys upon which hop loop is exited; defaults to <ESC> and <C-c>
+---@param callback function: Typically an action that uses levers the selected entry; takes `prompt_bufnr` as input
+actions._hop_loop = function(prompt_bufnr, opts, callback)
+  opts = opts or {}
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local row = current_picker:get_selection_row()
+  local escape_keys = vim.tbl_map(function(key)
+    return vim.api.nvim_replace_termcodes(key, true, false, true) end,
+    vim.F.if_nil(opts.escape_keys, {"<ESC>", "<C-c>"}))
+  while true do
+    local key = actions._hop(prompt_bufnr, opts)
+    if vim.tbl_contains(escape_keys, key) then
+      return
+    end
+    callback(prompt_bufnr)
+    current_picker:set_selection(row)
+  end
+end
+
+--- Levers `actions._hop` to sequentially toggle selection on hop char until escape keys are registered.
+actions.hop_toggle_selection = function(prompt_bufnr)
+  actions._hop_loop(prompt_bufnr, {}, actions.toggle_selection)
 end
 
 actions.complete_tag = function(prompt_bufnr)
