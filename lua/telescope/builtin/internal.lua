@@ -634,26 +634,72 @@ internal.buffers = function(opts)
 end
 
 internal.colorscheme = function(opts)
+  local before_color = vim.api.nvim_exec('colorscheme', true)
+  local need_restore = true
+
   local colors = vim.list_extend(opts.colors or {}, vim.fn.getcompletion('', 'color'))
 
-  pickers.new(opts,{
-    prompt = 'Change Colorscheme',
+  -- used for hiding the preview window
+  local deleted
+  local function del_win(win_id)
+    if win_id == nil or not vim.api.nvim_win_is_valid(win_id) then
+      return
+    end
+
+    local bufnr = vim.api.nvim_win_get_buf(win_id)
+    if vim.api.nvim_buf_is_valid(bufnr) and not vim.api.nvim_buf_get_option(bufnr, 'buflisted') then
+      vim.cmd(string.format('silent! bdelete! %s', bufnr))
+    end
+
+    if not vim.api.nvim_win_is_valid(win_id) then
+      return
+    end
+    pcall(vim.api.nvim_win_close, win_id, true)
+  end
+
+  local picker
+  picker = pickers.new(opts, {
+    prompt_title = 'Change Colorscheme',
     finder = finders.new_table {
-      results = colors
+      results = colors,
     },
     -- TODO: better preview?
     sorter = conf.generic_sorter(opts),
+    previewer = previewers.new {
+      preview_fn = function(_, entry, status)
+        -- hide preview window
+        if not deleted then
+          deleted = true
+          del_win(status.preview_win)
+          del_win(status.preview_border_win)
+        end
+        -- preview this color
+        vim.cmd('colorscheme ' .. entry.value)
+      end,
+    },
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
-
         actions.close(prompt_bufnr)
-        vim.cmd("colorscheme " .. selection.value)
+
+        need_restore = false
+        vim.cmd('colorscheme ' .. selection.value)
       end)
 
       return true
+    end,
+  })
+
+  -- rewrite picker.close_windows. restore color if needed
+  local close_windows = picker.close_windows
+  picker.close_windows = function(status)
+    close_windows(status)
+    if need_restore then
+      vim.cmd('colorscheme ' .. before_color)
     end
-  }):find()
+  end
+
+  picker:find()
 end
 
 internal.marks = function(opts)
