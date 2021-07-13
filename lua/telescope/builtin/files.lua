@@ -7,6 +7,7 @@ local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
 local utils = require('telescope.utils')
 local conf = require('telescope.config').values
+local log = require('telescope.log')
 
 local scan = require('plenary.scandir')
 local Path = require('plenary.path')
@@ -188,22 +189,14 @@ files.find_files = function(opts)
       end
     elseif 1 == vim.fn.executable("where") then
       find_command = { 'where', '/r', '.', '*'}
-      if hidden then
-        print('The `hidden` key is not available for the Windows `where` command in `find_files`.')
+      if hidden ~= nil then
+        log.warn('The `hidden` key is not available for the Windows `where` command in `find_files`.')
       end
-      if follow then
-        print('The `follow` key is not available for the Windows `where` command in `find_files`.')
+      if follow ~= nil then
+        log.warn('The `follow` key is not available for the Windows `where` command in `find_files`.')
       end
-      if search_dirs then
-        table.remove(find_command, 3)
-        local dir_num = 1
-        for _,v in pairs(search_dirs) do
-          if dir_num == 1 then
-            table.insert(find_command, 3, v)
-          else
-            print('Multiple `search_dirs` are not available for the Windows `where` command in `find_files`.')
-          end
-        end
+      if search_dirs ~= nil then
+        log.warn('The `search_dirs` key is not available for the Windows `where` command in `find_files`.')
       end
     end
   end
