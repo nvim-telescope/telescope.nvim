@@ -1377,6 +1377,83 @@ actions.smart_add_to_loclist()                *actions.smart_add_to_loclist()*
 
 
 
+actions._hop({prompt_bufnr}, {opts})                          *actions._hop()*
+    Hop.nvim-style single char motion to entry in results window.
+    - Note: pressing any key not in `keys` silently interrupts hopping
+    - Highlight groups (`sign_hl`, `line_hl`):
+      - String: single uniform highlighting of hop sign or lines
+      - Table: must comprise two highlight groups to configure alternate
+        highlighting of signs or lines
+      - A common choice for line_hl is a version of sign_hl that only sets the
+        background
+    Example Usage: select entry by hopping
+      require("telescope").setup {
+        defaults = {
+          mappings = {
+            i = {
+              ['<C-space>'] = function(prompt_bufnr)
+                local opts = {
+                  sign_hl = {"TeleshoppingSignA", "TeleshoppingSignB"},
+                  line_hl = {"TeleshoppingLineA", "TeleshoppingLineB"}}
+                actions._hop(prompt_bufnr, opts)
+                actions.select_default(prompt_bufnr)
+              end
+            },
+          },
+        },
+      }
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {opts}         (table)   options to pass to hop
+
+    Fields: ~
+        {keys}               (table)             table of chars in order to hop
+                                                 to, roughly defaults to lower
+                                                 and upper-cased home row
+        {sign_hl}            (string|table)      hl group to link hop chars to;
+                                                 if table, must be two groups
+                                                 that are alternated between
+        {line_hl}            (nil|string|table)  analogous to sign_hl; in
+                                                 addition, `nil` results in no
+                                                 line highlighting
+        {sign_virt_text_pos} (string)            if "right_align" then hop char
+                                                 aligned to right, else left
+                                                 aligned
+
+
+actions.hop()                                                  *actions.hop()*
+    Hop.nvim-style single char motion to entry in results buffer.
+    - Note: corresponds to default version of action, see actions._hop for
+      configurable counterpart
+
+
+
+actions._hop_loop({prompt_bufnr}, {opts}, {callback})    *actions._hop_loop()*
+    Levers `actions._hop` to sequentially do `callback` on entry until escape
+    keys are registered.
+    - Note: as an example, see `actions.hop_toggle_selection`
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)    The prompt bufnr
+        {opts}         (table)     See `actions._hop`, barring escape_keys
+        {callback}     (function)  Typically an action that uses levers the
+                                   selected entry; takes `prompt_bufnr` as
+                                   input
+
+    Fields: ~
+        {escape_keys} (table)  table of keys upon which hop loop is exited;
+                               defaults to <ESC> and <C-c>
+
+
+actions.hop_toggle_selection()                *actions.hop_toggle_selection()*
+    Levers `actions._hop` to sequentially toggle selection on hop char until
+    escape keys are registered.
+
+
+
 actions.open_qflist()                                  *actions.open_qflist()*
     Open the quickfix list
 
