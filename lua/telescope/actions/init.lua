@@ -680,15 +680,67 @@ actions.smart_add_to_loclist = function(prompt_bufnr)
   smart_send(prompt_bufnr, 'a', 'loclist')
 end
 
-actions.hop = function(prompt_bufnr, opts)
+--- Hop.nvim-style single char motion to entry in results window.
+--- - Note: pressing any key not in `keys` silently interrupts hopping
+--- - Highlight groups (`sign_hl`, `line_hl`):
+---   - String: single uniform highlighting of hop sign or lines
+---   - Table: must comprise two highlight groups to configure alternate highlighting of signs or lines
+---   - A common choice for line_hl is a version of sign_hl that only sets the background
+--- <pre>
+--- Example Usage: select entry by hopping
+---   require("telescope").setup {
+---     defaults = {
+---       mappings = {
+---         i = {
+---           ['<C-space>'] = function(prompt_bufnr)
+---             local opts = {
+---               sign_hl = {"TeleshoppingSignA", "TeleshoppingSignB"},
+---               line_hl = {"TeleshoppingLineA", "TeleshoppingLineB"}}
+---             actions._hop(prompt_bufnr, opts)
+---             actions.select_default(prompt_bufnr)
+---           end
+---         },
+---       },
+---     },
+---   }
+--- </pre>
+---@param opts table: options to pass to hop
+---@field keys table: table of chars in order to hop to, roughly defaults to lower and upper-cased home row
+---@field sign_hl string|table: hl group to link hop chars to; if table, must be two groups that are alternated between
+---@field line_hl nil|string|table: analogous to sign_hl; in addition, `nil` results in no line highlighting
+---@field sign_virt_text_pos string: if "right_align" then hop char aligned to right, else left aligned
+actions._hop = function(prompt_bufnr, opts)
   opts = opts or {}
-  local escape = 27
-  local default_keys = {
+  opts.keys = vim.F.if_nil(opts.keys, {
     "a", "s", "d", "f", "g", "h", "j", "k", "l", ";",
-    "q", "w", "e", "r", "t", "u", "v", "w",
-    "A", "S", "D", "F", "G", "H", "J", "K", "L", "W", "E", "R", "T", "U"}
-  opts.keys = vim.F.if_nil(opts.keys, default_keys)
-  opts.hl_group = vim.F.if_nil(opts.hl_group, "Search")
+    "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
+    "A", "S", "D", "F", "G", "H", "J", "K", "L", ":",
+    "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
+  })
+  opts.sign_hl = vim.F.if_nil(opts.sign_hl, "Search")
+  opts.sign_virt_text_pos = opts.sign_virt_text_pos == "right_align" and "right_align" or "overlay"
+
+  -- validate hl groups
+  local val_hl = function(hl)
+    local t = type(hl)
+    if t == "string" or t == "nil" then return true end
+    if t == "table" then
+      if not #t == 2 then
+        print("A table of highlight groups must comprise two highlight groups")
+        return false
+      end
+      return true
+    end
+  end
+  vim.validate{
+    opts={opts, "table"},
+    [opts.keys]={opts.keys, "table"},
+    [opts.sign_hl]={opts.sign_hl, val_hl,
+        "Passed highlight groups have to be either string or tables"},
+    -- line_hl can be nil => pass arg name explicitly
+    ["line_hl"]={opts.line_hl, val_hl,
+        "Passed highlight groups have to be either string or tables"},
+  }
 
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local max_results = current_picker.max_results
@@ -697,17 +749,24 @@ actions.hop = function(prompt_bufnr, opts)
   local sorting_strategy = current_picker.sorting_strategy
 
   local ns = vim.api.nvim_create_namespace "teleshopping"
-  local keyline = {}
+  local ns_line_hl = vim.api.nvim_create_namespace "teleshopping_line_hl"
 
+  local keyline = {}
   for i = 1, math.min(num_results, max_results, #opts.keys) do
     local key = opts.keys[i]
     local linenr = sorting_strategy == "descending" and max_results - i or i
-    vim.api.nvim_buf_set_extmark(
-      results_bufnr,
-      ns,
-      linenr,
-      0,
-      { virt_text = { { key, opts.hl_group } }, virt_text_pos = "overlay" }
+
+    local sign_hl = type(opts.sign_hl) == "table" and opts.sign_hl[math.pow(2, i % 2)] or opts.sign_hl
+    if opts.line_hl ~= nil then
+      local line_hl = type(opts.line_hl) == "table" and opts.line_hl[math.pow(2, i % 2)] or opts.line_hl
+      -- full line highlighting
+      vim.api.nvim_buf_add_highlight(results_bufnr, ns_line_hl, line_hl, linenr, 0, -1) -- text
+      vim.api.nvim_buf_set_extmark(results_bufnr, ns_line_hl, linenr, 0, -- beyond text
+        {hl_group = line_hl, hl_eol=true, virt_text = {{ "", line_hl }}, virt_text_pos = "overlay"})
+    end
+
+    vim.api.nvim_buf_set_extmark( results_bufnr, ns, linenr, 0,
+      {virt_text = {{ key, sign_hl }}, virt_text_pos = opts.sign_virt_text_pos}
     )
     keyline[key] = linenr
   end
@@ -717,17 +776,19 @@ actions.hop = function(prompt_bufnr, opts)
   local char = vim.fn.getchar()
   local key = vim.fn.nr2char(char)
 
-  -- TODO fix error of buffer previewer
-  if char ~= escape and keyline[key] ~= nil then
+  if keyline[key] ~= nil then
     current_picker:set_selection(keyline[key])
-    if opts.callback then
-      opts.callback()
-    end
   end
 
   vim.api.nvim_buf_clear_namespace(results_bufnr, ns, 0, -1)
+  vim.api.nvim_buf_clear_namespace(results_bufnr, ns_line_hl, 0, -1)
 end
 
+--- Hop.nvim-style single char motion to entry in results buffer.
+--- - Note: corresponds to default version of action, see actions._hop for configurable counterpart
+actions.hop = function(prompt_bufnr)
+  actions._hop(prompt_bufnr, {})
+end
 
 actions.complete_tag = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
