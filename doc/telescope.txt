@@ -222,6 +222,21 @@ telescope.setup({opts})                                    *telescope.setup()*
         - "row"
         - "closest"
 
+                                           *telescope.defaults.shorten_len*
+    shorten_len: ~
+        Determines the length of the shortened portions of a filepath.
+
+        e.g. for a path like
+          `alpha/beta/gamma/delta.txt`
+        setting `shorten_len = 1` will give a path like:
+          `a/b/g/delta.txt`
+        when "shorten" is present in `path_display`.
+        Similarly, `shorten_len = 2` will give a path like:
+          `al/be/ga/delta.txt`
+        when "shorten" is present in `path_display`.
+
+        Default: 1
+
                                       *telescope.defaults.sorting_strategy*
     sorting_strategy: ~
         Determines the direction "better" results are sorted towards.
