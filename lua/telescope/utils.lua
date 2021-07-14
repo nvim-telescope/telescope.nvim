@@ -299,6 +299,15 @@ utils.transform_path = function(opts, path)
     if vim.tbl_contains(path_display, "shorten") then
       transformed_path = Path:new(transformed_path):shorten()
     end
+
+    if vim.tbl_contains(path_display, "function") then
+      local path_display_custom = utils.get_default(opts.path_display_custom, require('telescope.config').values.path_display_custom)
+      if path_display_custom == nil then
+          print("path_display set to function but path_display_custom is not set. ") 
+      else
+          transformed_path = path_display_custom(transformed_path)
+      end
+    end
   end
 
   return transformed_path
