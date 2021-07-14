@@ -187,11 +187,13 @@ local telescope_defaults = {
     - "absolute"  display absolute paths
     - "shorten"   only display the first character of each directory in
                   the path
+    - "function"  use a custom function defined in path_display_custom
 
     path_display can also be set to 'hidden' string to hide file names
 
     Default: {}]]
   },
+  path_display_custom = { nil },
 
   borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" } },
 

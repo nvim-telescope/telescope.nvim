@@ -291,27 +291,35 @@ utils.transform_path = function(opts, path)
 
   local transformed_path = path
 
-  if opts.path_display_custom ~= nil then
-      transformed_path = opts.path_display_custom(transformed_path)
+  if vim.tbl_contains(path_display, "tail") then
+    transformed_path = utils.path_tail(transformed_path)
+  else
+    if not vim.tbl_contains(path_display, "absolute") then
+      local cwd
+      if opts.cwd then
+        cwd = opts.cwd
+        if not vim.in_fast_event() then
+          cwd = vim.fn.expand(opts.cwd)
+        end
+      else
+        cwd = vim.loop.cwd();
+      end
+      transformed_path = pathlib.make_relative(transformed_path, cwd)
+    end
+
+    if vim.tbl_contains(path_display, "shorten") then
+      transformed_path = pathlib.shorten(transformed_path)
+    end
+
+    if vim.tbl_contains(path_display, "function") then
+      local path_display_custom = utils.get_default(opts.path_display_custom, require('telescope.config').values.path_display_custom)
+      if path_display_custom == nil then
+          print("path_display set to function but path_display_custom is not set. ") 
+      else
+          transformed_path = path_display_custom(transformed_path)
+      end
+    end
   end
-  -- elseif vim.tbl_contains(path_display, "tail") then
-  --   transformed_path = utils.path_tail(transformed_path)
-  -- elseif not vim.tbl_contains(path_display, "absolute") then
-  --     local cwd
-  --     if opts.cwd then
-  --       cwd = opts.cwd
-  --       if not vim.in_fast_event() then
-  --         cwd = vim.fn.expand(opts.cwd)
-  --       end
-  --     else
-  --       cwd = vim.loop.cwd();
-  --     end
-  --     transformed_path = pathlib.make_relative(transformed_path, cwd)
-  -- elseif vim.tbl_contains(path_display, "shorten") then
-  --     transformed_path = pathlib.shorten(transformed_path)
-  -- elseif vim.tbl_contains(path_display, "filename_first") then
-  --     transformed_path = pathlib.filename_first(transformed_path)
-  -- end
 
   return transformed_path
 end
@@ -447,7 +455,7 @@ utils.transform_devicons = (function()
       end
 
       local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, '%a+$'), { default = true })
-      local icon_display = (icon or ' ') .. ' ' .. display(filename)
+      local icon_display = (icon or ' ') .. ' ' .. display
 
       if conf.color_devicons then
         return icon_display, icon_highlight
