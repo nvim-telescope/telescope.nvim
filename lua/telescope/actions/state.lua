@@ -18,7 +18,7 @@ end
 
 --- Gets the current line
 function action_state.get_current_line()
-  return global_state.get_global_key "current_line"
+  return global_state.get_global_key "current_line" or ""
 end
 
 --- Gets the current picker

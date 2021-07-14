@@ -1,16 +1,14 @@
-local actions = require "telescope.actions"
+local channel = require("plenary.async.control").channel
+
 local action_state = require "telescope.actions.state"
+local actions = require "telescope.actions"
+local conf = require("telescope.config").values
+local entry_display = require "telescope.pickers.entry_display"
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
 local pickers = require "telescope.pickers"
-local entry_display = require "telescope.pickers.entry_display"
-local utils = require "telescope.utils"
 local strings = require "plenary.strings"
-local a = require "plenary.async_lib"
-local async, await = a.async, a.await
-local channel = a.util.channel
-
-local conf = require("telescope.config").values
+local utils = require "telescope.utils"
 
 local lsp = {}
 
@@ -309,20 +307,21 @@ lsp.workspace_symbols = function(opts)
   }):find()
 end
 
+-- TODO(MERGE)
 local function get_workspace_symbols_requester(bufnr)
   local cancel = function() end
 
-  return async(function(prompt)
+  return function(prompt)
     local tx, rx = channel.oneshot()
     cancel()
     _, cancel = vim.lsp.buf_request(bufnr, "workspace/symbol", { query = prompt }, tx)
 
-    local err, _, results_lsp = await(rx())
+    local err, _, results_lsp = rx()
     assert(not err, err)
 
     local locations = vim.lsp.util.symbols_to_items(results_lsp or {}, bufnr) or {}
     return locations
-  end)
+  end
 end
 
 lsp.dynamic_workspace_symbols = function(opts)
@@ -335,7 +334,7 @@ lsp.dynamic_workspace_symbols = function(opts)
       fn = get_workspace_symbols_requester(curr_bufnr),
     },
     previewer = conf.qflist_previewer(opts),
-    sorter = conf.generic_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 

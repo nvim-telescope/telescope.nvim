@@ -2,12 +2,10 @@ local Job = require "plenary.job"
 
 local make_entry = require "telescope.make_entry"
 local log = require "telescope.log"
-local a = require "plenary.async_lib"
-local await = a.await
 
 local async_static_finder = require "telescope.finders.async_static_finder"
 local async_oneshot_finder = require "telescope.finders.async_oneshot_finder"
--- local async_job_finder = require('telescope.finders.async_job_finder')
+local async_job_finder = require "telescope.finders.async_job_finder"
 
 local finders = {}
 
@@ -103,7 +101,7 @@ function JobFinder:_find(prompt, process_result, process_complete)
     enable_recording = false,
 
     on_stdout = on_output,
-    on_stderr = on_output,
+    -- on_stderr = on_output,
 
     on_exit = function()
       process_complete()
@@ -131,17 +129,15 @@ function DynamicFinder:new(opts)
 end
 
 function DynamicFinder:_find(prompt, process_result, process_complete)
-  a.scope(function()
-    local results = await(self.fn(prompt))
+  local results = self.fn(prompt)
 
-    for _, result in ipairs(results) do
-      if process_result(self.entry_maker(result)) then
-        return
-      end
+  for _, result in ipairs(results) do
+    if process_result(self.entry_maker(result)) then
+      return
     end
+  end
 
-    process_complete()
-  end)
+  process_complete()
 end
 
 --- Return a new Finder
@@ -154,33 +150,36 @@ finders._new = function(opts)
   return JobFinder:new(opts)
 end
 
-finders.new_job = function(command_generator, entry_maker, maximum_results, cwd)
+finders.new_async_job = function(opts)
+  return async_job_finder(opts)
+end
+
+finders.new_job = function(command_generator, entry_maker, _, cwd)
+  return async_job_finder {
+    command_generator = command_generator,
+    entry_maker = entry_maker,
+    cwd = cwd,
+  }
+
   -- return async_job_finder {
-  --   command_generator = command_generator,
+  --   fn_command = function(_, prompt)
+  --     local command_list = command_generator(prompt)
+  --     if command_list == nil then
+  --       return nil
+  --     end
+
+  --     local command = table.remove(command_list, 1)
+
+  --     return {
+  --       command = command,
+  --       args = command_list,
+  --     }
+  --   end,
+
   --   entry_maker = entry_maker,
   --   maximum_results = maximum_results,
   --   cwd = cwd,
   -- }
-
-  return JobFinder:new {
-    fn_command = function(_, prompt)
-      local command_list = command_generator(prompt)
-      if command_list == nil then
-        return nil
-      end
-
-      local command = table.remove(command_list, 1)
-
-      return {
-        command = command,
-        args = command_list,
-      }
-    end,
-
-    entry_maker = entry_maker,
-    maximum_results = maximum_results,
-    cwd = cwd,
-  }
 end
 
 --- One shot job
