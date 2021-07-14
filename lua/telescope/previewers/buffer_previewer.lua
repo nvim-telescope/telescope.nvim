@@ -116,6 +116,8 @@ previewers.file_maker = function(filepath, bufnr, opts)
       end
     end
   end
+
+  pcall(vim.api.nvim_buf_set_option, bufnr, 'filetype', ft)
 end
 
 previewers.new_buffer_previewer = function(opts)
