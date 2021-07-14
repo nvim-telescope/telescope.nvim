@@ -1,7 +1,7 @@
 local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 
 local Path = require('plenary.path')
-local Job     = require('plenary.job')
+local Job  = require('plenary.job')
 
 local utils = {}
 
@@ -249,6 +249,10 @@ utils.diagnostics_to_tbl = function(opts)
   end)
 
   return items
+end
+
+utils.path_shorten = function(file)
+  return Path:new(file):shorten()
 end
 
 utils.path_tail = (function()

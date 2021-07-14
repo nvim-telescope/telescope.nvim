@@ -85,5 +85,39 @@ For extension developers there is a new util function that can be used to
 display a path:
     local filename = utils.transform_path(opts, entry.filename)
 
+                                                     *telescope.changelog-473*
+
+Date: July 14, 2021
+PR: https://github.com/nvim-telescope/telescope.nvim/pull/473
+
+Deprecation of telescope.path
+
+Extension developers need to move to plenary.path, because we will remove the
+telescope.path  module soon.
+
+Guide to switch over to plenary.path
+    - separator
+        before: require("telescope.path").separator
+        now:    require("plenary.path").path.sep
+    - home
+        before: require("telescope.path").home
+        now:    require("plenary.path").path.home
+    - make_relative
+        before: require("telescope.path").make_relative(filepath, cwd)
+        now:    require("plenary.path"):new(filepath):make_relative(cwd)
+    - shorten
+        before: require("telescope.path").shorten(filepath)
+        now:    require("plenary.path"):new(filepath):shorten()
+                with optional len, default is 1
+    - normalize
+        before: require("telescope.path").normalize(filepath, cwd)
+        now:    require("plenary.path"):new(filepath):normalize(cwd)
+    - read_file
+        before: require("telescope.path").read_file(filepath)
+        now:    require("plenary.path"):new(filepath):read()
+    - read_file_async
+        before: require("telescope.path").read_file_async(filepath, callback)
+        now:    require("plenary.path"):new(filepath):read(callback)
+
 
  vim:tw=78:ts=8:ft=help:norl:
