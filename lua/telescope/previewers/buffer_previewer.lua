@@ -1,5 +1,5 @@
 local from_entry = require('telescope.from_entry')
-local path = require('telescope.path')
+local Path = require('plenary.path')
 local utils = require('telescope.utils')
 local putils = require('telescope.previewers.utils')
 local Previewer = require('telescope.previewers.previewer')
@@ -39,7 +39,7 @@ color_hash[6]   = function(line)
 end
 
 local colorize_ls = function(bufnr, data, sections)
-  local windows_add = path.separator == '\\' and 2 or 0
+  local windows_add = Path.path.sep == '\\' and 2 or 0
   for lnum, line in ipairs(data) do
     local section = sections[lnum]
     for i = 1, section[1].end_index - 1 do -- Highlight permissions
@@ -97,7 +97,7 @@ previewers.file_maker = function(filepath, bufnr, opts)
             if opts.callback then opts.callback(bufnr) end
         end)})
       else
-        path.read_file_async(filepath, vim.schedule_wrap(function(data)
+        Path:new(filepath):_read_async(vim.schedule_wrap(function(data)
           if not vim.api.nvim_buf_is_valid(bufnr) then return end
           local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, vim.split(data, '[\r]?\n'))
           if not ok then return end
@@ -273,7 +273,7 @@ previewers.cat = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "File Preview",
     dyn_title = function(_, entry)
-      return path.normalize(from_entry.path(entry, true), cwd)
+      return Path:new(from_entry.path(entry, true)):normalize(cwd)
     end,
 
     get_buffer_by_name = function(_, entry)
@@ -307,7 +307,7 @@ previewers.vimgrep = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
-      return path.normalize(from_entry.path(entry, true), cwd)
+      return Path:new(from_entry.path(entry, true)):normalize(cwd)
     end,
 
     setup = function()
@@ -614,7 +614,7 @@ previewers.git_commit_diff_as_was = defaulter(function(opts)
 
     define_preview = function(self, entry, status)
       local cmd = { 'git', '--no-pager', 'show' }
-      local cf = opts.current_file and path.make_relative(opts.current_file, opts.cwd)
+      local cf = opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd)
       local value = cf and (entry.value .. ':' .. cf) or (entry.value)
       local ft = cf and pfiletype.detect(value) or 'diff'
       table.insert(cmd, value)

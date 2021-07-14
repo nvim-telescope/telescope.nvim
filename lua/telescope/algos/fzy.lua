@@ -7,10 +7,12 @@
 -- > matches on consecutive letters and starts of words. This allows matching
 -- > using acronyms or different parts of the path." - J Hawthorn
 
-local has_path, path = pcall(require, 'telescope.path')
+local has_path, Path = pcall(require, 'plenary.path')
 if not has_path then
-  path = {
-    separator = '/'
+  Path = {
+    path = {
+      separator = '/'
+    }
   }
 end
 
@@ -56,10 +58,10 @@ end
 local function precompute_bonus(haystack)
   local match_bonus = {}
 
-  local last_char = path.separator
+  local last_char = Path.path.sep
   for i = 1, string.len(haystack) do
     local this_char = haystack:sub(i, i)
-    if last_char == path.separator then
+    if last_char == Path.path.sep then
       match_bonus[i] = SCORE_MATCH_SLASH
     elseif last_char == "-" or last_char == "_" or last_char == " " then
       match_bonus[i] = SCORE_MATCH_WORD

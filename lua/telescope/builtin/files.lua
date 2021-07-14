@@ -47,10 +47,9 @@ files.live_grep = function(opts)
     end, vim.api.nvim_list_bufs())
     if not next(bufnrs) then return end
 
-    local tele_path = require'telescope.path'
     for _, bufnr in ipairs(bufnrs) do
       local file = vim.api.nvim_buf_get_name(bufnr)
-      table.insert(filelist, tele_path.make_relative(file, opts.cwd))
+      table.insert(filelist, Path:new(file):make_relative(opts.cwd))
     end
   elseif search_dirs then
     for i, path in ipairs(search_dirs) do
@@ -242,6 +241,10 @@ end
 files.file_browser = function(opts)
   opts = opts or {}
 
+  local is_dir = function(value)
+    return value:sub(-1, -1) == os_sep
+  end
+
   opts.depth = opts.depth or 1
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
   opts.new_finder = opts.new_finder or function(path)
@@ -258,18 +261,53 @@ files.file_browser = function(opts)
     })
     table.insert(data, 1, '..' .. os_sep)
 
-    return finders.new_table {
-      results = data,
-      entry_maker = (function()
-        local tele_path = require'telescope.path'
-        local gen = make_entry.gen_from_file(opts)
-        return function(entry)
-          local tmp = gen(entry)
-          tmp.ordinal = tele_path.make_relative(entry, opts.cwd)
-          return tmp
+    local maker = function()
+      local mt = {}
+      mt.cwd = opts.cwd
+      mt.display = function(entry)
+        local hl_group
+        local display = utils.transform_path(opts, entry.value)
+        if is_dir(entry.value) then
+          display = display .. os_sep
+          if not opts.disable_devicons then
+            display = (opts.dir_icon or "") .. " " .. display
+            hl_group = "Default"
+          end
+        else
+          display, hl_group = utils.transform_devicons(entry.value, display, opts.disable_devicons)
         end
-      end)()
-    }
+
+        if hl_group then
+          return display, { { {1, 3}, hl_group } }
+        else
+          return display
+        end
+      end
+
+      mt.__index = function(t, k)
+        local raw = rawget(mt, k)
+        if raw then return raw end
+
+        if k == "path" then
+          local retpath = Path:new({t.cwd, t.value}):absolute()
+          if not vim.loop.fs_access(retpath, "R", nil) then
+            retpath = t.value
+          end
+          if is_dir(t.value) then retpath = retpath .. os_sep end
+          return retpath
+        end
+
+        return rawget(t, rawget({ value = 1 }, k))
+      end
+
+      return function(line)
+        local tbl = {line}
+        tbl.ordinal = Path:new(line):make_relative(opts.cwd)
+        return setmetatable(tbl, mt)
+      end
+    end
+
+    return finders.new_table { results = data, entry_maker = maker() }
   end
 
   pickers.new(opts, {
@@ -279,7 +317,7 @@ files.file_browser = function(opts)
     sorter = conf.file_sorter(opts),
     attach_mappings = function(prompt_bufnr, map)
       action_set.select:replace_if(function()
-        return action_state.get_selected_entry().path:sub(-1) == os_sep
+        return is_dir(action_state.get_selected_entry().path)
       end, function()
         local new_cwd = vim.fn.expand(action_state.get_selected_entry().path:sub(1, -2))
         local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -299,7 +337,7 @@ files.file_browser = function(opts)
         end
 
         local fpath = current_picker.cwd .. os_sep .. file
-        if string.sub(fpath, -1) ~= os_sep then
+        if not is_dir(fpath) then
           actions.close(prompt_bufnr)
           Path:new(fpath):touch({ parents = true })
           vim.cmd(string.format(':e %s', fpath))
