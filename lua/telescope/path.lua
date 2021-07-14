@@ -21,29 +21,12 @@ path.make_relative = function(filepath, cwd)
   return filepath
 end
 
-path.shorten = (function()
-  if jit then
-    local ffi = require('ffi')
-    ffi.cdef [[
-    typedef unsigned char char_u;
-    char_u *shorten_dir(char_u *str);
-    ]]
-
-    return function(filepath)
-      if not filepath then
-        return filepath
-      end
-
-      local c_str = ffi.new("char[?]", #filepath + 1)
-      ffi.copy(c_str, filepath)
-      return ffi.string(ffi.C.shorten_dir(c_str))
-    end
-  else
-    return function(filepath)
-      return filepath
-    end
-  end
-end)()
+-- In most cases it is better to use `utils.path_shorten`
+-- as it handles cases for `len` being things other than
+-- a positive integer.
+path.shorten = function(filepath,len)
+  return require'plenary.path'.new(filepath):shorten(len)
+end
 
 path.normalize = function(filepath, cwd)
   filepath = path.make_relative(filepath, cwd)

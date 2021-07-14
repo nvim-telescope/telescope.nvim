@@ -202,6 +202,21 @@ local telescope_defaults = {
     Default: {}]]
   },
 
+  shorten_len = { 1, [[
+    Determines the length of the shortened portions of a filepath.
+
+    e.g. for a path like
+      `alpha/beta/gamma/delta.txt`
+    setting `shorten_len = 1` will give a path like:
+      `a/b/g/delta.txt`
+    when "shorten" is present in `path_display`.
+    Similarly, `shorten_len = 2` will give a path like:
+      `al/be/ga/delta.txt`
+    when "shorten" is present in `path_display`.
+
+    Default: 1]]
+  },
+
   borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" } },
 
   get_status_text = {

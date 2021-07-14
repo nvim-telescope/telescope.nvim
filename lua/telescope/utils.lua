@@ -251,8 +251,14 @@ utils.diagnostics_to_tbl = function(opts)
   return items
 end
 
-utils.path_shorten = function(file)
-  return Path:new(file):shorten()
+utils.path_shorten = function(filename,len)
+  if len == nil or len == true then
+    return Path:new(filename):shorten(1)
+  elseif tonumber(len) > 0 then
+    return Path:new(filename):shorten(tonumber(len))
+  else
+    error('Invalid value for `len`. Acceptable values are `nil`, `true` and positive integers.')
+  end
 end
 
 utils.path_tail = (function()
@@ -273,6 +279,7 @@ end
 
 utils.transform_path = function(opts, path)
   local path_display = utils.get_default(opts.path_display, require('telescope.config').values.path_display)
+  local shorten_len = utils.get_default(opts.shorten_len, require('telescope.config').values.shorten_len)
 
   local transformed_path = path
 
@@ -301,7 +308,7 @@ utils.transform_path = function(opts, path)
     end
 
     if vim.tbl_contains(path_display, "shorten") then
-      transformed_path = Path:new(transformed_path):shorten()
+      transformed_path = utils.path_shorten(transformed_path, shorten_len)
     end
   end
 
@@ -439,7 +446,7 @@ utils.transform_devicons = (function()
       end
 
       local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, '%a+$'), { default = true })
-      local icon_display = (icon or ' ') .. ' ' .. display
+      local icon_display = (icon or ' ') .. ' ' .. (display or '')
 
       if conf.color_devicons then
         return icon_display, icon_highlight
