@@ -1,6 +1,6 @@
 local conf = require('telescope.config').values
 local utils = require('telescope.utils')
-local path = require('telescope.path')
+local Path = require('plenary.path')
 local putils = require('telescope.previewers.utils')
 local from_entry = require('telescope.from_entry')
 local Previewer = require('telescope.previewers.previewer')
@@ -239,7 +239,7 @@ previewers.cat = defaulter(function(opts)
   return previewers.new_termopen_previewer {
     title = "File Preview",
     dyn_title = function(_, entry)
-      return path.normalize(from_entry.path(entry, true), cwd)
+      return Path:new(from_entry.path(entry, true)):normalize(cwd)
     end,
 
     get_command = function(entry)
@@ -260,7 +260,7 @@ previewers.vimgrep = defaulter(function(opts)
   return previewers.new_termopen_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
-      return path.normalize(from_entry.path(entry, true), cwd)
+      return Path:new(from_entry.path(entry, true)):normalize(cwd)
     end,
 
     get_command = function(entry, status)
@@ -293,7 +293,7 @@ previewers.qflist = defaulter(function(opts)
   return previewers.new_termopen_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
-      return path.normalize(from_entry.path(entry, true), cwd)
+      return Path:new(from_entry.path(entry, true)):normalize(cwd)
     end,
 
     get_command = function(entry, status)
