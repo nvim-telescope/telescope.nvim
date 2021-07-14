@@ -3,7 +3,7 @@ local action_set = require('telescope.actions.set')
 local action_state = require('telescope.actions.state')
 local finders = require('telescope.finders')
 local make_entry = require('telescope.make_entry')
-local path = require('telescope.path')
+local Path = require('plenary.path')
 local pickers = require('telescope.pickers')
 local previewers = require('telescope.previewers')
 local sorters = require('telescope.sorters')
@@ -135,7 +135,7 @@ internal.symbols = function(opts)
 
   local results = {}
   for _, source in ipairs(sources) do
-    local data = vim.fn.json_decode(path.read_file(source))
+    local data = vim.fn.json_decode(Path:new(source):read())
     for _, entry in ipairs(data) do
       table.insert(results, entry)
     end
@@ -346,8 +346,9 @@ end
 
 internal.vim_options = function(opts)
   -- Load vim options.
-  local vim_opts = loadfile(utils.data_directory() .. path.separator .. 'options' ..
-                            path.separator .. 'options.lua')().options
+  local vim_opts = loadfile(
+    Path:new({utils.data_directory(), 'options', 'options.lua'}):absolute()
+  )().options
 
   pickers.new(opts, {
     prompt = 'options',
@@ -449,7 +450,7 @@ internal.help_tags = function(opts)
   local delimiter = string.char(9)
   for _, lang in ipairs(langs) do
     for _, file in ipairs(tag_files[lang] or {}) do
-      local lines = vim.split(path.read_file(file), '\n', true)
+      local lines = vim.split(Path:new(file):read(), '\n', true)
       for _, line in ipairs(lines) do
         -- TODO: also ignore tagComment starting with ';'
         if not line:match'^!_TAG_' then
@@ -906,31 +907,30 @@ end
 
 internal.tagstack = function(opts)
   opts = opts or {}
-  local tagstack = vim.fn.gettagstack()
-  if vim.tbl_isempty(tagstack.items) then
+  local tagstack = vim.fn.gettagstack().items
+
+  local tags = {}
+  for i = #tagstack, 1, -1 do
+    local tag = tagstack[i]
+    tag.bufnr = tag.from[1]
+    if vim.api.nvim_buf_is_valid(tag.bufnr) then
+      tags[#tags + 1] = tag
+      tag.filename = vim.fn.bufname(tag.bufnr)
+      tag.lnum = tag.from[2]
+      tag.col = tag.from[3]
+
+      tag.text = vim.api.nvim_buf_get_lines(
+        tag.bufnr,
+        tag.lnum - 1,
+        tag.lnum,
+        false
+      )[1] or ''
+    end
+  end
+
+  if vim.tbl_isempty(tags) then
     print("No tagstack available")
     return
-  end
-
-  for _, value in pairs(tagstack.items) do
-    value.valid = true
-    value.bufnr = value.from[1]
-    value.lnum = value.from[2]
-    value.col = value.from[3]
-    value.filename = vim.fn.bufname(value.from[1])
-
-    value.text = vim.api.nvim_buf_get_lines(
-      value.bufnr,
-      value.lnum - 1,
-      value.lnum,
-      false
-    )[1]
-  end
-
-  -- reverse the list
-  local tags = {}
-  for i = #tagstack.items, 1, -1 do
-    tags[#tags+1] = tagstack.items[i]
   end
 
   pickers.new(opts, {
@@ -951,15 +951,18 @@ internal.jumplist = function(opts)
   -- reverse the list
   local sorted_jumplist = {}
   for i = #jumplist, 1, -1 do
-    jumplist[i].text = ''
-    table.insert(sorted_jumplist, jumplist[i])
+    if vim.api.nvim_buf_is_valid(jumplist[i].bufnr) then
+      jumplist[i].text = vim.api.nvim_buf_get_lines(jumplist[i].bufnr, jumplist[i].lnum, jumplist[i].lnum+1,
+        false)[1] or ''
+      table.insert(sorted_jumplist, jumplist[i])
+    end
   end
 
   pickers.new(opts, {
     prompt_title = 'Jumplist',
     finder = finders.new_table {
       results = sorted_jumplist,
-      entry_maker = make_entry.gen_from_jumplist(opts),
+      entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),

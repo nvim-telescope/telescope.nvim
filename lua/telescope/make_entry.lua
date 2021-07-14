@@ -1,8 +1,6 @@
 local entry_display = require('telescope.pickers.entry_display')
-local path = require('telescope.path')
 local utils = require('telescope.utils')
 local strings = require('plenary.strings')
-
 local Path = require('plenary.path')
 
 local treesitter_type_highlight = {
@@ -88,7 +86,7 @@ do
       if raw then return raw end
 
       if k == "path" then
-        local retpath = t.cwd .. path.separator .. t.value
+        local retpath = Path:new({t.cwd, t.value}):absolute()
         if not vim.loop.fs_access(retpath, "R", nil) then
           retpath = t.value
         end
@@ -146,7 +144,7 @@ do
         if Path:new(t.filename):is_absolute() then
           return t.filename, false
         else
-          return t.cwd .. path.separator .. t.filename, false
+          return Path:new({t.cwd, t.filename}):absolute(), false
         end
       end,
 
@@ -446,7 +444,7 @@ function make_entry.gen_from_buffer(opts)
   return function(entry)
     local bufname = entry.info.name ~= "" and entry.info.name or '[No Name]'
     -- if bufname is inside the cwd, trim that part of the string
-    bufname = path.normalize(bufname, cwd)
+    bufname = Path:new(bufname):normalize(cwd)
 
     local hidden = entry.info.hidden == 1 and 'h' or 'a'
     local readonly = vim.api.nvim_buf_get_option(entry.bufnr, 'readonly') and '=' or ' '
@@ -815,7 +813,7 @@ function make_entry.gen_from_ctags(opts)
   opts = opts or {}
 
   local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
-  local current_file = path.normalize(vim.fn.expand('%'), cwd)
+  local current_file = Path:new(vim.fn.expand('%')):normalize(cwd)
 
   local display_items = {
     { remaining = true },
@@ -1106,57 +1104,9 @@ function make_entry.gen_from_git_status(opts)
       status = mod,
       ordinal = entry,
       display = make_display,
-      path = opts.cwd .. path.separator .. file
+      path = Path:new({opts.cwd, file}):absolute()
     }
   end
 end
-
-function make_entry.gen_from_jumplist(opts)
-  opts = opts or {}
-
-  local displayer = entry_display.create {
-    separator = "▏",
-    items = {
-      { width = 10 },
-      { remaining = true },
-    }
-  }
-
-  local make_display = function(entry)
-    local filename = utils.transform_path(opts, entry.filename)
-
-    local line_info = {table.concat({entry.lnum, entry.col}, ":"), "TelescopeResultsLineNr"}
-
-    return displayer {
-      line_info,
-      filename,
-    }
-  end
-
-  return function(entry)
-    if not vim.api.nvim_buf_is_valid(entry.bufnr) then
-      return
-    end
-
-    local filename = entry.filename or vim.api.nvim_buf_get_name(entry.bufnr)
-
-    return {
-      valid = true,
-
-      value = entry,
-      ordinal = (
-        not opts.ignore_filename and filename
-        or ''
-        ) .. ' ' .. entry.text,
-      display = make_display,
-
-      bufnr = entry.bufnr,
-      filename = filename,
-      lnum = entry.lnum,
-      col = entry.col,
-    }
-  end
-end
-
 
 return make_entry

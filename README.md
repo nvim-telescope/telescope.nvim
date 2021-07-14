@@ -344,6 +344,7 @@ its `attach_mappings` key to a function, like so:
 ```lua
 local actions = require('telescope.actions')
 local action_set = require('telescope.actions.set')
+local action_state = require('telescope.actions.state')
 -- Picker specific remapping
 ------------------------------
 require('telescope.builtin').fd({ -- or new custom picker's attach_mappings field:
