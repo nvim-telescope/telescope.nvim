@@ -174,7 +174,7 @@ files.find_files = function(opts)
           table.insert(find_command, v)
         end
       end
-    elseif 1 == vim.fn.executable("find") and not vim.fn.has('win32') then
+    elseif 1 == vim.fn.executable("find") and vim.fn.has('win32') == 0 then
       find_command = { 'find', '.', '-type', 'f' }
       if not hidden then
         table.insert(find_command, { '-not', '-path', "*/.*" })
