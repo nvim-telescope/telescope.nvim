@@ -187,19 +187,14 @@ local telescope_defaults = {
     - "absolute"  display absolute paths
     - "shorten"   only display the first character of each directory in
                   the path
-    - "function"  use a custom function defined in path_display_custom
 
     path_display can also be set to 'hidden' string to hide file names
 
-    Default: {}]]
-  },
+    path_display can also be set to a function for custom formatting of the
+    path display. Example:
 
-  path_display_custom = { nil, [[
-    Custom function for formatting the Path Display. Function called when path_display is set to 'function'
-
-    Example function that formats the path to "file.ext (full path)":
-
-        path_display_custom = function(opts, filepath)
+        -- Format path as "file.txt (path\to\file\)"
+        path_display = function(opts, filepath)
             iterator = string.gmatch(filepath, "(.-)([^\\/]-%.?([^%.\\/]*))$")
             result = filepath
             for key, value in iterator do
@@ -208,9 +203,9 @@ local telescope_defaults = {
                 end
             end
             return result
-        end
+        end,
 
-    Default: nil ]]
+    Default: {}]]
   },
 
   borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" } },
