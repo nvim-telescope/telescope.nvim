@@ -193,7 +193,25 @@ local telescope_defaults = {
 
     Default: {}]]
   },
-  path_display_custom = { nil },
+
+  path_display_custom = { nil, [[
+    Custom function for formatting the Path Display. Function called when path_display is set to 'function'
+
+    Example function that formats the path to "file.ext (full path)":
+
+        path_display_custom = function(opts, filepath)
+            iterator = string.gmatch(filepath, "(.-)([^\\/]-%.?([^%.\\/]*))$")
+            result = filepath
+            for key, value in iterator do
+                if key ~= '' then
+                    result = value .. " (" .. key .. ")"
+                end
+            end
+            return result
+        end
+
+    Default: nil ]]
+  },
 
   borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" } },
 
