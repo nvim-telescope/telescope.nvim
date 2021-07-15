@@ -57,8 +57,10 @@ git.commits = function(opts)
       previewers.git_commit_message.new(opts),
     },
     sorter = conf.file_sorter(opts),
-    attach_mappings = function()
+    attach_mappings = function(_, map)
       actions.select_default:replace(actions.git_checkout)
+      map('i', '<c-r>', actions.git_reset_branch)
+      map('n', '<c-r>', actions.git_reset_branch)
       return true
     end
   }):find()
