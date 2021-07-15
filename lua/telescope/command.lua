@@ -123,7 +123,8 @@ end
 local split_keywords = {
   ['find_command'] = true,
   ['vimgrep_arguments'] = true,
-  ['sections'] = true
+  ['sections'] = true,
+  ['search_dirs'] = true
 }
 
 function command.register_keyword(keyword)

@@ -13,7 +13,7 @@
 local a = vim.api
 
 local log = require('telescope.log')
-local path = require('telescope.path')
+local Path = require('plenary.path')
 local state = require('telescope.state')
 
 local action_state = require('telescope.actions.state')
@@ -130,7 +130,7 @@ action_set.edit = function(prompt_bufnr, command)
     -- check if we didn't pick a different buffer
     -- prevents restarting lsp server
     if vim.api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
-      filename = path.normalize(vim.fn.fnameescape(filename), vim.loop.cwd())
+      filename = Path:new(vim.fn.fnameescape(filename)):normalize(vim.loop.cwd())
       vim.cmd(string.format("%s %s", command, filename))
     end
   end

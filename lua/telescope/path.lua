@@ -1,6 +1,7 @@
+local log = require('telescope.log')
+
 local path = {}
 
--- TODO: Can we use vim.loop for this?
 path.separator = package.config:sub(1, 1)
 path.home = vim.fn.expand("~")
 
@@ -86,4 +87,9 @@ path.read_file_async = function(filepath, callback)
   end)
 end
 
-return path
+return setmetatable({}, {
+  __index = function(_, k)
+    log.error("telescope.path is deprecated. please use plenary.path instead")
+    return path[k]
+  end
+})
