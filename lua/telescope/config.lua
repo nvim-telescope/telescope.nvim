@@ -80,6 +80,10 @@ local layout_config_defaults = {
   center = {
     preview_cutoff = 40,
   },
+
+  cursor = {
+    preview_cutoff = 40,
+  }
 }
 
 local layout_config_description = string.format([[

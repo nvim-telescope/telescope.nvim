@@ -413,6 +413,8 @@ end)
 --- └──────────────────────────────────────────────────┘
 --- </pre>
 layout_strategies.cursor = make_documented_layout("cursor", vim.tbl_extend("error", shared_options, {
+    preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|", },
+    preview_cutoff = "When columns are less than this value, the preview will be disabled",
 }), function(self, max_columns, max_lines, layout_config)
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
@@ -433,11 +435,17 @@ layout_strategies.cursor = make_documented_layout("cursor", vim.tbl_extend("erro
   results.height = height
   preview.height = results.height + prompt.height + bs
 
-  -- If previewer is activated, it should take 2/3 of the space (width)
-  local width_left = self.previewer and math.floor(max_width / 3) or max_width
-  prompt.width = width_left
+  if self.previewer and max_columns >= layout_config.preview_cutoff then
+    preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, cols)
+      -- By default, previewer takes 2/3 of the layout
+      return 2 * math.floor(max_width / 3)
+    end))(self, max_width, max_lines)
+  else
+    preview.width = 0
+  end
+
+  prompt.width = max_width - preview.width
   results.width = prompt.width
-  preview.width = self.previewer and (2*width_left) or 0
 
   local total_height = preview.height + (bs*2)
   local total_width = prompt.width + (bs*2) + preview.width + bs
