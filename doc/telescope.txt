@@ -94,6 +94,9 @@ telescope.setup({opts})                                    *telescope.setup()*
           center = {
             preview_cutoff = 40
           },
+          cursor = {
+            preview_cutoff = 40
+          },
           height = 0.9,
           horizontal = {
             preview_cutoff = 120,
