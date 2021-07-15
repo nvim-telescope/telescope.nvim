@@ -305,7 +305,7 @@ utils.transform_path = function(opts, path)
       if path_display_custom == nil then
           print("path_display set to function but path_display_custom is not set. ") 
       else
-          transformed_path = path_display_custom(transformed_path)
+          transformed_path = path_display_custom(opts, transformed_path)
       end
     end
   end
