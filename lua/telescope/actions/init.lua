@@ -542,6 +542,28 @@ actions.git_rebase_branch = function(prompt_bufnr)
   end
 end
 
+--- Reset to selected git commit
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_reset_branch = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+
+  local confirmation = vim.fn.input('Do you really wanna reset to commit ' .. selection.value .. '? [Y/n] ')
+  if confirmation ~= '' and string.lower(confirmation) ~= 'y' then return end
+
+  actions.close(prompt_bufnr)
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'reset', selection.value }, cwd)
+  if ret == 0 then
+    print("Reset to: " .. selection.value)
+  else
+    print(string.format(
+      'Error when resetting to: %s. Git returned: "%s"',
+      selection.value,
+      table.concat(stderr, '  ')
+    ))
+  end
+end
+
 actions.git_checkout_current_buffer = function(prompt_bufnr)
   local cwd = actions.get_current_picker(prompt_bufnr).cwd
   local selection = actions.get_selected_entry()
