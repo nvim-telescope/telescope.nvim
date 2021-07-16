@@ -58,6 +58,44 @@ function themes.get_dropdown(opts)
   return vim.tbl_deep_extend("force", theme_opts, opts)
 end
 
+--- Cursor style theme.
+--- <pre>
+---
+--- Usage:
+---
+---     `local builtin = require('telescope.builtin')`
+---     `local themes = require('telescope.themes')`
+---     `builtin.lsp_code_actions(themes.get_cursor())`
+--- </pre>
+function themes.get_cursor(opts)
+  opts = opts or {}
+
+  local theme_opts = {
+    theme = 'cursor',
+
+    sorting_strategy = 'ascending',
+    results_title = false,
+    layout_strategy = 'cursor',
+    layout_config = {
+      width = function(_, _, _)
+        return 80
+      end,
+
+      height = function(_, _, _)
+        return 6
+      end,
+    },
+    borderchars = {
+      { '─', '│', '─', '│', '╭', '╮', '╯', '╰'},
+      prompt = {'─', '│', ' ', '│', '╭', '╮', '│', '│'},
+      results = {'─', '│', '─', '│', '├', '┤', '╯', '╰'},
+      preview = { '─', '│', '─', '│', '╭', '╮', '╯', '╰'},
+    },
+  }
+
+  return vim.tbl_deep_extend('force', theme_opts, opts)
+end
+
 --- Ivy style theme.
 --- <pre>
 ---
