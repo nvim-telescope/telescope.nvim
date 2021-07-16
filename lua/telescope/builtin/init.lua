@@ -254,6 +254,7 @@ builtin.buffers = require('telescope.builtin.internal').buffers
 
 --- Lists available colorschemes and applies them on `<cr>`
 ---@param opts table: options to pass to the picker
+---@field enable_preview boolean: if true, will preview the selected color
 builtin.colorscheme = require('telescope.builtin.internal').colorscheme
 
 --- Lists vim marks and their value, jumps to the mark on `<cr>`

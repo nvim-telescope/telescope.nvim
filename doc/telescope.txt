@@ -670,6 +670,9 @@ builtin.colorscheme({opts})                            *builtin.colorscheme()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
+    Fields: ~
+        {enable_preview} (boolean)  if true, will preview the selected color
+
 
 builtin.marks({opts})                                        *builtin.marks()*
     Lists vim marks and their value, jumps to the mark on `<cr>`
