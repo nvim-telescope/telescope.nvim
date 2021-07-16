@@ -146,7 +146,10 @@ files.find_files = function(opts)
   if not find_command then
     if 1 == vim.fn.executable("fd") then
       find_command = { 'fd', '--type', 'f' }
-      if hidden then table.insert(find_command, '--hidden') end
+      if hidden then
+        table.insert(find_command, '--hidden')
+        table.insert(find_command, '--no-ignore')
+      end
       if follow then table.insert(find_command, '-L') end
       if search_dirs then
         table.insert(find_command, '.')
@@ -156,7 +159,10 @@ files.find_files = function(opts)
       end
     elseif 1 == vim.fn.executable("fdfind") then
       find_command = { 'fdfind', '--type', 'f' }
-      if hidden then table.insert(find_command, '--hidden') end
+      if hidden then
+        table.insert(find_command, '--hidden')
+        table.insert(find_command, '--no-ignore')
+      end
       if follow then table.insert(find_command, '-L') end
       if search_dirs then
         table.insert(find_command, '.')
@@ -166,7 +172,10 @@ files.find_files = function(opts)
       end
     elseif 1 == vim.fn.executable("rg") then
       find_command = { 'rg', '--files' }
-      if hidden then table.insert(find_command, '--hidden') end
+      if hidden then
+        table.insert(find_command, '--hidden')
+        table.insert(find_command, '--no-ignore')
+      end
       if follow then table.insert(find_command, '-L') end
       if search_dirs then
         for _,v in pairs(search_dirs) do
