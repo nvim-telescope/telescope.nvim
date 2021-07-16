@@ -271,7 +271,7 @@ utils.is_path_hidden = function(opts, path_display)
   path_display = path_display or utils.get_default(opts.path_display, require('telescope.config').values.path_display)
 
   return path_display == nil or path_display == "hidden" or
-    type(path_display) ~= "table" or vim.tbl_contains(path_display, "hidden")
+    type(path_display) ~= "table" or vim.tbl_contains(path_display, "hidden") or path_display.hidden
 end
 
 utils.transform_path = function(opts, path)
@@ -287,10 +287,10 @@ utils.transform_path = function(opts, path)
     return ''
   end
 
-  if vim.tbl_contains(path_display, "tail") then
+  if vim.tbl_contains(path_display, "tail") or path_display.tail then
     transformed_path = utils.path_tail(transformed_path)
   else
-    if not vim.tbl_contains(path_display, "absolute") then
+    if not vim.tbl_contains(path_display, "absolute") or path_display.absolute == false then
       local cwd
       if opts.cwd then
         cwd = opts.cwd
