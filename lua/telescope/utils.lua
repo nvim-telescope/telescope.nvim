@@ -274,11 +274,15 @@ end
 utils.transform_path = function(opts, path)
   local path_display = utils.get_default(opts.path_display, require('telescope.config').values.path_display)
 
+  local transformed_path = path
+
+  if type(path_display) == "function" then
+    return path_display(opts, transformed_path)
+  end
+
   if utils.is_path_hidden(nil, path_display) then
     return ''
   end
-
-  local transformed_path = path
 
   if vim.tbl_contains(path_display, "tail") then
     transformed_path = utils.path_tail(transformed_path)
