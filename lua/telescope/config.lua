@@ -194,15 +194,9 @@ local telescope_defaults = {
     path display. Example:
 
         -- Format path as "file.txt (path\to\file\)"
-        path_display = function(opts, filepath)
-            iterator = string.gmatch(filepath, "(.-)([^\\/]-%.?([^%.\\/]*))$")
-            result = filepath
-            for key, value in iterator do
-                if key ~= '' then
-                    result = value .. " (" .. key .. ")"
-                end
-            end
-            return result
+        path_display = function(opts, path)
+            local tail = require("telescope.utils").path_tail(path)
+            return string.format("%s (%s)", tail, path)
         end,
 
     Default: {}]]
