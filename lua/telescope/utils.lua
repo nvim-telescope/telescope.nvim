@@ -3,6 +3,8 @@ local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 local Path = require('plenary.path')
 local Job  = require('plenary.job')
 
+local log = require('telescope.log')
+
 local utils = {}
 
 utils.get_separator = function()
@@ -251,8 +253,9 @@ utils.diagnostics_to_tbl = function(opts)
   return items
 end
 
-utils.path_shorten = function(file)
-  return Path:new(file):shorten()
+utils.path_shorten = function(filename,len)
+  log.warn("`utils.path_shorten` is deprecated. Use `require('plenary.path').shorten`.")
+  return Path:new(filename):shorten(len)
 end
 
 utils.path_tail = (function()
@@ -268,7 +271,7 @@ utils.is_path_hidden = function(opts, path_display)
   path_display = path_display or utils.get_default(opts.path_display, require('telescope.config').values.path_display)
 
   return path_display == nil or path_display == "hidden" or
-    type(path_display) ~= "table" or vim.tbl_contains(path_display, "hidden")
+    type(path_display) ~= "table" or vim.tbl_contains(path_display, "hidden") or path_display.hidden
 end
 
 utils.transform_path = function(opts, path)
@@ -284,10 +287,10 @@ utils.transform_path = function(opts, path)
     return ''
   end
 
-  if vim.tbl_contains(path_display, "tail") then
+  if vim.tbl_contains(path_display, "tail") or path_display.tail then
     transformed_path = utils.path_tail(transformed_path)
   else
-    if not vim.tbl_contains(path_display, "absolute") then
+    if not vim.tbl_contains(path_display, "absolute") or path_display.absolute == false then
       local cwd
       if opts.cwd then
         cwd = opts.cwd
@@ -300,8 +303,8 @@ utils.transform_path = function(opts, path)
       transformed_path = Path:new(transformed_path):make_relative(cwd)
     end
 
-    if vim.tbl_contains(path_display, "shorten") then
-      transformed_path = Path:new(transformed_path):shorten()
+    if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
+      transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
     end
   end
 
@@ -439,7 +442,7 @@ utils.transform_devicons = (function()
       end
 
       local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, '%a+$'), { default = true })
-      local icon_display = (icon or ' ') .. ' ' .. display
+      local icon_display = (icon or ' ') .. ' ' .. (display or '')
 
       if conf.color_devicons then
         return icon_display, icon_highlight
