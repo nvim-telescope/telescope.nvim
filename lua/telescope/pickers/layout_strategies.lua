@@ -391,6 +391,99 @@ layout_strategies.center = make_documented_layout("center", vim.tbl_extend("erro
   }
 end)
 
+--- Cursor layout dynamically positioned below the cursor if possible.
+--- If there is no place below the cursor it will be placed above.
+---
+--- <pre>
+--- ┌──────────────────────────────────────────────────┐
+--- │                                                  │
+--- │   █                                              │
+--- │   ┌──────────────┐┌─────────────────────┐        │
+--- │   │    Prompt    ││      Preview        │        │
+--- │   ├──────────────┤│      Preview        │        │
+--- │   │    Result    ││      Preview        │        │
+--- │   │    Result    ││      Preview        │        │
+--- │   └──────────────┘└─────────────────────┘        │
+--- │                                         █        │
+--- │                                                  │
+--- │                                                  │
+--- │                                                  │
+--- │                                                  │
+--- │                                                  │
+--- └──────────────────────────────────────────────────┘
+--- </pre>
+layout_strategies.cursor = make_documented_layout("cursor", vim.tbl_extend("error", shared_options, {
+    preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|", },
+    preview_cutoff = "When columns are less than this value, the preview will be disabled",
+}), function(self, max_columns, max_lines, layout_config)
+  local initial_options = p_window.get_initial_window_options(self)
+  local preview = initial_options.preview
+  local results = initial_options.results
+  local prompt = initial_options.prompt
+
+  local height_opt = layout_config.height
+  local height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
+
+  local width_opt = layout_config.width
+  local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
+
+  local max_width = (width > max_columns and max_columns or width)
+
+  local bs = get_border_size(self)
+
+  prompt.height = 1
+  results.height = height
+  preview.height = results.height + prompt.height + bs
+
+  if self.previewer and max_columns >= layout_config.preview_cutoff then
+    preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, cols)
+      -- By default, previewer takes 2/3 of the layout
+      return 2 * math.floor(max_width / 3)
+    end))(self, max_width, max_lines)
+  else
+    preview.width = 0
+  end
+
+  prompt.width = max_width - preview.width
+  results.width = prompt.width
+
+  local total_height = preview.height + (bs*2)
+  local total_width = prompt.width + (bs*2) + preview.width + bs
+
+  local position = vim.api.nvim_win_get_position(0)
+  local top_left = {
+    line = vim.fn.winline() + position[1] + bs,
+    col = vim.fn.wincol() + position[2]
+  }
+  local bot_right = {
+    line = top_left.line + total_height - 1,
+    col = top_left.col + total_width - 1
+  }
+
+  if bot_right.line > max_lines then
+    -- position above current line
+    top_left.line = top_left.line - total_height - 1
+  end
+  if bot_right.col >= max_columns then
+    -- cap to the right of the screen
+    top_left.col = max_columns - total_width
+  end
+
+  prompt.line = top_left.line
+  results.line = prompt.line + bs + 1
+  preview.line = prompt.line
+
+  prompt.col = top_left.col
+  results.col = prompt.col
+  preview.col = results.col + (bs*2) + results.width
+
+  return {
+    preview = self.previewer and preview.width > 0 and preview,
+    results = results,
+    prompt = prompt
+  }
+end)
+
 --- Vertical layout stacks the items on top of each other.
 --- Particularly useful with thinner windows.
 ---

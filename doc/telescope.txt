@@ -94,6 +94,9 @@ telescope.setup({opts})                                    *telescope.setup()*
           center = {
             preview_cutoff = 40
           },
+          cursor = {
+            preview_cutoff = 40
+          },
           height = 0.9,
           horizontal = {
             preview_cutoff = 120,
@@ -912,6 +915,17 @@ themes.get_dropdown()                                  *themes.get_dropdown()*
 
 
 
+themes.get_cursor()                                      *themes.get_cursor()*
+    Cursor style theme.
+
+    Usage:
+
+        `local builtin = require('telescope.builtin')`
+        `local themes = require('telescope.themes')`
+        `builtin.lsp_code_actions(themes.get_cursor())`
+
+
+
 themes.get_ivy()                                            *themes.get_ivy()*
     Ivy style theme.
 
@@ -1032,6 +1046,29 @@ layout_strategies.center()                        *layout_strategies.center()*
 
     `picker.layout_config` unique options:
       - preview_cutoff: When lines are less than this value, the preview will be disabled
+
+
+layout_strategies.cursor()                        *layout_strategies.cursor()*
+    Cursor layout dynamically positioned below the cursor if possible. If there
+    is no place below the cursor it will be placed above.
+
+    ┌──────────────────────────────────────────────────┐
+    │                                                  │
+    │   █                                              │
+    │   ┌──────────────┐┌─────────────────────┐        │
+    │   │    Prompt    ││      Preview        │        │
+    │   ├──────────────┤│      Preview        │        │
+    │   │    Result    ││      Preview        │        │
+    │   │    Result    ││      Preview        │        │
+    │   └──────────────┘└─────────────────────┘        │
+    │                                         █        │
+    │                                                  │
+    │                                                  │
+    │                                                  │
+    │                                                  │
+    │                                                  │
+    └──────────────────────────────────────────────────┘
+
 
 
 layout_strategies.vertical()                    *layout_strategies.vertical()*
