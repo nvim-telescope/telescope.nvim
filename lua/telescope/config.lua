@@ -190,13 +190,13 @@ local telescope_defaults = {
 
     path_display can also be set to 'hidden' string to hide file names
 
-    path_display can also be set to a function for custom formatting of the
-    path display. Example:
+    path_display can also be set to a function for custom formatting of
+    the path display. Example:
 
         -- Format path as "file.txt (path\to\file\)"
         path_display = function(opts, path)
-            local tail = require("telescope.utils").path_tail(path)
-            return string.format("%s (%s)", tail, path)
+          local tail = require("telescope.utils").path_tail(path)
+          return string.format("%s (%s)", tail, path)
         end,
 
     Default: {}]]

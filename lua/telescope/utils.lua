@@ -277,7 +277,7 @@ utils.transform_path = function(opts, path)
   local transformed_path = path
 
   if type(path_display) == "function" then
-      return path_display(opts, transformed_path)
+    return path_display(opts, transformed_path)
   end
 
   if utils.is_path_hidden(nil, path_display) then
