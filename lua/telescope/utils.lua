@@ -3,6 +3,8 @@ local has_devicons, devicons = pcall(require, 'nvim-web-devicons')
 local Path = require('plenary.path')
 local Job  = require('plenary.job')
 
+local log = require('telescope.log')
+
 local utils = {}
 
 utils.get_separator = function()
@@ -252,13 +254,8 @@ utils.diagnostics_to_tbl = function(opts)
 end
 
 utils.path_shorten = function(filename,len)
-  if len == nil or len == true then
-    return Path:new(filename):shorten(1)
-  elseif tonumber(len) > 0 then
-    return Path:new(filename):shorten(tonumber(len))
-  else
-    error('Invalid value for `len`. Acceptable values are `nil`, `true` and positive integers.')
-  end
+  log.warn("`utils.path_shorten` is deprecated. Use `require('plenary.path').shorten`.")
+  return Path:new(filename):shorten(len)
 end
 
 utils.path_tail = (function()
@@ -279,7 +276,6 @@ end
 
 utils.transform_path = function(opts, path)
   local path_display = utils.get_default(opts.path_display, require('telescope.config').values.path_display)
-  local shorten_len = utils.get_default(opts.shorten_len, require('telescope.config').values.shorten_len)
 
   local transformed_path = path
 
@@ -307,8 +303,8 @@ utils.transform_path = function(opts, path)
       transformed_path = Path:new(transformed_path):make_relative(cwd)
     end
 
-    if vim.tbl_contains(path_display, "shorten") then
-      transformed_path = utils.path_shorten(transformed_path, shorten_len)
+    if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
+      transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
     end
   end
 

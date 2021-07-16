@@ -188,6 +188,15 @@ local telescope_defaults = {
     - "shorten"   only display the first character of each directory in
                   the path
 
+    You can also specify the number of characters of each directory name
+    to keep by setting `path_display.shorten = num`.
+      e.g. for a path like
+        `alpha/beta/gamma/delta.txt`
+      setting `path_display.shorten = 1` will give a path like:
+        `a/b/g/delta.txt`
+      Similarly, `path_display.shorten = 2` will give a path like:
+        `al/be/ga/delta.txt`
+
     path_display can also be set to 'hidden' string to hide file names
 
     path_display can also be set to a function for custom formatting of
@@ -202,20 +211,6 @@ local telescope_defaults = {
     Default: {}]]
   },
 
-  shorten_len = { 1, [[
-    Determines the length of the shortened portions of a filepath.
-
-    e.g. for a path like
-      `alpha/beta/gamma/delta.txt`
-    setting `shorten_len = 1` will give a path like:
-      `a/b/g/delta.txt`
-    when "shorten" is present in `path_display`.
-    Similarly, `shorten_len = 2` will give a path like:
-      `al/be/ga/delta.txt`
-    when "shorten" is present in `path_display`.
-
-    Default: 1]]
-  },
 
   borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" } },
 
