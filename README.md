@@ -228,7 +228,7 @@ EOF
 
 ### Customize Default Builtin behavior
 
-You can customize each default builtin behavior by adding the preferred options
+You can customize each default built-in behavior by adding the preferred options
 into the table that is passed into `require("telescope").setup()`.
 
 Example:
@@ -239,7 +239,7 @@ require("telescope").setup {
     -- Your defaults config goes in here
   },
   pickers = {
-    -- Your special builtin config goes in here
+    -- Your special built-in config goes in here
     buffers = {
       sort_lastused = true,
       theme = "dropdown",
@@ -349,7 +349,7 @@ local action_state = require('telescope.actions.state')
 ------------------------------
 require('telescope.builtin').fd({ -- or new custom picker's attach_mappings field:
   attach_mappings = function(prompt_bufnr)
-    -- This will replace select no mather on which key it is mapped by default
+    -- This will replace select no matter on which key it is mapped by default
     action_set.select:replace(function(prompt_bufnr, type)
       local entry = action_state.get_selected_entry()
       actions.close(prompt_bufnr)
@@ -405,7 +405,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.git_files`                 | Fuzzy search through the output of `git ls-files` command, respects .gitignore, optionally ignores untracked files                |
 | `builtin.grep_string`               | Searches for the string under your cursor in your current working directory                                                       |
 | `builtin.live_grep`                 | Search for a string in your current working directory and get results live as you type (respecting .gitignore)                    |
-| `builtin.file_browser`              | Lists files and folders in your current working directory, open files, navigate your filesystem, and create new files and folders |
+| `builtin.file_browser`              | Lists files and folders in your current working directory, open files, navigate your file system, and create new files and folders |
 
 #### Options for builtin.live_grep
 
@@ -701,7 +701,7 @@ but only for this instance, we could do something like:
 If we wanted to change the width for every time we use the `vertical`
 layout strategy, we could add the following to our `setup()` call:
 
-```
+```lua
 require('telescope').setup({
   defaults = {
     layout_config = {
@@ -754,7 +754,7 @@ and some other functions can be easily changed in custom pickers or built-in fun
 -- Disable preview for find_files
 nnoremap <leader>ff :lua require('telescope.builtin').find_files({previewer = false})<cr>
 
--- Change change prompt prefix for find_files builtin function:
+-- Change prompt prefix for find_files builtin function:
 nnoremap <leader>fg :lua require('telescope.builtin').live_grep({ prompt_prefix=🔍 })<cr>
 nnoremap <leader>fg :Telescope live_grep prompt_prefix=🔍<cr>
 ```
