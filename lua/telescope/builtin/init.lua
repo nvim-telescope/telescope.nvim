@@ -143,6 +143,7 @@ builtin.git_files = require('telescope.builtin.git').files
 --- Lists commits for current directory with diff preview
 --- - Default keymaps:
 ---   - `<cr>`: checks out the currently selected commit
+---   - `<C-r>`: resets current branch to selected commit
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
 builtin.git_commits = require('telescope.builtin.git').commits
