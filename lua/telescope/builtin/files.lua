@@ -83,7 +83,7 @@ files.live_grep = function(opts)
       local filetype = opts.current_filetype or ''
 
       if (smart_mask == true and filetype ~= '') then
-          smart_mask_args = utils.get_default(opts.smart_mask_args, require('telescope.config').values.smart_mask_args)
+          local smart_mask_args = utils.get_default(opts.smart_mask_args, require('telescope.config').values.smart_mask_args)
           table.insert(extraArgs, smart_mask_args[filetype])
       end
 
