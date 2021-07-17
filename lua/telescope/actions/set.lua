@@ -151,7 +151,7 @@ action_set.scroll_previewer = function (prompt_bufnr, direction)
   local currenct_picker = action_state.get_current_picker(prompt_bufnr)
 
   -- Check if we actually have a previewer
-  if (type(current_picker['previewer']) ~= "table" or current_picker.previewer['scroll_fn'] == nil) then
+  if (type(current_picker.previewer) ~= "table" or current_picker.previewer.scroll_fn == nil) then
     return
   end
 
