@@ -349,7 +349,7 @@ local action_state = require('telescope.actions.state')
 ------------------------------
 require('telescope.builtin').fd({ -- or new custom picker's attach_mappings field:
   attach_mappings = function(prompt_bufnr)
-    -- This will replace select no mather on which key it is mapped by default
+    -- This will replace select no matter on which key it is mapped by default
     action_set.select:replace(function(prompt_bufnr, type)
       local entry = action_state.get_selected_entry()
       actions.close(prompt_bufnr)
@@ -701,7 +701,7 @@ but only for this instance, we could do something like:
 If we wanted to change the width for every time we use the `vertical`
 layout strategy, we could add the following to our `setup()` call:
 
-```
+```lua
 require('telescope').setup({
   defaults = {
     layout_config = {
@@ -754,7 +754,7 @@ and some other functions can be easily changed in custom pickers or built-in fun
 -- Disable preview for find_files
 nnoremap <leader>ff :lua require('telescope.builtin').find_files({previewer = false})<cr>
 
--- Change change prompt prefix for find_files builtin function:
+-- Change prompt prefix for find_files builtin function:
 nnoremap <leader>fg :lua require('telescope.builtin').live_grep({ prompt_prefix=🔍 })<cr>
 nnoremap <leader>fg :Telescope live_grep prompt_prefix=🔍<cr>
 ```
