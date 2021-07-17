@@ -286,16 +286,19 @@ local telescope_defaults = {
 
   smart_mask_args = {
       {
-          ["cs"] = "-tcs",
+          ["lua"] = "-tlua",
       }, [[
       Lookup table for live grep smart masking.
 
       Format is:
-          ["ext"] = "<argument to pass to grep program>"
+          ["filetype"] = "<argument to pass to grep program>"
+
+      Note: 'filetype' is vim's definition of filetype.
 
       Example (using ripgrep (rg) as the grep program):
 
         smart_mask_args = {
+            ["lua"] = "-tlua",
             ["cs"]  = "-tcs",
             ["cpp"] = "-tcpp",
             ["h"]   = "-tcpp"
