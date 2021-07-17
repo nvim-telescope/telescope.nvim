@@ -282,6 +282,27 @@ local telescope_defaults = {
     { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
   },
 
+  smart_mask = { false },
+
+  smart_mask_args = {
+      {
+          ["cs"] = "-tcs",
+      }, [[
+      Lookup table for live grep smart masking.
+
+      Format is:
+          ["ext"] = "<argument to pass to grep program>"
+
+      Example (using ripgrep (rg) as the grep program):
+
+        smart_mask_args = {
+            ["cs"]  = "-tcs",
+            ["cpp"] = "-tcpp",
+            ["h"]   = "-tcpp"
+        }
+      ]],
+  },
+
   use_less = { true },
 
   color_devicons = { true },

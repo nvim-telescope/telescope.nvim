@@ -402,6 +402,8 @@ local apply_config = function(mod)
         end
       end
 
+      opts.current_filetype = vim.bo.filetype
+
       v(vim.tbl_extend("force", pconf, opts))
     end
   end

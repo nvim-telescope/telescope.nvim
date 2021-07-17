@@ -78,7 +78,16 @@ files.live_grep = function(opts)
         search_list = filelist
       end
 
-      return flatten { vimgrep_arguments, prompt, search_list }
+      local extraArgs = {}
+      local smart_mask = utils.get_default(opts.smart_mask, require('telescope.config').values.smart_mask)
+      local filetype = opts.current_filetype or ''
+
+      if (smart_mask == true and filetype ~= '') then
+          smart_mask_args = utils.get_default(opts.smart_mask_args, require('telescope.config').values.smart_mask_args)
+          table.insert(extraArgs, smart_mask_args[filetype])
+      end
+
+      return flatten { vimgrep_arguments, extraArgs, prompt, search_list }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
     opts.max_results,
