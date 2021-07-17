@@ -351,7 +351,7 @@ internal.vim_options = function(opts)
   )().options
 
   pickers.new(opts, {
-    prompt = 'options',
+    prompt_title = 'options',
     finder = finders.new_table {
       results = vim_opts,
       entry_maker = opts.entry_maker or make_entry.gen_from_vimoptions(opts),

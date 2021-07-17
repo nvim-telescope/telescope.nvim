@@ -507,7 +507,7 @@ files.tags = function(opts)
   local results = vim.split(data, '\n')
 
   pickers.new(opts,{
-    prompt = 'Tags',
+    prompt_title = 'Tags',
     finder = finders.new_table {
       results = results,
       entry_maker = opts.entry_maker or make_entry.gen_from_ctags(opts),
