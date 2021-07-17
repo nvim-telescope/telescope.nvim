@@ -97,6 +97,8 @@ function action_utils._with_selections(prompt_bufnr, action)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   for index, selection in ipairs(current_picker:get_multi_selection()) do
     global_state.set_global_key("set_entry", selection)
+    -- satisfy linter
+    local _ = index
     action(prompt_bufnr)
   end
 end
