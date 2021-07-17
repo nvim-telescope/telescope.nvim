@@ -16,6 +16,14 @@ function state.get_global_key(key)
   return TelescopeGlobalState.global[key]
 end
 
+function state.get_and_clear_global_key(key)
+  local value = TelescopeGlobalState.global[key]
+  if value ~= nil then
+    TelescopeGlobalState.global[key] = nil
+  end
+  return value
+end
+
 function state.get_status(prompt_bufnr)
   return TelescopeGlobalState[prompt_bufnr] or {}
 end

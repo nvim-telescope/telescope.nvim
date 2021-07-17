@@ -60,6 +60,10 @@ function actions.get_current_line()
   return action_state.get_current_line()
 end
 
+function actions.inspect()
+  P(action_state.get_selected_entry())
+end
+
 function actions.get_current_picker(prompt_bufnr)
   -- TODO(1.0): Remove
   action_is_deprecated("get_current_picker")
@@ -784,7 +788,7 @@ actions.cycle_previewers_prev = function(prompt_bufnr)
 end
 
 -- ==================================================
--- Transforms modules and sets the corect metatables.
+-- Transforms modules and sets the correct metatables.
 -- ==================================================
 actions = transform_mod(actions)
 return actions

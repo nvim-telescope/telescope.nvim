@@ -121,8 +121,11 @@ action_set.edit = function(prompt_bufnr, command)
   end
 
   local entry_bufnr = entry.bufnr
-
-  require('telescope.actions').close(prompt_bufnr)
+  
+  -- multi-style actions may have torn down picker
+  if action_state.get_current_picker(prompt_bufnr) ~= nil then
+    require('telescope.actions').close(prompt_bufnr)
+  end
 
   if entry_bufnr then
     edit_buffer(command, entry_bufnr)
