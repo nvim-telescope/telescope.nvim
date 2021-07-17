@@ -351,7 +351,7 @@ internal.vim_options = function(opts)
   )().options
 
   pickers.new(opts, {
-    prompt = 'options',
+    prompt_title = 'options',
     finder = finders.new_table {
       results = vim_opts,
       entry_maker = opts.entry_maker or make_entry.gen_from_vimoptions(opts),
@@ -740,7 +740,7 @@ internal.marks = function(opts)
   table.remove(marks_table, 1)
 
   pickers.new(opts,{
-    prompt = 'Marks',
+    prompt_title = 'Marks',
     finder = finders.new_table {
       results = marks_table,
       entry_maker = opts.entry_maker or make_entry.gen_from_marks(opts),
