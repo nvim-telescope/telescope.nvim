@@ -281,34 +281,39 @@ utils.transform_path = function(opts, path)
 
   if type(path_display) == "function" then
     return path_display(opts, transformed_path)
-  end
 
-  if utils.is_path_hidden(nil, path_display) then
-    return ''
-  end
+  elseif utils.is_path_hidden(nil, path_display) then
+      return ''
 
-  if vim.tbl_contains(path_display, "tail") or path_display.tail then
-    transformed_path = utils.path_tail(transformed_path)
-  else
-    if not vim.tbl_contains(path_display, "absolute") or path_display.absolute == false then
-      local cwd
-      if opts.cwd then
-        cwd = opts.cwd
-        if not vim.in_fast_event() then
-          cwd = vim.fn.expand(opts.cwd)
+  elseif type(path_display) == "table" then
+
+    if vim.tbl_contains(path_display, "tail") or path_display.tail then
+      transformed_path = utils.path_tail(transformed_path)
+    else
+      if not vim.tbl_contains(path_display, "absolute") or path_display.absolute == false then
+        local cwd
+        if opts.cwd then
+          cwd = opts.cwd
+          if not vim.in_fast_event() then
+            cwd = vim.fn.expand(opts.cwd)
+          end
+        else
+          cwd = vim.loop.cwd();
         end
-      else
-        cwd = vim.loop.cwd();
+        transformed_path = Path:new(transformed_path):make_relative(cwd)
       end
-      transformed_path = Path:new(transformed_path):make_relative(cwd)
+
+      if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
+        transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
+      end
     end
 
-    if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
-      transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
-    end
+    return transformed_path
+  else
+    log.warn("`path_display` must be either a function or a table.",
+      "See `:help telescope.defaults.path_display.")
+    return transformed_path
   end
-
-  return transformed_path
 end
 
 -- local x = utils.make_default_callable(function(opts)
