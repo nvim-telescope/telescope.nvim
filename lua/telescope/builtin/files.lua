@@ -36,6 +36,7 @@ files.live_grep = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
   local grep_open_files = opts.grep_open_files
+  local filetype = vim.bo.filetype
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
 
   local filelist = {}
@@ -80,7 +81,6 @@ files.live_grep = function(opts)
 
       local extraArgs = {}
       local smart_mask = utils.get_default(opts.smart_mask, conf.smart_mask)
-      local filetype = opts.current_filetype or ''
 
       if (smart_mask == true and filetype ~= '') then
           local smart_mask_args = utils.get_default(opts.smart_mask_args, conf.smart_mask_args)
