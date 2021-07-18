@@ -655,6 +655,7 @@ layout_strategies.bottom_pane = function(self, max_columns, max_lines)
     height = "The height of the layout",
     mirror = "Flip the default locations of preview/results windows (requires use of previewer)",
   })
+end
 
 --- Bottom pane can be used to create layouts similar to "ivy".
 ---
