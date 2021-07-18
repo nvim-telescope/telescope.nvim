@@ -46,6 +46,10 @@ vim.deepcopy = (function()
   }
 
   return function(orig)
+    if orig == vim.NIL then
+      return vim.NIL
+    end
+
     local f = deepcopy_funcs[type(orig)]
     if f then
       return f(orig)

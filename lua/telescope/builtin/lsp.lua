@@ -6,9 +6,6 @@ local pickers = require('telescope.pickers')
 local entry_display = require('telescope.pickers.entry_display')
 local utils = require('telescope.utils')
 local strings = require('plenary.strings')
-local a = require('plenary.async_lib')
-local async, await = a.async, a.await
-local channel = a.util.channel
 
 local conf = require('telescope.config').values
 
@@ -294,6 +291,7 @@ lsp.workspace_symbols = function(opts)
   }):find()
 end
 
+-- TODO(MERGE)
 local function get_workspace_symbols_requester(bufnr)
   local cancel = function() end
 

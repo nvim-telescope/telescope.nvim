@@ -174,11 +174,10 @@ function EntryManager:add_entry(picker, score, entry)
 end
 
 function EntryManager:iter()
-  return coroutine.wrap(function()
-    for val in self.linked_states:iter() do
-      coroutine.yield(val[1])
-    end
-  end)
+  local iterator = self.linked_states:iter()
+  return function()
+    return iterator()
+  end
 end
 
 return EntryManager
