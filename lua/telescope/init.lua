@@ -60,10 +60,8 @@ end
 telescope.extensions = require('telescope._extensions').manager
 
 telescope.__format_setup_keys = function()
+  local names = require("telescope.config").descriptions_order
   local descriptions = require('telescope.config').descriptions
-
-  local names = vim.tbl_keys(descriptions)
-  table.sort(names)
 
   local result = { "<pre>", "", "Valid keys for {opts.defaults}" }
   for _, name in ipairs(names) do
