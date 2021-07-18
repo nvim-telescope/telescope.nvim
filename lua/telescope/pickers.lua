@@ -471,6 +471,7 @@ function Picker:find()
 
   -- Do filetype last, so that users can register at the last second.
   pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')
+  pcall(a.nvim_buf_set_option, results_bufnr, 'filetype', 'TelescopeResults')
 
   if self.default_text then
     self:set_prompt(self.default_text)
