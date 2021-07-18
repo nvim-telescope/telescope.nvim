@@ -12,6 +12,8 @@ local telescope = {}
 --- Telescope.nvim is a plugin for fuzzy finding and neovim. It helps you search,
 --- filter, find and pick things in Lua.
 ---
+--- TODO(conni2461): Write a getting started here!!!
+---
 --- <pre>
 --- To find out more:
 --- https://github.com/nvim-telescope/telescope.nvim

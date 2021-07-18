@@ -111,9 +111,17 @@ local layout_config_description = string.format([[
 
 local telescope_defaults = {
 
-  sorting_strategy = {
-    "descending",
-    [[
+  --TODO(conni2461): This is kinda aweful. Why because we cant have a deterministic
+  --                 order. So we have to sort it which makes
+  --                 `buffer_previewer_maker` the first option, it should be the
+  --                 last because its a developer option. This needs to be a
+  --                 list with a set order so we dont have to sort it.
+  --
+  --                 Or we go back to something similar to what we had before.
+  --                 We do it with a function that will make two tables, one
+  --                 that results in this table, and a second one that keeps
+  --                 track of the order. We do something similar in docgen.
+  sorting_strategy = { "descending", [[
     Determines the direction "better" results are sorted towards.
 
     Available options are:
@@ -121,9 +129,7 @@ local telescope_defaults = {
     - "ascending"]],
   },
 
-  selection_strategy = {
-    "reset",
-    [[
+  selection_strategy = { "reset", [[
     Determines how the cursor acts after each sort iteration.
 
     Available options are:
@@ -133,9 +139,7 @@ local telescope_defaults = {
     - "closest"]],
   },
 
-  scroll_strategy = {
-    "cycle",
-    [[
+  scroll_strategy = { "cycle", [[
     Determines what happens you try to scroll past view of the picker.
 
     Available options are:
@@ -143,9 +147,7 @@ local telescope_defaults = {
     - "limit"]],
   },
 
-  layout_strategy = {
-    "horizontal",
-    [[
+  layout_strategy = { "horizontal", [[
     Determines the default layout of Telescope pickers.
     See |telescope.layout| for details of the available strategies.
 
@@ -154,7 +156,12 @@ local telescope_defaults = {
 
   layout_config = { layout_config_defaults, layout_config_description },
 
-  winblend = { 0 },
+  winblend = { 0, [[
+    Configure winblend for telescope floating windows. See |winblend| for
+    more information.
+
+    Default: 0]]
+  },
 
   prompt_prefix = { "> ", [[
     Will be shown in front of the prompt.
@@ -174,7 +181,12 @@ local telescope_defaults = {
     Default: '  ']]
   },
 
-  initial_mode = { "insert" },
+  initial_mode = { "insert", [[
+    Determines in which mode telescope starts. Valid Keys:
+    `insert` and `normal`.
+
+    Default: "insert"]]
+  },
 
   border = { true, [[
     Boolean defining if borders are added to Telescope windows.
@@ -216,7 +228,12 @@ local telescope_defaults = {
   },
 
 
-  borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" } },
+  borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }, [[
+    Set the borderchars of telescope floating windows. It has to be a
+    table of 8 string values.
+
+    Default: { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }]]
+  },
 
   get_status_text = {
     function(self)
@@ -227,7 +244,11 @@ local telescope_defaults = {
       end
 
       return string.format("%s / %s", xx, yy)
-    end,
+    end, [[
+    A function that determines how the virtual text looks like.
+    Signature: function(picker) -> str
+
+    Default: function that shows current count / all]]
   },
 
   dynamic_preview_title = { false, [[
@@ -269,27 +290,50 @@ local telescope_defaults = {
                  which allows context sensitive (cwd + picker) history.
 
                  Default:
-                 require('telescope.actions.history').get_simple_history
-  ]],
-
+                 require('telescope.actions.history').get_simple_history]],
   },
 
-  -- Builtin configuration
-
-  -- List that will be executed.
-  --    Last argument will be the search term (passed in during execution)
   vimgrep_arguments = {
-    { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
+    { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" }, [[
+      Defines the command that will be used for `live_grep` and `grep_string`.
+      Hint: Make sure that color is currently set to `never` because we do
+      not yet interpret color codes
+      Hint 2: Make sure that these options are in your changes arguments:
+        "--no-heading", "--with-filename", "--line-number", "--column"
+      because we need them so the ripgrep output is in the correct format.
+
+      Default: {
+        "rg",
+        "--color=never",
+        "--no-heading",
+        "--with-filename",
+        "--line-number",
+        "--column",
+        "--smart-case"
+      }]]
   },
 
-  use_less = { true },
+  use_less = { true, [[
+    Boolean if less should be enabled in term_previewer (deprecated and
+    currently no longer used in the builtin pickers).
 
-  color_devicons = { true },
+    Default: true]]
+  },
+  set_env = { nil, [[
+    Set a environment for term_previewer. A table of key values:
+    Example: { COLORTERM = "truecolor", ... }
+    Hint: Empty table is not allowed.
 
-  set_env = { nil },
+    Default: nil]]
+  },
+  color_devicons = { true, [[
+    Boolean if devicons should be enabled or not.
+    Hint: Coloring only works if |termguicolors| is enabled.
 
-  mappings = {
-    {}, [[
+    Default: true]]
+  },
+
+  mappings = { {}, [[
     Your mappings to override telescope's default mappings.
 
     Format is:
@@ -344,9 +388,7 @@ local telescope_defaults = {
     ]],
   },
 
-  default_mappings = {
-    nil,
-    [[
+  default_mappings = { nil, [[
     Not recommended to use except for advanced users.
 
     Will allow you to completely remove all of telescope's default maps
@@ -354,31 +396,87 @@ local telescope_defaults = {
     ]],
   },
 
-  generic_sorter = { sorters.get_generic_fuzzy_sorter },
-  prefilter_sorter = { sorters.prefilter },
-  file_sorter = { sorters.get_fuzzy_file },
+  file_sorter = { sorters.get_fzy_sorter, [[
+    A function pointer that specifies the file_sorter. This sorter will
+    be used for find_files, git_files and similar.
+    Hint: If you load a native sorter, you dont need to change this value,
+    the native sorter will override it anyway.
 
-  file_ignore_patterns = { nil },
+    Default: require("telescope.sorters").get_fzy_sorter]]
+  },
+  generic_sorter = { sorters.get_fzy_sorter, [[
+    A function pointer to the generic sorter. The sorter that should be
+    used for everything that is not a file.
+    Hint: If you load a native sorter, you dont need to change this value,
+    the native sorter will override it anyway.
+
+    Default: require("telescope.sorters").get_fzy_sorter]]
+  },
+  --TODO(conni2461): Why is this even configurable???
+  prefilter_sorter = { sorters.prefilter, [[
+    This points to a wrapper sorter around the generic_sorter that is able
+    to do prefiltering.
+    Its usually used for lsp_*_symbols and lsp_*_diagnostics
+
+    Default: require("telescope.sorters").prefilter]]
+  },
+
+  file_ignore_patterns = { nil, [[
+    A table of lua regex that define the files that should be ignored.
+    Example: { "^scratch/" } -- ignore all files in scratch directory
+    Example: { "%.npz" } -- ignore all npz files
+    See: https://www.lua.org/manual/5.1/manual.html#5.4.1 for more
+    information about lua regex
+
+    Default: nil]]
+  },
 
   file_previewer = {
     function(...)
       return require("telescope.previewers").vim_buffer_cat.new(...)
-    end,
+    end, [[
+      Function pointer to the default file_previewer. It is mostly used
+      for find_files, git_files and similar.
+      You can change this function pointer to either use your own
+      previewer or use bat previewer:
+        require("telescope.previewers").cat.new
+
+      Default: require("telescope.previewers").vim_buffer_cat.new]]
   },
   grep_previewer = {
     function(...)
       return require("telescope.previewers").vim_buffer_vimgrep.new(...)
-    end,
+    end, [[
+      Function pointer to the default vim_grep previewer. It is mostly
+      used for live_grep, grep_string and similar.
+      You can change this function pointer to either use your own
+      previewer or use bat previewer:
+        require("telescope.previewers").vimgrep.new
+
+      Default: require("telescope.previewers").vim_buffer_vimgrep.new]]
   },
   qflist_previewer = {
     function(...)
       return require("telescope.previewers").vim_buffer_qflist.new(...)
-    end,
+    end, [[
+      Function pointer to the default qflist previewer. It is mostly
+      used for qflist, loclist and lsp.
+      You can change this function pointer to either use your own
+      previewer or use bat previewer:
+        require("telescope.previewers").qflist.new
+
+      Default: require("telescope.previewers").vim_buffer_vimgrep.new]]
   },
   buffer_previewer_maker = {
     function(...)
       return require("telescope.previewers").buffer_previewer_maker(...)
-    end,
+    end, [[
+      Developer option that defines the underlining functionality
+      of the buffer previewer.
+      For interesting configuration examples take a look at
+      https://github.com/nvim-telescope/telescope.nvim/wiki/Configuration-Recipes
+
+      Default: require("telescope.previewers").buffer_previewer_maker]]
   },
 }
 
