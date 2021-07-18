@@ -13,7 +13,7 @@
 local a = vim.api
 
 local log = require('telescope.log')
-local path = require('telescope.path')
+local Path = require('plenary.path')
 local state = require('telescope.state')
 
 local action_state = require('telescope.actions.state')
@@ -47,6 +47,20 @@ end
 action_set.select = function(prompt_bufnr, type)
   return action_set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
 end
+
+-- goal: currently we have a workaround in actions/init.lua where we do this for all files
+-- action_set.select = {
+--   -- Will not be called if `select_default` is replaced rather than `action_set.select` because we never get here
+--   pre = function(prompt_bufnr)
+--     action_state.get_current_history():append(
+--       action_state.get_current_line(),
+--       action_state.get_current_picker(prompt_bufnr)
+--     )
+--   end,
+--   action = function(prompt_bufnr, type)
+--     return action_set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
+--   end
+-- }
 
 local edit_buffer
 do
@@ -116,7 +130,7 @@ action_set.edit = function(prompt_bufnr, command)
     -- check if we didn't pick a different buffer
     -- prevents restarting lsp server
     if vim.api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
-      filename = path.normalize(vim.fn.fnameescape(filename), vim.loop.cwd())
+      filename = Path:new(vim.fn.fnameescape(filename)):normalize(vim.loop.cwd())
       vim.cmd(string.format("%s %s", command, filename))
     end
   end
@@ -134,11 +148,18 @@ end
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_previewer = function (prompt_bufnr, direction)
+  local previewer = action_state.get_current_picker(prompt_bufnr).previewer
+
+  -- Check if we actually have a previewer
+  if (type(previewer) ~= "table" or previewer.scroll_fn == nil) then
+    return
+  end
+
   local status = state.get_status(prompt_bufnr)
   local default_speed = vim.api.nvim_win_get_height(status.preview_win) / 2
   local speed = status.picker.layout_config.scroll_speed or default_speed
 
-  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(math.floor(speed * direction))
+  previewer:scroll_fn(math.floor(speed * direction))
 end
 
 -- ==================================================

@@ -14,6 +14,7 @@ local actions = require('telescope.actions')
 local action_set = require('telescope.actions.set')
 local config = require('telescope.config')
 local debounce = require('telescope.debounce')
+local deprecated = require('telescope.deprecated')
 local log = require('telescope.log')
 local mappings = require('telescope.mappings')
 local state = require('telescope.state')
@@ -56,6 +57,8 @@ function Picker:new(opts)
   actions._clear()
   action_set._clear()
 
+  deprecated.picker_window_options(opts)
+
   local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
 
   local obj = setmetatable({
@@ -74,7 +77,10 @@ function Picker:new(opts)
 
     finder = opts.finder,
     sorter = opts.sorter or require('telescope.sorters').empty(),
-    previewer = opts.previewer,
+
+    all_previewers = opts.previewer,
+    current_previewer_index = 1,
+
     default_selection_index = opts.default_selection_index,
 
     cwd = opts.cwd,
@@ -93,36 +99,25 @@ function Picker:new(opts)
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
     layout_strategy = layout_strategy,
-    layout_config = get_default(
-      opts.layout_config,
-      (config.values.layout_defaults or {})[layout_strategy]
-    ) or {},
+    layout_config = config.smarter_depth_2_extend(opts.layout_config or {}, config.values.layout_config or {}),
 
     window = {
-      -- TODO: This won't account for different layouts...
-      -- TODO: If it's between 0 and 1, it's a percetnage.
-      -- TODO: If its's a single number, it's always that many columsn
-      -- TODO: If it's a list, of length 2, then it's a range of min to max?
-      height = get_default(opts.height, 0.8),
-      width = get_default(opts.width, config.values.width),
-
-      get_preview_width = get_default(opts.preview_width, config.values.get_preview_width),
-
-      results_width = get_default(opts.results_width, config.values.results_width),
-      results_height = get_default(opts.results_height, config.values.results_height),
-
       winblend = get_default(opts.winblend, config.values.winblend),
-      prompt_position = get_default(opts.prompt_position, config.values.prompt_position),
-
-      -- Border config
       border = get_default(opts.border, config.values.border),
       borderchars = get_default(opts.borderchars, config.values.borderchars),
     },
-
-    preview_cutoff = get_default(opts.preview_cutoff, config.values.preview_cutoff),
   }, self)
 
   obj.get_window_options = opts.get_window_options or p_window.get_window_options
+
+  if obj.all_previewers ~= nil and obj.all_previewers ~= false then
+    if obj.all_previewers[1] == nil then
+      obj.all_previewers = { obj.all_previewers }
+    end
+    obj.previewer = obj.all_previewers[1]
+  else
+    obj.previewer = false
+  end
 
   -- TODO: It's annoying that this is create and everything else is "new"
   obj.scroller = p_scroller.create(
@@ -269,7 +264,7 @@ function Picker:can_select_row(row)
   if self.sorting_strategy == 'ascending' then
     return row <= self.manager:num_results()
   else
-    return row <= self.max_results and row >= self.max_results - self.manager:num_results()
+    return row >= 0 and row <= self.max_results and row >= self.max_results - self.manager:num_results()
   end
 end
 
@@ -453,7 +448,9 @@ function Picker:find()
 
   self.prompt_bufnr = prompt_bufnr
 
-  local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
+  local preview_border = preview_opts and preview_opts.border
+  self.preview_border = preview_border
+  local preview_border_win = (preview_border and preview_border.win_id) and preview_border.win_id
 
   state.set_status(prompt_bufnr, setmetatable({
     prompt_bufnr = prompt_bufnr,
@@ -476,7 +473,7 @@ function Picker:find()
   pcall(a.nvim_buf_set_option, prompt_bufnr, 'filetype', 'TelescopePrompt')
 
   if self.default_text then
-    vim.api.nvim_buf_set_lines(prompt_bufnr, 0, 1, false, {self.default_text})
+    self:set_prompt(self.default_text)
   end
 
   if self.initial_mode == "insert" then
@@ -491,6 +488,67 @@ function Picker:hide_preview()
   -- 2. Resize prompt & results windows accordingly
 end
 
+-- TODO: update multi-select with the correct tag name when available
+--- A simple interface to remove an entry from the results window without
+--- closing telescope. This either deletes the current selection or all the
+--- selections made using multi-select. It can be used to define actions
+--- such as deleting buffers or files.
+---
+--- Example usage:
+--- <pre>
+--- actions.delete_something = function(prompt_bufnr)
+---    local current_picker = action_state.get_current_picker(prompt_bufnr)
+---    current_picker:delete_selection(function(selection)
+---      -- delete the selection outside of telescope
+---    end)
+--- end
+--- </pre>
+---
+--- Example usage in telescope:
+---   - `actions.delete_buffer()`
+---@param delete_cb function: called with each deleted selection
+function Picker:delete_selection(delete_cb)
+  vim.validate { delete_cb = { delete_cb, "f" } }
+  local original_selection_strategy = self.selection_strategy
+  self.selection_strategy = "row"
+
+  local delete_selections = self._multi:get()
+  local used_multi_select = true
+  if vim.tbl_isempty(delete_selections) then
+    table.insert(delete_selections, self:get_selection())
+    used_multi_select = false
+  end
+
+  local selection_index = {}
+  for result_index, result_entry in ipairs(self.finder.results) do
+    if vim.tbl_contains(delete_selections, result_entry) then
+      table.insert(selection_index, result_index)
+    end
+  end
+
+  -- Sort in reverse order as removing an entry from the table shifts down the
+  -- other elements to close the hole.
+  table.sort(selection_index, function(x, y) return x > y end)
+  for _, index in ipairs(selection_index) do
+    local selection = table.remove(self.finder.results, index)
+    delete_cb(selection)
+  end
+
+  if used_multi_select then
+    self._multi = MultiSelect:new()
+  end
+
+  self:refresh()
+  vim.schedule(function()
+    self.selection_strategy = original_selection_strategy
+  end)
+end
+
+function Picker:set_prompt(str)
+  -- TODO(conni2461): As soon as prompt_buffers are fix use this:
+  -- vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, 1, false, { str })
+  vim.api.nvim_feedkeys(str, 'n', false)
+end
 
 function Picker.close_windows(status)
   local prompt_win = status.prompt_win
@@ -639,16 +697,18 @@ function Picker:refresh(finder, opts)
   end
   if opts.reset_prompt then self:reset_prompt() end
 
-  self.finder:close()
   if finder then
-      self.finder = finder
-      self._multi = MultiSelect:new()
+    self.finder:close()
+    self.finder = finder
+    self._multi = MultiSelect:new()
   end
 
   self.__on_lines(nil, nil, nil, 0, 1)
 end
 
 function Picker:set_selection(row)
+  if not self.manager then return end
+
   row = self.scroller(self.max_results, self.manager:num_results(), row)
 
   if not self:can_select_row(row) then
@@ -758,7 +818,29 @@ function Picker:refresh_previewer()
       self._selection_entry,
       status
     )
+    if self.preview_border then
+      if config.values.dynamic_preview_title == true then
+        self.preview_border:change_title(self.previewer:dynamic_title(self._selection_entry))
+      else
+        self.preview_border:change_title(self.previewer:title())
+      end
+    end
   end
+end
+
+function Picker:cycle_previewers(next)
+  local size = #self.all_previewers
+  if size == 1 then return end
+
+  self.current_previewer_index = self.current_previewer_index + next
+  if self.current_previewer_index > size then
+    self.current_previewer_index = 1
+  elseif self.current_previewer_index < 1 then
+    self.current_previewer_index = size
+  end
+
+  self.previewer = self.all_previewers[self.current_previewer_index]
+  self:refresh_previewer()
 end
 
 function Picker:entry_adder(index, entry, _, insert)
@@ -988,6 +1070,12 @@ function Picker:get_result_completor(results_bufnr, find_id, prompt, status_upda
       end
     elseif selection_strategy == 'reset' then
       if self.default_selection_index ~= nil then
+        self:set_selection(self:get_row(self.default_selection_index))
+      else
+        self:set_selection(self:get_reset_row())
+      end
+    elseif selection_strategy == 'closest' then
+      if prompt == "" and self.default_selection_index ~= nil then
         self:set_selection(self:get_row(self.default_selection_index))
       else
         self:set_selection(self:get_reset_row())

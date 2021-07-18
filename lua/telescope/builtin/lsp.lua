@@ -5,6 +5,7 @@ local make_entry = require('telescope.make_entry')
 local pickers = require('telescope.pickers')
 local entry_display = require('telescope.pickers.entry_display')
 local utils = require('telescope.utils')
+local strings = require('plenary.strings')
 local a = require('plenary.async_lib')
 local async, await = a.async, a.await
 local channel = a.util.channel
@@ -14,8 +15,6 @@ local conf = require('telescope.config').values
 local lsp = {}
 
 lsp.references = function(opts)
-  opts.shorten_path = utils.get_default(opts.shorten_path, true)
-
   local params = vim.lsp.util.make_position_params()
   params.context = { includeDeclaration = true }
 
@@ -107,6 +106,12 @@ lsp.document_symbols = function(opts)
     vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
   end
 
+  locations = utils.filter_symbols(locations, opts)
+  if locations == nil then
+    -- error message already printed in `utils.filter_symbols`
+    return
+  end
+
   if vim.tbl_isempty(locations) then
     return
   end
@@ -166,7 +171,7 @@ lsp.code_actions = function(opts)
         }
 
         for key, value in pairs(widths) do
-          widths[key] = math.max(value, utils.strdisplaywidth(entry[key]))
+          widths[key] = math.max(value, strings.strdisplaywidth(entry[key]))
         end
 
         table.insert(results, entry)
@@ -243,8 +248,6 @@ lsp.range_code_actions = function(opts)
 end
 
 lsp.workspace_symbols = function(opts)
-  opts.shorten_path = utils.get_default(opts.shorten_path, true)
-
   local params = {query = opts.query or ''}
   local results_lsp, err = vim.lsp.buf_request_sync(0, "workspace/symbol", params, opts.timeout or 10000)
   if err then
@@ -263,6 +266,12 @@ lsp.workspace_symbols = function(opts)
     end
   end
 
+  locations = utils.filter_symbols(locations, opts)
+  if locations == nil then
+    -- error message already printed in `utils.filter_symbols`
+    return
+  end
+
   if vim.tbl_isempty(locations) then
     print("No results from workspace/symbol. Maybe try a different query: " ..
       "Telescope lsp_workspace_symbols query=example")
@@ -270,7 +279,6 @@ lsp.workspace_symbols = function(opts)
   end
 
   opts.ignore_filename = utils.get_default(opts.ignore_filename, false)
-  opts.hide_filename = utils.get_default(opts.hide_filename, false)
 
   pickers.new(opts, {
     prompt_title = 'LSP Workspace Symbols',
@@ -324,7 +332,7 @@ lsp.diagnostics = function(opts)
     return
   end
 
-  opts.hide_filename = utils.get_default(opts.hide_filename, true)
+  opts.path_display = utils.get_default(opts.path_display, 'hidden')
   pickers.new(opts, {
     prompt_title = 'LSP Document Diagnostics',
     finder = finders.new_table {
@@ -341,7 +349,7 @@ end
 
 lsp.workspace_diagnostics = function(opts)
   opts = utils.get_default(opts, {})
-  opts.hide_filename = utils.get_default(opts.hide_filename, false)
+  opts.path_display = utils.get_default(opts.path_display, {})
   opts.prompt_title = 'LSP Workspace Diagnostics'
   opts.get_all = true
   lsp.diagnostics(opts)
