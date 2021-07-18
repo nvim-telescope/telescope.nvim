@@ -650,6 +650,13 @@ layout_strategies.current_buffer = make_documented_layout('current_buffer', {
   }
 end)
 
+layout_strategies.bottom_pane = function(self, max_columns, max_lines)
+  local layout_config = validate_layout_config(self.layout_config or {}, {
+    height = "The height of the layout",
+    mirror = "Flip the default locations of preview/results windows (requires use of previewer)",
+  })
+end
+
 --- Bottom pane can be used to create layouts similar to "ivy".
 ---
 --- For an easy ivy configuration, see |themes.get_ivy()|
@@ -672,29 +679,45 @@ layout_strategies.bottom_pane = make_documented_layout('bottom_pane', vim.tbl_ex
     prompt_width = prompt_width - 2
   end
 
-  local result_width
+  local left_side_width
   if self.previewer then
-    result_width = math.floor(prompt_width / 2)
+    left_side_width = math.floor(prompt_width / 2)
 
-    local base_col = result_width + 1
+    local base_col
+    if layout_config.mirror then
+      base_col = 0
+    else
+      base_col = left_side_width + 1
+    end
+
     if has_border then
       preview = vim.tbl_deep_extend("force", {
         col = base_col + 2,
         line = max_lines - result_height + 1,
-        width = prompt_width - result_width - 2,
+        width = prompt_width - left_side_width - 2,
         height = result_height - 1,
       }, preview)
     else
       preview = vim.tbl_deep_extend("force", {
         col = base_col,
         line = max_lines - result_height,
-        width = prompt_width - result_width,
+        width = prompt_width - left_side_width,
         height = result_height,
       }, preview)
     end
   else
     preview = nil
-    result_width = prompt_width
+    left_side_width = prompt_width
+  end
+
+  local result_col
+  if layout_config.mirror and self.previewer then
+    result_col = left_side_width + 2
+    if has_border then
+      left_side_width = left_side_width - 2
+    end
+  else
+    result_col = col
   end
 
   return {
@@ -707,9 +730,9 @@ layout_strategies.bottom_pane = make_documented_layout('bottom_pane', vim.tbl_ex
     }),
     results = vim.tbl_deep_extend("force", results, {
       line = max_lines - result_height,
-      col = col,
+      col = result_col,
       height = result_height,
-      width = result_width,
+      width = left_side_width,
     }),
   }
 end)
