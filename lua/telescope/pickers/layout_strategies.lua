@@ -650,13 +650,6 @@ layout_strategies.current_buffer = make_documented_layout('current_buffer', {
   }
 end)
 
-layout_strategies.bottom_pane = function(self, max_columns, max_lines)
-  local layout_config = validate_layout_config(self.layout_config or {}, {
-    height = "The height of the layout",
-    mirror = "Flip the default locations of preview/results windows (requires use of previewer)",
-  })
-end
-
 --- Bottom pane can be used to create layouts similar to "ivy".
 ---
 --- For an easy ivy configuration, see |themes.get_ivy()|
