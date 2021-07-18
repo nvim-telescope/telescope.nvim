@@ -304,6 +304,7 @@ files.file_browser = function(opts)
       return function(line)
         local tbl = {line}
         tbl.ordinal = Path:new(line):make_relative(opts.cwd)
+        tbl.filename = Path:new(line):absolute()
         return setmetatable(tbl, mt)
       end
     end
