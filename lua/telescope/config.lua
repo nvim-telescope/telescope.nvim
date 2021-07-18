@@ -282,9 +282,7 @@ local telescope_defaults = {
     { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
   },
 
-  smart_mask = { false },
-
-  smart_mask_args = {
+  smart_mask = {
       {
           ["lua"] = "-tlua",
       }, [[
@@ -297,12 +295,15 @@ local telescope_defaults = {
 
       Example (using ripgrep (rg) as the grep program):
 
-        smart_mask_args = {
+        smart_mask = {
             ["lua"] = "-tlua",
             ["cs"]  = "-tcs",
             ["cpp"] = "-tcpp",
             ["h"]   = "-tcpp"
         }
+
+      To temporarily invoke live_grep with smart_mask disabled:
+        :lua require('telescope.builtin').live_grep({ smart_mask = {} })
       ]],
   },
 

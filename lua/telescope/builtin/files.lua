@@ -81,11 +81,7 @@ files.live_grep = function(opts)
 
       local extraArgs = {}
       local smart_mask = utils.get_default(opts.smart_mask, conf.smart_mask)
-
-      if (smart_mask == true and filetype ~= '') then
-          local smart_mask_args = utils.get_default(opts.smart_mask_args, conf.smart_mask_args)
-          table.insert(extraArgs, smart_mask_args[filetype])
-      end
+      table.insert(extraArgs, smart_mask[filetype])
 
       return flatten { vimgrep_arguments, extraArgs, prompt, search_list }
     end,
