@@ -374,10 +374,6 @@ layout_strategies.center = make_documented_layout("center", vim.tbl_extend("erro
   -- This sets the number of results displayed
   local res_height_opt = layout_config.height
   local res_height = resolve.resolve_height(res_height_opt)(self, max_columns, max_lines)
-  if type(res_height_opt) ~= "function"
-    and (type(res_height_opt) ~= "number" or res_height_opt < 1) then
-    res_height = res_height - 2
-  end
 
   local max_results = (res_height > max_lines and max_lines or res_height)
   local max_width = (width > max_columns and max_columns or width)
