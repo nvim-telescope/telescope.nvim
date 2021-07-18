@@ -245,10 +245,17 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
     preview_cutoff = "When columns are less than this value, the preview will be disabled",
     prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
 }), function(self, max_columns, max_lines, layout_config)
+
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
+
+  local tbln = (vim.o.showtabline == 2)
+    or (vim.o.showtabline == 1 and #vim.api.nvim_list_tabpages() > 1)
+  if tbln then
+    max_lines = max_lines - 1
+  end
 
   local width_opt = layout_config.width
   local picker_width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
@@ -306,6 +313,12 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
     error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
   end
 
+  if tbln then
+    prompt.line = prompt.line + 1
+    results.line = results.line + 1
+    preview.line = preview.line + 1
+  end
+
   return {
     preview = self.previewer and preview.width > 0 and preview,
     results = results,
@@ -342,10 +355,17 @@ end)
 layout_strategies.center = make_documented_layout("center", vim.tbl_extend("error", shared_options, {
   preview_cutoff = "When lines are less than this value, the preview will be disabled",
 }), function(self, max_columns, max_lines,layout_config)
+
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
+
+  local tbln = (vim.o.showtabline == 2)
+    or (vim.o.showtabline == 1 and #vim.api.nvim_list_tabpages() > 1)
+  if tbln then
+    max_lines = max_lines - 1
+  end
 
   -- This sets the width for the whole layout
   local width_opt = layout_config.width
@@ -354,6 +374,10 @@ layout_strategies.center = make_documented_layout("center", vim.tbl_extend("erro
   -- This sets the number of results displayed
   local res_height_opt = layout_config.height
   local res_height = resolve.resolve_height(res_height_opt)(self, max_columns, max_lines)
+  if type(res_height_opt) ~= "function"
+    and (type(res_height_opt) ~= "number" or res_height_opt < 1) then
+    res_height = res_height - 2
+  end
 
   local max_results = (res_height > max_lines and max_lines or res_height)
   local max_width = (width > max_columns and max_columns or width)
@@ -383,6 +407,12 @@ layout_strategies.center = make_documented_layout("center", vim.tbl_extend("erro
   results.col = math.ceil((max_columns / 2) - (width / 2) - bs)
   prompt.col = results.col
   preview.col = results.col
+
+  if tbln then
+    prompt.line = prompt.line + 1
+    results.line = results.line + 1
+    preview.line = preview.line + 1
+  end
 
   return {
     preview = self.previewer and preview.height > 0 and preview,
@@ -416,6 +446,7 @@ layout_strategies.cursor = make_documented_layout("cursor", vim.tbl_extend("erro
     preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|", },
     preview_cutoff = "When columns are less than this value, the preview will be disabled",
 }), function(self, max_columns, max_lines, layout_config)
+
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
@@ -512,10 +543,17 @@ layout_strategies.vertical = make_documented_layout("vertical", vim.tbl_extend("
   preview_height = { "Change the height of Telescope's preview window", "See |resolver.resolve_height()|" },
   prompt_position = { "(unimplemented, but we plan on supporting)" },
 }), function(self, max_columns, max_lines, layout_config)
+
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
+
+  local tbln = (vim.o.showtabline == 2)
+    or (vim.o.showtabline == 1 and #vim.api.nvim_list_tabpages() > 1)
+  if tbln then
+    max_lines = max_lines - 1
+  end
 
   local width_opt = layout_config.width
   local picker_width = resolve.resolve_width(width_opt)(self,max_columns,max_lines)
@@ -561,6 +599,12 @@ layout_strategies.vertical = make_documented_layout("vertical", vim.tbl_extend("
   else
     results.line = height_padding
     prompt.line = results.line + results.height + 2
+  end
+
+  if tbln then
+    prompt.line = prompt.line + 1
+    results.line = results.line + 1
+    preview.line = preview.line + 1
   end
 
   return {
