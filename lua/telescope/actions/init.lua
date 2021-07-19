@@ -546,7 +546,7 @@ local git_reset_branch = function(prompt_bufnr, mode)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
 
-  local confirmation = vim.fn.input('Do you really wanna ' .. mode .. ' reset to commit ' .. selection.value .. '? [Y/n] ')
+  local confirmation = vim.fn.input('Do you really wanna ' .. mode .. ' reset to ' .. selection.value .. '? [Y/n] ')
   if confirmation ~= '' and string.lower(confirmation) ~= 'y' then return end
 
   actions.close(prompt_bufnr)
