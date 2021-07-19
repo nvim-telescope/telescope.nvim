@@ -323,7 +323,7 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
     preview = self.previewer and preview.width > 0 and preview,
     results = results,
     prompt = prompt
-}
+  }
 end)
 
 --- Centered layout with a combined block of the prompt
@@ -600,7 +600,7 @@ layout_strategies.vertical = make_documented_layout("vertical", vim.tbl_extend("
   if tbln then
     prompt.line = prompt.line + 1
     results.line = results.line + 1
-    preview.line = preview.line + 1
+    preview.line = preview.line ~= nil and preview.line + 1
   end
 
   return {
