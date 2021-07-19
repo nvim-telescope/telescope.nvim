@@ -265,11 +265,11 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
 
   local width_opt = layout_config.width
   local picker_width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
-  local width_padding = math.floor((max_columns - picker_width)/2)
 
   local height_opt = layout_config.height
   local picker_height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
-  local height_padding = math.floor((max_lines - picker_height)/2)
+
+  local bs = get_border_size(self)
 
   if self.previewer and max_columns >= layout_config.preview_cutoff then
     preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, cols)
@@ -285,36 +285,37 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
     preview.width = 0
   end
 
-  results.width = picker_width - preview.width
-  prompt.width = picker_width - preview.width
+  results.width = picker_width - preview.width - 1 - 3*bs
+  prompt.width = picker_width - preview.width - 1 - 3*bs
 
   prompt.height = 1
-  results.height = picker_height - prompt.height - 2
+  results.height = picker_height - prompt.height - 1 - 3*bs
 
   if self.previewer then
-    preview.height = picker_height
+    preview.height = picker_height - 2*bs
   else
     preview.height = 0
   end
 
+  local width_padding = math.floor((max_columns - picker_width)/2)
   -- Default value is false, to use the normal horizontal layout
   if not layout_config.mirror then
-    results.col = width_padding
-    prompt.col = width_padding
-    preview.col = results.col + results.width + 2
+    results.col = width_padding + bs
+    prompt.col = results.col
+    preview.col = results.col + results.width + 1 + bs
   else
-    preview.col = width_padding
-    prompt.col = preview.col + preview.width + 2
-    results.col = preview.col + preview.width + 2
+    preview.col = width_padding + bs
+    prompt.col = preview.col + preview.width + 1 + bs
+    results.col = preview.col + preview.width + 1 + bs
   end
 
-  preview.line = height_padding
+  preview.line = math.floor((max_lines - picker_height)/2) + bs
   if layout_config.prompt_position == "top" then
-    prompt.line = height_padding
-    results.line = prompt.line + prompt.height + 2
+    prompt.line = preview.line
+    results.line = prompt.line + prompt.height + 1 + bs
   elseif layout_config.prompt_position == "bottom" then
-    results.line = height_padding
-    prompt.line = results.line + results.height + 2
+    results.line = preview.line
+    prompt.line = results.line + results.height + 1 + bs
   else
     error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
   end
@@ -457,24 +458,31 @@ layout_strategies.cursor = make_documented_layout("cursor", vim.tbl_extend("erro
   local width_opt = layout_config.width
   local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
 
-  local max_width = (width > max_columns and max_columns or width)
-
   local bs = get_border_size(self)
+
+  -- Handle oversized height
+  height = math.min(height, max_lines - 1 - 3*bs)
 
   prompt.height = 1
   results.height = height
   preview.height = results.height + prompt.height + bs
 
   if self.previewer and max_columns >= layout_config.preview_cutoff then
-    preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, cols)
+    -- Handle oversized width (with preview)
+    width = math.min(width, max_columns - 4*bs)
+
+    preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, _)
       -- By default, previewer takes 2/3 of the layout
-      return 2 * math.floor(max_width / 3)
-    end))(self, max_width, max_lines)
+      return 2 * math.floor(width / 3)
+    end))(self, width, max_lines)
   else
+    -- Handle oversize width (without preview)
+    width = math.min(width, max_columns)
+
     preview.width = 0
   end
 
-  prompt.width = max_width - preview.width
+  prompt.width = width - preview.width
   results.width = prompt.width
 
   local total_height = preview.height + (bs*2)
