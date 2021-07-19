@@ -542,17 +542,15 @@ actions.git_rebase_branch = function(prompt_bufnr)
   end
 end
 
---- Reset to selected git commit
----@param prompt_bufnr number: The prompt bufnr
-actions.git_reset_branch = function(prompt_bufnr)
+local git_reset_branch = function(prompt_bufnr, mode)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
 
-  local confirmation = vim.fn.input('Do you really wanna reset to commit ' .. selection.value .. '? [Y/n] ')
+  local confirmation = vim.fn.input('Do you really wanna ' .. mode .. ' reset to commit ' .. selection.value .. '? [Y/n] ')
   if confirmation ~= '' and string.lower(confirmation) ~= 'y' then return end
 
   actions.close(prompt_bufnr)
-  local _, ret, stderr = utils.get_os_command_output({ 'git', 'reset', selection.value }, cwd)
+  local _, ret, stderr = utils.get_os_command_output({ 'git', 'reset', mode, selection.value }, cwd)
   if ret == 0 then
     print("Reset to: " .. selection.value)
   else
@@ -562,6 +560,24 @@ actions.git_reset_branch = function(prompt_bufnr)
       table.concat(stderr, '  ')
     ))
   end
+end
+
+--- Reset to selected git commit using mixed mode
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_reset_mixed = function(prompt_bufnr)
+  git_reset_branch(prompt_bufnr, '--mixed')
+end
+
+--- Reset to selected git commit using soft mode
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_reset_soft = function(prompt_bufnr)
+  git_reset_branch(prompt_bufnr, '--soft')
+end
+
+--- Reset to selected git commit using hard mode
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_reset_hard = function(prompt_bufnr)
+  git_reset_branch(prompt_bufnr, '--hard')
 end
 
 actions.git_checkout_current_buffer = function(prompt_bufnr)
