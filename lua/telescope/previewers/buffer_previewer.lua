@@ -225,7 +225,9 @@ previewers.new_buffer_previewer = function(opts)
       set_bufnr(self, bufnr)
 
       vim.schedule(function()
-        vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+        if vim.api.nvim_buf_is_valid(bufnr) then
+          vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+        end
       end)
 
       -- TODO(conni2461): We only have to set options once. Right?

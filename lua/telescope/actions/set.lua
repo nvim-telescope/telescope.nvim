@@ -148,11 +148,18 @@ end
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_previewer = function (prompt_bufnr, direction)
+  local previewer = action_state.get_current_picker(prompt_bufnr).previewer
+
+  -- Check if we actually have a previewer
+  if (type(previewer) ~= "table" or previewer.scroll_fn == nil) then
+    return
+  end
+
   local status = state.get_status(prompt_bufnr)
   local default_speed = vim.api.nvim_win_get_height(status.preview_win) / 2
   local speed = status.picker.layout_config.scroll_speed or default_speed
 
-  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(math.floor(speed * direction))
+  previewer:scroll_fn(math.floor(speed * direction))
 end
 
 -- ==================================================
