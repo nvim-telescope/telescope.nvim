@@ -283,9 +283,7 @@ local telescope_defaults = {
   },
 
   smart_mask = {
-      {
-          ["lua"] = "-tlua",
-      }, [[
+      {}, [[
       Lookup table for live grep smart masking.
 
       Format is:
