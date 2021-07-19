@@ -1482,7 +1482,7 @@ Functions to be used to determine the current state of telescope.
 Generally used from within other |telescope.actions|
 
 action_state.get_selected_entry()          *action_state.get_selected_entry()*
-    Get the current entry
+    Get the user-overriden or current entry
 
 
 
@@ -1555,29 +1555,56 @@ action_set.scroll_previewer({prompt_bufnr}, {direction})*action_set.scroll_previ
 ================================================================================
                                                        *telescope.actions.utils*
 
-Utilities to wrap functions around picker selections and entries.
+Utilities to wrap actions and functions around picker selections and entries.
+Generally used with other |telescope.actions| or custom functions that lever
+entries or selections.
+The functions without the `_` prefix are intended to be mapped at setup,
+whereas `functions` with the `_` prefix are intended to be used in custom
+actions. Refer to the respective function documentation for examples.
+The functions that take `action(s)` as input typically are |telescope.actions|
+that lever the `action_state.selected_entry`. In particular,
+`action_utils.with_{entries, selection, selections}` intermittently override
+the `selected_entry` to perform the |telescope.actions| accordingly. More
+generally, `actions` are functions are akin to the below example
+  local action_state = require "telescope.actions.state"
+  function(prompt_bufnr)
+    local entry = action_state.get_selected_entry()
+    -- lever entry for function
+    ...
+  end
 
-Generally used from within other |telescope.actions|
-
-utils.map_entries({prompt_bufnr}, {f})                   *utils.map_entries()*
-    Apply `f` to the entries of the current picker.
+action_utils._map_entries({prompt_bufnr}, {f})   *action_utils._map_entries()*
+    Apply `f` to the entries of the current picker and prompt.
+    - `f` takes (entry, index, row) as arguments.
     - Notes:
       - Mapped entries may include results not visible in the results popup.
       - Indices are 1-indexed, whereas rows are 0-indexed.
     - Warning: `map_entries` has no return value.
-      - The below example showcases how to collect results
-    Usage:
-        local action_state = require "telescope.actions.state"
-        local action_utils = require "telescope.actions.utils"
-        function entry_value_by_row()
-          local prompt_bufnr = vim.api.nvim_get_current_buf()
-          local current_picker = action_state.get_current_picker(prompt_bufnr)
-          local results = {}
-            action_utils.map_entries(prompt_bufnr, function(entry, index, row)
-            results[row] = entry.value
-          end)
-          return results
-        end
+      - The below example showcase how to collect results.
+    Example Usage: collect entries in key-value table
+      local action_state = require "telescope.actions.state"
+      local action_utils = require "telescope.actions.utils"
+      require("telescope").setup {
+        defaults = {
+          mappings = {
+            i = {
+              -- with `action_utils._map_entries`
+              ['<C-e>'] = function(prompt_bufnr)
+                  local results = {}
+                  action_utils._with_entries(prompt_bufnr, function(entry, entry_index)
+                  results[entry_index] = entry
+                  return results
+                end)
+              end,
+              -- with `action_utils.map_entries`
+              ['<C-e>'] = action_utils.with_entries(function(entry, entry_index)
+                  results[entry_index] = entry
+                  return results
+                end)
+            },
+          },
+        },
+      }
 
 
     Parameters: ~
@@ -1587,32 +1614,173 @@ utils.map_entries({prompt_bufnr}, {f})                   *utils.map_entries()*
                                    arguments
 
 
-utils.map_selections({prompt_bufnr}, {f})             *utils.map_selections()*
+action_utils.map_entries()                        *action_utils.map_entries()*
+    Apply `f` to the entries of the current picker and prompt. See
+    |action_utils._map_entries| for further information.
+    - `f` takes (entry, index, row) as arguments.
+
+
+
+action_utils._map_selections({prompt_bufnr}, {f})*action_utils._map_selections()*
     Apply `f` to the multi selections of the current picker and return a table
     of mapped selections.
+    - `f` takes (selection, selection_index) as arguments
     - Notes:
       - Mapped selections may include results not visible in the results popup.
       - Selected entries are returned in order of their selection.
     - Warning: `map_selections` has no return value.
       - The below example showcases how to collect results
-    Usage:
-        local action_state = require "telescope.actions.state"
-        local action_utils = require "telescope.actions.utils"
-        function selection_by_index()
-          local prompt_bufnr = vim.api.nvim_get_current_buf()
-          local current_picker = action_state.get_current_picker(prompt_bufnr)
-          local results = {}
-            action_utils.map_selections(prompt_bufnr, function(entry, index)
-            results[index] = entry.value
-          end)
-          return results
-        end
+    Example Usage: collect selections in key-value table
+      local actions = require "telescope.actions"
+      local action_utils = require "telescope.actions.utils"
+      require("telescope").setup {
+        defaults = {
+          mappings = {
+            i = {
+            -- Collect selections
+              -- with `action_utils._map_selections`
+              ['<C-m>'] = function(prompt_bufnr)
+                  local results = {}
+                  action_utils._map_selections(prompt_bufnr, function(selection, selection_index)
+                  results[selection_index] = selection
+                  return results
+                  end),
+                end
+              -- with `action_utils.map_selections`
+              ['<C-m>'] = action_utils.with_selections(function(selection, selection_index)
+                  results[selection_index] = selection
+                  return results
+                end),
+            },
+          },
+        },
+      }
 
 
     Parameters: ~
         {prompt_bufnr} (number)    The prompt bufnr
         {f}            (function)  Function to map onto selection of picker
-                                   that takes (selection) as a viable argument
+                                   that takes (selection, selection_index) as
+                                   arguments
+
+
+action_utils.map_selections({f})               *action_utils.map_selections()*
+    Apply `f` to the multi selections of the current picker and return a table
+    of mapped selections. See |action_utils._map_selections| for further
+    information.
+    - `f` takes (selection, selection_index) as arguments
+
+
+    Parameters: ~
+        {f} (function)  Function to map onto selection of picker that takes
+                        (selection, selection_index) as arguments
+
+
+action_utils._with_entries({f})                 *action_utils._with_entries()*
+    Run an `action` from |telescope.actions| on entries of the current picker
+    and prompt.
+    - Notes:
+      - Mapped entries may include results not visible in the results popup.
+      - See |telescope.action.utils| for information on what functions
+        constitute `actions`.
+    Example Usage: git_staging_toggle
+      local actions = require "telescope.actions"
+      local action_utils = require "telescope.actions.utils"
+      require("telescope").setup {
+        defaults = {
+          pickers = {
+            git_status = {
+              mappings = {
+                i = {
+                -- Open selections vertically
+                  -- with `action_utils._with_entries`
+                  ['<S-Tab>'] = function(prompt_bufnr)
+                    action_utils.with_entries(prompt_bufnr, actions.git_staging_toggle)
+                    end,
+                  -- with `action_utils.with_entries`
+                  ['<S-Tab>'] = action_utils.with_entries(actions.git_staging_toggle)
+                },
+              },
+            },
+          },
+        }
+      }
+
+
+    Parameters: ~
+        {f} (function)  apply action onto all results
+
+
+action_utils.with_entries({f})                   *action_utils.with_entries()*
+    Run an `action` from |telescope.actions| on the entries of the current
+    picker and prompt.
+    - Note: see |action_utils._with_entries| for further information.
+
+
+    Parameters: ~
+        {f} (function)  apply action onto all results
+
+
+action_utils._with_selections({prompt_bufnr}, {f})*action_utils._with_selections()*
+    Run an `action` from |telescope.actions| on the multi selection.
+    - Note: see |telescope.action.utils| for information on what functions
+      constitute `actions`.
+    Example Usage: open selections vertically
+      local actions = require "telescope.actions"
+      local action_utils = require "telescope.actions.utils"
+      require("telescope").setup {
+        defaults = {
+          mappings = {
+            i = {
+            -- Open selections vertically
+              -- with `action_utils._with_selections`
+              ['<C-v><C-v>'] = function(prompt_bufnr)
+                action_utils.with_selections(prompt_bufnr, actions.select_vertical)
+                end,
+              -- with `action_utils.with_selections`
+              ['<C-v><C-v>'] = action_utils.with_selections(actions.select_vertical)
+            },
+          },
+        },
+      }
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)    The prompt bufnr
+        {f}            (function)  apply action onto entries of multi selection
+
+
+action_utils.with_selections({f})             *action_utils.with_selections()*
+    Run an `action` from |telescope.actions| on the multi selection.
+    - Note: see |telescope.action.utils| for specification on what functions
+      constitute `actions`.
+
+
+    Parameters: ~
+        {f} (function)  apply action onto entries of multi selection
+
+
+action_utils.cycle({actions})                           *action_utils.cycle()*
+    Apply `actions` to multi selections or entries in cycle, on
+    entry-after-entry basis. Commonly used in combination with
+    `action_utils.with_{selections, entries}`.
+    Example Usage: open selections alternatingly vertically and horizontally
+      local actions = require "telescope.actions"
+      local action_utils = require "telescope.actions.utils"
+      require("telescope").setup {
+        defaults = {
+          mappings = {
+            i = {
+              ['<C-b>'] = action_utils.with_selections(
+                            action_utils.cycle({actions.select_vertical, actions.select_horizontal})
+            },
+          },
+        },
+      }
+
+
+    Parameters: ~
+        {actions} (table)  table of actions to apply iteratively
 
 
 
