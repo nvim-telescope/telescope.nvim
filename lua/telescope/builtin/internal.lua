@@ -593,6 +593,11 @@ internal.buffers = function(opts)
     return true
   end, vim.api.nvim_list_bufs())
   if not next(bufnrs) then return end
+  if opts.sort_mru then
+    table.sort(bufnrs, function(a, b)
+      return vim.fn.getbufinfo(a)[1].lastused > vim.fn.getbufinfo(b)[1].lastused
+    end)
+  end
 
   local buffers = {}
   local default_selection_idx = 1
