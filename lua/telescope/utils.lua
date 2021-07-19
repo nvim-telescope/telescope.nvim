@@ -23,23 +23,6 @@ utils.get_default = function(x, default)
   return utils.if_nil(x, default, x)
 end
 
--- get variables of level scope
--- function calling the debug library has level 1, function that called it has level 2, etc
-utils.locals = function(level)
-  local variables = {}
-  local idx = 1
-  while true do
-      local ln, lv = debug.getlocal(level, idx)
-      if ln ~= nil then
-          variables[ln] = lv
-      else
-          break
-      end
-      idx = 1 + idx
-  end
-  return variables
-end
-
 utils.get_lazy_default = function(x, defaulter, ...)
   if x == nil then
     return defaulter(...)
