@@ -248,11 +248,17 @@ files.file_browser = function(opts)
 
   opts.depth = opts.depth or 1
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
-  opts.new_finder = opts.new_finder or function(path)
-    opts.cwd = path
+  opts.new_finder = opts.new_finder or function(o)
+    opts.cwd = o.path
+    opts.hidden = o.hidden
     local data = {}
 
-    scan.scan_dir(path, {
+    if not vim.loop.fs_access(o.path, "X") then
+      print("You don't have access to this directory")
+      return nil
+    end
+
+    scan.scan_dir(o.path, {
       hidden = opts.hidden or false,
       add_dirs = true,
       depth = opts.depth,
@@ -313,17 +319,19 @@ files.file_browser = function(opts)
 
   pickers.new(opts, {
     prompt_title = 'File Browser',
-    finder = opts.new_finder(opts.cwd),
+    finder = opts.new_finder({ path = opts.cwd }),
     previewer = conf.file_previewer(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function(prompt_bufnr, map)
       action_set.select:replace_if(function()
         return is_dir(action_state.get_selected_entry().path)
       end, function()
-        local new_cwd = vim.fn.expand(action_state.get_selected_entry().path:sub(1, -2))
+        local new_cwd = vim.loop.fs_realpath(action_state.get_selected_entry().path)
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         current_picker.cwd = new_cwd
-        current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
+        current_picker:refresh(opts.new_finder({
+          path = new_cwd
+        }), { reset_prompt = true })
       end)
 
       local create_new_file = function()
@@ -343,15 +351,148 @@ files.file_browser = function(opts)
           Path:new(fpath):touch({ parents = true })
           vim.cmd(string.format(':e %s', fpath))
         else
+          -- TODO(conni2461): I think when doing realpath we don't have to worry about :sub(1, -2) anymore
           Path:new(fpath:sub(1, -2)):mkdir({ parents = true })
-          local new_cwd = vim.fn.expand(fpath)
+          local new_cwd = vim.loop.fs_realpath(fpath)
           current_picker.cwd = new_cwd
-          current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
+          current_picker:refresh(opts.new_finder({
+            path = new_cwd
+          }), { reset_prompt = true })
         end
+      end
+
+      local get_marked_files = function ()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local multi_selected = current_picker:get_multi_selection()
+        local entries
+
+        if vim.tbl_isempty(multi_selected) then
+          entries = { action_state.get_selected_entry() }
+        else
+          entries = multi_selected
+        end
+
+        local selected = vim.tbl_map(function(entry)
+          return Path:new(entry[1])
+        end, entries)
+
+        return selected
+      end
+
+      local rename_file = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local old_name = Path:new(action_state.get_selected_entry()[1])
+
+        if old_name.filename == '../' then
+          print('Please select a file!')
+          return
+        end
+
+        local new_name = vim.fn.input("Insert a new name: ", old_name:make_relative())
+
+        old_name:rename({ new_name = new_name })
+        current_picker:refresh(opts.new_finder({
+          path = current_picker.cwd,
+        }), { reset_prompt = true })
+        current_picker:reset_multi_selection()
+      end
+
+      local move_file = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+
+        for _, file in ipairs(get_marked_files()) do
+          local filename = file.filename:sub(#file:parents() + 2)
+
+          file:rename({
+            new_name = Path:new({ current_picker.cwd, filename }).filename
+          })
+        end
+
+        print("The file has been moved!")
+        current_picker:refresh(opts.new_finder({
+          path = current_picker.cwd,
+        }), { reset_prompt = true })
+        current_picker:reset_multi_selection()
+      end
+
+      local copy_file = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+
+        for _, file in ipairs(get_marked_files()) do
+          local filename = file.filename:sub(#file:parents() + 2)
+
+          file:copy({
+            destination = Path:new({
+              current_picker.cwd, filename
+            }).filename
+          })
+        end
+
+        print("The file has been copied!")
+        current_picker:refresh(opts.new_finder({
+          path = current_picker.cwd,
+        }), { reset_prompt = true })
+        current_picker:reset_multi_selection()
+      end
+
+      local remove_file = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local marked_files = get_marked_files()
+
+        print("These files are going to be deleted:")
+        for _, file in ipairs(marked_files) do
+          print(file.filename)
+        end
+
+        local confirm = vim.fn.confirm("You're about to perform a destructive action."
+                                     .." Proceed? [y/N]: ", "&Yes\n&No", "No")
+
+        if confirm == 1 then
+          current_picker:delete_selection(function(entry)
+            local p = Path:new(entry[1])
+            p:rm({ recursive = p:is_dir() })
+          end)
+          print("\nThe file has been removed!")
+          current_picker:reset_multi_selection()
+        end
+      end
+
+      local toggle_hidden = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        current_picker:refresh(opts.new_finder({
+          path = current_picker.cwd,
+          hidden = not opts.hidden,
+        }), { reset_prompt = true })
+      end
+
+      local goto_prev_dir = function(bypass)
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local parent_dir = Path:new(current_picker.cwd):parents()
+
+        if not bypass then
+          if vim.loop.cwd() == current_picker.cwd then
+            print("You can't go up any further!")
+            return
+          end
+        end
+
+        current_picker:refresh(opts.new_finder({
+          path = parent_dir,
+        }), { reset_prompt = true })
+        current_picker.cwd = parent_dir
       end
 
       map('i', '<C-e>', create_new_file)
       map('n', '<C-e>', create_new_file)
+      map('i', '<C-r>', rename_file)
+      map('n', '<C-r>', rename_file)
+      map('n', 'm', move_file)
+      map('n', 'y', copy_file)
+      map('n', 'dd', remove_file)
+      map('n', '<S-h>', toggle_hidden)
+      map('n', 'l', actions.select_default)
+      map('n', 'h', function() goto_prev_dir(false) end)
+      map('n', '<BS>', function() goto_prev_dir(true) end)
       return true
     end,
   }):find()

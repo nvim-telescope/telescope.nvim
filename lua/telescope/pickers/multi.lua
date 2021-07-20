@@ -37,7 +37,11 @@ function MultiSelect:add(entry)
 end
 
 function MultiSelect:drop(entry)
-  self._entries[entry] = nil
+  if entry then
+    self._entries[entry] = nil
+    return
+  end
+  self._entries = {}
 end
 
 function MultiSelect:toggle(entry)
