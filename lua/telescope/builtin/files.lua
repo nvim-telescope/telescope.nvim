@@ -37,6 +37,7 @@ files.live_grep = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
   local grep_open_files = opts.grep_open_files
+  local filetype = vim.bo.filetype
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
 
   local filelist = {}
@@ -79,7 +80,12 @@ files.live_grep = function(opts)
         search_list = filelist
       end
 
-      return flatten { vimgrep_arguments, prompt, search_list }
+      local extraArgs = {}
+      if (opts.smart_mask ~= nil) then
+          table.insert(extraArgs, opts.smart_mask[filetype])
+      end
+
+      return flatten { vimgrep_arguments, extraArgs, prompt, search_list }
     end,
     opts.entry_maker or make_entry.gen_from_vimgrep(opts),
     opts.max_results,
