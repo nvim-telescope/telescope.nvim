@@ -77,12 +77,12 @@ function themes.get_cursor(opts)
     results_title = false,
     layout_strategy = 'cursor',
     layout_config = {
-      width = function(_, _, _)
-        return 80
+      width = function(_, max_columns, _)
+        return math.min(max_columns - 2, 80)
       end,
 
-      height = function(_, _, _)
-        return 6
+      height = function(_, _, max_lines)
+        return math.min(max_lines - 2, 6)
       end,
     },
     borderchars = {
@@ -117,7 +117,9 @@ function themes.get_ivy(opts)
 
     layout_strategy = "bottom_pane",
     layout_config = {
-      height = 25,
+      height = function(_, _, max_lines)
+        return math.min(max_lines - 2, 25)
+      end,
     },
 
     border = true,
