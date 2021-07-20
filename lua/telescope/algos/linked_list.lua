@@ -2,6 +2,49 @@
 local LinkedList = {}
 LinkedList.__index = LinkedList
 
+---@brief [[
+--- A linked list consists of a collection of "nodes", which contain information about:
+--- - the identity of their predecessor, under the `prev` key
+--- - the identity of their successor, under the `next` key
+--- - some stored information associated to themselves, under the `item` key
+---
+--- So locally at each node the picture of the linked list looks like:
+--- <pre>
+---      ┌──────────┐ B.prev ┌──────────┐ C.prev ┌──────────┐
+--- ◄────│    A     │◄───────│    B     │◄───────│    C     │◄────
+---  ... │ ┌──────┐ │        │ ┌──────┐ │        │ ┌──────┐ │ ...
+--- ────►│ │A.item│ │───────►│ │B.item│ │───────►│ │C.item│ │────►
+---      │ └──────┘ │ A.next │ └──────┘ │ B.next │ └──────┘ │
+---      └──────────┘        └──────────┘        └──────────┘
+--- </pre>
+---
+--- There are two special nodes in the linked list, the `head` and the `tail`.
+--- The `head` is a node which has no predecessor, so `head.prev=nil`.
+--- The `tail` is a node which has no successor, so `head.next=nil`.
+---
+--- The number of nodes in the linked list is stored under the `size` key.
+---
+--- This implementation also allows a specific index to be kept track of.
+--- The index is called `track_at`, and the node at that index is called `_tracked_node`.
+--- The information stored in the tracked node i.e. `_tracked_node.item` is stored under the
+--- `tracked` key.
+---
+--- The global picture of a linked list looks like:
+--- <pre>
+--- ┌────────┐           ┌───────────────┐           ┌────────┐
+--- │ `head` │◄───   ◄───│ _tracked_node │◄───   ◄───│ `tail` │
+--- │ ┌────┐ │    ...    │   ┌───────┐   │    ...    │ ┌────┐ │
+--- │ │item│ │───►   ───►│   │tracked│   │───►   ───►│ │item│ │
+--- │ └────┘ │           │   └───────┘   │           │ └────┘ │
+--- └────────┘           └───────────────┘           └────────┘
+--- </pre>
+---@brief ]]
+
+
+--- Create a new linked list
+---@param opts table
+---   @key track_at number: the index of the node to track
+---@return any
 function LinkedList:new(opts)
   opts = opts or {}
   local track_at = opts.track_at
@@ -20,17 +63,26 @@ function LinkedList:new(opts)
   }, self)
 end
 
+--- Increment the size of the linked list and return the new size
+---@return number
 function LinkedList:_increment()
   self.size = self.size + 1
   return self.size
 end
 
+--- Helper function that wraps `item` in a table at key `item`.
+---@param item any
+---@return table
 local create_node = function(item)
   return {
     item = item
   }
 end
 
+--- Add a node with information `item` at the end of the linked list.
+--- The tracked information is updated as necessary.
+---@note: the newly created node will be the `tail` of the linked list.
+---@param item any
 function LinkedList:append(item)
   local final_size = self:_increment()
 
@@ -55,6 +107,10 @@ function LinkedList:append(item)
   end
 end
 
+--- Add a node with information `item` at the beginning of the linked list.
+--- The tracked information is updated as necessary.
+---@note: the newly created node will be the `head` of the linked list.
+---@param item any
 function LinkedList:prepend(item)
   local final_size = self:_increment()
   local node = create_node(item)
@@ -94,9 +150,13 @@ end
 -- [a, b, d, c]
 --
 --  b.next = d
---  b.prev = a
+--  c.prev = d
 --
--- Place "item" after "node" (which is at index `index`)
+
+--- Place "item" after "node" (which is at index `index`)
+---@param index number
+---@param node table
+---@param item any
 function LinkedList:place_after(index, node, item)
   local new_node = create_node(item)
 
@@ -140,6 +200,24 @@ function LinkedList:place_after(index, node, item)
   end
 end
 
+-- [a, b, c]
+--  b.prev = a
+--  b.next = c
+--
+--  a.next = b
+--  c.prev = c
+--
+-- insert d before b
+-- [a, d, b, c]
+--
+--  a.next = d
+--  b.prev = d
+--
+
+--- Place "item" before "node" (which is at index `index`)
+---@param index number
+---@param node table
+---@param item any
 function LinkedList:place_before(index, node, item)
   local new_node = create_node(item)
 
@@ -189,6 +267,8 @@ end
 -- function LinkedList:remove(item)
 -- end
 
+--- Convert the linked list to an iterator function for the node `item`s
+---@return function
 function LinkedList:iter()
   local current_node = self.head
 
@@ -203,6 +283,9 @@ function LinkedList:iter()
   end
 end
 
+--- Convert the linked list to an iterator of `index`, `item`, `node` triples
+---@note: can also be used as an iterator of `index`, `item` pairs
+---@return function
 function LinkedList:ipairs()
   local index = 0
   local current_node = self.head

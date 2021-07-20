@@ -137,9 +137,9 @@ function Picker:new(opts)
 end
 
 --- Take a row and get an index.
----@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
----@param index number: The row being displayed
----@return number The row for the picker to display in
+---@note: rows are 0-indexed, and `index` is 1 indexed (table index)
+---@param index number: the row being displayed
+---@return number: The row for the picker to display in
 function Picker:get_row(index)
   if self.sorting_strategy == 'ascending' then
     return index - 1
@@ -149,9 +149,9 @@ function Picker:get_row(index)
 end
 
 --- Take a row and get an index
----@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
----@param row number: The row being displayed
----@return number The index in line_manager
+---@note: rows are 0-indexed, and `index` is 1 indexed (table index)
+---@param row number: the row being displayed
+---@return number: the index in line_manager
 function Picker:get_index(row)
   if self.sorting_strategy == 'ascending' then
     return row + 1
@@ -160,6 +160,8 @@ function Picker:get_index(row)
   end
 end
 
+--- Get the row number of the "best" entry
+---@return number: the number of the "reset" row
 function Picker:get_reset_row()
   if self.sorting_strategy == 'ascending' then
     return 0
@@ -168,10 +170,15 @@ function Picker:get_reset_row()
   end
 end
 
+--- Check if the picker is no longer in use
+---@return boolean/nil: `true` if picker is closed, `nil` otherwise
 function Picker:is_done()
   if not self.manager then return true end
 end
 
+--- Clear rows that are after the final remaining entry
+---@note: useful when number of remaining results is narrowed down
+---@param results_bufnr number: the buffer number of the results buffer
 function Picker:clear_extra_rows(results_bufnr)
   if self:is_done() then
     log.trace("Not clearing due to being already complete")
@@ -210,6 +217,10 @@ function Picker:clear_extra_rows(results_bufnr)
   log.trace("Clearing:", worst_line)
 end
 
+--- Highlight all of the entries in the results buffer
+---@note: this is basically a wrapper for `Picker:highlight_one_row`
+---@param results_bufnr number: the buffer number of the results buffer
+---@param prompt table: table with information about the prompt buffer
 function Picker:highlight_displayed_rows(results_bufnr, prompt)
   if not self.sorter or not self.sorter.highlighter then
     return
@@ -225,6 +236,12 @@ function Picker:highlight_displayed_rows(results_bufnr, prompt)
   end
 end
 
+--- Highlight the entry corresponding to the given row
+---@note: generally used via the wrapper `Picker:highlight_displayed_rows`
+---@param results_bufnr number: the buffer number of the results buffer
+---@param prompt table: table with information about the prompt buffer
+---@param display string: the text corresponding to the given row
+---@param row number: the number of the chosen row
 function Picker:highlight_one_row(results_bufnr, prompt, display, row)
   local highlights = self:_track("_highlight_time", self.sorter.highlighter, self.sorter, prompt, display)
 
@@ -260,6 +277,9 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
   self.highlighter:hi_multiselect(row, self:is_multi_selected(entry))
 end
 
+--- Check if the given row number can be selected
+---@param row number: the number of the chosen row in the results buffer
+---@return boolean
 function Picker:can_select_row(row)
   if self.sorting_strategy == 'ascending' then
     return row <= self.manager:num_results()
@@ -268,6 +288,7 @@ function Picker:can_select_row(row)
   end
 end
 
+--TODO: document what `find_id` is for
 function Picker:_next_find_id()
   local find_id = self._find_id + 1
   self._find_id = find_id
@@ -275,6 +296,8 @@ function Picker:_next_find_id()
   return find_id
 end
 
+--- Opens the given picker for the user to interact with
+---@note: this is the main function for pickers, as it actually creates the interface for users
 function Picker:find()
   self:close_existing_pickers()
   self:reset_selection()
@@ -484,6 +507,7 @@ function Picker:find()
   end
 end
 
+--TODO: implement this function
 function Picker:hide_preview()
   -- 1. Hide the window (and border)
   -- 2. Resize prompt & results windows accordingly
@@ -551,6 +575,9 @@ function Picker:set_prompt(str)
   vim.api.nvim_feedkeys(str, 'n', false)
 end
 
+--- Closes the windows for the prompt, results and preview
+---@param status table: table containing information on the picker
+--- and associated windows. Generally obtained from `state.get_status`
 function Picker.close_windows(status)
   local prompt_win = status.prompt_win
   local results_win = status.results_win
@@ -591,7 +618,7 @@ function Picker.close_windows(status)
 
   -- vim.cmd(string.format("bdelete! %s", status.prompt_bufnr))
 
-  -- Major hack?? Why do I have to od this.
+  -- Major hack?? Why do I have to do this.
   --    Probably because we're currently IN the buffer.
   --    Should wait to do this until after we're done.
   vim.defer_fn(function()
@@ -601,18 +628,26 @@ function Picker.close_windows(status)
   state.clear_status(status.prompt_bufnr)
 end
 
+--- Get the entry table of the current selection
+---@return table
 function Picker:get_selection()
   return self._selection_entry
 end
 
+--- Get the row number of the current selection
+---@return number
 function Picker:get_selection_row()
   return self._selection_row or self.max_results
 end
 
+--- Move the current selection by `change` steps
+---@param change number
 function Picker:move_selection(change)
   self:set_selection(self:get_selection_row() + change)
 end
 
+--- Add the given row to the multi-select object
+---@param row number: the number of the chosen row
 function Picker:add_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:add(entry)
@@ -620,6 +655,8 @@ function Picker:add_selection(row)
   self.highlighter:hi_multiselect(row, true)
 end
 
+--- Remove the given row from the multi-select object
+---@param row number: the number of the chosen row
 function Picker:remove_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:drop(entry)
@@ -627,14 +664,23 @@ function Picker:remove_selection(row)
   self.highlighter:hi_multiselect(row, false)
 end
 
+--- Check if the given row is in the multi-select object
+---@param entry table: table with information about the chosen entry
+---@return number: the "count" associated to the entry in the multi-select
+--  object (if present), `nil` otherwise
 function Picker:is_multi_selected(entry)
   return self._multi:is_selected(entry)
 end
 
+--- Get a table containing all of the currently selected entries
+---@return table: an integer indexed table of selected entries
 function Picker:get_multi_selection()
   return self._multi:get()
 end
 
+--- Toggle the given row in and out of the multi-select object.
+--- Also updates the highlighting for the given entry
+---@param row number: the number of the chosen row
 function Picker:toggle_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:toggle(entry)
@@ -642,11 +688,15 @@ function Picker:toggle_selection(row)
   self.highlighter:hi_multiselect(row, self._multi:is_selected(entry))
 end
 
+--- Set the current selection to `nil`
+---@note: generally used when a picker is first activated with `find()`
 function Picker:reset_selection()
   self._selection_entry = nil
   self._selection_row = nil
 end
 
+--- Apply the given highlight to the prompt prefix
+---@param hl_group string: the name of the chosen highlight
 function Picker:_reset_prefix_color(hl_group)
   self._current_prefix_hl_group = hl_group or nil
 
@@ -664,6 +714,9 @@ end
 -- TODO(conni2461): Maybe _ prefix these next two functions
 -- TODO(conni2461): Next two functions only work together otherwise color doesn't work
 --                  Probably a issue with prompt buffers
+--- Change the prefix in the prompt to be `new_prefix` and apply `hl_group`
+---@param new_prefix string: the string to be used as the new prefix
+---@param hl_group string: the name of the chosen highlight
 function Picker:change_prompt_prefix(new_prefix, hl_group)
   if not new_prefix then return end
 
@@ -677,6 +730,8 @@ function Picker:change_prompt_prefix(new_prefix, hl_group)
   self:_reset_prefix_color(hl_group)
 end
 
+--- Reset the prompt to the provided `text`
+---@param text string
 function Picker:reset_prompt(text)
   local prompt_text = self.prompt_prefix .. (text or '')
   vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, -1, false, { prompt_text })
@@ -707,6 +762,8 @@ function Picker:refresh(finder, opts)
   self.__on_lines(nil, nil, nil, 0, 1)
 end
 
+---Set the selection to the provided `row`
+---@param row number
 function Picker:set_selection(row)
   if not self.manager then return end
 
@@ -810,6 +867,7 @@ function Picker:set_selection(row)
   self:refresh_previewer()
 end
 
+--- Refresh the previewer based on the current `status` of the picker
 function Picker:refresh_previewer()
   local status = state.get_status(self.prompt_bufnr)
   if status.preview_win and self.previewer then
@@ -844,6 +902,10 @@ function Picker:cycle_previewers(next)
   self:refresh_previewer()
 end
 
+--- Handler for when entries are added by `self.manager`
+---@param index number: the index to add the entry at
+---@param entry table: the entry that has been added to the manager
+---@param insert boolean: whether the entry has been "inserted" or not
 function Picker:entry_adder(index, entry, _, insert)
   if not entry then return end
 
@@ -909,6 +971,7 @@ function Picker:entry_adder(index, entry, _, insert)
 end
 
 
+--- Reset tracked information for this picker
 function Picker:_reset_track()
   self.stats.processed = 0
   self.stats.displayed = 0
@@ -920,6 +983,12 @@ function Picker:_reset_track()
   self.stats.highlights = 0
 end
 
+--- Evaluate a given `func` with inputs `...`.
+--- If `self.track` is truthy, then add the amount of time taken to `self.stats[key]`
+---@param key any
+---@param func any
+---@return any
+---@return any
 function Picker:_track(key, func, ...)
   local start, final
   if self.track then
@@ -937,10 +1006,14 @@ function Picker:_track(key, func, ...)
   return res1, res2
 end
 
+--- Increment the count of the tracked info at `self.stats[key]`
+---@param key string
 function Picker:_increment(key)
   self.stats[key] = (self.stats[key] or 0) + 1
 end
 
+--- Decrement the count of the tracked info at `self.stats[key]`
+---@param key string
 function Picker:_decrement(key)
   self.stats[key] = (self.stats[key] or 0) - 1
 end
@@ -952,18 +1025,26 @@ function Picker:register_completion_callback(cb)
   table.insert(self._completion_callbacks, cb)
 end
 
+-- TODO: document what the purpose of this is
+--  Currently only used in `Picker: get_result_completor`
 function Picker:_on_complete()
   for _, v in ipairs(self._completion_callbacks) do
     pcall(v, self)
   end
 end
 
+--- Close all open Telescope pickers
 function Picker:close_existing_pickers()
   for _, prompt_bufnr in ipairs(state.get_existing_prompts()) do
-    pcall(actions.close, prompt_bufnr)
+    pcall(actions._close, prompt_bufnr, true)
   end
 end
 
+--- Returns a function that sets virtual text for the count indicator
+--- e.g. "10/50" as "filtered"/"processed"
+---@param prompt_win number
+---@param prompt_bufnr number
+---@return function
 function Picker:get_status_updater(prompt_win, prompt_bufnr)
   return function()
     local text = self:get_status_text()
@@ -1002,6 +1083,13 @@ function Picker:get_status_updater(prompt_win, prompt_bufnr)
 end
 
 
+--- Returns a function that will process an element.
+--- Returned function handles updating the "filtered" and "processed" counts
+--- as appropriate and runs the sorters score function
+---@param find_id number
+---@param prompt string
+---@param status_updater function
+---@return function
 function Picker:get_result_processor(find_id, prompt, status_updater)
   local cb_add = function(score, entry)
     self.manager:add_entry(self, score, entry)
@@ -1043,6 +1131,11 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
   end
 end
 
+--- Handles updating the picker after all the entries are scored/processed.
+---@param results_bufnr number
+---@param find_id number
+---@param prompt string
+---@param status_updater function
 function Picker:get_result_completor(results_bufnr, find_id, prompt, status_updater)
   return function()
     if self.closed == true or self:is_done() then return end
@@ -1100,6 +1193,11 @@ end
 
 
 
+--- Wrapper function for `Picker:new` that incorporates user provided `opts`
+--- with the telescope `defaults`
+---@param opts table
+---@param defaults table
+---@return any
 pickers.new = function(opts, defaults)
   local result = {}
 
@@ -1128,6 +1226,8 @@ pickers.new = function(opts, defaults)
   return Picker:new(result)
 end
 
+--- Close the picker which has prompt with buffer number `prompt_bufnr`
+---@param prompt_bufnr number
 function pickers.on_close_prompt(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
@@ -1148,6 +1248,7 @@ function Picker:_get_prompt()
   return vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, 1, false)[1]:sub(#self.prompt_prefix + 1)
 end
 
+--- Wrapper function for `Higlighter.clear_display` which uses `vim.api.nvim_buf_clear_namespace`
 function Picker:_reset_highlights()
   self.highlighter:clear_display()
 end
