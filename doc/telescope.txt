@@ -4,6 +4,8 @@
 Telescope.nvim is a plugin for fuzzy finding and neovim. It helps you search,
 filter, find and pick things in Lua.
 
+TODO(conni2461): Write a getting started here!!!
+
 To find out more:
 https://github.com/nvim-telescope/telescope.nvim
 
@@ -19,64 +21,38 @@ telescope.setup({opts})                                    *telescope.setup()*
 
     Valid keys for {opts.defaults}
 
-                                                *telescope.defaults.border*
-    border: ~
-        Boolean defining if borders are added to Telescope windows.
+                                      *telescope.defaults.sorting_strategy*
+    sorting_strategy: ~
+        Determines the direction "better" results are sorted towards.
 
-        Default: true
+        Available options are:
+        - "descending" (default)
+        - "ascending"
 
-                                      *telescope.defaults.default_mappings*
-    default_mappings: ~
-        Not recommended to use except for advanced users.
+                                    *telescope.defaults.selection_strategy*
+    selection_strategy: ~
+        Determines how the cursor acts after each sort iteration.
 
-        Will allow you to completely remove all of telescope's default maps
-        and use your own.
+        Available options are:
+        - "reset" (default)
+        - "follow"
+        - "row"
+        - "closest"
 
+                                       *telescope.defaults.scroll_strategy*
+    scroll_strategy: ~
+        Determines what happens you try to scroll past view of the picker.
 
-                                 *telescope.defaults.dynamic_preview_title*
-    dynamic_preview_title: ~
-        Will change the title of the preview window dynamically, where it
-        is supported. Means the preview window will for example show the
-        full filename.
+        Available options are:
+        - "cycle" (default)
+        - "limit"
 
-        Default: false
+                                       *telescope.defaults.layout_strategy*
+    layout_strategy: ~
+        Determines the default layout of Telescope pickers.
+        See |telescope.layout| for details of the available strategies.
 
-                                          *telescope.defaults.entry_prefix*
-    entry_prefix: ~
-        Prefix in front of each result entry. Current selection not included.
-
-        Default: '  '
-
-                                               *telescope.defaults.history*
-    history: ~
-          This field handles the configuration for prompt history.
-          By default it is a table, with default values (more below).
-          To disable history, set it to false.
-
-          Currently mappings still need to be added, Example:
-            mappings = {
-              i = {
-                ["<C-Down>"] = require('telescope.actions').cycle_history_next,
-                ["<C-Up>"] = require('telescope.actions').cycle_history_prev,
-              },
-            },
-
-          Fields:
-            - path:    The path to the telescope history as string.
-                       default: stdpath("data")/telescope_history
-            - limit:   The amount of entries that will be written in the
-                       history.
-                       Warning: If limit is set to nil it will grown unbound.
-                       default: 100
-            - handler: A lua function that implements the history.
-                       This is meant as a developer setting for extensions to
-                       override the history handling, e.g.,
-                       https://github.com/nvim-telescope/telescope-smart-history.nvim,
-                       which allows context sensitive (cwd + picker) history.
-
-                       Default:
-                       require('telescope.actions.history').get_simple_history
-
+        Default: 'horizontal'
 
                                          *telescope.defaults.layout_config*
     layout_config: ~
@@ -109,12 +85,169 @@ telescope.setup({opts})                                    *telescope.setup()*
         }
 
 
-                                       *telescope.defaults.layout_strategy*
-    layout_strategy: ~
-        Determines the default layout of Telescope pickers.
-        See |telescope.layout| for details of the available strategies.
+                                              *telescope.defaults.winblend*
+    winblend: ~
+        Configure winblend for telescope floating windows. See |winblend| for
+        more information.
 
-        Default: 'horizontal'
+        Default: 0
+
+                                         *telescope.defaults.prompt_prefix*
+    prompt_prefix: ~
+        Will be shown in front of the prompt.
+
+        Default: '> '
+
+                                       *telescope.defaults.selection_caret*
+    selection_caret: ~
+        Will be shown in front of the selection.
+
+        Default: '> '
+
+                                          *telescope.defaults.entry_prefix*
+    entry_prefix: ~
+        Prefix in front of each result entry. Current selection not included.
+
+        Default: '  '
+
+                                          *telescope.defaults.initial_mode*
+    initial_mode: ~
+        Determines in which mode telescope starts. Valid Keys:
+        `insert` and `normal`.
+
+        Default: "insert"
+
+                                                *telescope.defaults.border*
+    border: ~
+        Boolean defining if borders are added to Telescope windows.
+
+        Default: true
+
+                                          *telescope.defaults.path_display*
+    path_display: ~
+        Determines how file paths are displayed
+
+        path_display can be set to an array with a combination of:
+        - "hidden"    hide file names
+        - "tail"      only display the file name, and not the path
+        - "absolute"  display absolute paths
+        - "shorten"   only display the first character of each directory in
+                      the path
+
+        You can also specify the number of characters of each directory name
+        to keep by setting `path_display.shorten = num`.
+          e.g. for a path like
+            `alpha/beta/gamma/delta.txt`
+          setting `path_display.shorten = 1` will give a path like:
+            `a/b/g/delta.txt`
+          Similarly, `path_display.shorten = 2` will give a path like:
+            `al/be/ga/delta.txt`
+
+        path_display can also be set to 'hidden' string to hide file names
+
+        path_display can also be set to a function for custom formatting of
+        the path display. Example:
+
+            -- Format path as "file.txt (path\to\file\)"
+            path_display = function(opts, path)
+              local tail = require("telescope.utils").path_tail(path)
+              return string.format("%s (%s)", tail, path)
+            end,
+
+        Default: {}
+
+                                           *telescope.defaults.borderchars*
+    borderchars: ~
+        Set the borderchars of telescope floating windows. It has to be a
+        table of 8 string values.
+
+        Default: { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }
+
+                                       *telescope.defaults.get_status_text*
+    get_status_text: ~
+        A function that determines how the virtual text looks like.
+        Signature: function(picker) -> str
+
+        Default: function that shows current count / all
+
+                                 *telescope.defaults.dynamic_preview_title*
+    dynamic_preview_title: ~
+        Will change the title of the preview window dynamically, where it
+        is supported. Means the preview window will for example show the
+        full filename.
+
+        Default: false
+
+                                               *telescope.defaults.history*
+    history: ~
+        This field handles the configuration for prompt history.
+        By default it is a table, with default values (more below).
+        To disable history, set it to false.
+
+        Currently mappings still need to be added, Example:
+          mappings = {
+            i = {
+              ["<C-Down>"] = require('telescope.actions').cycle_history_next,
+              ["<C-Up>"] = require('telescope.actions').cycle_history_prev,
+            },
+          },
+
+        Fields:
+          - path:    The path to the telescope history as string.
+                     default: stdpath("data")/telescope_history
+          - limit:   The amount of entries that will be written in the
+                     history.
+                     Warning: If limit is set to nil it will grown unbound.
+                     default: 100
+          - handler: A lua function that implements the history.
+                     This is meant as a developer setting for extensions to
+                     override the history handling, e.g.,
+                     https://github.com/nvim-telescope/telescope-smart-history.nvim,
+                     which allows context sensitive (cwd + picker) history.
+
+                     Default:
+                     require('telescope.actions.history').get_simple_history
+
+                                     *telescope.defaults.vimgrep_arguments*
+    vimgrep_arguments: ~
+        Defines the command that will be used for `live_grep` and `grep_string`.
+        Hint: Make sure that color is currently set to `never` because we do
+        not yet interpret color codes
+        Hint 2: Make sure that these options are in your changes arguments:
+          "--no-heading", "--with-filename", "--line-number", "--column"
+        because we need them so the ripgrep output is in the correct format.
+
+        Default: {
+          "rg",
+          "--color=never",
+          "--no-heading",
+          "--with-filename",
+          "--line-number",
+          "--column",
+          "--smart-case"
+        }
+
+                                              *telescope.defaults.use_less*
+    use_less: ~
+        Boolean if less should be enabled in term_previewer (deprecated and
+        currently no longer used in the builtin pickers).
+
+        Default: true
+
+                                               *telescope.defaults.set_env*
+    set_env: ~
+        Set a environment for term_previewer. A table of key values:
+        Example: { COLORTERM = "truecolor", ... }
+        Hint: Empty table is not allowed.
+
+        Default: nil
+
+                                        *telescope.defaults.color_devicons*
+    color_devicons: ~
+        Boolean if devicons should be enabled or not.
+        Hint: Coloring only works if |termguicolors| is enabled.
+
+        Default: true
 
                                               *telescope.defaults.mappings*
     mappings: ~
@@ -171,76 +304,88 @@ telescope.setup({opts})                                    *telescope.setup()*
             ...,
 
 
-                                          *telescope.defaults.path_display*
-    path_display: ~
-        Determines how file paths are displayed
+                                      *telescope.defaults.default_mappings*
+    default_mappings: ~
+        Not recommended to use except for advanced users.
 
-        path_display can be set to an array with a combination of:
-        - "hidden"    hide file names
-        - "tail"      only display the file name, and not the path
-        - "absolute"  display absolute paths
-        - "shorten"   only display the first character of each directory in
-                      the path
+        Will allow you to completely remove all of telescope's default maps
+        and use your own.
 
-        You can also specify the number of characters of each directory name
-        to keep by setting `path_display.shorten = num`.
-          e.g. for a path like
-            `alpha/beta/gamma/delta.txt`
-          setting `path_display.shorten = 1` will give a path like:
-            `a/b/g/delta.txt`
-          Similarly, `path_display.shorten = 2` will give a path like:
-            `al/be/ga/delta.txt`
 
-        path_display can also be set to 'hidden' string to hide file names
+                                           *telescope.defaults.file_sorter*
+    file_sorter: ~
+        A function pointer that specifies the file_sorter. This sorter will
+        be used for find_files, git_files and similar.
+        Hint: If you load a native sorter, you dont need to change this value,
+        the native sorter will override it anyway.
 
-        path_display can also be set to a function for custom formatting of
-        the path display. Example:
+        Default: require("telescope.sorters").get_fzy_sorter
 
-            -- Format path as "file.txt (path\to\file\)"
-            path_display = function(opts, path)
-              local tail = require("telescope.utils").path_tail(path)
-              return string.format("%s (%s)", tail, path)
-            end,
+                                        *telescope.defaults.generic_sorter*
+    generic_sorter: ~
+        A function pointer to the generic sorter. The sorter that should be
+        used for everything that is not a file.
+        Hint: If you load a native sorter, you dont need to change this value,
+        the native sorter will override it anyway.
 
-        Default: {}
+        Default: require("telescope.sorters").get_fzy_sorter
 
-                                         *telescope.defaults.prompt_prefix*
-    prompt_prefix: ~
-        Will be shown in front of the prompt.
+                                      *telescope.defaults.prefilter_sorter*
+    prefilter_sorter: ~
+        This points to a wrapper sorter around the generic_sorter that is able
+        to do prefiltering.
+        Its usually used for lsp_*_symbols and lsp_*_diagnostics
 
-        Default: '> '
+        Default: require("telescope.sorters").prefilter
 
-                                       *telescope.defaults.scroll_strategy*
-    scroll_strategy: ~
-        Determines what happens you try to scroll past view of the picker.
+                                  *telescope.defaults.file_ignore_patterns*
+    file_ignore_patterns: ~
+        A table of lua regex that define the files that should be ignored.
+        Example: { "^scratch/" } -- ignore all files in scratch directory
+        Example: { "%.npz" } -- ignore all npz files
+        See: https://www.lua.org/manual/5.1/manual.html#5.4.1 for more
+        information about lua regex
 
-        Available options are:
-        - "cycle" (default)
-        - "limit"
+        Default: nil
 
-                                       *telescope.defaults.selection_caret*
-    selection_caret: ~
-        Will be shown in front of the selection.
+                                        *telescope.defaults.file_previewer*
+    file_previewer: ~
+        Function pointer to the default file_previewer. It is mostly used
+        for find_files, git_files and similar.
+        You can change this function pointer to either use your own
+        previewer or use bat previewer:
+          require("telescope.previewers").cat.new
 
-        Default: '> '
+        Default: require("telescope.previewers").vim_buffer_cat.new
 
-                                    *telescope.defaults.selection_strategy*
-    selection_strategy: ~
-        Determines how the cursor acts after each sort iteration.
+                                        *telescope.defaults.grep_previewer*
+    grep_previewer: ~
+        Function pointer to the default vim_grep previewer. It is mostly
+        used for live_grep, grep_string and similar.
+        You can change this function pointer to either use your own
+        previewer or use bat previewer:
+          require("telescope.previewers").vimgrep.new
 
-        Available options are:
-        - "reset" (default)
-        - "follow"
-        - "row"
-        - "closest"
+        Default: require("telescope.previewers").vim_buffer_vimgrep.new
 
-                                      *telescope.defaults.sorting_strategy*
-    sorting_strategy: ~
-        Determines the direction "better" results are sorted towards.
+                                      *telescope.defaults.qflist_previewer*
+    qflist_previewer: ~
+        Function pointer to the default qflist previewer. It is mostly
+        used for qflist, loclist and lsp.
+        You can change this function pointer to either use your own
+        previewer or use bat previewer:
+          require("telescope.previewers").qflist.new
 
-        Available options are:
-        - "descending" (default)
-        - "ascending"
+        Default: require("telescope.previewers").vim_buffer_vimgrep.new
+
+                                *telescope.defaults.buffer_previewer_maker*
+    buffer_previewer_maker: ~
+        Developer option that defines the underlining functionality
+        of the buffer previewer.
+        For interesting configuration examples take a look at
+        https://github.com/nvim-telescope/telescope.nvim/wiki/Configuration-Recipes
+
+        Default: require("telescope.previewers").buffer_previewer_maker
 
     Parameters: ~
         {opts} (table)  Configuration opts. Keys: defaults, extensions
