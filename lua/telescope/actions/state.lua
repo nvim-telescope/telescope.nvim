@@ -11,9 +11,13 @@ local conf = require('telescope.config').values
 
 local action_state = {}
 
---- Get the current entry
+--- Get the user-overriden or current entry
 function action_state.get_selected_entry()
-  return global_state.get_global_key('selected_entry')
+  local global_entry = global_state.get_and_clear_global_key('set_entry')
+  if global_entry == nil then
+    return global_state.get_global_key('selected_entry')
+  end
+  return global_entry
 end
 
 --- Gets the current line

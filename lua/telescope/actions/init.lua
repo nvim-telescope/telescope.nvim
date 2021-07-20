@@ -784,7 +784,7 @@ actions.cycle_previewers_prev = function(prompt_bufnr)
 end
 
 -- ==================================================
--- Transforms modules and sets the corect metatables.
+-- Transforms modules and sets the correct metatables.
 -- ==================================================
 actions = transform_mod(actions)
 return actions
