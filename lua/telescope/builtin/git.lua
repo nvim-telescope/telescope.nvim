@@ -14,7 +14,7 @@ local conf = require('telescope.config').values
 local git = {}
 
 git.files = function(opts)
-  local show_untracked = utils.get_default(opts.show_untracked, true)
+  local show_untracked = utils.get_default(opts.show_untracked, false)
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
   if show_untracked and recurse_submodules then
     error("Git does not support both --others and --recurse-submodules")

@@ -136,7 +136,7 @@ builtin.current_buffer_tags = require('telescope.builtin.files').current_buffer_
 --- - Default keymaps:
 ---   - `<cr>`: opens the currently selected file
 ---@param opts table: options to pass to the picker
----@field show_untracked boolean: if true, adds `--others` flag to command and shows untracked files (default is true)
+---@field show_untracked boolean: if true, adds `--others` flag to command and shows untracked files (default is false)
 ---@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to command (default is false)
 builtin.git_files = require('telescope.builtin.git').files
 
