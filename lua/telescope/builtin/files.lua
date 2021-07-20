@@ -297,6 +297,9 @@ files.file_browser = function(opts)
           if is_dir(t.value) then retpath = retpath .. os_sep end
           return retpath
         end
+        if k == "filename" then
+          return Path:new(t[1]):absolute()
+        end
 
         return rawget(t, rawget({ value = 1 }, k))
       end
