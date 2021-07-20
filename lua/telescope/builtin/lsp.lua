@@ -165,7 +165,7 @@ lsp.code_actions = function(opts)
       for _, result in pairs(response.result) do
         local entry = {
           idx = idx,
-          command_title = result.title,
+          command_title = result.title:gsub("\r\n", "\\r\\n"):gsub("\n", "\\n"),
           client_name = client and client.name or "",
           command = result,
         }
