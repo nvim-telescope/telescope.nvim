@@ -282,29 +282,6 @@ local telescope_defaults = {
     { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
   },
 
-  smart_mask = {
-      {}, [[
-      Lookup table for live grep smart masking.
-
-      Format is:
-          ["filetype"] = "<argument to pass to grep program>"
-
-      Note: 'filetype' is vim's definition of filetype.
-
-      Example (using ripgrep (rg) as the grep program):
-
-        smart_mask = {
-            ["lua"] = "-tlua",
-            ["cs"]  = "-tcs",
-            ["cpp"] = "-tcpp",
-            ["h"]   = "-tcpp"
-        }
-
-      To temporarily invoke live_grep with smart_mask disabled:
-        :lua require('telescope.builtin').live_grep({ smart_mask = {} })
-      ]],
-  },
-
   use_less = { true },
 
   color_devicons = { true },
