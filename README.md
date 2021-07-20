@@ -629,6 +629,30 @@ Finder:new{
   maximum_results = false
 }
 ```
+Example of finder processing json result.
+```lua
+local function do_preprocess(line)
+  local result = {}
+  local pJson = json.decode(line)
+  for _, v in ipairs(pJson) do
+    -- optionally pick only fields you are interested in.
+    table.insert(result, v)
+  end
+  return result
+end
+```
+Usage
+```lua
+Finder:new{
+  entry_maker     = function(line) end,
+  fn_command      = function() { command = "", args  = { "ls-files" } } end,
+  fn_preprocess   = do_preprocess,
+  static          = false,
+  maximum_results = false
+}
+```
+ 
+
 
 ### Picker
 <!-- TODO: this section need some love, an in-depth explanation will be appreciated it need some in depth explanation -->
