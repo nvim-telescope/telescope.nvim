@@ -468,7 +468,7 @@ document symbols not recognized as methods by treesitter.
 
 | Functions                           | Description                                                                                                |
 |-------------------------------------|------------------------------------------------------------------------------------------------------------|
-| `builtin.git_commits`               | Lists git commits with diff preview and checks them out on `<cr>`                                          |
+| `builtin.git_commits`               | Lists git commits with diff preview, checkout action `<cr>`, reset mixed `<C-r>m`, reset soft `<C-r>s` and reset hard `<C-r>h` |
 | `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checks them out on `<cr>`                                 |
 | `builtin.git_branches`              | Lists all branches with log preview, checkout action `<cr>`, track action `<C-t>` and rebase action`<C-r>` |
 | `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multi-selection still WIP)               |
