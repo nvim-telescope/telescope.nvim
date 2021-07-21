@@ -563,9 +563,10 @@ actions.git_staging_toggle = function(prompt_bufnr)
 end
 
 local entry_to_qf = function(entry)
+  local cwd = entry.cwd .. utils.get_separator()
   return {
     bufnr = entry.bufnr,
-    filename = entry.filename,
+    filename = cwd .. entry.filename,
     lnum = entry.lnum,
     col = entry.col,
     text = entry.text or entry.value.text or entry.value,
