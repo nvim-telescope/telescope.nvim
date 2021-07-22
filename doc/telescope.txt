@@ -91,21 +91,30 @@ telescope.setup({opts})                                    *telescope.setup()*
         of 50% of the screen width.
 
         Default: {
+          bottom_pane = {
+            height = 25
+          },
           center = {
-            preview_cutoff = 40
+            height = 0.9,
+            preview_cutoff = 40,
+            width = 0.8
           },
           cursor = {
-            preview_cutoff = 40
+            height = 0.9,
+            preview_cutoff = 40,
+            width = 0.8
           },
-          height = 0.9,
           horizontal = {
+            height = 0.9,
             preview_cutoff = 120,
-            prompt_position = "bottom"
+            prompt_position = "bottom",
+            width = 0.8
           },
           vertical = {
-            preview_cutoff = 40
-          },
-          width = 0.8
+            height = 0.9,
+            preview_cutoff = 40,
+            width = 0.8
+          }
         }
 
 
@@ -1009,9 +1018,6 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
       - preview_width:
         - Change the width of Telescope's preview window
         - See |resolver.resolve_width()|
-      - prompt_position:
-        - Where to place prompt window.
-        - Available Values: 'bottom', 'top'
 
 
 layout_strategies.center()                        *layout_strategies.center()*
