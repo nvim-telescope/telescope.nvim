@@ -395,7 +395,7 @@ layout_strategies.center = make_documented_layout("center", vim.tbl_extend("erro
   local max_results = (res_height > max_lines and max_lines or res_height)
 
   local bs = get_border_size(self)
-  
+
   -- Cap over/undersized width
   width = math.min(width, max_columns)
   width = math.max(width, 1 + 2*bs)
@@ -656,6 +656,7 @@ layout_strategies.flex = make_documented_layout('flex', vim.tbl_extend("error", 
   vertical = "Options to pass when switching to vertical layout",
   horizontal = "Options to pass when switching to horizontal layout",
 }), function(self, max_columns, max_lines, layout_config)
+
   local flip_columns = if_nil(layout_config.flip_columns, 100)
   local flip_lines = if_nil(layout_config.flip_lines, 20)
 
@@ -670,6 +671,7 @@ layout_strategies.current_buffer = make_documented_layout('current_buffer', {
   -- No custom options.
   -- height, width ignored
 }, function(self, _, _, _)
+
   local initial_options = p_window.get_initial_window_options(self)
 
   local window_width = vim.api.nvim_win_get_width(0)
@@ -729,6 +731,7 @@ end)
 layout_strategies.bottom_pane = make_documented_layout('bottom_pane', vim.tbl_extend("error", shared_options, {
   -- No custom options...
 }), function(self, max_columns, max_lines, layout_config)
+
   local initial_options = p_window.get_initial_window_options(self)
   local results = initial_options.results
   local prompt = initial_options.prompt
@@ -736,70 +739,44 @@ layout_strategies.bottom_pane = make_documented_layout('bottom_pane', vim.tbl_ex
 
   local result_height = if_nil(resolve.resolve_height(layout_config.height)(self,max_columns,max_lines), 25)
 
-  local prompt_width = max_columns
-  local col = 0
+  local bs = get_border_size(self)
 
-  local has_border = not not self.window.border
-  if has_border then
-    col = 1
-    prompt_width = prompt_width - 2
-  end
+  -- Height
+  prompt.height = 1
+  results.height = result_height
+  preview.height = result_height - bs
 
-  local left_side_width
+  -- Width
+  prompt.width = max_columns - 2*bs
+  -- TODO(l-kershaw): add a preview_cutoff option
   if self.previewer then
-    left_side_width = math.floor(prompt_width / 2)
-
-    local base_col
-    if layout_config.mirror then
-      base_col = 0
-    else
-      base_col = left_side_width + 1
-    end
-
-    if has_border then
-      preview = vim.tbl_deep_extend("force", {
-        col = base_col + 2,
-        line = max_lines - result_height + 1,
-        width = prompt_width - left_side_width - 2,
-        height = result_height - 1,
-      }, preview)
-    else
-      preview = vim.tbl_deep_extend("force", {
-        col = base_col,
-        line = max_lines - result_height,
-        width = prompt_width - left_side_width,
-        height = result_height,
-      }, preview)
-    end
+    -- TODO(l-kershaw): make configurable
+    results.width = math.floor(max_columns/2) - 2*bs
+    preview.width = max_columns - results.width - 4*bs
   else
-    preview = nil
-    left_side_width = prompt_width
+    results.width = prompt.width
+    preview.width = 0
   end
 
-  local result_col
-  if layout_config.mirror and self.previewer then
-    result_col = left_side_width + 2
-    if has_border then
-      left_side_width = left_side_width - 2
-    end
+  -- Line
+  prompt.line = max_lines - results.height - 1
+  results.line = max_lines - results.height
+  preview.line = max_lines - results.height + bs
+
+  -- Col
+  prompt.col = bs
+  if layout_config.mirror and preview.width > 0 then
+    results.col = preview.width + (3*bs)
+    preview.col = bs
   else
-    result_col = col
+    results.col = bs
+    preview.col = results.width + (3*bs)
   end
 
   return {
-    preview = preview,
-    prompt = vim.tbl_deep_extend("force", prompt, {
-      line = max_lines - result_height - 1,
-      col = col,
-      height = 1,
-      width = prompt_width,
-    }),
-    results = vim.tbl_deep_extend("force", results, {
-      line = max_lines - result_height,
-      col = result_col,
-      height = result_height,
-      width = left_side_width,
-    }),
+    preview = self.previewer and preview.width > 0 and preview,
+    prompt = prompt,
+    results = results,
   }
 end)
 

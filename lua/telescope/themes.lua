@@ -125,7 +125,6 @@ function themes.get_ivy(opts)
       "z",
       prompt = { "─", " ", " ", " ", "─", "─", " ", " " },
       results = { " " },
-      -- results = { "a", "b", "c", "d", "e", "f", "g", "h" },
       preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰"},
     },
   }, opts)

@@ -89,7 +89,11 @@ local layout_config_defaults = {
     width = 0.8,
     height = 0.9,
     preview_cutoff = 40,
-  }
+  },
+
+  bottom_pane = {
+    height = 25,
+  },
 }
 
 local layout_config_description = string.format([[
