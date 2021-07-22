@@ -46,6 +46,15 @@ local get_border_size = function(opts)
   return 1
 end
 
+local calc_tabline = function(max_lines)
+  local tbln = (vim.o.showtabline == 2)
+    or (vim.o.showtabline == 1 and #vim.api.nvim_list_tabpages() > 1)
+  if tbln then
+    max_lines = max_lines - 1
+  end
+  return max_lines, tbln
+end
+
 local layout_strategies = {}
 layout_strategies._configurations = {}
 
@@ -245,10 +254,14 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
     preview_cutoff = "When columns are less than this value, the preview will be disabled",
     prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
 }), function(self, max_columns, max_lines, layout_config)
+
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
+
+  local tbln
+  max_lines, tbln = calc_tabline(max_lines)
 
   local width_opt = layout_config.width
   local picker_width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
@@ -306,11 +319,17 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
     error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
   end
 
+  if tbln then
+    prompt.line = prompt.line + 1
+    results.line = results.line + 1
+    preview.line = preview.line + 1
+  end
+
   return {
     preview = self.previewer and preview.width > 0 and preview,
     results = results,
     prompt = prompt
-}
+  }
 end)
 
 --- Centered layout with a combined block of the prompt
@@ -342,10 +361,14 @@ end)
 layout_strategies.center = make_documented_layout("center", vim.tbl_extend("error", shared_options, {
   preview_cutoff = "When lines are less than this value, the preview will be disabled",
 }), function(self, max_columns, max_lines,layout_config)
+
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
+
+  local tbln
+  max_lines, tbln = calc_tabline(max_lines)
 
   -- This sets the width for the whole layout
   local width_opt = layout_config.width
@@ -384,6 +407,12 @@ layout_strategies.center = make_documented_layout("center", vim.tbl_extend("erro
   prompt.col = results.col
   preview.col = results.col
 
+  if tbln then
+    prompt.line = prompt.line + 1
+    results.line = results.line + 1
+    preview.line = preview.line + 1
+  end
+
   return {
     preview = self.previewer and preview.height > 0 and preview,
     results = results,
@@ -416,6 +445,7 @@ layout_strategies.cursor = make_documented_layout("cursor", vim.tbl_extend("erro
     preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|", },
     preview_cutoff = "When columns are less than this value, the preview will be disabled",
 }), function(self, max_columns, max_lines, layout_config)
+
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
@@ -512,10 +542,14 @@ layout_strategies.vertical = make_documented_layout("vertical", vim.tbl_extend("
   preview_height = { "Change the height of Telescope's preview window", "See |resolver.resolve_height()|" },
   prompt_position = { "(unimplemented, but we plan on supporting)" },
 }), function(self, max_columns, max_lines, layout_config)
+
   local initial_options = p_window.get_initial_window_options(self)
   local preview = initial_options.preview
   local results = initial_options.results
   local prompt = initial_options.prompt
+
+  local tbln
+  max_lines, tbln = calc_tabline(max_lines)
 
   local width_opt = layout_config.width
   local picker_width = resolve.resolve_width(width_opt)(self,max_columns,max_lines)
@@ -548,19 +582,21 @@ layout_strategies.vertical = make_documented_layout("vertical", vim.tbl_extend("
 
   results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
 
-  if self.previewer then
-    if not layout_config.mirror then
-      preview.line = height_padding
-      results.line = preview.line + preview.height + 2
-      prompt.line = results.line + results.height + 2
-    else
-      prompt.line = height_padding
-      results.line = prompt.line + prompt.height + 2
-      preview.line = results.line + results.height + 2
-    end
-  else
-    results.line = height_padding
+  if not layout_config.mirror then
+    preview.line = height_padding
+    results.line = (preview.height == 0) and preview.line
+      or preview.line + preview.height + 2
     prompt.line = results.line + results.height + 2
+  else
+    prompt.line = height_padding
+    results.line = prompt.line + prompt.height + 2
+    preview.line = results.line + results.height + 2
+  end
+
+  if tbln then
+    prompt.line = prompt.line + 1
+    results.line = results.line + 1
+    preview.line = preview.line + 1
   end
 
   return {
