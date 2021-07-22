@@ -393,16 +393,23 @@ layout_strategies.center = make_documented_layout("center", vim.tbl_extend("erro
   local res_height = resolve.resolve_height(res_height_opt)(self, max_columns, max_lines)
 
   local max_results = (res_height > max_lines and max_lines or res_height)
-  local max_width = (width > max_columns and max_columns or width)
 
   local bs = get_border_size(self)
+  
+  -- Cap over/undersized width
+  width = math.min(width, max_columns)
+  width = math.max(width, 1 + 2*bs)
+
+  prompt.width = width
+  results.width = width
+  preview.width = width
+
+  -- Cap over/undersized height
+  max_results = math.min(max_results, max_columns - (1 + 2*bs))
+  max_results = math.max(max_results, 1 + (1 + 2*bs))
 
   prompt.height = 1
   results.height = max_results
-
-  prompt.width = max_width
-  results.width = max_width
-  preview.width = max_width
 
   -- Align the prompt and results so halfway up the screen is
   -- in the middle of this combined block
