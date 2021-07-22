@@ -252,6 +252,7 @@ end
 layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_extend("error", shared_options, {
     preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|", },
     preview_cutoff = "When columns are less than this value, the preview will be disabled",
+    prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
 }), function(self, max_columns, max_lines, layout_config)
 
   local initial_options = p_window.get_initial_window_options(self)
