@@ -679,27 +679,25 @@ layout_strategies.current_buffer = make_documented_layout('current_buffer', {
   local results = initial_options.results
   local prompt = initial_options.prompt
 
-  local width_padding = 2
-  local width = window_width - width_padding * 2
-  if not self.previewer then
-    preview.width = 0
-  else
-    preview.width = width
-  end
-  results.width = width
-  prompt.width = width
+  local bs = get_border_size(self)
+
+  -- Width
+  local width_padding = (1 + bs)    -- TODO(l-kershaw): make this configurable
+
+  prompt.width = window_width - 2 * width_padding
+  results.width = prompt.width
+  preview.width = prompt.width
 
   -- Height
-  local height_padding = 3
+  local height_padding = (1 + bs)   -- TODO(l-kershaw): make this configurable
 
-  results.height = 10
   prompt.height = 1
-
-  -- The last 2 * 2 is for the extra borders
   if self.previewer then
-    preview.height = window_height - results.height - prompt.height - 2 * 2 - height_padding * 2
+    results.height = 10   -- TODO(l-kershaw): make this configurable
+    preview.height = window_height - results.height - prompt.height - 2 * (1 + bs) - 2 * height_padding
   else
-    results.height = window_height - prompt.height - 2 - height_padding * 2
+    results.height = window_height - prompt.height - (1 + bs) - 2 * height_padding
+    preview.height = 0
   end
 
 
@@ -708,18 +706,18 @@ layout_strategies.current_buffer = make_documented_layout('current_buffer', {
   local line = win_position[1]
   if self.previewer then
     preview.line = height_padding + line
-    results.line = preview.line + preview.height + 2
-    prompt.line = results.line + results.height + 2
+    results.line = preview.line + preview.height + (1 + bs)
+    prompt.line = results.line + results.height + (1 + bs)
   else
     results.line = height_padding + line
-    prompt.line = results.line + results.height + 2
+    prompt.line = results.line + results.height + (1 + bs)
   end
 
   local col = win_position[2] + width_padding
   preview.col, results.col, prompt.col = col, col, col
 
   return {
-    preview = preview.width > 0 and preview,
+    preview = preview.height > 0 and preview,
     results = results,
     prompt = prompt,
   }
