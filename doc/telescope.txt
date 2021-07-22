@@ -1018,6 +1018,9 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
       - preview_width:
         - Change the width of Telescope's preview window
         - See |resolver.resolve_width()|
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
 
 
 layout_strategies.center()                        *layout_strategies.center()*
