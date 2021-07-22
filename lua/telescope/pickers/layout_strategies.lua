@@ -252,7 +252,6 @@ end
 layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_extend("error", shared_options, {
     preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|", },
     preview_cutoff = "When columns are less than this value, the preview will be disabled",
-    prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
 }), function(self, max_columns, max_lines, layout_config)
 
   local initial_options = p_window.get_initial_window_options(self)
@@ -264,14 +263,18 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
   max_lines, tbln = calc_tabline(max_lines)
 
   local width_opt = layout_config.width
-  local picker_width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
+  local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
 
   local height_opt = layout_config.height
-  local picker_height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
+  local height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
 
   local bs = get_border_size(self)
 
   if self.previewer and max_columns >= layout_config.preview_cutoff then
+    -- Cap over/undersized width (with previewer)
+    width = math.min(width, max_columns)
+    width = math.max(width, 2 + (1 + 3*bs))
+
     preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, cols)
       if cols < 150 then
         return math.floor(cols * 0.4)
@@ -280,24 +283,34 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
       else
         return 120
       end
-    end))(self, picker_width, max_lines)
+    end))(self, width, max_lines)
+
+    results.width = width - preview.width - (1 + 3*bs)
+    prompt.width = width - preview.width - (1 + 3*bs)
   else
+    -- Cap over/undersized width (without previewer)
+    width = math.min(width, max_columns)
+    width = math.max(width, 1 + (1 + 2*bs))
+
     preview.width = 0
+    results.width = width - preview.width - (1 + 2*bs)
+    prompt.width = width - preview.width - (1 + 2*bs)
   end
 
-  results.width = picker_width - preview.width - 1 - 3*bs
-  prompt.width = picker_width - preview.width - 1 - 3*bs
+  -- Cap over/undersized height
+  height = math.min(height, max_lines)
+  height = math.max(height, 2 + (1 + 3*bs))
 
   prompt.height = 1
-  results.height = picker_height - prompt.height - 1 - 3*bs
+  results.height = height - prompt.height - (1 + 3*bs)
 
   if self.previewer then
-    preview.height = picker_height - 2*bs
+    preview.height = height - 2*bs
   else
     preview.height = 0
   end
 
-  local width_padding = math.floor((max_columns - picker_width)/2)
+  local width_padding = math.floor((max_columns - width)/2)
   -- Default value is false, to use the normal horizontal layout
   if not layout_config.mirror then
     results.col = width_padding + bs
@@ -309,7 +322,7 @@ layout_strategies.horizontal = make_documented_layout('horizontal', vim.tbl_exte
     results.col = preview.col + preview.width + 1 + bs
   end
 
-  preview.line = math.floor((max_lines - picker_height)/2) + bs
+  preview.line = math.floor((max_lines - height)/2) + bs
   if layout_config.prompt_position == "top" then
     prompt.line = preview.line
     results.line = prompt.line + prompt.height + 1 + bs
