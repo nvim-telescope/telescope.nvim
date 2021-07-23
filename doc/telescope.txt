@@ -1003,6 +1003,24 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
     │                                                  │
     └──────────────────────────────────────────────────┘
 
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The number of lines to scroll through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - preview_cutoff: When columns are less than this value, the preview will be disabled
+      - preview_width:
+        - Change the width of Telescope's preview window
+        - See |resolver.resolve_width()|
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
 
 
 layout_strategies.center()                        *layout_strategies.center()*
@@ -1028,6 +1046,18 @@ layout_strategies.center()                        *layout_strategies.center()*
     │                                                  │
     └──────────────────────────────────────────────────┘
 
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The number of lines to scroll through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - preview_cutoff: When lines are less than this value, the preview will be disabled
 
 
 layout_strategies.cursor()                        *layout_strategies.cursor()*
@@ -1074,6 +1104,23 @@ layout_strategies.vertical()                    *layout_strategies.vertical()*
     │                                                  │
     └──────────────────────────────────────────────────┘
 
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The number of lines to scroll through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - preview_cutoff: When lines are less than this value, the preview will be disabled
+      - preview_height:
+        - Change the height of Telescope's preview window
+        - See |resolver.resolve_height()|
+      - prompt_position:
+        - (unimplemented, but we plan on supporting)
 
 
 layout_strategies.flex()                            *layout_strategies.flex()*
@@ -1083,6 +1130,21 @@ layout_strategies.flex()                            *layout_strategies.flex()*
        features
 
 
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The number of lines to scroll through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - flip_columns: The number of columns required to move to horizontal mode
+      - flip_lines: The number of lines required to move to horizontal mode
+      - horizontal: Options to pass when switching to horizontal layout
+      - vertical: Options to pass when switching to vertical layout
 
 
 layout_strategies.bottom_pane()              *layout_strategies.bottom_pane()*
