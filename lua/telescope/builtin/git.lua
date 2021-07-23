@@ -1,15 +1,15 @@
-local actions = require('telescope.actions')
-local action_state = require('telescope.actions.state')
-local finders = require('telescope.finders')
-local make_entry = require('telescope.make_entry')
-local pickers = require('telescope.pickers')
-local previewers = require('telescope.previewers')
-local utils = require('telescope.utils')
-local entry_display = require('telescope.pickers.entry_display')
-local strings = require('plenary.strings')
-local Path = require('plenary.path')
+local actions = require "telescope.actions"
+local action_state = require "telescope.actions.state"
+local finders = require "telescope.finders"
+local make_entry = require "telescope.make_entry"
+local pickers = require "telescope.pickers"
+local previewers = require "telescope.previewers"
+local utils = require "telescope.utils"
+local entry_display = require "telescope.pickers.entry_display"
+local strings = require "plenary.strings"
+local Path = require "plenary.path"
 
-local conf = require('telescope.config').values
+local conf = require("telescope.config").values
 
 local git = {}
 
@@ -17,7 +17,7 @@ git.files = function(opts)
   local show_untracked = utils.get_default(opts.show_untracked, true)
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
   if show_untracked and recurse_submodules then
-    error("Git does not support both --others and --recurse-submodules")
+    error "Git does not support both --others and --recurse-submodules"
   end
 
   -- By creating the entry maker after the cwd options,
@@ -25,13 +25,16 @@ git.files = function(opts)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
 
   pickers.new(opts, {
-    prompt_title = 'Git Files',
+    prompt_title = "Git Files",
     finder = finders.new_oneshot_job(
-      vim.tbl_flatten( {
-        "git", "ls-files", "--exclude-standard", "--cached",
+      vim.tbl_flatten {
+        "git",
+        "ls-files",
+        "--exclude-standard",
+        "--cached",
         show_untracked and "--others" or nil,
-        recurse_submodules and "--recurse-submodules" or nil
-      } ),
+        recurse_submodules and "--recurse-submodules" or nil,
+      },
       opts
     ),
     previewer = conf.file_previewer(opts),
@@ -41,11 +44,16 @@ end
 
 git.commits = function(opts)
   local results = utils.get_os_command_output({
-    'git', 'log', '--pretty=oneline', '--abbrev-commit', '--', '.'
+    "git",
+    "log",
+    "--pretty=oneline",
+    "--abbrev-commit",
+    "--",
+    ".",
   }, opts.cwd)
 
   pickers.new(opts, {
-    prompt_title = 'Git Commits',
+    prompt_title = "Git Commits",
     finder = finders.new_table {
       results = results,
       entry_maker = opts.entry_maker or make_entry.gen_from_git_commits(opts),
@@ -60,17 +68,20 @@ git.commits = function(opts)
     attach_mappings = function()
       actions.select_default:replace(actions.git_checkout)
       return true
-    end
+    end,
   }):find()
 end
 
 git.stash = function(opts)
   local results = utils.get_os_command_output({
-    'git', '--no-pager', 'stash', 'list',
+    "git",
+    "--no-pager",
+    "stash",
+    "list",
   }, opts.cwd)
 
   pickers.new(opts, {
-    prompt_title = 'Git Stash',
+    prompt_title = "Git Stash",
     finder = finders.new_table {
       results = results,
       entry_maker = opts.entry_maker or make_entry.gen_from_git_stash(),
@@ -80,7 +91,7 @@ git.stash = function(opts)
     attach_mappings = function()
       actions.select_default:replace(actions.git_apply_stash)
       return true
-    end
+    end,
   }):find()
 end
 
@@ -90,14 +101,18 @@ local get_current_buf_line = function(winnr)
 end
 
 git.bcommits = function(opts)
-  opts.current_line = (not opts.current_file) and get_current_buf_line(0) or nil
-  opts.current_file = opts.current_file or vim.fn.expand('%')
+  opts.current_line = not opts.current_file and get_current_buf_line(0) or nil
+  opts.current_file = opts.current_file or vim.fn.expand "%"
   local results = utils.get_os_command_output({
-    'git', 'log', '--pretty=oneline', '--abbrev-commit', opts.current_file
+    "git",
+    "log",
+    "--pretty=oneline",
+    "--abbrev-commit",
+    opts.current_file,
   }, opts.cwd)
 
   pickers.new(opts, {
-    prompt_title = 'Git BCommits',
+    prompt_title = "Git BCommits",
     finder = finders.new_table {
       results = results,
       entry_maker = opts.entry_maker or make_entry.gen_from_git_commits(opts),
@@ -112,64 +127,67 @@ git.bcommits = function(opts)
     attach_mappings = function()
       actions.select_default:replace(actions.git_checkout_current_buffer)
       local transfrom_file = function()
-        return opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd) or ''
+        return opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd) or ""
       end
 
       local get_buffer_of_orig = function(selection)
-        local value = selection.value .. ':' .. transfrom_file()
-        local content = utils.get_os_command_output({ 'git', '--no-pager', 'show', value }, opts.cwd)
+        local value = selection.value .. ":" .. transfrom_file()
+        local content = utils.get_os_command_output({ "git", "--no-pager", "show", value }, opts.cwd)
 
         local bufnr = vim.api.nvim_create_buf(false, true)
         vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
-        vim.api.nvim_buf_set_name(bufnr, 'Original')
+        vim.api.nvim_buf_set_name(bufnr, "Original")
         return bufnr
       end
 
       local vimdiff = function(selection, command)
         local ft = vim.bo.filetype
-        vim.cmd("diffthis")
+        vim.cmd "diffthis"
 
         local bufnr = get_buffer_of_orig(selection)
         vim.cmd(string.format("%s %s", command, bufnr))
         vim.bo.filetype = ft
-        vim.cmd("diffthis")
+        vim.cmd "diffthis"
 
-        vim.cmd(string.format(
-          "autocmd WinClosed <buffer=%s> ++nested ++once :lua vim.api.nvim_buf_delete(%s, { force = true })",
-          bufnr,
-          bufnr))
+        vim.cmd(
+          string.format(
+            "autocmd WinClosed <buffer=%s> ++nested ++once :lua vim.api.nvim_buf_delete(%s, { force = true })",
+            bufnr,
+            bufnr
+          )
+        )
       end
 
       actions.select_vertical:replace(function(prompt_bufnr)
         actions.close(prompt_bufnr)
         local selection = action_state.get_selected_entry()
-        vimdiff(selection, 'leftabove vert sbuffer')
+        vimdiff(selection, "leftabove vert sbuffer")
       end)
 
       actions.select_horizontal:replace(function(prompt_bufnr)
         actions.close(prompt_bufnr)
         local selection = action_state.get_selected_entry()
-        vimdiff(selection, 'belowright sbuffer')
+        vimdiff(selection, "belowright sbuffer")
       end)
 
       actions.select_tab:replace(function(prompt_bufnr)
         actions.close(prompt_bufnr)
         local selection = action_state.get_selected_entry()
-        vim.cmd('tabedit ' .. transfrom_file())
-        vimdiff(selection, 'leftabove vert sbuffer')
+        vim.cmd("tabedit " .. transfrom_file())
+        vimdiff(selection, "leftabove vert sbuffer")
       end)
       return true
-    end
+    end,
   }):find()
 end
 
 git.branches = function(opts)
-  local format = '%(HEAD)'
-              .. '%(refname)'
-              .. '%(authorname)'
-              .. '%(upstream:lstrip=2)'
-              .. '%(committerdate:format-local:%Y/%m/%d%H:%M:%S)'
-  local output = utils.get_os_command_output({ 'git', 'for-each-ref', '--perl', '--format', format }, opts.cwd)
+  local format = "%(HEAD)"
+    .. "%(refname)"
+    .. "%(authorname)"
+    .. "%(upstream:lstrip=2)"
+    .. "%(committerdate:format-local:%Y/%m/%d%H:%M:%S)"
+  local output = utils.get_os_command_output({ "git", "for-each-ref", "--perl", "--format", format }, opts.cwd)
 
   local results = {}
   local widths = {
@@ -179,7 +197,7 @@ git.branches = function(opts)
     committerdate = 0,
   }
   local unescape_single_quote = function(v)
-      return string.gsub(v, "\\([\\'])", "%1")
+    return string.gsub(v, "\\([\\'])", "%1")
   end
   local parse_line = function(line)
     local fields = vim.split(string.sub(line, 2, -2), "''", true)
@@ -191,21 +209,21 @@ git.branches = function(opts)
       committerdate = fields[5],
     }
     local prefix
-    if vim.startswith(entry.refname, 'refs/remotes/') then
-      prefix = 'refs/remotes/'
-    elseif vim.startswith(entry.refname, 'refs/heads/') then
-      prefix = 'refs/heads/'
+    if vim.startswith(entry.refname, "refs/remotes/") then
+      prefix = "refs/remotes/"
+    elseif vim.startswith(entry.refname, "refs/heads/") then
+      prefix = "refs/heads/"
     else
       return
     end
     local index = 1
-    if entry.head ~= '*' then
+    if entry.head ~= "*" then
       index = #results + 1
     end
 
-    entry.name = string.sub(entry.refname, string.len(prefix)+1)
+    entry.name = string.sub(entry.refname, string.len(prefix) + 1)
     for key, value in pairs(widths) do
-      widths[key] = math.max(value, strings.strdisplaywidth(entry[key] or ''))
+      widths[key] = math.max(value, strings.strdisplaywidth(entry[key] or ""))
     end
     if string.len(entry.upstream) > 0 then
       widths.upstream_indicator = 2
@@ -228,22 +246,22 @@ git.branches = function(opts)
       { width = widths.upstream_indicator },
       { width = widths.upstream },
       { width = widths.committerdate },
-    }
+    },
   }
 
   local make_display = function(entry)
     return displayer {
-      {entry.head},
-      {entry.name, 'TelescopeResultsIdentifier'},
-      {entry.authorname},
-      {string.len(entry.upstream) > 0 and '=>' or ''},
-      {entry.upstream, 'TelescopeResultsIdentifier'},
-      {entry.committerdate}
+      { entry.head },
+      { entry.name, "TelescopeResultsIdentifier" },
+      { entry.authorname },
+      { string.len(entry.upstream) > 0 and "=>" or "" },
+      { entry.upstream, "TelescopeResultsIdentifier" },
+      { entry.committerdate },
     }
   end
 
   pickers.new(opts, {
-    prompt_title = 'Git Branches',
+    prompt_title = "Git Branches",
     finder = finders.new_table {
       results = results,
       entry_maker = function(entry)
@@ -251,58 +269,60 @@ git.branches = function(opts)
         entry.ordinal = entry.name
         entry.display = make_display
         return entry
-      end
+      end,
     },
     previewer = previewers.git_branch_log.new(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function(_, map)
       actions.select_default:replace(actions.git_checkout)
-      map('i', '<c-t>', actions.git_track_branch)
-      map('n', '<c-t>', actions.git_track_branch)
+      map("i", "<c-t>", actions.git_track_branch)
+      map("n", "<c-t>", actions.git_track_branch)
 
-      map('i', '<c-r>', actions.git_rebase_branch)
-      map('n', '<c-r>', actions.git_rebase_branch)
+      map("i", "<c-r>", actions.git_rebase_branch)
+      map("n", "<c-r>", actions.git_rebase_branch)
 
-      map('i', '<c-a>', actions.git_create_branch)
-      map('n', '<c-a>', actions.git_create_branch)
+      map("i", "<c-a>", actions.git_create_branch)
+      map("n", "<c-a>", actions.git_create_branch)
 
-      map('i', '<c-s>', actions.git_switch_branch)
-      map('n', '<c-s>', actions.git_switch_branch)
+      map("i", "<c-s>", actions.git_switch_branch)
+      map("n", "<c-s>", actions.git_switch_branch)
 
-      map('i', '<c-d>', actions.git_delete_branch)
-      map('n', '<c-d>', actions.git_delete_branch)
+      map("i", "<c-d>", actions.git_delete_branch)
+      map("n", "<c-d>", actions.git_delete_branch)
       return true
-    end
+    end,
   }):find()
 end
 
 git.status = function(opts)
   local gen_new_finder = function()
     local expand_dir = utils.if_nil(opts.expand_dir, true, opts.expand_dir)
-    local git_cmd = {'git', 'status', '-s', '--', '.'}
+    local git_cmd = { "git", "status", "-s", "--", "." }
 
     if expand_dir then
-      table.insert(git_cmd, table.getn(git_cmd) - 1, '-u')
+      table.insert(git_cmd, table.getn(git_cmd) - 1, "-u")
     end
 
     local output = utils.get_os_command_output(git_cmd, opts.cwd)
 
     if table.getn(output) == 0 then
-      print('No changes found')
+      print "No changes found"
       return
     end
 
     return finders.new_table {
       results = output,
-      entry_maker = opts.entry_maker or make_entry.gen_from_git_status(opts)
+      entry_maker = opts.entry_maker or make_entry.gen_from_git_status(opts),
     }
   end
 
   local initial_finder = gen_new_finder()
-  if not initial_finder then return end
+  if not initial_finder then
+    return
+  end
 
   pickers.new(opts, {
-    prompt_title = 'Git Status',
+    prompt_title = "Git Status",
     finder = initial_finder,
     previewer = previewers.git_file_diff.new(opts),
     sorter = conf.file_sorter(opts),
@@ -313,10 +333,10 @@ git.status = function(opts)
         end,
       }
 
-      map('i', '<tab>', actions.git_staging_toggle)
-      map('n', '<tab>', actions.git_staging_toggle)
+      map("i", "<tab>", actions.git_staging_toggle)
+      map("n", "<tab>", actions.git_staging_toggle)
       return true
-    end
+    end,
   }):find()
 end
 
@@ -334,7 +354,7 @@ local set_opts_cwd = function(opts)
   if ret ~= 0 then
     local output = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
     if output[1] ~= "true" then
-        error(opts.cwd .. ' is not a git directory')
+      error(opts.cwd .. " is not a git directory")
     end
   else
     if use_git_root then

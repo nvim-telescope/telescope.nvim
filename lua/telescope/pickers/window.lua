@@ -1,10 +1,10 @@
-local resolve = require("telescope.config.resolve")
+local resolve = require "telescope.config.resolve"
 
 local p_window = {}
 
 function p_window.get_window_options(picker, max_columns, max_lines)
   local layout_strategy = picker.layout_strategy
-  local getter = require('telescope.pickers.layout_strategies')[layout_strategy]
+  local getter = require("telescope.pickers.layout_strategies")[layout_strategy]
 
   if not getter then
     error("Not a valid layout strategy: " .. layout_strategy)
@@ -22,7 +22,7 @@ function p_window.get_initial_window_options(picker)
     border = popup_border.preview,
     borderchars = popup_borderchars.preview,
     enter = false,
-    highlight = false
+    highlight = false,
   }
 
   local results = {
@@ -36,7 +36,7 @@ function p_window.get_initial_window_options(picker)
     title = picker.prompt_title,
     border = popup_border.prompt,
     borderchars = popup_borderchars.prompt,
-    enter = true
+    enter = true,
   }
 
   return {
@@ -45,6 +45,5 @@ function p_window.get_initial_window_options(picker)
     prompt = prompt,
   }
 end
-
 
 return p_window

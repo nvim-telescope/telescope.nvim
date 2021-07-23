@@ -1,12 +1,12 @@
-local Job = require('plenary.job')
+local Job = require "plenary.job"
 
-local make_entry = require('telescope.make_entry')
-local log = require('telescope.log')
-local a = require('plenary.async_lib')
+local make_entry = require "telescope.make_entry"
+local log = require "telescope.log"
+local a = require "plenary.async_lib"
 local await = a.await
 
-local async_static_finder = require('telescope.finders.async_static_finder')
-local async_oneshot_finder = require('telescope.finders.async_oneshot_finder')
+local async_static_finder = require "telescope.finders.async_static_finder"
+local async_oneshot_finder = require "telescope.finders.async_oneshot_finder"
 -- local async_job_finder = require('telescope.finders.async_job_finder')
 
 local finders = {}
@@ -15,7 +15,9 @@ local _callable_obj = function()
   local obj = {}
 
   obj.__index = obj
-  obj.__call = function(t, ...) return t:_find(...) end
+  obj.__call = function(t, ...)
+    return t:_find(...)
+  end
 
   obj.close = function() end
 
@@ -58,10 +60,10 @@ function JobFinder:new(opts)
 end
 
 function JobFinder:_find(prompt, process_result, process_complete)
-  log.trace("Finding...")
+  log.trace "Finding..."
 
   if self.job and not self.job.is_shutdown then
-    log.debug("Shutting down old job")
+    log.debug "Shutting down old job"
     self.job:shutdown()
   end
 
@@ -78,7 +80,9 @@ function JobFinder:_find(prompt, process_result, process_complete)
   end
 
   local opts = self:fn_command(prompt)
-  if not opts then return end
+  if not opts then
+    return
+  end
 
   local writer = nil
   if opts.writer and Job.is_job(opts.writer) then
@@ -131,7 +135,9 @@ function DynamicFinder:_find(prompt, process_result, process_complete)
     local results = await(self.fn(prompt))
 
     for _, result in ipairs(results) do
-      if process_result(self.entry_maker(result)) then return end
+      if process_result(self.entry_maker(result)) then
+        return
+      end
     end
 
     process_complete()

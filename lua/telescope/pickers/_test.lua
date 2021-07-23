@@ -1,9 +1,9 @@
-local assert = require('luassert')
-local builtin = require('telescope.builtin')
-local log = require('telescope.log')
+local assert = require "luassert"
+local builtin = require "telescope.builtin"
+local log = require "telescope.log"
 
-local Job = require("plenary.job")
-local Path = require("plenary.path")
+local Job = require "plenary.job"
+local Path = require "plenary.path"
 
 local tester = {}
 
@@ -36,9 +36,9 @@ local execute_test_case = function(location, key, spec)
 
   if not ok then
     writer {
-      location = 'Error: ' .. location,
+      location = "Error: " .. location,
       case = key,
-      expected = 'To succeed and return: ' .. tostring(spec[1]),
+      expected = "To succeed and return: " .. tostring(spec[1]),
       actual = actual,
 
       _type = spec._type,
@@ -60,7 +60,7 @@ local end_test_cases = function()
 end
 
 local invalid_test_case = function(k)
-  writer { case = k, expected = '<a valid key>', actual = k }
+  writer { case = k, expected = "<a valid key>", actual = k }
 
   end_test_cases()
 end
@@ -93,17 +93,17 @@ tester.picker_feed = function(input, test_cases)
     vim.defer_fn(function()
       if test_cases.post_typed then
         for k, v in ipairs(test_cases.post_typed) do
-          execute_test_case('post_typed', k, v)
+          execute_test_case("post_typed", k, v)
         end
       end
 
-      nvim_feed(replace_terms("<CR>"), "")
+      nvim_feed(replace_terms "<CR>", "")
     end, 20)
 
     vim.defer_fn(function()
       if test_cases.post_close then
         for k, v in ipairs(test_cases.post_close) do
-          execute_test_case('post_close', k, v)
+          execute_test_case("post_close", k, v)
         end
       end
 
@@ -142,16 +142,13 @@ end
 
 local get_results_from_file = function(file)
   local j = Job:new {
-    command = 'nvim',
+    command = "nvim",
     args = {
-      '--noplugin',
-      '-u',
-      'scripts/minimal_init.vim',
-      '-c',
-      string.format(
-        [[lua require("telescope.pickers._test")._execute("%s")]],
-        file
-      ),
+      "--noplugin",
+      "-u",
+      "scripts/minimal_init.vim",
+      "-c",
+      string.format([[lua require("telescope.pickers._test")._execute("%s")]], file),
     },
   }
 
@@ -166,7 +163,6 @@ local get_results_from_file = function(file)
   return result_table
 end
 
-
 local asserters = {
   _default = assert.are.same,
 
@@ -174,19 +170,12 @@ local asserters = {
   are_not = assert.are_not.same,
 }
 
-
 local check_results = function(results)
   -- TODO: We should get all the test cases here that fail, not just the first one.
   for _, v in ipairs(results) do
-    local assertion = asserters[v._type or 'default']
+    local assertion = asserters[v._type or "default"]
 
-    assertion(
-      v.expected,
-      v.actual,
-      string.format("Test Case: %s // %s",
-        v.location,
-        v.case)
-    )
+    assertion(v.expected, v.actual, string.format("Test Case: %s // %s", v.location, v.case))
   end
 end
 
@@ -208,7 +197,7 @@ tester.run_string = function(contents)
 end
 
 tester.run_file = function(filename)
-  local file = './lua/tests/pickers/' .. filename .. '.lua'
+  local file = "./lua/tests/pickers/" .. filename .. ".lua"
 
   if not Path:new(file):exists() then
     assert.are.same("<An existing file>", file)
@@ -220,7 +209,7 @@ tester.run_file = function(filename)
 end
 
 tester.not_ = function(val)
-  val._type = 'are_not'
+  val._type = "are_not"
   return val
 end
 
@@ -233,9 +222,9 @@ tester._execute = function(filename)
   local f = loadfile(filename)
   if not f then
     writer {
-      location = 'Error: ' .. filename,
+      location = "Error: " .. filename,
       case = filename,
-      expected = 'To succeed',
+      expected = "To succeed",
       actual = nil,
     }
   end
@@ -251,6 +240,5 @@ tester._execute = function(filename)
 
   end_test_cases()
 end
-
 
 return tester

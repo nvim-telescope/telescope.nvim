@@ -1,13 +1,13 @@
-local async_lib = require('plenary.async_lib')
+local async_lib = require "plenary.async_lib"
 local async = async_lib.async
 local await = async_lib.await
 local void = async_lib.void
 
 local AWAITABLE = 1000
 
-local make_entry = require('telescope.make_entry')
+local make_entry = require "telescope.make_entry"
 
-local Job = require('plenary.job')
+local Job = require "plenary.job"
 
 return function(opts)
   opts = opts or {}
@@ -22,7 +22,10 @@ return function(opts)
   local job_started = false
   local job_completed = false
   return setmetatable({
-    close = function() results = {}; job_started = false end,
+    close = function()
+      results = {}
+      job_started = false
+    end,
     results = results,
   }, {
     __call = void(async(function(_, prompt, process_result, process_complete)

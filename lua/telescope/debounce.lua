@@ -5,12 +5,12 @@ local M = {}
 
 ---Validates args for `throttle()` and  `debounce()`.
 local function td_validate(fn, ms)
-  vim.validate{
-    fn = { fn, 'f' },
+  vim.validate {
+    fn = { fn, "f" },
     ms = {
       ms,
       function(v)
-        return type(v) == 'number' and v > 0
+        return type(v) == "number" and v > 0
       end,
       "number > 0",
     },
@@ -58,8 +58,8 @@ function M.throttle_trailing(fn, ms, last)
   if not last then
     function wrapped_fn(...)
       if not running then
-        local argv = {...}
-        local argc = select('#', ...)
+        local argv = { ... }
+        local argc = select("#", ...)
 
         timer:start(ms, 0, function()
           running = false
@@ -71,8 +71,8 @@ function M.throttle_trailing(fn, ms, last)
   else
     local argv, argc
     function wrapped_fn(...)
-      argv = {...}
-      argc = select('#', ...)
+      argv = { ... }
+      argc = select("#", ...)
 
       if not running then
         timer:start(ms, 0, function()
@@ -126,8 +126,8 @@ function M.debounce_trailing(fn, ms, first)
 
   if not first then
     function wrapped_fn(...)
-      local argv = {...}
-      local argc = select('#', ...)
+      local argv = { ... }
+      local argc = select("#", ...)
 
       timer:start(ms, 0, function()
         pcall(vim.schedule_wrap(fn), unpack(argv, 1, argc))
@@ -136,8 +136,8 @@ function M.debounce_trailing(fn, ms, first)
   else
     local argv, argc
     function wrapped_fn(...)
-      argv = argv or {...}
-      argc = argc or select('#', ...)
+      argv = argv or { ... }
+      argc = argc or select("#", ...)
 
       timer:start(ms, 0, function()
         pcall(vim.schedule_wrap(fn), unpack(argv, 1, argc))
@@ -163,16 +163,16 @@ function M.test_defer(bouncer, ms, firstlast)
 
   local timeout = ms or 2000
 
-  local bounced = bouncers[bouncer](
-  function(i) vim.cmd('echom "' .. bouncer .. ': ' .. i .. '"') end,
-  timeout,
-  firstlast
-  )
+  local bounced = bouncers[bouncer](function(i)
+    vim.cmd('echom "' .. bouncer .. ": " .. i .. '"')
+  end, timeout, firstlast)
 
-  for i, _ in ipairs{1,2,3,4,5} do
+  for i, _ in ipairs { 1, 2, 3, 4, 5 } do
     bounced(i)
-    vim.schedule(function () vim.cmd('echom ' .. i) end)
-    vim.fn.call("wait", {1000, "v:false"})
+    vim.schedule(function()
+      vim.cmd("echom " .. i)
+    end)
+    vim.fn.call("wait", { 1000, "v:false" })
   end
 end
 
