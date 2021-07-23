@@ -339,6 +339,12 @@ layout_strategies.horizontal = make_documented_layout(
       error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
     end
 
+    if tbln then
+      prompt.line = prompt.line + 1
+      results.line = results.line + 1
+      preview.line = preview.line + 1
+    end
+
     return {
       preview = self.previewer and preview.width > 0 and preview,
       results = results,
@@ -391,16 +397,11 @@ layout_strategies.center = make_documented_layout(
     local width_opt = layout_config.width
     local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
 
-    -- This sets the number of results displayed
-    local res_height_opt = layout_config.height
-    local res_height = resolve.resolve_height(res_height_opt)(self, max_columns, max_lines)
-
     -- This sets the height for the whole layout
     local height_opt = layout_config.height
     local height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
 
-    prompt.height = 1
-    results.height = max_results
+    local bs = get_border_size(self)
 
     -- Cap over/undersized width
     width = math.min(width, max_columns)
@@ -421,6 +422,8 @@ layout_strategies.center = make_documented_layout(
     -- in the middle of this combined block
     prompt.line = (max_lines / 2) - ((results.height + (2 * bs)) / 2)
     results.line = prompt.line + 1 + bs
+
+    preview.line = 1
 
     if self.previewer and max_lines >= layout_config.preview_cutoff then
       preview.height = math.floor(prompt.line - (2 + bs))
@@ -484,8 +487,6 @@ layout_strategies.cursor = make_documented_layout(
 
     local width_opt = layout_config.width
     local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
-
-    local max_width = (width > max_columns and max_columns or width)
 
     local bs = get_border_size(self)
 
@@ -638,6 +639,12 @@ layout_strategies.vertical = make_documented_layout(
       prompt.line = height_padding + bs
       results.line = prompt.line + prompt.height + (1 + bs)
       preview.line = results.line + results.height + (1 + bs)
+    end
+
+    if tbln then
+      prompt.line = prompt.line + 1
+      results.line = results.line + 1
+      preview.line = preview.line + 1
     end
 
     return {
