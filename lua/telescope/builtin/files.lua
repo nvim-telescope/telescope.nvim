@@ -90,12 +90,12 @@ files.live_grep = function(opts)
       search_list = filelist
     end
 
-      local extraArgs = {}
-      if (opts.smart_mask ~= nil) then
-          table.insert(extraArgs, opts.smart_mask[filetype])
-      end
+    local extraArgs = {}
+    if (opts.smart_mask ~= nil) then
+        table.insert(extraArgs, opts.smart_mask[filetype])
+    end
 
-      return flatten { vimgrep_arguments, extraArgs, prompt, search_list }
+    return flatten { vimgrep_arguments, extraArgs, prompt, search_list }
   end, opts.entry_maker or make_entry.gen_from_vimgrep(
     opts
   ), opts.max_results, opts.cwd)
