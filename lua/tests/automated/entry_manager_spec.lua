@@ -1,9 +1,9 @@
-local EntryManager = require('telescope.entry_manager')
+local EntryManager = require "telescope.entry_manager"
 
 local eq = assert.are.same
 
-describe('process_result', function()
-  it('works with one entry', function()
+describe("process_result", function()
+  it("works with one entry", function()
     local manager = EntryManager:new(5, nil)
 
     manager:add_entry(nil, 1, "hello")
@@ -11,7 +11,7 @@ describe('process_result', function()
     eq(1, manager:get_score(1))
   end)
 
-  it('works with two entries', function()
+  it("works with two entries", function()
     local manager = EntryManager:new(5, nil)
 
     manager:add_entry(nil, 1, "hello")
@@ -23,18 +23,22 @@ describe('process_result', function()
     eq("later", manager:get_entry(2))
   end)
 
-  it('calls functions when inserting', function()
+  it("calls functions when inserting", function()
     local called_count = 0
-    local manager = EntryManager:new(5, function() called_count = called_count + 1 end)
+    local manager = EntryManager:new(5, function()
+      called_count = called_count + 1
+    end)
 
     assert(called_count == 0)
     manager:add_entry(nil, 1, "hello")
     assert(called_count == 1)
   end)
 
-  it('calls functions when inserting twice', function()
+  it("calls functions when inserting twice", function()
     local called_count = 0
-    local manager = EntryManager:new(5, function() called_count = called_count + 1 end)
+    local manager = EntryManager:new(5, function()
+      called_count = called_count + 1
+    end)
 
     assert(called_count == 0)
     manager:add_entry(nil, 1, "hello")
@@ -42,9 +46,11 @@ describe('process_result', function()
     assert(called_count == 2)
   end)
 
-  it('correctly sorts lower scores', function()
+  it("correctly sorts lower scores", function()
     local called_count = 0
-    local manager = EntryManager:new(5, function() called_count = called_count + 1 end)
+    local manager = EntryManager:new(5, function()
+      called_count = called_count + 1
+    end)
     manager:add_entry(nil, 5, "worse result")
     manager:add_entry(nil, 2, "better result")
 
@@ -54,9 +60,11 @@ describe('process_result', function()
     eq(2, called_count)
   end)
 
-  it('respects max results', function()
+  it("respects max results", function()
     local called_count = 0
-    local manager = EntryManager:new(1, function() called_count = called_count + 1 end)
+    local manager = EntryManager:new(1, function()
+      called_count = called_count + 1
+    end)
     manager:add_entry(nil, 2, "better result")
     manager:add_entry(nil, 5, "worse result")
 
@@ -64,24 +72,28 @@ describe('process_result', function()
     eq(1, called_count)
   end)
 
-  it('should allow simple entries', function()
+  it("should allow simple entries", function()
     local manager = EntryManager:new(5)
 
     local counts_executed = 0
-    manager:add_entry(nil, 1, setmetatable({}, {
-      __index = function(t, k)
-        local val = nil
-        if k == "ordinal" then
-          counts_executed = counts_executed + 1
+    manager:add_entry(
+      nil,
+      1,
+      setmetatable({}, {
+        __index = function(t, k)
+          local val = nil
+          if k == "ordinal" then
+            counts_executed = counts_executed + 1
 
-          -- This could be expensive, only call later
-          val = "wow"
-        end
+            -- This could be expensive, only call later
+            val = "wow"
+          end
 
-        rawset(t, k, val)
-        return val
-      end,
-    }))
+          rawset(t, k, val)
+          return val
+        end,
+      })
+    )
 
     eq("wow", manager:get_ordinal(1))
     eq("wow", manager:get_ordinal(1))
@@ -90,7 +102,7 @@ describe('process_result', function()
     eq(1, counts_executed)
   end)
 
-  it('should not loop a bunch', function()
+  it("should not loop a bunch", function()
     local info = {}
     local manager = EntryManager:new(5, nil, info)
     manager:add_entry(nil, 4, "better result")
@@ -102,7 +114,7 @@ describe('process_result', function()
     eq(2, info.looped)
   end)
 
-  it('should not loop a bunch, part 2', function()
+  it("should not loop a bunch, part 2", function()
     local info = {}
     local manager = EntryManager:new(5, nil, info)
     manager:add_entry(nil, 4, "better result")
@@ -115,7 +127,7 @@ describe('process_result', function()
     eq(3, info.looped)
   end)
 
-  it('should update worst score in all append case', function()
+  it("should update worst score in all append case", function()
     local manager = EntryManager:new(2, nil)
     manager:add_entry(nil, 2, "result 2")
     manager:add_entry(nil, 3, "result 3")
@@ -124,9 +136,11 @@ describe('process_result', function()
     eq(3, manager.worst_acceptable_score)
   end)
 
-  it('should update worst score in all prepend case', function()
+  it("should update worst score in all prepend case", function()
     local called_count = 0
-    local manager = EntryManager:new(2, function() called_count = called_count + 1 end)
+    local manager = EntryManager:new(2, function()
+      called_count = called_count + 1
+    end)
     manager:add_entry(nil, 5, "worse result")
     manager:add_entry(nil, 4, "less worse result")
     manager:add_entry(nil, 2, "better result")

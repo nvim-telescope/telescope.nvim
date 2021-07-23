@@ -38,9 +38,9 @@ local smarter_depth_2_extend = function(priority, base)
   end
   for key, val in pairs(priority) do
     if type(val) ~= "table" then
-      result[key] = first_non_null(val,result[key])
+      result[key] = first_non_null(val, result[key])
     else
-      result[key] = vim.tbl_extend("keep",val,result[key] or {})
+      result[key] = vim.tbl_extend("keep", val, result[key] or {})
     end
   end
   return result
@@ -83,10 +83,11 @@ local layout_config_defaults = {
 
   cursor = {
     preview_cutoff = 40,
-  }
+  },
 }
 
-local layout_config_description = string.format([[
+local layout_config_description = string.format(
+  [[
     Determines the default configuration values for layout strategies.
     See |telescope.layout| for details of the configurations options for
     each strategy.
@@ -98,10 +99,9 @@ local layout_config_description = string.format([[
     of 50%% of the screen width.
 
     Default: %s
-]], vim.inspect(
-  layout_config_defaults,
-  { newline = "\n    ", indent = "  " }
-))
+]],
+  vim.inspect(layout_config_defaults, { newline = "\n    ", indent = "  " })
+)
 
 -- A table of all the usual defaults for telescope.
 -- Keys will be the name of the default,
@@ -159,19 +159,19 @@ local telescope_defaults = {
   prompt_prefix = { "> ", [[
     Will be shown in front of the prompt.
 
-    Default: '> ']]
-  },
+    Default: '> ']] },
 
   selection_caret = { "> ", [[
     Will be shown in front of the selection.
 
-    Default: '> ']]
-  },
+    Default: '> ']] },
 
-  entry_prefix = { "  ", [[
+  entry_prefix = {
+    "  ",
+    [[
     Prefix in front of each result entry. Current selection not included.
 
-    Default: '  ']]
+    Default: '  ']],
   },
 
   initial_mode = { "insert" },
@@ -179,10 +179,11 @@ local telescope_defaults = {
   border = { true, [[
     Boolean defining if borders are added to Telescope windows.
 
-    Default: true]]
-  },
+    Default: true]] },
 
-  path_display = { {}, [[
+  path_display = {
+    {},
+    [[
     Determines how file paths are displayed
 
     path_display can be set to an array with a combination of:
@@ -212,9 +213,8 @@ local telescope_defaults = {
           return string.format("%s (%s)", tail, path)
         end,
 
-    Default: {}]]
+    Default: {}]],
   },
-
 
   borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" } },
 
@@ -230,7 +230,9 @@ local telescope_defaults = {
     end,
   },
 
-  dynamic_preview_title = { false, [[
+  dynamic_preview_title = {
+    false,
+    [[
     Will change the title of the preview window dynamically, where it
     is supported. Means the preview window will for example show the
     full filename.
@@ -238,11 +240,15 @@ local telescope_defaults = {
     Default: false]],
   },
 
-  history = { {
-    path = vim.fn.stdpath("data") .. os_sep .. "telescope_history",
-    limit = 100,
-    handler = function(...) return require('telescope.actions.history').get_simple_history(...) end,
-  }, [[
+  history = {
+    {
+      path = vim.fn.stdpath "data" .. os_sep .. "telescope_history",
+      limit = 100,
+      handler = function(...)
+        return require("telescope.actions.history").get_simple_history(...)
+      end,
+    },
+    [[
     This field handles the configuration for prompt history.
     By default it is a table, with default values (more below).
     To disable history, set it to false.
@@ -271,7 +277,6 @@ local telescope_defaults = {
                  Default:
                  require('telescope.actions.history').get_simple_history
   ]],
-
   },
 
   -- Builtin configuration
@@ -289,7 +294,8 @@ local telescope_defaults = {
   set_env = { nil },
 
   mappings = {
-    {}, [[
+    {},
+    [[
     Your mappings to override telescope's default mappings.
 
     Format is:

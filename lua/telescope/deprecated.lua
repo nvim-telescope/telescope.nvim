@@ -9,16 +9,18 @@ deprecated.picker_window_options = function(opts)
   -- Can be removed in a few weeks.
 
   if opts.shorten_path then
-    table.insert(messages,
-      "'opts.shorten_path' is no longer valid. Please use 'opts.path_display' instead. " ..
-      "Please See ':help telescope.changelog-839'"
+    table.insert(
+      messages,
+      "'opts.shorten_path' is no longer valid. Please use 'opts.path_display' instead. "
+        .. "Please See ':help telescope.changelog-839'"
     )
   end
 
   if opts.hide_filename then
-    table.insert(messages,
-      "'opts.hide_filename' is no longer valid. Please use 'opts.path_display' instead. " ..
-      "Please See ':help telescope.changelog-839'"
+    table.insert(
+      messages,
+      "'opts.hide_filename' is no longer valid. Please use 'opts.path_display' instead. "
+        .. "Please See ':help telescope.changelog-839'"
     )
   end
 
@@ -35,19 +37,22 @@ deprecated.picker_window_options = function(opts)
   end
 
   if opts.results_width then
-    table.insert(messages,
+    table.insert(
+      messages,
       "'opts.results_width' actually didn't do anything. Please see ':help telescope.changelog-922'"
     )
   end
 
   if opts.prompt_position then
-    table.insert(messages,
+    table.insert(
+      messages,
       "'opts.prompt_position' is no longer valid. Please use 'layout_config.prompt_position' instead."
     )
   end
 
   if opts.preview_cutoff then
-    table.insert(messages,
+    table.insert(
+      messages,
       "'opts.preview_cutoff' is no longer valid. Please use 'layout_config.preview_cutoff' instead."
     )
   end
