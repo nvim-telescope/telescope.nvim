@@ -390,10 +390,8 @@ layout_strategies.center = make_documented_layout("center", vim.tbl_extend("erro
   local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
 
   -- This sets the number of results displayed
-  local res_height_opt = layout_config.height
-  local res_height = resolve.resolve_height(res_height_opt)(self, max_columns, max_lines)
-
-  local max_results = (res_height > max_lines and max_lines or res_height)
+  local height_opt = layout_config.height
+  local height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
 
   local bs = get_border_size(self)
 
@@ -406,15 +404,15 @@ layout_strategies.center = make_documented_layout("center", vim.tbl_extend("erro
   preview.width = width
 
   -- Cap over/undersized height
-  max_results = math.min(max_results, max_columns - (1 + 2*bs))
-  max_results = math.max(max_results, 1 + (1 + 2*bs))
+  height = math.min(height, max_lines)
+  height = math.max(height, 2 + 3*bs)
 
   prompt.height = 1
-  results.height = max_results
+  results.height = height - prompt.height - 3*bs
 
   -- Align the prompt and results so halfway up the screen is
   -- in the middle of this combined block
-  prompt.line = (max_lines / 2) - ((max_results + (bs * 2)) / 2)
+  prompt.line = (max_lines / 2) - ((results.height + (2*bs)) / 2)
   results.line = prompt.line + 1 + (bs)
 
   preview.line = 1
@@ -738,14 +736,18 @@ layout_strategies.bottom_pane = make_documented_layout('bottom_pane', vim.tbl_ex
   local prompt = initial_options.prompt
   local preview = initial_options.preview
 
-  local result_height = if_nil(resolve.resolve_height(layout_config.height)(self,max_columns,max_lines), 25)
+  local height = if_nil(resolve.resolve_height(layout_config.height)(self,max_columns,max_lines), 25)
 
   local bs = get_border_size(self)
 
+  -- Cap over/undersized height
+  height = math.min(height, max_lines)
+  height = math.max(height, 2 + 2*bs)
+
   -- Height
   prompt.height = 1
-  results.height = result_height
-  preview.height = result_height - bs
+  results.height = height - prompt.height - (2*bs)
+  preview.height = results.height - bs
 
   -- Width
   prompt.width = max_columns - 2*bs
