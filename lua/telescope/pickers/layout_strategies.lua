@@ -389,7 +389,7 @@ layout_strategies.center = make_documented_layout("center", vim.tbl_extend("erro
   local width_opt = layout_config.width
   local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
 
-  -- This sets the number of results displayed
+  -- This sets the height for the whole layout
   local height_opt = layout_config.height
   local height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
 
@@ -488,7 +488,7 @@ layout_strategies.cursor = make_documented_layout("cursor", vim.tbl_extend("erro
   preview.height = height - 2*bs
 
   if self.previewer and max_columns >= layout_config.preview_cutoff then
-    -- Handle over/undersized width (with preview)
+    -- Cap over/undersized width (with preview)
     width = math.min(width, max_columns)
     width = math.max(width, 2 + (4*bs))
 
@@ -499,7 +499,7 @@ layout_strategies.cursor = make_documented_layout("cursor", vim.tbl_extend("erro
     prompt.width = width - preview.width - (4*bs)
     results.width = prompt.width
   else
-    -- Handle over/undersized width (without preview)
+    -- Cap over/undersized width (without preview)
     width = math.min(width, max_columns)
     width = math.max(width, 1 + (2*bs))
 
