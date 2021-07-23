@@ -91,7 +91,7 @@ files.live_grep = function(opts)
     end
 
     local extraArgs = {}
-    if (opts.smart_mask ~= nil) then
+    if opts.smart_mask ~= nil then
         table.insert(extraArgs, opts.smart_mask[filetype])
     end
 
