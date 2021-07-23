@@ -21,7 +21,7 @@ vim.deepcopy = (function()
 
       return copy
     end,
-    ['function'] = _id or function(orig)
+    ["function"] = _id or function(orig)
       local ok, dumped = pcall(string.dump, orig)
       if not ok then
         error(debug.traceback(dumped))
@@ -41,7 +41,7 @@ vim.deepcopy = (function()
     end,
     number = _id,
     string = _id,
-    ['nil'] = _id,
+    ["nil"] = _id,
     boolean = _id,
   }
 
@@ -50,7 +50,7 @@ vim.deepcopy = (function()
     if f then
       return f(orig)
     else
-      error("Cannot deepcopy object of type "..type(orig))
+      error("Cannot deepcopy object of type " .. type(orig))
     end
   end
 end)()
