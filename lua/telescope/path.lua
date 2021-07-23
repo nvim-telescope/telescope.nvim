@@ -1,15 +1,17 @@
-local log = require('telescope.log')
+local log = require "telescope.log"
 
 local path = {}
 
 path.separator = package.config:sub(1, 1)
-path.home = vim.fn.expand("~")
+path.home = vim.fn.expand "~"
 
 path.make_relative = function(filepath, cwd)
-  if not cwd or not filepath then return filepath end
+  if not cwd or not filepath then
+    return filepath
+  end
 
-  if filepath:sub(1, #cwd) == cwd  then
-    local offset =  0
+  if filepath:sub(1, #cwd) == cwd then
+    local offset = 0
     -- if  cwd does ends in the os separator, we need to take it off
     if cwd:sub(#cwd, #cwd) ~= path.separator then
       offset = 1
@@ -23,7 +25,7 @@ end
 
 path.shorten = (function()
   if jit then
-    local ffi = require('ffi')
+    local ffi = require "ffi"
     ffi.cdef [[
     typedef unsigned char char_u;
     char_u *shorten_dir(char_u *str);
@@ -49,7 +51,7 @@ path.normalize = function(filepath, cwd)
   filepath = path.make_relative(filepath, cwd)
 
   -- Substitute home directory w/ "~"
-  filepath = filepath:gsub("^" .. path.home, '~', 1)
+  filepath = filepath:gsub("^" .. path.home, "~", 1)
 
   -- Remove double path separators, it's annoying
   filepath = filepath:gsub(path.separator .. path.separator, path.separator)
@@ -59,9 +61,13 @@ end
 
 path.read_file = function(filepath)
   local fd = vim.loop.fs_open(filepath, "r", 438)
-  if fd == nil then return '' end
+  if fd == nil then
+    return ""
+  end
   local stat = assert(vim.loop.fs_fstat(fd))
-  if stat.type ~= 'file' then return '' end
+  if stat.type ~= "file" then
+    return ""
+  end
   local data = assert(vim.loop.fs_read(fd, stat.size, 0))
   assert(vim.loop.fs_close(fd))
   return data
@@ -75,7 +81,9 @@ path.read_file_async = function(filepath, callback)
     end
     vim.loop.fs_fstat(fd, function(err_fstat, stat)
       assert(not err_fstat, err_fstat)
-      if stat.type ~= 'file' then return callback('') end
+      if stat.type ~= "file" then
+        return callback ""
+      end
       vim.loop.fs_read(fd, stat.size, 0, function(err_read, data)
         assert(not err_read, err_read)
         vim.loop.fs_close(fd, function(err_close)
@@ -89,7 +97,7 @@ end
 
 return setmetatable({}, {
   __index = function(_, k)
-    log.error("telescope.path is deprecated. please use plenary.path instead")
+    log.error "telescope.path is deprecated. please use plenary.path instead"
     return path[k]
-  end
+  end,
 })

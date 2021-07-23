@@ -1,6 +1,6 @@
-local log = require("telescope.log")
+local log = require "telescope.log"
 
-local LinkedList = require('telescope.algos.linked_list')
+local LinkedList = require "telescope.algos.linked_list"
 
 --[[
 
@@ -27,7 +27,7 @@ local EntryManager = {}
 EntryManager.__index = EntryManager
 
 function EntryManager:new(max_results, set_entry, info)
-  log.trace("Creating entry_manager...")
+  log.trace "Creating entry_manager..."
 
   info = info or {}
   info.looped = 0
@@ -136,7 +136,7 @@ function EntryManager:add_entry(picker, score, entry)
   local info = self.info
   info.maxed = info.maxed or 0
 
-  local new_container = { entry, score, }
+  local new_container = { entry, score }
 
   -- Short circuit for bad scores -- they never need to be displayed.
   --    Just save them and we'll deal with them later.

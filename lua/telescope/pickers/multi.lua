@@ -1,17 +1,16 @@
-
 local MultiSelect = {}
 MultiSelect.__index = MultiSelect
 
 function MultiSelect:new()
   return setmetatable({
-    _entries = {}
+    _entries = {},
   }, MultiSelect)
 end
 
 function MultiSelect:get()
   local marked_entries = {}
   for entry, count in pairs(self._entries) do
-    table.insert(marked_entries, {count, entry})
+    table.insert(marked_entries, { count, entry })
   end
 
   table.sort(marked_entries, function(left, right)

@@ -12,9 +12,16 @@ local from_entry = {}
 
 function from_entry.path(entry, validate)
   local path = entry.path and vim.fn.fnameescape(entry.path) or nil
-  if path == nil then path = entry.filename end
-  if path == nil then path = entry.value end
-  if path == nil then print("Invalid entry", vim.inspect(entry)); return end
+  if path == nil then
+    path = entry.filename
+  end
+  if path == nil then
+    path = entry.value
+  end
+  if path == nil then
+    print("Invalid entry", vim.inspect(entry))
+    return
+  end
 
   if validate and not vim.fn.filereadable(path) then
     return

@@ -27,11 +27,7 @@ action_mt.create = function(mod)
         end
 
         local result = {
-          run_replace_or_original(
-            t._replacements[action_name],
-            mod[action_name],
-            ...
-          )
+          run_replace_or_original(t._replacements[action_name], mod[action_name], ...),
         }
         for _, res in ipairs(result) do
           table.insert(values, res)
@@ -128,7 +124,7 @@ action_mt.create = function(mod)
 end
 
 action_mt.transform = function(k, mt, mod, v)
-  local res = setmetatable({k}, mt)
+  local res = setmetatable({ k }, mt)
   if type(v) == "table" then
     res._static_pre[k] = v.pre
     res._static_post[k] = v.post
