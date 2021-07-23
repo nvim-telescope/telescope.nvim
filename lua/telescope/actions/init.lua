@@ -20,6 +20,8 @@ local action_set = require "telescope.actions.set"
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 
+local Path = require "plenary.path"
+
 local actions = setmetatable({}, {
   __index = function(_, k)
     -- TODO(conni2461): Remove deprecated messages
@@ -547,7 +549,7 @@ end
 local entry_to_qf = function(entry)
   return {
     bufnr = entry.bufnr,
-    filename = entry.filename,
+    filename = Path:new(entry.cwd, entry.filename):absolute(),
     lnum = entry.lnum,
     col = entry.col,
     text = entry.text or entry.value.text or entry.value,
