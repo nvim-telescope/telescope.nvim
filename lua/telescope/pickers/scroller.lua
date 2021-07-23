@@ -48,7 +48,7 @@ scroller.create = function(scroll_strategy, sorting_strategy)
 
   local scroll_fn = scroll_calculators[scroll_strategy]
   if not scroll_fn then
-    error(debug.traceback("Unknown scroll strategy: " .. (scroll_strategy or '')))
+    error(debug.traceback("Unknown scroll strategy: " .. (scroll_strategy or "")))
   end
 
   local calculator = scroll_fn(range_fn)
@@ -56,17 +56,27 @@ scroller.create = function(scroll_strategy, sorting_strategy)
     local result = calculator(max_results, num_results, row)
 
     if result < 0 then
-      error(string.format(
-        "Must never return a negative row: { result = %s, args = { %s %s %s } }",
-        result, max_results, num_results, row
-      ))
+      error(
+        string.format(
+          "Must never return a negative row: { result = %s, args = { %s %s %s } }",
+          result,
+          max_results,
+          num_results,
+          row
+        )
+      )
     end
 
     if result >= max_results then
-      error(string.format(
-        "Must never exceed max results: { result = %s, args = { %s %s %s } }",
-        result, max_results, num_results, row
-      ))
+      error(
+        string.format(
+          "Must never exceed max results: { result = %s, args = { %s %s %s } }",
+          result,
+          max_results,
+          num_results,
+          row
+        )
+      )
     end
 
     return result
@@ -74,7 +84,7 @@ scroller.create = function(scroll_strategy, sorting_strategy)
 end
 
 scroller.top = function(sorting_strategy, max_results, num_results)
-  if sorting_strategy == 'ascending' then
+  if sorting_strategy == "ascending" then
     return 0
   end
   return (num_results > max_results) and 0 or (max_results - num_results)
@@ -83,7 +93,7 @@ end
 scroller.middle = function(sorting_strategy, max_results, num_results)
   local mid_pos
 
-  if sorting_strategy == 'ascending' then
+  if sorting_strategy == "ascending" then
     mid_pos = math.floor(num_results / 2)
   else
     mid_pos = math.floor(max_results - num_results / 2)
@@ -93,14 +103,14 @@ scroller.middle = function(sorting_strategy, max_results, num_results)
 end
 
 scroller.bottom = function(sorting_strategy, max_results, num_results)
-  if sorting_strategy == 'ascending' then
+  if sorting_strategy == "ascending" then
     return math.min(max_results, num_results) - 1
   end
   return max_results - 1
 end
 
 scroller.better = function(sorting_strategy)
-  if sorting_strategy == 'ascending' then
+  if sorting_strategy == "ascending" then
     return -1
   else
     return 1

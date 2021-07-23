@@ -48,10 +48,10 @@ function themes.get_dropdown(opts)
 
     border = true,
     borderchars = {
-      { "─", "│", "─", "│", "╭", "╮", "╯", "╰"},
-      prompt = {"─", "│", " ", "│", "╭", "╮", "│", "│"},
-      results = {"─", "│", "─", "│", "├", "┤", "╯", "╰"},
-      preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰"},
+      { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+      prompt = { "─", "│", " ", "│", "╭", "╮", "│", "│" },
+      results = { "─", "│", "─", "│", "├", "┤", "╯", "╰" },
+      preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
     },
   }
 
@@ -71,11 +71,11 @@ function themes.get_cursor(opts)
   opts = opts or {}
 
   local theme_opts = {
-    theme = 'cursor',
+    theme = "cursor",
 
-    sorting_strategy = 'ascending',
+    sorting_strategy = "ascending",
     results_title = false,
-    layout_strategy = 'cursor',
+    layout_strategy = "cursor",
     layout_config = {
       width = function(_, _, _)
         return 80
@@ -86,14 +86,14 @@ function themes.get_cursor(opts)
       end,
     },
     borderchars = {
-      { '─', '│', '─', '│', '╭', '╮', '╯', '╰'},
-      prompt = {'─', '│', ' ', '│', '╭', '╮', '│', '│'},
-      results = {'─', '│', '─', '│', '├', '┤', '╯', '╰'},
-      preview = { '─', '│', '─', '│', '╭', '╮', '╯', '╰'},
+      { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+      prompt = { "─", "│", " ", "│", "╭", "╮", "│", "│" },
+      results = { "─", "│", "─", "│", "├", "┤", "╯", "╰" },
+      preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
     },
   }
 
-  return vim.tbl_deep_extend('force', theme_opts, opts)
+  return vim.tbl_deep_extend("force", theme_opts, opts)
 end
 
 --- Ivy style theme.
@@ -126,7 +126,7 @@ function themes.get_ivy(opts)
       prompt = { "─", " ", " ", " ", "─", "─", " ", " " },
       results = { " " },
       -- results = { "a", "b", "c", "d", "e", "f", "g", "h" },
-      preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰"},
+      preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
     },
   }, opts)
 end

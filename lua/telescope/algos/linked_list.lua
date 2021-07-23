@@ -1,4 +1,3 @@
-
 local LinkedList = {}
 LinkedList.__index = LinkedList
 
@@ -27,7 +26,7 @@ end
 
 local create_node = function(item)
   return {
-    item = item
+    item = item,
   }
 end
 
@@ -122,7 +121,6 @@ function LinkedList:place_after(index, node, item)
     new_node.next.prev = new_node
   end
 
-
   if self.track_at then
     if index == self.track_at then
       self._tracked_node = new_node
@@ -166,7 +164,6 @@ function LinkedList:place_before(index, node, item)
     new_node.next.prev = new_node
   end
 
-
   if self.track_at then
     if index == self.track_at - 1 then
       self._tracked_node = node
@@ -176,14 +173,13 @@ function LinkedList:place_before(index, node, item)
       elseif final_size > self.track_at then
         self._tracked_node = self._tracked_node.prev
       else
-          return
+        return
       end
     end
 
     self.tracked = self._tracked_node.item
   end
 end
-
 
 -- Do you even do this in linked lists...?
 -- function LinkedList:remove(item)
