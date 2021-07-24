@@ -312,7 +312,7 @@ previewers.cat = defaulter(function(opts)
       return from_entry.path(entry, true)
     end,
 
-    define_preview = function(self, entry, status)
+    define_preview = function(self, entry, _status)
       local p = from_entry.path(entry, true)
       if p == nil or p == "" then
         return
@@ -360,7 +360,7 @@ previewers.vimgrep = defaulter(function(opts)
       return from_entry.path(entry, true)
     end,
 
-    define_preview = function(self, entry, status)
+    define_preview = function(self, entry, _status)
       local p = from_entry.path(entry, true)
       if p == nil or p == "" then
         return
@@ -432,7 +432,7 @@ previewers.ctags = defaulter(function(_)
       return entry.filename
     end,
 
-    define_preview = function(self, entry, status)
+    define_preview = function(self, entry, _status)
       conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
         bufname = self.state.bufname,
         callback = function(bufnr)
@@ -454,7 +454,7 @@ previewers.builtin = defaulter(function(_)
       return entry.filename
     end,
 
-    define_preview = function(self, entry, status)
+    define_preview = function(self, entry, _status)
       local module_name = vim.fn.fnamemodify(entry.filename, ":t:r")
       local text
       if entry.text:sub(1, #module_name) ~= module_name then
@@ -482,7 +482,7 @@ previewers.help = defaulter(function(_)
       return entry.filename
     end,
 
-    define_preview = function(self, entry, status)
+    define_preview = function(self, entry, _status)
       local query = entry.cmd
       query = query:sub(2)
       query = [[\V]] .. query
@@ -508,7 +508,7 @@ previewers.man = defaulter(function(opts)
       return entry.value
     end,
 
-    define_preview = function(self, entry, status)
+    define_preview = function(self, entry, _status)
       local win_width = vim.api.nvim_win_get_width(self.state.winid)
       putils.job_maker({ "man", entry.section, entry.value }, self.state.bufnr, {
         env = { ["PAGER"] = pager, ["MANWIDTH"] = win_width },
@@ -551,7 +551,7 @@ previewers.git_branch_log = defaulter(function(opts)
       return entry.value
     end,
 
-    define_preview = function(self, entry, status)
+    define_preview = function(self, entry, _status)
       local cmd = {
         "git",
         "--no-pager",
@@ -604,7 +604,7 @@ previewers.git_commit_diff_to_parent = defaulter(function(opts)
       return entry.value
     end,
 
-    define_preview = function(self, entry, status)
+    define_preview = function(self, entry, _status)
       local cmd = { "git", "--no-pager", "diff", entry.value .. "^!" }
       if opts.current_file then
         table.insert(cmd, "--")
@@ -633,7 +633,7 @@ previewers.git_commit_diff_to_head = defaulter(function(opts)
       return entry.value
     end,
 
-    define_preview = function(self, entry, status)
+    define_preview = function(self, entry, _status)
       local cmd = { "git", "--no-pager", "diff", "--cached", entry.value }
       if opts.current_file then
         table.insert(cmd, "--")
@@ -662,7 +662,7 @@ previewers.git_commit_diff_as_was = defaulter(function(opts)
       return entry.value
     end,
 
-    define_preview = function(self, entry, status)
+    define_preview = function(self, entry, _status)
       local cmd = { "git", "--no-pager", "show" }
       local cf = opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd)
       local value = cf and (entry.value .. ":" .. cf) or entry.value
@@ -694,7 +694,7 @@ previewers.git_commit_message = defaulter(function(opts)
       return entry.value
     end,
 
-    define_preview = function(self, entry, status)
+    define_preview = function(self, entry, _status)
       local cmd = { "git", "--no-pager", "log", "-n 1", entry.value }
 
       putils.job_maker(cmd, self.state.bufnr, {
@@ -724,7 +724,7 @@ previewers.git_file_diff = defaulter(function(opts)
       return entry.value
     end,
 
-    define_preview = function(self, entry, status)
+    define_preview = function(self, entry, _status)
       if entry.status and (entry.status == "??" or entry.status == "A ") then
         local p = from_entry.path(entry, true)
         if p == nil or p == "" then

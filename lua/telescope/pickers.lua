@@ -1054,7 +1054,7 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
   end
 end
 
-function Picker:get_result_completor(results_bufnr, find_id, prompt, status_updater)
+function Picker:get_result_completor(results_bufnr, _find_id, prompt, status_updater)
   return function()
     if self.closed == true or self:is_done() then
       return

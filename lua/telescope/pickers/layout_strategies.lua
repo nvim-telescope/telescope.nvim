@@ -477,7 +477,7 @@ layout_strategies.cursor = make_documented_layout(
     preview.height = results.height + prompt.height + bs
 
     if self.previewer and max_columns >= layout_config.preview_cutoff then
-      preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, cols)
+      preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, _cols)
         -- By default, previewer takes 2/3 of the layout
         return 2 * math.floor(max_width / 3)
       end))(self, max_width, max_lines)

@@ -99,7 +99,7 @@ local _resolve_map = {}
 _resolve_map[function(val)
   return val == false
 end] = function(_, val)
-  return function(...)
+  return function()
     return val
   end
 end

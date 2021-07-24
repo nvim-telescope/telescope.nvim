@@ -149,11 +149,11 @@ function Sorter:score(prompt, entry, cb_add, cb_filter)
   end
 end
 
-function Sorter:_was_discarded(prompt, ordinal)
+function Sorter:_was_discarded(_prompt, ordinal)
   return self.discard and self._discard_state.filtered[ordinal]
 end
 
-function Sorter:_mark_discarded(prompt, ordinal)
+function Sorter:_mark_discarded(_prompt, ordinal)
   if not self.discard then
     return
   end

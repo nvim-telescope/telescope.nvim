@@ -28,7 +28,7 @@ return function(opts)
     end,
     results = results,
   }, {
-    __call = void(async(function(_, prompt, process_result, process_complete)
+    __call = void(async(function(_, _prompt, process_result, process_complete)
       if not job_started then
         local job_opts = fn_command()
 
