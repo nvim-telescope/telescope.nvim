@@ -757,7 +757,7 @@ layout_strategies.bottom_pane = make_documented_layout(
     if type(layout_config.height) == "table" and type(layout_config.height.padding) == "number" then
       -- Since bottom_pane only has padding at the top, we only need half as much padding in total
       -- This doesn't match the vim help for `resolve.resolve_height`, but it matches expectations
-      height = math.floor((max_lines + height)/2)
+      height = math.floor((max_lines + height) / 2)
     end
 
     local bs = get_border_size(self)
