@@ -750,6 +750,9 @@ layout_strategies.bottom_pane = make_documented_layout(
     local prompt = initial_options.prompt
     local preview = initial_options.preview
 
+    local tbln
+    max_lines, tbln = calc_tabline(max_lines)
+
     local height = if_nil(resolve.resolve_height(layout_config.height)(self, max_columns, max_lines), 25)
     if type(layout_config.height) == "table" and type(layout_config.height.padding) == "number" then
       -- Since bottom_pane only has padding at the top, we only need half as much padding in total
@@ -781,7 +784,7 @@ layout_strategies.bottom_pane = make_documented_layout(
     end
 
     -- Line
-    prompt.line = max_lines - results.height - 1
+    prompt.line = max_lines - results.height - (1 + bs)
     results.line = prompt.line + 1
     preview.line = results.line + bs
 
@@ -793,6 +796,12 @@ layout_strategies.bottom_pane = make_documented_layout(
     else
       results.col = bs
       preview.col = results.width + (3 * bs)
+    end
+
+    if tbln then
+      prompt.line = prompt.line + 1
+      results.line = results.line + 1
+      preview.line = preview.line + 1
     end
 
     return {
