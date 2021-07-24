@@ -339,10 +339,14 @@ function Picker:find()
 
   -- Prompt prefix
   local prompt_prefix = self.prompt_prefix
+  a.nvim_buf_set_option(prompt_bufnr, "buftype", "prompt")
+
   if prompt_prefix ~= "" then
-    a.nvim_buf_set_option(prompt_bufnr, "buftype", "prompt")
     vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
+    vim.api.nvim_buf_set_lines(prompt, 0, 1, false, { prompt_prefix })
+    vim.api.nvim_win_set_cursor(prompt, { 1, #prompt_prefix })
   end
+
   self.prompt_prefix = prompt_prefix
   self:_reset_prefix_color()
 
@@ -359,33 +363,24 @@ function Picker:find()
   -- local debounced_status = status_updater
 
   local tx, rx = channel.mpsc()
-  self.__on_lines = tx.send
+
+  self.updater = function ()
+    local prompt = self:_get_prompt()
+    tx.send(prompt)
+  end
 
   local main_loop = async(function()
     while true do
       await(async_lib.scheduler())
-
-      local _, _, _, first_line, last_line = await(rx.last())
       self:_reset_track()
+
+      local original_prompt = await(rx.last())
 
       if not vim.api.nvim_buf_is_valid(prompt_bufnr) then
         log.debug("ON_LINES: Invalid prompt_bufnr", prompt_bufnr)
         return
       end
 
-      if not first_line then
-        first_line = 0
-      end
-      if not last_line then
-        last_line = 1
-      end
-
-      if first_line > 0 or last_line > 1 then
-        log.debug("ON_LINES: Bad range", first_line, last_line, self:_get_prompt())
-        return
-      end
-
-      local original_prompt = self:_get_prompt()
       local on_input_result = self._on_input_filter_cb(original_prompt) or {}
 
       local prompt = on_input_result.prompt or original_prompt
@@ -419,7 +414,7 @@ function Picker:find()
 
   -- Register attach
   vim.api.nvim_buf_attach(prompt_bufnr, false, {
-    on_lines = tx.send,
+    on_lines = self.updater,
     on_detach = function()
       -- TODO: Can we add a "cleanup" / "teardown" function that completely removes these.
       self.finder = nil
@@ -493,6 +488,8 @@ function Picker:find()
   elseif self.initial_mode ~= "normal" then
     error("Invalid setting for initial_mode: " .. self.initial_mode)
   end
+
+  self.updater()
 end
 
 function Picker:hide_preview()
