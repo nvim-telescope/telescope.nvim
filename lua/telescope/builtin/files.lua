@@ -69,6 +69,15 @@ files.live_grep = function(opts)
     end
   end
 
+  local additional_args = {}
+  if opts.additional_args ~= nil then
+      local context = {
+          filetype = vim.bo.filetype,
+          filename = vim.fn.expand(vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()))
+      }
+      additional_args = opts.additional_args(opts, context)
+  end
+
   local live_grepper = finders.new_job(function(prompt)
     -- TODO: Probably could add some options for smart case and whatever else rg offers.
 
@@ -90,12 +99,7 @@ files.live_grep = function(opts)
       search_list = filelist
     end
 
-    local extraArgs = {}
-    if opts.smart_mask ~= nil then
-        table.insert(extraArgs, opts.smart_mask[filetype])
-    end
-
-    return flatten { vimgrep_arguments, extraArgs, prompt, search_list }
+    return flatten { vimgrep_arguments, additional_args, prompt, search_list }
   end, opts.entry_maker or make_entry.gen_from_vimgrep(
     opts
   ), opts.max_results, opts.cwd)
