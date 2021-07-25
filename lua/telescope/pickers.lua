@@ -719,7 +719,7 @@ function Picker:refresh(finder, opts)
     self._multi = MultiSelect:new()
   end
 
-  self.__on_lines(nil, nil, nil, 0, 1)
+  self.updater()
 end
 
 function Picker:set_selection(row)
