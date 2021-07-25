@@ -43,7 +43,6 @@ files.live_grep = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
   local grep_open_files = opts.grep_open_files
-  local filetype = vim.bo.filetype
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
 
   local filelist = {}
