@@ -71,11 +71,7 @@ files.live_grep = function(opts)
 
   local additional_args = {}
   if opts.additional_args ~= nil and type(opts.additional_args) == "function" then
-      local context = {
-          filetype = vim.bo.filetype,
-          filename = vim.fn.expand(vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()))
-      }
-      additional_args = opts.additional_args(opts, context)
+      additional_args = opts.additional_args(opts)
   end
 
   local live_grepper = finders.new_job(function(prompt)

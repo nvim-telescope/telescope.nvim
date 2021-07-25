@@ -70,7 +70,7 @@ local builtin = {}
 ---@param opts table: options to pass to the picker
 ---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
 ---@field search_dirs table: directory/directories to search in, mutually exclusive with `grep_open_files`
----@field smart_mask table: look up table of filetype => grepper arguments. Ex: smart_mask = { ["lua"] = "-tlua" }
+---@field additional_args function: function(opts) which returns a table of additional arguments to be passed on
 builtin.live_grep = require("telescope.builtin.files").live_grep
 
 --- Searches for the string under your cursor in your current working directory
