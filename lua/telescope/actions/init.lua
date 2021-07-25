@@ -297,13 +297,13 @@ function actions.close(prompt_bufnr)
 end
 
 actions.edit_command_line = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry()
   actions.close(prompt_bufnr)
   a.nvim_feedkeys(a.nvim_replace_termcodes(":" .. entry.value, true, false, true), "t", true)
 end
 
 actions.set_command_line = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry()
 
   actions.close(prompt_bufnr)
   vim.fn.histadd("cmd", entry.value)
@@ -311,20 +311,20 @@ actions.set_command_line = function(prompt_bufnr)
 end
 
 actions.edit_search_line = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry()
   actions.close(prompt_bufnr)
   a.nvim_feedkeys(a.nvim_replace_termcodes("/" .. entry.value, true, false, true), "t", true)
 end
 
 actions.set_search_line = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry()
 
   actions.close(prompt_bufnr)
   a.nvim_feedkeys(a.nvim_replace_termcodes("/" .. entry.value .. "<CR>", true, false, true), "t", true)
 end
 
 actions.edit_register = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry()
   local picker = action_state.get_current_picker(prompt_bufnr)
 
   vim.fn.inputsave()
@@ -346,7 +346,7 @@ actions.edit_register = function(prompt_bufnr)
 end
 
 actions.paste_register = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry()
 
   actions.close(prompt_bufnr)
 
@@ -358,7 +358,7 @@ actions.paste_register = function(prompt_bufnr)
 end
 
 actions.run_builtin = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry()
 
   actions._close(prompt_bufnr, true)
   if string.match(entry.text, " : ") then
@@ -381,7 +381,7 @@ end
 
 -- TODO: Think about how to do this.
 actions.insert_value = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry(prompt_bufnr)
+  local entry = action_state.get_selected_entry()
 
   vim.schedule(function()
     actions.close(prompt_bufnr)
