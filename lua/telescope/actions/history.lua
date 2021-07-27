@@ -1,5 +1,5 @@
-local conf = require('telescope.config').values
-local Path = require('plenary.path')
+local conf = require("telescope.config").values
+local Path = require "plenary.path"
 
 local uv = vim.loop
 
@@ -37,7 +37,9 @@ local write_async = function(path, txt, flag)
   end)
 end
 
-local append_async = function(path, txt) write_async(path, txt, "a") end
+local append_async = function(path, txt)
+  write_async(path, txt, "a")
+end
 
 local histories = {}
 
@@ -86,7 +88,9 @@ end
 
 --- Will reset the history index to the default initial state. Will happen after the picker closed
 function histories.History:reset()
-  if not self.enabled then return end
+  if not self.enabled then
+    return
+  end
   self._reset(self)
 end
 
@@ -95,7 +99,9 @@ end
 ---@param picker table: the current picker object
 ---@param no_reset boolean: On default it will reset the state at the end. If you don't want to do this set to true
 function histories.History:append(line, picker, no_reset)
-  if not self.enabled then return end
+  if not self.enabled then
+    return
+  end
   self._append(self, line, picker, no_reset)
 end
 
@@ -105,11 +111,15 @@ end
 ---@return string: the next history item
 function histories.History:get_next(line, picker)
   if not self.enabled then
-    print("You are cycling to next the history item but history is disabled.",
-          "Read ':help telescope.defaults.history'")
+    print(
+      "You are cycling to next the history item but history is disabled.",
+      "Read ':help telescope.defaults.history'"
+    )
     return false
   end
-  if self._pre_get then self._pre_get(self, line, picker) end
+  if self._pre_get then
+    self._pre_get(self, line, picker)
+  end
 
   local next_idx = self.index + 1
   if next_idx <= #self.content then
@@ -126,15 +136,21 @@ end
 ---@return string: the previous history item
 function histories.History:get_prev(line, picker)
   if not self.enabled then
-    print("You are cycling to previous the history item but history is disabled.",
-          "Read ':help telescope.defaults.history'")
+    print(
+      "You are cycling to previous the history item but history is disabled.",
+      "Read ':help telescope.defaults.history'"
+    )
     return false
   end
-  if self._pre_get then self._pre_get(self, line, picker) end
+  if self._pre_get then
+    self._pre_get(self, line, picker)
+  end
 
   local next_idx = self.index - 1
   if self.index == #self.content + 1 then
-    if line ~= '' then self:append(line, picker, true) end
+    if line ~= "" then
+      self:append(line, picker, true)
+    end
   end
   if next_idx >= 1 then
     self.index = next_idx
@@ -147,10 +163,12 @@ end
 ---
 --- It will keep one unified history across all pickers.
 histories.get_simple_history = function()
-  return histories.new({
+  return histories.new {
     init = function(obj)
       local p = Path:new(obj.path)
-      if not p:exists() then p:touch({ parents = true }) end
+      if not p:exists() then
+        p:touch { parents = true }
+      end
 
       obj.content = Path:new(obj.path):readlines()
       obj.index = #obj.content
@@ -160,7 +178,7 @@ histories.get_simple_history = function()
       self.index = #self.content + 1
     end,
     append = function(self, line, _, no_reset)
-      if line ~= '' then
+      if line ~= "" then
         if self.content[#self.content] ~= line then
           table.insert(self.content, line)
 
@@ -170,9 +188,9 @@ histories.get_simple_history = function()
             for i = diff, 1, -1 do
               table.remove(self.content, i)
             end
-            write_async(self.path, table.concat(self.content, '\n') .. '\n', 'w')
+            write_async(self.path, table.concat(self.content, "\n") .. "\n", "w")
           else
-            append_async(self.path, line .. '\n')
+            append_async(self.path, line .. "\n")
           end
         end
       end
@@ -180,7 +198,7 @@ histories.get_simple_history = function()
         self:reset()
       end
     end,
-  })
+  }
 end
 
 return histories

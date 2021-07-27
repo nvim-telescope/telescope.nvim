@@ -1,12 +1,12 @@
-RELOAD('telescope')
+RELOAD "telescope"
 
-local actions = require('telescope.actions')
-local finders = require('telescope.finders')
-local make_entry = require('telescope.make_entry')
-local previewers = require('telescope.previewers')
-local pickers = require('telescope.pickers')
-local sorters = require('telescope.sorters')
-local utils = require('telescope.utils')
+local actions = require "telescope.actions"
+local finders = require "telescope.finders"
+local make_entry = require "telescope.make_entry"
+local previewers = require "telescope.previewers"
+local pickers = require "telescope.pickers"
+local sorters = require "telescope.sorters"
+local utils = require "telescope.utils"
 
 local slow_proc = function(opts)
   opts = opts or {}
@@ -18,11 +18,8 @@ local slow_proc = function(opts)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
 
   local p = pickers.new(opts, {
-    prompt = 'Slow Proc',
-    finder = finders.new_oneshot_job(
-      {"./scratch/slow_proc.sh"},
-      opts
-    ),
+    prompt = "Slow Proc",
+    finder = finders.new_oneshot_job({ "./scratch/slow_proc.sh" }, opts),
     previewer = previewers.cat.new(opts),
     sorter = sorters.get_fuzzy_file(),
 
@@ -31,21 +28,24 @@ local slow_proc = function(opts)
 
   local count = 0
   p:register_completion_callback(function(s)
-    print(count, vim.inspect(s.stats, {
-      process = function(item)
-        if type(item) == 'string' and item:sub(1, 1) == '_' then
-          return nil
-        end
+    print(
+      count,
+      vim.inspect(s.stats, {
+        process = function(item)
+          if type(item) == "string" and item:sub(1, 1) == "_" then
+            return nil
+          end
 
-        return item
-      end,
-    }))
+          return item
+        end,
+      })
+    )
 
     count = count + 1
   end)
 
   local feed = function(text)
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(text, true, false, true), 'n', true)
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(text, true, false, true), "n", true)
   end
 
   if false then
@@ -63,7 +63,6 @@ local slow_proc = function(opts)
       vim.cmd [[stopinsert]]
     end))
   end
-
 
   p:find()
 end

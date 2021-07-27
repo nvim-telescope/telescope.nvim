@@ -12,18 +12,18 @@
 
 local a = vim.api
 
-local log = require('telescope.log')
-local Path = require('plenary.path')
-local state = require('telescope.state')
+local log = require "telescope.log"
+local Path = require "plenary.path"
+local state = require "telescope.state"
 
-local action_state = require('telescope.actions.state')
+local action_state = require "telescope.actions.state"
 
-local transform_mod = require('telescope.actions.mt').transform_mod
+local transform_mod = require("telescope.actions.mt").transform_mod
 
 local action_set = setmetatable({}, {
   __index = function(_, k)
     error("'telescope.actions.set' does not have a value: " .. tostring(k))
-  end
+  end,
 })
 
 --- Move the current selection of a picker {change} rows.
@@ -65,16 +65,16 @@ end
 local edit_buffer
 do
   local map = {
-    edit = 'buffer',
-    new = 'sbuffer',
-    vnew = 'vert sbuffer',
-    tabedit = 'tab sb',
+    edit = "buffer",
+    new = "sbuffer",
+    vnew = "vert sbuffer",
+    tabedit = "tab sb",
   }
 
   edit_buffer = function(command, bufnr)
     command = map[command]
     if command == nil then
-      error('There was no associated buffer command')
+      error "There was no associated buffer command"
     end
     vim.cmd(string.format("%s %d", command, bufnr))
   end
@@ -88,7 +88,7 @@ action_set.edit = function(prompt_bufnr, command)
   local entry = action_state.get_selected_entry()
 
   if not entry then
-    print("[telescope] Nothing currently selected")
+    print "[telescope] Nothing currently selected"
     return
   end
 
@@ -105,7 +105,7 @@ action_set.edit = function(prompt_bufnr, command)
     -- to put stuff into `filename`
     local value = entry.value
     if not value then
-      print("Could not do anything with blank line...")
+      print "Could not do anything with blank line..."
       return
     end
 
@@ -122,7 +122,7 @@ action_set.edit = function(prompt_bufnr, command)
 
   local entry_bufnr = entry.bufnr
 
-  require('telescope.actions').close(prompt_bufnr)
+  require("telescope.actions").close(prompt_bufnr)
 
   if entry_bufnr then
     edit_buffer(command, entry_bufnr)
@@ -136,7 +136,7 @@ action_set.edit = function(prompt_bufnr, command)
   end
 
   if row and col then
-    local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, {row, col})
+    local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, { row, col })
     if not ok then
       log.debug("Failed to move to cursor:", err_msg, row, col)
     end
@@ -147,11 +147,11 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
-action_set.scroll_previewer = function (prompt_bufnr, direction)
+action_set.scroll_previewer = function(prompt_bufnr, direction)
   local previewer = action_state.get_current_picker(prompt_bufnr).previewer
 
   -- Check if we actually have a previewer
-  if (type(previewer) ~= "table" or previewer.scroll_fn == nil) then
+  if type(previewer) ~= "table" or previewer.scroll_fn == nil then
     return
   end
 

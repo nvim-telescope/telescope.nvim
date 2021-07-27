@@ -90,20 +90,24 @@ That's the next step to scrolling.
 
 --]]
 
-local get_default = require('telescope.utils').get_default
+local get_default = require("telescope.utils").get_default
 
 local resolver = {}
 local _resolve_map = {}
 
 -- Booleans
-_resolve_map[function(val) return val == false end] = function(_, val)
+_resolve_map[function(val)
+  return val == false
+end] = function(_, val)
   return function(...)
     return val
   end
 end
 
 -- Percentages
-_resolve_map[function(val) return type(val) == 'number' and val >= 0 and val < 1 end] = function(selector, val)
+_resolve_map[function(val)
+  return type(val) == "number" and val >= 0 and val < 1
+end] = function(selector, val)
   return function(...)
     local selected = select(selector, ...)
     return math.floor(val * selected)
@@ -111,7 +115,9 @@ _resolve_map[function(val) return type(val) == 'number' and val >= 0 and val < 1
 end
 
 -- Numbers
-_resolve_map[function(val) return type(val) == 'number' and val >= 1 end] = function(selector, val)
+_resolve_map[function(val)
+  return type(val) == "number" and val >= 1
+end] = function(selector, val)
   return function(...)
     local selected = select(selector, ...)
     return math.min(val, selected)
@@ -126,12 +132,16 @@ end
 --        function(self, max_columns, max_lines): number
 --
 --    Resulting number is used for this configuration value.
-_resolve_map[function(val) return type(val) == 'function' end] = function(_, val)
+_resolve_map[function(val)
+  return type(val) == "function"
+end] = function(_, val)
   return val
 end
 
 -- Add padding option
-_resolve_map[function(val) return type(val) == 'table' and val['padding'] ~= nil end] = function(selector, val)
+_resolve_map[function(val)
+  return type(val) == "table" and val["padding"] ~= nil
+end] = function(selector, val)
   local resolve_pad = function(value)
     for k, v in pairs(_resolve_map) do
       if k(value) then
@@ -139,16 +149,15 @@ _resolve_map[function(val) return type(val) == 'table' and val['padding'] ~= nil
       end
     end
 
-    error('invalid configuration option for padding:' .. tostring(value))
+    error("invalid configuration option for padding:" .. tostring(value))
   end
 
   return function(...)
     local selected = select(selector, ...)
-    local padding = resolve_pad(val['padding'])
+    local padding = resolve_pad(val["padding"])
     return math.floor(selected - 2 * padding(...))
   end
 end
-
 
 --- Converts input to a function that returns the height.
 --- The input must take one of four forms:
@@ -174,7 +183,7 @@ resolver.resolve_height = function(val)
     end
   end
 
-  error('invalid configuration option for height:' .. tostring(val))
+  error("invalid configuration option for height:" .. tostring(val))
 end
 
 --- Converts input to a function that returns the width.
@@ -201,7 +210,7 @@ resolver.resolve_width = function(val)
     end
   end
 
-  error('invalid configuration option for width:' .. tostring(val))
+  error("invalid configuration option for width:" .. tostring(val))
 end
 
 -- Win option always returns a table with preview, results, and prompt.
@@ -226,7 +235,7 @@ end
 --   prompt = {...},
 -- }
 resolver.win_option = function(val, default)
-  if type(val) ~= 'table' or vim.tbl_islist(val) then
+  if type(val) ~= "table" or vim.tbl_islist(val) then
     if val == nil then
       val = default
     end
@@ -236,7 +245,7 @@ resolver.win_option = function(val, default)
       results = val,
       prompt = val,
     }
-  elseif type(val) == 'table' then
+  elseif type(val) == "table" then
     assert(not vim.tbl_islist(val))
 
     local val_to_set = val[1]

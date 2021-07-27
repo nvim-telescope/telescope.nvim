@@ -1,5 +1,5 @@
-require('plenary.reload').reload_module('plenary')
-require('plenary.reload').reload_module('telescope')
+require("plenary.reload").reload_module "plenary"
+require("plenary.reload").reload_module "telescope"
 
 --[[
 
@@ -8,11 +8,11 @@ Goals:
 
 --]]
 
-local finders = require('telescope.finders')
-local make_entry = require('telescope.make_entry')
-local pickers = require('telescope.pickers')
-local sorters = require('telescope.sorters')
-local EntryManager = require('telescope.entry_manager')
+local finders = require "telescope.finders"
+local make_entry = require "telescope.make_entry"
+local pickers = require "telescope.pickers"
+local sorters = require "telescope.sorters"
+local EntryManager = require "telescope.entry_manager"
 
 local find_and_sort_test = function(prompt, f, s)
   local info = {}
@@ -42,10 +42,7 @@ local find_and_sort_test = function(prompt, f, s)
     end
 
     info.added = info.added + 1
-    entry_manager:add_entry(
-      s:score(prompt, entry),
-      entry
-    )
+    entry_manager:add_entry(s:score(prompt, entry), entry)
   end
 
   local process_complete = function()
@@ -58,7 +55,9 @@ local find_and_sort_test = function(prompt, f, s)
   f(prompt, process_result, process_complete)
 
   -- Wait until we're done to return
-  vim.wait(5000, function() return completed end, 10)
+  vim.wait(5000, function()
+    return completed
+  end, 10)
 
   return entry_manager, info
 end
@@ -74,42 +73,33 @@ local info_to_csv = function(info, filename)
   writer:write(info.inserted .. "\t")
   writer:write(info.total .. "\t")
   writer:write(info.set_entry .. "\t")
-  writer:write(string.format("%.0f", collectgarbage("count")) .. "\t")
-  writer:write("\n")
+  writer:write(string.format("%.0f", collectgarbage "count") .. "\t")
+  writer:write "\n"
 
   writer:close()
 end
 
+local cwd = vim.fn.expand "~/build/neovim"
 
-local cwd = vim.fn.expand("~/build/neovim")
-
-collectgarbage("collect")
+collectgarbage "collect"
 for _ = 1, 1 do
-
   -- local s = sorters.get_fuzzy_file()
   local s = sorters.get_generic_fuzzy_sorter()
-  local finder = finders.new_oneshot_job(
-    {"fdfind"},
-    {
-      cwd = cwd,
-      entry_maker = make_entry.gen_from_file {cwd = cwd},
-      -- disable_devicons = true,
-      -- maximum_results = 1000,
-    }
-  )
+  local finder = finders.new_oneshot_job({ "fdfind" }, {
+    cwd = cwd,
+    entry_maker = make_entry.gen_from_file { cwd = cwd },
+    -- disable_devicons = true,
+    -- maximum_results = 1000,
+  })
 
-  local res, info = find_and_sort_test(
-    "pickers.lua",
-    finder,
-    s
-  )
+  local res, info = find_and_sort_test("pickers.lua", finder, s)
 
   -- print(vim.inspect(res:get_entry(1)))
   -- print(vim.inspect(info))
 
   info_to_csv(info, "/home/tj/tmp/profile.csv")
 
-  collectgarbage("collect")
+  collectgarbage "collect"
 end
 -- No skip: 2,206,186
 -- Ya skip:     2,133
