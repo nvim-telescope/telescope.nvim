@@ -94,7 +94,7 @@ action_set.edit = function(prompt_bufnr, command)
 
   local filename, row, col
 
-  if entry.filename then
+  if entry.path or entry.filename then
     filename = entry.path or entry.filename
 
     -- TODO: Check for off-by-one
