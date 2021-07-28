@@ -6,13 +6,13 @@ extensions._config = {}
 extensions.manager = setmetatable({}, {
   __index = function(t, k)
     -- See if this extension exists.
-    local ok, ext = pcall(require, 'telescope._extensions.' .. k)
+    local ok, ext = pcall(require, "telescope._extensions." .. k)
     if not ok then
       error("This extension doesn't exist or is not installed: " .. k .. "\n" .. ext)
     end
 
     if ext.setup then
-      ext.setup(extensions._config[k] or {}, require('telescope.config').values)
+      ext.setup(extensions._config[k] or {}, require("telescope.config").values)
     end
 
     t[k] = ext.exports or {}

@@ -1,18 +1,18 @@
 -- TODO: Add a ladder test.
 --          1, 2, 4, 8, 16, 32 attempts
 
-RELOAD('plenary')
+RELOAD "plenary"
 -- RELOAD('telescope')
 
-local profiler = require('plenary.profile.lua_profiler')
-local Job = require('plenary.job')
+local profiler = require "plenary.profile.lua_profiler"
+local Job = require "plenary.job"
 
 BIG_LIST = nil
-BIG_LIST = BIG_LIST or Job:new { command = 'fdfind', cwd = '~/build/' }:sync()
+BIG_LIST = BIG_LIST or Job:new({ command = "fdfind", cwd = "~/build/" }):sync()
 print(#BIG_LIST)
 
 local do_profile = true
-local sorter_to_test = require('telescope.sorters').get_fuzzy_file()
+local sorter_to_test = require("telescope.sorters").get_fuzzy_file()
 
 local strings_to_test = { "", "ev", "eval.c", "neovim/eval.c" }
 
@@ -25,7 +25,7 @@ local first_results = setmetatable({}, {
     local obj = {}
     rawset(t, k, obj)
     return obj
-  end
+  end,
 })
 
 local second_results = {}
@@ -66,6 +66,5 @@ print(vim.inspect(first_results))
 
 if do_profile then
   profiler.stop()
-  profiler.report('/home/tj/tmp/profiler_score.txt')
+  profiler.report "/home/tj/tmp/profiler_score.txt"
 end
-
