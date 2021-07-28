@@ -23,7 +23,6 @@
 ---@brief ]]
 
 local action_state = require "telescope.actions.state"
-local global_state = require "telescope.state"
 local log = require "telescope.log"
 
 local action_utils = {}
@@ -176,8 +175,16 @@ end
 ---@param f function: apply action onto all results
 function action_utils._with_entries(prompt_bufnr, action)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local num_results = current_picker.manager:num_results()
+  local index = 1
+  local context = { ["picker"] = current_picker, ["is_final_entry"] = false }
   for entry in current_picker.manager:iter() do
-    action(prompt_bufnr, { ["entry"] = entry })
+    if index == num_results then
+      context.is_final_entry = true
+    end
+    context.entry = entry
+    action(prompt_bufnr, context)
+    index = index + 1
   end
 end
 
@@ -218,7 +225,7 @@ end
 function action_utils._with_selections(prompt_bufnr, action, smart)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local selections = current_picker:get_multi_selection()
-  local context = {["picker"] = current_picker}
+  local context = { ["picker"] = current_picker, ["is_final_entry"] = false }
   if vim.tbl_isempty(selections) then
     if smart then
       action(prompt_bufnr)
@@ -226,8 +233,11 @@ function action_utils._with_selections(prompt_bufnr, action, smart)
       log.warn "No entries are selected to perform multi-select action on."
     end
   else
-    for _, selection in ipairs(selections) do
-      context["entry"] = selection
+    for index, selection in ipairs(selections) do
+      if index == #selections then
+        context.is_final_entry = true
+      end
+      context.entry = selection
       action(prompt_bufnr, context)
     end
   end
@@ -251,7 +261,7 @@ function action_utils._with_selection(prompt_bufnr, action, selection_index)
   selection_index = vim.F.if_nil(selection_index, 1)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local selections = current_picker:get_multi_selection()
-  action(prompt_bufnr, { ["entry"] = selection })
+  action(prompt_bufnr, { ["entry"] = selections[selection_index] })
 end
 
 --- Run an `action` from |telescope.actions| on an indexed multi selection.

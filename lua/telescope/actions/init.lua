@@ -10,7 +10,6 @@
 local a = vim.api
 
 local log = require "telescope.log"
-local state = require "telescope.state"
 local utils = require "telescope.utils"
 local p_scroller = require "telescope.pickers.scroller"
 
@@ -137,7 +136,7 @@ end
 --- Remove current entry from multi select
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.remove_selection(prompt_bufnr, context)
-  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
   picker:remove_selection(picker:get_selection_row())
 end
 
@@ -274,6 +273,9 @@ function actions.close_pum(_)
 end
 
 actions._close = function(prompt_bufnr, context, keepinsert)
+  if context ~= nil and context.is_final_entry == false then
+    return
+  end
   action_state.get_current_history():reset()
   local picker = action_state.get_current_picker(prompt_bufnr, context)
   local prompt_win = picker.prompt_win
@@ -316,7 +318,7 @@ actions.set_command_line = function(prompt_bufnr, context)
   vim.cmd(entry.value)
 end
 
-actions.edit_search_line = function(prompt_bufnr)
+actions.edit_search_line = function(prompt_bufnr, context)
   local entry = action_state.get_selected_entry(context)
   actions.close(prompt_bufnr, context)
   a.nvim_feedkeys(a.nvim_replace_termcodes("/" .. entry.value, true, false, true), "t", true)
@@ -529,7 +531,7 @@ end
 actions.git_checkout_current_buffer = function(prompt_bufnr, context)
   local cwd = actions.get_current_picker(prompt_bufnr, context).cwd
   local entry = action_state.get_selected_entry(context)
-  actions.close(prompt_bufnr)
+  actions.close(prompt_bufnr, context)
   utils.get_os_command_output({ "git", "checkout", entry.value, "--", entry.file }, cwd)
 end
 
@@ -557,14 +559,14 @@ local entry_to_qf = function(entry)
 end
 
 local send_selected_to_qf = function(prompt_bufnr, mode, target)
-  local picker = action_state.get_current_picker(prompt_bufnr, context)
+  local picker = action_state.get_current_picker(prompt_bufnr)
 
   local qf_entries = {}
   for _, entry in ipairs(picker:get_multi_selection()) do
     table.insert(qf_entries, entry_to_qf(entry))
   end
 
-  actions.close(prompt_bufnr, context)
+  actions.close(prompt_bufnr)
 
   if target == "loclist" then
     vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
@@ -574,7 +576,7 @@ local send_selected_to_qf = function(prompt_bufnr, mode, target)
 end
 
 local send_all_to_qf = function(prompt_bufnr, mode, target)
-  local picker = action_state.get_current_picker(prompt_bufnr, context)
+  local picker = action_state.get_current_picker(prompt_bufnr)
   local manager = picker.manager
 
   local qf_entries = {}
@@ -632,7 +634,7 @@ actions.add_to_loclist = function(prompt_bufnr)
 end
 
 local smart_send = function(prompt_bufnr, mode, target)
-  local picker = action_state.get_current_picker(prompt_bufnr, context)
+  local picker = action_state.get_current_picker(prompt_bufnr)
   if table.getn(picker:get_multi_selection()) > 0 then
     send_selected_to_qf(prompt_bufnr, mode, target)
   else

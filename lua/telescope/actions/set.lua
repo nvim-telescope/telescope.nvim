@@ -121,7 +121,7 @@ action_set.edit = function(prompt_bufnr, context, command)
   end
 
   local entry_bufnr = entry.bufnr
-  
+
   if vim.api.nvim_buf_is_valid(prompt_bufnr) then
     require("telescope.actions").close(prompt_bufnr, context)
   end
