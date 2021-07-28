@@ -30,7 +30,7 @@ local action_set = setmetatable({}, {
 --- Handles not overflowing / underflowing the list.
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param change number: The amount to shift the selection by
-action_set.shift_selection = function(prompt_bufnr, change)
+action_set.shift_selection = function(prompt_bufnr, _, change)
   local count = vim.v.count
   count = count == 0 and 1 or count
   count = a.nvim_get_mode().mode == "n" and count or 1
@@ -44,8 +44,8 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param type string: The type of selection to make
 --          Valid types include: "default", "horizontal", "vertical", "tabedit"
-action_set.select = function(prompt_bufnr, type)
-  return action_set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
+action_set.select = function(prompt_bufnr, context, type)
+  return action_set.edit(prompt_bufnr, context, action_state.select_key_to_edit_key(type))
 end
 
 -- goal: currently we have a workaround in actions/init.lua where we do this for all files
@@ -84,8 +84,8 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param command string: The command to use to open the file.
 --      Valid commands include: "edit", "new", "vedit", "tabedit"
-action_set.edit = function(prompt_bufnr, command)
-  local entry = action_state.get_selected_entry()
+action_set.edit = function(prompt_bufnr, context, command)
+  local entry = action_state.get_selected_entry(context)
 
   if not entry then
     print "[telescope] Nothing currently selected"
@@ -121,8 +121,10 @@ action_set.edit = function(prompt_bufnr, command)
   end
 
   local entry_bufnr = entry.bufnr
-
-  require("telescope.actions").close(prompt_bufnr)
+  
+  if vim.api.nvim_buf_is_valid(prompt_bufnr) then
+    require("telescope.actions").close(prompt_bufnr, context)
+  end
 
   if entry_bufnr then
     edit_buffer(command, entry_bufnr)

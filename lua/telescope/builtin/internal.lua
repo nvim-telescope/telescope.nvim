@@ -486,7 +486,7 @@ internal.help_tags = function(opts)
     previewer = previewers.help.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
-      action_set.select:replace(function(_, cmd)
+      action_set.select:replace(function(_, _, cmd)
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
         if cmd == "default" or cmd == "horizontal" then
