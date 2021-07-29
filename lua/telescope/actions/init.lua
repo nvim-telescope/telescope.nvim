@@ -526,6 +526,42 @@ actions.git_rebase_branch = function(prompt_bufnr)
   end
 end
 
+local git_reset_branch = function(prompt_bufnr, mode)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+
+  local confirmation = vim.fn.input("Do you really wanna " .. mode .. " reset to " .. selection.value .. "? [Y/n] ")
+  if confirmation ~= "" and string.lower(confirmation) ~= "y" then
+    return
+  end
+
+  actions.close(prompt_bufnr)
+  local _, ret, stderr = utils.get_os_command_output({ "git", "reset", mode, selection.value }, cwd)
+  if ret == 0 then
+    print("Reset to: " .. selection.value)
+  else
+    print(string.format('Error when resetting to: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  ")))
+  end
+end
+
+--- Reset to selected git commit using mixed mode
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_reset_mixed = function(prompt_bufnr)
+  git_reset_branch(prompt_bufnr, "--mixed")
+end
+
+--- Reset to selected git commit using soft mode
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_reset_soft = function(prompt_bufnr)
+  git_reset_branch(prompt_bufnr, "--soft")
+end
+
+--- Reset to selected git commit using hard mode
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_reset_hard = function(prompt_bufnr)
+  git_reset_branch(prompt_bufnr, "--hard")
+end
+
 actions.git_checkout_current_buffer = function(prompt_bufnr)
   local cwd = actions.get_current_picker(prompt_bufnr).cwd
   local selection = actions.get_selected_entry()

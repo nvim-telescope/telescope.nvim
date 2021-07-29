@@ -65,8 +65,14 @@ git.commits = function(opts)
       previewers.git_commit_message.new(opts),
     },
     sorter = conf.file_sorter(opts),
-    attach_mappings = function()
+    attach_mappings = function(_, map)
       actions.select_default:replace(actions.git_checkout)
+      map("i", "<c-r>m", actions.git_reset_mixed)
+      map("n", "<c-r>m", actions.git_reset_mixed)
+      map("i", "<c-r>s", actions.git_reset_soft)
+      map("n", "<c-r>s", actions.git_reset_soft)
+      map("i", "<c-r>h", actions.git_reset_hard)
+      map("n", "<c-r>h", actions.git_reset_hard)
       return true
     end,
   }):find()
