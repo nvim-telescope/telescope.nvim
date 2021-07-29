@@ -177,11 +177,8 @@ function action_utils._with_entries(prompt_bufnr, action)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local num_results = current_picker.manager:num_results()
   local index = 1
-  local context = { ["picker"] = current_picker, ["is_final_entry"] = false }
+  local context = { ["picker"] = current_picker }
   for entry in current_picker.manager:iter() do
-    if index == num_results then
-      context.is_final_entry = true
-    end
     context.entry = entry
     action(prompt_bufnr, context)
     index = index + 1
@@ -225,7 +222,7 @@ end
 function action_utils._with_selections(prompt_bufnr, action, smart)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local selections = current_picker:get_multi_selection()
-  local context = { ["picker"] = current_picker, ["is_final_entry"] = false }
+  local context = { ["picker"] = current_picker }
   if vim.tbl_isempty(selections) then
     if smart then
       action(prompt_bufnr)
@@ -234,9 +231,6 @@ function action_utils._with_selections(prompt_bufnr, action, smart)
     end
   else
     for index, selection in ipairs(selections) do
-      if index == #selections then
-        context.is_final_entry = true
-      end
       context.entry = selection
       action(prompt_bufnr, context)
     end

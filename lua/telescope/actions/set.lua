@@ -30,11 +30,11 @@ local action_set = setmetatable({}, {
 --- Handles not overflowing / underflowing the list.
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param change number: The amount to shift the selection by
-action_set.shift_selection = function(prompt_bufnr, _, change)
+action_set.shift_selection = function(prompt_bufnr, context, change)
   local count = vim.v.count
   count = count == 0 and 1 or count
   count = a.nvim_get_mode().mode == "n" and count or 1
-  action_state.get_current_picker(prompt_bufnr):move_selection(change * count)
+  action_state.get_current_picker(prompt_bufnr, context):move_selection(change * count)
 end
 
 --- Select the current entry. This is the action set to overwrite common
@@ -149,7 +149,7 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
-action_set.scroll_previewer = function(prompt_bufnr, direction)
+action_set.scroll_previewer = function(prompt_bufnr, _, direction)
   local previewer = action_state.get_current_picker(prompt_bufnr).previewer
 
   -- Check if we actually have a previewer

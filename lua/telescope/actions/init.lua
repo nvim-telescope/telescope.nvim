@@ -273,9 +273,6 @@ function actions.close_pum(_)
 end
 
 actions._close = function(prompt_bufnr, context, keepinsert)
-  if context ~= nil and context.is_final_entry == false then
-    return
-  end
   action_state.get_current_history():reset()
   local picker = action_state.get_current_picker(prompt_bufnr, context)
   local prompt_win = picker.prompt_win
@@ -287,7 +284,7 @@ actions._close = function(prompt_bufnr, context, keepinsert)
     end
   end
 
-  actions.close_pum(prompt_bufnr)
+  actions.close_pum()
   if not keepinsert then
     vim.cmd [[stopinsert]]
   end
@@ -295,8 +292,11 @@ actions._close = function(prompt_bufnr, context, keepinsert)
   if vim.api.nvim_win_is_valid(prompt_win) then
     vim.api.nvim_win_close(prompt_win, true)
   end
+  
+  if vim.api.nvim_buf_is_valid(prompt_bufnr) then
+    pcall(vim.cmd, string.format([[silent bdelete! %s]], prompt_bufnr))
+  end
 
-  pcall(vim.cmd, string.format([[silent bdelete! %s]], prompt_bufnr))
   pcall(a.nvim_set_current_win, original_win_id)
 end
 
