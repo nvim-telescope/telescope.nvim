@@ -84,6 +84,7 @@ builtin.grep_string = require("telescope.builtin.files").grep_string
 ---@field find_command table: command line arguments for `find_files` to use for the search, overrides default config
 ---@field follow boolean: if true, follows symlinks (i.e. uses `-L` flag for the `find` command)
 ---@field hidden boolean: determines whether to show hidden files or not (default is false)
+---@field no_ignore boolean: show files ignored by .gitignore, .ignore, etc. (default is false)
 ---@field search_dirs table: directory/directories to search in
 builtin.find_files = require("telescope.builtin.files").find_files
 
