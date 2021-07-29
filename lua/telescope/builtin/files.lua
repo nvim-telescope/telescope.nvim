@@ -160,7 +160,7 @@ files.find_files = function(opts)
         table.insert(find_command, "--hidden")
       end
       if no_ignore then
-        table.insert(find_command, '--no-ignore')
+        table.insert(find_command, "--no-ignore")
       end
       if follow then
         table.insert(find_command, "-L")
@@ -177,7 +177,7 @@ files.find_files = function(opts)
         table.insert(find_command, "--hidden")
       end
       if no_ignore then
-        table.insert(find_command, '--no-ignore')
+        table.insert(find_command, "--no-ignore")
       end
       if follow then
         table.insert(find_command, "-L")
@@ -194,7 +194,7 @@ files.find_files = function(opts)
         table.insert(find_command, "--hidden")
       end
       if no_ignore then
-        table.insert(find_command, '--no-ignore')
+        table.insert(find_command, "--no-ignore")
       end
       if follow then
         table.insert(find_command, "-L")
@@ -211,7 +211,7 @@ files.find_files = function(opts)
         find_command = flatten(find_command)
       end
       if no_ignore ~= nil then
-        log.warn('The `no_ignore` key is not available for the `find` command in `find_files`.')
+        log.warn "The `no_ignore` key is not available for the `find` command in `find_files`."
       end
       if follow then
         table.insert(find_command, "-L")
@@ -228,7 +228,7 @@ files.find_files = function(opts)
         log.warn "The `hidden` key is not available for the Windows `where` command in `find_files`."
       end
       if no_ignore ~= nil then
-        log.warn('The `no_ignore` key is not available for the Windows `where` command in `find_files`.')
+        log.warn "The `no_ignore` key is not available for the Windows `where` command in `find_files`."
       end
       if follow ~= nil then
         log.warn "The `follow` key is not available for the Windows `where` command in `find_files`."
