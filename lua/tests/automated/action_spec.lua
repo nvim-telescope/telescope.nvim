@@ -300,7 +300,7 @@ describe("actions", function()
 
   describe("action_set", function()
     it("can replace `action_set.edit`", function()
-      action_set.edit:replace(function(_, arg)
+      action_set.edit:replace(function(_, _, arg)
         return "replaced:" .. arg
       end)
       eq("replaced:edit", actions.file_edit())
@@ -312,12 +312,12 @@ describe("actions", function()
       --  In config, we have { ["<CR>"] = actions.select, ... }
       --  In caller, we have actions._goto:replace(...)
       --  Person calls `select`, does not see update
-      action_set.edit:replace(function(_, arg)
+      action_set.edit:replace(function(_, _, arg)
         return "default_to_edit:" .. arg
       end)
       eq("default_to_edit:edit", actions.select_default())
 
-      action_set.select:replace(function(_, arg)
+      action_set.select:replace(function(_, _, arg)
         return "override_with_select:" .. arg
       end)
       eq("override_with_select:default", actions.select_default())

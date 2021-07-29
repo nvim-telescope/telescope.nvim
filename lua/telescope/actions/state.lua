@@ -12,7 +12,11 @@ local conf = require("telescope.config").values
 local action_state = {}
 
 --- Get the current entry
-function action_state.get_selected_entry()
+function action_state.get_selected_entry(context)
+  vim.validate { context = { context, "table", true } }
+  if context ~= nil and context.entry then
+    return context.entry
+  end
   return global_state.get_global_key "selected_entry"
 end
 
@@ -23,7 +27,11 @@ end
 
 --- Gets the current picker
 ---@param prompt_bufnr number: The prompt bufnr
-function action_state.get_current_picker(prompt_bufnr)
+function action_state.get_current_picker(prompt_bufnr, context)
+  vim.validate { context = { context, "table", true } }
+  if context ~= nil and context.picker then
+    return context.picker
+  end
   return global_state.get_status(prompt_bufnr).picker
 end
 
