@@ -327,11 +327,11 @@ require('telescope').setup{
         ["<cr>"] = actions.select_default + actions.center,
 
         -- You can perform as many actions in a row as you like
-        ["<cr>"] = actions.select_default + actions.center + my_cool_custom_action,
+        -- ["<cr>"] = actions.select_default + actions.center + my_cool_custom_action,
       },
       n = {
         ["<esc>"] = actions.close,
-        ["<C-i>"] = my_cool_custom_action,
+        -- ["<C-i>"] = my_cool_custom_action,
       },
     },
   }
