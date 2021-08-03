@@ -394,9 +394,11 @@ builtin.file_browser({opts})                          *builtin.file_browser()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {cwd}      (string)  directory path to browse (default is cwd)
-        {depth}    (number)  file tree depth to display (default is 1)
-        {dir_icon} (string)  change the icon for a directory. default: 
+        {cwd}      (string)   directory path to browse (default is cwd)
+        {depth}    (number)   file tree depth to display (default is 1)
+        {dir_icon} (string)   change the icon for a directory. default: 
+        {hidden}   (boolean)  determines whether to show hidden files or not
+                              (default is false)
 
 
 builtin.treesitter()                                    *builtin.treesitter()*

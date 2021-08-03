@@ -103,6 +103,7 @@ builtin.fd = builtin.find_files
 ---@field cwd string: directory path to browse (default is cwd)
 ---@field depth number: file tree depth to display (default is 1)
 ---@field dir_icon string: change the icon for a directory. default: 
+---@field hidden boolean: determines whether to show hidden files or not (default is false)
 builtin.file_browser = require("telescope.builtin.files").file_browser
 
 --- Lists function names, variables, and other symbols from treesitter queries
