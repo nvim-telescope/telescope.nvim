@@ -367,6 +367,8 @@ builtin.find_files({opts})                              *builtin.find_files()*
                                   flag for the `find` command)
         {hidden}       (boolean)  determines whether to show hidden files or
                                   not (default is false)
+        {no_ignore}    (boolean)  show files ignored by .gitignore, .ignore,
+                                  etc. (default is false)
         {search_dirs}  (table)    directory/directories to search in
 
 
@@ -468,6 +470,9 @@ builtin.git_commits({opts})                            *builtin.git_commits()*
     Lists commits for current directory with diff preview
     - Default keymaps:
       - `<cr>`: checks out the currently selected commit
+      - `<C-r>m`: resets current branch to selected commit using mixed mode
+      - `<C-r>s`: resets current branch to selected commit using soft mode
+      - `<C-r>h`: resets current branch to selected commit using hard mode
 
 
     Parameters: ~
@@ -1359,6 +1364,30 @@ actions.git_delete_branch({prompt_bufnr})        *actions.git_delete_branch()*
 
 actions.git_rebase_branch({prompt_bufnr})        *actions.git_rebase_branch()*
     Rebase to selected git branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_reset_mixed({prompt_bufnr})            *actions.git_reset_mixed()*
+    Reset to selected git commit using mixed mode
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_reset_soft({prompt_bufnr})              *actions.git_reset_soft()*
+    Reset to selected git commit using soft mode
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_reset_hard({prompt_bufnr})              *actions.git_reset_hard()*
+    Reset to selected git commit using hard mode
 
 
     Parameters: ~
