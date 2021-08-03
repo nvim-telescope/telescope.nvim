@@ -41,6 +41,9 @@ local function convert_user_opts(user_opts)
         user_opts[key] = bool_type[val]
       end
     end,
+    ["table"] = function(key, val)
+      user_opts[key] = vim.fn.eval(val)
+    end,
   }
 
   local _switch_metatable = {
