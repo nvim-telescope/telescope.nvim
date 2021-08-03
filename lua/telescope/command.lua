@@ -15,6 +15,13 @@ local bool_type = {
   ["true"] = true,
 }
 
+local split_keywords = {
+  ["find_command"] = true,
+  ["vimgrep_arguments"] = true,
+  ["sections"] = true,
+  ["search_dirs"] = true,
+}
+
 -- convert command line string arguments to
 -- lua number boolean type and nil value
 local function convert_user_opts(user_opts)
@@ -42,7 +49,12 @@ local function convert_user_opts(user_opts)
       end
     end,
     ["table"] = function(key, val)
-      user_opts[key] = vim.fn.eval(val)
+      local ok, eval = pcall(vim.fn.eval, val)
+      if ok then
+        user_opts[key] = eval
+      else
+        user_opts[key] = nil
+      end
     end,
   }
 
@@ -55,9 +67,19 @@ local function convert_user_opts(user_opts)
   setmetatable(_switch, _switch_metatable)
 
   for key, val in pairs(user_opts) do
-    if default_opts[key] ~= nil then
+    if split_keywords[key] then
+      _switch["table"](key, val)
+      if user_opts[key] == nil then
+        user_opts[key] = vim.split(val, ",")
+      end
+    elseif default_opts[key] ~= nil then
+      -- vim.fn.input('1')
+      -- dump(key,val)
       _switch[type(default_opts[key])](key, val)
     else
+      -- vim.fn.input('2')
+      -- dump(key,val)
+      -- print('type',type(default_opts[key]))
       _switch["string"](key, val)
     end
   end
@@ -126,13 +148,6 @@ function command.get_extensions_subcommand()
   return complete_ext_table
 end
 
-local split_keywords = {
-  ["find_command"] = true,
-  ["vimgrep_arguments"] = true,
-  ["sections"] = true,
-  ["search_dirs"] = true,
-}
-
 function command.register_keyword(keyword)
   split_keywords[keyword] = true
 end
@@ -155,8 +170,6 @@ function command.load_command(cmd, ...)
       local param = vim.split(arg, "=")
       if param[1] == "theme" then
         user_opts["theme"] = param[2]
-      elseif split_keywords[param[1]] then
-        user_opts.opts[param[1]] = vim.split(param[2], ",")
       else
         user_opts.opts[param[1]] = param[2]
       end
