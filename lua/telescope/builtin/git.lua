@@ -108,7 +108,7 @@ end
 
 git.bcommits = function(opts)
   opts.current_line = not opts.current_file and get_current_buf_line(0) or nil
-  opts.current_file = opts.current_file or vim.fn.expand "%"
+  opts.current_file = opts.current_file or vim.fn.expand "%:p"
   local results = utils.get_os_command_output({
     "git",
     "log",
