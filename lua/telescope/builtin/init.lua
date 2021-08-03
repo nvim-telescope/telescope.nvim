@@ -78,6 +78,7 @@ builtin.live_grep = require("telescope.builtin.files").live_grep
 ---@field search string: the query to search
 ---@field search_dirs table: directory/directories to search in
 ---@field use_regex boolean: if true, special characters won't be escaped, allows for using regex (default is false)
+---@field additional_args function: function(opts) which returns a table of additional arguments to be passed on
 builtin.grep_string = require("telescope.builtin.files").grep_string
 
 --- Lists files in your current working directory, respects .gitignore
