@@ -803,7 +803,7 @@ builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {jump_type} (string)  how to go to definition if there is only one,
+        {jump_type} (string)  how to go to implementation if there is only one,
                               values: "tab", "split", "vsplit", "never"
 
 
