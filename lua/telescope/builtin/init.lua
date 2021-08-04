@@ -244,6 +244,7 @@ builtin.help_tags = require("telescope.builtin.internal").help_tags
 
 --- Lists manpage entries, opens them in a help window on `<cr>`
 ---@param opts table: options to pass to the picker
+---@field sections table: a list of sections to search, use `{ "ALL" }` to search in all sections
 builtin.man_pages = require("telescope.builtin.internal").man_pages
 
 --- Lists lua modules and reloads them on `<cr>`
