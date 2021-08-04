@@ -789,6 +789,10 @@ builtin.lsp_definitions({opts})                    *builtin.lsp_definitions()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
+    Fields: ~
+        {jump_type} (string)  how to go to definition if there is only one,
+                              values: "tab", "split", "vsplit", "never"
+
 
 builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
     Goto the implementation of the word under the cursor if there's only one,
@@ -797,6 +801,10 @@ builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {jump_type} (string)  how to go to implementation if there is only one,
+                              values: "tab", "split", "vsplit", "never"
 
 
 builtin.lsp_code_actions({opts})                  *builtin.lsp_code_actions()*
