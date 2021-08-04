@@ -646,6 +646,10 @@ builtin.man_pages({opts})                                *builtin.man_pages()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
+    Fields: ~
+        {sections} (table)  a list of sections to search, use `{ "ALL" }` to
+                            search in all sections
+
 
 builtin.reloader({opts})                                  *builtin.reloader()*
     Lists lua modules and reloads them on `<cr>`
