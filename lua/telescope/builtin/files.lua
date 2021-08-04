@@ -68,6 +68,11 @@ files.live_grep = function(opts)
     end
   end
 
+  local additional_args = {}
+  if opts.additional_args ~= nil and type(opts.additional_args) == "function" then
+    additional_args = opts.additional_args(opts)
+  end
+
   local live_grepper = finders.new_job(function(prompt)
     -- TODO: Probably could add some options for smart case and whatever else rg offers.
 
@@ -89,7 +94,7 @@ files.live_grep = function(opts)
       search_list = filelist
     end
 
-    return flatten { vimgrep_arguments, prompt, search_list }
+    return flatten { vimgrep_arguments, additional_args, prompt, search_list }
   end, opts.entry_maker or make_entry.gen_from_vimgrep(
     opts
   ), opts.max_results, opts.cwd)
@@ -116,8 +121,14 @@ files.grep_string = function(opts)
   local word_match = opts.word_match
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
 
+  local additional_args = {}
+  if opts.additional_args ~= nil and type(opts.additional_args) == "function" then
+    additional_args = opts.additional_args(opts)
+  end
+
   local args = flatten {
     vimgrep_arguments,
+    additional_args,
     word_match,
     search,
   }
