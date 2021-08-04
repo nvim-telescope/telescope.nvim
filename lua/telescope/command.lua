@@ -53,7 +53,12 @@ local function convert_user_opts(user_opts)
       if ok then
         user_opts[key] = eval
       else
-        user_opts[key] = nil
+        eval = assert(loadstring("return " .. val))()
+        if type(eval) == "table" then
+          user_opts[key] = eval
+        else
+          user_opts[key] = nil
+        end
       end
     end,
   }
@@ -73,13 +78,8 @@ local function convert_user_opts(user_opts)
         user_opts[key] = vim.split(val, ",")
       end
     elseif default_opts[key] ~= nil then
-      -- vim.fn.input('1')
-      -- dump(key,val)
       _switch[type(default_opts[key])](key, val)
     else
-      -- vim.fn.input('2')
-      -- dump(key,val)
-      -- print('type',type(default_opts[key]))
       _switch["string"](key, val)
     end
   end
