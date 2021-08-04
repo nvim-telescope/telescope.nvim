@@ -336,7 +336,8 @@ builtin.live_grep({opts})                                *builtin.live_grep()*
                                       only, mutually exclusive with
                                       `search_dirs`
         {search_dirs}     (table)     directory/directories to search in,
-                                      mutually exclusive with `grep_open_files`
+                                      mutually exclusive with
+                                      `grep_open_files`
         {additional_args} (function)  function(opts) which returns a table of
                                       additional arguments to be passed on
 
@@ -416,8 +417,8 @@ builtin.treesitter()                                    *builtin.treesitter()*
 
 
     Fields: ~
-        {show_line} (boolean)  if true, shows the row:column that the result is
-                               found at (default is true)
+        {show_line} (boolean)  if true, shows the row:column that the result
+                               is found at (default is true)
 
 
 builtin.current_buffer_fuzzy_find({opts})*builtin.current_buffer_fuzzy_find()*
@@ -668,15 +669,16 @@ builtin.buffers({opts})                                    *builtin.buffers()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {show_all_buffers}      (boolean)  if true, show all buffers, including
-                                           unloaded buffers (default true)
+        {show_all_buffers}      (boolean)  if true, show all buffers,
+                                           including unloaded buffers (default
+                                           true)
         {ignore_current_buffer} (boolean)  if true, don't show the current
                                            buffer in the list (default false)
         {only_cwd}              (boolean)  if true, only show buffers in the
                                            current working directory (default
                                            false)
-        {sort_lastused}         (boolean)  Sorts current and last buffer to the
-                                           top and selects the lastused
+        {sort_lastused}         (boolean)  Sorts current and last buffer to
+                                           the top and selects the lastused
                                            (default false)
         {sort_mru}              (boolean)  Sorts all buffers after most recent
                                            used. Not just the current and last
@@ -790,7 +792,7 @@ builtin.lsp_definitions({opts})                    *builtin.lsp_definitions()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {jump_type} (string)  how to go to definition if there is only one,
+        {jump_type} (string)  how to goto definition if there is only one,
                               values: "tab", "split", "vsplit", "never"
 
 
@@ -803,7 +805,7 @@ builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {jump_type} (string)  how to go to implementation if there is only one,
+        {jump_type} (string)  how to goto implementation if there is only one,
                               values: "tab", "split", "vsplit", "never"
 
 
@@ -881,12 +883,12 @@ builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
     Fields: ~
         {severity}       (string|number)  filter diagnostics by severity name
                                           (string) or id (number)
-        {severity_limit} (string|number)  keep diagnostics equal or more severe
-                                          wrt severity name (string) or id
-                                          (number)
-        {severity_bound} (string|number)  keep diagnostics equal or less severe
-                                          wrt severity name (string) or id
-                                          (number)
+        {severity_limit} (string|number)  keep diagnostics equal or more
+                                          severe wrt severity name (string) or
+                                          id (number)
+        {severity_bound} (string|number)  keep diagnostics equal or less
+                                          severe wrt severity name (string) or
+                                          id (number)
         {no_sign}        (bool)           hide LspDiagnosticSigns from Results
                                           (default is false)
         {line_width}     (number)         set length of diagnostic entry text
@@ -910,12 +912,12 @@ builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
     Fields: ~
         {severity}       (string|number)  filter diagnostics by severity name
                                           (string) or id (number)
-        {severity_limit} (string|number)  keep diagnostics equal or more severe
-                                          wrt severity name (string) or id
-                                          (number)
-        {severity_bound} (string|number)  keep diagnostics equal or less severe
-                                          wrt severity name (string) or id
-                                          (number)
+        {severity_limit} (string|number)  keep diagnostics equal or more
+                                          severe wrt severity name (string) or
+                                          id (number)
+        {severity_bound} (string|number)  keep diagnostics equal or less
+                                          severe wrt severity name (string) or
+                                          id (number)
         {no_sign}        (bool)           hide LspDiagnosticSigns from Results
                                           (default is false)
         {line_width}     (number)         set length of diagnostic entry text
@@ -2019,8 +2021,8 @@ histories.History()                                      *histories.History()*
     Fields: ~
         {enabled} (boolean)  Will indicate if History is enabled or disabled
         {path}    (string)   Will point to the location of the history file
-        {limit}   (string)   Will have the limit of the history. Can be nil, if
-                             limit is disabled.
+        {limit}   (string)   Will have the limit of the history. Can be nil,
+                             if limit is disabled.
         {content} (table)    History table. Needs to be filled by your own
                              History implementation
         {index}   (number)   Used to keep track of the next or previous index.
@@ -2062,8 +2064,8 @@ histories.History:append({line}, {picker}, {no_reset})*histories.History:append(
     Parameters: ~
         {line}     (string)   current line that will be appended
         {picker}   (table)    the current picker object
-        {no_reset} (boolean)  On default it will reset the state at the end. If
-                              you don't want to do this set to true
+        {no_reset} (boolean)  On default it will reset the state at the end.
+                              If you don't want to do this set to true
 
 
 histories.History:get_next({line}, {picker})    *histories.History:get_next()*
