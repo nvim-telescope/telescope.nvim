@@ -64,7 +64,14 @@ local function list_or_jump(action, title, opts)
 
   if #flattened_results == 0 then
     return
-  elseif #flattened_results == 1 then
+  elseif #flattened_results == 1 and opts.jump_type ~= "never" then
+    if opts.jump_type == "tab" then
+      vim.cmd "tabedit"
+    elseif opts.jump_type == "split" then
+      vim.cmd "new"
+    elseif opts.jump_type == "vsplit" then
+      vim.cmd "vnew"
+    end
     vim.lsp.util.jump_to_location(flattened_results[1])
   else
     local locations = vim.lsp.util.locations_to_items(flattened_results)
