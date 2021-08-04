@@ -168,10 +168,12 @@ function command.load_command(cmd, ...)
       user_opts["extension_type"] = arg
     else
       local param = vim.split(arg, "=")
-      if param[1] == "theme" then
-        user_opts["theme"] = param[2]
+      local key = table.remove(param,1)
+      param = table.concat(param, "=")
+      if key == "theme" then
+        user_opts["theme"] = param
       else
-        user_opts.opts[param[1]] = param[2]
+        user_opts.opts[key] = param
       end
     end
   end
