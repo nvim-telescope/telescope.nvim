@@ -17,10 +17,9 @@ local p_scroller = require "telescope.pickers.scroller"
 local action_state = require "telescope.actions.state"
 local action_utils = require "telescope.actions.utils"
 local action_set = require "telescope.actions.set"
+local from_entry = require "telescope.from_entry"
 
 local transform_mod = require("telescope.actions.mt").transform_mod
-
-local Path = require "plenary.path"
 
 local actions = setmetatable({}, {
   __index = function(_, k)
@@ -585,7 +584,7 @@ end
 local entry_to_qf = function(entry)
   return {
     bufnr = entry.bufnr,
-    filename = Path:new(entry.cwd, entry.filename):absolute(),
+    filename = from_entry.path(entry, false),
     lnum = entry.lnum,
     col = entry.col,
     text = entry.text or entry.value.text or entry.value,
