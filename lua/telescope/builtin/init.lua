@@ -375,6 +375,7 @@ builtin.lsp_document_diagnostics = require("telescope.builtin.lsp").diagnostics
 ---@field severity_bound string|number: keep diagnostics equal or less severe wrt severity name (string) or id (number)
 ---@field no_sign bool: hide LspDiagnosticSigns from Results (default is false)
 ---@field line_width number: set length of diagnostic entry text in Results
+---@field only_cwd boolean: if true, only show diagnostics for files in the current working directory (default false)
 builtin.lsp_workspace_diagnostics = require("telescope.builtin.lsp").workspace_diagnostics
 
 local apply_config = function(mod)
