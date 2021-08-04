@@ -505,14 +505,14 @@ previewers.man = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "Man Preview",
     get_buffer_by_name = function(_, entry)
-      return entry.value
+      return entry.value .. "/" .. entry.section
     end,
 
     define_preview = function(self, entry, status)
       local win_width = vim.api.nvim_win_get_width(self.state.winid)
       putils.job_maker({ "man", entry.section, entry.value }, self.state.bufnr, {
         env = { ["PAGER"] = pager, ["MANWIDTH"] = win_width },
-        value = entry.value,
+        value = entry.value .. "/" .. entry.section,
         bufname = self.state.bufname,
       })
       putils.regex_highlighter(self.state.bufnr, "man")
