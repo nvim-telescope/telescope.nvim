@@ -332,11 +332,13 @@ builtin.live_grep({opts})                                *builtin.live_grep()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {grep_open_files} (boolean)  if true, restrict search to open files
-                                     only, mutually exclusive with
-                                     `search_dirs`
-        {search_dirs}     (table)    directory/directories to search in,
-                                     mutually exclusive with `grep_open_files`
+        {grep_open_files} (boolean)   if true, restrict search to open files
+                                      only, mutually exclusive with
+                                      `search_dirs`
+        {search_dirs}     (table)     directory/directories to search in,
+                                      mutually exclusive with `grep_open_files`
+        {additional_args} (function)  function(opts) which returns a table of
+                                      additional arguments to be passed on
 
 
 builtin.grep_string({opts})                            *builtin.grep_string()*
@@ -347,10 +349,13 @@ builtin.grep_string({opts})                            *builtin.grep_string()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {search}      (string)   the query to search
-        {search_dirs} (table)    directory/directories to search in
-        {use_regex}   (boolean)  if true, special characters won't be escaped,
-                                 allows for using regex (default is false)
+        {search}          (string)    the query to search
+        {search_dirs}     (table)     directory/directories to search in
+        {use_regex}       (boolean)   if true, special characters won't be
+                                      escaped, allows for using regex (default
+                                      is false)
+        {additional_args} (function)  function(opts) which returns a table of
+                                      additional arguments to be passed on
 
 
 builtin.find_files({opts})                              *builtin.find_files()*
