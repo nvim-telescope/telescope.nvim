@@ -278,7 +278,14 @@ utils.is_path_hidden = function(opts, path_display)
     or path_display.hidden
 end
 
+
+local is_uri = function(filename)
+  return string.match(filename, "^%w+://") ~= nil
+end
+
 utils.transform_path = function(opts, path)
+  if is_uri(path) then return path end
+
   local path_display = utils.get_default(opts.path_display, require("telescope.config").values.path_display)
 
   local transformed_path = path
