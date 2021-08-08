@@ -19,7 +19,7 @@ local action_utils = require "telescope.actions.utils"
 local action_set = require "telescope.actions.set"
 local from_entry = require "telescope.from_entry"
 
-local transform_mod = require("telescope.actions.mt").transform_mod
+local action_mt = require "telescope.actions.mt"
 
 local actions = setmetatable({}, {
   __index = function(_, k)
@@ -805,8 +805,45 @@ actions.cycle_previewers_prev = function(prompt_bufnr)
   actions.get_current_picker(prompt_bufnr):cycle_previewers(-1)
 end
 
+--- Register your custom actions.
+--- Example usage: modifying |actions.select_vertical|
+--- <pre>
+--- local actions = require "telescope.actions"
+--- local action_state = require "telescope.actions.state"
+--- -- func should be a table of {action_name = action_function}
+--- local print_entry = actions.register_action({
+---   print_entry = function()
+---     print(vim.inspect(action_state.get_selected_entry()))
+---   end,
+--- })[1] -- get first entry of returned functions
+---
+--- telescope.setup {
+---   defaults = {
+---     mappings = {
+---       i = {
+---         -- Both `print_entry` and `actions.print_entry` can be used
+---         ["<C-v>"] = print_entry + actions.select_vertical,
+---         ["<C-v>"] = actions.print_entry + actions.select_vertical,
+---       }
+---     }
+---   }
+--- }
+--- </pre>
+---@param func table: table comprising named custom action(s), i.e. {action_name = action, ... }
+---@return table: table of registered actions
+actions.register_actions = function(func)
+  local mt = action_mt.create(func)
+  local ret = {}
+  for k, v in pairs(func) do
+    -- actions is "redirect" of actions_mt when registering actions
+    actions[k] = action_mt.transform(k, mt, v)
+    table.insert(ret, actions[k])
+  end
+  return ret
+end
+
 -- ==================================================
 -- Transforms modules and sets the corect metatables.
 -- ==================================================
-actions = transform_mod(actions)
+actions = action_mt.transform_mod(actions)
 return actions

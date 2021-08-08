@@ -295,11 +295,11 @@ you can pick from to remap your telescope buffer mappings, or create a new custo
 <!-- TODO: add custom action in addition to a function that gets ran after a given action--->
 ```lua
 -- Built-in actions
-local transform_mod = require('telescope.actions.mt').transform_mod
+local actions = require('telescope.actions')
 
 -- or create your custom action
-local my_cool_custom_action = transform_mod({
-  x = function()
+actions.register_actions({
+  my_cool_custom_action = function()
     print("This function ran after another action. Prompt_bufnr: " .. prompt_bufnr)
     -- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
   end,
@@ -327,7 +327,7 @@ require('telescope').setup{
         ["<cr>"] = actions.select_default + actions.center,
 
         -- You can perform as many actions in a row as you like
-        ["<cr>"] = actions.select_default + actions.center + my_cool_custom_action,
+        ["<cr>"] = actions.select_default + actions.center + actions.my_cool_custom_action,
       },
       n = {
         ["<esc>"] = actions.close,

@@ -1,4 +1,5 @@
 local action_mt = {}
+local registered_actions = {}
 
 --- Checks all replacement combinations to determine which function to run.
 --- If no replacement can be found, then it will run the original function
@@ -15,6 +16,7 @@ local run_replace_or_original = function(replacements, original_func, ...)
 end
 
 action_mt.create = function(mod)
+  registered_actions = vim.tbl_extend("force", registered_actions, mod)
   local mt = {
     __call = function(t, ...)
       local values = {}
@@ -27,7 +29,7 @@ action_mt.create = function(mod)
         end
 
         local result = {
-          run_replace_or_original(t._replacements[action_name], mod[action_name], ...),
+          run_replace_or_original(t._replacements[action_name], registered_actions[action_name], ...),
         }
         for _, res in ipairs(result) do
           table.insert(values, res)
@@ -123,12 +125,12 @@ action_mt.create = function(mod)
   return mt
 end
 
-action_mt.transform = function(k, mt, mod, v)
+action_mt.transform = function(k, mt, v)
   local res = setmetatable({ k }, mt)
   if type(v) == "table" then
     res._static_pre[k] = v.pre
     res._static_post[k] = v.post
-    mod[k] = v.action
+    registered_actions[k] = v.action
   end
   return res
 end
@@ -141,7 +143,7 @@ action_mt.transform_mod = function(mod)
   local redirect = setmetatable({}, getmetatable(mod) or {})
 
   for k, v in pairs(mod) do
-    redirect[k] = action_mt.transform(k, mt, mod, v)
+    redirect[k] = action_mt.transform(k, mt, v)
   end
 
   redirect._clear = mt.clear
