@@ -383,26 +383,28 @@ builtin.lsp_workspace_diagnostics = require("telescope.builtin.lsp").workspace_d
 local apply_config = function(mod)
   local pickers_conf = require("telescope.config").pickers
   for k, v in pairs(mod) do
-    local pconf = vim.deepcopy(pickers_conf[k] or {})
-    if pconf.theme then
-      local theme = pconf.theme
-      pconf.theme = nil
-      pconf = require("telescope.themes")["get_" .. theme](pconf)
-    end
-    if pconf.mappings then
-      local mappings = pconf.mappings
-      pconf.mappings = nil
-      pconf.attach_mappings = function(_, map)
-        for mode, tbl in pairs(mappings) do
-          for key, action in pairs(tbl) do
-            map(mode, key, action)
-          end
-        end
-        return true
-      end
-    end
     mod[k] = function(opts)
       opts = opts or {}
+
+      local pconf = vim.deepcopy(pickers_conf[k] or {})
+      if pconf.theme then
+        local theme = pconf.theme
+        pconf.theme = nil
+        pconf = require("telescope.themes")["get_" .. theme](pconf)
+      end
+      if pconf.mappings then
+        local mappings = pconf.mappings
+        pconf.mappings = nil
+        pconf.attach_mappings = function(_, map)
+          for mode, tbl in pairs(mappings) do
+            for key, action in pairs(tbl) do
+              map(mode, key, action)
+            end
+          end
+          return true
+        end
+      end
+
       if pconf.attach_mappings and opts.attach_mappings then
         local attach_mappings = pconf.attach_mappings
         pconf.attach_mappings = nil
