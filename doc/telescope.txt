@@ -1526,6 +1526,38 @@ actions.cycle_previewers_prev({prompt_bufnr})*actions.cycle_previewers_prev()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.register_actions({fn})                    *actions.register_actions()*
+    Register your custom actions.
+    Example usage: modifying |actions.select_vertical|
+    local actions = require "telescope.actions"
+    local action_state = require "telescope.actions.state"
+    -- fn should be a table of {action_name = action_function, ...}
+    local print_entry = actions.register_action({
+      print_entry = function()
+        print(vim.inspect(action_state.get_selected_entry()))
+      end,
+    })[1] -- get first entry of returned functions
+    telescope.setup {
+      defaults = {
+        mappings = {
+          i = {
+            -- Both `print_entry` and `actions.print_entry` can be used
+            ["<C-v>"] = print_entry + actions.select_vertical,
+            ["<C-v>"] = actions.print_entry + actions.select_vertical,
+          }
+        }
+      }
+    }
+
+
+    Parameters: ~
+        {fn} (table)  table comprising named custom action(s), i.e.
+                      {action_name = action, ... }
+
+    Return: ~
+        table: table of registered actions
+
+
 
 ================================================================================
                                                        *telescope.actions.state*
