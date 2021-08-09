@@ -831,11 +831,11 @@ end
 ---@param fn table: table comprising named custom action(s), i.e. {action_name = action, ... }
 ---@return table: table of registered actions
 actions.register_actions = function(fn)
-  local mt = action_mt.create(fn)
+  action_mt.register(fn)
   local ret = {}
   for k, v in pairs(fn) do
     -- actions is "redirect" of actions_mt when registering actions
-    actions[k] = action_mt.transform(k, mt, v)
+    actions[k] = action_mt.transform(k, v)
     table.insert(ret, actions[k])
   end
   return ret

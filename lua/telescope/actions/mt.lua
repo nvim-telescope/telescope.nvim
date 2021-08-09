@@ -122,7 +122,7 @@ function mt:enhance(opts)
   return self
 end
 
-action_mt.create = function(mod)
+action_mt.register = function(mod)
   registered_actions = vim.tbl_extend("force", registered_actions, mod)
 end
 
@@ -137,7 +137,7 @@ action_mt.transform = function(k, v)
 end
 
 action_mt.transform_mod = function(mod)
-  action_mt.create(mod)
+  action_mt.register(mod)
 
   -- Pass the metatable of the module if applicable.
   --    This allows for custom errors, lookups, etc.
