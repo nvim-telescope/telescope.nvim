@@ -970,6 +970,10 @@ function Picker:register_completion_callback(cb)
   table.insert(self._completion_callbacks, cb)
 end
 
+function Picker:clear_completion_callbacks()
+  self._completion_callbacks = {}
+end
+
 function Picker:_on_complete()
   for _, v in ipairs(self._completion_callbacks) do
     pcall(v, self)
