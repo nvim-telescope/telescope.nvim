@@ -1,8 +1,8 @@
 local a = vim.api
-local popup = require "popup"
 
 local async_lib = require "plenary.async_lib"
 local async_util = async_lib.util
+local popup = require "plenary.popup"
 
 local async = async_lib.async
 local await = async_lib.await
