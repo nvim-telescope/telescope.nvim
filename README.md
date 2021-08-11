@@ -199,6 +199,7 @@ EOF
 | `scroll_strategy`      | How to behave when the when there are no more item next/prev | cycle, nil           |
 | `winblend`             | How transparent is the telescope window should be.    | number                      |
 | `borderchars`          | The border chars, it gives border telescope window    | dict                        |
+| `disable_devicons`     | Whether to display devicons or not                    | boolean                     |
 | `color_devicons`       | Whether to color devicons or not                      | boolean                     |
 | `use_less`             | Whether to use less with bat or less/cat if bat not installed | boolean             |
 | `set_env`              | Set environment variables for previewer               | dict                        |
