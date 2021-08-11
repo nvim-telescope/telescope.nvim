@@ -1,6 +1,5 @@
 set rtp+=.
 set rtp+=../plenary.nvim/
-set rtp+=../popup.nvim/
 
 
 set statusline=""
