@@ -66,7 +66,6 @@ This section should guide you to run your first built-in pickers :smile:.
 Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```viml
-Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 ```
@@ -74,7 +73,6 @@ Plug 'nvim-telescope/telescope.nvim'
 Using [dein](https://github.com/Shougo/dein.vim)
 
 ```viml
-call dein#add('nvim-lua/popup.nvim')
 call dein#add('nvim-lua/plenary.nvim')
 call dein#add('nvim-telescope/telescope.nvim')
 ```
@@ -83,7 +81,7 @@ Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 ```lua
 use {
   'nvim-telescope/telescope.nvim',
-  requires = {{'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'}}
+  requires = { {'nvim-lua/plenary.nvim'} }
 }
 ```
 

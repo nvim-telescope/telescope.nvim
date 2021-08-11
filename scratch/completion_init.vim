@@ -1,7 +1,6 @@
 
 set rtp+=.
 set rtp+=../plenary.nvim/
-set rtp+=../popup.nvim/
 
 source plugin/telescope.vim
 

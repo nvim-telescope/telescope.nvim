@@ -1,14 +1,13 @@
 vim.cmd [[packadd! plenary.nvim]]
-vim.cmd [[packadd! popup.nvim]]
 vim.cmd [[packadd! telescope.nvim]]
 
-local finders = require('telescope.finders')
-local previewers = require('telescope.previewers')
-local pickers = require('telescope.pickers')
-local sorters = require('telescope.sorters')
-local utils = require('telescope.utils')
+local finders = require "telescope.finders"
+local previewers = require "telescope.previewers"
+local pickers = require "telescope.pickers"
+local sorters = require "telescope.sorters"
+local utils = require "telescope.utils"
 
-local rgargs = {'--color=never', '--no-heading', '--with-filename', '--line-number', '--column', '--smart-case'}
+local rgargs = { "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" }
 -- grep typed string in current directory (live, not fuzzy!)
 finders.rg_live = function(opts)
   local live_grepper = finders.new {
@@ -18,15 +17,15 @@ finders.rg_live = function(opts)
       end
 
       return {
-        command = 'rg',
-        args = vim.tbl_flatten{rgargs, prompt},
+        command = "rg",
+        args = vim.tbl_flatten { rgargs, prompt },
       }
-    end
+    end,
   }
 
   pickers.new(opts, {
-    prompt    = 'Live Grep',
-    finder    = live_grepper,
+    prompt = "Live Grep",
+    finder = live_grepper,
     previewer = previewers.vimgrep,
   }):find()
 end
@@ -35,11 +34,11 @@ end
 finders.rg = function(opts)
   opts = opts or {}
 
-  local search = opts.search or ''
+  local search = opts.search or ""
 
   pickers.new(opts, {
-    prompt = 'Find Word',
-    finder = finders.new_oneshot_job(vim.tbl_flatten{'rg', rgargs, search}),
+    prompt = "Find Word",
+    finder = finders.new_oneshot_job(vim.tbl_flatten { "rg", rgargs, search }),
     previewer = previewers.vimgrep,
     sorter = sorters.get_norcalli_sorter(),
   }):find()
@@ -48,8 +47,8 @@ end
 -- fuzzy find files in current directory (may be slow in root dir)
 finders.fd = function(opts)
   pickers.new(opts, {
-    prompt = 'Find Files',
-    finder = finders.new_oneshot_job {"fd"},
+    prompt = "Find Files",
+    finder = finders.new_oneshot_job { "fd" },
     previewer = previewers.bat,
     sorter = sorters.get_fuzzy_file(),
   }):find()
@@ -77,10 +76,10 @@ finders.lsp_references = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'LSP References',
-    finder    = finders.new_table(results),
+    prompt = "LSP References",
+    finder = finders.new_table(results),
     previewer = previewers.qflist,
-    sorter    = sorters.get_norcalli_sorter(),
+    sorter = sorters.get_norcalli_sorter(),
   }):find()
 end
 
@@ -104,16 +103,16 @@ finders.lsp_document_symbols = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'LSP Document Symbols',
-    finder    = finders.new_table(results),
+    prompt = "LSP Document Symbols",
+    finder = finders.new_table(results),
     previewer = previewers.qflist,
-    sorter    = sorters.get_norcalli_sorter(),
+    sorter = sorters.get_norcalli_sorter(),
   }):find()
 end
 
 -- fuzzy find in all workspace symbols (may need longer timeout!)
 finders.lsp_workspace_symbols = function(opts)
-  local params = {query = ''}
+  local params = { query = "" }
   local results_lsp, err = vim.lsp.buf_request_sync(0, "workspace/symbol", params, 1000)
   if err then
     vim.api.nvim_err_writeln("Error when finding symbols: " .. err)
@@ -131,12 +130,11 @@ finders.lsp_workspace_symbols = function(opts)
   end
 
   pickers.new(opts, {
-    prompt    = 'LSP Workspace Symbols',
-    finder    = finders.new_table(results),
+    prompt = "LSP Workspace Symbols",
+    finder = finders.new_table(results),
     previewer = previewers.qflist,
-    sorter    = sorters.get_norcalli_sorter(),
+    sorter = sorters.get_norcalli_sorter(),
   }):find()
 end
-
 
 return finders
