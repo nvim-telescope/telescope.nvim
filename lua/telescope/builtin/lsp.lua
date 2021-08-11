@@ -58,10 +58,9 @@ local function list_or_jump(action, title, opts)
   local flattened_results = {}
   for _, server_results in pairs(result) do
     if server_results.result then
-
       -- textDocument/definition can return Location or Location[]
       if not vim.tbl_islist(server_results.result) then
-        flattened_results = {server_results.result}
+        flattened_results = { server_results.result }
         break
       end
 
