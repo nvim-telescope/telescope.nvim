@@ -192,7 +192,7 @@ git.branches = function(opts)
     .. "%(refname)"
     .. "%(authorname)"
     .. "%(upstream:lstrip=2)"
-    .. "%(committerdate:format-local:%Y/%m/%d%H:%M:%S)"
+    .. "%(committerdate:format-local:%Y/%m/%d %H:%M:%S)"
   local output = utils.get_os_command_output({ "git", "for-each-ref", "--perl", "--format", format }, opts.cwd)
 
   local results = {}
