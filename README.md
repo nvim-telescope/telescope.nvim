@@ -17,7 +17,7 @@ Community driven built-in [pickers](#pickers), [sorters](#sorters) and [previewe
 - [Vim](#vim-pickers)
 - [Files](#file-pickers)
 - [Git](#git-pickers)
-- [LSP](#lsp-pickers)
+- [LSP](#neovim-lsp-pickers)
 - [Treesitter](#treesitter-picker)
 
 ![Preview](https://i.imgur.com/TTTja6t.gif)
