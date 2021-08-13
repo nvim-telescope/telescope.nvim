@@ -103,7 +103,7 @@ files.live_grep = function(opts)
     prompt_title = "Live Grep",
     finder = live_grepper,
     previewer = conf.grep_previewer(opts),
-    sorter = conf.generic_sorter(opts),
+    sorter = conf.empty_sorter(opts),
   }):find()
 end
 

@@ -360,6 +360,7 @@ local telescope_defaults = {
     ]],
   },
 
+  empty_sorter = { sorters.empty },
   generic_sorter = { sorters.get_generic_fuzzy_sorter },
   prefilter_sorter = { sorters.prefilter },
   file_sorter = { sorters.get_fuzzy_file },
