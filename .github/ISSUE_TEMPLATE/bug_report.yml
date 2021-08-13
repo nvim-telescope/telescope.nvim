@@ -69,10 +69,6 @@ body:
                package_root = package_root,
                compile_path = install_path .. '/plugin/packer_compiled.lua',
                display = { non_interactive = true },
-               git = {
-                subcommands = { install = 'clone --depth 1 --progress' },
-                default_url_format = 'git://github.com/%s',
-               },
              },
            }
          end
