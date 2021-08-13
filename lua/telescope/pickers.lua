@@ -911,7 +911,7 @@ function Picker:refresh(finder, opts)
     local handle = type(opts.new_prefix) == "table" and unpack or function(x)
       return x
     end
-    self:change_prompt_prefix(handle(opts.new_prefix))
+    self:change_prompt_prefix(handle(opts.new_prefix), opts.prefix_hl_group)
   end
 
   if finder then
