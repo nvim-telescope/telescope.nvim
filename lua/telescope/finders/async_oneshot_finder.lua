@@ -30,6 +30,7 @@ return function(opts)
       end
     end,
     results = results,
+    entry_maker = entry_maker,
   }, {
     __call = function(_, prompt, process_result, process_complete)
       if not job_started then

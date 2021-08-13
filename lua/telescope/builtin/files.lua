@@ -111,6 +111,16 @@ files.live_grep = function(opts)
     -- TODO: It would be cool to use `--json` output for this
     -- and then we could get the highlight positions directly.
     sorter = sorters.highlighter_only(opts),
+    attach_mappings = function(_, map)
+      map("i", "<c-space>", function(prompt_bufnr)
+        local line = action_state.get_current_line()
+        require("telescope.actions.generate").refine(prompt_bufnr, {
+          prompt_title = "Find Word (" .. line .. ")",
+          sorter = conf.generic_sorter(opts),
+        })
+      end)
+      return true
+    end,
   }):find()
 end
 
