@@ -32,12 +32,12 @@ return function(opts)
   end
 
   return setmetatable({
-    results = {'results'},  -- TODO
+    results = {},
     close = function() end,
   }, {
-    __call = void(async(function(_, _, process_result, process_complete)
-      local results = make_results()
-      for i, v in ipairs(results) do
+    __call = void(async(function(table, _, process_result, process_complete)
+      table.results = make_results()
+      for i, v in ipairs(table.results) do
         if process_result(v) then
           break
         end
