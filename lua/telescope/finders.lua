@@ -227,8 +227,13 @@ end
 -- If you only pass a function, then it will used so generate the entries.
 --
 -- Otherwise pass a table with the keys:
---  `results_maker` (function), outputs are the results to run on
---  `entry_maker` (function), the function to convert results to entries.
+--  `results_maker` (function): outputs are the results to run on
+--  `entry_maker` (function, optional): the function to convert results to entries.
+--    Default: `make_entry.gen_from_string`
+--  `make_results` (function, optional): takes `results_maker` and `entry_maker` as
+--    as arguments and returns a table of entries
+--    defaults to a function which passes all elements of the table returned from
+--    `results_maker` to `entry_maker` and returns there.
 finders.new_function = function(t)
   return async_function_finder(t)
 end
