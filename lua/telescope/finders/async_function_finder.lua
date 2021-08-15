@@ -8,14 +8,13 @@ local make_entry = require "telescope.make_entry"
 return function(opts)
   local results_maker
   local entry_maker
-  if type(opts) == 'function' then
+  if type(opts) == "function" then
     results_maker = opts
     entry_maker = make_entry.gen_from_string()
   else
     results_maker = opts.results_maker
     entry_maker = opts.entry_maker or make_entry.gen_from_string()
   end
-
 
   local function make_results()
     local input_results = results_maker()
