@@ -34,9 +34,9 @@ return function(opts)
     results = {},
     close = function() end,
   }, {
-    __call = void(async(function(table, _, process_result, process_complete)
-      table.results = make_results()
-      for i, v in ipairs(table.results) do
+    __call = void(async(function(self, _, process_result, process_complete)
+      self.results = make_results()
+      for i, v in ipairs(self.results) do
         if process_result(v) then
           break
         end
