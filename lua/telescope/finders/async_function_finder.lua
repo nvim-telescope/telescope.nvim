@@ -18,9 +18,7 @@ return function(opts)
 
 
   local function make_results()
-    print('make_results')
     local input_results = results_maker()
-    print(vim.inspect(input_results))
     local results = {}
     for k, v in ipairs(input_results) do
       local entry = entry_maker(v)
