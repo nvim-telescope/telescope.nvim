@@ -5,7 +5,7 @@ local void = async_lib.void
 
 local make_entry = require "telescope.make_entry"
 
-local function default_make_results(results_maker, entry_maker)
+local function make_results(results_maker, entry_maker)
   local input_results = results_maker()
   local results = {}
   for k, v in ipairs(input_results) do
@@ -22,15 +22,24 @@ end
 return function(opts)
   local results_maker
   local entry_maker
-  local make_results
-  if type(opts) == "function" then
+  if vim.tbl_islist(opts) then
+    results_maker = function()
+      return opts
+    end
+    entry_maker = make_entry.gen_from_string()
+  elseif type(opts) == "function" then
     results_maker = opts
     entry_maker = make_entry.gen_from_string()
-    make_results = default_make_results
   else
-    results_maker = opts.results_maker
+    if opts.results ~= nil then
+      assert(not opts.results_maker, "shouldn't set both `results` and `results_maker`")
+      results_maker = function()
+        return opts.results
+      end
+    else
+      results_maker = opts.results_maker
+    end
     entry_maker = opts.entry_maker or make_entry.gen_from_string()
-    make_results = opts.make_results or default_make_results
   end
 
   return setmetatable({

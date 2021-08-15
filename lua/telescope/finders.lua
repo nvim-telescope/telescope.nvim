@@ -5,8 +5,7 @@ local log = require "telescope.log"
 local a = require "plenary.async_lib"
 local await = a.await
 
-local async_static_finder = require "telescope.finders.async_static_finder"
-local async_function_finder = require "telescope.finders.async_function_finder"
+local async_table_finder = require "telescope.finders.async_table_finder"
 local async_oneshot_finder = require "telescope.finders.async_oneshot_finder"
 -- local async_job_finder = require('telescope.finders.async_job_finder')
 
@@ -215,27 +214,15 @@ end
 --- Used to create a finder for a Lua table.
 -- If you only pass a table of results, then it will use that as the entries.
 --
--- If you pass a table, and then a function, it's used as:
---  results table, the results to run on
---  entry_maker function, the function to convert results to entries.
-finders.new_table = function(t)
-  return async_static_finder(t)
-end
-
---- similar to `new_table but where the results are generated each time
--- by calling a function (the `results_maker`).
 -- If you only pass a function, then it will used so generate the entries.
 --
--- Otherwise pass a table with the keys:
---  `results_maker` (function): outputs are the results to run on
+-- Otherwise pass a table with the keys (both `results` and `results_maker` should not be specified):
+--  `results` (table, optional): outputs are the results to run on
+--  `results_maker` (function, optional): outputs are the results to run on
 --  `entry_maker` (function, optional): the function to convert results to entries.
 --    Default: `make_entry.gen_from_string`
---  `make_results` (function, optional): takes `results_maker` and `entry_maker` as
---    as arguments and returns a table of entries
---    defaults to a function which passes all elements of the table returned from
---    `results_maker` to `entry_maker` and returns there.
-finders.new_function = function(t)
-  return async_function_finder(t)
+finders.new_table = function(t)
+  return async_table_finder(t)
 end
 
 finders.new_dynamic = function(t)
