@@ -6,6 +6,7 @@ local a = require "plenary.async_lib"
 local await = a.await
 
 local async_static_finder = require "telescope.finders.async_static_finder"
+local async_function_finder = require "telescope.finders.async_function_finder"
 local async_oneshot_finder = require "telescope.finders.async_oneshot_finder"
 -- local async_job_finder = require('telescope.finders.async_job_finder')
 
@@ -219,6 +220,17 @@ end
 --  entry_maker function, the function to convert results to entries.
 finders.new_table = function(t)
   return async_static_finder(t)
+end
+
+--- similar to `new_table but where the results are generated each time
+-- by calling a function (the `results_maker`).
+-- If you only pass a function, then it will used so generate the entries.
+--
+-- Otherwise pass a table with the keys:
+--  `results_maker` (function), outputs are the results to run on
+--  `entry_maker` (function), the function to convert results to entries.
+finders.new_function = function(t)
+  return async_function_finder(t)
 end
 
 finders.new_dynamic = function(t)
