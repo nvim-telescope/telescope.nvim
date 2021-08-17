@@ -171,14 +171,23 @@ internal.symbols = function(opts)
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
-      actions.select_default:replace(actions.insert_symbol)
-      actions.insert_symbol:enhance {
-        post = vim.schedule_wrap(function()
-          if initial_mode == "i" then
-            vim.cmd [[startinsert]]
-          end
-        end),
-      }
+      if initial_mode == "i" then
+        actions.select_default:replace(function(prompt_bufnr)
+          local symbol = action_state.get_selected_entry().value[1]
+          actions._close(prompt_bufnr, true)
+          local cursor = vim.api.nvim_win_get_cursor(0)
+          vim.api.nvim_buf_set_text(0, cursor[1] - 1, cursor[2], cursor[1] - 1, cursor[2], { symbol })
+          vim.schedule(function()
+            vim.api.nvim_win_set_cursor(0, { cursor[1], cursor[2] + #symbol })
+          end)
+        end)
+      else
+        actions.select_default:replace(function(prompt_bufnr)
+          local symbol = action_state.get_selected_entry().value[1]
+          actions.close(prompt_bufnr)
+          vim.api.nvim_put({ symbol }, "", true, true)
+        end)
+      end
       return true
     end,
   }):find()
