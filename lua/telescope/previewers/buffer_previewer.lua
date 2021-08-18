@@ -81,6 +81,19 @@ local search_teardown = function(self)
   end
 end
 
+local scroll_fn = function(self, direction)
+  if not self.state then
+    return
+  end
+
+  local input = direction > 0 and [[]] or [[]]
+  local count = math.abs(direction)
+
+  vim.api.nvim_win_call(self.state.winid, function()
+    vim.cmd([[normal! ]] .. count .. input)
+  end)
+end
+
 previewers.file_maker = function(filepath, bufnr, opts)
   opts = opts or {}
   if opts.use_ft_detect == nil then
@@ -282,18 +295,7 @@ previewers.new_buffer_previewer = function(opts)
   end
 
   if not opts.scroll_fn then
-    function opts.scroll_fn(self, direction)
-      if not self.state then
-        return
-      end
-
-      local input = direction > 0 and [[]] or [[]]
-      local count = math.abs(direction)
-
-      vim.api.nvim_buf_call(self.state.bufnr, function()
-        vim.cmd([[normal! ]] .. count .. input)
-      end)
-    end
+    opts.scroll_fn = scroll_fn
   end
 
   return Previewer:new(opts)
@@ -370,19 +372,12 @@ previewers.vimgrep = defaulter(function(opts)
         pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
       end
 
-      -- Workaround for unnamed buffer when using builtin.buffer
-      if entry.bufnr and (p == "[No Name]" or vim.api.nvim_buf_get_option(entry.bufnr, "buftype") ~= "") then
-        local lines = vim.api.nvim_buf_get_lines(entry.bufnr, 0, -1, false)
-        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
-        jump_to_line(self, self.state.bufnr, entry.lnum)
-      else
-        conf.buffer_previewer_maker(p, self.state.bufnr, {
-          bufname = self.state.bufname,
-          callback = function(bufnr)
-            jump_to_line(self, bufnr, entry.lnum)
-          end,
-        })
-      end
+      conf.buffer_previewer_maker(p, self.state.bufnr, {
+        bufname = self.state.bufname,
+        callback = function(bufnr)
+          jump_to_line(self, bufnr, entry.lnum)
+        end,
+      })
     end,
   }
 end, {})
@@ -879,6 +874,9 @@ previewers.buffers = defaulter(function(opts)
     title = function()
       return "Buffers"
     end,
+    setup = function(_, status)
+      return { ["winid"] = status.preview_win }
+    end,
     dyn_title = function(_, entry)
       return Path:new(from_entry.path(entry, true)):normalize(cwd)
     end,
@@ -890,20 +888,13 @@ previewers.buffers = defaulter(function(opts)
         vim.api.nvim_win_set_option(status.preview_win, "foldlevel", 100)
         vim.api.nvim_win_set_option(status.preview_win, "wrap", false)
         self.state.bufnr = entry.bufnr
+        if not entry.col then
+          local _, col = unpack(vim.api.nvim_win_get_cursor(status.preview_win))
+          entry.col = col + 1
+        end
       end
     end,
-    scroll_fn = function(self, direction)
-      if not self.state then
-        return
-      end
-
-      local input = direction > 0 and [[]] or [[]]
-      local count = math.abs(direction)
-
-      vim.api.nvim_buf_call(self.state.bufnr, function()
-        vim.cmd([[normal! ]] .. count .. input)
-      end)
-    end,
+    scroll_fn = scroll_fn,
   }
 end, {})
 
