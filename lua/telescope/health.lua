@@ -32,7 +32,6 @@ local optional_dependencies = {
 }
 
 local required_plugins = {
-  { lib = "popup", optional = false },
   { lib = "plenary", optional = false },
   {
     lib = "nvim-treesitter",
