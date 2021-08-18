@@ -875,7 +875,60 @@ previewers.buffers = defaulter(function(opts)
       return "Buffers"
     end,
     setup = function(_, status)
-      return { ["winid"] = status.preview_win }
+      local win_id = status.picker.original_win_id
+      -- required because of see `:h local-options` as
+      -- buffers not yet attached to a current window take the options from the `minimal` popup ...
+      local state = {
+        ["previewed_buffers"] = {},
+        ["winid"] = status.preview_win,
+        ["win_options"] = {
+          ["colorcolumn"] = vim.api.nvim_win_get_option(win_id, "colorcolumn"),
+          ["cursorline"] = vim.api.nvim_win_get_option(win_id, "cursorline"),
+          ["foldlevel"] = vim.api.nvim_win_get_option(win_id, "foldlevel"),
+          ["list"] = vim.api.nvim_win_get_option(win_id, "list"),
+          ["number"] = vim.api.nvim_win_get_option(win_id, "number"),
+          ["relativenumber"] = vim.api.nvim_win_get_option(win_id, "relativenumber"),
+          ["signcolumn"] = vim.api.nvim_win_get_option(win_id, "signcolumn"),
+          ["spell"] = vim.api.nvim_win_get_option(win_id, "spell"),
+          ["winhl"] = vim.api.nvim_win_get_option(win_id, "winhl"),
+          ["wrap"] = vim.api.nvim_win_get_option(win_id, "wrap"),
+        },
+      }
+      -- decoration provider is hierachical -> win -> line
+      vim.api.nvim_set_decoration_provider(ns_previewer, {
+        on_win = function(_, winid, _, _)
+          if winid ~= status.preview_win then
+            return false -- skip setting extmark for any window other than status.preview_win
+          end
+          return true
+        end,
+        on_line = function(_, winid, bufnr, row)
+          local lnum, _ = unpack(vim.api.nvim_win_get_cursor(winid))
+          -- row seems zero-indexed
+          if row == lnum - 1 then
+            local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
+            -- only set if winid and rows are matching
+            pcall(vim.api.nvim_buf_set_extmark, bufnr, ns_previewer, row, 0, {
+              end_col = #line,
+              virt_text_pos = "overlay",
+              hl_group = "TelescopePreviewLine",
+              ephemeral = true,
+              priority = 101, -- 1 higher than treesitter
+            })
+          end
+        end,
+      })
+      return state
+    end,
+    teardown = function(self)
+      -- reapply proper buffer-window options..
+      for opt, value in pairs(self.state.win_options) do
+        vim.api.nvim_win_set_option(self.state.winid, opt, value)
+      end
+      -- clear extmarks for previewed buffers
+      for buf, _ in pairs(self.state.previewed_buffers) do
+        vim.api.nvim_buf_clear_namespace(buf, ns_previewer, 0, -1)
+      end
     end,
     dyn_title = function(_, entry)
       return Path:new(from_entry.path(entry, true)):normalize(cwd)
@@ -891,6 +944,9 @@ previewers.buffers = defaulter(function(opts)
         if not entry.col then
           local _, col = unpack(vim.api.nvim_win_get_cursor(status.preview_win))
           entry.col = col + 1
+        end
+        if self.state.previewed_buffers[entry.bufnr] ~= true then
+          self.state.previewed_buffers[entry.bufnr] = true
         end
       end
     end,
