@@ -578,6 +578,17 @@ internal.reloader = function(opts)
 end
 
 internal.buffers = function(opts)
+  -- TODO upstream issue? if chosen buffer was not yet attached to window, minimal style of previewer is used
+  local winopts = {
+    ["number"] = vim.api.nvim_win_get_option(0, "number"),
+    ["relativenumber"] = vim.api.nvim_win_get_option(0, "relativenumber"),
+    ["cursorline"] = vim.api.nvim_win_get_option(0, "cursorline"),
+    ["signcolumn"] = vim.api.nvim_win_get_option(0, "signcolumn"),
+    ["spell"] = vim.api.nvim_win_get_option(0, "spell"),
+    ["wrap"] = vim.api.nvim_win_get_option(0, "wrap"),
+    ["list"] = vim.api.nvim_win_get_option(0, "list"),
+    ["colorcolumn"] = vim.api.nvim_win_get_option(0, "colorcolumn"),
+  }
   local bufnrs = filter(function(b)
     if 1 ~= vim.fn.buflisted(b) then
       return false
@@ -640,6 +651,17 @@ internal.buffers = function(opts)
     previewer = previewers.buffers.new(opts),
     sorter = conf.generic_sorter(opts),
     default_selection_index = default_selection_idx,
+    attach_mappings = function(_, _)
+      action_set.select:enhance {
+        post = function()
+          local entry = action_state.get_selected_entry()
+          for opt, value in pairs(winopts) do
+            vim.api.nvim_win_set_option(0, opt, value)
+          end
+          vim.api.nvim_win_set_cursor(0, {entry.lnum, entry.col})
+        end,
+      }
+    end,
   }):find()
 end
 

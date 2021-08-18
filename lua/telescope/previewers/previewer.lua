@@ -23,7 +23,7 @@ function Previewer:preview(entry, status)
 
   if not self.state then
     if self._setup_func then
-      self.state = self:_setup_func()
+      self.state = self:_setup_func(status)
     else
       self.state = {}
     end
