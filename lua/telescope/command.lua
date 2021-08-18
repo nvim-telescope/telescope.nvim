@@ -1,3 +1,46 @@
+---@tag telescope.command
+
+---@brief [[
+---
+--- Telescope commands can be called through two apis,
+--- the lua api and the viml api.
+---
+--- The lua api is the more direct way to interact with Telescope, as you directly call the
+--- lua functions that Telescope defines.
+--- It can be called in a lua file using commands like:
+--- <pre>
+--- `require("telescope.builtin").find_files({hidden=true, layout_config={prompt_position="top"}})`
+--- </pre>
+--- If you want to use this api from a vim file you should prepend `lua` to the command, as below:
+--- <pre>
+--- `lua require("telescope.builtin").find_files({hidden=true, layout_config={prompt_position="top"}})`
+--- </pre>
+--- If you want to use this api from a neovim command line you should prepend `:lua` to
+--- the command, as below:
+--- <pre>
+--- `:lua require("telescope.builtin").find_files({hidden=true, layout_config={prompt_position="top"}})`
+--- </pre>
+---
+--- The viml api is more indirect, as first the command must be parsed to the relevant lua
+--- equivalent, which brings some limitations.
+--- The viml api can be called using commands like:
+--- <pre>
+--- `:Telescope find_files hidden=true layout_config={"prompt_position":"top"}`
+--- </pre>
+--- This involves setting options using an `=` and using viml syntax for lists and
+--- dictionaries when the corresponding lua function requires a table.
+---
+--- One limitation of the viml api is that there can be no spaces in any of the options.
+--- For example, if you want to use the `cwd` option for `find_files` to specify that you
+--- only want to search within the folder `/foo bar/subfolder/` you could not do that using the
+--- viml api, as the path name contains a space.
+--- Similarly, you could NOT set the `prompt_position` to `"top"` using the following command:
+--- <pre>
+--- `:Telescope find_files layout_config={ "prompt_position" : "top" }`
+--- </pre>
+--- as there are spaces in the option.
+---
+---@brief ]]
 local themes = require "telescope.themes"
 local builtin = require "telescope.builtin"
 local extensions = require("telescope._extensions").manager
@@ -13,6 +56,14 @@ local arg_value = {
 local bool_type = {
   ["false"] = false,
   ["true"] = true,
+}
+
+local split_keywords = {
+  ["find_command"] = true,
+  ["vimgrep_arguments"] = true,
+  ["sections"] = true,
+  ["search_dirs"] = true,
+  ["symbols"] = true,
 }
 
 -- convert command line string arguments to
@@ -41,6 +92,19 @@ local function convert_user_opts(user_opts)
         user_opts[key] = bool_type[val]
       end
     end,
+    ["table"] = function(key, val)
+      local ok, eval = pcall(vim.fn.eval, val)
+      if ok then
+        user_opts[key] = eval
+      else
+        eval = assert(loadstring("return " .. val))()
+        if type(eval) == "table" then
+          user_opts[key] = eval
+        else
+          user_opts[key] = nil
+        end
+      end
+    end,
   }
 
   local _switch_metatable = {
@@ -52,7 +116,12 @@ local function convert_user_opts(user_opts)
   setmetatable(_switch, _switch_metatable)
 
   for key, val in pairs(user_opts) do
-    if default_opts[key] ~= nil then
+    if split_keywords[key] then
+      _switch["table"](key, val)
+      if user_opts[key] == nil then
+        user_opts[key] = vim.split(val, ",")
+      end
+    elseif default_opts[key] ~= nil then
       _switch[type(default_opts[key])](key, val)
     else
       _switch["string"](key, val)
@@ -123,13 +192,6 @@ function command.get_extensions_subcommand()
   return complete_ext_table
 end
 
-local split_keywords = {
-  ["find_command"] = true,
-  ["vimgrep_arguments"] = true,
-  ["sections"] = true,
-  ["search_dirs"] = true,
-}
-
 function command.register_keyword(keyword)
   split_keywords[keyword] = true
 end
@@ -150,12 +212,12 @@ function command.load_command(cmd, ...)
       user_opts["extension_type"] = arg
     else
       local param = vim.split(arg, "=")
-      if param[1] == "theme" then
-        user_opts["theme"] = param[2]
-      elseif split_keywords[param[1]] then
-        user_opts.opts[param[1]] = vim.split(param[2], ",")
+      local key = table.remove(param, 1)
+      param = table.concat(param, "=")
+      if key == "theme" then
+        user_opts["theme"] = param
       else
-        user_opts.opts[param[1]] = param[2]
+        user_opts.opts[key] = param
       end
     end
   end
