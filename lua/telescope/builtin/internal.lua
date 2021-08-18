@@ -846,7 +846,9 @@ internal.keymaps = function(opts)
       end)
       return true
     end,
-  }):find() end internal.filetypes = function(opts)
+  }):find()
+end
+internal.filetypes = function(opts)
   local filetypes = vim.fn.getcompletion("", "filetype")
 
   pickers.new(opts, {
