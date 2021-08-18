@@ -18,6 +18,7 @@ local action_state = require "telescope.actions.state"
 local action_utils = require "telescope.actions.utils"
 local action_set = require "telescope.actions.set"
 local from_entry = require "telescope.from_entry"
+local state = require "telescope.state"
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 
@@ -787,6 +788,11 @@ end
 actions.delete_buffer = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:delete_selection(function(selection)
+    -- avoid preview win from closing by creating tmp buffer
+    local buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
+    local preview_win = state.get_status(prompt_bufnr).preview_win
+    vim.api.nvim_win_set_buf(preview_win, buf)
     vim.api.nvim_buf_delete(selection.bufnr, { force = true })
   end)
 end

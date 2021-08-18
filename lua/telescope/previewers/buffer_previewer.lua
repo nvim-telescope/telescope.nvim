@@ -872,4 +872,26 @@ previewers.display_content = defaulter(function(_)
   }
 end, {})
 
+previewers.buffers = defaulter(function(opts)
+  opts = opts or {}
+  local cwd = opts.cwd or vim.loop.cwd()
+  return Previewer:new {
+    title = function()
+      return "Buffers"
+    end,
+    dyn_title = function(_, entry)
+      return Path:new(from_entry.path(entry, true)):normalize(cwd)
+    end,
+    preview_fn = function(_, entry, status)
+      if vim.api.nvim_buf_is_valid(entry.bufnr) then
+        vim.api.nvim_win_set_buf(status.preview_win, entry.bufnr)
+        vim.api.nvim_win_set_option(status.preview_win, "winhl", "Normal:TelescopePreviewNormal")
+        vim.api.nvim_win_set_option(status.preview_win, "signcolumn", "no")
+        vim.api.nvim_win_set_option(status.preview_win, "foldlevel", 100)
+        vim.api.nvim_win_set_option(status.preview_win, "wrap", false)
+      end
+    end,
+  }
+end, {})
+
 return previewers
