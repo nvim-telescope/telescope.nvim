@@ -927,7 +927,9 @@ previewers.buffers = defaulter(function(opts)
       end
       -- clear extmarks for previewed buffers
       for buf, _ in pairs(self.state.previewed_buffers) do
-        vim.api.nvim_buf_clear_namespace(buf, ns_previewer, 0, -1)
+        if vim.api.nvim_buf_is_valid(buf) then
+          vim.api.nvim_buf_clear_namespace(buf, ns_previewer, 0, -1)
+        end
       end
     end,
     dyn_title = function(_, entry)
