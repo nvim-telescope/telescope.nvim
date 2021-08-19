@@ -644,7 +644,7 @@ internal.buffers = function(opts)
       action_set.select:enhance {
         post = function()
           local entry = action_state.get_selected_entry()
-          vim.api.nvim_win_set_cursor(0, { entry.lnum, entry.col })
+          vim.api.nvim_win_set_cursor(0, { entry.lnum, entry.col or 0 })
         end,
       }
     end,
@@ -834,6 +834,7 @@ internal.keymaps = function(opts)
     end,
   }):find()
 end
+
 internal.filetypes = function(opts)
   local filetypes = vim.fn.getcompletion("", "filetype")
 
