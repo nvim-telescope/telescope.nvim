@@ -256,7 +256,7 @@ lsp.code_actions = function(opts)
 end
 
 lsp.range_code_actions = function(opts)
-  opts.params = vim.lsp.util.make_given_range_params()
+  opts.params = vim.lsp.util.make_given_range_params({ opts.start_line, 1 }, { opts.end_line, 1 })
   lsp.code_actions(opts)
 end
 

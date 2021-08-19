@@ -202,7 +202,7 @@ function command.register_keyword(keyword)
   split_keywords[keyword] = true
 end
 
-function command.load_command(cmd, ...)
+function command.load_command(start_line, end_line, count, cmd, ...)
   local args = { ... }
   if cmd == nil then
     run_command { cmd = "builtin" }
@@ -211,7 +211,11 @@ function command.load_command(cmd, ...)
 
   local user_opts = {}
   user_opts["cmd"] = cmd
-  user_opts.opts = {}
+  user_opts.opts = {
+    start_line = start_line,
+    end_line = end_line,
+    count = count,
+  }
 
   for _, arg in ipairs(args) do
     if arg:find("=", 1) == nil then
