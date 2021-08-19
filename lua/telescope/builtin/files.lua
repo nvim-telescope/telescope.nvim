@@ -569,7 +569,7 @@ files.tags = function(opts)
     local data = assert(vim.loop.fs_read(fd, stat.size, 0))
     assert(vim.loop.fs_close(fd))
 
-    for _, line in ipairs(vim.split(data, "\n")) do
+    for line in Path:new(vim.fn.expand(ctags_file)):iter() do
       results[#results + 1] = line
     end
   end
