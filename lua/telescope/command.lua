@@ -104,7 +104,7 @@ local function convert_user_opts(user_opts)
           user_opts[key] = nil
         elseif select("#", assert(eval)()) == 1 and type(assert(eval)()) == "table" then
           -- allow if return a single table only
-          user_opts[key] = eval
+          user_opts[key] = assert(eval)()
         else
           -- otherwise return nil (allows split check later)
           user_opts[key] = nil
