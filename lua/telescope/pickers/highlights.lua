@@ -89,7 +89,7 @@ function Highlighter:hi_multiselect(row, is_selected)
     -- This is still kind of weird to me, since it seems like I'm erasing stuff
     -- when i shouldn't... perhaps it's a bout the gravity of the extmark?
     if #existing_marks > 0 then
-      log.trace("Clearning row: ", row)
+      log.trace("Clearning highlight multi select row: ", row)
 
       vim.api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_multiselection, row, row + 1)
     end

@@ -11,8 +11,13 @@ describe("telescope", function()
     end)
 
     describe("attach_mappings", function()
+      local new_picker = function(a, b)
+        a.finder = true
+        return picker.new(a, b)
+      end
+
       it("should allow for passing in a function", function()
-        local p = picker.new({}, {
+        local p = new_picker({}, {
           attach_mappings = function()
             return 1
           end,
@@ -22,7 +27,7 @@ describe("telescope", function()
 
       it("should override an attach mappings passed in by opts", function()
         local called_order = {}
-        local p = picker.new({
+        local p = new_picker({
           attach_mappings = function()
             table.insert(called_order, "opts")
           end,

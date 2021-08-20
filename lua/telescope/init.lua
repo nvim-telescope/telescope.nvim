@@ -1,5 +1,3 @@
-require "telescope._compat"
-
 local _extensions = require "telescope._extensions"
 
 local telescope = {}

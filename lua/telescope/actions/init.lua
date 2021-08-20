@@ -582,12 +582,22 @@ actions.git_staging_toggle = function(prompt_bufnr)
 end
 
 local entry_to_qf = function(entry)
+  local text = entry.text
+
+  if not text then
+    if type(entry.value) == "table" then
+      text = entry.value.text
+    else
+      text = entry.value
+    end
+  end
+
   return {
     bufnr = entry.bufnr,
     filename = from_entry.path(entry, false),
     lnum = entry.lnum,
     col = entry.col,
-    text = entry.text or entry.value.text or entry.value,
+    text = text,
   }
 end
 

@@ -5,6 +5,7 @@ local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
 local pickers = require "telescope.pickers"
 local previewers = require "telescope.previewers"
+local sorters = require "telescope.sorters"
 local utils = require "telescope.utils"
 local conf = require("telescope.config").values
 local log = require "telescope.log"
@@ -80,8 +81,6 @@ files.live_grep = function(opts)
       return nil
     end
 
-    prompt = escape_chars(prompt)
-
     local search_list = {}
 
     if search_dirs then
@@ -103,7 +102,9 @@ files.live_grep = function(opts)
     prompt_title = "Live Grep",
     finder = live_grepper,
     previewer = conf.grep_previewer(opts),
-    sorter = conf.generic_sorter(opts),
+    -- TODO: It would be cool to use `--json` output for this
+    -- and then we could get the highlight positions directly.
+    sorter = sorters.highlighter_only(opts),
   }):find()
 end
 

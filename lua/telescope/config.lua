@@ -219,12 +219,19 @@ local telescope_defaults = {
   borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" } },
 
   get_status_text = {
-    function(self)
+    function(self, opts)
       local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
       local yy = self.stats.processed or 0
       if xx == 0 and yy == 0 then
         return ""
       end
+
+      -- local status_icon
+      -- if opts.completed then
+      --   status_icon = "✔️"
+      -- else
+      --   status_icon = "*"
+      -- end
 
       return string.format("%s / %s", xx, yy)
     end,
