@@ -1,5 +1,3 @@
-local has_devicons, devicons = pcall(require, "nvim-web-devicons")
-
 local Path = require "plenary.path"
 local Job = require "plenary.job"
 
@@ -456,7 +454,20 @@ utils.align_str = function()
   error "align_str deprecated. please use plenary.strings.align_str"
 end
 
-utils.transform_devicons = (function()
+local load_once = function(f)
+  local resolved = nil
+  return function(...)
+    if resolved == nil then
+      resolved = f()
+    end
+
+    return resolved(...)
+  end
+end
+
+utils.transform_devicons = load_once(function()
+  local has_devicons, devicons = pcall(require, "nvim-web-devicons")
+
   if has_devicons then
     if not devicons.has_loaded() then
       devicons.setup()
@@ -482,9 +493,11 @@ utils.transform_devicons = (function()
       return display
     end
   end
-end)()
+end)
 
-utils.get_devicons = (function()
+utils.get_devicons = load_once(function()
+  local has_devicons, devicons = pcall(require, "nvim-web-devicons")
+
   if has_devicons then
     if not devicons.has_loaded() then
       devicons.setup()
@@ -508,6 +521,6 @@ utils.get_devicons = (function()
       return ""
     end
   end
-end)()
+end)
 
 return utils
