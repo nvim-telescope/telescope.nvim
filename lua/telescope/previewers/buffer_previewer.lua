@@ -870,6 +870,7 @@ end, {})
 previewers.buffers = defaulter(function(opts)
   opts = opts or {}
   local cwd = opts.cwd or vim.loop.cwd()
+  local previewer_active = true -- decouple provider from preview_win
   return Previewer:new {
     title = function()
       return "Buffers"
@@ -894,28 +895,27 @@ previewers.buffers = defaulter(function(opts)
           ["wrap"] = vim.api.nvim_win_get_option(win_id, "wrap"),
         },
       }
-      -- decoration provider is hierachical -> win -> line
+      -- TODO clear explicitly once API should become available
+      -- decoration provider is hierachical on_start -> win
       vim.api.nvim_set_decoration_provider(ns_previewer, {
-        on_win = function(_, winid, _, _)
+        on_start = function()
+          -- defacto disable provider if status.preview_win does not exist anymore
+          return previewer_active
+        end,
+        on_win = function(_, winid, bufnr, _)
           if winid ~= status.preview_win then
             return false -- skip setting extmark for any window other than status.preview_win
           end
-          return true
-        end,
-        on_line = function(_, winid, bufnr, row)
           local lnum, _ = unpack(vim.api.nvim_win_get_cursor(winid))
-          -- row seems zero-indexed
-          if row == lnum - 1 then
-            local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
-            -- only set if winid and rows are matching
-            pcall(vim.api.nvim_buf_set_extmark, bufnr, ns_previewer, row, 0, {
-              end_col = #line,
-              virt_text_pos = "overlay",
-              hl_group = "TelescopePreviewLine",
-              ephemeral = true,
-              priority = 101, -- 1 higher than treesitter
-            })
-          end
+          local line = vim.api.nvim_buf_get_lines(bufnr, lnum - 1, lnum, false)[1]
+          -- only set if winid and rows are matching
+          pcall(vim.api.nvim_buf_set_extmark, bufnr, ns_previewer, lnum - 1, 0, {
+            end_col = #line,
+            virt_text_pos = "overlay",
+            hl_group = "TelescopePreviewLine",
+            ephemeral = true,
+            priority = 101, -- 1 higher than treesitter
+          })
         end,
       })
       return state
@@ -925,12 +925,14 @@ previewers.buffers = defaulter(function(opts)
       for opt, value in pairs(self.state.win_options) do
         vim.api.nvim_win_set_option(self.state.winid, opt, value)
       end
+      -- TODO precautious clearing of extmark though likely no effect due to ephemeral
       -- clear extmarks for previewed buffers
       for buf, _ in pairs(self.state.previewed_buffers) do
         if vim.api.nvim_buf_is_valid(buf) then
           vim.api.nvim_buf_clear_namespace(buf, ns_previewer, 0, -1)
         end
       end
+      previewer_active = false
     end,
     dyn_title = function(_, entry)
       return Path:new(from_entry.path(entry, true)):normalize(cwd)
