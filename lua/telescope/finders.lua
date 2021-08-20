@@ -151,6 +151,10 @@ finders._new = function(opts)
 end
 
 finders.new_async_job = function(opts)
+  if opts.writer then
+    return finders._new(opts)
+  end
+
   return async_job_finder(opts)
 end
 
@@ -160,33 +164,13 @@ finders.new_job = function(command_generator, entry_maker, _, cwd)
     entry_maker = entry_maker,
     cwd = cwd,
   }
-
-  -- return async_job_finder {
-  --   fn_command = function(_, prompt)
-  --     local command_list = command_generator(prompt)
-  --     if command_list == nil then
-  --       return nil
-  --     end
-
-  --     local command = table.remove(command_list, 1)
-
-  --     return {
-  --       command = command,
-  --       args = command_list,
-  --     }
-  --   end,
-
-  --   entry_maker = entry_maker,
-  --   maximum_results = maximum_results,
-  --   cwd = cwd,
-  -- }
 end
 
 --- One shot job
 ---@param command_list string[]: Command list to execute.
 ---@param opts table: stuff
----         @key entry_maker function Optional: function(line: string) => table
----         @key cwd string
+--         @key entry_maker function Optional: function(line: string) => table
+--         @key cwd string
 finders.new_oneshot_job = function(command_list, opts)
   opts = opts or {}
 
