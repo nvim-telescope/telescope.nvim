@@ -106,7 +106,7 @@ command.convert_user_opts = function(user_opts)
           ok, eval = pcall(eval)
           if ok and type(eval) == "table" then
             -- allow if return a table only
-            user_opts[key] = assert(eval)()
+            user_opts[key] = eval
           else
             -- otherwise return nil (allows split check later)
             user_opts[key] = nil
