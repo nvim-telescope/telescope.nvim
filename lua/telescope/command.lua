@@ -68,7 +68,7 @@ local split_keywords = {
 
 -- convert command line string arguments to
 -- lua number boolean type and nil value
-local function convert_user_opts(user_opts)
+command.convert_user_opts = function(user_opts)
   local default_opts = config.values
 
   local _switch = {
@@ -160,7 +160,7 @@ local function run_command(args)
   local theme = user_opts.theme or ""
 
   if next(opts) ~= nil then
-    convert_user_opts(opts)
+    command.convert_user_opts(opts)
   end
 
   if string.len(theme) > 0 then
