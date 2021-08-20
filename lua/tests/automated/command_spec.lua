@@ -66,12 +66,12 @@ describe("command_parser", function()
   )
   test_parse(
     "should handle symbols viml list",
-    { symbols = "[alpha,beta,gamma]" },
+    { symbols = "['alpha','beta','gamma']" },
     { symbols = { "alpha", "beta", "gamma" } }
   )
   test_parse(
     "should handle symbols lua list",
-    { symbols = "{alpha,beta,gamma}" },
+    { symbols = "{'alpha','beta','gamma'}" },
     { symbols = { "alpha", "beta", "gamma" } }
   )
 end)
