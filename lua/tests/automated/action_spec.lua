@@ -298,6 +298,36 @@ describe("actions", function()
     eq("modified: 5", a.x(5))
   end)
 
+  it("handles add with two different tables", function()
+    local a = transform_mod {
+      x = function()
+        return "x"
+      end,
+    }
+    local b = transform_mod {
+      y = function()
+        return "y"
+      end,
+    }
+
+    local called_count = 0
+    local count_inc = function()
+      called_count = called_count + 1
+    end
+
+    a.x:enhance {
+      post = count_inc,
+    }
+    b.y:enhance {
+      post = count_inc,
+    }
+
+    local x_plus_y = a.x + b.y
+    x_plus_y()
+
+    eq(2, called_count)
+  end)
+
   describe("action_set", function()
     it("can replace `action_set.edit`", function()
       action_set.edit:replace(function(_, arg)
