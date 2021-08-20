@@ -1,0 +1,123 @@
+================================================================================
+                                                         *telescope.changelog*
+
+# Changelog
+
+                                                     *telescope.changelog-922*
+
+Date: May 17, 2021
+PR: https://github.com/nvim-telescope/telescope.nvim/pull/922
+
+This is one of our largest breaking changes thus far, so I (TJ) am adding some
+information here so that you can more easily update (without having to track
+down the commit, etc.).
+
+The goal of these breaking changes is to greatly simplify the way
+configuration for layouts happen. This should make it much easier to configure
+each picker, layout_strategy, and more. Please report any bugs or behavior
+that is broken / confusing upstream and we can try and make the configuration
+better.
+
+|telescope.setup()| has changed `layout_defaults` -> `layout_config`.
+    This makes it so that the setup and the pickers share the same key,
+    otherwise it is too confusing which key is for which.
+
+
+`picker:find()` now has different values available for configuring the UI.
+    All configuration for the layout must be passed in the key:
+        `layout_config`.
+
+    Previously, these keys were passed via `picker:find(opts)`, but should be
+    passed via `opts.layout_config` now.
+        - {height}
+        - {width}
+        - {prompt_position}
+        - {preview_cutoff}
+
+    These keys are removed:
+        - {results_height}: This key is no longer valid. Instead, use `height`
+          and the corresponding `preview_*` options for the layout strategy to
+          get the correct results height. This simplifies the configuration
+          for many of the existing strategies.
+
+        - {results_width}: This key actually never did anything. It was
+          leftover from some hacking that I had attempted before. Instead you
+          should be using something like the `preview_width` configuration
+          option for |layout_strategies.horizontal()|
+
+    You should get error messages when you try and use any of the above keys now.
+
+                                                     *telescope.changelog-839*
+
+Date: July 7, 2021
+PR: https://github.com/nvim-telescope/telescope.nvim/pull/839
+
+Small breaking change regarding `shorten_path` and `hide_filename`.
+This allows to configure path displays on a global level and offers a way for
+extension developers to make use of the same configuration, offering a better
+overall experience.
+
+The new way to configure to configure path displays is with:
+    `path_display`: It is a table and accepts multiple values:
+        - "hidden"    hide file names
+        - "tail"      only display the file name, and not the path
+        - "absolute"  display absolute paths
+        - "shorten"   only display the first character of each directory in
+                      the path
+    see |telescope.defaults.path_display|
+
+Example would be for a global configuration:
+  require("telescope").setup{
+    defaults = {
+      path_display = {
+        "shorten",
+        "absolute",
+      },
+    }
+  }
+
+You can also still pass this to a single builtin call:
+    require("telescope.builtin").find_files {
+      path_display = { "shorten" }
+    }
+
+For extension developers there is a new util function that can be used to
+display a path:
+    local filename = utils.transform_path(opts, entry.filename)
+
+                                                     *telescope.changelog-473*
+
+Date: July 14, 2021
+PR: https://github.com/nvim-telescope/telescope.nvim/pull/473
+
+Deprecation of telescope.path
+
+Extension developers need to move to plenary.path, because we will remove the
+telescope.path  module soon.
+
+Guide to switch over to plenary.path
+    - separator
+        before: require("telescope.path").separator
+        now:    require("plenary.path").path.sep
+    - home
+        before: require("telescope.path").home
+        now:    require("plenary.path").path.home
+    - make_relative
+        before: require("telescope.path").make_relative(filepath, cwd)
+        now:    require("plenary.path"):new(filepath):make_relative(cwd)
+    - shorten
+        before: require("telescope.path").shorten(filepath)
+        now:    require("plenary.path"):new(filepath):shorten()
+                with optional len, default is 1
+    - normalize
+        before: require("telescope.path").normalize(filepath, cwd)
+        now:    require("plenary.path"):new(filepath):normalize(cwd)
+    - read_file
+        before: require("telescope.path").read_file(filepath)
+        now:    require("plenary.path"):new(filepath):read()
+    - read_file_async
+        before: require("telescope.path").read_file_async(filepath, callback)
+        now:    require("plenary.path"):new(filepath):read(callback)
+
+
+ vim:tw=78:ts=8:ft=help:norl:

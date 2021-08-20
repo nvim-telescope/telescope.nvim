@@ -12,18 +12,18 @@
 
 local a = vim.api
 
-local log = require('telescope.log')
-local path = require('telescope.path')
-local state = require('telescope.state')
+local log = require "telescope.log"
+local Path = require "plenary.path"
+local state = require "telescope.state"
 
-local action_state = require('telescope.actions.state')
+local action_state = require "telescope.actions.state"
 
-local transform_mod = require('telescope.actions.mt').transform_mod
+local transform_mod = require("telescope.actions.mt").transform_mod
 
 local action_set = setmetatable({}, {
   __index = function(_, k)
     error("'telescope.actions.set' does not have a value: " .. tostring(k))
-  end
+  end,
 })
 
 --- Move the current selection of a picker {change} rows.
@@ -48,19 +48,33 @@ action_set.select = function(prompt_bufnr, type)
   return action_set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
 end
 
+-- goal: currently we have a workaround in actions/init.lua where we do this for all files
+-- action_set.select = {
+--   -- Will not be called if `select_default` is replaced rather than `action_set.select` because we never get here
+--   pre = function(prompt_bufnr)
+--     action_state.get_current_history():append(
+--       action_state.get_current_line(),
+--       action_state.get_current_picker(prompt_bufnr)
+--     )
+--   end,
+--   action = function(prompt_bufnr, type)
+--     return action_set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
+--   end
+-- }
+
 local edit_buffer
 do
   local map = {
-    edit = 'buffer',
-    new = 'sbuffer',
-    vnew = 'vert sbuffer',
-    tabedit = 'tab sb',
+    edit = "buffer",
+    new = "sbuffer",
+    vnew = "vert sbuffer",
+    tabedit = "tab sb",
   }
 
   edit_buffer = function(command, bufnr)
     command = map[command]
     if command == nil then
-      error('There was no associated buffer command')
+      error "There was no associated buffer command"
     end
     vim.cmd(string.format("%s %d", command, bufnr))
   end
@@ -74,13 +88,13 @@ action_set.edit = function(prompt_bufnr, command)
   local entry = action_state.get_selected_entry()
 
   if not entry then
-    print("[telescope] Nothing currently selected")
+    print "[telescope] Nothing currently selected"
     return
   end
 
   local filename, row, col
 
-  if entry.filename then
+  if entry.path or entry.filename then
     filename = entry.path or entry.filename
 
     -- TODO: Check for off-by-one
@@ -91,7 +105,7 @@ action_set.edit = function(prompt_bufnr, command)
     -- to put stuff into `filename`
     local value = entry.value
     if not value then
-      print("Could not do anything with blank line...")
+      print "Could not do anything with blank line..."
       return
     end
 
@@ -108,7 +122,7 @@ action_set.edit = function(prompt_bufnr, command)
 
   local entry_bufnr = entry.bufnr
 
-  require('telescope.actions').close(prompt_bufnr)
+  require("telescope.actions").close(prompt_bufnr)
 
   if entry_bufnr then
     edit_buffer(command, entry_bufnr)
@@ -116,13 +130,13 @@ action_set.edit = function(prompt_bufnr, command)
     -- check if we didn't pick a different buffer
     -- prevents restarting lsp server
     if vim.api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
-      filename = path.normalize(vim.fn.fnameescape(filename), vim.loop.cwd())
+      filename = Path:new(vim.fn.fnameescape(filename)):normalize(vim.loop.cwd())
       vim.cmd(string.format("%s %s", command, filename))
     end
   end
 
   if row and col then
-    local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, {row, col})
+    local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, { row, col })
     if not ok then
       log.debug("Failed to move to cursor:", err_msg, row, col)
     end
@@ -133,12 +147,19 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
-action_set.scroll_previewer = function (prompt_bufnr, direction)
+action_set.scroll_previewer = function(prompt_bufnr, direction)
+  local previewer = action_state.get_current_picker(prompt_bufnr).previewer
+
+  -- Check if we actually have a previewer
+  if type(previewer) ~= "table" or previewer.scroll_fn == nil then
+    return
+  end
+
   local status = state.get_status(prompt_bufnr)
   local default_speed = vim.api.nvim_win_get_height(status.preview_win) / 2
   local speed = status.picker.layout_config.scroll_speed or default_speed
 
-  action_state.get_current_picker(prompt_bufnr).previewer:scroll_fn(math.floor(speed * direction))
+  previewer:scroll_fn(math.floor(speed * direction))
 end
 
 -- ==================================================

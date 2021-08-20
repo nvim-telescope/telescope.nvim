@@ -21,9 +21,9 @@
 ---   :Telescope find_files previewer=false
 ---@brief ]]
 
-local Previewer = require('telescope.previewers.previewer')
-local term_previewer = require('telescope.previewers.term_previewer')
-local buffer_previewer = require('telescope.previewers.buffer_previewer')
+local Previewer = require "telescope.previewers.previewer"
+local term_previewer = require "telescope.previewers.term_previewer"
+local buffer_previewer = require "telescope.previewers.buffer_previewer"
 
 local previewers = {}
 
@@ -53,6 +53,11 @@ local previewers = {}
 ---   - `teardown` function(self): Will be called on cleanup.
 ---   - `preview_fn` function(self, entry, status): Will be called each time
 ---                                                 a new entry was selected.
+---   - `title` function(self): Will return the static title of the previewer.
+---   - `dynamic_title` function(self, entry): Will return the dynamic title of
+---                                            the previewer. Will only be called
+---                                            when config value dynamic_preview_title
+---                                            is true.
 ---   - `send_input` function(self, input): This is meant for
 ---                                         `termopen_previewer` and it can be
 ---                                         used to send input to the terminal
@@ -78,6 +83,11 @@ end
 ---   end
 --- </pre>
 ---
+--- Additionally you can define:
+--- - `title` a static title for example "File Preview"
+--- - `dyn_title(self, entry)` a dynamic title function which gets called
+--- when config value `dynamic_preview_title = true`
+---
 --- It's an easy way to get your first previewer going and it integrates well
 --- with `bat` and `less`. Providing out of the box scrolling if the command
 --- uses less.
@@ -88,7 +98,6 @@ end
 --- While this interface is a good start, it was replaced with the way more
 --- flexible `buffer_previewer` and is now deprecated.
 previewers.new_termopen_previewer = term_previewer.new_termopen_previewer
-
 
 --- Provides a `termopen_previewer` which has the ability to display files.
 --- It will always show the top of the file and has support for
@@ -123,7 +132,6 @@ previewers.vimgrep = term_previewer.vimgrep
 --- This will respect user configuration and will use buffer previewers in
 --- case it's configured that way.
 previewers.qflist = term_previewer.qflist
-
 
 --- An interface to instantiate a new `buffer_previewer`.
 --- That means that the content actually lives inside a vim buffer which
@@ -166,6 +174,9 @@ previewers.qflist = term_previewer.qflist
 ---     useful if you have one file but multiple entries. This happens for grep
 ---     and lsp builtins. So to make the cache work only load content if
 ---     `self.state.bufname ~= entry.your_unique_key`
+---   - `title` a static title for example "File Preview"
+---   - `dyn_title(self, entry)` a dynamic title function which gets called
+---     when config value `dynamic_preview_title = true`
 ---
 --- `self.state` table:
 ---   - `self.state.bufnr`
@@ -228,7 +239,6 @@ previewers.new_buffer_previewer = buffer_previewer.new_buffer_previewer
 ---@param opts table: keys: `use_ft_detect`, `bufname` and `callback`
 previewers.buffer_previewer_maker = buffer_previewer.file_maker
 
-
 --- A previewer that is used to display a file. It uses the `buffer_previewer`
 --- interface and won't jump to the line. To integrate this one into your
 --- own picker make sure that the field `path` or `filename` is set for
@@ -259,12 +269,35 @@ previewers.vim_buffer_vimgrep = buffer_previewer.vimgrep
 --- case it's configured that way.
 previewers.vim_buffer_qflist = buffer_previewer.qflist
 
-
+--- A previewer that shows a log of a branch as graph
 previewers.git_branch_log = buffer_previewer.git_branch_log
-previewers.git_commit_diff = buffer_previewer.git_commit_diff
-previewers.git_file_diff = buffer_previewer.git_file_diff
+
+--- A previewer that shows a diff of a stash
 previewers.git_stash_diff = buffer_previewer.git_stash_diff
 
+--- A previewer that shows a diff of a commit to a parent commit.<br>
+--- The run command is `git --no-pager diff SHA^! -- $CURRENT_FILE`
+---
+--- The current file part is optional. So is only uses it with bcommits.
+previewers.git_commit_diff_to_parent = buffer_previewer.git_commit_diff_to_parent
+
+--- A previewer that shows a diff of a commit to head.<br>
+--- The run command is `git --no-pager diff --cached $SHA -- $CURRENT_FILE`
+---
+--- The current file part is optional. So is only uses it with bcommits.
+previewers.git_commit_diff_to_head = buffer_previewer.git_commit_diff_to_head
+
+--- A previewer that shows a diff of a commit as it was.<br>
+--- The run command is `git --no-pager show $SHA:$CURRENT_FILE` or `git --no-pager show $SHA`
+previewers.git_commit_diff_as_was = buffer_previewer.git_commit_diff_as_was
+
+--- A previewer that shows the commit message of a diff.<br>
+--- The run command is `git --no-pager log -n 1 $SHA`
+previewers.git_commit_message = buffer_previewer.git_commit_message
+
+--- A previewer that shows the current diff of a file. Used in git_status.<br>
+--- The run command is `git --no-pager diff $FILE`
+previewers.git_file_diff = buffer_previewer.git_file_diff
 
 previewers.ctags = buffer_previewer.ctags
 previewers.builtin = buffer_previewer.builtin
@@ -272,7 +305,6 @@ previewers.help = buffer_previewer.help
 previewers.man = buffer_previewer.man
 previewers.autocommands = buffer_previewer.autocommands
 previewers.highlights = buffer_previewer.highlights
-
 
 --- A deprecated way of displaying content more easily. Was written at a time,
 --- where the buffer_previewer interface wasn't present. Nowadays it's easier

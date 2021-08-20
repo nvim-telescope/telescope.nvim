@@ -6,18 +6,19 @@
 --- Generally used from within other |telescope.actions|
 ---@brief ]]
 
-local global_state = require('telescope.state')
+local global_state = require "telescope.state"
+local conf = require("telescope.config").values
 
 local action_state = {}
 
 --- Get the current entry
 function action_state.get_selected_entry()
-  return global_state.get_global_key('selected_entry')
+  return global_state.get_global_key "selected_entry"
 end
 
 --- Gets the current line
 function action_state.get_current_line()
-  return global_state.get_global_key('current_line')
+  return global_state.get_global_key "current_line" or ""
 end
 
 --- Gets the current picker
@@ -34,6 +35,21 @@ local select_to_edit_map = {
 }
 function action_state.select_key_to_edit_key(type)
   return select_to_edit_map[type]
+end
+
+function action_state.get_current_history()
+  local history = global_state.get_global_key "history"
+  if not history then
+    if conf.history == false or type(conf.history) ~= "table" then
+      history = require("telescope.actions.history").get_simple_history()
+      global_state.set_global_key("history", history)
+    else
+      history = conf.history.handler()
+      global_state.set_global_key("history", history)
+    end
+  end
+
+  return history
 end
 
 return action_state

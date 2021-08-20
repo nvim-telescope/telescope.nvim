@@ -19,11 +19,190 @@ telescope.setup({opts})                                    *telescope.setup()*
 
     Valid keys for {opts.defaults}
 
+                                                *telescope.defaults.border*
+    border: ~
+        Boolean defining if borders are added to Telescope windows.
+
+        Default: true
+
+                                      *telescope.defaults.default_mappings*
+    default_mappings: ~
+        Not recommended to use except for advanced users.
+
+        Will allow you to completely remove all of telescope's default maps
+        and use your own.
+
+
+                                 *telescope.defaults.dynamic_preview_title*
+    dynamic_preview_title: ~
+        Will change the title of the preview window dynamically, where it
+        is supported. Means the preview window will for example show the
+        full filename.
+
+        Default: false
+
                                           *telescope.defaults.entry_prefix*
     entry_prefix: ~
         Prefix in front of each result entry. Current selection not included.
 
         Default: '  '
+
+                                               *telescope.defaults.history*
+    history: ~
+          This field handles the configuration for prompt history.
+          By default it is a table, with default values (more below).
+          To disable history, set it to false.
+
+          Currently mappings still need to be added, Example:
+            mappings = {
+              i = {
+                ["<C-Down>"] = require('telescope.actions').cycle_history_next,
+                ["<C-Up>"] = require('telescope.actions').cycle_history_prev,
+              },
+            },
+
+          Fields:
+            - path:    The path to the telescope history as string.
+                       default: stdpath("data")/telescope_history
+            - limit:   The amount of entries that will be written in the
+                       history.
+                       Warning: If limit is set to nil it will grown unbound.
+                       default: 100
+            - handler: A lua function that implements the history.
+                       This is meant as a developer setting for extensions to
+                       override the history handling, e.g.,
+                       https://github.com/nvim-telescope/telescope-smart-history.nvim,
+                       which allows context sensitive (cwd + picker) history.
+
+                       Default:
+                       require('telescope.actions.history').get_simple_history
+
+
+                                         *telescope.defaults.layout_config*
+    layout_config: ~
+        Determines the default configuration values for layout strategies.
+        See |telescope.layout| for details of the configurations options for
+        each strategy.
+
+        Allows setting defaults for all strategies as top level options and
+        for overriding for specific options.
+        For example, the default values below set the default width to 80% of
+        the screen width for all strategies except 'center', which has width
+        of 50% of the screen width.
+
+        Default: {
+          center = {
+            preview_cutoff = 40
+          },
+          cursor = {
+            preview_cutoff = 40
+          },
+          height = 0.9,
+          horizontal = {
+            preview_cutoff = 120,
+            prompt_position = "bottom"
+          },
+          vertical = {
+            preview_cutoff = 40
+          },
+          width = 0.8
+        }
+
+
+                                       *telescope.defaults.layout_strategy*
+    layout_strategy: ~
+        Determines the default layout of Telescope pickers.
+        See |telescope.layout| for details of the available strategies.
+
+        Default: 'horizontal'
+
+                                              *telescope.defaults.mappings*
+    mappings: ~
+        Your mappings to override telescope's default mappings.
+
+        Format is:
+        {
+          mode = { ..keys }
+        }
+
+        where {mode} is the one character letter for a mode
+        ('i' for insert, 'n' for normal).
+
+        For example:
+
+        mappings = {
+          i = {
+            ["<esc>"] = require('telescope.actions').close,
+          },
+        }
+
+
+        To disable a keymap, put [map] = false
+          So, to not map "<C-n>", just put
+
+            ...,
+            ["<C-n>"] = false,
+            ...,
+
+          Into your config.
+
+
+        otherwise, just set the mapping to the function that you want it to
+        be.
+
+            ...,
+            ["<C-i>"] = require('telescope.actions').select_default,
+            ...,
+
+        If the function you want is part of `telescope.actions`, then you can
+        simply give a string.
+          For example, the previous option is equivalent to:
+
+            ...,
+            ["<C-i>"] = "select_default",
+            ...,
+
+        You can also add other mappings using tables with `type = "command"`.
+          For example:
+
+            ...,
+            ["jj"] = { "<esc>", type = "command" },
+            ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },)
+            ...,
+
+
+                                          *telescope.defaults.path_display*
+    path_display: ~
+        Determines how file paths are displayed
+
+        path_display can be set to an array with a combination of:
+        - "hidden"    hide file names
+        - "tail"      only display the file name, and not the path
+        - "absolute"  display absolute paths
+        - "shorten"   only display the first character of each directory in
+                      the path
+
+        You can also specify the number of characters of each directory name
+        to keep by setting `path_display.shorten = num`.
+          e.g. for a path like
+            `alpha/beta/gamma/delta.txt`
+          setting `path_display.shorten = 1` will give a path like:
+            `a/b/g/delta.txt`
+          Similarly, `path_display.shorten = 2` will give a path like:
+            `al/be/ga/delta.txt`
+
+        path_display can also be set to 'hidden' string to hide file names
+
+        path_display can also be set to a function for custom formatting of
+        the path display. Example:
+
+            -- Format path as "file.txt (path\to\file\)"
+            path_display = function(opts, path)
+              local tail = require("telescope.utils").path_tail(path)
+              return string.format("%s (%s)", tail, path)
+            end,
+
+        Default: {}
 
                                          *telescope.defaults.prompt_prefix*
     prompt_prefix: ~
@@ -53,6 +232,7 @@ telescope.setup({opts})                                    *telescope.setup()*
         - "reset" (default)
         - "follow"
         - "row"
+        - "closest"
 
                                       *telescope.defaults.sorting_strategy*
     sorting_strategy: ~
@@ -92,281 +272,37 @@ telescope.extensions()                                *telescope.extensions()*
 
 
 ================================================================================
-                                                              *telescope.themes*
-
-Themes are ways to combine several elements of styling together.
-
-They are helpful for managing the several differnt UI aspects for telescope and
-provide a simple interface for users to get a particular "style" of picker.
-
-themes.get_dropdown()                                  *themes.get_dropdown()*
-    Dropdown style theme.
-
-    Usage:
-
-        `local builtin = require('telescope.builtin')`
-        `local themes = require('telescope.themes')`
-        `builtin.find_files(themes.get_dropdown())`
-
-
-
-themes.get_ivy()                                            *themes.get_ivy()*
-    Ivy style theme.
-
-    Usage:
-
-        `local builtin = require('telescope.builtin')`
-        `local themes = require('telescope.themes')`
-        `builtin.find_files(themes.get_ivy())`
-
-
-
-
-================================================================================
-                                                         *telescope.actions.set*
-
-Telescope action sets are used to provide an interface for managing actions
-that all primarily do the same thing, but with slight tweaks.
-
-For example, when editing files you may want it in the current split, a
-vertical split, etc. Instead of making users have to overwrite EACH of those
-every time they want to change this behavior, they can instead replace the
-`set` itself and then it will work great and they're done.
-
-action_set.shift_selection({prompt_bufnr}, {change})*action_set.shift_selection()*
-    Move the current selection of a picker {change} rows. Handles not
-    overflowing / underflowing the list.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-        {change}       (number)  The amount to shift the selection by
-
-
-action_set.select({prompt_bufnr}, {type})                *action_set.select()*
-    Select the current entry. This is the action set to overwrite common
-    actions by the user.
-
-    By default maps to editing a file.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-        {type}         (string)  The type of selection to make
-
-
-action_set.edit({prompt_bufnr}, {command})                 *action_set.edit()*
-    Edit a file based on the current selection.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-        {command}      (string)  The command to use to open the file.
-
-
-action_set.scroll_previewer({prompt_bufnr}, {direction})*action_set.scroll_previewer()*
-    Scrolls the previewer up or down
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-        {direction}    (number)  The direction of the scrolling
-
-
-
-================================================================================
-                                                             *telescope.actions*
-
-Actions functions that are useful for people creating their own mappings.
-
-actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
-    Move the selection to the next entry
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous()*
-    Move the selection to the previous entry
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
-    Move the selection to the entry that has a worse score
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_selection_better({prompt_bufnr})*actions.move_selection_better()*
-    Move the selection to the entry that has a better score
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_to_top({prompt_bufnr})                    *actions.move_to_top()*
-    Move to the top of the picker
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_to_middle({prompt_bufnr})              *actions.move_to_middle()*
-    Move to the middle of the picker
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.move_to_bottom({prompt_bufnr})              *actions.move_to_bottom()*
-    Move to the bottom of the picker
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.add_selection({prompt_bufnr})                *actions.add_selection()*
-    Add current entry to multi select
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.remove_selection({prompt_bufnr})          *actions.remove_selection()*
-    Remove current entry from multi select
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
-    Toggle current entry status for multi select
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
-    Create and checkout a new git branch if it doesn't already exist
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_apply_stash({prompt_bufnr})            *actions.git_apply_stash()*
-    Applies an existing git stash
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_checkout({prompt_bufnr})                  *actions.git_checkout()*
-    Checkout an existing git branch
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_track_branch({prompt_bufnr})          *actions.git_track_branch()*
-    Tell git to track the currently selected remote branch in Telescope
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.send_selected_to_qflist()          *actions.send_selected_to_qflist()*
-    Sends the selected entries to the quickfix list, replacing the previous
-    entries.
-
-
-
-actions.add_selected_to_qflist()            *actions.add_selected_to_qflist()*
-    Adds the selected entries to the quickfix list, keeping the previous
-    entries.
-
-
-
-actions.send_to_qflist()                            *actions.send_to_qflist()*
-    Sends all entries to the quickfix list, replacing the previous entries.
-
-
-
-actions.add_to_qflist()                              *actions.add_to_qflist()*
-    Adds all entries to the quickfix list, keeping the previous entries.
-
-
-
-actions.send_selected_to_loclist()        *actions.send_selected_to_loclist()*
-    Sends the selected entries to the location list, replacing the previous
-    entries.
-
-
-
-actions.add_selected_to_loclist()          *actions.add_selected_to_loclist()*
-    Adds the selected entries to the location list, keeping the previous
-    entries.
-
-
-
-actions.send_to_loclist()                          *actions.send_to_loclist()*
-    Sends all entries to the location list, replacing the previous entries.
-
-
-
-actions.add_to_loclist()                            *actions.add_to_loclist()*
-    Adds all entries to the location list, keeping the previous entries.
-
-
-
-actions.smart_send_to_qflist()                *actions.smart_send_to_qflist()*
-    Sends the selected entries to the quickfix list, replacing the previous
-    entries. If no entry was selected, sends all entries.
-
-
-
-actions.smart_add_to_qflist()                  *actions.smart_add_to_qflist()*
-    Adds the selected entries to the quickfix list, keeping the previous
-    entries. If no entry was selected, adds all entries.
-
-
-
-actions.smart_send_to_loclist()              *actions.smart_send_to_loclist()*
-    Sends the selected entries to the location list, replacing the previous
-    entries. If no entry was selected, sends all entries.
-
-
-
-actions.smart_add_to_loclist()                *actions.smart_add_to_loclist()*
-    Adds the selected entries to the location list, keeping the previous
-    entries. If no entry was selected, adds all entries.
-
-
-
-actions.open_qflist()                                  *actions.open_qflist()*
-    Open the quickfix list
-
-
-
-actions.open_loclist()                                *actions.open_loclist()*
-    Open the location list
-
+                                                             *telescope.command*
+
+Telescope commands can be called through two apis, the lua api and the viml
+api.
+
+The lua api is the more direct way to interact with Telescope, as you directly
+call the lua functions that Telescope defines. It can be called in a lua file
+using commands like:
+`require("telescope.builtin").find_files({hidden=true, layout_config={prompt_position="top"}})`
+If you want to use this api from a vim file you should prepend `lua` to the
+command, as below:
+`lua require("telescope.builtin").find_files({hidden=true, layout_config={prompt_position="top"}})`
+If you want to use this api from a neovim command line you should prepend
+`:lua` to the command, as below:
+`:lua require("telescope.builtin").find_files({hidden=true, layout_config={prompt_position="top"}})`
+
+The viml api is more indirect, as first the command must be parsed to the
+relevant lua equivalent, which brings some limitations. The viml api can be
+called using commands like:
+`:Telescope find_files hidden=true layout_config={"prompt_position":"top"}`
+This involves setting options using an `=` and using viml syntax for lists and
+dictionaries when the corresponding lua function requires a table.
+
+One limitation of the viml api is that there can be no spaces in any of the
+options. For example, if you want to use the `cwd` option for `find_files` to
+specify that you only want to search within the folder `/foo bar/subfolder/`
+you could not do that using the viml api, as the path name contains a space.
+Similarly, you could NOT set the `prompt_position` to `"top"` using the
+following command:
+`:Telescope find_files layout_config={ "prompt_position" : "top" }`
+as there are spaces in the option.
 
 
 
@@ -387,9 +323,37 @@ your desired picker by passing a lua table to the picker with all of the
 options you want to use. Here's an example with the live_grep picker:
 
 :lua require('telescope.builtin').live_grep({
-   prompt_title = 'find string in open buffers...',
-   grep_open_files = true
- })
+  prompt_title = 'find string in open buffers...',
+  grep_open_files = true
+})
+-- or with dropdown theme
+:lua require('telescope.builtin').find_files(require('telescope.themes').get_dropdown{
+  previewer = false
+})
+
+You can also pass default configurations to builtin pickers. These options will
+also be added if the picker is executed with `Telescope find_files`.
+
+require("telescope").setup {
+  pickers = {
+    buffers = {
+      show_all_buffers = true,
+      sort_lastused = true,
+      theme = "dropdown",
+      previewer = false,
+      mappings = {
+        i = {
+          ["<c-d>"] = require("telescope.actions").delete_buffer,
+          -- or right hand side can also be the name of the action as string
+          ["<c-d>"] = "delete_buffer",
+        },
+        n = {
+          ["<c-d>"] = require("telescope.actions").delete_buffer,
+        }
+      }
+    }
+  }
+}
 
 This will use the default configuration options. Other configuration options
 are still in flux at the moment
@@ -403,11 +367,14 @@ builtin.live_grep({opts})                                *builtin.live_grep()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {grep_open_files} (boolean)  if true, restrict search to open files
-                                     only, mutually exclusive with
-                                     `search_dirs`
-        {search_dirs}     (table)    directory/directories to search in,
-                                     mutually exclusive with `grep_open_files`
+        {grep_open_files} (boolean)   if true, restrict search to open files
+                                      only, mutually exclusive with
+                                      `search_dirs`
+        {search_dirs}     (table)     directory/directories to search in,
+                                      mutually exclusive with
+                                      `grep_open_files`
+        {additional_args} (function)  function(opts) which returns a table of
+                                      additional arguments to be passed on
 
 
 builtin.grep_string({opts})                            *builtin.grep_string()*
@@ -418,10 +385,13 @@ builtin.grep_string({opts})                            *builtin.grep_string()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {search}      (string)   the query to search
-        {search_dirs} (table)    directory/directories to search in
-        {use_regex}   (boolean)  if true, special characters won't be escaped,
-                                 allows for using regex (default is false)
+        {search}          (string)    the query to search
+        {search_dirs}     (table)     directory/directories to search in
+        {use_regex}       (boolean)   if true, special characters won't be
+                                      escaped, allows for using regex (default
+                                      is false)
+        {additional_args} (function)  function(opts) which returns a table of
+                                      additional arguments to be passed on
 
 
 builtin.find_files({opts})                              *builtin.find_files()*
@@ -438,6 +408,8 @@ builtin.find_files({opts})                              *builtin.find_files()*
                                   flag for the `find` command)
         {hidden}       (boolean)  determines whether to show hidden files or
                                   not (default is false)
+        {no_ignore}    (boolean)  show files ignored by .gitignore, .ignore,
+                                  etc. (default is false)
         {search_dirs}  (table)    directory/directories to search in
 
 
@@ -465,7 +437,11 @@ builtin.file_browser({opts})                          *builtin.file_browser()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {search_dirs} (table)  directory/directories to search in
+        {cwd}      (string)   directory path to browse (default is cwd)
+        {depth}    (number)   file tree depth to display (default is 1)
+        {dir_icon} (string)   change the icon for a directory. default: 
+        {hidden}   (boolean)  determines whether to show hidden files or not
+                              (default is false)
 
 
 builtin.treesitter()                                    *builtin.treesitter()*
@@ -476,8 +452,8 @@ builtin.treesitter()                                    *builtin.treesitter()*
 
 
     Fields: ~
-        {show_line} (boolean)  if true, shows the row:column that the result is
-                               found at (default is true)
+        {show_line} (boolean)  if true, shows the row:column that the result
+                               is found at (default is true)
 
 
 builtin.current_buffer_fuzzy_find({opts})*builtin.current_buffer_fuzzy_find()*
@@ -498,14 +474,9 @@ builtin.tags({opts})                                          *builtin.tags()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {ctags_file}    (string)   specify a particular ctags file to use
-        {show_line}     (boolean)  if true, shows the content of the line the
-                                   tag is found on in the picker (default is
-                                   true)
-        {shorten_path}  (boolean)  if true, makes file paths shown in picker
-                                   use one letter for folders (default is true)
-        {hide_filename} (boolean)  if true, hides the name of the file in the
-                                   current picker (default is false)
+        {ctags_file} (string)   specify a particular ctags file to use
+        {show_line}  (boolean)  if true, shows the content of the line the tag
+                                is found on in the picker (default is true)
 
 
 builtin.current_buffer_tags({opts})            *builtin.current_buffer_tags()*
@@ -540,20 +511,34 @@ builtin.git_commits({opts})                            *builtin.git_commits()*
     Lists commits for current directory with diff preview
     - Default keymaps:
       - `<cr>`: checks out the currently selected commit
+      - `<C-r>m`: resets current branch to selected commit using mixed mode
+      - `<C-r>s`: resets current branch to selected commit using soft mode
+      - `<C-r>h`: resets current branch to selected commit using hard mode
 
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {cwd} (string)  specify the path of the repo
 
 
 builtin.git_bcommits({opts})                          *builtin.git_bcommits()*
     Lists commits for current buffer with diff preview
-    - Default keymaps:
+    - Default keymaps or your overriden `select_` keys:
       - `<cr>`: checks out the currently selected commit
+      - `<c-v>`: opens a diff in a vertical split
+      - `<c-x>`: opens a diff in a horizontal split
+      - `<c-t>`: opens a diff in a new tab
 
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {cwd}          (string)  specify the path of the repo
+        {current_file} (string)  specify the current file that should be used
+                                 for bcommits (default: current buffer)
 
 
 builtin.git_branches({opts})                          *builtin.git_branches()*
@@ -697,6 +682,10 @@ builtin.man_pages({opts})                                *builtin.man_pages()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
+    Fields: ~
+        {sections} (table)  a list of sections to search, use `{ "ALL" }` to
+                            search in all sections
+
 
 builtin.reloader({opts})                                  *builtin.reloader()*
     Lists lua modules and reloads them on `<cr>`
@@ -715,13 +704,22 @@ builtin.buffers({opts})                                    *builtin.buffers()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {show_all_buffers}      (boolean)  if true, show all buffers, including
-                                           unloaded buffers (default true)
+        {show_all_buffers}      (boolean)  if true, show all buffers,
+                                           including unloaded buffers (default
+                                           true)
         {ignore_current_buffer} (boolean)  if true, don't show the current
                                            buffer in the list (default false)
         {only_cwd}              (boolean)  if true, only show buffers in the
                                            current working directory (default
                                            false)
+        {sort_lastused}         (boolean)  Sorts current and last buffer to
+                                           the top and selects the lastused
+                                           (default false)
+        {sort_mru}              (boolean)  Sorts all buffers after most recent
+                                           used. Not just the current and last
+                                           one (default false)
+        {bufnr_width}           (number)   Defines the width of the buffer
+                                           numbers in front of the filenames
 
 
 builtin.colorscheme({opts})                            *builtin.colorscheme()*
@@ -730,6 +728,9 @@ builtin.colorscheme({opts})                            *builtin.colorscheme()*
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {enable_preview} (boolean)  if true, will preview the selected color
 
 
 builtin.marks({opts})                                        *builtin.marks()*
@@ -799,12 +800,6 @@ builtin.tagstack({opts})                                  *builtin.tagstack()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
-    Fields: ~
-        {shorten_path}  (boolean)  if true, makes file paths shown in picker
-                                   use one letter for folders (default is true)
-        {hide_filename} (boolean)  if true, hides the name of the file in the
-                                   current picker (default is true)
-
 
 builtin.jumplist({opts})                                  *builtin.jumplist()*
     Lists items from Vim's jumplist, jumps to location on `<cr>`
@@ -822,10 +817,6 @@ builtin.lsp_references({opts})                      *builtin.lsp_references()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
-    Fields: ~
-        {shorten_path} (boolean)  if true, makes file paths shown in picker use
-                                  one letter for folders (default is false)
-
 
 builtin.lsp_definitions({opts})                    *builtin.lsp_definitions()*
     Goto the definition of the word under the cursor, if there's only one,
@@ -835,6 +826,10 @@ builtin.lsp_definitions({opts})                    *builtin.lsp_definitions()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
+    Fields: ~
+        {jump_type} (string)  how to goto definition if there is only one,
+                              values: "tab", "split", "vsplit", "never"
+
 
 builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
     Goto the implementation of the word under the cursor if there's only one,
@@ -843,6 +838,10 @@ builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {jump_type} (string)  how to goto implementation if there is only one,
+                              values: "tab", "split", "vsplit", "never"
 
 
 builtin.lsp_code_actions({opts})                  *builtin.lsp_code_actions()*
@@ -873,7 +872,8 @@ builtin.lsp_document_symbols({opts})          *builtin.lsp_document_symbols()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {ignore_filename} (type)  string with file to ignore
+        {ignore_filename} (type)          string with file to ignore
+        {symbols}         (string|table)  filter results by symbol kind(s)
 
 
 builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
@@ -887,12 +887,8 @@ builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {shorten_path}    (boolean)  if true, makes file paths shown in picker
-                                     use one letter for folders (default is
-                                     false)
-        {ignore_filename} (string)   file(s) to ignore
-        {hide_filename}   (boolean)  if true, hides the name of the file in the
-                                     current picker (default is false)
+        {ignore_filename} (string)        file(s) to ignore
+        {symbols}         (string|table)  filter results by symbol kind(s)
 
 
 builtin.lsp_dynamic_workspace_symbols({opts})*builtin.lsp_dynamic_workspace_symbols()*
@@ -905,13 +901,12 @@ builtin.lsp_dynamic_workspace_symbols({opts})*builtin.lsp_dynamic_workspace_symb
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
-    Fields: ~
-        {hide_filename} (boolean)  if true, hides the name of the file in the
-                                   current picker (default is false)
-
 
 builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
     Lists LSP diagnostics for the current buffer
+    - Fields:
+      - `All severity flags can be passed as `string` or `number` as per
+        `:vim.lsp.protocol.DiagnosticSeverity:`
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query with the
         diagnostic you want to see (i.e. `:warning:`)
@@ -921,13 +916,26 @@ builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {hide_filename} (boolean)  if true, hides the name of the file in the
-                                   current picker (default is false)
+        {severity}       (string|number)  filter diagnostics by severity name
+                                          (string) or id (number)
+        {severity_limit} (string|number)  keep diagnostics equal or more
+                                          severe wrt severity name (string) or
+                                          id (number)
+        {severity_bound} (string|number)  keep diagnostics equal or less
+                                          severe wrt severity name (string) or
+                                          id (number)
+        {no_sign}        (bool)           hide LspDiagnosticSigns from Results
+                                          (default is false)
+        {line_width}     (number)         set length of diagnostic entry text
+                                          in Results
 
 
 builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
     Lists LSP diagnostics for the current workspace if supported, otherwise
     searches in all open buffers
+    - Fields:
+      - `All severity flags can be passed as `string` or `number` as per
+        `:vim.lsp.protocol.DiagnosticSeverity:`
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query with the
         diagnostic you want to see (i.e. `:warning:`)
@@ -937,8 +945,620 @@ builtin.lsp_workspace_diagnostics({opts})*builtin.lsp_workspace_diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {hide_filename} (boolean)  if true, hides the name of the file in the
-                                   current picker (default is false)
+        {severity}       (string|number)  filter diagnostics by severity name
+                                          (string) or id (number)
+        {severity_limit} (string|number)  keep diagnostics equal or more
+                                          severe wrt severity name (string) or
+                                          id (number)
+        {severity_bound} (string|number)  keep diagnostics equal or less
+                                          severe wrt severity name (string) or
+                                          id (number)
+        {no_sign}        (bool)           hide LspDiagnosticSigns from Results
+                                          (default is false)
+        {line_width}     (number)         set length of diagnostic entry text
+                                          in Results
+
+
+
+================================================================================
+                                                              *telescope.themes*
+
+Themes are ways to combine several elements of styling together.
+
+They are helpful for managing the several differnt UI aspects for telescope and
+provide a simple interface for users to get a particular "style" of picker.
+
+themes.get_dropdown()                                  *themes.get_dropdown()*
+    Dropdown style theme.
+
+    Usage:
+
+        `local builtin = require('telescope.builtin')`
+        `local themes = require('telescope.themes')`
+        `builtin.find_files(themes.get_dropdown())`
+
+
+
+themes.get_cursor()                                      *themes.get_cursor()*
+    Cursor style theme.
+
+    Usage:
+
+        `local builtin = require('telescope.builtin')`
+        `local themes = require('telescope.themes')`
+        `builtin.lsp_code_actions(themes.get_cursor())`
+
+
+
+themes.get_ivy()                                            *themes.get_ivy()*
+    Ivy style theme.
+
+    Usage:
+
+        `local builtin = require('telescope.builtin')`
+        `local themes = require('telescope.themes')`
+        `builtin.find_files(themes.get_ivy())`
+
+
+
+
+================================================================================
+                                                              *telescope.layout*
+
+Layout strategies are different functions to position telescope.
+
+All layout strategies are functions with the following signature:
+
+  function(picker, columns, lines, layout_config)
+    -- Do some calculations here...
+    return {
+      preview = preview_configuration
+      results = results_configuration,
+      prompt = prompt_configuration,
+    }
+  end
+
+  Parameters: ~
+    - picker        : A Picker object. (docs coming soon)
+    - columns       : (number) Columns in the vim window
+    - lines         : (number) Lines in the vim window
+    - layout_config : (table) The configuration values specific to the picker.
+
+
+This means you can create your own layout strategy if you want! Just be aware
+for now that we may change some APIs or interfaces, so they may break if you
+create your own.
+
+A good method for creating your own would be to copy one of the strategies that
+most resembles what you want from
+"./lua/telescope/pickers/layout_strategies.lua" in the telescope repo.
+
+
+layout_strategies.horizontal()                *layout_strategies.horizontal()*
+    Horizontal layout has two columns, one for the preview and one for the
+    prompt and results.
+
+    ┌──────────────────────────────────────────────────┐
+    │                                                  │
+    │    ┌───────────────────┐┌───────────────────┐    │
+    │    │                   ││                   │    │
+    │    │                   ││                   │    │
+    │    │                   ││                   │    │
+    │    │      Results      ││                   │    │
+    │    │                   ││      Preview      │    │
+    │    │                   ││                   │    │
+    │    │                   ││                   │    │
+    │    └───────────────────┘│                   │    │
+    │    ┌───────────────────┐│                   │    │
+    │    │      Prompt       ││                   │    │
+    │    └───────────────────┘└───────────────────┘    │
+    │                                                  │
+    └──────────────────────────────────────────────────┘
+
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The number of lines to scroll through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - preview_cutoff: When columns are less than this value, the preview will be disabled
+      - preview_width:
+        - Change the width of Telescope's preview window
+        - See |resolver.resolve_width()|
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
+
+
+layout_strategies.center()                        *layout_strategies.center()*
+    Centered layout with a combined block of the prompt and results aligned to
+    the middle of the screen. The preview window is then placed in the
+    remaining space above. Particularly useful for creating dropdown menus (see
+    |telescope.themes| and |themes.get_dropdown()|`).
+
+    ┌──────────────────────────────────────────────────┐
+    │    ┌────────────────────────────────────────┐    │
+    │    |                 Preview                |    │
+    │    |                 Preview                |    │
+    │    └────────────────────────────────────────┘    │
+    │    ┌────────────────────────────────────────┐    │
+    │    |                 Prompt                 |    │
+    │    ├────────────────────────────────────────┤    │
+    │    |                 Result                 |    │
+    │    |                 Result                 |    │
+    │    └────────────────────────────────────────┘    │
+    │                                                  │
+    │                                                  │
+    │                                                  │
+    │                                                  │
+    └──────────────────────────────────────────────────┘
+
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The number of lines to scroll through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - preview_cutoff: When lines are less than this value, the preview will be disabled
+
+
+layout_strategies.cursor()                        *layout_strategies.cursor()*
+    Cursor layout dynamically positioned below the cursor if possible. If there
+    is no place below the cursor it will be placed above.
+
+    ┌──────────────────────────────────────────────────┐
+    │                                                  │
+    │   █                                              │
+    │   ┌──────────────┐┌─────────────────────┐        │
+    │   │    Prompt    ││      Preview        │        │
+    │   ├──────────────┤│      Preview        │        │
+    │   │    Result    ││      Preview        │        │
+    │   │    Result    ││      Preview        │        │
+    │   └──────────────┘└─────────────────────┘        │
+    │                                         █        │
+    │                                                  │
+    │                                                  │
+    │                                                  │
+    │                                                  │
+    │                                                  │
+    └──────────────────────────────────────────────────┘
+
+
+
+layout_strategies.vertical()                    *layout_strategies.vertical()*
+    Vertical layout stacks the items on top of each other. Particularly useful
+    with thinner windows.
+
+    ┌──────────────────────────────────────────────────┐
+    │                                                  │
+    │    ┌────────────────────────────────────────┐    │
+    │    |                 Preview                |    │
+    │    |                 Preview                |    │
+    │    |                 Preview                |    │
+    │    └────────────────────────────────────────┘    │
+    │    ┌────────────────────────────────────────┐    │
+    │    |                 Result                 |    │
+    │    |                 Result                 |    │
+    │    └────────────────────────────────────────┘    │
+    │    ┌────────────────────────────────────────┐    │
+    │    |                 Prompt                 |    │
+    │    └────────────────────────────────────────┘    │
+    │                                                  │
+    └──────────────────────────────────────────────────┘
+
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The number of lines to scroll through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - preview_cutoff: When lines are less than this value, the preview will be disabled
+      - preview_height:
+        - Change the height of Telescope's preview window
+        - See |resolver.resolve_height()|
+      - prompt_position:
+        - (unimplemented, but we plan on supporting)
+
+
+layout_strategies.flex()                            *layout_strategies.flex()*
+    Flex layout swaps between `horizontal` and `vertical` strategies based on
+    the window width
+     - Supports |layout_strategies.vertical| or |layout_strategies.horizontal|
+       features
+
+
+    `picker.layout_config` shared options:
+      - height:
+        - How tall to make Telescope's entire layout
+        - See |resolver.resolve_height()|
+      - mirror: Flip the location of the results/prompt and preview windows
+      - scroll_speed: The number of lines to scroll through the previewer
+      - width:
+        - How wide to make Telescope's entire layout
+        - See |resolver.resolve_width()|
+
+    `picker.layout_config` unique options:
+      - flip_columns: The number of columns required to move to horizontal mode
+      - flip_lines: The number of lines required to move to horizontal mode
+      - horizontal: Options to pass when switching to horizontal layout
+      - vertical: Options to pass when switching to vertical layout
+
+
+layout_strategies.bottom_pane()              *layout_strategies.bottom_pane()*
+    Bottom pane can be used to create layouts similar to "ivy".
+
+    For an easy ivy configuration, see |themes.get_ivy()|
+
+
+
+
+================================================================================
+                                                             *telescope.resolve*
+
+Provides "resolver functions" to allow more customisable inputs for options.
+
+resolver.resolve_height()                          *resolver.resolve_height()*
+    Converts input to a function that returns the height. The input must take
+    one of four forms:
+    1. 0 <= number < 1
+       This means total height as a percentage.
+    2. 1 <= number
+       This means total height as a fixed number.
+    3. function
+       Must have signature: function(self, max_columns, max_lines): number
+    4. table of the form: {padding = `foo`}
+       where `foo` has one of the previous three forms.
+       The height is then set to be the remaining space after padding. For
+       example, if the window has height 50, and the input is {padding = 5}, 
+       the height returned will be `40 = 50 - 2*5`
+
+    The returned function will have signature: function(self, max_columns,
+    max_lines): number
+
+
+
+resolver.resolve_width()                            *resolver.resolve_width()*
+    Converts input to a function that returns the width. The input must take
+    one of four forms:
+    1. 0 <= number < 1
+       This means total width as a percentage.
+    2. 1 <= number
+       This means total width as a fixed number.
+    3. function
+       Must have signature: function(self, max_columns, max_lines): number
+    4. table of the form: {padding = `foo`}
+       where `foo` has one of the previous three forms.
+       The width is then set to be the remaining space after padding. For
+       example, if the window has width 100, and the input is {padding = 5}, 
+       the width returned will be `90 = 100 - 2*5`
+
+    The returned function will have signature: function(self, max_columns,
+    max_lines): number
+
+
+
+
+================================================================================
+                                                             *telescope.actions*
+
+Actions functions that are useful for people creating their own mappings.
+
+actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
+    Move the selection to the next entry
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_selection_previous({prompt_bufnr})*actions.move_selection_previous()*
+    Move the selection to the previous entry
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
+    Move the selection to the entry that has a worse score
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_selection_better({prompt_bufnr})*actions.move_selection_better()*
+    Move the selection to the entry that has a better score
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_to_top({prompt_bufnr})                    *actions.move_to_top()*
+    Move to the top of the picker
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_to_middle({prompt_bufnr})              *actions.move_to_middle()*
+    Move to the middle of the picker
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_to_bottom({prompt_bufnr})              *actions.move_to_bottom()*
+    Move to the bottom of the picker
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.add_selection({prompt_bufnr})                *actions.add_selection()*
+    Add current entry to multi select
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.remove_selection({prompt_bufnr})          *actions.remove_selection()*
+    Remove current entry from multi select
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
+    Toggle current entry status for multi select
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_all({prompt_bufnr})                      *actions.select_all()*
+    Multi select all entries.
+    - Note: selected entries may include results not visible in the results
+      popup.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.drop_all({prompt_bufnr})                          *actions.drop_all()*
+    Drop all entries from the current multi selection.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.toggle_all({prompt_bufnr})                      *actions.toggle_all()*
+    Toggle multi selection for all entries.
+    - Note: toggled entries may include results not visible in the results
+      popup.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
+    Create and checkout a new git branch if it doesn't already exist
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_apply_stash({prompt_bufnr})            *actions.git_apply_stash()*
+    Applies an existing git stash
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_checkout({prompt_bufnr})                  *actions.git_checkout()*
+    Checkout an existing git branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_switch_branch({prompt_bufnr})        *actions.git_switch_branch()*
+    Switch to git branch.
+    If the branch already exists in local, switch to that. If the branch is
+    only in remote, create new branch tracking remote and switch to new one.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_track_branch({prompt_bufnr})          *actions.git_track_branch()*
+    Tell git to track the currently selected remote branch in Telescope
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_delete_branch({prompt_bufnr})        *actions.git_delete_branch()*
+    Delete the currently selected branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_rebase_branch({prompt_bufnr})        *actions.git_rebase_branch()*
+    Rebase to selected git branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_reset_mixed({prompt_bufnr})            *actions.git_reset_mixed()*
+    Reset to selected git commit using mixed mode
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_reset_soft({prompt_bufnr})              *actions.git_reset_soft()*
+    Reset to selected git commit using soft mode
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_reset_hard({prompt_bufnr})              *actions.git_reset_hard()*
+    Reset to selected git commit using hard mode
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_staging_toggle({prompt_bufnr})      *actions.git_staging_toggle()*
+    Stage/unstage selected file
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.send_selected_to_qflist()          *actions.send_selected_to_qflist()*
+    Sends the selected entries to the quickfix list, replacing the previous
+    entries.
+
+
+
+actions.add_selected_to_qflist()            *actions.add_selected_to_qflist()*
+    Adds the selected entries to the quickfix list, keeping the previous
+    entries.
+
+
+
+actions.send_to_qflist()                            *actions.send_to_qflist()*
+    Sends all entries to the quickfix list, replacing the previous entries.
+
+
+
+actions.add_to_qflist()                              *actions.add_to_qflist()*
+    Adds all entries to the quickfix list, keeping the previous entries.
+
+
+
+actions.send_selected_to_loclist()        *actions.send_selected_to_loclist()*
+    Sends the selected entries to the location list, replacing the previous
+    entries.
+
+
+
+actions.add_selected_to_loclist()          *actions.add_selected_to_loclist()*
+    Adds the selected entries to the location list, keeping the previous
+    entries.
+
+
+
+actions.send_to_loclist()                          *actions.send_to_loclist()*
+    Sends all entries to the location list, replacing the previous entries.
+
+
+
+actions.add_to_loclist()                            *actions.add_to_loclist()*
+    Adds all entries to the location list, keeping the previous entries.
+
+
+
+actions.smart_send_to_qflist()                *actions.smart_send_to_qflist()*
+    Sends the selected entries to the quickfix list, replacing the previous
+    entries. If no entry was selected, sends all entries.
+
+
+
+actions.smart_add_to_qflist()                  *actions.smart_add_to_qflist()*
+    Adds the selected entries to the quickfix list, keeping the previous
+    entries. If no entry was selected, adds all entries.
+
+
+
+actions.smart_send_to_loclist()              *actions.smart_send_to_loclist()*
+    Sends the selected entries to the location list, replacing the previous
+    entries. If no entry was selected, sends all entries.
+
+
+
+actions.smart_add_to_loclist()                *actions.smart_add_to_loclist()*
+    Adds the selected entries to the location list, keeping the previous
+    entries. If no entry was selected, adds all entries.
+
+
+
+actions.open_qflist()                                  *actions.open_qflist()*
+    Open the quickfix list
+
+
+
+actions.open_loclist()                                *actions.open_loclist()*
+    Open the location list
+
+
+
+actions.delete_buffer({prompt_bufnr})                *actions.delete_buffer()*
+    Delete the selected buffer or all the buffers selected using multi
+    selection.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.cycle_previewers_next({prompt_bufnr})*actions.cycle_previewers_next()*
+    Cycle to the next previewer if there is one available.
+    This action is not mapped on default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.cycle_previewers_prev({prompt_bufnr})*actions.cycle_previewers_prev()*
+    Cycle to the previous previewer if there is one available.
+    This action is not mapped on default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 
@@ -965,6 +1585,122 @@ action_state.get_current_picker({prompt_bufnr})*action_state.get_current_picker(
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
+
+
+
+================================================================================
+                                                         *telescope.actions.set*
+
+Telescope action sets are used to provide an interface for managing actions
+that all primarily do the same thing, but with slight tweaks.
+
+For example, when editing files you may want it in the current split, a
+vertical split, etc. Instead of making users have to overwrite EACH of those
+every time they want to change this behavior, they can instead replace the
+`set` itself and then it will work great and they're done.
+
+action_set.shift_selection({prompt_bufnr}, {change})*action_set.shift_selection()*
+    Move the current selection of a picker {change} rows. Handles not
+    overflowing / underflowing the list.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {change}       (number)  The amount to shift the selection by
+
+
+action_set.select({prompt_bufnr}, {type})                *action_set.select()*
+    Select the current entry. This is the action set to overwrite common
+    actions by the user.
+
+    By default maps to editing a file.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {type}         (string)  The type of selection to make
+
+
+action_set.edit({prompt_bufnr}, {command})                 *action_set.edit()*
+    Edit a file based on the current selection.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {command}      (string)  The command to use to open the file.
+
+
+action_set.scroll_previewer({prompt_bufnr}, {direction})*action_set.scroll_previewer()*
+    Scrolls the previewer up or down
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {direction}    (number)  The direction of the scrolling
+
+
+
+================================================================================
+                                                       *telescope.actions.utils*
+
+Utilities to wrap functions around picker selections and entries.
+
+Generally used from within other |telescope.actions|
+
+utils.map_entries({prompt_bufnr}, {f})                   *utils.map_entries()*
+    Apply `f` to the entries of the current picker.
+    - Notes:
+      - Mapped entries may include results not visible in the results popup.
+      - Indices are 1-indexed, whereas rows are 0-indexed.
+    - Warning: `map_entries` has no return value.
+      - The below example showcases how to collect results
+    Usage:
+        local action_state = require "telescope.actions.state"
+        local action_utils = require "telescope.actions.utils"
+        function entry_value_by_row()
+          local prompt_bufnr = vim.api.nvim_get_current_buf()
+          local current_picker = action_state.get_current_picker(prompt_bufnr)
+          local results = {}
+            action_utils.map_entries(prompt_bufnr, function(entry, index, row)
+            results[row] = entry.value
+          end)
+          return results
+        end
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)    The prompt bufnr
+        {f}            (function)  Function to map onto entries of picker that
+                                   takes (entry, index, row) as viable
+                                   arguments
+
+
+utils.map_selections({prompt_bufnr}, {f})             *utils.map_selections()*
+    Apply `f` to the multi selections of the current picker and return a table
+    of mapped selections.
+    - Notes:
+      - Mapped selections may include results not visible in the results popup.
+      - Selected entries are returned in order of their selection.
+    - Warning: `map_selections` has no return value.
+      - The below example showcases how to collect results
+    Usage:
+        local action_state = require "telescope.actions.state"
+        local action_utils = require "telescope.actions.utils"
+        function selection_by_index()
+          local prompt_bufnr = vim.api.nvim_get_current_buf()
+          local current_picker = action_state.get_current_picker(prompt_bufnr)
+          local results = {}
+            action_utils.map_selections(prompt_bufnr, function(entry, index)
+            results[index] = entry.value
+          end)
+          return results
+        end
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)    The prompt bufnr
+        {f}            (function)  Function to map onto selection of picker
+                                   that takes (selection) as a viable argument
 
 
 
@@ -1016,6 +1752,10 @@ previewers.Previewer()                                *previewers.Previewer()*
       - `teardown` function(self): Will be called on cleanup.
       - `preview_fn` function(self, entry, status): Will be called each time a
         new entry was selected.
+      - `title` function(self): Will return the static title of the previewer.
+      - `dynamic_title` function(self, entry): Will return the dynamic title of
+        the previewer. Will only be called when config value
+        dynamic_preview_title is true.
       - `send_input` function(self, input): This is meant for 
         `termopen_previewer` and it can be used to send input to the terminal 
         application, like less.
@@ -1039,6 +1779,11 @@ previewers.new_termopen_previewer()      *previewers.new_termopen_previewer()*
       get_command = function(entry, status)
         return { 'bat', entry.path }
       end
+
+    Additionally you can define:
+    - `title` a static title for example "File Preview"
+    - `dyn_title(self, entry)` a dynamic title function which gets called when
+      config value `dynamic_preview_title = true`
 
     It's an easy way to get your first previewer going and it integrates well
     with `bat` and `less`. Providing out of the box scrolling if the command
@@ -1131,6 +1876,9 @@ previewers.new_buffer_previewer()          *previewers.new_buffer_previewer()*
         one file but multiple entries. This happens for grep and lsp builtins.
         So to make the cache work only load content if `self.state.bufname ~=
         entry.your_unique_key`
+      - `title` a static title for example "File Preview"
+      - `dyn_title(self, entry)` a dynamic title function which gets called 
+        when config value `dynamic_preview_title = true`
 
     `self.state` table:
       - `self.state.bufnr` Is the current buffer number, in which you have to
@@ -1226,6 +1974,51 @@ previewers.vim_buffer_qflist()                *previewers.vim_buffer_qflist()*
 
 
 
+previewers.git_branch_log()                      *previewers.git_branch_log()*
+    A previewer that shows a log of a branch as graph
+
+
+
+previewers.git_stash_diff()                      *previewers.git_stash_diff()*
+    A previewer that shows a diff of a stash
+
+
+
+previewers.git_commit_diff_to_parent()*previewers.git_commit_diff_to_parent()*
+    A previewer that shows a diff of a commit to a parent commit.
+    The run command is `git --no-pager diff SHA^! -- $CURRENT_FILE`
+
+    The current file part is optional. So is only uses it with bcommits.
+
+
+
+previewers.git_commit_diff_to_head()    *previewers.git_commit_diff_to_head()*
+    A previewer that shows a diff of a commit to head.
+    The run command is `git --no-pager diff --cached $SHA -- $CURRENT_FILE`
+
+    The current file part is optional. So is only uses it with bcommits.
+
+
+
+previewers.git_commit_diff_as_was()      *previewers.git_commit_diff_as_was()*
+    A previewer that shows a diff of a commit as it was.
+    The run command is `git --no-pager show $SHA:$CURRENT_FILE` or `git
+    --no-pager show $SHA`
+
+
+
+previewers.git_commit_message()              *previewers.git_commit_message()*
+    A previewer that shows the commit message of a diff.
+    The run command is `git --no-pager log -n 1 $SHA`
+
+
+
+previewers.git_file_diff()                        *previewers.git_file_diff()*
+    A previewer that shows the current diff of a file. Used in git_status.
+    The run command is `git --no-pager diff $FILE`
+
+
+
 previewers.display_content()                    *previewers.display_content()*
     A deprecated way of displaying content more easily. Was written at a time,
     where the buffer_previewer interface wasn't present. Nowadays it's easier
@@ -1237,115 +2030,108 @@ previewers.display_content()                    *previewers.display_content()*
 
 
 ================================================================================
-                                                              *telescope.layout*
+                                                     *telescope.actions.history*
 
-Layout strategies are different functions to position telescope.
+A base implementation of a prompt history that provides a simple history and
+can be replaced with a custom implementation.
 
-All layout strategies are functions with the following signature:
+For example: We provide a extension for a smart history that uses sql.nvim to
+map histories to metadata, like the calling picker or cwd.
 
-  function(picker, columns, lines)
-    -- Do some calculations here...
-    return {
-      preview = preview_configuration
-      results = results_configuration,
-      prompt = prompt_configuration,
-    }
-  end
+So you have a history for:
+- find_files project_1
+- grep_string project_1
+- live_grep project_1
+- find_files project_2
+- grep_string project_2
+- live_grep project_2
+- etc
 
-  Parameters: ~
-    - picker  : A Picker object. (docs coming soon)
-    - columns : number Columns in the vim window
-    - lines   : number Lines in the vim window
+See github.com/nvim-telescope/telescope-smart-history.nvim
+
+histories.History()                                      *histories.History()*
+    Manages prompt history
 
 
-TODO: I would like to make these link to `telescope.layout_strategies.*`, but
-it's not yet possible.
+    Fields: ~
+        {enabled} (boolean)  Will indicate if History is enabled or disabled
+        {path}    (string)   Will point to the location of the history file
+        {limit}   (string)   Will have the limit of the history. Can be nil,
+                             if limit is disabled.
+        {content} (table)    History table. Needs to be filled by your own
+                             History implementation
+        {index}   (number)   Used to keep track of the next or previous index.
+                             Default is #content + 1
 
-Available layout strategies include:
-  - horizontal:
-    - See |layout_strategies.horizontal|
 
-  - vertical:
-    - See |layout_strategies.vertical|
+histories.History:new({opts})                        *histories.History:new()*
+    Create a new History
 
-  - flex:
-    - See |layout_strategies.flex|
 
-Available tweaks to the settings in layout defaults include (can be applied to
-horizontal and vertical layouts):
-  - mirror (default is `false`):
-    - Flip the view of the current layout:
-      - If using horizontal: if `true`, swaps the location of the 
-        results/prompt window and preview window
-      - If using vertical: if `true`, swaps the location of the results and 
-        prompt windows
+    Parameters: ~
+        {opts} (table)  Defines the behavior of History
 
-  - width_padding:
-    - How many cells to pad the width of Telescope's layout window
+    Fields: ~
+        {init}    (function)  Will be called after handling configuration
+                              (required)
+        {append}  (function)  How to append a new prompt item (required)
+        {reset}   (function)  What happens on reset. Will be called when
+                              telescope closes (required)
+        {pre_get} (function)  Will be called before a next or previous item
+                              will be returned (optional)
 
-  - height_padding:
-    - How many cells to pad the height of Telescope's layout window
 
-  - preview_width:
-    - Change the width of Telescope's preview window
-
-  - scroll_speed:
-    - Change the scrolling speed of the previewer
-
-layout_strategies.horizontal()                *layout_strategies.horizontal()*
-    Horizontal previewer
-
-      +-------------+--------------+
-      |             |              |
-      |   Results   |              |
-      |             |    Preview   |
-      |             |              |
-      +-------------|              |
-      |   Prompt    |              |
-      +-------------+--------------+
+histories.new()                                              *histories.new()*
+    Shorthand to create a new history
 
 
 
-layout_strategies.center()                        *layout_strategies.center()*
-    Centered layout wih smaller default sizes (I think)
-
-       +--------------+
-       |    Preview   |
-       +--------------+
-       |    Prompt    |
-       +--------------+
-       |    Result    |
-       |    Result    |
-       |    Result    |
-       +--------------+
+histories.History:reset()                          *histories.History:reset()*
+    Will reset the history index to the default initial state. Will happen
+    after the picker closed
 
 
 
-layout_strategies.vertical()                    *layout_strategies.vertical()*
-    Vertical perviewer stacks the items on top of each other.
-
-       +-----------------+
-       |    Previewer    |
-       |    Previewer    |
-       |    Previewer    |
-       +-----------------+
-       |     Result      |
-       |     Result      |
-       |     Result      |
-       +-----------------+
-       |     Prompt      |
-       +-----------------+
+histories.History:append({line}, {picker}, {no_reset})*histories.History:append()*
+    Append a new line to the history
 
 
+    Parameters: ~
+        {line}     (string)   current line that will be appended
+        {picker}   (table)    the current picker object
+        {no_reset} (boolean)  On default it will reset the state at the end.
+                              If you don't want to do this set to true
 
-layout_strategies.flex()                            *layout_strategies.flex()*
-    Swap between `horizontal` and `vertical` strategies based on the window
-    width
-     - Supports `vertical` or `horizontal` features
 
-    Uses:
-     - flip_columns
-     - flip_lines
+histories.History:get_next({line}, {picker})    *histories.History:get_next()*
+    Will return the next history item. Can be nil if there are no next items
+
+
+    Parameters: ~
+        {line}   (string)  the current line
+        {picker} (table)   the current picker object
+
+    Return: ~
+        string: the next history item
+
+
+histories.History:get_prev({line}, {picker})    *histories.History:get_prev()*
+    Will return the previous history item. Can be nil if there are no previous
+    items
+
+
+    Parameters: ~
+        {line}   (string)  the current line
+        {picker} (table)   the current picker object
+
+    Return: ~
+        string: the previous history item
+
+
+histories.get_simple_history()                *histories.get_simple_history()*
+    A simple implementation of history.
+
+    It will keep one unified history across all pickers.
 
 
 
