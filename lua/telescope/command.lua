@@ -102,7 +102,7 @@ local function convert_user_opts(user_opts)
         if err ~= nil then
           -- discard invalid lua expression
           user_opts[key] = nil
-        elseif select("#", assert(eval)()) == 1 and type(assert(eval)()) == "table" then
+        elseif pcall(eval) and select("#", assert(eval)()) == 1 and type(assert(eval)()) == "table" then
           -- allow if return a single table only
           user_opts[key] = assert(eval)()
         else
