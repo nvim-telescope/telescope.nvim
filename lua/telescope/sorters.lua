@@ -124,7 +124,7 @@ function Sorter:score(prompt, entry, cb_add, cb_filter)
     return
   end
 
-  if self._status ~= "start" then
+  if self._status and self._status ~= "start" then
     return
   end
 
