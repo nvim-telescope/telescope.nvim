@@ -385,6 +385,7 @@ function Picker:find()
     while true do
       -- Wait for the next input
       rx.last()
+      await_schedule()
 
       self:_reset_track()
 
@@ -1123,6 +1124,10 @@ function pickers.on_close_prompt(prompt_bufnr)
 
   if picker.previewer then
     picker.previewer:teardown()
+  end
+
+  if picker.finder then
+    picker.finder:close()
   end
 
   picker.close_windows(status)

@@ -4,6 +4,8 @@ local LinesPipe = require("telescope._").LinesPipe
 
 local make_entry = require "telescope.make_entry"
 
+local await_count = 1000
+
 return function(opts)
   opts = opts or {}
 
@@ -18,9 +20,14 @@ return function(opts)
   local job_completed = false
   local stdout = nil
 
+  local job
+
   return setmetatable({
-    -- close = function() results = {}; job_started = false end,
-    close = function() end,
+    close = function()
+      if job then
+        job:close()
+      end
+    end,
     results = results,
   }, {
     __call = function(_, prompt, process_result, process_complete)
@@ -36,7 +43,7 @@ return function(opts)
         -- end
 
         stdout = LinesPipe()
-        local _ = async_job.spawn {
+        job = async_job.spawn {
           command = job_opts.command,
           args = job_opts.args,
           cwd = cwd,
@@ -48,8 +55,12 @@ return function(opts)
       end
 
       if not job_completed then
-        for line in stdout:iter(true) do
+        for line in stdout:iter(false) do
           num_results = num_results + 1
+
+          if num_results % await_count then
+            async.util.scheduler()
+          end
 
           local v = entry_maker(line)
           results[num_results] = v
@@ -65,7 +76,9 @@ return function(opts)
       local current_count = num_results
       for index = 1, current_count do
         -- TODO: Figure out scheduling...
-        async.util.scheduler()
+        if index % await_count then
+          async.util.scheduler()
+        end
 
         if process_result(results[index]) then
           break
