@@ -17,7 +17,7 @@ mappings.default_mappings = config.values.default_mappings
       ["<Down>"] = actions.move_selection_next,
       ["<Up>"] = actions.move_selection_previous,
 
-      ["<CR>"] = actions.select_default + actions.center,
+      ["<CR>"] = actions.select_default,
       ["<C-x>"] = actions.select_horizontal,
       ["<C-v>"] = actions.select_vertical,
       ["<C-t>"] = actions.select_tab,
@@ -34,7 +34,7 @@ mappings.default_mappings = config.values.default_mappings
 
     n = {
       ["<esc>"] = actions.close,
-      ["<CR>"] = actions.select_default + actions.center,
+      ["<CR>"] = actions.select_default,
       ["<C-x>"] = actions.select_horizontal,
       ["<C-v>"] = actions.select_vertical,
       ["<C-t>"] = actions.select_tab,
@@ -198,7 +198,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     end
   end
 
-  -- TODO: Probalby should not overwrite any keymaps
+  -- TODO: Probably should not overwrite any keymaps
   for mode, mode_map in pairs(mappings.default_mappings) do
     mode = string.lower(mode)
 
