@@ -233,7 +233,7 @@ local telescope_defaults = {
       --   status_icon = "*"
       -- end
 
-      return string.format("%s / %s", xx, yy)
+      return string.format("%s / %s ", xx, yy)
     end,
   },
 
