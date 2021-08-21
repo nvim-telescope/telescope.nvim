@@ -417,7 +417,7 @@ layout_strategies.center = make_documented_layout(
     local bs = get_border_size(self)
 
     -- Cap over/undersized width
-    width, _ = calc_size_and_spacing(width, max_columns, 1, 3, 0)
+    width, _ = calc_size_and_spacing(width, max_columns, bs, 1, 3, 0)
 
     prompt.width = width
     results.width = width
@@ -425,7 +425,7 @@ layout_strategies.center = make_documented_layout(
 
     local h_space
     -- Cap over/undersized height
-    height, h_space = calc_size_and_spacing(height, max_lines, 2, 3, 0)
+    height, h_space = calc_size_and_spacing(height, max_lines, bs, 2, 3, 0)
 
     prompt.height = 1
     results.height = height - prompt.height - h_space
@@ -504,7 +504,7 @@ layout_strategies.cursor = make_documented_layout(
 
     local h_space
     -- Cap over/undersized height
-    height, h_space = calc_size_and_spacing(height, max_lines, 2, 3, 0)
+    height, h_space = calc_size_and_spacing(height, max_lines, bs, 2, 3, 0)
 
     prompt.height = 1
     results.height = height - prompt.height - h_space
@@ -513,7 +513,7 @@ layout_strategies.cursor = make_documented_layout(
     local w_space
     if self.previewer and max_columns >= layout_config.preview_cutoff then
       -- Cap over/undersized width (with preview)
-      width, w_space = calc_size_and_spacing(width, max_columns, 2, 4, 0)
+      width, w_space = calc_size_and_spacing(width, max_columns, bs, 2, 4, 0)
 
       preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, _)
         -- By default, previewer takes 2/3 of the layout
@@ -523,7 +523,7 @@ layout_strategies.cursor = make_documented_layout(
       results.width = prompt.width
     else
       -- Cap over/undersized width (without preview)
-      width, w_space = calc_size_and_spacing(width, max_columns, 1, 2, 0)
+      width, w_space = calc_size_and_spacing(width, max_columns, bs, 1, 2, 0)
 
       preview.width = 0
       prompt.width = width - w_space
@@ -614,7 +614,7 @@ layout_strategies.vertical = make_documented_layout(
 
     local w_space
     -- Cap over/undersized width
-    width, w_space = calc_size_and_spacing(width, max_columns, 1, 2, 0)
+    width, w_space = calc_size_and_spacing(width, max_columns, bs, 1, 2, 0)
 
     prompt.width = width - w_space
     results.width = prompt.width
@@ -623,12 +623,12 @@ layout_strategies.vertical = make_documented_layout(
     local h_space
     if self.previewer and max_lines >= layout_config.preview_cutoff then
       -- Cap over/undersized height (with previewer)
-      height, h_space = calc_size_and_spacing(height, max_lines, 3, 6, 2)
+      height, h_space = calc_size_and_spacing(height, max_lines, bs, 3, 6, 2)
 
       preview.height = resolve.resolve_height(if_nil(layout_config.preview_height, 0.5))(self, max_columns, height)
     else
       -- Cap over/undersized height (without previewer)
-      height, h_space = calc_size_and_spacing(height, max_lines, 2, 4, 1)
+      height, h_space = calc_size_and_spacing(height, max_lines, bs, 2, 4, 1)
 
       preview.height = 0
     end
@@ -771,7 +771,7 @@ layout_strategies.bottom_pane = make_documented_layout(
     local bs = get_border_size(self)
 
     -- Cap over/undersized height
-    height, _ = calc_size_and_spacing(height, max_lines, 2, 3, 0)
+    height, _ = calc_size_and_spacing(height, max_lines, bs, 2, 3, 0)
 
     -- Height
     prompt.height = 1
