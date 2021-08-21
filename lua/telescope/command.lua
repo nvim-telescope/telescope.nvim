@@ -68,7 +68,7 @@ local split_keywords = {
 
 -- convert command line string arguments to
 -- lua number boolean type and nil value
-local function convert_user_opts(user_opts)
+command.convert_user_opts = function(user_opts)
   local default_opts = config.values
 
   local _switch = {
@@ -102,12 +102,15 @@ local function convert_user_opts(user_opts)
         if err ~= nil then
           -- discard invalid lua expression
           user_opts[key] = nil
-        elseif select("#", assert(eval)()) == 1 and type(assert(eval)()) == "table" then
-          -- allow if return a single table only
-          user_opts[key] = assert(eval)()
-        else
-          -- otherwise return nil (allows split check later)
-          user_opts[key] = nil
+        elseif eval ~= nil then
+          ok, eval = pcall(eval)
+          if ok and type(eval) == "table" then
+            -- allow if return a table only
+            user_opts[key] = eval
+          else
+            -- otherwise return nil (allows split check later)
+            user_opts[key] = nil
+          end
         end
       end
     end,
@@ -129,6 +132,8 @@ local function convert_user_opts(user_opts)
       end
     elseif default_opts[key] ~= nil then
       _switch[type(default_opts[key])](key, val)
+    elseif tonumber(val) ~= nil then
+      _switch["number"](key, val)
     else
       _switch["string"](key, val)
     end
@@ -157,7 +162,7 @@ local function run_command(args)
   local theme = user_opts.theme or ""
 
   if next(opts) ~= nil then
-    convert_user_opts(opts)
+    command.convert_user_opts(opts)
   end
 
   if string.len(theme) > 0 then
