@@ -391,12 +391,14 @@ local apply_config = function(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)
       opts = opts or {}
-      local defaults = {}
-
       local pconf = pickers_conf[k] or {}
-      if pconf.theme then
-        defaults = require("telescope.themes")["get_" .. pconf.theme](pconf)
-      end
+      local defaults = (function()
+        if pconf.theme then
+          return require("telescope.themes")["get_" .. pconf.theme](pconf)
+        end
+        return vim.deepcopy(pconf)
+      end)()
+
       if pconf.mappings then
         defaults.attach_mappings = function(_, map)
           for mode, tbl in pairs(pconf.mappings) do
