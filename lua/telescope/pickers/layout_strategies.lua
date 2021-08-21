@@ -54,6 +54,20 @@ local calc_tabline = function(max_lines)
   return max_lines, tbln
 end
 
+-- Helper function for capping over/undersized width/height, and calculating spacing
+--@param cur_size number: size to be capped
+--@param max_size any: the maximum size, e.g. max_lines or max_columns
+--@param bs number: the size of the border
+--@param w_num number: the maximum number of windows of the picker in the given direction
+--@param b_num number: the number of border rows/column in the given direction (when border enabled)
+--@param s_num number: the number of gaps in the given direction (when border disabled)
+local calc_size_and_spacing = function(cur_size, max_size, bs, w_num, b_num, s_num)
+  local spacing = s_num * (1 - bs) + b_num * bs
+  cur_size = math.min(cur_size, max_size)
+  cur_size = math.max(cur_size, w_num + spacing)
+  return cur_size, spacing
+end
+
 local layout_strategies = {}
 layout_strategies._configurations = {}
 
@@ -276,10 +290,10 @@ layout_strategies.horizontal = make_documented_layout(
 
     local bs = get_border_size(self)
 
+    local w_space
     if self.previewer and max_columns >= layout_config.preview_cutoff then
       -- Cap over/undersized width (with previewer)
-      width = math.min(width, max_columns)
-      width = math.max(width, 2 + (1 + 3 * bs))
+      width, w_space = calc_size_and_spacing(width, max_columns, bs, 2, 4, 1)
 
       preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, cols)
         if cols < 150 then
@@ -291,24 +305,23 @@ layout_strategies.horizontal = make_documented_layout(
         end
       end))(self, width, max_lines)
 
-      results.width = width - preview.width - (1 + 3 * bs)
-      prompt.width = width - preview.width - (1 + 3 * bs)
+      results.width = width - preview.width - w_space
+      prompt.width = results.width
     else
       -- Cap over/undersized width (without previewer)
-      width = math.min(width, max_columns)
-      width = math.max(width, 1 + (1 + 2 * bs))
+      width, w_space = calc_size_and_spacing(width, max_columns, bs, 1, 2, 0)
 
       preview.width = 0
-      results.width = width - preview.width - (1 + 2 * bs)
-      prompt.width = width - preview.width - (1 + 2 * bs)
+      results.width = width - preview.width - w_space
+      prompt.width = results.width
     end
 
+    local h_space
     -- Cap over/undersized height
-    height = math.min(height, max_lines)
-    height = math.max(height, 2 + (1 + 3 * bs))
+    height, h_space = calc_size_and_spacing(height, max_lines, bs, 2, 4, 1)
 
     prompt.height = 1
-    results.height = height - prompt.height - (1 + 3 * bs)
+    results.height = height - prompt.height - h_space
 
     if self.previewer then
       preview.height = height - 2 * bs
@@ -404,19 +417,18 @@ layout_strategies.center = make_documented_layout(
     local bs = get_border_size(self)
 
     -- Cap over/undersized width
-    width = math.min(width, max_columns)
-    width = math.max(width, 1 + 2 * bs)
+    width, _ = calc_size_and_spacing(width, max_columns, 1, 3, 0)
 
     prompt.width = width
     results.width = width
     preview.width = width
 
+    local h_space
     -- Cap over/undersized height
-    height = math.min(height, max_lines)
-    height = math.max(height, 2 + 3 * bs)
+    height, h_space = calc_size_and_spacing(height, max_lines, 2, 3, 0)
 
     prompt.height = 1
-    results.height = height - prompt.height - 3 * bs
+    results.height = height - prompt.height - h_space
 
     -- Align the prompt and results so halfway up the screen is
     -- in the middle of this combined block
@@ -490,32 +502,31 @@ layout_strategies.cursor = make_documented_layout(
 
     local bs = get_border_size(self)
 
+    local h_space
     -- Cap over/undersized height
-    height = math.min(height, max_lines)
-    height = math.max(height, 2 + (3 * bs))
+    height, h_space = calc_size_and_spacing(height, max_lines, 2, 3, 0)
 
     prompt.height = 1
-    results.height = height - prompt.height - (3 * bs)
+    results.height = height - prompt.height - h_space
     preview.height = height - 2 * bs
 
+    local w_space
     if self.previewer and max_columns >= layout_config.preview_cutoff then
       -- Cap over/undersized width (with preview)
-      width = math.min(width, max_columns)
-      width = math.max(width, 2 + (4 * bs))
+      width, w_space = calc_size_and_spacing(width, max_columns, 2, 4, 0)
 
       preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, _)
         -- By default, previewer takes 2/3 of the layout
         return 2 * math.floor(width / 3)
       end))(self, width, max_lines)
-      prompt.width = width - preview.width - (4 * bs)
+      prompt.width = width - preview.width - w_space
       results.width = prompt.width
     else
       -- Cap over/undersized width (without preview)
-      width = math.min(width, max_columns)
-      width = math.max(width, 1 + (2 * bs))
+      width, w_space = calc_size_and_spacing(width, max_columns, 1, 2, 0)
 
       preview.width = 0
-      prompt.width = width - (2 * bs)
+      prompt.width = width - w_space
       results.width = prompt.width
     end
 
@@ -601,31 +612,28 @@ layout_strategies.vertical = make_documented_layout(
 
     local bs = get_border_size(self)
 
+    local w_space
     -- Cap over/undersized width
-    width = math.min(width, max_columns)
-    width = math.max(width, 1 + (2 * bs))
+    width, w_space = calc_size_and_spacing(width, max_columns, 1, 2, 0)
 
-    prompt.width = width - (2 * bs)
+    prompt.width = width - w_space
     results.width = prompt.width
     preview.width = prompt.width
 
+    local h_space
     if self.previewer and max_lines >= layout_config.preview_cutoff then
       -- Cap over/undersized height (with previewer)
-      height = math.min(height, max_lines)
-      height = math.max(height, 3 + (2 + 4 * bs))
+      height, h_space = calc_size_and_spacing(height, max_lines, 3, 6, 2)
 
       preview.height = resolve.resolve_height(if_nil(layout_config.preview_height, 0.5))(self, max_columns, height)
-      prompt.height = 1
-      results.height = height - preview.height - prompt.height - (2 + 4 * bs)
     else
       -- Cap over/undersized height (without previewer)
-      height = math.min(height, max_lines)
-      height = math.max(height, 3 + (1 + 2 * bs))
+      height, h_space = calc_size_and_spacing(height, max_lines, 2, 4, 1)
 
       preview.height = 0
-      prompt.height = 1
-      results.height = height - prompt.height - (1 + 2 * bs)
     end
+    prompt.height = 1
+    results.height = height - preview.height - prompt.height - h_space
 
     local width_padding = math.floor((max_columns - width) / 2)
     results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
@@ -763,8 +771,7 @@ layout_strategies.bottom_pane = make_documented_layout(
     local bs = get_border_size(self)
 
     -- Cap over/undersized height
-    height = math.min(height, max_lines)
-    height = math.max(height, 2 + 2 * bs)
+    height, _ = calc_size_and_spacing(height, max_lines, 2, 3, 0)
 
     -- Height
     prompt.height = 1
