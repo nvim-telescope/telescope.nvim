@@ -10,8 +10,10 @@ describe("command_parser", function()
     end)
   end
 
+  -- Strings
   test_parse("should handle cwd", { cwd = "string" }, { cwd = "string" })
 
+  -- Find commands
   test_parse(
     "should handle find_command 1",
     { find_command = "rg,--ignore,--hidden,files" },
@@ -28,6 +30,7 @@ describe("command_parser", function()
     { find_command = { "fdfind", "--type", "f", "--no-ignore" } }
   )
 
+  -- Dictionaries/tables
   test_parse(
     "should handle layout_config viml 1",
     { layout_config = "{'prompt_position':'top'}" },
@@ -59,6 +62,7 @@ describe("command_parser", function()
     { layout_config = { mirror = true } }
   )
 
+  -- Lists/tables
   test_parse(
     "should handle symbols commas list",
     { symbols = "alpha,beta,gamma" },
@@ -74,4 +78,13 @@ describe("command_parser", function()
     { symbols = "{'alpha','beta','gamma'}" },
     { symbols = { "alpha", "beta", "gamma" } }
   )
+
+  -- Booleans
+  test_parse("should handle booleans 1", { hidden = "true" }, { hidden = true })
+  test_parse("should handle booleans 2", { no_ignore = "false" }, { no_ignore = false })
+
+  -- Numbers
+  test_parse("should handle numbers 1", { depth = "2" }, { depth = 2 })
+  test_parse("should handle numbers 2", { bufnr_width = "4" }, { bufnr_width = 4 })
+  test_parse("should handle numbers 3", { severity = "27" }, { severity = 27 })
 end)
