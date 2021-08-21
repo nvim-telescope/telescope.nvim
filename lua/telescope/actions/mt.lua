@@ -45,28 +45,32 @@ action_mt.create = function()
     end,
 
     __add = function(lhs, rhs)
-      local new_actions = setmetatable({}, action_mt.create())
+      local new_action = setmetatable({}, action_mt.create())
       for _, v in ipairs(lhs) do
-        table.insert(new_actions, v)
-        new_actions._func[v] = lhs._func[v]
-        new_actions._static_pre[v] = lhs._static_pre[v]
-        new_actions._pre[v] = lhs._pre[v]
-        new_actions._replacements[v] = lhs._replacements[v]
-        new_actions._static_post[v] = lhs._static_post[v]
-        new_actions._post[v] = lhs._post[v]
+        table.insert(new_action, v)
+        new_action._func[v] = lhs._func[v]
+        new_action._static_pre[v] = lhs._static_pre[v]
+        new_action._pre[v] = lhs._pre[v]
+        new_action._replacements[v] = lhs._replacements[v]
+        new_action._static_post[v] = lhs._static_post[v]
+        new_action._post[v] = lhs._post[v]
       end
 
       for _, v in ipairs(rhs) do
-        table.insert(new_actions, v)
-        new_actions._func[v] = rhs._func[v]
-        new_actions._static_pre[v] = rhs._static_pre[v]
-        new_actions._pre[v] = rhs._pre[v]
-        new_actions._replacements[v] = rhs._replacements[v]
-        new_actions._static_post[v] = rhs._static_post[v]
-        new_actions._post[v] = rhs._post[v]
+        table.insert(new_action, v)
+        new_action._func[v] = rhs._func[v]
+        new_action._static_pre[v] = rhs._static_pre[v]
+        new_action._pre[v] = rhs._pre[v]
+        new_action._replacements[v] = rhs._replacements[v]
+        new_action._static_post[v] = rhs._static_post[v]
+        new_action._post[v] = rhs._post[v]
+      end
+      new_action.clear = function()
+        lhs.clear()
+        rhs.clear()
       end
 
-      return new_actions
+      return new_action
     end,
 
     _func = {},
