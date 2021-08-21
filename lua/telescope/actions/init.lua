@@ -248,6 +248,7 @@ actions._close = function(prompt_bufnr, keepinsert)
   end
 
   require("telescope.pickers").on_close_prompt(prompt_bufnr)
+  require("telescope.mappings").clear(prompt_bufnr)
   pcall(a.nvim_set_current_win, original_win_id)
 end
 
