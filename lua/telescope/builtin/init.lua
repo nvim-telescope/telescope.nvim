@@ -202,8 +202,14 @@ builtin.builtin = require("telescope.builtin.internal").builtin
 ---@param opts table: options to pass to the picker
 builtin.planets = require("telescope.builtin.internal").planets
 
---- Lists symbols inside of data/telescope-sources/*.json found in your runtime path. Check README for more info
+--- Lists symbols inside of `data/telescope-sources/*.json` found in your runtime path
+--- or found in `stdpath("data")/telescope/symbols/*.json`. The second path can be customized.
+--- We provide a couple of default symbols which can be found in
+--- https://github.com/nvim-telescope/telescope-symbols.nvim. This repos README also provides more
+--- information about the format in which the symbols have to be.
 ---@param opts table: options to pass to the picker
+---@field symbol_path string: specify the second path. Default: `stdpath("data")/telescope/symbols/*.json`
+---@field sources table: specify a table of sources you want to load this time
 builtin.symbols = require("telescope.builtin.internal").symbols
 
 --- Lists available plugin/user commands and runs them on `<cr>`

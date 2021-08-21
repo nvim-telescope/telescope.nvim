@@ -373,9 +373,19 @@ actions.run_builtin = function(prompt_bufnr)
 end
 
 actions.insert_symbol = function(prompt_bufnr)
-  local selection = action_state.get_selected_entry()
+  local symbol = action_state.get_selected_entry().value[1]
   actions.close(prompt_bufnr)
-  vim.api.nvim_put({ selection.value[1] }, "", true, true)
+  vim.api.nvim_put({ symbol }, "", true, true)
+end
+
+actions.insert_symbol_i = function(prompt_bufnr)
+  local symbol = action_state.get_selected_entry().value[1]
+  actions._close(prompt_bufnr, true)
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  vim.api.nvim_buf_set_text(0, cursor[1] - 1, cursor[2], cursor[1] - 1, cursor[2], { symbol })
+  vim.schedule(function()
+    vim.api.nvim_win_set_cursor(0, { cursor[1], cursor[2] + #symbol })
+  end)
 end
 
 -- TODO: Think about how to do this.

@@ -595,12 +595,22 @@ builtin.planets({opts})                                    *builtin.planets()*
 
 
 builtin.symbols({opts})                                    *builtin.symbols()*
-    Lists symbols inside of data/telescope-sources/*.json found in your runtime
-    path. Check README for more info
+    Lists symbols inside of `data/telescope-sources/*.json` found in your
+    runtime path or found in `stdpath("data")/telescope/symbols/*.json`. The
+    second path can be customized. We provide a couple of default symbols which
+    can be found in https://github.com/nvim-telescope/telescope-symbols.nvim.
+    This repos README also provides more information about the format in which
+    the symbols have to be.
 
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {symbol_path} (string)  specify the second path. Default:
+                                `stdpath("data")/telescope/symbols/*.json`
+        {sources}     (table)   specify a table of sources you want to load
+                                this time
 
 
 builtin.commands({opts})                                  *builtin.commands()*

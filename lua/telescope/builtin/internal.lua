@@ -113,8 +113,22 @@ internal.planets = function(opts)
 end
 
 internal.symbols = function(opts)
+  local initial_mode = vim.fn.mode()
   local files = vim.api.nvim_get_runtime_file("data/telescope-sources/*.json", true)
-  if table.getn(files) == 0 then
+  local data_path = (function()
+    if not opts.symbol_path then
+      return Path:new { vim.fn.stdpath "data", "telescope", "symbols" }
+    else
+      return Path:new { opts.symbol_path }
+    end
+  end)()
+  if data_path:exists() then
+    for _, v in ipairs(require("plenary.scandir").scan_dir(data_path:absolute(), { search_pattern = "%.json$" })) do
+      table.insert(files, v)
+    end
+  end
+
+  if #files == 0 then
     print(
       "No sources found! Check out https://github.com/nvim-telescope/telescope-symbols.nvim "
         .. "for some prebuild symbols or how to create you own symbol source."
@@ -157,7 +171,11 @@ internal.symbols = function(opts)
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
-      actions.select_default:replace(actions.insert_symbol)
+      if initial_mode == "i" then
+        actions.select_default:replace(actions.insert_symbol_i)
+      else
+        actions.select_default:replace(actions.insert_symbol)
+      end
       return true
     end,
   }):find()
