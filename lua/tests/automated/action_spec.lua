@@ -3,9 +3,7 @@ local action_set = require "telescope.actions.set"
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 
-local eq = function(a, b)
-  assert.are.same(a, b)
-end
+local eq = assert.are.same
 
 describe("actions", function()
   it("should allow creating custom actions", function()
