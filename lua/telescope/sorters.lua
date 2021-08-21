@@ -244,7 +244,7 @@ sorters.get_fuzzy_file = function(opts)
       if N == 0 or N < ngram_len then
         -- TODO: If the character is in the line,
         -- then it should get a point or somethin.
-        return 0
+        return 1
       end
 
       local prompt_lower = prompt:lower()
@@ -352,7 +352,7 @@ sorters.get_generic_fuzzy_sorter = function(opts)
     -- entry (the whole entry)
     scoring_function = function(_, prompt, line, _)
       if prompt == 0 or #prompt < ngram_len then
-        return 0
+        return 1
       end
 
       local prompt_lower = prompt:lower()
@@ -484,7 +484,7 @@ sorters.highlighter_only = function(opts)
 
   return Sorter:new {
     scoring_function = function()
-      return 0
+      return 1
     end,
 
     highlighter = function(_, prompt, display)
@@ -496,7 +496,7 @@ end
 sorters.empty = function()
   return Sorter:new {
     scoring_function = function()
-      return 0
+      return 1
     end,
   }
 end
@@ -531,6 +531,10 @@ sorters.get_substr_matcher = function()
   return Sorter:new {
     highlighter = substr_highlighter,
     scoring_function = function(_, prompt, _, entry)
+      if #prompt == 0 then
+        return 1
+      end
+
       local display = entry.ordinal:lower()
 
       local search_terms = util.max_split(prompt, "%s")
