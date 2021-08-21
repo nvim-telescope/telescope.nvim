@@ -132,6 +132,8 @@ command.convert_user_opts = function(user_opts)
       end
     elseif default_opts[key] ~= nil then
       _switch[type(default_opts[key])](key, val)
+    elseif tonumber(val) ~= nil then
+      _switch["number"](key, val)
     else
       _switch["string"](key, val)
     end
