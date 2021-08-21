@@ -87,4 +87,16 @@ describe("command_parser", function()
   test_parse("should handle numbers 1", { depth = "2" }, { depth = 2 })
   test_parse("should handle numbers 2", { bufnr_width = "4" }, { bufnr_width = 4 })
   test_parse("should handle numbers 3", { severity = "27" }, { severity = 27 })
+
+  -- Multiple options
+  test_parse(
+    "should handle multiple options 1",
+    { layout_config = '{prompt_position="top"}', cwd = "/foobar", severity = "27" },
+    { layout_config = { prompt_position = "top" }, cwd = "/foobar", severity = 27 }
+  )
+  test_parse(
+    "should handle multiple options 2",
+    { symbols = "['alef','bet','gimel']", depth = "2", find_command = "rg,--ignore,files" },
+    { symbols = { "alef", "bet", "gimel" }, depth = 2, find_command = { "rg", "--ignore", "files" } }
+  )
 end)
