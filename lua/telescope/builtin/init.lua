@@ -391,18 +391,15 @@ local apply_config = function(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)
       opts = opts or {}
+      local defaults = {}
 
-      local pconf = vim.deepcopy(pickers_conf[k] or {})
+      local pconf = pickers_conf[k] or {}
       if pconf.theme then
-        local theme = pconf.theme
-        pconf.theme = nil
-        pconf = require("telescope.themes")["get_" .. theme](pconf)
+        defaults = require("telescope.themes")["get_" .. pconf.theme](pconf)
       end
       if pconf.mappings then
-        local mappings = pconf.mappings
-        pconf.mappings = nil
-        pconf.attach_mappings = function(_, map)
-          for mode, tbl in pairs(mappings) do
+        defaults.attach_mappings = function(_, map)
+          for mode, tbl in pairs(pconf.mappings) do
             for key, action in pairs(tbl) do
               map(mode, key, action)
             end
@@ -412,16 +409,14 @@ local apply_config = function(mod)
       end
 
       if pconf.attach_mappings and opts.attach_mappings then
-        local attach_mappings = pconf.attach_mappings
-        pconf.attach_mappings = nil
         local opts_attach = opts.attach_mappings
         opts.attach_mappings = function(prompt_bufnr, map)
-          attach_mappings(prompt_bufnr, map)
+          pconf.attach_mappings(prompt_bufnr, map)
           return opts_attach(prompt_bufnr, map)
         end
       end
 
-      v(vim.tbl_extend("force", pconf, opts))
+      v(vim.tbl_extend("force", defaults, opts))
     end
   end
 
