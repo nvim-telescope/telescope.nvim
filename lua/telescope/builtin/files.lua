@@ -557,19 +557,22 @@ files.current_buffer_fuzzy_find = function(opts)
 end
 
 files.tags = function(opts)
-  local ctags_file = opts.ctags_file or "tags"
-
-  if not vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438) then
-    print "Tags file does not exists. Create one with ctags -R"
+  local tagfiles = opts.ctags_file and { opts.ctags_file } or vim.fn.tagfiles()
+  if vim.tbl_isempty(tagfiles) then
+    print "No tags file found. Create one with ctags -R"
     return
   end
 
-  local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438))
-  local stat = assert(vim.loop.fs_fstat(fd))
-  local data = assert(vim.loop.fs_read(fd, stat.size, 0))
-  assert(vim.loop.fs_close(fd))
+  local results = {}
+  for _, ctags_file in ipairs(tagfiles) do
+    local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438))
+    local stat = assert(vim.loop.fs_fstat(fd))
+    assert(vim.loop.fs_close(fd))
 
-  local results = vim.split(data, "\n")
+    for line in Path:new(vim.fn.expand(ctags_file)):iter() do
+      results[#results + 1] = line
+    end
+  end
 
   pickers.new(opts, {
     prompt_title = "Tags",
