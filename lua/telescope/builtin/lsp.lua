@@ -1,4 +1,5 @@
 local channel = require("plenary.async.control").channel
+local to_iter = require("plenary.iterators").iter
 
 local action_state = require "telescope.actions.state"
 local actions = require "telescope.actions"
@@ -12,31 +13,31 @@ local utils = require "telescope.utils"
 
 local lsp = {}
 
+local cancel = function() end
+
 lsp.references = function(opts)
+  local bufnr = vim.api.nvim_get_current_buf()
   local params = vim.lsp.util.make_position_params()
   params.context = { includeDeclaration = true }
 
-  local results_lsp, err = vim.lsp.buf_request_sync(0, "textDocument/references", params, opts.timeout or 10000)
-  if err then
-    vim.api.nvim_err_writeln("Error when finding references: " .. err)
-    return
-  end
-
-  local locations = {}
-  for _, server_results in pairs(results_lsp) do
-    if server_results.result then
-      vim.list_extend(locations, vim.lsp.util.locations_to_items(server_results.result) or {})
-    end
-  end
-
-  if vim.tbl_isempty(locations) then
-    return
-  end
-
   pickers.new(opts, {
     prompt_title = "LSP References",
-    finder = finders.new_table {
-      results = locations,
+    finder = finders.new_incremental {
+      fn = function()
+        local tx, rx = channel.oneshot()
+        cancel()
+        _, cancel = vim.lsp.buf_request(bufnr, "textDocument/references", params, tx)
+
+        local err, _, results_lsp = rx()
+        assert(not err, err)
+
+        local locations = vim.lsp.util.locations_to_items(results_lsp or {}, bufnr) or {}
+
+        if vim.tbl_isempty(locations) then
+          return cancel
+        end
+        return to_iter(locations)
+      end,
       entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
     },
     previewer = conf.qflist_previewer(opts),
@@ -100,38 +101,33 @@ lsp.implementations = function(opts)
 end
 
 lsp.document_symbols = function(opts)
+  local bufnr = vim.api.nvim_get_current_buf()
   local params = vim.lsp.util.make_position_params()
-  local results_lsp, err = vim.lsp.buf_request_sync(0, "textDocument/documentSymbol", params, opts.timeout or 10000)
-  if err then
-    vim.api.nvim_err_writeln("Error when finding document symbols: " .. err)
-    return
-  end
-
-  if not results_lsp or vim.tbl_isempty(results_lsp) then
-    print "No results from textDocument/documentSymbol"
-    return
-  end
-
-  local locations = {}
-  for _, server_results in pairs(results_lsp) do
-    vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
-  end
-
-  locations = utils.filter_symbols(locations, opts)
-  if locations == nil then
-    -- error message already printed in `utils.filter_symbols`
-    return
-  end
-
-  if vim.tbl_isempty(locations) then
-    return
-  end
 
   opts.ignore_filename = opts.ignore_filename or true
   pickers.new(opts, {
     prompt_title = "LSP Document Symbols",
-    finder = finders.new_table {
-      results = locations,
+    finder = finders.new_incremental {
+      fn = function()
+        local tx, rx = channel.oneshot()
+        cancel()
+        _, cancel = vim.lsp.buf_request(bufnr, "textDocument/documentSymbol", params, tx)
+
+        local err, _, results_lsp = rx()
+        assert(not err, err)
+
+        local locations = vim.lsp.util.symbols_to_items(results_lsp or {}, bufnr) or {}
+        locations = utils.filter_symbols(locations, opts)
+        if locations == nil then
+          return cancel
+        end
+
+        if vim.tbl_isempty(locations) then
+          print "No results from textDocument/documentSymbol"
+        end
+
+        return to_iter(locations)
+      end,
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
     },
     previewer = conf.qflist_previewer(opts),
@@ -259,44 +255,38 @@ lsp.range_code_actions = function(opts)
 end
 
 lsp.workspace_symbols = function(opts)
+  local bufnr = vim.api.nvim_get_current_buf()
   local params = { query = opts.query or "" }
-  local results_lsp, err = vim.lsp.buf_request_sync(0, "workspace/symbol", params, opts.timeout or 10000)
-  if err then
-    vim.api.nvim_err_writeln("Error when finding workspace symbols: " .. err)
-    return
-  end
-
-  local locations = {}
-
-  if results_lsp and not vim.tbl_isempty(results_lsp) then
-    for _, server_results in pairs(results_lsp) do
-      -- Some LSPs (like Clangd and intelephense) might return { { result = {} } }, so make sure we have result
-      if server_results and server_results.result and not vim.tbl_isempty(server_results.result) then
-        vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_results.result, 0) or {})
-      end
-    end
-  end
-
-  locations = utils.filter_symbols(locations, opts)
-  if locations == nil then
-    -- error message already printed in `utils.filter_symbols`
-    return
-  end
-
-  if vim.tbl_isempty(locations) then
-    print(
-      "No results from workspace/symbol. Maybe try a different query: "
-        .. "Telescope lsp_workspace_symbols query=example"
-    )
-    return
-  end
-
   opts.ignore_filename = utils.get_default(opts.ignore_filename, false)
 
   pickers.new(opts, {
     prompt_title = "LSP Workspace Symbols",
-    finder = finders.new_table {
-      results = locations,
+    finder = finders.new_incremental {
+      fn = function()
+        local tx, rx = channel.oneshot()
+        cancel()
+        _, cancel = vim.lsp.buf_request(bufnr, "workspace/symbol", params, tx)
+
+        local err, _, results_lsp = rx()
+        assert(not err, err)
+
+        local locations = vim.lsp.util.symbols_to_items(results_lsp or {}, bufnr) or {}
+        locations = utils.filter_symbols(locations, opts)
+        if locations == nil then
+          -- error message already printed in `utils.filter_symbols`
+          return cancel
+        end
+
+        if vim.tbl_isempty(locations) then
+          print(
+            "No results from workspace/symbol. Maybe try a different query: "
+              .. "Telescope lsp_workspace_symbols query=example"
+          )
+          return cancel
+        end
+
+        return to_iter(locations)
+      end,
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
     },
     previewer = conf.qflist_previewer(opts),
@@ -309,8 +299,6 @@ end
 
 -- TODO(MERGE)
 local function get_workspace_symbols_requester(bufnr)
-  local cancel = function() end
-
   return function(prompt)
     local tx, rx = channel.oneshot()
     cancel()
