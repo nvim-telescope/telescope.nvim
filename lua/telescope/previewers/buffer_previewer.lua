@@ -921,15 +921,17 @@ previewers.buffers = defaulter(function(opts)
       return state
     end,
     teardown = function(self)
-      -- reapply proper buffer-window options..
-      for opt, value in pairs(self.state.win_options) do
-        vim.api.nvim_win_set_option(self.state.winid, opt, value)
-      end
-      -- TODO precautious clearing of extmark though likely no effect due to ephemeral
-      -- clear extmarks for previewed buffers
-      for buf, _ in pairs(self.state.previewed_buffers) do
-        if vim.api.nvim_buf_is_valid(buf) then
-          vim.api.nvim_buf_clear_namespace(buf, ns_previewer, 0, -1)
+      if self.state then
+        -- reapply proper buffer-window options..
+        for opt, value in pairs(self.state.win_options) do
+          vim.api.nvim_win_set_option(self.state.winid, opt, value)
+        end
+        -- TODO precautious clearing of extmark though likely no effect due to ephemeral
+        -- clear extmarks for previewed buffers
+        for buf, _ in pairs(self.state.previewed_buffers) do
+          if vim.api.nvim_buf_is_valid(buf) then
+            vim.api.nvim_buf_clear_namespace(buf, ns_previewer, 0, -1)
+          end
         end
       end
       previewer_active = false
