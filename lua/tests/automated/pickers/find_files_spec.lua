@@ -38,9 +38,10 @@ describe("builtin.find_files", function()
           sorter = require('telescope.sorters').get_fzy_sorter(),
           layout_strategy = 'center',
           layout_config = {
-            height = max_results + 4,
+            height = max_results + 1,
             width = 0.9,
           },
+          border = false,
         }, vim.fn.json_decode([==[%s]==])))
       ]],
         vim.fn.json_encode(configuration)
@@ -66,9 +67,10 @@ describe("builtin.find_files", function()
           sorter = require('telescope.sorters').get_fzy_sorter(),
           layout_strategy = 'center',
           layout_config = {
-            height = max_results + 4,
+            height = max_results + 1,
             width = 0.9,
           },
+          border = false,
         }, vim.fn.json_decode([==[%s]==])))
       ]],
         expected,
