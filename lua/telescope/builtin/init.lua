@@ -243,6 +243,21 @@ builtin.command_history = require("telescope.builtin.internal").command_history
 ---@param opts table: options to pass to the picker
 builtin.search_history = require("telescope.builtin.internal").search_history
 
+--- Opens the previous picker in the identical state (incl. multi selections)
+--- - Notes:
+---   - Requires `cache_picker` in setup or when having invoked pickers, see |telescope.defaults.cache_picker|
+---@param opts table: options to pass to the picker
+---@field cache_index number: what picker to resume, where 1 denotes most recent (default 1)
+builtin.resume = require("telescope.builtin.internal").resume
+
+--- Opens a picker over previously cached pickers in there preserved states (incl. multi selections)
+--- - Default keymaps:
+---   - `<C-x>`: delete the selected cached picker
+--- - Notes:
+---   - Requires `cache_picker` in setup or when having invoked pickers, see |telescope.defaults.cache_picker|
+---@param opts table: options to pass to the picker
+builtin.pickers = require("telescope.builtin.internal").pickers
+
 --- Lists vim options, allows you to edit the current value on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.vim_options = require("telescope.builtin.internal").vim_options

@@ -85,7 +85,11 @@ function Picker:new(opts)
 
     _find_id = 0,
     _completion_callbacks = {},
-    _multi = MultiSelect:new(),
+    manager = (type(opts.manager) == "table" and getmetatable(opts.manger) == getmetatable(EntryManager))
+      and opts.manager,
+    _multi = (type(opts._multi) == "table" and getmetatable(opts._multi) == getmetatable(MultiSelect:new()))
+        and opts._multi
+      or MultiSelect:new(),
 
     track = get_default(opts.track, false),
     stats = {},
@@ -104,6 +108,8 @@ function Picker:new(opts)
       border = get_default(opts.border, config.values.border),
       borderchars = get_default(opts.borderchars, config.values.borderchars),
     },
+
+    cache_picker = config.resolve_table_opts(opts.cache_picker, vim.deepcopy(config.values.cache_picker)),
   }, self)
 
   obj.get_window_options = opts.get_window_options or p_window.get_window_options
@@ -332,6 +338,7 @@ function Picker:find()
   if prompt_border_win then
     vim.api.nvim_win_set_option(prompt_border_win, "winhl", "Normal:TelescopePromptBorder")
   end
+  self.prompt_bufnr = prompt_bufnr
 
   -- Prompt prefix
   local prompt_prefix = self.prompt_prefix
@@ -416,23 +423,47 @@ function Picker:find()
         self.finder = new_finder
       end
 
-      self.sorter:_start(prompt)
-      self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats)
+      -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
+      if self.cache_picker == false or not (self.cache_picker.is_cached == true) then
+        self.sorter:_start(prompt)
+        self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats)
 
-      local process_result = self:get_result_processor(find_id, prompt, debounced_status)
-      local process_complete = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
+        local process_result = self:get_result_processor(find_id, prompt, debounced_status)
+        local process_complete = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
 
-      local ok, msg = pcall(function()
-        self.finder(prompt, process_result, process_complete)
-      end)
+        local ok, msg = pcall(function()
+          self.finder(prompt, process_result, process_complete)
+        end)
 
-      if not ok then
-        log.warn("Finder failed with msg: ", msg)
-      end
+        if not ok then
+          log.warn("Finder failed with msg: ", msg)
+        end
 
-      local diff_time = (vim.loop.hrtime() - start_time) / 1e6
-      if self.debounce and diff_time < self.debounce then
-        async.util.sleep(self.debounce - diff_time)
+        local diff_time = (vim.loop.hrtime() - start_time) / 1e6
+        if self.debounce and diff_time < self.debounce then
+          async.util.sleep(self.debounce - diff_time)
+        end
+      else
+        -- resume previous picker
+        local index = 1
+        for entry in self.manager:iter() do
+          self:entry_adder(index, entry, _, true)
+          index = index + 1
+        end
+        self.cache_picker.is_cached = false
+        -- if text changed, required to set anew to restart finder; otherwise hl and selection
+        if self.cache_picker.cached_prompt ~= self.default_text then
+          self:reset_prompt()
+          self:set_prompt(self.default_text)
+        else
+          -- scheduling required to apply highlighting and selection appropriately
+          await_schedule(function()
+            self:highlight_displayed_rows(self.results_bufnr, self.cache_picker.cached_prompt)
+            if self.cache_picker.selection_row ~= nil then
+              self:set_selection(self.cache_picker.selection_row)
+            end
+          end)
+        end
       end
     end
   end)
@@ -444,7 +475,6 @@ function Picker:find()
 
       self._result_completed = false
       status_updater { completed = false }
-
       tx.send(...)
     end,
     on_detach = function()
@@ -462,8 +492,6 @@ function Picker:find()
   vim.cmd [[  au!]]
   vim.cmd(on_buf_leave)
   vim.cmd [[augroup END]]
-
-  self.prompt_bufnr = prompt_bufnr
 
   local preview_border = preview_opts and preview_opts.border
   self.preview_border = preview_border
@@ -1123,6 +1151,41 @@ end
 function pickers.on_close_prompt(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
+
+  if type(picker.cache_picker) == "table" then
+    local cached_pickers = state.get_global_key "cached_pickers" or {}
+
+    if type(picker.cache_picker.index) == "number" then
+      if not vim.tbl_isempty(cached_pickers) then
+        table.remove(cached_pickers, picker.cache_picker.index)
+      end
+    end
+
+    -- if picker was disabled post-hoc (e.g. `cache_picker = false` conclude after deletion)
+    if picker.cache_picker.disabled ~= true then
+      if picker.cache_picker.limit_entries > 0 then
+        -- edge case: starting in normal mode and not having run a search means having no manager instantiated
+        if picker.manager then
+          picker.manager.linked_states:truncate(picker.cache_picker.limit_entries)
+        else
+          picker.manager = EntryManager:new(picker.max_results, picker.entry_adder, picker.stats)
+        end
+      end
+      picker.default_text = picker:_get_prompt()
+      picker.cache_picker.selection_row = picker._selection_row
+      picker.cache_picker.cached_prompt = picker:_get_prompt()
+      picker.cache_picker.is_cached = true
+      table.insert(cached_pickers, 1, picker)
+
+      -- release pickers
+      if picker.cache_picker.num_pickers > 0 then
+        while #cached_pickers > picker.cache_picker.num_pickers do
+          table.remove(cached_pickers, #cached_pickers)
+        end
+      end
+      state.set_global_key("cached_pickers", cached_pickers)
+    end
+  end
 
   if picker.sorter then
     picker.sorter:_destroy()
