@@ -655,9 +655,17 @@ internal.buffers = function(opts)
       results = buffers,
       entry_maker = opts.entry_maker or make_entry.gen_from_buffer(opts),
     },
-    previewer = conf.grep_previewer(opts),
+    previewer = previewers.buffers.new(opts),
     sorter = conf.generic_sorter(opts),
     default_selection_index = default_selection_idx,
+    attach_mappings = function(_, _)
+      action_set.select:enhance {
+        post = function()
+          local entry = action_state.get_selected_entry()
+          vim.api.nvim_win_set_cursor(0, { entry.lnum, entry.col or 0 })
+        end,
+      }
+    end,
   }):find()
 end
 

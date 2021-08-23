@@ -807,6 +807,13 @@ end
 actions.delete_buffer = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:delete_selection(function(selection)
+    -- avoid preview win from closing by creating tmp buffer
+    local preview_win = state.get_status(prompt_bufnr).preview_win
+    if preview_win ~= nil and vim.api.nvim_win_is_valid(preview_win) then
+      local buf = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
+      vim.api.nvim_win_set_buf(preview_win, buf)
+    end
     vim.api.nvim_buf_delete(selection.bufnr, { force = true })
   end)
 end
