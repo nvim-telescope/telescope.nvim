@@ -565,10 +565,6 @@ files.tags = function(opts)
 
   local results = {}
   for _, ctags_file in ipairs(tagfiles) do
-    local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438))
-    local stat = assert(vim.loop.fs_fstat(fd))
-    assert(vim.loop.fs_close(fd))
-
     for line in Path:new(vim.fn.expand(ctags_file)):iter() do
       results[#results + 1] = line
     end
