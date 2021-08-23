@@ -665,6 +665,7 @@ internal.buffers = function(opts)
           vim.api.nvim_win_set_cursor(0, { entry.lnum, entry.col or 0 })
         end,
       }
+      return true
     end,
   }):find()
 end
