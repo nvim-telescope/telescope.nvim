@@ -54,6 +54,7 @@ function Sorter:new(opts)
     start = opts.start,
     finish = opts.finish,
     destroy = opts.destroy,
+    _status = nil,
 
     filter_function = opts.filter_function,
     scoring_function = opts.scoring_function,
@@ -67,12 +68,14 @@ function Sorter:new(opts)
 end
 
 function Sorter:_init()
+  self._status = "init"
   if self.init then
     self:init()
   end
 end
 
 function Sorter:_destroy()
+  self._status = "destroy"
   if self.destroy then
     self:destroy()
   end
@@ -84,6 +87,7 @@ end
 --              as he did in his example.
 --              Example can be found in ./scratch/prime_prompt_cache.lua
 function Sorter:_start(prompt)
+  self._status = "start"
   if self.start then
     self:start(prompt)
   end
@@ -107,6 +111,7 @@ function Sorter:_start(prompt)
 end
 
 function Sorter:_finish(prompt)
+  self._status = "finish"
   if self.finish then
     self:finish(prompt)
   end
@@ -116,6 +121,10 @@ end
 --          if we're not discarding. Also, that means we don't have to check otherwise as well :)
 function Sorter:score(prompt, entry, cb_add, cb_filter)
   if not entry or not entry.ordinal then
+    return
+  end
+
+  if self._status and self._status ~= "start" then
     return
   end
 

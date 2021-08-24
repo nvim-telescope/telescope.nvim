@@ -193,14 +193,14 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
       local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
       if not applied_mappings[mode][key_bind_internal] then
         applied_mappings[mode][key_bind_internal] = true
-        local opts = {}
+        local keymap_opts = {}
 
-        if type(key_func) == "table" and key_func.action then
-            opts = key_func.options or {}
-            key_func = key_func.action
+        if type(key_func) == "table" and key_func.keymap_opts then
+            keymap_opts = key_func.keymap_opts
+            key_func.keymap_opts = nil
         end
 
-        telescope_map(prompt_bufnr, mode, key_bind, key_func, opts)
+        telescope_map(prompt_bufnr, mode, key_bind, key_func, keymap_opts)
       end
     end
   end
@@ -213,7 +213,14 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
       local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
       if not applied_mappings[mode][key_bind_internal] then
         applied_mappings[mode][key_bind_internal] = true
-        telescope_map(prompt_bufnr, mode, key_bind, key_func)
+        local keymap_opts = {}
+
+        if type(key_func) == "table" and key_func.keymap_opts then
+            keymap_opts = key_func.keymap_opts
+            key_func.keymap_opts = nil
+        end
+
+        telescope_map(prompt_bufnr, mode, key_bind, key_func, keymap_opts)
       end
     end
   end
