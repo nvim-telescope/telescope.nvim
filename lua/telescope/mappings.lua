@@ -196,8 +196,8 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
         local keymap_opts = {}
 
         if type(key_func) == "table" and key_func.keymap_opts then
-            keymap_opts = key_func.keymap_opts
-            key_func.keymap_opts = nil
+          keymap_opts = key_func.keymap_opts
+          key_func.keymap_opts = nil
         end
 
         telescope_map(prompt_bufnr, mode, key_bind, key_func, keymap_opts)
@@ -216,8 +216,8 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
         local keymap_opts = {}
 
         if type(key_func) == "table" and key_func.keymap_opts then
-            keymap_opts = key_func.keymap_opts
-            key_func.keymap_opts = nil
+          keymap_opts = key_func.keymap_opts
+          key_func.keymap_opts = nil
         end
 
         telescope_map(prompt_bufnr, mode, key_bind, key_func, keymap_opts)
