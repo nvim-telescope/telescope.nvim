@@ -505,8 +505,8 @@ files.current_buffer_fuzzy_find = function(opts)
       end,
     })
     for id, node in query:iter_captures(root, bufnr, 0, -1) do
-      local hl = highlighter_query.hl_cache[id]
-      if hl then
+      local hl = highlighter_query:_get_hl_from_capture(id)
+      if hl and type(hl) ~= "number" then
         local row1, col1, row2, col2 = node:range()
 
         if row1 == row2 then
