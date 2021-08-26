@@ -16,18 +16,20 @@ body:
     attributes:
       label: "Neovim version"
       description: "Output of `nvim --version`"
+      placeholder: "0.6.0 commit db1b0ee3b30f"
     validations:
       required: true
   - type: input
     attributes:
       label: "Operating system and version"
+      placeholder: "macOS 11.5"
     validations:
       required: true
   - type: textarea
     attributes:
       label: "Steps to reproduce"
       description: "Steps to reproduce using the minimal config provided below."
-      value: |
+      placeholder: |
         1. `nvim -nu minimal.lua`
         2. ...
     validations:
@@ -47,7 +49,7 @@ body:
        label: "Minimal config"
        description: "Minimal(!) configuration necessary to reproduce the issue. Save this as `minimal.lua`. If _absolutely_ necessary, add plugins and config options from your `init.lua` at the indicated lines."
        render: Lua
-       value: |
+       placeholder: |
          vim.cmd [[set runtimepath=$VIMRUNTIME]]
          vim.cmd [[set packpath=/tmp/nvim/site]]
          local package_root = '/tmp/nvim/site/pack'
