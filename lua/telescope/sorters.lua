@@ -32,7 +32,6 @@ Sorter.__index = Sorter
 --- Lower number is better (because it's like a closer match)
 --- But, any number below 0 means you want that line filtered out.
 ---@field scoring_function function: Function that has the interface: (sorter, prompt, line): number
----@field tags table: Unique tags collected at filtering for tag completion
 ---@field filter_function function: Function that can filter results
 ---@field highlighter function: Highlights results to display them pretty
 ---@field discard boolean: Whether this is a discardable style sorter or not.
@@ -47,7 +46,6 @@ function Sorter:new(opts)
   return setmetatable({
     score = opts.score,
     state = {},
-    tags = opts.tags,
 
     -- State management
     init = opts.init,
@@ -135,9 +133,6 @@ function Sorter:score(prompt, entry, cb_add, cb_filter)
 
   local filter_score
   if self.filter_function ~= nil then
-    if self.tags then
-      self.tags:insert(entry)
-    end
     filter_score, prompt = self:filter_function(prompt, entry)
   end
 
@@ -406,6 +401,7 @@ sorters.get_generic_fuzzy_sorter = function(opts)
     highlighter = opts.highlighter or function(_, prompt, display)
       return ngram_highlighter(ngram_len, prompt, display)
     end,
+    filter_function = opts.filter_function,
   }
 end
 
@@ -552,63 +548,11 @@ sorters.get_substr_matcher = function()
   }
 end
 
-local substr_matcher = function(_, prompt, line, _)
-  local display = line:lower()
-  local search_terms = util.max_split(prompt:lower(), "%s")
-  local matched = 0
-  local total_search_terms = 0
-  for _, word in pairs(search_terms) do
-    total_search_terms = total_search_terms + 1
-    if display:find(word, 1, true) then
-      matched = matched + 1
-    end
-  end
 
-  return matched == total_search_terms and 0 or FILTERED
-end
-
-local filter_function = function(opts)
-  local scoring_function = vim.F.if_nil(opts.filter_function, substr_matcher)
-  local tag = vim.F.if_nil(opts.tag, "ordinal")
-
-  return function(_, prompt, entry)
-    local filter = "^(" .. opts.delimiter .. "(%S+)" .. "[" .. opts.delimiter .. "%s]" .. ")"
-    local matched = prompt:match(filter)
-
-    if matched == nil then
-      return 0, prompt
-    end
-    -- clear prompt of tag
-    prompt = prompt:sub(#matched + 1, -1)
-    local query = vim.trim(matched:gsub(opts.delimiter, ""))
-    return scoring_function(_, query, entry[tag], _), prompt
-  end
-end
-
-local function create_tag_set(tag)
-  tag = vim.F.if_nil(tag, "ordinal")
-  local set = {}
-  return setmetatable(set, {
-    __index = {
-      insert = function(set_, entry)
-        local value = entry[tag]
-        if not set_[value] then
-          set_[value] = true
-        end
-      end,
-    },
-  })
-end
 
 sorters.prefilter = function(opts)
   local sorter = opts.sorter
-  opts.delimiter = util.get_default(opts.delimiter, ":")
-  sorter._delimiter = opts.delimiter
-  sorter.tags = create_tag_set(opts.tag)
   sorter.filter_function = filter_function(opts)
-  sorter._was_discarded = function()
-    return false
-  end
   return sorter
 end
 

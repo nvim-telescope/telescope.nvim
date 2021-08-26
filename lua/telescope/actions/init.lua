@@ -725,8 +725,8 @@ end
 
 actions.complete_tag = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
-  local tags = current_picker.sorter.tags
-  local delimiter = current_picker.sorter._delimiter
+  local tags = current_picker.sorter.filter_function.tags
+  local delimiter = current_picker.sorter.filter_function.delimiter
 
   if not tags then
     print "No tag pre-filtering set for this picker"

@@ -5,6 +5,7 @@ local actions = require "telescope.actions"
 local conf = require("telescope.config").values
 local entry_display = require "telescope.pickers.entry_display"
 local finders = require "telescope.finders"
+local filters = require "telescope.filters"
 local make_entry = require "telescope.make_entry"
 local pickers = require "telescope.pickers"
 local strings = require "plenary.strings"
@@ -127,6 +128,7 @@ lsp.document_symbols = function(opts)
     return
   end
 
+  opts.filter_function = vim.F.if_nil(opts.filter_function, filters.stack { filters.tag { tag = "symbol_type" } })
   opts.ignore_filename = opts.ignore_filename or true
   pickers.new(opts, {
     prompt_title = "LSP Document Symbols",
@@ -135,10 +137,7 @@ lsp.document_symbols = function(opts)
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
     },
     previewer = conf.qflist_previewer(opts),
-    sorter = conf.prefilter_sorter {
-      tag = "symbol_type",
-      sorter = conf.generic_sorter(opts),
-    },
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 
