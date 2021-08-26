@@ -128,7 +128,7 @@ lsp.document_symbols = function(opts)
     return
   end
 
-  opts.filter_function = vim.F.if_nil(opts.filter_function, filters.stack { filters.tag { tag = "symbol_type" } })
+  opts.filter_function = vim.F.if_nil(opts.filter_function, filters.stack {  filters.lines(opts), filters.tag { tag = "symbol_type" }})
   opts.ignore_filename = opts.ignore_filename or true
   pickers.new(opts, {
     prompt_title = "LSP Document Symbols",
