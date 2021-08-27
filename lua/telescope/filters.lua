@@ -3,6 +3,13 @@ local log = require "telescope.log"
 -- TODO
 --  make defaults for sorters overrideable
 
+local _get_parent = (function()
+  local formatted = string.format("^(.+)%s[^%s]+", "/", "/")
+  return function(abs_path)
+    return abs_path:match(formatted)
+  end
+end)()
+
 local function convert_reg_to_pos(reg1, reg2)
   -- get {start: 'v', end: curpos} of visual selection 0-indexed
   local pos1 = vim.fn.getpos(reg1)
@@ -12,6 +19,38 @@ local function convert_reg_to_pos(reg1, reg2)
 end
 
 local util = require "telescope.utils"
+
+local get_dirs
+function get_dirs(dirs, flattened_dirs, cwd)
+  cwd = cwd or vim.loop.cwd()
+  local handle = vim.loop.fs_scandir(cwd)
+  if type(handle) == "string" then
+    vim.api.nvim.nvim_err_writeln(handle)
+    return
+  end
+
+  while true do
+    local name, t = vim.loop.fs_scandir_next(handle)
+    if not name then
+      break
+    end
+
+    if name ~= ".git" then
+      local abs = string.format("%s/%s", cwd, name)
+      if not t then
+        local stat = vim.loop.fs_stat(abs)
+        t = stat and stat.type
+      end
+
+      if t == "directory" then
+        dirs[abs] = cwd
+        flattened_dirs[abs] = true
+        dirs = get_dirs(dirs, flattened_dirs, abs)
+      end
+    end
+  end
+  return dirs
+end
 
 local FILTERED = -1
 
@@ -114,6 +153,72 @@ filters.lines = function(opts)
   end
 end
 
+filters.paths = function(opts)
+  opts = opts or {}
+  opts.cwd = vim.F.if_nil(opts.cwd, vim.loop.cwd())
+  local delimiter = ":"
+  flattened_dirs = {}
+  tag_cache = {}
+  local path_tags = setmetatable({}, {
+    __call = function(t, k)
+      local ret = { [k] = true }
+      while true do
+        local value = rawget(t, k)
+        if value == nil then
+          break
+        end
+        ret[value] = true
+        k = value
+      end
+      return ret
+    end,
+  })
+  local cached_prompt
+  local cached_match
+  local cached_query
+  local ret_prompt
+  get_dirs(path_tags, flattened_dirs, opts.cwd)
+  return setmetatable({}, {
+    __call = function(_, _, prompt, entry)
+      if prompt:sub(1, 1) ~= delimiter then
+        return 0, prompt
+      end
+
+      if tag_cache[entry] == nil then
+        -- local path = string.format("%s/%s", opts.cwd, entry.value)
+        -- tag_cache
+        tag_cache[entry] = _get_parent(string.format("%s/%s", opts.cwd, entry.value))
+      end
+      local tag = tag_cache[entry]
+
+      if cached_prompt ~= prompt then
+        cached_prompt = prompt
+        local filter = "^(" .. delimiter .. "(%S+)" .. "[" .. delimiter .. "%s]" .. ")"
+        catched_matched = cached_prompt:match(filter)
+        ret_prompt = prompt:sub(#catched_matched + 1, -1)
+        cached_query = vim.trim(catched_matched:gsub(delimiter, ""))
+      end
+
+      -- clear prompt of tag
+      -- local query = vim.trim(matched:gsub(delimiter, ""))
+      -- if not path_tags[query] then
+      --   return 0, prompt
+      -- end
+      local valid_dirs = path_tags(tag)
+      -- log.warn(valid_dirs)
+      if valid_dirs[cached_query] == true then
+        return 0, ret_prompt
+      else
+        return FILTERED, prompt
+      end
+    end,
+    __index = {
+      tags = flattened_dirs,
+      delimiter = delimiter,
+    },
+  })
+end
+
 filters.treesitter = function(opts)
   local current_buf = vim.api.nvim_get_current_buf()
 
@@ -129,7 +234,7 @@ filters.treesitter = function(opts)
     return
   end
 
-  opts.textobject = vim.F.if_nil(opts.type, "@function.outer")
+  opts.textobject = vim.F.if_nil(opts.textobject, "@function.outer")
   -- 0, 0 indexed
   local bufnr, range = shared.textobject_at_point(opts.textobject)
   assert(current_buf == bufnr, "Alarm, alarm")
@@ -171,8 +276,12 @@ filters.tag = function(opts)
         return 0, prompt
       end
       -- clear prompt of tag
-      prompt = prompt:sub(#matched + 1, -1)
       local query = vim.trim(matched:gsub(delimiter, ""))
+      if tags_set[query] ~= true then
+        return 0, prompt
+      end
+
+      prompt = prompt:sub(#matched + 1, -1)
       return scoring_function(query, tag), prompt
     end,
     __index = {

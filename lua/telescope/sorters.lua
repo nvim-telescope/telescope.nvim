@@ -312,6 +312,7 @@ sorters.get_fuzzy_file = function(opts)
     highlighter = opts.highlighter or function(_, prompt, display)
       return ngram_highlighter(ngram_len, prompt, display)
     end,
+    filter_function = opts.filter_function,
   }
 end
 
