@@ -1,5 +1,6 @@
 local log = require "telescope.log"
 local util = require "telescope.utils"
+local defaulter = util.make_default_callable
 
 local sorters = {}
 
@@ -232,7 +233,7 @@ sorters.get_fuzzy_file = function(opts)
   local cached_tails = make_cached_tail()
   local cached_uppers = make_cached_uppers()
 
-  return Sorter:new {
+  return defaulter(sorters.new, {
     scoring_function = function(_, prompt, line)
       local N = #prompt
 
@@ -312,8 +313,7 @@ sorters.get_fuzzy_file = function(opts)
     highlighter = opts.highlighter or function(_, prompt, display)
       return ngram_highlighter(ngram_len, prompt, display)
     end,
-    filter_function = opts.filter_function,
-  }
+  }).new(opts)
 end
 
 sorters.get_generic_fuzzy_sorter = function(opts)
@@ -341,7 +341,7 @@ sorters.get_generic_fuzzy_sorter = function(opts)
     return R
   end
 
-  return Sorter:new {
+  return defaulter(sorters.new, {
     -- self
     -- prompt (which is the text on the line)
     -- line (entry.ordinal)
@@ -403,7 +403,7 @@ sorters.get_generic_fuzzy_sorter = function(opts)
       return ngram_highlighter(ngram_len, prompt, display)
     end,
     filter_function = opts.filter_function,
-  }
+  }).new(opts)
 end
 
 sorters.fuzzy_with_index_bias = function(opts)
@@ -413,7 +413,7 @@ sorters.fuzzy_with_index_bias = function(opts)
   -- TODO: Probably could use a better sorter here.
   local fuzzy_sorter = sorters.get_generic_fuzzy_sorter(opts)
 
-  return Sorter:new {
+  return defaulter(sorters.new, {
     scoring_function = function(_, prompt, _, entry)
       local base_score = fuzzy_sorter:score(prompt, entry)
 
@@ -427,7 +427,7 @@ sorters.fuzzy_with_index_bias = function(opts)
         return math.min(math.pow(entry.index, 0.25), 2) * base_score
       end
     end,
-  }
+  }).new(opts)
 end
 
 -- Sorter using the fzy algorithm
@@ -436,7 +436,7 @@ sorters.get_fzy_sorter = function(opts)
   local fzy = opts.fzy_mod or require "telescope.algos.fzy"
   local OFFSET = -fzy.get_score_floor()
 
-  return sorters.Sorter:new {
+  return defaulter(sorters.new, {
     discard = true,
 
     scoring_function = function(_, prompt, line)
@@ -469,7 +469,7 @@ sorters.get_fzy_sorter = function(opts)
     highlighter = function(_, prompt, display)
       return fzy.positions(prompt, display)
     end,
-  }
+  }).new(opts)
 end
 
 -- TODO: Could probably do something nice where we check their conf
@@ -479,7 +479,7 @@ sorters.highlighter_only = function(opts)
   opts = opts or {}
   local fzy = opts.fzy_mod or require "telescope.algos.fzy"
 
-  return Sorter:new {
+  return defaulter(sorters.new, {
     scoring_function = function()
       return 1
     end,
@@ -487,7 +487,7 @@ sorters.highlighter_only = function(opts)
     highlighter = function(_, prompt, display)
       return fzy.positions(prompt, display)
     end,
-  }
+  }).new(opts)
 end
 
 sorters.empty = function()
@@ -548,8 +548,6 @@ sorters.get_substr_matcher = function()
     end,
   }
 end
-
-
 
 sorters.prefilter = function(opts)
   local sorter = opts.sorter
