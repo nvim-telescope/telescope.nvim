@@ -37,6 +37,31 @@ local escape_chars = function(string)
   })
 end
 
+local get_visual_selection = function()
+  local mode = vim.fn.mode()
+  if mode ~= "v" or mode ~= "V" or mode ~= "CTRL-V" then
+    return nil
+  end
+  vim.cmd [[visual]]
+  local _, start_row, start_col, _ = unpack(vim.fn.getpos "'<")
+  local _, end_row, end_col, _ = unpack(vim.fn.getpos "'>")
+  if start_row > end_row or (start_row == end_row and start_col > end_col) then
+    start_row, end_row = end_row, start_row
+    start_col, end_col = end_col, start_col
+  end
+  local lines = vim.fn.getline(start_row, end_row)
+  local n = 0
+  for _ in pairs(lines) do
+    n = n + 1
+  end
+  if n <= 0 then
+    return nil
+  end
+  lines[n] = string.sub(lines[n], 1, end_col)
+  lines[1] = string.sub(lines[1], start_col)
+  return table.concat(lines, "\n")
+end
+
 -- Special keys:
 --  opts.search_dirs -- list of directory to search in
 --  opts.grep_open_files -- boolean to restrict search to open files
@@ -113,11 +138,9 @@ end
 --  opts.search_dirs -- list of directory to search in
 --  opts.use_regex -- special characters won't be escaped
 files.grep_string = function(opts)
-  -- TODO: This should probably check your visual selection as well, if you've got one
-
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
-  local word = opts.search or vim.fn.expand "<cword>"
+  local word = opts.search or get_visual_selection() or vim.fn.expand "<cword>"
   local search = opts.use_regex and word or escape_chars(word)
   local word_match = opts.word_match
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
