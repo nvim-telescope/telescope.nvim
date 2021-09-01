@@ -10,16 +10,20 @@
 local a = vim.api
 
 local log = require "telescope.log"
+local config = require "telescope.config"
 local state = require "telescope.state"
 local utils = require "telescope.utils"
+local popup = require "plenary.popup"
 local p_scroller = require "telescope.pickers.scroller"
 
 local action_state = require "telescope.actions.state"
 local action_utils = require "telescope.actions.utils"
 local action_set = require "telescope.actions.set"
+local entry_display = require "telescope.pickers.entry_display"
 local from_entry = require "telescope.from_entry"
 
 local transform_mod = require("telescope.actions.mt").transform_mod
+local resolver = require "telescope.config.resolve"
 
 local actions = setmetatable({}, {
   __index = function(_, k)
@@ -847,8 +851,205 @@ actions.remove_selected_picker = function(prompt_bufnr)
   end
 end
 
+--- Display the keymaps of registered actions similar to which-key.nvim.<br>
+--- - Notes:
+---   - The defaults can be overridden via |action_generate.toggle_registered_actions|.
+---@param prompt_bufnr number: The prompt bufnr
+actions.which_key = function(prompt_bufnr, opts)
+  opts = opts or {}
+  opts.max_height = utils.get_default(opts.max_height, 0.4)
+  opts.only_show_current_mode = utils.get_default(opts.only_show_current_mode, true)
+  opts.mode_width = utils.get_default(opts.mode_width, 1)
+  opts.keybind_width = utils.get_default(opts.keybind_width, 7)
+  opts.name_width = utils.get_default(opts.name_width, 30)
+  opts.column_padding = utils.get_default(opts.column_padding, "  ")
+  opts.column_indent = table.concat(utils.repeated_table(utils.get_default(opts.column_indent, 4), " "))
+  opts.line_padding = utils.get_default(opts.line_padding, 1)
+  opts.separator = utils.get_default(opts.separator, " -> ")
+  opts.close_with_action = utils.get_default(opts.close_with_action, true)
+  opts.normal_hl = utils.get_default(opts.normal_hl, "TelescopePrompt")
+  opts.border_hl = utils.get_default(opts.border_hl, "TelescopePromptBorder")
+  opts.winblend = utils.get_default(opts.winblend, config.values.winblend)
+
+  -- close on repeated keypress
+  local km_bufs = (function()
+    local ret = {}
+    local bufs = a.nvim_list_bufs()
+    for _, buf in ipairs(bufs) do
+      for _, bufname in ipairs { "_TelescopeWhichKey", "_TelescopeWhichKeyBorder" } do
+        if string.find(a.nvim_buf_get_name(buf), bufname) then
+          table.insert(ret, buf)
+        end
+      end
+    end
+    return ret
+  end)()
+  if not vim.tbl_isempty(km_bufs) then
+    for _, buf in ipairs(km_bufs) do
+      utils.buf_delete(buf)
+      local win_ids = vim.fn.win_findbuf(buf)
+      for _, win_id in ipairs(win_ids) do
+        pcall(a.nvim_win_close, win_id, true)
+      end
+    end
+    return
+  end
+
+  local displayer = entry_display.create {
+    separator = opts.separator,
+    items = {
+      { width = opts.mode_with },
+      { width = opts.keybind_width },
+      { width = opts.name_width },
+    },
+  }
+
+  local make_display = function(mapping)
+    return displayer {
+      { mapping.mode, utils.get_default(opts.mode_hl, "TelescopeResultsConstant") },
+      { mapping.keybind, utils.get_default(opts.keybind_hl, "TelescopeResultsVariable") },
+      { mapping.name, utils.get_default(opts.name_hl, "TelescopeResultsFunction") },
+    }
+  end
+
+  local mappings = {}
+  local mode = a.nvim_get_mode().mode
+  for _, v in pairs(action_utils.get_registered_mappings(prompt_bufnr)) do
+    -- holds true for registered keymaps
+    if type(v.func) == "table" then
+      local name = ""
+      for _, action in ipairs(v.func) do
+        if type(action) == "string" then
+          name = name == "" and action or name .. " + " .. action
+        end
+      end
+      if name and name ~= "which_key" then
+        if not opts.only_show_current_mode or mode == v.mode then
+          table.insert(mappings, { mode = v.mode, keybind = v.keybind, name = name })
+        end
+      end
+    end
+  end
+
+  table.sort(mappings, function(x, y)
+    if x.name < y.name then
+      return true
+    elseif x.name == y.name then
+      -- show normal mode as the standard mode first
+      if x.mode > y.mode then
+        return true
+      else
+        return false
+      end
+    else
+      return false
+    end
+  end)
+
+  local entry_width = #opts.column_padding
+    + opts.mode_width
+    + opts.keybind_width
+    + opts.name_width
+    + (3 * #opts.separator)
+  local num_total_columns = math.floor((vim.o.columns - #opts.column_indent) / entry_width)
+  opts.num_rows = math.min(
+    math.ceil(#mappings / num_total_columns),
+    resolver.resolve_height(opts.max_height)(_, _, vim.o.lines)
+  )
+  local total_available_entries = opts.num_rows * num_total_columns
+  local winheight = opts.num_rows + 2 * opts.line_padding
+
+  -- place hints at top or bottom relative to prompt
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  local prompt_win = picker.prompt_win
+  local prompt_row = a.nvim_win_get_position(prompt_win)[1]
+  local prompt_pos = prompt_row <= 0.5 * vim.o.lines
+
+  local modes = { n = "Normal", i = "Insert" }
+  local title_mode = opts.only_show_current_mode and modes[mode] .. " Mode " or ""
+  local title_text = title_mode .. "Keymaps"
+  local popup_opts = {
+    relative = "editor",
+    enter = false,
+    minwidth = vim.o.columns,
+    maxwidth = vim.o.columns,
+    minheight = winheight,
+    maxheight = winheight,
+    line = prompt_pos == true and vim.o.lines - winheight or 0,
+    col = 1,
+    border = { prompt_pos and 1 or 0, 0, not prompt_pos and 1 or 0, 0 },
+    borderchars = { prompt_pos and "─" or " ", "", not prompt_pos and "─" or " ", "", "", "", "", "" },
+    noautocmd = true,
+    title = { { text = title_text, pos = prompt_pos and "N" or "S" } },
+  }
+  local km_win_id, km_opts = popup.create("", popup_opts)
+  local km_buf = a.nvim_win_get_buf(km_win_id)
+  a.nvim_buf_set_name(km_buf, "_TelescopeWhichKey")
+  a.nvim_buf_set_name(km_opts.border.bufnr, "_TelescopeTelescopeWhichKeyBorder")
+  a.nvim_win_set_option(km_win_id, "winhl", "Normal:" .. opts.normal_hl)
+  a.nvim_win_set_option(km_opts.border.win_id, "winhl", "Normal:" .. opts.border_hl)
+  a.nvim_win_set_option(km_win_id, "winblend", opts.winblend)
+
+  vim.cmd(string.format(
+    "autocmd BufLeave <buffer> ++once lua %s",
+    table.concat({
+      string.format("pcall(vim.api.nvim_win_close, %s, true)", km_win_id),
+      string.format("pcall(vim.api.nvim_win_close, %s, true)", km_opts.border.win_id),
+      string.format("require 'telescope.utils'.buf_delete(%s)", km_buf),
+    }, ";")
+  ))
+
+  a.nvim_buf_set_lines(
+    km_buf,
+    0,
+    -1,
+    false,
+    utils.repeated_table(opts.num_rows + 2 * opts.line_padding, opts.column_indent)
+  )
+
+  local keymap_highlights = a.nvim_create_namespace "telescope_whichkey"
+  local highlights = {}
+  for index, mapping in ipairs(mappings) do
+    local row = utils.cycle(index, opts.num_rows) - 1 + opts.line_padding
+    local prev_line = a.nvim_buf_get_lines(km_buf, row, row + 1, false)[1]
+    if index == total_available_entries and total_available_entries > #mappings then
+      local new_line = prev_line .. "..."
+      a.nvim_buf_set_lines(km_buf, row, row + 1, false, { new_line })
+      break
+    end
+    local display, display_hl = make_display(mapping)
+    local new_line = prev_line .. display .. opts.column_padding -- incl. padding
+    a.nvim_buf_set_lines(km_buf, row, row + 1, false, { new_line })
+    table.insert(highlights, { hl = display_hl, row = row, col = #prev_line })
+  end
+
+  -- highlighting only after line setting as vim.api.nvim_buf_set_lines removes hl otherwise
+  for _, highlight_tbl in pairs(highlights) do
+    local highlight = highlight_tbl.hl
+    local row_ = highlight_tbl.row
+    local col = highlight_tbl.col
+    for _, hl_block in ipairs(highlight) do
+      a.nvim_buf_add_highlight(km_buf, keymap_highlights, hl_block[2], row_, col + hl_block[1][1], col + hl_block[1][2])
+    end
+  end
+
+  -- only set up autocommand after showing preview completed
+  if opts.close_with_action then
+    vim.schedule(function()
+      vim.cmd(string.format(
+        "autocmd User TelescopeKeymap ++once lua %s",
+        table.concat({
+          string.format("pcall(vim.api.nvim_win_close, %s, true)", km_win_id),
+          string.format("pcall(vim.api.nvim_win_close, %s, true)", km_opts.border.win_id),
+          string.format("require 'telescope.utils'.buf_delete(%s)", km_buf),
+        }, ";")
+      ))
+    end)
+  end
+end
+
 -- ==================================================
--- Transforms modules and sets the corect metatables.
+-- Transforms modules and sets the correct metatables.
 -- ==================================================
 actions = transform_mod(actions)
 return actions
