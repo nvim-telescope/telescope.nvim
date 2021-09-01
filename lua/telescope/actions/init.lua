@@ -990,14 +990,14 @@ actions.which_key = function(prompt_bufnr, opts)
   a.nvim_win_set_option(km_opts.border.win_id, "winhl", "Normal:" .. opts.border_hl)
   a.nvim_win_set_option(km_win_id, "winblend", opts.winblend)
 
-  vim.cmd(
-    string.format(
-      "autocmd BufLeave <buffer> ++once lua pcall(vim.api.nvim_win_close, %s, true); pcall(vim.api.nvim_win_close, %s, true); require 'telescope.utils'.buf_delete(%s)",
-      km_win_id,
-      km_opts.border.win_id,
-      km_buf
-    )
-  )
+  vim.cmd(string.format(
+    "autocmd BufLeave <buffer> ++once lua %s",
+    table.concat({
+      string.format("pcall(vim.api.nvim_win_close, %s, true)", km_win_id),
+      string.format("pcall(vim.api.nvim_win_close, %s, true)", km_opts.border.win_id),
+      string.format("require 'telescope.utils'.buf_delete(%s)", km_buf),
+    }, ";")
+  ))
 
   a.nvim_buf_set_lines(
     km_buf,
@@ -1036,14 +1036,14 @@ actions.which_key = function(prompt_bufnr, opts)
   -- only set up autocommand after showing preview completed
   if opts.close_with_action then
     vim.schedule(function()
-      vim.cmd(
-        string.format(
-          "autocmd User TelescopeKeymap ++once lua pcall(vim.api.nvim_win_close, %s, true); pcall(vim.api.nvim_win_close, %s, true); require 'telescope.utils'.buf_delete(%s)",
-          km_win_id,
-          km_opts.border.win_id,
-          km_buf
-        )
-      )
+      vim.cmd(string.format(
+        "autocmd User TelescopeKeymap ++once lua %s",
+        table.concat({
+          string.format("pcall(vim.api.nvim_win_close, %s, true)", km_win_id),
+          string.format("pcall(vim.api.nvim_win_close, %s, true)", km_opts.border.win_id),
+          string.format("require 'telescope.utils'.buf_delete(%s)", km_buf),
+        }, ";")
+      ))
     end)
   end
 end
