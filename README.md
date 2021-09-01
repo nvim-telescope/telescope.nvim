@@ -269,20 +269,21 @@ require("telescope").setup {
 Mappings are fully customizable.
 Many familiar mapping patterns are setup as defaults.
 
-| Mappings       | Action                                     |
-|----------------|--------------------------------------------|
-| `<C-n>/<Down>` | Next item                                  |
-| `<C-p>/<Up>`   | Previous item                              |
-| `j/k`          | Next/previous (in normal mode)             |
-| `<cr>`         | Confirm selection                          |
-| `<C-q>`        | Confirm selection and open quickfix window |
-| `<C-x>`        | go to file selection as a split            |
-| `<C-v>`        | go to file selection as a vsplit           |
-| `<C-t>`        | go to a file in a new tab                  |
-| `<C-u>`        | scroll up in preview window                |
-| `<C-d>`        | scroll down in preview window              |
-| `<C-c>`        | close telescope                            |
-| `<Esc>`        | close telescope (in normal mode)           |
+| Mappings       | Action                                                       |
+|----------------|--------------------------------------------------------------|
+| `<C-n>/<Down>` | Next item                                                    |
+| `<C-p>/<Up>`   | Previous item                                                |
+| `j/k`          | Next/previous (in normal mode)                               |
+| `<cr>`         | Confirm selection                                            |
+| `<C-q>`        | Confirm selection and open quickfix window                   |
+| `<C-x>`        | Go to file selection as a split                              |
+| `<C-v>`        | Go to file selection as a vsplit                             |
+| `<C-t>`        | Go to a file in a new tab                                    |
+| `<C-u>`        | Scroll up in preview window                                  |
+| `<C-d>`        | Scroll down in preview window                                |
+| `<C-/>/?`      | Show picker mappings (in insert & normal mode, respectively) |
+| `<C-c>`        | Close telescope                                              |
+| `<Esc>`        | Close telescope (in normal mode)                             |
 
 To see the full list of mappings, check out `lua/telescope/mappings.lua` and
 the `default_mappings` table.
