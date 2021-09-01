@@ -25,6 +25,28 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: true
 
+                                          *telescope.defaults.cache_picker*
+    cache_picker: ~
+        This field handles the configuration for picker caching.
+        By default it is a table, with default values (more below).
+        To disable caching, set it to false.
+
+        Caching preserves all previous multi selections and results and
+        therefore may result in slowdown or increased RAM occupation
+        if too many pickers (`cache_picker.num_pickers`) or entries
+        ('cache_picker.limit_entries`) are cached.
+
+        Fields:
+          - num_pickers:      The number of pickers to be cached.
+                              Set to -1 to preserve all pickers of your session.
+                              If passed to a picker, the cached pickers with
+                              indices larger than `cache_picker.num_pickers` will
+                              be cleared.
+                              Default: 1
+          - limit_entries:    The amount of entries that will be written in the
+                              Default: 1000
+
+
                                       *telescope.defaults.default_mappings*
     default_mappings: ~
         Not recommended to use except for advanced users.
@@ -367,8 +389,8 @@ builtin.live_grep({opts})                                *builtin.live_grep()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {cwd}             (string)    directory path to search from (default
-                                      is cwd, use utils.buffer_dir() to search
+        {cwd}             (string)    root dir to search from (default is cwd,
+                                      use utils.buffer_dir() to search
                                       relative to open buffer)
         {grep_open_files} (boolean)   if true, restrict search to open files
                                       only, mutually exclusive with
@@ -388,8 +410,8 @@ builtin.grep_string({opts})                            *builtin.grep_string()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {cwd}             (string)    directory path to search from (default
-                                      is cwd, use utils.buffer_dir() to search
+        {cwd}             (string)    root dir to search from (default is cwd,
+                                      use utils.buffer_dir() to search
                                       relative to open buffer)
         {search}          (string)    the query to search
         {search_dirs}     (table)     directory/directories to search in
@@ -408,9 +430,9 @@ builtin.find_files({opts})                              *builtin.find_files()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {cwd}          (string)   directory path to search from (default is
-                                  cwd, use utils.buffer_dir() to search
-                                  relative to open buffer)
+        {cwd}          (string)   root dir to search from (default is cwd, use
+                                  utils.buffer_dir() to search relative to
+                                  open buffer)
         {find_command} (table)    command line arguments for `find_files` to
                                   use for the search, overrides default config
         {follow}       (boolean)  if true, follows symlinks (i.e. uses `-L`
@@ -446,8 +468,8 @@ builtin.file_browser({opts})                          *builtin.file_browser()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {cwd}      (string)   directory path to browse (default is cwd, use
-                              utils.buffer_dir() to browse relative to open
+        {cwd}      (string)   root dir to browse from (default is cwd, use
+                              utils.buffer_dir() to search relative to open
                               buffer)
         {depth}    (number)   file tree depth to display (default is 1)
         {dir_icon} (string)   change the icon for a directory. default: 
@@ -673,6 +695,35 @@ builtin.search_history({opts})                      *builtin.search_history()*
     - Default keymaps:
       - `<C-e>`: open a search window with the text of the currently selected
         search result populated in it
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
+builtin.resume({opts})                                      *builtin.resume()*
+    Opens the previous picker in the identical state (incl. multi selections)
+    - Notes:
+      - Requires `cache_picker` in setup or when having invoked pickers, see
+        |telescope.defaults.cache_picker|
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {cache_index} (number)  what picker to resume, where 1 denotes most
+                                recent (default 1)
+
+
+builtin.pickers({opts})                                    *builtin.pickers()*
+    Opens a picker over previously cached pickers in there preserved states
+    (incl. multi selections)
+    - Default keymaps:
+      - `<C-x>`: delete the selected cached picker
+    - Notes:
+      - Requires `cache_picker` in setup or when having invoked pickers, see
+        |telescope.defaults.cache_picker|
 
 
     Parameters: ~
@@ -1576,6 +1627,16 @@ actions.cycle_previewers_next({prompt_bufnr})*actions.cycle_previewers_next()*
 actions.cycle_previewers_prev({prompt_bufnr})*actions.cycle_previewers_prev()*
     Cycle to the previous previewer if there is one available.
     This action is not mapped on default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.remove_selected_picker({prompt_bufnr})*actions.remove_selected_picker()*
+    Removes the selected picker in |builtin.pickers|.
+    This action is not mapped by default and only intended for
+    |builtin.pickers|.
 
 
     Parameters: ~
