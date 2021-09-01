@@ -414,6 +414,10 @@ function utils.data_directory()
   return Path:new({ base_directory, "data" }):absolute() .. Path.path.sep
 end
 
+function utils.buffer_dir()
+  return vim.fn.expand('%:p:h')
+end
+
 function utils.display_termcodes(str)
   return str:gsub(string.char(9), "<TAB>"):gsub("", "<C-F>"):gsub(" ", "<Space>")
 end
