@@ -247,6 +247,8 @@ previewers.new_buffer_previewer = function(opts)
         buf_delete(bufnr)
       end
     end
+    -- enable resuming picker with existing previewer to avoid lookup of deleted bufs
+    bufname_table = {}
   end
 
   function opts.preview_fn(self, entry, status)
@@ -848,6 +850,83 @@ previewers.highlights = defaulter(function(_)
           0,
           #entry.value
         )
+      end)
+    end,
+  }
+end, {})
+
+previewers.pickers = defaulter(function(_)
+  local ns_telescope_multiselection = vim.api.nvim_create_namespace "telescope_mulitselection"
+  local get_row = function(picker, preview_height, index)
+    if picker.sorting_strategy == "ascending" then
+      return index - 1
+    else
+      return preview_height - index
+    end
+  end
+  return previewers.new_buffer_previewer {
+
+    dyn_title = function(_, entry)
+      if entry.value.default_text and entry.value.default_text ~= "" then
+        return string.format("%s ─ %s", entry.value.prompt_title, entry.value.default_text)
+      end
+      return entry.value.prompt_title
+    end,
+
+    get_buffer_by_name = function(_, entry)
+      return tostring(entry.value.prompt_bufnr)
+    end,
+
+    teardown = function(self)
+      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
+        vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_telescope_multiselection, 0, -1)
+      end
+    end,
+
+    define_preview = function(self, entry, status)
+      putils.with_preview_window(status, nil, function()
+        local ns_telescope_entry = vim.api.nvim_create_namespace "telescope_entry"
+        local preview_height = vim.api.nvim_win_get_height(status.preview_win)
+
+        if self.state.bufname then
+          return
+        end
+
+        local picker = entry.value
+        -- prefill buffer to be able to set lines individually
+        local placeholder = utils.repeated_table(preview_height, "")
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, placeholder)
+
+        for index = 1, math.min(preview_height, picker.manager:num_results()) do
+          local row = get_row(picker, preview_height, index)
+          local e = picker.manager:get_entry(index)
+          local display, display_highlight = e:display()
+
+          vim.api.nvim_buf_set_lines(self.state.bufnr, row, row + 1, false, { display })
+
+          if display_highlight ~= nil then
+            for _, hl_block in ipairs(display_highlight) do
+              vim.api.nvim_buf_add_highlight(
+                self.state.bufnr,
+                ns_telescope_entry,
+                hl_block[2],
+                row,
+                hl_block[1][1],
+                hl_block[1][2]
+              )
+            end
+          end
+          if picker._multi:is_selected(e) then
+            vim.api.nvim_buf_add_highlight(
+              self.state.bufnr,
+              ns_telescope_multiselection,
+              "TelescopeMultiSelection",
+              row,
+              0,
+              -1
+            )
+          end
+        end
       end)
     end,
   }

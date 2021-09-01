@@ -68,7 +68,7 @@ local builtin = {}
 
 --- Search for a string and get results live as you type (respecting .gitignore)
 ---@param opts table: options to pass to the picker
----@field cwd string: directory path to search from (default is cwd, use utils.buffer_dir() to search relative to open buffer)
+---@field cwd string: root dir to search from (default is cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
 ---@field search_dirs table: directory/directories to search in, mutually exclusive with `grep_open_files`
 ---@field additional_args function: function(opts) which returns a table of additional arguments to be passed on
@@ -76,7 +76,7 @@ builtin.live_grep = require("telescope.builtin.files").live_grep
 
 --- Searches for the string under your cursor in your current working directory
 ---@param opts table: options to pass to the picker
----@field cwd string: directory path to search from (default is cwd, use utils.buffer_dir() to search relative to open buffer)
+---@field cwd string: root dir to search from (default is cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field search string: the query to search
 ---@field search_dirs table: directory/directories to search in
 ---@field use_regex boolean: if true, special characters won't be escaped, allows for using regex (default is false)
@@ -85,7 +85,7 @@ builtin.grep_string = require("telescope.builtin.files").grep_string
 
 --- Search for files (respecting .gitignore)
 ---@param opts table: options to pass to the picker
----@field cwd string: directory path to search from (default is cwd, use utils.buffer_dir() to search relative to open buffer)
+---@field cwd string: root dir to search from (default is cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field find_command table: command line arguments for `find_files` to use for the search, overrides default config
 ---@field follow boolean: if true, follows symlinks (i.e. uses `-L` flag for the `find` command)
 ---@field hidden boolean: determines whether to show hidden files or not (default is false)
@@ -105,7 +105,7 @@ builtin.fd = builtin.find_files
 ---       create the file `init.lua` inside of `lua/telescope` and will create the necessary folders (similar to how
 ---       `mkdir -p` would work) if they do not already exist
 ---@param opts table: options to pass to the picker
----@field cwd string: directory path to browse (default is cwd, use utils.buffer_dir() to browse relative to open buffer)
+---@field cwd string: root dir to browse from (default is cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field depth number: file tree depth to display (default is 1)
 ---@field dir_icon string: change the icon for a directory. default: 
 ---@field hidden boolean: determines whether to show hidden files or not (default is false)
@@ -242,6 +242,21 @@ builtin.command_history = require("telescope.builtin.internal").command_history
 ---   - `<C-e>`: open a search window with the text of the currently selected search result populated in it
 ---@param opts table: options to pass to the picker
 builtin.search_history = require("telescope.builtin.internal").search_history
+
+--- Opens the previous picker in the identical state (incl. multi selections)
+--- - Notes:
+---   - Requires `cache_picker` in setup or when having invoked pickers, see |telescope.defaults.cache_picker|
+---@param opts table: options to pass to the picker
+---@field cache_index number: what picker to resume, where 1 denotes most recent (default 1)
+builtin.resume = require("telescope.builtin.internal").resume
+
+--- Opens a picker over previously cached pickers in there preserved states (incl. multi selections)
+--- - Default keymaps:
+---   - `<C-x>`: delete the selected cached picker
+--- - Notes:
+---   - Requires `cache_picker` in setup or when having invoked pickers, see |telescope.defaults.cache_picker|
+---@param opts table: options to pass to the picker
+builtin.pickers = require("telescope.builtin.internal").pickers
 
 --- Lists vim options, allows you to edit the current value on `<cr>`
 ---@param opts table: options to pass to the picker

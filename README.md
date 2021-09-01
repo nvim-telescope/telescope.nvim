@@ -439,6 +439,8 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.highlights`                | Lists all available highlights                                                                                                                              |
 | `builtin.current_buffer_fuzzy_find` | Live fuzzy search inside of the currently open buffer                                                                                                       |
 | `builtin.current_buffer_tags`       | Lists all of the tags for the currently open buffer, with a preview                                                                                         |
+| `builtin.resume`                    | Lists the results incl. multi-selections of the previous picker                                                                                             |
+| `builtin.pickers`                   | Lists the previous pickers incl. multi-selections (see `:h telescope.defaults.cache_picker`)                                                                |
 
 ### Neovim LSP Pickers
 

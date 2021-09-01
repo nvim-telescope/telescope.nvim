@@ -832,6 +832,21 @@ actions.cycle_previewers_prev = function(prompt_bufnr)
   actions.get_current_picker(prompt_bufnr):cycle_previewers(-1)
 end
 
+--- Removes the selected picker in |builtin.pickers|.<br>
+--- This action is not mapped by default and only intended for |builtin.pickers|.
+---@param prompt_bufnr number: The prompt bufnr
+actions.remove_selected_picker = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local selection_index = current_picker:get_index(current_picker:get_selection_row())
+  local cached_pickers = state.get_global_key "cached_pickers"
+  current_picker:delete_selection(function()
+    table.remove(cached_pickers, selection_index)
+  end)
+  if #cached_pickers == 0 then
+    actions.close(prompt_bufnr)
+  end
+end
+
 -- ==================================================
 -- Transforms modules and sets the corect metatables.
 -- ==================================================
