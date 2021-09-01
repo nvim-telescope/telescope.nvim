@@ -867,7 +867,10 @@ previewers.pickers = defaulter(function(_)
   return previewers.new_buffer_previewer {
 
     dyn_title = function(_, entry)
-      return entry.value.preview_title
+      if entry.value.default_text and entry.value.default_text ~= "" then
+        return string.format("%s ─ %s", entry.value.prompt_title, entry.value.default_text)
+      end
+      return entry.value.prompt_title
     end,
 
     get_buffer_by_name = function(_, entry)
