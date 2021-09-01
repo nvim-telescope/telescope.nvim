@@ -900,7 +900,14 @@ previewers.pickers = defaulter(function(_)
         for index = 1, math.min(preview_height, picker.manager:num_results()) do
           local row = get_row(picker, preview_height, index)
           local e = picker.manager:get_entry(index)
-          local display, display_highlight = e:display()
+
+          local display, display_highlight
+          -- if-clause as otherwise function return values improperly unpacked
+          if type(e.display) == "function" then
+            display, display_highlight = e:display()
+          else
+            display = e.display
+          end
 
           vim.api.nvim_buf_set_lines(self.state.bufnr, row, row + 1, false, { display })
 
