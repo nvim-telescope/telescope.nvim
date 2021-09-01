@@ -1643,6 +1643,18 @@ actions.remove_selected_picker({prompt_bufnr})*actions.remove_selected_picker()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.which_key({prompt_bufnr})                        *actions.which_key()*
+    Display the keymaps of registered actions similar to which-key.nvim.
+
+    - Notes:
+      - The defaults can be overridden via
+        |action_generate.toggle_registered_actions|.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 
 ================================================================================
                                                        *telescope.actions.state*
@@ -1783,6 +1795,91 @@ utils.map_selections({prompt_bufnr}, {f})             *utils.map_selections()*
         {prompt_bufnr} (number)    The prompt bufnr
         {f}            (function)  Function to map onto selection of picker
                                    that takes (selection) as a viable argument
+
+
+utils.get_registered_mappings({prompt_bufnr})*utils.get_registered_mappings()*
+    Utility to collect mappings of prompt buffer in array of `{mode, keybind,
+    name}`.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+
+================================================================================
+                                                    *telescope.actions.generate*
+
+Module for convenience to override defaults of corresponding
+|telescope.actions| at |telescope.setup()|.
+
+General usage:
+  require("telescope").setup {
+    defaults = {
+      mappings = {
+        n = {
+          ["?"] = action_generate.toggle_registered_actions {
+            name_width = 20, -- typically leads to smaller floats
+            max_height = 0.5, -- increase potential maximum height
+            seperator = " > ", -- change sep between mode, keybind, and name
+            close_with_action = false, -- do not close float on action
+          },
+        },
+      },
+    },
+  }
+
+action_generate.which_key({opts})                *action_generate.which_key()*
+    Display the keymaps of registered actions similar to which-key.nvim.
+
+    - Floating window:
+      - Appears on the opposite side of the prompt.
+      - Resolves to minimum required number of lines to show hints with `opts`
+        or truncates entries at `max_height`.
+      - Closes automatically on action call and can be disabled with by setting
+        `close_with_action` to false.
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to toggling registered actions
+
+    Fields: ~
+        {max_height}             (number)   % of max. height or no. of rows
+                                            for hints (default: 0.4), see
+                                            |resolver.resolve_height()|
+        {only_show_current_mode} (boolean)  only show keymaps for the current
+                                            mode (default: true)
+        {mode_width}             (number)   fixed width of mode to be shown
+                                            (default: 1)
+        {keybind_width}          (number)   fixed width of keybind to be shown
+                                            (default: 7)
+        {name_width}             (number)   fixed width of action name to be
+                                            shown (default: 30)
+        {column_padding}         (string)   string to split; can be used for
+                                            vertical seperator (default: " ")
+        {mode_hl}                (string)   hl group of mode (default:
+                                            TelescopeResultsConstant)
+        {keybind_hl}             (string)   hl group of keybind (default:
+                                            TelescopeResultsVariable)
+        {name_hl}                (string)   hl group of action name (default:
+                                            TelescopeResultsFunction)
+        {column_indent}          (number)   number of left-most spaces before
+                                            keybinds are shown (default: 4)
+        {line_padding}           (number)   row padding in top and bottom of
+                                            float (default: 1)
+        {separator}              (string)   seperator string between mode, key
+                                            bindings, and action (default: "
+                                            -> ")
+        {close_with_action}      (boolean)  registered action will close
+                                            keymap float (default: true)
+        {normal_hl}              (string)   winhl of "Normal" for keymap hints
+                                            floating window (default:
+                                            "TelescopePrompt")
+        {border_hl}              (string)   winhl of "Normal" for keymap
+                                            borders (default:
+                                            "TelescopePromptBorder")
+        {winblend}               (number)   pseudo-transparency of keymap
+                                            hints floating window
 
 
 
