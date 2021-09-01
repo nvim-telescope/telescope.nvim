@@ -682,7 +682,7 @@ function make_entry.gen_from_picker(opts)
     return {
       value = entry,
       text = entry.prompt_title,
-      ordinal = string.format("%s %s", entry.prompt_title, entry.default_text),
+      ordinal = string.format("%s %s", entry.prompt_title, utils.get_default(entry.default_text, "")),
       display = make_display,
     }
   end
