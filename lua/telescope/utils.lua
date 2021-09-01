@@ -21,6 +21,10 @@ utils.get_default = function(x, default)
   return utils.if_nil(x, default, x)
 end
 
+utils.cycle = function(i, n)
+  return i % n == 0 and n or i % n
+end
+
 utils.get_lazy_default = function(x, defaulter, ...)
   if x == nil then
     return defaulter(...)
