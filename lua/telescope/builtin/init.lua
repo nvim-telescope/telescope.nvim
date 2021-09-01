@@ -71,10 +71,10 @@ local function require_on_exported_call(builtin_module)
   })
 end
 
-local files = require_on_exported_call("telescope.builtin.files")
-local git = require_on_exported_call("telescope.builtin.git")
-local internal = require_on_exported_call("telescope.builtin.internal")
-local lsp = require_on_exported_call("telescope.builtin.lsp")
+local files = require_on_exported_call "telescope.builtin.files"
+local git = require_on_exported_call "telescope.builtin.git"
+local internal = require_on_exported_call "telescope.builtin.internal"
+local lsp = require_on_exported_call "telescope.builtin.lsp"
 
 --
 --
