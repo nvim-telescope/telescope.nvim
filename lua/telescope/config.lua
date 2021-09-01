@@ -318,7 +318,7 @@ local telescope_defaults = {
                           If passed to a picker, the cached pickers with
                           indices larger than `cache_picker.num_pickers` will
                           be cleared.
-                          Default: 20
+                          Default: 1
       - limit_entries:    The amount of entries that will be written in the
                           Default: 1000
     ]],
