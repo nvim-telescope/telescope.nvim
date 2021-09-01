@@ -359,14 +359,17 @@ This will use the default configuration options. Other configuration options
 are still in flux at the moment
 
 builtin.live_grep({opts})                                *builtin.live_grep()*
-    Search for a string in your current working directory and get results live
-    as you type (respecting .gitignore)
+    Search for a string and get results live as you type (respecting
+    .gitignore)
 
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
     Fields: ~
+        {cwd}             (string)    directory path to search from (default
+                                      is cwd, use utils.buffer_dir() to search
+                                      relative to open buffer)
         {grep_open_files} (boolean)   if true, restrict search to open files
                                       only, mutually exclusive with
                                       `search_dirs`
@@ -385,6 +388,9 @@ builtin.grep_string({opts})                            *builtin.grep_string()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
+        {cwd}             (string)    directory path to search from (default
+                                      is cwd, use utils.buffer_dir() to search
+                                      relative to open buffer)
         {search}          (string)    the query to search
         {search_dirs}     (table)     directory/directories to search in
         {use_regex}       (boolean)   if true, special characters won't be
@@ -395,13 +401,16 @@ builtin.grep_string({opts})                            *builtin.grep_string()*
 
 
 builtin.find_files({opts})                              *builtin.find_files()*
-    Lists files in your current working directory, respects .gitignore
+    Search for files (respecting .gitignore)
 
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
     Fields: ~
+        {cwd}          (string)   directory path to search from (default is
+                                  cwd, use utils.buffer_dir() to search
+                                  relative to open buffer)
         {find_command} (table)    command line arguments for `find_files` to
                                   use for the search, overrides default config
         {follow}       (boolean)  if true, follows symlinks (i.e. uses `-L`
@@ -437,7 +446,9 @@ builtin.file_browser({opts})                          *builtin.file_browser()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {cwd}      (string)   directory path to browse (default is cwd)
+        {cwd}      (string)   directory path to browse (default is cwd, use
+                              utils.buffer_dir() to browse relative to open
+                              buffer)
         {depth}    (number)   file tree depth to display (default is 1)
         {dir_icon} (string)   change the icon for a directory. default: 
         {hidden}   (boolean)  determines whether to show hidden files or not
