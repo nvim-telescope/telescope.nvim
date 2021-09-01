@@ -12,11 +12,14 @@ body:
       description: "A short description of the problem you are reporting."
     validations:
       required: true
-  - type: input
+  - type: textarea
     attributes:
       label: "Neovim version"
       description: "Output of `nvim --version`"
-      placeholder: "0.6.0 commit db1b0ee3b30f"
+      placeholder: |
+        NVIM v0.6.0-dev+209-g0603eba6e
+        Build type: Release
+        LuaJIT 2.1.0-beta3
     validations:
       required: true
   - type: input
@@ -49,7 +52,7 @@ body:
        label: "Minimal config"
        description: "Minimal(!) configuration necessary to reproduce the issue. Save this as `minimal.lua`. If _absolutely_ necessary, add plugins and config options from your `init.lua` at the indicated lines."
        render: Lua
-       placeholder: |
+       value: |
          vim.cmd [[set runtimepath=$VIMRUNTIME]]
          vim.cmd [[set packpath=/tmp/nvim/site]]
          local package_root = '/tmp/nvim/site/pack'
