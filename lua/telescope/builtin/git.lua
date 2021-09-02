@@ -87,11 +87,9 @@ git.stash = function(opts)
     finder = finders.new_oneshot_job(
       vim.tbl_flatten {
         "git",
-        "log",
-        "--pretty=oneline",
-        "--abbrev-commit",
-        "--",
-        ".",
+        "--no-pager",
+        "stash",
+        "list",
       },
       opts
     ),
