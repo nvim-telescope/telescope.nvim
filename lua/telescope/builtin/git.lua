@@ -89,7 +89,7 @@ git.stash = function(opts)
         "git",
         "--no-pager",
         "stash",
-        "list"
+        "list",
       },
       opts
     ),
