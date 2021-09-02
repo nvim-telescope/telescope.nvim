@@ -96,16 +96,23 @@ function Picker:new(opts)
     attach_mappings = opts.attach_mappings,
     file_ignore_patterns = get_default(opts.file_ignore_patterns, config.values.file_ignore_patterns),
 
+    scroll_strategy = get_default(opts.scroll_strategy, config.values.scroll_strategy),
     sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
     layout_strategy = layout_strategy,
     layout_config = config.smarter_depth_2_extend(opts.layout_config or {}, config.values.layout_config or {}),
 
-    window = type(opts.window) == "table" and opts.window or {
-      winblend = get_default(opts.winblend, config.values.winblend),
-      border = get_default(opts.border, config.values.border),
-      borderchars = get_default(opts.borderchars, config.values.borderchars),
+    window = {
+      winblend = get_default(
+        opts.winblend,
+        type(opts.window) == "table" and opts.window.winblend or config.values.winblend
+      ),
+      border = get_default(opts.border, type(opts.window) == "table" and opts.window.border or config.values.border),
+      borderchars = get_default(
+        opts.borderchars,
+        type(opts.window) == "table" and opts.window.borderchars or config.values.borderchars
+      ),
     },
 
     cache_picker = config.resolve_table_opts(opts.cache_picker, vim.deepcopy(config.values.cache_picker)),
@@ -123,8 +130,7 @@ function Picker:new(opts)
   end
 
   -- TODO: It's annoying that this is create and everything else is "new"
-  obj.scroller = type(opts.scroller) == "function" and opts.scroller
-    or p_scroller.create(get_default(opts.scroll_strategy, config.values.scroll_strategy), obj.sorting_strategy)
+  obj.scroller = p_scroller.create(obj.scroll_strategy, obj.sorting_strategy)
 
   obj.highlighter = p_highlighter.new(obj)
 
