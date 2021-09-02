@@ -1021,6 +1021,8 @@ previewers.buffers = defaulter(function(opts)
         end
       end
       previewer_active = false
+      -- setup previewer fully anew for `builtin.{resume, pickers}`
+      self.state = nil
     end,
     dyn_title = function(_, entry)
       return Path:new(from_entry.path(entry, true)):normalize(cwd)
