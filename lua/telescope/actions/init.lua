@@ -272,17 +272,15 @@ function actions.close_pum(_)
   end
 end
 
---- Copy current entry command to unnamed register
+--- Copy current entry command to unnamed plus register
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.copy_command_to_reg(prompt_bufnr)
     -- concat ':' with command name entry
     local function set_reg(entry) a.fn.setreg('+', ":" .. entry.name, "c") end
-
     local selected = action_state.get_selected_entry(prompt_bufnr)
     set_reg(selected['value'])
     actions.close(prompt_bufnr)
 end
-
 
 actions._close = function(prompt_bufnr, keepinsert)
   action_state.get_current_history():reset()
