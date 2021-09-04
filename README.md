@@ -431,6 +431,7 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 | `builtin.colorscheme`               | Lists available colorschemes and applies them on `<cr>`                                                                                                     |
 | `builtin.quickfix`                  | Lists items in the quickfix list                                                                                                                            |
 | `builtin.loclist`                   | Lists items from the current window's location list                                                                                                         |
+| `builtin.jumplist`                  | Lists Jump List entries                                                                                                                                     |
 | `builtin.vim_options`               | Lists vim options, allows you to edit the current value on `<cr>`                                                                                           |
 | `builtin.registers`                 | Lists vim registers, pastes the contents of the register on `<cr>`                                                                                          |
 | `builtin.autocommands`              | Lists vim autocommands and goes to their declaration on `<cr>`                                                                                              |
