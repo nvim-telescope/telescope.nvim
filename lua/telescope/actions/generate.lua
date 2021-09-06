@@ -54,7 +54,6 @@ action_generate.which_key = function(opts)
 end
 
 action_generate.copy_command_to_reg = function(opts)
-  dump(opts)
   return function(prompt_bufnr)
     actions.copy_command_to_reg(prompt_bufnr, opts)
   end
