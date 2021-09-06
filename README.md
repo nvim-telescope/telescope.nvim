@@ -732,11 +732,11 @@ tab completions and setting options.
 :Telescope find_files
 
 " Setting options
-:Telescope find_files prompt_prefix=🔍
+:Telescope find_files prompt_prefix="🔍"
 
 " If option is table type in Lua code, you can use `,` to connect each command string, e.g.:
 " find_command,vimgrep_arguments are both table type. So configure it on command-line like so:
-:Telescope find_files find_command=rg,--ignore,--hidden,--files prompt_prefix=🔍
+:Telescope find_files find_command=rg,--ignore,--hidden,--files prompt_prefix="🔍"
 ```
 
 ## Media
@@ -759,8 +759,8 @@ and some other functions can be easily changed in custom pickers or built-in fun
 nnoremap <leader>ff :lua require('telescope.builtin').find_files({previewer = false})<cr>
 
 -- Change prompt prefix for find_files builtin function:
-nnoremap <leader>fg :lua require('telescope.builtin').live_grep({ prompt_prefix=🔍 })<cr>
-nnoremap <leader>fg :Telescope live_grep prompt_prefix=🔍<cr>
+nnoremap <leader>fg :lua require('telescope.builtin').live_grep({ prompt_prefix="🔍" })<cr>
+nnoremap <leader>fg :Telescope live_grep prompt_prefix="🔍"<cr>
 ```
 
 ### How to change Telescope Highlights group?
