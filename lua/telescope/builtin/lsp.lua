@@ -307,7 +307,6 @@ lsp.workspace_symbols = function(opts)
   }):find()
 end
 
--- TODO(MERGE)
 local function get_workspace_symbols_requester(bufnr)
   local cancel = function() end
 
@@ -316,7 +315,14 @@ local function get_workspace_symbols_requester(bufnr)
     cancel()
     _, cancel = vim.lsp.buf_request(bufnr, "workspace/symbol", { query = prompt }, tx)
 
-    local err, _, results_lsp = rx()
+    -- Handle 0.5 / 0.5.1 handler situation
+    local err, res_1, res_2 = rx()
+    local results_lsp
+    if type(res_1) == "table" then
+      results_lsp = res_1
+    else
+      results_lsp = res_2
+    end
     assert(not err, err)
 
     local locations = vim.lsp.util.symbols_to_items(results_lsp or {}, bufnr) or {}
