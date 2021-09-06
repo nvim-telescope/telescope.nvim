@@ -344,7 +344,7 @@ internal.oldfiles = function(opts)
   local results = {}
 
   if opts.include_current_session then
-    for _, buffer in ipairs(vim.split(vim.fn.execute ":buffers! t", "\n")) do
+    for _, buffer in ipairs(vim.split(vim.fn.execute ":buffers t", "\n")) do
       local match = tonumber(string.match(buffer, "%s*(%d+)"))
       if match then
         local file = vim.api.nvim_buf_get_name(match)
