@@ -517,6 +517,28 @@ actions.git_delete_branch = function(prompt_bufnr)
   end
 end
 
+--- Merge the currently selected branch
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_merge_branch = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+
+  local confirmation = vim.fn.input("Do you really wanna merge branch " .. selection.value .. "? [Y/n] ")
+  if confirmation ~= "" and string.lower(confirmation) ~= "y" then
+    return
+  end
+
+  actions.close(prompt_bufnr)
+  local _, ret, stderr = utils.get_os_command_output({ "git", "merge", selection.value }, cwd)
+  if ret == 0 then
+    print("Merged branch: " .. selection.value)
+  else
+    print(
+      string.format('Error when merging branch: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  "))
+    )
+  end
+end
+
 --- Rebase to selected git branch
 ---@param prompt_bufnr number: The prompt bufnr
 actions.git_rebase_branch = function(prompt_bufnr)
