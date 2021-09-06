@@ -93,7 +93,7 @@ files.live_grep = function(opts)
       search_list = filelist
     end
 
-    return flatten { vimgrep_arguments, additional_args, prompt, search_list }
+    return flatten { vimgrep_arguments, additional_args, "--", prompt, search_list }
   end, opts.entry_maker or make_entry.gen_from_vimgrep(
     opts
   ), opts.max_results, opts.cwd)
@@ -131,6 +131,7 @@ files.grep_string = function(opts)
     vimgrep_arguments,
     additional_args,
     word_match,
+    "--",
     search,
   }
 
