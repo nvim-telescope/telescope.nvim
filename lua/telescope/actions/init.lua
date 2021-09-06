@@ -274,11 +274,15 @@ end
 
 --- Copy current entry command to a specific register or unnamed plus as default
 ---@param prompt_bufnr number: The prompt bufnr
-function actions.copy_command_to_reg(prompt_bufnr)
-  local selected = action_state.get_selected_entry()["value"]
-  local regtocopy = vim.fn.input "Register: "
+---@param opts table: options to pass to the action
+---@field reg: the register which the content will be sent
+function actions.copy_command_to_reg(prompt_bufnr, opts)
+  opts = opts or {} -- ensure opts is a table if nil
+  opts.reg = utils.get_default(opts.reg, "+")
+  local cmd = action_state.get_selected_entry()["name"]
   -- concat ':' with command name entry
-  a.fn.setreg(regtocopy ~= "" and regtocopy or "+", ":" .. selected.name, "c")
+  vim.fn.setreg(opts.reg, ":" .. cmd, "c")
+  print("Copied to reg: " .. opts.reg)
 end
 
 actions._close = function(prompt_bufnr, keepinsert)

@@ -275,7 +275,9 @@ internal.commands = function(opts)
       entry_maker = opts.entry_maker or make_entry.gen_from_commands(opts),
     },
     sorter = conf.generic_sorter(opts),
-    attach_mappings = function(prompt_bufnr)
+    attach_mappings = function(prompt_bufnr, map)
+      map("n", "Y", actions.copy_command_to_reg)
+      map("i", "<C-Y>", actions.copy_command_to_reg)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
