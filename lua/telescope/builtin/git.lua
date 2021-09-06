@@ -297,6 +297,9 @@ git.branches = function(opts)
 
       map("i", "<c-d>", actions.git_delete_branch)
       map("n", "<c-d>", actions.git_delete_branch)
+
+      map("i", "<c-m>", actions.git_merge_branch)
+      map("n", "<c-m>", actions.git_merge_branch)
       return true
     end,
   }):find()
