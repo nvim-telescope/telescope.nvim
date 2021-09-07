@@ -18,7 +18,8 @@ local function convert_reg_to_pos(reg1, reg2)
   return { pos1[2], pos1[3] + pos1[4] + 1 }, { pos2[2], pos2[3] + pos2[4] + 1 }
 end
 
-local util = require "telescope.utils"
+local utils = require "telescope.utils"
+local from_entry = require "telescope.from_entry"
 
 local get_dirs
 function get_dirs(dirs, flattened_dirs, cwd)
@@ -252,10 +253,29 @@ filters.treesitter = function(opts)
   end
 end
 
+filters.whitelist = function(opts)
+  assert(opts.whitelist, "Whitelist [array of string] is required!")
+  opts.from_entry = utils.get_defaults(opts.from_entry, from_entry.path)
+  if type(opts.from_entry) == "string" then
+    local key = opts.from_entry
+    opts.from_entry = function(tbl)
+      return tbl[key]
+    end
+  end
+  return function(_, prompt, entry)
+    for _, v in ipairs(opts.whitelist) do
+      if opts.from_entry(entry):find(v) then
+        return 0, prompt
+      end
+    end
+    return FILTERED, prompt
+  end
+end
+
 filters.tag = function(opts)
   opts = opts or {}
   local scoring_function = vim.F.if_nil(opts.filter_function, partial_or_exact_match)
-  local tags_set = util.create_set()
+  local tags_set = utils.create_set()
   local tag_cache = {}
   local delimiter = vim.F.if_nil(opts.delimiter, ":")
 
