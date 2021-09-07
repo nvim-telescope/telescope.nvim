@@ -862,14 +862,15 @@ actions.which_key = function(prompt_bufnr, opts)
   opts.mode_width = utils.get_default(opts.mode_width, 1)
   opts.keybind_width = utils.get_default(opts.keybind_width, 7)
   opts.name_width = utils.get_default(opts.name_width, 30)
-  opts.column_padding = utils.get_default(opts.column_padding, "  ")
-  opts.column_indent = table.concat(utils.repeated_table(utils.get_default(opts.column_indent, 4), " "))
   opts.line_padding = utils.get_default(opts.line_padding, 1)
   opts.separator = utils.get_default(opts.separator, " -> ")
   opts.close_with_action = utils.get_default(opts.close_with_action, true)
   opts.normal_hl = utils.get_default(opts.normal_hl, "TelescopePrompt")
   opts.border_hl = utils.get_default(opts.border_hl, "TelescopePromptBorder")
   opts.winblend = utils.get_default(opts.winblend, config.values.winblend)
+
+  local column_padding = utils.get_default(opts.column_padding, "  ")
+  local column_indent = table.concat(utils.repeated_table(utils.get_default(opts.column_indent, 4), " "))
 
   -- close on repeated keypress
   local km_bufs = (function()
@@ -946,12 +947,12 @@ actions.which_key = function(prompt_bufnr, opts)
     end
   end)
 
-  local entry_width = #opts.column_padding
+  local entry_width = #column_padding
     + opts.mode_width
     + opts.keybind_width
     + opts.name_width
     + (3 * #opts.separator)
-  local num_total_columns = math.floor((vim.o.columns - #opts.column_indent) / entry_width)
+  local num_total_columns = math.floor((vim.o.columns - #column_indent) / entry_width)
   opts.num_rows = math.min(
     math.ceil(#mappings / num_total_columns),
     resolver.resolve_height(opts.max_height)(_, _, vim.o.lines)
@@ -1004,7 +1005,7 @@ actions.which_key = function(prompt_bufnr, opts)
     0,
     -1,
     false,
-    utils.repeated_table(opts.num_rows + 2 * opts.line_padding, opts.column_indent)
+    utils.repeated_table(opts.num_rows + 2 * opts.line_padding, column_indent)
   )
 
   local keymap_highlights = a.nvim_create_namespace "telescope_whichkey"
@@ -1018,7 +1019,7 @@ actions.which_key = function(prompt_bufnr, opts)
       break
     end
     local display, display_hl = make_display(mapping)
-    local new_line = prev_line .. display .. opts.column_padding -- incl. padding
+    local new_line = prev_line .. display .. column_padding -- incl. padding
     a.nvim_buf_set_lines(km_buf, row, row + 1, false, { new_line })
     table.insert(highlights, { hl = display_hl, row = row, col = #prev_line })
   end
