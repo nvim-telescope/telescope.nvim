@@ -253,8 +253,8 @@ filters.treesitter = function(opts)
   end
 end
 
-filters.whitelist = function(opts)
-  assert(opts.whitelist, "Whitelist [array of string] is required!")
+filters.allowlist = function(opts)
+  assert(opts.allowlist, "Allowlist [array of string] is required!")
   opts.from_entry = utils.get_defaults(opts.from_entry, from_entry.path)
   if type(opts.from_entry) == "string" then
     local key = opts.from_entry
@@ -263,7 +263,7 @@ filters.whitelist = function(opts)
     end
   end
   return function(_, prompt, entry)
-    for _, v in ipairs(opts.whitelist) do
+    for _, v in ipairs(opts.allowlist) do
       if opts.from_entry(entry):find(v) then
         return 0, prompt
       end
