@@ -862,14 +862,17 @@ actions.which_key = function(prompt_bufnr, opts)
   opts.mode_width = utils.get_default(opts.mode_width, 1)
   opts.keybind_width = utils.get_default(opts.keybind_width, 7)
   opts.name_width = utils.get_default(opts.name_width, 30)
-  opts.column_padding = utils.get_default(opts.column_padding, "  ")
-  opts.column_indent = table.concat(utils.repeated_table(utils.get_default(opts.column_indent, 4), " "))
   opts.line_padding = utils.get_default(opts.line_padding, 1)
   opts.separator = utils.get_default(opts.separator, " -> ")
   opts.close_with_action = utils.get_default(opts.close_with_action, true)
   opts.normal_hl = utils.get_default(opts.normal_hl, "TelescopePrompt")
   opts.border_hl = utils.get_default(opts.border_hl, "TelescopePromptBorder")
   opts.winblend = utils.get_default(opts.winblend, config.values.winblend)
+  opts.column_padding = utils.get_default(opts.column_padding, "  ")
+
+  -- Assigning into 'opts.column_indent' would override a number with a string and
+  -- cause issues with subsequent calls, keep a local copy of the string instead
+  local column_indent = table.concat(utils.repeated_table(utils.get_default(opts.column_indent, 4), " "))
 
   -- close on repeated keypress
   local km_bufs = (function()
@@ -951,7 +954,7 @@ actions.which_key = function(prompt_bufnr, opts)
     + opts.keybind_width
     + opts.name_width
     + (3 * #opts.separator)
-  local num_total_columns = math.floor((vim.o.columns - #opts.column_indent) / entry_width)
+  local num_total_columns = math.floor((vim.o.columns - #column_indent) / entry_width)
   opts.num_rows = math.min(
     math.ceil(#mappings / num_total_columns),
     resolver.resolve_height(opts.max_height)(_, _, vim.o.lines)
@@ -999,13 +1002,7 @@ actions.which_key = function(prompt_bufnr, opts)
     }, ";")
   ))
 
-  a.nvim_buf_set_lines(
-    km_buf,
-    0,
-    -1,
-    false,
-    utils.repeated_table(opts.num_rows + 2 * opts.line_padding, opts.column_indent)
-  )
+  a.nvim_buf_set_lines(km_buf, 0, -1, false, utils.repeated_table(opts.num_rows + 2 * opts.line_padding, column_indent))
 
   local keymap_highlights = a.nvim_create_namespace "telescope_whichkey"
   local highlights = {}
