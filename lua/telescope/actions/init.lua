@@ -1002,13 +1002,7 @@ actions.which_key = function(prompt_bufnr, opts)
     }, ";")
   ))
 
-  a.nvim_buf_set_lines(
-    km_buf,
-    0,
-    -1,
-    false,
-    utils.repeated_table(opts.num_rows + 2 * opts.line_padding, column_indent)
-  )
+  a.nvim_buf_set_lines(km_buf, 0, -1, false, utils.repeated_table(opts.num_rows + 2 * opts.line_padding, column_indent))
 
   local keymap_highlights = a.nvim_create_namespace "telescope_whichkey"
   local highlights = {}
