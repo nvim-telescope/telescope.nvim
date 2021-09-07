@@ -1488,14 +1488,6 @@ actions.git_delete_branch({prompt_bufnr})        *actions.git_delete_branch()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_merge_branch({prompt_bufnr})        *actions.git_merge_branch()*
-    Merge the currently selected branch
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
 actions.git_rebase_branch({prompt_bufnr})        *actions.git_rebase_branch()*
     Rebase to selected git branch
 
