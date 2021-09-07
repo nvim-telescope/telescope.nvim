@@ -868,8 +868,10 @@ actions.which_key = function(prompt_bufnr, opts)
   opts.normal_hl = utils.get_default(opts.normal_hl, "TelescopePrompt")
   opts.border_hl = utils.get_default(opts.border_hl, "TelescopePromptBorder")
   opts.winblend = utils.get_default(opts.winblend, config.values.winblend)
+  opts.column_padding = utils.get_default(opts.column_padding, "  ")
 
-  local column_padding = utils.get_default(opts.column_padding, "  ")
+  -- Assigning into 'opts.column_indent' would override a number with a string and
+  -- cause issues with subsequent calls, keep a local copy of the string instead
   local column_indent = table.concat(utils.repeated_table(utils.get_default(opts.column_indent, 4), " "))
 
   -- close on repeated keypress
@@ -947,7 +949,7 @@ actions.which_key = function(prompt_bufnr, opts)
     end
   end)
 
-  local entry_width = #column_padding
+  local entry_width = #opts.column_padding
     + opts.mode_width
     + opts.keybind_width
     + opts.name_width
@@ -1019,7 +1021,7 @@ actions.which_key = function(prompt_bufnr, opts)
       break
     end
     local display, display_hl = make_display(mapping)
-    local new_line = prev_line .. display .. column_padding -- incl. padding
+    local new_line = prev_line .. display .. opts.column_padding -- incl. padding
     a.nvim_buf_set_lines(km_buf, row, row + 1, false, { new_line })
     table.insert(highlights, { hl = display_hl, row = row, col = #prev_line })
   end
