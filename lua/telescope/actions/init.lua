@@ -273,12 +273,17 @@ function actions.close_pum(_)
 end
 
 --- Copy current entry command to a specific register or unnamed plus as default
+--- Don't let user use  blackhole register (_), fallback to default
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param opts table: options to pass to the action
 ---@field reg: the register which the content will be sent
 function actions.copy_command_to_reg(prompt_bufnr, opts)
   opts = opts or {} -- ensure opts is a table if nil
   opts.reg = utils.get_default(opts.reg, "+")
+  if opts.reg == _ then
+    print "Please do not use register _, falling back to default"
+    opts.reg = "+"
+  end
   local cmd = action_state.get_selected_entry()["name"]
   -- concat ':' with command name entry
   vim.fn.setreg(opts.reg, ":" .. cmd, "c")
