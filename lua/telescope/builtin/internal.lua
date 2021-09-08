@@ -6,7 +6,9 @@ local make_entry = require "telescope.make_entry"
 local Path = require "plenary.path"
 local pickers = require "telescope.pickers"
 local previewers = require "telescope.previewers"
+local p_window = require "telescope.pickers.window"
 local sorters = require "telescope.sorters"
+local state = require "telescope.state"
 local utils = require "telescope.utils"
 
 local conf = require("telescope.config").values
@@ -71,6 +73,80 @@ internal.builtin = function(opts)
   }):find()
 end
 
+internal.resume = function(opts)
+  opts = opts or {}
+  opts.cache_index = vim.F.if_nil(opts.cache_index, 1)
+
+  local cached_pickers = state.get_global_key "cached_pickers"
+  if cached_pickers == nil or vim.tbl_isempty(cached_pickers) then
+    print "No picker(s) cached."
+    return
+  end
+  local picker = cached_pickers[opts.cache_index]
+  if picker == nil then
+    print("Index too large as there are only %s pickers cached", #cached_pickers)
+    return
+  end
+  -- reset layout strategy and get_window_options if default as only one is valid
+  -- and otherwise unclear which was actually set
+  if picker.layout_strategy == conf.layout_strategy then
+    picker.layout_strategy = nil
+  end
+  if picker.get_window_options == p_window.get_window_options then
+    picker.get_window_options = nil
+  end
+  picker.cache_picker.index = opts.cache_index
+
+  -- avoid partial `opts.cache_picker` at picker creation
+  if opts.cache_picker ~= false then
+    picker.cache_picker = vim.tbl_extend("keep", opts.cache_picker or {}, picker.cache_picker)
+  else
+    picker.cache_picker.disabled = true
+  end
+  opts.cache_picker = nil
+  pickers.new(opts, picker):find()
+end
+
+internal.pickers = function(opts)
+  local cached_pickers = state.get_global_key "cached_pickers"
+  if cached_pickers == nil or vim.tbl_isempty(cached_pickers) then
+    print "No picker(s) cached."
+    return
+  end
+
+  opts = opts or {}
+
+  -- clear cache picker for immediate pickers.new and pass option to resumed picker
+  if opts.cache_picker ~= nil then
+    opts._cache_picker = opts.cache_picker
+    opts.cache_picker = nil
+  end
+
+  pickers.new(opts, {
+    prompt_title = "Pickers",
+    finder = finders.new_table {
+      results = cached_pickers,
+      entry_maker = make_entry.gen_from_picker(opts),
+    },
+    previewer = previewers.pickers.new(opts),
+    sorter = conf.generic_sorter(opts),
+    cache_picker = false,
+    attach_mappings = function(_, map)
+      actions.select_default:replace(function(prompt_bufnr)
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local selection_index = current_picker:get_index(current_picker:get_selection_row())
+        actions._close(prompt_bufnr, cached_pickers[selection_index].initial_mode == "insert")
+        opts.cache_picker = opts._cache_picker
+        opts["cache_index"] = selection_index
+        internal.resume(opts)
+      end)
+      map("i", "<C-x>", actions.remove_selected_picker)
+      map("n", "<C-x>", actions.remove_selected_picker)
+      return true
+    end,
+  }):find()
+end
+
 internal.planets = function(opts)
   local show_pluto = opts.show_pluto or false
 
@@ -113,8 +189,22 @@ internal.planets = function(opts)
 end
 
 internal.symbols = function(opts)
+  local initial_mode = vim.fn.mode()
   local files = vim.api.nvim_get_runtime_file("data/telescope-sources/*.json", true)
-  if table.getn(files) == 0 then
+  local data_path = (function()
+    if not opts.symbol_path then
+      return Path:new { vim.fn.stdpath "data", "telescope", "symbols" }
+    else
+      return Path:new { opts.symbol_path }
+    end
+  end)()
+  if data_path:exists() then
+    for _, v in ipairs(require("plenary.scandir").scan_dir(data_path:absolute(), { search_pattern = "%.json$" })) do
+      table.insert(files, v)
+    end
+  end
+
+  if #files == 0 then
     print(
       "No sources found! Check out https://github.com/nvim-telescope/telescope-symbols.nvim "
         .. "for some prebuild symbols or how to create you own symbol source."
@@ -157,7 +247,11 @@ internal.symbols = function(opts)
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
-      actions.select_default:replace(actions.insert_symbol)
+      if initial_mode == "i" then
+        actions.select_default:replace(actions.insert_symbol_i)
+      else
+        actions.select_default:replace(actions.insert_symbol)
+      end
       return true
     end,
   }):find()
@@ -637,9 +731,18 @@ internal.buffers = function(opts)
       results = buffers,
       entry_maker = opts.entry_maker or make_entry.gen_from_buffer(opts),
     },
-    previewer = conf.grep_previewer(opts),
+    previewer = previewers.buffers.new(opts),
     sorter = conf.generic_sorter(opts),
     default_selection_index = default_selection_idx,
+    attach_mappings = function(_, _)
+      action_set.select:enhance {
+        post = function()
+          local entry = action_state.get_selected_entry()
+          vim.api.nvim_win_set_cursor(0, { entry.lnum, entry.col or 0 })
+        end,
+      }
+      return true
+    end,
   }):find()
 end
 

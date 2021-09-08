@@ -10,6 +10,7 @@ docs.test = function()
   -- TODO: Fix the other files so that we can add them here.
   local input_files = {
     "./lua/telescope/init.lua",
+    "./lua/telescope/command.lua",
     "./lua/telescope/builtin/init.lua",
     "./lua/telescope/themes.lua",
     "./lua/telescope/pickers/layout_strategies.lua",
@@ -18,6 +19,7 @@ docs.test = function()
     "./lua/telescope/actions/state.lua",
     "./lua/telescope/actions/set.lua",
     "./lua/telescope/actions/utils.lua",
+    "./lua/telescope/actions/generate.lua",
     "./lua/telescope/previewers/init.lua",
     "./lua/telescope/actions/history.lua",
   }

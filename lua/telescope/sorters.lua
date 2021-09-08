@@ -54,6 +54,7 @@ function Sorter:new(opts)
     start = opts.start,
     finish = opts.finish,
     destroy = opts.destroy,
+    _status = nil,
 
     filter_function = opts.filter_function,
     scoring_function = opts.scoring_function,
@@ -67,12 +68,14 @@ function Sorter:new(opts)
 end
 
 function Sorter:_init()
+  self._status = "init"
   if self.init then
     self:init()
   end
 end
 
 function Sorter:_destroy()
+  self._status = "destroy"
   if self.destroy then
     self:destroy()
   end
@@ -84,6 +87,7 @@ end
 --              as he did in his example.
 --              Example can be found in ./scratch/prime_prompt_cache.lua
 function Sorter:_start(prompt)
+  self._status = "start"
   if self.start then
     self:start(prompt)
   end
@@ -96,10 +100,10 @@ function Sorter:_start(prompt)
   local len_previous = #previous
 
   if #prompt < len_previous then
-    log.debug "Reset discard because shorter prompt"
+    log.trace "Reset discard because shorter prompt"
     self._discard_state.filtered = {}
   elseif string.sub(prompt, 1, len_previous) ~= previous then
-    log.debug "Reset discard no match"
+    log.trace "Reset discard no match"
     self._discard_state.filtered = {}
   end
 
@@ -107,6 +111,7 @@ function Sorter:_start(prompt)
 end
 
 function Sorter:_finish(prompt)
+  self._status = "finish"
   if self.finish then
     self:finish(prompt)
   end
@@ -116,6 +121,10 @@ end
 --          if we're not discarding. Also, that means we don't have to check otherwise as well :)
 function Sorter:score(prompt, entry, cb_add, cb_filter)
   if not entry or not entry.ordinal then
+    return
+  end
+
+  if self._status and self._status ~= "start" then
     return
   end
 
@@ -167,11 +176,10 @@ end
 
 sorters.Sorter = Sorter
 
-TelescopeCachedTails = TelescopeCachedTails or nil
-if not TelescopeCachedTails then
+local make_cached_tail = function()
   local os_sep = util.get_separator()
   local match_string = "[^" .. os_sep .. "]*$"
-  TelescopeCachedTails = setmetatable({}, {
+  return setmetatable({}, {
     __index = function(t, k)
       local tail = string.match(k, match_string)
 
@@ -181,8 +189,8 @@ if not TelescopeCachedTails then
   })
 end
 
-TelescopeCachedUppers = TelescopeCachedUppers
-  or setmetatable({}, {
+local make_cached_uppers = function()
+  return setmetatable({}, {
     __index = function(t, k)
       local obj = {}
       for i = 1, #k do
@@ -196,8 +204,7 @@ TelescopeCachedUppers = TelescopeCachedUppers
       return obj
     end,
   })
-
-TelescopeCachedNgrams = TelescopeCachedNgrams or {}
+end
 
 -- TODO: Match on upper case words
 -- TODO: Match on last match
@@ -206,9 +213,11 @@ sorters.get_fuzzy_file = function(opts)
 
   local ngram_len = opts.ngram_len or 2
 
+  local cached_ngrams = {}
+
   local function overlapping_ngrams(s, n)
-    if TelescopeCachedNgrams[s] and TelescopeCachedNgrams[s][n] then
-      return TelescopeCachedNgrams[s][n]
+    if cached_ngrams[s] and cached_ngrams[s][n] then
+      return cached_ngrams[s][n]
     end
 
     local R = {}
@@ -216,14 +225,17 @@ sorters.get_fuzzy_file = function(opts)
       R[#R + 1] = s:sub(i, i + n - 1)
     end
 
-    if not TelescopeCachedNgrams[s] then
-      TelescopeCachedNgrams[s] = {}
+    if not cached_ngrams[s] then
+      cached_ngrams[s] = {}
     end
 
-    TelescopeCachedNgrams[s][n] = R
+    cached_ngrams[s][n] = R
 
     return R
   end
+
+  local cached_tails = make_cached_tail()
+  local cached_uppers = make_cached_uppers()
 
   return Sorter:new {
     scoring_function = function(_, prompt, line)
@@ -232,7 +244,7 @@ sorters.get_fuzzy_file = function(opts)
       if N == 0 or N < ngram_len then
         -- TODO: If the character is in the line,
         -- then it should get a point or somethin.
-        return 0
+        return 1
       end
 
       local prompt_lower = prompt:lower()
@@ -243,8 +255,8 @@ sorters.get_fuzzy_file = function(opts)
       -- Contains the original string
       local contains_string = line_lower:find(prompt_lower, 1, true)
 
-      local prompt_uppers = TelescopeCachedUppers[prompt]
-      local line_uppers = TelescopeCachedUppers[line]
+      local prompt_uppers = cached_uppers[prompt]
+      local line_uppers = cached_uppers[line]
 
       local uppers_matching = 0
       for k, _ in pairs(prompt_uppers) do
@@ -254,7 +266,7 @@ sorters.get_fuzzy_file = function(opts)
       end
 
       -- TODO: Consider case senstivity
-      local tail = TelescopeCachedTails[line_lower]
+      local tail = cached_tails[line_lower]
       local contains_tail = tail:find(prompt, 1, true)
 
       local consecutive_matches = 0
@@ -313,9 +325,10 @@ sorters.get_generic_fuzzy_sorter = function(opts)
 
   local ngram_len = opts.ngram_len or 2
 
+  local cached_ngrams = {}
   local function overlapping_ngrams(s, n)
-    if TelescopeCachedNgrams[s] and TelescopeCachedNgrams[s][n] then
-      return TelescopeCachedNgrams[s][n]
+    if cached_ngrams[s] and cached_ngrams[s][n] then
+      return cached_ngrams[s][n]
     end
 
     local R = {}
@@ -323,11 +336,11 @@ sorters.get_generic_fuzzy_sorter = function(opts)
       R[#R + 1] = s:sub(i, i + n - 1)
     end
 
-    if not TelescopeCachedNgrams[s] then
-      TelescopeCachedNgrams[s] = {}
+    if not cached_ngrams[s] then
+      cached_ngrams[s] = {}
     end
 
-    TelescopeCachedNgrams[s][n] = R
+    cached_ngrams[s][n] = R
 
     return R
   end
@@ -339,7 +352,7 @@ sorters.get_generic_fuzzy_sorter = function(opts)
     -- entry (the whole entry)
     scoring_function = function(_, prompt, line, _)
       if prompt == 0 or #prompt < ngram_len then
-        return 0
+        return 1
       end
 
       local prompt_lower = prompt:lower()
@@ -462,13 +475,16 @@ sorters.get_fzy_sorter = function(opts)
   }
 end
 
+-- TODO: Could probably do something nice where we check their conf
+--          and choose their default for this.
+--          But I think `fzy` is good default for now.
 sorters.highlighter_only = function(opts)
   opts = opts or {}
   local fzy = opts.fzy_mod or require "telescope.algos.fzy"
 
   return Sorter:new {
     scoring_function = function()
-      return 0
+      return 1
     end,
 
     highlighter = function(_, prompt, display)
@@ -480,7 +496,7 @@ end
 sorters.empty = function()
   return Sorter:new {
     scoring_function = function()
-      return 0
+      return 1
     end,
   }
 end
@@ -515,6 +531,10 @@ sorters.get_substr_matcher = function()
   return Sorter:new {
     highlighter = substr_highlighter,
     scoring_function = function(_, prompt, _, entry)
+      if #prompt == 0 then
+        return 1
+      end
+
       local display = entry.ordinal:lower()
 
       local search_terms = util.max_split(prompt, "%s")

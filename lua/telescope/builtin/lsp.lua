@@ -1,16 +1,14 @@
-local actions = require "telescope.actions"
+local channel = require("plenary.async.control").channel
+
 local action_state = require "telescope.actions.state"
+local actions = require "telescope.actions"
+local conf = require("telescope.config").values
+local entry_display = require "telescope.pickers.entry_display"
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
 local pickers = require "telescope.pickers"
-local entry_display = require "telescope.pickers.entry_display"
-local utils = require "telescope.utils"
 local strings = require "plenary.strings"
-local a = require "plenary.async_lib"
-local async, await = a.async, a.await
-local channel = a.util.channel
-
-local conf = require("telescope.config").values
+local utils = require "telescope.utils"
 
 local lsp = {}
 
@@ -58,13 +56,26 @@ local function list_or_jump(action, title, opts)
   local flattened_results = {}
   for _, server_results in pairs(result) do
     if server_results.result then
+      -- textDocument/definition can return Location or Location[]
+      if not vim.tbl_islist(server_results.result) then
+        flattened_results = { server_results.result }
+        break
+      end
+
       vim.list_extend(flattened_results, server_results.result)
     end
   end
 
   if #flattened_results == 0 then
     return
-  elseif #flattened_results == 1 then
+  elseif #flattened_results == 1 and opts.jump_type ~= "never" then
+    if opts.jump_type == "tab" then
+      vim.cmd "tabedit"
+    elseif opts.jump_type == "split" then
+      vim.cmd "new"
+    elseif opts.jump_type == "vsplit" then
+      vim.cmd "vnew"
+    end
     vim.lsp.util.jump_to_location(flattened_results[1])
   else
     local locations = vim.lsp.util.locations_to_items(flattened_results)
@@ -165,7 +176,7 @@ lsp.code_actions = function(opts)
       for _, result in pairs(response.result) do
         local entry = {
           idx = idx,
-          command_title = result.title,
+          command_title = result.title:gsub("\r\n", "\\r\\n"):gsub("\n", "\\n"),
           client_name = client and client.name or "",
           command = result,
         }
@@ -243,7 +254,7 @@ lsp.code_actions = function(opts)
 end
 
 lsp.range_code_actions = function(opts)
-  opts.params = vim.lsp.util.make_given_range_params()
+  opts.params = vim.lsp.util.make_given_range_params({ opts.start_line, 1 }, { opts.end_line, 1 })
   lsp.code_actions(opts)
 end
 
@@ -299,17 +310,24 @@ end
 local function get_workspace_symbols_requester(bufnr)
   local cancel = function() end
 
-  return async(function(prompt)
+  return function(prompt)
     local tx, rx = channel.oneshot()
     cancel()
     _, cancel = vim.lsp.buf_request(bufnr, "workspace/symbol", { query = prompt }, tx)
 
-    local err, _, results_lsp = await(rx())
+    -- Handle 0.5 / 0.5.1 handler situation
+    local err, res_1, res_2 = rx()
+    local results_lsp
+    if type(res_1) == "table" then
+      results_lsp = res_1
+    else
+      results_lsp = res_2
+    end
     assert(not err, err)
 
     local locations = vim.lsp.util.symbols_to_items(results_lsp or {}, bufnr) or {}
     return locations
-  end)
+  end
 end
 
 lsp.dynamic_workspace_symbols = function(opts)
@@ -322,7 +340,7 @@ lsp.dynamic_workspace_symbols = function(opts)
       fn = get_workspace_symbols_requester(curr_bufnr),
     },
     previewer = conf.qflist_previewer(opts),
-    sorter = conf.generic_sorter(),
+    sorter = conf.generic_sorter(opts),
   }):find()
 end
 

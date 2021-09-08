@@ -1,5 +1,3 @@
-local has_devicons, devicons = pcall(require, "nvim-web-devicons")
-
 local Path = require "plenary.path"
 local Job = require "plenary.job"
 
@@ -21,6 +19,10 @@ end
 
 utils.get_default = function(x, default)
   return utils.if_nil(x, default, x)
+end
+
+utils.cycle = function(i, n)
+  return i % n == 0 and n or i % n
 end
 
 utils.get_lazy_default = function(x, defaulter, ...)
@@ -278,7 +280,15 @@ utils.is_path_hidden = function(opts, path_display)
     or path_display.hidden
 end
 
+local is_uri = function(filename)
+  return string.match(filename, "^%w+://") ~= nil
+end
+
 utils.transform_path = function(opts, path)
+  if is_uri(path) then
+    return path
+  end
+
   local path_display = utils.get_default(opts.path_display, require("telescope.config").values.path_display)
 
   local transformed_path = path
@@ -408,6 +418,10 @@ function utils.data_directory()
   return Path:new({ base_directory, "data" }):absolute() .. Path.path.sep
 end
 
+function utils.buffer_dir()
+  return vim.fn.expand "%:p:h"
+end
+
 function utils.display_termcodes(str)
   return str:gsub(string.char(9), "<TAB>"):gsub("", "<C-F>"):gsub(" ", "<Space>")
 end
@@ -448,7 +462,20 @@ utils.align_str = function()
   error "align_str deprecated. please use plenary.strings.align_str"
 end
 
-utils.transform_devicons = (function()
+local load_once = function(f)
+  local resolved = nil
+  return function(...)
+    if resolved == nil then
+      resolved = f()
+    end
+
+    return resolved(...)
+  end
+end
+
+utils.transform_devicons = load_once(function()
+  local has_devicons, devicons = pcall(require, "nvim-web-devicons")
+
   if has_devicons then
     if not devicons.has_loaded() then
       devicons.setup()
@@ -474,9 +501,11 @@ utils.transform_devicons = (function()
       return display
     end
   end
-end)()
+end)
 
-utils.get_devicons = (function()
+utils.get_devicons = load_once(function()
+  local has_devicons, devicons = pcall(require, "nvim-web-devicons")
+
   if has_devicons then
     if not devicons.has_loaded() then
       devicons.setup()
@@ -500,6 +529,6 @@ utils.get_devicons = (function()
       return ""
     end
   end
-end)()
+end)
 
 return utils

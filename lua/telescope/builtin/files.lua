@@ -5,6 +5,7 @@ local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
 local pickers = require "telescope.pickers"
 local previewers = require "telescope.previewers"
+local sorters = require "telescope.sorters"
 local utils = require "telescope.utils"
 local conf = require("telescope.config").values
 local log = require "telescope.log"
@@ -68,14 +69,17 @@ files.live_grep = function(opts)
     end
   end
 
+  local additional_args = {}
+  if opts.additional_args ~= nil and type(opts.additional_args) == "function" then
+    additional_args = opts.additional_args(opts)
+  end
+
   local live_grepper = finders.new_job(function(prompt)
     -- TODO: Probably could add some options for smart case and whatever else rg offers.
 
     if not prompt or prompt == "" then
       return nil
     end
-
-    prompt = escape_chars(prompt)
 
     local search_list = {}
 
@@ -89,7 +93,7 @@ files.live_grep = function(opts)
       search_list = filelist
     end
 
-    return flatten { vimgrep_arguments, prompt, search_list }
+    return flatten { vimgrep_arguments, additional_args, prompt, search_list }
   end, opts.entry_maker or make_entry.gen_from_vimgrep(
     opts
   ), opts.max_results, opts.cwd)
@@ -98,7 +102,9 @@ files.live_grep = function(opts)
     prompt_title = "Live Grep",
     finder = live_grepper,
     previewer = conf.grep_previewer(opts),
-    sorter = conf.generic_sorter(opts),
+    -- TODO: It would be cool to use `--json` output for this
+    -- and then we could get the highlight positions directly.
+    sorter = sorters.highlighter_only(opts),
   }):find()
 end
 
@@ -116,8 +122,14 @@ files.grep_string = function(opts)
   local word_match = opts.word_match
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
 
+  local additional_args = {}
+  if opts.additional_args ~= nil and type(opts.additional_args) == "function" then
+    additional_args = opts.additional_args(opts)
+  end
+
   local args = flatten {
     vimgrep_arguments,
+    additional_args,
     word_match,
     search,
   }
@@ -143,6 +155,7 @@ end
 files.find_files = function(opts)
   local find_command = opts.find_command
   local hidden = opts.hidden
+  local no_ignore = opts.no_ignore
   local follow = opts.follow
   local search_dirs = opts.search_dirs
 
@@ -158,6 +171,9 @@ files.find_files = function(opts)
       if hidden then
         table.insert(find_command, "--hidden")
       end
+      if no_ignore then
+        table.insert(find_command, "--no-ignore")
+      end
       if follow then
         table.insert(find_command, "-L")
       end
@@ -171,6 +187,9 @@ files.find_files = function(opts)
       find_command = { "fdfind", "--type", "f" }
       if hidden then
         table.insert(find_command, "--hidden")
+      end
+      if no_ignore then
+        table.insert(find_command, "--no-ignore")
       end
       if follow then
         table.insert(find_command, "-L")
@@ -186,6 +205,9 @@ files.find_files = function(opts)
       if hidden then
         table.insert(find_command, "--hidden")
       end
+      if no_ignore then
+        table.insert(find_command, "--no-ignore")
+      end
       if follow then
         table.insert(find_command, "-L")
       end
@@ -200,6 +222,9 @@ files.find_files = function(opts)
         table.insert(find_command, { "-not", "-path", "*/.*" })
         find_command = flatten(find_command)
       end
+      if no_ignore ~= nil then
+        log.warn "The `no_ignore` key is not available for the `find` command in `find_files`."
+      end
       if follow then
         table.insert(find_command, "-L")
       end
@@ -213,6 +238,9 @@ files.find_files = function(opts)
       find_command = { "where", "/r", ".", "*" }
       if hidden ~= nil then
         log.warn "The `hidden` key is not available for the Windows `where` command in `find_files`."
+      end
+      if no_ignore ~= nil then
+        log.warn "The `no_ignore` key is not available for the Windows `where` command in `find_files`."
       end
       if follow ~= nil then
         log.warn "The `follow` key is not available for the Windows `where` command in `find_files`."
@@ -477,8 +505,8 @@ files.current_buffer_fuzzy_find = function(opts)
       end,
     })
     for id, node in query:iter_captures(root, bufnr, 0, -1) do
-      local hl = highlighter_query.hl_cache[id]
-      if hl then
+      local hl = highlighter_query:_get_hl_from_capture(id)
+      if hl and type(hl) ~= "number" then
         local row1, col1, row2, col2 = node:range()
 
         if row1 == row2 then
@@ -529,19 +557,18 @@ files.current_buffer_fuzzy_find = function(opts)
 end
 
 files.tags = function(opts)
-  local ctags_file = opts.ctags_file or "tags"
-
-  if not vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438) then
-    print "Tags file does not exists. Create one with ctags -R"
+  local tagfiles = opts.ctags_file and { opts.ctags_file } or vim.fn.tagfiles()
+  if vim.tbl_isempty(tagfiles) then
+    print "No tags file found. Create one with ctags -R"
     return
   end
 
-  local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438))
-  local stat = assert(vim.loop.fs_fstat(fd))
-  local data = assert(vim.loop.fs_read(fd, stat.size, 0))
-  assert(vim.loop.fs_close(fd))
-
-  local results = vim.split(data, "\n")
+  local results = {}
+  for _, ctags_file in ipairs(tagfiles) do
+    for line in Path:new(vim.fn.expand(ctags_file)):iter() do
+      results[#results + 1] = line
+    end
+  end
 
   pickers.new(opts, {
     prompt_title = "Tags",

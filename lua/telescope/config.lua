@@ -46,11 +46,22 @@ local smarter_depth_2_extend = function(priority, base)
   return result
 end
 
+local resolve_table_opts = function(priority, base)
+  if priority == false or (priority == nil and base == false) then
+    return false
+  end
+  if priority == nil and type(base) == "table" then
+    return base
+  end
+  return smarter_depth_2_extend(priority, base)
+end
+
 -- TODO: Add other major configuration points here.
 -- selection_strategy
 
 local config = {}
 config.smarter_depth_2_extend = smarter_depth_2_extend
+config.resolve_table_opts = resolve_table_opts
 
 config.values = _TelescopeConfigurationValues
 config.descriptions = {}
@@ -229,14 +240,21 @@ local telescope_defaults = {
   borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" } },
 
   get_status_text = {
-    function(self)
+    function(self, opts)
       local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
       local yy = self.stats.processed or 0
       if xx == 0 and yy == 0 then
         return ""
       end
 
-      return string.format("%s / %s", xx, yy)
+      -- local status_icon
+      -- if opts.completed then
+      --   status_icon = "✔️"
+      -- else
+      --   status_icon = "*"
+      -- end
+
+      return string.format("%s / %s ", xx, yy)
     end,
   },
 
@@ -287,6 +305,33 @@ local telescope_defaults = {
                  Default:
                  require('telescope.actions.history').get_simple_history
   ]],
+  },
+
+  cache_picker = {
+    {
+      num_pickers = 1,
+      limit_entries = 1000,
+    },
+    [[
+    This field handles the configuration for picker caching.
+    By default it is a table, with default values (more below).
+    To disable caching, set it to false.
+
+    Caching preserves all previous multi selections and results and
+    therefore may result in slowdown or increased RAM occupation
+    if too many pickers (`cache_picker.num_pickers`) or entries
+    ('cache_picker.limit_entries`) are cached.
+
+    Fields:
+      - num_pickers:      The number of pickers to be cached.
+                          Set to -1 to preserve all pickers of your session.
+                          If passed to a picker, the cached pickers with
+                          indices larger than `cache_picker.num_pickers` will
+                          be cleared.
+                          Default: 1
+      - limit_entries:    The amount of entries that will be written in the
+                          Default: 1000
+    ]],
   },
 
   -- Builtin configuration
@@ -419,7 +464,7 @@ function config.set_defaults(user_defaults, tele_defaults)
         vim.tbl_deep_extend("keep", if_nil(config.values[name], {}), if_nil(default_val, {}))
       )
     end
-    if name == "history" then
+    if name == "history" or name == "cache_picker" then
       if user_defaults[name] == false or config.values[name] == false then
         return false
       end

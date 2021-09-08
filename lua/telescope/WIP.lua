@@ -53,7 +53,7 @@ WIP.completion = function(opts)
     previewer = previewers.help,
   })
 
-  reference_picker:find {}
+  reference_picker:find()
 end
 
 WIP.reloader = function(opts)
@@ -63,13 +63,13 @@ WIP.reloader = function(opts)
     prompt = "Packages",
     finder = finders.new_table {
       results = vim.tbl_keys(package.loaded),
-      entry_maker = make_entry.gen_from_string(opts),
+      entry_maker = make_entry.gen_from_string(),
     },
     sorter = sorters.get_generic_fuzzy_sorter(),
 
     attach_mappings = function(prompt_bufnr, map)
       local reload_package = function()
-        local selection = action_state.get_selected_entry(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
 
         actions.close(prompt_bufnr)
 

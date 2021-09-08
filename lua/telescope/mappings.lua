@@ -17,7 +17,7 @@ mappings.default_mappings = config.values.default_mappings
       ["<Down>"] = actions.move_selection_next,
       ["<Up>"] = actions.move_selection_previous,
 
-      ["<CR>"] = actions.select_default + actions.center,
+      ["<CR>"] = actions.select_default,
       ["<C-x>"] = actions.select_horizontal,
       ["<C-v>"] = actions.select_vertical,
       ["<C-t>"] = actions.select_tab,
@@ -30,11 +30,12 @@ mappings.default_mappings = config.values.default_mappings
       ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
       ["<M-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
       ["<C-l>"] = actions.complete_tag,
+      ["<C-_>"] = actions.which_key, -- keys from pressing <C-/>
     },
 
     n = {
       ["<esc>"] = actions.close,
-      ["<CR>"] = actions.select_default + actions.center,
+      ["<CR>"] = actions.select_default,
       ["<C-x>"] = actions.select_horizontal,
       ["<C-v>"] = actions.select_vertical,
       ["<C-t>"] = actions.select_tab,
@@ -56,6 +57,7 @@ mappings.default_mappings = config.values.default_mappings
 
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
+      ["?"] = actions.which_key,
     },
   }
 
@@ -198,7 +200,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     end
   end
 
-  -- TODO: Probalby should not overwrite any keymaps
+  -- TODO: Probably should not overwrite any keymaps
   for mode, mode_map in pairs(mappings.default_mappings) do
     mode = string.lower(mode)
 
@@ -222,6 +224,7 @@ mappings.execute_keymap = function(prompt_bufnr, keymap_identifier)
   assert(key_func, string.format("Unsure of how we got this failure: %s %s", prompt_bufnr, keymap_identifier))
 
   key_func(prompt_bufnr)
+  vim.cmd [[ doautocmd User TelescopeKeymap ]]
 end
 
 mappings.clear = function(prompt_bufnr)

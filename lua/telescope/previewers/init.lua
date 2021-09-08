@@ -305,6 +305,8 @@ previewers.help = buffer_previewer.help
 previewers.man = buffer_previewer.man
 previewers.autocommands = buffer_previewer.autocommands
 previewers.highlights = buffer_previewer.highlights
+previewers.buffers = buffer_previewer.buffers
+previewers.pickers = buffer_previewer.pickers
 
 --- A deprecated way of displaying content more easily. Was written at a time,
 --- where the buffer_previewer interface wasn't present. Nowadays it's easier

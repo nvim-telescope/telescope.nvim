@@ -66,24 +66,30 @@ local builtin = {}
 --
 --
 
---- Search for a string in your current working directory and get results live as you type (respecting .gitignore)
+--- Search for a string and get results live as you type (respecting .gitignore)
 ---@param opts table: options to pass to the picker
+---@field cwd string: root dir to search from (default is cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
 ---@field search_dirs table: directory/directories to search in, mutually exclusive with `grep_open_files`
+---@field additional_args function: function(opts) which returns a table of additional arguments to be passed on
 builtin.live_grep = require("telescope.builtin.files").live_grep
 
 --- Searches for the string under your cursor in your current working directory
 ---@param opts table: options to pass to the picker
+---@field cwd string: root dir to search from (default is cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field search string: the query to search
 ---@field search_dirs table: directory/directories to search in
 ---@field use_regex boolean: if true, special characters won't be escaped, allows for using regex (default is false)
+---@field additional_args function: function(opts) which returns a table of additional arguments to be passed on
 builtin.grep_string = require("telescope.builtin.files").grep_string
 
---- Lists files in your current working directory, respects .gitignore
+--- Search for files (respecting .gitignore)
 ---@param opts table: options to pass to the picker
+---@field cwd string: root dir to search from (default is cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field find_command table: command line arguments for `find_files` to use for the search, overrides default config
 ---@field follow boolean: if true, follows symlinks (i.e. uses `-L` flag for the `find` command)
 ---@field hidden boolean: determines whether to show hidden files or not (default is false)
+---@field no_ignore boolean: show files ignored by .gitignore, .ignore, etc. (default is false)
 ---@field search_dirs table: directory/directories to search in
 builtin.find_files = require("telescope.builtin.files").find_files
 
@@ -99,9 +105,10 @@ builtin.fd = builtin.find_files
 ---       create the file `init.lua` inside of `lua/telescope` and will create the necessary folders (similar to how
 ---       `mkdir -p` would work) if they do not already exist
 ---@param opts table: options to pass to the picker
----@field cwd string: directory path to browse (default is cwd)
+---@field cwd string: root dir to browse from (default is cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field depth number: file tree depth to display (default is 1)
 ---@field dir_icon string: change the icon for a directory. default: 
+---@field hidden boolean: determines whether to show hidden files or not (default is false)
 builtin.file_browser = require("telescope.builtin.files").file_browser
 
 --- Lists function names, variables, and other symbols from treesitter queries
@@ -143,6 +150,9 @@ builtin.git_files = require("telescope.builtin.git").files
 --- Lists commits for current directory with diff preview
 --- - Default keymaps:
 ---   - `<cr>`: checks out the currently selected commit
+---   - `<C-r>m`: resets current branch to selected commit using mixed mode
+---   - `<C-r>s`: resets current branch to selected commit using soft mode
+---   - `<C-r>h`: resets current branch to selected commit using hard mode
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
 builtin.git_commits = require("telescope.builtin.git").commits
@@ -195,8 +205,14 @@ builtin.builtin = require("telescope.builtin.internal").builtin
 ---@param opts table: options to pass to the picker
 builtin.planets = require("telescope.builtin.internal").planets
 
---- Lists symbols inside of data/telescope-sources/*.json found in your runtime path. Check README for more info
+--- Lists symbols inside of `data/telescope-sources/*.json` found in your runtime path
+--- or found in `stdpath("data")/telescope/symbols/*.json`. The second path can be customized.
+--- We provide a couple of default symbols which can be found in
+--- https://github.com/nvim-telescope/telescope-symbols.nvim. This repos README also provides more
+--- information about the format in which the symbols have to be.
 ---@param opts table: options to pass to the picker
+---@field symbol_path string: specify the second path. Default: `stdpath("data")/telescope/symbols/*.json`
+---@field sources table: specify a table of sources you want to load this time
 builtin.symbols = require("telescope.builtin.internal").symbols
 
 --- Lists available plugin/user commands and runs them on `<cr>`
@@ -227,6 +243,21 @@ builtin.command_history = require("telescope.builtin.internal").command_history
 ---@param opts table: options to pass to the picker
 builtin.search_history = require("telescope.builtin.internal").search_history
 
+--- Opens the previous picker in the identical state (incl. multi selections)
+--- - Notes:
+---   - Requires `cache_picker` in setup or when having invoked pickers, see |telescope.defaults.cache_picker|
+---@param opts table: options to pass to the picker
+---@field cache_index number: what picker to resume, where 1 denotes most recent (default 1)
+builtin.resume = require("telescope.builtin.internal").resume
+
+--- Opens a picker over previously cached pickers in there preserved states (incl. multi selections)
+--- - Default keymaps:
+---   - `<C-x>`: delete the selected cached picker
+--- - Notes:
+---   - Requires `cache_picker` in setup or when having invoked pickers, see |telescope.defaults.cache_picker|
+---@param opts table: options to pass to the picker
+builtin.pickers = require("telescope.builtin.internal").pickers
+
 --- Lists vim options, allows you to edit the current value on `<cr>`
 ---@param opts table: options to pass to the picker
 builtin.vim_options = require("telescope.builtin.internal").vim_options
@@ -237,6 +268,7 @@ builtin.help_tags = require("telescope.builtin.internal").help_tags
 
 --- Lists manpage entries, opens them in a help window on `<cr>`
 ---@param opts table: options to pass to the picker
+---@field sections table: a list of sections to search, use `{ "ALL" }` to search in all sections
 builtin.man_pages = require("telescope.builtin.internal").man_pages
 
 --- Lists lua modules and reloads them on `<cr>`
@@ -308,10 +340,12 @@ builtin.lsp_references = require("telescope.builtin.lsp").references
 
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
+---@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
 builtin.lsp_definitions = require("telescope.builtin.lsp").definitions
 
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
+---@field jump_type string: how to goto implementation if there is only one, values: "tab", "split", "vsplit", "never"
 builtin.lsp_implementations = require("telescope.builtin.lsp").implementations
 
 --- Lists any LSP actions for the word under the cursor which can be triggered with `<cr>`
@@ -373,37 +407,36 @@ builtin.lsp_workspace_diagnostics = require("telescope.builtin.lsp").workspace_d
 local apply_config = function(mod)
   local pickers_conf = require("telescope.config").pickers
   for k, v in pairs(mod) do
-    local pconf = vim.deepcopy(pickers_conf[k] or {})
-    if pconf.theme then
-      local theme = pconf.theme
-      pconf.theme = nil
-      pconf = require("telescope.themes")["get_" .. theme](pconf)
-    end
-    if pconf.mappings then
-      local mappings = pconf.mappings
-      pconf.mappings = nil
-      pconf.attach_mappings = function(_, map)
-        for mode, tbl in pairs(mappings) do
-          for key, action in pairs(tbl) do
-            map(mode, key, action)
-          end
-        end
-        return true
-      end
-    end
     mod[k] = function(opts)
       opts = opts or {}
+      local pconf = pickers_conf[k] or {}
+      local defaults = (function()
+        if pconf.theme then
+          return require("telescope.themes")["get_" .. pconf.theme](pconf)
+        end
+        return vim.deepcopy(pconf)
+      end)()
+
+      if pconf.mappings then
+        defaults.attach_mappings = function(_, map)
+          for mode, tbl in pairs(pconf.mappings) do
+            for key, action in pairs(tbl) do
+              map(mode, key, action)
+            end
+          end
+          return true
+        end
+      end
+
       if pconf.attach_mappings and opts.attach_mappings then
-        local attach_mappings = pconf.attach_mappings
-        pconf.attach_mappings = nil
         local opts_attach = opts.attach_mappings
         opts.attach_mappings = function(prompt_bufnr, map)
-          attach_mappings(prompt_bufnr, map)
+          pconf.attach_mappings(prompt_bufnr, map)
           return opts_attach(prompt_bufnr, map)
         end
       end
 
-      v(vim.tbl_extend("force", pconf, opts))
+      v(vim.tbl_extend("force", defaults, opts))
     end
   end
 

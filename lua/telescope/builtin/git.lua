@@ -43,21 +43,22 @@ git.files = function(opts)
 end
 
 git.commits = function(opts)
-  local results = utils.get_os_command_output({
-    "git",
-    "log",
-    "--pretty=oneline",
-    "--abbrev-commit",
-    "--",
-    ".",
-  }, opts.cwd)
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_git_commits(opts)
 
   pickers.new(opts, {
     prompt_title = "Git Commits",
-    finder = finders.new_table {
-      results = results,
-      entry_maker = opts.entry_maker or make_entry.gen_from_git_commits(opts),
-    },
+
+    finder = finders.new_oneshot_job(
+      vim.tbl_flatten {
+        "git",
+        "log",
+        "--pretty=oneline",
+        "--abbrev-commit",
+        "--",
+        ".",
+      },
+      opts
+    ),
     previewer = {
       previewers.git_commit_diff_to_parent.new(opts),
       previewers.git_commit_diff_to_head.new(opts),
@@ -65,27 +66,33 @@ git.commits = function(opts)
       previewers.git_commit_message.new(opts),
     },
     sorter = conf.file_sorter(opts),
-    attach_mappings = function()
+    attach_mappings = function(_, map)
       actions.select_default:replace(actions.git_checkout)
+      map("i", "<c-r>m", actions.git_reset_mixed)
+      map("n", "<c-r>m", actions.git_reset_mixed)
+      map("i", "<c-r>s", actions.git_reset_soft)
+      map("n", "<c-r>s", actions.git_reset_soft)
+      map("i", "<c-r>h", actions.git_reset_hard)
+      map("n", "<c-r>h", actions.git_reset_hard)
       return true
     end,
   }):find()
 end
 
 git.stash = function(opts)
-  local results = utils.get_os_command_output({
-    "git",
-    "--no-pager",
-    "stash",
-    "list",
-  }, opts.cwd)
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_git_stash()
 
   pickers.new(opts, {
     prompt_title = "Git Stash",
-    finder = finders.new_table {
-      results = results,
-      entry_maker = opts.entry_maker or make_entry.gen_from_git_stash(),
-    },
+    finder = finders.new_oneshot_job(
+      vim.tbl_flatten {
+        "git",
+        "--no-pager",
+        "stash",
+        "list",
+      },
+      opts
+    ),
     previewer = previewers.git_stash_diff.new(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function()
@@ -102,21 +109,22 @@ end
 
 git.bcommits = function(opts)
   opts.current_line = not opts.current_file and get_current_buf_line(0) or nil
-  opts.current_file = opts.current_file or vim.fn.expand "%"
-  local results = utils.get_os_command_output({
-    "git",
-    "log",
-    "--pretty=oneline",
-    "--abbrev-commit",
-    opts.current_file,
-  }, opts.cwd)
+  opts.current_file = opts.current_file or vim.fn.expand "%:p"
+
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_git_commits(opts)
 
   pickers.new(opts, {
     prompt_title = "Git BCommits",
-    finder = finders.new_table {
-      results = results,
-      entry_maker = opts.entry_maker or make_entry.gen_from_git_commits(opts),
-    },
+    finder = finders.new_oneshot_job(
+      vim.tbl_flatten {
+        "git",
+        "log",
+        "--pretty=oneline",
+        "--abbrev-commit",
+        opts.current_file,
+      },
+      opts
+    ),
     previewer = {
       previewers.git_commit_diff_to_parent.new(opts),
       previewers.git_commit_diff_to_head.new(opts),
@@ -186,7 +194,7 @@ git.branches = function(opts)
     .. "%(refname)"
     .. "%(authorname)"
     .. "%(upstream:lstrip=2)"
-    .. "%(committerdate:format-local:%Y/%m/%d%H:%M:%S)"
+    .. "%(committerdate:format-local:%Y/%m/%d %H:%M:%S)"
   local output = utils.get_os_command_output({ "git", "for-each-ref", "--perl", "--format", format }, opts.cwd)
 
   local results = {}

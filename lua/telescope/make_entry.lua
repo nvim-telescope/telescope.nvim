@@ -662,6 +662,32 @@ function make_entry.gen_from_highlights()
   end
 end
 
+function make_entry.gen_from_picker(opts)
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = 30 },
+      { remaining = true },
+    },
+  }
+
+  local make_display = function(entry)
+    return displayer {
+      entry.value.prompt_title,
+      entry.value.default_text,
+    }
+  end
+
+  return function(entry)
+    return {
+      value = entry,
+      text = entry.prompt_title,
+      ordinal = string.format("%s %s", entry.prompt_title, utils.get_default(entry.default_text, "")),
+      display = make_display,
+    }
+  end
+end
+
 function make_entry.gen_from_buffer_lines(opts)
   local displayer = entry_display.create {
     separator = " │ ",

@@ -25,6 +25,28 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: true
 
+                                          *telescope.defaults.cache_picker*
+    cache_picker: ~
+        This field handles the configuration for picker caching.
+        By default it is a table, with default values (more below).
+        To disable caching, set it to false.
+
+        Caching preserves all previous multi selections and results and
+        therefore may result in slowdown or increased RAM occupation
+        if too many pickers (`cache_picker.num_pickers`) or entries
+        ('cache_picker.limit_entries`) are cached.
+
+        Fields:
+          - num_pickers:      The number of pickers to be cached.
+                              Set to -1 to preserve all pickers of your session.
+                              If passed to a picker, the cached pickers with
+                              indices larger than `cache_picker.num_pickers` will
+                              be cleared.
+                              Default: 1
+          - limit_entries:    The amount of entries that will be written in the
+                              Default: 1000
+
+
                                       *telescope.defaults.default_mappings*
     default_mappings: ~
         Not recommended to use except for advanced users.
@@ -281,6 +303,41 @@ telescope.extensions()                                *telescope.extensions()*
 
 
 ================================================================================
+                                                             *telescope.command*
+
+Telescope commands can be called through two apis, the lua api and the viml
+api.
+
+The lua api is the more direct way to interact with Telescope, as you directly
+call the lua functions that Telescope defines. It can be called in a lua file
+using commands like:
+`require("telescope.builtin").find_files({hidden=true, layout_config={prompt_position="top"}})`
+If you want to use this api from a vim file you should prepend `lua` to the
+command, as below:
+`lua require("telescope.builtin").find_files({hidden=true, layout_config={prompt_position="top"}})`
+If you want to use this api from a neovim command line you should prepend
+`:lua` to the command, as below:
+`:lua require("telescope.builtin").find_files({hidden=true, layout_config={prompt_position="top"}})`
+
+The viml api is more indirect, as first the command must be parsed to the
+relevant lua equivalent, which brings some limitations. The viml api can be
+called using commands like:
+`:Telescope find_files hidden=true layout_config={"prompt_position":"top"}`
+This involves setting options using an `=` and using viml syntax for lists and
+dictionaries when the corresponding lua function requires a table.
+
+One limitation of the viml api is that there can be no spaces in any of the
+options. For example, if you want to use the `cwd` option for `find_files` to
+specify that you only want to search within the folder `/foo bar/subfolder/`
+you could not do that using the viml api, as the path name contains a space.
+Similarly, you could NOT set the `prompt_position` to `"top"` using the
+following command:
+`:Telescope find_files layout_config={ "prompt_position" : "top" }`
+as there are spaces in the option.
+
+
+
+================================================================================
                                                              *telescope.builtin*
 
 Telescope Builtins is a collection of community maintained pickers to support
@@ -333,19 +390,25 @@ This will use the default configuration options. Other configuration options
 are still in flux at the moment
 
 builtin.live_grep({opts})                                *builtin.live_grep()*
-    Search for a string in your current working directory and get results live
-    as you type (respecting .gitignore)
+    Search for a string and get results live as you type (respecting
+    .gitignore)
 
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {grep_open_files} (boolean)  if true, restrict search to open files
-                                     only, mutually exclusive with
-                                     `search_dirs`
-        {search_dirs}     (table)    directory/directories to search in,
-                                     mutually exclusive with `grep_open_files`
+        {cwd}             (string)    root dir to search from (default is cwd,
+                                      use utils.buffer_dir() to search
+                                      relative to open buffer)
+        {grep_open_files} (boolean)   if true, restrict search to open files
+                                      only, mutually exclusive with
+                                      `search_dirs`
+        {search_dirs}     (table)     directory/directories to search in,
+                                      mutually exclusive with
+                                      `grep_open_files`
+        {additional_args} (function)  function(opts) which returns a table of
+                                      additional arguments to be passed on
 
 
 builtin.grep_string({opts})                            *builtin.grep_string()*
@@ -356,26 +419,37 @@ builtin.grep_string({opts})                            *builtin.grep_string()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {search}      (string)   the query to search
-        {search_dirs} (table)    directory/directories to search in
-        {use_regex}   (boolean)  if true, special characters won't be escaped,
-                                 allows for using regex (default is false)
+        {cwd}             (string)    root dir to search from (default is cwd,
+                                      use utils.buffer_dir() to search
+                                      relative to open buffer)
+        {search}          (string)    the query to search
+        {search_dirs}     (table)     directory/directories to search in
+        {use_regex}       (boolean)   if true, special characters won't be
+                                      escaped, allows for using regex (default
+                                      is false)
+        {additional_args} (function)  function(opts) which returns a table of
+                                      additional arguments to be passed on
 
 
 builtin.find_files({opts})                              *builtin.find_files()*
-    Lists files in your current working directory, respects .gitignore
+    Search for files (respecting .gitignore)
 
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
     Fields: ~
+        {cwd}          (string)   root dir to search from (default is cwd, use
+                                  utils.buffer_dir() to search relative to
+                                  open buffer)
         {find_command} (table)    command line arguments for `find_files` to
                                   use for the search, overrides default config
         {follow}       (boolean)  if true, follows symlinks (i.e. uses `-L`
                                   flag for the `find` command)
         {hidden}       (boolean)  determines whether to show hidden files or
                                   not (default is false)
+        {no_ignore}    (boolean)  show files ignored by .gitignore, .ignore,
+                                  etc. (default is false)
         {search_dirs}  (table)    directory/directories to search in
 
 
@@ -403,9 +477,13 @@ builtin.file_browser({opts})                          *builtin.file_browser()*
         {opts} (table)  options to pass to the picker
 
     Fields: ~
-        {cwd}      (string)  directory path to browse (default is cwd)
-        {depth}    (number)  file tree depth to display (default is 1)
-        {dir_icon} (string)  change the icon for a directory. default: 
+        {cwd}      (string)   root dir to browse from (default is cwd, use
+                              utils.buffer_dir() to search relative to open
+                              buffer)
+        {depth}    (number)   file tree depth to display (default is 1)
+        {dir_icon} (string)   change the icon for a directory. default: 
+        {hidden}   (boolean)  determines whether to show hidden files or not
+                              (default is false)
 
 
 builtin.treesitter()                                    *builtin.treesitter()*
@@ -475,6 +553,9 @@ builtin.git_commits({opts})                            *builtin.git_commits()*
     Lists commits for current directory with diff preview
     - Default keymaps:
       - `<cr>`: checks out the currently selected commit
+      - `<C-r>m`: resets current branch to selected commit using mixed mode
+      - `<C-r>s`: resets current branch to selected commit using soft mode
+      - `<C-r>h`: resets current branch to selected commit using hard mode
 
 
     Parameters: ~
@@ -556,12 +637,22 @@ builtin.planets({opts})                                    *builtin.planets()*
 
 
 builtin.symbols({opts})                                    *builtin.symbols()*
-    Lists symbols inside of data/telescope-sources/*.json found in your runtime
-    path. Check README for more info
+    Lists symbols inside of `data/telescope-sources/*.json` found in your
+    runtime path or found in `stdpath("data")/telescope/symbols/*.json`. The
+    second path can be customized. We provide a couple of default symbols which
+    can be found in https://github.com/nvim-telescope/telescope-symbols.nvim.
+    This repos README also provides more information about the format in which
+    the symbols have to be.
 
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {symbol_path} (string)  specify the second path. Default:
+                                `stdpath("data")/telescope/symbols/*.json`
+        {sources}     (table)   specify a table of sources you want to load
+                                this time
 
 
 builtin.commands({opts})                                  *builtin.commands()*
@@ -619,6 +710,35 @@ builtin.search_history({opts})                      *builtin.search_history()*
         {opts} (table)  options to pass to the picker
 
 
+builtin.resume({opts})                                      *builtin.resume()*
+    Opens the previous picker in the identical state (incl. multi selections)
+    - Notes:
+      - Requires `cache_picker` in setup or when having invoked pickers, see
+        |telescope.defaults.cache_picker|
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {cache_index} (number)  what picker to resume, where 1 denotes most
+                                recent (default 1)
+
+
+builtin.pickers({opts})                                    *builtin.pickers()*
+    Opens a picker over previously cached pickers in there preserved states
+    (incl. multi selections)
+    - Default keymaps:
+      - `<C-x>`: delete the selected cached picker
+    - Notes:
+      - Requires `cache_picker` in setup or when having invoked pickers, see
+        |telescope.defaults.cache_picker|
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
 builtin.vim_options({opts})                            *builtin.vim_options()*
     Lists vim options, allows you to edit the current value on `<cr>`
 
@@ -642,6 +762,10 @@ builtin.man_pages({opts})                                *builtin.man_pages()*
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {sections} (table)  a list of sections to search, use `{ "ALL" }` to
+                            search in all sections
 
 
 builtin.reloader({opts})                                  *builtin.reloader()*
@@ -783,6 +907,10 @@ builtin.lsp_definitions({opts})                    *builtin.lsp_definitions()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
+    Fields: ~
+        {jump_type} (string)  how to goto definition if there is only one,
+                              values: "tab", "split", "vsplit", "never"
+
 
 builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
     Goto the implementation of the word under the cursor if there's only one,
@@ -791,6 +919,10 @@ builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {jump_type} (string)  how to goto implementation if there is only one,
+                              values: "tab", "split", "vsplit", "never"
 
 
 builtin.lsp_code_actions({opts})                  *builtin.lsp_code_actions()*
@@ -1373,6 +1505,30 @@ actions.git_rebase_branch({prompt_bufnr})        *actions.git_rebase_branch()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.git_reset_mixed({prompt_bufnr})            *actions.git_reset_mixed()*
+    Reset to selected git commit using mixed mode
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_reset_soft({prompt_bufnr})              *actions.git_reset_soft()*
+    Reset to selected git commit using soft mode
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_reset_hard({prompt_bufnr})              *actions.git_reset_hard()*
+    Reset to selected git commit using hard mode
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 actions.git_staging_toggle({prompt_bufnr})      *actions.git_staging_toggle()*
     Stage/unstage selected file
 
@@ -1480,6 +1636,28 @@ actions.cycle_previewers_next({prompt_bufnr})*actions.cycle_previewers_next()*
 actions.cycle_previewers_prev({prompt_bufnr})*actions.cycle_previewers_prev()*
     Cycle to the previous previewer if there is one available.
     This action is not mapped on default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.remove_selected_picker({prompt_bufnr})*actions.remove_selected_picker()*
+    Removes the selected picker in |builtin.pickers|.
+    This action is not mapped by default and only intended for
+    |builtin.pickers|.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.which_key({prompt_bufnr})                        *actions.which_key()*
+    Display the keymaps of registered actions similar to which-key.nvim.
+
+    - Notes:
+      - The defaults can be overridden via
+        |action_generate.toggle_registered_actions|.
 
 
     Parameters: ~
@@ -1626,6 +1804,91 @@ utils.map_selections({prompt_bufnr}, {f})             *utils.map_selections()*
         {prompt_bufnr} (number)    The prompt bufnr
         {f}            (function)  Function to map onto selection of picker
                                    that takes (selection) as a viable argument
+
+
+utils.get_registered_mappings({prompt_bufnr})*utils.get_registered_mappings()*
+    Utility to collect mappings of prompt buffer in array of `{mode, keybind,
+    name}`.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+
+================================================================================
+                                                    *telescope.actions.generate*
+
+Module for convenience to override defaults of corresponding
+|telescope.actions| at |telescope.setup()|.
+
+General usage:
+  require("telescope").setup {
+    defaults = {
+      mappings = {
+        n = {
+          ["?"] = action_generate.toggle_registered_actions {
+            name_width = 20, -- typically leads to smaller floats
+            max_height = 0.5, -- increase potential maximum height
+            seperator = " > ", -- change sep between mode, keybind, and name
+            close_with_action = false, -- do not close float on action
+          },
+        },
+      },
+    },
+  }
+
+action_generate.which_key({opts})                *action_generate.which_key()*
+    Display the keymaps of registered actions similar to which-key.nvim.
+
+    - Floating window:
+      - Appears on the opposite side of the prompt.
+      - Resolves to minimum required number of lines to show hints with `opts`
+        or truncates entries at `max_height`.
+      - Closes automatically on action call and can be disabled with by setting
+        `close_with_action` to false.
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to toggling registered actions
+
+    Fields: ~
+        {max_height}             (number)   % of max. height or no. of rows
+                                            for hints (default: 0.4), see
+                                            |resolver.resolve_height()|
+        {only_show_current_mode} (boolean)  only show keymaps for the current
+                                            mode (default: true)
+        {mode_width}             (number)   fixed width of mode to be shown
+                                            (default: 1)
+        {keybind_width}          (number)   fixed width of keybind to be shown
+                                            (default: 7)
+        {name_width}             (number)   fixed width of action name to be
+                                            shown (default: 30)
+        {column_padding}         (string)   string to split; can be used for
+                                            vertical seperator (default: " ")
+        {mode_hl}                (string)   hl group of mode (default:
+                                            TelescopeResultsConstant)
+        {keybind_hl}             (string)   hl group of keybind (default:
+                                            TelescopeResultsVariable)
+        {name_hl}                (string)   hl group of action name (default:
+                                            TelescopeResultsFunction)
+        {column_indent}          (number)   number of left-most spaces before
+                                            keybinds are shown (default: 4)
+        {line_padding}           (number)   row padding in top and bottom of
+                                            float (default: 1)
+        {separator}              (string)   seperator string between mode, key
+                                            bindings, and action (default: "
+                                            -> ")
+        {close_with_action}      (boolean)  registered action will close
+                                            keymap float (default: true)
+        {normal_hl}              (string)   winhl of "Normal" for keymap hints
+                                            floating window (default:
+                                            "TelescopePrompt")
+        {border_hl}              (string)   winhl of "Normal" for keymap
+                                            borders (default:
+                                            "TelescopePromptBorder")
+        {winblend}               (number)   pseudo-transparency of keymap
+                                            hints floating window
 
 
 
