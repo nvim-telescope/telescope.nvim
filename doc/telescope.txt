@@ -647,7 +647,25 @@ builtin.symbols({opts})                                    *builtin.symbols()*
 
 
 builtin.commands({opts})                                  *builtin.commands()*
-    Lists available plugin/user commands and runs them on `<cr>`
+    Lists available plugin/user commands and runs them on `<cr>`. There is a
+    possibiliy of copying the selected command to a register with is defaulted
+    to `<C-Y>`in `Insert mode` and `Y` in `Normal mode` the  default register 
+    is `"+"`, it can be customized to enable on-fly selection if use the 
+    blackhole register `"_"`.
+    e.g. using `"_"`
+    ...
+    mappings = {
+        n = {
+            ["Y"] =
+            require'telescope.actions.generate'.copy_command_to_reg({reg= "_"})
+
+        },
+        i = {
+            ["<C-Y>"] = 
+            require'telescope.actions.generate'.copy_command_to_reg({reg= "_"})
+        },
+    },
+    ...
 
 
     Parameters: ~
