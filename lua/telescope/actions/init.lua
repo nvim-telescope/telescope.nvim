@@ -278,16 +278,11 @@ end
 ---@param opts table: options to pass to the action
 ---@field reg: the register which the content will be sent
 function actions.copy_command_to_reg(prompt_bufnr, opts)
-  local validate_reg = function(reg)
-    while reg == '_' do
-      reg = vim.fn.input "Register > "
-    end
-    return reg
-  end
   opts = opts or {} -- ensure opts is a table if nil
   opts.reg = utils.get_default(opts.reg, "+")
-  opts.reg = validate_reg(opts.reg)
-
+  if opts.reg == "_" then
+    opts.reg = vim.fn.input "Register > "
+  end
   local cmd = action_state.get_selected_entry()["name"]
   -- concat ':' with command name entry
   vim.fn.setreg(opts.reg, ":" .. cmd, "c")
