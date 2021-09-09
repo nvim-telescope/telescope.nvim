@@ -61,11 +61,11 @@ end
 local builtin = {}
 
 -- Ref: https://github.com/tjdevries/lazy.nvim
-local function require_on_exported_call(builtin_module)
+local function require_on_exported_call(mod)
   return setmetatable({}, {
     __index = function(_, picker)
       return function(...)
-        return require(builtin_module)[picker](...)
+        return require(mod)[picker](...)
       end
     end,
   })
