@@ -143,7 +143,7 @@ files.grep_string = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title = "Find Word",
+    prompt_title = "Find Word (" .. word .. ")",
     finder = finders.new_oneshot_job(args, opts),
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
