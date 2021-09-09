@@ -956,12 +956,13 @@ end, {})
 previewers.buffers = defaulter(function(opts)
   opts = opts or {}
   local cwd = opts.cwd or vim.loop.cwd()
-  local previewer_active = true -- decouple provider from preview_win
+  local previewer_active -- decouple provider from preview_win
   return Previewer:new {
     title = function()
       return "Buffers"
     end,
     setup = function(_, status)
+      previewer_active = true
       local win_id = status.picker.original_win_id
       -- required because of see `:h local-options` as
       -- buffers not yet attached to a current window take the options from the `minimal` popup ...
