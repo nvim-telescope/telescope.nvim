@@ -584,7 +584,7 @@ builtin.git_branches({opts})                          *builtin.git_branches()*
       - `<C-a>`: creates a new branch, with confirmation prompt before creation
       - `<C-d>`: deletes the currently selected branch, with confirmation
         prompt before deletion
-      - `<C-m>`: merges the currently selected branch, with confirmation prompt
+      - `<C-y>`: merges the currently selected branch, with confirmation prompt
         before deletion
 
 
