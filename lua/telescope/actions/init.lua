@@ -497,63 +497,57 @@ local function make_git_branch_action(opts)
     if ret == 0 then
       print(string.format(opts.success_message, selection.value))
     else
-      print(
-        string.format(opts.error_message, selection.value, table.concat(stderr, "  "))
-      )
+      print(string.format(opts.error_message, selection.value, table.concat(stderr, "  ")))
     end
   end
 end
 
 --- Tell git to track the currently selected remote branch in Telescope
 ---@param prompt_bufnr number: The prompt bufnr
-actions.git_track_branch =
-  make_git_branch_action({
-    should_confirm = false,
-    success_message = 'Tracking branch: %s',
-    error_message = 'Error when tracking branch: %s. Git returned: "%s"',
-    command = function(branch_name)
-      return {'git', 'checkout', '--track', branch_name}
-    end
-  })
+actions.git_track_branch = make_git_branch_action {
+  should_confirm = false,
+  success_message = "Tracking branch: %s",
+  error_message = 'Error when tracking branch: %s. Git returned: "%s"',
+  command = function(branch_name)
+    return { "git", "checkout", "--track", branch_name }
+  end,
+}
 
 --- Delete the currently selected branch
 ---@param prompt_bufnr number: The prompt bufnr
-actions.git_delete_branch =
-  make_git_branch_action({
-    should_confirm = true,
-    confirmation_question = 'Do you really wanna delete branch %s? [Y/n] ',
-    success_message = 'Deleted branch: %s',
-    error_message = 'Error when deleting branch: %s. Git returned: "%s"',
-    command = function(branch_name)
-      return {'git', 'branch', '-D', branch_name}
-    end
-  })
+actions.git_delete_branch = make_git_branch_action {
+  should_confirm = true,
+  confirmation_question = "Do you really wanna delete branch %s? [Y/n] ",
+  success_message = "Deleted branch: %s",
+  error_message = 'Error when deleting branch: %s. Git returned: "%s"',
+  command = function(branch_name)
+    return { "git", "branch", "-D", branch_name }
+  end,
+}
 
 --- Merge the currently selected branch
 ---@param prompt_bufnr number: The prompt bufnr
-actions.git_merge_branch =
-  make_git_branch_action({
-    should_confirm = true,
-    confirmation_question = 'Do you really wanna merge branch %s? [Y/n] ',
-    success_message = 'Merged branch: %s',
-    error_message = 'Error when merging branch: %s. Git returned: "%s"',
-    command = function(branch_name)
-      return {'git', 'merge', branch_name}
-    end
-  })
+actions.git_merge_branch = make_git_branch_action {
+  should_confirm = true,
+  confirmation_question = "Do you really wanna merge branch %s? [Y/n] ",
+  success_message = "Merged branch: %s",
+  error_message = 'Error when merging branch: %s. Git returned: "%s"',
+  command = function(branch_name)
+    return { "git", "merge", branch_name }
+  end,
+}
 
 --- Rebase to selected git branch
 ---@param prompt_bufnr number: The prompt bufnr
-actions.git_rebase_branch =
-  make_git_branch_action({
-    should_confirm = true,
-    confirmation_question = 'Do you really wanna rebase branch %s? [Y/n] ',
-    success_message = 'Rebased branch: %s',
-    error_message = 'Error when rebasing branch: %s. Git returned: "%s"',
-    command = function(branch_name)
-      return {'git', 'rebase', branch_name}
-    end
-  })
+actions.git_rebase_branch = make_git_branch_action {
+  should_confirm = true,
+  confirmation_question = "Do you really wanna rebase branch %s? [Y/n] ",
+  success_message = "Rebased branch: %s",
+  error_message = 'Error when rebasing branch: %s. Git returned: "%s"',
+  command = function(branch_name)
+    return { "git", "rebase", branch_name }
+  end,
+}
 
 local git_reset_branch = function(prompt_bufnr, mode)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
