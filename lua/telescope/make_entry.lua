@@ -883,6 +883,17 @@ function make_entry.gen_from_ctags(opts)
     end
   end
 
+  local mt = {}
+  mt.__index = function(t, k)
+    if k == "path" then
+      local retpath = Path:new({ t.filename }):absolute()
+      if not vim.loop.fs_access(retpath, "R", nil) then
+        retpath = t.filename
+      end
+      return retpath
+    end
+  end
+
   return function(line)
     if line == "" or line:sub(1, 1) == "!" then
       return nil
@@ -900,26 +911,21 @@ function make_entry.gen_from_ctags(opts)
       return nil
     end
 
-    local ordinal
-
+    local tag_entry = {}
     if opts.only_sort_tags then
-      ordinal = tag
+      tag_entry.ordinal = tag
     else
-      ordinal = file .. ": " .. tag
+      tag_entry.ordinal = file .. ": " .. tag
     end
 
-    return {
-      valid = true,
-      ordinal = ordinal,
-      display = make_display,
-      scode = scode,
-      tag = tag,
+    tag_entry.display = make_display
+    tag_entry.scode = scode
+    tag_entry.tag = tag
+    tag_entry.filename = file
+    tag_entry.col = 1
+    tag_entry.lnum = lnum and tonumber(lnum) or 1
 
-      filename = file,
-
-      col = 1,
-      lnum = lnum and tonumber(lnum) or 1,
-    }
+    return setmetatable(tag_entry, mt)
   end
 end
 
