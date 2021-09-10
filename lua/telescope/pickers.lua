@@ -181,6 +181,7 @@ function Picker:is_done()
   end
 end
 
+-- TODO(scroll)
 function Picker:clear_extra_rows(results_bufnr)
   if self:is_done() then
     log.trace "Not clearing due to being already complete"
@@ -217,21 +218,6 @@ function Picker:clear_extra_rows(results_bufnr)
   end
 
   log.trace("Clearing:", worst_line)
-end
-
-function Picker:highlight_displayed_rows(results_bufnr, prompt)
-  if not self.sorter or not self.sorter.highlighter then
-    return
-  end
-
-  vim.api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_matching, 0, -1)
-
-  local displayed_rows = vim.api.nvim_buf_get_lines(results_bufnr, 0, -1, false)
-  for row_index = 1, math.min(#displayed_rows, self.max_results) do
-    local display = displayed_rows[row_index]
-
-    self:highlight_one_row(results_bufnr, prompt, display, row_index - 1)
-  end
 end
 
 function Picker:highlight_one_row(results_bufnr, prompt, display, row)
@@ -278,6 +264,8 @@ function Picker:_next_find_id()
 end
 
 function Picker:find()
+  self.result_limit = 100000
+
   self:close_existing_pickers()
   self:reset_selection()
 
@@ -353,7 +341,7 @@ function Picker:find()
   self:_reset_prefix_color()
 
   -- First thing we want to do is set all the lines to blank.
-  self.max_results = popup_opts.results.height
+  self.max_results = 10000 or popup_opts.results.height
 
   -- TODO(scrolling): This may be a hack when we get a little further into implementing scrolling.
   vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
@@ -431,6 +419,7 @@ function Picker:find()
         self.sorter:_start(prompt)
         self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats)
 
+        vim.api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_matching, 0, -1)
         local process_result = self:get_result_processor(find_id, prompt, debounced_status)
         local process_complete = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
 
@@ -461,7 +450,6 @@ function Picker:find()
         else
           -- scheduling required to apply highlighting and selection appropriately
           await_schedule(function()
-            self:highlight_displayed_rows(self.results_bufnr, self.cache_picker.cached_prompt)
             if self.cache_picker.selection_row ~= nil then
               self:set_selection(self.cache_picker.selection_row)
             end
@@ -856,6 +844,8 @@ function Picker:set_selection(row)
   self._selection_row = row
 
   self:refresh_previewer()
+
+  vim.api.nvim_win_set_cursor(self.results_win, { row + 1, 0 })
 end
 
 function Picker:refresh_previewer()
@@ -942,6 +932,7 @@ function Picker:entry_adder(index, entry, _, insert)
     local set_ok, msg = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + offset, false, { display })
     if set_ok and display_highlights then
       self.highlighter:hi_display(row, prefix, display_highlights)
+      self:highlight_one_row(self.results_bufnr, self:_get_prompt(), display, row)
     end
 
     if not set_ok then
@@ -1025,9 +1016,17 @@ function Picker:get_status_updater(prompt_win, prompt_bufnr)
 end
 
 function Picker:get_result_processor(find_id, prompt, status_updater)
+  local stopped = false
+  local added = 0
+
   local cb_add = function(score, entry)
     self.manager:add_entry(self, score, entry)
     status_updater { completed = false }
+
+    added = added + 1
+    if added > self.result_limit then
+      stopped = true
+    end
   end
 
   local cb_filter = function(_)
@@ -1036,6 +1035,10 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
 
   return function(entry)
     if find_id ~= self._find_id then
+      return true
+    end
+
+    if stopped then
       return true
     end
 
@@ -1075,7 +1078,6 @@ function Picker:get_result_completor(results_bufnr, find_id, prompt, status_upda
     status_updater { completed = true }
 
     self:clear_extra_rows(results_bufnr)
-    self:highlight_displayed_rows(results_bufnr, prompt)
     self.sorter:_finish(prompt)
 
     self:_on_complete()
