@@ -186,6 +186,7 @@ builtin.git_bcommits = require_on_exported_call("telescope.builtin.git").bcommit
 ---   - `<C-r>`: rebases currently selected branch
 ---   - `<C-a>`: creates a new branch, with confirmation prompt before creation
 ---   - `<C-d>`: deletes the currently selected branch, with confirmation prompt before deletion
+---   - `<C-y>`: merges the currently selected branch, with confirmation prompt before deletion
 ---@param opts table: options to pass to the picker
 builtin.git_branches = require_on_exported_call("telescope.builtin.git").branches
 

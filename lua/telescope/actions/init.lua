@@ -479,65 +479,75 @@ actions.git_switch_branch = function(prompt_bufnr)
   end
 end
 
---- Tell git to track the currently selected remote branch in Telescope
----@param prompt_bufnr number: The prompt bufnr
-actions.git_track_branch = function(prompt_bufnr)
-  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
-  local selection = action_state.get_selected_entry()
-  actions.close(prompt_bufnr)
-  local _, ret, stderr = utils.get_os_command_output({ "git", "checkout", "--track", selection.value }, cwd)
-  if ret == 0 then
-    print("Tracking branch: " .. selection.value)
-  else
-    print(
-      string.format('Error when tracking branch: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  "))
-    )
+local function make_git_branch_action(opts)
+  return function(prompt_bufnr)
+    local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+    local selection = action_state.get_selected_entry()
+
+    local should_confirm = opts.should_confirm
+    if should_confirm then
+      local confirmation = vim.fn.input(string.format(opts.confirmation_question, selection.value))
+      if confirmation ~= "" and string.lower(confirmation) ~= "y" then
+        return
+      end
+    end
+
+    actions.close(prompt_bufnr)
+    local _, ret, stderr = utils.get_os_command_output(opts.command(selection.value), cwd)
+    if ret == 0 then
+      print(string.format(opts.success_message, selection.value))
+    else
+      print(string.format(opts.error_message, selection.value, table.concat(stderr, "  ")))
+    end
   end
 end
+
+--- Tell git to track the currently selected remote branch in Telescope
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_track_branch = make_git_branch_action {
+  should_confirm = false,
+  success_message = "Tracking branch: %s",
+  error_message = 'Error when tracking branch: %s. Git returned: "%s"',
+  command = function(branch_name)
+    return { "git", "checkout", "--track", branch_name }
+  end,
+}
 
 --- Delete the currently selected branch
 ---@param prompt_bufnr number: The prompt bufnr
-actions.git_delete_branch = function(prompt_bufnr)
-  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
-  local selection = action_state.get_selected_entry()
+actions.git_delete_branch = make_git_branch_action {
+  should_confirm = true,
+  confirmation_question = "Do you really wanna delete branch %s? [Y/n] ",
+  success_message = "Deleted branch: %s",
+  error_message = 'Error when deleting branch: %s. Git returned: "%s"',
+  command = function(branch_name)
+    return { "git", "branch", "-D", branch_name }
+  end,
+}
 
-  local confirmation = vim.fn.input("Do you really wanna delete branch " .. selection.value .. "? [Y/n] ")
-  if confirmation ~= "" and string.lower(confirmation) ~= "y" then
-    return
-  end
-
-  actions.close(prompt_bufnr)
-  local _, ret, stderr = utils.get_os_command_output({ "git", "branch", "-D", selection.value }, cwd)
-  if ret == 0 then
-    print("Deleted branch: " .. selection.value)
-  else
-    print(
-      string.format('Error when deleting branch: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  "))
-    )
-  end
-end
+--- Merge the currently selected branch
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_merge_branch = make_git_branch_action {
+  should_confirm = true,
+  confirmation_question = "Do you really wanna merge branch %s? [Y/n] ",
+  success_message = "Merged branch: %s",
+  error_message = 'Error when merging branch: %s. Git returned: "%s"',
+  command = function(branch_name)
+    return { "git", "merge", branch_name }
+  end,
+}
 
 --- Rebase to selected git branch
 ---@param prompt_bufnr number: The prompt bufnr
-actions.git_rebase_branch = function(prompt_bufnr)
-  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
-  local selection = action_state.get_selected_entry()
-
-  local confirmation = vim.fn.input("Do you really wanna rebase branch " .. selection.value .. "? [Y/n] ")
-  if confirmation ~= "" and string.lower(confirmation) ~= "y" then
-    return
-  end
-
-  actions.close(prompt_bufnr)
-  local _, ret, stderr = utils.get_os_command_output({ "git", "rebase", selection.value }, cwd)
-  if ret == 0 then
-    print("Rebased branch: " .. selection.value)
-  else
-    print(
-      string.format('Error when rebasing branch: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  "))
-    )
-  end
-end
+actions.git_rebase_branch = make_git_branch_action {
+  should_confirm = true,
+  confirmation_question = "Do you really wanna rebase branch %s? [Y/n] ",
+  success_message = "Rebased branch: %s",
+  error_message = 'Error when rebasing branch: %s. Git returned: "%s"',
+  command = function(branch_name)
+    return { "git", "rebase", branch_name }
+  end,
+}
 
 local git_reset_branch = function(prompt_bufnr, mode)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd

@@ -584,6 +584,8 @@ builtin.git_branches({opts})                          *builtin.git_branches()*
       - `<C-a>`: creates a new branch, with confirmation prompt before creation
       - `<C-d>`: deletes the currently selected branch, with confirmation
         prompt before deletion
+      - `<C-y>`: merges the currently selected branch, with confirmation prompt
+        before deletion
 
 
     Parameters: ~
@@ -1482,6 +1484,14 @@ actions.git_track_branch({prompt_bufnr})          *actions.git_track_branch()*
 
 actions.git_delete_branch({prompt_bufnr})        *actions.git_delete_branch()*
     Delete the currently selected branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_merge_branch({prompt_bufnr})          *actions.git_merge_branch()*
+    Merge the currently selected branch
 
 
     Parameters: ~
