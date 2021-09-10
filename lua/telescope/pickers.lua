@@ -221,6 +221,10 @@ function Picker:clear_extra_rows(results_bufnr)
 end
 
 function Picker:highlight_one_row(results_bufnr, prompt, display, row)
+  if not self.sorter.highlighter then
+    return
+  end
+
   local highlights = self.sorter:highlighter(prompt, display)
 
   if highlights then
@@ -355,7 +359,7 @@ function Picker:find()
   local debounced_status = debounce.throttle_leading(status_updater, 50)
 
   local tx, rx = channel.mpsc()
-  self.__on_lines = tx.send
+  self._on_lines = tx.send
 
   local find_id = self:_next_find_id()
 
@@ -400,19 +404,7 @@ function Picker:find()
 
       local start_time = vim.loop.hrtime()
 
-      local prompt = self:_get_prompt()
-      local on_input_result = self._on_input_filter_cb(prompt) or {}
-
-      local new_prompt = on_input_result.prompt
-      if new_prompt then
-        prompt = new_prompt
-      end
-
-      local new_finder = on_input_result.updated_finder
-      if new_finder then
-        self.finder:close()
-        self.finder = new_finder
-      end
+      local prompt = self:_get_next_filtered_prompt()
 
       -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
       if self.cache_picker == false or not (self.cache_picker.is_cached == true) then
@@ -436,25 +428,8 @@ function Picker:find()
           async.util.sleep(self.debounce - diff_time)
         end
       else
-        -- resume previous picker
-        local index = 1
-        for entry in self.manager:iter() do
-          self:entry_adder(index, entry, _, true)
-          index = index + 1
-        end
-        self.cache_picker.is_cached = false
-        -- if text changed, required to set anew to restart finder; otherwise hl and selection
-        if self.cache_picker.cached_prompt ~= self.default_text then
-          self:reset_prompt()
-          self:set_prompt(self.default_text)
-        else
-          -- scheduling required to apply highlighting and selection appropriately
-          await_schedule(function()
-            if self.cache_picker.selection_row ~= nil then
-              self:set_selection(self.cache_picker.selection_row)
-            end
-          end)
-        end
+        -- TODO(scroll): This can only happen once, I don't like where it is.
+        self:_resume_picker()
       end
     end
   end)
@@ -464,10 +439,10 @@ function Picker:find()
     on_lines = function(...)
       find_id = self:_next_find_id()
 
-      self._result_completed = false
       status_updater { completed = false }
       tx.send(...)
     end,
+
     on_detach = function()
       self:_detach()
     end,
@@ -741,7 +716,7 @@ function Picker:refresh(finder, opts)
     self._multi = MultiSelect:new()
   end
 
-  self.__on_lines(nil, nil, nil, 0, 1)
+  self._on_lines(nil, nil, nil, 0, 1)
 end
 
 function Picker:set_selection(row)
@@ -1081,8 +1056,6 @@ function Picker:get_result_completor(results_bufnr, find_id, prompt, status_upda
     self.sorter:_finish(prompt)
 
     self:_on_complete()
-
-    self._result_completed = true
   end)
 end
 
@@ -1226,6 +1199,46 @@ function Picker:_detach()
   -- self.manager = nil
 
   self.closed = true
+end
+
+function Picker:_get_next_filtered_prompt()
+  local prompt = self:_get_prompt()
+  local on_input_result = self._on_input_filter_cb(prompt) or {}
+
+  local new_prompt = on_input_result.prompt
+  if new_prompt then
+    prompt = new_prompt
+  end
+
+  local new_finder = on_input_result.updated_finder
+  if new_finder then
+    self.finder:close()
+    self.finder = new_finder
+  end
+
+  return prompt
+end
+
+function Picker:_resume_picker()
+  -- resume previous picker
+  local index = 1
+  for entry in self.manager:iter() do
+    self:entry_adder(index, entry, _, true)
+    index = index + 1
+  end
+  self.cache_picker.is_cached = false
+  -- if text changed, required to set anew to restart finder; otherwise hl and selection
+  if self.cache_picker.cached_prompt ~= self.default_text then
+    self:reset_prompt()
+    self:set_prompt(self.default_text)
+  else
+    -- scheduling required to apply highlighting and selection appropriately
+    await_schedule(function()
+      if self.cache_picker.selection_row ~= nil then
+        self:set_selection(self.cache_picker.selection_row)
+      end
+    end)
+  end
 end
 
 pickers._Picker = Picker
