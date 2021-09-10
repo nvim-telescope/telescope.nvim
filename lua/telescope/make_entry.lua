@@ -463,7 +463,7 @@ function make_entry.gen_from_buffer(opts)
 
       bufnr = entry.bufnr,
       filename = bufname,
-
+      -- account for potentially stale lnum as getbufinfo might not be updated or from resuming buffers picker
       lnum = entry.info.lnum ~= 0 and math.max(math.min(entry.info.lnum, line_count), 1) or 1,
       indicator = indicator,
     }
