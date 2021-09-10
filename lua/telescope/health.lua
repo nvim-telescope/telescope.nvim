@@ -1,4 +1,5 @@
 local fn = vim.fn
+local extension_module = require "telescope._extensions"
 local extension_info = require("telescope").extensions
 local is_win = vim.api.nvim_call_function("has", { "win32" }) == 1
 
@@ -58,12 +59,6 @@ local function lualib_installed(lib_name)
   return res
 end
 
--- local function get_healthcheck(ext_name)
---   local has_check, check = pcall(require, "telescope.extensions"[ext_name]['health'])
---     if(has_check) then return check end
---   return
--- end
-
 local M = {}
 
 M.check_health = function()
@@ -109,7 +104,8 @@ M.check_health = function()
   end
 
   -- Extensions
-  health_start "Installed extensions"
+  health_start "===== Installed extensions ====="
+
   local installed = {}
   for extension_name, _ in pairs(extension_info) do
     installed[#installed + 1] = extension_name
@@ -117,14 +113,13 @@ M.check_health = function()
   table.sort(installed)
 
   for _, installed_ext in ipairs(installed) do
-    local extension_healthcheck = extension_info[installed_ext].health
+    local extension_healthcheck = extension_module._health[installed_ext]
 
-    health_info(("`%s` installed"):format(installed_ext))
+    health_start(string.format("Telescope Extension: `%s`", installed_ext))
     if extension_healthcheck then
-      local announce_check = ("echo '  - extension healthcheck:'"):format(installed_ext)
-      vim.cmd(announce_check)
       extension_healthcheck()
-      vim.cmd "echo ''"
+    else
+      health_info "No healthcheck provided"
     end
   end
 end

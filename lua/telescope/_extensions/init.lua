@@ -2,6 +2,7 @@ local extensions = {}
 
 extensions._loaded = {}
 extensions._config = {}
+extensions._health = {}
 
 extensions.manager = setmetatable({}, {
   __index = function(t, k)
@@ -16,6 +17,7 @@ extensions.manager = setmetatable({}, {
     end
 
     t[k] = ext.exports or {}
+    extensions._health[k] = ext.health
 
     return t[k]
   end,
