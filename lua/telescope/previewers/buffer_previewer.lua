@@ -956,12 +956,13 @@ end, {})
 previewers.buffers = defaulter(function(opts)
   opts = opts or {}
   local cwd = opts.cwd or vim.loop.cwd()
-  local previewer_active = true -- decouple provider from preview_win
+  local previewer_active -- decouple provider from preview_win
   return Previewer:new {
     title = function()
       return "Buffers"
     end,
     setup = function(_, status)
+      previewer_active = true
       local win_id = status.picker.original_win_id
       -- required because of see `:h local-options` as
       -- buffers not yet attached to a current window take the options from the `minimal` popup ...
@@ -1030,16 +1031,20 @@ previewers.buffers = defaulter(function(opts)
     preview_fn = function(self, entry, status)
       if vim.api.nvim_buf_is_valid(entry.bufnr) then
         vim.api.nvim_win_set_buf(status.preview_win, entry.bufnr)
+        self.state.bufnr = entry.bufnr
         vim.api.nvim_win_set_option(status.preview_win, "winhl", "Normal:TelescopePreviewNormal")
         vim.api.nvim_win_set_option(status.preview_win, "signcolumn", "no")
         vim.api.nvim_win_set_option(status.preview_win, "foldlevel", 100)
         vim.api.nvim_win_set_option(status.preview_win, "wrap", false)
-        self.state.bufnr = entry.bufnr
-        if not entry.col then
-          local _, col = unpack(vim.api.nvim_win_get_cursor(status.preview_win))
-          entry.col = col + 1
-        end
+
         if self.state.previewed_buffers[entry.bufnr] ~= true then
+          if entry.lnum then
+            local lnum, col = unpack(vim.api.nvim_win_get_cursor(status.preview_win))
+            entry.lnum = lnum
+            if not entry.col then
+              entry.col = col + 1
+            end
+          end
           self.state.previewed_buffers[entry.bufnr] = true
         end
       end
