@@ -201,6 +201,8 @@ local telescope_defaults = {
     - "hidden"    hide file names
     - "tail"      only display the file name, and not the path
     - "absolute"  display absolute paths
+    - "smart"     remove as much from the path as possible to only show
+                  the difference between the displayed paths
     - "shorten"   only display the first character of each directory in
                   the path
 
