@@ -8,23 +8,27 @@ on:
 jobs:
   build-sources:
     name: Generate docs
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            url: https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz
     steps:
       - uses: actions/checkout@v2
       - run: date +%F > todays-date
       - name: Restore cache for today's nightly.
         uses: actions/cache@v2
         with:
-          path: build
-          key: ${{ runner.os }}-appimage-${{ hashFiles('todays-date') }}
+          path: _neovim
+          key: ${{ runner.os }}-${{ matrix.url }}-${{ hashFiles('todays-date') }}
 
       - name: Prepare
         run: |
-          test -d build || {
-            mkdir -p build
-            wget https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
-            chmod +x nvim.appimage
-            mv nvim.appimage ./build/nvim
+          test -d _neovim || {
+            mkdir -p _neovim
+            curl -sL ${{ matrix.url }} | tar xzf - --strip-components=1 -C "${PWD}/_neovim"
           }
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
@@ -42,7 +46,9 @@ jobs:
 
       - name: Generating docs
         run: |
-          export PATH="${PWD}/build/:${PATH}"
+          export PATH="${PWD}/_neovim/bin:${PATH}"
+          export VIM="${PWD}/_neovim/share/nvim/runtime"
+          nvim --version
           make docgen
 
       # inspired by nvim-lspconfigs
