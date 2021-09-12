@@ -1,13 +1,11 @@
-local Job = require('plenary.job')
+local Job = require "plenary.job"
 
-local make_entry = require('telescope.make_entry')
-local log = require('telescope.log')
-local a = require('plenary.async_lib')
-local await = a.await
+local make_entry = require "telescope.make_entry"
+local log = require "telescope.log"
 
-local async_static_finder = require('telescope.finders.async_static_finder')
-local async_oneshot_finder = require('telescope.finders.async_oneshot_finder')
--- local async_job_finder = require('telescope.finders.async_job_finder')
+local async_static_finder = require "telescope.finders.async_static_finder"
+local async_oneshot_finder = require "telescope.finders.async_oneshot_finder"
+local async_job_finder = require "telescope.finders.async_job_finder"
 
 local finders = {}
 
@@ -15,7 +13,9 @@ local _callable_obj = function()
   local obj = {}
 
   obj.__index = obj
-  obj.__call = function(t, ...) return t:_find(...) end
+  obj.__call = function(t, ...)
+    return t:_find(...)
+  end
 
   obj.close = function() end
 
@@ -58,10 +58,10 @@ function JobFinder:new(opts)
 end
 
 function JobFinder:_find(prompt, process_result, process_complete)
-  log.trace("Finding...")
+  log.trace "Finding..."
 
   if self.job and not self.job.is_shutdown then
-    log.debug("Shutting down old job")
+    log.debug "Shutting down old job"
     self.job:shutdown()
   end
 
@@ -78,7 +78,9 @@ function JobFinder:_find(prompt, process_result, process_complete)
   end
 
   local opts = self:fn_command(prompt)
-  if not opts then return end
+  if not opts then
+    return
+  end
 
   local writer = nil
   if opts.writer and Job.is_job(opts.writer) then
@@ -99,7 +101,7 @@ function JobFinder:_find(prompt, process_result, process_complete)
     enable_recording = false,
 
     on_stdout = on_output,
-    on_stderr = on_output,
+    -- on_stderr = on_output,
 
     on_exit = function()
       process_complete()
@@ -127,15 +129,15 @@ function DynamicFinder:new(opts)
 end
 
 function DynamicFinder:_find(prompt, process_result, process_complete)
-  a.scope(function()
-    local results = await(self.fn(prompt))
+  local results = self.fn(prompt)
 
-    for _, result in ipairs(results) do
-      if process_result(self.entry_maker(result)) then return end
+  for _, result in ipairs(results) do
+    if process_result(self.entry_maker(result)) then
+      return
     end
+  end
 
-    process_complete()
-  end)
+  process_complete()
 end
 
 --- Return a new Finder
@@ -148,31 +150,18 @@ finders._new = function(opts)
   return JobFinder:new(opts)
 end
 
-finders.new_job = function(command_generator, entry_maker, maximum_results, cwd)
-  -- return async_job_finder {
-  --   command_generator = command_generator,
-  --   entry_maker = entry_maker,
-  --   maximum_results = maximum_results,
-  --   cwd = cwd,
-  -- }
+finders.new_async_job = function(opts)
+  if opts.writer then
+    return finders._new(opts)
+  end
 
-  return JobFinder:new {
-    fn_command = function(_, prompt)
-      local command_list = command_generator(prompt)
-      if command_list == nil then
-        return nil
-      end
+  return async_job_finder(opts)
+end
 
-      local command = table.remove(command_list, 1)
-
-      return {
-        command = command,
-        args = command_list,
-      }
-    end,
-
+finders.new_job = function(command_generator, entry_maker, _, cwd)
+  return async_job_finder {
+    command_generator = command_generator,
     entry_maker = entry_maker,
-    maximum_results = maximum_results,
     cwd = cwd,
   }
 end
@@ -180,8 +169,8 @@ end
 --- One shot job
 ---@param command_list string[]: Command list to execute.
 ---@param opts table: stuff
----         @key entry_maker function Optional: function(line: string) => table
----         @key cwd string
+--         @key entry_maker function Optional: function(line: string) => table
+--         @key cwd string
 finders.new_oneshot_job = function(command_list, opts)
   opts = opts or {}
 

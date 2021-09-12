@@ -1,12 +1,13 @@
 -- TODO: Customize keymap
 local a = vim.api
 
-local actions = require('telescope.actions')
-local config = require('telescope.config')
+local actions = require "telescope.actions"
+local config = require "telescope.config"
 
 local mappings = {}
 
-mappings.default_mappings = config.values.default_mappings or {
+mappings.default_mappings = config.values.default_mappings
+  or {
     i = {
       ["<C-n>"] = actions.move_selection_next,
       ["<C-p>"] = actions.move_selection_previous,
@@ -16,7 +17,7 @@ mappings.default_mappings = config.values.default_mappings or {
       ["<Down>"] = actions.move_selection_next,
       ["<Up>"] = actions.move_selection_previous,
 
-      ["<CR>"] = actions.select_default + actions.center,
+      ["<CR>"] = actions.select_default,
       ["<C-x>"] = actions.select_horizontal,
       ["<C-v>"] = actions.select_vertical,
       ["<C-t>"] = actions.select_tab,
@@ -28,12 +29,13 @@ mappings.default_mappings = config.values.default_mappings or {
       ["<S-Tab>"] = actions.toggle_selection + actions.move_selection_better,
       ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
       ["<M-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
-      ["<C-l>"] = actions.complete_tag
+      ["<C-l>"] = actions.complete_tag,
+      ["<C-_>"] = actions.which_key, -- keys from pressing <C-/>
     },
 
     n = {
       ["<esc>"] = actions.close,
-      ["<CR>"] = actions.select_default + actions.center,
+      ["<CR>"] = actions.select_default,
       ["<C-x>"] = actions.select_horizontal,
       ["<C-v>"] = actions.select_vertical,
       ["<C-t>"] = actions.select_tab,
@@ -55,16 +57,18 @@ mappings.default_mappings = config.values.default_mappings or {
 
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
+      ["?"] = actions.which_key,
     },
   }
 
-__TelescopeKeymapStore = __TelescopeKeymapStore or setmetatable({}, {
-  __index = function(t, k)
-    rawset(t, k, {})
+__TelescopeKeymapStore = __TelescopeKeymapStore
+  or setmetatable({}, {
+    __index = function(t, k)
+      rawset(t, k, {})
 
-    return rawget(t, k)
-  end
-})
+      return rawget(t, k)
+    end,
+  })
 local keymap_store = __TelescopeKeymapStore
 
 local _mapping_key_id = 0
@@ -80,7 +84,6 @@ local assign_function = function(prompt_bufnr, func)
 
   return func_id
 end
-
 
 --[[
 Usage:
@@ -107,22 +110,20 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
   end
 
   opts = opts or {}
-  if opts.noremap == nil then opts.noremap = true end
-  if opts.silent == nil then opts.silent = true end
+  if opts.noremap == nil then
+    opts.noremap = true
+  end
+  if opts.silent == nil then
+    opts.silent = true
+  end
 
   if type(key_func) == "string" then
     key_func = actions[key_func]
   elseif type(key_func) == "table" then
     if key_func.type == "command" then
-      a.nvim_buf_set_keymap(
-        prompt_bufnr,
-        mode,
-        key_bind,
-        key_func[1],
-        opts or {
-          silent = true
-        }
-      )
+      a.nvim_buf_set_keymap(prompt_bufnr, mode, key_bind, key_func[1], opts or {
+        silent = true,
+      })
       return
     elseif key_func.type == "action_key" then
       key_func = actions[key_func[1]]
@@ -158,13 +159,7 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
     )
   end
 
-  a.nvim_buf_set_keymap(
-    prompt_bufnr,
-    mode,
-    key_bind,
-    map_string,
-    opts
-  )
+  a.nvim_buf_set_keymap(prompt_bufnr, mode, key_bind, map_string, opts)
 end
 
 mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
@@ -184,7 +179,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     if attach_results == nil then
       error(
         "Attach mappings must always return a value. `true` means use default mappings, "
-        .. "`false` means only use attached mappings"
+          .. "`false` means only use attached mappings"
       )
     end
 
@@ -205,7 +200,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     end
   end
 
-  -- TODO: Probalby should not overwrite any keymaps
+  -- TODO: Probably should not overwrite any keymaps
   for mode, mode_map in pairs(mappings.default_mappings) do
     mode = string.lower(mode)
 
@@ -218,26 +213,18 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     end
   end
 
-  vim.cmd(string.format(
-    [[autocmd BufDelete %s :lua require('telescope.mappings').clear(%s)]],
-    prompt_bufnr,
-    prompt_bufnr
-  ))
+  vim.cmd(
+    string.format([[autocmd BufDelete %s :lua require('telescope.mappings').clear(%s)]], prompt_bufnr, prompt_bufnr)
+  )
 end
 
 mappings.execute_keymap = function(prompt_bufnr, keymap_identifier)
   local key_func = keymap_store[prompt_bufnr][keymap_identifier]
 
-  assert(
-    key_func,
-    string.format(
-      "Unsure of how we got this failure: %s %s",
-      prompt_bufnr,
-      keymap_identifier
-    )
-  )
+  assert(key_func, string.format("Unsure of how we got this failure: %s %s", prompt_bufnr, keymap_identifier))
 
   key_func(prompt_bufnr)
+  vim.cmd [[ doautocmd User TelescopeKeymap ]]
 end
 
 mappings.clear = function(prompt_bufnr)

@@ -1,4 +1,3 @@
-
 local LinkedList = {}
 LinkedList.__index = LinkedList
 
@@ -27,7 +26,7 @@ end
 
 local create_node = function(item)
   return {
-    item = item
+    item = item,
   }
 end
 
@@ -122,7 +121,6 @@ function LinkedList:place_after(index, node, item)
     new_node.next.prev = new_node
   end
 
-
   if self.track_at then
     if index == self.track_at then
       self._tracked_node = new_node
@@ -166,7 +164,6 @@ function LinkedList:place_before(index, node, item)
     new_node.next.prev = new_node
   end
 
-
   if self.track_at then
     if index == self.track_at - 1 then
       self._tracked_node = node
@@ -176,14 +173,13 @@ function LinkedList:place_before(index, node, item)
       elseif final_size > self.track_at then
         self._tracked_node = self._tracked_node.prev
       else
-          return
+        return
       end
     end
 
     self.tracked = self._tracked_node.item
   end
 end
-
 
 -- Do you even do this in linked lists...?
 -- function LinkedList:remove(item)
@@ -216,6 +212,43 @@ function LinkedList:ipairs()
     current_node = current_node.next
     index = index + 1
     return index, node.item, node
+  end
+end
+
+function LinkedList:truncate(max_results)
+  if max_results >= self.size then
+    return
+  end
+
+  local current_node
+  if max_results < self.size - max_results then
+    local index = 1
+    current_node = self.head
+    while index < max_results do
+      local node = current_node
+      if not node.next then
+        break
+      end
+      current_node = current_node.next
+      index = index + 1
+    end
+    self.size = max_results
+  else
+    current_node = self.tail
+    while self.size > max_results do
+      if current_node.prev == nil then
+        break
+      end
+      current_node = current_node.prev
+      self.size = self.size - 1
+    end
+  end
+  self.tail = current_node
+  self.tail.next = nil
+  if max_results < self.track_at then
+    self.track_at = max_results
+    self.tracked = current_node.item
+    self._tracked_node = current_node
   end
 end
 

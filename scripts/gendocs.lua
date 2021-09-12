@@ -1,4 +1,5 @@
 -- Setup telescope with defaults
+if RELOAD then RELOAD('telescope') end
 require('telescope').setup()
 
 local docgen = require('docgen')
@@ -9,18 +10,19 @@ docs.test = function()
   -- TODO: Fix the other files so that we can add them here.
   local input_files = {
     "./lua/telescope/init.lua",
+    "./lua/telescope/command.lua",
     "./lua/telescope/builtin/init.lua",
+    "./lua/telescope/themes.lua",
     "./lua/telescope/pickers/layout_strategies.lua",
+    "./lua/telescope/config/resolve.lua",
     "./lua/telescope/actions/init.lua",
     "./lua/telescope/actions/state.lua",
     "./lua/telescope/actions/set.lua",
+    "./lua/telescope/actions/utils.lua",
+    "./lua/telescope/actions/generate.lua",
     "./lua/telescope/previewers/init.lua",
-    "./lua/telescope/themes.lua",
+    "./lua/telescope/actions/history.lua",
   }
-
-  table.sort(input_files, function(a, b)
-    return #a < #b
-  end)
 
   local output_file = "./doc/telescope.txt"
   local output_file_handle = io.open(output_file, "w")

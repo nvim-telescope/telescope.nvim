@@ -1,6 +1,6 @@
-local log = require("telescope.log")
+local log = require "telescope.log"
 
-local LinkedList = require('telescope.algos.linked_list')
+local LinkedList = require "telescope.algos.linked_list"
 
 --[[
 
@@ -27,7 +27,7 @@ local EntryManager = {}
 EntryManager.__index = EntryManager
 
 function EntryManager:new(max_results, set_entry, info)
-  log.trace("Creating entry_manager...")
+  log.trace "Creating entry_manager..."
 
   info = info or {}
   info.looped = 0
@@ -136,7 +136,7 @@ function EntryManager:add_entry(picker, score, entry)
   local info = self.info
   info.maxed = info.maxed or 0
 
-  local new_container = { entry, score, }
+  local new_container = { entry, score }
 
   -- Short circuit for bad scores -- they never need to be displayed.
   --    Just save them and we'll deal with them later.
@@ -155,7 +155,10 @@ function EntryManager:add_entry(picker, score, entry)
     info.looped = info.looped + 1
 
     if container[2] > score then
-      -- print("Inserting: ", picker, index, node, new_container)
+      return self:_insert_container_before(picker, index, node, new_container)
+    end
+
+    if score < 1 and container[2] == score and #entry.ordinal < #container[1].ordinal then
       return self:_insert_container_before(picker, index, node, new_container)
     end
 
@@ -174,11 +177,13 @@ function EntryManager:add_entry(picker, score, entry)
 end
 
 function EntryManager:iter()
-  return coroutine.wrap(function()
-    for val in self.linked_states:iter() do
-      coroutine.yield(val[1])
+  local iterator = self.linked_states:iter()
+  return function()
+    local val = iterator()
+    if val then
+      return val[1]
     end
-  end)
+  end
 end
 
 return EntryManager

@@ -1,6 +1,4 @@
-require('telescope._compat')
-
-local _extensions = require('telescope._extensions')
+local _extensions = require "telescope._extensions"
 
 local telescope = {}
 
@@ -33,11 +31,11 @@ function telescope.setup(opts)
   opts = opts or {}
 
   if opts.default then
-    error("'default' is not a valid value for setup. See 'defaults'")
+    error "'default' is not a valid value for setup. See 'defaults'"
   end
 
-  require('telescope.config').set_defaults(opts.defaults)
-  require('telescope.config').set_pickers(opts.pickers)
+  require("telescope.config").set_defaults(opts.defaults)
+  require("telescope.config").set_pickers(opts.pickers)
   _extensions.set_config(opts.extensions)
 end
 
@@ -55,10 +53,10 @@ end
 
 --- Use telescope.extensions to reference any extensions within your configuration. <br>
 --- While the docs currently generate this as a function, it's actually a table. Sorry.
-telescope.extensions = require('telescope._extensions').manager
+telescope.extensions = require("telescope._extensions").manager
 
 telescope.__format_setup_keys = function()
-  local descriptions = require('telescope.config').descriptions
+  local descriptions = require("telescope.config").descriptions
 
   local names = vim.tbl_keys(descriptions)
   table.sort(names)
@@ -70,12 +68,12 @@ telescope.__format_setup_keys = function()
     table.insert(result, "")
     table.insert(result, string.format("%s*telescope.defaults.%s*", string.rep(" ", 70 - 20 - #name), name))
     table.insert(result, string.format("%s: ~", name))
-    for _, line in ipairs(vim.split(desc, '\n')) do
+    for _, line in ipairs(vim.split(desc, "\n")) do
       table.insert(result, string.format("    %s", line))
     end
   end
 
-  table.insert(result, '</pre>')
+  table.insert(result, "</pre>")
   return result
 end
 

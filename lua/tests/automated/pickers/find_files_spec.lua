@@ -1,26 +1,27 @@
-require('plenary.reload').reload_module('telescope')
+require("plenary.reload").reload_module "telescope"
 
-local tester = require('telescope.pickers._test')
+local tester = require "telescope.pickers._test"
 
 local disp = function(val)
   return vim.inspect(val, { newline = " ", indent = "" })
 end
 
-describe('builtin.find_files', function()
-  it('should find the readme', function()
-    tester.run_file('find_files__readme')
+describe("builtin.find_files", function()
+  it("should find the readme", function()
+    tester.run_file "find_files__readme"
   end)
 
-  it('should be able to move selections', function()
-    tester.run_file('find_files__with_ctrl_n')
+  it("should be able to move selections", function()
+    tester.run_file "find_files__with_ctrl_n"
   end)
 
   for _, configuration in ipairs {
-    { sorting_strategy = 'descending', },
-    { sorting_strategy = 'ascending', },
+    { sorting_strategy = "descending" },
+    { sorting_strategy = "ascending" },
   } do
-    it('should not display devicons when disabled: ' .. disp(configuration), function()
-      tester.run_string(string.format([[
+    it("should not display devicons when disabled: " .. disp(configuration), function()
+      tester.run_string(string.format(
+        [[
         local max_results = 5
 
         tester.builtin_picker('find_files', 'README.md', {
@@ -35,21 +36,27 @@ describe('builtin.find_files', function()
         }, vim.tbl_extend("force", {
           disable_devicons = true,
           sorter = require('telescope.sorters').get_fzy_sorter(),
-          results_height = max_results,
           layout_strategy = 'center',
+          layout_config = {
+            height = max_results,
+            width = 0.9,
+          },
         }, vim.fn.json_decode([==[%s]==])))
-      ]], vim.fn.json_encode(configuration)))
+      ]],
+        vim.fn.json_encode(configuration)
+      ))
     end)
 
-    it('should only save one line for ascending, but many for descending', function()
+    it("should only save one line for ascending, but many for descending", function()
       local expected
-      if configuration.sorting_strategy == 'descending' then
+      if configuration.sorting_strategy == "descending" then
         expected = 5
       else
         expected = 1
       end
 
-      tester.run_string(string.format([[
+      tester.run_string(string.format(
+        [[
         tester.builtin_picker('find_files', 'README.md', {
           post_typed = {
             { %s, function() return #GetResults() end },
@@ -57,18 +64,25 @@ describe('builtin.find_files', function()
         }, vim.tbl_extend("force", {
           disable_devicons = true,
           sorter = require('telescope.sorters').get_fzy_sorter(),
-          results_height = 5,
           layout_strategy = 'center',
+          layout_config = {
+            height = max_results,
+            width = 0.9,
+          },
         }, vim.fn.json_decode([==[%s]==])))
-      ]], expected, vim.fn.json_encode(configuration)))
+      ]],
+        expected,
+        vim.fn.json_encode(configuration)
+      ))
     end)
 
-    it('use devicons, if it has it when enabled', function()
-      if not pcall(require, 'nvim-web-devicons') then
+    it("use devicons, if it has it when enabled", function()
+      if not pcall(require, "nvim-web-devicons") then
         return
       end
 
-      tester.run_string(string.format([[
+      tester.run_string(string.format(
+        [[
         tester.builtin_picker('find_files', 'README.md', {
           post_typed = {
             { "> README.md", GetPrompt },
@@ -82,11 +96,13 @@ describe('builtin.find_files', function()
           disable_devicons = false,
           sorter = require('telescope.sorters').get_fzy_sorter(),
         }, vim.fn.json_decode([==[%s]==])))
-      ]], vim.fn.json_encode(configuration)))
+      ]],
+        vim.fn.json_encode(configuration)
+      ))
     end)
   end
 
-  it('should find the readme, using lowercase', function()
+  it("should find the readme, using lowercase", function()
     tester.run_string [[
       tester.builtin_picker('find_files', 'readme.md', {
         post_close = {
@@ -96,7 +112,7 @@ describe('builtin.find_files', function()
     ]]
   end)
 
-  it('should find the pickers.lua, using lowercase', function()
+  it("should find the pickers.lua, using lowercase", function()
     tester.run_string [[
       tester.builtin_picker('find_files', 'pickers.lua', {
         post_close = {
@@ -106,7 +122,7 @@ describe('builtin.find_files', function()
     ]]
   end)
 
-  it('should find the pickers.lua', function()
+  it("should find the pickers.lua", function()
     tester.run_string [[
       tester.builtin_picker('find_files', 'pickers.lua', {
         post_close = {
@@ -117,7 +133,7 @@ describe('builtin.find_files', function()
     ]]
   end)
 
-  it('should be able to c-n the items', function()
+  it("should be able to c-n the items", function()
     tester.run_string [[
       tester.builtin_picker('find_files', 'fixtures/file<c-p>', {
         post_typed = {
@@ -145,7 +161,7 @@ describe('builtin.find_files', function()
     ]]
   end)
 
-  it('should be able to get the current selection', function()
+  it("should be able to get the current selection", function()
     tester.run_string [[
       tester.builtin_picker('find_files', 'fixtures/file_abc', {
         post_typed = {

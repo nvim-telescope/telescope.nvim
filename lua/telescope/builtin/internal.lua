@@ -1,15 +1,17 @@
-local actions = require('telescope.actions')
-local action_set = require('telescope.actions.set')
-local action_state = require('telescope.actions.state')
-local finders = require('telescope.finders')
-local make_entry = require('telescope.make_entry')
-local path = require('telescope.path')
-local pickers = require('telescope.pickers')
-local previewers = require('telescope.previewers')
-local sorters = require('telescope.sorters')
-local utils = require('telescope.utils')
+local actions = require "telescope.actions"
+local action_set = require "telescope.actions.set"
+local action_state = require "telescope.actions.state"
+local finders = require "telescope.finders"
+local make_entry = require "telescope.make_entry"
+local Path = require "plenary.path"
+local pickers = require "telescope.pickers"
+local previewers = require "telescope.previewers"
+local p_window = require "telescope.pickers.window"
+local sorters = require "telescope.sorters"
+local state = require "telescope.state"
+local utils = require "telescope.utils"
 
-local conf = require('telescope.config').values
+local conf = require("telescope.config").values
 
 local filter = vim.tbl_filter
 
@@ -19,12 +21,13 @@ local internal = {}
 --  vim.fn.setreg("+", "nnoremap $TODO :lua require('telescope.builtin').<whatever>()<CR>")
 -- TODO: Can we just do the names instead?
 internal.builtin = function(opts)
-  opts.hide_filename = utils.get_default(opts.hide_filename, true)
+  opts.path_display = utils.get_default(opts.path_display, "hidden")
   opts.ignore_filename = utils.get_default(opts.ignore_filename, true)
+  opts.include_extensions = utils.get_default(opts.include_extensions, false)
 
   local objs = {}
 
-  for k, v in pairs(require'telescope.builtin') do
+  for k, v in pairs(require "telescope.builtin") do
     local debug_info = debug.getinfo(v)
     table.insert(objs, {
       filename = string.sub(debug_info.source, 2),
@@ -32,9 +35,24 @@ internal.builtin = function(opts)
     })
   end
 
+  local title = "Telescope Builtin"
+
+  if opts.include_extensions then
+    title = "Telescope Pickers"
+    for ext, funcs in pairs(require("telescope").extensions) do
+      for func_name, func_obj in pairs(funcs) do
+        local debug_info = debug.getinfo(func_obj)
+        table.insert(objs, {
+          filename = string.sub(debug_info.source, 2),
+          text = string.format("%s : %s", ext, func_name),
+        })
+      end
+    end
+  end
+
   pickers.new(opts, {
-    prompt_title = 'Telescope Builtin',
-    finder    = finders.new_table {
+    prompt_title = title,
+    finder = finders.new_table {
       results = objs,
       entry_maker = function(entry)
         return {
@@ -42,44 +60,118 @@ internal.builtin = function(opts)
           text = entry.text,
           display = entry.text,
           ordinal = entry.text,
-          filename = entry.filename
+          filename = entry.filename,
         }
-      end
+      end,
     },
     previewer = previewers.builtin.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
       actions.select_default:replace(actions.run_builtin)
       return true
-    end
+    end,
+  }):find()
+end
+
+internal.resume = function(opts)
+  opts = opts or {}
+  opts.cache_index = vim.F.if_nil(opts.cache_index, 1)
+
+  local cached_pickers = state.get_global_key "cached_pickers"
+  if cached_pickers == nil or vim.tbl_isempty(cached_pickers) then
+    print "No picker(s) cached."
+    return
+  end
+  local picker = cached_pickers[opts.cache_index]
+  if picker == nil then
+    print("Index too large as there are only %s pickers cached", #cached_pickers)
+    return
+  end
+  -- reset layout strategy and get_window_options if default as only one is valid
+  -- and otherwise unclear which was actually set
+  if picker.layout_strategy == conf.layout_strategy then
+    picker.layout_strategy = nil
+  end
+  if picker.get_window_options == p_window.get_window_options then
+    picker.get_window_options = nil
+  end
+  picker.cache_picker.index = opts.cache_index
+
+  -- avoid partial `opts.cache_picker` at picker creation
+  if opts.cache_picker ~= false then
+    picker.cache_picker = vim.tbl_extend("keep", opts.cache_picker or {}, picker.cache_picker)
+  else
+    picker.cache_picker.disabled = true
+  end
+  opts.cache_picker = nil
+  pickers.new(opts, picker):find()
+end
+
+internal.pickers = function(opts)
+  local cached_pickers = state.get_global_key "cached_pickers"
+  if cached_pickers == nil or vim.tbl_isempty(cached_pickers) then
+    print "No picker(s) cached."
+    return
+  end
+
+  opts = opts or {}
+
+  -- clear cache picker for immediate pickers.new and pass option to resumed picker
+  if opts.cache_picker ~= nil then
+    opts._cache_picker = opts.cache_picker
+    opts.cache_picker = nil
+  end
+
+  pickers.new(opts, {
+    prompt_title = "Pickers",
+    finder = finders.new_table {
+      results = cached_pickers,
+      entry_maker = make_entry.gen_from_picker(opts),
+    },
+    previewer = previewers.pickers.new(opts),
+    sorter = conf.generic_sorter(opts),
+    cache_picker = false,
+    attach_mappings = function(_, map)
+      actions.select_default:replace(function(prompt_bufnr)
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local selection_index = current_picker:get_index(current_picker:get_selection_row())
+        actions._close(prompt_bufnr, cached_pickers[selection_index].initial_mode == "insert")
+        opts.cache_picker = opts._cache_picker
+        opts["cache_index"] = selection_index
+        internal.resume(opts)
+      end)
+      map("i", "<C-x>", actions.remove_selected_picker)
+      map("n", "<C-x>", actions.remove_selected_picker)
+      return true
+    end,
   }):find()
 end
 
 internal.planets = function(opts)
   local show_pluto = opts.show_pluto or false
 
-  local sourced_file = require('plenary.debug_utils').sourced_filepath()
+  local sourced_file = require("plenary.debug_utils").sourced_filepath()
   local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h:h")
 
-  local globbed_files = vim.fn.globpath(base_directory .. '/data/memes/planets/', '*', true, true)
+  local globbed_files = vim.fn.globpath(base_directory .. "/data/memes/planets/", "*", true, true)
   local acceptable_files = {}
   for _, v in ipairs(globbed_files) do
-    if show_pluto or not v:find("pluto") then
-      table.insert(acceptable_files,vim.fn.fnamemodify(v, ':t'))
+    if show_pluto or not v:find "pluto" then
+      table.insert(acceptable_files, vim.fn.fnamemodify(v, ":t"))
     end
   end
 
-  pickers.new {
-    prompt_title = 'Planets',
+  pickers.new({
+    prompt_title = "Planets",
     finder = finders.new_table {
       results = acceptable_files,
       entry_maker = function(line)
         return {
           ordinal = line,
           display = line,
-          filename = base_directory .. '/data/memes/planets/' .. line,
+          filename = base_directory .. "/data/memes/planets/" .. line,
         }
-      end
+      end,
     },
     previewer = previewers.cat.new(opts),
     sorter = conf.generic_sorter(opts),
@@ -93,14 +185,30 @@ internal.planets = function(opts)
 
       return true
     end,
-  }:find()
+  }):find()
 end
 
 internal.symbols = function(opts)
-  local files = vim.api.nvim_get_runtime_file('data/telescope-sources/*.json', true)
-  if table.getn(files) == 0 then
-    print("No sources found! Check out https://github.com/nvim-telescope/telescope-symbols.nvim " ..
-          "for some prebuild symbols or how to create you own symbol source.")
+  local initial_mode = vim.fn.mode()
+  local files = vim.api.nvim_get_runtime_file("data/telescope-sources/*.json", true)
+  local data_path = (function()
+    if not opts.symbol_path then
+      return Path:new { vim.fn.stdpath "data", "telescope", "symbols" }
+    else
+      return Path:new { opts.symbol_path }
+    end
+  end)()
+  if data_path:exists() then
+    for _, v in ipairs(require("plenary.scandir").scan_dir(data_path:absolute(), { search_pattern = "%.json$" })) do
+      table.insert(files, v)
+    end
+  end
+
+  if #files == 0 then
+    print(
+      "No sources found! Check out https://github.com/nvim-telescope/telescope-symbols.nvim "
+        .. "for some prebuild symbols or how to create you own symbol source."
+    )
     return
   end
 
@@ -119,38 +227,42 @@ internal.symbols = function(opts)
 
   local results = {}
   for _, source in ipairs(sources) do
-    local data = vim.fn.json_decode(path.read_file(source))
+    local data = vim.fn.json_decode(Path:new(source):read())
     for _, entry in ipairs(data) do
       table.insert(results, entry)
     end
   end
 
   pickers.new(opts, {
-    prompt_title = 'Symbols',
-    finder    = finders.new_table {
-      results     = results,
+    prompt_title = "Symbols",
+    finder = finders.new_table {
+      results = results,
       entry_maker = function(entry)
         return {
           value = entry,
-          ordinal = entry[1] .. ' ' .. entry[2],
-          display = entry[1] .. ' ' .. entry[2],
+          ordinal = entry[1] .. " " .. entry[2],
+          display = entry[1] .. " " .. entry[2],
         }
-      end
+      end,
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
-      actions.select_default:replace(actions.insert_symbol)
+      if initial_mode == "i" then
+        actions.select_default:replace(actions.insert_symbol_i)
+      else
+        actions.select_default:replace(actions.insert_symbol)
+      end
       return true
-    end
+    end,
   }):find()
 end
 
 internal.commands = function(opts)
   pickers.new(opts, {
-    prompt_title = 'Commands',
+    prompt_title = "Commands",
     finder = finders.new_table {
       results = (function()
-        local command_iter = vim.api.nvim_get_commands({})
+        local command_iter = vim.api.nvim_get_commands {}
         local commands = {}
 
         for _, cmd in pairs(command_iter) do
@@ -179,7 +291,7 @@ internal.commands = function(opts)
       end)
 
       return true
-    end
+    end,
   }):find()
 end
 
@@ -191,9 +303,9 @@ internal.quickfix = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title  = 'Quickfix',
-    finder    = finders.new_table {
-      results     = locations,
+    prompt_title = "Quickfix",
+    finder = finders.new_table {
+      results = locations,
       entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
     },
     previewer = conf.qflist_previewer(opts),
@@ -214,9 +326,9 @@ internal.loclist = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title = 'Loclist',
-    finder    = finders.new_table {
-      results     = locations,
+    prompt_title = "Loclist",
+    finder = finders.new_table {
+      results = locations,
       entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
     },
     previewer = conf.qflist_previewer(opts),
@@ -232,8 +344,8 @@ internal.oldfiles = function(opts)
   local results = {}
 
   if opts.include_current_session then
-    for _, buffer in ipairs(vim.split(vim.fn.execute(':buffers! t'), "\n")) do
-      local match = tonumber(string.match(buffer, '%s*(%d+)'))
+    for _, buffer in ipairs(vim.split(vim.fn.execute ":buffers! t", "\n")) do
+      local match = tonumber(string.match(buffer, "%s*(%d+)"))
       if match then
         local file = vim.api.nvim_buf_get_name(match)
         if vim.loop.fs_stat(file) and match ~= current_buffer then
@@ -251,15 +363,15 @@ internal.oldfiles = function(opts)
 
   if opts.cwd_only then
     local cwd = vim.loop.cwd()
-    cwd = cwd:gsub([[\]],[[\\]])
+    cwd = cwd:gsub([[\]], [[\\]])
     results = vim.tbl_filter(function(file)
       return vim.fn.matchstrpos(file, cwd)[2] ~= -1
     end, results)
   end
 
   pickers.new(opts, {
-    prompt_title = 'Oldfiles',
-    finder = finders.new_table{
+    prompt_title = "Oldfiles",
+    finder = finders.new_table {
       results = results,
       entry_maker = opts.entry_maker or make_entry.gen_from_file(opts),
     },
@@ -269,7 +381,7 @@ internal.oldfiles = function(opts)
 end
 
 internal.command_history = function(opts)
-  local history_string = vim.fn.execute('history cmd')
+  local history_string = vim.fn.execute "history cmd"
   local history_list = vim.split(history_string, "\n")
 
   local results = {}
@@ -280,15 +392,15 @@ internal.command_history = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title = 'Command History',
+    prompt_title = "Command History",
     finder = finders.new_table(results),
     sorter = conf.generic_sorter(opts),
 
     attach_mappings = function(_, map)
-      map('i', '<CR>', actions.set_command_line)
-      map('n', '<CR>', actions.set_command_line)
-      map('n', '<C-e>', actions.edit_command_line)
-      map('i', '<C-e>', actions.edit_command_line)
+      map("i", "<CR>", actions.set_command_line)
+      map("n", "<CR>", actions.set_command_line)
+      map("n", "<C-e>", actions.edit_command_line)
+      map("i", "<C-e>", actions.edit_command_line)
 
       -- TODO: Find a way to insert the text... it seems hard.
       -- map('i', '<C-i>', actions.insert_value, { expr = true })
@@ -299,7 +411,7 @@ internal.command_history = function(opts)
 end
 
 internal.search_history = function(opts)
-  local search_string = vim.fn.execute('history search')
+  local search_string = vim.fn.execute "history search"
   local search_list = vim.split(search_string, "\n")
 
   local results = {}
@@ -310,15 +422,15 @@ internal.search_history = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title = 'Search History',
+    prompt_title = "Search History",
     finder = finders.new_table(results),
     sorter = conf.generic_sorter(opts),
 
     attach_mappings = function(_, map)
-      map('i', '<CR>', actions.set_search_line)
-      map('n', '<CR>', actions.set_search_line)
-      map('n', '<C-e>', actions.edit_search_line)
-      map('i', '<C-e>', actions.edit_search_line)
+      map("i", "<CR>", actions.set_search_line)
+      map("n", "<CR>", actions.set_search_line)
+      map("n", "<C-e>", actions.edit_search_line)
+      map("i", "<C-e>", actions.edit_search_line)
 
       -- TODO: Find a way to insert the text... it seems hard.
       -- map('i', '<C-i>', actions.insert_value, { expr = true })
@@ -330,11 +442,10 @@ end
 
 internal.vim_options = function(opts)
   -- Load vim options.
-  local vim_opts = loadfile(utils.data_directory() .. path.separator .. 'options' ..
-                            path.separator .. 'options.lua')().options
+  local vim_opts = loadfile(Path:new({ utils.data_directory(), "options", "options.lua" }):absolute())().options
 
   pickers.new(opts, {
-    prompt = 'options',
+    prompt_title = "options",
     finder = finders.new_table {
       results = vim_opts,
       entry_maker = opts.entry_maker or make_entry.gen_from_vimoptions(opts),
@@ -386,7 +497,7 @@ internal.vim_options = function(opts)
       end)
 
       return true
-    end
+    end,
   }):find()
 end
 
@@ -394,9 +505,9 @@ internal.help_tags = function(opts)
   opts.lang = utils.get_default(opts.lang, vim.o.helplang)
   opts.fallback = utils.get_default(opts.fallback, true)
 
-  local langs = vim.split(opts.lang, ',', true)
-  if opts.fallback and not vim.tbl_contains(langs, 'en') then
-    table.insert(langs, 'en')
+  local langs = vim.split(opts.lang, ",", true)
+  if opts.fallback and not vim.tbl_contains(langs, "en") then
+    table.insert(langs, "en")
   end
   local langs_map = {}
   for _, lang in ipairs(langs) do
@@ -409,18 +520,18 @@ internal.help_tags = function(opts)
       if tag_files[lang] then
         table.insert(tag_files[lang], file)
       else
-        tag_files[lang] = {file}
+        tag_files[lang] = { file }
       end
     end
   end
 
   local help_files = {}
-  local all_files = vim.fn.globpath(vim.o.runtimepath, 'doc/*', 1, 1)
+  local all_files = vim.fn.globpath(vim.o.runtimepath, "doc/*", 1, 1)
   for _, fullpath in ipairs(all_files) do
     local file = utils.path_tail(fullpath)
-    if file == 'tags' then
-      add_tag_file('en', fullpath)
-    elseif file:match('^tags%-..$') then
+    if file == "tags" then
+      add_tag_file("en", fullpath)
+    elseif file:match "^tags%-..$" then
       local lang = file:sub(-2)
       add_tag_file(lang, fullpath)
     else
@@ -433,10 +544,10 @@ internal.help_tags = function(opts)
   local delimiter = string.char(9)
   for _, lang in ipairs(langs) do
     for _, file in ipairs(tag_files[lang] or {}) do
-      local lines = vim.split(path.read_file(file), '\n', true)
+      local lines = vim.split(Path:new(file):read(), "\n", true)
       for _, line in ipairs(lines) do
         -- TODO: also ignore tagComment starting with ';'
-        if not line:match'^!_TAG_' then
+        if not line:match "^!_TAG_" then
           local fields = vim.split(line, delimiter, true)
           if #fields == 3 and not tags_map[fields[1]] then
             table.insert(tags, {
@@ -453,16 +564,16 @@ internal.help_tags = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title = 'Help',
+    prompt_title = "Help",
     finder = finders.new_table {
       results = tags,
       entry_maker = function(entry)
         return {
-          value = entry.name .. '@' .. entry.lang,
+          value = entry.name .. "@" .. entry.lang,
           display = entry.name,
           ordinal = entry.name,
           filename = entry.filename,
-          cmd = entry.cmd
+          cmd = entry.cmd,
         }
       end,
     },
@@ -472,51 +583,51 @@ internal.help_tags = function(opts)
       action_set.select:replace(function(_, cmd)
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
-        if cmd == 'default' or cmd == 'horizontal' then
-          vim.cmd('help ' .. selection.value)
-        elseif cmd == 'vertical' then
-          vim.cmd('vert bo help ' .. selection.value)
-        elseif cmd == 'tab' then
-          vim.cmd('tab help ' .. selection.value)
+        if cmd == "default" or cmd == "horizontal" then
+          vim.cmd("help " .. selection.value)
+        elseif cmd == "vertical" then
+          vim.cmd("vert bo help " .. selection.value)
+        elseif cmd == "tab" then
+          vim.cmd("tab help " .. selection.value)
         end
       end)
 
       return true
-    end
+    end,
   }):find()
 end
 
 internal.man_pages = function(opts)
-  opts.sections = utils.get_default(opts.sections, {'1'})
-  assert(vim.tbl_islist(opts.sections), 'sections should be a list')
+  opts.sections = utils.get_default(opts.sections, { "1" })
+  assert(vim.tbl_islist(opts.sections), "sections should be a list")
   opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
-    local is_darwin = vim.loop.os_uname().sysname == 'Darwin'
-    return is_darwin and {'apropos', ' '} or {'apropos', ''}
+    local is_darwin = vim.loop.os_uname().sysname == "Darwin"
+    return is_darwin and { "apropos", " " } or { "apropos", "" }
   end)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts)
 
   pickers.new(opts, {
-    prompt_title = 'Man',
-    finder    = finders.new_oneshot_job(opts.man_cmd, opts),
+    prompt_title = "Man",
+    finder = finders.new_oneshot_job(opts.man_cmd, opts),
     previewer = previewers.man.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       action_set.select:replace(function(_, cmd)
         local selection = action_state.get_selected_entry()
-        local args = selection.section .. ' ' .. selection.value
+        local args = selection.section .. " " .. selection.value
 
         actions.close(prompt_bufnr)
-        if cmd == 'default' or cmd == 'horizontal' then
-          vim.cmd('Man ' .. args)
-        elseif cmd == 'vertical' then
-          vim.cmd('vert bo Man ' .. args)
-        elseif cmd == 'tab' then
-          vim.cmd('tab Man ' .. args)
+        if cmd == "default" or cmd == "horizontal" then
+          vim.cmd("Man " .. args)
+        elseif cmd == "vertical" then
+          vim.cmd("vert bo Man " .. args)
+        elseif cmd == "tab" then
+          vim.cmd("tab Man " .. args)
         end
       end)
 
       return true
-    end
+    end,
   }):find()
 end
 
@@ -526,9 +637,11 @@ internal.reloader = function(opts)
   -- filter out packages we don't want and track the longest package name
   opts.column_len = 0
   for index, module_name in pairs(package_list) do
-    if type(require(module_name)) ~= 'table' or
-       module_name:sub(1,1) == "_" or
-       package.searchpath(module_name, package.path) == nil then
+    if
+      type(require(module_name)) ~= "table"
+      or module_name:sub(1, 1) == "_"
+      or package.searchpath(module_name, package.path) == nil
+    then
       table.remove(package_list, index)
     elseif #module_name > opts.column_len then
       opts.column_len = #module_name
@@ -536,7 +649,7 @@ internal.reloader = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title = 'Packages',
+    prompt_title = "Packages",
     finder = finders.new_table {
       results = package_list,
       entry_maker = opts.entry_maker or make_entry.gen_from_packages(opts),
@@ -549,19 +662,19 @@ internal.reloader = function(opts)
         local selection = action_state.get_selected_entry()
 
         actions.close(prompt_bufnr)
-        require('plenary.reload').reload_module(selection.value)
+        require("plenary.reload").reload_module(selection.value)
         print(string.format("[%s] - module reloaded", selection.value))
       end)
 
       return true
-    end
+    end,
   }):find()
 end
 
 internal.buffers = function(opts)
   local bufnrs = filter(function(b)
     if 1 ~= vim.fn.buflisted(b) then
-        return false
+      return false
     end
     -- only hide unloaded buffers if opts.show_all_buffers is false, keep them listed if true or nil
     if opts.show_all_buffers == false and not vim.api.nvim_buf_is_loaded(b) then
@@ -575,12 +688,19 @@ internal.buffers = function(opts)
     end
     return true
   end, vim.api.nvim_list_bufs())
-  if not next(bufnrs) then return end
+  if not next(bufnrs) then
+    return
+  end
+  if opts.sort_mru then
+    table.sort(bufnrs, function(a, b)
+      return vim.fn.getbufinfo(a)[1].lastused > vim.fn.getbufinfo(b)[1].lastused
+    end)
+  end
 
   local buffers = {}
   local default_selection_idx = 1
   for _, bufnr in ipairs(bufnrs) do
-    local flag = bufnr == vim.fn.bufnr('') and '%' or (bufnr == vim.fn.bufnr('#') and '#' or ' ')
+    local flag = bufnr == vim.fn.bufnr "" and "%" or (bufnr == vim.fn.bufnr "#" and "#" or " ")
 
     if opts.sort_lastused and not opts.ignore_current_buffer and flag == "#" then
       default_selection_idx = 2
@@ -606,38 +726,119 @@ internal.buffers = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title = 'Buffers',
-    finder    = finders.new_table {
+    prompt_title = "Buffers",
+    finder = finders.new_table {
       results = buffers,
-      entry_maker = opts.entry_maker or make_entry.gen_from_buffer(opts)
+      entry_maker = opts.entry_maker or make_entry.gen_from_buffer(opts),
     },
-    previewer = conf.grep_previewer(opts),
+    previewer = previewers.buffers.new(opts),
     sorter = conf.generic_sorter(opts),
     default_selection_index = default_selection_idx,
+    attach_mappings = function(_, _)
+      action_set.select:enhance {
+        post = function()
+          local entry = action_state.get_selected_entry()
+          vim.api.nvim_win_set_cursor(0, { entry.lnum, entry.col or 0 })
+        end,
+      }
+      return true
+    end,
   }):find()
 end
 
 internal.colorscheme = function(opts)
-  local colors = vim.list_extend(opts.colors or {}, vim.fn.getcompletion('', 'color'))
+  local before_color = vim.api.nvim_exec("colorscheme", true)
+  local need_restore = true
 
-  pickers.new(opts,{
-    prompt = 'Change Colorscheme',
+  local colors = opts.colors or { before_color }
+  if not vim.tbl_contains(colors, before_color) then
+    table.insert(colors, 1, before_color)
+  end
+
+  colors = vim.list_extend(
+    colors,
+    vim.tbl_filter(function(color)
+      return color ~= before_color
+    end, vim.fn.getcompletion("", "color"))
+  )
+
+  local previewer
+  if opts.enable_preview then
+    -- define previewer
+    local bufnr = vim.api.nvim_get_current_buf()
+    local p = vim.api.nvim_buf_get_name(bufnr)
+
+    -- don't need previewer
+    if vim.fn.buflisted(bufnr) ~= 1 then
+      local deleted = false
+      local function del_win(win_id)
+        if win_id and vim.api.nvim_win_is_valid(win_id) then
+          utils.buf_delete(vim.api.nvim_win_get_buf(win_id))
+          pcall(vim.api.nvim_win_close, win_id, true)
+        end
+      end
+
+      previewer = previewers.new {
+        preview_fn = function(_, entry, status)
+          if not deleted then
+            deleted = true
+            del_win(status.preview_win)
+            del_win(status.preview_border_win)
+          end
+          vim.cmd("colorscheme " .. entry.value)
+        end,
+      }
+    else
+      -- show current buffer content in previewer
+      previewer = previewers.new_buffer_previewer {
+        get_buffer_by_name = function()
+          return p
+        end,
+        define_preview = function(self, entry)
+          if vim.loop.fs_stat(p) then
+            conf.buffer_previewer_maker(p, self.state.bufnr, { bufname = self.state.bufname })
+          else
+            local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+            vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
+          end
+          vim.cmd("colorscheme " .. entry.value)
+        end,
+      }
+    end
+  end
+
+  local picker = pickers.new(opts, {
+    prompt_title = "Change Colorscheme",
     finder = finders.new_table {
-      results = colors
+      results = colors,
     },
-    -- TODO: better preview?
     sorter = conf.generic_sorter(opts),
+    previewer = previewer,
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
-
         actions.close(prompt_bufnr)
+
+        need_restore = false
         vim.cmd("colorscheme " .. selection.value)
       end)
 
       return true
+    end,
+  })
+
+  if opts.enable_preview then
+    -- rewrite picker.close_windows. restore color if needed
+    local close_windows = picker.close_windows
+    picker.close_windows = function(status)
+      close_windows(status)
+      if need_restore then
+        vim.cmd("colorscheme " .. before_color)
+      end
     end
-  }):find()
+  end
+
+  picker:find()
 end
 
 internal.marks = function(opts)
@@ -647,8 +848,8 @@ internal.marks = function(opts)
   -- Pop off the header.
   table.remove(marks_table, 1)
 
-  pickers.new(opts,{
-    prompt = 'Marks',
+  pickers.new(opts, {
+    prompt_title = "Marks",
     finder = finders.new_table {
       results = marks_table,
       entry_maker = opts.entry_maker or make_entry.gen_from_marks(opts),
@@ -659,7 +860,7 @@ internal.marks = function(opts)
 end
 
 internal.registers = function(opts)
-  local registers_table = {"\"", "_", "#", "=", "_", "/", "*", "+", ":", ".", "%"}
+  local registers_table = { '"', "_", "#", "=", "_", "/", "*", "+", ":", ".", "%" }
 
   -- named
   for i = 0, 9 do
@@ -671,8 +872,8 @@ internal.registers = function(opts)
     table.insert(registers_table, string.char(i))
   end
 
-  pickers.new(opts,{
-    prompt_title = 'Registers',
+  pickers.new(opts, {
+    prompt_title = "Registers",
     finder = finders.new_table {
       results = registers_table,
       entry_maker = opts.entry_maker or make_entry.gen_from_registers(opts),
@@ -681,7 +882,7 @@ internal.registers = function(opts)
     sorter = sorters.get_levenshtein_sorter(),
     attach_mappings = function(_, map)
       actions.select_default:replace(actions.paste_register)
-      map('i', '<C-e>', actions.edit_register)
+      map("i", "<C-e>", actions.edit_register)
 
       return true
     end,
@@ -690,7 +891,7 @@ end
 
 -- TODO: make filtering include the mapping and the action
 internal.keymaps = function(opts)
-  local modes = {"n", "i", "c"}
+  local modes = { "n", "i", "c" }
   local keymaps_table = {}
 
   for _, mode in pairs(modes) do
@@ -705,7 +906,7 @@ internal.keymaps = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title = 'Key Maps',
+    prompt_title = "Key Maps",
     finder = finders.new_table {
       results = keymaps_table,
       entry_maker = function(line)
@@ -713,29 +914,27 @@ internal.keymaps = function(opts)
           valid = line ~= "",
           value = line,
           ordinal = utils.display_termcodes(line.lhs) .. line.rhs,
-          display = line.mode .. ' ' .. utils.display_termcodes(line.lhs) .. ' ' .. line.rhs
+          display = line.mode .. " " .. utils.display_termcodes(line.lhs) .. " " .. line.rhs,
         }
-      end
+      end,
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
-        vim.api.nvim_feedkeys(
-          vim.api.nvim_replace_termcodes(selection.value.lhs, true, false, true),
-        "t", true)
+        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(selection.value.lhs, true, false, true), "t", true)
         return actions.close(prompt_bufnr)
       end)
       return true
-    end
+    end,
   }):find()
 end
 
 internal.filetypes = function(opts)
-  local filetypes = vim.fn.getcompletion('', 'filetype')
+  local filetypes = vim.fn.getcompletion("", "filetype")
 
   pickers.new(opts, {
-    prompt_title = 'Filetypes',
+    prompt_title = "Filetypes",
     finder = finders.new_table {
       results = filetypes,
     },
@@ -744,28 +943,28 @@ internal.filetypes = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
-        vim.cmd('setfiletype ' .. selection[1])
+        vim.cmd("setfiletype " .. selection[1])
       end)
       return true
-    end
+    end,
   }):find()
 end
 
 internal.highlights = function(opts)
-  local highlights = vim.fn.getcompletion('', 'highlight')
+  local highlights = vim.fn.getcompletion("", "highlight")
 
   pickers.new(opts, {
-    prompt_title = 'Highlights',
+    prompt_title = "Highlights",
     finder = finders.new_table {
       results = highlights,
-      entry_maker = opts.entry_maker or make_entry.gen_from_highlights(opts)
+      entry_maker = opts.entry_maker or make_entry.gen_from_highlights(opts),
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
-        vim.cmd('hi ' .. selection.value)
+        vim.cmd("hi " .. selection.value)
       end)
       return true
     end,
@@ -776,10 +975,10 @@ end
 internal.autocommands = function(opts)
   local autocmd_table = {}
 
-  local pattern  = {}
+  local pattern = {}
   pattern.BUFFER = "<buffer=%d+>"
-  pattern.EVENT  = "[%a]+"
-  pattern.GROUP  = "[%a%d_:]+"
+  pattern.EVENT = "[%a]+"
+  pattern.GROUP = "[%a%d_:]+"
   pattern.INDENT = "^%s%s%s%s" -- match indentation of 4 spaces
 
   local event, group, ft_pat, cmd, source_file, source_lnum
@@ -805,7 +1004,7 @@ internal.autocommands = function(opts)
     -- non event/group lines
     ft_pat = line:match(pattern.INDENT .. "(%S+)")
     if ft_pat then
-      if ft_pat:match("^%d+") then
+      if ft_pat:match "^%d+" then
         ft_pat = "<buffer=" .. ft_pat .. ">"
       end
       current_ft = ft_pat
@@ -823,13 +1022,13 @@ internal.autocommands = function(opts)
     end
 
     if current_ft and cmd then
-      source_file, source_lnum = line:match("Last set from (.*) line (.*)")
+      source_file, source_lnum = line:match "Last set from (.*) line (.*)"
       if source_file then
         local autocmd = {}
-        autocmd.event       = current_event
-        autocmd.group       = current_group
-        autocmd.ft_pattern  = current_ft
-        autocmd.command     = cmd
+        autocmd.event = current_event
+        autocmd.group = current_group
+        autocmd.ft_pattern = current_ft
+        autocmd.command = cmd
         autocmd.source_file = source_file
         autocmd.source_lnum = source_lnum
         table.insert(autocmd_table, autocmd)
@@ -840,12 +1039,12 @@ internal.autocommands = function(opts)
   end
 
   local cmd_output = vim.fn.execute("verb autocmd *", "silent")
-  for line in cmd_output:gmatch("[^\r\n]+") do
+  for line in cmd_output:gmatch "[^\r\n]+" do
     inner_loop(line)
   end
 
-  pickers.new(opts,{
-    prompt_title = 'autocommands',
+  pickers.new(opts, {
+    prompt_title = "autocommands",
     finder = finders.new_table {
       results = autocmd_table,
       entry_maker = opts.entry_maker or make_entry.gen_from_autocommands(opts),
@@ -856,22 +1055,24 @@ internal.autocommands = function(opts)
       action_set.select:replace(function(_, type)
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
-        vim.cmd(action_state.select_key_to_edit_key(type) .. ' ' .. selection.value)
+        vim.cmd(action_state.select_key_to_edit_key(type) .. " " .. selection.value)
       end)
 
       return true
-    end
+    end,
   }):find()
 end
 
 internal.spell_suggest = function(opts)
-  if not vim.wo.spell then return false end
+  if not vim.wo.spell then
+    return false
+  end
 
-  local cursor_word = vim.fn.expand("<cword>")
+  local cursor_word = vim.fn.expand "<cword>"
   local suggestions = vim.fn.spellsuggest(cursor_word)
 
   pickers.new(opts, {
-    prompt_title = 'Spelling Suggestions',
+    prompt_title = "Spelling Suggestions",
     finder = finders.new_table {
       results = suggestions,
     },
@@ -880,45 +1081,39 @@ internal.spell_suggest = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
-        vim.cmd('normal! ciw' .. selection[1])
-        vim.cmd('stopinsert')
+        vim.cmd("normal! ciw" .. selection[1])
+        vim.cmd "stopinsert"
       end)
       return true
-    end
+    end,
   }):find()
 end
 
 internal.tagstack = function(opts)
   opts = opts or {}
-  local tagstack = vim.fn.gettagstack()
-  if vim.tbl_isempty(tagstack.items) then
-    print("No tagstack available")
+  local tagstack = vim.fn.gettagstack().items
+
+  local tags = {}
+  for i = #tagstack, 1, -1 do
+    local tag = tagstack[i]
+    tag.bufnr = tag.from[1]
+    if vim.api.nvim_buf_is_valid(tag.bufnr) then
+      tags[#tags + 1] = tag
+      tag.filename = vim.fn.bufname(tag.bufnr)
+      tag.lnum = tag.from[2]
+      tag.col = tag.from[3]
+
+      tag.text = vim.api.nvim_buf_get_lines(tag.bufnr, tag.lnum - 1, tag.lnum, false)[1] or ""
+    end
+  end
+
+  if vim.tbl_isempty(tags) then
+    print "No tagstack available"
     return
   end
 
-  for _, value in pairs(tagstack.items) do
-    value.valid = true
-    value.bufnr = value.from[1]
-    value.lnum = value.from[2]
-    value.col = value.from[3]
-    value.filename = vim.fn.bufname(value.from[1])
-
-    value.text = vim.api.nvim_buf_get_lines(
-      value.bufnr,
-      value.lnum - 1,
-      value.lnum,
-      false
-    )[1]
-  end
-
-  -- reverse the list
-  local tags = {}
-  for i = #tagstack.items, 1, -1 do
-    tags[#tags+1] = tagstack.items[i]
-  end
-
   pickers.new(opts, {
-    prompt_title = 'TagStack',
+    prompt_title = "TagStack",
     finder = finders.new_table {
       results = tags,
       entry_maker = make_entry.gen_from_quickfix(opts),
@@ -935,15 +1130,18 @@ internal.jumplist = function(opts)
   -- reverse the list
   local sorted_jumplist = {}
   for i = #jumplist, 1, -1 do
-    jumplist[i].text = ''
-    table.insert(sorted_jumplist, jumplist[i])
+    if vim.api.nvim_buf_is_valid(jumplist[i].bufnr) then
+      jumplist[i].text = vim.api.nvim_buf_get_lines(jumplist[i].bufnr, jumplist[i].lnum, jumplist[i].lnum + 1, false)[1]
+        or ""
+      table.insert(sorted_jumplist, jumplist[i])
+    end
   end
 
   pickers.new(opts, {
-    prompt_title = 'Jumplist',
+    prompt_title = "Jumplist",
     finder = finders.new_table {
       results = sorted_jumplist,
-      entry_maker = make_entry.gen_from_jumplist(opts),
+      entry_maker = make_entry.gen_from_quickfix(opts),
     },
     previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),

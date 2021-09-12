@@ -111,4 +111,4 @@ function! s:telescope_complete(arg,line,pos)
 endfunction
 
 " Telescope Commands with complete
-command! -nargs=* -complete=custom,s:telescope_complete Telescope    lua require('telescope.command').load_command(<f-args>)
+command! -nargs=* -range -complete=custom,s:telescope_complete Telescope    lua require('telescope.command').load_command(<line1>, <line2>, <count>, unpack({<f-args>}))

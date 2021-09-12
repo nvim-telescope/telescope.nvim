@@ -19,21 +19,23 @@ action_mt.create = function(mod)
     __call = function(t, ...)
       local values = {}
       for _, action_name in ipairs(t) do
+        if t._static_pre[action_name] then
+          t._static_pre[action_name](...)
+        end
         if t._pre[action_name] then
           t._pre[action_name](...)
         end
 
         local result = {
-          run_replace_or_original(
-            t._replacements[action_name],
-            mod[action_name],
-            ...
-          )
+          run_replace_or_original(t._replacements[action_name], mod[action_name], ...),
         }
         for _, res in ipairs(result) do
           table.insert(values, res)
         end
 
+        if t._static_post[action_name] then
+          t._static_post[action_name](...)
+        end
         if t._post[action_name] then
           t._post[action_name](...)
         end
@@ -55,8 +57,10 @@ action_mt.create = function(mod)
       return setmetatable(new_actions, getmetatable(lhs))
     end,
 
+    _static_pre = {},
     _pre = {},
     _replacements = {},
+    _static_post = {},
     _post = {},
   }
 
@@ -119,8 +123,14 @@ action_mt.create = function(mod)
   return mt
 end
 
-action_mt.transform = function(k, mt)
-  return setmetatable({k}, mt)
+action_mt.transform = function(k, mt, mod, v)
+  local res = setmetatable({ k }, mt)
+  if type(v) == "table" then
+    res._static_pre[k] = v.pre
+    res._static_post[k] = v.post
+    mod[k] = v.action
+  end
+  return res
 end
 
 action_mt.transform_mod = function(mod)
@@ -130,8 +140,8 @@ action_mt.transform_mod = function(mod)
   --    This allows for custom errors, lookups, etc.
   local redirect = setmetatable({}, getmetatable(mod) or {})
 
-  for k, _ in pairs(mod) do
-    redirect[k] = action_mt.transform(k, mt)
+  for k, v in pairs(mod) do
+    redirect[k] = action_mt.transform(k, mt, mod, v)
   end
 
   redirect._clear = mt.clear
