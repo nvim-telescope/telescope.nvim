@@ -201,6 +201,8 @@ telescope.setup({opts})                                    *telescope.setup()*
         - "hidden"    hide file names
         - "tail"      only display the file name, and not the path
         - "absolute"  display absolute paths
+        - "smart"     remove as much from the path as possible to only show
+                      the difference between the displayed paths
         - "shorten"   only display the first character of each directory in
                       the path
 
@@ -916,6 +918,7 @@ builtin.lsp_type_definitions({opts})          *builtin.lsp_type_definitions()*
     Fields: ~
         {jump_type} (string)  how to goto definition if there is only one,
                               values: "tab", "split", "vsplit", "never"
+
 
 builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
     Goto the implementation of the word under the cursor if there's only one,
