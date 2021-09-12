@@ -619,8 +619,8 @@ local entry_to_qf = function(entry)
   return {
     bufnr = entry.bufnr,
     filename = from_entry.path(entry, false),
-    lnum = entry.lnum,
-    col = entry.col,
+    lnum = utils.get_default(entry.lnum, 1),
+    col = utils.get_default(entry.col, 1),
     text = text,
   }
 end
