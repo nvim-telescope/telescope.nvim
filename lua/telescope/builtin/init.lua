@@ -355,6 +355,12 @@ builtin.lsp_references = require_on_exported_call("telescope.builtin.lsp").refer
 ---@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
 builtin.lsp_definitions = require_on_exported_call("telescope.builtin.lsp").definitions
 
+--- Goto the definition of the type of the word under the cursor, if there's only one,
+--- otherwise show all options in Telescope
+---@param opts table: options to pass to the picker
+---@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
+builtin.lsp_type_definitions = require("telescope.builtin.lsp").type_definitions
+
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto implementation if there is only one, values: "tab", "split", "vsplit", "never"

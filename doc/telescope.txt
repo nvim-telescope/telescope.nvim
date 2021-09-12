@@ -905,6 +905,18 @@ builtin.lsp_definitions({opts})                    *builtin.lsp_definitions()*
                               values: "tab", "split", "vsplit", "never"
 
 
+builtin.lsp_type_definitions({opts})          *builtin.lsp_type_definitions()*
+    Goto the definition of the type of the word under the cursor, if there's
+    only one, otherwise show all options in Telescope
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Fields: ~
+        {jump_type} (string)  how to goto definition if there is only one,
+                              values: "tab", "split", "vsplit", "never"
+
 builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
     Goto the implementation of the word under the cursor if there's only one,
     otherwise show all options in Telescope

@@ -95,6 +95,10 @@ lsp.definitions = function(opts)
   return list_or_jump("textDocument/definition", "LSP Definitions", opts)
 end
 
+lsp.type_definitions = function(opts)
+  return list_or_jump("textDocument/typeDefinition", "LSP Type Definitions", opts)
+end
+
 lsp.implementations = function(opts)
   return list_or_jump("textDocument/implementation", "LSP Implementations", opts)
 end
@@ -403,6 +407,7 @@ local feature_map = {
   ["document_symbols"] = "document_symbol",
   ["references"] = "find_references",
   ["definitions"] = "goto_definition",
+  ["type_definitions"] = "type_definition",
   ["implementations"] = "implementation",
   ["workspace_symbols"] = "workspace_symbol",
 }

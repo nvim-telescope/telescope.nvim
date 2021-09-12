@@ -446,18 +446,19 @@ Built-in functions. Ready to be bound to any key you like. :smile:
 
 ### Neovim LSP Pickers
 
-| Functions                                   | Description                                                                                                       |
-|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| `builtin.lsp_references`                    | Lists LSP references for word under the cursor                                                                    |
-| `builtin.lsp_document_symbols`              | Lists LSP document symbols in the current buffer                                                                  |
-| `builtin.lsp_workspace_symbols`             | Lists LSP document symbols in the current workspace                                                               |
-| `builtin.lsp_dynamic_workspace_symbols`     | Dynamically Lists LSP for all workspace symbols                                                                   |
-| `builtin.lsp_code_actions`                  | Lists any LSP actions for the word under the cursor, that can be triggered with `<cr>`                            |
-| `builtin.lsp_range_code_actions`            | Lists any LSP actions for a given range, that can be triggered with `<cr>`                                        |
-| `builtin.lsp_document_diagnostics`          | Lists LSP diagnostics for the current buffer                                                                      |
-| `builtin.lsp_workspace_diagnostics`         | Lists LSP diagnostics for the current workspace if supported, otherwise searches in all open buffers              |
-| `builtin.lsp_implementations`               | Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope |
-| `builtin.lsp_definitions`                   | Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope    |
+| Functions                                   | Description                                                                                                               |
+|---------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| `builtin.lsp_references`                    | Lists LSP references for word under the cursor                                                                            |
+| `builtin.lsp_document_symbols`              | Lists LSP document symbols in the current buffer                                                                          |
+| `builtin.lsp_workspace_symbols`             | Lists LSP document symbols in the current workspace                                                                       |
+| `builtin.lsp_dynamic_workspace_symbols`     | Dynamically Lists LSP for all workspace symbols                                                                           |
+| `builtin.lsp_code_actions`                  | Lists any LSP actions for the word under the cursor, that can be triggered with `<cr>`                                    |
+| `builtin.lsp_range_code_actions`            | Lists any LSP actions for a given range, that can be triggered with `<cr>`                                                |
+| `builtin.lsp_document_diagnostics`          | Lists LSP diagnostics for the current buffer                                                                              |
+| `builtin.lsp_workspace_diagnostics`         | Lists LSP diagnostics for the current workspace if supported, otherwise searches in all open buffers                      |
+| `builtin.lsp_implementations`               | Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope         |
+| `builtin.lsp_definitions`                   | Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope            |
+| `builtin.lsp_type_definitions`              | Goto the definition of the type of the word under the cursor, if there's only one, otherwise show all options in Telescope|
 
 #### Pre-filtering option for LSP pickers
 
