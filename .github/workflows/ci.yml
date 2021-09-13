@@ -3,54 +3,45 @@ name: Tests
 on: [push, pull_request]
 
 jobs:
-  x64-ubuntu:
-    name: X64-ubuntu
-    runs-on: ubuntu-20.04
+  unit_tests:
+    name: unit tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            url: https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz
+            manager: sudo apt-get
+            packages: -y fd-find
+          - os: ubuntu-20.04
+            url: https://github.com/neovim/neovim/releases/download/v0.5.0/nvim-linux64.tar.gz
+            manager: sudo apt-get
+            packages: -y fd-find
+          - os: macos-10.15
+            url: https://github.com/neovim/neovim/releases/download/nightly/nvim-macos.tar.gz
+            manager: brew
+            packages: fd
+          - os: macos-10.15
+            url: https://github.com/neovim/neovim/releases/download/v0.5.0/nvim-macos.tar.gz
+            manager: brew
+            packages: fd
     steps:
       - uses: actions/checkout@v2
       - run: date +%F > todays-date
-      - name: Restore cache for today's nightly.
+      - name: Restore from todays cache
         uses: actions/cache@v2
         with:
-          path: |
-            _neovim
-          key: ${{ runner.os }}-x64-${{ hashFiles('todays-date') }}
+          path: _neovim
+          key: ${{ runner.os }}-${{ matrix.url }}-${{ hashFiles('todays-date') }}
 
       - name: Prepare
         run: |
-          sudo apt install fd-find
-          mkdir -p ~/.local/share/nvim/site/pack/vendor/start
-          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
-          git clone --depth 1 https://github.com/kyazdani42/nvim-web-devicons ~/.local/share/nvim/site/pack/vendor/start/nvim-web-devicons
-          ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
-
-      - name: Run tests
-        run: |
-          curl -OL https://raw.githubusercontent.com/norcalli/bot-ci/master/scripts/github-actions-setup.sh
-          source github-actions-setup.sh nightly-x64
-          make test
-
-  appimage-ubuntu:
-    name: Appimage-ubuntu
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - run: date +%F > todays-date
-      - name: Restore cache for today's nightly.
-        uses: actions/cache@v2
-        with:
-          path: |
-            build
-          key: ${{ runner.os }}-appimage-${{ hashFiles('todays-date') }}
-
-      - name: Prepare
-        run: |
-          sudo apt install fd-find
-          test -d build || {
-            mkdir -p build
-            wget https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
-            chmod +x nvim.appimage
-            mv nvim.appimage ./build/nvim
+          ${{ matrix.manager }} update
+          ${{ matrix.manager }} install ${{ matrix.packages }}
+          test -d _neovim || {
+            mkdir -p _neovim
+            curl -sL ${{ matrix.url }} | tar xzf - --strip-components=1 -C "${PWD}/_neovim"
           }
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
@@ -59,5 +50,7 @@ jobs:
 
       - name: Run tests
         run: |
-            export PATH="${PWD}/build/:${PATH}"
-            make test
+          export PATH="${PWD}/_neovim/bin:${PATH}"
+          export VIM="${PWD}/_neovim/share/nvim/runtime"
+          nvim --version
+          make test
