@@ -44,7 +44,7 @@ function JobFinder:new(opts)
   assert(not opts.static, "`static` should be used with finder.new_oneshot_job")
 
   local obj = setmetatable({
-    entry_maker = opts.entry_maker or make_entry.from_string,
+    entry_maker = opts.entry_maker or make_entry.gen_from_string,
     fn_command = opts.fn_command,
     cwd = opts.cwd,
     writer = opts.writer,
@@ -122,7 +122,7 @@ function DynamicFinder:new(opts)
   local obj = setmetatable({
     curr_buf = opts.curr_buf,
     fn = opts.fn,
-    entry_maker = opts.entry_maker or make_entry.from_string,
+    entry_maker = opts.entry_maker or make_entry.gen_from_string,
   }, self)
 
   return obj

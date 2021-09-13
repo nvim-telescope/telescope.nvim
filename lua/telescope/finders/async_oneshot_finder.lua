@@ -9,7 +9,7 @@ local await_count = 1000
 return function(opts)
   opts = opts or {}
 
-  local entry_maker = opts.entry_maker or make_entry.from_string
+  local entry_maker = opts.entry_maker or make_entry.gen_from_string
   local cwd = opts.cwd
   local fn_command = assert(opts.fn_command, "Must pass `fn_command`")
 
