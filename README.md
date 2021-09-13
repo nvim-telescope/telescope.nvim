@@ -760,7 +760,7 @@ and some other functions can be easily changed in custom pickers or built-in fun
 nnoremap <leader>ff :lua require('telescope.builtin').find_files({previewer = false})<cr>
 
 -- Change prompt prefix for find_files builtin function:
-nnoremap <leader>fg :lua require('telescope.builtin').live_grep({ prompt_prefix=🔍 })<cr>
+nnoremap <leader>fg :lua require('telescope.builtin').live_grep({ prompt_prefix="🔍" })<cr>
 nnoremap <leader>fg :Telescope live_grep prompt_prefix=🔍<cr>
 ```
 
