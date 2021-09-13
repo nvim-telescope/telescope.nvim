@@ -3,8 +3,8 @@
 ---@brief [[
 --- Module for convenience to override defaults of corresponding |telescope.actions| at |telescope.setup()|.
 ---
---- <pre>
 --- General usage:
+--- <code>
 ---   require("telescope").setup {
 ---     defaults = {
 ---       mappings = {
@@ -19,7 +19,7 @@
 ---       },
 ---     },
 ---   }
---- </pre>
+--- </code>
 ---@brief ]]
 
 local actions = require "telescope.actions"

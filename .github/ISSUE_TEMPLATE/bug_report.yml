@@ -30,6 +30,24 @@ body:
       required: true
   - type: textarea
     attributes:
+      label: "checkhealth telescope"
+      description: "Output of `:checkhealth telescope`"
+      placeholder: |
+        health#telescope#check
+        ========================================================================
+        ## Checking for required plugins
+          - OK: plenary installed.
+          - OK: nvim-treesitter installed.
+
+        ## Checking external dependencies
+          - OK: rg: found ripgrep 13.0.0
+          - OK: fd: found fd 8.2.1
+
+        ## ===== Installed extensions =====
+    validations:
+      required: true
+  - type: textarea
+    attributes:
       label: "Steps to reproduce"
       description: "Steps to reproduce using the minimal config provided below."
       placeholder: |

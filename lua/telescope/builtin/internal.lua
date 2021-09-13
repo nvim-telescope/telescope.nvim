@@ -635,7 +635,7 @@ internal.reloader = function(opts)
   local package_list = vim.tbl_keys(package.loaded)
 
   -- filter out packages we don't want and track the longest package name
-  opts.column_len = 0
+  local column_len = 0
   for index, module_name in pairs(package_list) do
     if
       type(require(module_name)) ~= "table"
@@ -643,10 +643,11 @@ internal.reloader = function(opts)
       or package.searchpath(module_name, package.path) == nil
     then
       table.remove(package_list, index)
-    elseif #module_name > opts.column_len then
-      opts.column_len = #module_name
+    elseif #module_name > column_len then
+      column_len = #module_name
     end
   end
+  opts.column_len = vim.F.if_nil(opts.column_len, column_len)
 
   pickers.new(opts, {
     prompt_title = "Packages",

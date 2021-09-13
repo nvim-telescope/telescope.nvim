@@ -6,7 +6,7 @@
 ---
 --- All layout strategies are functions with the following signature:
 ---
---- <pre>
+--- <code>
 ---   function(picker, columns, lines, layout_config)
 ---     -- Do some calculations here...
 ---     return {
@@ -15,7 +15,9 @@
 ---       prompt = prompt_configuration,
 ---     }
 ---   end
+--- </code>
 ---
+--- <pre>
 ---   Parameters: ~
 ---     - picker        : A Picker object. (docs coming soon)
 ---     - columns       : (number) Columns in the vim window
