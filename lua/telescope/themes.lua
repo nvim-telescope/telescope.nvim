@@ -15,14 +15,13 @@
 local themes = {}
 
 --- Dropdown style theme.
---- <pre>
 ---
 --- Usage:
----
+--- <code>
 ---     `local builtin = require('telescope.builtin')`
 ---     `local themes = require('telescope.themes')`
 ---     `builtin.find_files(themes.get_dropdown())`
---- </pre>
+--- </code>
 function themes.get_dropdown(opts)
   opts = opts or {}
 
@@ -59,14 +58,14 @@ function themes.get_dropdown(opts)
 end
 
 --- Cursor style theme.
---- <pre>
 ---
 --- Usage:
+--- <code>
 ---
 ---     `local builtin = require('telescope.builtin')`
 ---     `local themes = require('telescope.themes')`
 ---     `builtin.lsp_code_actions(themes.get_cursor())`
---- </pre>
+--- </code>
 function themes.get_cursor(opts)
   opts = opts or {}
 
@@ -97,14 +96,13 @@ function themes.get_cursor(opts)
 end
 
 --- Ivy style theme.
---- <pre>
 ---
 --- Usage:
----
+--- <code>
 ---     `local builtin = require('telescope.builtin')`
 ---     `local themes = require('telescope.themes')`
 ---     `builtin.find_files(themes.get_ivy())`
---- </pre>
+--- </code>
 function themes.get_ivy(opts)
   opts = opts or {}
 

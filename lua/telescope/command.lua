@@ -166,7 +166,8 @@ local function run_command(args)
   end
 
   if string.len(theme) > 0 then
-    opts = themes[theme](opts)
+    local func = themes[theme] or themes["get_" .. theme]
+    opts = func(opts)
   end
 
   if string.len(extension_type) > 0 and extension_type ~= '"' then

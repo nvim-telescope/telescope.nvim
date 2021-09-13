@@ -120,191 +120,247 @@ local layout_config_description = string.format(
 -- - first entry is the value
 -- - second entry is the description of the option
 
-local telescope_defaults = {
+local telescope_defaults = {}
+config.descriptions_order = {}
+local append = function(name, val, doc)
+  telescope_defaults[name] = { val, doc }
+  table.insert(config.descriptions_order, name)
+end
 
-  sorting_strategy = {
-    "descending",
-    [[
-    Determines the direction "better" results are sorted towards.
+append(
+  "sorting_strategy",
+  "descending",
+  [[
+  Determines the direction "better" results are sorted towards.
 
-    Available options are:
-    - "descending" (default)
-    - "ascending"]],
-  },
+  Available options are:
+  - "descending" (default)
+  - "ascending"]]
+)
 
-  selection_strategy = {
-    "reset",
-    [[
-    Determines how the cursor acts after each sort iteration.
+append(
+  "selection_strategy",
+  "reset",
+  [[
+  Determines how the cursor acts after each sort iteration.
 
-    Available options are:
-    - "reset" (default)
-    - "follow"
-    - "row"
-    - "closest"]],
-  },
+  Available options are:
+  - "reset" (default)
+  - "follow"
+  - "row"
+  - "closest"]]
+)
 
-  scroll_strategy = {
-    "cycle",
-    [[
-    Determines what happens you try to scroll past view of the picker.
+append(
+  "scroll_strategy",
+  "cycle",
+  [[
+  Determines what happens if you try to scroll past the view of the
+  picker.
 
-    Available options are:
-    - "cycle" (default)
-    - "limit"]],
-  },
+  Available options are:
+  - "cycle" (default)
+  - "limit"]]
+)
 
-  layout_strategy = {
-    "horizontal",
-    [[
-    Determines the default layout of Telescope pickers.
-    See |telescope.layout| for details of the available strategies.
+append(
+  "layout_strategy",
+  "horizontal",
+  [[
+  Determines the default layout of Telescope pickers.
+  See |telescope.layout| for details of the available strategies.
 
-    Default: 'horizontal']],
-  },
+  Default: 'horizontal']]
+)
 
-  layout_config = { layout_config_defaults, layout_config_description },
+append("layout_config", layout_config_defaults, layout_config_description)
 
-  winblend = { 0 },
+append(
+  "winblend",
+  0,
+  [[
+  Configure winblend for telescope floating windows. See |winblend| for
+  more information.
 
-  prompt_prefix = { "> ", [[
-    Will be shown in front of the prompt.
+  Default: 0]]
+)
 
-    Default: '> ']] },
+append(
+  "prompt_prefix",
+  "> ",
+  [[
+  The character(s) that will be shown in front of Telescope's prompt.
 
-  selection_caret = { "> ", [[
-    Will be shown in front of the selection.
+  Default: '> ']]
+)
 
-    Default: '> ']] },
+append(
+  "selection_caret",
+  "> ",
+  [[
+  The character(s) that will be shown in front of the current selection.
 
-  entry_prefix = {
-    "  ",
-    [[
-    Prefix in front of each result entry. Current selection not included.
 
-    Default: '  ']],
-  },
+  Default: '> ']]
+)
 
-  initial_mode = { "insert" },
+append(
+  "entry_prefix",
+  "  ",
+  [[
+  Prefix in front of each result entry. Current selection not included.
 
-  border = { true, [[
-    Boolean defining if borders are added to Telescope windows.
+  Default: '  ']]
+)
 
-    Default: true]] },
+append(
+  "initial_mode",
+  "insert",
+  [[
+  Determines in which mode telescope starts. Valid Keys:
+  `insert` and `normal`.
 
-  path_display = {
-    {},
-    [[
-    Determines how file paths are displayed
+  Default: "insert"]]
+)
 
-    path_display can be set to an array with a combination of:
-    - "hidden"    hide file names
-    - "tail"      only display the file name, and not the path
-    - "absolute"  display absolute paths
-    - "smart"     remove as much from the path as possible to only show
-                  the difference between the displayed paths
-    - "shorten"   only display the first character of each directory in
-                  the path
+append(
+  "border",
+  true,
+  [[
+  Boolean defining if borders are added to Telescope windows.
 
-    You can also specify the number of characters of each directory name
-    to keep by setting `path_display.shorten = num`.
-      e.g. for a path like
-        `alpha/beta/gamma/delta.txt`
-      setting `path_display.shorten = 1` will give a path like:
-        `a/b/g/delta.txt`
-      Similarly, `path_display.shorten = 2` will give a path like:
-        `al/be/ga/delta.txt`
+  Default: true]]
+)
 
-    path_display can also be set to 'hidden' string to hide file names
+append(
+  "path_display",
+  {},
+  [[
+  Determines how file paths are displayed
 
-    path_display can also be set to a function for custom formatting of
-    the path display. Example:
+  path_display can be set to an array with a combination of:
+  - "hidden"    hide file names
+  - "tail"      only display the file name, and not the path
+  - "absolute"  display absolute paths
+  - "smart"     remove as much from the path as possible to only show
+                the difference between the displayed paths
+  - "shorten"   only display the first character of each directory in
+                the path
 
-        -- Format path as "file.txt (path\to\file\)"
-        path_display = function(opts, path)
-          local tail = require("telescope.utils").path_tail(path)
-          return string.format("%s (%s)", tail, path)
-        end,
+  You can also specify the number of characters of each directory name
+  to keep by setting `path_display.shorten = num`.
+    e.g. for a path like
+      `alpha/beta/gamma/delta.txt`
+    setting `path_display.shorten = 1` will give a path like:
+      `a/b/g/delta.txt`
+    Similarly, `path_display.shorten = 2` will give a path like:
+      `al/be/ga/delta.txt`
 
-    Default: {}]],
-  },
+  path_display can also be set to 'hidden' string to hide file names
 
-  borderchars = { { "─", "│", "─", "│", "╭", "╮", "╯", "╰" } },
+  path_display can also be set to a function for custom formatting of
+  the path display. Example:
 
-  get_status_text = {
-    function(self, opts)
-      local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
-      local yy = self.stats.processed or 0
-      if xx == 0 and yy == 0 then
-        return ""
-      end
+      -- Format path as "file.txt (path\to\file\)"
+      path_display = function(opts, path)
+        local tail = require("telescope.utils").path_tail(path)
+        return string.format("%s (%s)", tail, path)
+      end,
 
-      -- local status_icon
-      -- if opts.completed then
-      --   status_icon = "✔️"
-      -- else
-      --   status_icon = "*"
-      -- end
+  Default: {}]]
+)
 
-      return string.format("%s / %s ", xx, yy)
+append(
+  "borderchars",
+  { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+  [[
+  Set the borderchars of telescope floating windows. It has to be a
+  table of 8 string values.
+
+  Default: { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }]]
+)
+
+append(
+  "get_status_text",
+  function(self)
+    local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
+    local yy = self.stats.processed or 0
+    if xx == 0 and yy == 0 then
+      return ""
+    end
+
+    -- local status_icon
+    -- if opts.completed then
+    --   status_icon = "✔️"
+    -- else
+    --   status_icon = "*"
+    -- end
+    return string.format("%s / %s", xx, yy)
+  end,
+  [[
+  A function that determines what the virtual text looks like.
+  Signature: function(picker) -> str
+
+  Default: function that shows current count / all]]
+)
+
+append(
+  "dynamic_preview_title",
+  false,
+  [[
+  Will change the title of the preview window dynamically, where it
+  is supported. For example, the preview window's title could show up as
+  the full filename.
+
+  Default: false]]
+)
+
+append(
+  "history",
+  {
+    path = vim.fn.stdpath "data" .. os_sep .. "telescope_history",
+    limit = 100,
+    handler = function(...)
+      return require("telescope.actions.history").get_simple_history(...)
     end,
   },
+  [[
+  This field handles the configuration for prompt history.
+  By default it is a table, with default values (more below).
+  To disable history, set it to false.
 
-  dynamic_preview_title = {
-    false,
-    [[
-    Will change the title of the preview window dynamically, where it
-    is supported. Means the preview window will for example show the
-    full filename.
-
-    Default: false]],
-  },
-
-  history = {
-    {
-      path = vim.fn.stdpath "data" .. os_sep .. "telescope_history",
-      limit = 100,
-      handler = function(...)
-        return require("telescope.actions.history").get_simple_history(...)
-      end,
-    },
-    [[
-    This field handles the configuration for prompt history.
-    By default it is a table, with default values (more below).
-    To disable history, set it to false.
-
-    Currently mappings still need to be added, Example:
-      mappings = {
-        i = {
-          ["<C-Down>"] = require('telescope.actions').cycle_history_next,
-          ["<C-Up>"] = require('telescope.actions').cycle_history_prev,
-        },
+  Currently mappings still need to be added, Example:
+    mappings = {
+      i = {
+        ["<C-Down>"] = require('telescope.actions').cycle_history_next,
+        ["<C-Up>"] = require('telescope.actions').cycle_history_prev,
       },
-
-    Fields:
-      - path:    The path to the telescope history as string.
-                 default: stdpath("data")/telescope_history
-      - limit:   The amount of entries that will be written in the
-                 history.
-                 Warning: If limit is set to nil it will grown unbound.
-                 default: 100
-      - handler: A lua function that implements the history.
-                 This is meant as a developer setting for extensions to
-                 override the history handling, e.g.,
-                 https://github.com/nvim-telescope/telescope-smart-history.nvim,
-                 which allows context sensitive (cwd + picker) history.
-
-                 Default:
-                 require('telescope.actions.history').get_simple_history
-  ]],
-  },
-
-  cache_picker = {
-    {
-      num_pickers = 1,
-      limit_entries = 1000,
     },
-    [[
+
+  Fields:
+    - path:    The path to the telescope history as string.
+               default: stdpath("data")/telescope_history
+    - limit:   The amount of entries that will be written in the
+               history.
+               Warning: If limit is set to nil it will grown unbound.
+               default: 100
+    - handler: A lua function that implements the history.
+               This is meant as a developer setting for extensions to
+               override the history handling, e.g.,
+               https://github.com/nvim-telescope/telescope-smart-history.nvim,
+               which allows context sensitive (cwd + picker) history.
+
+               Default:
+               require('telescope.actions.history').get_simple_history]]
+)
+
+append(
+  "cache_picker",
+  {
+    num_pickers = 1,
+    limit_entries = 1000,
+  },
+  [[
     This field handles the configuration for picker caching.
     By default it is a table, with default values (more below).
     To disable caching, set it to false.
@@ -323,117 +379,239 @@ local telescope_defaults = {
                           Default: 1
       - limit_entries:    The amount of entries that will be written in the
                           Default: 1000
-    ]],
-  },
+    ]]
+)
 
-  -- Builtin configuration
+append(
+  "vimgrep_arguments",
+  { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
+  [[
+    Defines the command that will be used for `live_grep` and `grep_string`
+    pickers.
+    Hint: Make sure that color is currently set to `never` because we do
+    not yet interpret color codes
+    Hint 2: Make sure that these options are in your changes arguments:
+      "--no-heading", "--with-filename", "--line-number", "--column"
+    because we need them so the ripgrep output is in the correct format.
 
-  -- List that will be executed.
-  --    Last argument will be the search term (passed in during execution)
-  vimgrep_arguments = {
-    { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
-  },
+    Default: {
+      "rg",
+      "--color=never",
+      "--no-heading",
+      "--with-filename",
+      "--line-number",
+      "--column",
+      "--smart-case"
+    }]]
+)
 
-  use_less = { true },
+append(
+  "use_less",
+  true,
+  [[
+  Boolean if less should be enabled in term_previewer (deprecated and
+  currently no longer used in the builtin pickers).
 
-  color_devicons = { true },
+  Default: true]]
+)
 
-  set_env = { nil },
+append(
+  "set_env",
+  nil,
+  [[
+  Set an environment for term_previewer. A table of key values:
+  Example: { COLORTERM = "truecolor", ... }
+  Hint: Empty table is not allowed.
+
+  Default: nil]]
+)
+
+append(
+  "color_devicons",
+  true,
+  [[
+  Boolean if devicons should be enabled or not.
+  Hint: Coloring only works if |termguicolors| is enabled.
+
+  Default: true]]
+)
+
+append(
+  "mappings",
+  {},
+  [[
+  Your mappings to override telescope's default mappings.
+
+  Format is:
+  {
+    mode = { ..keys }
+  }
+
+  where {mode} is the one character letter for a mode
+  ('i' for insert, 'n' for normal).
+
+  For example:
 
   mappings = {
-    {},
-    [[
-    Your mappings to override telescope's default mappings.
+    i = {
+      ["<esc>"] = require('telescope.actions').close,
+    },
+  }
 
-    Format is:
-    {
-      mode = { ..keys }
-    }
 
-    where {mode} is the one character letter for a mode
-    ('i' for insert, 'n' for normal).
+  To disable a keymap, put [map] = false
+    So, to not map "<C-n>", just put
 
+      ...,
+      ["<C-n>"] = false,
+      ...,
+
+    Into your config.
+
+
+  otherwise, just set the mapping to the function that you want it to
+  be.
+
+      ...,
+      ["<C-i>"] = require('telescope.actions').select_default,
+      ...,
+
+  If the function you want is part of `telescope.actions`, then you can
+  simply give a string.
+    For example, the previous option is equivalent to:
+
+      ...,
+      ["<C-i>"] = "select_default",
+      ...,
+
+  You can also add other mappings using tables with `type = "command"`.
     For example:
 
-    mappings = {
-      i = {
-        ["<esc>"] = require('telescope.actions').close,
-      },
-    }
+      ...,
+      ["jj"] = { "<esc>", type = "command" },
+      ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },)
+      ...,
+  ]]
+)
 
+append(
+  "default_mappings",
+  nil,
+  [[
+  Not recommended to use except for advanced users.
 
-    To disable a keymap, put [map] = false
-      So, to not map "<C-n>", just put
+  Will allow you to completely remove all of telescope's default maps
+  and use your own.
+  ]]
+)
 
-        ...,
-        ["<C-n>"] = false,
-        ...,
+append(
+  "file_sorter",
+  sorters.get_fzy_sorter,
+  [[
+  A function pointer that specifies the file_sorter. This sorter will
+  be used for find_files, git_files and similar.
+  Hint: If you load a native sorter, you dont need to change this value,
+  the native sorter will override it anyway.
 
-      Into your config.
+  Default: require("telescope.sorters").get_fzy_sorter]]
+)
 
+append(
+  "generic_sorter",
+  sorters.get_fzy_sorter,
+  [[
+  A function pointer to the generic sorter. The sorter that should be
+  used for everything that is not a file.
+  Hint: If you load a native sorter, you dont need to change this value,
+  the native sorter will override it anyway.
 
-    otherwise, just set the mapping to the function that you want it to
-    be.
+  Default: require("telescope.sorters").get_fzy_sorter]]
+)
 
-        ...,
-        ["<C-i>"] = require('telescope.actions').select_default,
-        ...,
+--TODO(conni2461): Why is this even configurable???
+append(
+  "prefilter_sorter",
+  sorters.prefilter,
+  [[
+  This points to a wrapper sorter around the generic_sorter that is able
+  to do prefiltering.
+  Its usually used for lsp_*_symbols and lsp_*_diagnostics
 
-    If the function you want is part of `telescope.actions`, then you can
-    simply give a string.
-      For example, the previous option is equivalent to:
+  Default: require("telescope.sorters").prefilter]]
+)
 
-        ...,
-        ["<C-i>"] = "select_default",
-        ...,
+append(
+  "file_ignore_patterns",
+  nil,
+  [[
+  A table of lua regex that define the files that should be ignored.
+  Example: { "^scratch/" } -- ignore all files in scratch directory
+  Example: { "%.npz" } -- ignore all npz files
+  See: https://www.lua.org/manual/5.1/manual.html#5.4.1 for more
+  information about lua regex
 
-    You can also add other mappings using tables with `type = "command"`.
-      For example:
+  Default: nil]]
+)
 
-        ...,
-        ["jj"] = { "<esc>", type = "command" },
-        ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },)
-        ...,
-    ]],
-  },
+append(
+  "file_previewer",
+  function(...)
+    return require("telescope.previewers").vim_buffer_cat.new(...)
+  end,
+  [[
+    Function pointer to the default file_previewer. It is mostly used
+    for find_files, git_files and similar.
+    You can change this function pointer to either use your own
+    previewer or use the command-line program bat as the previewer:
+      require("telescope.previewers").cat.new
 
-  default_mappings = {
-    nil,
-    [[
-    Not recommended to use except for advanced users.
+    Default: require("telescope.previewers").vim_buffer_cat.new]]
+)
 
-    Will allow you to completely remove all of telescope's default maps
-    and use your own.
-    ]],
-  },
+append(
+  "grep_previewer",
+  function(...)
+    return require("telescope.previewers").vim_buffer_vimgrep.new(...)
+  end,
+  [[
+    Function pointer to the default vim_grep previewer. It is mostly
+    used for live_grep, grep_string and similar.
+    You can change this function pointer to either use your own
+    previewer or use the command-line program bat as the previewer:
+      require("telescope.previewers").vimgrep.new
 
-  generic_sorter = { sorters.get_generic_fuzzy_sorter },
-  prefilter_sorter = { sorters.prefilter },
-  file_sorter = { sorters.get_fuzzy_file },
+    Default: require("telescope.previewers").vim_buffer_vimgrep.new]]
+)
 
-  file_ignore_patterns = { nil },
+append(
+  "qflist_previewer",
+  function(...)
+    return require("telescope.previewers").vim_buffer_qflist.new(...)
+  end,
+  [[
+    Function pointer to the default qflist previewer. It is mostly
+    used for qflist, loclist and lsp.
+    You can change this function pointer to either use your own
+    previewer or use the command-line program bat as the previewer:
+      require("telescope.previewers").qflist.new
 
-  file_previewer = {
-    function(...)
-      return require("telescope.previewers").vim_buffer_cat.new(...)
-    end,
-  },
-  grep_previewer = {
-    function(...)
-      return require("telescope.previewers").vim_buffer_vimgrep.new(...)
-    end,
-  },
-  qflist_previewer = {
-    function(...)
-      return require("telescope.previewers").vim_buffer_qflist.new(...)
-    end,
-  },
-  buffer_previewer_maker = {
-    function(...)
-      return require("telescope.previewers").buffer_previewer_maker(...)
-    end,
-  },
-}
+    Default: require("telescope.previewers").vim_buffer_vimgrep.new]]
+)
+
+append(
+  "buffer_previewer_maker",
+  function(...)
+    return require("telescope.previewers").buffer_previewer_maker(...)
+  end,
+  [[
+    Developer option that defines the underlining functionality
+    of the buffer previewer.
+    For interesting configuration examples take a look at
+    https://github.com/nvim-telescope/telescope.nvim/wiki/Configuration-Recipes
+
+    Default: require("telescope.previewers").buffer_previewer_maker]]
+)
 
 -- @param user_defaults table: a table where keys are the names of options,
 --    and values are the ones the user wants
@@ -470,8 +648,7 @@ function config.set_defaults(user_defaults, tele_defaults)
   end
 
   local function set(name, default_val, description)
-    -- TODO(doc): Once we have descriptions for all of these, then we can add this back in.
-    -- assert(description, "Config values must always have a description")
+    assert(description, "Config values must always have a description")
 
     config.values[name] = get(name, default_val)
     if description then
