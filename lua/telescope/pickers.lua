@@ -1,6 +1,7 @@
 require "telescope"
 
 local a = vim.api
+local if_nil = vim.F.if_nil
 
 local async = require "plenary.async"
 local await_schedule = async.util.scheduler
@@ -1049,7 +1050,7 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
     -- a ton of time on large results.
     log.trace("Processing result... ", entry)
     for _, v in ipairs(self.file_ignore_patterns or {}) do
-      local file = type(entry.value) == "string" and entry.value or entry.filename
+      local file = if_nil(entry.filename, type(entry.value) == "string" and entry.value) -- false if none is true
       if file then
         if string.find(file, v) then
           log.trace("SKIPPING", entry.value, "because", v)
