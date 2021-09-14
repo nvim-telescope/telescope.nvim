@@ -101,6 +101,8 @@ function Picker:new(opts)
     sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
+    reorder_by_length = get_default(opts.reorder_by_length, config.values.reorder_by_length),
+
     layout_strategy = layout_strategy,
     layout_config = config.smarter_depth_2_extend(opts.layout_config or {}, config.values.layout_config or {}),
 

@@ -137,7 +137,7 @@ function EntryManager:add_entry(picker, score, entry)
       return self:_insert_container_before(picker, index, node, new_container)
     end
 
-    if score < 1 and container[2] == score and #entry.ordinal < #container[1].ordinal then
+    if picker.reorder_by_length and score < 1 and container[2] == score and #entry.ordinal < #container[1].ordinal then
       return self:_insert_container_before(picker, index, node, new_container)
     end
 

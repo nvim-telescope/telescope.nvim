@@ -152,6 +152,19 @@ append(
 )
 
 append(
+  "reorder_by_length" ,
+    true,
+    [[
+    Change the order of result by string length when it have same score.
+
+    Available options are:
+    - true (default)
+    - false
+
+    ]]
+)
+
+append(
   "selection_strategy",
   "reset",
   [[
