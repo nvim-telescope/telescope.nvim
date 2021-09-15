@@ -220,14 +220,13 @@ lsp.code_actions = function(opts)
   -- If the text document version is 0, set it to nil instead so that Neovim
   -- won't refuse to update a buffer that it believes is newer than edits.
   -- See: https://github.com/eclipse/eclipse.jdt.ls/issues/1695
-  -- Source: https://github.com/neovim/nvim-lspconfig/blob/486f72a25ea2ee7f81648fdfd8999a155049e466/lua/lspconfig/jdtls.lua#L62
+  -- Source:
+  -- https://github.com/neovim/nvim-lspconfig/blob/486f72a25ea2ee7f81648fdfd8999a155049e466/lua/lspconfig/jdtls.lua#L62
   local function fix_zero_version(workspace_edit)
     if workspace_edit and workspace_edit.documentChanges then
       for _, change in pairs(workspace_edit.documentChanges) do
         local text_document = change.textDocument
-        if  text_document 
-            and text_document.version 
-            and text_document.version == 0 then
+        if text_document and text_document.version and text_document.version == 0 then
           text_document.version = nil
         end
       end
@@ -250,33 +249,35 @@ lsp.code_actions = function(opts)
   --      command: String
   --      arguments?: any[]
   --]]
-  local transform_action = opts.transform_action or function(action)
+  local transform_action = opts.transform_action
+    or function(action)
       -- Remove 0 -version from LSP codeaction request payload.
       -- Is only run on lsp codeactions which contain a comand or a arguments field
       -- Fixed Java/jdtls compatibility with Telescope
       -- See fix_zero_version commentary for more information
       if action.command or action.arguments then
-          if action.command.command then
-            action.edit = fix_zero_version(action.command.arguments[1])
-          else
-            action.edit = fix_zero_version(action.arguments[1])
-          end
+        if action.command.command then
+          action.edit = fix_zero_version(action.command.arguments[1])
+        else
+          action.edit = fix_zero_version(action.arguments[1])
+        end
       end
-    return action
-  end
-
-  local execute_action = opts.execute_action or function(action)
-    if action.edit or type(action.command) == "table" then
-      if action.edit then
-        vim.lsp.util.apply_workspace_edit(action.edit)
-      end
-      if type(action.command) == "table" then
-        vim.lsp.buf.execute_command(action.command)
-      end
-    else
-      vim.lsp.buf.execute_command(action)
+      return action
     end
-  end
+
+  local execute_action = opts.execute_action
+    or function(action)
+      if action.edit or type(action.command) == "table" then
+        if action.edit then
+          vim.lsp.util.apply_workspace_edit(action.edit)
+        end
+        if type(action.command) == "table" then
+          vim.lsp.buf.execute_command(action.command)
+        end
+      else
+        vim.lsp.buf.execute_command(action)
+      end
+    end
 
   pickers.new(opts, {
     prompt_title = "LSP Code Actions",
