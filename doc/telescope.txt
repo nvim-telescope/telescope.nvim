@@ -807,6 +807,9 @@ builtin.git_branches({opts})                          *builtin.git_branches()*
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
+        
+    Fields: ~
+        {pattern} (string)  specify the pattern to match all refs
 
     Options: ~
         {cwd}          (string)   specify the path of the repo
