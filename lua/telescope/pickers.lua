@@ -1,7 +1,6 @@
 require "telescope"
 
 local a = vim.api
-local if_nil = vim.F.if_nil
 
 local async = require "plenary.async"
 local await_schedule = async.util.scheduler
