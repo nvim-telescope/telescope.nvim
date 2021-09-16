@@ -17,6 +17,8 @@ local ns_previewer = vim.api.nvim_create_namespace "telescope.previewers"
 
 local has_file = 1 == vim.fn.executable "file"
 
+-- TODO(fdschmidt93) switch to Job once file_maker callbacks get cleaned up with plenary async
+-- avoids SIGABRT from utils.get_os_command_output due to vim.time in fs_stat cb
 local function capture(cmd, raw)
   local f = assert(io.popen(cmd, "r"))
   local s = assert(f:read "*a")
