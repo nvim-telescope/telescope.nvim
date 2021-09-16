@@ -399,8 +399,11 @@ append(
     your picker.
 
     Fields:
-      - check_mime_type:  Use `file` to try to infer whether the file to preview
-                          is a binary if plenary's filetype detection fails.
+      - check_mime_type:  Use `file` if available to try to infer whether the
+                          file to preview is a binary if plenary's
+                          filetype detection fails.
+                          Windows users get `file` from:
+                          https://github.com/julian-r/file-windows
                           Set to false to attempt to preview any mime type.
                           Default: true
       - filesize_limit:   The maximum file size in MB attempted to be previewed.
