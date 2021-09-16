@@ -395,7 +395,8 @@ append(
     By default it is a table, with default values (more below).
     To disable previewing, set it to false. If you have disabled previewers
     globally, but want to opt in to previewing for single pickers, you will have to
-    pass `show_preview = true` to the `opts` of your picker.
+    pass `preview = true` or `preview = {...}` (your config) to the `opts` of
+    your picker.
 
     Fields:
       - check_mime_type:  Use `file` to try to infer whether the file to preview

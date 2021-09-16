@@ -34,10 +34,10 @@ local function defaulter(f, default_opts)
   default_opts = default_opts or {}
   return {
     new = function(opts)
-      opts.preview = opts.preview or {}
-      if conf.preview == false and not opts.show_preview == true then
+      if conf.preview == false and not opts.preview then
         return false
       end
+      opts.preview = type(opts.preview) ~= "table" and {} or opts.preview
       if type(conf.preview) == "table" then
         for k, v in pairs(conf.preview) do
           opts.preview[k] = vim.F.if_nil(opts.preview[k], v)
