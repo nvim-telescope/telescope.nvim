@@ -74,7 +74,7 @@ utils.highlighter = function(bufnr, ft, opts)
   if ts_highlighting then
     ts_success = utils.ts_highlighter(bufnr, ft)
   end
-  if not (ts_highlighting or ts_success) then
+  if not ts_highlighting or ts_success == false then
     utils.regex_highlighter(bufnr, ft)
   end
 end
