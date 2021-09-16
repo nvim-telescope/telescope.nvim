@@ -1,6 +1,7 @@
 local from_entry = require "telescope.from_entry"
 local Path = require "plenary.path"
 local utils = require "telescope.utils"
+local strings = require "plenary.strings"
 local putils = require "telescope.previewers.utils"
 local Previewer = require "telescope.previewers.previewer"
 local conf = require("telescope.config").values
@@ -9,11 +10,98 @@ local pfiletype = require "plenary.filetype"
 local pscan = require "plenary.scandir"
 
 local buf_delete = utils.buf_delete
-local defaulter = utils.make_default_callable
 
 local previewers = {}
 
 local ns_previewer = vim.api.nvim_create_namespace "telescope.previewers"
+
+local has_file = 1 == vim.fn.executable "file"
+
+-- TODO(fdschmidt93) switch to Job once file_maker callbacks get cleaned up with plenary async
+-- avoids SIGABRT from utils.get_os_command_output due to vim.time in fs_stat cb
+local function capture(cmd, raw)
+  local f = assert(io.popen(cmd, "r"))
+  local s = assert(f:read "*a")
+  f:close()
+  if raw then
+    return s
+  end
+  s = string.gsub(s, "^%s+", "")
+  s = string.gsub(s, "%s+$", "")
+  s = string.gsub(s, "[\n\r]+", " ")
+  return s
+end
+
+local function defaulter(f, default_opts)
+  default_opts = default_opts or {}
+  return {
+    new = function(opts)
+      if conf.preview == false and not opts.preview then
+        return false
+      end
+      opts.preview = type(opts.preview) ~= "table" and {} or opts.preview
+      if type(conf.preview) == "table" then
+        for k, v in pairs(conf.preview) do
+          opts.preview[k] = vim.F.if_nil(opts.preview[k], v)
+        end
+      end
+      return f(opts)
+    end,
+    __call = function()
+      local ok, err = pcall(f(default_opts))
+      if not ok then
+        error(debug.traceback(err))
+      end
+    end,
+  }
+end
+
+local function set_timeout_message(bufnr, winid, message)
+  local height = vim.api.nvim_win_get_height(winid)
+  local width = vim.api.nvim_win_get_width(winid)
+  vim.api.nvim_buf_set_lines(
+    bufnr,
+    0,
+    -1,
+    false,
+    utils.repeated_table(height, table.concat(utils.repeated_table(width, "╱"), ""))
+  )
+  local anon_ns = vim.api.nvim_create_namespace ""
+  local padding = table.concat(utils.repeated_table(#message + 4, " "), "")
+  local lines = {
+    padding,
+    "  " .. message .. "  ",
+    padding,
+  }
+
+  local col = math.floor((width - strings.strdisplaywidth(lines[2])) / 2)
+  for i, line in ipairs(lines) do
+    vim.api.nvim_buf_set_extmark(
+      bufnr,
+      anon_ns,
+      math.floor(height / 2) - 1 + i,
+      0,
+      { virt_text = { { line, "Normal" } }, virt_text_pos = "overlay", virt_text_win_col = col }
+    )
+  end
+end
+
+-- modified vim.split to incorporate a timer
+local function split(s, sep, plain, opts)
+  opts = opts or {}
+  local t = {}
+  for c in vim.gsplit(s, sep, plain) do
+    table.insert(t, c)
+    if opts.preview.timeout then
+      local diff_time = (vim.loop.hrtime() - opts.start_time) / 1e6
+      if diff_time > opts.preview.timeout then
+        return
+      end
+    end
+  end
+  return t
+end
+local bytes_to_megabytes = math.pow(1024, 2)
 
 local color_hash = {
   ["p"] = "TelescopePreviewPipe",
@@ -96,11 +184,13 @@ end
 
 previewers.file_maker = function(filepath, bufnr, opts)
   opts = opts or {}
+  opts.preview = opts.preview or {}
+  opts.preview.timeout = vim.F.if_nil(opts.preview.timeout, 250) -- in ms
+  opts.preview.filesize_limit = vim.F.if_nil(opts.preview.filesize_limit, 25) -- in mb
   if opts.use_ft_detect == nil then
     opts.use_ft_detect = true
   end
   local ft = opts.use_ft_detect and pfiletype.detect(filepath)
-
   if opts.bufname ~= filepath then
     if not vim.in_fast_event() then
       filepath = vim.fn.expand(filepath)
@@ -122,19 +212,61 @@ previewers.file_maker = function(filepath, bufnr, opts)
           end),
         })
       else
+        if opts.preview.check_mime_type == true and has_file and ft == "" then
+          -- avoid SIGABRT in buffer previewer happening with utils.get_os_command_output
+          local output = capture(string.format([[file --mime-type -b "%s"]], filepath))
+          local mime_type = vim.split(output, "/")[1]
+          if mime_type ~= "text" and mime_type ~= "inode" then
+            if type(opts.preview.mime_hook) == "function" then
+              opts.preview.mime_hook(filepath, bufnr, opts)
+            else
+              vim.schedule(function()
+                set_timeout_message(bufnr, opts.winid, "Binary cannot be previewed")
+              end)
+            end
+            return
+          end
+        end
+
+        if opts.preview.filesize_limit then
+          local mb_filesize = math.floor(stat.size / bytes_to_megabytes)
+          if mb_filesize > opts.preview.filesize_limit then
+            if type(opts.preview.filesize_hook) == "function" then
+              opts.preview.filesize_hook(filepath, bufnr, opts)
+            else
+              vim.schedule(function()
+                set_timeout_message(bufnr, opts.winid, "File exceeds preview size limit")
+              end)
+              return
+            end
+          end
+        end
+
+        opts.start_time = vim.loop.hrtime()
         Path:new(filepath):_read_async(vim.schedule_wrap(function(data)
           if not vim.api.nvim_buf_is_valid(bufnr) then
             return
           end
-          local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, vim.split(data, "[\r]?\n"))
-          if not ok then
-            return
-          end
+          local processed_data = split(data, "[\r]?\n", _, opts)
 
-          if opts.callback then
-            opts.callback(bufnr)
+          if processed_data then
+            local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, processed_data)
+            if not ok then
+              return
+            end
+
+            if opts.callback then
+              opts.callback(bufnr)
+            end
+            putils.highlighter(bufnr, ft, opts)
+          else
+            if type(opts.preview.timeout_hook) == "function" then
+              opts.preview.timeout_hook(filepath, bufnr, opts)
+            else
+              set_timeout_message(bufnr, opts.winid, "Previewer timed out")
+              return
+            end
           end
-          putils.highlighter(bufnr, ft)
         end))
       end
     end)
@@ -323,6 +455,8 @@ previewers.cat = defaulter(function(opts)
       end
       conf.buffer_previewer_maker(p, self.state.bufnr, {
         bufname = self.state.bufname,
+        winid = self.state.winid,
+        preview = opts.preview,
       })
     end,
   }
@@ -376,6 +510,8 @@ previewers.vimgrep = defaulter(function(opts)
 
       conf.buffer_previewer_maker(p, self.state.bufnr, {
         bufname = self.state.bufname,
+        winid = self.state.winid,
+        preview = opts.preview,
         callback = function(bufnr)
           jump_to_line(self, bufnr, entry.lnum)
         end,
@@ -432,6 +568,7 @@ previewers.ctags = defaulter(function(_)
     define_preview = function(self, entry, status)
       conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
         bufname = self.state.bufname,
+        winid = self.state.winid,
         callback = function(bufnr)
           vim.api.nvim_buf_call(bufnr, function()
             determine_jump(entry)(self, bufnr)
@@ -462,6 +599,7 @@ previewers.builtin = defaulter(function(_)
 
       conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
         bufname = self.state.bufname,
+        winid = self.state.winid,
         callback = function(bufnr)
           search_cb_jump(self, bufnr, text)
         end,
@@ -486,6 +624,7 @@ previewers.help = defaulter(function(_)
 
       conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
         bufname = self.state.bufname,
+        winid = self.state.winid,
         callback = function(bufnr)
           putils.regex_highlighter(bufnr, "help")
           search_cb_jump(self, bufnr, query)
@@ -729,6 +868,7 @@ previewers.git_file_diff = defaulter(function(opts)
         end
         conf.buffer_previewer_maker(p, self.state.bufnr, {
           bufname = self.state.bufname,
+          winid = self.state.winid,
         })
       else
         putils.job_maker({ "git", "--no-pager", "diff", entry.value }, self.state.bufnr, {

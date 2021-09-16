@@ -63,8 +63,18 @@ local function has_filetype(ft)
 end
 
 --- Attach default highlighter which will choose between regex and ts
-utils.highlighter = function(bufnr, ft)
-  if not (utils.ts_highlighter(bufnr, ft)) then
+utils.highlighter = function(bufnr, ft, opts)
+  opts = opts or {}
+  opts.preview = opts.preview or {}
+  opts.preview.treesitter = vim.F.if_nil(opts.preview.treesitter, true)
+  local ts_highlighting = opts.preview.treesitter == true
+    or type(opts.preview.treesitter) == "table" and vim.tbl_contains(opts.preview.treesitter, ft)
+
+  local ts_success
+  if ts_highlighting then
+    ts_success = utils.ts_highlighter(bufnr, ft)
+  end
+  if not (ts_highlighting or ts_success) then
     utils.regex_highlighter(bufnr, ft)
   end
 end

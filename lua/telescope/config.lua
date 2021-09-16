@@ -383,6 +383,56 @@ append(
 )
 
 append(
+  "preview",
+  {
+    check_mime_type = true,
+    filesize_limit = 25,
+    timeout = 250,
+    treesitter = true,
+  },
+  [[
+    This field handles the global configuration for previewers.
+    By default it is a table, with default values (more below).
+    To disable previewing, set it to false. If you have disabled previewers
+    globally, but want to opt in to previewing for single pickers, you will have to
+    pass `preview = true` or `preview = {...}` (your config) to the `opts` of
+    your picker.
+
+    Fields:
+      - check_mime_type:  Use `file` if available to try to infer whether the
+                          file to preview is a binary if plenary's
+                          filetype detection fails.
+                          Windows users get `file` from:
+                          https://github.com/julian-r/file-windows
+                          Set to false to attempt to preview any mime type.
+                          Default: true
+      - filesize_limit:   The maximum file size in MB attempted to be previewed.
+                          Set to false to attempt to preview any file size.
+                          Default: 25
+      - timeout:          Timeout the previewer if the preview did not
+                          complete within `timeout` milliseconds.
+                          Set to false to not timeout preview.
+                          Default: 250
+      - hook(s):          Function(s) that takes `(filepath, bufnr, opts)`
+                          to be run if the buffer previewer was not shown due to
+                          the respective test.
+                          Available hooks are: {mime, filesize, timeout}_hook, e.g.
+                          preview = {
+                            mime_hook = function(filepath, bufnr, opts) ... end
+                          }
+                          See `telescope/previewers/*.lua` for relevant examples.
+                          Default: nil
+      - treesitter:       Determines whether the previewer performs treesitter
+                          highlighting, which falls back to regex-based highlighting.
+                          `true`: treesitter highlighting for all available filetypes
+                          `false`: regex-based highlighting for all filetypes
+                          `table`: table of filetypes for which to attach treesitter
+                          highlighting
+                          Default: true
+    ]]
+)
+
+append(
   "vimgrep_arguments",
   { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
   [[
