@@ -20,19 +20,19 @@
 So you want to develop your own picker and/or extension for telescope? Then you
 are in the right place! This file will first present an introduction on how to
 do this. After that, this document will present a technical explanation of
-pickers, finders, actions, and the previewer. You will find more information
-in specific help pages and we likely will move some of the technical stuff to
+pickers, finders, actions and the previewer. You can find more information
+in specific help pages and we will probably move some of the technical stuff to
 our vim help docs in the future.
 
-This guide is mainly for telescope so it will assume that a lua knowledge is
-present. You can find information for lua here:
+This guide is mainly for telescope so it will assume that you already have some knowledge of the Lua
+programming language. If not then you can find information for Lua here:
 - [Lua 5.1 Manual](https://www.lua.org/manual/5.1/)
 - [Getting started using Lua in Neovim](https://github.com/nanotee/nvim-lua-guide)
 
 ## Guide to your first Picker
 
 To guide you along the way to first picker we will do the following. We will
-open a empty lua scratch file in which we will develop the picker and run it
+open an empty lua scratch file in which we will develop the picker and run it
 each time using `:luafile %`. Later this file then be bundled as extension.
 
 ### Requires
@@ -46,13 +46,13 @@ local conf = require("telescope.config").values
 
 - `pickers` is the main module which is used to create a new picker.
 - `finders` provides interfaces to fill the picker with items.
-- `config` which is used for user configuration and the `values` table holds
-  these configurations. So to make it easier we only get this table in `conf`.
+- `config` the `values` table holds the user configuration.
+So to make it easier we access this table directly in `conf`.
 
 ### First Picker
 
-We will now make the most simplest color picker. (Note that the previous snippet
-is also required. We will approach this example step by step).
+We will now make the simplest color picker. (We will approach this example step by step,
+you will still need to have the previous requires section above this code.)
 
 ```lua
 -- our picker function: colors
@@ -70,35 +70,38 @@ end
 colors()
 ```
 
-Running this file should open a telescope picker with the entries `red`,
-`green`, `blue`. Pressing enter will open a new file, depending which element is
-selected, in this case this is not what we want so we will address this after
-explaining this snippet.
+Running this code with `:luafile %` should open a telescope picker with the entries `red`,
+`green`, `blue`. Selecting a color and pressing enter will open a new file, in this case
+it's not what we want so we will address this after explaining this snippet.
 
-We will define a new function which will take in a table `opts`. This is good
-practice because now the user can define the behavior of the picker, for example
-change the theme. That the user is able to change the theme we need to pass in
-`opts` as the first argument to `pickers.new`. The second argument is a table
-that defines the default behavior of the picker.
+We will define a new function `colors` which accepts a table `opts`. This is good
+practice because now the user can change how telescope behaves by passing in their
+own `opts` table when calling `colors`.
 
-We can define a `prompt_title`, this option is not required, default will be
-`Prompt` if not set.
+For example the user can pass in a configuration in `opts` which allows them to change
+the theme used for the picker. To allow this we have to make sure we pass the `opts` table
+as the first argument to `pickers.new`. The second argument is a table
+which defines the default behavior of the picker.
+
+We have defined a `prompt_title` but this isn't required. This will default to use
+the text `Prompt` if not set.
 
 `finder` is a required field that needs to be set to the result of a `finders`
 function. In this case we take `new_table` which allows us to define a static
-set of values, `results`, which is a array of elements, in this case our colors
-as strings. It doesn't have to be a array of strings, it can also be a array of
-tables. More to this later.
+set of values, `results`, which is an array of elements, in this case our colors
+as strings. It doesn't have to be an array of strings, it can also be an array of
+tables. More on this later.
 
-`sorter` on the other hand is not a required field but its good practice to
+`sorter` on the other hand is not a required field but it's good practice to
 define it, because the default value will set it to `empty()`, meaning no sorter
 is attached and you can't filter the results. Good practice is to set the sorter
-to either `conf.generic_sorter(opts)` or `conf.file_sorter(opts)`. Setting it to
-a `conf` value will respect user configuration, so if a user has setup
-`fzf-native` as sorter then this decision will be respected and the fzf sorter
-will be attached. Its also suggested to pass in opts here because the sorter
+to either `conf.generic_sorter(opts)` or `conf.file_sorter(opts)`.
+
+Setting it to a value from `conf` will respect the user's configuration, so if a user has set-up
+`fzf-native` as the sorter then this decision will be respected and the `fzf-native` sorter
+will be attached. It's also suggested to pass in `opts` here because the sorter
 could make use of it. As an example the fzf sorter can be configured to be case
-sensitive or insensitive. A user can setup a default behavior and then alter
+sensitive or insensitive. A user can set-up a default behavior and then alter
 this behavior with the `opts` table.
 
 After the picker is defined you need to call `find()` to actually start the
@@ -115,13 +118,13 @@ the last line with the following to open the picker with the `dropdown` theme.
 colors(require("telescope.themes").get_dropdown{})
 ```
 
-Now lets address the issue that selecting a color opens a new buffer. For that
-we need to replace the default select action. The benefit of replace rather than
+Now let's address the issue that selecting a color opens a new buffer. For that
+we need to replace the default select action. The benefit of replacing rather than
 mapping a new function to `<CR>` is that it will respect user configuration. So
 if a user has remapped `select_default` to another key then this decision will
 be respected and it works as expected for the user.
 
-To make this work we need more includes at the top of the file.
+To make this work we need more requires at the top of the file.
 
 ```lua
 local actions = require "telescope.actions"
@@ -132,11 +135,11 @@ local action_state = require "telescope.actions.state"
   access the default action so we can replace it. Also see `:help
   telescope.actions`
 
-- `action_state` gives us a couple of util function we can use to get the
+- `action_state` gives us a few utility functions we can use to get the
   current picker, current selection or current line. Also see `:help
   telescope.actions.state`
 
-So lets replace the default action. For that we need to define a new key value
+So let's replace the default action. For that we need to define a new key value
 pair in our table that we pass into `pickers.new`, for example after `sorter`.
 
 ```lua
@@ -151,41 +154,45 @@ pair in our table that we pass into `pickers.new`, for example after `sorter`.
     end,
 ```
 
-So we do this by setting the `attach_mappings` key to a function. This function
+We do this by setting the `attach_mappings` key to a function. This function
 needs to return either `true` or `false`. If it returns false it means that only
-the actions defined in the function should be attached. So no
-`move_selection_{next,previous}`, so most of the cases you want that this
-function returns `true`. If the function does not return anything a error is
-thrown. The `attach_mappings` function will get to parameters passed in
-`prompt_bufnr` the buffer number of the prompt buffer, which we can use to get
-the pickers object, and `map` a function we can use to map actions or functions
-to arbitrary key sequences.
+the actions defined in the function should be attached. In this case it would
+remove the default actions to move the selected item in the picker,
+`move_selection_{next,previous}`. So in most cases you'll want to return `true`.
+If the function does not return anything then an error is thrown. 
 
-Now we are replacing `select_default` the default action that happens on `<CR>`
-(if not remapped). To do so we need to call `actions.select_default:replace` and
-pass in a new function. In this new function we first close the picker with
-`actions.close` and then get the `selection` with `action_state`. Its important
+The `attach_mappings` function has two parameters, `prompt_bufnr` is the buffer number
+of the prompt buffer, which we can use to get the pickers object and `map` is a function
+we can use to map actions or functions to arbitrary key sequences.
+
+Now we are replacing `select_default` the default action, which is mapped to `<CR>`
+by default. To do this we need to call `actions.select_default:replace` and
+pass in a new function.
+
+In this new function we first close the picker with `actions.close` and then
+get the `selection` with `action_state`. It's important
 to notice that you can still get the selection and current prompt input
-(`action_state.get_current_line()`) with `action_state` even tho the picker is
-already closed. You can look at the selection with
-`print(vim.inspect(selection))` and you will see that it differs from our input
-(string), this is because we will internally pack it in a table with different
-keys. You can specify this behavior and we will talk about that in the next
-section. Now all that is left is to do anything with the selection we have. In
-this case we just put the text in the current buffer.
+(`action_state.get_current_line()`) with `action_state` even after the picker is
+closed.
+
+You can look at the selection with `print(vim.inspect(selection))` and see that it differs from our input
+(string), this is because internally we pack it into a table with different
+keys. You can specify this behavior and wel'l talk about that in the next
+section. Now all that is left is to do something with the selection we have. In
+this case we just put the text in the current buffer with `vim.api.nvim_put`.
 
 ### Entry Maker
 
-Entry maker is a function that is used to transform a item from the finder to a
-internal entry table, which has a couple of required keys. It allows to have a
-different display and match something completly different. It also allows to set
-a absolute path (so the file will always be found) and a relative file path as
-display and for sorting. This allows that the relative file path doesn't even
-have to be valid in the context of the current working directory.
+Entry maker is a function used to transform an item from the finder to an
+internal entry table, which has a few required keys. It allows us to display
+one string but match something completly different. It also allows us to set
+an absolute path when working with files (so the file will always be found)
+and a relative file path for display and sorting. This means the relative file
+path doesn't even need to be valid in the context of the current working directory.
 
-We will now try to define a our entry maker for our example by providing a
+We will now try to define our entry maker for our example by providing an
 `entry_maker` to `finders.new_table` and changing our table to be a little bit
-more interesting. We will end up following new input for `finders.new_table`:
+more interesting. We will end up with the following new code for `finders.new_table`:
 
 ```lua
     finder = finders.new_table {
@@ -204,29 +211,34 @@ more interesting. We will end up following new input for `finders.new_table`:
     },
 ```
 
-With the new snippet we now no longer have a array of strings but a array of
-tables. Each table has a color name and the hex value.
+With the new snippet we no longer have an array of strings but an array of
+tables. Each table has a color name and the color's hex value.
 
 `entry_maker` is a function that will receive each table and then we can set the
-values we want to set. Its best practice to have a `value` reference to the
-original entry, that way you can access the whole table in your action later.
+values we need. It's best practice to have a `value` reference to the
+original entry, that way we will always have access to the complete table in our
+action.
 
-The first required key is `display` and is either a string or a `function(tbl)`,
-where `tbl` the table that is returned by `entry_maker`. For a lot of values its
-suggested to have display as function especially if you are modifying it because
-then the function will only be executed for the entries that are being
-displayed. For examples of entry maker take a look at
-`lua/telescope/make_entry.lua`. A good way to make your `display` more like a
-table is to use `displayer` which can be found in
-`lua/telescope/entry_display.lua`. A more simple example of `displayer` is the
+The `display` key is required and is either a string or a `function(tbl)`,
+where `tbl` is the table returned by `entry_maker`. So in this example `tbl` would
+give our `display` function access to `value` and `ordinal`.
+
+If our picker will have a lot lot of values it's suggested to use a function for `display`
+especially if you are modifying the text to display. This way the function will only be executed 
+for the entries being displayed. For an examples of an entry maker take a look at
+`lua/telescope/make_entry.lua`.
+
+A good way to make your `display` more like a table is to use a `displayer` which can be found in
+`lua/telescope/entry_display.lua`. A simpler example of `displayer` is the
 function `gen_from_git_commits` in `make_entry.lua`.
 
-The second required key is `ordinal`, which is used for sorting. So you can have
-different display and sorting values. This allows `display` to be more fancier
-with icons and special indicators and a separate sorting key.
+The `ordinal` is also required, which is used for sorting. As already mentioned
+this allows us to have different display and sorting values. This allows `display`
+to be more complex with icons and special indicators but `ordinal` could be a simpler 
+sorting key.
 
-There are more important keys which can be set but do not make sense in the
-current context:
+There are other important keys which can be set but do not make sense in the
+current context as we are not dealing wiht files:
 - `path`: to set the absolute path of the file to make sure its always found
 - `lnum`: to specify a line number in the file. This will allow the
   `conf.grep_previewer` to show that line and the default action to jump to
@@ -234,16 +246,16 @@ current context:
 
 ### Previewer
 
-We will not write a previewer for this picker because it makes less sense and is
-a more advanced topic. Its already documented pretty good under `:help
-telescope.previewers` so you should read this section if you want to write your
-own `previewer`. If you want a file previewer with or without col you should
+We will not write a previewer for this picker because it isn't required for 
+basic colors and is a more advanced topic. It's already well documented in `:help
+telescope.previewers` so you can read this section if you want to write your
+own `previewer`. If you want a file previewer without columns you should
 default to `conf.file_previewer` or `conf.grep_previewer`.
 
 ### Oneshot Job
 
-The `oneshot_job` finder can be used to have a async external process which will
-produce results and call `entry_maker` on each new line. Example usage would be
+The `oneshot_job` finder can be used to have an asynchronous external process which will
+find results and call `entry_maker` for each entry. An example usage would be
 `find`.
 
 ```lua
@@ -253,14 +265,14 @@ finder = finders.new_oneshot_job { "find", opts },
 ### More examples
 
 A good way to find more examples is to look into the `lua/telescope/builtin/`
-directory which contains all builtin pickers. Another way to find more examples
+directory which contains all of the builtin pickers. Another way to find more examples
 is to take a look at the [extension wiki page](https://github.com/nvim-telescope/telescope.nvim/wiki/Extensions)
-and then at a extension some wrote.
+as this provides many extensions peopel have already written which use these concepts.
 
-If you still have questions after reading this guide feel free to ask us for
+If you still have any questions after reading this guide please feel free to ask us for
 more information on [gitter](https://gitter.im/nvim-telescope/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-and we happily answer your questions and potentially even improve this guide. Of
-course you can also improve this guide by sending a PRs.
+and we will happily answer your questions and hopefully allow us to improve this guide. You can also
+help us to improve this guide by sending a PRs.
 
 ## Technical
 
@@ -283,7 +295,7 @@ Picker:new{
 ```
 
 ### Finders
-<!-- TODO what is finders -->
+<!-- TODO what are finders -->
 ```lua
 -- lua/telescope/finders.lua
 Finder:new{
@@ -309,8 +321,8 @@ TODO: Talk about what actions vs actions sets are
 - `lua/telescope/actions/set.lua`
     - The second most "user-facing" of the files. This provides actions that are consumed by several builtin actions, which allows for only overriding ONE item, instead of copying the same configuration / function several times.
 - `lua/telescope/actions/state.lua`
-    - Provides APIs for interacting with the state of telescope while in actions.
-    - These are most useful for writing your own actions and interacting with telescope at that time
+    - Provides APIs for interacting with the state of telescope from within actions.
+    - These are useful for writing your own actions and interacting with telescope
 - `lua/telescope/actions/mt.lua`
     - You probably don't need to look at this, but it defines the behavior of actions.
 
