@@ -812,6 +812,7 @@ builtin.git_branches({opts})                          *builtin.git_branches()*
         {cwd}          (string)   specify the path of the repo
         {use_git_root} (boolean)  if we should use git root as cwd or the cwd
                                   (important for submodule) (default: true)
+        {pattern}      (string)   specify the pattern to match all refs
 
 
 builtin.git_status({opts})                              *builtin.git_status()*
