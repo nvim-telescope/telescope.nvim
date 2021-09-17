@@ -1,8 +1,10 @@
-local truncate = require("plenary.strings").truncate
 local Path = require "plenary.path"
 local Job = require "plenary.job"
 
 local log = require "telescope.log"
+
+local truncate = require("plenary.strings").truncate
+local get_status = require("telescope.state").get_status
 
 local utils = {}
 
@@ -363,7 +365,7 @@ utils.transform_path = function(opts, path)
         transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
       end
       if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
-        local status = require("telescope.state").get_status(vim.api.nvim_get_current_buf())
+        local status = get_status(vim.api.nvim_get_current_buf())
         local width = vim.api.nvim_win_get_width(status.results_win) - 5
         transformed_path = truncate(transformed_path, width, nil, -1)
       end
