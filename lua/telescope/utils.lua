@@ -3,6 +3,10 @@ local Job = require "plenary.job"
 
 local log = require "telescope.log"
 
+local has_vim_diagnostic = vim.diagnostic ~= nil
+-- TODO why is vim.diagnostic all uppercase..
+local type_diagnostic = vim.lsp.protocol.DiagnosticSeverity
+
 local utils = {}
 
 utils.get_separator = function()
@@ -178,10 +182,30 @@ local filter_diag_severity = function(opts, severity)
   end
 end
 
+-- avoid closure for jitting
+local preprocess_diag = function(diag, bufnr)
+  bufnr = vim.F.if_nil(bufnr, diag.bufnr)
+  local filename = vim.api.nvim_buf_get_name(bufnr)
+
+  local buffer_diag = {
+    bufnr = bufnr,
+    filename = filename,
+    lnum = (has_vim_diagnostic and diag.lnum or diag.range["start"].line) + 1,
+    col = (has_vim_diagnostic and diag.col or diag.range["start"].line) + 1,
+    end_lnum = has_vim_diagnostic and diag.end_lnum + 1,
+    end_col = has_vim_diagnostic and diag.end_col + 1,
+    start = not has_vim_diagnostic and diag.range["start"],
+    finish = not has_vim_diagnostic and diag.range["end"],
+    -- remove line break to avoid display issues
+    text = vim.trim(diag.message:gsub("[\n]", "")),
+    type = type_diagnostic[diag.severity] or type_diagnostic[1],
+  }
+  return buffer_diag
+end
+
 utils.diagnostics_to_tbl = function(opts)
   opts = opts or {}
   local items = {}
-  local lsp_type_diagnostic = vim.lsp.protocol.DiagnosticSeverity
   local current_buf = vim.api.nvim_get_current_buf()
 
   opts.severity = convert_diagnostic_type(opts.severity)
@@ -199,35 +223,26 @@ utils.diagnostics_to_tbl = function(opts)
     end
   end
 
-  local preprocess_diag = function(diag, bufnr)
-    local filename = vim.api.nvim_buf_get_name(bufnr)
-    local start = diag.range["start"]
-    local finish = diag.range["end"]
-    local row = start.line
-    local col = start.character
-
-    local buffer_diag = {
-      bufnr = bufnr,
-      filename = filename,
-      lnum = row + 1,
-      col = col + 1,
-      start = start,
-      finish = finish,
-      -- remove line break to avoid display issues
-      text = vim.trim(diag.message:gsub("[\n]", "")),
-      type = lsp_type_diagnostic[diag.severity] or lsp_type_diagnostic[1],
-    }
-    return buffer_diag
-  end
-
-  local buffer_diags = opts.get_all and vim.lsp.diagnostic.get_all()
-    or { [current_buf] = vim.lsp.diagnostic.get(current_buf, opts.client_id) }
-  for bufnr, diags in pairs(buffer_diags) do
-    for _, diag in ipairs(diags) do
-      -- workspace diagnostics may include empty tables for unused bufnr
+  local buffer_diags
+  if not has_vim_diagnostic then
+    buffer_diags = opts.get_all and vim.lsp.diagnostic.get_all()
+      or { [current_buf] = vim.lsp.diagnostic.get(current_buf, opts.client_id) }
+      for bufnr, diags in pairs(buffer_diags) do
+        for _, diag in ipairs(diags) do
+          -- workspace diagnostics may include empty tables for unused bufnr
+          if not vim.tbl_isempty(diag) then
+            if filter_diag_severity(opts, diag.severity) then
+              table.insert(items, preprocess_diag(diag, bufnr))
+            end
+          end
+        end
+      end
+  else
+    buffer_diags = opts.get_all and vim.diagnostic.get(nil) or vim.diagnostic.get(0)
+    for _, diag in ipairs(buffer_diags) do
       if not vim.tbl_isempty(diag) then
         if filter_diag_severity(opts, diag.severity) then
-          table.insert(items, preprocess_diag(diag, bufnr))
+          table.insert(items, preprocess_diag(diag))
         end
       end
     end
