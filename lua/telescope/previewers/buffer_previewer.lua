@@ -237,8 +237,8 @@ previewers.file_maker = function(filepath, bufnr, opts)
               vim.schedule(function()
                 set_timeout_message(bufnr, opts.winid, "File exceeds preview size limit")
               end)
-              return
             end
+            return
           end
         end
 
@@ -264,8 +264,8 @@ previewers.file_maker = function(filepath, bufnr, opts)
               opts.preview.timeout_hook(filepath, bufnr, opts)
             else
               set_timeout_message(bufnr, opts.winid, "Previewer timed out")
-              return
             end
+            return
           end
         end))
       end
