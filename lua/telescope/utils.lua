@@ -366,7 +366,7 @@ utils.transform_path = function(opts, path)
       end
       if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
         local status = get_status(vim.api.nvim_get_current_buf())
-        local width = vim.api.nvim_win_get_width(status.results_win) - 5
+        local width = vim.api.nvim_win_get_width(status.results_win) - status.picker.selection_caret:len() - 2
         transformed_path = truncate(transformed_path, width, nil, -1)
       end
     end
