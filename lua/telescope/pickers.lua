@@ -988,7 +988,10 @@ end
 
 function Picker:_on_complete()
   for _, v in ipairs(self._completion_callbacks) do
-    pcall(v, self)
+    local ok, msg = pcall(v, self)
+    if not ok then
+      log.warn("completion callback failed with:", msg)
+    end
   end
 end
 

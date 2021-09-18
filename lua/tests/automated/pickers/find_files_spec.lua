@@ -7,6 +7,16 @@ local disp = function(val)
 end
 
 describe("builtin.find_files", function()
+  it("should find the readme, using lowercase", function()
+    tester.run_string [[
+      tester.builtin_picker('find_files', 'readme.md', {
+        post_close = {
+          { 'README.md', GetFile },
+        }
+      })
+    ]]
+  end)
+
   it("should find the readme", function()
     tester.run_file "find_files__readme"
   end)
@@ -50,7 +60,7 @@ describe("builtin.find_files", function()
     it("should only save one line for ascending, but many for descending", function()
       local expected
       if configuration.sorting_strategy == "descending" then
-        expected = 5
+        expected = 19
       else
         expected = 1
       end
@@ -102,16 +112,6 @@ describe("builtin.find_files", function()
     end)
   end
 
-  it("should find the readme, using lowercase", function()
-    tester.run_string [[
-      tester.builtin_picker('find_files', 'readme.md', {
-        post_close = {
-          { 'README.md', GetFile },
-        }
-      })
-    ]]
-  end)
-
   it("should find the pickers.lua, using lowercase", function()
     tester.run_string [[
       tester.builtin_picker('find_files', 'pickers.lua', {
@@ -139,10 +139,10 @@ describe("builtin.find_files", function()
         post_typed = {
           {
             {
-              "  lua/tests/fixtures/file_abc.txt",
-              "> lua/tests/fixtures/file_a.txt",
+              "> lua/tests/fixtures/file_abc.txt",
+              "  lua/tests/fixtures/file_a.txt",
             }, function()
-            local res = GetResults()
+              local res = GetResults()
 
               return {
                 res[#res - 1],

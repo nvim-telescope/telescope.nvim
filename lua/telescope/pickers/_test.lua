@@ -55,9 +55,9 @@ local execute_test_case = function(location, key, spec)
   end
 end
 
-local end_test_cases = function()
+local end_test_cases = vim.schedule_wrap(function()
   vim.cmd [[qa!]]
-end
+end)
 
 local invalid_test_case = function(k)
   writer { case = k, expected = "<a valid key>", actual = k }
@@ -85,10 +85,6 @@ tester.picker_feed = function(input, test_cases)
     end
 
     vim.wait(10)
-
-    if tester.debug then
-      coroutine.yield()
-    end
 
     vim.defer_fn(function()
       if test_cases.post_typed then
@@ -173,7 +169,7 @@ local asserters = {
 local check_results = function(results)
   -- TODO: We should get all the test cases here that fail, not just the first one.
   for _, v in ipairs(results) do
-    local assertion = asserters[v._type or "default"]
+    local assertion = asserters[v._type or "_default"]
 
     assertion(v.expected, v.actual, string.format("Test Case: %s // %s", v.location, v.case))
   end
@@ -217,8 +213,6 @@ tester._execute = function(filename)
   -- Important so that the outputs don't get mixed
   log.use_console = false
 
-  vim.cmd(string.format("luafile %s", filename))
-
   local f = loadfile(filename)
   if not f then
     writer {
@@ -238,7 +232,7 @@ tester._execute = function(filename)
     }
   end
 
-  end_test_cases()
+  -- end_test_cases()
 end
 
 return tester
