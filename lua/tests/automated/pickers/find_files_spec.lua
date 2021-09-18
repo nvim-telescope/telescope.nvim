@@ -58,6 +58,8 @@ describe("builtin.find_files", function()
 
       tester.run_string(string.format(
         [[
+        local max_results = 5
+
         tester.builtin_picker('find_files', 'README.md', {
           post_typed = {
             { %s, function() return #GetResults() end },
