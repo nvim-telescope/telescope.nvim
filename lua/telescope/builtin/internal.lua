@@ -526,7 +526,7 @@ internal.help_tags = function(opts)
   end
 
   local help_files = {}
-  local all_files = vim.fn.globpath(vim.o.runtimepath, "doc/*", 1, 1)
+  local all_files = vim.api.nvim_get_runtime_file("doc/*", true)
   for _, fullpath in ipairs(all_files) do
     local file = utils.path_tail(fullpath)
     if file == "tags" then
