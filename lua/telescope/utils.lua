@@ -365,9 +365,10 @@ utils.transform_path = function(opts, path)
         transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
       end
       if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
-        local status = get_status(vim.api.nvim_get_current_buf())
-        local width = vim.api.nvim_win_get_width(status.results_win) - status.picker.selection_caret:len() - 2
-        transformed_path = truncate(transformed_path, width, nil, -1)
+        if opts.__length == nil then
+          opts.__length = utils.calc_result_length()
+        end
+        transformed_path = truncate(transformed_path, opts.__length, nil, -1)
       end
     end
 
@@ -376,6 +377,11 @@ utils.transform_path = function(opts, path)
     log.warn("`path_display` must be either a function or a table.", "See `:help telescope.defaults.path_display.")
     return transformed_path
   end
+end
+
+utils.calc_result_length = function()
+  local status = get_status(vim.api.nvim_get_current_buf())
+  return vim.api.nvim_win_get_width(status.results_win) - status.picker.selection_caret:len() - 2
 end
 
 -- local x = utils.make_default_callable(function(opts)
