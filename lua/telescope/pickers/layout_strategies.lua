@@ -334,16 +334,16 @@ layout_strategies.horizontal = make_documented_layout(
     local width_padding = math.floor((max_columns - width) / 2)
     -- Default value is false, to use the normal horizontal layout
     if not layout_config.mirror then
-      results.col = width_padding + bs
+      results.col = width_padding + bs + 1
       prompt.col = results.col
       preview.col = results.col + results.width + 1 + bs
     else
-      preview.col = width_padding + bs
+      preview.col = width_padding + bs + 1
       prompt.col = preview.col + preview.width + 1 + bs
       results.col = preview.col + preview.width + 1 + bs
     end
 
-    preview.line = math.floor((max_lines - height) / 2) + bs
+    preview.line = math.floor((max_lines - height) / 2) + bs + 1
     if layout_config.prompt_position == "top" then
       prompt.line = preview.line
       results.line = prompt.line + prompt.height + 1 + bs
@@ -435,20 +435,18 @@ layout_strategies.center = make_documented_layout(
 
     -- Align the prompt and results so halfway up the screen is
     -- in the middle of this combined block
-    prompt.line = (max_lines / 2) - ((results.height + (2 * bs)) / 2)
+    prompt.line = (max_lines / 2) - ((results.height + (2 * bs)) / 2) + 1
     results.line = prompt.line + 1 + bs
 
-    preview.line = 1
+    preview.line = 2
 
     if self.previewer and max_lines >= layout_config.preview_cutoff then
-      preview.height = math.floor(prompt.line - (2 + bs))
+      preview.height = math.floor(prompt.line - (3 + bs))
     else
       preview.height = 0
     end
 
-    results.col = math.ceil((max_columns / 2) - (width / 2) + bs)
-    prompt.col = results.col
-    preview.col = results.col
+    results.col, preview.col, prompt.col = 0, 0, 0 -- all centered
 
     if tbln then
       prompt.line = prompt.line + 1
@@ -552,11 +550,11 @@ layout_strategies.cursor = make_documented_layout(
       top_left.col = max_columns - width
     end
 
-    prompt.line = top_left.line
+    prompt.line = top_left.line + 1
     results.line = prompt.line + bs + 1
     preview.line = prompt.line
 
-    prompt.col = top_left.col
+    prompt.col = top_left.col + 1
     results.col = prompt.col
     preview.col = results.col + (bs * 2) + results.width
 
@@ -638,16 +636,15 @@ layout_strategies.vertical = make_documented_layout(
     prompt.height = 1
     results.height = height - preview.height - prompt.height - h_space
 
-    local width_padding = math.floor((max_columns - width) / 2) + 1
-    results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
+    results.col, preview.col, prompt.col = 0, 0, 0 -- all centered
 
     local height_padding = math.floor((max_lines - height) / 2)
     if not layout_config.mirror then
-      preview.line = height_padding + bs
+      preview.line = height_padding + bs + 1
       results.line = (preview.height == 0) and preview.line or preview.line + preview.height + (1 + bs)
       prompt.line = results.line + results.height + (1 + bs)
     else
-      prompt.line = height_padding + bs
+      prompt.line = height_padding + bs + 1
       results.line = prompt.line + prompt.height + (1 + bs)
       preview.line = results.line + results.height + (1 + bs)
     end
@@ -729,15 +726,15 @@ layout_strategies.current_buffer = make_documented_layout("current_buffer", {
 
   local line = win_position[1]
   if self.previewer then
-    preview.line = height_padding + line
+    preview.line = height_padding + line + 1
     results.line = preview.line + preview.height + (1 + bs)
     prompt.line = results.line + results.height + (1 + bs)
   else
-    results.line = height_padding + line
+    results.line = height_padding + line + 1
     prompt.line = results.line + results.height + (1 + bs)
   end
 
-  local col = win_position[2] + width_padding
+  local col = win_position[2] + width_padding + 1
   preview.col, results.col, prompt.col = col, col, col
 
   return {
@@ -794,18 +791,18 @@ layout_strategies.bottom_pane = make_documented_layout(
     end
 
     -- Line
-    prompt.line = max_lines - results.height - (1 + bs)
+    prompt.line = max_lines - results.height - (1 + bs) + 1
     results.line = prompt.line + 1
     preview.line = results.line + bs
 
     -- Col
-    prompt.col = bs
+    prompt.col = 0 -- centered
     if layout_config.mirror and preview.width > 0 then
-      results.col = preview.width + (3 * bs)
-      preview.col = bs
+      results.col = preview.width + (3 * bs) + 1
+      preview.col = bs + 1
     else
-      results.col = bs
-      preview.col = results.width + (3 * bs)
+      results.col = bs + 1
+      preview.col = results.width + (3 * bs) + 1
     end
 
     if tbln then
