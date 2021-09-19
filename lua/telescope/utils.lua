@@ -329,6 +329,11 @@ local is_uri = function(filename)
   return string.match(filename, "^%w+://") ~= nil
 end
 
+local calc_result_length = function()
+  local status = get_status(vim.api.nvim_get_current_buf())
+  return vim.api.nvim_win_get_width(status.results_win) - status.picker.selection_caret:len() - 2
+end
+
 utils.transform_path = function(opts, path)
   if is_uri(path) then
     return path
@@ -366,7 +371,7 @@ utils.transform_path = function(opts, path)
       end
       if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
         if opts.__length == nil then
-          opts.__length = utils.calc_result_length()
+          opts.__length = calc_result_length()
         end
         transformed_path = truncate(transformed_path, opts.__length, nil, -1)
       end
@@ -377,11 +382,6 @@ utils.transform_path = function(opts, path)
     log.warn("`path_display` must be either a function or a table.", "See `:help telescope.defaults.path_display.")
     return transformed_path
   end
-end
-
-utils.calc_result_length = function()
-  local status = get_status(vim.api.nvim_get_current_buf())
-  return vim.api.nvim_win_get_width(status.results_win) - status.picker.selection_caret:len() - 2
 end
 
 -- local x = utils.make_default_callable(function(opts)
