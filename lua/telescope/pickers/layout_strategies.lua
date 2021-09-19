@@ -56,6 +56,20 @@ local calc_tabline = function(max_lines)
   return max_lines, tbln
 end
 
+-- Helper function for capping over/undersized width/height, and calculating spacing
+--@param cur_size number: size to be capped
+--@param max_size any: the maximum size, e.g. max_lines or max_columns
+--@param bs number: the size of the border
+--@param w_num number: the maximum number of windows of the picker in the given direction
+--@param b_num number: the number of border rows/column in the given direction (when border enabled)
+--@param s_num number: the number of gaps in the given direction (when border disabled)
+local calc_size_and_spacing = function(cur_size, max_size, bs, w_num, b_num, s_num)
+  local spacing = s_num * (1 - bs) + b_num * bs
+  cur_size = math.min(cur_size, max_size)
+  cur_size = math.max(cur_size, w_num + spacing)
+  return cur_size, spacing
+end
+
 local layout_strategies = {}
 layout_strategies._configurations = {}
 
@@ -271,14 +285,18 @@ layout_strategies.horizontal = make_documented_layout(
     max_lines, tbln = calc_tabline(max_lines)
 
     local width_opt = layout_config.width
-    local picker_width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
-    local width_padding = math.floor((max_columns - picker_width) / 2)
+    local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
 
     local height_opt = layout_config.height
-    local picker_height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
-    local height_padding = math.floor((max_lines - picker_height) / 2)
+    local height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
 
+    local bs = get_border_size(self)
+
+    local w_space
     if self.previewer and max_columns >= layout_config.preview_cutoff then
+      -- Cap over/undersized width (with previewer)
+      width, w_space = calc_size_and_spacing(width, max_columns, bs, 2, 4, 1)
+
       preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, cols)
         if cols < 150 then
           return math.floor(cols * 0.4)
@@ -287,41 +305,51 @@ layout_strategies.horizontal = make_documented_layout(
         else
           return 120
         end
-      end))(self, picker_width, max_lines)
+      end))(self, width, max_lines)
+
+      results.width = width - preview.width - w_space
+      prompt.width = results.width
     else
+      -- Cap over/undersized width (without previewer)
+      width, w_space = calc_size_and_spacing(width, max_columns, bs, 1, 2, 0)
+
       preview.width = 0
+      results.width = width - preview.width - w_space
+      prompt.width = results.width
     end
 
-    results.width = picker_width - preview.width
-    prompt.width = picker_width - preview.width
+    local h_space
+    -- Cap over/undersized height
+    height, h_space = calc_size_and_spacing(height, max_lines, bs, 2, 4, 1)
 
     prompt.height = 1
-    results.height = picker_height - prompt.height - 2
+    results.height = height - prompt.height - h_space
 
     if self.previewer then
-      preview.height = picker_height
+      preview.height = height - 2 * bs
     else
       preview.height = 0
     end
 
+    local width_padding = math.floor((max_columns - width) / 2)
     -- Default value is false, to use the normal horizontal layout
     if not layout_config.mirror then
-      results.col = width_padding
-      prompt.col = width_padding
-      preview.col = results.col + results.width + 2
+      results.col = width_padding + bs
+      prompt.col = results.col
+      preview.col = results.col + results.width + 1 + bs
     else
-      preview.col = width_padding
-      prompt.col = preview.col + preview.width + 2
-      results.col = preview.col + preview.width + 2
+      preview.col = width_padding + bs
+      prompt.col = preview.col + preview.width + 1 + bs
+      results.col = preview.col + preview.width + 1 + bs
     end
 
-    preview.line = height_padding
+    preview.line = math.floor((max_lines - height) / 2) + bs
     if layout_config.prompt_position == "top" then
-      prompt.line = height_padding
-      results.line = prompt.line + prompt.height + 2
+      prompt.line = preview.line
+      results.line = prompt.line + prompt.height + 1 + bs
     elseif layout_config.prompt_position == "bottom" then
-      results.line = height_padding
-      prompt.line = results.line + results.height + 2
+      results.line = preview.line
+      prompt.line = results.line + results.height + 1 + bs
     else
       error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
     end
@@ -384,25 +412,30 @@ layout_strategies.center = make_documented_layout(
     local width_opt = layout_config.width
     local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
 
-    -- This sets the number of results displayed
-    local res_height_opt = layout_config.height
-    local res_height = resolve.resolve_height(res_height_opt)(self, max_columns, max_lines)
-
-    local max_results = (res_height > max_lines and max_lines or res_height)
-    local max_width = (width > max_columns and max_columns or width)
+    -- This sets the height for the whole layout
+    local height_opt = layout_config.height
+    local height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
 
     local bs = get_border_size(self)
 
-    prompt.height = 1
-    results.height = max_results
+    local w_space
+    -- Cap over/undersized width
+    width, w_space = calc_size_and_spacing(width, max_columns, bs, 1, 2, 0)
 
-    prompt.width = max_width
-    results.width = max_width
-    preview.width = max_width
+    prompt.width = width - w_space
+    results.width = width - w_space
+    preview.width = width - w_space
+
+    local h_space
+    -- Cap over/undersized height
+    height, h_space = calc_size_and_spacing(height, max_lines, bs, 2, 3, 0)
+
+    prompt.height = 1
+    results.height = height - prompt.height - h_space
 
     -- Align the prompt and results so halfway up the screen is
     -- in the middle of this combined block
-    prompt.line = (max_lines / 2) - ((max_results + (bs * 2)) / 2)
+    prompt.line = (max_lines / 2) - ((results.height + (2 * bs)) / 2)
     results.line = prompt.line + 1 + bs
 
     preview.line = 1
@@ -413,7 +446,7 @@ layout_strategies.center = make_documented_layout(
       preview.height = 0
     end
 
-    results.col = math.ceil((max_columns / 2) - (width / 2) - bs)
+    results.col = math.ceil((max_columns / 2) - (width / 2) + bs)
     prompt.col = results.col
     preview.col = results.col
 
@@ -470,28 +503,35 @@ layout_strategies.cursor = make_documented_layout(
     local width_opt = layout_config.width
     local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
 
-    local max_width = (width > max_columns and max_columns or width)
-
     local bs = get_border_size(self)
 
+    local h_space
+    -- Cap over/undersized height
+    height, h_space = calc_size_and_spacing(height, max_lines, bs, 2, 3, 0)
+
     prompt.height = 1
-    results.height = height
-    preview.height = results.height + prompt.height + bs
+    results.height = height - prompt.height - h_space
+    preview.height = height - 2 * bs
 
+    local w_space
     if self.previewer and max_columns >= layout_config.preview_cutoff then
-      preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, cols)
+      -- Cap over/undersized width (with preview)
+      width, w_space = calc_size_and_spacing(width, max_columns, bs, 2, 4, 0)
+
+      preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, _)
         -- By default, previewer takes 2/3 of the layout
-        return 2 * math.floor(max_width / 3)
-      end))(self, max_width, max_lines)
+        return 2 * math.floor(width / 3)
+      end))(self, width, max_lines)
+      prompt.width = width - preview.width - w_space
+      results.width = prompt.width
     else
+      -- Cap over/undersized width (without preview)
+      width, w_space = calc_size_and_spacing(width, max_columns, bs, 1, 2, 0)
+
       preview.width = 0
+      prompt.width = width - w_space
+      results.width = prompt.width
     end
-
-    prompt.width = max_width - preview.width
-    results.width = prompt.width
-
-    local total_height = preview.height + (bs * 2)
-    local total_width = prompt.width + (bs * 2) + preview.width + bs
 
     local position = vim.api.nvim_win_get_position(0)
     local top_left = {
@@ -499,17 +539,17 @@ layout_strategies.cursor = make_documented_layout(
       col = vim.fn.wincol() + position[2],
     }
     local bot_right = {
-      line = top_left.line + total_height - 1,
-      col = top_left.col + total_width - 1,
+      line = top_left.line + height - 1,
+      col = top_left.col + width - 1,
     }
 
     if bot_right.line > max_lines then
       -- position above current line
-      top_left.line = top_left.line - total_height - 1
+      top_left.line = top_left.line - height - 1
     end
     if bot_right.col >= max_columns then
       -- cap to the right of the screen
-      top_left.col = max_columns - total_width
+      top_left.col = max_columns - width
     end
 
     prompt.line = top_left.line
@@ -568,46 +608,48 @@ layout_strategies.vertical = make_documented_layout(
     max_lines, tbln = calc_tabline(max_lines)
 
     local width_opt = layout_config.width
-    local picker_width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
-    local width_padding = math.floor((max_columns - picker_width) / 2)
+    local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
 
     local height_opt = layout_config.height
-    local picker_height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
-    local height_padding = math.floor((max_lines - picker_height) / 2)
+    local height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
 
+    local bs = get_border_size(self)
+
+    local w_space
+    -- Cap over/undersized width
+    width, w_space = calc_size_and_spacing(width, max_columns, bs, 1, 2, 0)
+
+    prompt.width = width - w_space
+    results.width = prompt.width
+    preview.width = prompt.width
+
+    local h_space
     if self.previewer and max_lines >= layout_config.preview_cutoff then
-      preview.width = picker_width
+      -- Cap over/undersized height (with previewer)
+      height, h_space = calc_size_and_spacing(height, max_lines, bs, 3, 6, 2)
+
+      preview.height = resolve.resolve_height(if_nil(layout_config.preview_height, 0.5))(self, max_columns, height)
     else
-      preview.width = 0
+      -- Cap over/undersized height (without previewer)
+      height, h_space = calc_size_and_spacing(height, max_lines, bs, 2, 4, 1)
+
+      preview.height = 0
     end
-    results.width = picker_width
-    prompt.width = picker_width
-
-    local preview_total = 0
-    preview.height = 0
-    if self.previewer and max_lines >= layout_config.preview_cutoff then
-      preview.height = resolve.resolve_height(if_nil(layout_config.preview_height, 0.5))(
-        self,
-        max_columns,
-        picker_height
-      )
-
-      preview_total = preview.height + 2
-    end
-
     prompt.height = 1
-    results.height = picker_height - preview_total - prompt.height - 2
+    results.height = height - preview.height - prompt.height - h_space
 
+    local width_padding = math.floor((max_columns - width) / 2) + 1
     results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
 
+    local height_padding = math.floor((max_lines - height) / 2)
     if not layout_config.mirror then
-      preview.line = height_padding
-      results.line = (preview.height == 0) and preview.line or preview.line + preview.height + 2
-      prompt.line = results.line + results.height + 2
+      preview.line = height_padding + bs
+      results.line = (preview.height == 0) and preview.line or preview.line + preview.height + (1 + bs)
+      prompt.line = results.line + results.height + (1 + bs)
     else
-      prompt.line = height_padding
-      results.line = prompt.line + prompt.height + 2
-      preview.line = results.line + results.height + 2
+      prompt.line = height_padding + bs
+      results.line = prompt.line + prompt.height + (1 + bs)
+      preview.line = results.line + results.height + (1 + bs)
     end
 
     if tbln then
@@ -662,27 +704,25 @@ layout_strategies.current_buffer = make_documented_layout("current_buffer", {
   local results = initial_options.results
   local prompt = initial_options.prompt
 
-  local width_padding = 2
-  local width = window_width - width_padding * 2
-  if not self.previewer then
-    preview.width = 0
-  else
-    preview.width = width
-  end
-  results.width = width
-  prompt.width = width
+  local bs = get_border_size(self)
+
+  -- Width
+  local width_padding = (1 + bs) -- TODO(l-kershaw): make this configurable
+
+  prompt.width = window_width - 2 * width_padding
+  results.width = prompt.width
+  preview.width = prompt.width
 
   -- Height
-  local height_padding = 3
+  local height_padding = (1 + bs) -- TODO(l-kershaw): make this configurable
 
-  results.height = 10
   prompt.height = 1
-
-  -- The last 2 * 2 is for the extra borders
   if self.previewer then
-    preview.height = window_height - results.height - prompt.height - 2 * 2 - height_padding * 2
+    results.height = 10 -- TODO(l-kershaw): make this configurable
+    preview.height = window_height - results.height - prompt.height - 2 * (1 + bs) - 2 * height_padding
   else
-    results.height = window_height - prompt.height - 2 - height_padding * 2
+    results.height = window_height - prompt.height - (1 + bs) - 2 * height_padding
+    preview.height = 0
   end
 
   local win_position = vim.api.nvim_win_get_position(0)
@@ -690,18 +730,18 @@ layout_strategies.current_buffer = make_documented_layout("current_buffer", {
   local line = win_position[1]
   if self.previewer then
     preview.line = height_padding + line
-    results.line = preview.line + preview.height + 2
-    prompt.line = results.line + results.height + 2
+    results.line = preview.line + preview.height + (1 + bs)
+    prompt.line = results.line + results.height + (1 + bs)
   else
     results.line = height_padding + line
-    prompt.line = results.line + results.height + 2
+    prompt.line = results.line + results.height + (1 + bs)
   end
 
   local col = win_position[2] + width_padding
   preview.col, results.col, prompt.col = col, col, col
 
   return {
-    preview = preview.width > 0 and preview,
+    preview = preview.height > 0 and preview,
     results = results,
     prompt = prompt,
   }
@@ -721,72 +761,63 @@ layout_strategies.bottom_pane = make_documented_layout(
     local prompt = initial_options.prompt
     local preview = initial_options.preview
 
-    local result_height = if_nil(resolve.resolve_height(layout_config.height)(self, max_columns, max_lines), 25)
+    local tbln
+    max_lines, tbln = calc_tabline(max_lines)
 
-    local prompt_width = max_columns
-    local col = 0
-
-    local has_border = not not self.window.border
-    if has_border then
-      col = 1
-      prompt_width = prompt_width - 2
+    local height = if_nil(resolve.resolve_height(layout_config.height)(self, max_columns, max_lines), 25)
+    if type(layout_config.height) == "table" and type(layout_config.height.padding) == "number" then
+      -- Since bottom_pane only has padding at the top, we only need half as much padding in total
+      -- This doesn't match the vim help for `resolve.resolve_height`, but it matches expectations
+      height = math.floor((max_lines + height) / 2)
     end
 
-    local left_side_width
+    local bs = get_border_size(self)
+
+    -- Cap over/undersized height
+    height, _ = calc_size_and_spacing(height, max_lines, bs, 2, 3, 0)
+
+    -- Height
+    prompt.height = 1
+    results.height = height - prompt.height - (2 * bs)
+    preview.height = results.height - bs
+
+    -- Width
+    prompt.width = max_columns - 2 * bs
+    -- TODO(l-kershaw): add a preview_cutoff option
     if self.previewer then
-      left_side_width = math.floor(prompt_width / 2)
-
-      local base_col
-      if layout_config.mirror then
-        base_col = 0
-      else
-        base_col = left_side_width + 1
-      end
-
-      if has_border then
-        preview = vim.tbl_deep_extend("force", {
-          col = base_col + 2,
-          line = max_lines - result_height + 1,
-          width = prompt_width - left_side_width - 2,
-          height = result_height - 1,
-        }, preview)
-      else
-        preview = vim.tbl_deep_extend("force", {
-          col = base_col,
-          line = max_lines - result_height,
-          width = prompt_width - left_side_width,
-          height = result_height,
-        }, preview)
-      end
+      -- TODO(l-kershaw): make configurable
+      results.width = math.floor(max_columns / 2) - 2 * bs
+      preview.width = max_columns - results.width - 4 * bs
     else
-      preview = nil
-      left_side_width = prompt_width
+      results.width = prompt.width
+      preview.width = 0
     end
 
-    local result_col
-    if layout_config.mirror and self.previewer then
-      result_col = left_side_width + 2
-      if has_border then
-        left_side_width = left_side_width - 2
-      end
+    -- Line
+    prompt.line = max_lines - results.height - (1 + bs)
+    results.line = prompt.line + 1
+    preview.line = results.line + bs
+
+    -- Col
+    prompt.col = bs
+    if layout_config.mirror and preview.width > 0 then
+      results.col = preview.width + (3 * bs)
+      preview.col = bs
     else
-      result_col = col
+      results.col = bs
+      preview.col = results.width + (3 * bs)
+    end
+
+    if tbln then
+      prompt.line = prompt.line + 1
+      results.line = results.line + 1
+      preview.line = preview.line + 1
     end
 
     return {
-      preview = preview,
-      prompt = vim.tbl_deep_extend("force", prompt, {
-        line = max_lines - result_height - 1,
-        col = col,
-        height = 1,
-        width = prompt_width,
-      }),
-      results = vim.tbl_deep_extend("force", results, {
-        line = max_lines - result_height,
-        col = result_col,
-        height = result_height,
-        width = left_side_width,
-      }),
+      preview = self.previewer and preview.width > 0 and preview,
+      prompt = prompt,
+      results = results,
     }
   end
 )

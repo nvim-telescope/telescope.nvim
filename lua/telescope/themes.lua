@@ -47,7 +47,6 @@ function themes.get_dropdown(opts)
 
     border = true,
     borderchars = {
-      { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
       prompt = { "─", "│", " ", "│", "╭", "╮", "│", "│" },
       results = { "─", "│", "─", "│", "├", "┤", "╯", "╰" },
       preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
@@ -85,7 +84,6 @@ function themes.get_cursor(opts)
       end,
     },
     borderchars = {
-      { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
       prompt = { "─", "│", " ", "│", "╭", "╮", "│", "│" },
       results = { "─", "│", "─", "│", "├", "┤", "╯", "╰" },
       preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
@@ -120,10 +118,8 @@ function themes.get_ivy(opts)
 
     border = true,
     borderchars = {
-      "z",
       prompt = { "─", " ", " ", " ", "─", "─", " ", " " },
       results = { " " },
-      -- results = { "a", "b", "c", "d", "e", "f", "g", "h" },
       preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
     },
   }, opts)

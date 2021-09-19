@@ -76,24 +76,34 @@ function config.set_pickers(pickers)
 end
 
 local layout_config_defaults = {
-  width = 0.8,
-  height = 0.9,
 
   horizontal = {
+    width = 0.8,
+    height = 0.9,
     prompt_position = "bottom",
     preview_cutoff = 120,
   },
 
   vertical = {
+    width = 0.8,
+    height = 0.9,
     preview_cutoff = 40,
   },
 
   center = {
+    width = 0.8,
+    height = 0.9,
     preview_cutoff = 40,
   },
 
   cursor = {
+    width = 0.8,
+    height = 0.9,
     preview_cutoff = 40,
+  },
+
+  bottom_pane = {
+    height = 25,
   },
 }
 
