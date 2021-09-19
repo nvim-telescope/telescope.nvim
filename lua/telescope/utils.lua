@@ -3,6 +3,9 @@ local Job = require "plenary.job"
 
 local log = require "telescope.log"
 
+local truncate = require("plenary.strings").truncate
+local get_status = require("telescope.state").get_status
+
 local utils = {}
 
 utils.get_separator = function()
@@ -326,6 +329,11 @@ local is_uri = function(filename)
   return string.match(filename, "^%w+://") ~= nil
 end
 
+local calc_result_length = function()
+  local status = get_status(vim.api.nvim_get_current_buf())
+  return vim.api.nvim_win_get_width(status.results_win) - status.picker.selection_caret:len() - 2
+end
+
 utils.transform_path = function(opts, path)
   if is_uri(path) then
     return path
@@ -360,6 +368,12 @@ utils.transform_path = function(opts, path)
 
       if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
         transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
+      end
+      if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
+        if opts.__length == nil then
+          opts.__length = calc_result_length()
+        end
+        transformed_path = truncate(transformed_path, opts.__length, nil, -1)
       end
     end
 

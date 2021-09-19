@@ -256,6 +256,8 @@ append(
                 the difference between the displayed paths
   - "shorten"   only display the first character of each directory in
                 the path
+  - "truncate"  truncates the start of the path when the whole path will
+                not fit
 
   You can also specify the number of characters of each directory name
   to keep by setting `path_display.shorten = num`.

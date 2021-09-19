@@ -330,6 +330,7 @@ end
 
 function make_entry.gen_from_lsp_symbols(opts)
   opts = opts or {}
+
   local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
 
   local display_items = {
@@ -932,6 +933,7 @@ end
 
 function make_entry.gen_from_lsp_diagnostics(opts)
   opts = opts or {}
+
   local lsp_type_diagnostic = vim.lsp.protocol.DiagnosticSeverity
 
   local signs
