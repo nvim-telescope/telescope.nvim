@@ -37,11 +37,11 @@ function themes.get_dropdown(opts)
       preview_cutoff = 1, -- Preview should always show (unless previewer = false)
 
       width = function(_, max_columns, _)
-        return math.min(max_columns - 3, 80)
+        return math.min(max_columns, 80)
       end,
 
       height = function(_, _, max_lines)
-        return math.min(max_lines - 4, 15)
+        return math.min(max_lines, 15)
       end,
     },
 
@@ -75,13 +75,8 @@ function themes.get_cursor(opts)
     results_title = false,
     layout_strategy = "cursor",
     layout_config = {
-      width = function(_, _, _)
-        return 80
-      end,
-
-      height = function(_, _, _)
-        return 6
-      end,
+      width = 80,
+      height = 9,
     },
     borderchars = {
       prompt = { "─", "│", " ", "│", "╭", "╮", "│", "│" },
