@@ -372,12 +372,11 @@ utils.transform_path = function(opts, path)
       if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
         if opts.__length == nil then
           opts.__length = calc_result_length()
+          if type(path_display.truncate) == "number" then
+            opts.__length = opts.__length - path_display.truncate
+          end
         end
         transformed_path = truncate(transformed_path, opts.__length, nil, -1)
-
-        if type(path_display.truncate) == "number" then
-          transformed_path = transformed_path ..  string.rep(" ", path_display.truncate)
-        end
       end
     end
 
