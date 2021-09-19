@@ -374,6 +374,8 @@ utils.transform_path = function(opts, path)
           opts.__length = calc_result_length()
           if type(path_display.truncate) == "number" then
             opts.__length = opts.__length - path_display.truncate
+          else
+            opts.__length = opts.__length - 2
           end
         end
         transformed_path = truncate(transformed_path, opts.__length, nil, -1)
