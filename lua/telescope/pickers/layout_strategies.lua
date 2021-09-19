@@ -446,9 +446,7 @@ layout_strategies.center = make_documented_layout(
       preview.height = 0
     end
 
-    results.col = math.ceil((max_columns / 2) - (width / 2) + bs) + 1
-    prompt.col = results.col
-    preview.col = results.col
+    results.col, preview.col, prompt.col = 0, 0, 0 -- all centered
 
     if tbln then
       prompt.line = prompt.line + 1
@@ -638,8 +636,7 @@ layout_strategies.vertical = make_documented_layout(
     prompt.height = 1
     results.height = height - preview.height - prompt.height - h_space
 
-    local width_padding = math.floor((max_columns - width) / 2) + 1
-    results.col, preview.col, prompt.col = width_padding + 1, width_padding + 1, width_padding + 1
+    results.col, preview.col, prompt.col = 0, 0, 0 -- all centered
 
     local height_padding = math.floor((max_lines - height) / 2)
     if not layout_config.mirror then
@@ -799,7 +796,7 @@ layout_strategies.bottom_pane = make_documented_layout(
     preview.line = results.line + bs
 
     -- Col
-    prompt.col = bs + 1
+    prompt.col = 0 -- centered
     if layout_config.mirror and preview.width > 0 then
       results.col = preview.width + (3 * bs) + 1
       preview.col = bs + 1
