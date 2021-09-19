@@ -416,12 +416,13 @@ layout_strategies.center = make_documented_layout(
 
     local bs = get_border_size(self)
 
+    local w_space
     -- Cap over/undersized width
-    width, _ = calc_size_and_spacing(width, max_columns, bs, 1, 3, 0)
+    width, w_space = calc_size_and_spacing(width, max_columns, bs, 1, 2, 0)
 
-    prompt.width = width
-    results.width = width
-    preview.width = width
+    prompt.width = width - w_space
+    results.width = width - w_space
+    preview.width = width - w_space
 
     local h_space
     -- Cap over/undersized height
@@ -443,7 +444,7 @@ layout_strategies.center = make_documented_layout(
       preview.height = 0
     end
 
-    results.col = math.ceil((max_columns / 2) - (width / 2) - bs)
+    results.col = math.ceil((max_columns / 2) - (width / 2) + bs)
     prompt.col = results.col
     preview.col = results.col
 
@@ -635,7 +636,7 @@ layout_strategies.vertical = make_documented_layout(
     prompt.height = 1
     results.height = height - preview.height - prompt.height - h_space
 
-    local width_padding = math.floor((max_columns - width) / 2)
+    local width_padding = math.floor((max_columns - width) / 2) + 1
     results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
 
     local height_padding = math.floor((max_lines - height) / 2)
