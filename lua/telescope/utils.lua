@@ -374,6 +374,10 @@ utils.transform_path = function(opts, path)
           opts.__length = calc_result_length()
         end
         transformed_path = truncate(transformed_path, opts.__length, nil, -1)
+
+        if type(path_display.truncate) == "number" then
+          transformed_path = transformed_path ..  string.rep(" ", path_display.truncate)
+        end
       end
     end
 
