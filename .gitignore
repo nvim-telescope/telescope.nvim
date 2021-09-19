@@ -2,3 +2,4 @@ build/
 doc/tags
 
 .luacheckcache
+.gdb_history

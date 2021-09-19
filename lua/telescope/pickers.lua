@@ -22,7 +22,7 @@ local p_highlighter = require "telescope.pickers.highlights"
 local p_scroller = require "telescope.pickers.scroller"
 local p_window = require "telescope.pickers.window"
 
-local EntryManager = require "telescope.entry_manager"
+local EntryManager = require "telescope.c_entry_manager"
 local MultiSelect = require "telescope.pickers.multi"
 
 local get_default = utils.get_default

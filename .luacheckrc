@@ -18,6 +18,7 @@ globals = {
   "_TelescopeConfigurationValues",
   "_TelescopeConfigurationPickers",
   "__TelescopeKeymapStore",
+  "__Telescope_FFI_DEFINED",
 }
 
 -- Global objects defined by the C code

@@ -1,4 +1,4 @@
-local EntryManager = require "telescope.entry_manager"
+local EntryManager = require "telescope.c_entry_manager"
 
 local eq = assert.are.same
 
@@ -17,7 +17,7 @@ describe("process_result", function()
     manager:add_entry(nil, 1, "hello")
     manager:add_entry(nil, 2, "later")
 
-    eq(2, manager.linked_states.size)
+    eq(2, manager:num_results())
 
     eq("hello", manager:get_entry(1))
     eq("later", manager:get_entry(2))

@@ -1,5 +1,5 @@
 CFLAGS = -Wall -Werror -fpic -std=gnu99
-MODE ?= -Og -ggdb3
+MODE ?= -O3
 
 ifeq ($(OS),Windows_NT)
     MKD = -mkdir
