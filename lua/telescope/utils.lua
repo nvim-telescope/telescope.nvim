@@ -329,9 +329,10 @@ local is_uri = function(filename)
   return string.match(filename, "^%w+://") ~= nil
 end
 
-local calc_result_length = function()
+local calc_result_length = function(truncate_len)
   local status = get_status(vim.api.nvim_get_current_buf())
-  return vim.api.nvim_win_get_width(status.results_win) - status.picker.selection_caret:len() - 2
+  local len = vim.api.nvim_win_get_width(status.results_win) - status.picker.selection_caret:len() - 2
+  return type(truncate_len) == "number" and len - truncate_len or len
 end
 
 utils.transform_path = function(opts, path)
@@ -371,7 +372,7 @@ utils.transform_path = function(opts, path)
       end
       if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
         if opts.__length == nil then
-          opts.__length = calc_result_length()
+          opts.__length = calc_result_length(path_display.truncate)
         end
         transformed_path = truncate(transformed_path, opts.__length, nil, -1)
       end
