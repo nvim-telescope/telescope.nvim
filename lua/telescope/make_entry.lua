@@ -943,7 +943,7 @@ function make_entry.gen_from_lsp_diagnostics(opts)
       -- pcall to catch entirely unbound or cleared out sign hl group
       if type(severity) == "string" then
         local status, sign = pcall(function()
-          return vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. severity)[1].text)
+          return vim.trim(vim.fn.sign_getdefined("DiagnosticSign" .. severity)[1].text)
         end)
         if not status then
           sign = severity:sub(1, 1)
