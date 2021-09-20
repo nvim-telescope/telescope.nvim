@@ -5,17 +5,17 @@
 #include <string.h>
 
 // ENTRYMANAGER THINGS
-static fzf_node_t *create_node(int item) {
-  fzf_node_t *node = (fzf_node_t *)malloc(sizeof(fzf_node_t));
-  node->item = item;
+static tele_node_t *create_node(int32_t item, double score) {
+  tele_node_t *node = (tele_node_t *)malloc(sizeof(tele_node_t));
+  node->item = (tele_container){.idx = item, .score = score};
   node->next = NULL;
   node->prev = NULL;
   return node;
 }
 
-fzf_linked_list_t *fzf_list_create(size_t track_at) {
-  fzf_linked_list_t *list =
-      (fzf_linked_list_t *)malloc(sizeof(fzf_linked_list_t));
+tele_linked_list_t *tele_list_create(size_t track_at) {
+  tele_linked_list_t *list =
+      (tele_linked_list_t *)malloc(sizeof(tele_linked_list_t));
   list->len = 0;
   list->track_at = track_at;
   list->head = NULL;
@@ -24,11 +24,11 @@ fzf_linked_list_t *fzf_list_create(size_t track_at) {
   return list;
 }
 
-void fzf_list_free(fzf_linked_list_t *list) {
+void tele_list_free(tele_linked_list_t *list) {
   if (list->head) {
-    fzf_node_t *curr = list->head;
+    tele_node_t *curr = list->head;
     while (curr != NULL) {
-      fzf_node_t *tmp = curr->next;
+      tele_node_t *tmp = curr->next;
       free(curr);
       curr = tmp;
     }
@@ -37,9 +37,10 @@ void fzf_list_free(fzf_linked_list_t *list) {
   free(list);
 }
 
-fzf_node_t *fzf_list_append(fzf_linked_list_t *list, int item) {
+tele_node_t *tele_list_append(tele_linked_list_t *list, int32_t item,
+                              double score) {
   ++list->len;
-  fzf_node_t *node = create_node(item);
+  tele_node_t *node = create_node(item, score);
 
   if (list->head == NULL) {
     list->head = node;
@@ -58,9 +59,9 @@ fzf_node_t *fzf_list_append(fzf_linked_list_t *list, int item) {
   return node;
 }
 
-void fzf_list_prepend(fzf_linked_list_t *list, int item) {
+void tele_list_prepend(tele_linked_list_t *list, int32_t item, double score) {
   ++list->len;
-  fzf_node_t *node = create_node(item);
+  tele_node_t *node = create_node(item, score);
 
   if (list->tail == NULL) {
     list->tail = node;
@@ -78,10 +79,10 @@ void fzf_list_prepend(fzf_linked_list_t *list, int item) {
   }
 }
 
-void fzf_list_place_after(fzf_linked_list_t *list, size_t index,
-                          fzf_node_t *node, int item) {
+void tele_list_place_after(tele_linked_list_t *list, size_t index,
+                           tele_node_t *node, int32_t item, double score) {
   ++list->len;
-  fzf_node_t *new_node = create_node(item);
+  tele_node_t *new_node = create_node(item, score);
 
   assert(node->prev != node);
   assert(node->next != node);
@@ -113,10 +114,10 @@ void fzf_list_place_after(fzf_linked_list_t *list, size_t index,
   }
 }
 
-void fzf_list_place_before(fzf_linked_list_t *list, size_t index,
-                           fzf_node_t *node, int item) {
+void tele_list_place_before(tele_linked_list_t *list, size_t index,
+                            tele_node_t *node, int32_t item, double score) {
   ++list->len;
-  fzf_node_t *new_node = create_node(item);
+  tele_node_t *new_node = create_node(item, score);
 
   assert(node->prev != node);
   assert(node->next != node);

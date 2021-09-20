@@ -5,30 +5,36 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef struct fzf_node_s fzf_node_t;
-struct fzf_node_s {
-  fzf_node_t *next;
-  fzf_node_t *prev;
-  int item;
+typedef struct {
+  int32_t idx;
+  double score;
+} tele_container;
+
+typedef struct tele_node_s tele_node_t;
+struct tele_node_s {
+  tele_node_t *next;
+  tele_node_t *prev;
+  tele_container item;
 };
 
 typedef struct {
-  fzf_node_t *head;
-  fzf_node_t *tail;
-  fzf_node_t *_tracked_node;
+  tele_node_t *head;
+  tele_node_t *tail;
+  tele_node_t *_tracked_node;
   size_t len;
   size_t track_at;
-} fzf_linked_list_t;
+} tele_linked_list_t;
 
-fzf_linked_list_t *fzf_list_create(size_t track_at);
-void fzf_list_free(fzf_linked_list_t *list);
+tele_linked_list_t *tele_list_create(size_t track_at);
+void tele_list_free(tele_linked_list_t *list);
 
-fzf_node_t *fzf_list_append(fzf_linked_list_t *list, int item);
-void fzf_list_prepend(fzf_linked_list_t *list, int item);
+tele_node_t *tele_list_append(tele_linked_list_t *list, int32_t item,
+                              double score);
+void tele_list_prepend(tele_linked_list_t *list, int32_t item, double score);
 
-void fzf_list_place_after(fzf_linked_list_t *list, size_t index,
-                          fzf_node_t *node, int item);
-void fzf_list_place_before(fzf_linked_list_t *list, size_t index,
-                           fzf_node_t *node, int item);
+void tele_list_place_after(tele_linked_list_t *list, size_t index,
+                           tele_node_t *node, int32_t item, double score);
+void tele_list_place_before(tele_linked_list_t *list, size_t index,
+                            tele_node_t *node, int32_t item, double score);
 
 #endif

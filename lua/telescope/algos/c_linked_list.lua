@@ -8,7 +8,7 @@ function LinkedList:new(opts)
   opts = opts or {}
 
   return setmetatable({
-    list = ffi.gc(native.fzf_list_create(opts.track_at), native.fzf_list_free),
+    list = ffi.gc(native.tele_list_create(opts.track_at), native.tele_list_free),
     tbl = {},
     idx = 0,
   }, self)
@@ -19,31 +19,31 @@ function LinkedList:has_tracked()
 end
 
 function LinkedList:tracked()
-  return self.tbl[self.list._tracked_node.item]
+  return self.tbl[self.list._tracked_node.item.idx], self.list._tracked_node.item.score
 end
 
-function LinkedList:append(item)
+function LinkedList:append(item, score)
   self.idx = self.idx + 1
   self.tbl[self.idx] = item
-  native.fzf_list_append(self.list, self.idx)
+  native.tele_list_append(self.list, self.idx, score)
 end
 
-function LinkedList:prepend(item)
+function LinkedList:prepend(item, score)
   self.idx = self.idx + 1
   self.tbl[self.idx] = item
-  native.fzf_list_prepend(self.list, self.idx)
+  native.tele_list_prepend(self.list, self.idx, score)
 end
 
-function LinkedList:place_after(index, node, item)
+function LinkedList:place_after(index, node, item, score)
   self.idx = self.idx + 1
   self.tbl[self.idx] = item
-  native.fzf_list_place_after(self.list, index, node, self.idx)
+  native.tele_list_place_after(self.list, index, node, self.idx, score)
 end
 
-function LinkedList:place_before(index, node, item)
+function LinkedList:place_before(index, node, item, score)
   self.idx = self.idx + 1
   self.tbl[self.idx] = item
-  native.fzf_list_place_before(self.list, index, node, self.idx)
+  native.tele_list_place_before(self.list, index, node, self.idx, score)
 end
 
 function LinkedList:size()
@@ -59,7 +59,7 @@ function LinkedList:iter()
     end
 
     current_node = current_node.next
-    return self.tbl[node.item]
+    return self.tbl[node.item.idx], node.item.score
   end
 end
 
@@ -75,7 +75,7 @@ function LinkedList:ipairs()
 
     current_node = current_node.next
     index = index + 1
-    return index, self.tbl[node.item], node
+    return index, self.tbl[node.item.idx], node.item.score, node
   end
 end
 
