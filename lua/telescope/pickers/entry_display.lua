@@ -3,6 +3,8 @@ local strings = require "plenary.strings"
 local entry_display = {}
 entry_display.truncate = strings.truncate
 
+---@tag telescope.pickers.entry_display
+
 ---@brief [[
 --- Entry Display takes care of formatting the text displayed for each entry.
 --- This includes adding highlight colors.
