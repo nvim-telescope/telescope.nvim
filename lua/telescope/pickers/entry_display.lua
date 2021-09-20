@@ -6,20 +6,20 @@ entry_display.truncate = strings.truncate
 ---@brief [[
 --- Entry Display takes care of formatting the text displayed for each entry.
 --- This includes adding highlight colors.
-
+---
 --- Most pickers will call the create function only once.
 --- The configuration.items passed in will provide the column
 --- widths which will normally be the same for every entry.
 --- This is why a single call is made to create.
-
+---
 --- The create function will use the column widths to create a generator table.
 --- Each item in the table is a function used to format the text in each column,
 --- in terms of width and how it's justified.
 --- It's also possible for the final column not to have a fixed width, this will
 --- be shown in the configuartion as 'remaining = true'.
-
+---
 --- An example of this configuration is shown for the buffers picker
-
+---
 ---   local displayer = entry_display.create {
 ---     separator = " ",
 ---     items = {
@@ -29,41 +29,41 @@ entry_display.truncate = strings.truncate
 ---       { remaining = true },
 ---     },
 ---   }
-
+---
 --- This shows 4 columns, the first is defined in the opts as the width we'll use when display_string
 --- the number of the buffer. The second has a fixed width of 4 and the 3rd column's widht will be 
 --- decided by the width of the icons we use. The fourth column will use the remaining space.
 --- Finally we have also defined the seperator between each column will be the space " ".
-
-
+---
+---
 --- Most pickers store the function returned by create() in a reference called display.
 --- This function is called for every entry which is displayed and passes in the actual text
 --- which should be used to create the string displayed for the entry.
 --- The text is passed in as a table, the number of items will match the number of columns.
 --- Each item can be a string or a table containing the text along with the highlight color.
-
+---
 --- An example of how the display reference will be used is shown, again for the buffers pickerfunction self:
-
+---
 --- return displayer {
 ---   { entry.bufnr, "TelescopeResultsNumber" },
 ---   { entry.indicator, "TelescopeResultsComment" },
 ---   { icon, hl_group },
 ---   display_bufname .. ":" .. entry.lnum,
 --- }
-
+---
 --- You can see these match up to the configuration passed in to the create function.
 --- And this is how the entry would look for this file's buffer:
 --- 14  %a    l/t/p/entry_display.lua:47
-
+---
 --- The call to displayer is wrapped inside a make_display functiion.
 --- The only argument to this function is the entry itself, so this will be called for
 --- every entry which will be displayed.
-
+---
 --- The final layer above this is the make_entry function.
 --- This is called with the opts for the picker and it also returns a function.
 --- That function accepts the entry and on eof it's returns is the make_display function
 --- from above.
-
+---
 --- At the very end of this process when the picker calls make_entry with an entry to be displayed
 --- the final return 2 values, final_str and highlights.
 --- final_str is all the text to be displayed for this entry as a single string. If parts of the
