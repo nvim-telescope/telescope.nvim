@@ -258,7 +258,7 @@ append(
                 the path
   - "truncate"  truncates the start of the path when the whole path will
                 not fit. To increase the the gap between the path and the edge.
-                set truncate to number `truncate = 3`. default = 2
+                set truncate to number `truncate = 3`
 
   You can also specify the number of characters of each directory name
   to keep by setting `path_display.shorten = num`.
