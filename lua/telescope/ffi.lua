@@ -32,16 +32,15 @@ typedef struct {
   size_t track_at;
 } tele_linked_list_t;
 
-tele_linked_list_t *tele_list_create(size_t);
-void tele_list_free(tele_linked_list_t *);
+typedef struct {
+  size_t max_results;
+  double worst_acceptable_score;
+  tele_linked_list_t *list;
+} tele_manager_t;
 
-tele_node_t *tele_list_append(tele_linked_list_t *, int32_t, double);
-void tele_list_prepend(tele_linked_list_t *, int32_t, double);
-
-void tele_list_place_after(tele_linked_list_t *, size_t, tele_node_t *, int32_t,
-                           double);
-void tele_list_place_before(tele_linked_list_t *, size_t, tele_node_t *,
-                            int32_t, double);
+tele_manager_t *tele_manager_create(size_t max_results);
+void tele_manager_free(tele_manager_t *manager);
+int32_t tele_manager_add(tele_manager_t *manager, int32_t item, double score);
 ]]
 end
 

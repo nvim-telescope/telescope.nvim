@@ -1169,7 +1169,7 @@ function pickers.on_close_prompt(prompt_bufnr)
       if picker.cache_picker.limit_entries > 0 then
         -- edge case: starting in normal mode and not having run a search means having no manager instantiated
         if picker.manager then
-          picker.manager.linked_states:truncate(picker.cache_picker.limit_entries)
+          picker.manager:truncate(picker.cache_picker.limit_entries)
         else
           picker.manager = EntryManager:new(picker.max_results, picker.entry_adder, picker.stats)
         end

@@ -186,4 +186,8 @@ function EntryManager:iter()
   end
 end
 
+function EntryManager:truncate(...)
+  return self.linked_states:truncate(...)
+end
+
 return EntryManager

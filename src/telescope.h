@@ -1,7 +1,6 @@
 #ifndef _TELESCOPE_H_
 #define _TELESCOPE_H_
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -25,16 +24,14 @@ typedef struct {
   size_t track_at;
 } tele_linked_list_t;
 
-tele_linked_list_t *tele_list_create(size_t track_at);
-void tele_list_free(tele_linked_list_t *list);
+typedef struct {
+  size_t max_results;
+  double worst_acceptable_score;
+  tele_linked_list_t *list;
+} tele_manager_t;
 
-tele_node_t *tele_list_append(tele_linked_list_t *list, int32_t item,
-                              double score);
-void tele_list_prepend(tele_linked_list_t *list, int32_t item, double score);
-
-void tele_list_place_after(tele_linked_list_t *list, size_t index,
-                           tele_node_t *node, int32_t item, double score);
-void tele_list_place_before(tele_linked_list_t *list, size_t index,
-                            tele_node_t *node, int32_t item, double score);
+tele_manager_t *tele_manager_create(size_t max_results);
+void tele_manager_free(tele_manager_t *manager);
+int32_t tele_manager_add(tele_manager_t *manager, int32_t item, double score);
 
 #endif

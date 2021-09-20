@@ -25,8 +25,7 @@ end
 
 local lines = lines_from "../telescope-fzf-native.nvim/files"
 
-local c_manager = CEntryManager:new(10000)
-local manager = EntryManager:new(10000)
+local max = 10000
 
 bench("lua vs c ffi", {
   warmup = 3,
@@ -35,12 +34,14 @@ bench("lua vs c ffi", {
     {
       "c ffi",
       function()
+        local c_manager = CEntryManager:new(max)
         filter(c_manager, "fzf.c", lines)
       end,
     },
     {
       "lua",
       function()
+        local manager = EntryManager:new(max)
         filter(manager, "fzf.c", lines)
       end,
     },

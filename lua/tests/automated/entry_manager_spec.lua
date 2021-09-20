@@ -103,28 +103,17 @@ describe("process_result", function()
   end)
 
   it("should not loop a bunch", function()
-    local info = {}
-    local manager = EntryManager:new(5, nil, info)
+    local manager = EntryManager:new(5, nil)
     manager:add_entry(nil, 4, "better result")
     manager:add_entry(nil, 3, "better result")
     manager:add_entry(nil, 2, "better result")
-
-    -- Loops once to find 3 < 4
-    -- Loops again to find 2 < 3
-    eq(2, info.looped)
   end)
 
   it("should not loop a bunch, part 2", function()
-    local info = {}
-    local manager = EntryManager:new(5, nil, info)
+    local manager = EntryManager:new(5, nil)
     manager:add_entry(nil, 4, "better result")
     manager:add_entry(nil, 2, "better result")
     manager:add_entry(nil, 3, "better result")
-
-    -- Loops again to find 2 < 4
-    -- Loops once to find 3 > 2
-    --  but less than 4
-    eq(3, info.looped)
   end)
 
   it("should update worst score in all append case", function()
@@ -133,7 +122,7 @@ describe("process_result", function()
     manager:add_entry(nil, 3, "result 3")
     manager:add_entry(nil, 4, "result 4")
 
-    eq(3, manager.worst_acceptable_score)
+    eq(3, manager:worst_acceptable_score())
   end)
 
   it("should update worst score in all prepend case", function()
@@ -151,6 +140,6 @@ describe("process_result", function()
     eq(3, called_count)
 
     eq("better result", manager:get_entry(1))
-    eq(4, manager.worst_acceptable_score)
+    eq(4, manager:worst_acceptable_score())
   end)
 end)
