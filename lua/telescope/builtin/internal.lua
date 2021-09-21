@@ -361,7 +361,7 @@ internal.oldfiles = function(opts)
     end
   end
 
-  if opts.cwd_only then
+  if opts.only_cwd then
     local cwd = vim.loop.cwd()
     cwd = cwd:gsub([[\]], [[\\]])
     results = vim.tbl_filter(function(file)
