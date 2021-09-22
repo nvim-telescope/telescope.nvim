@@ -504,6 +504,7 @@ end
 internal.help_tags = function(opts)
   opts.lang = utils.get_default(opts.lang, vim.o.helplang)
   opts.fallback = utils.get_default(opts.fallback, true)
+  opts.file_ignore_patterns = {}
 
   local langs = vim.split(opts.lang, ",", true)
   if opts.fallback and not vim.tbl_contains(langs, "en") then
