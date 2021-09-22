@@ -255,7 +255,7 @@ lsp.code_actions = function(opts)
       -- Is only run on lsp codeactions which contain a comand or a arguments field
       -- Fixed Java/jdtls compatibility with Telescope
       -- See fix_zero_version commentary for more information
-      if action.command or action.arguments then
+      if (action.command and action.command.arguments) or action.arguments then
         if action.command.command then
           action.edit = fix_zero_version(action.command.arguments[1])
         else
