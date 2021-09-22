@@ -87,6 +87,7 @@ local layout_config_defaults = {
   vertical = {
     width = 0.8,
     height = 0.9,
+    prompt_position = "bottom",
     preview_cutoff = 40,
   },
 
