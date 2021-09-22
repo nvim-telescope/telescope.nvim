@@ -508,13 +508,13 @@ function Picker:recalculate_layout()
   local prompt_win = status.prompt_win
   local results_win = status.results_win
   local preview_win = status.preview_win
-  popup.resize(results_win, popup_opts.results)
+  popup.move(results_win, popup_opts.results)
 
   if popup_opts.preview then
-    popup.resize(preview_win, popup_opts.preview)
+    popup.move(preview_win, popup_opts.preview)
   end
 
-  popup.resize(prompt_win, popup_opts.prompt)
+  popup.move(prompt_win, popup_opts.prompt)
 
   -- Temporarily disabled: Draw the screen ASAP. This makes things feel speedier.
   -- vim.cmd [[redraw]]
