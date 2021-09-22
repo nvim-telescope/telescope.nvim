@@ -105,6 +105,7 @@ local layout_config_defaults = {
 
   bottom_pane = {
     height = 25,
+    prompt_position = "top",
   },
 }
 

@@ -765,7 +765,7 @@ end)
 layout_strategies.bottom_pane = make_documented_layout(
   "bottom_pane",
   vim.tbl_extend("error", shared_options, {
-    -- No custom options...
+    prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -806,9 +806,17 @@ layout_strategies.bottom_pane = make_documented_layout(
     end
 
     -- Line
-    prompt.line = max_lines - results.height - (1 + bs) + 1
-    results.line = prompt.line + 1
-    preview.line = results.line + bs
+    if layout_config.prompt_position == "top" then
+      prompt.line = max_lines - results.height - (1 + bs) + 1
+      results.line = prompt.line + 1
+      preview.line = results.line + bs
+    elseif layout_config.prompt_position == "bottom" then
+      results.line = max_lines - results.height - (1 + bs) + 1
+      preview.line = results.line
+      prompt.line = max_lines - bs
+    else
+      error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
+    end
 
     -- Col
     prompt.col = 0 -- centered
