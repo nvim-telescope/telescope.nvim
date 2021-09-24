@@ -115,7 +115,10 @@ end
 files.grep_string = function(opts)
   -- TODO: This should probably check your visual selection as well, if you've got one
 
+  opts.vimgrep_arguments = { "rg", "--color=always", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" }
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
+
+
   local search_dirs = opts.search_dirs
   local word = opts.search or vim.fn.expand "<cword>"
   local search = opts.use_regex and word or escape_chars(word)

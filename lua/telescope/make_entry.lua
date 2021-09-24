@@ -112,6 +112,31 @@ do
 
   -- Gets called only once to parse everything out for the vimgrep, after that looks up directly.
   local parse = function(t)
+
+    -- create a atble to match ansi colors to our highlights 
+    local ansi_to_hl = {
+            [1] = 'TelescopeMatching',
+            [2] = 'TelescopeResultsLineNr',
+            [5] = 'TelescopeResultsIdentifier',
+    }
+
+    local fetch_hl = function( color_code )
+        -- check for a color match
+        local color_code = color_code:sub(1, -2) -- Remove m
+        color_code = tonumber( color_code )
+
+        local hl = ansi_to_hl[color_code] or 'Normal'
+        return hl
+    end
+
+    local conv = require('telescope.color_conv')
+    local t_clean, highlights = conv.interpret_termcodes(t, fetch_hl)
+
+
+    -- bollocks
+    -- bollocks
+    
+    t.value = t_clean[1]
     local _, _, filename, lnum, col, text = string.find(t.value, [[([^:]+):(%d+):(%d+):(.*)]])
 
     local ok
@@ -125,6 +150,7 @@ do
       col = nil
     end
 
+    t.highlights = highlights
     t.filename = filename
     t.lnum = lnum
     t.col = col
@@ -184,6 +210,9 @@ do
       cwd = vim.fn.expand(opts.cwd or vim.loop.cwd()),
 
       display = function(entry)
+
+        if entry.display_text then return entry.display_text, entry.highlights end
+
         local display_filename = utils.transform_path(opts, entry.filename)
 
         local coordinates = ""
@@ -191,16 +220,57 @@ do
           coordinates = string.format("%s:%s:", entry.lnum, entry.col)
         end
 
-        local display, hl_group = utils.transform_devicons(
+        local display_text, hl_group = utils.transform_devicons(
           entry.filename,
           string.format(display_string, display_filename, coordinates, entry.text),
           disable_devicons
         )
+        
+        entry.display_text = display_text 
 
-        if hl_group then
-          return display, { { { 1, 3 }, hl_group } }
+        -- our highlights are affected by filepath shortening
+        -- and adding devicons, fix the highlights here
+        if entry.highlights then
+            local icon_offset = 0
+            if hl_group then
+              icon_offset = 3
+            end
+
+          -- how the path has been shortened
+          local filename_offset = string.len( entry.filename ) - string.len( display_filename )
+
+          -- do we need to adjust?
+          if icon_offset > 0 or filename_offset > 0 then
+              if filename_offset > 0 then 
+                  local filename_start = icon_offset + 1
+                  local total_offset = icon_offset - filename_offset
+                  for k,highlight  in pairs(entry.highlights) do
+                    -- if we're past the 1st character then take away the filename offset
+                    -- always add the icon_offset
+                    if highlight[1][1] == 1 then
+                        entry.highlights[k][1][1] = 1 + icon_offset
+                    else
+                       entry.highlights[k][1][1] = highlight[1][1] + total_offset
+                    end
+                   entry.highlights[k][1][2] = highlight[1][2] + total_offset
+
+                  end
+             else
+                  for k,highlight  in pairs(entry.highlights) do
+                      -- add the icon offset to every highlight position
+                       entry.highlights[k][1][1] = highlight[1][1] + icon_offset
+                       entry.highlights[k][1][2] = highlight[1][2] + icon_offset
+                  end
+            end
+          end
+
+            -- add the highlight for the devicon, can be added at the end
+          if hl_group then
+            table.insert( entry.highlights, { { 1, 3 }, hl_group } )
+          end
+          return display_text, entry.highlights
         else
-          return display
+          return display_text
         end
       end,
 
