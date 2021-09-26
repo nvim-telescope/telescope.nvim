@@ -6,19 +6,16 @@ entry_display.truncate = strings.truncate
 ---@tag telescope.pickers.entry_display
 
 ---@brief [[
---- Entry Display takes care of formatting the text displayed for each entry.
---- This includes adding highlight colors.
+--- Entry Display is used to format each entry shown in the result panel.
 ---
---- Most pickers will call the create function only once.
---- The configuration.items passed in will provide the column
---- widths which will normally be the same for every entry.
---- This is why a single call is made to create.
+--- Entry Display create() will give us a function based on the configuration
+--- of column widths we pass into to it. We then can use this function n times 
+--- to return a string based on structured input.
 ---
---- The create function will use the column widths to create a generator table.
---- Each item in the table is a function used to format the text in each column,
---- in terms of width and how it's justified.
---- It's also possible for the final column not to have a fixed width, this will
---- be shown in the configuartion as 'remaining = true'.
+--- The create function will use the column widths passed to it in
+--- configaration.items. Each item in that table is the number of characters in
+--- the column. It's also possible for the final column to not have a fixed width,
+--- this will be shown in the configuartion as 'remaining = true'.
 ---
 --- An example of this configuration is shown for the buffers picker
 ---
@@ -38,13 +35,13 @@ entry_display.truncate = strings.truncate
 --- Finally we have also defined the seperator between each column will be the space " ".
 ---
 ---
---- Most pickers store the function returned by create() in a reference called display.
---- This function is called for every entry which is displayed and passes in the actual text
---- which should be used to create the string displayed for the entry.
+--- It's best practice for pickers to store the function returned by create() in a reference
+--- called display. This function is called for every entry which is displayed and passes in the
+--- actual text which should be used to create the string displayed for the entry.
 --- The text is passed in as a table, the number of items will match the number of columns.
 --- Each item can be a string or a table containing the text along with the highlight color.
 ---
---- An example of how the display reference will be used is shown, again for the buffers pickerfunction self:
+--- An example of how the display reference will be used is shown, again for the buffers picker:
 ---
 --- return displayer {
 ---   { entry.bufnr, "TelescopeResultsNumber" },
@@ -53,24 +50,13 @@ entry_display.truncate = strings.truncate
 ---   display_bufname .. ":" .. entry.lnum,
 --- }
 ---
---- You can see these match up to the configuration passed in to the create function.
---- And this is how the entry would look for this file's buffer:
---- 14  %a    l/t/p/entry_display.lua:47
----
---- The call to displayer is wrapped inside a make_display functiion.
---- The only argument to this function is the entry itself, so this will be called for
---- every entry which will be displayed.
----
---- The final layer above this is the make_entry function.
---- This is called with the opts for the picker and it also returns a function.
---- That function accepts the entry and on eof it's returns is the make_display function
---- from above.
----
---- At the very end of this process when the picker calls make_entry with an entry to be displayed
---- the final return 2 values, final_str and highlights.
+--- The displayer can return values, final_str and an optional highlights.
 --- final_str is all the text to be displayed for this entry as a single string. If parts of the
---- string are to be highlighted they will be described in the highlights table. Each highlight
---- has a table containing the highlight color, along with the start and end position in final_str.
+--- string are to be highlighted they will be described in the highlights table.
+---
+--- For better understanding of how create() and displayer are used it's best to look
+--- at the code in make_entry.lua.
+---
 ---@brief ]]
 
 entry_display.create = function(configuration)

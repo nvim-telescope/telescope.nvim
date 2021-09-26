@@ -1,3 +1,25 @@
+---@tag telescope.pickers.entry_display
+
+---@brief [[
+---
+--- Each picker has a finder made up of two parts, the results which are the data to be displayed,
+--- and the entry_maker. These entry_makers are functions returned from make_entry functions in 
+--- this document. These will be referrd to as entry_makers.
+---
+--- Every entry maker returns a function which accepts the data to be used for an entry. This 
+--- function will return the final text to be displayed for the entry's result in the result 
+--- panel and an optional table with the color highlights.
+---
+---
+---
+---
+---
+---@brief ]]
+
+
+
+
+
 local entry_display = require "telescope.pickers.entry_display"
 local utils = require "telescope.utils"
 local strings = require "plenary.strings"
