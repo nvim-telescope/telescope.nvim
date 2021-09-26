@@ -583,6 +583,10 @@ internal.help_tags = function(opts)
     attach_mappings = function(prompt_bufnr)
       action_set.select:replace(function(_, cmd)
         local selection = action_state.get_selected_entry()
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
         actions.close(prompt_bufnr)
         if cmd == "default" or cmd == "horizontal" then
           vim.cmd("help " .. selection.value)
@@ -615,6 +619,10 @@ internal.man_pages = function(opts)
     attach_mappings = function(prompt_bufnr)
       action_set.select:replace(function(_, cmd)
         local selection = action_state.get_selected_entry()
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
         local args = selection.section .. " " .. selection.value
 
         actions.close(prompt_bufnr)
