@@ -1223,6 +1223,7 @@ function pickers.on_resize_window(prompt_bufnr)
   -- end
 
   picker:recalculate_layout()
+  vim.api.nvim_win_set_cursor(status.results_win, { 1, 0 })
 end
 
 --- Get the prompt text without the prompt prefix.
