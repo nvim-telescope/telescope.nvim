@@ -570,7 +570,7 @@ previewers.ctags = defaulter(function(_)
         bufname = self.state.bufname,
         winid = self.state.winid,
         callback = function(bufnr)
-          vim.api.nvim_buf_call(bufnr, function()
+          pcall(vim.api.nvim_buf_call, bufnr, function()
             determine_jump(entry)(self, bufnr)
           end)
         end,
