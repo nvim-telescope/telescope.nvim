@@ -67,7 +67,7 @@ local function set_timeout_message(bufnr, winid, message)
     utils.repeated_table(height, table.concat(utils.repeated_table(width, "╱"), ""))
   )
   for linenr = 0, height do
-      vim.api.nvim_buf_add_highlight(bufnr, -1, "TelescopePreviewMessage", linenr, 0, -1)
+    vim.api.nvim_buf_add_highlight(bufnr, -1, "TelescopePreviewMessage", linenr, 0, -1)
   end
   local anon_ns = vim.api.nvim_create_namespace ""
   local padding = table.concat(utils.repeated_table(#message + 4, " "), "")
