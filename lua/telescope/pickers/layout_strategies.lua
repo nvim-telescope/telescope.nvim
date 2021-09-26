@@ -351,7 +351,13 @@ layout_strategies.horizontal = make_documented_layout(
       results.line = preview.line
       prompt.line = results.line + results.height + 1 + bs
     else
-      error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
+      error(
+        string.format(
+          "Unknown prompt_position: %s\n%s",
+          self.window.prompt_position,
+          vim.inspect(layout_config)
+        )
+      )
     end
 
     if tbln then
@@ -649,7 +655,11 @@ layout_strategies.vertical = make_documented_layout(
         prompt.line = results.line + results.height + (1 + bs)
       else
         error(
-          "Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config)
+          string.format(
+            "Unknown prompt_position: %s\n%s",
+            self.window.prompt_position,
+            vim.inspect(layout_config)
+          )
         )
       end
     else
@@ -663,7 +673,11 @@ layout_strategies.vertical = make_documented_layout(
         preview.line = prompt.line + prompt.height + (1 + bs)
       else
         error(
-          "Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config)
+          string.format(
+            "Unknown prompt_position: %s\n%s",
+            self.window.prompt_position,
+            vim.inspect(layout_config)
+          )
         )
       end
     end
