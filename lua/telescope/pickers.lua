@@ -1225,30 +1225,33 @@ function pickers.on_resize_window(prompt_bufnr)
 
   picker:recalculate_layout()
   vim.api.nvim_win_set_cursor(status.results_win, { 1, 0 })
+  vim.api.nvim_buf_set_lines(picker.results_bufnr, 0, -1, false, utils.repeated_table(picker.max_results, ""))
   picker.highlighter:clear_display()
 
   for row = 0, picker.max_results - 1 do
     local prompt = picker:_get_prompt()
     local caret = picker.selection_caret
     local entry = picker.manager:get_entry(picker:get_index(row))
-    local display, display_highlights = entry_display.resolve(picker, entry)
-    if picker:get_index(row) == selection_index then
-      display = caret .. display
-      picker._selection_row = row
-      picker._selection_entry = entry
-    else
-      display = string.rep(" ", #caret) .. display
+    if entry then
+      local display, display_highlights = entry_display.resolve(picker, entry)
+      if picker:get_index(row) == selection_index then
+        display = caret .. display
+        picker._selection_row = row
+        picker._selection_entry = entry
+      else
+        display = string.rep(" ", #caret) .. display
+      end
+
+      a.nvim_buf_set_lines(status.results_bufnr, row, row + 1, false, { display })
+
+      if picker:get_index(row) == selection_index then
+        picker.highlighter:hi_selection(row, caret:sub(1, -2))
+      end
+      picker.highlighter:hi_display(row, caret, display_highlights)
+      picker.highlighter:hi_sorter(row, prompt, display)
+
+      picker.highlighter:hi_multiselect(row, picker:is_multi_selected(entry))
     end
-
-    a.nvim_buf_set_lines(status.results_bufnr, row, row + 1, false, { display })
-
-    if picker:get_index(row) == selection_index then
-      picker.highlighter:hi_selection(row, caret:sub(1, -2))
-    end
-    picker.highlighter:hi_display(row, caret, display_highlights)
-    picker.highlighter:hi_sorter(row, prompt, display)
-
-    picker.highlighter:hi_multiselect(row, picker:is_multi_selected(entry))
   end
 end
 
