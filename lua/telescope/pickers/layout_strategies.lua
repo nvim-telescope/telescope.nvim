@@ -648,7 +648,9 @@ layout_strategies.vertical = make_documented_layout(
         results.line = (preview.height == 0) and preview.line or preview.line + preview.height + (1 + bs)
         prompt.line = results.line + results.height + (1 + bs)
       else
-        error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
+        error(
+          "Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config)
+        )
       end
     else
       if layout_config.prompt_position == "top" then
@@ -660,7 +662,9 @@ layout_strategies.vertical = make_documented_layout(
         prompt.line = results.line + results.height + (1 + bs)
         preview.line = prompt.line + prompt.height + (1 + bs)
       else
-        error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
+        error(
+          "Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config)
+        )
       end
     end
 
