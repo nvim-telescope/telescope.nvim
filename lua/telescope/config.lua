@@ -402,6 +402,7 @@ append(
     filesize_limit = 25,
     timeout = 250,
     treesitter = true,
+    msg_bg_fillchar = "╱",
   },
   [[
     This field handles the global configuration for previewers.
@@ -426,14 +427,52 @@ append(
                           complete within `timeout` milliseconds.
                           Set to false to not timeout preview.
                           Default: 250
-      - hook(s):          Function(s) that takes `(filepath, bufnr, opts)`
-                          to be run if the buffer previewer was not shown due to
-                          the respective test.
-                          Available hooks are: {mime, filesize, timeout}_hook, e.g.
-                          preview = {
-                            mime_hook = function(filepath, bufnr, opts) ... end
-                          }
-                          See `telescope/previewers/*.lua` for relevant examples.
+      - hook(s):          Function(s) that takes `(filepath, bufnr, opts)`, where opts
+                          exposes winid and ft (filetype).
+                          Available hooks (in order of priority):
+                          {filetype, mime, filesize, timeout}_hook
+                          Important: the filetype_hook must return true or false
+                          to indicate whether to continue (true) previewing or not (false),
+                          respectively.
+                          Two examples:
+                          local putils = require("telescope.previewers.utils")
+                          ... -- preview is called in telescope.setup { ... }
+                            preview = {
+                              -- 1) Do not show previewer for certain files
+                              filetype_hook = function(filepath, bufnr, opts)
+                                -- you could analogously check opts.ft for filetypes
+                                local excluded = vim.tbl_filter(function(ending)
+                                  return filepath:match(ending)
+                                end, {
+                                  ".*%.csv",
+                                  ".*%.toml",
+                                })
+                                if not vim.tbl_isempty(excluded) then
+                                  putils.set_preview_message(
+                                    bufnr,
+                                    opts.winid,
+                                    string.format("I don't like %s files!",
+                                    excluded[1]:sub(5, -1))
+                                  )
+                                  return false
+                                end
+                                return true
+                              end,
+                              -- 2) Truncate lines to preview window for too large files
+                              filesize_hook = function(filepath, bufnr, opts)
+                                local path = require("plenary.path"):new(filepath)
+                                -- opts exposes winid
+                                local height = vim.api.nvim_win_get_height(opts.winid)
+                                local lines = vim.split(path:head(height), "[\r]?\n")
+                                vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+                              end,
+                            }
+                          The configuration recipes for relevant examples.
+                          Note: if plenary does not recognize your filetype yet --
+                          1) Please consider contributing to:
+                             $PLENARY_REPO/data/plenary/filetypes/builtin.lua
+                          2) Register your filetype locally as per link
+                             https://github.com/nvim-lua/plenary.nvim#plenaryfiletype
                           Default: nil
       - treesitter:       Determines whether the previewer performs treesitter
                           highlighting, which falls back to regex-based highlighting.
@@ -442,6 +481,8 @@ append(
                           `table`: table of filetypes for which to attach treesitter
                           highlighting
                           Default: true
+      - msg_bg_fillchar:  Character to fill background of unpreviewable buffers with
+                          Default: "╱"
     ]]
 )
 
@@ -697,7 +738,7 @@ function config.set_defaults(user_defaults, tele_defaults)
         vim.tbl_deep_extend("keep", if_nil(config.values[name], {}), if_nil(default_val, {}))
       )
     end
-    if name == "history" or name == "cache_picker" then
+    if name == "history" or name == "cache_picker" or name == "preview" then
       if user_defaults[name] == false or config.values[name] == false then
         return false
       end
