@@ -442,6 +442,9 @@ layout_strategies.center = make_documented_layout(
     elseif layout_config.prompt_position == "bottom" then
       results.line = topline
       prompt.line = results.line + results.height + bs
+      if type(prompt.title) == "string" then
+        prompt.title = {{ pos = "S", text = prompt.title}}
+      end
     else
       error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
     end
@@ -455,9 +458,6 @@ layout_strategies.center = make_documented_layout(
     end
 
     results.col, preview.col, prompt.col = 0, 0, 0 -- all centered
-
-    -- Ensure that the prompt is always on top
-    prompt.zindex = 51
 
     if tbln then
       prompt.line = prompt.line + 1
