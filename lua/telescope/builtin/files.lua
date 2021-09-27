@@ -289,134 +289,125 @@ local function prepare_match(entry, kind)
   return entries
 end
 
+-- avoid checks for browse_{files, folders} because it __should__ never silently fail
+local browse_files = function(opts)
+  local data = {}
+  scan.scan_dir(opts.path, {
+    hidden = opts.hidden,
+    add_dirs = true,
+    depth = opts.depth,
+    on_insert = function(entry, typ)
+      table.insert(data, typ == "directory" and (entry .. os_sep) or entry)
+    end,
+  })
+  table.insert(data, 1, ".." .. os_sep)
+  -- returns copy with properly set cwd for entry maker
+  return finders.new_table { results = data, entry_maker = opts.entry_maker { cwd = opts.path } }
+end
+
+local browse_folders = function(opts)
+  local data = {}
+  scan.scan_dir(opts.cwd, {
+    hidden = opts.hidden,
+    only_dirs = true,
+    respect_gitignore = opts.respect_gitignore,
+    on_insert = function(entry)
+      table.insert(data, entry .. os_sep)
+    end,
+  })
+  table.insert(data, 1, "." .. os_sep)
+  return finders.new_table { results = data, entry_maker = opts.entry_maker { cwd = opts.cwd } }
+end
+
+local fb_finder = function(opts)
+  local cwd = vim.loop.cwd()
+  return setmetatable({
+    path = vim.F.if_nil(opts.path, cwd), -- current path for file browser
+    cwd = vim.F.if_nil(opts.cwd, cwd), -- nvim cwd
+    hidden = vim.F.if_nil(opts.hidden, false),
+    depth = vim.F.if_nil(opts.depth, 1), -- depth for file browser
+    respect_gitignore = vim.F.if_nil(opts.respect_gitignore, true),
+    files = vim.F.if_nil(opts.files, true), -- file or folders mode
+    -- ensure we forward make_entry opts adequately
+    entry_maker = vim.F.if_nil(opts.entry_maker, function(local_opts)
+      return make_entry.gen_from_fs(vim.tbl_extend("force", opts, local_opts))
+    end),
+    _file_finder = vim.F.if_nil(opts.browse_files, browse_files),
+    _folder_finder = vim.F.if_nil(opts.browse_folders, browse_folders),
+    _cached_folder_finder = false,
+    _was_hidden = vim.F.if_nil(opts.hidden, false),
+    close = function(self)
+      -- force refresh of folder finder on picker:refresh when finder is passed
+      self._cached_folder_finder = false
+    end,
+  }, {
+    __call = function(self, ...)
+      if self.files then
+        self._finder = self._file_finder(self)
+      else
+        local cwd_ = vim.loop.cwd()
+        if self._cached_folder_finder == false or cwd_ ~= self.cwd then
+          self._cached_folder_finder = self._folder_finder(self)
+          self.hidden = self._was_hidden
+          self.cwd = cwd_
+        end
+        self._finder = self._cached_folder_finder
+      end
+      self._finder(...)
+    end,
+    __index = function(self, k)
+      if self._finder[k] ~= nil then
+        return self._finder[k]
+      else
+        error(string.format("%s not in finder", k))
+      end
+    end,
+  })
+end
+
 files.file_browser = function(opts)
   opts = opts or {}
 
-  local is_dir = function(value)
-    return value:sub(-1, -1) == os_sep
-  end
-
+  local cwd = vim.loop.cwd()
   opts.depth = opts.depth or 1
-  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
-  opts.new_finder = opts.new_finder
-    or function(path)
-      opts.cwd = path
-      local data = {}
-
-      scan.scan_dir(path, {
-        hidden = opts.hidden or false,
-        add_dirs = true,
-        depth = opts.depth,
-        on_insert = function(entry, typ)
-          table.insert(data, typ == "directory" and (entry .. os_sep) or entry)
-        end,
-      })
-      table.insert(data, 1, ".." .. os_sep)
-
-      local maker = function()
-        local mt = {}
-        mt.cwd = opts.cwd
-        mt.display = function(entry)
-          local hl_group
-          local display = utils.transform_path(opts, entry.value)
-          if is_dir(entry.value) then
-            display = display .. os_sep
-            if not opts.disable_devicons then
-              display = (opts.dir_icon or "") .. " " .. display
-              hl_group = "Default"
-            end
-          else
-            display, hl_group = utils.transform_devicons(entry.value, display, opts.disable_devicons)
-          end
-
-          if hl_group then
-            return display, { { { 1, 3 }, hl_group } }
-          else
-            return display
-          end
-        end
-
-        mt.__index = function(t, k)
-          local raw = rawget(mt, k)
-          if raw then
-            return raw
-          end
-
-          if k == "path" then
-            local retpath = Path:new({ t.cwd, t.value }):absolute()
-            if not vim.loop.fs_access(retpath, "R", nil) then
-              retpath = t.value
-            end
-            if is_dir(t.value) then
-              retpath = retpath .. os_sep
-            end
-            return retpath
-          end
-
-          return rawget(t, rawget({ value = 1 }, k))
-        end
-
-        return function(line)
-          local tbl = { line }
-          tbl.ordinal = Path:new(line):make_relative(opts.cwd)
-          return setmetatable(tbl, mt)
-        end
-      end
-
-      return finders.new_table { results = data, entry_maker = maker() }
-    end
+  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or cwd
+  opts.files = vim.F.if_nil(opts.files, true)
 
   pickers.new(opts, {
-    prompt_title = "File Browser",
-    finder = opts.new_finder(opts.cwd),
+    prompt_title = opts.files and "File Browser" or "Folder Browser",
+    results_title = opts.files and Path:new(opts.cwd):make_relative(cwd) .. os_sep or "Results",
+    finder = fb_finder(opts),
     previewer = conf.file_previewer(opts),
     sorter = conf.file_sorter(opts),
     attach_mappings = function(prompt_bufnr, map)
       action_set.select:replace_if(function()
-        return is_dir(action_state.get_selected_entry().path)
+        -- test whether selected entry is directory
+        return action_state.get_selected_entry().path:sub(-1, -1) == os_sep
       end, function()
-        local new_cwd = vim.fn.expand(action_state.get_selected_entry().path:sub(1, -2))
+        local path = vim.loop.fs_realpath(action_state.get_selected_entry().path)
         local current_picker = action_state.get_current_picker(prompt_bufnr)
-        current_picker.cwd = new_cwd
-        current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
+        current_picker.results_border:change_title(Path:new(path):make_relative(cwd) .. os_sep)
+        local finder = current_picker.finder
+        finder.files = true
+        finder.path = path
+        current_picker:refresh(finder, { reset_prompt = true, multi = current_picker._multi })
       end)
-
-      local create_new_file = function()
-        local current_picker = action_state.get_current_picker(prompt_bufnr)
-        local file = action_state.get_current_line()
-        if file == "" then
-          print(
-            "To create a new file or directory(add "
-              .. os_sep
-              .. " at the end of file) "
-              .. "write the desired new into the prompt and press <C-e>. "
-              .. "It works for not existing nested input as well."
-              .. "Example: this"
-              .. os_sep
-              .. "is"
-              .. os_sep
-              .. "a"
-              .. os_sep
-              .. "new_file.lua"
-          )
-          return
-        end
-
-        local fpath = current_picker.cwd .. os_sep .. file
-        if not is_dir(fpath) then
-          actions.close(prompt_bufnr)
-          Path:new(fpath):touch { parents = true }
-          vim.cmd(string.format(":e %s", fpath))
-        else
-          Path:new(fpath:sub(1, -2)):mkdir { parents = true }
-          local new_cwd = vim.fn.expand(fpath)
-          current_picker.cwd = new_cwd
-          current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
-        end
-      end
-
-      map("i", "<C-e>", create_new_file)
-      map("n", "<C-e>", create_new_file)
+      map("i", "<C-e>", actions.create_file)
+      map("n", "<C-e>", actions.create_file)
+      map("i", "<C-r>", actions.rename_file)
+      map("n", "<C-r>", actions.rename_file)
+      map("i", "<C-y>", actions.copy_file)
+      map("n", "<y>", actions.copy_file)
+      map("i", "<C-h>", actions.toggle_hidden)
+      map("n", "<h>", actions.toggle_hidden)
+      map("i", "<C-g>", actions.goto_prev_dir)
+      map("n", "g", actions.goto_prev_dir)
+      map("i", "<C-f>", actions.toggle_browser)
+      map("n", "<f>", actions.toggle_browser)
+      map("i", "<C-w>", actions.goto_cwd)
+      map("n", "m", actions.move_file)
+      map("n", "dd", actions.remove_file)
+      map("n", "l", actions.select_default)
       return true
     end,
   }):find()
@@ -616,7 +607,7 @@ local function apply_checks(mod)
     mod[k] = function(opts)
       opts = opts or {}
 
-      v(opts)
+      return v(opts)
     end
   end
 

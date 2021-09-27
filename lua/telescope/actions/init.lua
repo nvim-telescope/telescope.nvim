@@ -24,6 +24,8 @@ local from_entry = require "telescope.from_entry"
 local transform_mod = require("telescope.actions.mt").transform_mod
 local resolver = require "telescope.config.resolve"
 
+local Path = require "plenary.path"
+
 local actions = setmetatable({}, {
   __index = function(_, k)
     error("Key does not exist for 'telescope.actions': " .. tostring(k))
@@ -1062,6 +1064,248 @@ actions.which_key = function(prompt_bufnr, opts)
       ))
     end)
   end
+end
+
+local os_sep = Path.path.sep
+
+local get_marked_files = function(prompt_bufnr, smart)
+  smart = vim.F.if_nil(smart, true)
+  local selected = {}
+  action_utils.map_selections(prompt_bufnr, function(entry)
+    return table.insert(selected, Path:new(entry[1]))
+  end, smart)
+  return selected
+end
+
+local is_dir = function(value)
+  return string.sub(value, -1, -1) == os_sep
+end
+
+--- Creates a new file in the current directory of the |builtin.file_browser|.
+--- Notes:
+--- - You can create folders by ending the name in the path separator of your OS, e.g. "/" on Unix systems
+--- - You can implicitly create new folders by passing $/CWD/new_folder/filename.lua
+---@param prompt_bufnr number: The prompt bufnr
+actions.create_file = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local finder = current_picker.finder
+  local file = vim.trim(action_state.get_current_line())
+  if file == "" then
+    print(string.format("Write filename.ext<C-e> or dir%s<C-e> to create a file or folder, respectively.", os_sep))
+    return
+  end
+  local fpath = Path:new(finder.path .. os_sep .. file)
+  if fpath:exists() then
+    vim.api.nvim_echo "File or folder already exists."
+    return
+  end
+  if not is_dir(fpath.filename) then
+    Path:new(fpath):touch { parents = true }
+    current_picker:refresh(false, { reset_prompt = true })
+  else
+    Path:new(fpath.filename:sub(1, -2)):mkdir { parents = true }
+  end
+  -- close cached folder finder
+  current_picker:refresh(finder, { reset_prompt = true })
+end
+
+-- creds to nvim-tree.lua
+local function rename_loaded_buffers(old_name, new_name)
+  for _, buf in pairs(a.nvim_list_bufs()) do
+    if a.nvim_buf_is_loaded(buf) then
+      if a.nvim_buf_get_name(buf) == old_name then
+        a.nvim_buf_set_name(buf, new_name)
+        -- to avoid the 'overwrite existing file' error message on write
+        vim.api.nvim_buf_call(buf, function()
+          vim.cmd "silent! w!"
+        end)
+      end
+    end
+  end
+end
+
+--- Rename files or folders for |builtin.file_browser|.<br>
+---@param prompt_bufnr number: The prompt bufnr
+actions.rename_file = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local entry = action_state.get_selected_entry()
+  local old_name = Path:new(entry[1])
+
+  -- "../" more common so test first
+  if old_name.filename == "../" or old_name.filename == "./" then
+    print "Please select a file!"
+    return
+  end
+  local new_name = Path:new(vim.fn.input("Insert a new name: ", old_name:make_relative()))
+
+  if old_name.filename == new_name.filename then
+    print "Original and new filename are the same! Skipping."
+    return
+  end
+
+  if new_name:exists() then
+    print(string.format("%s already exists! Skipping.", new_name.filename))
+    return
+  end
+
+  old_name:rename { new_name = new_name.filename }
+  rename_loaded_buffers(old_name:absolute(), new_name:absolute())
+
+  -- persist multi selections unambiguously by only removing renamed entry
+  if current_picker:is_multi_selected(entry) then
+    current_picker._multi:drop(entry)
+  end
+
+  current_picker:refresh(false, { reset_prompt = true })
+end
+
+--- Move multi-selected files or folders to current directory in |builtin.file_browser|.<br>
+--- Note: Performs a blocking synchronized file-system operation.
+---@param prompt_bufnr number: The prompt bufnr
+actions.move_file = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local finder = current_picker.finder
+  if finder.files ~= nil and finder.files == false then
+    error "Moving files in folder browser mode not supported."
+    return
+  end
+
+  local selections = get_marked_files(prompt_bufnr, false)
+  assert(not vim.tbl_isempty(selections), "No files or folders currently multi-selected for copying!")
+
+  for _, file in ipairs(selections) do
+    local filename = file.filename:sub(#file:parent().filename + 2)
+    local new_path = Path:new { finder.path, filename }
+    if new_path:exists() then
+      print(string.format("%s already exists in target folder! Skipping.", filename))
+    else
+      file:rename {
+        new_name = new_path.filename,
+      }
+      print(string.format("%s has been moved!", filename))
+    end
+  end
+
+  -- reset multi selection
+  current_picker:refresh(current_picker.finder, { reset_prompt = true })
+end
+
+--- Copy file or folders recursively to current directory in |builtin.file_browser|.<br>
+--- Note: Performs a blocking synchronized file-system operation.
+---@param prompt_bufnr number: The prompt bufnr
+actions.copy_file = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local finder = current_picker.finder
+  if finder.files ~= nil and finder.files == false then
+    error "Copying files in folder browser mode not supported."
+    return
+  end
+
+  local selections = get_marked_files(prompt_bufnr, false)
+  assert(not vim.tbl_isempty(selections), "No files or folders currently multi-selected for copying!")
+
+  for _, file in ipairs(selections) do
+    local filename = file.filename:sub(#file:parent().filename + 2)
+    file:copy {
+      destination = Path:new({
+        finder.path,
+        filename,
+      }).filename,
+      recursive = true,
+    }
+    print(string.format("%s has been copied!", filename))
+  end
+
+  current_picker:refresh(current_picker.finder, { reset_prompt = true })
+end
+
+--- Remove file or folders recursively for |builtin.file_browser|.<br>
+--- Note: Performs a blocking synchronized file-system operation.
+---@param prompt_bufnr number: The prompt bufnr
+actions.remove_file = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local selections = get_marked_files(prompt_bufnr, true)
+
+  print "These files are going to be deleted:"
+  for _, file in ipairs(selections) do
+    print(file.filename)
+  end
+
+  local confirm = vim.fn.confirm(
+    "You're about to perform a destructive action." .. " Proceed? [y/N]: ",
+    "&Yes\n&No",
+    "No"
+  )
+
+  if confirm == 1 then
+    current_picker:delete_selection(function(entry)
+      local p = Path:new(entry[1])
+      p:rm { recursive = p:is_dir() }
+    end)
+    print "\nThe file has been removed!"
+  end
+end
+
+--- Toggle hidden files or folders for |builtin.file_browser|.
+---@param prompt_bufnr number: The prompt bufnr
+actions.toggle_hidden = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local finder = current_picker.finder
+  finder.hidden = not finder.hidden
+  if not finder.files then
+    finder._cached_folder_finder = finder._folder_finder(finder)
+  end
+  current_picker:refresh(finder, { reset_prompt = true, multi = current_picker._multi })
+end
+
+--- Goto previous directory in |builtin.file_browser|.
+---@param prompt_bufnr number: The prompt bufnr
+---@param bypass boolean: Allow passing beyond the globally set current working directory
+actions.goto_prev_dir = function(prompt_bufnr, bypass)
+  bypass = vim.F.if_nil(bypass, false)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local finder = current_picker.finder
+  local parent_dir = Path:new(finder.path):parent()
+
+  if not bypass then
+    if vim.loop.cwd() == finder.path then
+      print "You can't go up any further!"
+      return
+    end
+  end
+
+  finder.path = parent_dir .. os_sep
+  finder.files = true
+  current_picker:refresh(false, { reset_prompt = true })
+end
+
+--- Goto working directory of nvim in |builtin.file_browser|.
+---@param prompt_bufnr number: The prompt bufnr
+actions.goto_cwd = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local finder = current_picker.finder
+  finder.path = vim.loop.cwd() .. os_sep
+  finder.files = true
+  current_picker:refresh(false, { reset_prompt = true })
+end
+
+--- Toggle between file and folder browser for |builtin.file_browser|.
+---@param prompt_bufnr number: The prompt bufnr
+actions.toggle_browser = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local finder = current_picker.finder
+  finder.files = not finder.files
+
+  local selections = current_picker._multi
+  if current_picker.prompt_border then
+    local new_title = finder.files and "File Browser" or "Folder Browser"
+    current_picker.prompt_border:change_title(new_title)
+  end
+  if current_picker.results_border then
+    local new_title = finder.files and Path:new(finder.path):make_relative(vim.loop.cwd()) .. os_sep or "Results"
+    current_picker.results_border:change_title(new_title)
+  end
+  current_picker:refresh(finder, { reset_prompt = true, multi = selections })
 end
 
 -- ==================================================

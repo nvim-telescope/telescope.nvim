@@ -88,14 +88,22 @@ builtin.fd = builtin.find_files
 
 --- Lists files and folders in your current working directory, open files, navigate your filesystem, and create new
 --- files and folders
---- - Default keymaps:
+--- - Default keymaps in insert/normal mode:
 ---   - `<cr>`: opens the currently selected file, or navigates to the currently selected directory
 ---   - `<C-e>`: creates new file in current directory, creates new directory if the name contains a trailing '/'
 ---     - Note: you can create files nested into several directories with `<C-e>`, i.e. `lua/telescope/init.lua` would
 ---       create the file `init.lua` inside of `lua/telescope` and will create the necessary folders (similar to how
 ---       `mkdir -p` would work) if they do not already exist
+---   - `<C-r>/r`: rename currently selected file or folder
+---   - `<C-g>/g`: goto previous folder
+---   - `<C-y>/y`: copy multi selected file(s) or folder(s) recursively to current directory
+---   - `<C-f>/f`: toggle between file and folder browser
+---   - `<C-h>/h`: toggle hidden files
+---   - --/dd`: remove currently or multi selected file(s) or folder(s) recursively
+---   - --/m`: move multi selected file(s) or folder(s) recursively to current directory in file browser
 ---@param opts table: options to pass to the picker
 ---@field cwd string: root dir to browse from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+---@field files boolean: start in file (true) or folder (false) browser (default: true)
 ---@field depth number: file tree depth to display (default: 1)
 ---@field dir_icon string: change the icon for a directory. (default: )
 ---@field hidden boolean: determines whether to show hidden files or not (default: false)

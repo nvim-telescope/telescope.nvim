@@ -161,6 +161,7 @@ previewers.file_maker = function(filepath, bufnr, opts)
     opts.use_ft_detect = true
   end
   opts.ft = opts.use_ft_detect and pfiletype.detect(filepath)
+
   if opts.bufname ~= filepath then
     if not vim.in_fast_event() then
       filepath = vim.fn.expand(filepath)
@@ -175,7 +176,7 @@ previewers.file_maker = function(filepath, bufnr, opts)
         return
       end
       if stat.type == "directory" then
-        pscan.ls_async(filepath, {
+        pscan.ls_async(vim.loop.fs_realpath(filepath), {
           hidden = true,
           group_directories_first = true,
           on_exit = vim.schedule_wrap(function(data, sections)

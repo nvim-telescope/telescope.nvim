@@ -70,13 +70,18 @@ end
 --- </code>
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param f function: Function to map onto selection of picker that takes (selection) as a viable argument
-function utils.map_selections(prompt_bufnr, f)
+function utils.map_selections(prompt_bufnr, f, smart)
   vim.validate {
     f = { f, "function" },
   }
   local current_picker = action_state.get_current_picker(prompt_bufnr)
-  for _, selection in ipairs(current_picker:get_multi_selection()) do
-    f(selection)
+  local selections = current_picker:get_multi_selection()
+  if smart and vim.tbl_isempty(selections) then
+    f(action_state.get_selected_entry())
+  else
+    for _, selection in ipairs(selections) do
+      f(selection)
+    end
   end
 end
 

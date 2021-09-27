@@ -2,6 +2,7 @@ local entry_display = require "telescope.pickers.entry_display"
 local utils = require "telescope.utils"
 local strings = require "plenary.strings"
 local Path = require "plenary.path"
+local os_sep = Path.path.sep
 
 local treesitter_type_highlight = {
   ["associated"] = "TSConstant",
@@ -226,6 +227,60 @@ do
     return function(line)
       return setmetatable({ line }, mt_vimgrep_entry)
     end
+  end
+end
+
+local is_dir = function(value)
+  return value:sub(-1, -1) == os_sep
+end
+
+function make_entry.gen_from_fs(opts)
+  local mt = {}
+  mt.cwd = opts.cwd
+  mt.display = function(entry)
+    local hl_group
+    local display = utils.transform_path(opts, entry.value)
+    if is_dir(entry.value) then
+      display = display .. os_sep
+      if not opts.disable_devicons then
+        display = (opts.dir_icon or "") .. " " .. display
+        hl_group = "Default"
+      end
+    else
+      display, hl_group = utils.transform_devicons(entry.value, display, opts.disable_devicons)
+    end
+
+    if hl_group then
+      return display, { { { 1, 3 }, hl_group } }
+    else
+      return display
+    end
+  end
+
+  mt.__index = function(t, k)
+    local raw = rawget(mt, k)
+    if raw then
+      return raw
+    end
+
+    if k == "path" then
+      local retpath = Path:new({ t.cwd, t.value }):absolute()
+      if not vim.loop.fs_access(retpath, "R", nil) then
+        retpath = t.value
+      end
+      if is_dir(t.value) then
+        retpath = retpath .. os_sep
+      end
+      return retpath
+    end
+
+    return rawget(t, rawget({ value = 1 }, k))
+  end
+
+  return function(line)
+    local tbl = { line }
+    tbl.ordinal = Path:new(line):make_relative(opts.cwd)
+    return setmetatable(tbl, mt)
   end
 end
 
