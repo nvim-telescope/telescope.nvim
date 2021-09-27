@@ -825,6 +825,9 @@ layout_strategies.bottom_pane = make_documented_layout(
       results.line = max_lines - results.height - (1 + bs) + 1
       preview.line = results.line
       prompt.line = max_lines - bs
+      if type(prompt.title) == "string" then
+        prompt.title = {{ pos = "S", text = prompt.title }}
+      end
     else
       error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
     end
