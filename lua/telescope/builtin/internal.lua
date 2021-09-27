@@ -179,8 +179,8 @@ internal.planets = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-            print "[telescope] Nothing currently selected"
-            return
+          print "[telescope] Nothing currently selected"
+          return
         end
 
         actions.close(prompt_bufnr)
@@ -283,8 +283,8 @@ internal.commands = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-            print "[telescope] Nothing currently selected"
-            return
+          print "[telescope] Nothing currently selected"
+          return
         end
 
         actions.close(prompt_bufnr)
@@ -685,8 +685,8 @@ internal.reloader = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-            print "[telescope] Nothing currently selected"
-            return
+          print "[telescope] Nothing currently selected"
+          return
         end
 
         actions.close(prompt_bufnr)
@@ -846,8 +846,8 @@ internal.colorscheme = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-            print "[telescope] Nothing currently selected"
-            return
+          print "[telescope] Nothing currently selected"
+          return
         end
 
         actions.close(prompt_bufnr)
@@ -955,8 +955,8 @@ internal.keymaps = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-            print "[telescope] Nothing currently selected"
-            return
+          print "[telescope] Nothing currently selected"
+          return
         end
 
         vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(selection.value.lhs, true, false, true), "t", true)
@@ -980,8 +980,8 @@ internal.filetypes = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-            print "[telescope] Nothing currently selected"
-            return
+          print "[telescope] Nothing currently selected"
+          return
         end
 
         actions.close(prompt_bufnr)
@@ -1006,8 +1006,8 @@ internal.highlights = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-            print "[telescope] Nothing currently selected"
-            return
+          print "[telescope] Nothing currently selected"
+          return
         end
 
         actions.close(prompt_bufnr)
@@ -1102,8 +1102,8 @@ internal.autocommands = function(opts)
       action_set.select:replace(function(_, type)
         local selection = action_state.get_selected_entry()
         if selection == nil then
-            print "[telescope] Nothing currently selected"
-            return
+          print "[telescope] Nothing currently selected"
+          return
         end
 
         actions.close(prompt_bufnr)
@@ -1133,8 +1133,8 @@ internal.spell_suggest = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-            print "[telescope] Nothing currently selected"
-            return
+          print "[telescope] Nothing currently selected"
+          return
         end
 
         actions.close(prompt_bufnr)
