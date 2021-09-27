@@ -510,8 +510,36 @@ function Picker:recalculate_layout()
   local preview_win = status.preview_win
   popup.move(results_win, popup_opts.results)
 
+  local preview_opts
   if popup_opts.preview then
-    popup.move(preview_win, popup_opts.preview)
+    if preview_win ~= nil then
+      popup.move(preview_win, popup_opts.preview)
+    else
+      preview_win, preview_opts = popup.create("", popup_opts.preview)
+      a.nvim_win_set_option(preview_win, "winhl", "Normal:TelescopePreviewNormal")
+      a.nvim_win_set_option(preview_win, "winblend", self.window.winblend)
+      local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
+      if preview_border_win then
+        vim.api.nvim_win_set_option(preview_border_win, "winhl", "Normal:TelescopePreviewBorder")
+      end
+      status.preview_win = preview_win
+      status.preview_border_win = preview_border_win
+      state.set_status(prompt_win, status)
+      self.preview_win = preview_win
+      self.preview_border_win = preview_border_win
+      self.preview_border = preview_opts and preview_opts.border
+    end
+  elseif preview_win ~= nil then
+    vim.api.nvim_win_close(preview_win)
+    if status.preview_border_win then
+      vim.api.nvim_win_close(status.preview_border_win)
+    end
+    status.preview_win = nil
+    status.preview_border_win = nil
+    state.set_status(prompt_win, status)
+    self.preview_win = nil
+    self.preview_border_win = nil
+    self.preview_border = nil
   end
 
   popup.move(prompt_win, popup_opts.prompt)
@@ -1224,6 +1252,7 @@ function pickers.on_resize_window(prompt_bufnr)
   -- end
 
   picker:recalculate_layout()
+  picker:refresh_previewer()
   vim.api.nvim_win_set_cursor(status.results_win, { 1, 0 })
   vim.api.nvim_buf_set_lines(picker.results_bufnr, 0, -1, false, utils.repeated_table(picker.max_results, ""))
   picker.highlighter:clear_display()
