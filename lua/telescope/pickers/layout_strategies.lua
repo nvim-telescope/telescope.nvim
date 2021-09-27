@@ -456,6 +456,9 @@ layout_strategies.center = make_documented_layout(
 
     results.col, preview.col, prompt.col = 0, 0, 0 -- all centered
 
+    -- Ensure that the prompt is always on top
+    prompt.zindex = 51
+
     if tbln then
       prompt.line = prompt.line + 1
       results.line = results.line + 1

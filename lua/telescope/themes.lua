@@ -54,7 +54,7 @@ function themes.get_dropdown(opts)
   }
   if opts.layout_config and opts.layout_config.prompt_position == "bottom" then
     theme_opts.borderchars = {
-      prompt = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+      prompt = { "─", "│", "─", "│", "├", "┤", "╯", "╰" },
       results = { "─", "│", "─", "│", "╭", "╮", "┤", "├" },
       preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
     }
