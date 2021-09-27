@@ -54,7 +54,7 @@ highlight default link TelescopePreviewUser Constant
 highlight default link TelescopePreviewGroup Constant
 highlight default link TelescopePreviewDate Directory
 highlight default link TelescopePreviewMessage TelescopePreviewNormal
-highlight default link TelescopePreviewFillchar TelescopePreviewNormal
+highlight default link TelescopePreviewMessageFillchar TelescopePreviewMessage
 
 " Used for Picker specific Results highlighting
 highlight default link TelescopeResultsClass Function
