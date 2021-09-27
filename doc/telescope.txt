@@ -120,6 +120,7 @@ telescope.setup({opts})                                    *telescope.setup()*
           center = {
             height = 0.9,
             preview_cutoff = 40,
+            prompt_position = "top",
             width = 0.8
           },
           cursor = {
