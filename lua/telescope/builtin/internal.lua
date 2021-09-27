@@ -465,8 +465,12 @@ internal.vim_options = function(opts)
     attach_mappings = function()
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
-        local esc = ""
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
 
+        local esc = ""
         if vim.fn.mode() == "i" then
           -- TODO: don't make this local
           esc = vim.api.nvim_replace_termcodes("<esc>", true, false, true)
