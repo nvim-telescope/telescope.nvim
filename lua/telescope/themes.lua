@@ -52,6 +52,13 @@ function themes.get_dropdown(opts)
       preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
     },
   }
+  if opts.layout_config and opts.layout_config.prompt_position == "bottom" then
+    theme_opts.borderchars = {
+      prompt = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+      results = { "─", "│", "─", "│", "╭", "╮", "┤", "├" },
+      preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+    }
+  end
 
   return vim.tbl_deep_extend("force", theme_opts, opts)
 end
@@ -99,7 +106,7 @@ end
 function themes.get_ivy(opts)
   opts = opts or {}
 
-  return vim.tbl_deep_extend("force", {
+  local theme_opts = {
     theme = "ivy",
 
     sorting_strategy = "ascending",
@@ -117,7 +124,16 @@ function themes.get_ivy(opts)
       results = { " " },
       preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
     },
-  }, opts)
+  }
+  if opts.layout_config and opts.layout_config.prompt_position == "bottom" then
+    theme_opts.borderchars = {
+      prompt = { " ", " ", "─", " ", " ", " ", "─", "─" },
+      results = { "─", " ", " ", " ", "─", "─", " ", " " },
+      preview = { "─", " ", "─", "│", "┬", "─", "─", "╰" },
+    }
+  end
+
+  return vim.tbl_deep_extend("force", theme_opts, opts)
 end
 
 return themes
