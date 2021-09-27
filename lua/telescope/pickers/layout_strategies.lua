@@ -433,15 +433,23 @@ layout_strategies.center = make_documented_layout(
     prompt.height = 1
     results.height = height - prompt.height - h_space
 
+    local topline = (max_lines / 2) - ((results.height + (2 * bs)) / 2) + 1
     -- Align the prompt and results so halfway up the screen is
     -- in the middle of this combined block
-    prompt.line = (max_lines / 2) - ((results.height + (2 * bs)) / 2) + 1
-    results.line = prompt.line + 1 + bs
+    if layout_config.prompt_position == "top" then
+      prompt.line = topline
+      results.line = prompt.line + 1 + bs
+    elseif layout_config.prompt_position == "bottom" then
+      results.line = topline
+      prompt.line = results.line + results.height + bs
+    else
+      error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+    end
 
     preview.line = 2
 
     if self.previewer and max_lines >= layout_config.preview_cutoff then
-      preview.height = math.floor(prompt.line - (3 + bs))
+      preview.height = math.floor(topline - (3 + bs))
     else
       preview.height = 0
     end

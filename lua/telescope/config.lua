@@ -95,6 +95,7 @@ local layout_config_defaults = {
     width = 0.8,
     height = 0.9,
     preview_cutoff = 40,
+    prompt_position = "top",
   },
 
   cursor = {
