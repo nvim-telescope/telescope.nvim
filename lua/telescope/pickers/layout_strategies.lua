@@ -443,7 +443,7 @@ layout_strategies.center = make_documented_layout(
       results.line = topline
       prompt.line = results.line + results.height + bs
       if type(prompt.title) == "string" then
-        prompt.title = {{ pos = "S", text = prompt.title}}
+        prompt.title = { { pos = "S", text = prompt.title } }
       end
     else
       error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
@@ -826,7 +826,7 @@ layout_strategies.bottom_pane = make_documented_layout(
       preview.line = results.line
       prompt.line = max_lines - bs
       if type(prompt.title) == "string" then
-        prompt.title = {{ pos = "S", text = prompt.title }}
+        prompt.title = { { pos = "S", text = prompt.title } }
       end
     else
       error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
