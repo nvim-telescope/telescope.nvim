@@ -1,7 +1,6 @@
 local from_entry = require "telescope.from_entry"
 local Path = require "plenary.path"
 local utils = require "telescope.utils"
-local strings = require "plenary.strings"
 local putils = require "telescope.previewers.utils"
 local Previewer = require "telescope.previewers.previewer"
 local conf = require("telescope.config").values
@@ -54,39 +53,6 @@ local function defaulter(f, default_opts)
       end
     end,
   }
-end
-
-local function set_timeout_message(bufnr, winid, message)
-  local height = vim.api.nvim_win_get_height(winid)
-  local width = vim.api.nvim_win_get_width(winid)
-  vim.api.nvim_buf_set_lines(
-    bufnr,
-    0,
-    -1,
-    false,
-    utils.repeated_table(height, table.concat(utils.repeated_table(width, "╱"), ""))
-  )
-  for linenr = 0, height do
-    vim.api.nvim_buf_add_highlight(bufnr, -1, "TelescopePreviewMessage", linenr, 0, -1)
-  end
-  local anon_ns = vim.api.nvim_create_namespace ""
-  local padding = table.concat(utils.repeated_table(#message + 4, " "), "")
-  local lines = {
-    padding,
-    "  " .. message .. "  ",
-    padding,
-  }
-
-  local col = math.floor((width - strings.strdisplaywidth(lines[2])) / 2)
-  for i, line in ipairs(lines) do
-    vim.api.nvim_buf_set_extmark(
-      bufnr,
-      anon_ns,
-      math.floor(height / 2) - 1 + i,
-      0,
-      { virt_text = { { line, "TelescopePreviewMessage" } }, virt_text_pos = "overlay", virt_text_win_col = col }
-    )
-  end
 end
 
 -- modified vim.split to incorporate a timer
@@ -190,13 +156,19 @@ previewers.file_maker = function(filepath, bufnr, opts)
   opts.preview = opts.preview or {}
   opts.preview.timeout = vim.F.if_nil(opts.preview.timeout, 250) -- in ms
   opts.preview.filesize_limit = vim.F.if_nil(opts.preview.filesize_limit, 25) -- in mb
+  opts.preview.msg_bg_fillchar = vim.F.if_nil(opts.preview.msg_bg_fillchar, "╱") -- in mb
   if opts.use_ft_detect == nil then
     opts.use_ft_detect = true
   end
-  local ft = opts.use_ft_detect and pfiletype.detect(filepath)
+  opts.ft = opts.use_ft_detect and pfiletype.detect(filepath)
   if opts.bufname ~= filepath then
     if not vim.in_fast_event() then
       filepath = vim.fn.expand(filepath)
+    end
+    if type(opts.preview.filetype_hook) == "function" then
+      if not opts.preview.filetype_hook(filepath, bufnr, opts) then
+        return
+      end
     end
     vim.loop.fs_stat(filepath, function(_, stat)
       if not stat then
@@ -215,17 +187,20 @@ previewers.file_maker = function(filepath, bufnr, opts)
           end),
         })
       else
-        if opts.preview.check_mime_type == true and has_file and ft == "" then
+        if opts.preview.check_mime_type == true and has_file and opts.ft == "" then
           -- avoid SIGABRT in buffer previewer happening with utils.get_os_command_output
           local output = capture(string.format([[file --mime-type -b "%s"]], filepath))
           local mime_type = vim.split(output, "/")[1]
           if mime_type ~= "text" and mime_type ~= "inode" then
             if type(opts.preview.mime_hook) == "function" then
-              opts.preview.mime_hook(filepath, bufnr, opts)
+              vim.schedule_wrap(opts.preview.mime_hook)(filepath, bufnr, opts)
             else
-              vim.schedule(function()
-                set_timeout_message(bufnr, opts.winid, "Binary cannot be previewed")
-              end)
+              vim.schedule_wrap(putils.set_preview_message)(
+                bufnr,
+                opts.winid,
+                "Binary cannot be previewed",
+                opts.preview.msg_bg_fillchar
+              )
             end
             return
           end
@@ -235,11 +210,14 @@ previewers.file_maker = function(filepath, bufnr, opts)
           local mb_filesize = math.floor(stat.size / bytes_to_megabytes)
           if mb_filesize > opts.preview.filesize_limit then
             if type(opts.preview.filesize_hook) == "function" then
-              opts.preview.filesize_hook(filepath, bufnr, opts)
+              vim.schedule_wrap(opts.preview.filesize_hook)(filepath, bufnr, opts)
             else
-              vim.schedule(function()
-                set_timeout_message(bufnr, opts.winid, "File exceeds preview size limit")
-              end)
+              vim.schedule_wrap(putils.set_preview_message)(
+                bufnr,
+                opts.winid,
+                "File exceeds preview size limit",
+                opts.preview.msg_bg_fillchar
+              )
             end
             return
           end
@@ -261,12 +239,17 @@ previewers.file_maker = function(filepath, bufnr, opts)
             if opts.callback then
               opts.callback(bufnr)
             end
-            putils.highlighter(bufnr, ft, opts)
+            putils.highlighter(bufnr, opts.ft, opts)
           else
             if type(opts.preview.timeout_hook) == "function" then
-              opts.preview.timeout_hook(filepath, bufnr, opts)
+              vim.schedule_wrap(opts.preview.timeout_hook)(filepath, bufnr, opts)
             else
-              set_timeout_message(bufnr, opts.winid, "Previewer timed out")
+              vim.schedule_wrap(putils.set_preview_message)(
+                bufnr,
+                opts.winid,
+                "Previewer timed out",
+                opts.preview.msg_bg_fillchar
+              )
             end
             return
           end
