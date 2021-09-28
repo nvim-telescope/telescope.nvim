@@ -1041,7 +1041,7 @@ actions.which_key = function(prompt_bufnr, opts)
     maxwidth = vim.o.columns,
     minheight = winheight,
     maxheight = winheight,
-    line = prompt_pos == true and vim.o.lines - winheight or 0,
+    line = prompt_pos == true and vim.o.lines - winheight or 1,
     col = 1,
     border = { prompt_pos and 1 or 0, 0, not prompt_pos and 1 or 0, 0 },
     borderchars = { prompt_pos and "─" or " ", "", not prompt_pos and "─" or " ", "", "", "", "", "" },
