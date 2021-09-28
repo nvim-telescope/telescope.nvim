@@ -122,7 +122,7 @@ do
 
     local fetch_hl = function( color_code )
         -- check for a color match
-        local color_code = color_code:sub(1, -2) -- Remove m
+        color_code = color_code:sub(1, -2) -- Remove m
         color_code = tonumber( color_code )
 
         local hl = ansi_to_hl[color_code] or 'Normal'

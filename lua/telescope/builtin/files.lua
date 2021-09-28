@@ -115,7 +115,7 @@ end
 files.grep_string = function(opts)
   -- TODO: This should probably check your visual selection as well, if you've got one
 
-  opts.vimgrep_arguments = { "rg", "--color=always", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" }
+  opts.vimgrep_arguments = { "rg", "--color=ansi", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" }
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
 
 

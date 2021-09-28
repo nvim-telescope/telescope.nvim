@@ -160,7 +160,7 @@ conv.interpret_termcodes = function(content, fetch_hl)
             hl_start = nil
             processed_chars = 0
           else
-            if get_hl_group(current_color) then
+            if fetch_hl(current_color) then
               --add_highlight(k, hl_start, hl_start + processed_chars, get_hl_group(current_color))
                 add_highlight(k, hl_start, hl_start + processed_chars, fetch_hl( current_color ))
             end
