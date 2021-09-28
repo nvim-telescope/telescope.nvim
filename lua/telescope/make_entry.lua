@@ -132,10 +132,6 @@ do
     local conv = require('telescope.color_conv')
     local t_clean, highlights = conv.interpret_termcodes(t, fetch_hl)
 
-
-    -- bollocks
-    -- bollocks
-    
     t.value = t_clean[1]
     local _, _, filename, lnum, col, text = string.find(t.value, [[([^:]+):(%d+):(%d+):(.*)]])
 
