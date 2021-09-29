@@ -82,6 +82,7 @@ local gen_hl_groups = function()
   end
 end
 
+--[[
 local get_hl_group = function(code)
   if table.getn(color_cache) == 0 then gen_hl_groups() end
 
