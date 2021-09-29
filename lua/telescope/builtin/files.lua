@@ -74,29 +74,32 @@ files.live_grep = function(opts)
     additional_args = opts.additional_args(opts)
   end
 
-  local live_grepper = finders.new_job(function(prompt)
+  local live_grepper = finders.new_async_job {
+    command_generator = function(prompt)
     -- TODO: Probably could add some options for smart case and whatever else rg offers.
 
-    if not prompt or prompt == "" then
-      return nil
-    end
+      if not prompt or prompt == "" then
+        return nil
+      end
 
-    local search_list = {}
+      local search_list = {}
 
-    if search_dirs then
-      table.insert(search_list, search_dirs)
-    else
-      table.insert(search_list, ".")
-    end
+      if search_dirs then
+        table.insert(search_list, search_dirs)
+      else
+        table.insert(search_list, ".")
+      end
 
-    if grep_open_files then
-      search_list = filelist
-    end
+      if grep_open_files then
+        search_list = filelist
+      end
 
-    return flatten { vimgrep_arguments, additional_args, "--", prompt, search_list }
-  end, opts.entry_maker or make_entry.gen_from_vimgrep(
-    opts
-  ), opts.max_results, opts.cwd)
+      return flatten { vimgrep_arguments, additional_args, "--", prompt, search_list }
+
+    end,
+        entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts),
+        cwd = opts.cwd
+  }
 
   pickers.new(opts, {
     prompt_title = "Live Grep",
