@@ -72,7 +72,6 @@ local gen_hl_groups = function()
     end
 
     local name = 'plenary_term_' .. i
-    name = 'DevIconLua'
     local cmd = 'hi ' .. name
     for a, h in pairs(att) do
       cmd = cmd .. ' ' .. a .. '=' .. h
@@ -82,6 +81,7 @@ local gen_hl_groups = function()
   end
 end
 
+--[[
 local get_hl_group = function(code)
   if table.getn(color_cache) == 0 then gen_hl_groups() end
 
@@ -104,7 +104,7 @@ end
 
 -- Function for testing
 conv._reset_table = function() color_cache = {} end
-
+--]]
 conv.remove_termcodes = function(content)
   local res_lines = {}
   for k, v in ipairs(content) do
@@ -125,7 +125,7 @@ conv.interpret_termcodes = function(content, fetch_hl)
 
   for k, v in ipairs(content) do
     local line = ""
-    local text_section = ""
+    local text_section
     local current_color, hl_start
     local new_default_start = 1
     local processed_chars = 0

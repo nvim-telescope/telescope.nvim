@@ -113,7 +113,7 @@ do
   -- Gets called only once to parse everything out for the vimgrep, after that looks up directly.
   local parse = function(t)
 
-    -- create a atble to match ansi colors to our highlights 
+    -- create a atble to match ansi colors to our highlights
     local ansi_to_hl = {
             [1] = 'TelescopeMatching',
             [2] = 'TelescopeResultsLineNr',
@@ -221,8 +221,8 @@ do
           string.format(display_string, display_filename, coordinates, entry.text),
           disable_devicons
         )
-        
-        entry.display_text = display_text 
+
+        entry.display_text = display_text
 
         -- our highlights are affected by filepath shortening
         -- and adding devicons, fix the highlights here
@@ -237,8 +237,7 @@ do
 
           -- do we need to adjust?
           if icon_offset > 0 or filename_offset > 0 then
-              if filename_offset > 0 then 
-                  local filename_start = icon_offset + 1
+              if filename_offset > 0 then
                   local total_offset = icon_offset - filename_offset
                   for k,highlight  in pairs(entry.highlights) do
                     -- if we're past the 1st character then take away the filename offset
