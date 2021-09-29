@@ -1029,7 +1029,9 @@ actions.which_key = function(prompt_bufnr, opts)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local prompt_win = picker.prompt_win
   local prompt_row = a.nvim_win_get_position(prompt_win)[1]
-  local prompt_pos = prompt_row <= 0.5 * vim.o.lines
+  -- TODO(fdschmidt93): resolve side in more principled fashion
+  -- ivy theme right around 0.5 * vim.o.lines; simple heuristic to circumvent
+  local prompt_pos = prompt_row < 0.45 * vim.o.lines
 
   local modes = { n = "Normal", i = "Insert" }
   local title_mode = opts.only_show_current_mode and modes[mode] .. " Mode " or ""
@@ -1041,8 +1043,8 @@ actions.which_key = function(prompt_bufnr, opts)
     maxwidth = vim.o.columns,
     minheight = winheight,
     maxheight = winheight,
-    line = prompt_pos == true and vim.o.lines - winheight or 1,
-    col = 1,
+    line = prompt_pos == true and vim.o.lines - winheight + 1 or 1,
+    col = 0,
     border = { prompt_pos and 1 or 0, 0, not prompt_pos and 1 or 0, 0 },
     borderchars = { prompt_pos and "─" or " ", "", not prompt_pos and "─" or " ", "", "", "", "", "" },
     noautocmd = true,
