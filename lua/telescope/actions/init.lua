@@ -1026,10 +1026,16 @@ actions.which_key = function(prompt_bufnr, opts)
   local winheight = opts.num_rows + 2 * opts.line_padding
 
   -- place hints at top or bottom relative to prompt
+  local win_central_row = function(win_nr)
+    return a.nvim_win_get_position(win_nr)[1] + 0.5 * a.nvim_win_get_height(win_nr)
+  end
+  -- TODO(fdschmidt93|l-kershaw): better generalization of where to put which key float
   local picker = action_state.get_current_picker(prompt_bufnr)
-  local prompt_win = picker.prompt_win
-  local prompt_row = a.nvim_win_get_position(prompt_win)[1]
-  local prompt_pos = prompt_row <= 0.5 * vim.o.lines
+  local prompt_row = win_central_row(picker.prompt_win)
+  local results_row = win_central_row(picker.results_win)
+  local preview_row = win_central_row(picker.preview_win)
+  local prompt_pos = prompt_row < 0.4 * vim.o.lines
+    or prompt_row < 0.6 * vim.o.lines and results_row + preview_row < vim.o.lines
 
   local modes = { n = "Normal", i = "Insert" }
   local title_mode = opts.only_show_current_mode and modes[mode] .. " Mode " or ""
@@ -1041,8 +1047,8 @@ actions.which_key = function(prompt_bufnr, opts)
     maxwidth = vim.o.columns,
     minheight = winheight,
     maxheight = winheight,
-    line = prompt_pos == true and vim.o.lines - winheight or 0,
-    col = 1,
+    line = prompt_pos == true and vim.o.lines - winheight + 1 or 1,
+    col = 0,
     border = { prompt_pos and 1 or 0, 0, not prompt_pos and 1 or 0, 0 },
     borderchars = { prompt_pos and "─" or " ", "", not prompt_pos and "─" or " ", "", "", "", "", "" },
     noautocmd = true,
