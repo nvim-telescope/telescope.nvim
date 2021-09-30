@@ -1026,12 +1026,16 @@ actions.which_key = function(prompt_bufnr, opts)
   local winheight = opts.num_rows + 2 * opts.line_padding
 
   -- place hints at top or bottom relative to prompt
+  local win_central_row = function(win_nr)
+    return a.nvim_win_get_position(win_nr)[1] + 0.5 * a.nvim_win_get_height(win_nr)
+  end
+  -- TODO(fdschmidt93|l-kershaw): better generalization of where to put which key float
   local picker = action_state.get_current_picker(prompt_bufnr)
-  local prompt_win = picker.prompt_win
-  local prompt_row = a.nvim_win_get_position(prompt_win)[1]
-  -- TODO(fdschmidt93): resolve side in more principled fashion
-  -- ivy theme right around 0.5 * vim.o.lines; simple heuristic to circumvent
-  local prompt_pos = prompt_row < 0.45 * vim.o.lines
+  local prompt_row = win_central_row(picker.prompt_win)
+  local results_row = win_central_row(picker.results_win)
+  local preview_row = win_central_row(picker.preview_win)
+  local prompt_pos = prompt_row < 0.4 * vim.o.lines
+    or prompt_row < 0.6 * vim.o.lines and results_row + preview_row < vim.o.lines
 
   local modes = { n = "Normal", i = "Insert" }
   local title_mode = opts.only_show_current_mode and modes[mode] .. " Mode " or ""
