@@ -213,7 +213,7 @@ Many familiar mapping patterns are setup as defaults.
 To see the full list of mappings, check out `lua/telescope/mappings.lua` and the
 `default_mappings` table. 
 
-**Tip**: you can use `<C-/>` and `?` in insert and normal mode, respectively, to show the builtin mappings for your picker.
+**Tip**: you can use `<C-/>` and `?` in insert and normal mode, respectively, to show the actions mapped to your picker.
 
 Much like [builtin pickers](#pickers), there are a number of
 [actions](https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/actions/init.lua)
