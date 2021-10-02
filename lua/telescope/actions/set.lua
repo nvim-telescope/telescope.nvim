@@ -14,6 +14,7 @@ local a = vim.api
 
 local log = require "telescope.log"
 local Path = require "plenary.path"
+local popup = require "plenary.popup"
 local state = require "telescope.state"
 
 local action_state = require "telescope.actions.state"
@@ -69,6 +70,7 @@ do
     new = "sbuffer",
     vnew = "vert sbuffer",
     tabedit = "tab sb",
+    popup = "buffer",
   }
 
   edit_buffer = function(command, bufnr)
@@ -122,7 +124,48 @@ action_set.edit = function(prompt_bufnr, command)
 
   local entry_bufnr = entry.bufnr
 
+  local popup_opts, parent_win_id
+  if command == "popup" then
+    -- get the current window information before we close it
+    local current_picker = action_state.get_current_picker(prompt_bufnr)
+    parent_win_id = current_picker.original_win_id
+    local line_count = vim.o.lines - vim.o.cmdheight
+    if vim.o.laststatus ~= 0 then
+      line_count = line_count - 1
+    end
+
+    popup_opts = current_picker:get_window_options(vim.o.columns, line_count)
+    -- use the preview window but add the width of the results window
+    popup_opts.preview.width = popup_opts.preview.width + popup_opts.results.width
+    popup_opts.preview.minheight = popup_opts.preview.height
+    popup_opts.preview.enter = true
+    popup_opts.preview.col = popup_opts.results.col
+    popup_opts.preview.line = popup_opts.results.line
+  end
+
   require("telescope.actions").close(prompt_bufnr)
+
+  -- special case for popup
+  local preview_win, preview_opts, preview_border_win
+  if command == "popup" then
+    if popup_opts then
+      preview_win, preview_opts = popup.create("", popup_opts.preview)
+      a.nvim_win_set_option(preview_win, "winhl", "Normal:TelescopePreviewNormal")
+      --a.nvim_win_set_option(preview_win, "winblend", 0)
+      preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
+      if preview_border_win then
+        vim.api.nvim_win_set_option(preview_border_win, "winhl", "Normal:TelescopePreviewBorder")
+        -- add an autocmd to close the border window when we go back to the original window
+        vim.cmd(
+          string.format(
+            "autocmd WinEnter <buffer=%s> ++once :lua require('plenary.window').try_close(%s, true)",
+            vim.api.nvim_win_get_buf(parent_win_id),
+            preview_border_win
+          )
+        )
+      end
+    end
+  end
 
   if entry_bufnr then
     edit_buffer(command, entry_bufnr)
@@ -131,7 +174,16 @@ action_set.edit = function(prompt_bufnr, command)
     -- prevents restarting lsp server
     if vim.api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
       filename = Path:new(vim.fn.fnameescape(filename)):normalize(vim.loop.cwd())
-      pcall(vim.cmd, string.format("%s %s", command, filename))
+
+      if command == "popup" then
+        pcall(vim.cmd, string.format("%s %s", "edit", filename))
+        vim.api.nvim_win_set_option(preview_win, "winhl", "Normal:TelescopePreviewNormal")
+        vim.api.nvim_win_set_option(preview_win, "signcolumn", "no")
+        vim.api.nvim_win_set_option(preview_win, "foldlevel", 100)
+        vim.api.nvim_win_set_option(preview_win, "wrap", false)
+      else
+        pcall(vim.cmd, string.format("%s %s", command, filename))
+      end
     end
   end
 

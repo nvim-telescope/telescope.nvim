@@ -21,6 +21,7 @@ mappings.default_mappings = config.values.default_mappings
       ["<C-x>"] = actions.select_horizontal,
       ["<C-v>"] = actions.select_vertical,
       ["<C-t>"] = actions.select_tab,
+      ["<C-f>"] = actions.select_popup,
 
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
@@ -39,6 +40,7 @@ mappings.default_mappings = config.values.default_mappings
       ["<C-x>"] = actions.select_horizontal,
       ["<C-v>"] = actions.select_vertical,
       ["<C-t>"] = actions.select_tab,
+      ["<C-f>"] = actions.select_popup,
 
       ["<Tab>"] = actions.toggle_selection + actions.move_selection_worse,
       ["<S-Tab>"] = actions.toggle_selection + actions.move_selection_better,
