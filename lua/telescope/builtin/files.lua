@@ -16,6 +16,7 @@ local os_sep = Path.path.sep
 
 local flatten = vim.tbl_flatten
 local filter = vim.tbl_filter
+local get_default = utils.get_default
 
 local files = {}
 
@@ -41,7 +42,7 @@ end
 --  opts.search_dirs -- list of directory to search in
 --  opts.grep_open_files -- boolean to restrict search to open files
 files.live_grep = function(opts)
-  local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
+  local vimgrep_arguments = get_default(opts.vimgrep_arguments, conf.vimgrep_arguments)
   local search_dirs = opts.search_dirs
   local grep_open_files = opts.grep_open_files
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
@@ -154,7 +155,7 @@ end
 -- TODO: Maybe just change this to `find`.
 -- TODO: Support `find` and maybe let people do other stuff with it as well.
 files.find_files = function(opts)
-  local find_command = opts.find_command
+  local find_command = get_default(opts.find_command, conf.find_command)
   local hidden = opts.hidden
   local no_ignore = opts.no_ignore
   local follow = opts.follow

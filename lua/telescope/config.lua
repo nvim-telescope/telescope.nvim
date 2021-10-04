@@ -510,6 +510,17 @@ append(
 )
 
 append(
+  "find_command",
+  nil,
+  [[
+  Defines the command that will be used for `find_files` pickers.
+  If `fd` was not found on you system, then it will try to `rg`.
+  If that is not found either, then it will try both `find` and `which` commands.
+
+  Default: nil]]
+)
+
+append(
   "use_less",
   true,
   [[
