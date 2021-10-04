@@ -16,9 +16,13 @@ utils.with_preview_window = function(status, bufnr, callable)
     vim.api.nvim_buf_call(bufnr, callable)
   else
     return context_manager.with(function()
-      vim.cmd(string.format("noautocmd call nvim_set_current_win(%s)", status.preview_win))
+      if status.preview_win then
+        vim.cmd(string.format("noautocmd call nvim_set_current_win(%s)", status.preview_win))
+      end
       coroutine.yield()
-      vim.cmd(string.format("noautocmd call nvim_set_current_win(%s)", status.prompt_win))
+      if status.prompt_win then
+        vim.cmd(string.format("noautocmd call nvim_set_current_win(%s)", status.prompt_win))
+      end
     end, callable)
   end
 end

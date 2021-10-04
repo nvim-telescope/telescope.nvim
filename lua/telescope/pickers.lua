@@ -284,19 +284,7 @@ function Picker:_create_window(bufnr, popup_opts, nowrap)
   return win, opts, border_win
 end
 
-function Picker:find()
-  self:close_existing_pickers()
-  self:reset_selection()
-
-  self.original_win_id = a.nvim_get_current_win()
-
-  -- User autocmd run it before create Telescope window
-  vim.cmd [[doautocmd User TelescopeFindPre]]
-
-  -- Create three windows:
-  -- 1. Prompt window
-  -- 2. Options window
-  -- 3. Preview window
+function Picker:_get_window_options()
   local line_count = vim.o.lines - vim.o.cmdheight
   if vim.o.laststatus ~= 0 then
     line_count = line_count - 1
@@ -320,25 +308,114 @@ function Picker:find()
     popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
   end
 
-  -- local results_win, results_opts = popup.create("", popup_opts.results)
-  local results_win, _, results_border_win = self:_create_window("", popup_opts.results, true)
-  local results_bufnr = a.nvim_win_get_buf(results_win)
+  return popup_opts
+end
+
+function Picker:_create_results_window(bufnr, opts)
+  local what = bufnr or ""
+  local results_win, results_opts = popup.create(what, opts)
+
+  a.nvim_win_set_option(results_win, "wrap", false)
+  a.nvim_win_set_option(results_win, "winhl", "Normal:TelescopeNormal")
+  a.nvim_win_set_option(results_win, "winblend", self.window.winblend)
+  local results_border_win = results_opts.border and results_opts.border.win_id
+  if results_border_win then
+    vim.api.nvim_win_set_option(results_border_win, "winhl", "Normal:TelescopeResultsBorder")
+  end
+  return results_win, results_opts
+end
+
+function Picker:_create_preview_window(bufnr, opts)
+  local what = bufnr or ""
+  local preview_win, preview_opts = popup.create(what, opts)
+
+  a.nvim_win_set_option(preview_win, "winhl", "Normal:TelescopePreviewNormal")
+  a.nvim_win_set_option(preview_win, "winblend", self.window.winblend)
+  local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
+  if preview_border_win then
+    vim.api.nvim_win_set_option(preview_border_win, "winhl", "Normal:TelescopePreviewBorder")
+  end
+  return preview_win, preview_opts
+end
+
+function Picker:_create_prompt_window(bufnr, opts)
+  local what = bufnr or ""
+  local prompt_win, prompt_opts = popup.create(what, opts)
+
+  a.nvim_win_set_option(prompt_win, "winhl", "Normal:TelescopeNormal")
+  a.nvim_win_set_option(prompt_win, "winblend", self.window.winblend)
+  local prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
+  if prompt_border_win then
+    vim.api.nvim_win_set_option(prompt_border_win, "winhl", "Normal:TelescopePromptBorder")
+  end
+
+  return prompt_win, prompt_opts
+end
+
+function Picker:_autocmd_on_buf_leave(prompt_bufnr, attach_to_bufnr)
+  if attach_to_bufnr == nil then
+    attach_to_bufnr = prompt_bufnr
+  end
+  local on_buf_leave = string.format(
+    [[  autocmd BufLeave <buffer=%s> ++nested ++once :silent lua require('telescope.pickers').on_close_prompt(%s)]],
+    attach_to_bufnr,
+    prompt_bufnr
+  )
+
+  local on_vim_resize = string.format(
+    [[  autocmd VimResized <buffer=%s> ++nested :lua require('telescope.pickers').on_resize_window(%s)]],
+    attach_to_bufnr,
+    prompt_bufnr
+  )
+
+  vim.cmd [[augroup PickerInsert]]
+  vim.cmd [[  au!]]
+  vim.cmd(on_buf_leave)
+  vim.cmd(on_vim_resize)
+  vim.cmd [[augroup END]]
+end
+
+function Picker:_remove_autocmd_on_buf_leave(bufnr)
+  vim.cmd(string.format([[ autocmd! PickerInsert BufLeave <buffer=%s> ]], bufnr))
+end
+
+function Picker:find()
+  self:close_existing_pickers()
+  self:reset_selection()
+
+  self.original_win_id = a.nvim_get_current_win()
+
+  -- User autocmd run it before create Telescope window
+  vim.cmd [[doautocmd User TelescopeFindPre]]
+
+  -- Create three windows:
+  -- 1. Prompt window
+  -- 2. Options window
+  -- 3. Preview window
+
+  local popup_opts = self:_get_window_options()
+
+  local results_bufnr = utils.create_named_buffer(false, false, "[TelescopeResults]")
+  local results_win, _, results_border_win = self:_create_window(results_bufnr, popup_opts.results, true)
 
   self.results_bufnr = results_bufnr
   self.results_win = results_win
 
+  -- TODO: Should probably always show all the line for results win, so should implement a resize for the windows
+
   local preview_win, preview_opts, preview_bufnr, preview_border_win
   if popup_opts.preview then
-    preview_win, preview_opts, preview_border_win = self:_create_window("", popup_opts.preview)
-    preview_bufnr = a.nvim_win_get_buf(preview_win)
+    preview_bufnr = utils.create_named_buffer(false, false, "[TelescopePreview]")
+    preview_win, preview_opts, preview_border_win = self:_create_window(preview_bufnr, popup_opts.preview)
   end
-  -- This is needed for updating the title
-  local preview_border = preview_opts and preview_opts.border
-  self.preview_border = preview_border
 
-  local prompt_win, _, prompt_border_win = self:_create_window("", popup_opts.prompt)
-  local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
+  -- TODO: We need to center this and make it prettier...
+
+  local prompt_bufnr = utils.create_named_buffer(false, false, "[TelescopePrompt]")
+  local prompt_win, _, prompt_border_win = self:_create_window(prompt_bufnr, popup_opts.prompt)
+
   self.prompt_bufnr = prompt_bufnr
+  self.prompt_win = prompt_win
 
   -- Prompt prefix
   local prompt_prefix = self.prompt_prefix
@@ -451,21 +528,7 @@ function Picker:find()
   })
 
   -- TODO: Use WinLeave as well?
-  local on_buf_leave = string.format(
-    [[  autocmd BufLeave <buffer> ++nested ++once :silent lua require('telescope.pickers').on_close_prompt(%s)]],
-    prompt_bufnr
-  )
-
-  local on_vim_resize = string.format(
-    [[  autocmd VimResized <buffer> ++nested :lua require('telescope.pickers').on_resize_window(%s)]],
-    prompt_bufnr
-  )
-
-  vim.cmd [[augroup PickerInsert]]
-  vim.cmd [[  au!]]
-  vim.cmd(on_buf_leave)
-  vim.cmd(on_vim_resize)
-  vim.cmd [[augroup END]]
+  self:_autocmd_on_buf_leave(prompt_bufnr)
 
   self.prompt_bufnr = prompt_bufnr
 
@@ -554,9 +617,254 @@ function Picker:recalculate_layout()
   -- self.max_results = popup_opts.results.height
 end
 
+function Picker:_win_del(win_id)
+  if vim.api.nvim_win_is_valid(win_id) then
+    if not pcall(vim.api.nvim_win_close, win_id, true) then
+      log.trace("Unable to close window: ", win_id)
+    end
+  end
+end
+
+function Picker:refresh_results_height(height)
+  if self.max_results == height then
+    return
+  end
+  vim.api.nvim_buf_set_lines(self.results_bufnr, 0, self.max_results, false, utils.repeated_table(height, ""))
+  self.max_results = height
+  local selected_row = self:get_selection_row()
+  if selected_row >= self.max_results then
+    selected_row = self.max_results - 1
+  end
+  self:reset_selection()
+  self:set_selection(selected_row)
+  self:refresh()
+end
+
 function Picker:hide_preview()
-  -- 1. Hide the window (and border)
-  -- 2. Resize prompt & results windows accordingly
+  if not self.previewer then
+    return
+  end
+
+  local status = state.get_status(self.prompt_bufnr)
+  if not status.preview_win then
+    return
+  end
+
+  -- TODO: is this really good idea? I guess better than new flag
+  local previewer = self.previewer
+  self.previewer = nil
+  local window_options = self:_get_window_options()
+  self.previewer = previewer
+
+  self:_remove_autocmd_on_buf_leave(self.prompt_bufnr)
+  -- For the cases when results and prompt is hidden
+  local preview_bufnr = a.nvim_win_get_buf(status.preview_win)
+  self:_remove_autocmd_on_buf_leave(preview_bufnr)
+  mappings.remove_keymap(preview_bufnr, config.values.mappings)
+
+  self:_win_del(status.preview_win)
+  self:_win_del(status.preview_border_win)
+  self:_win_del(status.results_win)
+  self:_win_del(status.results_border_win)
+  self:_win_del(status.prompt_win)
+  self:_win_del(status.prompt_border_win)
+
+  status.preview_win = nil
+  status.preview_border_win = nil
+
+  -- make sure that we have at most the new max_results
+  self:refresh_results_height(window_options.results.height)
+
+  local prompt_opts, results_opts
+  status.prompt_win, prompt_opts = self:_create_prompt_window(self.prompt_bufnr, window_options.prompt)
+  status.results_win, results_opts = self:_create_results_window(self.results_bufnr, window_options.results)
+  self.prompt_win = status.prompt_win
+  self.results_win = status.results_win
+  status.prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
+  status.results_border_win = results_opts.border and results_opts.border.win_id
+  self:_autocmd_on_buf_leave(self.prompt_bufnr)
+end
+
+function Picker:unhide_preview()
+  if not self.previewer then
+    return
+  end
+
+  local status = state.get_status(self.prompt_bufnr)
+  if status.preview_win then
+    return
+  end
+
+  local window_options = self:_get_window_options()
+  if not window_options.preview then
+    return
+  end
+
+  self:_remove_autocmd_on_buf_leave(self.prompt_bufnr)
+  self:_win_del(status.results_win)
+  self:_win_del(status.results_border_win)
+  self:_win_del(status.prompt_win)
+  self:_win_del(status.prompt_border_win)
+
+  -- make sure that we have at most the new max_results
+  self:refresh_results_height(window_options.results.height)
+
+  local prompt_opts, results_opts, preview_opts
+  status.prompt_win, prompt_opts = self:_create_prompt_window(self.prompt_bufnr, window_options.prompt)
+  status.results_win, results_opts = self:_create_results_window(self.results_bufnr, window_options.results)
+  status.preview_win, preview_opts = self:_create_preview_window(status.preview_bufnr, window_options.preview)
+  self.prompt_win = status.prompt_win
+  self.results_win = status.results_win
+  status.prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
+  status.results_border_win = results_opts.border and results_opts.border.win_id
+  status.preview_border_win = preview_opts.border and preview_opts.border.win_id
+  self.preview_border = preview_opts.border
+  self:_autocmd_on_buf_leave(self.prompt_bufnr)
+  if self.previewer.state then
+    self.previewer.state.winid = status.preview_win
+    self:refresh_previewer()
+  end
+end
+
+function Picker:toggle_preview()
+  if not self.previewer then
+    return
+  end
+
+  local status = state.get_status(self.prompt_bufnr)
+  if status.preview_win then
+    self:hide_preview()
+  else
+    self:unhide_preview()
+  end
+end
+
+function Picker:hide_results_and_prompt()
+  if not self.previewer then
+    return
+  end
+
+  local status = state.get_status(self.prompt_bufnr)
+  if not status.prompt_win then
+    return
+  end
+
+  self:_remove_autocmd_on_buf_leave(self.prompt_bufnr)
+  self:_win_del(status.preview_win)
+  self:_win_del(status.preview_border_win)
+  self:_win_del(status.results_win)
+  self:_win_del(status.results_border_win)
+  self:_win_del(status.prompt_win)
+  self:_win_del(status.prompt_border_win)
+
+  local window_options = self:_get_window_options()
+  local preview_opts = window_options.preview or p_window.get_initial_window_options(self).preview
+  preview_opts.enter = true
+  -- find upper left corner and bottom right corner of layout
+  local upper_line, upper_col = preview_opts.line, preview_opts.col
+  local bottom_line, bottom_col = preview_opts.line + preview_opts.height, preview_opts.col + preview_opts.width
+
+  for _, opts in ipairs { window_options.results, window_options.prompt } do
+    if upper_line > opts.line then
+      upper_line, upper_col = opts.line, opts.col
+    elseif upper_line == opts.line and upper_col > opts.col then
+      upper_col = opts.col
+    end
+  end
+
+  for _, opts in ipairs { window_options.results, window_options.prompt } do
+    if bottom_line < opts.line + opts.height then
+      bottom_line = opts.line + opts.height
+      bottom_col = opts.col + opts.width
+    elseif bottom_line == opts.line + opts.height and bottom_col < opts.col + opts.width then
+      bottom_col = opts.col + opts.width
+    end
+  end
+
+  preview_opts.line = upper_line
+  preview_opts.col = upper_col
+  preview_opts.height = bottom_line - upper_line
+  preview_opts.minheight = preview_opts.height
+  preview_opts.width = bottom_col - upper_col
+
+  status.preview_win, preview_opts = self:_create_preview_window(status.preview_bufnr, preview_opts)
+  status.preview_border_win = preview_opts.border and preview_opts.border.win_id
+  status.prompt_win = nil
+  status.prompt_border_win = nil
+  status.results_win = nil
+  status.results_border_win = nil
+  self.prompt_win = status.prompt_win
+  self.results_win = status.results_win
+  self.preview_border = preview_opts.border
+  -- if preview does not have state it means there was no preview for example live grep after start
+  if self.previewer.state then
+    self.previewer.state.winid = status.preview_win
+    self:refresh_previewer()
+  else
+    local preview_bufnr = a.nvim_win_get_buf(status.preview_win)
+    self:_autocmd_on_buf_leave(self.prompt_bufnr, preview_bufnr)
+    -- TODO: for now attach_mappings are ignored - I am not sure how those would be unmapped
+    mappings.apply_keymap(self.prompt_bufnr, nil, config.values.mappings, preview_bufnr)
+  end
+end
+
+function Picker:unhide_results_and_prompt()
+  if not self.previewer then
+    return
+  end
+
+  local status = state.get_status(self.prompt_bufnr)
+  if status.prompt_win then
+    return
+  end
+
+  local window_options = self:_get_window_options()
+
+  local preview_bufnr = a.nvim_win_get_buf(status.preview_win)
+  mappings.remove_keymap(preview_bufnr, config.values.mappings)
+  self:_remove_autocmd_on_buf_leave(preview_bufnr)
+  self:_win_del(status.preview_win)
+  self:_win_del(status.preview_border_win)
+
+  -- make sure that we have at most the new max_results
+  self:refresh_results_height(window_options.results.height)
+
+  local prompt_opts, results_opts
+  status.prompt_win, prompt_opts = self:_create_prompt_window(self.prompt_bufnr, window_options.prompt)
+  status.results_win, results_opts = self:_create_results_window(self.results_bufnr, window_options.results)
+  self.prompt_win = status.prompt_win
+  self.results_win = status.results_win
+  status.prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
+  status.results_border_win = results_opts.border and results_opts.border.win_id
+  self:_autocmd_on_buf_leave(self.prompt_bufnr)
+
+  if window_options.preview then
+    local preview_opts
+    status.preview_win, preview_opts = self:_create_preview_window(status.preview_bufnr, window_options.preview)
+
+    status.preview_border_win = preview_opts.border and preview_opts.border.win_id
+    self.preview_border = preview_opts.border
+    if self.previewer.state then
+      self.previewer.state.winid = status.preview_win
+      self:refresh_previewer()
+    end
+  else
+    status.preview_win = nil
+    status.preview_border_win = nil
+    self.preview_border = nil
+  end
+end
+
+function Picker:toggle_results_and_prompt()
+  if not self.previewer then
+    return
+  end
+  local status = state.get_status(self.prompt_bufnr)
+  if status.prompt_win then
+    self:hide_results_and_prompt()
+  else
+    self:unhide_results_and_prompt()
+  end
 end
 
 function Picker:toggle_padding()
@@ -641,14 +949,21 @@ function Picker.close_windows(status)
   local results_border_win = status.results_border_win
   local preview_border_win = status.preview_border_win
 
+  local function delete_buffer(bufnr)
+    if vim.api.nvim_buf_is_valid(bufnr) and not vim.api.nvim_buf_get_option(bufnr, "buflisted") then
+      vim.cmd(string.format("silent! bdelete! %s", bufnr))
+      vim.cmd(string.format("silent! bwipeout! %s", bufnr))
+    end
+  end
+
   local function del_win(name, win_id, force, bdelete)
     if win_id == nil or not vim.api.nvim_win_is_valid(win_id) then
       return
     end
 
     local bufnr = vim.api.nvim_win_get_buf(win_id)
-    if bdelete and vim.api.nvim_buf_is_valid(bufnr) and not vim.api.nvim_buf_get_option(bufnr, "buflisted") then
-      vim.cmd(string.format("silent! bdelete! %s", bufnr))
+    if bdelete then
+      delete_buffer(bufnr)
     end
 
     if not vim.api.nvim_win_is_valid(win_id) then
@@ -660,7 +975,7 @@ function Picker.close_windows(status)
     end
   end
 
-  del_win("prompt_win", prompt_win, true)
+  del_win("prompt_win", prompt_win, true, true)
   del_win("results_win", results_win, true, true)
   del_win("preview_win", preview_win, true, true)
 
@@ -668,14 +983,13 @@ function Picker.close_windows(status)
   del_win("results_border_win", results_border_win, true, true)
   del_win("preview_border_win", preview_border_win, true, true)
 
-  -- vim.cmd(string.format("bdelete! %s", status.prompt_bufnr))
+  -- Buffers should be deleted but it may be also the case that buffer was swapped in window
+  -- so make sure that buffers created in Picker are deleted.
+  delete_buffer(status.prompt_bufnr)
+  delete_buffer(status.results_bufnr)
+  delete_buffer(status.preview_bufnr)
 
-  -- Major hack?? Why do I have to od this.
-  --    Probably because we're currently IN the buffer.
-  --    Should wait to do this until after we're done.
-  vim.defer_fn(function()
-    del_win("prompt_win", prompt_win, true)
-  end, 10)
+  -- vim.cmd(string.format("bdelete! %s", status.prompt_bufnr))
 
   state.clear_status(status.prompt_bufnr)
 end
@@ -899,8 +1213,15 @@ end
 
 function Picker:refresh_previewer()
   local status = state.get_status(self.prompt_bufnr)
-  if status.preview_win and self.previewer then
+  if self.previewer and status.preview_win and a.nvim_win_is_valid(status.preview_win) then
     self:_increment "previewed"
+
+    -- unmap keybindings if preview is only window
+    if not self.prompt_win then
+      local preview_bufnr = a.nvim_win_get_buf(status.preview_win)
+      mappings.remove_keymap(preview_bufnr, config.values.mappings)
+      self:_remove_autocmd_on_buf_leave(preview_bufnr)
+    end
 
     self.previewer:preview(self._selection_entry, status)
     if self.preview_border then
@@ -913,6 +1234,14 @@ function Picker:refresh_previewer()
         self.preview_title = new_title
         self.preview_border:change_title(new_title)
       end
+    end
+
+    -- map keybindings if preview is only window
+    -- TODO: this will work as long as previewer does not set buffer async
+    if not self.prompt_win then
+      local preview_bufnr = a.nvim_win_get_buf(status.preview_win)
+      mappings.apply_keymap(self.prompt_bufnr, nil, config.values.mappings, preview_bufnr)
+      self:_autocmd_on_buf_leave(self.prompt_bufnr, preview_bufnr)
     end
   end
 end

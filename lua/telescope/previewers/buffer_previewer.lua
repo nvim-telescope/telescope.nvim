@@ -363,11 +363,17 @@ previewers.new_buffer_previewer = function(opts)
       local bufnr = vim.api.nvim_create_buf(false, true)
       set_bufnr(self, bufnr)
 
-      vim.schedule(function()
-        if vim.api.nvim_buf_is_valid(bufnr) then
-          vim.api.nvim_win_set_buf(status.preview_win, bufnr)
-        end
-      end)
+      -- vim.schedule(function()
+      --   if vim.api.nvim_buf_is_valid(bufnr) then
+      --     vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+      --   end
+      -- end)
+      -- TODO: why would we want the set buf to be async ? It would make sense to have
+      -- async reading file or setting lines of buffer or do I miss something ?
+      -- and setting content ?
+      if vim.api.nvim_buf_is_valid(bufnr) then
+        vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+      end
 
       -- TODO(conni2461): We only have to set options once. Right?
       vim.api.nvim_win_set_option(status.preview_win, "winhl", "Normal:TelescopePreviewNormal")

@@ -106,10 +106,12 @@ mappings.apply_keymap(42, <function>, {
   }
 })
 --]]
-local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
+local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts, attach_bufnr)
   if not key_func then
     return
   end
+
+  attach_bufnr = attach_bufnr or prompt_bufnr
 
   opts = opts or {}
   if opts.noremap == nil then
@@ -123,7 +125,7 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
     key_func = actions[key_func]
   elseif type(key_func) == "table" then
     if key_func.type == "command" then
-      a.nvim_buf_set_keymap(prompt_bufnr, mode, key_bind, key_func[1], opts or {
+      a.nvim_buf_set_keymap(attach_bufnr, mode, key_bind, key_func[1], opts or {
         silent = true,
       })
       return
@@ -161,10 +163,10 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
     )
   end
 
-  a.nvim_buf_set_keymap(prompt_bufnr, mode, key_bind, map_string, opts)
+  a.nvim_buf_set_keymap(attach_bufnr, mode, key_bind, map_string, opts)
 end
 
-mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
+mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap, attach_bufnr)
   local applied_mappings = { n = {}, i = {} }
 
   local map = function(mode, key_bind, key_func, opts)
@@ -197,7 +199,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
       local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
       if not applied_mappings[mode][key_bind_internal] then
         applied_mappings[mode][key_bind_internal] = true
-        telescope_map(prompt_bufnr, mode, key_bind, key_func)
+        telescope_map(prompt_bufnr, mode, key_bind, key_func, {}, attach_bufnr)
       end
     end
   end
@@ -210,14 +212,21 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
       local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
       if not applied_mappings[mode][key_bind_internal] then
         applied_mappings[mode][key_bind_internal] = true
-        telescope_map(prompt_bufnr, mode, key_bind, key_func)
+        telescope_map(prompt_bufnr, mode, key_bind, key_func, {}, attach_bufnr)
       end
     end
   end
 
   vim.cmd(
+    string.format([[autocmd! BufDelete %s :lua require('telescope.mappings').clear(%s)]], prompt_bufnr, prompt_bufnr)
+  )
+  vim.cmd(
     string.format([[autocmd BufDelete %s :lua require('telescope.mappings').clear(%s)]], prompt_bufnr, prompt_bufnr)
   )
+end
+
+mappings.clear = function(prompt_bufnr)
+  keymap_store[prompt_bufnr] = nil
 end
 
 mappings.execute_keymap = function(prompt_bufnr, keymap_identifier)
@@ -229,8 +238,42 @@ mappings.execute_keymap = function(prompt_bufnr, keymap_identifier)
   vim.cmd [[ doautocmd User TelescopeKeymap ]]
 end
 
-mappings.clear = function(prompt_bufnr)
-  keymap_store[prompt_bufnr] = nil
+mappings.remove_keymap = function(bufnr, buffer_keymap)
+  local removed_mappings = { n = {}, i = {} }
+  local function get_existing_mappings_by_lhs(mode)
+    local existing_keymap_list = vim.api.nvim_buf_get_keymap(bufnr, mode)
+    local existing_keymap = {}
+    for _, keymap in ipairs(existing_keymap_list) do
+      existing_keymap[keymap["lhs"]] = true
+    end
+    return existing_keymap
+  end
+
+  for mode, mode_map in pairs(buffer_keymap or {}) do
+    mode = string.lower(mode)
+
+    local existing_keymap = get_existing_mappings_by_lhs(mode)
+    for key_bind, _ in pairs(mode_map) do
+      local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
+      if existing_keymap[key_bind] and not removed_mappings[mode][key_bind_internal] then
+        removed_mappings[mode][key_bind_internal] = true
+        a.nvim_buf_del_keymap(bufnr, mode, key_bind)
+      end
+    end
+  end
+
+  for mode, mode_map in pairs(mappings.default_mappings) do
+    mode = string.lower(mode)
+
+    local existing_keymap = get_existing_mappings_by_lhs(mode)
+    for key_bind, _ in pairs(mode_map) do
+      local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
+      if existing_keymap[key_bind] and not removed_mappings[mode][key_bind_internal] then
+        removed_mappings[mode][key_bind_internal] = true
+        a.nvim_buf_del_keymap(bufnr, mode, key_bind)
+      end
+    end
+  end
 end
 
 return mappings

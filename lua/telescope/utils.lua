@@ -590,4 +590,12 @@ utils.get_devicons = load_once(function()
   end
 end)
 
+function utils.create_named_buffer(listed, scratch, name)
+  local bufnr = vim.api.nvim_create_buf(false, false)
+  assert(bufnr, "Failed to create buffer")
+  vim.api.nvim_buf_set_name(bufnr, name)
+  vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
+  return bufnr
+end
+
 return utils
