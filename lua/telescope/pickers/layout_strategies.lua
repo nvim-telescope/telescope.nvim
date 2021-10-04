@@ -351,7 +351,7 @@ layout_strategies.horizontal = make_documented_layout(
       results.line = preview.line
       prompt.line = results.line + results.height + 1 + bs
     else
-      error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
+      error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
     end
 
     if tbln then
@@ -433,15 +433,26 @@ layout_strategies.center = make_documented_layout(
     prompt.height = 1
     results.height = height - prompt.height - h_space
 
+    local topline = (max_lines / 2) - ((results.height + (2 * bs)) / 2) + 1
     -- Align the prompt and results so halfway up the screen is
     -- in the middle of this combined block
-    prompt.line = (max_lines / 2) - ((results.height + (2 * bs)) / 2) + 1
-    results.line = prompt.line + 1 + bs
+    if layout_config.prompt_position == "top" then
+      prompt.line = topline
+      results.line = prompt.line + 1 + bs
+    elseif layout_config.prompt_position == "bottom" then
+      results.line = topline
+      prompt.line = results.line + results.height + bs
+      if type(prompt.title) == "string" then
+        prompt.title = { { pos = "S", text = prompt.title } }
+      end
+    else
+      error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+    end
 
     preview.line = 2
 
     if self.previewer and max_lines >= layout_config.preview_cutoff then
-      preview.height = math.floor(prompt.line - (3 + bs))
+      preview.height = math.floor(topline - (3 + bs))
     else
       preview.height = 0
     end
@@ -594,7 +605,7 @@ layout_strategies.vertical = make_documented_layout(
   vim.tbl_extend("error", shared_options, {
     preview_cutoff = "When lines are less than this value, the preview will be disabled",
     preview_height = { "Change the height of Telescope's preview window", "See |resolver.resolve_height()|" },
-    prompt_position = { "(unimplemented, but we plan on supporting)" },
+    prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -640,13 +651,28 @@ layout_strategies.vertical = make_documented_layout(
 
     local height_padding = math.floor((max_lines - height) / 2)
     if not layout_config.mirror then
-      preview.line = height_padding + bs + 1
-      results.line = (preview.height == 0) and preview.line or preview.line + preview.height + (1 + bs)
-      prompt.line = results.line + results.height + (1 + bs)
+      preview.line = height_padding + (1 + bs)
+      if layout_config.prompt_position == "top" then
+        prompt.line = (preview.height == 0) and preview.line or preview.line + preview.height + (1 + bs)
+        results.line = prompt.line + prompt.height + (1 + bs)
+      elseif layout_config.prompt_position == "bottom" then
+        results.line = (preview.height == 0) and preview.line or preview.line + preview.height + (1 + bs)
+        prompt.line = results.line + results.height + (1 + bs)
+      else
+        error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+      end
     else
-      prompt.line = height_padding + bs + 1
-      results.line = prompt.line + prompt.height + (1 + bs)
-      preview.line = results.line + results.height + (1 + bs)
+      if layout_config.prompt_position == "top" then
+        prompt.line = height_padding + (1 + bs)
+        results.line = prompt.line + prompt.height + (1 + bs)
+        preview.line = results.line + results.height + (1 + bs)
+      elseif layout_config.prompt_position == "bottom" then
+        results.line = height_padding + (1 + bs)
+        prompt.line = results.line + results.height + (1 + bs)
+        preview.line = prompt.line + prompt.height + (1 + bs)
+      else
+        error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+      end
     end
 
     if tbln then
@@ -750,7 +776,7 @@ end)
 layout_strategies.bottom_pane = make_documented_layout(
   "bottom_pane",
   vim.tbl_extend("error", shared_options, {
-    -- No custom options...
+    prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -791,9 +817,20 @@ layout_strategies.bottom_pane = make_documented_layout(
     end
 
     -- Line
-    prompt.line = max_lines - results.height - (1 + bs) + 1
-    results.line = prompt.line + 1
-    preview.line = results.line + bs
+    if layout_config.prompt_position == "top" then
+      prompt.line = max_lines - results.height - (1 + bs) + 1
+      results.line = prompt.line + 1
+      preview.line = results.line + bs
+    elseif layout_config.prompt_position == "bottom" then
+      results.line = max_lines - results.height - (1 + bs) + 1
+      preview.line = results.line
+      prompt.line = max_lines - bs
+      if type(prompt.title) == "string" then
+        prompt.title = { { pos = "S", text = prompt.title } }
+      end
+    else
+      error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
+    end
 
     -- Col
     prompt.col = 0 -- centered

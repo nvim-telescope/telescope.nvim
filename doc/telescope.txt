@@ -114,11 +114,13 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: {
           bottom_pane = {
-            height = 25
+            height = 25,
+            prompt_position = "top"
           },
           center = {
             height = 0.9,
             preview_cutoff = 40,
+            prompt_position = "top",
             width = 0.8
           },
           cursor = {
@@ -135,6 +137,7 @@ telescope.setup({opts})                                    *telescope.setup()*
           vertical = {
             height = 0.9,
             preview_cutoff = 40,
+            prompt_position = "bottom",
             width = 0.8
           }
         }
@@ -1679,7 +1682,8 @@ layout_strategies.vertical()                    *layout_strategies.vertical()*
         - Change the height of Telescope's preview window
         - See |resolver.resolve_height()|
       - prompt_position:
-        - (unimplemented, but we plan on supporting)
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
 
 
 layout_strategies.flex()                            *layout_strategies.flex()*

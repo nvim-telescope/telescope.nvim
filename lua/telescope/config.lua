@@ -87,6 +87,7 @@ local layout_config_defaults = {
   vertical = {
     width = 0.8,
     height = 0.9,
+    prompt_position = "bottom",
     preview_cutoff = 40,
   },
 
@@ -94,6 +95,7 @@ local layout_config_defaults = {
     width = 0.8,
     height = 0.9,
     preview_cutoff = 40,
+    prompt_position = "top",
   },
 
   cursor = {
@@ -104,6 +106,7 @@ local layout_config_defaults = {
 
   bottom_pane = {
     height = 25,
+    prompt_position = "top",
   },
 }
 
