@@ -1124,7 +1124,7 @@ previewers.buffers = defaulter(function(opts)
           -- only set if winid and rows are matching
           pcall(vim.api.nvim_buf_set_extmark, bufnr, ns_previewer, lnum - 1, 0, {
             end_col = #line,
-            virt_text = {{line, "TelescopePreviewLine"}},
+            virt_text = { { line, "TelescopePreviewLine" } },
             virt_text_pos = "overlay",
             hl_mode = "combine",
             ephemeral = true,
