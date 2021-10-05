@@ -286,20 +286,12 @@ actions._close = function(prompt_bufnr, keepinsert)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
 
-  if picker.previewer then
-    for _, v in ipairs(picker.all_previewers) do
-      v:teardown()
-    end
-  end
-
   actions.close_pum(prompt_bufnr)
   if not keepinsert then
     vim.cmd [[stopinsert]]
   end
 
-  vim.api.nvim_win_close(prompt_win, true)
-
-  pcall(vim.cmd, string.format([[silent bdelete! %s]], prompt_bufnr))
+  require("telescope.pickers").on_close_prompt(prompt_bufnr)
   pcall(a.nvim_set_current_win, original_win_id)
 end
 

@@ -941,6 +941,9 @@ function Picker:set_prompt(str)
 end
 
 function Picker.close_windows(status)
+  -- make sure we don't have BufLeave autocmd.
+  status.picker:_remove_autocmd_on_buf_leave(status.prompt_bufnr)
+  status.picker:_remove_autocmd_on_buf_leave(status.preview_bufnr)
   local prompt_win = status.prompt_win
   local results_win = status.results_win
   local preview_win = status.preview_win
