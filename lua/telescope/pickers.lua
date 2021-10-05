@@ -390,6 +390,7 @@ function Picker:find()
         -- otherwise (i) insert mode exitted faster than `picker:set_prompt`; (ii) cursor on wrong pos
         await_schedule(function()
           vim.cmd [[stopinsert]]
+          actions._toggle_cursor()
         end)
       end
     else
@@ -641,6 +642,10 @@ function Picker.close_windows(status)
   end, 10)
 
   state.clear_status(status.prompt_bufnr)
+
+  if status.picker.initial_mode == "normal" then
+    actions._toggle_cursor()
+  end
 end
 
 function Picker:get_selection()

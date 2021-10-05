@@ -1108,6 +1108,14 @@ actions.which_key = function(prompt_bufnr, opts)
   end
 end
 
+actions._toggle_cursor = function()
+  if vim.o.termguicolors and vim.o.guicursor ~= "" and vim.o.guicursor ~= "a:HiddenCursor" then
+    state.set_global_key("guicursor", vim.o.guicursor)
+    vim.o.guicursor = "a:HiddenCursor"
+  else
+    vim.o.guicursor = state.get_global_key "guicursor"
+  end
+end
 -- ==================================================
 -- Transforms modules and sets the correct metatables.
 -- ==================================================
