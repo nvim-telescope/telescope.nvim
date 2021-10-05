@@ -390,7 +390,8 @@ function Picker:find()
         -- otherwise (i) insert mode exitted faster than `picker:set_prompt`; (ii) cursor on wrong pos
         await_schedule(function()
           vim.cmd [[stopinsert]]
-          actions._toggle_cursor()
+          state.set_global_key("guicursor", vim.o.guicursor)
+          vim.o.guicursor = "a:HiddenCursor"
         end)
       end
     else
@@ -495,6 +496,13 @@ function Picker:find()
   vim.cmd [[augroup PickerInsert]]
   vim.cmd [[  au!]]
   vim.cmd(on_buf_leave)
+
+  if state.get_global_key "guicursor" then
+    vim.cmd [[ autocmd BufLeave <buffer> ++nested ++once :silent lua vim.o.guicursor = require "telescope.state".get_global_key "guicursor" ]]
+    vim.cmd [[ autocmd InsertEnter <buffer> ++nested :silent lua vim.o.guicursor = require "telescope.state".get_global_key "guicursor" ]]
+    vim.cmd [[ autocmd InsertLeave <buffer> ++nested :silent lua vim.o.guicursor = "a:HiddenCursor" ]]
+  end
+
   vim.cmd [[augroup END]]
 
   local preview_border = preview_opts and preview_opts.border
@@ -642,10 +650,6 @@ function Picker.close_windows(status)
   end, 10)
 
   state.clear_status(status.prompt_bufnr)
-
-  if status.picker.initial_mode == "normal" then
-    actions._toggle_cursor()
-  end
 end
 
 function Picker:get_selection()

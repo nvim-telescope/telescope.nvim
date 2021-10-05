@@ -78,10 +78,6 @@ highlight default link TelescopeResultsDiffAdd DiffAdd
 highlight default link TelescopeResultsDiffDelete DiffDelete
 highlight default link TelescopeResultsDiffUntracked NonText
 
-augroup TelescopeAutocmds
-  autocmd! ColorScheme * highlight HiddenCursor gui=reverse blend=100
-augroup END
-
 " This is like "<C-R>" in your terminal.
 "   To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)
 cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
