@@ -78,6 +78,7 @@ function Picker:new(opts)
     sorter = opts.sorter or require("telescope.sorters").empty(),
 
     all_previewers = opts.previewer,
+    disable_previewer_at_startup = opts.disable_previewer_at_startup or false,
     current_previewer_index = 1,
 
     default_selection_index = opts.default_selection_index,
@@ -393,7 +394,12 @@ function Picker:find()
   -- 2. Options window
   -- 3. Preview window
 
+  local previewer = self.previewer
+  if self.disable_previewer_at_startup then
+    self.previewer = nil
+  end
   local popup_opts = self:_get_window_options()
+  self.previewer = previewer
 
   local results_bufnr = utils.create_named_buffer(false, false, "[TelescopeResults]")
   local results_win, _, results_border_win = self:_create_window(results_bufnr, popup_opts.results, true)
@@ -404,8 +410,8 @@ function Picker:find()
   -- TODO: Should probably always show all the line for results win, so should implement a resize for the windows
 
   local preview_win, preview_opts, preview_bufnr, preview_border_win
+  preview_bufnr = utils.create_named_buffer(false, false, "[TelescopePreview]")
   if popup_opts.preview then
-    preview_bufnr = utils.create_named_buffer(false, false, "[TelescopePreview]")
     preview_win, preview_opts, preview_border_win = self:_create_window(preview_bufnr, popup_opts.preview)
   end
 
@@ -722,8 +728,8 @@ function Picker:unhide_preview()
   self:_autocmd_on_buf_leave(self.prompt_bufnr)
   if self.previewer.state then
     self.previewer.state.winid = status.preview_win
-    self:refresh_previewer()
   end
+  self:refresh_previewer()
 end
 
 function Picker:toggle_preview()
@@ -799,13 +805,13 @@ function Picker:hide_results_and_prompt()
   -- if preview does not have state it means there was no preview for example live grep after start
   if self.previewer.state then
     self.previewer.state.winid = status.preview_win
-    self:refresh_previewer()
   else
     local preview_bufnr = a.nvim_win_get_buf(status.preview_win)
     self:_autocmd_on_buf_leave(self.prompt_bufnr, preview_bufnr)
     -- TODO: for now attach_mappings are ignored - I am not sure how those would be unmapped
     mappings.apply_keymap(self.prompt_bufnr, nil, config.values.mappings, preview_bufnr)
   end
+  self:refresh_previewer()
 end
 
 function Picker:unhide_results_and_prompt()
@@ -846,8 +852,8 @@ function Picker:unhide_results_and_prompt()
     self.preview_border = preview_opts.border
     if self.previewer.state then
       self.previewer.state.winid = status.preview_win
-      self:refresh_previewer()
     end
+    self:refresh_previewer()
   else
     status.preview_win = nil
     status.preview_border_win = nil
@@ -1216,6 +1222,10 @@ end
 
 function Picker:refresh_previewer()
   local status = state.get_status(self.prompt_bufnr)
+  if not self._selection_entry then
+    -- if selection_entry is nil there is nothing to be previewed
+    return
+  end
   if self.previewer and status.preview_win and a.nvim_win_is_valid(status.preview_win) then
     self:_increment "previewed"
 
