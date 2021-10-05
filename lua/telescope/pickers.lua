@@ -498,8 +498,9 @@ function Picker:find()
   vim.cmd(on_buf_leave)
 
   if state.get_global_key "guicursor" then
-    vim.cmd [[ autocmd BufLeave <buffer> ++nested ++once :silent lua vim.o.guicursor = require "telescope.state".get_global_key "guicursor" ]]
-    vim.cmd [[ autocmd InsertEnter <buffer> ++nested :silent lua vim.o.guicursor = require "telescope.state".get_global_key "guicursor" ]]
+    local toggle_back = ':silent lua vim.o.guicursor = require "telescope.state".get_global_key "guicursor"'
+    vim.cmd([[ autocmd BufLeave <buffer> ++nested ++once ]] .. toggle_back)
+    vim.cmd([[ autocmd InsertEnter <buffer> ++nested ]] .. toggle_back)
     vim.cmd [[ autocmd InsertLeave <buffer> ++nested :silent lua vim.o.guicursor = "a:HiddenCursor" ]]
   end
 
