@@ -1108,6 +1108,18 @@ actions.which_key = function(prompt_bufnr, opts)
   end
 end
 
+actions._hide_cursor = function(hide)
+  if not hide then
+    return
+  end
+  state.set_global_key("guicursor", vim.o.guicursor)
+  vim.o.guicursor = "a:HiddenCursor"
+  local toggle_back = ':silent lua vim.o.guicursor = require "telescope.state".get_global_key "guicursor"'
+  vim.cmd([[ autocmd! BufLeave <buffer> ++nested ++once ]] .. toggle_back)
+  vim.cmd([[ autocmd! InsertEnter <buffer> ++nested ]] .. toggle_back)
+  vim.cmd [[ autocmd! InsertLeave <buffer> ++nested :silent lua vim.o.guicursor = "a:HiddenCursor" ]]
+end
+
 -- ==================================================
 -- Transforms modules and sets the correct metatables.
 -- ==================================================
