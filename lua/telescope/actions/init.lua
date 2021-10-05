@@ -20,7 +20,6 @@ local action_state = require "telescope.actions.state"
 local action_utils = require "telescope.actions.utils"
 local action_set = require "telescope.actions.set"
 local entry_display = require "telescope.pickers.entry_display"
-local from_entry = require "telescope.from_entry"
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 local resolver = require "telescope.config.resolve"
