@@ -10,8 +10,12 @@ This will provide standard mechanism for accessing information from an entry.
 
 local from_entry = {}
 
-function from_entry.path(entry, validate)
+function from_entry.path(entry, validate, skip_escaping)
   local path = entry.path and vim.fn.fnameescape(entry.path) or nil
+  if skip_escaping then
+    path = entry.path
+  end
+
   if path == nil then
     path = entry.filename
   end
