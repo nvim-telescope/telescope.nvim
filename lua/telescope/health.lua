@@ -61,7 +61,7 @@ end
 
 local M = {}
 
-M.check_health = function()
+M.check = function()
   -- Required lua libs
   health_start "Checking for required plugins"
   for _, plugin in ipairs(required_plugins) do
