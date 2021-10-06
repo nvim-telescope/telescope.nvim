@@ -1,3 +1,3 @@
 function! health#telescope#check()
-  lua require 'telescope.health'.check_health()
+  lua require 'telescope.health'.check()
 endfunction
