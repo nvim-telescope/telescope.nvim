@@ -671,7 +671,7 @@ local entry_to_qf = function(entry)
 
   return {
     bufnr = entry.bufnr,
-    filename = from_entry.path(entry, false, true),
+    filename = from_entry.path(entry, false, false),
     lnum = vim.F.if_nil(entry.lnum, 1),
     col = vim.F.if_nil(entry.col, 1),
     text = text,
