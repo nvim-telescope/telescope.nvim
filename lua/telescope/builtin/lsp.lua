@@ -147,13 +147,18 @@ lsp.document_symbols = function(opts)
 end
 
 lsp.code_actions = function(opts)
-  local params = opts.params or vim.lsp.util.make_range_params()
+  local params = vim.F.if_nil(opts.params, vim.lsp.util.make_range_params())
 
   params.context = {
     diagnostics = vim.lsp.diagnostic.get_line_diagnostics(),
   }
 
-  local results_lsp, err = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, opts.timeout or 10000)
+  local results_lsp, err = vim.lsp.buf_request_sync(
+    0,
+    "textDocument/codeAction",
+    params,
+    vim.F.if_nil(opts.timeout, 10000)
+  )
 
   if err then
     print("ERROR: " .. err)
@@ -181,6 +186,7 @@ lsp.code_actions = function(opts)
         local entry = {
           idx = idx,
           command_title = result.title:gsub("\r\n", "\\r\\n"):gsub("\n", "\\n"),
+          client = client,
           client_name = client and client.name or "",
           command = result,
         }
@@ -211,9 +217,9 @@ lsp.code_actions = function(opts)
 
   local function make_display(entry)
     return displayer {
-      { entry.idx .. ":", "TelescopePromptPrefix" },
-      { entry.command_title },
-      { entry.client_name, "TelescopeResultsComment" },
+      { entry.value.idx .. ":", "TelescopePromptPrefix" },
+      { entry.value.command_title },
+      { entry.value.client_name, "TelescopeResultsComment" },
     }
   end
 
@@ -283,14 +289,10 @@ lsp.code_actions = function(opts)
     prompt_title = "LSP Code Actions",
     finder = finders.new_table {
       results = results,
-      entry_maker = function(line)
+      entry_maker = function(action)
         return {
-          valid = line ~= nil,
-          value = line.command,
-          ordinal = line.idx .. line.command_title,
-          command_title = line.command_title,
-          idx = line.idx,
-          client_name = line.client_name,
+          value = action,
+          ordinal = action.idx .. action.command_title,
           display = make_display,
         }
       end,
@@ -299,9 +301,24 @@ lsp.code_actions = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         actions.close(prompt_bufnr)
-        local action = selection.value
-
-        execute_action(transform_action(action))
+        local action = selection.value.command
+        local client = selection.value.client
+        if
+          not action.edit
+          and client
+          and type(client.resolved_capabilities.code_action) == "table"
+          and client.resolved_capabilities.code_action.resolveProvider
+        then
+          client.request("codeAction/resolve", action, function(resolved_err, resolved_action)
+            if resolved_err then
+              vim.notify(resolved_err.code .. ": " .. resolved_err.message, vim.log.levels.ERROR)
+              return
+            end
+            execute_action(transform_action(resolved_action))
+          end)
+        else
+          execute_action(transform_action(action))
+        end
       end)
 
       return true
