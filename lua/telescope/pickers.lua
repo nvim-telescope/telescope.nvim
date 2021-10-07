@@ -826,12 +826,6 @@ function Picker:set_selection(row)
     local display, display_highlights = entry_display.resolve(self, entry)
     display = caret .. display
 
-    local window_width = vim.api.nvim_win_get_width(self.results_win)
-    local display_length = string.len(display)
-    if display_length < window_width + 2 then
-      display = display .. string.rep(" ", window_width + 2 - display_length)
-    end
-
     -- TODO: You should go back and redraw the highlights for this line from the sorter.
     -- That's the only smart thing to do.
     if not a.nvim_buf_is_valid(results_bufnr) then
