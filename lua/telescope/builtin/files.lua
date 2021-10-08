@@ -407,6 +407,7 @@ files.file_browser = function(opts)
       map("i", "<C-w>", actions.goto_cwd)
       map("n", "m", actions.move_file)
       map("n", "dd", actions.remove_file)
+      map("i", "<C-d>", actions.remove_file)
       map("n", "l", actions.select_default)
       return true
     end,
