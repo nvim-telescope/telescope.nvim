@@ -11,12 +11,6 @@ local range_calculators = {
 }
 
 local scroll_calculators = {
-  scroll = function(range_fn)
-    return function(max_results, num_results, row)
-      return math.min(math.max(row, 0), max_results - 1)
-    end
-  end,
-
   cycle = function(range_fn)
     return function(max_results, num_results, row)
       local start, finish = range_fn(max_results, num_results)

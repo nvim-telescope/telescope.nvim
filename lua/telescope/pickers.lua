@@ -181,7 +181,6 @@ function Picker:is_done()
   end
 end
 
--- TODO(scroll)
 function Picker:clear_extra_rows(results_bufnr)
   if self:is_done() then
     log.trace "Not clearing due to being already complete"
@@ -214,7 +213,7 @@ function Picker:clear_extra_rows(results_bufnr)
   end
 
   if not ok then
-    log.debug(msg)
+    log.debug("Failed to set lines:", msg)
   end
 
   log.trace("Clearing:", worst_line)
@@ -268,8 +267,6 @@ function Picker:_next_find_id()
 end
 
 function Picker:find()
-  self.result_limit = 100000
-
   self:close_existing_pickers()
   self:reset_selection()
 
@@ -344,17 +341,14 @@ function Picker:find()
   self.prompt_prefix = prompt_prefix
   self:_reset_prefix_color()
 
-  -- First thing we want to do is set all the lines to blank.
-  self.max_results = 10000 or popup_opts.results.height
+  -- TODO: This could be configurable in the future, but I don't know why you would
+  -- want to scroll through more than 10,000 items.
+  --
+  -- This just lets us stop doing stuff after tons of  things.
+  self.max_results = 10000
 
-  -- TODO(scrolling): This may be a hack when we get a little further into implementing scrolling.
   vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
 
-  -- TODO(status): I would love to get the status text not moving back and forth. Perhaps it is just a problem with
-  -- virtual text & prompt buffers or something though. I can't figure out why it would redraw the way it does.
-  --
-  -- A "hacked" version of this would be to calculate where the area I want the status to go and put a new window there.
-  -- With this method, I do not need to worry about padding or antying, just make it take up X characters or something.
   local status_updater = self:get_status_updater(prompt_win, prompt_bufnr)
   local debounced_status = debounce.throttle_leading(status_updater, 50)
 
@@ -440,7 +434,7 @@ function Picker:find()
       find_id = self:_next_find_id()
 
       status_updater { completed = false }
-      tx.send(...)
+      self._on_lines(...)
     end,
 
     on_detach = function()
@@ -883,44 +877,41 @@ function Picker:entry_adder(index, entry, _, insert)
 
   self:_increment "displayed"
 
-  -- TODO: Don't need to schedule this if we schedule the adder.
   local offset = insert and 0 or 1
-  vim.schedule(function()
-    if not vim.api.nvim_buf_is_valid(self.results_bufnr) then
-      log.debug "ON_ENTRY: Invalid buffer"
-      return
-    end
+  if not vim.api.nvim_buf_is_valid(self.results_bufnr) then
+    log.debug "ON_ENTRY: Invalid buffer"
+    return
+  end
 
-    -- TODO: Does this every get called?
-    -- local line_count = vim.api.nvim_win_get_height(self.results_win)
-    local line_count = vim.api.nvim_buf_line_count(self.results_bufnr)
-    if row > line_count then
-      return
-    end
+  -- TODO: Does this every get called?
+  -- local line_count = vim.api.nvim_win_get_height(self.results_win)
+  local line_count = vim.api.nvim_buf_line_count(self.results_bufnr)
+  if row > line_count then
+    return
+  end
 
-    if insert then
-      if self.sorting_strategy == "descending" then
-        vim.api.nvim_buf_set_lines(self.results_bufnr, 0, 1, false, {})
-      end
+  if insert then
+    if self.sorting_strategy == "descending" then
+      vim.api.nvim_buf_set_lines(self.results_bufnr, 0, 1, false, {})
     end
+  end
 
-    local set_ok, msg = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + offset, false, { display })
-    if set_ok and display_highlights then
-      self.highlighter:hi_display(row, prefix, display_highlights)
-      self:highlight_one_row(self.results_bufnr, self:_get_prompt(), display, row)
-    end
+  local set_ok, msg = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + offset, false, { display })
+  if set_ok and display_highlights then
+    self.highlighter:hi_display(row, prefix, display_highlights)
+    self:highlight_one_row(self.results_bufnr, self:_get_prompt(), display, row)
+  end
 
-    if not set_ok then
-      log.debug("Failed to set lines...", msg)
-    end
+  if not set_ok then
+    log.debug("Failed to set lines...", msg)
+  end
 
-    -- This pretty much only fails when people leave newlines in their results.
-    --  So we'll clean it up for them if it fails.
-    if not set_ok and display:find "\n" then
-      display = display:gsub("\n", " | ")
-      vim.api.nvim_buf_set_lines(self.results_bufnr, row, row + 1, false, { display })
-    end
-  end)
+  -- This pretty much only fails when people leave newlines in their results.
+  --  So we'll clean it up for them if it fails.
+  if not set_ok and display:find "\n" then
+    display = display:gsub("\n", " | ")
+    vim.api.nvim_buf_set_lines(self.results_bufnr, row, row + 1, false, { display })
+  end
 end
 
 function Picker:_reset_track()
@@ -991,17 +982,11 @@ function Picker:get_status_updater(prompt_win, prompt_bufnr)
 end
 
 function Picker:get_result_processor(find_id, prompt, status_updater)
-  local stopped = false
-  local added = 0
+  local count = 0
 
   local cb_add = function(score, entry)
     self.manager:add_entry(self, score, entry)
     status_updater { completed = false }
-
-    added = added + 1
-    if added > self.result_limit then
-      stopped = true
-    end
   end
 
   local cb_filter = function(_)
@@ -1013,15 +998,13 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
       return true
     end
 
-    if stopped then
-      return true
-    end
-
     self:_increment "processed"
 
     if not entry or entry.valid == false then
       return
     end
+
+    count = count + 1
 
     -- TODO: Probably should asyncify this / cache this / do something because this probably takes
     -- a ton of time on large results.
@@ -1038,6 +1021,13 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
     end
 
     self.sorter:score(prompt, entry, cb_add, cb_filter)
+
+    -- Only on the first addition do we want to set the selection.
+    -- This allows us to handle moving the cursor to the bottom or top of the window
+    -- depending on the strategy.
+    if count == 1 then
+      self:_do_selection(prompt)
+    end
   end
 end
 
