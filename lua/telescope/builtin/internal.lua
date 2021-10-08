@@ -11,6 +11,8 @@ local sorters = require "telescope.sorters"
 local state = require "telescope.state"
 local utils = require "telescope.utils"
 
+local log = require "telescope.log"
+
 local conf = require("telescope.config").values
 
 local filter = vim.tbl_filter
@@ -711,7 +713,7 @@ internal.buffers = function(opts)
     if opts.ignore_current_buffer and b == vim.api.nvim_get_current_buf() then
       return false
     end
-    if opts.only_cwd and not string.find(vim.api.nvim_buf_get_name(b), vim.loop.cwd(), 1, true) then
+    if opts.cwd_only and not string.find(vim.api.nvim_buf_get_name(b), vim.loop.cwd(), 1, true) then
       return false
     end
     return true
@@ -1205,10 +1207,29 @@ internal.jumplist = function(opts)
   }):find()
 end
 
+-- Makes sure aliased options are set correctly
+local function apply_aliases(opts)
+    local has_cwd_only = opts.cwd_only ~= nil
+    local has_only_cwd = opts.only_cwd ~= nil
+
+    if has_cwd_only and has_only_cwd then
+        log.warn [[Both 'only_cwd' and 'cwd_only' specified. Using 'cwd_only']]
+    end
+
+    if has_only_cwd and not has_cwd_only then
+        -- Internally, use cwd_only
+        opts.cwd_only = opts.only_cwd
+        opts.only_cwd = nil
+    end
+
+    return opts
+end
+
 local function apply_checks(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)
       opts = opts or {}
+      opts = apply_aliases(opts)
 
       v(opts)
     end
