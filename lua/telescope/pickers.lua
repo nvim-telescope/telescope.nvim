@@ -345,7 +345,7 @@ function Picker:find()
   -- want to scroll through more than 10,000 items.
   --
   -- This just lets us stop doing stuff after tons of  things.
-  self.max_results = 10000
+  self.max_results = 1000
 
   vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
 
