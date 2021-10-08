@@ -25,6 +25,7 @@ local optional_dependencies = {
     package = {
       {
         name = "fd",
+        binaries = { "fd", "fdfind" },
         url = "[sharkdp/fd](https://github.com/sharkdp/fd)",
         optional = true,
       },
@@ -42,15 +43,17 @@ local required_plugins = {
 }
 
 local check_binary_installed = function(package)
-  local file_extension = is_win and ".exe" or ""
-  local filename = package.name .. file_extension
-  if fn.executable(filename) == 0 then
-    return
-  else
-    local handle = io.popen(filename .. " --version")
-    local binary_version = handle:read "*a"
-    handle:close()
-    return true, binary_version
+  local binaries = package.binaries or { package.name }
+  for _, binary in ipairs(binaries) do
+    if is_win then
+      binary = binary .. ".exe"
+    end
+    if fn.executable(binary) == 1 then
+      local handle = io.popen(binary .. " --version")
+      local binary_version = handle:read "*a"
+      handle:close()
+      return true, binary_version
+    end
   end
 end
 
