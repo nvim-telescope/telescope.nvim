@@ -15,6 +15,20 @@ local conf = require("telescope.config").values
 
 local filter = vim.tbl_filter
 
+-- Makes sure aliased options are set correctly
+local function apply_cwd_only_aliases(opts)
+  local has_cwd_only = opts.cwd_only ~= nil
+  local has_only_cwd = opts.only_cwd ~= nil
+
+  if has_only_cwd and not has_cwd_only then
+    -- Internally, use cwd_only
+    opts.cwd_only = opts.only_cwd
+    opts.only_cwd = nil
+  end
+
+  return opts
+end
+
 local internal = {}
 
 -- TODO: What the heck should we do for accepting this.
@@ -346,6 +360,7 @@ internal.loclist = function(opts)
 end
 
 internal.oldfiles = function(opts)
+  opts = apply_cwd_only_aliases(opts)
   opts.include_current_session = utils.get_default(opts.include_current_session, true)
 
   local current_buffer = vim.api.nvim_get_current_buf()
@@ -700,6 +715,7 @@ internal.reloader = function(opts)
 end
 
 internal.buffers = function(opts)
+  opts = apply_cwd_only_aliases(opts)
   local bufnrs = filter(function(b)
     if 1 ~= vim.fn.buflisted(b) then
       return false
@@ -711,7 +727,7 @@ internal.buffers = function(opts)
     if opts.ignore_current_buffer and b == vim.api.nvim_get_current_buf() then
       return false
     end
-    if opts.only_cwd and not string.find(vim.api.nvim_buf_get_name(b), vim.loop.cwd(), 1, true) then
+    if opts.cwd_only and not string.find(vim.api.nvim_buf_get_name(b), vim.loop.cwd(), 1, true) then
       return false
     end
     return true

@@ -262,6 +262,7 @@ builtin.loclist = require_on_exported_call("telescope.builtin.internal").loclist
 --- Lists previously open files, opens on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field only_cwd boolean: show only files in the cwd (default: false)
+---@field cwd_only boolean: alias for only_cwd
 builtin.oldfiles = require_on_exported_call("telescope.builtin.internal").oldfiles
 
 --- Lists commands that were executed recently, and reruns them on `<cr>`
@@ -302,6 +303,7 @@ builtin.reloader = require_on_exported_call("telescope.builtin.internal").reload
 ---@field show_all_buffers boolean: if true, show all buffers, including unloaded buffers (default: true)
 ---@field ignore_current_buffer boolean: if true, don't show the current buffer in the list (default: false)
 ---@field only_cwd boolean: if true, only show buffers in the current working directory (default: false)
+---@field cwd_only boolean: alias for only_cwd
 ---@field sort_lastused boolean: Sorts current and last buffer to the top and selects the lastused (default: false)
 ---@field sort_mru boolean: Sorts all buffers after most recent used. Not just the current and last one (default: false)
 ---@field bufnr_width number: Defines the width of the buffer numbers in front of the filenames  (default: dynamic)
