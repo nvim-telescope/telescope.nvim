@@ -67,7 +67,7 @@ scroller.create = function(scroll_strategy, sorting_strategy)
       )
     end
 
-    if result >= max_results then
+    if result > max_results then
       error(
         string.format(
           "Must never exceed max results: { result = %s, args = { %s %s %s } }",
