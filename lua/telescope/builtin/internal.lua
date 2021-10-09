@@ -11,11 +11,23 @@ local sorters = require "telescope.sorters"
 local state = require "telescope.state"
 local utils = require "telescope.utils"
 
-local log = require "telescope.log"
-
 local conf = require("telescope.config").values
 
 local filter = vim.tbl_filter
+
+-- Makes sure aliased options are set correctly
+local function apply_cwd_only_aliases(opts)
+  local has_cwd_only = opts.cwd_only ~= nil
+  local has_only_cwd = opts.only_cwd ~= nil
+
+  if has_only_cwd and not has_cwd_only then
+    -- Internally, use cwd_only
+    opts.cwd_only = opts.only_cwd
+    opts.only_cwd = nil
+  end
+
+  return opts
+end
 
 local internal = {}
 
@@ -348,6 +360,7 @@ internal.loclist = function(opts)
 end
 
 internal.oldfiles = function(opts)
+  opts = apply_cwd_only_aliases(opts)
   opts.include_current_session = utils.get_default(opts.include_current_session, true)
 
   local current_buffer = vim.api.nvim_get_current_buf()
@@ -702,6 +715,7 @@ internal.reloader = function(opts)
 end
 
 internal.buffers = function(opts)
+  opts = apply_cwd_only_aliases(opts)
   local bufnrs = filter(function(b)
     if 1 ~= vim.fn.buflisted(b) then
       return false
@@ -1207,29 +1221,10 @@ internal.jumplist = function(opts)
   }):find()
 end
 
--- Makes sure aliased options are set correctly
-local function apply_aliases(opts)
-    local has_cwd_only = opts.cwd_only ~= nil
-    local has_only_cwd = opts.only_cwd ~= nil
-
-    if has_cwd_only and has_only_cwd then
-        log.warn [[Both 'only_cwd' and 'cwd_only' specified. Using 'cwd_only']]
-    end
-
-    if has_only_cwd and not has_cwd_only then
-        -- Internally, use cwd_only
-        opts.cwd_only = opts.only_cwd
-        opts.only_cwd = nil
-    end
-
-    return opts
-end
-
 local function apply_checks(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)
       opts = opts or {}
-      opts = apply_aliases(opts)
 
       v(opts)
     end
