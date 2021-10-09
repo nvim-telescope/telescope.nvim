@@ -29,7 +29,7 @@ local scroll_calculators = {
     return function(max_results, num_results, row)
       local start, finish = range_fn(max_results, num_results)
 
-      if row >= finish then
+      if row >= finish and finish > 0 then
         return finish - 1
       elseif row < start then
         return start
