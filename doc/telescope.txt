@@ -1059,6 +1059,7 @@ builtin.oldfiles({opts})                                  *builtin.oldfiles()*
 
     Options: ~
         {only_cwd} (boolean)  show only files in the cwd (default: false)
+        {cwd_only} (boolean)  alias for only_cwd
 
 
 builtin.command_history({opts})                    *builtin.command_history()*
@@ -1148,6 +1149,7 @@ builtin.buffers({opts})                                    *builtin.buffers()*
         {only_cwd}              (boolean)  if true, only show buffers in the
                                            current working directory (default:
                                            false)
+        {cwd_only}              (boolean)  alias for only_cwd
         {sort_lastused}         (boolean)  Sorts current and last buffer to
                                            the top and selects the lastused
                                            (default: false)
