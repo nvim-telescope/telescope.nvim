@@ -998,11 +998,11 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
       return true
     end
 
-    self:_increment "processed"
-
     if not entry or entry.valid == false then
       return
     end
+
+    self:_increment "processed"
 
     count = count + 1
 
