@@ -897,8 +897,10 @@ function Picker:entry_adder(index, entry, _, insert)
   end
 
   local set_ok, msg = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + offset, false, { display })
-  if set_ok and display_highlights then
-    self.highlighter:hi_display(row, prefix, display_highlights)
+  if set_ok then
+    if display_highlights then
+      self.highlighter:hi_display(row, prefix, display_highlights)
+    end
     self:highlight_one_row(self.results_bufnr, self:_get_prompt(), display, row)
   end
 
