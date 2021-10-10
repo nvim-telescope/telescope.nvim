@@ -445,10 +445,11 @@ function Picker:find()
   -- TODO: Use WinLeave as well?
   local on_buf_leave = string.format(
     [[  autocmd BufLeave <buffer> ++nested ++once :silent lua require('telescope.pickers').on_close_prompt(%s)]],
-    prompt_bufnr)
+    prompt_bufnr
+  )
 
   local on_vim_resize = string.format(
-    [[  autocmd VimResized <buffer> ++nested :silent lua require('telescope.pickers').on_resize_window(%s)]],
+    [[  autocmd VimResized <buffer> ++nested :lua require('telescope.pickers').on_resize_window(%s)]],
     prompt_bufnr
   )
 
@@ -530,9 +531,9 @@ function Picker:recalculate_layout()
       self.preview_border = preview_opts and preview_opts.border
     end
   elseif preview_win ~= nil then
-    vim.api.nvim_win_close(preview_win)
+    vim.api.nvim_win_close(preview_win, false)
     if status.preview_border_win then
-      vim.api.nvim_win_close(status.preview_border_win)
+      vim.api.nvim_win_close(status.preview_border_win, false)
     end
     status.preview_win = nil
     status.preview_border_win = nil
@@ -547,7 +548,7 @@ function Picker:recalculate_layout()
   -- Temporarily disabled: Draw the screen ASAP. This makes things feel speedier.
   -- vim.cmd [[redraw]]
 
-  self.max_results = popup_opts.results.height
+  -- self.max_results = popup_opts.results.height
 end
 
 function Picker:hide_preview()
@@ -1253,13 +1254,15 @@ function pickers.on_resize_window(prompt_bufnr)
 
   picker:recalculate_layout()
   picker:refresh_previewer()
-  vim.api.nvim_win_set_cursor(status.results_win, { 1, 0 })
+  -- TODO: improve cursor adjustment with scrolling based on sorting_strategy
+  vim.api.nvim_win_set_cursor(status.results_win, { 0, 0 })
+  vim.api.nvim_win_set_cursor(status.results_win, { picker._selection_row + 1, 0 })
   vim.api.nvim_buf_set_lines(picker.results_bufnr, 0, -1, false, utils.repeated_table(picker.max_results, ""))
   picker.highlighter:clear_display()
 
+  local prompt = picker:_get_prompt()
+  local caret = picker.selection_caret
   for row = 0, picker.max_results - 1 do
-    local prompt = picker:_get_prompt()
-    local caret = picker.selection_caret
     local entry = picker.manager:get_entry(picker:get_index(row))
     if entry then
       local display, display_highlights = entry_display.resolve(picker, entry)
