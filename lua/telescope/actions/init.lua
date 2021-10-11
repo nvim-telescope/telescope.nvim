@@ -191,10 +191,6 @@ function actions.toggle_preview(prompt_bufnr)
   action_state.get_current_picker(prompt_bufnr):toggle_preview()
 end
 
-function actions.toggle_results_and_prompt(prompt_bufnr)
-  action_state.get_current_picker(prompt_bufnr):toggle_results_and_prompt()
-end
-
 function actions.preview_scrolling_up(prompt_bufnr)
   action_set.scroll_previewer(prompt_bufnr, -1)
 end
