@@ -195,6 +195,7 @@ Many familiar mapping patterns are setup as defaults.
 | `<C-p>/<Up>`   | Previous item                               |
 | `j/k`          | Next/previous (in normal mode)              |
 | `H/M/L`        | Select High/Middle/Low (in normal mode)     |
+| 'gg/G'         | Select the first/last item (in normal mode) |
 | `<CR>`         | Confirm selection                           |
 | `<C-x>`        | Go to file selection as a split             |
 | `<C-v>`        | Go to file selection as a vsplit            |
