@@ -266,6 +266,22 @@ function Picker:_next_find_id()
   return find_id
 end
 
+function Picker:_create_window(bufnr, popup_opts, content_hl, border_hl, nowrap)
+  local what = bufnr or ""
+  local win, opts = popup.create(what, popup_opts)
+
+  a.nvim_win_set_option(win, "winhl", content_hl)
+  a.nvim_win_set_option(win, "winblend", self.window.winblend)
+  if nowrap then
+    a.nvim_win_set_option(win, "wrap", false)
+  end
+  local border_win = opts and opts.border and opts.border.win_id
+  if border_win then
+    vim.api.nvim_win_set_option(border_win, "winhl", border_hl)
+  end
+  return win, opts, border_win
+end
+
 function Picker:find()
   self:close_existing_pickers()
   self:reset_selection()
@@ -293,43 +309,40 @@ function Picker:find()
     popup_opts.preview.minheight = popup_opts.preview.height
   end
 
-  local results_win, results_opts = popup.create("", popup_opts.results)
+  -- local results_win, results_opts = popup.create("", popup_opts.results)
+  local results_win, _, results_border_win = self:_create_window(
+    "",
+    popup_opts.results,
+    "Normal:TelescopeNormal",
+    "Normal:TelescopeResultsBorder",
+    true
+  )
   local results_bufnr = a.nvim_win_get_buf(results_win)
 
   self.results_bufnr = results_bufnr
   self.results_win = results_win
 
-  -- TODO: Should probably always show all the line for results win, so should implement a resize for the windows
-  a.nvim_win_set_option(results_win, "wrap", false)
-  a.nvim_win_set_option(results_win, "winhl", "Normal:TelescopeNormal")
-  a.nvim_win_set_option(results_win, "winblend", self.window.winblend)
-  local results_border_win = results_opts.border and results_opts.border.win_id
-  if results_border_win then
-    vim.api.nvim_win_set_option(results_border_win, "winhl", "Normal:TelescopeResultsBorder")
-  end
-
-  local preview_win, preview_opts, preview_bufnr
+  local preview_win, preview_opts, preview_bufnr, preview_border_win
   if popup_opts.preview then
-    preview_win, preview_opts = popup.create("", popup_opts.preview)
+    preview_win, preview_opts, preview_border_win = self:_create_window(
+      "",
+      popup_opts.preview,
+      "Normal:TelescopePreviewNormal",
+      "Normal:TelescopePreviewBorder"
+    )
     preview_bufnr = a.nvim_win_get_buf(preview_win)
-
-    a.nvim_win_set_option(preview_win, "winhl", "Normal:TelescopePreviewNormal")
-    a.nvim_win_set_option(preview_win, "winblend", self.window.winblend)
-    local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
-    if preview_border_win then
-      vim.api.nvim_win_set_option(preview_border_win, "winhl", "Normal:TelescopePreviewBorder")
-    end
   end
+  -- This is needed for updating the title
+  local preview_border = preview_opts and preview_opts.border
+  self.preview_border = preview_border
 
-  -- TODO: We need to center this and make it prettier...
-  local prompt_win, prompt_opts = popup.create("", popup_opts.prompt)
+  local prompt_win, _, prompt_border_win = self:_create_window(
+    "",
+    popup_opts.prompt,
+    "Normal:TelescopeNormal",
+    "Normal:TelescopePromptBorder"
+  )
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
-  a.nvim_win_set_option(prompt_win, "winhl", "Normal:TelescopeNormal")
-  a.nvim_win_set_option(prompt_win, "winblend", self.window.winblend)
-  local prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
-  if prompt_border_win then
-    vim.api.nvim_win_set_option(prompt_border_win, "winhl", "Normal:TelescopePromptBorder")
-  end
   self.prompt_bufnr = prompt_bufnr
 
   -- Prompt prefix
@@ -461,10 +474,6 @@ function Picker:find()
 
   self.prompt_bufnr = prompt_bufnr
 
-  local preview_border = preview_opts and preview_opts.border
-  self.preview_border = preview_border
-  local preview_border_win = (preview_border and preview_border.win_id) and preview_border.win_id
-
   state.set_status(
     prompt_bufnr,
     setmetatable({
@@ -506,23 +515,24 @@ function Picker:recalculate_layout()
   end
 
   local status = state.get_status(self.prompt_bufnr)
+
   local prompt_win = status.prompt_win
   local results_win = status.results_win
   local preview_win = status.preview_win
+
   popup.move(results_win, popup_opts.results)
 
-  local preview_opts
+  local preview_opts, preview_border_win
   if popup_opts.preview then
     if preview_win ~= nil then
       popup.move(preview_win, popup_opts.preview)
     else
-      preview_win, preview_opts = popup.create("", popup_opts.preview)
-      a.nvim_win_set_option(preview_win, "winhl", "Normal:TelescopePreviewNormal")
-      a.nvim_win_set_option(preview_win, "winblend", self.window.winblend)
-      local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
-      if preview_border_win then
-        vim.api.nvim_win_set_option(preview_border_win, "winhl", "Normal:TelescopePreviewBorder")
-      end
+      preview_win, preview_opts, preview_border_win = self:_create_window(
+        "",
+        popup_opts.preview,
+        "Normal:TelescopePreviewNormal",
+        "Normal:TelescopePreviewBorder"
+      )
       status.preview_win = preview_win
       status.preview_border_win = preview_border_win
       state.set_status(prompt_win, status)
