@@ -382,7 +382,6 @@ lsp.workspace_symbols = function(opts)
 end
 
 local function get_workspace_symbols_requester(bufnr, opts)
-  opts = opts or {}
   local cancel = function() end
 
   return function(prompt)
