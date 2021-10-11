@@ -556,6 +556,15 @@ function Picker:hide_preview()
   -- 2. Resize prompt & results windows accordingly
 end
 
+function Picker:toggle_padding()
+  -- if padding ~= 0
+  --    1. Save `height` and `width` of picker
+  --    2. Set both to `{padding = 0}`
+  -- else
+  --    1. Lookup previous `height` and `width` of picker
+  --    2. Set both to previous values
+end
+
 -- TODO: update multi-select with the correct tag name when available
 --- A simple interface to remove an entry from the results window without
 --- closing telescope. This either deletes the current selection or all the
