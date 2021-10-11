@@ -102,7 +102,7 @@ end
 --- Move to the top of the picker
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.move_to_top(prompt_bufnr)
-  local current_picker = actions.get_current_picker(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:set_selection(
     p_scroller.top(current_picker.sorting_strategy, current_picker.max_results, current_picker.manager:num_results())
   )
@@ -111,7 +111,7 @@ end
 --- Move to the middle of the picker
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.move_to_middle(prompt_bufnr)
-  local current_picker = actions.get_current_picker(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:set_selection(
     p_scroller.middle(current_picker.sorting_strategy, current_picker.max_results, current_picker.manager:num_results())
   )
@@ -120,7 +120,7 @@ end
 --- Move to the bottom of the picker
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.move_to_bottom(prompt_bufnr)
-  local current_picker = actions.get_current_picker(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:set_selection(
     p_scroller.bottom(current_picker.sorting_strategy, current_picker.max_results, current_picker.manager:num_results())
   )
@@ -632,7 +632,7 @@ actions.git_reset_hard = function(prompt_bufnr)
 end
 
 actions.git_checkout_current_buffer = function(prompt_bufnr)
-  local cwd = actions.get_current_picker(prompt_bufnr).cwd
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = actions.get_selected_entry()
   if selection == nil then
     print "[telescope] Nothing currently selected"
@@ -830,7 +830,7 @@ end
 
 actions.cycle_history_next = function(prompt_bufnr)
   local history = action_state.get_current_history()
-  local current_picker = actions.get_current_picker(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
   local line = action_state.get_current_line()
 
   local entry = history:get_next(line, current_picker)
@@ -846,7 +846,7 @@ end
 
 actions.cycle_history_prev = function(prompt_bufnr)
   local history = action_state.get_current_history()
-  local current_picker = actions.get_current_picker(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
   local line = action_state.get_current_line()
 
   local entry = history:get_prev(line, current_picker)
@@ -889,14 +889,14 @@ end
 --- This action is not mapped on default.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.cycle_previewers_next = function(prompt_bufnr)
-  actions.get_current_picker(prompt_bufnr):cycle_previewers(1)
+  action_state.get_current_picker(prompt_bufnr):cycle_previewers(1)
 end
 
 --- Cycle to the previous previewer if there is one available.<br>
 --- This action is not mapped on default.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.cycle_previewers_prev = function(prompt_bufnr)
-  actions.get_current_picker(prompt_bufnr):cycle_previewers(-1)
+  action_state.get_current_picker(prompt_bufnr):cycle_previewers(-1)
 end
 
 --- Removes the selected picker in |builtin.pickers|.<br>
