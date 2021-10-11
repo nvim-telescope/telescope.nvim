@@ -338,10 +338,13 @@ end
 
 internal.loclist = function(opts)
   local locations = vim.fn.getloclist(0)
-  local filename = vim.api.nvim_buf_get_name(0)
-
+  local filenames = {}
   for _, value in pairs(locations) do
-    value.filename = filename
+    local bufnr = value.bufnr
+    if filenames[bufnr] == nil then
+      filenames[bufnr] = vim.api.nvim_buf_get_name(bufnr)
+    end
+    value.filename = filenames[bufnr]
   end
 
   if vim.tbl_isempty(locations) then
