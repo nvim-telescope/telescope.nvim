@@ -266,19 +266,15 @@ function Picker:_next_find_id()
   return find_id
 end
 
-function Picker:_create_window(bufnr, popup_opts, content_hl, border_hl, nowrap)
+function Picker:_create_window(bufnr, popup_opts, nowrap)
   local what = bufnr or ""
   local win, opts = popup.create(what, popup_opts)
 
-  a.nvim_win_set_option(win, "winhl", content_hl)
   a.nvim_win_set_option(win, "winblend", self.window.winblend)
   if nowrap then
     a.nvim_win_set_option(win, "wrap", false)
   end
   local border_win = opts and opts.border and opts.border.win_id
-  if border_win then
-    vim.api.nvim_win_set_option(border_win, "winhl", border_hl)
-  end
   return win, opts, border_win
 end
 
@@ -304,17 +300,22 @@ function Picker:find()
 
   -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
   popup_opts.results.minheight = popup_opts.results.height
+  popup_opts.results.highlight = "TelescopeNormal"
+  popup_opts.results.borderhighlight = "TelescopeResultsBorder"
   popup_opts.prompt.minheight = popup_opts.prompt.height
+  popup_opts.prompt.highlight = "TelescopeNormal"
+  popup_opts.prompt.borderhighlight = "TelescopePromptBorder"
   if popup_opts.preview then
     popup_opts.preview.minheight = popup_opts.preview.height
+    popup_opts.preview.highlight = "TelescopeNormal"
+    popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
   end
+
 
   -- local results_win, results_opts = popup.create("", popup_opts.results)
   local results_win, _, results_border_win = self:_create_window(
     "",
     popup_opts.results,
-    "Normal:TelescopeNormal",
-    "Normal:TelescopeResultsBorder",
     true
   )
   local results_bufnr = a.nvim_win_get_buf(results_win)
@@ -326,9 +327,7 @@ function Picker:find()
   if popup_opts.preview then
     preview_win, preview_opts, preview_border_win = self:_create_window(
       "",
-      popup_opts.preview,
-      "Normal:TelescopePreviewNormal",
-      "Normal:TelescopePreviewBorder"
+      popup_opts.preview
     )
     preview_bufnr = a.nvim_win_get_buf(preview_win)
   end
@@ -338,9 +337,7 @@ function Picker:find()
 
   local prompt_win, _, prompt_border_win = self:_create_window(
     "",
-    popup_opts.prompt,
-    "Normal:TelescopeNormal",
-    "Normal:TelescopePromptBorder"
+    popup_opts.prompt
   )
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
   self.prompt_bufnr = prompt_bufnr
@@ -527,11 +524,11 @@ function Picker:recalculate_layout()
     if preview_win ~= nil then
       popup.move(preview_win, popup_opts.preview)
     else
+      popup_opts.preview.highlight = "TelescopeNormal"
+      popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
       preview_win, preview_opts, preview_border_win = self:_create_window(
         "",
-        popup_opts.preview,
-        "Normal:TelescopePreviewNormal",
-        "Normal:TelescopePreviewBorder"
+        popup_opts.preview
       )
       status.preview_win = preview_win
       status.preview_border_win = preview_border_win
