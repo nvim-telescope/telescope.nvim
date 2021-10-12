@@ -381,7 +381,7 @@ lsp.workspace_symbols = function(opts)
   }):find()
 end
 
-local function get_workspace_symbols_requester(bufnr)
+local function get_workspace_symbols_requester(bufnr, opts)
   local cancel = function() end
 
   return function(prompt)
@@ -400,6 +400,9 @@ local function get_workspace_symbols_requester(bufnr)
     assert(not err, err)
 
     local locations = vim.lsp.util.symbols_to_items(results_lsp or {}, bufnr) or {}
+    if not vim.tbl_isempty(locations) then
+      locations = utils.filter_symbols(locations, opts) or {}
+    end
     return locations
   end
 end
@@ -411,7 +414,7 @@ lsp.dynamic_workspace_symbols = function(opts)
     prompt_title = "LSP Dynamic Workspace Symbols",
     finder = finders.new_dynamic {
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
-      fn = get_workspace_symbols_requester(curr_bufnr),
+      fn = get_workspace_symbols_requester(curr_bufnr, opts),
     },
     previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),

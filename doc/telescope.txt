@@ -1401,11 +1401,14 @@ builtin.lsp_dynamic_workspace_symbols({opts})*builtin.lsp_dynamic_workspace_symb
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {ignore_filename}   (boolean)  dont show filenames (default: false)
-        {show_line}         (boolean)  if true, shows the content of the line
-                                       the symbol is found on (default: false)
-        {symbol_highlights} (table)    string -> string. Matches symbol with
-                                       hl_group
+        {ignore_filename}   (boolean)       dont show filenames (default:
+                                            false)
+        {show_line}         (boolean)       if true, shows the content of the
+                                            line the symbol is found on
+                                            (default: false)
+        {symbols}           (string|table)  filter results by symbol kind(s)
+        {symbol_highlights} (table)         string -> string. Matches symbol
+                                            with hl_group
 
 
 builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
