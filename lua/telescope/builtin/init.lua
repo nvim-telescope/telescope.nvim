@@ -146,6 +146,7 @@ builtin.current_buffer_tags = require_on_exported_call("telescope.builtin.files"
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field show_untracked boolean: if true, adds `--others` flag to command and shows untracked files (default: true)
 ---@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to command (default: false)
+---@field find_files_fallback boolean: if true, the find_files picker is run instead when the picker is used outside of a git repository (default: true)
 builtin.git_files = require_on_exported_call("telescope.builtin.git").files
 
 --- Lists commits for current directory with diff preview

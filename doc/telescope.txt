@@ -838,16 +838,20 @@ builtin.git_files({opts})                                *builtin.git_files()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {cwd}                (string)   specify the path of the repo
-        {use_git_root}       (boolean)  if we should use git root as cwd or
-                                        the cwd (important for submodule)
-                                        (default: true)
-        {show_untracked}     (boolean)  if true, adds `--others` flag to
-                                        command and shows untracked files
-                                        (default: true)
-        {recurse_submodules} (boolean)  if true, adds the
-                                        `--recurse-submodules` flag to command
-                                        (default: false)
+        {cwd}                 (string)   specify the path of the repo
+        {use_git_root}        (boolean)  if we should use git root as cwd or
+                                         the cwd (important for submodule)
+                                         (default: true)
+        {show_untracked}      (boolean)  if true, adds `--others` flag to
+                                         command and shows untracked files
+                                         (default: true)
+        {recurse_submodules}  (boolean)  if true, adds the
+                                        ` --recurse-submodules` flag to command
+                                         (default: false)
+        {find_files_fallback} (boolean)  if true, the find_files picker is run
+                                         instead when the picker is used
+                                         outside of a git repository
+                                         (default: true)
 
 
 builtin.git_commits({opts})                            *builtin.git_commits()*
