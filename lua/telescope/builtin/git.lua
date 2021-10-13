@@ -19,10 +19,15 @@ git.files = function(opts)
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
   local find_files_fallback = utils.get_default(opts.find_files_fallback, true)
 
-  if find_files_fallback and opts.not_in_git_repo then
-    command.load_command(opts.start_line, opts.end_line, opts.count, 'find_files')
-    return
+  if opts.not_in_git_repo then
+    if find_files_fallback then
+      command.load_command(opts.start_line, opts.end_line, opts.count, 'find_files')
+      return
+    else
+      error(opts.cwd .. " is not a git directory")
+    end
   end
+
   if show_untracked and recurse_submodules then
     error "Git does not support both --others and --recurse-submodules"
   end
