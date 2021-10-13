@@ -1,5 +1,6 @@
 local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
+local command = require "telescope.command"
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
 local pickers = require "telescope.pickers"
@@ -16,6 +17,12 @@ local git = {}
 git.files = function(opts)
   local show_untracked = utils.get_default(opts.show_untracked, true)
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
+  local find_files_fallback = utils.get_default(opts.find_files_fallback, true)
+
+  if find_files_fallback and opts.not_in_git_repo then
+    command.load_command(opts.start_line, opts.end_line, opts.count, 'find_files')
+    return
+  end
   if show_untracked and recurse_submodules then
     error "Git does not support both --others and --recurse-submodules"
   end
@@ -364,11 +371,16 @@ local set_opts_cwd = function(opts)
   -- Find root of git directory and remove trailing newline characters
   local git_root, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
   local use_git_root = utils.get_default(opts.use_git_root, true)
+  local find_files_fallback = utils.get_default(opts.find_files_fallback, true)
 
   if ret ~= 0 then
     local output = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
     if output[1] ~= "true" then
-      error(opts.cwd .. " is not a git directory")
+      if find_files_fallback then
+        opts.not_in_git_repo = true
+      else
+        error(opts.cwd .. " is not a git directory")
+      end
     end
   else
     if use_git_root then
