@@ -279,7 +279,6 @@ end
 actions._close = function(prompt_bufnr, keepinsert)
   action_state.get_current_history():reset()
   local picker = action_state.get_current_picker(prompt_bufnr)
-  local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
 
   actions.close_pum(prompt_bufnr)
