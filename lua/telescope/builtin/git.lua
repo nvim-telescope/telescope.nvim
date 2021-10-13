@@ -170,12 +170,12 @@ git.bcommits = function(opts)
         return bufnr
       end
 
-      local vimdiff = function(selection, command)
+      local vimdiff = function(selection, position)
         local ft = vim.bo.filetype
         vim.cmd "diffthis"
 
         local bufnr = get_buffer_of_orig(selection)
-        vim.cmd(string.format("%s %s", command, bufnr))
+        vim.cmd(string.format("%s %s", position, bufnr))
         vim.bo.filetype = ft
         vim.cmd "diffthis"
 
