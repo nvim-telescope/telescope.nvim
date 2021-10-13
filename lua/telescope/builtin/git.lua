@@ -49,7 +49,15 @@ git.files = function(opts)
   }):find()
 end
 
+local function fail_if_not_in_git_repo(opts)
+  local find_files_fallback = utils.get_default(opts.find_files_fallback, true)
+  if find_files_fallback and opts.not_in_git_repo then
+    error(opts.cwd .. " is not a git directory")
+  end
+end
+
 git.commits = function(opts)
+  fail_if_not_in_git_repo(opts)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_git_commits(opts)
 
   pickers.new(opts, {
@@ -87,6 +95,7 @@ git.commits = function(opts)
 end
 
 git.stash = function(opts)
+  fail_if_not_in_git_repo(opts)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_git_stash()
 
   pickers.new(opts, {
@@ -115,6 +124,7 @@ local get_current_buf_line = function(winnr)
 end
 
 git.bcommits = function(opts)
+  fail_if_not_in_git_repo(opts)
   opts.current_line = not opts.current_file and get_current_buf_line(0) or nil
   opts.current_file = opts.current_file or vim.fn.expand "%:p"
 
@@ -197,6 +207,7 @@ git.bcommits = function(opts)
 end
 
 git.branches = function(opts)
+  fail_if_not_in_git_repo(opts)
   local format = "%(HEAD)"
     .. "%(refname)"
     .. "%(authorname)"
@@ -316,6 +327,7 @@ git.branches = function(opts)
 end
 
 git.status = function(opts)
+  fail_if_not_in_git_repo(opts)
   local gen_new_finder = function()
     local expand_dir = utils.if_nil(opts.expand_dir, true, opts.expand_dir)
     local git_cmd = { "git", "status", "-s", "--", "." }
@@ -376,11 +388,7 @@ local set_opts_cwd = function(opts)
   if ret ~= 0 then
     local output = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
     if output[1] ~= "true" then
-      if find_files_fallback then
-        opts.not_in_git_repo = true
-      else
-        error(opts.cwd .. " is not a git directory")
-      end
+      opts.not_in_git_repo = true
     end
   else
     if use_git_root then
