@@ -15,6 +15,20 @@ local conf = require("telescope.config").values
 
 local filter = vim.tbl_filter
 
+-- Makes sure aliased options are set correctly
+local function apply_cwd_only_aliases(opts)
+  local has_cwd_only = opts.cwd_only ~= nil
+  local has_only_cwd = opts.only_cwd ~= nil
+
+  if has_only_cwd and not has_cwd_only then
+    -- Internally, use cwd_only
+    opts.cwd_only = opts.only_cwd
+    opts.only_cwd = nil
+  end
+
+  return opts
+end
+
 local internal = {}
 
 -- TODO: What the heck should we do for accepting this.
@@ -178,8 +192,12 @@ internal.planets = function(opts)
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
-        actions.close(prompt_bufnr)
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
 
+        actions.close(prompt_bufnr)
         print("Enjoy astronomy! You viewed:", selection.display)
       end)
 
@@ -278,6 +296,11 @@ internal.commands = function(opts)
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
+
         actions.close(prompt_bufnr)
         local val = selection.value
         local cmd = string.format([[:%s ]], val.name)
@@ -315,10 +338,13 @@ end
 
 internal.loclist = function(opts)
   local locations = vim.fn.getloclist(0)
-  local filename = vim.api.nvim_buf_get_name(0)
-
+  local filenames = {}
   for _, value in pairs(locations) do
-    value.filename = filename
+    local bufnr = value.bufnr
+    if filenames[bufnr] == nil then
+      filenames[bufnr] = vim.api.nvim_buf_get_name(bufnr)
+    end
+    value.filename = filenames[bufnr]
   end
 
   if vim.tbl_isempty(locations) then
@@ -337,6 +363,7 @@ internal.loclist = function(opts)
 end
 
 internal.oldfiles = function(opts)
+  opts = apply_cwd_only_aliases(opts)
   opts.include_current_session = utils.get_default(opts.include_current_session, true)
 
   local current_buffer = vim.api.nvim_get_current_buf()
@@ -456,8 +483,12 @@ internal.vim_options = function(opts)
     attach_mappings = function()
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
-        local esc = ""
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
 
+        local esc = ""
         if vim.fn.mode() == "i" then
           -- TODO: don't make this local
           esc = vim.api.nvim_replace_termcodes("<esc>", true, false, true)
@@ -504,6 +535,7 @@ end
 internal.help_tags = function(opts)
   opts.lang = utils.get_default(opts.lang, vim.o.helplang)
   opts.fallback = utils.get_default(opts.fallback, true)
+  opts.file_ignore_patterns = {}
 
   local langs = vim.split(opts.lang, ",", true)
   if opts.fallback and not vim.tbl_contains(langs, "en") then
@@ -582,6 +614,11 @@ internal.help_tags = function(opts)
     attach_mappings = function(prompt_bufnr)
       action_set.select:replace(function(_, cmd)
         local selection = action_state.get_selected_entry()
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
+
         actions.close(prompt_bufnr)
         if cmd == "default" or cmd == "horizontal" then
           vim.cmd("help " .. selection.value)
@@ -614,8 +651,12 @@ internal.man_pages = function(opts)
     attach_mappings = function(prompt_bufnr)
       action_set.select:replace(function(_, cmd)
         local selection = action_state.get_selected_entry()
-        local args = selection.section .. " " .. selection.value
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
 
+        local args = selection.section .. " " .. selection.value
         actions.close(prompt_bufnr)
         if cmd == "default" or cmd == "horizontal" then
           vim.cmd("Man " .. args)
@@ -661,6 +702,10 @@ internal.reloader = function(opts)
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
 
         actions.close(prompt_bufnr)
         require("plenary.reload").reload_module(selection.value)
@@ -673,6 +718,7 @@ internal.reloader = function(opts)
 end
 
 internal.buffers = function(opts)
+  opts = apply_cwd_only_aliases(opts)
   local bufnrs = filter(function(b)
     if 1 ~= vim.fn.buflisted(b) then
       return false
@@ -684,7 +730,7 @@ internal.buffers = function(opts)
     if opts.ignore_current_buffer and b == vim.api.nvim_get_current_buf() then
       return false
     end
-    if opts.only_cwd and not string.find(vim.api.nvim_buf_get_name(b), vim.loop.cwd(), 1, true) then
+    if opts.cwd_only and not string.find(vim.api.nvim_buf_get_name(b), vim.loop.cwd(), 1, true) then
       return false
     end
     return true
@@ -738,8 +784,8 @@ internal.buffers = function(opts)
     attach_mappings = function(_, _)
       action_set.select:enhance {
         post = function()
-          local entry = action_state.get_selected_entry()
-          vim.api.nvim_win_set_cursor(0, { entry.lnum, entry.col or 0 })
+          local selection = action_state.get_selected_entry()
+          vim.api.nvim_win_set_cursor(0, { selection.lnum, selection.col or 0 })
         end,
       }
       return true
@@ -818,8 +864,12 @@ internal.colorscheme = function(opts)
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
-        actions.close(prompt_bufnr)
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
 
+        actions.close(prompt_bufnr)
         need_restore = false
         vim.cmd("colorscheme " .. selection.value)
       end)
@@ -923,6 +973,11 @@ internal.keymaps = function(opts)
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
+
         vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(selection.value.lhs, true, false, true), "t", true)
         return actions.close(prompt_bufnr)
       end)
@@ -943,6 +998,11 @@ internal.filetypes = function(opts)
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
+
         actions.close(prompt_bufnr)
         vim.cmd("setfiletype " .. selection[1])
       end)
@@ -964,6 +1024,11 @@ internal.highlights = function(opts)
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
+
         actions.close(prompt_bufnr)
         vim.cmd("hi " .. selection.value)
       end)
@@ -1055,6 +1120,11 @@ internal.autocommands = function(opts)
     attach_mappings = function(prompt_bufnr)
       action_set.select:replace(function(_, type)
         local selection = action_state.get_selected_entry()
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
+
         actions.close(prompt_bufnr)
         vim.cmd(action_state.select_key_to_edit_key(type) .. " " .. selection.value)
       end)
@@ -1081,6 +1151,11 @@ internal.spell_suggest = function(opts)
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
+
         actions.close(prompt_bufnr)
         vim.cmd("normal! ciw" .. selection[1])
         vim.cmd "stopinsert"

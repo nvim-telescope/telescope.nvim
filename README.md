@@ -139,7 +139,14 @@ require('telescope').setup{
   defaults = {
     -- Default configuration for telescope goes here:
     -- config_key = value,
-    -- ..
+    mappings = {
+      i = {
+        -- map actions.which_key to <C-h> (default: <C-/>)
+        -- actions.which_key shows the mappings for your picker,
+        -- e.g. git_{create, delete, ...}_branch for the git_branches picker
+        ["<C-h>"] = "which_key"
+      }
+    }
   },
   pickers = {
     -- Default configuration for builtin pickers goes here:
@@ -188,13 +195,15 @@ Many familiar mapping patterns are setup as defaults.
 | `<C-p>/<Up>`   | Previous item                               |
 | `j/k`          | Next/previous (in normal mode)              |
 | `H/M/L`        | Select High/Middle/Low (in normal mode)     |
+| 'gg/G'         | Select the first/last item (in normal mode) |
 | `<CR>`         | Confirm selection                           |
 | `<C-x>`        | Go to file selection as a split             |
 | `<C-v>`        | Go to file selection as a vsplit            |
 | `<C-t>`        | Go to a file in a new tab                   |
 | `<C-u>`        | Scroll up in preview window                 |
 | `<C-d>`        | Scroll down in preview window               |
-| `<C-/>/?`      | Show picker mappings (in insert & normal mode, respectively) |
+| `<C-/>`      | Show mappings for picker actions (insert mode)|
+| `?`          | Show mappings for picker actions (normal mode)|
 | `<C-c>`        | Close telescope                             |
 | `<Esc>`        | Close telescope (in normal mode)            |
 | `<Tab>`        | Toggle selection and move to next selection |
@@ -204,7 +213,9 @@ Many familiar mapping patterns are setup as defaults.
 
 
 To see the full list of mappings, check out `lua/telescope/mappings.lua` and the
-`default_mappings` table.
+`default_mappings` table. 
+
+**Tip**: you can use `<C-/>` and `?` in insert and normal mode, respectively, to show the actions mapped to your picker.
 
 Much like [builtin pickers](#pickers), there are a number of
 [actions](https://github.com/nvim-telescope/telescope.nvim/blob/master/lua/telescope/actions/init.lua)

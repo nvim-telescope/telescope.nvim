@@ -1,4 +1,7 @@
 local context_manager = require "plenary.context_manager"
+local ts_utils = require "telescope.utils"
+local strings = require "plenary.strings"
+local conf = require("telescope.config").values
 
 local has_ts, _ = pcall(require, "nvim-treesitter")
 local _, ts_configs = pcall(require, "nvim-treesitter.configs")
@@ -66,7 +69,10 @@ end
 utils.highlighter = function(bufnr, ft, opts)
   opts = opts or {}
   opts.preview = opts.preview or {}
-  opts.preview.treesitter = vim.F.if_nil(opts.preview.treesitter, true)
+  opts.preview.treesitter = vim.F.if_nil(
+    opts.preview.treesitter,
+    type(conf.preview) == "table" and conf.preview.treesitter
+  )
   local ts_highlighting = opts.preview.treesitter == true
     or type(opts.preview.treesitter) == "table" and vim.tbl_contains(opts.preview.treesitter, ft)
 
@@ -125,6 +131,43 @@ utils.ts_highlighter = function(bufnr, ft)
     return treesitter_attach(bufnr, ft)
   end
   return false
+end
+
+utils.set_preview_message = function(bufnr, winid, message, fillchar)
+  fillchar = vim.F.if_nil(fillchar, "╱")
+  local height = vim.api.nvim_win_get_height(winid)
+  local width = vim.api.nvim_win_get_width(winid)
+  vim.api.nvim_buf_set_lines(
+    bufnr,
+    0,
+    -1,
+    false,
+    ts_utils.repeated_table(height, table.concat(ts_utils.repeated_table(width, fillchar), ""))
+  )
+  local anon_ns = vim.api.nvim_create_namespace ""
+  local padding = table.concat(ts_utils.repeated_table(#message + 4, " "), "")
+  local lines = {
+    padding,
+    "  " .. message .. "  ",
+    padding,
+  }
+  vim.api.nvim_buf_set_extmark(
+    bufnr,
+    anon_ns,
+    0,
+    0,
+    { end_line = height, hl_group = "TelescopePreviewMessageFillchar" }
+  )
+  local col = math.floor((width - strings.strdisplaywidth(lines[2])) / 2)
+  for i, line in ipairs(lines) do
+    vim.api.nvim_buf_set_extmark(
+      bufnr,
+      anon_ns,
+      math.floor(height / 2) - 1 + i,
+      0,
+      { virt_text = { { line, "TelescopePreviewMessage" } }, virt_text_pos = "overlay", virt_text_win_col = col }
+    )
+  end
 end
 
 return utils

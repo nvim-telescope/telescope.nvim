@@ -2,27 +2,6 @@ local log = require "telescope.log"
 
 local LinkedList = require "telescope.algos.linked_list"
 
---[[
-
-OK, new idea.
-We can do linked list here.
-To convert at the end to quickfix, just run the list.
-...
-
-start node
-end node
-
-if past loop of must have scores,
-  then we can just add to end node and shift end node to current node.
-  etc.
-
-
-  always inserts a row, because we clear everything before?
-
-  can also optimize by keeping worst acceptable score around.
-
---]]
-
 local EntryManager = {}
 EntryManager.__index = EntryManager
 
