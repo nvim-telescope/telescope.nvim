@@ -454,7 +454,20 @@ previewers.vimgrep = defaulter(function(opts)
 
   local jump_to_line = function(self, bufnr, lnum)
     if lnum and lnum > 0 then
-      pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewLine", lnum - 1, 0, -1)
+      -- move from add_highlight to set_extmark
+      --  pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewLine", lnum - 1, 0, -1)
+      --              nvim_buf_add_highlight({buffer}, {ns_id}, {hl_group}, {line}, {col_start}, {col_end})
+      --              nvim_buf_set_extmark({buffer}, {ns_id}, {line}, {col}, {*opts})
+
+      pcall(
+        vim.api.nvim_buf_set_extmark(
+          bufnr,
+          ns_previewer,
+          lnum - 1,
+          0,
+          { end_line = lnum, hl_eol = true, hl_group = "TelescopePreviewLine" }
+        )
+      )
       pcall(vim.api.nvim_win_set_cursor, self.state.winid, { lnum, 0 })
       vim.api.nvim_buf_call(bufnr, function()
         vim.cmd "norm! zz"
@@ -1058,6 +1071,10 @@ previewers.pickers = defaulter(function(_)
               0,
               -1
             )
+            --                    nvim_buf_add_highlight({buffer}, {ns_id}, {hl_group}, {line}, {col_start}, {col_end})
+
+            --                    nvim_buf_set_extmark({buffer}, {ns_id}, {line}, {col}, {*opts})
+            --                    a.nvim_buf_set_extmark( results_bufnr, ns_telescope_selection, row, #caret, { end_line = row + 1, hl_eol = true, hl_group = "TelescopeSelection" })
           end
         end
       end)
