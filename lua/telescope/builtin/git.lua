@@ -195,7 +195,10 @@ git.branches = function(opts)
     .. "%(authorname)"
     .. "%(upstream:lstrip=2)"
     .. "%(committerdate:format-local:%Y/%m/%d %H:%M:%S)"
-  local output = utils.get_os_command_output({ "git", "for-each-ref", "--perl", "--format", format }, opts.cwd)
+  local output = utils.get_os_command_output(
+    { "git", "for-each-ref", "--perl", "--format", format, opts.pattern },
+    opts.cwd
+  )
 
   local results = {}
   local widths = {
@@ -297,6 +300,9 @@ git.branches = function(opts)
 
       map("i", "<c-d>", actions.git_delete_branch)
       map("n", "<c-d>", actions.git_delete_branch)
+
+      map("i", "<c-y>", actions.git_merge_branch)
+      map("n", "<c-y>", actions.git_merge_branch)
       return true
     end,
   }):find()

@@ -217,7 +217,7 @@ end
 -- It handles many different ways. Some examples are as follows:
 --
 -- -- Disable
--- borderschars = false
+-- borderchars = false
 --
 -- -- All three windows share the same
 -- borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└'},

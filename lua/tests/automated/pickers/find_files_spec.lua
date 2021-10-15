@@ -38,9 +38,10 @@ describe("builtin.find_files", function()
           sorter = require('telescope.sorters').get_fzy_sorter(),
           layout_strategy = 'center',
           layout_config = {
-            height = max_results,
+            height = max_results + 1,
             width = 0.9,
           },
+          border = false,
         }, vim.fn.json_decode([==[%s]==])))
       ]],
         vim.fn.json_encode(configuration)
@@ -57,6 +58,8 @@ describe("builtin.find_files", function()
 
       tester.run_string(string.format(
         [[
+        local max_results = 5
+
         tester.builtin_picker('find_files', 'README.md', {
           post_typed = {
             { %s, function() return #GetResults() end },
@@ -66,9 +69,10 @@ describe("builtin.find_files", function()
           sorter = require('telescope.sorters').get_fzy_sorter(),
           layout_strategy = 'center',
           layout_config = {
-            height = max_results,
+            height = max_results + 1,
             width = 0.9,
           },
+          border = false,
         }, vim.fn.json_decode([==[%s]==])))
       ]],
         expected,

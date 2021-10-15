@@ -61,7 +61,7 @@ do
   function make_entry.gen_from_file(opts)
     opts = opts or {}
 
-    local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
+    local cwd = vim.fn.expand(opts.cwd or vim.loop.cwd())
 
     local disable_devicons = opts.disable_devicons
 
@@ -181,7 +181,7 @@ do
     local display_string = "%s:%s%s"
 
     mt_vimgrep_entry = {
-      cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd()),
+      cwd = vim.fn.expand(opts.cwd or vim.loop.cwd()),
 
       display = function(entry)
         local display_filename = utils.transform_path(opts, entry.filename)
@@ -330,6 +330,7 @@ end
 
 function make_entry.gen_from_lsp_symbols(opts)
   opts = opts or {}
+
   local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
 
   local display_items = {
@@ -428,7 +429,7 @@ function make_entry.gen_from_buffer(opts)
     },
   }
 
-  local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
+  local cwd = vim.fn.expand(opts.cwd or vim.loop.cwd())
 
   local make_display = function(entry)
     local display_bufname = utils.transform_path(opts, entry.filename)
@@ -452,6 +453,7 @@ function make_entry.gen_from_buffer(opts)
     local readonly = vim.api.nvim_buf_get_option(entry.bufnr, "readonly") and "=" or " "
     local changed = entry.info.changed == 1 and "+" or " "
     local indicator = entry.flag .. hidden .. readonly .. changed
+    local line_count = vim.api.nvim_buf_line_count(entry.bufnr)
 
     return {
       valid = true,
@@ -462,8 +464,8 @@ function make_entry.gen_from_buffer(opts)
 
       bufnr = entry.bufnr,
       filename = bufname,
-
-      lnum = entry.info.lnum ~= 0 and entry.info.lnum or 1,
+      -- account for potentially stale lnum as getbufinfo might not be updated or from resuming buffers picker
+      lnum = entry.info.lnum ~= 0 and math.max(math.min(entry.info.lnum, line_count), 1) or 1,
       indicator = indicator,
     }
   end
@@ -841,7 +843,7 @@ end
 function make_entry.gen_from_ctags(opts)
   opts = opts or {}
 
-  local cwd = vim.fn.expand(opts.cwd or vim.fn.getcwd())
+  local cwd = vim.fn.expand(opts.cwd or vim.loop.cwd())
   local current_file = Path:new(vim.fn.expand "%"):normalize(cwd)
 
   local display_items = {
@@ -883,6 +885,17 @@ function make_entry.gen_from_ctags(opts)
     end
   end
 
+  local mt = {}
+  mt.__index = function(t, k)
+    if k == "path" then
+      local retpath = Path:new({ t.filename }):absolute()
+      if not vim.loop.fs_access(retpath, "R", nil) then
+        retpath = t.filename
+      end
+      return retpath
+    end
+  end
+
   return function(line)
     if line == "" or line:sub(1, 1) == "!" then
       return nil
@@ -890,7 +903,7 @@ function make_entry.gen_from_ctags(opts)
 
     local tag, file, scode, lnum
     -- ctags gives us: 'tags\tfile\tsource'
-    tag, file, scode = string.match(line, '([^\t]+)\t([^\t]+)\t/^\t?(.*)/;"\t+.*')
+    tag, file, scode = string.match(line, '([^\t]+)\t([^\t]+)\t/^?\t?(.*)/;"\t+.*')
     if not tag then
       -- hasktags gives us: 'tags\tfile\tlnum'
       tag, file, lnum = string.match(line, "([^\t]+)\t([^\t]+)\t(%d+).*")
@@ -900,31 +913,27 @@ function make_entry.gen_from_ctags(opts)
       return nil
     end
 
-    local ordinal
-
+    local tag_entry = {}
     if opts.only_sort_tags then
-      ordinal = tag
+      tag_entry.ordinal = tag
     else
-      ordinal = file .. ": " .. tag
+      tag_entry.ordinal = file .. ": " .. tag
     end
 
-    return {
-      valid = true,
-      ordinal = ordinal,
-      display = make_display,
-      scode = scode,
-      tag = tag,
+    tag_entry.display = make_display
+    tag_entry.scode = scode
+    tag_entry.tag = tag
+    tag_entry.filename = file
+    tag_entry.col = 1
+    tag_entry.lnum = lnum and tonumber(lnum) or 1
 
-      filename = file,
-
-      col = 1,
-      lnum = lnum and tonumber(lnum) or 1,
-    }
+    return setmetatable(tag_entry, mt)
   end
 end
 
 function make_entry.gen_from_lsp_diagnostics(opts)
   opts = opts or {}
+
   local lsp_type_diagnostic = vim.lsp.protocol.DiagnosticSeverity
 
   local signs

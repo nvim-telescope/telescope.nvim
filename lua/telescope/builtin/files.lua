@@ -93,7 +93,7 @@ files.live_grep = function(opts)
       search_list = filelist
     end
 
-    return flatten { vimgrep_arguments, additional_args, prompt, search_list }
+    return flatten { vimgrep_arguments, additional_args, "--", prompt, search_list }
   end, opts.entry_maker or make_entry.gen_from_vimgrep(
     opts
   ), opts.max_results, opts.cwd)
@@ -131,6 +131,7 @@ files.grep_string = function(opts)
     vimgrep_arguments,
     additional_args,
     word_match,
+    "--",
     search,
   }
 
@@ -143,7 +144,7 @@ files.grep_string = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title = "Find Word",
+    prompt_title = "Find Word (" .. word .. ")",
     finder = finders.new_oneshot_job(args, opts),
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),

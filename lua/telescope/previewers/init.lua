@@ -77,11 +77,11 @@ end
 --- It requires you to specify one table entry `get_command(entry, status)`.
 --- This `get_command` function has to return the terminal command that will be
 --- executed for each entry. Example:
---- <pre>
+--- <code>
 ---   get_command = function(entry, status)
 ---     return { 'bat', entry.path }
 ---   end
---- </pre>
+--- </code>
 ---
 --- Additionally you can define:
 --- - `title` a static title for example "File Preview"
@@ -219,12 +219,12 @@ previewers.qflist = term_previewer.qflist
 ---     - `require('telescope.previewers.utils').ts_highlighter(bufnr, ft)`
 ---   - If you want to use `vim.fn.search` or similar you need to run it in
 ---     that specific buffer context. Do
---- <pre>
+--- <code>
 ---       vim.api.nvim_buf_call(bufnr, function()
 ---         -- for example `search` and `matchadd`
 ---       end)
 ---     to achieve that.
---- </pre>
+--- </code>
 ---   - If you want to read a file into the buffer it's best to use
 ---     `buffer_previewer_maker`. But access this function with
 ---     `require('telescope.config').values.buffer_previewer_maker`

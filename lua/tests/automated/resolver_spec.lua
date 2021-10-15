@@ -15,7 +15,7 @@ describe("telescope.config.resolve", function()
       eq(height_config, opt.results)
     end)
 
-    it("should resolve for percetnages with default", function()
+    it("should resolve for percentages with default", function()
       local height_config = 0.8
       local opt = resolve.win_option(nil, height_config)
 

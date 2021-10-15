@@ -102,7 +102,7 @@ end
 --- Move to the top of the picker
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.move_to_top(prompt_bufnr)
-  local current_picker = actions.get_current_picker(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:set_selection(
     p_scroller.top(current_picker.sorting_strategy, current_picker.max_results, current_picker.manager:num_results())
   )
@@ -111,7 +111,7 @@ end
 --- Move to the middle of the picker
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.move_to_middle(prompt_bufnr)
-  local current_picker = actions.get_current_picker(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:set_selection(
     p_scroller.middle(current_picker.sorting_strategy, current_picker.max_results, current_picker.manager:num_results())
   )
@@ -120,7 +120,7 @@ end
 --- Move to the bottom of the picker
 ---@param prompt_bufnr number: The prompt bufnr
 function actions.move_to_bottom(prompt_bufnr)
-  local current_picker = actions.get_current_picker(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:set_selection(
     p_scroller.bottom(current_picker.sorting_strategy, current_picker.max_results, current_picker.manager:num_results())
   )
@@ -300,48 +300,62 @@ function actions.close(prompt_bufnr)
 end
 
 actions.edit_command_line = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry()
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    print "[telescope] Nothing currently selected"
+    return
+  end
   actions.close(prompt_bufnr)
-  a.nvim_feedkeys(a.nvim_replace_termcodes(":" .. entry.value, true, false, true), "t", true)
+  a.nvim_feedkeys(a.nvim_replace_termcodes(":" .. selection.value, true, false, true), "t", true)
 end
 
 actions.set_command_line = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry()
-
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    print "[telescope] Nothing currently selected"
+    return
+  end
   actions.close(prompt_bufnr)
-  vim.fn.histadd("cmd", entry.value)
-  vim.cmd(entry.value)
+  vim.fn.histadd("cmd", selection.value)
+  vim.cmd(selection.value)
 end
 
 actions.edit_search_line = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry()
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    print "[telescope] Nothing currently selected"
+    return
+  end
   actions.close(prompt_bufnr)
-  a.nvim_feedkeys(a.nvim_replace_termcodes("/" .. entry.value, true, false, true), "t", true)
+  a.nvim_feedkeys(a.nvim_replace_termcodes("/" .. selection.value, true, false, true), "t", true)
 end
 
 actions.set_search_line = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry()
-
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    print "[telescope] Nothing currently selected"
+    return
+  end
   actions.close(prompt_bufnr)
-  a.nvim_feedkeys(a.nvim_replace_termcodes("/" .. entry.value .. "<CR>", true, false, true), "t", true)
+  a.nvim_feedkeys(a.nvim_replace_termcodes("/" .. selection.value .. "<CR>", true, false, true), "t", true)
 end
 
 actions.edit_register = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry()
+  local selection = action_state.get_selected_entry()
   local picker = action_state.get_current_picker(prompt_bufnr)
 
   vim.fn.inputsave()
-  local updated_value = vim.fn.input("Edit [" .. entry.value .. "] ❯ ", entry.content)
+  local updated_value = vim.fn.input("Edit [" .. selection.value .. "] ❯ ", selection.content)
   vim.fn.inputrestore()
-  if updated_value ~= entry.content then
-    vim.fn.setreg(entry.value, updated_value)
-    entry.content = updated_value
+  if updated_value ~= selection.content then
+    vim.fn.setreg(selection.value, updated_value)
+    selection.content = updated_value
   end
 
   -- update entry in results table
   -- TODO: find way to redraw finder content
   for _, v in pairs(picker.finder.results) do
-    if v == entry then
+    if v == selection then
       v.content = updated_value
     end
   end
@@ -349,30 +363,38 @@ actions.edit_register = function(prompt_bufnr)
 end
 
 actions.paste_register = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry()
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    print "[telescope] Nothing currently selected"
+    return
+  end
 
   actions.close(prompt_bufnr)
 
   -- ensure that the buffer can be written to
   if vim.api.nvim_buf_get_option(vim.api.nvim_get_current_buf(), "modifiable") then
     print "Paste!"
-    vim.api.nvim_paste(entry.content, true, -1)
+    vim.api.nvim_paste(selection.content, true, -1)
   end
 end
 
 actions.run_builtin = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry()
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    print "[telescope] Nothing currently selected"
+    return
+  end
 
   actions._close(prompt_bufnr, true)
-  if string.match(entry.text, " : ") then
+  if string.match(selection.text, " : ") then
     -- Call appropriate function from extensions
-    local split_string = vim.split(entry.text, " : ")
+    local split_string = vim.split(selection.text, " : ")
     local ext = split_string[1]
     local func = split_string[2]
     require("telescope").extensions[ext][func]()
   else
     -- Call appropriate telescope builtin
-    require("telescope.builtin")[entry.text]()
+    require("telescope.builtin")[selection.text]()
   end
 end
 
@@ -394,13 +416,17 @@ end
 
 -- TODO: Think about how to do this.
 actions.insert_value = function(prompt_bufnr)
-  local entry = action_state.get_selected_entry()
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    print "[telescope] Nothing currently selected"
+    return
+  end
 
   vim.schedule(function()
     actions.close(prompt_bufnr)
   end)
 
-  return entry.value
+  return selection.value
 end
 
 --- Create and checkout a new git branch if it doesn't already exist
@@ -435,6 +461,10 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.git_apply_stash = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()
+  if selection == nil then
+    print "[telescope] Nothing currently selected"
+    return
+  end
   actions.close(prompt_bufnr)
   local _, ret, stderr = utils.get_os_command_output { "git", "stash", "apply", "--index", selection.value }
   if ret == 0 then
@@ -449,6 +479,10 @@ end
 actions.git_checkout = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
+  if selection == nil then
+    print "[telescope] Nothing currently selected"
+    return
+  end
   actions.close(prompt_bufnr)
   local _, ret, stderr = utils.get_os_command_output({ "git", "checkout", selection.value }, cwd)
   if ret == 0 then
@@ -465,6 +499,10 @@ end
 actions.git_switch_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
+  if selection == nil then
+    print "[telescope] Nothing currently selected"
+    return
+  end
   actions.close(prompt_bufnr)
   local pattern = "^refs/remotes/%w+/"
   local branch = selection.value
@@ -479,69 +517,87 @@ actions.git_switch_branch = function(prompt_bufnr)
   end
 end
 
---- Tell git to track the currently selected remote branch in Telescope
----@param prompt_bufnr number: The prompt bufnr
-actions.git_track_branch = function(prompt_bufnr)
-  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
-  local selection = action_state.get_selected_entry()
-  actions.close(prompt_bufnr)
-  local _, ret, stderr = utils.get_os_command_output({ "git", "checkout", "--track", selection.value }, cwd)
-  if ret == 0 then
-    print("Tracking branch: " .. selection.value)
-  else
-    print(
-      string.format('Error when tracking branch: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  "))
-    )
+local function make_git_branch_action(opts)
+  return function(prompt_bufnr)
+    local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+    local selection = action_state.get_selected_entry()
+    if selection == nil then
+      print "[telescope] Nothing currently selected"
+      return
+    end
+
+    local should_confirm = opts.should_confirm
+    if should_confirm then
+      local confirmation = vim.fn.input(string.format(opts.confirmation_question, selection.value))
+      if confirmation ~= "" and string.lower(confirmation) ~= "y" then
+        return
+      end
+    end
+
+    actions.close(prompt_bufnr)
+    local _, ret, stderr = utils.get_os_command_output(opts.command(selection.value), cwd)
+    if ret == 0 then
+      print(string.format(opts.success_message, selection.value))
+    else
+      print(string.format(opts.error_message, selection.value, table.concat(stderr, "  ")))
+    end
   end
 end
+
+--- Tell git to track the currently selected remote branch in Telescope
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_track_branch = make_git_branch_action {
+  should_confirm = false,
+  success_message = "Tracking branch: %s",
+  error_message = 'Error when tracking branch: %s. Git returned: "%s"',
+  command = function(branch_name)
+    return { "git", "checkout", "--track", branch_name }
+  end,
+}
 
 --- Delete the currently selected branch
 ---@param prompt_bufnr number: The prompt bufnr
-actions.git_delete_branch = function(prompt_bufnr)
-  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
-  local selection = action_state.get_selected_entry()
+actions.git_delete_branch = make_git_branch_action {
+  should_confirm = true,
+  confirmation_question = "Do you really wanna delete branch %s? [Y/n] ",
+  success_message = "Deleted branch: %s",
+  error_message = 'Error when deleting branch: %s. Git returned: "%s"',
+  command = function(branch_name)
+    return { "git", "branch", "-D", branch_name }
+  end,
+}
 
-  local confirmation = vim.fn.input("Do you really wanna delete branch " .. selection.value .. "? [Y/n] ")
-  if confirmation ~= "" and string.lower(confirmation) ~= "y" then
-    return
-  end
-
-  actions.close(prompt_bufnr)
-  local _, ret, stderr = utils.get_os_command_output({ "git", "branch", "-D", selection.value }, cwd)
-  if ret == 0 then
-    print("Deleted branch: " .. selection.value)
-  else
-    print(
-      string.format('Error when deleting branch: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  "))
-    )
-  end
-end
+--- Merge the currently selected branch
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_merge_branch = make_git_branch_action {
+  should_confirm = true,
+  confirmation_question = "Do you really wanna merge branch %s? [Y/n] ",
+  success_message = "Merged branch: %s",
+  error_message = 'Error when merging branch: %s. Git returned: "%s"',
+  command = function(branch_name)
+    return { "git", "merge", branch_name }
+  end,
+}
 
 --- Rebase to selected git branch
 ---@param prompt_bufnr number: The prompt bufnr
-actions.git_rebase_branch = function(prompt_bufnr)
-  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
-  local selection = action_state.get_selected_entry()
-
-  local confirmation = vim.fn.input("Do you really wanna rebase branch " .. selection.value .. "? [Y/n] ")
-  if confirmation ~= "" and string.lower(confirmation) ~= "y" then
-    return
-  end
-
-  actions.close(prompt_bufnr)
-  local _, ret, stderr = utils.get_os_command_output({ "git", "rebase", selection.value }, cwd)
-  if ret == 0 then
-    print("Rebased branch: " .. selection.value)
-  else
-    print(
-      string.format('Error when rebasing branch: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  "))
-    )
-  end
-end
+actions.git_rebase_branch = make_git_branch_action {
+  should_confirm = true,
+  confirmation_question = "Do you really wanna rebase branch %s? [Y/n] ",
+  success_message = "Rebased branch: %s",
+  error_message = 'Error when rebasing branch: %s. Git returned: "%s"',
+  command = function(branch_name)
+    return { "git", "rebase", branch_name }
+  end,
+}
 
 local git_reset_branch = function(prompt_bufnr, mode)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
+  if selection == nil then
+    print "[telescope] Nothing currently selected"
+    return
+  end
 
   local confirmation = vim.fn.input("Do you really wanna " .. mode .. " reset to " .. selection.value .. "? [Y/n] ")
   if confirmation ~= "" and string.lower(confirmation) ~= "y" then
@@ -576,8 +632,12 @@ actions.git_reset_hard = function(prompt_bufnr)
 end
 
 actions.git_checkout_current_buffer = function(prompt_bufnr)
-  local cwd = actions.get_current_picker(prompt_bufnr).cwd
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = actions.get_selected_entry()
+  if selection == nil then
+    print "[telescope] Nothing currently selected"
+    return
+  end
   actions.close(prompt_bufnr)
   utils.get_os_command_output({ "git", "checkout", selection.value, "--", selection.file }, cwd)
 end
@@ -587,7 +647,10 @@ end
 actions.git_staging_toggle = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
-
+  if selection == nil then
+    print "[telescope] Nothing currently selected"
+    return
+  end
   if selection.status:sub(2) == " " then
     utils.get_os_command_output({ "git", "restore", "--staged", selection.value }, cwd)
   else
@@ -609,8 +672,8 @@ local entry_to_qf = function(entry)
   return {
     bufnr = entry.bufnr,
     filename = from_entry.path(entry, false),
-    lnum = entry.lnum,
-    col = entry.col,
+    lnum = vim.F.if_nil(entry.lnum, 1),
+    col = vim.F.if_nil(entry.col, 1),
     text = text,
   }
 end
@@ -767,7 +830,7 @@ end
 
 actions.cycle_history_next = function(prompt_bufnr)
   local history = action_state.get_current_history()
-  local current_picker = actions.get_current_picker(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
   local line = action_state.get_current_line()
 
   local entry = history:get_next(line, current_picker)
@@ -783,7 +846,7 @@ end
 
 actions.cycle_history_prev = function(prompt_bufnr)
   local history = action_state.get_current_history()
-  local current_picker = actions.get_current_picker(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
   local line = action_state.get_current_line()
 
   local entry = history:get_prev(line, current_picker)
@@ -826,14 +889,14 @@ end
 --- This action is not mapped on default.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.cycle_previewers_next = function(prompt_bufnr)
-  actions.get_current_picker(prompt_bufnr):cycle_previewers(1)
+  action_state.get_current_picker(prompt_bufnr):cycle_previewers(1)
 end
 
 --- Cycle to the previous previewer if there is one available.<br>
 --- This action is not mapped on default.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.cycle_previewers_prev = function(prompt_bufnr)
-  actions.get_current_picker(prompt_bufnr):cycle_previewers(-1)
+  action_state.get_current_picker(prompt_bufnr):cycle_previewers(-1)
 end
 
 --- Removes the selected picker in |builtin.pickers|.<br>
@@ -862,14 +925,17 @@ actions.which_key = function(prompt_bufnr, opts)
   opts.mode_width = utils.get_default(opts.mode_width, 1)
   opts.keybind_width = utils.get_default(opts.keybind_width, 7)
   opts.name_width = utils.get_default(opts.name_width, 30)
-  opts.column_padding = utils.get_default(opts.column_padding, "  ")
-  opts.column_indent = table.concat(utils.repeated_table(utils.get_default(opts.column_indent, 4), " "))
   opts.line_padding = utils.get_default(opts.line_padding, 1)
   opts.separator = utils.get_default(opts.separator, " -> ")
   opts.close_with_action = utils.get_default(opts.close_with_action, true)
   opts.normal_hl = utils.get_default(opts.normal_hl, "TelescopePrompt")
   opts.border_hl = utils.get_default(opts.border_hl, "TelescopePromptBorder")
   opts.winblend = utils.get_default(opts.winblend, config.values.winblend)
+  opts.column_padding = utils.get_default(opts.column_padding, "  ")
+
+  -- Assigning into 'opts.column_indent' would override a number with a string and
+  -- cause issues with subsequent calls, keep a local copy of the string instead
+  local column_indent = table.concat(utils.repeated_table(utils.get_default(opts.column_indent, 4), " "))
 
   -- close on repeated keypress
   local km_bufs = (function()
@@ -951,7 +1017,7 @@ actions.which_key = function(prompt_bufnr, opts)
     + opts.keybind_width
     + opts.name_width
     + (3 * #opts.separator)
-  local num_total_columns = math.floor((vim.o.columns - #opts.column_indent) / entry_width)
+  local num_total_columns = math.floor((vim.o.columns - #column_indent) / entry_width)
   opts.num_rows = math.min(
     math.ceil(#mappings / num_total_columns),
     resolver.resolve_height(opts.max_height)(_, _, vim.o.lines)
@@ -960,10 +1026,16 @@ actions.which_key = function(prompt_bufnr, opts)
   local winheight = opts.num_rows + 2 * opts.line_padding
 
   -- place hints at top or bottom relative to prompt
+  local win_central_row = function(win_nr)
+    return a.nvim_win_get_position(win_nr)[1] + 0.5 * a.nvim_win_get_height(win_nr)
+  end
+  -- TODO(fdschmidt93|l-kershaw): better generalization of where to put which key float
   local picker = action_state.get_current_picker(prompt_bufnr)
-  local prompt_win = picker.prompt_win
-  local prompt_row = a.nvim_win_get_position(prompt_win)[1]
-  local prompt_pos = prompt_row <= 0.5 * vim.o.lines
+  local prompt_row = win_central_row(picker.prompt_win)
+  local results_row = win_central_row(picker.results_win)
+  local preview_row = win_central_row(picker.preview_win)
+  local prompt_pos = prompt_row < 0.4 * vim.o.lines
+    or prompt_row < 0.6 * vim.o.lines and results_row + preview_row < vim.o.lines
 
   local modes = { n = "Normal", i = "Insert" }
   local title_mode = opts.only_show_current_mode and modes[mode] .. " Mode " or ""
@@ -975,8 +1047,8 @@ actions.which_key = function(prompt_bufnr, opts)
     maxwidth = vim.o.columns,
     minheight = winheight,
     maxheight = winheight,
-    line = prompt_pos == true and vim.o.lines - winheight or 0,
-    col = 1,
+    line = prompt_pos == true and vim.o.lines - winheight + 1 or 1,
+    col = 0,
     border = { prompt_pos and 1 or 0, 0, not prompt_pos and 1 or 0, 0 },
     borderchars = { prompt_pos and "─" or " ", "", not prompt_pos and "─" or " ", "", "", "", "", "" },
     noautocmd = true,
@@ -999,13 +1071,7 @@ actions.which_key = function(prompt_bufnr, opts)
     }, ";")
   ))
 
-  a.nvim_buf_set_lines(
-    km_buf,
-    0,
-    -1,
-    false,
-    utils.repeated_table(opts.num_rows + 2 * opts.line_padding, opts.column_indent)
-  )
+  a.nvim_buf_set_lines(km_buf, 0, -1, false, utils.repeated_table(opts.num_rows + 2 * opts.line_padding, column_indent))
 
   local keymap_highlights = a.nvim_create_namespace "telescope_whichkey"
   local highlights = {}
