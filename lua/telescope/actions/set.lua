@@ -157,6 +157,8 @@ action_set.scroll_previewer = function(prompt_bufnr, direction)
 
   local status = state.get_status(prompt_bufnr)
   local default_speed = vim.api.nvim_win_get_height(status.preview_win) / 2
+
+  -- status.picker.layout_config.{vertical,horizontal}.scroll_speed?
   local speed = status.picker.layout_config.scroll_speed or default_speed
 
   previewer:scroll_fn(math.floor(speed * direction))
