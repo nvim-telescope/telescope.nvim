@@ -61,7 +61,8 @@ function Picker:new(opts)
   local obj = setmetatable({
     prompt_title = get_default(opts.prompt_title, "Prompt"),
     results_title = get_default(opts.results_title, "Results"),
-    preview_title = get_default(opts.preview_title, "Preview"),
+    -- either whats passed in by the user or whats defined by the previewer
+    preview_title = opts.preview_title,
 
     prompt_prefix = get_default(opts.prompt_prefix, config.values.prompt_prefix),
     selection_caret = get_default(opts.selection_caret, config.values.selection_caret),
@@ -125,6 +126,11 @@ function Picker:new(opts)
       obj.all_previewers = { obj.all_previewers }
     end
     obj.previewer = obj.all_previewers[1]
+    if obj.preview_title == nil then
+      obj.preview_title = obj.previewer:title(nil, config.values.dynamic_preview_title)
+    else
+      obj.fix_preview_title = true
+    end
   else
     obj.previewer = false
   end
@@ -894,10 +900,14 @@ function Picker:refresh_previewer()
 
     self.previewer:preview(self._selection_entry, status)
     if self.preview_border then
-      if config.values.dynamic_preview_title == true then
-        self.preview_border:change_title(self.previewer:dynamic_title(self._selection_entry))
-      else
-        self.preview_border:change_title(self.previewer:title())
+      if self.fix_preview_title then
+        return
+      end
+
+      local new_title = self.previewer:title(self._selection_entry, config.values.dynamic_preview_title)
+      if new_title ~= nil and new_title ~= self.preview_title then
+        self.preview_title = new_title
+        self.preview_border:change_title(new_title)
       end
     end
   end
