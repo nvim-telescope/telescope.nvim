@@ -311,13 +311,8 @@ function Picker:find()
     popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
   end
 
-
   -- local results_win, results_opts = popup.create("", popup_opts.results)
-  local results_win, _, results_border_win = self:_create_window(
-    "",
-    popup_opts.results,
-    true
-  )
+  local results_win, _, results_border_win = self:_create_window("", popup_opts.results, true)
   local results_bufnr = a.nvim_win_get_buf(results_win)
 
   self.results_bufnr = results_bufnr
@@ -325,20 +320,14 @@ function Picker:find()
 
   local preview_win, preview_opts, preview_bufnr, preview_border_win
   if popup_opts.preview then
-    preview_win, preview_opts, preview_border_win = self:_create_window(
-      "",
-      popup_opts.preview
-    )
+    preview_win, preview_opts, preview_border_win = self:_create_window("", popup_opts.preview)
     preview_bufnr = a.nvim_win_get_buf(preview_win)
   end
   -- This is needed for updating the title
   local preview_border = preview_opts and preview_opts.border
   self.preview_border = preview_border
 
-  local prompt_win, _, prompt_border_win = self:_create_window(
-    "",
-    popup_opts.prompt
-  )
+  local prompt_win, _, prompt_border_win = self:_create_window("", popup_opts.prompt)
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
   self.prompt_bufnr = prompt_bufnr
 
@@ -526,10 +515,7 @@ function Picker:recalculate_layout()
     else
       popup_opts.preview.highlight = "TelescopeNormal"
       popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
-      preview_win, preview_opts, preview_border_win = self:_create_window(
-        "",
-        popup_opts.preview
-      )
+      preview_win, preview_opts, preview_border_win = self:_create_window("", popup_opts.preview)
       status.preview_win = preview_win
       status.preview_border_win = preview_border_win
       state.set_status(prompt_win, status)
