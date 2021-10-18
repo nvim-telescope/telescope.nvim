@@ -1240,53 +1240,31 @@ function pickers.on_close_prompt(prompt_bufnr)
   picker.close_windows(status)
 end
 
+local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
+  if strategy == "ascending" then
+    vim.api.nvim_win_set_cursor(win, { max_results, 0 })
+    vim.api.nvim_win_set_cursor(win, { oldinfo.topline, 0 })
+    vim.api.nvim_win_set_cursor(win, oldcursor)
+  elseif strategy == "descending" then
+    vim.api.nvim_win_set_cursor(win, { 1, 0 })
+    vim.api.nvim_win_set_cursor(win, { oldinfo.botline, 0 })
+    vim.api.nvim_win_set_cursor(win, oldcursor)
+  else
+    error(debug.traceback("Unknown sorting strategy: " .. (strategy or "")))
+  end
+end
+
 function pickers.on_resize_window(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
 
-  local selection_index = picker:get_index(picker._selection_row)
-
-  -- if picker.sorter then
-  --   picker.sorter:_destroy()
-  -- end
-
-  -- if picker.previewer then
-  --   picker.previewer:teardown()
-  -- end
-
+  local oldinfo = vim.fn.getwininfo(status.results_win)[1]
+  local oldcursor = vim.api.nvim_win_get_cursor(status.results_win)
   picker:recalculate_layout()
   picker:refresh_previewer()
-  -- TODO: improve cursor adjustment with scrolling based on sorting_strategy
-  vim.api.nvim_win_set_cursor(status.results_win, { 0, 0 })
-  vim.api.nvim_win_set_cursor(status.results_win, { picker._selection_row + 1, 0 })
-  vim.api.nvim_buf_set_lines(picker.results_bufnr, 0, -1, false, utils.repeated_table(picker.max_results, ""))
-  picker.highlighter:clear_display()
 
-  local prompt = picker:_get_prompt()
-  local caret = picker.selection_caret
-  for row = 0, picker.max_results - 1 do
-    local entry = picker.manager:get_entry(picker:get_index(row))
-    if entry then
-      local display, display_highlights = entry_display.resolve(picker, entry)
-      if picker:get_index(row) == selection_index then
-        display = caret .. display
-        picker._selection_row = row
-        picker._selection_entry = entry
-      else
-        display = string.rep(" ", #caret) .. display
-      end
-
-      a.nvim_buf_set_lines(status.results_bufnr, row, row + 1, false, { display })
-
-      if picker:get_index(row) == selection_index then
-        picker.highlighter:hi_selection(row, caret:sub(1, -2))
-      end
-      picker.highlighter:hi_display(row, caret, display_highlights)
-      picker.highlighter:hi_sorter(row, prompt, display)
-
-      picker.highlighter:hi_multiselect(row, picker:is_multi_selected(entry))
-    end
-  end
+  -- update scrolled position
+  update_scroll(status.results_win, oldinfo, oldcursor, picker.sorting_strategy, picker.max_results)
 end
 
 --- Get the prompt text without the prompt prefix.
