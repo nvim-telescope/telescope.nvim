@@ -935,6 +935,8 @@ function make_entry.gen_from_lsp_diagnostics(opts)
   opts = opts or {}
 
   local lsp_type_diagnostic = vim.lsp.protocol.DiagnosticSeverity
+  local diagnostic_sign = (vim.fn.has('nvim-0.6') == 1) and "DiagnosticSign" or "LspDiagnosticsSign"
+  local diagnostic_type = (vim.fn.has('nvim-0.6') == 1) and "Diagnostic" or "LspDiagnosticsDefault"
 
   local signs
   if not opts.no_sign then
@@ -943,7 +945,7 @@ function make_entry.gen_from_lsp_diagnostics(opts)
       -- pcall to catch entirely unbound or cleared out sign hl group
       if type(severity) == "string" then
         local status, sign = pcall(function()
-          return vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. severity)[1].text)
+          return vim.trim(vim.fn.sign_getdefined(diagnostic_sign .. severity)[1].text)
         end)
         if not status then
           sign = severity:sub(1, 1)
@@ -973,7 +975,7 @@ function make_entry.gen_from_lsp_diagnostics(opts)
     local pos = string.format("%4d:%2d", entry.lnum, entry.col)
     local line_info = {
       (signs and signs[entry.type] .. " " or "") .. pos,
-      "LspDiagnosticsDefault" .. entry.type,
+      diagnostic_type .. entry.type,
     }
 
     return displayer {
