@@ -12,7 +12,7 @@ local log = require "telescope.log"
 
 local scan = require "plenary.scandir"
 local Path = require "plenary.path"
-local os_sep = Path.path.sep
+local os_sep = utils.get_separator(conf.use_unix_friendly_paths)
 
 local flatten = vim.tbl_flatten
 local filter = vim.tbl_filter

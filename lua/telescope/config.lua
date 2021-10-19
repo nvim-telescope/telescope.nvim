@@ -676,6 +676,15 @@ append(
     Default: require("telescope.previewers").buffer_previewer_maker]]
 )
 
+append(
+  "use_unix_friendly_paths",
+  false,
+  [[
+  Boolean if should use unix friendly os seperator. "\\" -> "/"
+
+  Default: false]]
+)
+
 -- @param user_defaults table: a table where keys are the names of options,
 --    and values are the ones the user wants
 -- @param tele_defaults table: (optional) a table containing all of the defaults

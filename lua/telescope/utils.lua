@@ -8,7 +8,11 @@ local get_status = require("telescope.state").get_status
 
 local utils = {}
 
-utils.get_separator = function()
+utils.get_separator = function(use_unix_friendly_paths)
+  if use_unix_friendly_paths then
+    return "/"
+  end
+
   return Path.path.sep
 end
 
@@ -325,6 +329,17 @@ utils.is_path_hidden = function(opts, path_display)
     or path_display.hidden
 end
 
+utils.transform_path_os_sep = function(filename)
+  local conf = require("telescope.config").values
+  local os_sep = utils.get_separator(conf.use_unix_friendly_paths)
+
+  if not filename then
+    return filename
+  end
+
+  return filename:gsub(Path.path.sep, os_sep)
+end
+
 local is_uri = function(filename)
   return string.match(filename, "^%w+://") ~= nil
 end
@@ -336,6 +351,7 @@ local calc_result_length = function(truncate_len)
 end
 
 utils.transform_path = function(opts, path)
+  path = utils.transform_path_os_sep(path)
   if is_uri(path) then
     return path
   end

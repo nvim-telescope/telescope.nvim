@@ -92,10 +92,12 @@ do
         if not vim.loop.fs_access(retpath, "R", nil) then
           retpath = t.value
         end
-        return retpath
+
+        return utils.transform_path_os_sep(retpath)
       end
 
-      return rawget(t, rawget(lookup_keys, k))
+
+      return utils.transform_path_os_sep(rawget(t, rawget(lookup_keys, k)))
     end
 
     return function(line)
