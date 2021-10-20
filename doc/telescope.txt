@@ -545,7 +545,7 @@ telescope.setup({opts})                                    *telescope.setup()*
         previewer or use the command-line program bat as the previewer:
           require("telescope.previewers").qflist.new
 
-        Default: require("telescope.previewers").vim_buffer_vimgrep.new
+        Default: require("telescope.previewers").vim_buffer_qflist.new
 
                                 *telescope.defaults.buffer_previewer_maker*
     buffer_previewer_maker: ~
