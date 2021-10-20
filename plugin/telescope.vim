@@ -27,6 +27,14 @@ highlight default link TelescopePromptBorder TelescopeBorder
 highlight default link TelescopeResultsBorder TelescopeBorder
 highlight default link TelescopePreviewBorder TelescopeBorder
 
+" Title highlight groups.
+"   Use TelescopeTitle to override the default.
+"   Otherwise set them specifically
+highlight default link TelescopeTitle TelescopeBorder
+highlight default link TelescopePromptTitle TelescopeTitle
+highlight default link TelescopeResultsTitle TelescopeTitle
+highlight default link TelescopePreviewTitle TelescopeTitle
+
 " Used for highlighting characters that you match.
 highlight default link TelescopeMatching Special
 
