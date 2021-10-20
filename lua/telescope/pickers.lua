@@ -266,6 +266,18 @@ function Picker:_next_find_id()
   return find_id
 end
 
+function Picker:_create_window(bufnr, popup_opts, nowrap)
+  local what = bufnr or ""
+  local win, opts = popup.create(what, popup_opts)
+
+  a.nvim_win_set_option(win, "winblend", self.window.winblend)
+  if nowrap then
+    a.nvim_win_set_option(win, "wrap", false)
+  end
+  local border_win = opts and opts.border and opts.border.win_id
+  return win, opts, border_win
+end
+
 function Picker:find()
   self:close_existing_pickers()
   self:reset_selection()
@@ -288,48 +300,35 @@ function Picker:find()
 
   -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
   popup_opts.results.minheight = popup_opts.results.height
+  popup_opts.results.highlight = "TelescopeNormal"
+  popup_opts.results.borderhighlight = "TelescopeResultsBorder"
   popup_opts.prompt.minheight = popup_opts.prompt.height
+  popup_opts.prompt.highlight = "TelescopeNormal"
+  popup_opts.prompt.borderhighlight = "TelescopePromptBorder"
   if popup_opts.preview then
     popup_opts.preview.minheight = popup_opts.preview.height
+    popup_opts.preview.highlight = "TelescopeNormal"
+    popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
   end
 
-  local results_win, results_opts = popup.create("", popup_opts.results)
+  -- local results_win, results_opts = popup.create("", popup_opts.results)
+  local results_win, _, results_border_win = self:_create_window("", popup_opts.results, true)
   local results_bufnr = a.nvim_win_get_buf(results_win)
 
   self.results_bufnr = results_bufnr
   self.results_win = results_win
 
-  -- TODO: Should probably always show all the line for results win, so should implement a resize for the windows
-  a.nvim_win_set_option(results_win, "wrap", false)
-  a.nvim_win_set_option(results_win, "winhl", "Normal:TelescopeNormal")
-  a.nvim_win_set_option(results_win, "winblend", self.window.winblend)
-  local results_border_win = results_opts.border and results_opts.border.win_id
-  if results_border_win then
-    vim.api.nvim_win_set_option(results_border_win, "winhl", "Normal:TelescopeResultsBorder")
-  end
-
-  local preview_win, preview_opts, preview_bufnr
+  local preview_win, preview_opts, preview_bufnr, preview_border_win
   if popup_opts.preview then
-    preview_win, preview_opts = popup.create("", popup_opts.preview)
+    preview_win, preview_opts, preview_border_win = self:_create_window("", popup_opts.preview)
     preview_bufnr = a.nvim_win_get_buf(preview_win)
-
-    a.nvim_win_set_option(preview_win, "winhl", "Normal:TelescopePreviewNormal")
-    a.nvim_win_set_option(preview_win, "winblend", self.window.winblend)
-    local preview_border_win = preview_opts and preview_opts.border and preview_opts.border.win_id
-    if preview_border_win then
-      vim.api.nvim_win_set_option(preview_border_win, "winhl", "Normal:TelescopePreviewBorder")
-    end
   end
+  -- This is needed for updating the title
+  local preview_border = preview_opts and preview_opts.border
+  self.preview_border = preview_border
 
-  -- TODO: We need to center this and make it prettier...
-  local prompt_win, prompt_opts = popup.create("", popup_opts.prompt)
+  local prompt_win, _, prompt_border_win = self:_create_window("", popup_opts.prompt)
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
-  a.nvim_win_set_option(prompt_win, "winhl", "Normal:TelescopeNormal")
-  a.nvim_win_set_option(prompt_win, "winblend", self.window.winblend)
-  local prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
-  if prompt_border_win then
-    vim.api.nvim_win_set_option(prompt_border_win, "winhl", "Normal:TelescopePromptBorder")
-  end
   self.prompt_bufnr = prompt_bufnr
 
   -- Prompt prefix
@@ -448,14 +447,18 @@ function Picker:find()
     prompt_bufnr
   )
 
+  local on_vim_resize = string.format(
+    [[  autocmd VimResized <buffer> ++nested :lua require('telescope.pickers').on_resize_window(%s)]],
+    prompt_bufnr
+  )
+
   vim.cmd [[augroup PickerInsert]]
   vim.cmd [[  au!]]
   vim.cmd(on_buf_leave)
+  vim.cmd(on_vim_resize)
   vim.cmd [[augroup END]]
 
-  local preview_border = preview_opts and preview_opts.border
-  self.preview_border = preview_border
-  local preview_border_win = (preview_border and preview_border.win_id) and preview_border.win_id
+  self.prompt_bufnr = prompt_bufnr
 
   state.set_status(
     prompt_bufnr,
@@ -483,9 +486,76 @@ function Picker:find()
   main_loop()
 end
 
+function Picker:recalculate_layout()
+  local line_count = vim.o.lines - vim.o.cmdheight
+  if vim.o.laststatus ~= 0 then
+    line_count = line_count - 1
+  end
+
+  local popup_opts = self:get_window_options(vim.o.columns, line_count)
+  -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
+  popup_opts.results.minheight = popup_opts.results.height
+  popup_opts.prompt.minheight = popup_opts.prompt.height
+  if popup_opts.preview then
+    popup_opts.preview.minheight = popup_opts.preview.height
+  end
+
+  local status = state.get_status(self.prompt_bufnr)
+
+  local prompt_win = status.prompt_win
+  local results_win = status.results_win
+  local preview_win = status.preview_win
+
+  popup.move(results_win, popup_opts.results)
+
+  local preview_opts, preview_border_win
+  if popup_opts.preview then
+    if preview_win ~= nil then
+      popup.move(preview_win, popup_opts.preview)
+    else
+      popup_opts.preview.highlight = "TelescopeNormal"
+      popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
+      preview_win, preview_opts, preview_border_win = self:_create_window("", popup_opts.preview)
+      status.preview_win = preview_win
+      status.preview_border_win = preview_border_win
+      state.set_status(prompt_win, status)
+      self.preview_win = preview_win
+      self.preview_border_win = preview_border_win
+      self.preview_border = preview_opts and preview_opts.border
+    end
+  elseif preview_win ~= nil then
+    vim.api.nvim_win_close(preview_win, false)
+    if status.preview_border_win then
+      vim.api.nvim_win_close(status.preview_border_win, false)
+    end
+    status.preview_win = nil
+    status.preview_border_win = nil
+    state.set_status(prompt_win, status)
+    self.preview_win = nil
+    self.preview_border_win = nil
+    self.preview_border = nil
+  end
+
+  popup.move(prompt_win, popup_opts.prompt)
+
+  -- Temporarily disabled: Draw the screen ASAP. This makes things feel speedier.
+  -- vim.cmd [[redraw]]
+
+  -- self.max_results = popup_opts.results.height
+end
+
 function Picker:hide_preview()
   -- 1. Hide the window (and border)
   -- 2. Resize prompt & results windows accordingly
+end
+
+function Picker:toggle_padding()
+  -- if padding ~= 0
+  --    1. Save `height` and `width` of picker
+  --    2. Set both to `{padding = 0}`
+  -- else
+  --    1. Lookup previous `height` and `width` of picker
+  --    2. Set both to previous values
 end
 
 -- TODO: update multi-select with the correct tag name when available
@@ -1170,6 +1240,33 @@ function pickers.on_close_prompt(prompt_bufnr)
   end
 
   picker.close_windows(status)
+end
+
+local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
+  if strategy == "ascending" then
+    vim.api.nvim_win_set_cursor(win, { max_results, 0 })
+    vim.api.nvim_win_set_cursor(win, { oldinfo.topline, 0 })
+    vim.api.nvim_win_set_cursor(win, oldcursor)
+  elseif strategy == "descending" then
+    vim.api.nvim_win_set_cursor(win, { 1, 0 })
+    vim.api.nvim_win_set_cursor(win, { oldinfo.botline, 0 })
+    vim.api.nvim_win_set_cursor(win, oldcursor)
+  else
+    error(debug.traceback("Unknown sorting strategy: " .. (strategy or "")))
+  end
+end
+
+function pickers.on_resize_window(prompt_bufnr)
+  local status = state.get_status(prompt_bufnr)
+  local picker = status.picker
+
+  local oldinfo = vim.fn.getwininfo(status.results_win)[1]
+  local oldcursor = vim.api.nvim_win_get_cursor(status.results_win)
+  picker:recalculate_layout()
+  picker:refresh_previewer()
+
+  -- update scrolled position
+  update_scroll(status.results_win, oldinfo, oldcursor, picker.sorting_strategy, picker.max_results)
 end
 
 --- Get the prompt text without the prompt prefix.
