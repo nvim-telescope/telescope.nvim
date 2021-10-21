@@ -741,7 +741,7 @@ function config.set_defaults(user_defaults, tele_defaults)
         vim.tbl_deep_extend("keep", if_nil(config.values[name], {}), if_nil(default_val, {}))
       )
     end
-    if name == "history" or name == "cache_picker" or name == "preview" then
+    if name == "history" or name == "cache_picker" then
       if user_defaults[name] == false or config.values[name] == false then
         return false
       end
@@ -761,6 +761,13 @@ function config.set_defaults(user_defaults, tele_defaults)
     if description then
       config.descriptions[name] = strings.dedent(description)
     end
+  end
+
+  if user_defaults["preview"] == false then
+    -- if preview is false we need to keep this information but still initialize previewer so that
+    -- user can still toggle preview if needed
+    set("__hide_previewer", true, "Hide preview when picker is initialized.")
+    user_defaults["preview"] = nil
   end
 
   for key, info in pairs(tele_defaults) do

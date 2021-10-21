@@ -88,7 +88,6 @@ function Picker:new(opts)
     sorter = opts.sorter or require("telescope.sorters").empty(),
 
     all_previewers = opts.previewer,
-    _default_previewer = opts._default_previewer,
     disable_previewer_at_startup = opts.disable_previewer_at_startup or false,
     current_previewer_index = 1,
 
@@ -145,6 +144,14 @@ function Picker:new(opts)
     end
   else
     obj.previewer = false
+  end
+
+  local __hide_previewer = utils.get_default(config.values.__hide_previewer, false)
+  if __hide_previewer then
+    obj.hidden_previewer = obj.previewer
+    obj.previewer = nil
+  else
+    obj.hidden_previewer = nil
   end
 
   -- TODO: It's annoying that this is create and everything else is "new"
@@ -364,9 +371,7 @@ function Picker:find()
   -- 2. Options window
   -- 3. Preview window
 
-  local previewer = self.previewer or self._default_previewer
   local popup_opts = self:_get_window_options()
-  self.previewer = previewer
 
   local results_bufnr = create_named_buffer(false, false, "[TelescopeResults]")
   local results_win, _, results_border_win = self:_create_window(results_bufnr, popup_opts.results, true)
@@ -376,10 +381,11 @@ function Picker:find()
 
   -- TODO: Should probably always show all the line for results win, so should implement a resize for the windows
 
-  local preview_win, preview_opts, preview_bufnr, preview_border_win
+  local preview_win, preview_bufnr, preview_border_win
   preview_bufnr = create_named_buffer(false, false, "[TelescopePreview]")
+  self.preview_bufnr = preview_bufnr
   if popup_opts.preview then
-    preview_win, preview_opts, preview_border_win = self:_create_window(preview_bufnr, popup_opts.preview)
+    preview_win, _, preview_border_win = self:_create_window(preview_bufnr, popup_opts.preview)
   end
 
   -- TODO: We need to center this and make it prettier...
@@ -619,10 +625,9 @@ function Picker:hide_preview()
     return
   end
 
-  local previewer = self.previewer
+  self.hidden_previewer = self.previewer
   self.previewer = nil
   local window_options = self:_get_window_options()
-  self.previewer = previewer
 
   self:_remove_autocmd_on_buf_leave(self.prompt_bufnr)
 
@@ -633,21 +638,21 @@ function Picker:hide_preview()
   Picker.del_win("prompt_win", status.prompt_win)
   Picker.del_win("prompt_border_win", status.prompt_border_win)
 
-  local prompt_opts, results_opts
+  local results_border_win, prompt_border_win
   -- popup.create sets height == vim.api.nvim_buf_line_count(self.results_bufnr)
-  self.results_win, results_opts = self:_create_window(nil, window_options.results)
+  self.results_win, _, results_border_win = self:_create_window(nil, window_options.results)
   a.nvim_win_set_buf(self.results_win, self.results_bufnr)
-  self.prompt_win, prompt_opts = self:_create_window(self.prompt_bufnr, window_options.prompt)
+  self.prompt_win, _, prompt_border_win = self:_create_window(self.prompt_bufnr, window_options.prompt)
   state.set_status(
     self.prompt_bufnr,
     setmetatable({
       prompt_bufnr = self.prompt_bufnr,
       prompt_win = self.prompt_win,
-      prompt_border_win = prompt_opts.border and prompt_opts.border.win_id,
+      prompt_border_win = prompt_border_win,
 
       results_bufnr = self.results_bufnr,
       results_win = self.results_win,
-      results_border_win = results_opts.border and results_opts.border.win_id,
+      results_border_win = results_border_win,
 
       preview_bufnr = self.preview_bufnr,
       preview_win = nil,
@@ -661,7 +666,7 @@ function Picker:hide_preview()
 end
 
 function Picker:unhide_preview()
-  if not self.previewer then
+  if not self.hidden_previewer then
     return
   end
 
@@ -670,6 +675,8 @@ function Picker:unhide_preview()
     return
   end
 
+  self.previewer = self.hidden_previewer
+  self.hidden_previewer = nil
   local window_options = self:_get_window_options()
   if not window_options.preview then
     return
@@ -681,27 +688,27 @@ function Picker:unhide_preview()
   Picker.del_win("prompt_win", status.prompt_win)
   Picker.del_win("prompt_border_win", status.prompt_border_win)
 
-  local prompt_opts, results_opts, preview_opts
-  self.results_win, results_opts = self:_create_window(nil, window_options.results)
+  local prompt_border_win, results_border_win, preview_border_win, preview_opts
+  self.results_win, _, results_border_win = self:_create_window(nil, window_options.results)
   -- popup.create sets height == vim.api.nvim_buf_line_count(self.results_bufnr)
   a.nvim_win_set_buf(self.results_win, self.results_bufnr)
-  self.preview_win, preview_opts = self:_create_window(status.preview_bufnr, window_options.preview)
-  self.prompt_win, prompt_opts = self:_create_window(self.prompt_bufnr, window_options.prompt)
+  self.preview_win, preview_opts, preview_border_win = self:_create_window(status.preview_bufnr, window_options.preview)
+  self.prompt_win, _, prompt_border_win = self:_create_window(self.prompt_bufnr, window_options.prompt)
   self.preview_border = preview_opts.border
   state.set_status(
     self.prompt_bufnr,
     setmetatable({
       prompt_bufnr = self.prompt_bufnr,
       prompt_win = self.prompt_win,
-      prompt_border_win = prompt_opts.border and prompt_opts.border.win_id,
+      prompt_border_win = prompt_border_win,
 
       results_bufnr = self.results_bufnr,
       results_win = self.results_win,
-      results_border_win = results_opts.border and results_opts.border.win_id,
+      results_border_win = results_border_win,
 
       preview_bufnr = self.preview_bufnr,
       preview_win = self.preview_win,
-      preview_border_win = preview_opts.border and preview_opts.border.win_id,
+      preview_border_win = preview_border_win,
       picker = self,
     }, {
       __mode = "kv",
@@ -715,14 +722,9 @@ function Picker:unhide_preview()
 end
 
 function Picker:toggle_preview()
-  if not self.previewer then
-    return
-  end
-
-  local status = state.get_status(self.prompt_bufnr)
-  if status.preview_win then
+  if self.previewer then
     self:hide_preview()
-  else
+  elseif self.hidden_previewer then
     self:unhide_preview()
   end
 end
@@ -1084,8 +1086,12 @@ function Picker:cycle_previewers(next)
     self.current_previewer_index = size
   end
 
-  self.previewer = self.all_previewers[self.current_previewer_index]
-  self:refresh_previewer()
+  if self.previewer then
+    self.previewer = self.all_previewers[self.current_previewer_index]
+    self:refresh_previewer()
+  elseif self.hidden_previewer then
+    self.hidden_previewer = self.all_previewers[self.current_previewer_index]
+  end
 end
 
 function Picker:entry_adder(index, entry, _, insert)
@@ -1336,7 +1342,6 @@ pickers.new = function(opts, defaults)
     result[k] = v
   end
 
-  result._default_previewer = defaults.previewer
   for k, v in pairs(defaults or {}) do
     if result[k] == nil then
       assert(type(k) == "string", "Should be string, defaults")
