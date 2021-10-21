@@ -833,25 +833,20 @@ function Picker:set_selection(row)
   local set_ok, set_errmsg = pcall(function()
     local prompt = self:_get_prompt()
 
-    -- Handle adding '> ' to beginning of selections
-    if self._selection_row then
+    -- Handle removing '> ' from beginning of previous selection (if still visible)
+    if self._selection_entry and self.manager:find_entry(self._selection_entry) then
+      -- Find the (possibly new) row of the old selection
+      local row_old_selection = self:get_row(self.manager:find_entry(self._selection_entry))
       -- Only change the first couple characters, nvim_buf_set_text leaves the existing highlights
       a.nvim_buf_set_text(
         results_bufnr,
-        self._selection_row,
+        row_old_selection,
         0,
-        self._selection_row,
+        row_old_selection,
         #self.selection_caret,
         { self.entry_prefix }
       )
-      self.highlighter:hi_multiselect(self._selection_row, self:is_multi_selected(self._selection_entry))
-
-      -- local display = a.nvim_buf_get_lines(results_bufnr, old_row, old_row + 1, false)[1]
-      -- display = '  ' .. display
-      -- a.nvim_buf_set_lines(results_bufnr, old_row, old_row + 1, false, {display})
-
-      -- self.highlighter:hi_display(old_row, '  ', display_highlights)
-      -- self.highlighter:hi_sorter(old_row, prompt, display)
+      self.highlighter:hi_multiselect(row_old_selection, self:is_multi_selected(self._selection_entry))
     end
 
     local caret = self.selection_caret
