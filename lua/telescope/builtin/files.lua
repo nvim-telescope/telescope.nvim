@@ -558,7 +558,18 @@ files.current_buffer_fuzzy_find = function(opts)
 end
 
 files.tags = function(opts)
-  local tagfiles = opts.ctags_file and { opts.ctags_file } or vim.fn.tagfiles()
+  local tagfiles = (function()
+    if opts.ctags_file ~= nil then
+      return { opts.ctags_file }
+    else
+      return require("plenary.iterators").iter(vim.fn.tagfiles())
+        :map(function(file)
+          return vim.fn.expand(vim.fn.fnamemodify(file, ":p"))
+        end)
+        :tolist()
+    end
+  end)()
+
   if vim.tbl_isempty(tagfiles) then
     print "No tags file found. Create one with ctags -R"
     return
@@ -566,8 +577,16 @@ files.tags = function(opts)
 
   local results = {}
   for _, ctags_file in ipairs(tagfiles) do
+    local tags_directory = vim.fn.fnamemodify(ctags_file, ":h")
+    local resolve_filename = function(filename)
+      if Path:new(filename):exists() then
+        return filename
+      else
+        return Path:new(tags_directory, filename):absolute()
+      end
+    end
     for line in Path:new(vim.fn.expand(ctags_file)):iter() do
-      results[#results + 1] = line
+      results[#results + 1] = { line, resolve_filename }
     end
   end
 

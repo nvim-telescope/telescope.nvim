@@ -528,11 +528,11 @@ previewers.ctags = defaulter(function(_)
     end,
 
     get_buffer_by_name = function(_, entry)
-      return entry.filename
+      return entry.resolve(entry.filename)
     end,
 
     define_preview = function(self, entry, status)
-      conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
+      conf.buffer_previewer_maker(entry.resolve(entry.filename), self.state.bufnr, {
         bufname = self.state.bufname,
         winid = self.state.winid,
         callback = function(bufnr)

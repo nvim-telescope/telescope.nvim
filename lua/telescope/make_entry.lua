@@ -888,15 +888,12 @@ function make_entry.gen_from_ctags(opts)
   local mt = {}
   mt.__index = function(t, k)
     if k == "path" then
-      local retpath = Path:new({ t.filename }):absolute()
-      if not vim.loop.fs_access(retpath, "R", nil) then
-        retpath = t.filename
-      end
-      return retpath
+      return t.resolve(t.filename)
     end
   end
 
-  return function(line)
+  return function(result)
+    local line = result[1]
     if line == "" or line:sub(1, 1) == "!" then
       return nil
     end
@@ -928,6 +925,7 @@ function make_entry.gen_from_ctags(opts)
     tag_entry.scode = scode
     tag_entry.tag = tag
     tag_entry.filename = file
+    tag_entry.resolve = result[2]
     tag_entry.col = 1
     tag_entry.lnum = lnum and tonumber(lnum) or 1
 
