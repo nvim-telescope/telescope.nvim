@@ -41,6 +41,39 @@ local function create_named_buffer(listed, scratch, name)
   return bufnr
 end
 
+local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
+  if strategy == "ascending" then
+    vim.api.nvim_win_set_cursor(win, { max_results, 0 })
+    vim.api.nvim_win_set_cursor(win, { oldinfo.topline, 0 })
+    vim.api.nvim_win_set_cursor(win, oldcursor)
+  elseif strategy == "descending" then
+    vim.api.nvim_win_set_cursor(win, { 1, 0 })
+    vim.api.nvim_win_set_cursor(win, { oldinfo.botline, 0 })
+    vim.api.nvim_win_set_cursor(win, oldcursor)
+  else
+    error(debug.traceback("Unknown sorting strategy: " .. (strategy or "")))
+  end
+end
+
+local function del_win(name, win_id, force, bdelete)
+  if win_id == nil or not vim.api.nvim_win_is_valid(win_id) then
+    return
+  end
+
+  local bufnr = vim.api.nvim_win_get_buf(win_id)
+  if bdelete then
+    utils.buf_delete(bufnr)
+  end
+
+  if not vim.api.nvim_win_is_valid(win_id) then
+    return
+  end
+
+  if not pcall(vim.api.nvim_win_close, win_id, force) then
+    log.trace("Unable to close window: ", name, "/", win_id)
+  end
+end
+
 local pickers = {}
 
 -- TODO: Add overscroll option for results buffer
@@ -596,25 +629,6 @@ function Picker:recalculate_layout()
   -- self.max_results = popup_opts.results.height
 end
 
-function Picker.del_win(name, win_id, force, bdelete)
-  if win_id == nil or not vim.api.nvim_win_is_valid(win_id) then
-    return
-  end
-
-  local bufnr = vim.api.nvim_win_get_buf(win_id)
-  if bdelete then
-    utils.buf_delete(bufnr)
-  end
-
-  if not vim.api.nvim_win_is_valid(win_id) then
-    return
-  end
-
-  if not pcall(vim.api.nvim_win_close, win_id, force) then
-    log.trace("Unable to close window: ", name, "/", win_id)
-  end
-end
-
 function Picker:hide_preview()
   if not self.previewer then
     return
@@ -627,42 +641,12 @@ function Picker:hide_preview()
 
   self.hidden_previewer = self.previewer
   self.previewer = nil
-  local window_options = self:_get_window_options()
 
-  self:_remove_autocmd_on_buf_leave(self.prompt_bufnr)
+  local oldinfo = vim.fn.getwininfo(status.results_win)[1]
+  local oldcursor = vim.api.nvim_win_get_cursor(status.results_win)
 
-  Picker.del_win("preview_win", status.preview_win)
-  Picker.del_win("preview_border_win", status.preview_border_win)
-  Picker.del_win("results_win", status.results_win)
-  Picker.del_win("results_border_win", status.results_border_win)
-  Picker.del_win("prompt_win", status.prompt_win)
-  Picker.del_win("prompt_border_win", status.prompt_border_win)
-
-  local results_border_win, prompt_border_win
-  -- popup.create sets height == vim.api.nvim_buf_line_count(self.results_bufnr)
-  self.results_win, _, results_border_win = self:_create_window(nil, window_options.results)
-  a.nvim_win_set_buf(self.results_win, self.results_bufnr)
-  self.prompt_win, _, prompt_border_win = self:_create_window(self.prompt_bufnr, window_options.prompt)
-  state.set_status(
-    self.prompt_bufnr,
-    setmetatable({
-      prompt_bufnr = self.prompt_bufnr,
-      prompt_win = self.prompt_win,
-      prompt_border_win = prompt_border_win,
-
-      results_bufnr = self.results_bufnr,
-      results_win = self.results_win,
-      results_border_win = results_border_win,
-
-      preview_bufnr = self.preview_bufnr,
-      preview_win = nil,
-      preview_border_win = nil,
-      picker = self,
-    }, {
-      __mode = "kv",
-    })
-  )
-  self:_autocmd_on_buf_leave(self.prompt_bufnr)
+  self:recalculate_layout()
+  update_scroll(status.results_win, oldinfo, oldcursor, self.sorting_strategy, self.max_results)
 end
 
 function Picker:unhide_preview()
@@ -677,48 +661,13 @@ function Picker:unhide_preview()
 
   self.previewer = self.hidden_previewer
   self.hidden_previewer = nil
-  local window_options = self:_get_window_options()
-  if not window_options.preview then
-    return
-  end
 
-  self:_remove_autocmd_on_buf_leave(self.prompt_bufnr)
-  Picker.del_win("results_win", status.results_win)
-  Picker.del_win("results_border_win", status.results_border_win)
-  Picker.del_win("prompt_win", status.prompt_win)
-  Picker.del_win("prompt_border_win", status.prompt_border_win)
+  local oldinfo = vim.fn.getwininfo(status.results_win)[1]
+  local oldcursor = vim.api.nvim_win_get_cursor(status.results_win)
 
-  local prompt_border_win, results_border_win, preview_border_win, preview_opts
-  self.results_win, _, results_border_win = self:_create_window(nil, window_options.results)
-  -- popup.create sets height == vim.api.nvim_buf_line_count(self.results_bufnr)
-  a.nvim_win_set_buf(self.results_win, self.results_bufnr)
-  self.preview_win, preview_opts, preview_border_win = self:_create_window(status.preview_bufnr, window_options.preview)
-  self.prompt_win, _, prompt_border_win = self:_create_window(self.prompt_bufnr, window_options.prompt)
-  self.preview_border = preview_opts.border
-  state.set_status(
-    self.prompt_bufnr,
-    setmetatable({
-      prompt_bufnr = self.prompt_bufnr,
-      prompt_win = self.prompt_win,
-      prompt_border_win = prompt_border_win,
-
-      results_bufnr = self.results_bufnr,
-      results_win = self.results_win,
-      results_border_win = results_border_win,
-
-      preview_bufnr = self.preview_bufnr,
-      preview_win = self.preview_win,
-      preview_border_win = preview_border_win,
-      picker = self,
-    }, {
-      __mode = "kv",
-    })
-  )
-  self:_autocmd_on_buf_leave(self.prompt_bufnr)
-  if self.previewer.state then
-    self.previewer.state.winid = self.preview_win
-  end
+  self:recalculate_layout()
   self:refresh_previewer()
+  update_scroll(status.results_win, oldinfo, oldcursor, self.sorting_strategy, self.max_results)
 end
 
 function Picker:toggle_preview()
@@ -813,13 +762,13 @@ function Picker.close_windows(status)
   local results_border_win = status.results_border_win
   local preview_border_win = status.preview_border_win
 
-  Picker.del_win("prompt_win", prompt_win, true, true)
-  Picker.del_win("results_win", results_win, true, true)
-  Picker.del_win("preview_win", preview_win, true, true)
+  del_win("prompt_win", prompt_win, true, true)
+  del_win("results_win", results_win, true, true)
+  del_win("preview_win", preview_win, true, true)
 
-  Picker.del_win("prompt_border_win", prompt_border_win, true, true)
-  Picker.del_win("results_border_win", results_border_win, true, true)
-  Picker.del_win("preview_border_win", preview_border_win, true, true)
+  del_win("prompt_border_win", prompt_border_win, true, true)
+  del_win("results_border_win", results_border_win, true, true)
+  del_win("preview_border_win", preview_border_win, true, true)
 
   -- Buffers should be deleted but it may be also the case that buffer was swapped in window
   -- so make sure that buffers created in Picker are deleted.
@@ -1414,20 +1363,6 @@ function pickers.on_close_prompt(prompt_bufnr)
   end
 
   picker.close_windows(status)
-end
-
-local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
-  if strategy == "ascending" then
-    vim.api.nvim_win_set_cursor(win, { max_results, 0 })
-    vim.api.nvim_win_set_cursor(win, { oldinfo.topline, 0 })
-    vim.api.nvim_win_set_cursor(win, oldcursor)
-  elseif strategy == "descending" then
-    vim.api.nvim_win_set_cursor(win, { 1, 0 })
-    vim.api.nvim_win_set_cursor(win, { oldinfo.botline, 0 })
-    vim.api.nvim_win_set_cursor(win, oldcursor)
-  else
-    error(debug.traceback("Unknown sorting strategy: " .. (strategy or "")))
-  end
 end
 
 function pickers.on_resize_window(prompt_bufnr)
