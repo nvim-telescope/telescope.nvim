@@ -703,7 +703,7 @@ append(
     previewer or use the command-line program bat as the previewer:
       require("telescope.previewers").qflist.new
 
-    Default: require("telescope.previewers").vim_buffer_vimgrep.new]]
+    Default: require("telescope.previewers").vim_buffer_qflist.new]]
 )
 
 append(
