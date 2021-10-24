@@ -1,13 +1,25 @@
 local Previewer = {}
 Previewer.__index = Previewer
 
+local force_function_wrap = function(value)
+  if value ~= nil then
+    if type(value) ~= "function" then
+      return function()
+        return tostring(value)
+      end
+    else
+      return value
+    end
+  end
+end
+
 function Previewer:new(opts)
   opts = opts or {}
 
   return setmetatable({
     state = nil,
-    _title_fn = opts.title,
-    _dyn_title_fn = opts.dyn_title,
+    _title_fn = force_function_wrap(opts.title),
+    _dyn_title_fn = force_function_wrap(opts.dyn_title),
     _setup_func = opts.setup,
     _teardown_func = opts.teardown,
     _send_input = opts.send_input,
@@ -32,18 +44,16 @@ function Previewer:preview(entry, status)
   return self:preview_fn(entry, status)
 end
 
-function Previewer:title()
-  if self._title_fn then
-    return self:_title_fn()
-  end
-  return "Preview"
-end
-
-function Previewer:dynamic_title(entry)
-  if self._title_fn then
+function Previewer:title(entry, dynamic)
+  if dynamic == true and self._dyn_title_fn ~= nil then
+    if entry == nil then
+      return nil
+    end
     return self:_dyn_title_fn(entry)
   end
-  return "Preview"
+  if self._title_fn ~= nil then
+    return self:_title_fn()
+  end
 end
 
 function Previewer:teardown()

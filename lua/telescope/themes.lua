@@ -29,7 +29,6 @@ function themes.get_dropdown(opts)
     theme = "dropdown",
 
     results_title = false,
-    preview_title = "Preview",
 
     sorting_strategy = "ascending",
     layout_strategy = "center",
@@ -110,8 +109,6 @@ function themes.get_ivy(opts)
     theme = "ivy",
 
     sorting_strategy = "ascending",
-
-    preview_title = "",
 
     layout_strategy = "bottom_pane",
     layout_config = {

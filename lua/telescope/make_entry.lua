@@ -909,6 +909,10 @@ function make_entry.gen_from_ctags(opts)
       tag, file, lnum = string.match(line, "([^\t]+)\t([^\t]+)\t(%d+).*")
     end
 
+    if Path.path.sep == "\\" then
+      file = string.gsub(file, "/", "\\")
+    end
+
     if opts.only_current_file and file ~= current_file then
       return nil
     end
