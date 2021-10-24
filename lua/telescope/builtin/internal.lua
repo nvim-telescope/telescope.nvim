@@ -373,7 +373,8 @@ internal.oldfiles = function(opts)
   if opts.include_current_session then
     for _, buffer in ipairs(vim.split(vim.fn.execute ":buffers! t", "\n")) do
       local match = tonumber(string.match(buffer, "%s*(%d+)"))
-      if match then
+      local open_by_lsp = string.match(buffer, "line 0$")
+      if match and not open_by_lsp then
         local file = vim.api.nvim_buf_get_name(match)
         if vim.loop.fs_stat(file) and match ~= current_buffer then
           table.insert(results, file)
