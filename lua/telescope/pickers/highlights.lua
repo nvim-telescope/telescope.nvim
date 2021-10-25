@@ -69,13 +69,19 @@ function Highlighter:hi_selection(row, caret)
   a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
   a.nvim_buf_add_highlight(results_bufnr, ns_telescope_selection, "TelescopeSelectionCaret", row, 0, #caret)
 
-  a.nvim_buf_set_extmark(
-    results_bufnr,
-    ns_telescope_selection,
-    row,
-    #caret,
-    { end_line = row + 1, hl_eol = true, hl_group = "TelescopeSelection" }
-  )
+  local conf = require("telescope.config").values
+
+  if conf.hl_result_eol then
+    a.nvim_buf_set_extmark(
+      results_bufnr,
+      ns_telescope_selection,
+      row,
+      #caret,
+      { end_line = row + 1, hl_eol = true, hl_group = "TelescopeSelection" }
+    )
+  else
+    a.nvim_buf_add_highlight(results_bufnr, ns_telescope_selection, "TelescopeSelection", row, #caret, -1)
+  end
 end
 
 function Highlighter:hi_multiselect(row, is_selected)
