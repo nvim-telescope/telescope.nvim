@@ -266,7 +266,7 @@ lsp.code_actions = function(opts)
         return action
       end
       local arguments = (action.command and action.command.arguments) or action.arguments
-      action.edit = fix_zero_version(argments[1])
+      action.edit = fix_zero_version(arguments[1])
       return action
     end
 
