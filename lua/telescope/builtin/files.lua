@@ -454,12 +454,13 @@ files.file_browser = function(opts)
 
       local clean_prompt = function()
         local current_picker = action_state.get_current_picker(prompt_bufnr)
-        current_picker:refresh(opts.new_finder {path = current_picker.cwd}, {reset_prompt = true})
+        current_picker:refresh(opts.new_finder(current_picker.cwd), {reset_prompt = true})
       end
 
       local toggle_hidden = function()
         local current_picker = action_state.get_current_picker(prompt_bufnr)
-        current_picker:refresh(opts.new_finder {path = current_picker.cwd, hidden = not opts.hidden}, {reset_prompt = true})
+        opts.hidden = not opts.hidden
+        current_picker:refresh(opts.new_finder(current_picker.cwd))
       end
 
       map("i", "<C-e>", create_new_file)
