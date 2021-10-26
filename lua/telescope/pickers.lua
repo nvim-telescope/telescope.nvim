@@ -104,6 +104,8 @@ function Picker:new(opts)
     layout_strategy = layout_strategy,
     layout_config = config.smarter_depth_2_extend(opts.layout_config or {}, config.values.layout_config or {}),
 
+    __cycle_layout_list = get_default(opts.cycle_layout_list, config.values.cycle_layout_list),
+
     window = {
       winblend = get_default(
         opts.winblend,
@@ -553,6 +555,20 @@ function Picker:recalculate_layout()
   -- self.max_results = popup_opts.results.height
 end
 
+local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
+  if strategy == "ascending" then
+    vim.api.nvim_win_set_cursor(win, { max_results, 0 })
+    vim.api.nvim_win_set_cursor(win, { oldinfo.topline, 0 })
+    vim.api.nvim_win_set_cursor(win, oldcursor)
+  elseif strategy == "descending" then
+    vim.api.nvim_win_set_cursor(win, { 1, 0 })
+    vim.api.nvim_win_set_cursor(win, { oldinfo.botline, 0 })
+    vim.api.nvim_win_set_cursor(win, oldcursor)
+  else
+    error(debug.traceback("Unknown sorting strategy: " .. (strategy or "")))
+  end
+end
+
 function Picker:hide_preview()
   -- 1. Hide the window (and border)
   -- 2. Resize prompt & results windows accordingly
@@ -565,6 +581,35 @@ function Picker:toggle_padding()
   -- else
   --    1. Lookup previous `height` and `width` of picker
   --    2. Set both to previous values
+end
+
+function Picker:cycle_layout(dir)
+  if self.__layout_index then
+    self.__layout_index = ((self.__layout_index + dir - 1) % #self.__cycle_layout_list) + 1
+  else
+    self.__layout_index = 1
+  end
+  local new_layout = self.__cycle_layout_list[self.__layout_index]
+  if type(new_layout) == "string" then
+    self.layout_strategy = new_layout
+    self.layout_config = nil
+    self.previewer = self.all_previewers[1]
+  elseif type(new_layout) == "table" then
+    self.layout_strategy = new_layout.layout_strategy
+    self.layout_config = new_layout.layout_config
+    self.previewer = (new_layout.previewer == nil and self.all_previewers[self.current_previewer_index])
+      or new_layout.previewer
+  else
+    error("Not a valid layout setup: " .. vim.inspect(new_layout) .. "\nShould be a string or a table")
+  end
+
+  local oldinfo = vim.fn.getwininfo(self.results_win)[1]
+  local oldcursor = vim.api.nvim_win_get_cursor(self.results_win)
+  self:recalculate_layout()
+  self:refresh_previewer()
+
+  -- update scrolled position
+  update_scroll(self.results_win, oldinfo, oldcursor, self.sorting_strategy, self.max_results)
 end
 
 -- TODO: update multi-select with the correct tag name when available
@@ -1248,20 +1293,6 @@ function pickers.on_close_prompt(prompt_bufnr)
   end
 
   picker.close_windows(status)
-end
-
-local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
-  if strategy == "ascending" then
-    vim.api.nvim_win_set_cursor(win, { max_results, 0 })
-    vim.api.nvim_win_set_cursor(win, { oldinfo.topline, 0 })
-    vim.api.nvim_win_set_cursor(win, oldcursor)
-  elseif strategy == "descending" then
-    vim.api.nvim_win_set_cursor(win, { 1, 0 })
-    vim.api.nvim_win_set_cursor(win, { oldinfo.botline, 0 })
-    vim.api.nvim_win_set_cursor(win, oldcursor)
-  else
-    error(debug.traceback("Unknown sorting strategy: " .. (strategy or "")))
-  end
 end
 
 function pickers.on_resize_window(prompt_bufnr)
