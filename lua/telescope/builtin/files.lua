@@ -418,16 +418,10 @@ files.file_browser = function(opts)
       local rename_file = function()
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         local old_name = Path:new(action_state.get_selected_entry()[1])
-
-        if old_name.filename == "../" then
-          print "Please select a file!"
-          return
-        end
-
         local new_name = vim.fn.input("Insert a new name: ", old_name:make_relative())
 
         old_name:rename{new_name = new_name}
-        current_picker:refresh(opts.new_finder {path = current_picker.cwd}, {reset_prompt = true})
+        current_picker:refresh(opts.new_finder(current_picker.cwd), {reset_prompt = true})
       end
 
       local delete_file = function()
@@ -437,6 +431,10 @@ files.file_browser = function(opts)
         if confirm == 1 then
           current_picker:delete_selection(function(entry)
             local p = Path:new(entry[1])
+            if p.filename == "../" then
+                print "Please select a file or folder!"
+                return
+            end
             p:rm{recursive = p:is_dir()}
           end)
         end
