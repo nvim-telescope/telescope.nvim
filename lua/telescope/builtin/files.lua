@@ -415,8 +415,61 @@ files.file_browser = function(opts)
         end
       end
 
+      local rename_file = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local old_name = Path:new(action_state.get_selected_entry()[1])
+
+        if old_name.filename == "../" then
+          print "Please select a file!"
+          return
+        end
+
+        local new_name = vim.fn.input("Insert a new name: ", old_name:make_relative())
+
+        old_name:rename{new_name = new_name}
+        current_picker:refresh(opts.new_finder {path = current_picker.cwd}, {reset_prompt = true})
+      end
+
+      local delete_file = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        local confirm = vim.fn.confirm("You're about to perform a destructive action." .. " Proceed? [y/N]: ", "&Yes\n&No",
+        "No")
+        if confirm == 1 then
+          current_picker:delete_selection(function(entry)
+            local p = Path:new(entry[1])
+            p:rm{recursive = p:is_dir()}
+          end)
+        end
+      end
+
+      local open_file = function()
+        local sel = Path:new(action_state.get_selected_entry()[1])
+        os.execute("open " .. sel:expand():gsub(" ", "\\ "))
+      end
+
+      local change_directory = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        vim.cmd(":cd " .. current_picker.cwd)
+      end
+
+      local clean_prompt = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        current_picker:refresh(opts.new_finder {path = current_picker.cwd}, {reset_prompt = true})
+      end
+
+      local toggle_hidden = function()
+        local current_picker = action_state.get_current_picker(prompt_bufnr)
+        current_picker:refresh(opts.new_finder {path = current_picker.cwd, hidden = not opts.hidden}, {reset_prompt = true})
+      end
+
       map("i", "<C-e>", create_new_file)
       map("n", "<C-e>", create_new_file)
+      map("i", "<C-a>", clean_prompt)
+      map("i", "<C-x>", delete_file)
+      map("i", "<C-t>", change_directory)
+      map("i", "<C-h>", toggle_hidden)
+      map("i", "<C-r>", rename_file)
+      map("i", "<C-o>", open_file)
       return true
     end,
   }):find()
