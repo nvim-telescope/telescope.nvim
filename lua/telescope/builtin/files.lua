@@ -426,15 +426,10 @@ files.file_browser = function(opts)
 
       local delete_file = function()
         local current_picker = action_state.get_current_picker(prompt_bufnr)
-        local confirm = vim.fn.confirm("You're about to perform a destructive action." .. " Proceed? [y/N]: ", "&Yes\n&No",
-        "No")
+        local confirm = vim.fn.confirm("You're about to perform a destructive action. Proceed? [y/N]: ", "&Yes\n&No", "No")
         if confirm == 1 then
           current_picker:delete_selection(function(entry)
             local p = Path:new(entry[1])
-            if p.filename == "../" then
-                print "Please select a file or folder!"
-                return
-            end
             p:rm{recursive = p:is_dir()}
           end)
         end
