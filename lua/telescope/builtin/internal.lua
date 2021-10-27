@@ -1228,4 +1228,57 @@ local function apply_checks(mod)
   return mod
 end
 
+internal.find_runtime_files = function(opts)
+  opts = opts or {}
+  local files = require "telescope.builtin.files"
+  local runtimepath = vim.opt.runtimepath:get()
+  local runtimedirs = {}
+
+  for _, entry in ipairs(runtimepath) do
+    vim.list_extend(runtimedirs, vim.fn.globpath(entry, "", 1, 1))
+  end
+
+  local find_in_dir = function()
+    local entry = action_state.get_selected_entry()
+    opts.cwd = entry.value
+    files.find_files(opts)
+    vim.cmd [[normal! A]]
+  end
+
+  local grep_in_dir = function()
+    local entry = action_state.get_selected_entry()
+    opts.cwd = entry.value
+    files.live_grep(opts)
+    vim.cmd [[normal! A]]
+  end
+
+  local set_cwd = function()
+    local entry = action_state.get_selected_entry()
+    local dir = entry.value
+    if dir ~= nil and vim.fn.getcwd() ~= dir then
+      vim.api.nvim_set_current_dir(dir)
+      vim.notify("Set CWD to " .. dir)
+      vim.cmd [[normal! A]]
+    end
+  end
+
+  pickers.new(opts, {
+    prompt_title = "select a runtime directory",
+    layout_strategy = "flex",
+    finder = finders.new_table(runtimedirs),
+    sorter = sorters.get_generic_fuzzy_sorter(opts),
+    attach_mappings = function(_, map)
+      map("i", "<cr>", find_in_dir)
+      map("n", "<cr>", find_in_dir)
+      map("i", "<c-y>", set_cwd)
+      map("n", "<c-y>", set_cwd)
+      map("i", "<c-f>", find_in_dir)
+      map("n", "<c-f>", find_in_dir)
+      map("i", "<c-g>", grep_in_dir)
+      map("n", "<c-g>", grep_in_dir)
+      return true
+    end,
+  }):find()
+end
+
 return apply_checks(internal)
