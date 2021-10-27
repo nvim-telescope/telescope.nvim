@@ -609,10 +609,8 @@ function Picker:recalculate_layout()
       self.preview_border = preview_opts and preview_opts.border
     end
   elseif preview_win ~= nil then
-    vim.api.nvim_win_close(preview_win, false)
-    if status.preview_border_win then
-      vim.api.nvim_win_close(status.preview_border_win, false)
-    end
+    del_win("preview_win", preview_win, true)
+    del_win("preview_win", status.preview_border_win, true)
     status.preview_win = nil
     status.preview_border_win = nil
     state.set_status(prompt_win, status)
