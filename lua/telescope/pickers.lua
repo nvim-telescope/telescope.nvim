@@ -336,33 +336,6 @@ function Picker:_create_window(bufnr, popup_opts, nowrap)
   return win, opts, border_win
 end
 
-function Picker:_get_window_options()
-  local line_count = vim.o.lines - vim.o.cmdheight
-  if vim.o.laststatus ~= 0 then
-    line_count = line_count - 1
-  end
-
-  local popup_opts = self:get_window_options(vim.o.columns, line_count)
-
-  -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
-  popup_opts.results.minheight = popup_opts.results.height
-  popup_opts.results.highlight = "TelescopeNormal"
-  popup_opts.results.borderhighlight = "TelescopeResultsBorder"
-  popup_opts.results.titlehighlight = "TelescopeResultsTitle"
-  popup_opts.prompt.minheight = popup_opts.prompt.height
-  popup_opts.prompt.highlight = "TelescopeNormal"
-  popup_opts.prompt.borderhighlight = "TelescopePromptBorder"
-  popup_opts.prompt.titlehighlight = "TelescopePromptTitle"
-  if popup_opts.preview then
-    popup_opts.preview.minheight = popup_opts.preview.height
-    popup_opts.preview.highlight = "TelescopePreviewNormal"
-    popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
-    popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
-  end
-
-  return popup_opts
-end
-
 function Picker:_autocmd_on_buf_leave(prompt_bufnr, attach_to_bufnr)
   if attach_to_bufnr == nil then
     attach_to_bufnr = prompt_bufnr
@@ -404,7 +377,28 @@ function Picker:find()
   -- 2. Options window
   -- 3. Preview window
 
-  local popup_opts = self:_get_window_options()
+  local line_count = vim.o.lines - vim.o.cmdheight
+  if vim.o.laststatus ~= 0 then
+    line_count = line_count - 1
+  end
+
+  local popup_opts = self:get_window_options(vim.o.columns, line_count)
+
+  -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
+  popup_opts.results.minheight = popup_opts.results.height
+  popup_opts.results.highlight = "TelescopeNormal"
+  popup_opts.results.borderhighlight = "TelescopeResultsBorder"
+  popup_opts.results.titlehighlight = "TelescopeResultsTitle"
+  popup_opts.prompt.minheight = popup_opts.prompt.height
+  popup_opts.prompt.highlight = "TelescopeNormal"
+  popup_opts.prompt.borderhighlight = "TelescopePromptBorder"
+  popup_opts.prompt.titlehighlight = "TelescopePromptTitle"
+  if popup_opts.preview then
+    popup_opts.preview.minheight = popup_opts.preview.height
+    popup_opts.preview.highlight = "TelescopePreviewNormal"
+    popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
+    popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
+  end
 
   local results_bufnr = create_named_buffer(false, false, "[TelescopeResults]")
   local results_win, _, results_border_win = self:_create_window(results_bufnr, popup_opts.results, true)
@@ -412,16 +406,12 @@ function Picker:find()
   self.results_bufnr = results_bufnr
   self.results_win = results_win
 
-  -- TODO: Should probably always show all the line for results win, so should implement a resize for the windows
-
   local preview_win, preview_bufnr, preview_border_win
   preview_bufnr = create_named_buffer(false, false, "[TelescopePreview]")
   self.preview_bufnr = preview_bufnr
   if popup_opts.preview then
     preview_win, _, preview_border_win = self:_create_window(preview_bufnr, popup_opts.preview)
   end
-
-  -- TODO: We need to center this and make it prettier...
 
   local prompt_bufnr = create_named_buffer(false, false, "[TelescopePrompt]")
   local prompt_win, _, prompt_border_win = self:_create_window(prompt_bufnr, popup_opts.prompt)
