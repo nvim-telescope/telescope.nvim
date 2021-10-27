@@ -1260,6 +1260,19 @@ builtin.jumplist({opts})                                  *builtin.jumplist()*
         {ignore_filename} (boolean)  dont show filenames (default: true)
 
 
+builtin.find_runtime_files({opts})              *builtin.find_runtime_files()*
+    Lists directories from `vim.opt.runtimepath` and allows to quickly jump,
+    search for file, or grep for text in any entry
+    - Default keymaps:
+      - `<cr>` or `<C-f>`: search for files in selectied directory
+      - `<C-g>`: grep for text in selectied directory
+      - `<C-y>`: change CWD to selectied directory
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
 builtin.lsp_references({opts})                      *builtin.lsp_references()*
     Lists LSP references for word under the cursor, jumps to reference on
     `<cr>`
