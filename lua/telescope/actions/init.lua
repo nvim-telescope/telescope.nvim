@@ -859,16 +859,6 @@ actions.cycle_history_prev = function(prompt_bufnr)
   end
 end
 
---- TODO(l-kershaw)
-actions.cycle_layout_next = function(prompt_bufnr)
-  action_state.get_current_picker(prompt_bufnr):cycle_layout(1)
-end
-
---- TODO(l-kershaw)
-actions.cycle_layout_prev = function(prompt_bufnr)
-  action_state.get_current_picker(prompt_bufnr):cycle_layout(-1)
-end
-
 --- Open the quickfix list
 actions.open_qflist = function(_)
   vim.cmd [[copen]]
