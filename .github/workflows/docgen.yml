@@ -25,10 +25,15 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.url }}-${{ hashFiles('todays-date') }}
 
       - name: Prepare
+        env:
+         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
           test -d _neovim || {
             mkdir -p _neovim
-            curl -sL ${{ matrix.url }} | tar xzf - --strip-components=1 -C "${PWD}/_neovim"
+            gh api "repos/neovim/neovim/releases/latest" --jq '.assets[].browser_download_url' \
+                  | grep 'nvim-linux64.tar.gz$' \
+                  | xargs -I % curl -sL % \
+                  | tar xzf - --strip-components=1 -C "${PWD}/_neovim"
           }
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
