@@ -524,6 +524,7 @@ function Picker:recalculate_layout()
     else
       popup_opts.preview.highlight = "TelescopeNormal"
       popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
+      popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
       preview_win, preview_opts, preview_border_win = self:_create_window("", popup_opts.preview)
       status.preview_win = preview_win
       status.preview_border_win = preview_border_win
