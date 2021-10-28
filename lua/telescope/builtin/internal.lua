@@ -1230,15 +1230,12 @@ end
 
 internal.find_runtime_files = function(opts)
   opts = opts or {}
+  opts.pre_filter = opts.pre_filter or ""
+  local runtimedirs = vim.api.nvim_get_runtime_file(opts.pre_filter, true)
+
   local files = require "telescope.builtin.files"
-  local runtimepath = vim.opt.runtimepath:get()
-  local runtimedirs = {}
 
-  for _, entry in ipairs(runtimepath) do
-    vim.list_extend(runtimedirs, vim.fn.globpath(entry, "", 1, 1))
-  end
-
-  local find_in_dir = function()
+  local find_in_dir = function(prompt_bufnr)
     local entry = action_state.get_selected_entry()
     opts.cwd = entry.value
     files.find_files(opts)
@@ -1252,7 +1249,7 @@ internal.find_runtime_files = function(opts)
     vim.cmd [[normal! A]]
   end
 
-  local set_cwd = function()
+  local set_cwd = function(prompt_bufnr)
     local entry = action_state.get_selected_entry()
     local dir = entry.value
     if dir ~= nil and vim.fn.getcwd() ~= dir then
@@ -1263,10 +1260,9 @@ internal.find_runtime_files = function(opts)
   end
 
   pickers.new(opts, {
-    prompt_title = "select a runtime directory",
-    layout_strategy = "flex",
+    prompt_title = "Select A Runtime Directory",
     finder = finders.new_table(runtimedirs),
-    sorter = sorters.get_generic_fuzzy_sorter(opts),
+    sorter = conf.file_sorter(opts),
     attach_mappings = function(_, map)
       map("i", "<cr>", find_in_dir)
       map("n", "<cr>", find_in_dir)

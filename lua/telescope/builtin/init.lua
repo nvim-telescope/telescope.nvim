@@ -359,9 +359,9 @@ builtin.jumplist = require_on_exported_call("telescope.builtin.internal").jumpli
 
 --- Lists directories from `vim.opt.runtimepath` and allows to quickly jump, search for file, or grep for text in any entry
 --- - Default keymaps:
----   - `<cr>` or `<C-f>`: search for files in selectied directory
----   - `<C-g>`: grep for text in selectied directory
----   - `<C-y>`: change CWD to selectied directory
+---   - `<cr>` or `<C-f>`: search for files in selected directory
+---   - `<C-g>`: grep for text in selected directory
+---   - `<C-y>`: change CWD to selected directory
 ---@param opts table: options to pass to the picker
 builtin.find_runtime_files = require_on_exported_call("telescope.builtin.internal").find_runtime_files
 --
