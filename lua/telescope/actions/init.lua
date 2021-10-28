@@ -374,7 +374,7 @@ actions.paste_register = function(prompt_bufnr)
   -- ensure that the buffer can be written to
   if vim.api.nvim_buf_get_option(vim.api.nvim_get_current_buf(), "modifiable") then
     print "Paste!"
-    vim.api.nvim_paste(selection.content, true, -1)
+    vim.api.nvim_paste(selection[1], true, -1)
   end
 end
 
