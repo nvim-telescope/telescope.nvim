@@ -19,11 +19,13 @@ action_layout.toggle_prompt_position = function(prompt_bufnr)
   if layout_strats._configurations[picker.layout_strategy].prompt_position then
     if picker.layout_config.prompt_position == "top" then
       picker.layout_config.prompt_position = "bottom"
+      picker.layout_config[picker.layout_strategy].prompt_position = "bottom"
     else
       picker.layout_config.prompt_position = "top"
+      picker.layout_config[picker.layout_strategy].prompt_position = "top"
     end
+    picker:full_layout_update()
   end
-  -- TODO full_layout_update here
 end
 
 --- Toggles the `mirror` option between `true` and `false`.
@@ -35,8 +37,9 @@ action_layout.toggle_mirror = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
   if layout_strats._configurations[picker.layout_strategy].mirror then
     picker.layout_config.mirror = not picker.layout_config.mirror
+    picker.layout_config[picker.layout_strategy].mirror = not picker.layout_config.mirror
+    picker:full_layout_update()
   end
-  -- TODO full_layout_update here
 end
 
 -- Helper function for `cycle_layout_next` and `cycle_layout_prev`.
@@ -62,7 +65,7 @@ local get_cycle_layout = function(dir)
       error("Not a valid layout setup: " .. vim.inspect(new_layout) .. "\nShould be a string or a table")
     end
 
-    -- TODO full_layout_update here
+    picker:full_layout_update()
   end
 end
 

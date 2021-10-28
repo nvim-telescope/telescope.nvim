@@ -569,6 +569,16 @@ local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
   end
 end
 
+function Picker:full_layout_update()
+  local oldinfo = vim.fn.getwininfo(self.results_win)[1]
+  local oldcursor = vim.api.nvim_win_get_cursor(self.results_win)
+  self:recalculate_layout()
+  self:refresh_previewer()
+
+  -- update scrolled position
+  update_scroll(self.results_win, oldinfo, oldcursor, self.sorting_strategy, self.max_results)
+end
+
 function Picker:hide_preview()
   -- 1. Hide the window (and border)
   -- 2. Resize prompt & results windows accordingly
@@ -1270,13 +1280,7 @@ function pickers.on_resize_window(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
 
-  local oldinfo = vim.fn.getwininfo(status.results_win)[1]
-  local oldcursor = vim.api.nvim_win_get_cursor(status.results_win)
-  picker:recalculate_layout()
-  picker:refresh_previewer()
-
-  -- update scrolled position
-  update_scroll(status.results_win, oldinfo, oldcursor, picker.sorting_strategy, picker.max_results)
+  picker:full_layout_update()
 end
 
 --- Get the prompt text without the prompt prefix.
