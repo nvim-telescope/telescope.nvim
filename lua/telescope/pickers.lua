@@ -31,49 +31,6 @@ local ns_telescope_matching = a.nvim_create_namespace "telescope_matching"
 local ns_telescope_prompt = a.nvim_create_namespace "telescope_prompt"
 local ns_telescope_prompt_prefix = a.nvim_create_namespace "telescope_prompt_prefix"
 
-local function create_named_buffer(listed, scratch, name)
-  listed = vim.F.if_nil(listed, false)
-  scratch = vim.F.if_nil(scratch, false)
-  local bufnr = vim.api.nvim_create_buf(listed, scratch)
-  assert(bufnr, "Failed to create buffer")
-  vim.api.nvim_buf_set_name(bufnr, name)
-  vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
-  return bufnr
-end
-
-local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
-  if strategy == "ascending" then
-    vim.api.nvim_win_set_cursor(win, { max_results, 0 })
-    vim.api.nvim_win_set_cursor(win, { oldinfo.topline, 0 })
-    vim.api.nvim_win_set_cursor(win, oldcursor)
-  elseif strategy == "descending" then
-    vim.api.nvim_win_set_cursor(win, { 1, 0 })
-    vim.api.nvim_win_set_cursor(win, { oldinfo.botline, 0 })
-    vim.api.nvim_win_set_cursor(win, oldcursor)
-  else
-    error(debug.traceback("Unknown sorting strategy: " .. (strategy or "")))
-  end
-end
-
-local function del_win(name, win_id, force, bdelete)
-  if win_id == nil or not vim.api.nvim_win_is_valid(win_id) then
-    return
-  end
-
-  local bufnr = vim.api.nvim_win_get_buf(win_id)
-  if bdelete then
-    utils.buf_delete(bufnr)
-  end
-
-  if not vim.api.nvim_win_is_valid(win_id) then
-    return
-  end
-
-  if not pcall(vim.api.nvim_win_close, win_id, force) then
-    log.trace("Unable to close window: ", name, "/", win_id)
-  end
-end
-
 local pickers = {}
 
 -- TODO: Add overscroll option for results buffer
@@ -121,7 +78,6 @@ function Picker:new(opts)
     sorter = opts.sorter or require("telescope.sorters").empty(),
 
     all_previewers = opts.previewer,
-    disable_previewer_at_startup = opts.disable_previewer_at_startup or false,
     current_previewer_index = 1,
 
     default_selection_index = opts.default_selection_index,
@@ -179,7 +135,7 @@ function Picker:new(opts)
     obj.previewer = false
   end
 
-  local __hide_previewer = utils.get_default(config.values.__hide_previewer, false)
+  local __hide_previewer = opts.__hide_previewer
   if __hide_previewer then
     obj.hidden_previewer = obj.previewer
     obj.previewer = nil
@@ -336,33 +292,6 @@ function Picker:_create_window(bufnr, popup_opts, nowrap)
   return win, opts, border_win
 end
 
-function Picker:_autocmd_on_buf_leave(prompt_bufnr, attach_to_bufnr)
-  if attach_to_bufnr == nil then
-    attach_to_bufnr = prompt_bufnr
-  end
-  local on_buf_leave = string.format(
-    [[  autocmd BufLeave <buffer=%s> ++nested ++once :silent lua require('telescope.pickers').on_close_prompt(%s)]],
-    attach_to_bufnr,
-    prompt_bufnr
-  )
-
-  local on_vim_resize = string.format(
-    [[  autocmd VimResized <buffer=%s> ++nested :lua require('telescope.pickers').on_resize_window(%s)]],
-    attach_to_bufnr,
-    prompt_bufnr
-  )
-
-  vim.cmd [[augroup PickerInsert]]
-  vim.cmd [[  au!]]
-  vim.cmd(on_buf_leave)
-  vim.cmd(on_vim_resize)
-  vim.cmd [[augroup END]]
-end
-
-function Picker:_remove_autocmd_on_buf_leave(bufnr)
-  vim.cmd(string.format([[ autocmd! PickerInsert BufLeave <buffer=%s> ]], bufnr))
-end
-
 function Picker:find()
   self:close_existing_pickers()
   self:reset_selection()
@@ -400,24 +329,24 @@ function Picker:find()
     popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
   end
 
-  local results_bufnr = create_named_buffer(false, false, "[TelescopeResults]")
-  local results_win, _, results_border_win = self:_create_window(results_bufnr, popup_opts.results, true)
+  local results_win, _, results_border_win = self:_create_window("", popup_opts.results, true)
+  local results_bufnr = a.nvim_win_get_buf(results_win)
 
   self.results_bufnr = results_bufnr
   self.results_win = results_win
 
-  local preview_win, preview_bufnr, preview_border_win
-  preview_bufnr = create_named_buffer(false, false, "[TelescopePreview]")
-  self.preview_bufnr = preview_bufnr
+  local preview_win, preview_opts, preview_bufnr, preview_border_win
   if popup_opts.preview then
-    preview_win, _, preview_border_win = self:_create_window(preview_bufnr, popup_opts.preview)
+    preview_win, preview_opts, preview_border_win = self:_create_window("", popup_opts.preview)
+    preview_bufnr = a.nvim_win_get_buf(preview_win)
   end
+  -- This is needed for updating the title
+  local preview_border = preview_opts and preview_opts.border
+  self.preview_border = preview_border
 
-  local prompt_bufnr = create_named_buffer(false, false, "[TelescopePrompt]")
-  local prompt_win, _, prompt_border_win = self:_create_window(prompt_bufnr, popup_opts.prompt)
-
+  local prompt_win, _, prompt_border_win = self:_create_window("", popup_opts.prompt)
+  local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
   self.prompt_bufnr = prompt_bufnr
-  self.prompt_win = prompt_win
 
   -- Prompt prefix
   local prompt_prefix = self.prompt_prefix
@@ -530,7 +459,23 @@ function Picker:find()
   })
 
   -- TODO: Use WinLeave as well?
-  self:_autocmd_on_buf_leave(prompt_bufnr)
+  local on_buf_leave = string.format(
+    [[  autocmd BufLeave <buffer=%s> ++nested ++once :silent lua require('telescope.pickers').on_close_prompt(%s)]],
+    prompt_bufnr,
+    prompt_bufnr
+  )
+
+  local on_vim_resize = string.format(
+    [[  autocmd VimResized <buffer=%s> ++nested :lua require('telescope.pickers').on_resize_window(%s)]],
+    prompt_bufnr,
+    prompt_bufnr
+  )
+
+  vim.cmd [[augroup PickerInsert]]
+  vim.cmd [[  au!]]
+  vim.cmd(on_buf_leave)
+  vim.cmd(on_vim_resize)
+  vim.cmd [[augroup END]]
 
   self.prompt_bufnr = prompt_bufnr
 
@@ -587,11 +532,16 @@ function Picker:recalculate_layout()
     if preview_win ~= nil then
       popup.move(preview_win, popup_opts.preview)
     else
-      popup_opts.preview.highlight = "TelescopeNormal"
+      popup_opts.preview.highlight = "TelescopePreviewNormal"
       popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
       popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
-      preview_win, preview_opts, preview_border_win = self:_create_window("", popup_opts.preview)
+      local preview_bufnr = vim.api.nvim_buf_is_valid(status.preview_bufnr) and status.preview_bufnr or ""
+      preview_win, preview_opts, preview_border_win = self:_create_window(preview_bufnr, popup_opts.preview)
+      if preview_bufnr == "" then
+        preview_bufnr = a.nvim_win_get_buf(preview_win)
+      end
       status.preview_win = preview_win
+      status.preview_bufnr = preview_bufnr
       status.preview_border_win = preview_border_win
       state.set_status(prompt_win, status)
       self.preview_win = preview_win
@@ -599,8 +549,8 @@ function Picker:recalculate_layout()
       self.preview_border = preview_opts and preview_opts.border
     end
   elseif preview_win ~= nil then
-    del_win("preview_win", preview_win, true)
-    del_win("preview_win", status.preview_border_win, true)
+    utils.win_delete("preview_win", preview_win, true)
+    utils.win_delete("preview_win", status.preview_border_win, true)
     status.preview_win = nil
     status.preview_border_win = nil
     state.set_status(prompt_win, status)
@@ -615,6 +565,20 @@ function Picker:recalculate_layout()
   -- vim.cmd [[redraw]]
 
   -- self.max_results = popup_opts.results.height
+end
+
+local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
+  if strategy == "ascending" then
+    vim.api.nvim_win_set_cursor(win, { max_results, 0 })
+    vim.api.nvim_win_set_cursor(win, { oldinfo.topline, 0 })
+    vim.api.nvim_win_set_cursor(win, oldcursor)
+  elseif strategy == "descending" then
+    vim.api.nvim_win_set_cursor(win, { 1, 0 })
+    vim.api.nvim_win_set_cursor(win, { oldinfo.botline, 0 })
+    vim.api.nvim_win_set_cursor(win, oldcursor)
+  else
+    error(debug.traceback("Unknown sorting strategy: " .. (strategy or "")))
+  end
 end
 
 function Picker:hide_preview()
@@ -741,7 +705,7 @@ end
 
 function Picker.close_windows(status)
   -- make sure we don't have BufLeave autocmd.
-  status.picker:_remove_autocmd_on_buf_leave(status.prompt_bufnr)
+  vim.cmd(string.format([[ autocmd! PickerInsert BufLeave <buffer=%s> ]], status.prompt_bufnr))
   local prompt_win = status.prompt_win
   local results_win = status.results_win
   local preview_win = status.preview_win
@@ -750,13 +714,13 @@ function Picker.close_windows(status)
   local results_border_win = status.results_border_win
   local preview_border_win = status.preview_border_win
 
-  del_win("prompt_win", prompt_win, true, true)
-  del_win("results_win", results_win, true, true)
-  del_win("preview_win", preview_win, true, true)
+  utils.win_delete("prompt_win", prompt_win, true, true)
+  utils.win_delete("results_win", results_win, true, true)
+  utils.win_delete("preview_win", preview_win, true, true)
 
-  del_win("prompt_border_win", prompt_border_win, true, true)
-  del_win("results_border_win", results_border_win, true, true)
-  del_win("preview_border_win", preview_border_win, true, true)
+  utils.win_delete("prompt_border_win", prompt_border_win, true, true)
+  utils.win_delete("results_border_win", results_border_win, true, true)
+  utils.win_delete("preview_border_win", preview_border_win, true, true)
 
   -- Buffers should be deleted but it may be also the case that buffer was swapped in window
   -- so make sure that buffers created in Picker are deleted.
@@ -1294,6 +1258,13 @@ pickers.new = function(opts, defaults)
         end
       end
     end
+  end
+
+  if result["previewer"] == false then
+    result["previewer"] = defaults["previewer"]
+    result["__hide_previewer"] = true
+  elseif type(opts["preview"]) == "table" and opts["preview"]["hide_on_startup"] then
+    result["__hide_previewer"] = true
   end
 
   return Picker:new(result)
