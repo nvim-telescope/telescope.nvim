@@ -576,7 +576,7 @@ function Picker:full_layout_update()
   self:refresh_previewer()
 
   -- update scrolled position
-  local buf_maxline = #vim.api.nvim_buf_get_lines(self.results_bufnr,0,-1,false)
+  local buf_maxline = #vim.api.nvim_buf_get_lines(self.results_bufnr, 0, -1, false)
   update_scroll(self.results_win, oldinfo, oldcursor, self.sorting_strategy, buf_maxline)
 end
 
