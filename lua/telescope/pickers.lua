@@ -555,9 +555,9 @@ function Picker:recalculate_layout()
   -- self.max_results = popup_opts.results.height
 end
 
-local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
+local update_scroll = function(win, oldinfo, oldcursor, strategy, buf_maxline)
   if strategy == "ascending" then
-    vim.api.nvim_win_set_cursor(win, { max_results, 0 })
+    vim.api.nvim_win_set_cursor(win, { buf_maxline, 0 })
     vim.api.nvim_win_set_cursor(win, { oldinfo.topline, 0 })
     vim.api.nvim_win_set_cursor(win, oldcursor)
   elseif strategy == "descending" then
@@ -576,7 +576,8 @@ function Picker:full_layout_update()
   self:refresh_previewer()
 
   -- update scrolled position
-  update_scroll(self.results_win, oldinfo, oldcursor, self.sorting_strategy, self.max_results)
+  local buf_maxline = #vim.api.nvim_buf_get_lines(self.results_bufnr,0,-1,false)
+  update_scroll(self.results_win, oldinfo, oldcursor, self.sorting_strategy, buf_maxline)
 end
 
 -- TODO: update multi-select with the correct tag name when available

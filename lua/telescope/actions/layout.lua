@@ -16,7 +16,7 @@ action_layout.toggle_preview = function(prompt_bufnr)
   picker:full_layout_update()
 end
 
--- TODO implement (mentored project available, l-kershaw)
+-- TODO IMPLEMENT (mentored project available, contact @l-kershaw)
 action_layout.toggle_padding = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
   -- if padding ~= 0
@@ -74,7 +74,7 @@ local get_cycle_layout = function(dir)
     if type(new_layout) == "string" then
       picker.layout_strategy = new_layout
       picker.layout_config = nil
-      picker.previewer = picker.all_previewers[1]
+      picker.previewer = picker.all_previewers and picker.all_previewers[1] or nil
     elseif type(new_layout) == "table" then
       picker.layout_strategy = new_layout.layout_strategy
       picker.layout_config = new_layout.layout_config
