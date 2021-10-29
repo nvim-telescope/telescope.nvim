@@ -6,6 +6,7 @@ local async = require "plenary.async"
 local await_schedule = async.util.scheduler
 local channel = require("plenary.async.control").channel
 local popup = require "plenary.popup"
+local strings = require "plenary.strings"
 
 local actions = require "telescope.actions"
 local action_set = require "telescope.actions.set"
@@ -837,20 +838,25 @@ function Picker:set_selection(row)
   local set_ok, set_errmsg = pcall(function()
     local prompt = self:_get_prompt()
 
-    -- Handle removing '> ' from beginning of previous selection (if still visible)
+    -- This block handles removing the caret from beginning of previous selection (if still visible)
+    -- Check if previous selection is still visible
     if self._selection_entry and self.manager:find_entry(self._selection_entry) then
       -- Find the (possibly new) row of the old selection
       local row_old_selection = self:get_row(self.manager:find_entry(self._selection_entry))
-      -- Only change the first couple characters, nvim_buf_set_text leaves the existing highlights
-      a.nvim_buf_set_text(
-        results_bufnr,
-        row_old_selection,
-        0,
-        row_old_selection,
-        #self.selection_caret,
-        { self.entry_prefix }
-      )
-      self.highlighter:hi_multiselect(row_old_selection, self:is_multi_selected(self._selection_entry))
+      local line = a.nvim_buf_get_lines(results_bufnr, row_old_selection, row_old_selection+1, false)[1]
+      --Check if that row still has the caret
+      if string.sub(line, 0, #self.selection_caret) == self.selection_caret then
+        -- Only change the first couple characters, nvim_buf_set_text leaves the existing highlights
+        a.nvim_buf_set_text(
+          results_bufnr,
+          row_old_selection,
+          0,
+          row_old_selection,
+          strings.strdisplaywidth(self.selection_caret),
+          { self.entry_prefix }
+        )
+        self.highlighter:hi_multiselect(row_old_selection, self:is_multi_selected(self._selection_entry))
+      end
     end
 
     local caret = self.selection_caret
