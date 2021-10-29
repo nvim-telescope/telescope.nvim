@@ -843,7 +843,7 @@ function Picker:set_selection(row)
     if self._selection_entry and self.manager:find_entry(self._selection_entry) then
       -- Find the (possibly new) row of the old selection
       local row_old_selection = self:get_row(self.manager:find_entry(self._selection_entry))
-      local line = a.nvim_buf_get_lines(results_bufnr, row_old_selection, row_old_selection+1, false)[1]
+      local line = a.nvim_buf_get_lines(results_bufnr, row_old_selection, row_old_selection + 1, false)[1]
       --Check if that row still has the caret
       if string.sub(line, 0, #self.selection_caret) == self.selection_caret then
         -- Only change the first couple characters, nvim_buf_set_text leaves the existing highlights
