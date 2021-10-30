@@ -6,7 +6,6 @@ local async = require "plenary.async"
 local await_schedule = async.util.scheduler
 local channel = require("plenary.async.control").channel
 local popup = require "plenary.popup"
-local strings = require "plenary.strings"
 
 local actions = require "telescope.actions"
 local action_set = require "telescope.actions.set"
@@ -852,7 +851,7 @@ function Picker:set_selection(row)
           row_old_selection,
           0,
           row_old_selection,
-          strings.strdisplaywidth(self.selection_caret),
+          #self.selection_caret,
           { self.entry_prefix }
         )
         self.highlighter:hi_multiselect(row_old_selection, self:is_multi_selected(self._selection_entry))
