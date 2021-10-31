@@ -321,16 +321,6 @@ append(
 )
 
 append(
-  "hl_result_eol",
-  true,
-  [[
-  Changes if the highlight for the selected item in the results
-  window is always the full width of the window
-
-  Default: true]]
-)
-
-append(
   "dynamic_preview_title",
   false,
   [[
