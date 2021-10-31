@@ -729,10 +729,7 @@ function config.set_defaults(user_defaults, tele_defaults)
   tele_defaults = if_nil(tele_defaults, telescope_defaults)
 
   -- Check if using layout keywords outside of `layout_config`
-  deprecated.picker_window_options(user_defaults)
-
-  -- Check if using `layout_defaults` instead of `layout_config`
-  user_defaults = deprecated.layout_configuration(user_defaults)
+  deprecated.options(user_defaults)
 
   local function get(name, default_val)
     if name == "layout_config" then
