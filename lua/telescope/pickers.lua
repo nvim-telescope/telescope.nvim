@@ -581,38 +581,18 @@ local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
   end
 end
 
-function Picker:hide_preview()
-  if not self.previewer then
-    return
-  end
-
+function Picker:toggle_preview()
   local status = state.get_status(self.prompt_bufnr)
-  if not status.preview_win then
+
+  if self.previewer and status.preview_win then
+    self.hidden_previewer = self.previewer
+    self.previewer = nil
+  elseif self.hidden_previewer and not status.preview_win then
+    self.previewer = self.hidden_previewer
+    self.hidden_previewer = nil
+  else
     return
   end
-
-  self.hidden_previewer = self.previewer
-  self.previewer = nil
-
-  local oldinfo = vim.fn.getwininfo(status.results_win)[1]
-  local oldcursor = vim.api.nvim_win_get_cursor(status.results_win)
-
-  self:recalculate_layout()
-  update_scroll(status.results_win, oldinfo, oldcursor, self.sorting_strategy, self.max_results)
-end
-
-function Picker:unhide_preview()
-  if not self.hidden_previewer then
-    return
-  end
-
-  local status = state.get_status(self.prompt_bufnr)
-  if status.preview_win then
-    return
-  end
-
-  self.previewer = self.hidden_previewer
-  self.hidden_previewer = nil
 
   local oldinfo = vim.fn.getwininfo(status.results_win)[1]
   local oldcursor = vim.api.nvim_win_get_cursor(status.results_win)
@@ -620,14 +600,6 @@ function Picker:unhide_preview()
   self:recalculate_layout()
   self:refresh_previewer()
   update_scroll(status.results_win, oldinfo, oldcursor, self.sorting_strategy, self.max_results)
-end
-
-function Picker:toggle_preview()
-  if self.previewer then
-    self:hide_preview()
-  elseif self.hidden_previewer then
-    self:unhide_preview()
-  end
 end
 
 function Picker:toggle_padding()
@@ -1313,8 +1285,10 @@ function pickers.on_close_prompt(prompt_bufnr)
     picker.sorter:_destroy()
   end
 
-  if picker.previewer then
-    picker.previewer:teardown()
+  if picker.all_previewers then
+    for _, v in ipairs(picker.all_previewers) do
+      v:teardown()
+    end
   end
 
   if picker.finder then
