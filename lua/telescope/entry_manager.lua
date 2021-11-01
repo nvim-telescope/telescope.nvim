@@ -137,7 +137,15 @@ function EntryManager:add_entry(picker, score, entry)
       return self:_insert_container_before(picker, index, node, new_container)
     end
 
-    if score < 1 and container[2] == score and #entry.ordinal < #container[1].ordinal then
+    -- this handles entries with the same score by using the length to break the tie
+    -- fzf allows a tiebreaker to be specified which can work in this way
+    -- length - the default which prefers shorter lines
+    -- begin - prefers line with the match closer to the beginnings
+    -- end - prefers lines with he match closer to the end
+    -- index - prefers lines that appeared earlier in the input stream
+    -- let's define the tiebreaker function
+
+    if score < 1 and container[2] == score and picker.fzf_tiebreak( #entry.ordinal < #container[1].ordinal ) then
       return self:_insert_container_before(picker, index, node, new_container)
     end
 

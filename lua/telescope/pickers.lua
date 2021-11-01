@@ -76,6 +76,8 @@ function Picker:new(opts)
     initial_mode = get_default(opts.initial_mode, config.values.initial_mode),
     debounce = get_default(tonumber(opts.debounce), nil),
 
+    fzf_tiebreak = get_default(opts.fzf_tiebreak, config.values.fzf_tiebreak),
+
     default_text = opts.default_text,
     get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
     _on_input_filter_cb = opts.on_input_filter_cb or function() end,

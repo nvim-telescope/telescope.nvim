@@ -276,6 +276,22 @@ append(
   Default: true]]
 )
 
+
+
+append(
+  "fzf_tiebreak",
+  function( current_entry, existing_entry )
+    return #current_entry < #existing_entry
+  end,
+  [[
+  fzf_tiebreak can be set to a function
+
+  Signature: function(entry2,entry1) -> boolean
+
+  Default: function that breaks the tie based on entry length
+  ]]
+)
+
 append(
   "path_display",
   {},
