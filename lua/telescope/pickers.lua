@@ -54,7 +54,7 @@ function Picker:new(opts)
   actions._clear()
   action_set._clear()
 
-  deprecated.picker_window_options(opts)
+  deprecated.options(opts)
 
   local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
 
