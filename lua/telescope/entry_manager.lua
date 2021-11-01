@@ -1,5 +1,4 @@
 local log = require "telescope.log"
-local config = require "telescope.config"
 
 local LinkedList = require "telescope.algos.linked_list"
 

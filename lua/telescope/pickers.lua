@@ -76,8 +76,6 @@ function Picker:new(opts)
     initial_mode = get_default(opts.initial_mode, config.values.initial_mode),
     debounce = get_default(tonumber(opts.debounce), nil),
 
-    fzf_tiebreak = get_default(opts.fzf_tiebrerak, config.values.fzf_tiebreak),
-
     default_text = opts.default_text,
     get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
     _on_input_filter_cb = opts.on_input_filter_cb or function() end,
@@ -107,6 +105,7 @@ function Picker:new(opts)
 
     scroll_strategy = get_default(opts.scroll_strategy, config.values.scroll_strategy),
     sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
+    fzf_tiebreak = get_default(opts.fzf_tiebreak, config.values.fzf_tiebreak),
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
     layout_strategy = layout_strategy,
