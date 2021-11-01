@@ -276,11 +276,9 @@ append(
   Default: true]]
 )
 
-
-
 append(
   "fzf_tiebreak",
-  function( current_entry, existing_entry )
+  function(current_entry, existing_entry)
     return #current_entry < #existing_entry
   end,
   [[
