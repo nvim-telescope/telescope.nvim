@@ -290,7 +290,7 @@ function make_entry.gen_from_quickfix(opts)
     separator = "▏",
     items = {
       { width = 8 },
-      { width = 50 },
+      { width = 0.45 },
       { remaining = true },
     },
   }
