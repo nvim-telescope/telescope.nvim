@@ -40,7 +40,7 @@ Telescope Wiki</sub>
 
 This section should guide you to run your first builtin pickers.
 
-[Neovim (v0.5)](https://github.com/neovim/neovim/releases/tag/v0.5.0) or newer
+[Neovim (v0.5.1)](https://github.com/neovim/neovim/releases/tag/v0.5.1) or newer
   is required for `telescope.nvim` to work.
 
 ### Suggested dependencies
