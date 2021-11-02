@@ -364,12 +364,8 @@ function make_entry.gen_from_lsp_symbols(opts)
   local display_items = {
     { width = opts.symbol_width or 25 }, -- symbol
     { width = opts.symbol_type_width or 8 }, -- symbol type
-    { remaining = true }, -- filename{:optional_lnum+col} OR content preview
+    { remaining = true }, -- content preview (if enabled)
   }
-
-  if opts.ignore_filename and opts.show_line then
-    table.insert(display_items, 2, { width = 6 })
-  end
 
   local displayer = entry_display.create {
     separator = " ",
@@ -380,18 +376,9 @@ function make_entry.gen_from_lsp_symbols(opts)
   local make_display = function(entry)
     local msg
 
-    -- what to show in the last column: filename or symbol information
-    if opts.ignore_filename then -- ignore the filename and show line preview instead
-      -- TODO: fixme - if ignore_filename is set for workspace, bufnr will be incorrect
+    if opts.show_line then
       msg = vim.api.nvim_buf_get_lines(bufnr, entry.lnum - 1, entry.lnum, false)[1] or ""
       msg = vim.trim(msg)
-    else
-      local filename = utils.transform_path(opts, entry.filename)
-
-      if opts.show_line then -- show inline line info
-        filename = filename .. " [" .. entry.lnum .. ":" .. entry.col .. "]"
-      end
-      msg = filename
     end
 
     local type_highlight = opts.symbol_highlights or lsp_type_highlight
@@ -401,10 +388,6 @@ function make_entry.gen_from_lsp_symbols(opts)
       msg,
     }
 
-    if opts.ignore_filename and opts.show_line then
-      table.insert(display_columns, 2, { entry.lnum .. ":" .. entry.col, "TelescopeResultsLineNr" })
-    end
-
     return displayer(display_columns)
   end
 
@@ -412,12 +395,8 @@ function make_entry.gen_from_lsp_symbols(opts)
     local filename = entry.filename or vim.api.nvim_buf_get_name(entry.bufnr)
     local symbol_msg = entry.text
     local symbol_type, symbol_name = symbol_msg:match "%[(.+)%]%s+(.*)"
+    local ordinal = symbol_name .. " " .. (symbol_type or "unknown")
 
-    local ordinal = ""
-    if not opts.ignore_filename and filename then
-      ordinal = filename .. " "
-    end
-    ordinal = ordinal .. symbol_name .. " " .. (symbol_type or "unknown")
     return {
       valid = true,
 

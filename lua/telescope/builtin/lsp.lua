@@ -144,7 +144,6 @@ lsp.document_symbols = function(opts)
       return
     end
 
-    opts.ignore_filename = opts.ignore_filename or true
     pickers.new(opts, {
       prompt_title = "LSP Document Symbols",
       finder = finders.new_table {

@@ -1510,8 +1510,6 @@ builtin.lsp_document_symbols({opts}) *telescope.builtin.lsp_document_symbols()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {ignore_filename}   (boolean)       dont show filenames (default:
-                                            true)
         {show_line}         (boolean)       if true, shows the content of the
                                             line the tag is found on (default:
                                             false)
