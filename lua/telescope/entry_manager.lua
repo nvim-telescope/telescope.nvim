@@ -130,6 +130,8 @@ function EntryManager:add_entry(picker, score, entry)
     return
   end
 
+  -- may need the prompt for tiebreak
+  local prompt = picker:_get_prompt()
   for index, container, node in self.linked_states:ipairs() do
     info.looped = info.looped + 1
 
@@ -137,7 +139,7 @@ function EntryManager:add_entry(picker, score, entry)
       return self:_insert_container_before(picker, index, node, new_container)
     end
 
-    if score < 1 and container[2] == score and picker.fzf_tiebreak(entry.ordinal, container[1].ordinal) then
+    if score < 1 and container[2] == score and picker.tiebreak(entry, container[1], prompt) then
       return self:_insert_container_before(picker, index, node, new_container)
     end
 
