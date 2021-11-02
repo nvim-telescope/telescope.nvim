@@ -1,4 +1,4 @@
-if !has('nvim-0.5')
+if !has('nvim-0.5.1')
   echoerr "Telescope.nvim requires at least nvim-0.5. Please update or uninstall"
   finish
 end
