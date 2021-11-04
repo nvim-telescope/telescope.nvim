@@ -3,6 +3,7 @@ local deprecated = require "telescope.deprecated"
 local sorters = require "telescope.sorters"
 local if_nil = vim.F.if_nil
 local os_sep = require("plenary.path").path.sep
+local has_win = vim.fn.has "win32" == 1
 
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
@@ -411,7 +412,7 @@ append(
 append(
   "preview",
   {
-    check_mime_type = true,
+    check_mime_type = not has_win,
     filesize_limit = 25,
     timeout = 250,
     treesitter = true,
@@ -432,7 +433,7 @@ append(
                           Windows users get `file` from:
                           https://github.com/julian-r/file-windows
                           Set to false to attempt to preview any mime type.
-                          Default: true
+                          Default: true for all OS excl. Windows
       - filesize_limit:   The maximum file size in MB attempted to be previewed.
                           Set to false to attempt to preview any file size.
                           Default: 25
