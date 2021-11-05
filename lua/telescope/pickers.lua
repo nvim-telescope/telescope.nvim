@@ -291,6 +291,9 @@ function Picker:_create_window(bufnr, popup_opts, nowrap)
     a.nvim_win_set_option(win, "wrap", false)
   end
   local border_win = opts and opts.border and opts.border.win_id
+  if border_win then
+    a.nvim_win_set_option(border_win, "winblend", self.window.winblend)
+  end
   return win, opts, border_win
 end
 
