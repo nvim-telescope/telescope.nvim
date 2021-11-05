@@ -1258,6 +1258,17 @@ actions.toggle_hidden = function(prompt_bufnr)
   current_picker:refresh(finder, { reset_prompt = true, multi = current_picker._multi })
 end
 
+actions.open_file = function()
+  local selection = action_state.get_selected_entry()
+  local cmd = vim.fn.has "win-32" == 1 and "start" or vim.fn.has "mac" == 1 and "open" or "xdg-open"
+  require("plenary.job")
+    :new({
+      command = cmd,
+      args = { selection.value },
+    })
+    :start()
+end
+
 --- Goto previous directory in |builtin.file_browser|.
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param bypass boolean: Allow passing beyond the globally set current working directory
