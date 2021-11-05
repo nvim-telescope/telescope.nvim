@@ -88,12 +88,15 @@ builtin.fd = builtin.find_files
 
 --- Lists files and folders in your current working directory, open files, navigate your filesystem, and create new
 --- files and folders
+--- - Notes:
+---   - The folder browser uses `fd` if the executable is found
 --- - Default keymaps in insert/normal mode:
 ---   - `<cr>`: opens the currently selected file, or navigates to the currently selected directory
 ---   - `<C-e>`: creates new file in current directory, creates new directory if the name contains a trailing '/'
 ---     - Note: you can create files nested into several directories with `<C-e>`, i.e. `lua/telescope/init.lua` would
 ---       create the file `init.lua` inside of `lua/telescope` and will create the necessary folders (similar to how
 ---       `mkdir -p` would work) if they do not already exist
+---   - `<C-a>/a`: open file with system default application
 ---   - `<C-r>/r`: rename currently selected file or folder
 ---   - `<C-g>/g`: goto previous folder
 ---   - `<C-y>/y`: copy multi selected file(s) or folder(s) recursively to current directory

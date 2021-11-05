@@ -240,6 +240,10 @@ function make_entry.gen_from_fs(opts)
   mt.display = function(entry)
     local hl_group
     local display = utils.transform_path(opts, entry.value)
+    -- `fd` does not append os_sep
+    if opts.is_fd and entry.value:sub(-1, -1) ~= os_sep then
+      entry.value = string.format("%s%s", entry.value, os_sep)
+    end
     if is_dir(entry.value) then
       display = display .. os_sep
       if not opts.disable_devicons then

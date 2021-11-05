@@ -307,23 +307,36 @@ end
 
 local browse_folders = function(opts)
   local data = {}
-  scan.scan_dir(opts.cwd, {
-    hidden = opts.hidden,
-    only_dirs = true,
-    respect_gitignore = opts.respect_gitignore,
-    on_insert = function(entry)
-      table.insert(data, entry .. os_sep)
-    end,
-  })
-  table.insert(data, 1, "." .. os_sep)
-  return finders.new_table { results = data, entry_maker = opts.entry_maker { cwd = opts.cwd } }
+  if vim.fn.executable "fd" == 1 then
+    local cmd = { "fd", "-t", "d" }
+    if opts.hidden then
+      table.insert(cmd, "-H")
+    end
+    if not opts.respect_gitignore then
+      table.insert(cmd, "-I")
+    end
+    return finders.new_oneshot_job(
+      cmd,
+      { entry_maker = opts.entry_maker { cwd = opts.cwd, is_fd = true }, cwd = opts.cwd }
+    )
+  else
+    scan.scan_dir(opts.cwd, {
+      hidden = opts.hidden,
+      only_dirs = true,
+      respect_gitignore = opts.respect_gitignore,
+      on_insert = function(entry)
+        table.insert(data, entry .. os_sep)
+      end,
+    })
+    table.insert(data, 1, "." .. os_sep)
+    return finders.new_table { results = data, entry_maker = opts.entry_maker { cwd = opts.cwd } }
+  end
 end
 
 local fb_finder = function(opts)
-  local cwd = vim.loop.cwd()
   return setmetatable({
-    path = vim.F.if_nil(opts.path, cwd), -- current path for file browser
-    cwd = vim.F.if_nil(opts.cwd, cwd), -- nvim cwd
+    path = vim.F.if_nil(opts.path, opts.cwd), -- current path for file browser
+    cwd = vim.F.if_nil(opts.cwd, opts.cwd), -- nvim cwd
     hidden = vim.F.if_nil(opts.hidden, false),
     depth = vim.F.if_nil(opts.depth, 1), -- depth for file browser
     respect_gitignore = vim.F.if_nil(opts.respect_gitignore, true),

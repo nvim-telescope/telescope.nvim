@@ -1258,6 +1258,13 @@ actions.toggle_hidden = function(prompt_bufnr)
   current_picker:refresh(finder, { reset_prompt = true, multi = current_picker._multi })
 end
 
+--- Opens the file or folder with the default application.<br>
+--- - Notes:
+---   - map actions.open_file + actions.close if you want to close the picker post-action
+--- - OS: make sure your OS links against the desired applications:
+---   - Linux: induces application via `xdg-open`
+---   - macOS: relies on `open` to start the program
+---   - Windows: defaults to default applications through `start`
 actions.open_file = function()
   local selection = action_state.get_selected_entry()
   local cmd = vim.fn.has "win-32" == 1 and "start" or vim.fn.has "mac" == 1 and "open" or "xdg-open"
