@@ -40,8 +40,8 @@ Telescope Wiki</sub>
 
 This section should guide you to run your first builtin pickers.
 
-[Neovim (v0.5.1)](https://github.com/neovim/neovim/releases/tag/v0.5.1) or newer
-  is required for `telescope.nvim` to work.
+[Neovim (v0.5.1)](https://github.com/neovim/neovim/releases/tag/v0.5.1) or the
+latest neovim nighly commit is required for `telescope.nvim` to work.
 
 ### Suggested dependencies
 
@@ -213,7 +213,7 @@ Many familiar mapping patterns are setup as defaults.
 
 
 To see the full list of mappings, check out `lua/telescope/mappings.lua` and the
-`default_mappings` table. 
+`default_mappings` table.
 
 **Tip**: you can use `<C-/>` and `?` in insert and normal mode, respectively, to show the actions mapped to your picker.
 
