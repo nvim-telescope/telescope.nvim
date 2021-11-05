@@ -321,7 +321,7 @@ function Picker:find()
   end
 
   -- local results_win, results_opts = popup.create("", popup_opts.results)
-  local results_win, _, results_border_win = self:_create_window("", popup_opts.results, true)
+  local results_win, results_opts, results_border_win = self:_create_window("", popup_opts.results, true)
   local results_bufnr = a.nvim_win_get_buf(results_win)
 
   self.results_bufnr = results_bufnr
@@ -337,12 +337,12 @@ function Picker:find()
   local preview_border = preview_opts and preview_opts.border
   self.preview_border = preview_border
 
-  local prompt_win, _, prompt_border_win = self:_create_window("", popup_opts.prompt)
+  local prompt_win, prompt_opts, prompt_border_win = self:_create_window("", popup_opts.prompt)
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
 
   a.nvim_win_set_option(prompt_win, "winhl", "Normal:TelescopeNormal")
   a.nvim_win_set_option(prompt_win, "winblend", self.window.winblend)
-  local prompt_border_win = prompt_opts.border and prompt_opts.border.win_id
+
   if prompt_border_win then
     vim.api.nvim_win_set_option(prompt_border_win, "winhl", "Normal:TelescopePromptBorder")
   end
