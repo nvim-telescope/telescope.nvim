@@ -1309,7 +1309,9 @@ end
 
 --- Toggle between file and folder browser for |builtin.file_browser|.
 ---@param prompt_bufnr number: The prompt bufnr
-actions.toggle_browser = function(prompt_bufnr)
+actions.toggle_browser = function(prompt_bufnr, opts)
+  opts = opts or {}
+  opts.reset_prompt = vim.F.if_nil(opts.reset_prompt, true)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local finder = current_picker.finder
   finder.files = not finder.files
@@ -1323,7 +1325,7 @@ actions.toggle_browser = function(prompt_bufnr)
     local new_title = finder.files and Path:new(finder.path):make_relative(vim.loop.cwd()) .. os_sep or "Results"
     current_picker.results_border:change_title(new_title)
   end
-  current_picker:refresh(finder, { reset_prompt = true, multi = selections })
+  current_picker:refresh(finder, { reset_prompt = opts.reset_prompt, multi = selections })
 end
 
 -- ==================================================
