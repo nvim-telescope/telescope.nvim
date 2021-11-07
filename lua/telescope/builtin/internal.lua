@@ -81,7 +81,15 @@ internal.builtin = function(opts)
     previewer = previewers.builtin.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
-      actions.select_default:replace(actions.run_builtin)
+      actions.select_default:replace(function(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        if not selection then
+          print "[telescope] Nothing currently selected"
+          return
+        end
+        opts.next_picker = selection.text
+        actions.run_builtin(prompt_bufnr, opts)
+      end)
       return true
     end,
   }):find()

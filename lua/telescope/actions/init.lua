@@ -336,23 +336,32 @@ actions.paste_register = function(prompt_bufnr)
   end
 end
 
-actions.run_builtin = function(prompt_bufnr)
-  local selection = action_state.get_selected_entry()
-  if selection == nil then
-    print "[telescope] Nothing currently selected"
-    return
+---Run a builtin pickers based on opts.next_picker
+---@param prompt_bufnr number: the prompt bufnr
+---@param opts table: options
+---@field next_picker string the name of the next picker to execute, e.g. "find_files"
+---@field entry_cb function can be used to modify the current options, e.g. modify `opts.cwd` based on selection
+actions.run_builtin = function(prompt_bufnr, opts)
+  -- make sure the options are cleanly separated
+  local picker_opts = vim.deepcopy(opts)
+
+  picker_opts.next_picker = nil
+  picker_opts.entry_cb = nil
+
+  if opts.entry_cb and type(opts.entry_cb) == "function" then
+    picker_opts = vim.tbl_deep_extend("force", picker_opts, opts.entry_cb(prompt_bufnr, opts))
   end
 
   actions._close(prompt_bufnr, true)
-  if string.match(selection.text, " : ") then
+  if string.match(opts.next_picker, " : ") then
     -- Call appropriate function from extensions
-    local split_string = vim.split(selection.text, " : ")
+    local split_string = vim.split(opts.next_picker, " : ")
     local ext = split_string[1]
     local func = split_string[2]
-    require("telescope").extensions[ext][func]()
+    require("telescope").extensions[ext][func](picker_opts)
   else
     -- Call appropriate telescope builtin
-    require("telescope.builtin")[selection.text]()
+    require("telescope.builtin")[opts.next_picker](picker_opts)
   end
 end
 
