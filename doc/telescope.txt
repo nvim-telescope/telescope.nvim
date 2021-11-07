@@ -234,6 +234,13 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: function that shows current count / all
 
+                                         *telescope.defaults.hl_result_eol*
+    hl_result_eol: ~
+        Changes if the highlight for the selected item in the results
+        window is always the full width of the window
+
+        Default: true
+
                                  *telescope.defaults.dynamic_preview_title*
     dynamic_preview_title: ~
         Will change the title of the preview window dynamically, where it
