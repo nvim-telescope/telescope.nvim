@@ -241,9 +241,6 @@ function make_entry.gen_from_fs(opts)
     local hl_group
     local display = utils.transform_path(opts, entry.value)
     -- `fd` does not append os_sep
-    if opts.is_fd and entry.value:sub(-1, -1) ~= os_sep then
-      entry.value = string.format("%s%s", entry.value, os_sep)
-    end
     if is_dir(entry.value) then
       display = display .. os_sep
       if not opts.disable_devicons then
@@ -282,9 +279,28 @@ function make_entry.gen_from_fs(opts)
   end
 
   return function(line)
-    local tbl = { line }
-    tbl.ordinal = Path:new(line):make_relative(opts.cwd)
-    return setmetatable(tbl, mt)
+    -- unify with `fd`
+    if opts.is_fd and line:sub(-1, -1) ~= os_sep then
+      line = string.format("%s%s", line, os_sep)
+    end
+
+    local p = Path:new { opts.cwd, line }
+
+    -- unambiguously set paths to avoid issues with `..`
+    local abs = p:absolute()
+    local cached_entry = opts.entry_cache[abs]
+    if cached_entry ~= nil then
+      return cached_entry
+    end
+    -- TODO(fdschmidt93): maybe avoid recreating path?
+    local tbl = setmetatable({ line, ordinal = Path:new(line):make_relative(opts.cwd) }, mt)
+
+    -- unify `fd` and static finder
+    if tbl.index then
+      tbl.index = nil
+    end
+    opts.entry_cache[abs] = tbl
+    return tbl
   end
 end
 

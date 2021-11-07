@@ -308,7 +308,7 @@ end
 local browse_folders = function(opts)
   local data = {}
   if vim.fn.executable "fd" == 1 then
-    local cmd = { "fd", "-t", "d" }
+    local cmd = { "fd", "-t", "d", "-a" }
     if opts.hidden then
       table.insert(cmd, "-H")
     end
@@ -334,6 +334,9 @@ local browse_folders = function(opts)
 end
 
 local fb_finder = function(opts)
+  -- cache entries such that multi selections are maintained
+  -- otherwise varying metatables misalign selections
+  opts.entry_cache = {}
   return setmetatable({
     path = vim.F.if_nil(opts.path, opts.cwd), -- current path for file browser
     cwd = vim.F.if_nil(opts.cwd, opts.cwd), -- nvim cwd
@@ -345,8 +348,8 @@ local fb_finder = function(opts)
     entry_maker = vim.F.if_nil(opts.entry_maker, function(local_opts)
       return make_entry.gen_from_fs(vim.tbl_extend("force", opts, local_opts))
     end),
-    _file_finder = vim.F.if_nil(opts.browse_files, browse_files),
-    _folder_finder = vim.F.if_nil(opts.browse_folders, browse_folders),
+    _browse_files = vim.F.if_nil(opts.browse_files, browse_files),
+    _browse_folders = vim.F.if_nil(opts.browse_folders, browse_folders),
     _cached_folder_finder = false,
     _was_hidden = vim.F.if_nil(opts.hidden, false),
     close = function(self)
@@ -356,11 +359,11 @@ local fb_finder = function(opts)
   }, {
     __call = function(self, ...)
       if self.files then
-        self._finder = self._file_finder(self)
+        self._finder = self._browse_files(self)
       else
         local cwd_ = vim.loop.cwd()
         if self._cached_folder_finder == false or cwd_ ~= self.cwd then
-          self._cached_folder_finder = self._folder_finder(self)
+          self._cached_folder_finder = self._browse_folders(self)
           self.hidden = self._was_hidden
           self.cwd = cwd_
         end
