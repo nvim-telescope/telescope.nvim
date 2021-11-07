@@ -81,7 +81,15 @@ internal.builtin = function(opts)
     previewer = previewers.builtin.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
-      actions.select_default:replace(actions.run_builtin)
+      actions.select_default:replace(function(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        if not selection then
+          print "[telescope] Nothing currently selected"
+          return
+        end
+        opts.next_picker = selection.text
+        actions.run_builtin(prompt_bufnr, opts)
+      end)
       return true
     end,
   }):find()
@@ -1233,37 +1241,38 @@ internal.find_runtime_files = function(opts)
   opts.pre_filter = opts.pre_filter or ""
   local runtimedirs = vim.api.nvim_get_runtime_file(opts.pre_filter, true)
 
-  local files = require "telescope.builtin.files"
-
-  local find_in_dir = function(prompt_bufnr)
-    local entry = action_state.get_selected_entry()
-    opts.cwd = entry.value
-    files.find_files(opts)
-    vim.cmd [[normal! A]]
-  end
-
-  local grep_in_dir = function()
-    local entry = action_state.get_selected_entry()
-    opts.cwd = entry.value
-    files.live_grep(opts)
-    vim.cmd [[normal! A]]
-  end
-
-  local set_cwd = function(prompt_bufnr)
-    local entry = action_state.get_selected_entry()
-    local dir = entry.value
-    if dir ~= nil and vim.fn.getcwd() ~= dir then
-      vim.api.nvim_set_current_dir(dir)
-      vim.notify("Set CWD to " .. dir)
-      vim.cmd [[normal! A]]
-    end
-  end
-
   pickers.new(opts, {
     prompt_title = "Select A Runtime Directory",
     finder = finders.new_table(runtimedirs),
     sorter = conf.file_sorter(opts),
-    attach_mappings = function(_, map)
+    attach_mappings = function(prompt_bufnr, map)
+      local get_cwd = function()
+        opts.cwd = action_state.get_selected_entry().value
+        return opts
+      end
+
+      local find_in_dir = function()
+        opts.next_picker = "find_files"
+        opts.entry_cb = get_cwd
+        actions.run_builtin(prompt_bufnr, opts)
+      end
+
+      local grep_in_dir = function()
+        opts.next_picker = "live_grep"
+        opts.entry_cb = get_cwd
+        actions.run_builtin(prompt_bufnr, opts)
+      end
+
+      local set_cwd = function()
+        local entry = action_state.get_selected_entry()
+        local dir = entry.value
+        if dir ~= nil and vim.fn.getcwd() ~= dir then
+          vim.api.nvim_set_current_dir(dir)
+          vim.notify("Set CWD to " .. dir)
+          vim.cmd [[normal! A]]
+        end
+      end
+
       map("i", "<cr>", find_in_dir)
       map("n", "<cr>", find_in_dir)
       map("i", "<c-y>", set_cwd)
