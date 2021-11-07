@@ -1089,24 +1089,18 @@ end
 actions.create_file = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local finder = current_picker.finder
-  local file = vim.trim(action_state.get_current_line())
-  if file == "" then
-    print(string.format("Write filename.ext<C-e> or dir%s<C-e> to create a file or folder, respectively.", os_sep))
-    return
-  end
-  local fpath = Path:new(finder.path .. os_sep .. file)
-  if fpath:exists() then
+  local file = Path:new(vim.fn.input("Insert the file name:\n", finder.path .. os_sep))
+  if file:exists() then
     vim.api.nvim_echo "File or folder already exists."
     return
   end
-  if not is_dir(fpath.filename) then
-    Path:new(fpath):touch { parents = true }
+  if not is_dir(file.filename) then
+    Path:new(file):touch { parents = true }
     current_picker:refresh(false, { reset_prompt = true })
   else
-    Path:new(fpath.filename:sub(1, -2)):mkdir { parents = true }
+    Path:new(file.filename:sub(1, -2)):mkdir { parents = true }
   end
-  -- close cached folder finder
-  current_picker:refresh(finder, { reset_prompt = true })
+  current_picker:refresh(false, { reset_prompt = true })
 end
 
 -- creds to nvim-tree.lua
@@ -1136,7 +1130,7 @@ actions.rename_file = function(prompt_bufnr)
     print "Please select a file!"
     return
   end
-  local new_name = Path:new(vim.fn.input("Insert a new name: ", old_name:make_relative()))
+  local new_name = Path:new(vim.fn.input("Insert a new name:\n", old_name:absolute()))
 
   if old_name.filename == new_name.filename then
     print "Original and new filename are the same! Skipping."
@@ -1252,10 +1246,7 @@ actions.toggle_hidden = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local finder = current_picker.finder
   finder.hidden = not finder.hidden
-  if not finder.files then
-    finder._cached_folder_finder = finder._folder_finder(finder)
-  end
-  current_picker:refresh(finder, { reset_prompt = true, multi = current_picker._multi })
+  current_picker:refresh(false, { reset_prompt = true })
 end
 
 --- Opens the file or folder with the default application.<br>
@@ -1280,7 +1271,7 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param bypass boolean: Allow passing beyond the globally set current working directory
 actions.goto_prev_dir = function(prompt_bufnr, bypass)
-  bypass = vim.F.if_nil(bypass, false)
+  bypass = vim.F.if_nil(bypass, true)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local finder = current_picker.finder
   local parent_dir = Path:new(finder.path):parent()

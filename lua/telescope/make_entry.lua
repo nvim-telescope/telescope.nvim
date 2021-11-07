@@ -279,28 +279,27 @@ function make_entry.gen_from_fs(opts)
   end
 
   return function(line)
-    -- unify with `fd`
+    -- `fd` does not append `os_sep` to directories
     if opts.is_fd and line:sub(-1, -1) ~= os_sep then
       line = string.format("%s%s", line, os_sep)
     end
 
     local p = Path:new { opts.cwd, line }
+    -- unambiguously set paths to avoid issues with `..` or identical filenames
+    local p_absolute = p:absolute()
 
-    -- unambiguously set paths to avoid issues with `..`
-    local abs = p:absolute()
-    local cached_entry = opts.entry_cache[abs]
+    local cached_entry = opts.entry_cache[p_absolute]
     if cached_entry ~= nil then
       return cached_entry
     end
-    -- TODO(fdschmidt93): maybe avoid recreating path?
-    local tbl = setmetatable({ line, ordinal = Path:new(line):make_relative(opts.cwd) }, mt)
+    local e = setmetatable({ line, ordinal = p:make_relative() }, mt)
 
     -- unify `fd` and static finder
-    if tbl.index then
-      tbl.index = nil
+    if e.index then
+      e.index = nil
     end
-    opts.entry_cache[abs] = tbl
-    return tbl
+    opts.entry_cache[p_absolute] = e
+    return e -- entry
   end
 end
 

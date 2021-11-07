@@ -96,7 +96,7 @@ builtin.fd = builtin.find_files
 ---     - Note: you can create files nested into several directories with `<C-e>`, i.e. `lua/telescope/init.lua` would
 ---       create the file `init.lua` inside of `lua/telescope` and will create the necessary folders (similar to how
 ---       `mkdir -p` would work) if they do not already exist
----   - `<C-a>/a`: open file with system default application
+---   - `<C-o>/o`: open file with system default application
 ---   - `<C-r>/r`: rename currently selected file or folder
 ---   - `<C-g>/g`: goto previous folder
 ---   - `<C-y>/y`: copy multi selected file(s) or folder(s) recursively to current directory

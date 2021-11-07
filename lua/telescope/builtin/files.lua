@@ -306,7 +306,6 @@ local browse_files = function(opts)
 end
 
 local browse_folders = function(opts)
-  local data = {}
   if vim.fn.executable "fd" == 1 then
     local cmd = { "fd", "-t", "d", "-a" }
     if opts.hidden then
@@ -320,6 +319,7 @@ local browse_folders = function(opts)
       { entry_maker = opts.entry_maker { cwd = opts.cwd, is_fd = true }, cwd = opts.cwd }
     )
   else
+    local data = {}
     scan.scan_dir(opts.cwd, {
       hidden = opts.hidden,
       only_dirs = true,
@@ -334,7 +334,7 @@ local browse_folders = function(opts)
 end
 
 local fb_finder = function(opts)
-  -- cache entries such that multi selections are maintained
+  -- cache entries such that multi selections are maintained across {file, folder}_browsers
   -- otherwise varying metatables misalign selections
   opts.entry_cache = {}
   return setmetatable({
@@ -350,25 +350,9 @@ local fb_finder = function(opts)
     end),
     _browse_files = vim.F.if_nil(opts.browse_files, browse_files),
     _browse_folders = vim.F.if_nil(opts.browse_folders, browse_folders),
-    _cached_folder_finder = false,
-    _was_hidden = vim.F.if_nil(opts.hidden, false),
-    close = function(self)
-      -- force refresh of folder finder on picker:refresh when finder is passed
-      self._cached_folder_finder = false
-    end,
   }, {
     __call = function(self, ...)
-      if self.files then
-        self._finder = self._browse_files(self)
-      else
-        local cwd_ = vim.loop.cwd()
-        if self._cached_folder_finder == false or cwd_ ~= self.cwd then
-          self._cached_folder_finder = self._browse_folders(self)
-          self.hidden = self._was_hidden
-          self.cwd = cwd_
-        end
-        self._finder = self._cached_folder_finder
-      end
+      self._finder = self.files and self._browse_files(self) or self._browse_folders(self)
       self._finder(...)
     end,
     __index = function(self, k)
@@ -402,7 +386,8 @@ files.file_browser = function(opts)
         if vim.bo[prompt_bufnr].filetype == "TelescopePrompt" then
           local current_picker = action_state.get_current_picker(prompt_bufnr)
           if current_picker.finder.files then
-            actions.toggle_browser(prompt_bufnr, { reset_prompt = false })
+            actions.toggle_browser(prompt_bufnr, { reset_prompt = true })
+            current_picker:set_prompt(prompt:sub(1, -2))
           end
         end
       end
@@ -424,8 +409,8 @@ files.file_browser = function(opts)
       map("n", "<C-e>", actions.create_file)
       map("i", "<C-r>", actions.rename_file)
       map("n", "<C-r>", actions.rename_file)
-      map("i", "<C-o>", actions.open_file)
-      map("n", "<C-o>", actions.open_file)
+      map("i", "<C-o>", actions.open_file + actions.close)
+      map("n", "<C-o>", actions.open_file + actions.close)
       map("i", "<C-y>", actions.copy_file)
       map("n", "<y>", actions.copy_file)
       map("i", "<C-h>", actions.toggle_hidden)
