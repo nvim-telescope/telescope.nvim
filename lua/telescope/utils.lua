@@ -438,6 +438,25 @@ function utils.buf_delete(bufnr)
   end
 end
 
+function utils.win_delete(name, win_id, force, bdelete)
+  if win_id == nil or not vim.api.nvim_win_is_valid(win_id) then
+    return
+  end
+
+  local bufnr = vim.api.nvim_win_get_buf(win_id)
+  if bdelete then
+    utils.buf_delete(bufnr)
+  end
+
+  if not vim.api.nvim_win_is_valid(win_id) then
+    return
+  end
+
+  if not pcall(vim.api.nvim_win_close, win_id, force) then
+    log.trace("Unable to close window: ", name, "/", win_id)
+  end
+end
+
 function utils.max_split(s, pattern, maxsplit)
   pattern = pattern or " "
   maxsplit = maxsplit or -1
