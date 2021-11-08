@@ -569,7 +569,6 @@ function Picker:recalculate_layout()
   -- self.max_results = popup_opts.results.height
 end
 
-
 local update_scroll = function(win, oldinfo, oldcursor, strategy, buf_maxline)
   if strategy == "ascending" then
     vim.api.nvim_win_set_cursor(win, { buf_maxline, 0 })
@@ -677,7 +676,7 @@ function Picker.close_windows(status)
   utils.win_delete("prompt_border_win", prompt_border_win, true, true)
   utils.win_delete("results_border_win", results_border_win, true, true)
   utils.win_delete("preview_border_win", preview_border_win, true, true)
-  
+
   -- Buffers should be deleted but it may be also the case that buffer was swapped in window
   -- so make sure that buffers created in Picker are deleted.
   utils.buf_delete(status.prompt_bufnr)
