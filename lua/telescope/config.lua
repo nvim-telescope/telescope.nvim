@@ -417,6 +417,7 @@ append(
     timeout = 250,
     treesitter = true,
     msg_bg_fillchar = "╱",
+    hide_on_startup = false,
   },
   [[
     This field handles the global configuration for previewers.
@@ -497,6 +498,9 @@ append(
                           Default: true
       - msg_bg_fillchar:  Character to fill background of unpreviewable buffers with
                           Default: "╱"
+      - hide_on_startup:  Hide previewer when picker starts. Previewer can be toggled
+                          with actions.toggle_preview.
+                          Default: false
     ]]
 )
 
