@@ -118,8 +118,6 @@ previewers.new_termopen_previewer = function(opts)
 
   local opt_setup = opts.setup
   local opt_teardown = opts.teardown
-  local opt_title = opts.title
-  local opt_dyn_title = opts.dyn_title
 
   local old_bufs = {}
 
@@ -153,24 +151,6 @@ previewers.new_termopen_previewer = function(opts)
     if self.state then
       self.state.termopen_bufnr = value
     end
-  end
-
-  function opts.title(self)
-    if opt_title then
-      if type(opt_title) == "function" then
-        return opt_title(self)
-      else
-        return opt_title
-      end
-    end
-    return "Preview"
-  end
-
-  function opts.dyn_title(self, entry)
-    if opt_dyn_title then
-      return opt_dyn_title(self, entry)
-    end
-    return "Preview"
   end
 
   function opts.setup(self)
@@ -292,6 +272,9 @@ previewers.vimgrep = defaulter(function(opts)
 
       local p = from_entry.path(entry, true)
       if p == nil or p == "" then
+        return
+      end
+      if entry.bufnr and (p == "[No Name]" or vim.api.nvim_buf_get_option(entry.bufnr, "buftype") ~= "") then
         return
       end
 

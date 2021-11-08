@@ -18,7 +18,7 @@ local scroll_calculators = {
       if row >= finish then
         return start
       elseif row < start then
-        return finish - 1
+        return (finish - 1 < 0) and finish or finish - 1
       end
 
       return row

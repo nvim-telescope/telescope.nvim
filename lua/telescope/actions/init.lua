@@ -9,7 +9,6 @@
 
 local a = vim.api
 
-local log = require "telescope.log"
 local config = require "telescope.config"
 local state = require "telescope.state"
 local utils = require "telescope.utils"
@@ -27,51 +26,9 @@ local resolver = require "telescope.config.resolve"
 
 local actions = setmetatable({}, {
   __index = function(_, k)
-    -- TODO(conni2461): Remove deprecated messages
-    if k:find "goto_file_selection" then
-      error(
-        "`"
-          .. k
-          .. "` is removed and no longer usable. "
-          .. "Use `require('telescope.actions').select_` instead. Take a look at developers.md for more Information."
-      )
-    elseif k == "_goto_file_selection" then
-      error(
-        "`_goto_file_selection` is deprecated and no longer replaceable. "
-          .. "Use `require('telescope.actions.set').edit` instead. Take a look at developers.md for more Information."
-      )
-    end
-
     error("Key does not exist for 'telescope.actions': " .. tostring(k))
   end,
 })
-
--- TODO(conni2461): Remove deprecated messages
-local action_is_deprecated = function(name, err)
-  local messager = err and error or log.info
-
-  return messager(
-    string.format("`actions.%s()` is deprecated." .. "Use require('telescope.actions.state').%s() instead", name, name)
-  )
-end
-
-function actions.get_selected_entry()
-  -- TODO(1.0): Remove
-  action_is_deprecated "get_selected_entry"
-  return action_state.get_selected_entry()
-end
-
-function actions.get_current_line()
-  -- TODO(1.0): Remove
-  action_is_deprecated "get_current_line"
-  return action_state.get_current_line()
-end
-
-function actions.get_current_picker(prompt_bufnr)
-  -- TODO(1.0): Remove
-  action_is_deprecated "get_current_picker"
-  return action_state.get_current_picker(prompt_bufnr)
-end
 
 --- Move the selection to the next entry
 ---@param prompt_bufnr number: The prompt bufnr
@@ -874,13 +831,6 @@ end
 actions.delete_buffer = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:delete_selection(function(selection)
-    -- avoid preview win from closing by creating tmp buffer
-    local preview_win = state.get_status(prompt_bufnr).preview_win
-    if preview_win ~= nil and vim.api.nvim_win_is_valid(preview_win) then
-      local buf = vim.api.nvim_create_buf(false, true)
-      vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-      vim.api.nvim_win_set_buf(preview_win, buf)
-    end
     vim.api.nvim_buf_delete(selection.bufnr, { force = true })
   end)
 end

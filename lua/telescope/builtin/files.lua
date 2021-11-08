@@ -566,7 +566,7 @@ files.tags = function(opts)
 
   local results = {}
   for _, ctags_file in ipairs(tagfiles) do
-    for line in Path:new(vim.fn.expand(ctags_file)):iter() do
+    for line in Path:new(vim.fn.expand(ctags_file, true)):iter() do
       results[#results + 1] = line
     end
   end

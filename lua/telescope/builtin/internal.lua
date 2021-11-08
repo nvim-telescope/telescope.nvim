@@ -373,7 +373,8 @@ internal.oldfiles = function(opts)
   if opts.include_current_session then
     for _, buffer in ipairs(vim.split(vim.fn.execute ":buffers! t", "\n")) do
       local match = tonumber(string.match(buffer, "%s*(%d+)"))
-      if match then
+      local open_by_lsp = string.match(buffer, "line 0$")
+      if match and not open_by_lsp then
         local file = vim.api.nvim_buf_get_name(match)
         if vim.loop.fs_stat(file) and match ~= current_buffer then
           table.insert(results, file)
@@ -778,18 +779,9 @@ internal.buffers = function(opts)
       results = buffers,
       entry_maker = opts.entry_maker or make_entry.gen_from_buffer(opts),
     },
-    previewer = previewers.buffers.new(opts),
+    previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
     default_selection_index = default_selection_idx,
-    attach_mappings = function(_, _)
-      action_set.select:enhance {
-        post = function()
-          local selection = action_state.get_selected_entry()
-          vim.api.nvim_win_set_cursor(0, { selection.lnum, selection.col or 0 })
-        end,
-      }
-      return true
-    end,
   }):find()
 end
 
