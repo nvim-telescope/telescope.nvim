@@ -135,6 +135,14 @@ function Picker:new(opts)
     obj.previewer = false
   end
 
+  local __hide_previewer = opts.__hide_previewer
+  if __hide_previewer then
+    obj.hidden_previewer = obj.previewer
+    obj.previewer = nil
+  else
+    obj.hidden_previewer = nil
+  end
+
   -- TODO: It's annoying that this is create and everything else is "new"
   obj.scroller = p_scroller.create(obj.scroll_strategy, obj.sorting_strategy)
 
@@ -297,6 +305,7 @@ function Picker:find()
   -- 1. Prompt window
   -- 2. Options window
   -- 3. Preview window
+
   local line_count = vim.o.lines - vim.o.cmdheight
   if vim.o.laststatus ~= 0 then
     line_count = line_count - 1
@@ -315,12 +324,11 @@ function Picker:find()
   popup_opts.prompt.titlehighlight = "TelescopePromptTitle"
   if popup_opts.preview then
     popup_opts.preview.minheight = popup_opts.preview.height
-    popup_opts.preview.highlight = "TelescopeNormal"
+    popup_opts.preview.highlight = "TelescopePreviewNormal"
     popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
     popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
   end
 
-  -- local results_win, results_opts = popup.create("", popup_opts.results)
   local results_win, results_opts, results_border_win = self:_create_window("", popup_opts.results, true)
   local results_bufnr = a.nvim_win_get_buf(results_win)
 
@@ -457,12 +465,14 @@ function Picker:find()
 
   -- TODO: Use WinLeave as well?
   local on_buf_leave = string.format(
-    [[  autocmd BufLeave <buffer> ++nested ++once :silent lua require('telescope.pickers').on_close_prompt(%s)]],
+    [[  autocmd BufLeave <buffer=%s> ++nested ++once :silent lua require('telescope.pickers').on_close_prompt(%s)]],
+    prompt_bufnr,
     prompt_bufnr
   )
 
   local on_vim_resize = string.format(
-    [[  autocmd VimResized <buffer> ++nested :lua require('telescope.pickers').on_resize_window(%s)]],
+    [[  autocmd VimResized <buffer=%s> ++nested :lua require('telescope.pickers').on_resize_window(%s)]],
+    prompt_bufnr,
     prompt_bufnr
   )
 
@@ -527,11 +537,16 @@ function Picker:recalculate_layout()
     if preview_win ~= nil then
       popup.move(preview_win, popup_opts.preview)
     else
-      popup_opts.preview.highlight = "TelescopeNormal"
+      popup_opts.preview.highlight = "TelescopePreviewNormal"
       popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
       popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
-      preview_win, preview_opts, preview_border_win = self:_create_window("", popup_opts.preview)
+      local preview_bufnr = vim.api.nvim_buf_is_valid(status.preview_bufnr) and status.preview_bufnr or ""
+      preview_win, preview_opts, preview_border_win = self:_create_window(preview_bufnr, popup_opts.preview)
+      if preview_bufnr == "" then
+        preview_bufnr = a.nvim_win_get_buf(preview_win)
+      end
       status.preview_win = preview_win
+      status.preview_bufnr = preview_bufnr
       status.preview_border_win = preview_border_win
       state.set_status(prompt_win, status)
       self.preview_win = preview_win
@@ -539,10 +554,8 @@ function Picker:recalculate_layout()
       self.preview_border = preview_opts and preview_opts.border
     end
   elseif preview_win ~= nil then
-    vim.api.nvim_win_close(preview_win, false)
-    if status.preview_border_win then
-      vim.api.nvim_win_close(status.preview_border_win, false)
-    end
+    utils.win_delete("preview_win", preview_win, true)
+    utils.win_delete("preview_win", status.preview_border_win, true)
     status.preview_win = nil
     status.preview_border_win = nil
     state.set_status(prompt_win, status)
@@ -559,9 +572,39 @@ function Picker:recalculate_layout()
   -- self.max_results = popup_opts.results.height
 end
 
-function Picker:hide_preview()
-  -- 1. Hide the window (and border)
-  -- 2. Resize prompt & results windows accordingly
+local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
+  if strategy == "ascending" then
+    vim.api.nvim_win_set_cursor(win, { max_results, 0 })
+    vim.api.nvim_win_set_cursor(win, { oldinfo.topline, 0 })
+    vim.api.nvim_win_set_cursor(win, oldcursor)
+  elseif strategy == "descending" then
+    vim.api.nvim_win_set_cursor(win, { 1, 0 })
+    vim.api.nvim_win_set_cursor(win, { oldinfo.botline, 0 })
+    vim.api.nvim_win_set_cursor(win, oldcursor)
+  else
+    error(debug.traceback("Unknown sorting strategy: " .. (strategy or "")))
+  end
+end
+
+function Picker:toggle_preview()
+  local status = state.get_status(self.prompt_bufnr)
+
+  if self.previewer and status.preview_win then
+    self.hidden_previewer = self.previewer
+    self.previewer = nil
+  elseif self.hidden_previewer and not status.preview_win then
+    self.previewer = self.hidden_previewer
+    self.hidden_previewer = nil
+  else
+    return
+  end
+
+  local oldinfo = vim.fn.getwininfo(status.results_win)[1]
+  local oldcursor = vim.api.nvim_win_get_cursor(status.results_win)
+
+  self:recalculate_layout()
+  self:refresh_previewer()
+  update_scroll(status.results_win, oldinfo, oldcursor, self.sorting_strategy, self.max_results)
 end
 
 function Picker:toggle_padding()
@@ -638,6 +681,8 @@ function Picker:set_prompt(str)
 end
 
 function Picker.close_windows(status)
+  -- make sure we don't have BufLeave autocmd.
+  vim.cmd(string.format([[ autocmd! PickerInsert BufLeave <buffer=%s> ]], status.prompt_bufnr))
   local prompt_win = status.prompt_win
   local results_win = status.results_win
   local preview_win = status.preview_win
@@ -646,41 +691,21 @@ function Picker.close_windows(status)
   local results_border_win = status.results_border_win
   local preview_border_win = status.preview_border_win
 
-  local function del_win(name, win_id, force, bdelete)
-    if win_id == nil or not vim.api.nvim_win_is_valid(win_id) then
-      return
-    end
+  utils.win_delete("prompt_win", prompt_win, true, true)
+  utils.win_delete("results_win", results_win, true, true)
+  utils.win_delete("preview_win", preview_win, true, true)
 
-    local bufnr = vim.api.nvim_win_get_buf(win_id)
-    if bdelete and vim.api.nvim_buf_is_valid(bufnr) and not vim.api.nvim_buf_get_option(bufnr, "buflisted") then
-      vim.cmd(string.format("silent! bdelete! %s", bufnr))
-    end
+  utils.win_delete("prompt_border_win", prompt_border_win, true, true)
+  utils.win_delete("results_border_win", results_border_win, true, true)
+  utils.win_delete("preview_border_win", preview_border_win, true, true)
 
-    if not vim.api.nvim_win_is_valid(win_id) then
-      return
-    end
-
-    if not pcall(vim.api.nvim_win_close, win_id, force) then
-      log.trace("Unable to close window: ", name, "/", win_id)
-    end
-  end
-
-  del_win("prompt_win", prompt_win, true)
-  del_win("results_win", results_win, true, true)
-  del_win("preview_win", preview_win, true, true)
-
-  del_win("prompt_border_win", prompt_border_win, true, true)
-  del_win("results_border_win", results_border_win, true, true)
-  del_win("preview_border_win", preview_border_win, true, true)
+  -- Buffers should be deleted but it may be also the case that buffer was swapped in window
+  -- so make sure that buffers created in Picker are deleted.
+  utils.buf_delete(status.prompt_bufnr)
+  utils.buf_delete(status.results_bufnr)
+  utils.buf_delete(status.preview_bufnr)
 
   -- vim.cmd(string.format("bdelete! %s", status.prompt_bufnr))
-
-  -- Major hack?? Why do I have to od this.
-  --    Probably because we're currently IN the buffer.
-  --    Should wait to do this until after we're done.
-  vim.defer_fn(function()
-    del_win("prompt_win", prompt_win, true)
-  end, 10)
 
   state.clear_status(status.prompt_bufnr)
 end
@@ -907,7 +932,11 @@ end
 
 function Picker:refresh_previewer()
   local status = state.get_status(self.prompt_bufnr)
-  if status.preview_win and self.previewer then
+  if not self._selection_entry then
+    -- if selection_entry is nil there is nothing to be previewed
+    return
+  end
+  if self.previewer and status.preview_win and a.nvim_win_is_valid(status.preview_win) then
     self:_increment "previewed"
 
     self.previewer:preview(self._selection_entry, status)
@@ -938,8 +967,12 @@ function Picker:cycle_previewers(next)
     self.current_previewer_index = size
   end
 
-  self.previewer = self.all_previewers[self.current_previewer_index]
-  self:refresh_previewer()
+  if self.previewer then
+    self.previewer = self.all_previewers[self.current_previewer_index]
+    self:refresh_previewer()
+  elseif self.hidden_previewer then
+    self.hidden_previewer = self.all_previewers[self.current_previewer_index]
+  end
 end
 
 function Picker:entry_adder(index, entry, _, insert)
@@ -1207,6 +1240,13 @@ pickers.new = function(opts, defaults)
     end
   end
 
+  if result["previewer"] == false then
+    result["previewer"] = defaults["previewer"]
+    result["__hide_previewer"] = true
+  elseif type(opts["preview"]) == "table" and opts["preview"]["hide_on_startup"] then
+    result["__hide_previewer"] = true
+  end
+
   return Picker:new(result)
 end
 
@@ -1253,8 +1293,10 @@ function pickers.on_close_prompt(prompt_bufnr)
     picker.sorter:_destroy()
   end
 
-  if picker.previewer then
-    picker.previewer:teardown()
+  if picker.all_previewers then
+    for _, v in ipairs(picker.all_previewers) do
+      v:teardown()
+    end
   end
 
   if picker.finder then
@@ -1262,20 +1304,6 @@ function pickers.on_close_prompt(prompt_bufnr)
   end
 
   picker.close_windows(status)
-end
-
-local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
-  if strategy == "ascending" then
-    vim.api.nvim_win_set_cursor(win, { max_results, 0 })
-    vim.api.nvim_win_set_cursor(win, { oldinfo.topline, 0 })
-    vim.api.nvim_win_set_cursor(win, oldcursor)
-  elseif strategy == "descending" then
-    vim.api.nvim_win_set_cursor(win, { 1, 0 })
-    vim.api.nvim_win_set_cursor(win, { oldinfo.botline, 0 })
-    vim.api.nvim_win_set_cursor(win, oldcursor)
-  else
-    error(debug.traceback("Unknown sorting strategy: " .. (strategy or "")))
-  end
 end
 
 function pickers.on_resize_window(prompt_bufnr)

@@ -144,6 +144,13 @@ function actions.toggle_all(prompt_bufnr)
   end)
 end
 
+--- Toggle preview window.
+--- - Note: preview window can be toggled even if preview is set to false.
+---@param prompt_bufnr number: The prompt bufnr
+function actions.toggle_preview(prompt_bufnr)
+  action_state.get_current_picker(prompt_bufnr):toggle_preview()
+end
+
 function actions.preview_scrolling_up(prompt_bufnr)
   action_set.scroll_previewer(prompt_bufnr, -1)
 end
@@ -240,23 +247,14 @@ end
 actions._close = function(prompt_bufnr, keepinsert)
   action_state.get_current_history():reset()
   local picker = action_state.get_current_picker(prompt_bufnr)
-  local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
-
-  if picker.previewer then
-    for _, v in ipairs(picker.all_previewers) do
-      v:teardown()
-    end
-  end
 
   actions.close_pum(prompt_bufnr)
   if not keepinsert then
     vim.cmd [[stopinsert]]
   end
 
-  vim.api.nvim_win_close(prompt_win, true)
-
-  pcall(vim.cmd, string.format([[silent bdelete! %s]], prompt_bufnr))
+  require("telescope.pickers").on_close_prompt(prompt_bufnr)
   pcall(a.nvim_set_current_win, original_win_id)
 end
 
