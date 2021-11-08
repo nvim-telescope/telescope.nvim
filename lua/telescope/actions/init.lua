@@ -1117,42 +1117,103 @@ local function rename_loaded_buffers(old_name, new_name)
   end
 end
 
+local bulk_rename = function(prompt_bufnr, selections)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local prompt_win = vim.api.nvim_get_current_win()
+
+  -- create
+  local buf = vim.api.nvim_create_buf(false, true)
+  local what = {}
+  for _, sel in ipairs(selections) do
+    table.insert(what, sel:absolute())
+  end
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, what)
+  local popup_opts = {
+    title = { { text = "Bulk Rename", pos = "N" } },
+    relative = "editor",
+    maxheight = math.floor(vim.o.lines * 0.80),
+    width = math.floor(vim.o.columns * 0.80),
+    enter = true,
+    noautocmd = true,
+    border = { 1, 1, 1, 1 },
+    borderchars = config.values.borderchars,
+  }
+  local win, win_opts = popup.create(buf, popup_opts)
+
+  -- "rename callback"
+  _G.__TelescopeBulkRename = function()
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+    assert(#lines == #what, "Keep a line unchanged if you do not want to rename")
+    for idx, file in ipairs(lines) do
+      local new_file = Path:new(file)
+      if selections[idx]:absolute() ~= new_file:absolute() then
+        local old_buf = selections[idx]:absolute()
+        selections[idx]:rename { new_name = new_file.filename }
+        rename_loaded_buffers(old_buf, new_file:absolute())
+      end
+    end
+    actions.drop_all(prompt_bufnr)
+    vim.api.nvim_set_current_win(prompt_win)
+    current_picker:refresh(false, { reset_prompt = true })
+  end
+
+  local set_bkm = vim.api.nvim_buf_set_keymap
+  local opts = { noremap = true, silent = true }
+  set_bkm(buf, "n", "<ESC>", string.format("<cmd>lua vim.api.nvim_set_current_win(%s)<CR>", prompt_win), opts)
+  set_bkm(buf, "i", "<C-c>", string.format("<cmd>lua vim.api.nvim_set_current_win(%s)<CR>", prompt_win), opts)
+  set_bkm(buf, "n", "<CR>", "<cmd> __TelescopeBulkRename()<CR>", opts)
+  set_bkm(buf, "i", "<CR>", "<cmd> __TelescopeBulkRename()<CR>", opts)
+
+  vim.cmd(string.format(
+    "autocmd BufLeave <buffer> ++once lua %s",
+    table.concat({
+      string.format("_G.__TelescopeBulkRename = nil", win),
+      string.format("pcall(vim.api.nvim_win_close, %s, true)", win),
+      string.format("pcall(vim.api.nvim_win_close, %s, true)", win_opts.border.win_id),
+      string.format("require 'telescope.utils'.buf_delete(%s)", buf),
+    }, ";")
+  ))
+end
+
 --- Rename files or folders for |builtin.file_browser|.<br>
 ---@param prompt_bufnr number: The prompt bufnr
 actions.rename_file = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
-  local entry = action_state.get_selected_entry()
-  local old_name = Path:new(entry[1])
+  local selections = get_marked_files(prompt_bufnr, false)
+  if not vim.tbl_isempty(selections) then
+    bulk_rename(prompt_bufnr, selections)
+  else
+    local entry = action_state.get_selected_entry()
+    local old_name = Path:new(entry[1])
+    -- "../" more common so test first
+    if old_name.filename == "../" or old_name.filename == "./" then
+      print "Please select a file!"
+      return
+    end
+    local new_name = Path:new(vim.fn.input("Insert a new name:\n", old_name:absolute()))
 
-  -- "../" more common so test first
-  if old_name.filename == "../" or old_name.filename == "./" then
-    print "Please select a file!"
-    return
+    if old_name.filename == new_name.filename then
+      print "Original and new filename are the same! Skipping."
+      return
+    end
+
+    if new_name:exists() then
+      print(string.format("%s already exists! Skipping.", new_name.filename))
+      return
+    end
+
+    -- rename changes old_name in place
+    local old_buf = old_name:absolute()
+
+    old_name:rename { new_name = new_name.filename }
+    rename_loaded_buffers(old_buf, new_name:absolute())
+
+    -- persist multi selections unambiguously by only removing renamed entry
+    if current_picker:is_multi_selected(entry) then
+      current_picker._multi:drop(entry)
+    end
+    current_picker:refresh(false, { reset_prompt = true })
   end
-  local new_name = Path:new(vim.fn.input("Insert a new name:\n", old_name:absolute()))
-
-  if old_name.filename == new_name.filename then
-    print "Original and new filename are the same! Skipping."
-    return
-  end
-
-  if new_name:exists() then
-    print(string.format("%s already exists! Skipping.", new_name.filename))
-    return
-  end
-
-  -- rename changes old_name in place
-  local old_buf = old_name:absolute()
-
-  old_name:rename { new_name = new_name.filename }
-  rename_loaded_buffers(old_buf, new_name:absolute())
-
-  -- persist multi selections unambiguously by only removing renamed entry
-  if current_picker:is_multi_selected(entry) then
-    current_picker._multi:drop(entry)
-  end
-
-  current_picker:refresh(false, { reset_prompt = true })
 end
 
 --- Move multi-selected files or folders to current directory in |builtin.file_browser|.<br>
