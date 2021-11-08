@@ -583,27 +583,6 @@ local update_scroll = function(win, oldinfo, oldcursor, strategy, buf_maxline)
   end
 end
 
-function Picker:toggle_preview()
-  local status = state.get_status(self.prompt_bufnr)
-
-  if self.previewer and status.preview_win then
-    self.hidden_previewer = self.previewer
-    self.previewer = nil
-  elseif self.hidden_previewer and not status.preview_win then
-    self.previewer = self.hidden_previewer
-    self.hidden_previewer = nil
-  else
-    return
-  end
-
-  local oldinfo = vim.fn.getwininfo(status.results_win)[1]
-  local oldcursor = vim.api.nvim_win_get_cursor(status.results_win)
-
-  self:recalculate_layout()
-  self:refresh_previewer()
-  update_scroll(status.results_win, oldinfo, oldcursor, self.sorting_strategy, self.max_results)
-end
-
 function Picker:full_layout_update()
   local oldinfo = vim.fn.getwininfo(self.results_win)[1]
   local oldcursor = vim.api.nvim_win_get_cursor(self.results_win)

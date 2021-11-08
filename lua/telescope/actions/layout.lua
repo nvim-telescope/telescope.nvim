@@ -5,14 +5,29 @@
 ---@brief ]]
 
 local action_state = require "telescope.actions.state"
+local state = require "telescope.state"
 local layout_strats = require "telescope.pickers.layout_strategies"
 
 local action_layout = {}
 
--- TODO(l-kershaw) move documentation after #1305
+--- Toggle preview window.
+--- - Note: preview window can be toggled even if preview is set to false.
+---
+--- This action is not mapped by default.
+---@param prompt_bufnr number: The prompt bufnr
 action_layout.toggle_preview = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
-  -- TODO(l-kershaw) move implementation after #1305
+  local status = state.get_status(picker.prompt_bufnr)
+
+  if picker.previewer and status.preview_win then
+    picker.hidden_previewer = picker.previewer
+    picker.previewer = nil
+  elseif picker.hidden_previewer and not status.preview_win then
+    picker.previewer = picker.hidden_previewer
+    picker.hidden_previewer = nil
+  else
+    return
+  end
   picker:full_layout_update()
 end
 

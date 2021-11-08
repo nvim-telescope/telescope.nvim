@@ -1912,15 +1912,6 @@ actions.toggle_all({prompt_bufnr})                      *actions.toggle_all()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.toggle_preview({prompt_bufnr})              *actions.toggle_preview()*
-    Toggle preview window.
-    - Note: preview window can be toggled even if preview is set to false.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
 actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
     Create and checkout a new git branch if it doesn't already exist
 
@@ -2229,6 +2220,17 @@ action_set.scroll_previewer({prompt_bufnr}, {direction}) *action_set.scroll_prev
                                                       *telescope.actions.layout*
 
 The layout actions are actions to be used to change the layout of a picker.
+
+action_layout.toggle_preview({prompt_bufnr})  *action_layout.toggle_preview()*
+    Toggle preview window.
+    - Note: preview window can be toggled even if preview is set to false.
+
+    This action is not mapped by default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
 
 action_layout.toggle_prompt_position({prompt_bufnr}) *action_layout.toggle_prompt_position()*
     Toggles the `prompt_position` option between "top" and "bottom". Checks if
