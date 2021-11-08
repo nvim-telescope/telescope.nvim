@@ -1141,8 +1141,11 @@ actions.rename_file = function(prompt_bufnr)
     return
   end
 
+  -- rename changes old_name in place
+  local old_buf = old_name:absolute()
+
   old_name:rename { new_name = new_name.filename }
-  rename_loaded_buffers(old_name:absolute(), new_name:absolute())
+  rename_loaded_buffers(old_buf, new_name:absolute())
 
   -- persist multi selections unambiguously by only removing renamed entry
   if current_picker:is_multi_selected(entry) then
