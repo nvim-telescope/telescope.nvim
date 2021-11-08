@@ -248,6 +248,13 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: function that shows current count / all
 
+                                         *telescope.defaults.hl_result_eol*
+    hl_result_eol: ~
+        Changes if the highlight for the selected item in the results
+        window is always the full width of the window
+
+        Default: true
+
                                  *telescope.defaults.dynamic_preview_title*
     dynamic_preview_title: ~
         Will change the title of the preview window dynamically, where it
@@ -324,7 +331,7 @@ telescope.setup({opts})                                    *telescope.setup()*
                               Windows users get `file` from:
                               https://github.com/julian-r/file-windows
                               Set to false to attempt to preview any mime type.
-                              Default: true
+                              Default: true for all OS excl. Windows
           - filesize_limit:   The maximum file size in MB attempted to be previewed.
                               Set to false to attempt to preview any file size.
                               Default: 25
@@ -388,6 +395,9 @@ telescope.setup({opts})                                    *telescope.setup()*
                               Default: true
           - msg_bg_fillchar:  Character to fill background of unpreviewable buffers with
                               Default: "╱"
+          - hide_on_startup:  Hide previewer when picker starts. Previewer can be toggled
+                              with actions.toggle_preview.
+                              Default: false
 
 
                                      *telescope.defaults.vimgrep_arguments*
@@ -1896,6 +1906,15 @@ actions.toggle_all({prompt_bufnr})                      *actions.toggle_all()*
     Toggle multi selection for all entries.
     - Note: toggled entries may include results not visible in the results
       popup.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.toggle_preview({prompt_bufnr})              *actions.toggle_preview()*
+    Toggle preview window.
+    - Note: preview window can be toggled even if preview is set to false.
 
 
     Parameters: ~

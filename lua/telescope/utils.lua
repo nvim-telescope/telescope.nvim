@@ -259,11 +259,6 @@ utils.diagnostics_to_tbl = function(opts)
   return items
 end
 
-utils.path_shorten = function(filename, len)
-  log.warn "`utils.path_shorten` is deprecated. Use `require('plenary.path').shorten`."
-  return Path:new(filename):shorten(len)
-end
-
 utils.path_smart = (function()
   local paths = {}
   return function(filepath)
@@ -438,6 +433,25 @@ function utils.buf_delete(bufnr)
   end
 end
 
+function utils.win_delete(name, win_id, force, bdelete)
+  if win_id == nil or not vim.api.nvim_win_is_valid(win_id) then
+    return
+  end
+
+  local bufnr = vim.api.nvim_win_get_buf(win_id)
+  if bdelete then
+    utils.buf_delete(bufnr)
+  end
+
+  if not vim.api.nvim_win_is_valid(win_id) then
+    return
+  end
+
+  if not pcall(vim.api.nvim_win_close, win_id, force) then
+    log.trace("Unable to close window: ", name, "/", win_id)
+  end
+end
+
 function utils.max_split(s, pattern, maxsplit)
   pattern = pattern or " "
   maxsplit = maxsplit or -1
@@ -503,22 +517,6 @@ function utils.get_os_command_output(cmd, cwd)
     })
     :sync()
   return stdout, ret, stderr
-end
-
-utils.strdisplaywidth = function()
-  error "strdisplaywidth deprecated. please use plenary.strings.strdisplaywidth"
-end
-
-utils.utf_ptr2len = function()
-  error "utf_ptr2len deprecated. please use plenary.strings.utf_ptr2len"
-end
-
-utils.strcharpart = function()
-  error "strcharpart deprecated. please use plenary.strings.strcharpart"
-end
-
-utils.align_str = function()
-  error "align_str deprecated. please use plenary.strings.align_str"
 end
 
 local load_once = function(f)

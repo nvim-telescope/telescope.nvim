@@ -3,6 +3,7 @@ local deprecated = require "telescope.deprecated"
 local sorters = require "telescope.sorters"
 local if_nil = vim.F.if_nil
 local os_sep = require("plenary.path").path.sep
+local has_win = vim.fn.has "win32" == 1
 
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
@@ -338,6 +339,16 @@ append(
 )
 
 append(
+  "hl_result_eol",
+  true,
+  [[
+  Changes if the highlight for the selected item in the results
+  window is always the full width of the window
+
+  Default: true]]
+)
+
+append(
   "dynamic_preview_title",
   false,
   [[
@@ -418,11 +429,12 @@ append(
 append(
   "preview",
   {
-    check_mime_type = true,
+    check_mime_type = not has_win,
     filesize_limit = 25,
     timeout = 250,
     treesitter = true,
     msg_bg_fillchar = "╱",
+    hide_on_startup = false,
   },
   [[
     This field handles the global configuration for previewers.
@@ -439,7 +451,7 @@ append(
                           Windows users get `file` from:
                           https://github.com/julian-r/file-windows
                           Set to false to attempt to preview any mime type.
-                          Default: true
+                          Default: true for all OS excl. Windows
       - filesize_limit:   The maximum file size in MB attempted to be previewed.
                           Set to false to attempt to preview any file size.
                           Default: 25
@@ -503,6 +515,9 @@ append(
                           Default: true
       - msg_bg_fillchar:  Character to fill background of unpreviewable buffers with
                           Default: "╱"
+      - hide_on_startup:  Hide previewer when picker starts. Previewer can be toggled
+                          with actions.toggle_preview.
+                          Default: false
     ]]
 )
 
@@ -746,10 +761,7 @@ function config.set_defaults(user_defaults, tele_defaults)
   tele_defaults = if_nil(tele_defaults, telescope_defaults)
 
   -- Check if using layout keywords outside of `layout_config`
-  deprecated.picker_window_options(user_defaults)
-
-  -- Check if using `layout_defaults` instead of `layout_config`
-  user_defaults = deprecated.layout_configuration(user_defaults)
+  deprecated.options(user_defaults)
 
   local function get(name, default_val)
     if name == "layout_config" then
