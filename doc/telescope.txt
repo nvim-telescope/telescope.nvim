@@ -1912,6 +1912,15 @@ actions.toggle_all({prompt_bufnr})                      *actions.toggle_all()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.toggle_preview({prompt_bufnr})              *actions.toggle_preview()*
+    Toggle preview window.
+    - Note: preview window can be toggled even if preview is set to false.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
     Create and checkout a new git branch if it doesn't already exist
 
