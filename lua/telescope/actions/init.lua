@@ -1096,11 +1096,10 @@ actions.create_file = function(prompt_bufnr)
   end
   if not is_dir(file.filename) then
     Path:new(file):touch { parents = true }
-    current_picker:refresh(false, { reset_prompt = true })
   else
     Path:new(file.filename:sub(1, -2)):mkdir { parents = true }
   end
-  current_picker:refresh(false, { reset_prompt = true })
+  current_picker:refresh(finder, { reset_prompt = true, multi = current_picker._multi })
 end
 
 -- creds to nvim-tree.lua
@@ -1234,7 +1233,12 @@ actions.remove_file = function(prompt_bufnr)
   if confirm == 1 then
     current_picker:delete_selection(function(entry)
       local p = Path:new(entry[1])
-      p:rm { recursive = p:is_dir() }
+      local dir = p:is_dir()
+      p:rm { recursive = dir }
+      -- update folder picker
+      if dir then
+        current_picker.finder:close()
+      end
     end)
     print "\nThe file has been removed!"
   end
@@ -1246,7 +1250,7 @@ actions.toggle_hidden = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local finder = current_picker.finder
   finder.hidden = not finder.hidden
-  current_picker:refresh(false, { reset_prompt = true })
+  current_picker:refresh(finder, { reset_prompt = true, multi = current_picker._multi })
 end
 
 --- Opens the file or folder with the default application.<br>
@@ -1307,7 +1311,6 @@ actions.toggle_browser = function(prompt_bufnr, opts)
   local finder = current_picker.finder
   finder.files = not finder.files
 
-  local selections = current_picker._multi
   if current_picker.prompt_border then
     local new_title = finder.files and "File Browser" or "Folder Browser"
     current_picker.prompt_border:change_title(new_title)
@@ -1316,7 +1319,7 @@ actions.toggle_browser = function(prompt_bufnr, opts)
     local new_title = finder.files and Path:new(finder.path):make_relative(vim.loop.cwd()) .. os_sep or "Results"
     current_picker.results_border:change_title(new_title)
   end
-  current_picker:refresh(finder, { reset_prompt = opts.reset_prompt, multi = selections })
+  current_picker:refresh(false, { reset_prompt = opts.reset_prompt })
 end
 
 -- ==================================================

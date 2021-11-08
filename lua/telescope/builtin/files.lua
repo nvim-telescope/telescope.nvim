@@ -349,10 +349,25 @@ local fb_finder = function(opts)
       return make_entry.gen_from_fs(vim.tbl_extend("force", opts, local_opts))
     end),
     _browse_files = vim.F.if_nil(opts.browse_files, browse_files),
+    -- lazy finder updated on hidden or cwd change
+    _cached_browse_folder = false,
     _browse_folders = vim.F.if_nil(opts.browse_folders, browse_folders),
+    close = function(self)
+      -- refresh folder browser on close
+      self._cached_browse_folder = false
+    end,
   }, {
     __call = function(self, ...)
-      self._finder = self.files and self._browse_files(self) or self._browse_folders(self)
+      if self.files then
+        self._finder = self:_browse_files()
+      else
+        local cwd = vim.loop.cwd() -- if nvim cwd changed
+        if self._cached_browse_folder == false or cwd ~= self.cwd then
+          self.cwd = cwd
+          self._cached_browse_folder = self:_browse_folders()
+        end
+        self._finder = self._cached_browse_folder
+      end
       self._finder(...)
     end,
     __index = function(self, k)
