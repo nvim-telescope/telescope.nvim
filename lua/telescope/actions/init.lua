@@ -152,6 +152,14 @@ function actions.preview_scrolling_down(prompt_bufnr)
   action_set.scroll_previewer(prompt_bufnr, 1)
 end
 
+function actions.results_scrolling_up(prompt_bufnr)
+  action_set.scroll_results(prompt_bufnr, -1)
+end
+
+function actions.results_scrolling_down(prompt_bufnr)
+  action_set.scroll_results(prompt_bufnr, 1)
+end
+
 function actions.center(_)
   vim.cmd ":normal! zz"
 end

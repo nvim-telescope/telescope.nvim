@@ -162,6 +162,18 @@ action_set.scroll_previewer = function(prompt_bufnr, direction)
   previewer:scroll_fn(math.floor(speed * direction))
 end
 
+--- Scrolls the results up or down
+---@param prompt_bufnr number: The prompt bufnr
+---@param direction number: The direction of the scrolling
+--      Valid directions include: "1", "-1"
+action_set.scroll_results = function(prompt_bufnr, direction)
+  local status = state.get_status(prompt_bufnr)
+  local default_speed = vim.api.nvim_win_get_height(status.results_win) / 2
+  local speed = status.picker.layout_config.scroll_speed or default_speed
+
+  action_set.shift_selection(prompt_bufnr, math.floor(speed * direction))
+end
+
 -- ==================================================
 -- Transforms modules and sets the corect metatables.
 -- ==================================================
