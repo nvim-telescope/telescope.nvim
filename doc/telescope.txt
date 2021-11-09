@@ -2198,6 +2198,15 @@ action_set.scroll_previewer({prompt_bufnr}, {direction}) *action_set.scroll_prev
         {direction}    (number)  The direction of the scrolling
 
 
+action_set.scroll_results({prompt_bufnr}, {direction}) *action_set.scroll_results()*
+    Scrolls the results up or down
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {direction}    (number)  The direction of the scrolling
+
+
 
 ================================================================================
                                                        *telescope.actions.utils*
