@@ -8,7 +8,7 @@
 ---@brief [[
 --- Themes are ways to combine several elements of styling together.
 ---
---- They are helpful for managing the several differnt UI aspects for telescope and provide
+--- They are helpful for managing the several different UI aspects for telescope and provide
 --- a simple interface for users to get a particular "style" of picker.
 ---@brief ]]
 
