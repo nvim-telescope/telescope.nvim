@@ -1117,7 +1117,7 @@ local function rename_loaded_buffers(old_name, new_name)
   end
 end
 
-local bulk_rename = function(prompt_bufnr, selections)
+local batch_rename = function(prompt_bufnr, selections)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local prompt_win = vim.api.nvim_get_current_win()
 
@@ -1128,10 +1128,11 @@ local bulk_rename = function(prompt_bufnr, selections)
     table.insert(what, sel:absolute())
   end
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, what)
+  local maxheight = math.floor(vim.o.lines * 0.80)
   local popup_opts = {
-    title = { { text = "Bulk Rename", pos = "N" } },
+    title = { { text = "Batch Rename", pos = "N" } },
     relative = "editor",
-    maxheight = math.floor(vim.o.lines * 0.80),
+    maxheight = maxheight,
     width = math.floor(vim.o.columns * 0.80),
     enter = true,
     noautocmd = true,
@@ -1140,8 +1141,19 @@ local bulk_rename = function(prompt_bufnr, selections)
   }
   local win, win_opts = popup.create(buf, popup_opts)
 
+  -- add indicators
+  vim.wo[win].number = true
+  if #selections > maxheight then
+    vim.api.nvim_buf_set_extmark(buf, vim.api.nvim_create_namespace "", 0, 0, {
+      virt_text = {
+        { string.format("Selections exceed window height: %s/%s shown ", maxheight, #selections), "Comment" },
+      },
+      virt_text_pos = "right_align",
+    })
+  end
+
   -- "rename callback"
-  _G.__TelescopeBulkRename = function()
+  _G.__TelescopeBatchRename = function()
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     assert(#lines == #what, "Keep a line unchanged if you do not want to rename")
     for idx, file in ipairs(lines) do
@@ -1161,13 +1173,13 @@ local bulk_rename = function(prompt_bufnr, selections)
   local opts = { noremap = true, silent = true }
   set_bkm(buf, "n", "<ESC>", string.format("<cmd>lua vim.api.nvim_set_current_win(%s)<CR>", prompt_win), opts)
   set_bkm(buf, "i", "<C-c>", string.format("<cmd>lua vim.api.nvim_set_current_win(%s)<CR>", prompt_win), opts)
-  set_bkm(buf, "n", "<CR>", "<cmd> __TelescopeBulkRename()<CR>", opts)
-  set_bkm(buf, "i", "<CR>", "<cmd> __TelescopeBulkRename()<CR>", opts)
+  set_bkm(buf, "n", "<CR>", "<cmd>lua _G.__TelescopeBatchRename()<CR>", opts)
+  set_bkm(buf, "i", "<CR>", "<cmd>lua _G.__TelescopeBatchRename()<CR>", opts)
 
   vim.cmd(string.format(
     "autocmd BufLeave <buffer> ++once lua %s",
     table.concat({
-      string.format("_G.__TelescopeBulkRename = nil", win),
+      string.format("_G.__TelescopeBatchRename = nil", win),
       string.format("pcall(vim.api.nvim_win_close, %s, true)", win),
       string.format("pcall(vim.api.nvim_win_close, %s, true)", win_opts.border.win_id),
       string.format("require 'telescope.utils'.buf_delete(%s)", buf),
@@ -1181,7 +1193,7 @@ actions.rename_file = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local selections = get_marked_files(prompt_bufnr, false)
   if not vim.tbl_isempty(selections) then
-    bulk_rename(prompt_bufnr, selections)
+    batch_rename(prompt_bufnr, selections)
   else
     local entry = action_state.get_selected_entry()
     local old_name = Path:new(entry[1])
