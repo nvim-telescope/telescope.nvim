@@ -590,7 +590,7 @@ end
 
 actions.git_checkout_current_buffer = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
-  local selection = actions.get_selected_entry()
+  local selection = action_state.get_selected_entry()
   if selection == nil then
     print "[telescope] Nothing currently selected"
     return
