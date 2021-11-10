@@ -1089,7 +1089,17 @@ end
 actions.create_file = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local finder = current_picker.finder
-  local file = Path:new(vim.fn.input("Insert the file name:\n", finder.path .. os_sep))
+  local file = vim.fn.input("Insert the file name:\n", finder.path .. os_sep)
+  if file == "" then
+    print "Please enter valid filename!"
+    return
+  end
+  if file == finder.path .. os_sep then
+    print "Please enter valid file or folder name!"
+    return
+  end
+  file = Path:new(file)
+
   if file:exists() then
     vim.api.nvim_echo "File or folder already exists."
     return
@@ -1202,7 +1212,11 @@ actions.rename_file = function(prompt_bufnr)
       print "Please select a file!"
       return
     end
-    local new_name = Path:new(vim.fn.input("Insert a new name:\n", old_name:absolute()))
+    local new_name = vim.fn.input("Insert a new name:\n", old_name:absolute())
+    if new_name == "" then
+      print "Renaming file aborted."
+    end
+    new_name = Path:new(new_name)
 
     if old_name.filename == new_name.filename then
       print "Original and new filename are the same! Skipping."
