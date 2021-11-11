@@ -94,7 +94,7 @@ files.live_grep = function(opts)
     end
 
     return flatten { vimgrep_arguments, additional_args, "--", prompt, search_list }
-  end, opts.entry_maker or make_entry.gen_from_vimgrep(
+  end, opts.entry_maker or make_entry.gen_from_vimgrep_json(
     opts
   ), opts.max_results, opts.cwd)
 
@@ -120,7 +120,7 @@ files.grep_string = function(opts)
   local word = opts.search or vim.fn.expand "<cword>"
   local search = opts.use_regex and word or escape_chars(word)
   local word_match = opts.word_match
-  opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep_json(opts)
 
   local additional_args = {}
   if opts.additional_args ~= nil and type(opts.additional_args) == "function" then

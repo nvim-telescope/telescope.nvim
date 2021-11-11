@@ -182,7 +182,6 @@ do
 
     mt_vimgrep_entry = {
       cwd = vim.fn.expand(opts.cwd or vim.loop.cwd()),
-
       display = function(entry)
         local display_filename = utils.transform_path(opts, entry.filename)
 
@@ -226,6 +225,93 @@ do
     return function(line)
       return setmetatable({ line }, mt_vimgrep_entry)
     end
+  end
+end
+
+local parse_json = function(line, cwd)
+  line = vim.json.decode(line)
+  if line.type ~= "match" then
+    return
+  end
+  local data = line.data
+  local entry = {}
+
+  entry[1] = data.lines.text:gsub("\n", "")
+  entry.ordinal = entry[1]
+  entry.text = entry[1]
+  entry.display = entry[1]
+  entry.lnum = data.line_number
+  entry.filename = data.path.text
+  entry.highlight = {}
+  local min_start
+  for _, match in ipairs(data.submatches) do
+    if not min_start then
+      min_start = match.start
+    else
+      min_start = match.start < min_start or min_start
+    end
+  end
+  entry.col = min_start
+  -- TBD why plus 4
+  local offset = #string.format("%s:%s:%s:", entry.filename, entry.lnum, entry.col) + 4
+  for _, match in ipairs(data.submatches) do
+    if match.start then
+      -- -1 because of 1-index
+      local start_hl = match["start"] - 1 + 4 + offset
+      -- -2 because rg hl 1 too long?
+      local end_hl = match["end"] - 2 + 4 + offset
+      table.insert(entry.highlight, { start = start_hl, finish = end_hl })
+    end
+  end
+  if Path:new(entry.filename):is_absolute() then
+    entry.path = entry.filename
+  else
+    entry.path = Path:new({ cwd, entry.filename }):absolute()
+  end
+  return entry
+end
+
+--- Special options:
+---  - disable_coordinates: Don't show the line & row numbers
+---  - only_sort_text: Only sort via the text. Ignore filename and other items
+function make_entry.gen_from_vimgrep_json(opts)
+  local disable_devicons = opts.disable_devicons
+  local disable_coordinates = opts.disable_coordinates
+  local display_string = "%s:%s%s"
+  local mt_vimgrep_entry = {
+    cwd = vim.fn.expand(opts.cwd or vim.loop.cwd()),
+
+    display = function(entry)
+      local display_filename = utils.transform_path(opts, entry.filename)
+
+      local coordinates = ""
+      if not disable_coordinates then
+        coordinates = string.format("%s:%s:", entry.lnum, entry.col)
+      end
+
+      local display, hl_group = utils.transform_devicons(
+        entry.filename,
+        string.format(display_string, display_filename, coordinates, entry.text),
+        disable_devicons
+      )
+
+      if hl_group then
+        return display, { { { 1, 3 }, hl_group } }
+      else
+        return display
+      end
+    end,
+  }
+  local cwd = opts.cwd or vim.loop.cwd()
+  return function(line)
+    -- return setmetatable({ line }, mt_vimgrep_entry)
+    local entry = parse_json(line, cwd)
+    if entry then
+      entry.display = mt_vimgrep_entry.display
+      return entry
+    end
+    -- return {}
+    -- return parse_json(line)
   end
 end
 

@@ -230,7 +230,9 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
     return
   end
 
-  local highlights = self.sorter:highlighter(prompt, display)
+  -- local highlights = self.sorter:highlighter(prompt, display)
+  local entry = self.manager:get_entry(self:get_index(row))
+  local highlights = entry.highlight
 
   if highlights then
     for _, hl in ipairs(highlights) do

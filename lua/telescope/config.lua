@@ -502,7 +502,8 @@ append(
 
 append(
   "vimgrep_arguments",
-  { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
+  -- { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
+  { "rg", "--json", "--no-heading", "--smart-case" },
   [[
     Defines the command that will be used for `live_grep` and `grep_string`
     pickers.
