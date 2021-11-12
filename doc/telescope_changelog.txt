@@ -127,8 +127,8 @@ PR: https://github.com/nvim-telescope/telescope.nvim/pull/1406
 Telescope requires Neovim release 0.5.1 or a recent nightly
 
 Due to making use of newly implemented extmark features, Telescope now
-requires users to be on Neovim 0.5.1 (the most recent stable version) or on a
-recent version of Neovim nightly (at most 1 week old).
+requires users to be on Neovim 0.5.1 (the most recent stable version) or on
+the LATEST version of Neovim nightly.
 
 
  vim:tw=78:ts=8:ft=help:norl:
