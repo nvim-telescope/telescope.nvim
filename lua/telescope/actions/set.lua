@@ -171,7 +171,13 @@ action_set.scroll_results = function(prompt_bufnr, direction)
   local default_speed = vim.api.nvim_win_get_height(status.results_win) / 2
   local speed = status.picker.layout_config.scroll_speed or default_speed
 
-  action_set.shift_selection(prompt_bufnr, math.floor(speed * direction))
+  local input = direction > 0 and [[]] or [[]]
+
+  vim.api.nvim_win_call(status.results_win, function()
+    vim.cmd([[normal! ]] .. math.floor(speed) .. input)
+  end)
+
+  action_set.shift_selection(prompt_bufnr, math.floor(speed) * direction)
 end
 
 -- ==================================================
