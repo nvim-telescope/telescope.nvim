@@ -739,7 +739,9 @@ builtin.fd()                                                    *builtin.fd()*
 builtin.file_browser({opts})                          *builtin.file_browser()*
     Lists files and folders in your current working directory, open files,
     navigate your filesystem, and create new files and folders
-    - Default keymaps:
+    - Notes:
+      - The folder browser uses `fd` if the executable is found
+    - Default keymaps in insert/normal mode:
       - `<cr>`: opens the currently selected file, or navigates to the
         currently selected directory
       - `<C-e>`: creates new file in current directory, creates new directory
@@ -749,6 +751,17 @@ builtin.file_browser({opts})                          *builtin.file_browser()*
           `init.lua` inside of `lua/telescope` and will create the necessary
           folders (similar to how `mkdir -p` would work) if they do not already
           exist
+      - `<C-o>/o`: open file with system default application
+      - `<C-r>/r`: rename currently selected file or folder
+      - `<C-g>/g`: goto previous folder
+      - `<C-y>/y`: copy multi selected file(s) or folder(s) recursively to
+        current directory
+      - `<C-f>/f`: toggle between file and folder browser
+      - `<C-h>/h`: toggle hidden files
+      - --/dd`: remove currently or multi selected file(s) or folder(s)
+        recursively
+      - --/m`: move multi selected file(s) or folder(s) recursively to current
+        directory in file browser
 
 
     Parameters: ~
@@ -758,6 +771,8 @@ builtin.file_browser({opts})                          *builtin.file_browser()*
         {cwd}      (string)   root dir to browse from (default: cwd, use
                               utils.buffer_dir() to search relative to open
                               buffer)
+        {files}    (boolean)  start in file (true) or folder (false) browser
+                              (default: true)
         {depth}    (number)   file tree depth to display (default: 1)
         {dir_icon} (string)   change the icon for a directory. (default: )
         {hidden}   (boolean)  determines whether to show hidden files or not
@@ -2120,6 +2135,104 @@ actions.which_key({prompt_bufnr})                        *actions.which_key()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.create_file({prompt_bufnr})                    *actions.create_file()*
+    Creates a new file in the current directory of the |builtin.file_browser|.
+    Notes:
+    - You can create folders by ending the name in the path separator of your
+      OS, e.g. "/" on Unix systems
+    - You can implicitly create new folders by passing
+      $/CWD/new_folder/filename.lua
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.rename_file({prompt_bufnr})                    *actions.rename_file()*
+    Rename files or folders for |builtin.file_browser|.
+
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.move_file({prompt_bufnr})                        *actions.move_file()*
+    Move multi-selected files or folders to current directory in
+    |builtin.file_browser|.
+    Note: Performs a blocking synchronized file-system operation.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.copy_file({prompt_bufnr})                        *actions.copy_file()*
+    Copy file or folders recursively to current directory in
+    |builtin.file_browser|.
+    Note: Performs a blocking synchronized file-system operation.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.remove_file({prompt_bufnr})                    *actions.remove_file()*
+    Remove file or folders recursively for |builtin.file_browser|.
+    Note: Performs a blocking synchronized file-system operation.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.toggle_hidden({prompt_bufnr})                *actions.toggle_hidden()*
+    Toggle hidden files or folders for |builtin.file_browser|.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.open_file()                                      *actions.open_file()*
+    Opens the file or folder with the default application.
+
+    - Notes:
+      - map actions.open_file + actions.close if you want to close the picker
+        post-action
+    - OS: make sure your OS links against the desired applications:
+      - Linux: induces application via `xdg-open`
+      - macOS: relies on `open` to start the program
+      - Windows: defaults to default applications through `start`
+
+
+
+actions.goto_prev_dir({prompt_bufnr}, {bypass})      *actions.goto_prev_dir()*
+    Goto previous directory in |builtin.file_browser|.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)   The prompt bufnr
+        {bypass}       (boolean)  Allow passing beyond the globally set
+                                  current working directory
+
+
+actions.goto_cwd({prompt_bufnr})                          *actions.goto_cwd()*
+    Goto working directory of nvim in |builtin.file_browser|.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.toggle_browser({prompt_bufnr})              *actions.toggle_browser()*
+    Toggle between file and folder browser for |builtin.file_browser|.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 
 ================================================================================
                                                        *telescope.actions.state*
@@ -2367,7 +2480,7 @@ work and make it really easy create new previewers.
 
 Furthermore, there are a collection of previewers already defined which can be
 used for every picker, as long as the entries of the picker provide the
-necessary fields. The more important ones are
+necessary fields. The more important once are
   - `previewers.cat`
   - `previewers.vimgrep`
   - `previewers.qflist`
