@@ -2190,7 +2190,20 @@ action_set.edit({prompt_bufnr}, {command})                 *action_set.edit()*
 
 
 action_set.scroll_previewer({prompt_bufnr}, {direction}) *action_set.scroll_previewer()*
-    Scrolls the previewer up or down
+    Scrolls the previewer up or down. Defaults to a half page scroll, but can
+    be overridden using the `scroll_speed` option in `layout_config`. See
+    |telescope.layout| for more details.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {direction}    (number)  The direction of the scrolling
+
+
+action_set.scroll_results({prompt_bufnr}, {direction}) *action_set.scroll_results()*
+    Scrolls the results up or down. Defaults to a half page scroll, but can be
+    overridden using the `scroll_speed` option in `layout_config`. See
+    |telescope.layout| for more details.
 
 
     Parameters: ~
