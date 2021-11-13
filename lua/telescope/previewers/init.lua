@@ -9,7 +9,7 @@
 ---
 --- Furthermore, there are a collection of previewers already defined which
 --- can be used for every picker, as long as the entries of the picker provide
---- the necessary fields. The more important once are
+--- the necessary fields. The more important ones are
 ---   - `previewers.cat`
 ---   - `previewers.vimgrep`
 ---   - `previewers.qflist`
