@@ -2,6 +2,7 @@ local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 local action_set = require "telescope.actions.set"
 local finders = require "telescope.finders"
+local filters = require "telescope.filters"
 local make_entry = require "telescope.make_entry"
 local pickers = require "telescope.pickers"
 local previewers = require "telescope.previewers"
@@ -265,7 +266,7 @@ files.find_files = function(opts)
   end
 
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
-
+  opts.filter_function = filters.paths(opts)
   pickers.new(opts, {
     prompt_title = "Find Files",
     finder = finders.new_oneshot_job(find_command, opts),

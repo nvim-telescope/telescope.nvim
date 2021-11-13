@@ -55,6 +55,19 @@ utils.default_table_mt = {
   end,
 }
 
+utils.create_set = function()
+  local set = {}
+  return setmetatable(set, {
+    __index = {
+      insert = function(set_, value)
+        if not set_[value] then
+          set_[value] = true
+        end
+      end,
+    },
+  })
+end
+
 utils.repeated_table = function(n, val)
   local empty_lines = {}
   for _ = 1, n do

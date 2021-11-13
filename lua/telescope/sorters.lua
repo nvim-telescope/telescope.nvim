@@ -1,5 +1,6 @@
 local log = require "telescope.log"
 local util = require "telescope.utils"
+local defaulter = util.make_default_callable
 
 local sorters = {}
 
@@ -32,7 +33,6 @@ Sorter.__index = Sorter
 --- Lower number is better (because it's like a closer match)
 --- But, any number below 0 means you want that line filtered out.
 ---@field scoring_function function: Function that has the interface: (sorter, prompt, line): number
----@field tags table: Unique tags collected at filtering for tag completion
 ---@field filter_function function: Function that can filter results
 ---@field highlighter function: Highlights results to display them pretty
 ---@field discard boolean: Whether this is a discardable style sorter or not.
@@ -47,7 +47,6 @@ function Sorter:new(opts)
   return setmetatable({
     score = opts.score,
     state = {},
-    tags = opts.tags,
 
     -- State management
     init = opts.init,
@@ -135,9 +134,6 @@ function Sorter:score(prompt, entry, cb_add, cb_filter)
 
   local filter_score
   if self.filter_function ~= nil then
-    if self.tags then
-      self.tags:insert(entry)
-    end
     filter_score, prompt = self:filter_function(prompt, entry)
   end
 
@@ -237,7 +233,7 @@ sorters.get_fuzzy_file = function(opts)
   local cached_tails = make_cached_tail()
   local cached_uppers = make_cached_uppers()
 
-  return Sorter:new {
+  return defaulter(sorters.new, {
     scoring_function = function(_, prompt, line)
       local N = #prompt
 
@@ -317,7 +313,7 @@ sorters.get_fuzzy_file = function(opts)
     highlighter = opts.highlighter or function(_, prompt, display)
       return ngram_highlighter(ngram_len, prompt, display)
     end,
-  }
+  }).new(opts)
 end
 
 sorters.get_generic_fuzzy_sorter = function(opts)
@@ -345,7 +341,7 @@ sorters.get_generic_fuzzy_sorter = function(opts)
     return R
   end
 
-  return Sorter:new {
+  return defaulter(sorters.new, {
     -- self
     -- prompt (which is the text on the line)
     -- line (entry.ordinal)
@@ -406,7 +402,8 @@ sorters.get_generic_fuzzy_sorter = function(opts)
     highlighter = opts.highlighter or function(_, prompt, display)
       return ngram_highlighter(ngram_len, prompt, display)
     end,
-  }
+    filter_function = opts.filter_function,
+  }).new(opts)
 end
 
 sorters.fuzzy_with_index_bias = function(opts)
@@ -416,7 +413,7 @@ sorters.fuzzy_with_index_bias = function(opts)
   -- TODO: Probably could use a better sorter here.
   local fuzzy_sorter = sorters.get_generic_fuzzy_sorter(opts)
 
-  return Sorter:new {
+  return defaulter(sorters.new, {
     scoring_function = function(_, prompt, _, entry)
       local base_score = fuzzy_sorter:score(prompt, entry)
 
@@ -430,7 +427,7 @@ sorters.fuzzy_with_index_bias = function(opts)
         return math.min(math.pow(entry.index, 0.25), 2) * base_score
       end
     end,
-  }
+  }).new(opts)
 end
 
 -- Sorter using the fzy algorithm
@@ -439,7 +436,7 @@ sorters.get_fzy_sorter = function(opts)
   local fzy = opts.fzy_mod or require "telescope.algos.fzy"
   local OFFSET = -fzy.get_score_floor()
 
-  return sorters.Sorter:new {
+  return defaulter(sorters.new, {
     discard = true,
 
     scoring_function = function(_, prompt, line)
@@ -472,7 +469,7 @@ sorters.get_fzy_sorter = function(opts)
     highlighter = function(_, prompt, display)
       return fzy.positions(prompt, display)
     end,
-  }
+  }).new(opts)
 end
 
 -- TODO: Could probably do something nice where we check their conf
@@ -482,7 +479,7 @@ sorters.highlighter_only = function(opts)
   opts = opts or {}
   local fzy = opts.fzy_mod or require "telescope.algos.fzy"
 
-  return Sorter:new {
+  return defaulter(sorters.new, {
     scoring_function = function()
       return 1
     end,
@@ -490,7 +487,7 @@ sorters.highlighter_only = function(opts)
     highlighter = function(_, prompt, display)
       return fzy.positions(prompt, display)
     end,
-  }
+  }).new(opts)
 end
 
 sorters.empty = function()
@@ -552,63 +549,9 @@ sorters.get_substr_matcher = function()
   }
 end
 
-local substr_matcher = function(_, prompt, line, _)
-  local display = line:lower()
-  local search_terms = util.max_split(prompt:lower(), "%s")
-  local matched = 0
-  local total_search_terms = 0
-  for _, word in pairs(search_terms) do
-    total_search_terms = total_search_terms + 1
-    if display:find(word, 1, true) then
-      matched = matched + 1
-    end
-  end
-
-  return matched == total_search_terms and 0 or FILTERED
-end
-
-local filter_function = function(opts)
-  local scoring_function = vim.F.if_nil(opts.filter_function, substr_matcher)
-  local tag = vim.F.if_nil(opts.tag, "ordinal")
-
-  return function(_, prompt, entry)
-    local filter = "^(" .. opts.delimiter .. "(%S+)" .. "[" .. opts.delimiter .. "%s]" .. ")"
-    local matched = prompt:match(filter)
-
-    if matched == nil then
-      return 0, prompt
-    end
-    -- clear prompt of tag
-    prompt = prompt:sub(#matched + 1, -1)
-    local query = vim.trim(matched:gsub(opts.delimiter, ""))
-    return scoring_function(_, query, entry[tag], _), prompt
-  end
-end
-
-local function create_tag_set(tag)
-  tag = vim.F.if_nil(tag, "ordinal")
-  local set = {}
-  return setmetatable(set, {
-    __index = {
-      insert = function(set_, entry)
-        local value = entry[tag]
-        if not set_[value] then
-          set_[value] = true
-        end
-      end,
-    },
-  })
-end
-
 sorters.prefilter = function(opts)
   local sorter = opts.sorter
-  opts.delimiter = util.get_default(opts.delimiter, ":")
-  sorter._delimiter = opts.delimiter
-  sorter.tags = create_tag_set(opts.tag)
   sorter.filter_function = filter_function(opts)
-  sorter._was_discarded = function()
-    return false
-  end
   return sorter
 end
 

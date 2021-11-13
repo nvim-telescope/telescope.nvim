@@ -95,6 +95,12 @@ do
         return retpath
       end
 
+      if k == "parent" then
+        local retpath = Path:new({ t.cwd, t.value }):parent()
+        assert(retpath:is_dir())
+        return retpath:absolute()
+      end
+
       return rawget(t, rawget(lookup_keys, k))
     end
 
