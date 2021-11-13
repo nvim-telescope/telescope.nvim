@@ -143,7 +143,9 @@ action_set.edit = function(prompt_bufnr, command)
   end
 end
 
---- Scrolls the previewer up or down
+--- Scrolls the previewer up or down.
+--- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
+--- option in `layout_config`. See |telescope.layout| for more details.
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
@@ -162,7 +164,9 @@ action_set.scroll_previewer = function(prompt_bufnr, direction)
   previewer:scroll_fn(math.floor(speed * direction))
 end
 
---- Scrolls the results up or down
+--- Scrolls the results up or down.
+--- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
+--- option in `layout_config`. See |telescope.layout| for more details.
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
