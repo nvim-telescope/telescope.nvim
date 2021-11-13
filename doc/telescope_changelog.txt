@@ -119,5 +119,16 @@ Guide to switch over to plenary.path
         before: require("telescope.path").read_file_async(filepath, callback)
         now:    require("plenary.path"):new(filepath):read(callback)
 
+                                                    *telescope.changelog-1406*
+
+Date: November 4, 2021
+PR: https://github.com/nvim-telescope/telescope.nvim/pull/1406
+
+Telescope requires Neovim release 0.5.1 or a recent nightly
+
+Due to making use of newly implemented extmark features, Telescope now
+requires users to be on Neovim 0.5.1 (the most recent stable version) or on
+the LATEST version of Neovim nightly.
+
 
  vim:tw=78:ts=8:ft=help:norl:
