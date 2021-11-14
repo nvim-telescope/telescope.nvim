@@ -273,6 +273,20 @@ append(
     Similarly, `path_display.shorten = 2` will give a path like:
       `al/be/ga/delta.txt`
 
+  You can also further customise the shortening behaviour by
+  setting `path_display.shorten = { len = num, exclude = list }`,
+  where `len` acts as above, and `exclude` is a list of positions
+  that are not shortened. Negative numbers in the list are considered
+  relative to the end of the path.
+    e.g. for a path like
+      `alpha/beta/gamma/delta.txt`
+    setting `path_display.shorten = { len = 1, exclude = {1, -1} }`
+    will give a path like:
+      `alpha/b/g/delta.txt`
+    setting `path_display.shorten = { len = 2, exclude = {2, -2} }`
+    will give a path like:
+      `al/beta/gamma/de`
+
   path_display can also be set to 'hidden' string to hide file names
 
   path_display can also be set to a function for custom formatting of
