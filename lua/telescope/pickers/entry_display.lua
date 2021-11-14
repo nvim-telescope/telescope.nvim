@@ -10,15 +10,15 @@ entry_display.create = function(configuration)
   for _, v in ipairs(configuration.items) do
     if v.width then
       local justify = v.right_justify
-      local s
+      local width
       table.insert(generator, function(item)
-        if s == nil then
+        if width == nil then
           local status = state.get_status(vim.api.nvim_get_current_buf())
-          s = {}
+          local s = {}
           s[1] = vim.api.nvim_win_get_width(status.results_win) - #status.picker.selection_caret
           s[2] = vim.api.nvim_win_get_height(status.results_win)
+          width = resolve.resolve_width(v.width)(nil, s[1], s[2])
         end
-        local width = resolve.resolve_width(v.width)(nil, s[1], s[2])
         if type(item) == "table" then
           return strings.align_str(entry_display.truncate(item[1], width), width, justify), item[2]
         else
