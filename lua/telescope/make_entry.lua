@@ -234,7 +234,7 @@ function make_entry.gen_from_git_stash()
     if entry == "" then
       return nil
     end
-    local splitted = vim.split(entry, ":")
+    local splitted = utils.max_split(entry, ": ", 2)
     return {
       value = splitted[1],
       ordinal = splitted[3],
