@@ -363,7 +363,12 @@ utils.transform_path = function(opts, path)
       end
 
       if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
-        transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
+        if type(path_display["shorten"]) == "table" then
+          local shorten = path_display["shorten"]
+          transformed_path = Path:new(transformed_path):shorten(shorten.len, shorten.exclude)
+        else
+          transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
+        end
       end
       if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
         if opts.__length == nil then

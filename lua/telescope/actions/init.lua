@@ -159,6 +159,14 @@ function actions.preview_scrolling_down(prompt_bufnr)
   action_set.scroll_previewer(prompt_bufnr, 1)
 end
 
+function actions.results_scrolling_up(prompt_bufnr)
+  action_set.scroll_results(prompt_bufnr, -1)
+end
+
+function actions.results_scrolling_down(prompt_bufnr)
+  action_set.scroll_results(prompt_bufnr, 1)
+end
+
 function actions.center(_)
   vim.cmd ":normal! zz"
 end
@@ -588,7 +596,7 @@ end
 
 actions.git_checkout_current_buffer = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
-  local selection = actions.get_selected_entry()
+  local selection = action_state.get_selected_entry()
   if selection == nil then
     print "[telescope] Nothing currently selected"
     return

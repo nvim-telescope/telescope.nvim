@@ -258,16 +258,15 @@ lsp.code_actions = function(opts)
   local transform_action = opts.transform_action
     or function(action)
       -- Remove 0 -version from LSP codeaction request payload.
-      -- Is only run on lsp codeactions which contain a comand or a arguments field
+      -- Is only run on the "java.apply.workspaceEdit" codeaction.
       -- Fixed Java/jdtls compatibility with Telescope
       -- See fix_zero_version commentary for more information
-      if (action.command and action.command.arguments) or action.arguments then
-        if action.command.command then
-          action.edit = fix_zero_version(action.command.arguments[1])
-        else
-          action.edit = fix_zero_version(action.arguments[1])
-        end
+      local command = (action.command and action.command.command) or action.command
+      if not (command == "java.apply.workspaceEdit") then
+        return action
       end
+      local arguments = (action.command and action.command.arguments) or action.arguments
+      action.edit = fix_zero_version(arguments[1])
       return action
     end
 
