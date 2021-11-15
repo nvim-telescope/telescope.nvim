@@ -321,11 +321,12 @@ function Picker:find()
   end
 
   -- local results_win, results_opts = popup.create("", popup_opts.results)
-  local results_win, _, results_border_win = self:_create_window("", popup_opts.results, true)
+  local results_win, results_opts, results_border_win = self:_create_window("", popup_opts.results, true)
   local results_bufnr = a.nvim_win_get_buf(results_win)
 
   self.results_bufnr = results_bufnr
   self.results_win = results_win
+  self.results_border = results_opts and results_opts.border
 
   local preview_win, preview_opts, preview_bufnr, preview_border_win
   if popup_opts.preview then
@@ -334,11 +335,15 @@ function Picker:find()
   end
   -- This is needed for updating the title
   local preview_border = preview_opts and preview_opts.border
+  self.preview_win = preview_win
   self.preview_border = preview_border
 
-  local prompt_win, _, prompt_border_win = self:_create_window("", popup_opts.prompt)
+  local prompt_win, prompt_opts, prompt_border_win = self:_create_window("", popup_opts.prompt)
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
+
   self.prompt_bufnr = prompt_bufnr
+  self.prompt_win = prompt_win
+  self.prompt_border = prompt_opts and prompt_opts.border
 
   -- Prompt prefix
   local prompt_prefix = self.prompt_prefix
@@ -770,8 +775,11 @@ function Picker:reset_prompt(text)
   end
 end
 
---- opts.new_prefix:   Either as string or { new_string, hl_group }
---- opts.reset_prompt: bool
+---@param finder finder: telescope finder (see telescope/finders.lua)
+---@param opts table: options to pass when refreshing the picker
+---@field new_prefix string|table: either as string or { new_string, hl_group }
+---@field reset_prompt bool: whether to reset the prompt
+---@field multi MultiSelect: multi-selection to persist upon renewing finder (see telescope/pickers/multi.lua)
 function Picker:refresh(finder, opts)
   opts = opts or {}
   if opts.new_prefix then
@@ -787,7 +795,7 @@ function Picker:refresh(finder, opts)
   if finder then
     self.finder:close()
     self.finder = finder
-    self._multi = MultiSelect:new()
+    self._multi = vim.F.if_nil(opts.multi, MultiSelect:new())
   end
 
   self._on_lines(nil, nil, nil, 0, 1)
