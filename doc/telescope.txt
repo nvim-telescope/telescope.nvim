@@ -143,6 +143,20 @@ telescope.setup({opts})                                    *telescope.setup()*
         }
 
 
+                                     *telescope.defaults.cycle_layout_list*
+    cycle_layout_list: ~
+        Determines the layouts to cycle through when using `actions.cycle_layout_next`
+        and `actions.cycle_layout_prev`.
+        Should be a list of "layout setups".
+        Each "layout setup" can take one of two forms:
+        1. string <br>
+            This is interpreted as the name of a `layout_strategy`
+        2. table <br>
+            A table with possible keys `layout_strategy`, `layout_config` and `previewer`
+
+        Default: TODO
+
+
                                               *telescope.defaults.winblend*
     winblend: ~
         Configure winblend for telescope floating windows. See |winblend| for
@@ -2235,6 +2249,65 @@ action_set.scroll_results({prompt_bufnr}, {direction}) *action_set.scroll_result
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
         {direction}    (number)  The direction of the scrolling
+
+
+
+================================================================================
+                                                      *telescope.actions.layout*
+
+The layout actions are actions to be used to change the layout of a picker.
+
+action_layout.toggle_preview({prompt_bufnr})  *action_layout.toggle_preview()*
+    Toggle preview window.
+    - Note: preview window can be toggled even if preview is set to false.
+
+    This action is not mapped by default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+action_layout.toggle_prompt_position({prompt_bufnr}) *action_layout.toggle_prompt_position()*
+    Toggles the `prompt_position` option between "top" and "bottom". Checks if
+    `prompt_position` is an option for the current layout.
+
+    This action is not mapped by default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+action_layout.toggle_mirror({prompt_bufnr})    *action_layout.toggle_mirror()*
+    Toggles the `mirror` option between `true` and `false`. Checks if `mirror`
+    is an option for the current layout.
+
+    This action is not mapped by default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+action_layout.cycle_layout_next({prompt_bufnr}) *action_layout.cycle_layout_next()*
+    Cycles to the next layout in `cycle_layout_list`.
+
+    This action is not mapped by default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+action_layout.cycle_layout_prev({prompt_bufnr}) *action_layout.cycle_layout_prev()*
+    Cycles to the previous layout in `cycle_layout_list`.
+
+    This action is not mapped by default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 

@@ -104,6 +104,8 @@ function Picker:new(opts)
     layout_strategy = layout_strategy,
     layout_config = config.smarter_depth_2_extend(opts.layout_config or {}, config.values.layout_config or {}),
 
+    __cycle_layout_list = get_default(opts.cycle_layout_list, config.values.cycle_layout_list),
+
     window = {
       winblend = get_default(
         opts.winblend,
@@ -330,6 +332,7 @@ function Picker:find()
   end
 
   local results_win, results_opts, results_border_win = self:_create_window("", popup_opts.results, true)
+
   local results_bufnr = a.nvim_win_get_buf(results_win)
 
   self.results_bufnr = results_bufnr
@@ -572,9 +575,9 @@ function Picker:recalculate_layout()
   -- self.max_results = popup_opts.results.height
 end
 
-local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
+local update_scroll = function(win, oldinfo, oldcursor, strategy, buf_maxline)
   if strategy == "ascending" then
-    vim.api.nvim_win_set_cursor(win, { max_results, 0 })
+    vim.api.nvim_win_set_cursor(win, { buf_maxline, 0 })
     vim.api.nvim_win_set_cursor(win, { oldinfo.topline, 0 })
     vim.api.nvim_win_set_cursor(win, oldcursor)
   elseif strategy == "descending" then
@@ -586,34 +589,15 @@ local update_scroll = function(win, oldinfo, oldcursor, strategy, max_results)
   end
 end
 
-function Picker:toggle_preview()
-  local status = state.get_status(self.prompt_bufnr)
-
-  if self.previewer and status.preview_win then
-    self.hidden_previewer = self.previewer
-    self.previewer = nil
-  elseif self.hidden_previewer and not status.preview_win then
-    self.previewer = self.hidden_previewer
-    self.hidden_previewer = nil
-  else
-    return
-  end
-
-  local oldinfo = vim.fn.getwininfo(status.results_win)[1]
-  local oldcursor = vim.api.nvim_win_get_cursor(status.results_win)
-
+function Picker:full_layout_update()
+  local oldinfo = vim.fn.getwininfo(self.results_win)[1]
+  local oldcursor = vim.api.nvim_win_get_cursor(self.results_win)
   self:recalculate_layout()
   self:refresh_previewer()
-  update_scroll(status.results_win, oldinfo, oldcursor, self.sorting_strategy, self.max_results)
-end
 
-function Picker:toggle_padding()
-  -- if padding ~= 0
-  --    1. Save `height` and `width` of picker
-  --    2. Set both to `{padding = 0}`
-  -- else
-  --    1. Lookup previous `height` and `width` of picker
-  --    2. Set both to previous values
+  -- update scrolled position
+  local buf_maxline = #vim.api.nvim_buf_get_lines(self.results_bufnr, 0, -1, false)
+  update_scroll(self.results_win, oldinfo, oldcursor, self.sorting_strategy, buf_maxline)
 end
 
 -- TODO: update multi-select with the correct tag name when available
@@ -1310,13 +1294,7 @@ function pickers.on_resize_window(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
 
-  local oldinfo = vim.fn.getwininfo(status.results_win)[1]
-  local oldcursor = vim.api.nvim_win_get_cursor(status.results_win)
-  picker:recalculate_layout()
-  picker:refresh_previewer()
-
-  -- update scrolled position
-  update_scroll(status.results_win, oldinfo, oldcursor, picker.sorting_strategy, picker.max_results)
+  picker:full_layout_update()
 end
 
 --- Get the prompt text without the prompt prefix.
