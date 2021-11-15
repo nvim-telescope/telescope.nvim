@@ -418,7 +418,7 @@ function Picker:find()
         self.sorter:_start(prompt)
         self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats)
 
-        vim.api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_matching, 0, -1)
+        self:_reset_highlights()
         local process_result = self:get_result_processor(find_id, prompt, debounced_status)
         local process_complete = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
 
@@ -1298,6 +1298,7 @@ end
 
 function Picker:_reset_highlights()
   self.highlighter:clear_display()
+  vim.api.nvim_buf_clear_namespace(self.results_bufnr, ns_telescope_matching, 0, -1)
 end
 
 function Picker:_detach()
