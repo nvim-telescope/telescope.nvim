@@ -575,7 +575,6 @@ function Picker:recalculate_layout()
   -- self.max_results = popup_opts.results.height
 end
 
-
 local update_scroll = function(win, oldinfo, oldcursor, strategy, buf_maxline)
   if strategy == "ascending" then
     vim.api.nvim_win_set_cursor(win, { buf_maxline, 0 })
