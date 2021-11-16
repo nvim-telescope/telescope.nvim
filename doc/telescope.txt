@@ -154,7 +154,7 @@ telescope.setup({opts})                                    *telescope.setup()*
         2. table <br>
             A table with possible keys `layout_strategy`, `layout_config` and `previewer`
 
-        Default: TODO
+        Default: { "horizontal", "vertical" }
 
 
                                               *telescope.defaults.winblend*
@@ -1920,15 +1920,6 @@ actions.toggle_all({prompt_bufnr})                      *actions.toggle_all()*
     Toggle multi selection for all entries.
     - Note: toggled entries may include results not visible in the results
       popup.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.toggle_preview({prompt_bufnr})              *actions.toggle_preview()*
-    Toggle preview window.
-    - Note: preview window can be toggled even if preview is set to false.
 
 
     Parameters: ~

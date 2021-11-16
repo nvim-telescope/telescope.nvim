@@ -144,13 +144,6 @@ function actions.toggle_all(prompt_bufnr)
   end)
 end
 
---- Toggle preview window.
---- - Note: preview window can be toggled even if preview is set to false.
----@param prompt_bufnr number: The prompt bufnr
-function actions.toggle_preview(prompt_bufnr)
-  action_state.get_current_picker(prompt_bufnr):toggle_preview()
-end
-
 function actions.preview_scrolling_up(prompt_bufnr)
   action_set.scroll_previewer(prompt_bufnr, -1)
 end

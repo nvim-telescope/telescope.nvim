@@ -191,7 +191,7 @@ append("layout_config", layout_config_defaults, layout_config_description)
 
 append(
   "cycle_layout_list",
-  { "horizontal", "vertical", { layout_strategy = "horizontal", previewer = false } },
+  { "horizontal", "vertical" },
   [[
   Determines the layouts to cycle through when using `actions.cycle_layout_next`
   and `actions.cycle_layout_prev`.
@@ -202,7 +202,7 @@ append(
   2. table <br>
       A table with possible keys `layout_strategy`, `layout_config` and `previewer`
 
-  Default: TODO
+  Default: { "horizontal", "vertical" }
   ]]
 )
 
