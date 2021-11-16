@@ -533,11 +533,12 @@ function Picker:recalculate_layout()
   local results_win = status.results_win
   local preview_win = status.preview_win
 
-  popup.move(results_win, popup_opts.results)
-
   local preview_opts, preview_border_win
   if popup_opts.preview then
     if preview_win ~= nil then
+      -- Move all popups at the same time
+      popup.move(prompt_win, popup_opts.prompt)
+      popup.move(results_win, popup_opts.results)
       popup.move(preview_win, popup_opts.preview)
     else
       popup_opts.preview.highlight = "TelescopePreviewNormal"
@@ -555,19 +556,32 @@ function Picker:recalculate_layout()
       self.preview_win = preview_win
       self.preview_border_win = preview_border_win
       self.preview_border = preview_opts and preview_opts.border
+
+      -- Move prompt and results after preview created
+      vim.defer_fn(function()
+        popup.move(prompt_win, popup_opts.prompt)
+        popup.move(results_win, popup_opts.results)
+      end, 0)
     end
   elseif preview_win ~= nil then
-    utils.win_delete("preview_win", preview_win, true)
-    utils.win_delete("preview_win", status.preview_border_win, true)
-    status.preview_win = nil
-    status.preview_border_win = nil
-    state.set_status(prompt_win, status)
-    self.preview_win = nil
-    self.preview_border_win = nil
-    self.preview_border = nil
-  end
+    popup.move(prompt_win, popup_opts.prompt)
+    popup.move(results_win, popup_opts.results)
 
-  popup.move(prompt_win, popup_opts.prompt)
+    -- Remove preview after the prompt and results are moved
+    vim.defer_fn(function()
+      utils.win_delete("preview_win", preview_win, true)
+      utils.win_delete("preview_win", status.preview_border_win, true)
+      status.preview_win = nil
+      status.preview_border_win = nil
+      state.set_status(prompt_win, status)
+      self.preview_win = nil
+      self.preview_border_win = nil
+      self.preview_border = nil
+    end, 0)
+  else
+    popup.move(prompt_win, popup_opts.prompt)
+    popup.move(results_win, popup_opts.results)
+  end
 
   -- Temporarily disabled: Draw the screen ASAP. This makes things feel speedier.
   -- vim.cmd [[redraw]]
