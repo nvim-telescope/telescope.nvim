@@ -13,8 +13,8 @@ return function(opts)
   local cwd = opts.cwd
   local fn_command = assert(opts.fn_command, "Must pass `fn_command`")
 
-  local results = {}
-  local num_results = 0
+  local results = vim.F.if_nil(opts.results, {})
+  local num_results = #results
 
   local job_started = false
   local job_completed = false
