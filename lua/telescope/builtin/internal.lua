@@ -98,7 +98,7 @@ internal.resume = function(opts)
   end
   local picker = cached_pickers[opts.cache_index]
   if picker == nil then
-    print("Index too large as there are only %s pickers cached", #cached_pickers)
+    print(string.format("Index too large as there are only %s pickers cached", #cached_pickers))
     return
   end
   -- reset layout strategy and get_window_options if default as only one is valid
