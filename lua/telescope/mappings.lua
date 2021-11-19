@@ -178,8 +178,11 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     mode = string.lower(mode)
     local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
     applied_mappings[mode][key_bind_internal] = true
-
-    telescope_map(prompt_bufnr, mode, key_bind, key_func, opts)
+    if key_func == false then
+      pcall(vim.api.nvim_buf_del_keymap, prompt_bufnr, mode, key_bind_internal)
+    else
+      telescope_map(prompt_bufnr, mode, key_bind, key_func, opts)
+    end
   end
 
   if attach_mappings then
