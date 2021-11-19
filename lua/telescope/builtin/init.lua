@@ -492,16 +492,7 @@ local apply_config = function(mod)
         return vim.deepcopy(pconf)
       end)()
 
-      if pconf.mappings then
-        defaults.attach_mappings = function(_, map)
-          for mode, tbl in pairs(pconf.mappings) do
-            for key, action in pairs(tbl) do
-              map(mode, key, action)
-            end
-          end
-          return true
-        end
-      end
+      opts.__name = k
 
       if pconf.attach_mappings and opts.attach_mappings then
         local opts_attach = opts.attach_mappings

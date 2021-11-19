@@ -66,8 +66,12 @@ function Picker:new(opts)
   local layout_strategy = vim.F.if_nil(opts.layout_strategy, config.values.layout_strategy)
 
   local obj = setmetatable({
+    -- Metadata reserved for telescope. Do not use if you're not telescope
+    __name = opts.__name,
+
     prompt_title = vim.F.if_nil(opts.prompt_title, config.values.prompt_title),
     results_title = vim.F.if_nil(opts.results_title, config.values.results_title),
+
     -- either whats passed in by the user or whats defined by the previewer
     preview_title = opts.preview_title,
 
@@ -108,6 +112,7 @@ function Picker:new(opts)
     track = vim.F.if_nil(opts.track, false),
     stats = {},
 
+    mappings = opts.mappings or {},
     attach_mappings = opts.attach_mappings,
     file_ignore_patterns = vim.F.if_nil(opts.file_ignore_patterns, config.values.file_ignore_patterns),
 
@@ -559,7 +564,16 @@ function Picker:find()
     })
   )
 
-  mappings.apply_keymap(prompt_bufnr, self.attach_mappings, config.values.mappings)
+  mappings.apply_keymap(
+    prompt_bufnr,
+    self.attach_mappings,
+    -- Lowest priority: user config defaults
+    config.values.mappings or {},
+    -- user picker defaults
+    (config.pickers[self.__name] or {}).mappings or {},
+    -- explicit mappings via opts
+    self.mappings or {}
+  )
 
   tx.send()
   main_loop()
