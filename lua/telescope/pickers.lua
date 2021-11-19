@@ -1241,7 +1241,7 @@ pickers.new = function(opts, defaults)
   if result["previewer"] == false then
     result["previewer"] = defaults["previewer"]
     result["__hide_previewer"] = true
-  elseif type(opts["preview"]) == "table" and opts["preview"]["hide_on_startup"] then
+  elseif opts and type(opts["preview"]) == "table" and opts["preview"]["hide_on_startup"] then
     result["__hide_previewer"] = true
   end
 
