@@ -70,13 +70,13 @@ internal.builtin = function(opts)
     finder = finders.new_table {
       results = objs,
       entry_maker = function(entry)
-        return {
+        return make_entry.set_default_entry_mt({
           value = entry,
           text = entry.text,
           display = entry.text,
           ordinal = entry.text,
           filename = entry.filename,
-        }
+        }, opts)
       end,
     },
     previewer = previewers.builtin.new(opts),
@@ -221,11 +221,11 @@ internal.planets = function(opts)
     finder = finders.new_table {
       results = acceptable_files,
       entry_maker = function(line)
-        return {
+        return make_entry.set_default_entry_mt({
           ordinal = line,
           display = line,
           filename = base_directory .. "/data/memes/planets/" .. line,
-        }
+        }, opts)
       end,
     },
     previewer = previewers.cat.new(opts),
@@ -298,11 +298,11 @@ internal.symbols = function(opts)
     finder = finders.new_table {
       results = results,
       entry_maker = function(entry)
-        return {
+        return make_entry.set_default_entry_mt({
           value = entry,
           ordinal = entry[1] .. " " .. entry[2],
           display = entry[1] .. " " .. entry[2],
-        }
+        }, opts)
       end,
     },
     sorter = conf.generic_sorter(opts),
@@ -399,14 +399,14 @@ internal.quickfixhistory = function(opts)
   end
   local entry_maker = opts.make_entry
     or function(entry)
-      return {
+      return make_entry.set_default_entry_mt({
         value = entry.title or "Untitled",
         ordinal = entry.title or "Untitled",
         display = entry.title or "Untitled",
         nr = entry.nr,
         id = entry.id,
         items = entry.items,
-      }
+      }, opts)
     end
   local qf_entry_maker = make_entry.gen_from_quickfix(opts)
   pickers.new(opts, {
@@ -690,13 +690,13 @@ internal.help_tags = function(opts)
     finder = finders.new_table {
       results = tags,
       entry_maker = function(entry)
-        return {
+        return make_entry.set_default_entry_mt({
           value = entry.name .. "@" .. entry.lang,
           display = entry.name,
           ordinal = entry.name,
           filename = entry.filename,
           cmd = entry.cmd,
-        }
+        }, opts)
       end,
     },
     previewer = previewers.help.new(opts),
@@ -1189,10 +1189,8 @@ internal.autocommands = function(opts)
           return false
         end
         local val = selection.value
-        local output = vim.fn.execute(
-          "verb autocmd " .. val.group_name .. " " .. val.event .. " " .. val.pattern,
-          "silent"
-        )
+        local group_name = val.group_name ~= "<anonymous>" or ""
+        local output = vim.fn.execute("verb autocmd " .. group_name .. " " .. val.event .. " " .. val.pattern, "silent")
         for line in output:gmatch "[^\r\n]+" do
           local source_file = line:match "Last set from (.*) line %d*$" or line:match "Last set from (.*)$"
           if source_file and source_file ~= "Lua" then

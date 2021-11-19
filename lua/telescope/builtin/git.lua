@@ -281,7 +281,7 @@ git.branches = function(opts)
         entry.value = entry.name
         entry.ordinal = entry.name
         entry.display = make_display
-        return entry
+        return make_entry.set_default_entry_mt(entry, opts)
       end,
     },
     previewer = previewers.git_branch_log.new(opts),
