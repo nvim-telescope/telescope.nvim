@@ -14,6 +14,24 @@ local run_replace_or_original = function(replacements, original_func, ...)
   return original_func(...)
 end
 
+local append_action_copy = function(new, v, old)
+  table.insert(new, v)
+  new._func[v] = old._func[v]
+  new._static_pre[v] = old._static_pre[v]
+  new._pre[v] = old._pre[v]
+  new._replacements[v] = old._replacements[v]
+  new._static_post[v] = old._static_post[v]
+  new._post[v] = old._post[v]
+end
+
+--- an action is metatable which allows replacement(prepend or append) of the function
+---@class Action
+---@field _func table<string, function>: the original action function
+---@field _static_pre table<string, function>: will allways run before the function even if its replaced
+---@field _pre table<string, function>: the functions that will run before the action
+---@field _replacements table<string, function>: the function that replaces this action
+---@field _static_post table<string, function>: will allways run after the function even if its replaced
+---@field _post table<string, function>: the functions that will run after the action
 action_mt.create = function()
   local mt = {
     __call = function(t, ...)
@@ -47,23 +65,11 @@ action_mt.create = function()
     __add = function(lhs, rhs)
       local new_action = setmetatable({}, action_mt.create())
       for _, v in ipairs(lhs) do
-        table.insert(new_action, v)
-        new_action._func[v] = lhs._func[v]
-        new_action._static_pre[v] = lhs._static_pre[v]
-        new_action._pre[v] = lhs._pre[v]
-        new_action._replacements[v] = lhs._replacements[v]
-        new_action._static_post[v] = lhs._static_post[v]
-        new_action._post[v] = lhs._post[v]
+        append_action_copy(new_action, v, lhs)
       end
 
       for _, v in ipairs(rhs) do
-        table.insert(new_action, v)
-        new_action._func[v] = rhs._func[v]
-        new_action._static_pre[v] = rhs._static_pre[v]
-        new_action._pre[v] = rhs._pre[v]
-        new_action._replacements[v] = rhs._replacements[v]
-        new_action._static_post[v] = rhs._static_post[v]
-        new_action._post[v] = rhs._post[v]
+        append_action_copy(new_action, v, rhs)
       end
       new_action.clear = function()
         lhs.clear()
@@ -140,7 +146,7 @@ action_mt.create = function()
   return mt
 end
 
-action_mt.transform = function(k, mt, v)
+action_mt.transform = function(k, mt, _, v)
   local res = setmetatable({ k }, mt)
   if type(v) == "table" then
     res._static_pre[k] = v.pre
@@ -159,7 +165,7 @@ action_mt.transform_mod = function(mod)
 
   for k, v in pairs(mod) do
     local mt = action_mt.create()
-    redirect[k] = action_mt.transform(k, mt, v)
+    redirect[k] = action_mt.transform(k, mt, _, v)
   end
 
   redirect._clear = function()
