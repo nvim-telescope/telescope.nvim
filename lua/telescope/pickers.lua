@@ -1214,14 +1214,16 @@ function Picker:_do_selection(prompt)
 end
 
 pickers.new = function(opts, defaults)
+  opts = opts or {}
+  defaults = defaults or {}
   local result = {}
 
-  for k, v in pairs(opts or {}) do
+  for k, v in pairs(opts) do
     assert(type(k) == "string", "Should be string, opts")
     result[k] = v
   end
 
-  for k, v in pairs(defaults or {}) do
+  for k, v in pairs(defaults) do
     if result[k] == nil then
       assert(type(k) == "string", "Should be string, defaults")
       result[k] = v
