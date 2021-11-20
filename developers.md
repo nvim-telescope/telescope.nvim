@@ -57,6 +57,7 @@ you will still need to have the previous requires section above this code.)
 ```lua
 -- our picker function: colors
 local colors = function(opts)
+  opts = opts or {}
   pickers.new(opts, {
     prompt_title = "colors",
     finder = finders.new_table {
