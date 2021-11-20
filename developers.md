@@ -31,9 +31,9 @@ programming language. If not then you can find information for Lua here:
 
 ## Guide to your first Picker
 
-To guide you along the way to first picker we will do the following. We will
-open an empty lua scratch file in which we will develop the picker and run it
-each time using `:luafile %`. Later this file then be bundled as extension.
+To guide you along the way to your first picker we will open an empty lua
+scratch file, in which we will develop the picker and run it each time using
+`:luafile %`. Later we will bundle this file as an extension.
 
 ### Requires
 
@@ -44,9 +44,9 @@ local finders = require "telescope.finders"
 local conf = require("telescope.config").values
 ```
 
-- `pickers` is the main module which is used to create a new picker.
-- `finders` provides interfaces to fill the picker with items.
-- `config` the `values` table holds the user configuration.
+- `pickers`: main module which is used to create a new picker.
+- `finders`: provides interfaces to fill the picker with items.
+- `config`: `values` table which holds the user's configuration.
 So to make it easier we access this table directly in `conf`.
 
 ### First Picker
@@ -71,15 +71,15 @@ colors()
 ```
 
 Running this code with `:luafile %` should open a telescope picker with the entries `red`,
-`green`, `blue`. Selecting a color and pressing enter will open a new file, in this case
-it's not what we want so we will address this after explaining this snippet.
+`green`, `blue`. Selecting a color and pressing enter will open a new file. In this case
+it's not what we want, so we will address this after explaining this snippet.
 
 We will define a new function `colors` which accepts a table `opts`. This is good
 practice because now the user can change how telescope behaves by passing in their
 own `opts` table when calling `colors`.
 
 For example the user can pass in a configuration in `opts` which allows them to change
-the theme used for the picker. To allow this we have to make sure we pass the `opts` table
+the theme used for the picker. To allow this, we make sure to pass the `opts` table
 as the first argument to `pickers.new`. The second argument is a table
 which defines the default behavior of the picker.
 
@@ -109,7 +109,7 @@ picker.
 
 ### Replacing Actions
 
-Now calling `colors()` will result in the opening of telescope with the values.
+Now calling `colors()` will result in the opening of telescope with the values:
 `red`, `green` and `blue`. The default theme isn't optimal for this picker so we
 want to change it and thanks to the acceptance of `opts` we can. We will replace
 the last line with the following to open the picker with the `dropdown` theme.
@@ -120,7 +120,7 @@ colors(require("telescope.themes").get_dropdown{})
 
 Now let's address the issue that selecting a color opens a new buffer. For that
 we need to replace the default select action. The benefit of replacing rather than
-mapping a new function to `<CR>` is that it will respect user configuration. So
+mapping a new function to `<CR>` is that it will respect the user's configuration. So
 if a user has remapped `select_default` to another key then this decision will
 be respected and it works as expected for the user.
 
@@ -131,11 +131,11 @@ local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 ```
 
-- `actions` holds all actions that can be mapped by a user and we need it to
+- `actions`: holds all actions that can be mapped by a user. We also need it to
   access the default action so we can replace it. Also see `:help
   telescope.actions`
 
-- `action_state` gives us a few utility functions we can use to get the
+- `action_state`: gives us a few utility functions we can use to get the
   current picker, current selection or current line. Also see `:help
   telescope.actions.state`
 
@@ -177,7 +177,7 @@ closed.
 
 You can look at the selection with `print(vim.inspect(selection))` and see that it differs from our input
 (string), this is because internally we pack it into a table with different
-keys. You can specify this behavior and wel'l talk about that in the next
+keys. You can specify this behavior and we'll talk about that in the next
 section. Now all that is left is to do something with the selection we have. In
 this case we just put the text in the current buffer with `vim.api.nvim_put`.
 
@@ -211,8 +211,8 @@ more interesting. We will end up with the following new code for `finders.new_ta
     },
 ```
 
-With the new snippet we no longer have an array of strings but an array of
-tables. Each table has a color name and the color's hex value.
+With the new snippet, we no longer have an array of strings but an array of
+tables. Each table has a color, name, and the color's hex value.
 
 `entry_maker` is a function that will receive each table and then we can set the
 values we need. It's best practice to have a `value` reference to the
@@ -223,9 +223,9 @@ The `display` key is required and is either a string or a `function(tbl)`,
 where `tbl` is the table returned by `entry_maker`. So in this example `tbl` would
 give our `display` function access to `value` and `ordinal`.
 
-If our picker will have a lot lot of values it's suggested to use a function for `display`
+If our picker will have a lot of values it's suggested to use a function for `display`,
 especially if you are modifying the text to display. This way the function will only be executed 
-for the entries being displayed. For an examples of an entry maker take a look at
+for the entries being displayed. For an example of an entry maker take a look at
 `lua/telescope/make_entry.lua`.
 
 A good way to make your `display` more like a table is to use a `displayer` which can be found in
@@ -237,9 +237,9 @@ this allows us to have different display and sorting values. This allows `displa
 to be more complex with icons and special indicators but `ordinal` could be a simpler 
 sorting key.
 
-There are other important keys which can be set but do not make sense in the
-current context as we are not dealing wiht files:
-- `path`: to set the absolute path of the file to make sure its always found
+There are other important keys which can be set, but do not make sense in the
+current context as we are not dealing with files:
+- `path`: to set the absolute path of the file to make sure it's always found
 - `lnum`: to specify a line number in the file. This will allow the
   `conf.grep_previewer` to show that line and the default action to jump to
   that line.
@@ -264,15 +264,15 @@ finder = finders.new_oneshot_job { "find", opts },
 
 ### More examples
 
-A good way to find more examples is to look into the `lua/telescope/builtin/`
+A good way to find more examples is to look into the [lua/telescope/builtin](https://github.com/nvim-telescope/telescope.nvim/tree/master/lua/telescope/builtin)
 directory which contains all of the builtin pickers. Another way to find more examples
 is to take a look at the [extension wiki page](https://github.com/nvim-telescope/telescope.nvim/wiki/Extensions)
-as this provides many extensions peopel have already written which use these concepts.
+as this provides many extensions people have already written which use these concepts.
 
 If you still have any questions after reading this guide please feel free to ask us for
 more information on [gitter](https://gitter.im/nvim-telescope/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 and we will happily answer your questions and hopefully allow us to improve this guide. You can also
-help us to improve this guide by sending a PRs.
+help us to improve this guide by sending a PR.
 
 ## Technical
 
