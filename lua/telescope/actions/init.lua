@@ -240,6 +240,7 @@ end
 actions._close = function(prompt_bufnr, keepinsert)
   action_state.get_current_history():reset()
   local picker = action_state.get_current_picker(prompt_bufnr)
+  local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
 
   actions.close_pum(prompt_bufnr)
@@ -247,7 +248,8 @@ actions._close = function(prompt_bufnr, keepinsert)
     vim.cmd [[stopinsert]]
   end
 
-  require("telescope.pickers").on_close_prompt(prompt_bufnr)
+  vim.api.nvim_win_close(prompt_win, true)
+  pcall(vim.cmd, string.format([[silent bdelete! %s]], prompt_bufnr))
   pcall(a.nvim_set_current_win, original_win_id)
 end
 

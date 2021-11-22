@@ -8,7 +8,13 @@ local action_state = require "telescope.actions.state"
 local state = require "telescope.state"
 local layout_strats = require "telescope.pickers.layout_strategies"
 
-local action_layout = {}
+local transform_mod = require("telescope.actions.mt").transform_mod
+
+local action_layout = setmetatable({}, {
+  __index = function(_, k)
+    error("'telescope.actions.layout' does not have a value: " .. tostring(k))
+  end,
+})
 
 --- Toggle preview window.
 --- - Note: preview window can be toggled even if preview is set to false.
@@ -137,4 +143,5 @@ action_layout.cycle_layout_next = get_cycle_layout(1)
 ---@param prompt_bufnr number: The prompt bufnr
 action_layout.cycle_layout_prev = get_cycle_layout(-1)
 
+action_layout = transform_mod(action_layout)
 return action_layout
