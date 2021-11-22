@@ -1,9 +1,4 @@
-require("plenary.reload").reload_module "telescope"
-
-local tester = require "telescope.pickers._test"
-
-local log = require "telescope.log"
-log.use_console = false
+local tester = require "telescope.testharness"
 
 describe("scrolling strategies", function()
   it("should handle cycling for full list", function()

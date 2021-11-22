@@ -63,6 +63,8 @@ mappings.default_mappings = config.values.default_mappings
 
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
+      ["<C-e>"] = actions.results_scrolling_down,
+      ["<C-y>"] = actions.results_scrolling_up,
 
       ["<PageUp>"] = actions.results_scrolling_up,
       ["<PageDown>"] = actions.results_scrolling_down,

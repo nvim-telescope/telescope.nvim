@@ -193,23 +193,16 @@ action_set.scroll_previewer = function(prompt_bufnr, direction)
 end
 
 --- Scrolls the results up or down.
---- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
---- option in `layout_config`. See |telescope.layout| for more details.
+--- Moves `count` movements.
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_results = function(prompt_bufnr, direction)
-  local status = state.get_status(prompt_bufnr)
-  local default_speed = vim.api.nvim_win_get_height(status.results_win) / 2
-  local speed = status.picker.layout_config.scroll_speed or default_speed
+  local count = vim.v.count
+  count = count == 0 and 1 or count
+  count = a.nvim_get_mode().mode == "n" and count or 1
 
-  local input = direction > 0 and [[]] or [[]]
-
-  vim.api.nvim_win_call(status.results_win, function()
-    vim.cmd([[normal! ]] .. math.floor(speed) .. input)
-  end)
-
-  action_set.shift_selection(prompt_bufnr, math.floor(speed) * direction)
+  action_state.get_current_picker(prompt_bufnr):shift_offset(count * direction)
 end
 
 -- ==================================================

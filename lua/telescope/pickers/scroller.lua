@@ -40,7 +40,7 @@ local scroll_calculators = {
   end,
 }
 
-scroller.create = function(scroll_strategy, sorting_strategy)
+scroller.new = function(scroll_strategy, sorting_strategy)
   local range_fn = range_calculators[sorting_strategy]
   if not range_fn then
     error(debug.traceback("Unknown sorting strategy: " .. sorting_strategy))

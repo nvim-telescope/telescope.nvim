@@ -15,51 +15,6 @@ Getting started with telescope:
      what options these implement
   6. Profit
 
-The below flow chart illustrates a simplified telescope architecture:
-┌───────────────────────────────────────────────────────────┐
-│      ┌────────┐                                           │
-│      │ Multi  │                                ┌───────+  │
-│      │ Select │    ┌───────┐                   │ Entry │  │
-│      └─────┬──*    │ Entry │    ┌────────+     │ Maker │  │
-│            │   ┌───│Manager│────│ Sorter │┐    └───┬───*  │
-│            ▼   ▼   └───────*    └────────┘│        │      │
-│            1────────┐                 2───┴──┐     │      │
-│      ┌─────│ Picker │                 │Finder│◄────┘      │
-│      ▼     └───┬────┘                 └──────*            │
-│ ┌────────┐     │       3────────+         ▲               │
-│ │Selected│     └───────│ Prompt │─────────┘               │
-│ │ Entry  │             └───┬────┘                         │
-│ └────────*             ┌───┴────┐  ┌────────┐  ┌────────┐ │
-│     │  ▲    4─────────┐│ Prompt │  │(Attach)│  │Actions │ │
-│     ▼  └──► │ Results ││ Buffer │◄─┤Mappings│◄─┤User Fn │ │
-│5─────────┐  └─────────┘└────────┘  └────────┘  └────────┘ │
-││Previewer│                                                │
-│└─────────┘                   telescope.nvim architecture  │
-└───────────────────────────────────────────────────────────┘
-
-  + The `Entry Maker` at least defines
-    - value: "raw" result of the finder
-    - ordinal: string to be sorted derived from value
-    - display: line representation of entry in results buffer
-
-  * The finder, entry manager, selected entry, and multi selections
-    comprises `entries` constructed by the `Entry Maker` from
-    raw results of the finder (`value`s)
-
- Primary components:
-  1 Picker: central UI dedicated to varying use cases
-            (finding files, grepping, diagnostics, etc.)
-            see :h telescope.builtin
-  2 Finder: pipe or interactively generates results to pick over
-  3 Prompt: user input that triggers the finder which sorts results
-            in order into the entry manager
-  4 Results: listed entries scored by sorter from finder results
-  5 Previewer: preview of context of selected entry
-               see :h telescope.previewers
-
-A practical introduction into telescope customization is our `developers.md`
-(top-level of repo) and `:h telescope.actions` that showcase how to access
-information about the state of the picker (current selection, etc.).
 To find out more:
 https://github.com/nvim-telescope/telescope.nvim
 
@@ -74,8 +29,8 @@ https://github.com/nvim-telescope/telescope.nvim
   :h telescope.actions.set
   :h telescope.actions.utils
   :h telescope.actions.generate
-  :h telescope.actions.history
   :h telescope.previewers
+  :h telescope.actions.history
 
 telescope.setup({opts})                                    *telescope.setup()*
     Setup function to be run by user. Configures the defaults, pickers and
@@ -280,9 +235,7 @@ telescope.setup({opts})                                    *telescope.setup()*
         - "tail"      only display the file name, and not the path
         - "absolute"  display absolute paths
         - "smart"     remove as much from the path as possible to only show
-                      the difference between the displayed paths.
-                      Warning: The nature of the algorithm might have a negative
-                      performance impact!
+                      the difference between the displayed paths
         - "shorten"   only display the first character of each directory in
                       the path
         - "truncate"  truncates the start of the path when the whole path will
@@ -354,21 +307,6 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: false
 
-                                         *telescope.defaults.results_title*
-    results_title: ~
-        Defines the default title of the results window. A false value
-        can be used to hide the title altogether.
-
-        Default: "Results"
-
-                                          *telescope.defaults.prompt_title*
-    prompt_title: ~
-        Defines the default title of the prompt window. A false value
-        can be used to hide the title altogether. Most of the times builtins
-        define a prompt_title which will be prefered over this default.
-
-        Default: "Prompt"
-
                                                *telescope.defaults.history*
     history: ~
         This field handles the configuration for prompt history.
@@ -388,7 +326,7 @@ telescope.setup({opts})                                    *telescope.setup()*
                      default: stdpath("data")/telescope_history
           - limit:   The amount of entries that will be written in the
                      history.
-                     Warning: If limit is set to nil it will grow unbound.
+                     Warning: If limit is set to nil it will grown unbound.
                      default: 100
           - handler: A lua function that implements the history.
                      This is meant as a developer setting for extensions to
@@ -543,8 +481,7 @@ telescope.setup({opts})                                    *telescope.setup()*
 
                                         *telescope.defaults.color_devicons*
     color_devicons: ~
-        Boolean if devicons should be enabled or not. If set to false, the
-        "TelescopeResultsFileIcon" highlight group is used.
+        Boolean if devicons should be enabled or not.
         Hint: Coloring only works if |termguicolors| is enabled.
 
         Default: true
@@ -603,16 +540,6 @@ telescope.setup({opts})                                    *telescope.setup()*
             ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },)
             ...,
 
-        You can also add additional options for mappings of any type
-        ("action" and "command"). For example:
-
-            ...,
-            ["<C-j>"] = {
-              action = actions.move_selection_next,
-              opts = { nowait = true, silent = true }
-            },
-            ...,
-
 
                                       *telescope.defaults.default_mappings*
     default_mappings: ~
@@ -657,15 +584,6 @@ telescope.setup({opts})                                    *telescope.setup()*
         information about lua regex
 
         Default: nil
-
-                                  *telescope.defaults.get_selection_window*
-    get_selection_window: ~
-          Function that takes function(picker, entry) and returns a window id.
-          The window ID will be used to decide what window the chosen file will
-          be opened in and the cursor placed in upon leaving the picker.
-
-          Default: `function() return 0 end`
-
 
                                         *telescope.defaults.file_previewer*
     file_previewer: ~
@@ -800,7 +718,7 @@ options you want to use. Here's an example with the live_grep picker:
   })
 <
 
-builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
+builtin.live_grep({opts})                                *builtin.live_grep()*
     Search for a string and get results live as you type (respecting
     .gitignore)
 
@@ -818,11 +736,6 @@ builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
         {search_dirs}         (table)     directory/directories to search in,
                                           mutually exclusive with
                                           `grep_open_files`
-        {glob_pattern}        (string)    argument to be used with `--glob`,
-                                          e.g. "*.toml", can use the opposite
-                                          "!*.toml"
-        {type_filter}         (string)    argument to be used with `--type`,
-                                          e.g. "rust", see `rg --type-list`
         {additional_args}     (function)  function(opts) which returns a table
                                           of additional arguments to be passed
                                           on
@@ -831,7 +744,7 @@ builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
                                           (default: false)
 
 
-builtin.grep_string({opts})                  *telescope.builtin.grep_string()*
+builtin.grep_string({opts})                            *builtin.grep_string()*
     Searches for the string under your cursor in your current working directory
 
 
@@ -858,7 +771,7 @@ builtin.grep_string({opts})                  *telescope.builtin.grep_string()*
                                           line or row (default: false)
 
 
-builtin.find_files({opts})                    *telescope.builtin.find_files()*
+builtin.find_files({opts})                              *builtin.find_files()*
     Search for files (respecting .gitignore)
 
 
@@ -881,12 +794,12 @@ builtin.find_files({opts})                    *telescope.builtin.find_files()*
         {search_dirs}  (table)    directory/directories to search in
 
 
-builtin.fd()                                          *telescope.builtin.fd()*
+builtin.fd()                                                    *builtin.fd()*
     This is an alias for the `find_files` picker
 
 
 
-builtin.treesitter()                          *telescope.builtin.treesitter()*
+builtin.treesitter()                                    *builtin.treesitter()*
     Lists function names, variables, and other symbols from treesitter queries
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query by kind of ts
@@ -903,7 +816,7 @@ builtin.treesitter()                          *telescope.builtin.treesitter()*
                                        hl_group
 
 
-builtin.current_buffer_fuzzy_find({opts}) *telescope.builtin.current_buffer_fuzzy_find()*
+builtin.current_buffer_fuzzy_find({opts}) *builtin.current_buffer_fuzzy_find()*
     Live fuzzy search inside of the currently open buffer
 
 
@@ -915,7 +828,7 @@ builtin.current_buffer_fuzzy_find({opts}) *telescope.builtin.current_buffer_fuzz
                                       (default: false)
 
 
-builtin.tags({opts})                                *telescope.builtin.tags()*
+builtin.tags({opts})                                          *builtin.tags()*
     Lists tags in current directory with tag location file preview (users are
     required to run ctags -R to generate tags or update when introducing new
     changes)
@@ -934,11 +847,9 @@ builtin.tags({opts})                                *telescope.builtin.tags()*
                                     true)
         {only_sort_tags} (boolean)  if true we will only sort tags (default:
                                     false)
-        {fname_width}    (number)   defines the width of the filename section
-                                    (default: 30)
 
 
-builtin.current_buffer_tags({opts})  *telescope.builtin.current_buffer_tags()*
+builtin.current_buffer_tags({opts})            *builtin.current_buffer_tags()*
     Lists all of the tags for the currently open buffer, with a preview
 
 
@@ -955,11 +866,9 @@ builtin.current_buffer_tags({opts})  *telescope.builtin.current_buffer_tags()*
                                     true)
         {only_sort_tags} (boolean)  if true we will only sort tags (default:
                                     false)
-        {fname_width}    (number)   defines the width of the filename section
-                                    (default: 30)
 
 
-builtin.git_files({opts})                      *telescope.builtin.git_files()*
+builtin.git_files({opts})                                *builtin.git_files()*
     Fuzzy search for files tracked by Git. This command lists the output of the
     `git ls-files` command, respects .gitignore, and optionally ignores
     untracked files
@@ -985,7 +894,7 @@ builtin.git_files({opts})                      *telescope.builtin.git_files()*
                                         {"git","ls-files","--exclude-standard","--cached"}
 
 
-builtin.git_commits({opts})                  *telescope.builtin.git_commits()*
+builtin.git_commits({opts})                            *builtin.git_commits()*
     Lists commits for current directory with diff preview
     - Default keymaps:
       - `<cr>`: checks out the currently selected commit
@@ -1005,7 +914,7 @@ builtin.git_commits({opts})                  *telescope.builtin.git_commits()*
                                   {"git","log","--pretty=oneline","--abbrev-commit","--","."}
 
 
-builtin.git_bcommits({opts})                *telescope.builtin.git_bcommits()*
+builtin.git_bcommits({opts})                          *builtin.git_bcommits()*
     Lists commits for current buffer with diff preview
     - Default keymaps or your overriden `select_` keys:
       - `<cr>`: checks out the currently selected commit
@@ -1027,7 +936,7 @@ builtin.git_bcommits({opts})                *telescope.builtin.git_bcommits()*
                                   {"git","log","--pretty=oneline","--abbrev-commit"}
 
 
-builtin.git_branches({opts})                *telescope.builtin.git_branches()*
+builtin.git_branches({opts})                          *builtin.git_branches()*
     List branches for current directory, with output from `git log --oneline`
     shown in the preview window
     - Default keymaps:
@@ -1051,7 +960,7 @@ builtin.git_branches({opts})                *telescope.builtin.git_branches()*
         {pattern}      (string)   specify the pattern to match all refs
 
 
-builtin.git_status({opts})                    *telescope.builtin.git_status()*
+builtin.git_status({opts})                              *builtin.git_status()*
     Lists git status for current directory
     - Default keymaps:
       - `<Tab>`: stages or unstages the currently selected file
@@ -1070,7 +979,7 @@ builtin.git_status({opts})                    *telescope.builtin.git_status()*
                                   git_icon_defaults)
 
 
-builtin.git_stash({opts})                      *telescope.builtin.git_stash()*
+builtin.git_stash({opts})                                *builtin.git_stash()*
     Lists stash items in current repository
     - Default keymaps:
       - `<cr>`: runs `git apply` for currently selected stash
@@ -1087,7 +996,7 @@ builtin.git_stash({opts})                      *telescope.builtin.git_stash()*
                                   stash entries (default: true)
 
 
-builtin.builtin({opts})                          *telescope.builtin.builtin()*
+builtin.builtin({opts})                                    *builtin.builtin()*
     Lists all of the community maintained pickers built into Telescope
 
 
@@ -1099,7 +1008,7 @@ builtin.builtin({opts})                          *telescope.builtin.builtin()*
                                         installed extensions (default: false)
 
 
-builtin.resume({opts})                            *telescope.builtin.resume()*
+builtin.resume({opts})                                      *builtin.resume()*
     Opens the previous picker in the identical state (incl. multi selections)
     - Notes:
       - Requires `cache_picker` in setup or when having invoked pickers, see
@@ -1114,8 +1023,8 @@ builtin.resume({opts})                            *telescope.builtin.resume()*
                                 recent (default: 1)
 
 
-builtin.pickers({opts})                          *telescope.builtin.pickers()*
-    Opens a picker over previously cached pickers in their preserved states
+builtin.pickers({opts})                                    *builtin.pickers()*
+    Opens a picker over previously cached pickers in there preserved states
     (incl. multi selections)
     - Default keymaps:
       - `<C-x>`: delete the selected cached picker
@@ -1128,7 +1037,7 @@ builtin.pickers({opts})                          *telescope.builtin.pickers()*
         {opts} (table)  options to pass to the picker
 
 
-builtin.planets({opts})                          *telescope.builtin.planets()*
+builtin.planets({opts})                                    *builtin.planets()*
     Use the telescope...
 
 
@@ -1140,7 +1049,7 @@ builtin.planets({opts})                          *telescope.builtin.planets()*
                                 hidden feature)
 
 
-builtin.symbols({opts})                          *telescope.builtin.symbols()*
+builtin.symbols({opts})                                    *builtin.symbols()*
     Lists symbols inside of `data/telescope-sources/*.json` found in your
     runtime path or found in `stdpath("data")/telescope/symbols/*.json`. The
     second path can be customized. We provide a couple of default symbols which
@@ -1159,18 +1068,15 @@ builtin.symbols({opts})                          *telescope.builtin.symbols()*
                                 this time
 
 
-builtin.commands({opts})                        *telescope.builtin.commands()*
+builtin.commands({opts})                                  *builtin.commands()*
     Lists available plugin/user commands and runs them on `<cr>`
 
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
-    Options: ~
-        {show_buf_command} (boolean)  show buf local command (Default: true)
 
-
-builtin.quickfix({opts})                        *telescope.builtin.quickfix()*
+builtin.quickfix({opts})                                  *builtin.quickfix()*
     Lists items in the quickfix list, jumps to location on `<cr>`
 
 
@@ -1179,21 +1085,9 @@ builtin.quickfix({opts})                        *telescope.builtin.quickfix()*
 
     Options: ~
         {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
-        {nr}              (number)   specify the quickfix list number
 
 
-builtin.quickfixhistory({opts})          *telescope.builtin.quickfixhistory()*
-    Lists all quickfix lists in your history and open them with
-    `builtin.quickfix`. It seems that neovim only keeps the full history for 10
-    lists
-
-
-    Parameters: ~
-        {opts} (table)  options to pass to the picker
-
-
-builtin.loclist({opts})                          *telescope.builtin.loclist()*
+builtin.loclist({opts})                                    *builtin.loclist()*
     Lists items from the current window's location list, jumps to location on
     `<cr>`
 
@@ -1203,10 +1097,9 @@ builtin.loclist({opts})                          *telescope.builtin.loclist()*
 
     Options: ~
         {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
 
 
-builtin.oldfiles({opts})                        *telescope.builtin.oldfiles()*
+builtin.oldfiles({opts})                                  *builtin.oldfiles()*
     Lists previously open files, opens on `<cr>`
 
 
@@ -1218,7 +1111,7 @@ builtin.oldfiles({opts})                        *telescope.builtin.oldfiles()*
         {cwd_only} (boolean)  alias for only_cwd
 
 
-builtin.command_history({opts})          *telescope.builtin.command_history()*
+builtin.command_history({opts})                    *builtin.command_history()*
     Lists commands that were executed recently, and reruns them on `<cr>`
     - Default keymaps:
       - `<C-e>`: open the command line with the text of the currently selected
@@ -1229,7 +1122,7 @@ builtin.command_history({opts})          *telescope.builtin.command_history()*
         {opts} (table)  options to pass to the picker
 
 
-builtin.search_history({opts})            *telescope.builtin.search_history()*
+builtin.search_history({opts})                      *builtin.search_history()*
     Lists searches that were executed recently, and reruns them on `<cr>`
     - Default keymaps:
       - `<C-e>`: open a search window with the text of the currently selected
@@ -1240,7 +1133,7 @@ builtin.search_history({opts})            *telescope.builtin.search_history()*
         {opts} (table)  options to pass to the picker
 
 
-builtin.vim_options({opts})                  *telescope.builtin.vim_options()*
+builtin.vim_options({opts})                            *builtin.vim_options()*
     Lists vim options, allows you to edit the current value on `<cr>`
 
 
@@ -1248,7 +1141,7 @@ builtin.vim_options({opts})                  *telescope.builtin.vim_options()*
         {opts} (table)  options to pass to the picker
 
 
-builtin.help_tags({opts})                      *telescope.builtin.help_tags()*
+builtin.help_tags({opts})                                *builtin.help_tags()*
     Lists available help tags and opens a new window with the relevant help
     info on `<cr>`
 
@@ -1262,7 +1155,7 @@ builtin.help_tags({opts})                      *telescope.builtin.help_tags()*
                               (default: true)
 
 
-builtin.man_pages({opts})                      *telescope.builtin.man_pages()*
+builtin.man_pages({opts})                                *builtin.man_pages()*
     Lists manpage entries, opens them in a help window on `<cr>`
 
 
@@ -1276,7 +1169,7 @@ builtin.man_pages({opts})                      *telescope.builtin.man_pages()*
                                `apropos ""` on linux, `apropos " "` on macos)
 
 
-builtin.reloader({opts})                        *telescope.builtin.reloader()*
+builtin.reloader({opts})                                  *builtin.reloader()*
     Lists lua modules and reloads them on `<cr>`
 
 
@@ -1288,7 +1181,7 @@ builtin.reloader({opts})                        *telescope.builtin.reloader()*
                                (default: dynamic, longest module name)
 
 
-builtin.buffers({opts})                          *telescope.builtin.buffers()*
+builtin.buffers({opts})                                    *builtin.buffers()*
     Lists open buffers in current neovim instance, opens selected buffer on
     `<cr>`
 
@@ -1317,7 +1210,7 @@ builtin.buffers({opts})                          *telescope.builtin.buffers()*
                                            (default: dynamic)
 
 
-builtin.colorscheme({opts})                  *telescope.builtin.colorscheme()*
+builtin.colorscheme({opts})                            *builtin.colorscheme()*
     Lists available colorschemes and applies them on `<cr>`
 
 
@@ -1328,7 +1221,7 @@ builtin.colorscheme({opts})                  *telescope.builtin.colorscheme()*
         {enable_preview} (boolean)  if true, will preview the selected color
 
 
-builtin.marks({opts})                              *telescope.builtin.marks()*
+builtin.marks({opts})                                        *builtin.marks()*
     Lists vim marks and their value, jumps to the mark on `<cr>`
 
 
@@ -1336,7 +1229,7 @@ builtin.marks({opts})                              *telescope.builtin.marks()*
         {opts} (table)  options to pass to the picker
 
 
-builtin.registers({opts})                      *telescope.builtin.registers()*
+builtin.registers({opts})                                *builtin.registers()*
     Lists vim registers, pastes the contents of the register on `<cr>`
     - Default keymaps:
       - `<C-e>`: edit the contents of the currently selected register
@@ -1346,7 +1239,7 @@ builtin.registers({opts})                      *telescope.builtin.registers()*
         {opts} (table)  options to pass to the picker
 
 
-builtin.keymaps({opts})                          *telescope.builtin.keymaps()*
+builtin.keymaps({opts})                                    *builtin.keymaps()*
     Lists normal mode keymappings, runs the selected keymap on `<cr>`
 
 
@@ -1360,7 +1253,7 @@ builtin.keymaps({opts})                          *telescope.builtin.keymaps()*
                                "<Plug>" are also shown (default: true)
 
 
-builtin.filetypes({opts})                      *telescope.builtin.filetypes()*
+builtin.filetypes({opts})                                *builtin.filetypes()*
     Lists all available filetypes, sets currently open buffer's filetype to
     selected filetype in Telescope on `<cr>`
 
@@ -1369,7 +1262,7 @@ builtin.filetypes({opts})                      *telescope.builtin.filetypes()*
         {opts} (table)  options to pass to the picker
 
 
-builtin.highlights({opts})                    *telescope.builtin.highlights()*
+builtin.highlights({opts})                              *builtin.highlights()*
     Lists all available highlights
 
 
@@ -1377,7 +1270,7 @@ builtin.highlights({opts})                    *telescope.builtin.highlights()*
         {opts} (table)  options to pass to the picker
 
 
-builtin.autocommands({opts})                *telescope.builtin.autocommands()*
+builtin.autocommands({opts})                          *builtin.autocommands()*
     Lists vim autocommands and goes to their declaration on `<cr>`
 
 
@@ -1385,7 +1278,7 @@ builtin.autocommands({opts})                *telescope.builtin.autocommands()*
         {opts} (table)  options to pass to the picker
 
 
-builtin.spell_suggest({opts})              *telescope.builtin.spell_suggest()*
+builtin.spell_suggest({opts})                        *builtin.spell_suggest()*
     Lists spelling suggestions for the current word under the cursor, replaces
     word with selected suggestion on `<cr>`
 
@@ -1394,7 +1287,7 @@ builtin.spell_suggest({opts})              *telescope.builtin.spell_suggest()*
         {opts} (table)  options to pass to the picker
 
 
-builtin.tagstack({opts})                        *telescope.builtin.tagstack()*
+builtin.tagstack({opts})                                  *builtin.tagstack()*
     Lists the tag stack for the current window, jumps to tag on `<cr>`
 
 
@@ -1403,10 +1296,9 @@ builtin.tagstack({opts})                        *telescope.builtin.tagstack()*
 
     Options: ~
         {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
 
 
-builtin.jumplist({opts})                        *telescope.builtin.jumplist()*
+builtin.jumplist({opts})                                  *builtin.jumplist()*
     Lists items from Vim's jumplist, jumps to location on `<cr>`
 
 
@@ -1415,10 +1307,9 @@ builtin.jumplist({opts})                        *telescope.builtin.jumplist()*
 
     Options: ~
         {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
 
 
-builtin.lsp_references({opts})            *telescope.builtin.lsp_references()*
+builtin.lsp_references({opts})                      *builtin.lsp_references()*
     Lists LSP references for word under the cursor, jumps to reference on
     `<cr>`
 
@@ -1426,15 +1317,8 @@ builtin.lsp_references({opts})            *telescope.builtin.lsp_references()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
-    Options: ~
-        {include_declaration}  (boolean)  include symbol declaration in the
-                                          lsp references (default: true)
-        {include_current_line} (boolean)  include current line (default:
-                                          false)
-        {trim_text}            (boolean)  trim results text (default: false)
 
-
-builtin.lsp_definitions({opts})          *telescope.builtin.lsp_definitions()*
+builtin.lsp_definitions({opts})                    *builtin.lsp_definitions()*
     Goto the definition of the word under the cursor, if there's only one,
     otherwise show all options in Telescope
 
@@ -1447,10 +1331,9 @@ builtin.lsp_definitions({opts})          *telescope.builtin.lsp_definitions()*
                                      one, values: "tab", "split", "vsplit",
                                      "never"
         {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
 
 
-builtin.lsp_type_definitions({opts}) *telescope.builtin.lsp_type_definitions()*
+builtin.lsp_type_definitions({opts})          *builtin.lsp_type_definitions()*
     Goto the definition of the type of the word under the cursor, if there's
     only one, otherwise show all options in Telescope
 
@@ -1459,14 +1342,15 @@ builtin.lsp_type_definitions({opts}) *telescope.builtin.lsp_type_definitions()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {jump_type}       (string)   how to goto definition if there is only
-                                     one, values: "tab", "split", "vsplit",
-                                     "never"
-        {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
+        {jump_type}           (string)   how to goto definition if there is
+                                         only one, values: "tab", "split",
+                                         "vsplit", "never"
+        {ignore_filename}     (boolean)  dont show filenames (default: true)
+        {include_declaration} (boolean)  include symbol declaration in the lsp
+                                         references (default: true)
 
 
-builtin.lsp_implementations({opts})  *telescope.builtin.lsp_implementations()*
+builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
     Goto the implementation of the word under the cursor if there's only one,
     otherwise show all options in Telescope
 
@@ -1479,10 +1363,36 @@ builtin.lsp_implementations({opts})  *telescope.builtin.lsp_implementations()*
                                      only one, values: "tab", "split",
                                      "vsplit", "never"
         {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
 
 
-builtin.lsp_document_symbols({opts}) *telescope.builtin.lsp_document_symbols()*
+builtin.lsp_code_actions({opts})                  *builtin.lsp_code_actions()*
+    Lists any LSP actions for the word under the cursor which can be triggered
+    with `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Options: ~
+        {timeout} (number)  timeout for the sync call (default: 10000)
+
+
+builtin.lsp_range_code_actions({opts})      *builtin.lsp_range_code_actions()*
+    Lists any LSP actions for a given range, that can be triggered with `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Options: ~
+        {timeout}    (number)  timeout for the sync call (default: 10000)
+        {start_line} (number)  where the code action starts (default: handled
+                               by :'<,'>Telescope lsp_range_code_actions)
+        {end_line}   (number)  where the code action ends (default: handled by
+                               :'<,'>Telescope lsp_range_code_actions)
+
+
+builtin.lsp_document_symbols({opts})          *builtin.lsp_document_symbols()*
     Lists LSP document symbols in the current buffer
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query by type of
@@ -1504,7 +1414,7 @@ builtin.lsp_document_symbols({opts}) *telescope.builtin.lsp_document_symbols()*
                                             with hl_group
 
 
-builtin.lsp_workspace_symbols({opts}) *telescope.builtin.lsp_workspace_symbols()*
+builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
     Lists LSP document symbols in the current workspace
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query by type of
@@ -1528,7 +1438,7 @@ builtin.lsp_workspace_symbols({opts}) *telescope.builtin.lsp_workspace_symbols()
                                             with hl_group
 
 
-builtin.lsp_dynamic_workspace_symbols({opts}) *telescope.builtin.lsp_dynamic_workspace_symbols()*
+builtin.lsp_dynamic_workspace_symbols({opts}) *builtin.lsp_dynamic_workspace_symbols()*
     Dynamically lists LSP for all workspace symbols
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query by type of
@@ -1550,8 +1460,8 @@ builtin.lsp_dynamic_workspace_symbols({opts}) *telescope.builtin.lsp_dynamic_wor
                                             with hl_group
 
 
-builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
-    Lists diagnostics
+builtin.diagnostics({opts})                            *builtin.diagnostics()*
+    Lists diagnostics for current or all open buffers
     - Fields:
       - `All severity flags can be passed as `string` or `number` as per
         `:vim.diagnostic.severity:`
@@ -1564,28 +1474,22 @@ builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {bufnr}          (number|nil)      Buffer number to get diagnostics
-                                           from. Use 0 for current buffer or
-                                           nil for all buffers
-        {severity}       (string|number)   filter diagnostics by severity name
-                                           (string) or id (number)
-        {severity_limit} (string|number)   keep diagnostics equal or more
-                                           severe wrt severity name (string)
-                                           or id (number)
-        {severity_bound} (string|number)   keep diagnostics equal or less
-                                           severe wrt severity name (string)
-                                           or id (number)
-        {root_dir}       (string|boolean)  if set to string, get diagnostics
-                                           only for buffers under this dir
-                                           otherwise cwd
-        {no_unlisted}    (boolean)         if true, get diagnostics only for
-                                           listed buffers
-        {no_sign}        (boolean)         hide DiagnosticSigns from Results
-                                           (default: false)
-        {line_width}     (number)          set length of diagnostic entry text
-                                           in Results
-        {namespace}      (number)          limit your diagnostics to a
-                                           specific namespace
+        {bufnr}          (string|number)  if nil get diagnostics for all open
+                                          buffers. Use 0 for current buffer
+        {severity}       (string|number)  filter diagnostics by severity name
+                                          (string) or id (number)
+        {severity_limit} (string|number)  keep diagnostics equal or more
+                                          severe wrt severity name (string) or
+                                          id (number)
+        {severity_bound} (string|number)  keep diagnostics equal or less
+                                          severe wrt severity name (string) or
+                                          id (number)
+        {no_sign}        (boolean)        hide DiagnosticSigns from Results
+                                          (default: false)
+        {line_width}     (number)         set length of diagnostic entry text
+                                          in Results
+        {namespace}      (number)         limit your diagnostics to a specific
+                                          namespace
 
 
 
@@ -1597,7 +1501,7 @@ Themes are ways to combine several elements of styling together.
 They are helpful for managing the several different UI aspects for telescope
 and provide a simple interface for users to get a particular "style" of picker.
 
-themes.get_dropdown()                        *telescope.themes.get_dropdown()*
+themes.get_dropdown()                                  *themes.get_dropdown()*
     Dropdown style theme.
 
     Usage:
@@ -1609,7 +1513,7 @@ themes.get_dropdown()                        *telescope.themes.get_dropdown()*
 
 
 
-themes.get_cursor()                            *telescope.themes.get_cursor()*
+themes.get_cursor()                                      *themes.get_cursor()*
     Cursor style theme.
 
     Usage:
@@ -1617,12 +1521,12 @@ themes.get_cursor()                            *telescope.themes.get_cursor()*
 
         `local builtin = require('telescope.builtin')`
         `local themes = require('telescope.themes')`
-        `builtin.lsp_references(themes.get_cursor())`
+        `builtin.lsp_code_actions(themes.get_cursor())`
 <
 
 
 
-themes.get_ivy()                                  *telescope.themes.get_ivy()*
+themes.get_ivy()                                            *themes.get_ivy()*
     Ivy style theme.
 
     Usage:
@@ -1685,7 +1589,7 @@ most resembles what you want from
 "./lua/telescope/pickers/layout_strategies.lua" in the telescope repo.
 
 
-layout_strategies.horizontal()                 *telescope.layout.horizontal()*
+layout_strategies.horizontal()                *layout_strategies.horizontal()*
     Horizontal layout has two columns, one for the preview and one for the
     prompt and results.
 
@@ -1729,7 +1633,7 @@ layout_strategies.horizontal()                 *telescope.layout.horizontal()*
         - See |resolver.resolve_width()|
 
 
-layout_strategies.center()                         *telescope.layout.center()*
+layout_strategies.center()                        *layout_strategies.center()*
     Centered layout with a combined block of the prompt and results aligned to
     the middle of the screen. The preview window is then placed in the
     remaining space above or below, according to `anchor` or `mirror`.
@@ -1779,7 +1683,7 @@ layout_strategies.center()                         *telescope.layout.center()*
       - preview_cutoff: When lines are less than this value, the preview will be disabled
 
 
-layout_strategies.cursor()                         *telescope.layout.cursor()*
+layout_strategies.cursor()                        *layout_strategies.cursor()*
     Cursor layout dynamically positioned below the cursor if possible. If there
     is no place below the cursor it will be placed above.
 
@@ -1802,7 +1706,7 @@ layout_strategies.cursor()                         *telescope.layout.cursor()*
 
 
 
-layout_strategies.vertical()                     *telescope.layout.vertical()*
+layout_strategies.vertical()                    *layout_strategies.vertical()*
     Vertical layout stacks the items on top of each other. Particularly useful
     with thinner windows.
 
@@ -1846,7 +1750,7 @@ layout_strategies.vertical()                     *telescope.layout.vertical()*
         - See |resolver.resolve_height()|
 
 
-layout_strategies.flex()                             *telescope.layout.flex()*
+layout_strategies.flex()                            *layout_strategies.flex()*
     Flex layout swaps between `horizontal` and `vertical` strategies based on
     the window width
      - Supports |layout_strategies.vertical| or |layout_strategies.horizontal|
@@ -1876,7 +1780,7 @@ layout_strategies.flex()                             *telescope.layout.flex()*
       - vertical: Options to pass when switching to vertical layout
 
 
-layout_strategies.bottom_pane()               *telescope.layout.bottom_pane()*
+layout_strategies.bottom_pane()              *layout_strategies.bottom_pane()*
     Bottom pane can be used to create layouts similar to "ivy".
 
     For an easy ivy configuration, see |themes.get_ivy()|
@@ -1889,7 +1793,7 @@ layout_strategies.bottom_pane()               *telescope.layout.bottom_pane()*
 
 Provides "resolver functions" to allow more customisable inputs for options.
 
-resolver.resolve_height()                 *telescope.resolve.resolve_height()*
+resolver.resolve_height()                          *resolver.resolve_height()*
     Converts input to a function that returns the height. The input must take
     one of four forms:
     1. 0 <= number < 1
@@ -1909,7 +1813,7 @@ resolver.resolve_height()                 *telescope.resolve.resolve_height()*
 
 
 
-resolver.resolve_width()                   *telescope.resolve.resolve_width()*
+resolver.resolve_width()                            *resolver.resolve_width()*
     Converts input to a function that returns the width. The input must take
     one of four forms:
     1. 0 <= number < 1
@@ -1929,7 +1833,7 @@ resolver.resolve_width()                   *telescope.resolve.resolve_width()*
 
 
 
-resolver.resolve_anchor_pos()         *telescope.resolve.resolve_anchor_pos()*
+resolver.resolve_anchor_pos()                  *resolver.resolve_anchor_pos()*
     Calculates the adjustment required to move the picker from the middle of
     the screen to an edge or corner.
     The `anchor` can be any of the following strings:
@@ -1949,53 +1853,7 @@ resolver.resolve_anchor_pos()         *telescope.resolve.resolve_anchor_pos()*
 
 Actions functions that are useful for people creating their own mappings.
 
-Actions can be either normal functions that expect the prompt_bufnr as first
-argument (1) or they can be a custom telescope type called "action" (2).
-
-(1) The `prompt_bufnr` of a normal function denotes the identifier of your
-picker which can be used to access the picker state. In practice, users most
-commonly access from both picker and global state via the following:
->
-  -- for utility functions
-  local action_state = require "telescope.actions.state"
-
-  local actions = {}
-  actions.do_stuff = function(prompt_bufnr)
-    local current_picker = action_state.get_current_picker(prompt_bufnr) -- picker state
-    local entry = action_state.get_selected_entry()
-  end
-<
-
-See |telescope.actions.state| for more information.
-
-(2) To transform a module of functions into a module of "action"s, you need to
-do the following:
->
-  local transform_mod = require("telescope.actions.mt").transform_mod
-
-  local mod = {}
-  mod.a1 = function(prompt_bufnr)
-    -- your code goes here
-    -- You can access the picker/global state as described above in (1).
-  end
-
-  mod.a2 = function(prompt_bufnr)
-    -- your code goes here
-  end
-  mod = transform_mod(mod)
-
-  -- Now the following is possible. This means that actions a2 will be executed
-  -- after action a1. You can chain as many actions as you want.
-  local action = mod.a1 + mod.a2
-  action(bufnr)
-<
-
-Another interesing thing to do is that these actions now have functions you can
-call. These functions include `:replace(f)`, `:replace_if(f, c)`,
-`replace_map(tbl)` and `enhance(tbl)`. More information on these functions can
-be found in the `developers.md` and `lua/tests/automated/action_spec.lua` file.
-
-actions.move_selection_next({prompt_bufnr}) *telescope.actions.move_selection_next()*
+actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
     Move the selection to the next entry
 
 
@@ -2003,7 +1861,7 @@ actions.move_selection_next({prompt_bufnr}) *telescope.actions.move_selection_ne
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_selection_previous({prompt_bufnr}) *telescope.actions.move_selection_previous()*
+actions.move_selection_previous({prompt_bufnr}) *actions.move_selection_previous()*
     Move the selection to the previous entry
 
 
@@ -2011,7 +1869,7 @@ actions.move_selection_previous({prompt_bufnr}) *telescope.actions.move_selectio
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_selection_worse({prompt_bufnr}) *telescope.actions.move_selection_worse()*
+actions.move_selection_worse({prompt_bufnr})  *actions.move_selection_worse()*
     Move the selection to the entry that has a worse score
 
 
@@ -2019,7 +1877,7 @@ actions.move_selection_worse({prompt_bufnr}) *telescope.actions.move_selection_w
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_selection_better({prompt_bufnr}) *telescope.actions.move_selection_better()*
+actions.move_selection_better({prompt_bufnr}) *actions.move_selection_better()*
     Move the selection to the entry that has a better score
 
 
@@ -2027,7 +1885,7 @@ actions.move_selection_better({prompt_bufnr}) *telescope.actions.move_selection_
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_to_top({prompt_bufnr})          *telescope.actions.move_to_top()*
+actions.move_to_top({prompt_bufnr})                    *actions.move_to_top()*
     Move to the top of the picker
 
 
@@ -2035,7 +1893,7 @@ actions.move_to_top({prompt_bufnr})          *telescope.actions.move_to_top()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_to_middle({prompt_bufnr})    *telescope.actions.move_to_middle()*
+actions.move_to_middle({prompt_bufnr})              *actions.move_to_middle()*
     Move to the middle of the picker
 
 
@@ -2043,7 +1901,7 @@ actions.move_to_middle({prompt_bufnr})    *telescope.actions.move_to_middle()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.move_to_bottom({prompt_bufnr})    *telescope.actions.move_to_bottom()*
+actions.move_to_bottom({prompt_bufnr})              *actions.move_to_bottom()*
     Move to the bottom of the picker
 
 
@@ -2051,7 +1909,7 @@ actions.move_to_bottom({prompt_bufnr})    *telescope.actions.move_to_bottom()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.add_selection({prompt_bufnr})      *telescope.actions.add_selection()*
+actions.add_selection({prompt_bufnr})                *actions.add_selection()*
     Add current entry to multi select
 
 
@@ -2059,7 +1917,7 @@ actions.add_selection({prompt_bufnr})      *telescope.actions.add_selection()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.remove_selection({prompt_bufnr}) *telescope.actions.remove_selection()*
+actions.remove_selection({prompt_bufnr})          *actions.remove_selection()*
     Remove current entry from multi select
 
 
@@ -2067,7 +1925,7 @@ actions.remove_selection({prompt_bufnr}) *telescope.actions.remove_selection()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.toggle_selection({prompt_bufnr}) *telescope.actions.toggle_selection()*
+actions.toggle_selection({prompt_bufnr})          *actions.toggle_selection()*
     Toggle current entry status for multi select
 
 
@@ -2075,7 +1933,7 @@ actions.toggle_selection({prompt_bufnr}) *telescope.actions.toggle_selection()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.select_all({prompt_bufnr})            *telescope.actions.select_all()*
+actions.select_all({prompt_bufnr})                      *actions.select_all()*
     Multi select all entries.
     - Note: selected entries may include results not visible in the results
       popup.
@@ -2085,7 +1943,7 @@ actions.select_all({prompt_bufnr})            *telescope.actions.select_all()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.drop_all({prompt_bufnr})                *telescope.actions.drop_all()*
+actions.drop_all({prompt_bufnr})                          *actions.drop_all()*
     Drop all entries from the current multi selection.
 
 
@@ -2093,7 +1951,7 @@ actions.drop_all({prompt_bufnr})                *telescope.actions.drop_all()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.toggle_all({prompt_bufnr})            *telescope.actions.toggle_all()*
+actions.toggle_all({prompt_bufnr})                      *actions.toggle_all()*
     Toggle multi selection for all entries.
     - Note: toggled entries may include results not visible in the results
       popup.
@@ -2103,210 +1961,7 @@ actions.toggle_all({prompt_bufnr})            *telescope.actions.toggle_all()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.preview_scrolling_up({prompt_bufnr}) *telescope.actions.preview_scrolling_up()*
-    Scroll the preview window up
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.preview_scrolling_down({prompt_bufnr}) *telescope.actions.preview_scrolling_down()*
-    Scroll the preview window down
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.results_scrolling_up({prompt_bufnr}) *telescope.actions.results_scrolling_up()*
-    Scroll the results window up
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.results_scrolling_down({prompt_bufnr}) *telescope.actions.results_scrolling_down()*
-    Scroll the results window down
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.center({prompt_bufnr})                    *telescope.actions.center()*
-    Center the cursor in the window, can be used after selecting a file to edit
-    You can just map `actions.select_default + actions.center`
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.select_default({prompt_bufnr})    *telescope.actions.select_default()*
-    Perform default action on selection, usually something like
-    `:edit <selection>`
-
-    i.e. open the selection in the current buffer
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.select_horizontal({prompt_bufnr}) *telescope.actions.select_horizontal()*
-    Perform 'horizontal' action on selection, usually something like
-    `:new <selection>`
-
-    i.e. open the selection in a new horizontal split
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.select_vertical({prompt_bufnr})  *telescope.actions.select_vertical()*
-    Perform 'vertical' action on selection, usually something like
-    `:vnew <selection>`
-
-    i.e. open the selection in a new vertical split
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.select_tab({prompt_bufnr})            *telescope.actions.select_tab()*
-    Perform 'tab' action on selection, usually something like
-    `:tabedit <selection>`
-
-    i.e. open the selection in a new tab
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.file_edit({prompt_bufnr})              *telescope.actions.file_edit()*
-    Perform file edit on selection, usually something like
-    `:edit <selection>`
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.file_split({prompt_bufnr})            *telescope.actions.file_split()*
-    Perform file split on selection, usually something like
-    `:new <selection>`
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.file_vsplit({prompt_bufnr})          *telescope.actions.file_vsplit()*
-    Perform file vsplit on selection, usually something like
-    `:vnew <selection>`
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.file_tab({prompt_bufnr})                *telescope.actions.file_tab()*
-    Perform file tab on selection, usually something like
-    `:tabedit <selection>`
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.close({prompt_bufnr})                      *telescope.actions.close()*
-    Close the Telescope window, usually used within an action
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions._close({prompt_bufnr})                    *telescope.actions._close()*
-    Close the Telescope window, usually used within an action
-    Deprecated and no longer needed, does the same as
-    |telescope.actions.close|. Might be removed in the future
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.edit_command_line({prompt_bufnr}) *telescope.actions.edit_command_line()*
-    Set a value in the command line and dont run it, making it editable.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.set_command_line({prompt_bufnr}) *telescope.actions.set_command_line()*
-    Set a value in the command line and run it
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.edit_search_line({prompt_bufnr}) *telescope.actions.edit_search_line()*
-    Set a value in the search line and dont search for it, making it editable.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.set_search_line({prompt_bufnr})  *telescope.actions.set_search_line()*
-    Set a value in the search line and search for it
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.edit_register({prompt_bufnr})      *telescope.actions.edit_register()*
-    Edit a register
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.paste_register({prompt_bufnr})    *telescope.actions.paste_register()*
-    Paste the selected register into the buffer
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.insert_symbol({prompt_bufnr})      *telescope.actions.insert_symbol()*
-    Insert a symbol into the current buffer (while switching to normal mode)
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.insert_symbol_i({prompt_bufnr})  *telescope.actions.insert_symbol_i()*
-    Insert a symbol into the current buffer and keeping the insert mode.
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_create_branch({prompt_bufnr}) *telescope.actions.git_create_branch()*
+actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
     Create and checkout a new git branch if it doesn't already exist
 
 
@@ -2314,7 +1969,7 @@ actions.git_create_branch({prompt_bufnr}) *telescope.actions.git_create_branch()
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_apply_stash({prompt_bufnr})  *telescope.actions.git_apply_stash()*
+actions.git_apply_stash({prompt_bufnr})            *actions.git_apply_stash()*
     Applies an existing git stash
 
 
@@ -2322,7 +1977,7 @@ actions.git_apply_stash({prompt_bufnr})  *telescope.actions.git_apply_stash()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_checkout({prompt_bufnr})        *telescope.actions.git_checkout()*
+actions.git_checkout({prompt_bufnr})                  *actions.git_checkout()*
     Checkout an existing git branch
 
 
@@ -2330,7 +1985,7 @@ actions.git_checkout({prompt_bufnr})        *telescope.actions.git_checkout()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_switch_branch({prompt_bufnr}) *telescope.actions.git_switch_branch()*
+actions.git_switch_branch({prompt_bufnr})        *actions.git_switch_branch()*
     Switch to git branch.
     If the branch already exists in local, switch to that. If the branch is
     only in remote, create new branch tracking remote and switch to new one.
@@ -2340,7 +1995,7 @@ actions.git_switch_branch({prompt_bufnr}) *telescope.actions.git_switch_branch()
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_track_branch({prompt_bufnr}) *telescope.actions.git_track_branch()*
+actions.git_track_branch({prompt_bufnr})          *actions.git_track_branch()*
     Tell git to track the currently selected remote branch in Telescope
 
 
@@ -2348,7 +2003,7 @@ actions.git_track_branch({prompt_bufnr}) *telescope.actions.git_track_branch()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_delete_branch({prompt_bufnr}) *telescope.actions.git_delete_branch()*
+actions.git_delete_branch({prompt_bufnr})        *actions.git_delete_branch()*
     Delete the currently selected branch
 
 
@@ -2356,7 +2011,7 @@ actions.git_delete_branch({prompt_bufnr}) *telescope.actions.git_delete_branch()
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_merge_branch({prompt_bufnr}) *telescope.actions.git_merge_branch()*
+actions.git_merge_branch({prompt_bufnr})          *actions.git_merge_branch()*
     Merge the currently selected branch
 
 
@@ -2364,7 +2019,7 @@ actions.git_merge_branch({prompt_bufnr}) *telescope.actions.git_merge_branch()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_rebase_branch({prompt_bufnr}) *telescope.actions.git_rebase_branch()*
+actions.git_rebase_branch({prompt_bufnr})        *actions.git_rebase_branch()*
     Rebase to selected git branch
 
 
@@ -2372,7 +2027,7 @@ actions.git_rebase_branch({prompt_bufnr}) *telescope.actions.git_rebase_branch()
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_reset_mixed({prompt_bufnr})  *telescope.actions.git_reset_mixed()*
+actions.git_reset_mixed({prompt_bufnr})            *actions.git_reset_mixed()*
     Reset to selected git commit using mixed mode
 
 
@@ -2380,7 +2035,7 @@ actions.git_reset_mixed({prompt_bufnr})  *telescope.actions.git_reset_mixed()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_reset_soft({prompt_bufnr})    *telescope.actions.git_reset_soft()*
+actions.git_reset_soft({prompt_bufnr})              *actions.git_reset_soft()*
     Reset to selected git commit using soft mode
 
 
@@ -2388,7 +2043,7 @@ actions.git_reset_soft({prompt_bufnr})    *telescope.actions.git_reset_soft()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_reset_hard({prompt_bufnr})    *telescope.actions.git_reset_hard()*
+actions.git_reset_hard({prompt_bufnr})              *actions.git_reset_hard()*
     Reset to selected git commit using hard mode
 
 
@@ -2396,15 +2051,7 @@ actions.git_reset_hard({prompt_bufnr})    *telescope.actions.git_reset_hard()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.git_checkout_current_buffer({prompt_bufnr}) *telescope.actions.git_checkout_current_buffer()*
-    Checkout a specific file for a given sha
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.git_staging_toggle({prompt_bufnr}) *telescope.actions.git_staging_toggle()*
+actions.git_staging_toggle({prompt_bufnr})      *actions.git_staging_toggle()*
     Stage/unstage selected file
 
 
@@ -2412,156 +2059,85 @@ actions.git_staging_toggle({prompt_bufnr}) *telescope.actions.git_staging_toggle
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.send_selected_to_qflist({prompt_bufnr}) *telescope.actions.send_selected_to_qflist()*
+actions.send_selected_to_qflist()          *actions.send_selected_to_qflist()*
     Sends the selected entries to the quickfix list, replacing the previous
     entries.
 
 
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
-
-actions.add_selected_to_qflist({prompt_bufnr}) *telescope.actions.add_selected_to_qflist()*
+actions.add_selected_to_qflist()            *actions.add_selected_to_qflist()*
     Adds the selected entries to the quickfix list, keeping the previous
     entries.
 
 
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
-
-actions.send_to_qflist({prompt_bufnr})    *telescope.actions.send_to_qflist()*
+actions.send_to_qflist()                            *actions.send_to_qflist()*
     Sends all entries to the quickfix list, replacing the previous entries.
 
 
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
-
-actions.add_to_qflist({prompt_bufnr})      *telescope.actions.add_to_qflist()*
+actions.add_to_qflist()                              *actions.add_to_qflist()*
     Adds all entries to the quickfix list, keeping the previous entries.
 
 
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
-
-actions.send_selected_to_loclist({prompt_bufnr}) *telescope.actions.send_selected_to_loclist()*
+actions.send_selected_to_loclist()        *actions.send_selected_to_loclist()*
     Sends the selected entries to the location list, replacing the previous
     entries.
 
 
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
-
-actions.add_selected_to_loclist({prompt_bufnr}) *telescope.actions.add_selected_to_loclist()*
+actions.add_selected_to_loclist()          *actions.add_selected_to_loclist()*
     Adds the selected entries to the location list, keeping the previous
     entries.
 
 
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
-
-actions.send_to_loclist({prompt_bufnr})  *telescope.actions.send_to_loclist()*
+actions.send_to_loclist()                          *actions.send_to_loclist()*
     Sends all entries to the location list, replacing the previous entries.
 
 
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
-
-actions.add_to_loclist({prompt_bufnr})    *telescope.actions.add_to_loclist()*
+actions.add_to_loclist()                            *actions.add_to_loclist()*
     Adds all entries to the location list, keeping the previous entries.
 
 
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
-
-actions.smart_send_to_qflist({prompt_bufnr}) *telescope.actions.smart_send_to_qflist()*
+actions.smart_send_to_qflist()                *actions.smart_send_to_qflist()*
     Sends the selected entries to the quickfix list, replacing the previous
     entries. If no entry was selected, sends all entries.
 
 
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
-
-actions.smart_add_to_qflist({prompt_bufnr}) *telescope.actions.smart_add_to_qflist()*
+actions.smart_add_to_qflist()                  *actions.smart_add_to_qflist()*
     Adds the selected entries to the quickfix list, keeping the previous
     entries. If no entry was selected, adds all entries.
 
 
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
-
-actions.smart_send_to_loclist({prompt_bufnr}) *telescope.actions.smart_send_to_loclist()*
+actions.smart_send_to_loclist()              *actions.smart_send_to_loclist()*
     Sends the selected entries to the location list, replacing the previous
     entries. If no entry was selected, sends all entries.
 
 
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
-
-actions.smart_add_to_loclist({prompt_bufnr}) *telescope.actions.smart_add_to_loclist()*
+actions.smart_add_to_loclist()                *actions.smart_add_to_loclist()*
     Adds the selected entries to the location list, keeping the previous
     entries. If no entry was selected, adds all entries.
 
 
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
+
+actions.open_qflist()                                  *actions.open_qflist()*
+    Open the quickfix list
 
 
-actions.complete_tag({prompt_bufnr})        *telescope.actions.complete_tag()*
-    Open completion menu containing the tags which can be used to filter the
-    results in a faster way
+
+actions.open_loclist()                                *actions.open_loclist()*
+    Open the location list
 
 
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
 
-
-actions.cycle_history_next({prompt_bufnr}) *telescope.actions.cycle_history_next()*
-    Cycle to the next search prompt in the history
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.cycle_history_prev({prompt_bufnr}) *telescope.actions.cycle_history_prev()*
-    Cycle to the previous search prompt in the history
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.open_qflist({prompt_bufnr})          *telescope.actions.open_qflist()*
-    Open the quickfix list. It makes sense to use this in combination with one
-    of the send_to_qflist actions `actions.smart_send_to_qflist +
-    actions.open_qflist`
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.open_loclist({prompt_bufnr})        *telescope.actions.open_loclist()*
-    Open the location list. It makes sense to use this in combination with one
-    of the send_to_loclist actions `actions.smart_send_to_qflist +
-    actions.open_qflist`
-
-
-    Parameters: ~
-        {prompt_bufnr} (number)  The prompt bufnr
-
-
-actions.delete_buffer({prompt_bufnr})      *telescope.actions.delete_buffer()*
+actions.delete_buffer({prompt_bufnr})                *actions.delete_buffer()*
     Delete the selected buffer or all the buffers selected using multi
     selection.
 
@@ -2570,7 +2146,7 @@ actions.delete_buffer({prompt_bufnr})      *telescope.actions.delete_buffer()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.cycle_previewers_next({prompt_bufnr}) *telescope.actions.cycle_previewers_next()*
+actions.cycle_previewers_next({prompt_bufnr}) *actions.cycle_previewers_next()*
     Cycle to the next previewer if there is one available.
     This action is not mapped on default.
 
@@ -2579,7 +2155,7 @@ actions.cycle_previewers_next({prompt_bufnr}) *telescope.actions.cycle_previewer
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.cycle_previewers_prev({prompt_bufnr}) *telescope.actions.cycle_previewers_prev()*
+actions.cycle_previewers_prev({prompt_bufnr}) *actions.cycle_previewers_prev()*
     Cycle to the previous previewer if there is one available.
     This action is not mapped on default.
 
@@ -2588,7 +2164,7 @@ actions.cycle_previewers_prev({prompt_bufnr}) *telescope.actions.cycle_previewer
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.remove_selected_picker({prompt_bufnr}) *telescope.actions.remove_selected_picker()*
+actions.remove_selected_picker({prompt_bufnr}) *actions.remove_selected_picker()*
     Removes the selected picker in |builtin.pickers|.
     This action is not mapped by default and only intended for
     |builtin.pickers|.
@@ -2598,7 +2174,7 @@ actions.remove_selected_picker({prompt_bufnr}) *telescope.actions.remove_selecte
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.which_key({prompt_bufnr})              *telescope.actions.which_key()*
+actions.which_key({prompt_bufnr})                        *actions.which_key()*
     Display the keymaps of registered actions similar to which-key.nvim.
 
     - Notes:
@@ -2617,17 +2193,17 @@ Functions to be used to determine the current state of telescope.
 
 Generally used from within other |telescope.actions|
 
-action_state.get_selected_entry() *telescope.actions.state.get_selected_entry()*
+action_state.get_selected_entry()          *action_state.get_selected_entry()*
     Get the current entry
 
 
 
-action_state.get_current_line()   *telescope.actions.state.get_current_line()*
+action_state.get_current_line()              *action_state.get_current_line()*
     Gets the current line
 
 
 
-action_state.get_current_picker({prompt_bufnr}) *telescope.actions.state.get_current_picker()*
+action_state.get_current_picker({prompt_bufnr}) *action_state.get_current_picker()*
     Gets the current picker
 
 
@@ -2647,7 +2223,7 @@ vertical split, etc. Instead of making users have to overwrite EACH of those
 every time they want to change this behavior, they can instead replace the
 `set` itself and then it will work great and they're done.
 
-action_set.shift_selection({prompt_bufnr}, {change}) *telescope.actions.set.shift_selection()*
+action_set.shift_selection({prompt_bufnr}, {change}) *action_set.shift_selection()*
     Move the current selection of a picker {change} rows. Handles not
     overflowing / underflowing the list.
 
@@ -2657,7 +2233,7 @@ action_set.shift_selection({prompt_bufnr}, {change}) *telescope.actions.set.shif
         {change}       (number)  The amount to shift the selection by
 
 
-action_set.select({prompt_bufnr}, {type})     *telescope.actions.set.select()*
+action_set.select({prompt_bufnr}, {type})                *action_set.select()*
     Select the current entry. This is the action set to overwrite common
     actions by the user.
 
@@ -2669,7 +2245,7 @@ action_set.select({prompt_bufnr}, {type})     *telescope.actions.set.select()*
         {type}         (string)  The type of selection to make
 
 
-action_set.edit({prompt_bufnr}, {command})      *telescope.actions.set.edit()*
+action_set.edit({prompt_bufnr}, {command})                 *action_set.edit()*
     Edit a file based on the current selection.
 
 
@@ -2678,7 +2254,7 @@ action_set.edit({prompt_bufnr}, {command})      *telescope.actions.set.edit()*
         {command}      (string)  The command to use to open the file.
 
 
-action_set.scroll_previewer({prompt_bufnr}, {direction}) *telescope.actions.set.scroll_previewer()*
+action_set.scroll_previewer({prompt_bufnr}, {direction}) *action_set.scroll_previewer()*
     Scrolls the previewer up or down. Defaults to a half page scroll, but can
     be overridden using the `scroll_speed` option in `layout_config`. See
     |telescope.layout| for more details.
@@ -2689,10 +2265,8 @@ action_set.scroll_previewer({prompt_bufnr}, {direction}) *telescope.actions.set.
         {direction}    (number)  The direction of the scrolling
 
 
-action_set.scroll_results({prompt_bufnr}, {direction}) *telescope.actions.set.scroll_results()*
-    Scrolls the results up or down. Defaults to a half page scroll, but can be
-    overridden using the `scroll_speed` option in `layout_config`. See
-    |telescope.layout| for more details.
+action_set.scroll_results({prompt_bufnr}, {direction}) *action_set.scroll_results()*
+    Scrolls the results up or down. Moves `count` movements.
 
 
     Parameters: ~
@@ -2706,7 +2280,7 @@ action_set.scroll_results({prompt_bufnr}, {direction}) *telescope.actions.set.sc
 
 The layout actions are actions to be used to change the layout of a picker.
 
-action_layout.toggle_preview({prompt_bufnr}) *telescope.actions.layout.toggle_preview()*
+action_layout.toggle_preview({prompt_bufnr})  *action_layout.toggle_preview()*
     Toggle preview window.
     - Note: preview window can be toggled even if preview is set to false.
 
@@ -2717,7 +2291,7 @@ action_layout.toggle_preview({prompt_bufnr}) *telescope.actions.layout.toggle_pr
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-action_layout.toggle_prompt_position({prompt_bufnr}) *telescope.actions.layout.toggle_prompt_position()*
+action_layout.toggle_prompt_position({prompt_bufnr}) *action_layout.toggle_prompt_position()*
     Toggles the `prompt_position` option between "top" and "bottom". Checks if
     `prompt_position` is an option for the current layout.
 
@@ -2728,7 +2302,7 @@ action_layout.toggle_prompt_position({prompt_bufnr}) *telescope.actions.layout.t
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-action_layout.toggle_mirror({prompt_bufnr}) *telescope.actions.layout.toggle_mirror()*
+action_layout.toggle_mirror({prompt_bufnr})    *action_layout.toggle_mirror()*
     Toggles the `mirror` option between `true` and `false`. Checks if `mirror`
     is an option for the current layout.
 
@@ -2739,7 +2313,7 @@ action_layout.toggle_mirror({prompt_bufnr}) *telescope.actions.layout.toggle_mir
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-action_layout.cycle_layout_next({prompt_bufnr}) *telescope.actions.layout.cycle_layout_next()*
+action_layout.cycle_layout_next({prompt_bufnr}) *action_layout.cycle_layout_next()*
     Cycles to the next layout in `cycle_layout_list`.
 
     This action is not mapped by default.
@@ -2749,7 +2323,7 @@ action_layout.cycle_layout_next({prompt_bufnr}) *telescope.actions.layout.cycle_
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-action_layout.cycle_layout_prev({prompt_bufnr}) *telescope.actions.layout.cycle_layout_prev()*
+action_layout.cycle_layout_prev({prompt_bufnr}) *action_layout.cycle_layout_prev()*
     Cycles to the previous layout in `cycle_layout_list`.
 
     This action is not mapped by default.
@@ -2767,7 +2341,7 @@ Utilities to wrap functions around picker selections and entries.
 
 Generally used from within other |telescope.actions|
 
-utils.map_entries({prompt_bufnr}, {f}) *telescope.actions.utils.map_entries()*
+utils.map_entries({prompt_bufnr}, {f})                   *utils.map_entries()*
     Apply `f` to the entries of the current picker.
     - Notes:
       - Mapped entries may include results not visible in the results popup.
@@ -2798,7 +2372,7 @@ utils.map_entries({prompt_bufnr}, {f}) *telescope.actions.utils.map_entries()*
                                    arguments
 
 
-utils.map_selections({prompt_bufnr}, {f}) *telescope.actions.utils.map_selections()*
+utils.map_selections({prompt_bufnr}, {f})             *utils.map_selections()*
     Apply `f` to the multi selections of the current picker and return a table
     of mapped selections.
     - Notes:
@@ -2829,7 +2403,7 @@ utils.map_selections({prompt_bufnr}, {f}) *telescope.actions.utils.map_selection
                                    that takes (selection) as a viable argument
 
 
-utils.get_registered_mappings({prompt_bufnr}) *telescope.actions.utils.get_registered_mappings()*
+utils.get_registered_mappings({prompt_bufnr}) *utils.get_registered_mappings()*
     Utility to collect mappings of prompt buffer in array of `{mode, keybind,
     name}`.
 
@@ -2863,7 +2437,7 @@ General usage:
   }
 <
 
-action_generate.which_key({opts})     *telescope.actions.generate.which_key()*
+action_generate.which_key({opts})                *action_generate.which_key()*
     Display the keymaps of registered actions similar to which-key.nvim.
 
     - Floating window:
@@ -2939,7 +2513,7 @@ necessary fields. The more important ones are
 Previewers can be disabled for any builtin or custom picker by doing :Telescope
 find_files previewer=false
 
-previewers.Previewer()                      *telescope.previewers.Previewer()*
+previewers.Previewer()                                *previewers.Previewer()*
     This is the base table all previewers have to implement. It's possible to
     write a wrapper for this because most previewers need to have the same keys
     set. Examples of wrappers are:
@@ -2976,13 +2550,13 @@ previewers.Previewer()                      *telescope.previewers.Previewer()*
 
 
 
-previewers.new()                                  *telescope.previewers.new()*
+previewers.new()                                            *previewers.new()*
     A shorthand for creating a new Previewer. The provided table will be
     forwarded to `Previewer:new(...)`
 
 
 
-previewers.new_termopen_previewer() *telescope.previewers.new_termopen_previewer()*
+previewers.new_termopen_previewer()      *previewers.new_termopen_previewer()*
     Is a wrapper around Previewer and helps with creating a new
     `termopen_previewer`.
 
@@ -3007,9 +2581,12 @@ previewers.new_termopen_previewer() *telescope.previewers.new_termopen_previewer
     Furthermore, it will forward all `config.set_env` environment variables to
     that terminal process.
 
+    While this interface is a good start, it was replaced with the way more
+    flexible `buffer_previewer` and is now deprecated.
 
 
-previewers.cat()                                  *telescope.previewers.cat()*
+
+previewers.cat()                                            *previewers.cat()*
     Provides a `termopen_previewer` which has the ability to display files. It
     will always show the top of the file and has support for `bat`(prioritized)
     and `cat`. Each entry has to provide either the field `path` or `filename`
@@ -3022,7 +2599,7 @@ previewers.cat()                                  *telescope.previewers.cat()*
 
 
 
-previewers.vimgrep()                          *telescope.previewers.vimgrep()*
+previewers.vimgrep()                                    *previewers.vimgrep()*
     Provides a `termopen_previewer` which has the ability to display files at
     the provided line. It has support for `bat`(prioritized) and `cat`. Each
     entry has to provide either the field `path` or `filename` and a `lnum`
@@ -3035,7 +2612,7 @@ previewers.vimgrep()                          *telescope.previewers.vimgrep()*
 
 
 
-previewers.qflist()                            *telescope.previewers.qflist()*
+previewers.qflist()                                      *previewers.qflist()*
     Provides a `termopen_previewer` which has the ability to display files at
     the provided line or range. It has support for `bat`(prioritized) and
     `cat`. Each entry has to provide either the field `path` or `filename`,
@@ -3049,7 +2626,7 @@ previewers.qflist()                            *telescope.previewers.qflist()*
 
 
 
-previewers.new_buffer_previewer() *telescope.previewers.new_buffer_previewer()*
+previewers.new_buffer_previewer()          *previewers.new_buffer_previewer()*
     An interface to instantiate a new `buffer_previewer`. That means that the
     content actually lives inside a vim buffer which enables us more control
     over the actual content. For example, we can use `vim.fn.search` to jump to
@@ -3142,7 +2719,7 @@ previewers.new_buffer_previewer() *telescope.previewers.new_buffer_previewer()*
 
 
 
-previewers.buffer_previewer_maker({filepath}, {bufnr}, {opts}) *telescope.previewers.buffer_previewer_maker()*
+previewers.buffer_previewer_maker({filepath}, {bufnr}, {opts}) *previewers.buffer_previewer_maker()*
     A universal way of reading a file into a buffer previewer. It handles async
     reading, cache, highlighting, displaying directories and provides a
     callback which can be used, to jump to a line in the buffer.
@@ -3154,7 +2731,7 @@ previewers.buffer_previewer_maker({filepath}, {bufnr}, {opts}) *telescope.previe
         {opts}     (table)   keys: `use_ft_detect`, `bufname` and `callback`
 
 
-previewers.vim_buffer_cat()            *telescope.previewers.vim_buffer_cat()*
+previewers.vim_buffer_cat()                      *previewers.vim_buffer_cat()*
     A previewer that is used to display a file. It uses the `buffer_previewer`
     interface and won't jump to the line. To integrate this one into your own
     picker make sure that the field `path` or `filename` is set for each entry.
@@ -3165,7 +2742,7 @@ previewers.vim_buffer_cat()            *telescope.previewers.vim_buffer_cat()*
 
 
 
-previewers.vim_buffer_vimgrep()    *telescope.previewers.vim_buffer_vimgrep()*
+previewers.vim_buffer_vimgrep()              *previewers.vim_buffer_vimgrep()*
     A previewer that is used to display a file and jump to the provided line.
     It uses the `buffer_previewer` interface. To integrate this one into your
     own picker make sure that the field `path` or `filename` and `lnum` is set
@@ -3177,7 +2754,7 @@ previewers.vim_buffer_vimgrep()    *telescope.previewers.vim_buffer_vimgrep()*
 
 
 
-previewers.vim_buffer_qflist()      *telescope.previewers.vim_buffer_qflist()*
+previewers.vim_buffer_qflist()                *previewers.vim_buffer_qflist()*
     Is the same as `vim_buffer_vimgrep` and only exist for consistency with
     `term_previewers`.
 
@@ -3188,17 +2765,17 @@ previewers.vim_buffer_qflist()      *telescope.previewers.vim_buffer_qflist()*
 
 
 
-previewers.git_branch_log()            *telescope.previewers.git_branch_log()*
+previewers.git_branch_log()                      *previewers.git_branch_log()*
     A previewer that shows a log of a branch as graph
 
 
 
-previewers.git_stash_diff()            *telescope.previewers.git_stash_diff()*
+previewers.git_stash_diff()                      *previewers.git_stash_diff()*
     A previewer that shows a diff of a stash
 
 
 
-previewers.git_commit_diff_to_parent() *telescope.previewers.git_commit_diff_to_parent()*
+previewers.git_commit_diff_to_parent() *previewers.git_commit_diff_to_parent()*
     A previewer that shows a diff of a commit to a parent commit.
     The run command is `git --no-pager diff SHA^! -- $CURRENT_FILE`
 
@@ -3206,7 +2783,7 @@ previewers.git_commit_diff_to_parent() *telescope.previewers.git_commit_diff_to_
 
 
 
-previewers.git_commit_diff_to_head() *telescope.previewers.git_commit_diff_to_head()*
+previewers.git_commit_diff_to_head()    *previewers.git_commit_diff_to_head()*
     A previewer that shows a diff of a commit to head.
     The run command is `git --no-pager diff --cached $SHA -- $CURRENT_FILE`
 
@@ -3214,26 +2791,26 @@ previewers.git_commit_diff_to_head() *telescope.previewers.git_commit_diff_to_he
 
 
 
-previewers.git_commit_diff_as_was() *telescope.previewers.git_commit_diff_as_was()*
+previewers.git_commit_diff_as_was()      *previewers.git_commit_diff_as_was()*
     A previewer that shows a diff of a commit as it was.
     The run command is `git --no-pager show $SHA:$CURRENT_FILE` or `git
     --no-pager show $SHA`
 
 
 
-previewers.git_commit_message()    *telescope.previewers.git_commit_message()*
+previewers.git_commit_message()              *previewers.git_commit_message()*
     A previewer that shows the commit message of a diff.
     The run command is `git --no-pager log -n 1 $SHA`
 
 
 
-previewers.git_file_diff()              *telescope.previewers.git_file_diff()*
+previewers.git_file_diff()                        *previewers.git_file_diff()*
     A previewer that shows the current diff of a file. Used in git_status.
     The run command is `git --no-pager diff $FILE`
 
 
 
-previewers.display_content()          *telescope.previewers.display_content()*
+previewers.display_content()                    *previewers.display_content()*
     A deprecated way of displaying content more easily. Was written at a time,
     where the buffer_previewer interface wasn't present. Nowadays it's easier
     to just use this. We will keep it around for backwards compatibility
@@ -3261,9 +2838,9 @@ So you have a history for:
 - live_grep project_2
 - etc
 
-See https://github.com/nvim-telescope/telescope-smart-history.nvim
+See github.com/nvim-telescope/telescope-smart-history.nvim
 
-histories.History()                      *telescope.actions.history.History()*
+histories.History()                                      *histories.History()*
     Manages prompt history
 
 
@@ -3278,7 +2855,7 @@ histories.History()                      *telescope.actions.history.History()*
                              Default is #content + 1
 
 
-histories.History:new({opts})        *telescope.actions.history.History:new()*
+histories.History:new({opts})                        *histories.History:new()*
     Create a new History
 
 
@@ -3295,18 +2872,18 @@ histories.History:new({opts})        *telescope.actions.history.History:new()*
                               will be returned (optional)
 
 
-histories.new()                              *telescope.actions.history.new()*
+histories.new()                                              *histories.new()*
     Shorthand to create a new history
 
 
 
-histories.History:reset()          *telescope.actions.history.History:reset()*
+histories.History:reset()                          *histories.History:reset()*
     Will reset the history index to the default initial state. Will happen
     after the picker closed
 
 
 
-histories.History:append({line}, {picker}, {no_reset}) *telescope.actions.history.History:append()*
+histories.History:append({line}, {picker}, {no_reset}) *histories.History:append()*
     Append a new line to the history
 
 
@@ -3317,7 +2894,7 @@ histories.History:append({line}, {picker}, {no_reset}) *telescope.actions.histor
                               If you don't want to do this set to true
 
 
-histories.History:get_next({line}, {picker}) *telescope.actions.history.History:get_next()*
+histories.History:get_next({line}, {picker})    *histories.History:get_next()*
     Will return the next history item. Can be nil if there are no next items
 
 
@@ -3329,7 +2906,7 @@ histories.History:get_next({line}, {picker}) *telescope.actions.history.History:
         string: the next history item
 
 
-histories.History:get_prev({line}, {picker}) *telescope.actions.history.History:get_prev()*
+histories.History:get_prev({line}, {picker})    *histories.History:get_prev()*
     Will return the previous history item. Can be nil if there are no previous
     items
 
@@ -3342,7 +2919,7 @@ histories.History:get_prev({line}, {picker}) *telescope.actions.history.History:
         string: the previous history item
 
 
-histories.get_simple_history() *telescope.actions.history.get_simple_history()*
+histories.get_simple_history()                *histories.get_simple_history()*
     A simple implementation of history.
 
     It will keep one unified history across all pickers.

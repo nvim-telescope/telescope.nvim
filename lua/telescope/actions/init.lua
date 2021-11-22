@@ -155,35 +155,19 @@ end
 actions.select_all = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   action_utils.map_entries(prompt_bufnr, function(entry, _, row)
-    if not current_picker._multi:is_selected(entry) then
-      current_picker._multi:add(entry)
-      if current_picker:can_select_row(row) then
-        local caret = current_picker:update_prefix(entry, row)
-        if current_picker._selection_entry == entry and current_picker._selection_row == row then
-          current_picker.highlighter:hi_selection(row, caret:match "(.*%S)")
-        end
-        current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
-      end
-    end
+    current_picker._multi:add(entry)
   end)
-  current_picker:get_status_updater(current_picker.prompt_win, current_picker.prompt_bufnr)()
+  current_picker:_redraw(true)
 end
 
 --- Drop all entries from the current multi selection.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.drop_all = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
-  action_utils.map_entries(prompt_bufnr, function(entry, _, row)
+  action_utils.map_entries(prompt_bufnr, function(entry)
     current_picker._multi:drop(entry)
-    if current_picker:can_select_row(row) then
-      local caret = current_picker:update_prefix(entry, row)
-      if current_picker._selection_entry == entry and current_picker._selection_row == row then
-        current_picker.highlighter:hi_selection(row, caret:match "(.*%S)")
-      end
-      current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
-    end
   end)
-  current_picker:get_status_updater(current_picker.prompt_win, current_picker.prompt_bufnr)()
+  current_picker:_redraw(true)
 end
 
 --- Toggle multi selection for all entries.
@@ -191,17 +175,10 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.toggle_all = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
-  action_utils.map_entries(prompt_bufnr, function(entry, _, row)
+  action_utils.map_entries(prompt_bufnr, function(entry)
     current_picker._multi:toggle(entry)
-    if current_picker:can_select_row(row) then
-      local caret = current_picker:update_prefix(entry, row)
-      if current_picker._selection_entry == entry and current_picker._selection_row == row then
-        current_picker.highlighter:hi_selection(row, caret:match "(.*%S)")
-      end
-      current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
-    end
   end)
-  current_picker:get_status_updater(current_picker.prompt_win, current_picker.prompt_bufnr)()
+  current_picker:_redraw(true)
 end
 
 --- Scroll the preview window up
