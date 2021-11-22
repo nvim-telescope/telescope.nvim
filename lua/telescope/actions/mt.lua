@@ -24,6 +24,9 @@ local append_action_copy = function(new, v, old)
   new._post[v] = old._post[v]
 end
 
+--TODO(conni2461): Not a fan of this solution/hack. Needs to be addressed
+local all_mts = {}
+
 --- an action is metatable which allows replacement(prepend or append) of the function
 ---@class Action
 ---@field _func table<string, function>: the original action function
@@ -143,6 +146,7 @@ action_mt.create = function()
     return self
   end
 
+  table.insert(all_mts, mt)
   return mt
 end
 
@@ -177,6 +181,12 @@ action_mt.transform_mod = function(mod)
   end
 
   return redirect
+end
+
+action_mt.clear_all = function()
+  for _, v in ipairs(all_mts) do
+    pcall(v.clear)
+  end
 end
 
 return action_mt
