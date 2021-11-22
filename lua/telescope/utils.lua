@@ -379,7 +379,12 @@ utils.transform_path = function(opts, path)
       end
 
       if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
-        transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
+        if type(path_display["shorten"]) == "table" then
+          local shorten = path_display["shorten"]
+          transformed_path = Path:new(transformed_path):shorten(shorten.len, shorten.exclude)
+        else
+          transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
+        end
       end
       if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
         if opts.__length == nil then
@@ -446,6 +451,25 @@ function utils.buf_delete(bufnr)
 
   if start_report < 2 then
     vim.o.report = start_report
+  end
+end
+
+function utils.win_delete(name, win_id, force, bdelete)
+  if win_id == nil or not vim.api.nvim_win_is_valid(win_id) then
+    return
+  end
+
+  local bufnr = vim.api.nvim_win_get_buf(win_id)
+  if bdelete then
+    utils.buf_delete(bufnr)
+  end
+
+  if not vim.api.nvim_win_is_valid(win_id) then
+    return
+  end
+
+  if not pcall(vim.api.nvim_win_close, win_id, force) then
+    log.trace("Unable to close window: ", name, "/", win_id)
   end
 end
 

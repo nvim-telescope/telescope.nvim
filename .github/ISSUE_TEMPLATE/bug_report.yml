@@ -16,6 +16,7 @@ body:
     attributes:
       label: "Neovim version"
       description: "Output of `nvim --version`"
+      render: markdown
       placeholder: |
         NVIM v0.6.0-dev+209-g0603eba6e
         Build type: Release

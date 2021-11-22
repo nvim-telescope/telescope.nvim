@@ -143,6 +143,20 @@ telescope.setup({opts})                                    *telescope.setup()*
         }
 
 
+                                     *telescope.defaults.cycle_layout_list*
+    cycle_layout_list: ~
+        Determines the layouts to cycle through when using `actions.cycle_layout_next`
+        and `actions.cycle_layout_prev`.
+        Should be a list of "layout setups".
+        Each "layout setup" can take one of two forms:
+        1. string <br>
+            This is interpreted as the name of a `layout_strategy`
+        2. table <br>
+            A table with possible keys `layout_strategy`, `layout_config` and `previewer`
+
+        Default: { "horizontal", "vertical" }
+
+
                                               *telescope.defaults.winblend*
     winblend: ~
         Configure winblend for telescope floating windows. See |winblend| for
@@ -206,6 +220,20 @@ telescope.setup({opts})                                    *telescope.setup()*
             `a/b/g/delta.txt`
           Similarly, `path_display.shorten = 2` will give a path like:
             `al/be/ga/delta.txt`
+
+        You can also further customise the shortening behaviour by
+        setting `path_display.shorten = { len = num, exclude = list }`,
+        where `len` acts as above, and `exclude` is a list of positions
+        that are not shortened. Negative numbers in the list are considered
+        relative to the end of the path.
+          e.g. for a path like
+            `alpha/beta/gamma/delta.txt`
+          setting `path_display.shorten = { len = 1, exclude = {1, -1} }`
+          will give a path like:
+            `alpha/b/g/delta.txt`
+          setting `path_display.shorten = { len = 2, exclude = {2, -2} }`
+          will give a path like:
+            `al/beta/gamma/de`
 
         path_display can also be set to 'hidden' string to hide file names
 
@@ -381,6 +409,9 @@ telescope.setup({opts})                                    *telescope.setup()*
                               Default: true
           - msg_bg_fillchar:  Character to fill background of unpreviewable buffers with
                               Default: "╱"
+          - hide_on_startup:  Hide previewer when picker starts. Previewer can be toggled
+                              with actions.toggle_preview.
+                              Default: false
 
 
                                      *telescope.defaults.vimgrep_arguments*
@@ -1487,8 +1518,8 @@ builtin.lsp_workspace_diagnostics({opts}) *builtin.lsp_workspace_diagnostics()*
 
 Themes are ways to combine several elements of styling together.
 
-They are helpful for managing the several differnt UI aspects for telescope and
-provide a simple interface for users to get a particular "style" of picker.
+They are helpful for managing the several different UI aspects for telescope
+and provide a simple interface for users to get a particular "style" of picker.
 
 themes.get_dropdown()                                  *themes.get_dropdown()*
     Dropdown style theme.
@@ -2190,12 +2221,84 @@ action_set.edit({prompt_bufnr}, {command})                 *action_set.edit()*
 
 
 action_set.scroll_previewer({prompt_bufnr}, {direction}) *action_set.scroll_previewer()*
-    Scrolls the previewer up or down
+    Scrolls the previewer up or down. Defaults to a half page scroll, but can
+    be overridden using the `scroll_speed` option in `layout_config`. See
+    |telescope.layout| for more details.
 
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
         {direction}    (number)  The direction of the scrolling
+
+
+action_set.scroll_results({prompt_bufnr}, {direction}) *action_set.scroll_results()*
+    Scrolls the results up or down. Defaults to a half page scroll, but can be
+    overridden using the `scroll_speed` option in `layout_config`. See
+    |telescope.layout| for more details.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {direction}    (number)  The direction of the scrolling
+
+
+
+================================================================================
+                                                      *telescope.actions.layout*
+
+The layout actions are actions to be used to change the layout of a picker.
+
+action_layout.toggle_preview({prompt_bufnr})  *action_layout.toggle_preview()*
+    Toggle preview window.
+    - Note: preview window can be toggled even if preview is set to false.
+
+    This action is not mapped by default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+action_layout.toggle_prompt_position({prompt_bufnr}) *action_layout.toggle_prompt_position()*
+    Toggles the `prompt_position` option between "top" and "bottom". Checks if
+    `prompt_position` is an option for the current layout.
+
+    This action is not mapped by default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+action_layout.toggle_mirror({prompt_bufnr})    *action_layout.toggle_mirror()*
+    Toggles the `mirror` option between `true` and `false`. Checks if `mirror`
+    is an option for the current layout.
+
+    This action is not mapped by default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+action_layout.cycle_layout_next({prompt_bufnr}) *action_layout.cycle_layout_next()*
+    Cycles to the next layout in `cycle_layout_list`.
+
+    This action is not mapped by default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+action_layout.cycle_layout_prev({prompt_bufnr}) *action_layout.cycle_layout_prev()*
+    Cycles to the previous layout in `cycle_layout_list`.
+
+    This action is not mapped by default.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 
@@ -2367,7 +2470,7 @@ work and make it really easy create new previewers.
 
 Furthermore, there are a collection of previewers already defined which can be
 used for every picker, as long as the entries of the picker provide the
-necessary fields. The more important once are
+necessary fields. The more important ones are
   - `previewers.cat`
   - `previewers.vimgrep`
   - `previewers.qflist`

@@ -190,6 +190,23 @@ append(
 append("layout_config", layout_config_defaults, layout_config_description)
 
 append(
+  "cycle_layout_list",
+  { "horizontal", "vertical" },
+  [[
+  Determines the layouts to cycle through when using `actions.cycle_layout_next`
+  and `actions.cycle_layout_prev`.
+  Should be a list of "layout setups".
+  Each "layout setup" can take one of two forms:
+  1. string <br>
+      This is interpreted as the name of a `layout_strategy`
+  2. table <br>
+      A table with possible keys `layout_strategy`, `layout_config` and `previewer`
+
+  Default: { "horizontal", "vertical" }
+  ]]
+)
+
+append(
   "winblend",
   0,
   [[
@@ -272,6 +289,20 @@ append(
       `a/b/g/delta.txt`
     Similarly, `path_display.shorten = 2` will give a path like:
       `al/be/ga/delta.txt`
+
+  You can also further customise the shortening behaviour by
+  setting `path_display.shorten = { len = num, exclude = list }`,
+  where `len` acts as above, and `exclude` is a list of positions
+  that are not shortened. Negative numbers in the list are considered
+  relative to the end of the path.
+    e.g. for a path like
+      `alpha/beta/gamma/delta.txt`
+    setting `path_display.shorten = { len = 1, exclude = {1, -1} }`
+    will give a path like:
+      `alpha/b/g/delta.txt`
+    setting `path_display.shorten = { len = 2, exclude = {2, -2} }`
+    will give a path like:
+      `al/beta/gamma/de`
 
   path_display can also be set to 'hidden' string to hide file names
 
@@ -417,6 +448,7 @@ append(
     timeout = 250,
     treesitter = true,
     msg_bg_fillchar = "╱",
+    hide_on_startup = false,
   },
   [[
     This field handles the global configuration for previewers.
@@ -497,6 +529,9 @@ append(
                           Default: true
       - msg_bg_fillchar:  Character to fill background of unpreviewable buffers with
                           Default: "╱"
+      - hide_on_startup:  Hide previewer when picker starts. Previewer can be toggled
+                          with actions.toggle_preview.
+                          Default: false
     ]]
 )
 

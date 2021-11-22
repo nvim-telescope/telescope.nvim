@@ -25,6 +25,9 @@ mappings.default_mappings = config.values.default_mappings
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
 
+      ["<PageUp>"] = actions.results_scrolling_up,
+      ["<PageDown>"] = actions.results_scrolling_down,
+
       ["<Tab>"] = actions.toggle_selection + actions.move_selection_worse,
       ["<S-Tab>"] = actions.toggle_selection + actions.move_selection_better,
       ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
@@ -59,6 +62,10 @@ mappings.default_mappings = config.values.default_mappings
 
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
+
+      ["<PageUp>"] = actions.results_scrolling_up,
+      ["<PageDown>"] = actions.results_scrolling_down,
+
       ["?"] = actions.which_key,
     },
   }

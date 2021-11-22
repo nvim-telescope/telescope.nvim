@@ -152,6 +152,14 @@ function actions.preview_scrolling_down(prompt_bufnr)
   action_set.scroll_previewer(prompt_bufnr, 1)
 end
 
+function actions.results_scrolling_up(prompt_bufnr)
+  action_set.scroll_results(prompt_bufnr, -1)
+end
+
+function actions.results_scrolling_down(prompt_bufnr)
+  action_set.scroll_results(prompt_bufnr, 1)
+end
+
 function actions.center(_)
   vim.cmd ":normal! zz"
 end
@@ -232,23 +240,14 @@ end
 actions._close = function(prompt_bufnr, keepinsert)
   action_state.get_current_history():reset()
   local picker = action_state.get_current_picker(prompt_bufnr)
-  local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
-
-  if picker.previewer then
-    for _, v in ipairs(picker.all_previewers) do
-      v:teardown()
-    end
-  end
 
   actions.close_pum(prompt_bufnr)
   if not keepinsert then
     vim.cmd [[stopinsert]]
   end
 
-  vim.api.nvim_win_close(prompt_win, true)
-
-  pcall(vim.cmd, string.format([[silent bdelete! %s]], prompt_bufnr))
+  require("telescope.pickers").on_close_prompt(prompt_bufnr)
   pcall(a.nvim_set_current_win, original_win_id)
 end
 
@@ -590,7 +589,7 @@ end
 
 actions.git_checkout_current_buffer = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
-  local selection = actions.get_selected_entry()
+  local selection = action_state.get_selected_entry()
   if selection == nil then
     print "[telescope] Nothing currently selected"
     return

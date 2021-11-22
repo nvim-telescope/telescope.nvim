@@ -94,9 +94,7 @@ files.live_grep = function(opts)
     end
 
     return flatten { vimgrep_arguments, additional_args, "--", prompt, search_list }
-  end, opts.entry_maker or make_entry.gen_from_vimgrep(
-    opts
-  ), opts.max_results, opts.cwd)
+  end, opts.entry_maker or make_entry.gen_from_vimgrep(opts), opts.max_results, opts.cwd)
 
   pickers.new(opts, {
     prompt_title = "Live Grep",

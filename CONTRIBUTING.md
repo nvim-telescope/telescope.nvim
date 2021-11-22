@@ -6,7 +6,7 @@ Thanks for taking the time to submit code to Telescope if you're reading this! W
 
 ## Documentation with treesitter
 
-We are generating docs based on the tree sitter syntax tree. TJ wrote a grammar that includes the documentation in this syntax tree so we can do take this function header documentation and transform it into vim documentation. All documentation that is part of the returning module will be exported. So example:
+We are generating docs based on the tree sitter syntax tree. TJ wrote a grammar that includes the documentation in this syntax tree so we can do take this function header documentation and transform it into vim documentation. All documentation that is part of the returning module will be exported. For example:
 
 ```lua
 local m = {}
@@ -37,7 +37,7 @@ This guide contains all annotations and we will update it when we add new annota
 
 ## What is missing?
 
-The docgen has some problems on which people can work. This would happen in https://github.com/tjdevries/tree-sitter-lua and documentation of some modules here.
+The docgen has some problems on which people can work. This would happen in [https://github.com/tjdevries/tree-sitter-lua](https://github.com/tjdevries/tree-sitter-lua) and documentation of some modules here.
 I would suggest we are documenting lua/telescope/builtin/init.lua rather than the files itself. We can use that init.lua file as "header" file, so we are not cluttering the other files.
 How to help out with documentation:
 
