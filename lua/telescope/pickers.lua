@@ -8,7 +8,6 @@ local channel = require("plenary.async.control").channel
 local popup = require "plenary.popup"
 
 local actions = require "telescope.actions"
-local action_set = require "telescope.actions.set"
 local config = require "telescope.config"
 local debounce = require "telescope.debounce"
 local deprecated = require "telescope.deprecated"
@@ -47,12 +46,6 @@ function Picker:new(opts)
   if opts.layout_strategy and opts.get_window_options then
     error "layout_strategy and get_window_options are not compatible keys"
   end
-
-  -- Reset actions for any replaced / enhanced actions.
-  -- TODO: Think about how we could remember to NOT have to do this...
-  --        I almost forgot once already, cause I'm not smart enough to always do it.
-  actions._clear()
-  action_set._clear()
 
   deprecated.options(opts)
 
@@ -1304,6 +1297,7 @@ function pickers.on_close_prompt(prompt_bufnr)
   end
 
   picker.close_windows(status)
+  mappings.clear(prompt_bufnr)
 end
 
 function pickers.on_resize_window(prompt_bufnr)

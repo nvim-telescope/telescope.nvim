@@ -14,7 +14,28 @@ local run_replace_or_original = function(replacements, original_func, ...)
   return original_func(...)
 end
 
-action_mt.create = function(mod)
+local append_action_copy = function(new, v, old)
+  table.insert(new, v)
+  new._func[v] = old._func[v]
+  new._static_pre[v] = old._static_pre[v]
+  new._pre[v] = old._pre[v]
+  new._replacements[v] = old._replacements[v]
+  new._static_post[v] = old._static_post[v]
+  new._post[v] = old._post[v]
+end
+
+--TODO(conni2461): Not a fan of this solution/hack. Needs to be addressed
+local all_mts = {}
+
+--- an action is metatable which allows replacement(prepend or append) of the function
+---@class Action
+---@field _func table<string, function>: the original action function
+---@field _static_pre table<string, function>: will allways run before the function even if its replaced
+---@field _pre table<string, function>: the functions that will run before the action
+---@field _replacements table<string, function>: the function that replaces this action
+---@field _static_post table<string, function>: will allways run after the function even if its replaced
+---@field _post table<string, function>: the functions that will run after the action
+action_mt.create = function()
   local mt = {
     __call = function(t, ...)
       local values = {}
@@ -27,7 +48,7 @@ action_mt.create = function(mod)
         end
 
         local result = {
-          run_replace_or_original(t._replacements[action_name], mod[action_name], ...),
+          run_replace_or_original(t._replacements[action_name], t._func[action_name], ...),
         }
         for _, res in ipairs(result) do
           table.insert(values, res)
@@ -45,18 +66,23 @@ action_mt.create = function(mod)
     end,
 
     __add = function(lhs, rhs)
-      local new_actions = {}
+      local new_action = setmetatable({}, action_mt.create())
       for _, v in ipairs(lhs) do
-        table.insert(new_actions, v)
+        append_action_copy(new_action, v, lhs)
       end
 
       for _, v in ipairs(rhs) do
-        table.insert(new_actions, v)
+        append_action_copy(new_action, v, rhs)
+      end
+      new_action.clear = function()
+        lhs.clear()
+        rhs.clear()
       end
 
-      return setmetatable(new_actions, getmetatable(lhs))
+      return new_action
     end,
 
+    _func = {},
     _static_pre = {},
     _pre = {},
     _replacements = {},
@@ -120,33 +146,47 @@ action_mt.create = function(mod)
     return self
   end
 
+  table.insert(all_mts, mt)
   return mt
 end
 
-action_mt.transform = function(k, mt, mod, v)
+action_mt.transform = function(k, mt, _, v)
   local res = setmetatable({ k }, mt)
   if type(v) == "table" then
     res._static_pre[k] = v.pre
     res._static_post[k] = v.post
-    mod[k] = v.action
+    res._func[k] = v.action
+  else
+    res._func[k] = v
   end
   return res
 end
 
 action_mt.transform_mod = function(mod)
-  local mt = action_mt.create(mod)
-
   -- Pass the metatable of the module if applicable.
   --    This allows for custom errors, lookups, etc.
   local redirect = setmetatable({}, getmetatable(mod) or {})
 
   for k, v in pairs(mod) do
-    redirect[k] = action_mt.transform(k, mt, mod, v)
+    local mt = action_mt.create()
+    redirect[k] = action_mt.transform(k, mt, _, v)
   end
 
-  redirect._clear = mt.clear
+  redirect._clear = function()
+    for k, v in pairs(redirect) do
+      if k ~= "_clear" then
+        pcall(v.clear)
+      end
+    end
+  end
 
   return redirect
+end
+
+action_mt.clear_all = function()
+  for _, v in ipairs(all_mts) do
+    pcall(v.clear)
+  end
 end
 
 return action_mt
