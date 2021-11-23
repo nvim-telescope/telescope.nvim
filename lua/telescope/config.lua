@@ -120,8 +120,7 @@ local layout_config_description = string.format(
     Allows setting defaults for all strategies as top level options and
     for overriding for specific options.
     For example, the default values below set the default width to 80%% of
-    the screen width for all strategies except 'center', which has width
-    of 50%% of the screen width.
+    the screen width for all strategies except 'bottom_pane'.
 
     Default: %s
 ]],
