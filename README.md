@@ -299,6 +299,8 @@ Built-in functions. Ready to be bound to any key you like.
 | Functions                                   | Description                                                                                                               |
 |---------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
 | `builtin.lsp_references`                    | Lists LSP references for word under the cursor                                                                            |
+| `builtin.lsp_incoming_calls`                | Lists LSP incoming calls for word under the cursor                                                                        |
+| `builtin.lsp_outgoing_calls`                | Lists LSP outgoing calls for word under the cursor                                                                        |
 | `builtin.lsp_document_symbols`              | Lists LSP document symbols in the current buffer                                                                          |
 | `builtin.lsp_workspace_symbols`             | Lists LSP document symbols in the current workspace                                                                       |
 | `builtin.lsp_dynamic_workspace_symbols`     | Dynamically Lists LSP for all workspace symbols                                                                           |

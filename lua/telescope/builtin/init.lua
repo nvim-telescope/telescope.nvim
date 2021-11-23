@@ -378,6 +378,18 @@ builtin.jumplist = require_on_exported_call("telescope.builtin.internal").jumpli
 ---@field fname_width number: defines the width of the filename section (default: 30)
 builtin.lsp_references = require_on_exported_call("telescope.builtin.lsp").references
 
+--- Lists LSP incoming calls for word under the cursor, jumps to reference on `<cr>`
+---@param opts table: options to pass to the picker
+---@field show_line boolean: show results text (default: true)
+---@field trim_text boolean: trim results text (default: false)
+builtin.lsp_incoming_calls = require_on_exported_call("telescope.builtin.lsp").incoming_calls
+
+--- Lists LSP outgoing calls for word under the cursor, jumps to reference on `<cr>`
+---@param opts table: options to pass to the picker
+---@field show_line boolean: show results text (default: true)
+---@field trim_text boolean: trim results text (default: false)
+builtin.lsp_outgoing_calls = require_on_exported_call("telescope.builtin.lsp").outgoing_calls
+
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
