@@ -234,12 +234,6 @@ mappings.execute_keymap = function(prompt_bufnr, keymap_identifier)
 end
 
 mappings.clear = function(prompt_bufnr)
-  require("telescope.actions.mt").clear_all()
-  -- TODO(conni2461): This seems like the better solution but it won't clear actions that were never mapped
-  -- for _, v in ipairs(keymap_store[prompt_bufnr]) do
-  --   pcall(v.clear)
-  -- end
-
   keymap_store[prompt_bufnr] = nil
 end
 

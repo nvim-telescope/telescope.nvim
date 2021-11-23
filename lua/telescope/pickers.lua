@@ -53,6 +53,14 @@ function Picker:new(opts)
 
   deprecated.options(opts)
 
+  -- We need to clear at the beginning not on close because after close we can still have select:post
+  -- etc ...
+  require("telescope.actions.mt").clear_all()
+  -- TODO(conni2461): This seems like the better solution but it won't clear actions that were never mapped
+  -- for _, v in ipairs(keymap_store[prompt_bufnr]) do
+  --   pcall(v.clear)
+  -- end
+
   local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
 
   local obj = setmetatable({
