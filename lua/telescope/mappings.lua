@@ -37,7 +37,7 @@ mappings.default_mappings = config.values.default_mappings
     },
 
     n = {
-      ["<esc>"] = actions.close,
+      ["q"] = actions.close,
       ["<CR>"] = actions.select_default,
       ["<C-x>"] = actions.select_horizontal,
       ["<C-v>"] = actions.select_vertical,
@@ -49,11 +49,11 @@ mappings.default_mappings = config.values.default_mappings
       ["<M-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
 
       -- TODO: This would be weird if we switch the ordering.
-      ["j"] = actions.move_selection_next,
+      ["i"] = actions.move_selection_next,
       ["k"] = actions.move_selection_previous,
-      ["H"] = actions.move_to_top,
+      ["I"] = actions.move_to_top,
       ["M"] = actions.move_to_middle,
-      ["L"] = actions.move_to_bottom,
+      ["K"] = actions.move_to_bottom,
 
       ["<Down>"] = actions.move_selection_next,
       ["<Up>"] = actions.move_selection_previous,
