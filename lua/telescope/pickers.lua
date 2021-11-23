@@ -461,14 +461,12 @@ function Picker:find()
 
   -- TODO: Use WinLeave as well?
   local on_buf_leave = string.format(
-    [[  autocmd BufLeave <buffer=%s> ++nested ++once :silent lua require('telescope.pickers').on_close_prompt(%s)]],
-    prompt_bufnr,
+    [[  autocmd BufLeave <buffer> ++nested ++once :silent lua require('telescope.pickers').on_close_prompt(%s)]],
     prompt_bufnr
   )
 
   local on_vim_resize = string.format(
-    [[  autocmd VimResized <buffer=%s> ++nested :lua require('telescope.pickers').on_resize_window(%s)]],
-    prompt_bufnr,
+    [[  autocmd VimResized <buffer> ++nested :lua require('telescope.pickers').on_resize_window(%s)]],
     prompt_bufnr
   )
 
@@ -672,8 +670,6 @@ function Picker:set_prompt(str)
 end
 
 function Picker.close_windows(status)
-  -- make sure we don't have BufLeave autocmd.
-  vim.cmd(string.format([[ autocmd! PickerInsert BufLeave <buffer=%s> ]], status.prompt_bufnr))
   local prompt_win = status.prompt_win
   local results_win = status.results_win
   local preview_win = status.preview_win
@@ -682,7 +678,6 @@ function Picker.close_windows(status)
   local results_border_win = status.results_border_win
   local preview_border_win = status.preview_border_win
 
-  utils.win_delete("prompt_win", prompt_win, true, true)
   utils.win_delete("results_win", results_win, true, true)
   utils.win_delete("preview_win", preview_win, true, true)
 
@@ -690,13 +685,9 @@ function Picker.close_windows(status)
   utils.win_delete("results_border_win", results_border_win, true, true)
   utils.win_delete("preview_border_win", preview_border_win, true, true)
 
-  -- Buffers should be deleted but it may be also the case that buffer was swapped in window
-  -- so make sure that buffers created in Picker are deleted.
-  utils.buf_delete(status.prompt_bufnr)
-  utils.buf_delete(status.results_bufnr)
-  utils.buf_delete(status.preview_bufnr)
-
-  -- vim.cmd(string.format("bdelete! %s", status.prompt_bufnr))
+  vim.defer_fn(function()
+    utils.win_delete("prompt_win", prompt_win, true)
+  end, 10)
 
   state.clear_status(status.prompt_bufnr)
 end
