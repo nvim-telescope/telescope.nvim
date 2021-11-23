@@ -3,7 +3,9 @@ local action_set = require "telescope.actions.set"
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 
-local eq = assert.are.same
+local eq = function(a, b)
+  assert.are.same(a, b)
+end
 
 describe("actions", function()
   it("should allow creating custom actions", function()
@@ -205,29 +207,6 @@ describe("actions", function()
     eq(true, called_post)
   end)
 
-  it("static_pre static_post", function()
-    local called_pre = false
-    local called_post = false
-    local static_post = 0
-    local a = transform_mod {
-      x = {
-        pre = function()
-          called_pre = true
-        end,
-        action = function()
-          return "x"
-        end,
-        post = function()
-          called_post = true
-        end,
-      },
-    }
-
-    eq("x", a.x())
-    eq(true, called_pre)
-    eq(true, called_post)
-  end)
-
   it("can call both", function()
     local a = transform_mod {
       x = function()
@@ -317,102 +296,6 @@ describe("actions", function()
       return string.format("modified: %s", bufnr)
     end)
     eq("modified: 5", a.x(5))
-  end)
-
-  it("handles add with two different tables", function()
-    local count_a = 0
-    local count_b = 0
-    local a = transform_mod {
-      x = function()
-        count_a = count_a + 1
-      end,
-    }
-    local b = transform_mod {
-      y = function()
-        count_b = count_b + 1
-      end,
-    }
-
-    local called_count = 0
-    local count_inc = function()
-      called_count = called_count + 1
-    end
-
-    a.x:enhance {
-      post = count_inc,
-    }
-    b.y:enhance {
-      post = count_inc,
-    }
-
-    local x_plus_y = a.x + b.y
-    x_plus_y()
-
-    eq(2, called_count)
-    eq(1, count_a)
-    eq(1, count_b)
-  end)
-
-  it("handles tripple concat with static pre post", function()
-    local count_a = 0
-    local count_b = 0
-    local count_c = 0
-    local static_pre = 0
-    local static_post = 0
-    local a = transform_mod {
-      x = {
-        pre = function()
-          static_pre = static_pre + 1
-        end,
-        action = function()
-          count_a = count_a + 1
-        end,
-        post = function()
-          static_post = static_post + 1
-        end,
-      },
-    }
-    local b = transform_mod {
-      y = {
-        pre = function()
-          static_pre = static_pre + 1
-        end,
-        action = function()
-          count_b = count_b + 1
-        end,
-        post = function()
-          static_post = static_post + 1
-        end,
-      },
-    }
-    local c = transform_mod {
-      z = {
-        pre = function()
-          static_pre = static_pre + 1
-        end,
-        action = function()
-          count_c = count_c + 1
-        end,
-        post = function()
-          static_post = static_post + 1
-        end,
-      },
-    }
-
-    local replace_count = 0
-    a.x:replace(function()
-      replace_count = replace_count + 1
-    end)
-
-    local x_plus_y_plus_z = a.x + b.y + c.z
-    x_plus_y_plus_z()
-
-    eq(0, count_a)
-    eq(1, count_b)
-    eq(1, count_c)
-    eq(1, replace_count)
-    eq(3, static_pre)
-    eq(3, static_post)
   end)
 
   describe("action_set", function()
