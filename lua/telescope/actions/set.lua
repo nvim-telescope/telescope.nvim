@@ -124,7 +124,7 @@ action_set.edit = function(prompt_bufnr, command)
 
   require("telescope.actions").close(prompt_bufnr)
 
-  if entry_bufnr then
+  if entry_bufnr and vim.api.nvim_buf_is_loaded(entry_bufnr) then
     edit_buffer(command, entry_bufnr)
   else
     -- check if we didn't pick a different buffer
