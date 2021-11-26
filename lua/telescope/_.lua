@@ -57,14 +57,17 @@ end
 
 M.spawn = function(opts)
   local self = AsyncJob.new(opts)
-
-  self.handle = uv.spawn(
+  self.handle, self.pid = uv.spawn(
     self.command,
     self.uv_opts,
     async.void(function()
       self:close(false)
     end)
   )
+
+  if not self.handle then
+    error(debug.traceback("Failed to spawn process: " .. vim.inspect(self)))
+  end
 
   return self
 end
