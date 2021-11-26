@@ -115,7 +115,7 @@ do
     local start, _, filename, lnum, col, text = string.find(t.value, [[([^:]+):(%d+):(%d+):(.*)]])
 
     -- Handle Windows drive letter (e.g. "C:") at the beginning (if present)
-    if Path.path_sep == "\\" and start == 3 then
+    if Path.path.sep == "\\" and start == 3 then
       filename = string.sub(t.value, 1, 3) .. filename
     end
 
