@@ -4,3 +4,4 @@ vim.opt_local.formatoptions:remove "c"
 
 -- There's also no reason to enable textwidth here anyway
 vim.opt_local.textwidth = 0
+vim.opt_local.scrollbind = false
