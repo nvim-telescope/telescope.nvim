@@ -374,6 +374,7 @@ previewers.new_buffer_previewer = function(opts)
       vim.api.nvim_win_set_option(status.preview_win, "signcolumn", "no")
       vim.api.nvim_win_set_option(status.preview_win, "foldlevel", 100)
       vim.api.nvim_win_set_option(status.preview_win, "wrap", false)
+      vim.api.nvim_win_set_option(status.preview_win, "scrollbind", false)
 
       self.state.winid = status.preview_win
       self.state.bufname = nil
