@@ -1,4 +1,6 @@
 local strings = require "plenary.strings"
+local state = require "telescope.state"
+local resolve = require "telescope.config.resolve"
 
 local entry_display = {}
 entry_display.truncate = strings.truncate
@@ -8,11 +10,19 @@ entry_display.create = function(configuration)
   for _, v in ipairs(configuration.items) do
     if v.width then
       local justify = v.right_justify
+      local width
       table.insert(generator, function(item)
+        if width == nil then
+          local status = state.get_status(vim.api.nvim_get_current_buf())
+          local s = {}
+          s[1] = vim.api.nvim_win_get_width(status.results_win) - #status.picker.selection_caret
+          s[2] = vim.api.nvim_win_get_height(status.results_win)
+          width = resolve.resolve_width(v.width)(nil, s[1], s[2])
+        end
         if type(item) == "table" then
-          return strings.align_str(entry_display.truncate(item[1], v.width), v.width, justify), item[2]
+          return strings.align_str(entry_display.truncate(item[1], width), width, justify), item[2]
         else
-          return strings.align_str(entry_display.truncate(item, v.width), v.width, justify)
+          return strings.align_str(entry_display.truncate(item, width), width, justify)
         end
       end)
     else

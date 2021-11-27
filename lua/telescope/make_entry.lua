@@ -290,7 +290,7 @@ function make_entry.gen_from_quickfix(opts)
     separator = "▏",
     items = {
       { width = 8 },
-      { width = 50 },
+      { width = 0.45 },
       { remaining = true },
     },
   }
@@ -666,9 +666,9 @@ end
 
 function make_entry.gen_from_picker(opts)
   local displayer = entry_display.create {
-    separator = " ",
+    separator = " │ ",
     items = {
-      { width = 30 },
+      { width = 0.5 },
       { remaining = true },
     },
   }
@@ -957,17 +957,17 @@ function make_entry.gen_from_lsp_diagnostics(opts)
     end
   end
 
-  local layout = {
+  local display_items = {
     { width = utils.if_nil(signs, 8, 10) },
     { remaining = true },
   }
-  local line_width = utils.get_default(opts.line_width, 45)
+  local line_width = utils.get_default(opts.line_width, 0.5)
   if not utils.is_path_hidden(opts) then
-    table.insert(layout, 2, { width = line_width })
+    table.insert(display_items, 2, { width = line_width })
   end
   local displayer = entry_display.create {
     separator = "▏",
-    items = layout,
+    items = display_items,
   }
 
   local make_display = function(entry)
@@ -1049,7 +1049,7 @@ function make_entry.gen_from_commands(_)
   local displayer = entry_display.create {
     separator = "▏",
     items = {
-      { width = 25 },
+      { width = 0.2 },
       { width = 4 },
       { width = 4 },
       { width = 11 },
