@@ -42,7 +42,7 @@ Telescope Wiki</sub>
 This section should guide you to run your first builtin pickers.
 
 [Neovim (v0.5.1)](https://github.com/neovim/neovim/releases/tag/v0.5.1) or the
-latest neovim nighly commit is required for `telescope.nvim` to work.
+latest neovim nightly commit is required for `telescope.nvim` to work.
 
 ### Suggested dependencies
 
