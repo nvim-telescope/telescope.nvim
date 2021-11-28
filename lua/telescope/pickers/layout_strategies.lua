@@ -807,8 +807,7 @@ layout_strategies.bottom_pane = make_documented_layout(
     results.height = height - prompt.height - (2 * bs)
     preview.height = results.height - bs
 
-    local width_opt = layout_config.width
-    local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
+    local width
 
     -- Width
     prompt.width = max_columns - 2 * bs
