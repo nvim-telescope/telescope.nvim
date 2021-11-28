@@ -398,6 +398,7 @@ layout_strategies.center = make_documented_layout(
   "center",
   vim.tbl_extend("error", shared_options, {
     preview_cutoff = "When lines are less than this value, the preview will be disabled",
+    prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -527,10 +528,7 @@ layout_strategies.cursor = make_documented_layout(
       -- Cap over/undersized width (with preview)
       width, w_space = calc_size_and_spacing(width, max_columns, bs, 2, 4, 0)
 
-      preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, _)
-        -- By default, previewer takes 2/3 of the layout
-        return 2 * math.floor(width / 3)
-      end))(self, width, max_lines)
+      preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, 2 / 3))(self, width, max_lines)
       prompt.width = width - preview.width - w_space
       results.width = prompt.width
     else
@@ -779,6 +777,7 @@ layout_strategies.bottom_pane = make_documented_layout(
   "bottom_pane",
   vim.tbl_extend("error", shared_options, {
     preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|" },
+    preview_cutoff = "When columns are less than this value, the preview will be disabled",
     prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
   }),
   function(self, max_columns, max_lines, layout_config)
@@ -807,19 +806,13 @@ layout_strategies.bottom_pane = make_documented_layout(
     results.height = height - prompt.height - (2 * bs)
     preview.height = results.height - bs
 
-    local width
-
     -- Width
     prompt.width = max_columns - 2 * bs
-    local w_space
     if self.previewer and max_columns >= layout_config.preview_cutoff then
       -- Cap over/undersized width (with preview)
-      width, w_space = calc_size_and_spacing(max_columns, max_columns, bs, 2, 4, 0)
+      local width, w_space = calc_size_and_spacing(max_columns, max_columns, bs, 2, 4, 0)
 
-      preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, _)
-        -- By default, previewer takes 1/2 of the layout
-        return math.floor(width / 2)
-      end))(self, width, max_lines)
+      preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, 0.5))(self, width, max_lines)
       results.width = width - preview.width - w_space
     else
       results.width = prompt.width
