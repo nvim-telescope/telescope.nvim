@@ -108,7 +108,7 @@ local layout_config_defaults = {
   bottom_pane = {
     height = 25,
     prompt_position = "top",
-    preview_cutoff = 40,
+    preview_cutoff = 120,
   },
 }
 
