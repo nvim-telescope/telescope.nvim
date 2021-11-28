@@ -778,6 +778,7 @@ end)
 layout_strategies.bottom_pane = make_documented_layout(
   "bottom_pane",
   vim.tbl_extend("error", shared_options, {
+    preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|" },
     prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
   }),
   function(self, max_columns, max_lines, layout_config)
@@ -806,13 +807,22 @@ layout_strategies.bottom_pane = make_documented_layout(
     results.height = height - prompt.height - (2 * bs)
     preview.height = results.height - bs
 
+    local width_opt = layout_config.width
+    local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
+
     -- Width
     prompt.width = max_columns - 2 * bs
-    -- TODO(l-kershaw): add a preview_cutoff option
-    if self.previewer then
-      -- TODO(l-kershaw): make configurable
-      results.width = math.floor(max_columns / 2) - 2 * bs
-      preview.width = max_columns - results.width - 4 * bs
+    local w_space
+    if self.previewer and max_columns >= layout_config.preview_cutoff then
+      -- Cap over/undersized width (with preview)
+      width, w_space = calc_size_and_spacing(width, max_columns, bs, 2, 4, 0)
+
+      preview.width = resolve.resolve_width(if_nil(layout_config.preview_width, function(_, _)
+        -- By default, previewer takes 1/2 of the layout
+        return 2 * math.floor(width / 2)
+      end))(self, width, max_lines)
+      prompt.width = width - preview.width - w_space
+      results.width = prompt.width
     else
       results.width = prompt.width
       preview.width = 0
