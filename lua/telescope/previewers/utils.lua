@@ -97,7 +97,7 @@ end
 local treesitter_attach = function(bufnr, ft)
   local lang = ts_parsers.ft_to_lang(ft)
   if not ts_configs.is_enabled("highlight", lang, bufnr) then
-      return false
+    return false
   end
 
   local config = ts_configs.get_module "highlight"
