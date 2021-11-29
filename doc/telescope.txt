@@ -115,6 +115,7 @@ telescope.setup({opts})                                    *telescope.setup()*
         Default: {
           bottom_pane = {
             height = 25,
+            preview_cutoff = 120,
             prompt_position = "top"
           },
           center = {
@@ -1669,6 +1670,9 @@ layout_strategies.center()                        *layout_strategies.center()*
 
     `picker.layout_config` unique options:
       - preview_cutoff: When lines are less than this value, the preview will be disabled
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
 
 
 layout_strategies.cursor()                        *layout_strategies.cursor()*
