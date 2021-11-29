@@ -159,10 +159,10 @@ function Picker:new(opts)
   return obj
 end
 
---- Take a row and get an index.
+--- Take an index and get a row.
 ---@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
----@param index number: The row being displayed
----@return number The row for the picker to display in
+---@param index number: The index in line_manager
+---@return number: The row for the picker to display in
 function Picker:get_row(index)
   if self.sorting_strategy == "ascending" then
     return index - 1
@@ -174,7 +174,7 @@ end
 --- Take a row and get an index
 ---@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
 ---@param row number: The row being displayed
----@return number The index in line_manager
+---@return number: The index in line_manager
 function Picker:get_index(row)
   if self.sorting_strategy == "ascending" then
     return row + 1
