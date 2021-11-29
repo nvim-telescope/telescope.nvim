@@ -18,6 +18,8 @@ highlight default link TelescopeNormal Normal
 
 " "Normal" in the preview floating windows created by telescope.
 highlight default link TelescopePreviewNormal Normal
+highlight default link TelescopePromptNormal TelescopeNormal
+highlight default link TelescopeResultsNormal TelescopeNormal
 
 " Border highlight groups.
 "   Use TelescopeBorder to override the default.

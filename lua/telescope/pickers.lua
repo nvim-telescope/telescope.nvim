@@ -320,11 +320,11 @@ function Picker:find()
 
   -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
   popup_opts.results.minheight = popup_opts.results.height
-  popup_opts.results.highlight = "TelescopeNormal"
+  popup_opts.results.highlight = "TelescopeResultsNormal"
   popup_opts.results.borderhighlight = "TelescopeResultsBorder"
   popup_opts.results.titlehighlight = "TelescopeResultsTitle"
   popup_opts.prompt.minheight = popup_opts.prompt.height
-  popup_opts.prompt.highlight = "TelescopeNormal"
+  popup_opts.prompt.highlight = "TelescopePromptNormal"
   popup_opts.prompt.borderhighlight = "TelescopePromptBorder"
   popup_opts.prompt.titlehighlight = "TelescopePromptTitle"
   if popup_opts.preview then
