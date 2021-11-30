@@ -432,7 +432,8 @@ telescope.setup({opts})                                    *telescope.setup()*
           "--with-filename",
           "--line-number",
           "--column",
-          "--smart-case"
+          "--smart-case",
+          "--trim"
         }
 
                                               *telescope.defaults.use_less*
