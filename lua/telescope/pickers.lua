@@ -557,6 +557,9 @@ function Picker:recalculate_layout()
       self.preview_win = preview_win
       self.preview_border_win = preview_border_win
       self.preview_border = preview_opts and preview_opts.border
+      if self.previewer and self.previewer.state and self.previewer.state.winid then
+        self.previewer.state.winid = preview_win
+      end
 
       -- Move prompt and results after preview created
       vim.defer_fn(function()
