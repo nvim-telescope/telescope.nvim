@@ -136,6 +136,7 @@ action_set.edit = function(prompt_bufnr, command)
   end
 
   if row and col then
+    vim.cmd [[ normal! m' ]] -- adds current cursor position to the jump list
     local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, { row, col })
     if not ok then
       log.debug("Failed to move to cursor:", err_msg, row, col)
