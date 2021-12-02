@@ -129,7 +129,12 @@ action_set.edit = function(prompt_bufnr, command)
 
   local entry_bufnr = entry.bufnr
 
+  local picker = action_state.get_current_picker(prompt_bufnr)
   require("telescope.actions").close(prompt_bufnr)
+
+  if picker.push_cursor_on_edit then
+    vim.cmd "normal! m'"
+  end
 
   if entry_bufnr then
     if not vim.api.nvim_buf_get_option(entry_bufnr, "buflisted") then
