@@ -101,6 +101,7 @@ lsp.implementations = function(opts)
 end
 
 lsp.document_symbols = function(opts)
+  local bufnr = vim.api.nvim_get_current_buf()
   local params = vim.lsp.util.make_position_params()
   vim.lsp.buf_request(0, "textDocument/documentSymbol", params, function(err, result, _ctx, _config)
     if err then
@@ -113,9 +114,7 @@ lsp.document_symbols = function(opts)
       return
     end
 
-    local locations = {}
-    vim.list_extend(locations, vim.lsp.util.symbols_to_items(result, 0) or {})
-
+    local locations = vim.lsp.util.symbols_to_items(result or {}, bufnr) or {}
     locations = utils.filter_symbols(locations, opts)
     if locations == nil then
       -- error message already printed in `utils.filter_symbols`
@@ -332,6 +331,7 @@ lsp.range_code_actions = function(opts)
 end
 
 lsp.workspace_symbols = function(opts)
+  local bufnr = vim.api.nvim_get_current_buf()
   local params = { query = opts.query or "" }
   vim.lsp.buf_request(0, "workspace/symbol", params, function(err, server_result, _ctx, _config)
     if err then
@@ -339,15 +339,7 @@ lsp.workspace_symbols = function(opts)
       return
     end
 
-    local locations = {}
-
-    if server_result and not vim.tbl_isempty(server_result) then
-      -- Some LSPs (like Clangd and intelephense) might return { { result = {} } }, so make sure we have result
-      if server_result and server_result.result and not vim.tbl_isempty(server_result.result) then
-        vim.list_extend(locations, vim.lsp.util.symbols_to_items(server_result.result, 0) or {})
-      end
-    end
-
+    local locations = vim.lsp.util.symbols_to_items(server_result or {}, bufnr) or {}
     locations = utils.filter_symbols(locations, opts)
     if locations == nil then
       -- error message already printed in `utils.filter_symbols`
