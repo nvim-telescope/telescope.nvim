@@ -46,7 +46,7 @@ end
 
 git.commits = function(opts)
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
-  local git_command = vim.F.if_nil(opts.git_command, { "git", "log", "--pretty=oneline", "--abbrev-commit", "--", "." })
+  local git_command = vim.F.if_nil(opts.git_command, { "git", "log", "--pretty=oneline", "--", "." })
 
   pickers.new(opts, {
     prompt_title = "Git Commits",
@@ -103,7 +103,7 @@ git.bcommits = function(opts)
   opts.current_line = (opts.current_file == nil) and get_current_buf_line(0) or nil
   opts.current_file = vim.F.if_nil(opts.current_file, vim.fn.expand "%:p")
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
-  local git_command = vim.F.if_nil(opts.git_command, { "git", "log", "--pretty=oneline", "--abbrev-commit" })
+  local git_command = vim.F.if_nil(opts.git_command, { "git", "log", "--pretty=oneline" })
 
   pickers.new(opts, {
     prompt_title = "Git BCommits",

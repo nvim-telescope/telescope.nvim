@@ -256,7 +256,7 @@ function make_entry.gen_from_git_commits(opts)
 
   local make_display = function(entry)
     return displayer {
-      { entry.value, "TelescopeResultsIdentifier" },
+      { entry.value:sub(0,8), "TelescopeResultsIdentifier" },
       entry.msg,
     }
   end
@@ -273,12 +273,17 @@ function make_entry.gen_from_git_commits(opts)
       msg = "<empty commit message>"
     end
 
+    local virt_lines = function(self)
+      return {{{"   " .. self.value, "Comment"}}}
+    end
+
     return {
       value = sha,
       ordinal = sha .. " " .. msg,
       msg = msg,
       display = make_display,
       current_file = opts.current_file,
+      virt_lines = virt_lines,
     }
   end
 end
