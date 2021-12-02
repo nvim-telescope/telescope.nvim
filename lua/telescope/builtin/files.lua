@@ -166,7 +166,7 @@ files.find_files = function(opts)
 
   if not find_command then
     if 1 == vim.fn.executable "fd" then
-      find_command = { "fd", "--type", "f" }
+      find_command = { "fd", "--type", "f", "--strip-cwd-prefix" }
       if hidden then
         table.insert(find_command, "--hidden")
       end
@@ -183,7 +183,7 @@ files.find_files = function(opts)
         end
       end
     elseif 1 == vim.fn.executable "fdfind" then
-      find_command = { "fdfind", "--type", "f" }
+      find_command = { "fdfind", "--type", "f", "--strip-cwd-prefix" }
       if hidden then
         table.insert(find_command, "--hidden")
       end
