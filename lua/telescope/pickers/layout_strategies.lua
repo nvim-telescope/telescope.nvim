@@ -1,6 +1,20 @@
 ---@tag telescope.layout
 
 ---@brief [[
+--- The layout of telescope pickers can be adjusted using the
+--- |telescope.defaults.layout_strategy| and |telescope.defaults.layout_config| options.
+--- For example, the following configuration changes the default layout strategy and the
+--- default size of the picker:
+--- <code>
+---   require('telescope').setup{
+---     defaults = {
+---       layout_strategy = 'vertical',
+---       layout_config = { height = 0.95 },
+---     },
+---   }
+--- </code>
+---
+--- ────────────────────────────────────────────────────────────────────────────────
 ---
 --- Layout strategies are different functions to position telescope.
 ---
