@@ -1,0 +1,11 @@
+{
+    "mercury" : {"How close to Earth?" : "the closest most of the time"},
+    "venus" : {"How hot?" : "too hot"},
+    "Moon" : {"Planetary status:" : "not"},
+    "mars" : {"Average distance from Sun:" : "228 million kilometers"},
+    "jupiter" : {"Greek alter ego:" : "Zeus"},
+    "saturn" : {"Rings:" : "affirmative"},
+    "uranus" : {"Jokes:" : "lots"},
+    "neptune" : {"Discovered:" : "1846"},
+    "pluto" : {"Planetary status:" : "not anymore 😭"}
+}

@@ -81,6 +81,15 @@ do
       end
     end
 
+    mt_file_entry.virt_lines = (function()
+      if not opts.full_details then return end
+      return function(self)
+        local retpath = Path:new({ self.cwd, self.value }):absolute()
+        local stat = vim.loop.fs_stat(retpath)
+        return { { {"    Size: ", "Function"}, {stat.size .. " bytes"} } }
+      end
+    end)()
+
     mt_file_entry.__index = function(t, k)
       local raw = rawget(mt_file_entry, k)
       if raw then
@@ -256,7 +265,7 @@ function make_entry.gen_from_git_commits(opts)
 
   local make_display = function(entry)
     return displayer {
-      { entry.value:sub(0,8), "TelescopeResultsIdentifier" },
+      { entry.value:sub(0, 8), "TelescopeResultsIdentifier" },
       entry.msg,
     }
   end
@@ -274,7 +283,7 @@ function make_entry.gen_from_git_commits(opts)
     end
 
     local virt_lines = function(self)
-      return {{{"   " .. self.value, "Comment"}}}
+      return { { { "   " .. self.value, "Comment" } } }
     end
 
     return {

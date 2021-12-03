@@ -910,14 +910,7 @@ function Picker:set_selection(row)
       log.debug "Invalid buf somehow..."
       return
     end
-    a.nvim_buf_set_text(
-      results_bufnr,
-      row,
-      0,
-      row,
-      #self.entry_prefix,
-      { self.selection_caret }
-    )
+    a.nvim_buf_set_text(results_bufnr, row, 0, row, #self.entry_prefix, { self.selection_caret })
 
     -- don't highlight the ' ' at the end of caret
     self.highlighter:hi_selection(row, caret:sub(1, -2))
@@ -990,6 +983,16 @@ function Picker:cycle_previewers(next)
   end
 end
 
+local left_pad_virt_lines = function(pad, virt_lines)
+  virt_lines = vim.deepcopy(virt_lines)
+  for k, l in ipairs(virt_lines) do
+    if l[1] then
+      virt_lines[k][1][1] = string.rep(" ", pad) .. virt_lines[k][1][1]
+    end
+  end
+  return virt_lines
+end
+
 function Picker:entry_adder(index, entry, _, insert)
   if not entry then
     return
@@ -1038,10 +1041,9 @@ function Picker:entry_adder(index, entry, _, insert)
 
   local set_ok, msg = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + offset, false, { display })
   if entry.virt_lines then
-    dump(entry)
     local opts = {
-      virt_lines = entry.virt_lines(entry),
-      virt_lines_above = entry.virt_lines_above
+      virt_lines = left_pad_virt_lines(prefix:len() + 1, entry:virt_lines()),
+      virt_lines_above = entry.virt_lines_above,
     }
     pcall(vim.api.nvim_buf_set_extmark, self.results_bufnr, ns_telescope_virt_lines, row, prefix:len(), opts)
   end
