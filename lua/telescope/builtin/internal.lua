@@ -170,11 +170,12 @@ internal.planets = function(opts)
   local globbed_files = vim.fn.globpath(base_directory .. "/data/memes/planets/", "*", true, true)
   local acceptable_files = {}
   for _, v in ipairs(globbed_files) do
-    if show_pluto or not v:find "pluto" then
+    if not v:find "json" and (show_pluto or not v:find "pluto") then
       table.insert(acceptable_files, vim.fn.fnamemodify(v, ":t"))
     end
   end
 
+  local stats
   pickers.new({
     prompt_title = "Planets",
     finder = finders.new_table {
@@ -183,11 +184,22 @@ internal.planets = function(opts)
         return {
           ordinal = line,
           display = line,
+          virt_lines = function(self)
+            if stats == nil then
+              stats = vim.json.decode(Path:new(base_directory .. "/data/memes/planets/stats.json"):read())
+            end
+            local v_lines = {}
+            for k, v in pairs(stats[self.ordinal] or {}) do
+              table.insert(v_lines, { {k,"Function"}, {" "}, {v,"Comment"} })
+            end
+            dump(v_lines)
+            return v_lines
+          end,
           filename = base_directory .. "/data/memes/planets/" .. line,
         }
       end,
     },
-    previewer = previewers.cat.new(opts),
+    previewer = opts.previewer or opts.previewer == nil and previewers.cat.new(opts) or opts.previewer,
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
       actions.select_default:replace(function()

@@ -30,6 +30,7 @@ local get_default = utils.get_default
 local ns_telescope_matching = a.nvim_create_namespace "telescope_matching"
 local ns_telescope_prompt = a.nvim_create_namespace "telescope_prompt"
 local ns_telescope_prompt_prefix = a.nvim_create_namespace "telescope_prompt_prefix"
+local ns_telescope_virt_lines = a.nvim_create_namespace "telescope_virt_lines"
 
 local pickers = {}
 
@@ -208,7 +209,7 @@ function Picker:clear_extra_rows(results_bufnr)
     return
   end
 
-  local worst_line, ok, msg
+  local worst_line, ok, msg, vl_ok, vls
   if self.sorting_strategy == "ascending" then
     local num_results = self.manager:num_results()
     worst_line = self.max_results - num_results
@@ -217,12 +218,24 @@ function Picker:clear_extra_rows(results_bufnr)
       return
     end
 
+    vl_ok, vls = pcall(
+      vim.api.nvim_buf_get_extmarks,
+      results_bufnr,
+      ns_telescope_virt_lines,
+      num_results == 0 and 0 or num_results + 1, -- don't understand why this adjustment is needed
+      -1,
+      {}
+    )
+    for _, vl in ipairs(vl_ok and vls or {}) do
+      vim.api.nvim_buf_del_extmark(results_bufnr, ns_telescope_virt_lines, vl[1])
+    end
     ok, msg = pcall(vim.api.nvim_buf_set_lines, results_bufnr, num_results, -1, false, {})
   else
     worst_line = self:get_row(self.manager:num_results())
     if worst_line <= 0 then
       return
     end
+    --TODO(l-kershaw): add extmark handling here
 
     local empty_lines = utils.repeated_table(worst_line, "")
     ok, msg = pcall(vim.api.nvim_buf_set_lines, results_bufnr, 0, worst_line, false, empty_lines)
@@ -897,7 +910,7 @@ function Picker:set_selection(row)
       log.debug "Invalid buf somehow..."
       return
     end
-    a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, { display })
+    a.nvim_buf_set_text(results_bufnr, row, 0, row, #self.entry_prefix, { self.selection_caret })
 
     -- don't highlight the ' ' at the end of caret
     self.highlighter:hi_selection(row, caret:sub(1, -2))
@@ -970,6 +983,16 @@ function Picker:cycle_previewers(next)
   end
 end
 
+local left_pad_virt_lines = function(pad, virt_lines)
+  virt_lines = vim.deepcopy(virt_lines)
+  for k, l in ipairs(virt_lines) do
+    if l[1] then
+      virt_lines[k][1][1] = string.rep(" ", pad) .. virt_lines[k][1][1]
+    end
+  end
+  return virt_lines
+end
+
 function Picker:entry_adder(index, entry, _, insert)
   if not entry then
     return
@@ -1017,6 +1040,13 @@ function Picker:entry_adder(index, entry, _, insert)
   end
 
   local set_ok, msg = pcall(vim.api.nvim_buf_set_lines, self.results_bufnr, row, row + offset, false, { display })
+  if entry.virt_lines then
+    local opts = {
+      virt_lines = left_pad_virt_lines(prefix:len() + 1, entry:virt_lines()),
+      virt_lines_above = entry.virt_lines_above,
+    }
+    pcall(vim.api.nvim_buf_set_extmark, self.results_bufnr, ns_telescope_virt_lines, row, prefix:len(), opts)
+  end
   if set_ok then
     if display_highlights then
       self.highlighter:hi_display(row, prefix, display_highlights)
