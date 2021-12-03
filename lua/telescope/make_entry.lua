@@ -113,7 +113,7 @@ do
   local find = (function()
     if Path.path.sep == "\\" then
       return function(t)
-        local start, _, filename, lnum, col, text = string.find(t.value, [[([^:]+):(%d+):(%d+):(.*)]])
+        local start, _, filename, lnum, col, text = string.find(t, [[([^:]+):(%d+):(%d+):(.*)]])
 
         -- Handle Windows drive letter (e.g. "C:") at the beginning (if present)
         if start == 3 then
@@ -124,7 +124,7 @@ do
       end
     else
       return function(t)
-        local _, _, filename, lnum, col, text = string.find(t.value, [[([^:]+):(%d+):(%d+):(.*)]])
+        local _, _, filename, lnum, col, text = string.find(t, [[([^:]+):(%d+):(%d+):(.*)]])
         return filename, lnum, col, text
       end
     end
