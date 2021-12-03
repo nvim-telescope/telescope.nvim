@@ -1,7 +1,6 @@
 local strings = require "plenary.strings"
 local deprecated = require "telescope.deprecated"
 local sorters = require "telescope.sorters"
-local if_nil = vim.F.if_nil
 local os_sep = require("plenary.path").path.sep
 local has_win = vim.fn.has "win32" == 1
 
@@ -69,7 +68,7 @@ config.descriptions = {}
 config.pickers = _TelescopeConfigurationPickers
 
 function config.set_pickers(pickers)
-  pickers = if_nil(pickers, {})
+  pickers = vim.F.if_nil(pickers, {})
 
   for k, v in pairs(pickers) do
     config.pickers[k] = v
@@ -877,8 +876,8 @@ append(
 -- @param tele_defaults table: (optional) a table containing all of the defaults
 --    for telescope [defaults to `telescope_defaults`]
 function config.set_defaults(user_defaults, tele_defaults)
-  user_defaults = if_nil(user_defaults, {})
-  tele_defaults = if_nil(tele_defaults, telescope_defaults)
+  user_defaults = vim.F.if_nil(user_defaults, {})
+  tele_defaults = vim.F.if_nil(tele_defaults, telescope_defaults)
 
   -- Check if using layout keywords outside of `layout_config`
   deprecated.options(user_defaults)
@@ -886,8 +885,8 @@ function config.set_defaults(user_defaults, tele_defaults)
   local function get(name, default_val)
     if name == "layout_config" then
       return smarter_depth_2_extend(
-        if_nil(user_defaults[name], {}),
-        vim.tbl_deep_extend("keep", if_nil(config.values[name], {}), if_nil(default_val, {}))
+        vim.F.if_nil(user_defaults[name], {}),
+        vim.tbl_deep_extend("keep", vim.F.if_nil(config.values[name], {}), vim.F.if_nil(default_val, {}))
       )
     end
     if name == "history" or name == "cache_picker" or name == "preview" then
@@ -896,8 +895,8 @@ function config.set_defaults(user_defaults, tele_defaults)
       end
 
       return smarter_depth_2_extend(
-        if_nil(user_defaults[name], {}),
-        vim.tbl_deep_extend("keep", if_nil(config.values[name], {}), if_nil(default_val, {}))
+        vim.F.if_nil(user_defaults[name], {}),
+        vim.tbl_deep_extend("keep", vim.F.if_nil(config.values[name], {}), vim.F.if_nil(default_val, {}))
       )
     end
     return first_non_null(user_defaults[name], config.values[name], default_val)
