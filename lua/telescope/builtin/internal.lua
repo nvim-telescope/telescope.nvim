@@ -245,7 +245,7 @@ internal.symbols = function(opts)
 
   local results = {}
   for _, source in ipairs(sources) do
-    local data = vim.fn.json_decode(Path:new(source):read())
+    local data = vim.json.decode(Path:new(source):read())
     for _, entry in ipairs(data) do
       table.insert(results, entry)
     end

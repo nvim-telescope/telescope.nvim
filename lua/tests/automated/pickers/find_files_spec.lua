@@ -42,9 +42,9 @@ describe("builtin.find_files", function()
             width = 0.9,
           },
           border = false,
-        }, vim.fn.json_decode([==[%s]==])))
+        }, vim.json.decode([==[%s]==])))
       ]],
-        vim.fn.json_encode(configuration)
+        vim.json.encode(configuration)
       ))
     end)
 
@@ -73,10 +73,10 @@ describe("builtin.find_files", function()
             width = 0.9,
           },
           border = false,
-        }, vim.fn.json_decode([==[%s]==])))
+        }, vim.json.decode([==[%s]==])))
       ]],
         expected,
-        vim.fn.json_encode(configuration)
+        vim.json.encode(configuration)
       ))
     end)
 
@@ -99,9 +99,9 @@ describe("builtin.find_files", function()
         }, vim.tbl_extend("force", {
           disable_devicons = false,
           sorter = require('telescope.sorters').get_fzy_sorter(),
-        }, vim.fn.json_decode([==[%s]==])))
+        }, vim.json.decode([==[%s]==])))
       ]],
-        vim.fn.json_encode(configuration)
+        vim.json.encode(configuration)
       ))
     end)
   end

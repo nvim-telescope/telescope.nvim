@@ -26,8 +26,8 @@
 --- </code>
 ---@brief ]]
 
-if 1 ~= vim.fn.has "nvim-0.5.1" then
-  vim.api.nvim_err_writeln "This plugins requires neovim 0.5.1"
+if 1 ~= vim.fn.has "nvim-0.6.0" then
+  vim.api.nvim_err_writeln "This plugins requires neovim 0.6.0"
   vim.api.nvim_err_writeln "Please update your neovim."
   return
 end
