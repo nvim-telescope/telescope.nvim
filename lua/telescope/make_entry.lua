@@ -259,7 +259,7 @@ function make_entry.gen_from_git_stash()
 
     return {
       value = stash_idx,
-      ordinal = stash_idx,
+      ordinal = commit_info,
       branch_name = branch_name,
       commit_info = commit_info,
       display = make_display,
