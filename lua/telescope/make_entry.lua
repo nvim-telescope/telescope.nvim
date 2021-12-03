@@ -230,15 +230,39 @@ do
 end
 
 function make_entry.gen_from_git_stash()
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = 10 },
+      { width = 15 },
+      { remaining = true },
+    },
+  }
+
+  local make_display = function(entry)
+    return displayer {
+      { entry.value, "TelescopeResultsLineNr" },
+      { entry.branch_name, "TelescopeResultsIdentifier" },
+      entry.commit_info,
+    }
+  end
+
   return function(entry)
     if entry == "" then
       return nil
     end
+
     local splitted = utils.max_split(entry, ": ", 2)
+    local stash_idx = splitted[1]
+    local _, branch_name = string.match(splitted[2], "^([WIP on|On]+) (.+)")
+    local commit_info = splitted[3]
+
     return {
-      value = splitted[1],
-      ordinal = splitted[3],
-      display = splitted[3],
+      value = stash_idx,
+      ordinal = stash_idx,
+      branch_name = branch_name,
+      commit_info = commit_info,
+      display = make_display,
     }
   end
 end
