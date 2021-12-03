@@ -35,6 +35,8 @@ highlight default link TelescopePromptTitle TelescopeTitle
 highlight default link TelescopeResultsTitle TelescopeTitle
 highlight default link TelescopePreviewTitle TelescopeTitle
 
+highlight default link TelescopePromptCounter NonText
+
 " Used for highlighting characters that you match.
 highlight default link TelescopeMatching Special
 

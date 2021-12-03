@@ -1095,7 +1095,7 @@ function Picker:get_status_updater(prompt_win, prompt_bufnr)
     local text = self:get_status_text(opts)
     vim.api.nvim_buf_clear_namespace(prompt_bufnr, ns_telescope_prompt, 0, -1)
     vim.api.nvim_buf_set_extmark(prompt_bufnr, ns_telescope_prompt, 0, 0, {
-      virt_text = { { text, "NonText" } },
+      virt_text = { { text, "TelescopePromptCounter" } },
       virt_text_pos = "right_align",
     })
 
