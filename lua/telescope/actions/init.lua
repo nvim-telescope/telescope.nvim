@@ -832,7 +832,7 @@ end
 actions.delete_buffer = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:delete_selection(function(selection)
-    vim.api.nvim_buf_delete(selection.bufnr, { force = true })
+    vim.api.nvim_buf_delete(selection.bufnr, { force = false })
   end)
 end
 
