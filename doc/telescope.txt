@@ -119,10 +119,10 @@ telescope.setup({opts})                                    *telescope.setup()*
             prompt_position = "top"
           },
           center = {
-            height = 0.9,
+            height = 0.4,
             preview_cutoff = 40,
             prompt_position = "top",
-            width = 0.8
+            width = 0.5
           },
           cursor = {
             height = 0.9,

@@ -93,8 +93,8 @@ local layout_config_defaults = {
   },
 
   center = {
-    width = 0.8,
-    height = 0.9,
+    width = 0.5,
+    height = 0.4,
     preview_cutoff = 40,
     prompt_position = "top",
   },
