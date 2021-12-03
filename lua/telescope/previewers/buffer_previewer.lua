@@ -638,19 +638,43 @@ previewers.git_branch_log = defaulter(function(opts)
       if hstart then
         local hend = hstart + 7
         if hend < #line then
-          vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, "TelescopeResultsIdentifier", i - 1, hstart - 1, hend)
+          pcall(
+            vim.api.nvim_buf_add_highlight,
+            bufnr,
+            ns_previewer,
+            "TelescopeResultsIdentifier",
+            i - 1,
+            hstart - 1,
+            hend
+          )
         end
       end
       local _, cstart = line:find "- %("
       if cstart then
         local cend = string.find(line, "%) ")
         if cend then
-          vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, "TelescopeResultsConstant", i - 1, cstart - 1, cend)
+          pcall(
+            vim.api.nvim_buf_add_highlight,
+            bufnr,
+            ns_previewer,
+            "TelescopeResultsConstant",
+            i - 1,
+            cstart - 1,
+            cend
+          )
         end
       end
       local dstart, _ = line:find " %(%d"
       if dstart then
-        vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, "TelescopeResultsSpecialComment", i - 1, dstart, #line)
+        pcall(
+          vim.api.nvim_buf_add_highlight,
+          bufnr,
+          ns_previewer,
+          "TelescopeResultsSpecialComment",
+          i - 1,
+          dstart,
+          #line
+        )
       end
     end
   end
