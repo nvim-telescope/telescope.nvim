@@ -348,24 +348,19 @@ git.status = function(opts)
 end
 
 local set_opts_cwd = function(opts)
-  print(vim.inspect(opts))
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)
   else
     opts.cwd = vim.loop.cwd()
   end
-  print(opts.cwd)
 
   -- Find root of git directory and remove trailing newline characters
   local git_root, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
-  print(vim.inspect(git_root), ret)
   local use_git_root = utils.get_default(opts.use_git_root, true)
 
   if ret ~= 0 then
     local in_worktree = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
-    print(vim.inspect(in_worktree))
     local in_bare = utils.get_os_command_output({ "git", "rev-parse", "--is-bare-repository" }, opts.cwd)
-    print(vim.inspect(in_bare))
 
     if in_worktree[1] ~= "true" and in_bare[1] ~= "true" then
       error(opts.cwd .. " is not a git directory")

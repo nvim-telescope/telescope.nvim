@@ -21,8 +21,10 @@ function AsyncJob.new(opts)
   self.stderr = opts.stderr or M.NullPipe()
 
   if opts.cwd and opts.cwd ~= "" then
-    -- TODO: not vim.fn
     self.uv_opts.cwd = vim.fn.expand(opts.cwd)
+    if self.uv_opts.cwd == "" then
+      self.uv_opts.cwd = opts.cwd
+    end
   end
 
   self.uv_opts.stdio = {
@@ -65,9 +67,9 @@ M.spawn = function(opts)
     end)
   )
 
-  -- if not self.handle then
-    -- error(debug.traceback("Failed to spawn process: " .. vim.inspect(self)))
-  -- end
+  if not self.handle then
+    error(debug.traceback("Failed to spawn process: " .. vim.inspect(self)))
+  end
 
   return self
 end
