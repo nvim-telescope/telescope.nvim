@@ -20,7 +20,7 @@ function AsyncJob.new(opts)
   self.stdout = opts.stdout or M.NullPipe()
   self.stderr = opts.stderr or M.NullPipe()
 
-  if opts.cwd then
+  if opts.cwd and opts.cwd ~= "" then
     -- TODO: not vim.fn
     self.uv_opts.cwd = vim.fn.expand(opts.cwd)
   end
