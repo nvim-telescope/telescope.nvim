@@ -229,12 +229,12 @@ do
   end
 end
 
-function make_entry.gen_from_git_stash()
+function make_entry.gen_from_git_stash(opts)
   local displayer = entry_display.create {
     separator = " ",
     items = {
       { width = 10 },
-      { width = 15 },
+      opts.show_branch and { width = 15 } or "",
       { remaining = true },
     },
   }
@@ -242,7 +242,7 @@ function make_entry.gen_from_git_stash()
   local make_display = function(entry)
     return displayer {
       { entry.value, "TelescopeResultsLineNr" },
-      { entry.branch_name, "TelescopeResultsIdentifier" },
+      opts.show_branch and { entry.branch_name, "TelescopeResultsIdentifier" } or "",
       entry.commit_info,
     }
   end

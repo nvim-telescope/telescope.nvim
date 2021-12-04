@@ -72,7 +72,8 @@ git.commits = function(opts)
 end
 
 git.stash = function(opts)
-  opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_stash())
+  opts.show_branch = vim.F.if_nil(opts.show_branch, true)
+  opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_stash(opts))
 
   pickers.new(opts, {
     prompt_title = "Git Stash",
