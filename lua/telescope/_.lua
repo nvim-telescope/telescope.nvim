@@ -65,9 +65,9 @@ M.spawn = function(opts)
     end)
   )
 
-  if not self.handle then
-    error(debug.traceback("Failed to spawn process: " .. vim.inspect(self)))
-  end
+  -- if not self.handle then
+    -- error(debug.traceback("Failed to spawn process: " .. vim.inspect(self)))
+  -- end
 
   return self
 end
