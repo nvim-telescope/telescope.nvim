@@ -18,7 +18,7 @@ lsp.references = function(opts)
 
   vim.lsp.buf_request(0, "textDocument/references", params, function(err, result, _ctx, _config)
     if err then
-      vim.api.nvim_err_writeln("Error when finding references: " .. err)
+      vim.api.nvim_err_writeln("Error when finding references: " .. err.message)
       return
     end
 
@@ -49,7 +49,7 @@ local function list_or_jump(action, title, opts)
   local params = vim.lsp.util.make_position_params()
   vim.lsp.buf_request(0, action, params, function(err, result, _ctx, _config)
     if err then
-      vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err)
+      vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
       return
     end
     local flattened_results = {}
@@ -105,7 +105,7 @@ lsp.document_symbols = function(opts)
   local params = vim.lsp.util.make_position_params()
   vim.lsp.buf_request(0, "textDocument/documentSymbol", params, function(err, result, _ctx, _config)
     if err then
-      vim.api.nvim_err_writeln("Error when finding document symbols: " .. err)
+      vim.api.nvim_err_writeln("Error when finding document symbols: " .. err.message)
       return
     end
 
@@ -335,7 +335,7 @@ lsp.workspace_symbols = function(opts)
   local params = { query = opts.query or "" }
   vim.lsp.buf_request(0, "workspace/symbol", params, function(err, server_result, _ctx, _config)
     if err then
-      vim.api.nvim_err_writeln("Error when finding workspace symbols: " .. err)
+      vim.api.nvim_err_writeln("Error when finding workspace symbols: " .. err.message)
       return
     end
 
