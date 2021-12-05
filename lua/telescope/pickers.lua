@@ -709,9 +709,9 @@ function Picker:delete_selection(delete_cb)
   end
 
   self:refresh()
-  vim.schedule(function()
+  vim.defer_fn(function()
     self.selection_strategy = original_selection_strategy
-  end)
+  end, 50)
 end
 
 function Picker:set_prompt(str)
@@ -1277,13 +1277,6 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
     end
 
     self.sorter:score(prompt, entry, cb_add, cb_filter)
-
-    -- Only on the first addition do we want to set the selection.
-    -- This allows us to handle moving the cursor to the bottom or top of the window
-    -- depending on the strategy.
-    if count == 1 then
-      self:_do_selection(prompt)
-    end
   end
 end
 
