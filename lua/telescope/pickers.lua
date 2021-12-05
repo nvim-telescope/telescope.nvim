@@ -35,8 +35,9 @@ local pickers = {}
 
 -- TODO: Add overscroll option for results buffer
 
+---@class Picker
 --- Picker is the main UI that shows up to interact w/ your results.
--- Takes a filter & a previewr
+-- Takes a filter & a previewer
 local Picker = {}
 Picker.__index = Picker
 
@@ -194,7 +195,7 @@ function Picker:get_reset_row()
 end
 
 --- Check if the picker is no longer in use
----@return boolean/nil: `true` if picker is closed, `nil` otherwise
+---@return boolean|nil: `true` if picker is closed, `nil` otherwise
 function Picker:is_done()
   if not self.manager then
     return true
@@ -1297,7 +1298,7 @@ end
 --- with the telescope `defaults`
 ---@param opts table
 ---@param defaults table
----@return any
+---@return Picker
 pickers.new = function(opts, defaults)
   opts = opts or {}
   defaults = defaults or {}
