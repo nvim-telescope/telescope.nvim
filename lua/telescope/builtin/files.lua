@@ -524,7 +524,7 @@ files.current_buffer_fuzzy_find = function(opts)
           while row < row2 + 1 do
             row = row + 1
 
-            for index = 0, #lines[row] do
+            for index = 0, #(lines[row] or {}) do
               line_highlights[row][index] = hl
             end
           end
