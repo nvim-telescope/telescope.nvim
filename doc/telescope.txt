@@ -2163,8 +2163,7 @@ actions.which_key({prompt_bufnr})                        *actions.which_key()*
     Display the keymaps of registered actions similar to which-key.nvim.
 
     - Notes:
-      - The defaults can be overridden via
-        |action_generate.toggle_registered_actions|.
+      - The defaults can be overridden via |action_generate.which_key|.
 
 
     Parameters: ~
@@ -2413,7 +2412,7 @@ General usage:
     defaults = {
       mappings = {
         n = {
-          ["?"] = action_generate.toggle_registered_actions {
+          ["?"] = action_generate.which_key {
             name_width = 20, -- typically leads to smaller floats
             max_height = 0.5, -- increase potential maximum height
             seperator = " > ", -- change sep between mode, keybind, and name
