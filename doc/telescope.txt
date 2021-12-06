@@ -2163,8 +2163,7 @@ actions.which_key({prompt_bufnr})                        *actions.which_key()*
     Display the keymaps of registered actions similar to which-key.nvim.
 
     - Notes:
-      - The defaults can be overridden via
-        |action_generate.which_key|.
+      - The defaults can be overridden via |action_generate.which_key|.
 
 
     Parameters: ~
