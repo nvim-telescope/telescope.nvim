@@ -989,6 +989,8 @@ builtin.git_stash({opts})                                *builtin.git_stash()*
         {cwd}          (string)   specify the path of the repo
         {use_git_root} (boolean)  if we should use git root as cwd or the cwd
                                   (important for submodule) (default: true)
+        {show_branch}  (boolean)  if we should display the branch name for git
+                                  stash entries (default: true)
 
 
 builtin.builtin({opts})                                    *builtin.builtin()*

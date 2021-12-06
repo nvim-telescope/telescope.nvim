@@ -204,6 +204,7 @@ builtin.git_status = require_on_exported_call("telescope.builtin.git").status
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field show_branch boolean: if we should display the branch name for git stash entries (default: true)
 builtin.git_stash = require_on_exported_call("telescope.builtin.git").stash
 
 --
