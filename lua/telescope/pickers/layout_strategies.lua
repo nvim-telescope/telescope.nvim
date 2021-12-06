@@ -839,7 +839,7 @@ layout_strategies.bottom_pane = make_documented_layout(
       results.line = prompt.line + 1
       preview.line = results.line + bs
       if results.border == true then
-        results.border = {0, 1, 1, 1}
+        results.border = { 0, 1, 1, 1 }
       end
       if type(results.title) == "string" then
         results.title = { { pos = "S", text = results.title } }
@@ -852,7 +852,7 @@ layout_strategies.bottom_pane = make_documented_layout(
         prompt.title = { { pos = "S", text = prompt.title } }
       end
       if results.border == true then
-        results.border = {1, 1, 0, 1}
+        results.border = { 1, 1, 0, 1 }
       end
     else
       error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
