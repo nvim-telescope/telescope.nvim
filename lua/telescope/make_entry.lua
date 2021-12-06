@@ -96,7 +96,6 @@ do
         return utils.transform_path_os_sep(retpath)
       end
 
-
       return utils.transform_path_os_sep(rawget(t, rawget(lookup_keys, k)))
     end
 
