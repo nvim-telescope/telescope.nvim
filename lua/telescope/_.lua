@@ -20,9 +20,14 @@ function AsyncJob.new(opts)
   self.stdout = opts.stdout or M.NullPipe()
   self.stderr = opts.stderr or M.NullPipe()
 
-  if opts.cwd then
-    -- TODO: not vim.fn
+  if opts.cwd and opts.cwd ~= "" then
     self.uv_opts.cwd = vim.fn.expand(opts.cwd)
+    -- this is a "illegal" hack for windows. E.g. If the git command returns `/` rather than `\` as delimiter,
+    -- vim.fn.expand might just end up returning an empty string. Weird
+    -- Because empty string is not allowed in libuv the job will not spawn. Solution is we just set it to opts.cwd
+    if self.uv_opts.cwd == "" then
+      self.uv_opts.cwd = opts.cwd
+    end
   end
 
   self.uv_opts.stdio = {
@@ -57,14 +62,17 @@ end
 
 M.spawn = function(opts)
   local self = AsyncJob.new(opts)
-
-  self.handle = uv.spawn(
+  self.handle, self.pid = uv.spawn(
     self.command,
     self.uv_opts,
     async.void(function()
       self:close(false)
     end)
   )
+
+  if not self.handle then
+    error(debug.traceback("Failed to spawn process: " .. vim.inspect(self)))
+  end
 
   return self
 end

@@ -96,25 +96,23 @@ end
 
 local treesitter_attach = function(bufnr, ft)
   local lang = ts_parsers.ft_to_lang(ft)
-  if ts_parsers.has_parser(lang) then
-    local config = ts_configs.get_module "highlight"
-    if vim.tbl_contains(config.disable, lang) then
-      return false
-    end
-    for k, v in pairs(config.custom_captures) do
-      vim.treesitter.highlighter.hl_map[k] = v
-    end
-    vim.treesitter.highlighter.new(ts_parsers.get_parser(bufnr, lang))
-    local is_table = type(config.additional_vim_regex_highlighting) == "table"
-    if
-      config.additional_vim_regex_highlighting
-      and (not is_table or vim.tbl_contains(config.additional_vim_regex_highlighting, lang))
-    then
-      vim.api.nvim_buf_set_option(bufnr, "syntax", ft)
-    end
-    return true
+  if not ts_configs.is_enabled("highlight", lang, bufnr) then
+    return false
   end
-  return false
+
+  local config = ts_configs.get_module "highlight"
+  for k, v in pairs(config.custom_captures) do
+    vim.treesitter.highlighter.hl_map[k] = v
+  end
+  vim.treesitter.highlighter.new(ts_parsers.get_parser(bufnr, lang))
+  local is_table = type(config.additional_vim_regex_highlighting) == "table"
+  if
+    config.additional_vim_regex_highlighting
+    and (not is_table or vim.tbl_contains(config.additional_vim_regex_highlighting, lang))
+  then
+    vim.api.nvim_buf_set_option(bufnr, "syntax", ft)
+  end
+  return true
 end
 
 -- Attach ts highlighter

@@ -115,13 +115,14 @@ telescope.setup({opts})                                    *telescope.setup()*
         Default: {
           bottom_pane = {
             height = 25,
+            preview_cutoff = 120,
             prompt_position = "top"
           },
           center = {
-            height = 0.9,
+            height = 0.4,
             preview_cutoff = 40,
             prompt_position = "top",
-            width = 0.8
+            width = 0.5
           },
           cursor = {
             height = 0.9,
@@ -1562,6 +1563,22 @@ themes.get_ivy()                                            *themes.get_ivy()*
 ================================================================================
                                                               *telescope.layout*
 
+The layout of telescope pickers can be adjusted using the
+|telescope.defaults.layout_strategy| and |telescope.defaults.layout_config|
+options. For example, the following configuration changes the default layout
+strategy and the default size of the picker:
+>
+  require('telescope').setup{
+    defaults = {
+      layout_strategy = 'vertical',
+      layout_config = { height = 0.95 },
+    },
+  }
+<
+
+
+────────────────────────────────────────────────────────────────────────────────
+
 Layout strategies are different functions to position telescope.
 
 All layout strategies are functions with the following signature:
@@ -1669,6 +1686,9 @@ layout_strategies.center()                        *layout_strategies.center()*
 
     `picker.layout_config` unique options:
       - preview_cutoff: When lines are less than this value, the preview will be disabled
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
 
 
 layout_strategies.cursor()                        *layout_strategies.cursor()*

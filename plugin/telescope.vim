@@ -15,9 +15,9 @@ highlight default link TelescopeMultiSelection Type
 
 " "Normal" in the floating windows created by telescope.
 highlight default link TelescopeNormal Normal
-
-" "Normal" in the preview floating windows created by telescope.
-highlight default link TelescopePreviewNormal Normal
+highlight default link TelescopePreviewNormal TelescopeNormal
+highlight default link TelescopePromptNormal TelescopeNormal
+highlight default link TelescopeResultsNormal TelescopeNormal
 
 " Border highlight groups.
 "   Use TelescopeBorder to override the default.
@@ -34,6 +34,8 @@ highlight default link TelescopeTitle TelescopeBorder
 highlight default link TelescopePromptTitle TelescopeTitle
 highlight default link TelescopeResultsTitle TelescopeTitle
 highlight default link TelescopePreviewTitle TelescopeTitle
+
+highlight default link TelescopePromptCounter NonText
 
 " Used for highlighting characters that you match.
 highlight default link TelescopeMatching Special

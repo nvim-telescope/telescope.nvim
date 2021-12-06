@@ -487,10 +487,11 @@ files.current_buffer_fuzzy_find = function(opts)
   if ts_ok then
     filetype = ts_parsers.ft_to_lang(filetype)
   end
+  local _, ts_configs = pcall(require, "nvim-treesitter.configs")
 
   local parser_ok, parser = pcall(vim.treesitter.get_parser, bufnr, filetype)
   local query_ok, query = pcall(vim.treesitter.get_query, filetype, "highlights")
-  if parser_ok and query_ok then
+  if parser_ok and query_ok and ts_ok and ts_configs.is_enabled("highlight", filetype, bufnr) then
     local root = parser:parse()[1]:root()
 
     local highlighter = vim.treesitter.highlighter.new(parser)
@@ -523,7 +524,7 @@ files.current_buffer_fuzzy_find = function(opts)
           while row < row2 + 1 do
             row = row + 1
 
-            for index = 0, #lines[row] do
+            for index = 0, #(lines[row] or {}) do
               line_highlights[row][index] = hl
             end
           end
