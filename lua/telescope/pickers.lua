@@ -6,6 +6,7 @@ local async = require "plenary.async"
 local await_schedule = async.util.scheduler
 local channel = require("plenary.async.control").channel
 local popup = require "plenary.popup"
+local strings = require "plenary.strings"
 
 local actions = require "telescope.actions"
 local action_set = require "telescope.actions.set"
@@ -26,6 +27,8 @@ local EntryManager = require "telescope.entry_manager"
 local MultiSelect = require "telescope.pickers.multi"
 
 local get_default = utils.get_default
+
+local charpart = strings.strcharpart
 
 local ns_telescope_matching = a.nvim_create_namespace "telescope_matching"
 local ns_telescope_prompt = a.nvim_create_namespace "telescope_prompt"
@@ -68,6 +71,16 @@ function Picker:new(opts)
     prompt_prefix = get_default(opts.prompt_prefix, config.values.prompt_prefix),
     selection_caret = get_default(opts.selection_caret, config.values.selection_caret),
     entry_prefix = get_default(opts.entry_prefix, config.values.entry_prefix),
+    multi_icon = (function()
+      local icon = get_default(opts.multi_icon, config.values.multi_icon)
+      assert(type(icon) == "string", "multi_icon must be a string")
+      if icon ~= "" then
+        return charpart(icon, 0, 1)
+      else
+        return false
+      end
+    end)(),
+
     initial_mode = get_default(opts.initial_mode, config.values.initial_mode),
     debounce = get_default(tonumber(opts.debounce), nil),
 
@@ -920,29 +933,45 @@ function Picker:set_selection(row)
   --        Not sure.
   local set_ok, set_errmsg = pcall(function()
     local prompt = self:_get_prompt()
+    local prefix = function(sel, multi)
+      local t
+      if sel then
+        t = self.selection_caret
+      else
+        t = self.entry_prefix
+      end
+      if multi and self.multi_icon then
+        t = strings.truncate(t, strings.strdisplaywidth(t) - 1, "") .. self.multi_icon
+      end
+      return t
+    end
 
     -- This block handles removing the caret from beginning of previous selection (if still visible)
     -- Check if previous selection is still visible
     if self._selection_entry and self.manager:find_entry(self._selection_entry) then
       -- Find the (possibly new) row of the old selection
       local row_old_selection = self:get_row(self.manager:find_entry(self._selection_entry))
+      local old_multiselected = self:is_multi_selected(self._selection_entry)
       local line = a.nvim_buf_get_lines(results_bufnr, row_old_selection, row_old_selection + 1, false)[1]
+
       --Check if that row still has the caret
-      if string.sub(line, 0, #self.selection_caret) == self.selection_caret then
+      local old_caret = string.sub(line, 0, #prefix(true)) == prefix(true) and prefix(true)
+        or string.sub(line, 0, #prefix(true, true)) == prefix(true, true) and prefix(true, true)
+      if old_caret then
         -- Only change the first couple characters, nvim_buf_set_text leaves the existing highlights
         a.nvim_buf_set_text(
           results_bufnr,
           row_old_selection,
           0,
           row_old_selection,
-          #self.selection_caret,
-          { self.entry_prefix }
+          #old_caret,
+          { prefix(false, old_multiselected) }
         )
-        self.highlighter:hi_multiselect(row_old_selection, self:is_multi_selected(self._selection_entry))
+        self.highlighter:hi_multiselect(row_old_selection, old_multiselected)
       end
     end
 
-    local caret = self.selection_caret
+    local caret = prefix(true, self:is_multi_selected(entry))
 
     local display, display_highlights = entry_display.resolve(self, entry)
     display = caret .. display
