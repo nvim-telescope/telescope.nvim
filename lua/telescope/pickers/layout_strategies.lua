@@ -618,6 +618,7 @@ layout_strategies.vertical = make_documented_layout(
     preview_cutoff = "When lines are less than this value, the preview will be disabled",
     preview_height = { "Change the height of Telescope's preview window", "See |resolver.resolve_height()|" },
     prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
+    layout_position = { "Where to place the layout.", "Available Values: 'center' (default), 'top', 'bottom'" },
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -662,6 +663,11 @@ layout_strategies.vertical = make_documented_layout(
     results.col, preview.col, prompt.col = 0, 0, 0 -- all centered
 
     local height_padding = math.floor((max_lines - height) / 2)
+    if layout_config.layout_position == 'top' then
+        height_padding = 0
+    elseif layout_config.layout_position == 'bottom' then
+        height_padding = max_lines - height
+    end
     if not layout_config.mirror then
       preview.line = height_padding + (1 + bs)
       if layout_config.prompt_position == "top" then
