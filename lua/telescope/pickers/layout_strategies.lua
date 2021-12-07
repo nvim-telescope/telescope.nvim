@@ -94,6 +94,7 @@ local get_valid_configuration_keys = function(strategy_config)
     -- TEMP: There are a few keys we should say are valid to start with.
     preview_cutoff = true,
     prompt_position = true,
+    window_position = true,
   }
 
   for key in pairs(strategy_config) do
@@ -659,9 +660,17 @@ layout_strategies.vertical = make_documented_layout(
     prompt.height = 1
     results.height = height - preview.height - prompt.height - h_space
 
-    results.col, preview.col, prompt.col = 0, 0, 0 -- all centered
-
+    local width_padding = 0
     local height_padding = math.floor((max_lines - height) / 2)
+
+    local win_pos = layout_config.window_position
+    if win_pos then
+        width_padding = win_pos.x and win_pos.x or width_padding
+        height_padding = win_pos.y and win_pos.y or height_padding
+    end
+
+    results.col, preview.col, prompt.col = width_padding, width_padding, width_padding -- all centered
+
     if not layout_config.mirror then
       preview.line = height_padding + (1 + bs)
       if layout_config.prompt_position == "top" then
