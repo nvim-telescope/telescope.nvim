@@ -976,8 +976,8 @@ function Picker:set_selection(row)
     end
     a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, { display })
 
-    -- don't highlight the ' ' at the end of caret
-    self.highlighter:hi_selection(row, caret:sub(1, -2))
+    -- don't highlight any whitespace at the end of caret
+    self.highlighter:hi_selection(row, caret:match("(.*%S)"))
     self.highlighter:hi_display(row, caret, display_highlights)
     self.highlighter:hi_sorter(row, prompt, display)
 
