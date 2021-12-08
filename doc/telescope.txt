@@ -1638,6 +1638,9 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
       - scroll_speed: The number of lines to scroll through the previewer
       - width:
         - How wide to make Telescope's entire layout
@@ -1648,9 +1651,6 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
       - preview_width:
         - Change the width of Telescope's preview window
         - See |resolver.resolve_width()|
-      - prompt_position:
-        - Where to place prompt window.
-        - Available Values: 'bottom', 'top'
 
 
 layout_strategies.center()                        *layout_strategies.center()*
@@ -1681,6 +1681,9 @@ layout_strategies.center()                        *layout_strategies.center()*
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
       - scroll_speed: The number of lines to scroll through the previewer
       - width:
         - How wide to make Telescope's entire layout
@@ -1688,9 +1691,6 @@ layout_strategies.center()                        *layout_strategies.center()*
 
     `picker.layout_config` unique options:
       - preview_cutoff: When lines are less than this value, the preview will be disabled
-      - prompt_position:
-        - Where to place prompt window.
-        - Available Values: 'bottom', 'top'
 
 
 layout_strategies.cursor()                        *layout_strategies.cursor()*
@@ -1742,6 +1742,9 @@ layout_strategies.vertical()                    *layout_strategies.vertical()*
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
       - scroll_speed: The number of lines to scroll through the previewer
       - width:
         - How wide to make Telescope's entire layout
@@ -1752,9 +1755,6 @@ layout_strategies.vertical()                    *layout_strategies.vertical()*
       - preview_height:
         - Change the height of Telescope's preview window
         - See |resolver.resolve_height()|
-      - prompt_position:
-        - Where to place prompt window.
-        - Available Values: 'bottom', 'top'
 
 
 layout_strategies.flex()                            *layout_strategies.flex()*
@@ -1769,6 +1769,9 @@ layout_strategies.flex()                            *layout_strategies.flex()*
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
       - scroll_speed: The number of lines to scroll through the previewer
       - width:
         - How wide to make Telescope's entire layout
