@@ -71,15 +71,7 @@ function Picker:new(opts)
     prompt_prefix = get_default(opts.prompt_prefix, config.values.prompt_prefix),
     selection_caret = get_default(opts.selection_caret, config.values.selection_caret),
     entry_prefix = get_default(opts.entry_prefix, config.values.entry_prefix),
-    multi_icon = (function()
-      local icon = get_default(opts.multi_icon, config.values.multi_icon)
-      assert(type(icon) == "string", "multi_icon must be a string")
-      if icon ~= "" then
-        return charpart(icon, 0, 1)
-      else
-        return false
-      end
-    end)(),
+    multi_icon = get_default(opts.multi_icon, config.values.multi_icon),
 
     initial_mode = get_default(opts.initial_mode, config.values.initial_mode),
     debounce = get_default(tonumber(opts.debounce), nil),
@@ -940,8 +932,8 @@ function Picker:set_selection(row)
       else
         t = self.entry_prefix
       end
-      if multi and self.multi_icon then
-        t = strings.truncate(t, strings.strdisplaywidth(t) - 1, "") .. self.multi_icon
+      if multi and type(self.multi_icon) == "string" then
+        t = strings.truncate(t, strings.strdisplaywidth(t) - strings.strdisplaywidth(self.multi_icon), "") .. self.multi_icon
       end
       return t
     end

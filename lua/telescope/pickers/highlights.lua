@@ -94,7 +94,7 @@ function Highlighter:hi_multiselect(row, is_selected)
           "TelescopeMultiIcon",
           row,
           pos - 1,
-          pos
+          pos - 1 + #self.picker.multi_icon
         )
       end
     end
