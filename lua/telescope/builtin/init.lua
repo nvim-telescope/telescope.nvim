@@ -94,6 +94,7 @@ builtin.fd = builtin.find_files
 ---     - Note: you can create files nested into several directories with `<C-e>`, i.e. `lua/telescope/init.lua` would
 ---       create the file `init.lua` inside of `lua/telescope` and will create the necessary folders (similar to how
 ---       `mkdir -p` would work) if they do not already exist
+---@deprecated Please move to https://github.com/nvim-telescope/telescope-file-browser.nvim
 ---@param opts table: options to pass to the picker
 ---@field cwd string: root dir to browse from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field depth number: file tree depth to display (default: 1)
