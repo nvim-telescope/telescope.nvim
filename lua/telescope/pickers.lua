@@ -6,7 +6,6 @@ local async = require "plenary.async"
 local await_schedule = async.util.scheduler
 local channel = require("plenary.async.control").channel
 local popup = require "plenary.popup"
-local strings = require "plenary.strings"
 
 local actions = require "telescope.actions"
 local action_set = require "telescope.actions.set"
@@ -28,7 +27,8 @@ local MultiSelect = require "telescope.pickers.multi"
 
 local get_default = utils.get_default
 
-local charpart = strings.strcharpart
+local truncate = require("plenary.strings").truncate
+local strdisplaywidth = require("plenary.strings").strdisplaywidth
 
 local ns_telescope_matching = a.nvim_create_namespace "telescope_matching"
 local ns_telescope_prompt = a.nvim_create_namespace "telescope_prompt"
@@ -933,7 +933,7 @@ function Picker:set_selection(row)
         t = self.entry_prefix
       end
       if multi and type(self.multi_icon) == "string" then
-        t = strings.truncate(t, strings.strdisplaywidth(t) - strings.strdisplaywidth(self.multi_icon), "") .. self.multi_icon
+        t = truncate(t, strdisplaywidth(t) - strdisplaywidth(self.multi_icon), "") .. self.multi_icon
       end
       return t
     end
@@ -977,7 +977,7 @@ function Picker:set_selection(row)
     a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, { display })
 
     -- don't highlight any whitespace at the end of caret
-    self.highlighter:hi_selection(row, caret:match("(.*%S)"))
+    self.highlighter:hi_selection(row, caret:match "(.*%S)")
     self.highlighter:hi_display(row, caret, display_highlights)
     self.highlighter:hi_sorter(row, prompt, display)
 
