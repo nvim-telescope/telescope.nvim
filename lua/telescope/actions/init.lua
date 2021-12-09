@@ -883,6 +883,7 @@ actions.which_key = function(prompt_bufnr, opts)
   opts.border_hl = utils.get_default(opts.border_hl, "TelescopePromptBorder")
   opts.winblend = utils.get_default(opts.winblend, config.values.winblend)
   opts.column_padding = utils.get_default(opts.column_padding, "  ")
+  opts.foldenable = utils.get_default(opts.foldenable, false)
 
   -- Assigning into 'opts.column_indent' would override a number with a string and
   -- cause issues with subsequent calls, keep a local copy of the string instead
@@ -1012,6 +1013,7 @@ actions.which_key = function(prompt_bufnr, opts)
   a.nvim_win_set_option(km_win_id, "winhl", "Normal:" .. opts.normal_hl)
   a.nvim_win_set_option(km_opts.border.win_id, "winhl", "Normal:" .. opts.border_hl)
   a.nvim_win_set_option(km_win_id, "winblend", opts.winblend)
+  a.nvim_win_set_option(km_win_id, "foldenable", opts.foldenable)
 
   vim.cmd(string.format(
     "autocmd BufLeave <buffer> ++once lua %s",
