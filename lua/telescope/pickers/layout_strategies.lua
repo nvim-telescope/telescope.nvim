@@ -107,6 +107,13 @@ local get_valid_configuration_keys = function(strategy_config)
   return valid_configuration_keys
 end
 
+local adjust_pos = function(pos, ...)
+  for _, opts in ipairs { ... } do
+    opts.col = opts.col and opts.col + pos[1]
+    opts.line = opts.line and opts.line + pos[2]
+  end
+end
+
 --@param strategy_name string: the name of the layout_strategy we are validating for
 --@param configuration table: table with keys for each option available
 --@param values table: table containing all of the non-default options we want to set
@@ -186,6 +193,7 @@ local shared_options = {
   height = { "How tall to make Telescope's entire layout", "See |resolver.resolve_height()|" },
   mirror = "Flip the location of the results/prompt and preview windows",
   scroll_speed = "The number of lines to scroll through the previewer",
+  anchor = { "Which edge/corner to pin the picker to", "See |resolver.resolve_anchor_pos()|" },
 }
 
 -- Used for generating vim help documentation.
@@ -368,6 +376,9 @@ layout_strategies.horizontal = make_documented_layout(
       error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
     end
 
+    local anchor_pos = resolve.resolve_anchor_pos(layout_config.anchor or "", width, height, max_columns, max_lines)
+    adjust_pos(anchor_pos, prompt, results, preview)
+
     if tbln then
       prompt.line = prompt.line + 1
       results.line = results.line + 1
@@ -387,6 +398,8 @@ layout_strategies.horizontal = make_documented_layout(
 --- The preview window is then placed in the remaining space above.
 --- Particularly useful for creating dropdown menus
 --- (see |telescope.themes| and |themes.get_dropdown()|`).
+---
+--- Note that this layout can only be pinned to the left and right edges using the `anchor` option.
 ---
 --- <pre>
 --- ┌──────────────────────────────────────────────────┐
@@ -472,7 +485,12 @@ layout_strategies.center = make_documented_layout(
       preview.height = 0
     end
 
-    results.col, preview.col, prompt.col = 0, 0, 0 -- all centered
+    local width_padding = math.floor((max_columns - width) / 2) + bs + 1
+    results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
+
+    local anchor_pos = resolve.resolve_anchor_pos(layout_config.anchor or "", width, height, max_columns, max_lines)
+    anchor_pos[2] = 0 -- only use horizontal anchoring
+    adjust_pos(anchor_pos, prompt, results, preview)
 
     if tbln then
       prompt.line = prompt.line + 1
@@ -511,7 +529,11 @@ layout_strategies.center = make_documented_layout(
 --- </pre>
 layout_strategies.cursor = make_documented_layout(
   "cursor",
-  vim.tbl_extend("error", shared_options, {
+  vim.tbl_extend("error", {
+    width = shared_options.width,
+    height = shared_options.height,
+    scroll_speed = shared_options.scroll_speed,
+  }, {
     preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|" },
     preview_cutoff = "When columns are less than this value, the preview will be disabled",
   }),
@@ -659,7 +681,8 @@ layout_strategies.vertical = make_documented_layout(
     prompt.height = 1
     results.height = height - preview.height - prompt.height - h_space
 
-    results.col, preview.col, prompt.col = 0, 0, 0 -- all centered
+    local width_padding = math.floor((max_columns - width) / 2) + bs + 1
+    results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
 
     local height_padding = math.floor((max_lines - height) / 2)
     if not layout_config.mirror then
@@ -686,6 +709,9 @@ layout_strategies.vertical = make_documented_layout(
         error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
       end
     end
+
+    local anchor_pos = resolve.resolve_anchor_pos(layout_config.anchor or "", width, height, max_columns, max_lines)
+    adjust_pos(anchor_pos, prompt, results, preview)
 
     if tbln then
       prompt.line = prompt.line + 1
