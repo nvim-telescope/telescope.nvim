@@ -59,12 +59,62 @@ describe("telescope.config.resolve", function()
   end)
 
   describe("resolve_height/width", function()
-    --TODO(l-kershaw) expand tests and add descriptions
-    eq(10, resolve.resolve_height(0.1)(nil, 24, 100))
-    eq(2, resolve.resolve_width(0.1)(nil, 24, 100))
+    local test_sizes = {
+      { 24, 100 },
+      { 35, 125 },
+      { 60, 59 },
+      { 100, 40 },
+    }
+    it("should handle percentages", function()
+      local percentages = { 0.1, 0.33333, 0.5, 0.99 }
+      for _, s in ipairs(test_sizes) do
+        for _, p in ipairs(percentages) do
+          eq(math.floor(s[1] * p), resolve.resolve_width(p)(nil, unpack(s)))
+          eq(math.floor(s[2] * p), resolve.resolve_height(p)(nil, unpack(s)))
+        end
+      end
+    end)
 
-    eq(10, resolve.resolve_width(10)(nil, 24, 100))
-    eq(24, resolve.resolve_width(50)(nil, 24, 100))
+    it("should handle fixed size", function()
+      local fixed = { 5, 8, 13, 21, 34 }
+      for _, s in ipairs(test_sizes) do
+        for _, f in ipairs(fixed) do
+          eq(math.min(f, s[1]), resolve.resolve_width(f)(nil, unpack(s)))
+          eq(math.min(f, s[2]), resolve.resolve_height(f)(nil, unpack(s)))
+        end
+      end
+    end)
+
+    it("should handle functions", function()
+      local func = function(_, max_columns, max_lines)
+        if max_columns < 45 then
+          return math.min(max_columns, max_lines)
+        elseif max_columns < max_lines then
+          return max_columns * 0.8
+        else
+          return math.min(max_columns, max_lines) * 0.5
+        end
+      end
+      for _, s in ipairs(test_sizes) do
+        eq(func(nil, unpack(s)), resolve.resolve_height(func)(nil, unpack(s)))
+      end
+    end)
+
+    it("should handle padding", function()
+      local func = function(_, max_columns, max_lines)
+        return math.floor(math.min(max_columns * 0.6, max_lines * 0.8))
+      end
+      local pads = { 0.1, 5, func }
+      for _, s in ipairs(test_sizes) do
+        for _, p in ipairs(pads) do
+          eq(s[1] - 2 * resolve.resolve_width(p)(nil, unpack(s)), resolve.resolve_width { padding = p }(nil, unpack(s)))
+          eq(
+            s[2] - 2 * resolve.resolve_height(p)(nil, unpack(s)),
+            resolve.resolve_height { padding = p }(nil, unpack(s))
+          )
+        end
+      end
+    end)
   end)
 
   describe("resolve_anchor_pos", function()
