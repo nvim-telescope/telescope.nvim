@@ -21,7 +21,7 @@ end
 
 local writer = function(val)
   if type(val) == "table" then
-    val = vim.fn.json_encode(val) .. "\n"
+    val = vim.json.encode(val) .. "\n"
   end
 
   if tester.debug then
@@ -157,7 +157,7 @@ local get_results_from_file = function(file)
   local results = j:stderr_result()
   local result_table = {}
   for _, v in ipairs(results) do
-    table.insert(result_table, vim.fn.json_decode(v))
+    table.insert(result_table, vim.json.decode(v))
   end
 
   return result_table

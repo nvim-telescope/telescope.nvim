@@ -15,7 +15,7 @@ jobs:
             manager: sudo apt-get
             packages: -y fd-find
           - os: ubuntu-20.04
-            url: https://github.com/neovim/neovim/releases/download/v0.5.1/nvim-linux64.tar.gz
+            url: https://github.com/neovim/neovim/releases/download/v0.6.0/nvim-linux64.tar.gz
             manager: sudo apt-get
             packages: -y fd-find
           - os: macos-10.15
@@ -23,7 +23,7 @@ jobs:
             manager: brew
             packages: fd
           - os: macos-10.15
-            url: https://github.com/neovim/neovim/releases/download/v0.5.1/nvim-macos.tar.gz
+            url: https://github.com/neovim/neovim/releases/download/v0.6.0/nvim-macos.tar.gz
             manager: brew
             packages: fd
     steps:

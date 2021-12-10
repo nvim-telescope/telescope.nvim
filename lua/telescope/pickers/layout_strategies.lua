@@ -193,6 +193,7 @@ local shared_options = {
   height = { "How tall to make Telescope's entire layout", "See |resolver.resolve_height()|" },
   mirror = "Flip the location of the results/prompt and preview windows",
   scroll_speed = "The number of lines to scroll through the previewer",
+  prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
   anchor = { "Which edge/corner to pin the picker to", "See |resolver.resolve_anchor_pos()|" },
 }
 
@@ -295,7 +296,6 @@ layout_strategies.horizontal = make_documented_layout(
   vim.tbl_extend("error", shared_options, {
     preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|" },
     preview_cutoff = "When columns are less than this value, the preview will be disabled",
-    prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -425,7 +425,6 @@ layout_strategies.center = make_documented_layout(
   "center",
   vim.tbl_extend("error", shared_options, {
     preview_cutoff = "When lines are less than this value, the preview will be disabled",
-    prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -461,7 +460,7 @@ layout_strategies.center = make_documented_layout(
     prompt.height = 1
     results.height = height - prompt.height - h_space
 
-    local topline = (max_lines / 2) - ((results.height + (2 * bs)) / 2) + 1
+    local topline = math.floor((max_lines / 2) - ((results.height + (2 * bs)) / 2) + 1)
     -- Align the prompt and results so halfway up the screen is
     -- in the middle of this combined block
     if layout_config.prompt_position == "top" then
@@ -477,11 +476,15 @@ layout_strategies.center = make_documented_layout(
       error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
     end
 
-    preview.line = 2
-
-    if self.previewer and max_lines >= layout_config.preview_cutoff then
-      preview.height = math.floor(topline - (3 + bs))
+    if not layout_config.mirror then
+      preview.line = 1 + bs
+      preview.height = topline - (2 * bs + 2)
     else
+      preview.line = topline + (results.height + (2 * bs + 2))
+      preview.height = max_lines - preview.line + (1 - bs)
+    end
+
+    if not (self.previewer and max_lines >= layout_config.preview_cutoff) then
       preview.height = 0
     end
 
@@ -639,7 +642,6 @@ layout_strategies.vertical = make_documented_layout(
   vim.tbl_extend("error", shared_options, {
     preview_cutoff = "When lines are less than this value, the preview will be disabled",
     preview_height = { "Change the height of Telescope's preview window", "See |resolver.resolve_height()|" },
-    prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -818,7 +820,6 @@ layout_strategies.bottom_pane = make_documented_layout(
   vim.tbl_extend("error", shared_options, {
     preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|" },
     preview_cutoff = "When columns are less than this value, the preview will be disabled",
-    prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -864,12 +865,21 @@ layout_strategies.bottom_pane = make_documented_layout(
       prompt.line = max_lines - results.height - (1 + bs) + 1
       results.line = prompt.line + 1
       preview.line = results.line + bs
+      if results.border == true then
+        results.border = { 0, 1, 1, 1 }
+      end
+      if type(results.title) == "string" then
+        results.title = { { pos = "S", text = results.title } }
+      end
     elseif layout_config.prompt_position == "bottom" then
       results.line = max_lines - results.height - (1 + bs) + 1
       preview.line = results.line
       prompt.line = max_lines - bs
       if type(prompt.title) == "string" then
         prompt.title = { { pos = "S", text = prompt.title } }
+      end
+      if results.border == true then
+        results.border = { 1, 1, 0, 1 }
       end
     else
       error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
