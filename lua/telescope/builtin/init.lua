@@ -441,7 +441,7 @@ builtin.lsp_document_diagnostics = function(...)
     "`lsp_document_diagnostics` is deprecated and will be removed. Please use `Telescope diagnostics bufnr=0`.\n"
       .. "For more information see `:help telescope.changelog-1553`\n"
   )
-  local new = {...}
+  local new = ...
   new.bufnr = 0
   require("telescope.builtin.diagnostics").get(new)
 end
