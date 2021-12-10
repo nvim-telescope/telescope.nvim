@@ -1637,8 +1637,8 @@ layout_strategies.center()                        *layout_strategies.center()*
     remaining space above. Particularly useful for creating dropdown menus (see
     |telescope.themes| and |themes.get_dropdown()|`).
 
-    Note that this layout can only be pinned to the left and right edges using
-    the `anchor` option.
+    Note that the `anchor` option can only pin this layout to the left or right
+    edges.
 
     ┌──────────────────────────────────────────────────┐
     │    ┌────────────────────────────────────────┐    │
