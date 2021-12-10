@@ -1462,7 +1462,7 @@ builtin.diagnostics_document({opts})          *builtin.diagnostics_document()*
     Lists diagnostics for the current buffer
     - Fields:
       - `All severity flags can be passed as `string` or `number` as per
-        `:vim.lsp.protocol.DiagnosticSeverity:`
+        `:vim.diagnostic.severity:`
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query with the
         diagnostic you want to see (i.e. `:warning:`)
@@ -1480,7 +1480,7 @@ builtin.diagnostics_document({opts})          *builtin.diagnostics_document()*
         {severity_bound} (string|number)  keep diagnostics equal or less
                                           severe wrt severity name (string) or
                                           id (number)
-        {no_sign}        (boolean)        hide LspDiagnosticSigns from Results
+        {no_sign}        (boolean)        hide DiagnosticSigns from Results
                                           (default: false)
         {line_width}     (number)         set length of diagnostic entry text
                                           in Results
@@ -1493,7 +1493,7 @@ builtin.diagnostics_workspace({opts})        *builtin.diagnostics_workspace()*
     searches in all open buffers
     - Fields:
       - `All severity flags can be passed as `string` or `number` as per
-        `:vim.lsp.protocol.DiagnosticSeverity:`
+        `:vim.diagnostic.severity:`
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query with the
         diagnostic you want to see (i.e. `:warning:`)
@@ -1511,7 +1511,7 @@ builtin.diagnostics_workspace({opts})        *builtin.diagnostics_workspace()*
         {severity_bound} (string|number)  keep diagnostics equal or less
                                           severe wrt severity name (string) or
                                           id (number)
-        {no_sign}        (boolean)        hide LspDiagnosticSigns from Results
+        {no_sign}        (boolean)        hide DiagnosticSigns from Results
                                           (default: false)
         {line_width}     (number)         set length of diagnostic entry text
                                           in Results
