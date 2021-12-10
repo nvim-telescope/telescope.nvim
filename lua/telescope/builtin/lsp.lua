@@ -380,16 +380,10 @@ local function get_workspace_symbols_requester(bufnr, opts)
     _, cancel = vim.lsp.buf_request(bufnr, "workspace/symbol", { query = prompt }, tx)
 
     -- Handle 0.5 / 0.5.1 handler situation
-    local err, res_1, res_2 = rx()
-    local results_lsp
-    if type(res_1) == "table" then
-      results_lsp = res_1
-    else
-      results_lsp = res_2
-    end
+    local err, res = rx()
     assert(not err, err)
 
-    local locations = vim.lsp.util.symbols_to_items(results_lsp or {}, bufnr) or {}
+    local locations = vim.lsp.util.symbols_to_items(res or {}, bufnr) or {}
     if not vim.tbl_isempty(locations) then
       locations = utils.filter_symbols(locations, opts) or {}
     end

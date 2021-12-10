@@ -131,4 +131,15 @@ requires users to be on Neovim 0.5.1 (the most recent stable version) or on
 the LATEST version of Neovim nightly.
 
 
+                                                    *telescope.changelog-1549*
+
+Date: December 10, 2021
+PR: https://github.com/nvim-telescope/telescope.nvim/pull/1549
+
+Telescope requires now Neovim release 0.6.0 or a more recent nightly.
+If you are running neovim nightly, you need to make sure that you are on the
+LATEST version. Every other commit is not supported. So make sure you build
+the newest nightly before reporting issues.
+
+
  vim:tw=78:ts=8:ft=help:norl:
