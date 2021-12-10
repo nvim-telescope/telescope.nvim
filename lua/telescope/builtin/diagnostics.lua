@@ -15,18 +15,6 @@ local convert_diagnostic_type = function(severities, severity)
   return severity
 end
 
-local filter_diag_severity = function(opts, severity)
-  if opts.severity ~= nil then
-    return opts.severity == severity
-  elseif opts.severity_limit ~= nil then
-    return severity <= opts.severity_limit
-  elseif opts.severity_bound ~= nil then
-    return severity >= opts.severity_bound
-  else
-    return true
-  end
-end
-
 local diagnostics_to_tbl = function(opts)
   opts = vim.F.if_nil(opts, {})
   local items = {}
@@ -37,14 +25,19 @@ local diagnostics_to_tbl = function(opts)
   opts.severity_limit = convert_diagnostic_type(severities, opts.severity_limit)
   opts.severity_bound = convert_diagnostic_type(severities, opts.severity_bound)
 
-  local validate_severity = 0
-  for _, v in ipairs { opts.severity, opts.severity_limit, opts.severity_bound } do
-    if v ~= nil then
-      validate_severity = validate_severity + 1
-    end
-    if validate_severity > 1 then
-      print "Please pass valid severity parameters"
+  local diagnosis_opts = { severity = {}, namespace = opts.namespace }
+  if opts.severity ~= nil then
+    if opts.severity_limit ~= nil or opts.severity_bound ~= nil then
+      print "Invalid severity parameters. Both a specific severity and a limit/bound is not allowed"
       return {}
+    end
+    diagnosis_opts.severity = opts.severity
+  else
+    if opts.severity_limit ~= nil then
+      diagnosis_opts.severity["min"] = opts.severity_limit
+    end
+    if opts.severity_bound ~= nil then
+      diagnosis_opts.severity["max"] = opts.severity_bound
     end
   end
 
@@ -65,13 +58,11 @@ local diagnostics_to_tbl = function(opts)
     return buffer_diag
   end
 
-  local diagnosis = opts.get_all and vim.diagnostic.get(nil)
-    or { vim.diagnostic.get(current_buf, { namespace = opts.namespace }) }
+  local diagnosis = opts.get_all and vim.diagnostic.get(nil, diagnosis_opts)
+    or { vim.diagnostic.get(current_buf, diagnosis_opts) }
   for _, namespace in ipairs(diagnosis) do
     for _, diagnostic in ipairs(namespace) do
-      if filter_diag_severity(opts, diagnostic.severity) then
-        table.insert(items, preprocess_diag(diagnostic))
-      end
+      table.insert(items, preprocess_diag(diagnostic))
     end
   end
 

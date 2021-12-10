@@ -436,12 +436,13 @@ builtin.lsp_workspace_symbols = require_on_exported_call("telescope.builtin.lsp"
 ---@field symbol_highlights table: string -> string. Matches symbol with hl_group
 builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.builtin.lsp").dynamic_workspace_symbols
 
+local dep_mes = vim.api.nvim_err_write
 builtin.lsp_document_diagnostics = function(...)
-  error "Why you still using lsp_diagnostics. 0.6 is here"
+  dep_mes "`lsp_document_diagnostics` is deprecated and will be removed. Please use `diagnostics_document`"
   require("telescope.builtin.diagnostics").document(...)
 end
 builtin.lsp_workspace_diagnostics = function(...)
-  error "Why you still using lsp_diagnostics. 0.6 is here"
+  dep_mes "`lsp_workspace_diagnostics` is deprecated and will be removed. Please use `diagnostics_workspace`"
   require("telescope.builtin.diagnostics").workspace(...)
 end
 
@@ -453,28 +454,28 @@ end
 
 --- Lists diagnostics for the current buffer
 --- - Fields:
----   - `All severity flags can be passed as `string` or `number` as per `:vim.lsp.protocol.DiagnosticSeverity:`
+---   - `All severity flags can be passed as `string` or `number` as per `:vim.diagnostic.severity:`
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query with the diagnostic you want to see (i.e. `:warning:`)
 ---@param opts table: options to pass to the picker
 ---@field severity string|number: filter diagnostics by severity name (string) or id (number)
 ---@field severity_limit string|number: keep diagnostics equal or more severe wrt severity name (string) or id (number)
 ---@field severity_bound string|number: keep diagnostics equal or less severe wrt severity name (string) or id (number)
----@field no_sign boolean: hide LspDiagnosticSigns from Results (default: false)
+---@field no_sign boolean: hide DiagnosticSigns from Results (default: false)
 ---@field line_width number: set length of diagnostic entry text in Results
 ---@field namespace number: limit your diagnostics to a specific namespace
 builtin.diagnostics_document = require_on_exported_call("telescope.builtin.diagnostics").document
 
 --- Lists diagnostics for the current workspace if supported, otherwise searches in all open buffers
 --- - Fields:
----   - `All severity flags can be passed as `string` or `number` as per `:vim.lsp.protocol.DiagnosticSeverity:`
+---   - `All severity flags can be passed as `string` or `number` as per `:vim.diagnostic.severity:`
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query with the diagnostic you want to see (i.e. `:warning:`)
 ---@param opts table: options to pass to the picker
 ---@field severity string|number: filter diagnostics by severity name (string) or id (number)
 ---@field severity_limit string|number: keep diagnostics equal or more severe wrt severity name (string) or id (number)
 ---@field severity_bound string|number: keep diagnostics equal or less severe wrt severity name (string) or id (number)
----@field no_sign boolean: hide LspDiagnosticSigns from Results (default: false)
+---@field no_sign boolean: hide DiagnosticSigns from Results (default: false)
 ---@field line_width number: set length of diagnostic entry text in Results
 ---@field namespace number: limit your diagnostics to a specific namespace
 builtin.diagnostics_workspace = require_on_exported_call("telescope.builtin.diagnostics").document
