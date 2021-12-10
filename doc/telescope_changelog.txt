@@ -151,11 +151,12 @@ Move from `vim.lsp.diagnostic` to `vim.diagnostic`.
 
 Because the newly added `vim.diagnostic` has no longer anything to do with lsp
 we also decided to rename our diagnostic functions:
-    Telescope lsp_document_diagnostics -> Telescope diagnostics_document
-    Telescope lsp_workspace_diagnostics -> Telescope diagnostics_workspace
+    Telescope lsp_document_diagnostics -> Telescope diagnostics bufnr=0
+    Telescope lsp_workspace_diagnostics -> Telescope diagnostics
 Because of that the `lsp_*_diagnostics` inside Telescope will be deprecated
-and removed soon. The new `diagnostics_*` work identical to the previous
-functions, so it should be sufficient to update your mappings.
+and removed soon. The new `diagnostics` works almost identical to the previous
+functions. Note that there is no longer a workspace diagnostics. You can only
+get all diagnostics for all open buffers.
 
 
 

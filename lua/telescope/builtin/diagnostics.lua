@@ -58,10 +58,8 @@ local diagnostics_to_tbl = function(opts)
     return buffer_diag
   end
 
-  local diagnosis = opts.get_all and vim.diagnostic.get(nil, diagnosis_opts)
-    or vim.diagnostic.get(current_buf, diagnosis_opts)
-  for _, diagnostic in ipairs(diagnosis) do
-    table.insert(items, preprocess_diag(diagnostic))
+  for _, d in ipairs(vim.diagnostic.get(opts.bufnr, diagnosis_opts)) do
+    table.insert(items, preprocess_diag(d))
   end
 
   -- sort results by bufnr (prioritize cur buf), severity, lnum
@@ -87,7 +85,14 @@ local diagnostics_to_tbl = function(opts)
   return items
 end
 
-diagnostics.document = function(opts)
+diagnostics.get = function(opts)
+  if opts.bufnr == nil then
+    opts.path_display = vim.F.if_nil(opts.path_display, {})
+  end
+  if type(opts.bufnr) == "string" then
+    opts.bufnr = tonumber(opts.bufnr)
+  end
+
   local locations = diagnostics_to_tbl(opts)
 
   if vim.tbl_isempty(locations) then
@@ -108,13 +113,6 @@ diagnostics.document = function(opts)
       sorter = conf.generic_sorter(opts),
     },
   }):find()
-end
-
-diagnostics.workspace = function(opts)
-  opts.path_display = vim.F.if_nil(opts.path_display, {})
-  opts.prompt_title = "Workspace Diagnostics"
-  opts.get_all = true
-  diagnostics.document(opts)
 end
 
 local function apply_checks(mod)
