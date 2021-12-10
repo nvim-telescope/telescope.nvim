@@ -1609,6 +1609,9 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
     └──────────────────────────────────────────────────┘
 
     `picker.layout_config` shared options:
+      - anchor:
+        - Which edge/corner to pin the picker to
+        - See |resolver.resolve_anchor_pos()|
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
@@ -1634,6 +1637,9 @@ layout_strategies.center()                        *layout_strategies.center()*
     remaining space above. Particularly useful for creating dropdown menus (see
     |telescope.themes| and |themes.get_dropdown()|`).
 
+    Note that the `anchor` option can only pin this layout to the left or right
+    edges.
+
     ┌──────────────────────────────────────────────────┐
     │    ┌────────────────────────────────────────┐    │
     │    |                 Preview                |    │
@@ -1652,6 +1658,9 @@ layout_strategies.center()                        *layout_strategies.center()*
     └──────────────────────────────────────────────────┘
 
     `picker.layout_config` shared options:
+      - anchor:
+        - Which edge/corner to pin the picker to
+        - See |resolver.resolve_anchor_pos()|
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
@@ -1713,6 +1722,9 @@ layout_strategies.vertical()                    *layout_strategies.vertical()*
     └──────────────────────────────────────────────────┘
 
     `picker.layout_config` shared options:
+      - anchor:
+        - Which edge/corner to pin the picker to
+        - See |resolver.resolve_anchor_pos()|
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
@@ -1740,6 +1752,9 @@ layout_strategies.flex()                            *layout_strategies.flex()*
 
 
     `picker.layout_config` shared options:
+      - anchor:
+        - Which edge/corner to pin the picker to
+        - See |resolver.resolve_anchor_pos()|
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
@@ -1809,6 +1824,20 @@ resolver.resolve_width()                            *resolver.resolve_width()*
 
     The returned function will have signature: function(self, max_columns,
     max_lines): number
+
+
+
+resolver.resolve_anchor_pos()                  *resolver.resolve_anchor_pos()*
+    Calculates the adjustment required to move the picker from the middle of
+    the screen to an edge or corner.
+    The `anchor` can be any of the following strings:
+      - "", "CENTER", "NW", "N", "NE", "E", "SE", "S", "SW", "W" The anchors
+        have the following meanings:
+      - "" or "CENTER":
+        the picker will remain in the middle of the screen.
+      - Compass directions:
+        the picker will move to the corresponding edge/corner e.g. "NW" -> "top
+        left corner", "E" -> "right edge", "S" -> "bottom edge"
 
 
 
