@@ -142,4 +142,21 @@ LATEST version. Every other commit is not supported. So make sure you build
 the newest nightly before reporting issues.
 
 
+                                                    *telescope.changelog-1553*
+
+Date: December 10, 2021
+PR: https://github.com/nvim-telescope/telescope.nvim/pull/1553
+
+Move from `vim.lsp.diagnostic` to `vim.diagnostic`.
+
+Because the newly added `vim.diagnostic` has no longer anything to do with lsp
+we also decided to rename our diagnostic functions:
+    Telescope lsp_document_diagnostics -> Telescope diagnostics_document
+    Telescope lsp_workspace_diagnostics -> Telescope diagnostics_workspace
+Because of that the `lsp_*_diagnostics` inside Telescope will be deprecated
+and removed soon. The new `diagnostics_*` work identical to the previous
+functions, so it should be sufficient to update your mappings.
+
+
+
  vim:tw=78:ts=8:ft=help:norl:

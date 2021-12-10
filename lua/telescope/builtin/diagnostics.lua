@@ -59,11 +59,9 @@ local diagnostics_to_tbl = function(opts)
   end
 
   local diagnosis = opts.get_all and vim.diagnostic.get(nil, diagnosis_opts)
-    or { vim.diagnostic.get(current_buf, diagnosis_opts) }
-  for _, namespace in ipairs(diagnosis) do
-    for _, diagnostic in ipairs(namespace) do
-      table.insert(items, preprocess_diag(diagnostic))
-    end
+    or vim.diagnostic.get(current_buf, diagnosis_opts)
+  for _, diagnostic in ipairs(diagnosis) do
+    table.insert(items, preprocess_diag(diagnostic))
   end
 
   -- sort results by bufnr (prioritize cur buf), severity, lnum
@@ -116,7 +114,7 @@ diagnostics.workspace = function(opts)
   opts.path_display = vim.F.if_nil(opts.path_display, {})
   opts.prompt_title = "Workspace Diagnostics"
   opts.get_all = true
-  diagnostics.diagnostics(opts)
+  diagnostics.document(opts)
 end
 
 local function apply_checks(mod)
