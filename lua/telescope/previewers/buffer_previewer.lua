@@ -163,7 +163,7 @@ previewers.file_maker = function(filepath, bufnr, opts)
   opts.ft = opts.use_ft_detect and pfiletype.detect(filepath)
   if opts.bufname ~= filepath then
     if not vim.in_fast_event() then
-      filepath = vim.fn.expand(filepath)
+      filepath = vim.fn.expand(filepath, false)
     end
     if type(opts.preview.filetype_hook) == "function" then
       if not opts.preview.filetype_hook(filepath, bufnr, opts) then
