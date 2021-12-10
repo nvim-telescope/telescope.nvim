@@ -55,11 +55,13 @@ internal.builtin = function(opts)
     title = "Telescope Pickers"
     for ext, funcs in pairs(require("telescope").extensions) do
       for func_name, func_obj in pairs(funcs) do
-        local debug_info = debug.getinfo(func_obj)
-        table.insert(objs, {
-          filename = string.sub(debug_info.source, 2),
-          text = string.format("%s : %s", ext, func_name),
-        })
+        if type(func_obj) == "function" then
+          local debug_info = debug.getinfo(func_obj)
+          table.insert(objs, {
+            filename = string.sub(debug_info.source, 2),
+            text = string.format("%s : %s", ext, func_name),
+          })
+        end
       end
     end
   end
