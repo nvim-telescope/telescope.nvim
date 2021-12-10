@@ -1012,6 +1012,7 @@ actions.which_key = function(prompt_bufnr, opts)
   a.nvim_win_set_option(km_win_id, "winhl", "Normal:" .. opts.normal_hl)
   a.nvim_win_set_option(km_opts.border.win_id, "winhl", "Normal:" .. opts.border_hl)
   a.nvim_win_set_option(km_win_id, "winblend", opts.winblend)
+  a.nvim_win_set_option(km_win_id, "foldenable", false)
 
   vim.cmd(string.format(
     "autocmd BufLeave <buffer> ++once lua %s",
