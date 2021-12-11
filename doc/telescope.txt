@@ -1001,7 +1001,6 @@ builtin.builtin({opts})                                    *builtin.builtin()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {ignore_filename}    (boolean)  dont show filenames (default: true)
         {include_extensions} (boolean)  if true will show the pickers of the
                                         installed extensions (default: false)
 
