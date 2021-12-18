@@ -432,13 +432,15 @@ function Picker:find()
     pcall(a.nvim_buf_set_option, prompt_bufnr, "filetype", "TelescopePrompt")
     pcall(a.nvim_buf_set_option, results_bufnr, "filetype", "TelescopeResults")
 
-    -- TODO(async): I wonder if this should actually happen _before_ we nvim_buf_attach.
-    -- This way the buffer would always start with what we think it should when we start the loop.
     if self.initial_mode == "insert" or self.initial_mode == "normal" then
       -- required for set_prompt to work adequately
-      vim.cmd [[startinsert!]]
+      vim.schedule(function()
+        vim.cmd [[startinsert!]]
+      end)
       if self.default_text then
-        self:set_prompt(self.default_text)
+        vim.schedule(function()
+          self:set_prompt(self.default_text)
+        end)
       end
       if self.initial_mode == "normal" then
         -- otherwise (i) insert mode exitted faster than `picker:set_prompt`; (ii) cursor on wrong pos

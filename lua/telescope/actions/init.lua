@@ -356,14 +356,8 @@ actions._close = function(prompt_bufnr, keepinsert)
   local original_win_id = picker.original_win_id
 
   actions.close_pum(prompt_bufnr)
-
   if not keepinsert then
     vim.cmd [[stopinsert]]
-  elseif vim.fn.has "nvim-0.7" == 1 then
-    -- https://github.com/neovim/neovim/commit/28134f4e78819c2bbf0344326b9d44f21eb0d736
-    vim.schedule(function()
-      vim.cmd [[startinsert]]
-    end)
   end
 
   vim.api.nvim_win_close(prompt_win, true)
