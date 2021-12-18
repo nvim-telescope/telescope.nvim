@@ -43,6 +43,9 @@ extensions.manager = setmetatable({}, {
 ---
 ---         Only the items in `exports` will be exposed on the  resulting
 ---         module that users can access via require('telescope').extensions.foo
+---         Also, any top-level key-value pairs in exports where the value is a function and the
+---         key doesn't start with an underscore will be included when calling the `builtin` picker
+---         with the `include_extensions` option enabled.
 ---
 ---         Other things in the module will not be accessible. This is the public API
 ---         for your extension. Consider not breaking it a lot :laugh:
