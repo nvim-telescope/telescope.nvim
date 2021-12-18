@@ -41,9 +41,12 @@ local diagnostics_to_tbl = function(opts)
     end
   end
 
-  local root_dir = not opts.root_dir or
-    type(opts.root_dir) == "boolean" and vim.fn.getcwd() or  -- use cwd for `true`
-    opts.root_dir
+  local root_dir
+  if opts.root_dir then
+    root_dir = type(opts.root_dir) == "boolean" and
+      vim.fn.getcwd() or  -- use cwd for `true`
+      opts.root_dir
+  end
 
   local bufnr_name_map = {}
   local filter_diag = function(diagnostic)
