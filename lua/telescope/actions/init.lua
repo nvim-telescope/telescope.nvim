@@ -369,6 +369,7 @@ actions.insert_symbol_i = function(prompt_bufnr)
   vim.api.nvim_buf_set_text(0, cursor[1] - 1, cursor[2], cursor[1] - 1, cursor[2], { symbol })
   vim.schedule(function()
     vim.api.nvim_win_set_cursor(0, { cursor[1], cursor[2] + #symbol })
+    vim.cmd [[startinsert!]]
   end)
 end
 
