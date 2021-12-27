@@ -14,7 +14,6 @@ end
 
 extensions.manager = setmetatable({}, {
   __index = function(t, k)
-    -- See if this extension exists.
 
     local ext = load_extension(k)
     t[k] = ext.exports or {}
