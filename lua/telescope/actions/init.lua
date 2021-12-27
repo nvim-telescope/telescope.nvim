@@ -336,26 +336,6 @@ actions.paste_register = function(prompt_bufnr)
   end
 end
 
-actions.run_builtin = function(prompt_bufnr)
-  local selection = action_state.get_selected_entry()
-  if selection == nil then
-    print "[telescope] Nothing currently selected"
-    return
-  end
-
-  actions._close(prompt_bufnr, true)
-  if string.match(selection.text, " : ") then
-    -- Call appropriate function from extensions
-    local split_string = vim.split(selection.text, " : ")
-    local ext = split_string[1]
-    local func = split_string[2]
-    require("telescope").extensions[ext][func]()
-  else
-    -- Call appropriate telescope builtin
-    require("telescope.builtin")[selection.text]()
-  end
-end
-
 actions.insert_symbol = function(prompt_bufnr)
   local symbol = action_state.get_selected_entry().value[1]
   actions.close(prompt_bufnr)

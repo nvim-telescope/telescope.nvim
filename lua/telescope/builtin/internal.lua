@@ -31,12 +31,7 @@ end
 
 local internal = {}
 
--- TODO: What the heck should we do for accepting this.
---  vim.fn.setreg("+", "nnoremap $TODO :lua require('telescope.builtin').<whatever>()<CR>")
--- TODO: Can we just do the names instead?
 internal.builtin = function(opts)
-  opts.path_display = utils.get_default(opts.path_display, "hidden")
-  opts.ignore_filename = utils.get_default(opts.ignore_filename, true)
   opts.include_extensions = utils.get_default(opts.include_extensions, false)
 
   local objs = {}
@@ -84,7 +79,27 @@ internal.builtin = function(opts)
     previewer = previewers.builtin.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
-      actions.select_default:replace(actions.run_builtin)
+      actions.select_default:replace(function(_)
+        local selection = action_state.get_selected_entry()
+        if not selection then
+          print "[telescope] Nothing currently selected"
+          return
+        end
+
+        -- we do this to avoid any surprises
+        opts.include_extensions = nil
+
+        if string.match(selection.text, " : ") then
+          -- Call appropriate function from extensions
+          local split_string = vim.split(selection.text, " : ")
+          local ext = split_string[1]
+          local func = split_string[2]
+          require("telescope").extensions[ext][func](opts)
+        else
+          -- Call appropriate telescope builtin
+          require("telescope.builtin")[selection.text](opts)
+        end
+      end)
       return true
     end,
   }):find()
