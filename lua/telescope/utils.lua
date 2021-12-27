@@ -230,6 +230,9 @@ local calc_result_length = function(truncate_len)
 end
 
 utils.transform_path = function(opts, path)
+  if path == nil then
+    return
+  end
   if is_uri(path) then
     return path
   end
