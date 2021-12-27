@@ -55,6 +55,11 @@ return function(opts)
       end
 
       if not job_completed then
+        if not vim.tbl_isempty(results) then
+          for _, v in ipairs(results) do
+            process_result(v)
+          end
+        end
         for line in stdout:iter(false) do
           num_results = num_results + 1
 
