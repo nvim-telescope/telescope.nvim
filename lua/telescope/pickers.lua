@@ -438,9 +438,7 @@ function Picker:find()
         vim.cmd [[startinsert!]]
       end)
       if self.default_text then
-        vim.schedule(function()
-          self:set_prompt(self.default_text)
-        end)
+        self:set_prompt(self.default_text)
       end
       if self.initial_mode == "normal" then
         -- otherwise (i) insert mode exitted faster than `picker:set_prompt`; (ii) cursor on wrong pos
@@ -725,9 +723,16 @@ function Picker:delete_selection(delete_cb)
 end
 
 function Picker:set_prompt(str)
-  -- TODO(conni2461): As soon as prompt_buffers are fix use this:
-  -- vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, 1, false, { str })
-  vim.api.nvim_feedkeys(str, "n", false)
+  if vim.fn.has "nvim-0.7" == 1 then
+    local prompt_text = self.prompt_prefix .. (str or "")
+    vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, 1, false, { prompt_text })
+    vim.api.nvim_win_set_cursor(self.prompt_win, { 1, #prompt_text })
+    self:_reset_prefix_color()
+  else
+    vim.schedule(function()
+      vim.api.nvim_feedkeys(str, "n", false)
+    end)
+  end
 end
 
 --- Closes the windows for the prompt, results and preview
