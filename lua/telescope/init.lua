@@ -93,6 +93,8 @@ function telescope.register_extension(mod)
 end
 
 --- Load an extension.
+--- - Notes:
+---   - Loading triggers ext setup via the config passed in |telescope.setup|
 ---@param name string: Name of the extension
 function telescope.load_extension(name)
   return _extensions.load(name)

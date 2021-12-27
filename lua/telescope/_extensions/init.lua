@@ -4,18 +4,17 @@ extensions._loaded = {}
 extensions._config = {}
 extensions._health = {}
 
+local load_extension = function(name)
+  local ok, ext = pcall(require, "telescope._extensions." .. name)
+  if not ok then
+    error("This extension doesn't exist or is not installed: " .. name .. "\n" .. ext)
+  end
+  return ext
+end
+
 extensions.manager = setmetatable({}, {
   __index = function(t, k)
-    -- See if this extension exists.
-    local ok, ext = pcall(require, "telescope._extensions." .. k)
-    if not ok then
-      error("This extension doesn't exist or is not installed: " .. k .. "\n" .. ext)
-    end
-
-    if ext.setup then
-      ext.setup(extensions._config[k] or {}, require("telescope.config").values)
-    end
-
+    local ext = load_extension(k)
     t[k] = ext.exports or {}
     extensions._health[k] = ext.health
 
@@ -57,7 +56,10 @@ extensions.register = function(mod)
 end
 
 extensions.load = function(name)
-  return extensions.manager[name]
+  local ext = load_extension(name)
+  if ext.setup then
+    ext.setup(extensions._config[name] or {}, require("telescope.config").values)
+  end
 end
 
 extensions.set_config = function(extensions_config)
