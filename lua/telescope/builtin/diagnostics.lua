@@ -102,7 +102,7 @@ diagnostics.get = function(opts)
 
   opts.path_display = vim.F.if_nil(opts.path_display, "hidden")
   pickers.new(opts, {
-    prompt_title = "Document Diagnostics",
+    prompt_title = opts.bufnr == nil and "Workspace Diagnostics" or "Document Diagnostics",
     finder = finders.new_table {
       results = locations,
       entry_maker = opts.entry_maker or make_entry.gen_from_diagnostics(opts),
