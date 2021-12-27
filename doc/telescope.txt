@@ -610,6 +610,8 @@ telescope.register_extension({mod})           *telescope.register_extension()*
 
 telescope.load_extension({name})                  *telescope.load_extension()*
     Load an extension.
+    - Notes:
+      - Loading triggers ext setup via the config passed in |telescope.setup|
 
 
     Parameters: ~
