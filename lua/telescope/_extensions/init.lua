@@ -63,6 +63,7 @@ extensions.load = function(name)
   if ext.setup then
     ext.setup(extensions._config[name] or {}, require("telescope.config").values)
   end
+  return extensions.manager[name]
 end
 
 extensions.set_config = function(extensions_config)
