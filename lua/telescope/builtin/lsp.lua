@@ -49,7 +49,7 @@ local function list_or_jump(action, title, opts)
   local params = vim.lsp.util.make_position_params()
   vim.lsp.buf_request(0, action, params, function(err, result, _ctx, _config)
     if err then
-      vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
+      vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. tostring(err.message))
       return
     end
     local flattened_results = {}
