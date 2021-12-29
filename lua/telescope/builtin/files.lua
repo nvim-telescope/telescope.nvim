@@ -284,6 +284,9 @@ local function prepare_match(entry, kind)
 end
 
 files.file_browser = function(opts)
+  vim.api.nvim_err_writeln [[Deprecation notice: file browser will be carved out into a more featureful extension, see:
+https://github.com/nvim-telescope/telescope-file-browser.nvim]]
+
   opts = opts or {}
 
   local is_dir = function(value)
