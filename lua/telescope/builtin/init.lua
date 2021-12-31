@@ -400,7 +400,7 @@ builtin.lsp_code_actions = require_on_exported_call("telescope.builtin.lsp").cod
 ---@param opts table: options to pass to the picker
 ---@field timeout number: timeout for the sync call (default: 10000)
 ---@field start_line number: where the code action starts (default: handled by :'<,'>Telescope lsp_range_code_actions)
----@field start_line number: where the code action ends (default: handled by :'<,'>Telescope lsp_range_code_actions)
+---@field end_line number: where the code action ends (default: handled by :'<,'>Telescope lsp_range_code_actions)
 builtin.lsp_range_code_actions = require_on_exported_call("telescope.builtin.lsp").range_code_actions
 
 --- Lists LSP document symbols in the current buffer
