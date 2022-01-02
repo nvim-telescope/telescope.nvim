@@ -41,12 +41,7 @@ local diagnostics_to_tbl = function(opts)
     end
   end
 
-  local root_dir
-  if opts.root_dir then
-    root_dir = type(opts.root_dir) == "boolean" and
-      vim.fn.getcwd() or  -- use cwd for `true`
-      opts.root_dir
-  end
+  opts.root_dir = opts.root_dir == true and vim.loop.cwd() or opts.root_dir
 
   local bufnr_name_map = {}
   local filter_diag = function(diagnostic)
@@ -54,10 +49,10 @@ local diagnostics_to_tbl = function(opts)
       bufnr_name_map[diagnostic.bufnr] = vim.api.nvim_buf_get_name(diagnostic.bufnr)
     end
 
-    local root_dir_test = not root_dir or
-      string.sub(bufnr_name_map[diagnostic.bufnr], 1, #root_dir) == root_dir
-    local listed_test = not opts.no_unlisted  or
-      vim.fn.buflisted(diagnostic.bufnr) == 1
+    local root_dir_test = not opts.root_dir or
+      string.sub(bufnr_name_map[diagnostic.bufnr], 1, #opts.root_dir) == opts.root_dir
+    local listed_test = not opts.no_unlisted or
+      vim.api.nvim_buf_get_option(diagnostic.bufnr, "buflisted")
 
     return root_dir_test and listed_test
   end
