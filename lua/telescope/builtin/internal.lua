@@ -971,11 +971,12 @@ internal.keymaps = function(opts)
     finder = finders.new_table {
       results = keymaps_table,
       entry_maker = function(line)
+        local desc = line.desc or line.rhs or "Lua function"
         return {
           valid = line ~= "",
           value = line,
-          ordinal = utils.display_termcodes(line.lhs) .. line.rhs,
-          display = line.mode .. " " .. utils.display_termcodes(line.lhs) .. " " .. line.rhs,
+          ordinal = utils.display_termcodes(line.lhs) .. desc,
+          display = line.mode .. " " .. utils.display_termcodes(line.lhs) .. " " .. desc,
         }
       end,
     },
