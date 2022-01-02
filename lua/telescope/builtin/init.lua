@@ -423,7 +423,7 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 --
 --
 
---- Lists diagnostics for current or all open buffers
+--- Lists diagnostics
 --- - Fields:
 ---   - `All severity flags can be passed as `string` or `number` as per `:vim.diagnostic.severity:`
 --- - Default keymaps:

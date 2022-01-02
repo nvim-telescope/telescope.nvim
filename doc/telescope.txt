@@ -1458,7 +1458,7 @@ builtin.lsp_dynamic_workspace_symbols({opts}) *builtin.lsp_dynamic_workspace_sym
 
 
 builtin.diagnostics({opts})                            *builtin.diagnostics()*
-    Lists diagnostics
+    Lists diagnostics for current or all open buffers
     - Fields:
       - `All severity flags can be passed as `string` or `number` as per
         `:vim.diagnostic.severity:`
