@@ -550,6 +550,11 @@ local git_reset_branch = function(prompt_bufnr, mode)
   else
     print(string.format('Error when resetting to: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  ")))
   end
+  
+  local currentBuff = vim.api.nvim_get_current_buf()
+  vim.cmd("bufdo e")
+  vim.cmd("b" .. currentBuff)
+  vim.cmd("syntax on")
 end
 
 --- Reset to selected git commit using mixed mode
