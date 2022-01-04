@@ -9,7 +9,7 @@
 ---     defaults = {
 ---       mappings = {
 ---         n = {
----           ["?"] = action_generate.toggle_registered_actions {
+---           ["?"] = action_generate.which_key {
 ---             name_width = 20, -- typically leads to smaller floats
 ---             max_height = 0.5, -- increase potential maximum height
 ---             seperator = " > ", -- change sep between mode, keybind, and name

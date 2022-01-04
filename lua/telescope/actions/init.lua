@@ -336,26 +336,6 @@ actions.paste_register = function(prompt_bufnr)
   end
 end
 
-actions.run_builtin = function(prompt_bufnr)
-  local selection = action_state.get_selected_entry()
-  if selection == nil then
-    print "[telescope] Nothing currently selected"
-    return
-  end
-
-  actions._close(prompt_bufnr, true)
-  if string.match(selection.text, " : ") then
-    -- Call appropriate function from extensions
-    local split_string = vim.split(selection.text, " : ")
-    local ext = split_string[1]
-    local func = split_string[2]
-    require("telescope").extensions[ext][func]()
-  else
-    -- Call appropriate telescope builtin
-    require("telescope.builtin")[selection.text]()
-  end
-end
-
 actions.insert_symbol = function(prompt_bufnr)
   local symbol = action_state.get_selected_entry().value[1]
   actions.close(prompt_bufnr)
@@ -369,6 +349,7 @@ actions.insert_symbol_i = function(prompt_bufnr)
   vim.api.nvim_buf_set_text(0, cursor[1] - 1, cursor[2], cursor[1] - 1, cursor[2], { symbol })
   vim.schedule(function()
     vim.api.nvim_win_set_cursor(0, { cursor[1], cursor[2] + #symbol })
+    vim.cmd [[startinsert!]]
   end)
 end
 
@@ -867,7 +848,7 @@ end
 
 --- Display the keymaps of registered actions similar to which-key.nvim.<br>
 --- - Notes:
----   - The defaults can be overridden via |action_generate.toggle_registered_actions|.
+---   - The defaults can be overridden via |action_generate.which_key|.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.which_key = function(prompt_bufnr, opts)
   opts = opts or {}
@@ -1012,6 +993,7 @@ actions.which_key = function(prompt_bufnr, opts)
   a.nvim_win_set_option(km_win_id, "winhl", "Normal:" .. opts.normal_hl)
   a.nvim_win_set_option(km_opts.border.win_id, "winhl", "Normal:" .. opts.border_hl)
   a.nvim_win_set_option(km_win_id, "winblend", opts.winblend)
+  a.nvim_win_set_option(km_win_id, "foldenable", false)
 
   vim.cmd(string.format(
     "autocmd BufLeave <buffer> ++once lua %s",

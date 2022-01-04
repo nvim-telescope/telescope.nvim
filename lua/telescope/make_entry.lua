@@ -250,16 +250,40 @@ do
   end
 end
 
-function make_entry.gen_from_git_stash()
+function make_entry.gen_from_git_stash(opts)
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = 10 },
+      opts.show_branch and { width = 15 } or "",
+      { remaining = true },
+    },
+  }
+
+  local make_display = function(entry)
+    return displayer {
+      { entry.value, "TelescopeResultsLineNr" },
+      opts.show_branch and { entry.branch_name, "TelescopeResultsIdentifier" } or "",
+      entry.commit_info,
+    }
+  end
+
   return function(entry)
     if entry == "" then
       return nil
     end
-    local splitted = vim.split(entry, ":")
+
+    local splitted = utils.max_split(entry, ": ", 2)
+    local stash_idx = splitted[1]
+    local _, branch_name = string.match(splitted[2], "^([WIP on|On]+) (.+)")
+    local commit_info = splitted[3]
+
     return {
-      value = splitted[1],
-      ordinal = splitted[3],
-      display = splitted[3],
+      value = stash_idx,
+      ordinal = commit_info,
+      branch_name = branch_name,
+      commit_info = commit_info,
+      display = make_display,
     }
   end
 end
@@ -956,33 +980,33 @@ function make_entry.gen_from_ctags(opts)
   end
 end
 
-function make_entry.gen_from_lsp_diagnostics(opts)
+function make_entry.gen_from_diagnostics(opts)
   opts = opts or {}
 
-  local lsp_type_diagnostic = vim.lsp.protocol.DiagnosticSeverity
-
-  local signs
-  if not opts.no_sign then
-    signs = {}
-    for severity, _ in pairs(lsp_type_diagnostic) do
-      -- pcall to catch entirely unbound or cleared out sign hl group
-      if type(severity) == "string" then
-        local status, sign = pcall(function()
-          return vim.trim(vim.fn.sign_getdefined("LspDiagnosticsSign" .. severity)[1].text)
-        end)
-        if not status then
-          sign = severity:sub(1, 1)
-        end
-        signs[severity] = sign
-      end
+  local signs = (function()
+    if opts.no_sign then
+      return
     end
-  end
+    local signs = {}
+    local type_diagnostic = vim.diagnostic.severity
+    for _, severity in ipairs(type_diagnostic) do
+      local status, sign = pcall(function()
+        -- only the first char is upper all others are lowercalse
+        return vim.trim(vim.fn.sign_getdefined("DiagnosticSign" .. severity:lower():gsub("^%l", string.upper))[1].text)
+      end)
+      if not status then
+        sign = severity:sub(1, 1)
+      end
+      signs[severity] = sign
+    end
+    return signs
+  end)()
 
   local display_items = {
     { width = utils.if_nil(signs, 8, 10) },
     { remaining = true },
   }
-  local line_width = utils.get_default(opts.line_width, 0.5)
+  local line_width = vim.F.if_nil(opts.line_width, 0.5)
   if not utils.is_path_hidden(opts) then
     table.insert(display_items, 2, { width = line_width })
   end
@@ -998,9 +1022,13 @@ function make_entry.gen_from_lsp_diagnostics(opts)
     local pos = string.format("%4d:%2d", entry.lnum, entry.col)
     local line_info = {
       (signs and signs[entry.type] .. " " or "") .. pos,
-      "LspDiagnosticsDefault" .. entry.type,
+      "Diagnostic" .. entry.type,
     }
 
+    --TODO(conni2461): I dont like that this is symbol lnum:col | msg | filename
+    --                 i want: symbol filename:lnum:col | msg
+    --                 or    : symbol lnum:col | msg
+    --                 I think this is more natural
     return displayer {
       line_info,
       entry.text,
@@ -1009,21 +1037,15 @@ function make_entry.gen_from_lsp_diagnostics(opts)
   end
 
   return function(entry)
-    local filename = entry.filename or vim.api.nvim_buf_get_name(entry.bufnr)
-
     return {
-      valid = true,
-
       value = entry,
-      ordinal = (not opts.ignore_filename and filename or "") .. " " .. entry.text,
+      ordinal = ("%s %s"):format(not opts.ignore_filename and entry.filename or "", entry.text),
       display = make_display,
-      filename = filename,
+      filename = entry.filename,
       type = entry.type,
       lnum = entry.lnum,
       col = entry.col,
       text = entry.text,
-      start = entry.start,
-      finish = entry.finish,
     }
   end
 end

@@ -563,7 +563,7 @@ previewers.builtin = defaulter(function(_)
     end,
 
     define_preview = function(self, entry, status)
-      local module_name = vim.fn.fnamemodify(entry.filename, ":t:r")
+      local module_name = vim.fn.fnamemodify(vim.fn.fnamemodify(entry.filename, ":h"), ":t")
       local text
       if entry.text:sub(1, #module_name) ~= module_name then
         text = module_name .. "." .. entry.text

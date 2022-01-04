@@ -4,19 +4,21 @@ extensions._loaded = {}
 extensions._config = {}
 extensions._health = {}
 
+local load_extension = function(name)
+  local ok, ext = pcall(require, "telescope._extensions." .. name)
+  if not ok then
+    error("This extension doesn't exist or is not installed: " .. name .. "\n" .. ext)
+  end
+  return ext
+end
+
 extensions.manager = setmetatable({}, {
   __index = function(t, k)
-    -- See if this extension exists.
-    local ok, ext = pcall(require, "telescope._extensions." .. k)
-    if not ok then
-      error("This extension doesn't exist or is not installed: " .. k .. "\n" .. ext)
-    end
-
+    local ext = load_extension(k)
+    t[k] = ext.exports or {}
     if ext.setup then
       ext.setup(extensions._config[k] or {}, require("telescope.config").values)
     end
-
-    t[k] = ext.exports or {}
     extensions._health[k] = ext.health
 
     return t[k]
@@ -43,6 +45,9 @@ extensions.manager = setmetatable({}, {
 ---
 ---         Only the items in `exports` will be exposed on the  resulting
 ---         module that users can access via require('telescope').extensions.foo
+---         Also, any top-level key-value pairs in exports where the value is a function and the
+---         key doesn't start with an underscore will be included when calling the `builtin` picker
+---         with the `include_extensions` option enabled.
 ---
 ---         Other things in the module will not be accessible. This is the public API
 ---         for your extension. Consider not breaking it a lot :laugh:
@@ -54,6 +59,10 @@ extensions.register = function(mod)
 end
 
 extensions.load = function(name)
+  local ext = load_extension(name)
+  if ext.setup then
+    ext.setup(extensions._config[name] or {}, require("telescope.config").values)
+  end
   return extensions.manager[name]
 end
 

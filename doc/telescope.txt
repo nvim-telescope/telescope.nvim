@@ -610,6 +610,8 @@ telescope.register_extension({mod})           *telescope.register_extension()*
 
 telescope.load_extension({name})                  *telescope.load_extension()*
     Load an extension.
+    - Notes:
+      - Loading triggers ext setup via the config passed in |telescope.setup|
 
 
     Parameters: ~
@@ -989,6 +991,8 @@ builtin.git_stash({opts})                                *builtin.git_stash()*
         {cwd}          (string)   specify the path of the repo
         {use_git_root} (boolean)  if we should use git root as cwd or the cwd
                                   (important for submodule) (default: true)
+        {show_branch}  (boolean)  if we should display the branch name for git
+                                  stash entries (default: true)
 
 
 builtin.builtin({opts})                                    *builtin.builtin()*
@@ -999,7 +1003,6 @@ builtin.builtin({opts})                                    *builtin.builtin()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {ignore_filename}    (boolean)  dont show filenames (default: true)
         {include_extensions} (boolean)  if true will show the pickers of the
                                         installed extensions (default: false)
 
@@ -1456,11 +1459,11 @@ builtin.lsp_dynamic_workspace_symbols({opts}) *builtin.lsp_dynamic_workspace_sym
                                             with hl_group
 
 
-builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
-    Lists LSP diagnostics for the current buffer
+builtin.diagnostics({opts})                            *builtin.diagnostics()*
+    Lists diagnostics for current or all open buffers
     - Fields:
       - `All severity flags can be passed as `string` or `number` as per
-        `:vim.lsp.protocol.DiagnosticSeverity:`
+        `:vim.diagnostic.severity:`
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query with the
         diagnostic you want to see (i.e. `:warning:`)
@@ -1470,6 +1473,8 @@ builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
+        {bufnr}          (string|number)  if nil get diagnostics for all open
+                                          buffers. Use 0 for current buffer
         {severity}       (string|number)  filter diagnostics by severity name
                                           (string) or id (number)
         {severity_limit} (string|number)  keep diagnostics equal or more
@@ -1478,39 +1483,12 @@ builtin.lsp_document_diagnostics({opts})  *builtin.lsp_document_diagnostics()*
         {severity_bound} (string|number)  keep diagnostics equal or less
                                           severe wrt severity name (string) or
                                           id (number)
-        {no_sign}        (boolean)        hide LspDiagnosticSigns from Results
+        {no_sign}        (boolean)        hide DiagnosticSigns from Results
                                           (default: false)
         {line_width}     (number)         set length of diagnostic entry text
                                           in Results
-
-
-builtin.lsp_workspace_diagnostics({opts}) *builtin.lsp_workspace_diagnostics()*
-    Lists LSP diagnostics for the current workspace if supported, otherwise
-    searches in all open buffers
-    - Fields:
-      - `All severity flags can be passed as `string` or `number` as per
-        `:vim.lsp.protocol.DiagnosticSeverity:`
-    - Default keymaps:
-      - `<C-l>`: show autocompletion menu to prefilter your query with the
-        diagnostic you want to see (i.e. `:warning:`)
-
-
-    Parameters: ~
-        {opts} (table)  options to pass to the picker
-
-    Options: ~
-        {severity}       (string|number)  filter diagnostics by severity name
-                                          (string) or id (number)
-        {severity_limit} (string|number)  keep diagnostics equal or more
-                                          severe wrt severity name (string) or
-                                          id (number)
-        {severity_bound} (string|number)  keep diagnostics equal or less
-                                          severe wrt severity name (string) or
-                                          id (number)
-        {no_sign}        (boolean)        hide LspDiagnosticSigns from Results
-                                          (default: false)
-        {line_width}     (number)         set length of diagnostic entry text
-                                          in Results
+        {namespace}      (number)         limit your diagnostics to a specific
+                                          namespace
 
 
 
@@ -1632,10 +1610,16 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
     └──────────────────────────────────────────────────┘
 
     `picker.layout_config` shared options:
+      - anchor:
+        - Which edge/corner to pin the picker to
+        - See |resolver.resolve_anchor_pos()|
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
       - scroll_speed: The number of lines to scroll through the previewer
       - width:
         - How wide to make Telescope's entire layout
@@ -1646,9 +1630,6 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
       - preview_width:
         - Change the width of Telescope's preview window
         - See |resolver.resolve_width()|
-      - prompt_position:
-        - Where to place prompt window.
-        - Available Values: 'bottom', 'top'
 
 
 layout_strategies.center()                        *layout_strategies.center()*
@@ -1656,6 +1637,9 @@ layout_strategies.center()                        *layout_strategies.center()*
     the middle of the screen. The preview window is then placed in the
     remaining space above. Particularly useful for creating dropdown menus (see
     |telescope.themes| and |themes.get_dropdown()|`).
+
+    Note that the `anchor` option can only pin this layout to the left or right
+    edges.
 
     ┌──────────────────────────────────────────────────┐
     │    ┌────────────────────────────────────────┐    │
@@ -1675,10 +1659,16 @@ layout_strategies.center()                        *layout_strategies.center()*
     └──────────────────────────────────────────────────┘
 
     `picker.layout_config` shared options:
+      - anchor:
+        - Which edge/corner to pin the picker to
+        - See |resolver.resolve_anchor_pos()|
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
       - scroll_speed: The number of lines to scroll through the previewer
       - width:
         - How wide to make Telescope's entire layout
@@ -1686,9 +1676,6 @@ layout_strategies.center()                        *layout_strategies.center()*
 
     `picker.layout_config` unique options:
       - preview_cutoff: When lines are less than this value, the preview will be disabled
-      - prompt_position:
-        - Where to place prompt window.
-        - Available Values: 'bottom', 'top'
 
 
 layout_strategies.cursor()                        *layout_strategies.cursor()*
@@ -1736,10 +1723,16 @@ layout_strategies.vertical()                    *layout_strategies.vertical()*
     └──────────────────────────────────────────────────┘
 
     `picker.layout_config` shared options:
+      - anchor:
+        - Which edge/corner to pin the picker to
+        - See |resolver.resolve_anchor_pos()|
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
       - scroll_speed: The number of lines to scroll through the previewer
       - width:
         - How wide to make Telescope's entire layout
@@ -1750,9 +1743,6 @@ layout_strategies.vertical()                    *layout_strategies.vertical()*
       - preview_height:
         - Change the height of Telescope's preview window
         - See |resolver.resolve_height()|
-      - prompt_position:
-        - Where to place prompt window.
-        - Available Values: 'bottom', 'top'
 
 
 layout_strategies.flex()                            *layout_strategies.flex()*
@@ -1763,10 +1753,16 @@ layout_strategies.flex()                            *layout_strategies.flex()*
 
 
     `picker.layout_config` shared options:
+      - anchor:
+        - Which edge/corner to pin the picker to
+        - See |resolver.resolve_anchor_pos()|
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
       - mirror: Flip the location of the results/prompt and preview windows
+      - prompt_position:
+        - Where to place prompt window.
+        - Available Values: 'bottom', 'top'
       - scroll_speed: The number of lines to scroll through the previewer
       - width:
         - How wide to make Telescope's entire layout
@@ -1829,6 +1825,20 @@ resolver.resolve_width()                            *resolver.resolve_width()*
 
     The returned function will have signature: function(self, max_columns,
     max_lines): number
+
+
+
+resolver.resolve_anchor_pos()                  *resolver.resolve_anchor_pos()*
+    Calculates the adjustment required to move the picker from the middle of
+    the screen to an edge or corner.
+    The `anchor` can be any of the following strings:
+      - "", "CENTER", "NW", "N", "NE", "E", "SE", "S", "SW", "W" The anchors
+        have the following meanings:
+      - "" or "CENTER":
+        the picker will remain in the middle of the screen.
+      - Compass directions:
+        the picker will move to the corresponding edge/corner e.g. "NW" -> "top
+        left corner", "E" -> "right edge", "S" -> "bottom edge"
 
 
 
@@ -2163,8 +2173,7 @@ actions.which_key({prompt_bufnr})                        *actions.which_key()*
     Display the keymaps of registered actions similar to which-key.nvim.
 
     - Notes:
-      - The defaults can be overridden via
-        |action_generate.toggle_registered_actions|.
+      - The defaults can be overridden via |action_generate.which_key|.
 
 
     Parameters: ~
@@ -2413,7 +2422,7 @@ General usage:
     defaults = {
       mappings = {
         n = {
-          ["?"] = action_generate.toggle_registered_actions {
+          ["?"] = action_generate.which_key {
             name_width = 20, -- typically leads to smaller floats
             max_height = 0.5, -- increase potential maximum height
             seperator = " > ", -- change sep between mode, keybind, and name

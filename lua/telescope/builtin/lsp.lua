@@ -380,16 +380,10 @@ local function get_workspace_symbols_requester(bufnr, opts)
     _, cancel = vim.lsp.buf_request(bufnr, "workspace/symbol", { query = prompt }, tx)
 
     -- Handle 0.5 / 0.5.1 handler situation
-    local err, res_1, res_2 = rx()
-    local results_lsp
-    if type(res_1) == "table" then
-      results_lsp = res_1
-    else
-      results_lsp = res_2
-    end
+    local err, res = rx()
     assert(not err, err)
 
-    local locations = vim.lsp.util.symbols_to_items(results_lsp or {}, bufnr) or {}
+    local locations = vim.lsp.util.symbols_to_items(res or {}, bufnr) or {}
     if not vim.tbl_isempty(locations) then
       locations = utils.filter_symbols(locations, opts) or {}
     end
@@ -409,37 +403,6 @@ lsp.dynamic_workspace_symbols = function(opts)
     previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),
   }):find()
-end
-
-lsp.diagnostics = function(opts)
-  local locations = utils.diagnostics_to_tbl(opts)
-
-  if vim.tbl_isempty(locations) then
-    print "No diagnostics found"
-    return
-  end
-
-  opts.path_display = utils.get_default(opts.path_display, "hidden")
-  pickers.new(opts, {
-    prompt_title = "LSP Document Diagnostics",
-    finder = finders.new_table {
-      results = locations,
-      entry_maker = opts.entry_maker or make_entry.gen_from_lsp_diagnostics(opts),
-    },
-    previewer = conf.qflist_previewer(opts),
-    sorter = conf.prefilter_sorter {
-      tag = "type",
-      sorter = conf.generic_sorter(opts),
-    },
-  }):find()
-end
-
-lsp.workspace_diagnostics = function(opts)
-  opts = utils.get_default(opts, {})
-  opts.path_display = utils.get_default(opts.path_display, {})
-  opts.prompt_title = "LSP Workspace Diagnostics"
-  opts.get_all = true
-  lsp.diagnostics(opts)
 end
 
 local function check_capabilities(feature)

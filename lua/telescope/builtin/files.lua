@@ -85,8 +85,6 @@ files.live_grep = function(opts)
 
     if search_dirs then
       table.insert(search_list, search_dirs)
-    else
-      table.insert(search_list, ".")
     end
 
     if grep_open_files then
@@ -137,8 +135,6 @@ files.grep_string = function(opts)
     for _, path in ipairs(search_dirs) do
       table.insert(args, vim.fn.expand(path))
     end
-  else
-    table.insert(args, ".")
   end
 
   pickers.new(opts, {
@@ -288,6 +284,9 @@ local function prepare_match(entry, kind)
 end
 
 files.file_browser = function(opts)
+  vim.api.nvim_err_writeln [[Deprecation notice: file browser will be carved out into a more featureful extension, see:
+https://github.com/nvim-telescope/telescope-file-browser.nvim]]
+
   opts = opts or {}
 
   local is_dir = function(value)

@@ -31,12 +31,7 @@ end
 
 local internal = {}
 
--- TODO: What the heck should we do for accepting this.
---  vim.fn.setreg("+", "nnoremap $TODO :lua require('telescope.builtin').<whatever>()<CR>")
--- TODO: Can we just do the names instead?
 internal.builtin = function(opts)
-  opts.path_display = utils.get_default(opts.path_display, "hidden")
-  opts.ignore_filename = utils.get_default(opts.ignore_filename, true)
   opts.include_extensions = utils.get_default(opts.include_extensions, false)
 
   local objs = {}
@@ -55,11 +50,14 @@ internal.builtin = function(opts)
     title = "Telescope Pickers"
     for ext, funcs in pairs(require("telescope").extensions) do
       for func_name, func_obj in pairs(funcs) do
-        local debug_info = debug.getinfo(func_obj)
-        table.insert(objs, {
-          filename = string.sub(debug_info.source, 2),
-          text = string.format("%s : %s", ext, func_name),
-        })
+        -- Only include exported functions whose name doesn't begin with an underscore
+        if type(func_obj) == "function" and string.sub(func_name, 0, 1) ~= "_" then
+          local debug_info = debug.getinfo(func_obj)
+          table.insert(objs, {
+            filename = string.sub(debug_info.source, 2),
+            text = string.format("%s : %s", ext, func_name),
+          })
+        end
       end
     end
   end
@@ -81,7 +79,27 @@ internal.builtin = function(opts)
     previewer = previewers.builtin.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(_)
-      actions.select_default:replace(actions.run_builtin)
+      actions.select_default:replace(function(_)
+        local selection = action_state.get_selected_entry()
+        if not selection then
+          print "[telescope] Nothing currently selected"
+          return
+        end
+
+        -- we do this to avoid any surprises
+        opts.include_extensions = nil
+
+        if string.match(selection.text, " : ") then
+          -- Call appropriate function from extensions
+          local split_string = vim.split(selection.text, " : ")
+          local ext = split_string[1]
+          local func = split_string[2]
+          require("telescope").extensions[ext][func](opts)
+        else
+          -- Call appropriate telescope builtin
+          require("telescope.builtin")[selection.text](opts)
+        end
+      end)
       return true
     end,
   }):find()
@@ -245,7 +263,7 @@ internal.symbols = function(opts)
 
   local results = {}
   for _, source in ipairs(sources) do
-    local data = vim.fn.json_decode(Path:new(source):read())
+    local data = vim.json.decode(Path:new(source):read())
     for _, entry in ipairs(data) do
       table.insert(results, entry)
     end
@@ -953,11 +971,12 @@ internal.keymaps = function(opts)
     finder = finders.new_table {
       results = keymaps_table,
       entry_maker = function(line)
+        local desc = line.desc or line.rhs or "Lua function"
         return {
           valid = line ~= "",
           value = line,
-          ordinal = utils.display_termcodes(line.lhs) .. line.rhs,
-          display = line.mode .. " " .. utils.display_termcodes(line.lhs) .. " " .. line.rhs,
+          ordinal = utils.display_termcodes(line.lhs) .. desc,
+          display = line.mode .. " " .. utils.display_termcodes(line.lhs) .. " " .. desc,
         }
       end,
     },
