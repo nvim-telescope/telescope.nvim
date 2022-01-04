@@ -102,4 +102,11 @@ function utils.get_registered_mappings(prompt_bufnr)
   return ret
 end
 
+function utils.restore_buffers()
+  local currentBuffer = vim.api.nvim_get_current_buf()
+  vim.cmd("bufdo e")
+  vim.cmd("syntax on")
+  vim.cmd("b" .. currentBuffer)
+end
+
 return utils
