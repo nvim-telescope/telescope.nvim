@@ -550,6 +550,8 @@ local git_reset_branch = function(prompt_bufnr, mode)
   else
     print(string.format('Error when resetting to: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  ")))
   end
+
+  action_utils.restore_buffers()
 end
 
 --- Reset to selected git commit using mixed mode
