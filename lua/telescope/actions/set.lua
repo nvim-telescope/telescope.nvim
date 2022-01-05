@@ -12,7 +12,6 @@
 
 local a = vim.api
 
-local log = require "telescope.log"
 local Path = require "plenary.path"
 local state = require "telescope.state"
 
@@ -129,24 +128,21 @@ action_set.edit = function(prompt_bufnr, command)
       vim.api.nvim_buf_set_option(entry_bufnr, "buflisted", true)
     end
     edit_buffer(command, entry_bufnr)
+    require("telescope.actions.utils").__jump_to(row, col)
   else
     -- check if we didn't pick a different buffer
     -- prevents restarting lsp server
     if vim.api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
       filename = Path:new(vim.fn.fnameescape(filename)):normalize(vim.loop.cwd())
-      vim.cmd(string.format([[autocmd InsertLeave * ++once ++nested :%s %s]], command, filename))
-    end
-  end
-
-  if row and col then
-    print(row, col)
-    vim.cmd(
-      string.format(
-        [[autocmd InsertLeave * ++once ++nested :call nvim_win_set_cursor(0, [%s, %s])]],
+      vim.cmd(string.format(
+        [[%s :lua require("telescope.actions.utils").__open_file_at("%s", "%s", %s, %s)]],
+        "autocmd InsertLeave * ++once ++nested", -- open file as soon as we have left insert mode (fixes folding)
+        command,
+        filename,
         row,
         col
-      )
-    )
+      ))
+    end
   end
 end
 
