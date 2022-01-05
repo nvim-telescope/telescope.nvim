@@ -569,7 +569,10 @@ function Picker:recalculate_layout()
       popup_opts.preview.highlight = "TelescopePreviewNormal"
       popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
       popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
-      local preview_bufnr = vim.api.nvim_buf_is_valid(status.preview_bufnr) and status.preview_bufnr or ""
+      local preview_bufnr = status.preview_bufnr ~= nil
+          and vim.api.nvim_buf_is_valid(status.preview_bufnr)
+          and status.preview_bufnr
+        or ""
       preview_win, preview_opts, preview_border_win = self:_create_window(preview_bufnr, popup_opts.preview)
       if preview_bufnr == "" then
         preview_bufnr = a.nvim_win_get_buf(preview_win)
