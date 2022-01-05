@@ -84,6 +84,20 @@ function Highlighter:hi_multiselect(row, is_selected)
 
   if is_selected then
     vim.api.nvim_buf_add_highlight(results_bufnr, ns_telescope_multiselection, "TelescopeMultiSelection", row, 0, -1)
+    if self.picker.multi_icon then
+      local line = vim.api.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1]
+      local pos = line:find(self.picker.multi_icon)
+      if pos and pos <= math.max(#self.picker.selection_caret, #self.picker.entry_prefix) then
+        vim.api.nvim_buf_add_highlight(
+          results_bufnr,
+          ns_telescope_multiselection,
+          "TelescopeMultiIcon",
+          row,
+          pos - 1,
+          pos - 1 + #self.picker.multi_icon
+        )
+      end
+    end
   else
     local existing_marks = vim.api.nvim_buf_get_extmarks(
       results_bufnr,
