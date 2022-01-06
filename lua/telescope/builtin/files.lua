@@ -145,13 +145,13 @@ files.grep_string = function(opts)
   }):find()
 end
 
-local function which_find_command(opts)
   local command = opts.find_command
   if command then
     return command[1]
   end
   if 1 == vim.fn.executable "fd" then
     return "fd"
+local function get_find_command(opts)
   elseif 1 == vim.fn.executable "fdfind" then
     return "fdfind"
   elseif 1 == vim.fn.executable "rg" then
@@ -163,9 +163,9 @@ local function which_find_command(opts)
   end
 end
 
-local function find_command_options(opts)
   local command = which_find_command(opts)
   local find_command = opts.find_command
+local function get_find_command_options(opts)
   local hidden = opts.hidden
   local no_ignore = opts.no_ignore
   local follow = opts.follow
@@ -261,7 +261,7 @@ end
 -- TODO: Maybe just change this to `find`.
 -- TODO: Support `find` and maybe let people do other stuff with it as well.
 files.find_files = function(opts)
-  local find_command = find_command_options(opts)
+  local find_command = get_find_command_options(opts)
 
   if not find_command then
     print(
