@@ -145,27 +145,25 @@ files.grep_string = function(opts)
   }):find()
 end
 
-  local command = opts.find_command
-  if command then
-    return command[1]
-  end
-  if 1 == vim.fn.executable "fd" then
-    return "fd"
 local function get_find_command(opts)
+  if opts.find_command then
+    return opts.find_command
+  elseif 1 == vim.fn.executable "fd" then
+    return { "fd", "--type", "f" }
   elseif 1 == vim.fn.executable "fdfind" then
-    return "fdfind"
+    return { "fdfind", "--type", "f" }
   elseif 1 == vim.fn.executable "rg" then
-    return "rg"
+    return { "rg", "--files" }
   elseif 1 == vim.fn.executable "find" and vim.fn.has "win32" == 0 then
-    return "find"
+    return { "find", ".", "-type", "f" }
   elseif 1 == vim.fn.executable "where" then
-    return "where"
+    return { "where", "/r", ".", "*" }
   end
 end
 
-  local command = which_find_command(opts)
-  local find_command = opts.find_command
 local function get_find_command_options(opts)
+  local find_command = get_find_command(opts)
+  local command = find_command[1]
   local hidden = opts.hidden
   local no_ignore = opts.no_ignore
   local follow = opts.follow
