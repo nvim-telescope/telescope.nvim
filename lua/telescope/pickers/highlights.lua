@@ -65,6 +65,7 @@ function Highlighter:hi_sorter(row, prompt, display)
 end
 
 function Highlighter:hi_selection(row, caret)
+  caret = vim.F.if_nil(caret, "")
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
 
   a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
