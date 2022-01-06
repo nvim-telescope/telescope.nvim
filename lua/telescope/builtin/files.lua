@@ -163,6 +163,15 @@ files.find_files = function(opts)
       return { "where", "/r", ".", "*" }
     end
   end)()
+
+  if not find_command then
+    print(
+      "You need to install either find, fd, or rg. "
+        .. "You can also submit a PR to add support for another file finder :)"
+    )
+    return
+  end
+
   local command = find_command[1]
   local hidden = opts.hidden
   local no_ignore = opts.no_ignore
@@ -223,14 +232,6 @@ files.find_files = function(opts)
     if search_dirs ~= nil then
       log.warn "The `search_dirs` key is not available for the Windows `where` command in `find_files`."
     end
-  end
-
-  if not find_command then
-    print(
-      "You need to install either find, fd, or rg. "
-        .. "You can also submit a PR to add support for another file finder :)"
-    )
-    return
   end
 
   if opts.cwd then
