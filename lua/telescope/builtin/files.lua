@@ -175,23 +175,7 @@ local function get_find_command_options(opts)
     end
   end
 
-  if command == "fd" then
-    if hidden then
-      table.insert(find_command, "--hidden")
-    end
-    if no_ignore then
-      table.insert(find_command, "--no-ignore")
-    end
-    if follow then
-      table.insert(find_command, "-L")
-    end
-    if search_dirs then
-      table.insert(find_command, ".")
-      for _, v in pairs(search_dirs) do
-        table.insert(find_command, v)
-      end
-    end
-  elseif command == "fdfind" then
+  if command == "fd" or command == "fdfind" then
     if hidden then
       table.insert(find_command, "--hidden")
     end
