@@ -186,22 +186,9 @@ files.find_files = function(opts)
       table.insert(find_command, "-L")
     end
     if search_dirs then
-      table.insert(find_command, ".")
-      for _, v in pairs(search_dirs) do
-        table.insert(find_command, v)
+      if command ~= "rg" then
+        table.insert(find_command, ".")
       end
-    end
-  elseif command == "rg" then
-    if hidden then
-      table.insert(find_command, "--hidden")
-    end
-    if no_ignore then
-      table.insert(find_command, "--no-ignore")
-    end
-    if follow then
-      table.insert(find_command, "-L")
-    end
-    if search_dirs then
       for _, v in pairs(search_dirs) do
         table.insert(find_command, v)
       end
