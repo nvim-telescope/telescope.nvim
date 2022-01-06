@@ -175,7 +175,7 @@ files.find_files = function(opts)
     end
   end
 
-  if command == "fd" or command == "fdfind" then
+  if command == "fd" or command == "fdfind" or command == "rg" then
     if hidden then
       table.insert(find_command, "--hidden")
     end
