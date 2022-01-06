@@ -255,7 +255,6 @@ end
 -- TODO: Maybe just change this to `find`.
 -- TODO: Support `find` and maybe let people do other stuff with it as well.
 files.find_files = function(opts)
-  local find_command = opts.find_command
   local search_dirs = opts.search_dirs
 
   if search_dirs then
@@ -264,7 +263,7 @@ files.find_files = function(opts)
     end
   end
 
-  find_command = find_command_options(opts)
+  local find_command = find_command_options(opts)
 
   if not find_command then
     print(
