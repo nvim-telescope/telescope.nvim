@@ -145,24 +145,24 @@ files.grep_string = function(opts)
   }):find()
 end
 
-local function get_find_command(opts)
-  if opts.find_command then
-    return opts.find_command
-  elseif 1 == vim.fn.executable "fd" then
-    return { "fd", "--type", "f" }
-  elseif 1 == vim.fn.executable "fdfind" then
-    return { "fdfind", "--type", "f" }
-  elseif 1 == vim.fn.executable "rg" then
-    return { "rg", "--files" }
-  elseif 1 == vim.fn.executable "find" and vim.fn.has "win32" == 0 then
-    return { "find", ".", "-type", "f" }
-  elseif 1 == vim.fn.executable "where" then
-    return { "where", "/r", ".", "*" }
-  end
-end
-
-local function get_find_command_options(opts)
-  local find_command = get_find_command(opts)
+-- TODO: Maybe just change this to `find`.
+-- TODO: Support `find` and maybe let people do other stuff with it as well.
+files.find_files = function(opts)
+  local find_command = (function()
+    if opts.find_command then
+      return opts.find_command
+    elseif 1 == vim.fn.executable "fd" then
+      return { "fd", "--type", "f" }
+    elseif 1 == vim.fn.executable "fdfind" then
+      return { "fdfind", "--type", "f" }
+    elseif 1 == vim.fn.executable "rg" then
+      return { "rg", "--files" }
+    elseif 1 == vim.fn.executable "find" and vim.fn.has "win32" == 0 then
+      return { "find", ".", "-type", "f" }
+    elseif 1 == vim.fn.executable "where" then
+      return { "where", "/r", ".", "*" }
+    end
+  end)()
   local command = find_command[1]
   local hidden = opts.hidden
   local no_ignore = opts.no_ignore
@@ -237,13 +237,6 @@ local function get_find_command_options(opts)
       log.warn "The `search_dirs` key is not available for the Windows `where` command in `find_files`."
     end
   end
-  return find_command
-end
-
--- TODO: Maybe just change this to `find`.
--- TODO: Support `find` and maybe let people do other stuff with it as well.
-files.find_files = function(opts)
-  local find_command = get_find_command_options(opts)
 
   if not find_command then
     print(
