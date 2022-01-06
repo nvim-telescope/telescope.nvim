@@ -171,6 +171,12 @@ local function find_command_options(opts)
   local follow = opts.follow
   local search_dirs = opts.search_dirs
 
+  if search_dirs then
+    for k, v in pairs(search_dirs) do
+      search_dirs[k] = vim.fn.expand(v)
+    end
+  end
+
   if command == "fd" then
     if hidden then
       table.insert(find_command, "--hidden")
@@ -255,14 +261,6 @@ end
 -- TODO: Maybe just change this to `find`.
 -- TODO: Support `find` and maybe let people do other stuff with it as well.
 files.find_files = function(opts)
-  local search_dirs = opts.search_dirs
-
-  if search_dirs then
-    for k, v in pairs(search_dirs) do
-      search_dirs[k] = vim.fn.expand(v)
-    end
-  end
-
   local find_command = find_command_options(opts)
 
   if not find_command then
