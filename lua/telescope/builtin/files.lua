@@ -148,7 +148,31 @@ end
 -- TODO: Maybe just change this to `find`.
 -- TODO: Support `find` and maybe let people do other stuff with it as well.
 files.find_files = function(opts)
-  local find_command = opts.find_command
+  local find_command = (function()
+    if opts.find_command then
+      return opts.find_command
+    elseif 1 == vim.fn.executable "fd" then
+      return { "fd", "--type", "f" }
+    elseif 1 == vim.fn.executable "fdfind" then
+      return { "fdfind", "--type", "f" }
+    elseif 1 == vim.fn.executable "rg" then
+      return { "rg", "--files" }
+    elseif 1 == vim.fn.executable "find" and vim.fn.has "win32" == 0 then
+      return { "find", ".", "-type", "f" }
+    elseif 1 == vim.fn.executable "where" then
+      return { "where", "/r", ".", "*" }
+    end
+  end)()
+
+  if not find_command then
+    print(
+      "You need to install either find, fd, or rg. "
+        .. "You can also submit a PR to add support for another file finder :)"
+    )
+    return
+  end
+
+  local command = find_command[1]
   local hidden = opts.hidden
   local no_ignore = opts.no_ignore
   local follow = opts.follow
@@ -160,98 +184,54 @@ files.find_files = function(opts)
     end
   end
 
-  if not find_command then
-    if 1 == vim.fn.executable "fd" then
-      find_command = { "fd", "--type", "f" }
-      if hidden then
-        table.insert(find_command, "--hidden")
-      end
-      if no_ignore then
-        table.insert(find_command, "--no-ignore")
-      end
-      if follow then
-        table.insert(find_command, "-L")
-      end
-      if search_dirs then
+  if command == "fd" or command == "fdfind" or command == "rg" then
+    if hidden then
+      table.insert(find_command, "--hidden")
+    end
+    if no_ignore then
+      table.insert(find_command, "--no-ignore")
+    end
+    if follow then
+      table.insert(find_command, "-L")
+    end
+    if search_dirs then
+      if command ~= "rg" then
         table.insert(find_command, ".")
-        for _, v in pairs(search_dirs) do
-          table.insert(find_command, v)
-        end
       end
-    elseif 1 == vim.fn.executable "fdfind" then
-      find_command = { "fdfind", "--type", "f" }
-      if hidden then
-        table.insert(find_command, "--hidden")
-      end
-      if no_ignore then
-        table.insert(find_command, "--no-ignore")
-      end
-      if follow then
-        table.insert(find_command, "-L")
-      end
-      if search_dirs then
-        table.insert(find_command, ".")
-        for _, v in pairs(search_dirs) do
-          table.insert(find_command, v)
-        end
-      end
-    elseif 1 == vim.fn.executable "rg" then
-      find_command = { "rg", "--files" }
-      if hidden then
-        table.insert(find_command, "--hidden")
-      end
-      if no_ignore then
-        table.insert(find_command, "--no-ignore")
-      end
-      if follow then
-        table.insert(find_command, "-L")
-      end
-      if search_dirs then
-        for _, v in pairs(search_dirs) do
-          table.insert(find_command, v)
-        end
-      end
-    elseif 1 == vim.fn.executable "find" and vim.fn.has "win32" == 0 then
-      find_command = { "find", ".", "-type", "f" }
-      if not hidden then
-        table.insert(find_command, { "-not", "-path", "*/.*" })
-        find_command = flatten(find_command)
-      end
-      if no_ignore ~= nil then
-        log.warn "The `no_ignore` key is not available for the `find` command in `find_files`."
-      end
-      if follow then
-        table.insert(find_command, "-L")
-      end
-      if search_dirs then
-        table.remove(find_command, 2)
-        for _, v in pairs(search_dirs) do
-          table.insert(find_command, 2, v)
-        end
-      end
-    elseif 1 == vim.fn.executable "where" then
-      find_command = { "where", "/r", ".", "*" }
-      if hidden ~= nil then
-        log.warn "The `hidden` key is not available for the Windows `where` command in `find_files`."
-      end
-      if no_ignore ~= nil then
-        log.warn "The `no_ignore` key is not available for the Windows `where` command in `find_files`."
-      end
-      if follow ~= nil then
-        log.warn "The `follow` key is not available for the Windows `where` command in `find_files`."
-      end
-      if search_dirs ~= nil then
-        log.warn "The `search_dirs` key is not available for the Windows `where` command in `find_files`."
+      for _, v in pairs(search_dirs) do
+        table.insert(find_command, v)
       end
     end
-  end
-
-  if not find_command then
-    print(
-      "You need to install either find, fd, or rg. "
-        .. "You can also submit a PR to add support for another file finder :)"
-    )
-    return
+  elseif command == "find" then
+    if not hidden then
+      table.insert(find_command, { "-not", "-path", "*/.*" })
+      find_command = flatten(find_command)
+    end
+    if no_ignore ~= nil then
+      log.warn "The `no_ignore` key is not available for the `find` command in `find_files`."
+    end
+    if follow then
+      table.insert(find_command, "-L")
+    end
+    if search_dirs then
+      table.remove(find_command, 2)
+      for _, v in pairs(search_dirs) do
+        table.insert(find_command, 2, v)
+      end
+    end
+  elseif command == "where" then
+    if hidden ~= nil then
+      log.warn "The `hidden` key is not available for the Windows `where` command in `find_files`."
+    end
+    if no_ignore ~= nil then
+      log.warn "The `no_ignore` key is not available for the Windows `where` command in `find_files`."
+    end
+    if follow ~= nil then
+      log.warn "The `follow` key is not available for the Windows `where` command in `find_files`."
+    end
+    if search_dirs ~= nil then
+      log.warn "The `search_dirs` key is not available for the Windows `where` command in `find_files`."
+    end
   end
 
   if opts.cwd then

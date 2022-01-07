@@ -12,6 +12,7 @@ let g:loaded_telescope = 1
 highlight default link TelescopeSelection Visual
 highlight default link TelescopeSelectionCaret TelescopeSelection
 highlight default link TelescopeMultiSelection Type
+highlight default link TelescopeMultiIcon Identifier
 
 " "Normal" in the floating windows created by telescope.
 highlight default link TelescopeNormal Normal

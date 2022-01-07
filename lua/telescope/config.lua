@@ -246,6 +246,18 @@ append(
 )
 
 append(
+  "multi_icon",
+  "+",
+  [[
+  Symbol to add in front of a multi-selected result entry.
+  Replaces final character of |telescope.defaults.selection_caret| and
+  |telescope.defaults.entry_prefix| as appropriate.
+  To have no icon, set to the empty string.
+
+  Default: '+']]
+)
+
+append(
   "initial_mode",
   "insert",
   [[
