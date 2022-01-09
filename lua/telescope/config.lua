@@ -159,13 +159,17 @@ append(
     return #current_entry.ordinal < #existing_entry.ordinal
   end,
   [[
-  tiebreak can be set to a function which decides how to break
-  a tie when 2 entries have the same score
+  A function that determines how to break a tie when two entries have
+  the same score.
+  Having a function that always returns false would keep the entries in
+  the order they are found, so existing_entry before current_entry.
+  Vice versa always returning true would place the current_entry
+  before the existing_entry.
 
-  Signature: function(current_entry,existing_entry, prompt) -> boolean
+  Signature: function(current_entry, existing_entry, prompt) -> boolean
 
-  Default: function that breaks the tie based on the length of the entry's ordinal
-  ]]
+  Default: function that breaks the tie based on the length of the
+           entry's ordinal]]
 )
 
 append(
