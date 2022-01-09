@@ -252,7 +252,7 @@ local function prepare_match(entry, kind)
   local entries = {}
 
   if entry.node then
-    entry["kind"] = kind
+    entry["kind"] = vim.F.if_nil(kind, "")
     table.insert(entries, entry)
   else
     for name, item in pairs(entry) do
