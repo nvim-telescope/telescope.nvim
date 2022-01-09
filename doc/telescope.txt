@@ -1395,7 +1395,9 @@ builtin.lsp_range_code_actions({opts})      *builtin.lsp_range_code_actions()*
 
     Options: ~
         {timeout}    (number)  timeout for the sync call (default: 10000)
-        {start_line} (number)  where the code action ends (default: handled by
+        {start_line} (number)  where the code action starts (default: handled
+                               by :'<,'>Telescope lsp_range_code_actions)
+        {end_line}   (number)  where the code action ends (default: handled by
                                :'<,'>Telescope lsp_range_code_actions)
 
 
