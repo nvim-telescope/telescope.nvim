@@ -1211,7 +1211,8 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
   local count = 0
 
   local cb_add = function(score, entry)
-    self.manager:add_entry(self, score, entry)
+    -- may need the prompt for tiebreak
+    self.manager:add_entry(self, score, entry, prompt)
     status_updater { completed = false }
   end
 

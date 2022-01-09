@@ -105,7 +105,7 @@ function EntryManager:_append_container(picker, new_container, should_update)
   end
 end
 
-function EntryManager:add_entry(picker, score, entry)
+function EntryManager:add_entry(picker, score, entry, prompt)
   score = score or 0
 
   local max_res = self.max_results
@@ -130,8 +130,6 @@ function EntryManager:add_entry(picker, score, entry)
     return
   end
 
-  -- may need the prompt for tiebreak
-  local prompt = picker:_get_prompt()
   for index, container, node in self.linked_states:ipairs() do
     info.looped = info.looped + 1
 
