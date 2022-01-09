@@ -6,7 +6,6 @@
 --- Generally used from within other |telescope.actions|
 ---@brief ]]
 
-local log = require "telescope.log"
 local action_state = require "telescope.actions.state"
 
 local utils = {}
@@ -101,24 +100,6 @@ function utils.get_registered_mappings(prompt_bufnr)
     end
   end
   return ret
-end
-
---- Internal function for autocmd
---- Please dont call (subject to change)
-function utils.__jump_to(row, col)
-  if row and col then
-    local ok, err_msg = pcall(vim.api.nvim_win_set_cursor, 0, { row, col })
-    if not ok then
-      log.debug("Failed to move to cursor:", err_msg, row, col)
-    end
-  end
-end
-
---- Internal function for autocmd
---- Please dont call (subject to change)
-function utils.__open_file_at(command, filename, row, col)
-  vim.cmd(string.format([[:%s %s]], command, filename))
-  utils.__jump_to(row, col)
 end
 
 return utils
