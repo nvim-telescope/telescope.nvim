@@ -6,7 +6,7 @@ describe("process_result", function()
   it("works with one entry", function()
     local manager = EntryManager:new(5, nil)
 
-    manager:add_entry(nil, 1, "hello")
+    manager:add_entry(nil, 1, "hello", "")
 
     eq(1, manager:get_score(1))
   end)
@@ -14,8 +14,8 @@ describe("process_result", function()
   it("works with two entries", function()
     local manager = EntryManager:new(5, nil)
 
-    manager:add_entry(nil, 1, "hello")
-    manager:add_entry(nil, 2, "later")
+    manager:add_entry(nil, 1, "hello", "")
+    manager:add_entry(nil, 2, "later", "")
 
     eq(2, manager.linked_states.size)
 
@@ -30,7 +30,7 @@ describe("process_result", function()
     end)
 
     assert(called_count == 0)
-    manager:add_entry(nil, 1, "hello")
+    manager:add_entry(nil, 1, "hello", "")
     assert(called_count == 1)
   end)
 
@@ -41,8 +41,8 @@ describe("process_result", function()
     end)
 
     assert(called_count == 0)
-    manager:add_entry(nil, 1, "hello")
-    manager:add_entry(nil, 2, "world")
+    manager:add_entry(nil, 1, "hello", "")
+    manager:add_entry(nil, 2, "world", "")
     assert(called_count == 2)
   end)
 
@@ -51,8 +51,8 @@ describe("process_result", function()
     local manager = EntryManager:new(5, function()
       called_count = called_count + 1
     end)
-    manager:add_entry(nil, 5, "worse result")
-    manager:add_entry(nil, 2, "better result")
+    manager:add_entry(nil, 5, "worse result", "")
+    manager:add_entry(nil, 2, "better result", "")
 
     eq("better result", manager:get_entry(1))
     eq("worse result", manager:get_entry(2))
@@ -65,8 +65,8 @@ describe("process_result", function()
     local manager = EntryManager:new(1, function()
       called_count = called_count + 1
     end)
-    manager:add_entry(nil, 2, "better result")
-    manager:add_entry(nil, 5, "worse result")
+    manager:add_entry(nil, 2, "better result", "")
+    manager:add_entry(nil, 5, "worse result", "")
 
     eq("better result", manager:get_entry(1))
     eq(1, called_count)
@@ -92,7 +92,8 @@ describe("process_result", function()
           rawset(t, k, val)
           return val
         end,
-      })
+      }),
+      ""
     )
 
     eq("wow", manager:get_ordinal(1))
@@ -105,9 +106,9 @@ describe("process_result", function()
   it("should not loop a bunch", function()
     local info = {}
     local manager = EntryManager:new(5, nil, info)
-    manager:add_entry(nil, 4, "better result")
-    manager:add_entry(nil, 3, "better result")
-    manager:add_entry(nil, 2, "better result")
+    manager:add_entry(nil, 4, "better result", "")
+    manager:add_entry(nil, 3, "better result", "")
+    manager:add_entry(nil, 2, "better result", "")
 
     -- Loops once to find 3 < 4
     -- Loops again to find 2 < 3
@@ -117,9 +118,9 @@ describe("process_result", function()
   it("should not loop a bunch, part 2", function()
     local info = {}
     local manager = EntryManager:new(5, nil, info)
-    manager:add_entry(nil, 4, "better result")
-    manager:add_entry(nil, 2, "better result")
-    manager:add_entry(nil, 3, "better result")
+    manager:add_entry(nil, 4, "better result", "")
+    manager:add_entry(nil, 2, "better result", "")
+    manager:add_entry(nil, 3, "better result", "")
 
     -- Loops again to find 2 < 4
     -- Loops once to find 3 > 2
@@ -129,9 +130,9 @@ describe("process_result", function()
 
   it("should update worst score in all append case", function()
     local manager = EntryManager:new(2, nil)
-    manager:add_entry(nil, 2, "result 2")
-    manager:add_entry(nil, 3, "result 3")
-    manager:add_entry(nil, 4, "result 4")
+    manager:add_entry(nil, 2, "result 2", "")
+    manager:add_entry(nil, 3, "result 3", "")
+    manager:add_entry(nil, 4, "result 4", "")
 
     eq(3, manager.worst_acceptable_score)
   end)
@@ -141,9 +142,9 @@ describe("process_result", function()
     local manager = EntryManager:new(2, function()
       called_count = called_count + 1
     end)
-    manager:add_entry(nil, 5, "worse result")
-    manager:add_entry(nil, 4, "less worse result")
-    manager:add_entry(nil, 2, "better result")
+    manager:add_entry(nil, 5, "worse result", "")
+    manager:add_entry(nil, 4, "less worse result", "")
+    manager:add_entry(nil, 2, "better result", "")
 
     -- Once for insert 5
     -- Once for prepend 4
@@ -152,5 +153,37 @@ describe("process_result", function()
 
     eq("better result", manager:get_entry(1))
     eq(4, manager.worst_acceptable_score)
+  end)
+
+  it("should call tiebreaker if score is the same, sort length", function()
+    local manager = EntryManager:new(5, nil)
+    local picker = {
+      tiebreak = function(curr, prev, prompt)
+        eq("asdf", prompt)
+        return #curr < #prev
+      end,
+    }
+
+    manager:add_entry(picker, 0.5, "same same", "asdf")
+    manager:add_entry(picker, 0.5, "same", "asdf")
+
+    eq("same", manager:get_entry(1))
+    eq("same same", manager:get_entry(2))
+  end)
+
+  it("should call tiebreaker if score is the same, keep initial", function()
+    local manager = EntryManager:new(5, nil)
+    local picker = {
+      tiebreak = function(_, _, prompt)
+        eq("asdf", prompt)
+        return false
+      end,
+    }
+
+    manager:add_entry(picker, 0.5, "same same", "asdf")
+    manager:add_entry(picker, 0.5, "same", "asdf")
+
+    eq("same", manager:get_entry(2))
+    eq("same same", manager:get_entry(1))
   end)
 end)
