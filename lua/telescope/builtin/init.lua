@@ -86,22 +86,6 @@ builtin.find_files = require_on_exported_call("telescope.builtin.files").find_fi
 --- This is an alias for the `find_files` picker
 builtin.fd = builtin.find_files
 
---- Lists files and folders in your current working directory, open files, navigate your filesystem, and create new
---- files and folders
---- - Default keymaps:
----   - `<cr>`: opens the currently selected file, or navigates to the currently selected directory
----   - `<C-e>`: creates new file in current directory, creates new directory if the name contains a trailing '/'
----     - Note: you can create files nested into several directories with `<C-e>`, i.e. `lua/telescope/init.lua` would
----       create the file `init.lua` inside of `lua/telescope` and will create the necessary folders (similar to how
----       `mkdir -p` would work) if they do not already exist
----@deprecated Please move to https://github.com/nvim-telescope/telescope-file-browser.nvim
----@param opts table: options to pass to the picker
----@field cwd string: root dir to browse from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
----@field depth number: file tree depth to display (default: 1)
----@field dir_icon string: change the icon for a directory. (default: )
----@field hidden boolean: determines whether to show hidden files or not (default: false)
-builtin.file_browser = require_on_exported_call("telescope.builtin.files").file_browser
-
 --- Lists function names, variables, and other symbols from treesitter queries
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by kind of ts node you want to see (i.e. `:var:`)
