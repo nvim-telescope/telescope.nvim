@@ -5,7 +5,7 @@ local conf = require("telescope.config").values
 local highlights = {}
 
 local ns_telescope_selection = a.nvim_create_namespace "telescope_selection"
-local ns_telescope_multiselection = a.nvim_create_namespace "telescope_mulitselection"
+local ns_telescope_multiselection = a.nvim_create_namespace "telescope_multiselection"
 local ns_telescope_entry = a.nvim_create_namespace "telescope_entry"
 
 local Highlighter = {}
@@ -19,7 +19,7 @@ end
 
 function Highlighter:hi_display(row, prefix, display_highlights)
   -- This is the bug that made my highlight fixes not work.
-  -- We will leave the solutino commented, so the test fails.
+  -- We will leave the solution commented, so the test fails.
   if not display_highlights or vim.tbl_isempty(display_highlights) then
     return
   end
@@ -109,9 +109,9 @@ function Highlighter:hi_multiselect(row, is_selected)
     )
 
     -- This is still kind of weird to me, since it seems like I'm erasing stuff
-    -- when i shouldn't... perhaps it's a bout the gravity of the extmark?
+    -- when I shouldn't... Perhaps it's about the gravity of the extmark?
     if #existing_marks > 0 then
-      log.trace("Clearning highlight multi select row: ", row)
+      log.trace("Clearing highlight multi select row: ", row)
 
       vim.api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_multiselection, row, row + 1)
     end
