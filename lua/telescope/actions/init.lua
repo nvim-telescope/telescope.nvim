@@ -113,7 +113,11 @@ function actions.select_all(prompt_bufnr)
     if not current_picker._multi:is_selected(entry) then
       current_picker._multi:add(entry)
       if current_picker:can_select_row(row) then
+        local caret = current_picker:update_prefix(entry, row)
         current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
+        if current_picker._selection_entry == entry and current_picker._selection_row == row then
+          current_picker.highlighter:hi_selection(row, caret:match "(.*%S)")
+        end
       end
     end
   end)
@@ -126,7 +130,11 @@ function actions.drop_all(prompt_bufnr)
   action_utils.map_entries(prompt_bufnr, function(entry, _, row)
     current_picker._multi:drop(entry)
     if current_picker:can_select_row(row) then
+      local caret = current_picker:update_prefix(entry, row)
       current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
+      if current_picker._selection_entry == entry and current_picker._selection_row == row then
+        current_picker.highlighter:hi_selection(row, caret:match "(.*%S)")
+      end
     end
   end)
 end
@@ -139,7 +147,11 @@ function actions.toggle_all(prompt_bufnr)
   action_utils.map_entries(prompt_bufnr, function(entry, _, row)
     current_picker._multi:toggle(entry)
     if current_picker:can_select_row(row) then
+      local caret = current_picker:update_prefix(entry, row)
       current_picker.highlighter:hi_multiselect(row, current_picker._multi:is_selected(entry))
+      if current_picker._selection_entry == entry and current_picker._selection_row == row then
+        current_picker.highlighter:hi_selection(row, caret:match "(.*%S)")
+      end
     end
   end)
 end

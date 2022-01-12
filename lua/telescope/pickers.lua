@@ -765,6 +765,7 @@ function Picker:add_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:add(entry)
 
+  self:update_prefix(entry, row)
   self.highlighter:hi_multiselect(row, true)
 end
 
@@ -774,6 +775,7 @@ function Picker:remove_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:drop(entry)
 
+  self:update_prefix(entry, row)
   self.highlighter:hi_multiselect(row, false)
 end
 
@@ -798,6 +800,7 @@ function Picker:toggle_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:toggle(entry)
 
+  self:update_prefix(entry, row)
   self.highlighter:hi_multiselect(row, self._multi:is_selected(entry))
 end
 
@@ -928,47 +931,24 @@ function Picker:set_selection(row)
   --        Not sure.
   local set_ok, set_errmsg = pcall(function()
     local prompt = self:_get_prompt()
-    local prefix = function(sel, multi)
-      local t
-      if sel then
-        t = self.selection_caret
-      else
-        t = self.entry_prefix
-      end
-      if multi and type(self.multi_icon) == "string" then
-        t = truncate(t, strdisplaywidth(t) - strdisplaywidth(self.multi_icon), "") .. self.multi_icon
-      end
-      return t
-    end
 
-    -- This block handles removing the caret from beginning of previous selection (if still visible)
     -- Check if previous selection is still visible
     if self._selection_entry and self.manager:find_entry(self._selection_entry) then
-      -- Find the (possibly new) row of the old selection
-      local row_old_selection = self:get_row(self.manager:find_entry(self._selection_entry))
-      local old_multiselected = self:is_multi_selected(self._selection_entry)
-      local line = a.nvim_buf_get_lines(results_bufnr, row_old_selection, row_old_selection + 1, false)[1]
+      -- Find old selection, and update prefix and highlights
+      local old_entry = self._selection_entry
+      local old_row = self:get_row(self.manager:find_entry(old_entry))
 
-      --Check if that row still has the caret
-      local old_caret = string.sub(line, 0, #prefix(true)) == prefix(true) and prefix(true)
-        or string.sub(line, 0, #prefix(true, true)) == prefix(true, true) and prefix(true, true)
-      if old_caret then
-        -- Only change the first couple characters, nvim_buf_set_text leaves the existing highlights
-        a.nvim_buf_set_text(
-          results_bufnr,
-          row_old_selection,
-          0,
-          row_old_selection,
-          #old_caret,
-          { prefix(false, old_multiselected) }
-        )
-        self.highlighter:hi_multiselect(row_old_selection, old_multiselected)
-      end
+      self._selection_entry = entry
+
+      self:update_prefix(old_entry, old_row)
+      self.highlighter:hi_multiselect(old_row, self:is_multi_selected(old_entry))
+    else
+      self._selection_entry = entry
     end
 
-    local caret = prefix(true, self:is_multi_selected(entry))
+    local caret = self:update_prefix(entry, row)
 
-    local display, display_highlights = entry_display.resolve(self, entry)
+    local display, _ = entry_display.resolve(self, entry)
     display = caret .. display
 
     -- TODO: You should go back and redraw the highlights for this line from the sorter.
@@ -977,11 +957,9 @@ function Picker:set_selection(row)
       log.debug "Invalid buf somehow..."
       return
     end
-    a.nvim_buf_set_lines(results_bufnr, row, row + 1, false, { display })
 
     -- don't highlight any whitespace at the end of caret
     self.highlighter:hi_selection(row, caret:match "(.*%S)")
-    self.highlighter:hi_display(row, caret, display_highlights)
     self.highlighter:hi_sorter(row, prompt, display)
 
     self.highlighter:hi_multiselect(row, self:is_multi_selected(entry))
@@ -1003,6 +981,33 @@ function Picker:set_selection(row)
   self:refresh_previewer()
 
   vim.api.nvim_win_set_cursor(self.results_win, { row + 1, 0 })
+end
+
+--- Update prefix for entry on a given row
+function Picker:update_prefix(entry, row)
+  local prefix = function(sel, multi)
+    local t
+    if sel then
+      t = self.selection_caret
+    else
+      t = self.entry_prefix
+    end
+    if multi and type(self.multi_icon) == "string" then
+      t = truncate(t, strdisplaywidth(t) - strdisplaywidth(self.multi_icon), "") .. self.multi_icon
+    end
+    return t
+  end
+
+  local line = vim.api.nvim_buf_get_lines(self.results_bufnr, row, row + 1, false)[1]
+  local old_caret = string.sub(line, 0, #prefix(true)) == prefix(true) and prefix(true)
+    or string.sub(line, 0, #prefix(true, true)) == prefix(true, true) and prefix(true, true)
+    or string.sub(line, 0, #prefix(false)) == prefix(false) and prefix(false)
+    or string.sub(line, 0, #prefix(false, true)) == prefix(false, true) and prefix(false, true)
+
+  local pre = prefix(entry == self._selection_entry, self:is_multi_selected(entry))
+  -- Only change the first couple characters, nvim_buf_set_text leaves the existing highlights
+  a.nvim_buf_set_text(self.results_bufnr, row, 0, row, #old_caret, { pre })
+  return pre
 end
 
 --- Refresh the previewer based on the current `status` of the picker
@@ -1106,6 +1111,7 @@ function Picker:entry_adder(index, entry, _, insert)
     if display_highlights then
       self.highlighter:hi_display(row, prefix, display_highlights)
     end
+    self:update_prefix(entry, row)
     self:highlight_one_row(self.results_bufnr, self:_get_prompt(), display, row)
   end
 
