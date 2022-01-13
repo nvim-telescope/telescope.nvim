@@ -999,12 +999,17 @@ function Picker:update_prefix(entry, row)
   end
 
   local line = vim.api.nvim_buf_get_lines(self.results_bufnr, row, row + 1, false)[1]
+  if not line then
+    log.warn(string.format("no line found at row %d in buffer %d", row, self.results_bufnr))
+    return
+  end
+
   local old_caret = string.sub(line, 0, #prefix(true)) == prefix(true) and prefix(true)
     or string.sub(line, 0, #prefix(true, true)) == prefix(true, true) and prefix(true, true)
     or string.sub(line, 0, #prefix(false)) == prefix(false) and prefix(false)
     or string.sub(line, 0, #prefix(false, true)) == prefix(false, true) and prefix(false, true)
   if old_caret == false then
-    log.warn("can't identify old caret in line:", line)
+    log.warn(string.format("can't identify old caret in line: %s", line))
     return
   end
 
