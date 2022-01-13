@@ -248,7 +248,7 @@ utils.transform_path = function(opts, path)
   if path == nil then
     return
   end
-  
+
   path = utils.transform_path_os_sep(path)
 
   if is_uri(path) then
