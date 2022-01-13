@@ -105,6 +105,7 @@ function Picker:new(opts)
 
     scroll_strategy = get_default(opts.scroll_strategy, config.values.scroll_strategy),
     sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
+    tiebreak = get_default(opts.tiebreak, config.values.tiebreak),
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
     layout_strategy = layout_strategy,
@@ -1210,7 +1211,8 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
   local count = 0
 
   local cb_add = function(score, entry)
-    self.manager:add_entry(self, score, entry)
+    -- may need the prompt for tiebreak
+    self.manager:add_entry(self, score, entry, prompt)
     status_updater { completed = false }
   end
 

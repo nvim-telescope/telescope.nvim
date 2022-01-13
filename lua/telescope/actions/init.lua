@@ -965,7 +965,7 @@ actions.which_key = function(prompt_bufnr, opts)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local prompt_row = win_central_row(picker.prompt_win)
   local results_row = win_central_row(picker.results_win)
-  local preview_row = win_central_row(picker.preview_win)
+  local preview_row = picker.preview_win and win_central_row(picker.preview_win) or results_row
   local prompt_pos = prompt_row < 0.4 * vim.o.lines
     or prompt_row < 0.6 * vim.o.lines and results_row + preview_row < vim.o.lines
 
