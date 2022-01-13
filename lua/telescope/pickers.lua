@@ -1003,6 +1003,10 @@ function Picker:update_prefix(entry, row)
     or string.sub(line, 0, #prefix(true, true)) == prefix(true, true) and prefix(true, true)
     or string.sub(line, 0, #prefix(false)) == prefix(false) and prefix(false)
     or string.sub(line, 0, #prefix(false, true)) == prefix(false, true) and prefix(false, true)
+  if old_caret == false then
+    log.warn("can't identify old caret in line:", line)
+    return
+  end
 
   local pre = prefix(entry == self._selection_entry, self:is_multi_selected(entry))
   -- Only change the first couple characters, nvim_buf_set_text leaves the existing highlights
