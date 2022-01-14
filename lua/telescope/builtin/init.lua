@@ -420,23 +420,6 @@ builtin.lsp_workspace_symbols = require_on_exported_call("telescope.builtin.lsp"
 ---@field symbol_highlights table: string -> string. Matches symbol with hl_group
 builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.builtin.lsp").dynamic_workspace_symbols
 
-builtin.lsp_document_diagnostics = function(...)
-  vim.api.nvim_err_write(
-    "`lsp_document_diagnostics` is deprecated and will be removed. Please use `Telescope diagnostics bufnr=0`.\n"
-      .. "For more information see `:help telescope.changelog-1553`\n"
-  )
-  local new = ...
-  new.bufnr = 0
-  require("telescope.builtin.diagnostics").get(new)
-end
-builtin.lsp_workspace_diagnostics = function(...)
-  vim.api.nvim_err_write(
-    "`lsp_workspace_diagnostics` is deprecated and will be removed. Please use `Telescope diagnostics`.\n"
-      .. "For more information see `:help telescope.changelog-1553`\n"
-  )
-  require("telescope.builtin.diagnostics").get(...)
-end
-
 --
 --
 -- Diagnostics Pickers
