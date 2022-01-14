@@ -363,6 +363,7 @@ append(
 append(
   "get_status_text",
   function(self)
+    local ww = #(self:get_multi_selection())
     local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
     local yy = self.stats.processed or 0
     if xx == 0 and yy == 0 then
@@ -375,7 +376,11 @@ append(
     -- else
     --   status_icon = "*"
     -- end
-    return string.format("%s / %s", xx, yy)
+    if ww == 0 then
+      return string.format("%s / %s", xx, yy)
+    else
+      return string.format("%s / %s / %s", ww, xx, yy)
+    end
   end,
   [[
   A function that determines what the virtual text looks like.

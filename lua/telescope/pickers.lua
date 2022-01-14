@@ -766,6 +766,7 @@ function Picker:add_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:add(entry)
 
+  self:get_status_updater(self.prompt_win, self.prompt_bufnr)()
   self.highlighter:hi_multiselect(row, true)
 end
 
@@ -775,6 +776,7 @@ function Picker:remove_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:drop(entry)
 
+  self:get_status_updater(self.prompt_win, self.prompt_bufnr)()
   self.highlighter:hi_multiselect(row, false)
 end
 
@@ -799,6 +801,7 @@ function Picker:toggle_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:toggle(entry)
 
+  self:get_status_updater(self.prompt_win, self.prompt_bufnr)()
   self.highlighter:hi_multiselect(row, self._multi:is_selected(entry))
 end
 
