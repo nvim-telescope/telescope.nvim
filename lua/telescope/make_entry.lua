@@ -713,7 +713,7 @@ function make_entry.gen_from_keymaps(opts)
     return displayer {
       entry.mode,
       get_lhs(entry),
-      get_desc(entry)
+      get_desc(entry),
     }
   end
 
@@ -726,7 +726,7 @@ function make_entry.gen_from_keymaps(opts)
       valid = entry ~= "",
       value = entry,
       ordinal = entry.mode .. " " .. get_lhs(entry) .. " " .. get_desc(entry),
-      display = make_display
+      display = make_display,
     }
   end
 end
