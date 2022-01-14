@@ -955,30 +955,27 @@ internal.keymaps = function(opts)
   local modes = { "n", "i", "c" }
   local keymaps_table = {}
 
+  local max_len_lhs = 0
   for _, mode in pairs(modes) do
+    local function extract_keymaps(keymaps)
+      for _, keymap in pairs(keymaps) do
+        table.insert(keymaps_table, keymap)
+        max_len_lhs = math.max(max_len_lhs, string.len(keymap.lhs or ""))
+      end
+    end
+
     local global = vim.api.nvim_get_keymap(mode)
-    for _, keymap in pairs(global) do
-      table.insert(keymaps_table, keymap)
-    end
     local buf_local = vim.api.nvim_buf_get_keymap(0, mode)
-    for _, keymap in pairs(buf_local) do
-      table.insert(keymaps_table, keymap)
-    end
+    extract_keymaps(global)
+    extract_keymaps(buf_local)
   end
+  opts.width_lhs = max_len_lhs + 1
 
   pickers.new(opts, {
     prompt_title = "Key Maps",
     finder = finders.new_table {
       results = keymaps_table,
-      entry_maker = function(line)
-        local desc = line.desc or line.rhs or "Lua function"
-        return {
-          valid = line ~= "",
-          value = line,
-          ordinal = utils.display_termcodes(line.lhs) .. desc,
-          display = line.mode .. " " .. utils.display_termcodes(line.lhs) .. " " .. desc,
-        }
-      end,
+      entry_maker = opts.entry_maker or make_entry.gen_from_keymaps(opts),
     },
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr)
