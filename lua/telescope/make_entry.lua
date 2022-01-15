@@ -693,6 +693,44 @@ function make_entry.gen_from_registers(_)
   end
 end
 
+function make_entry.gen_from_keymaps(opts)
+  local function get_desc(entry)
+    return entry.desc or entry.rhs or "Lua function"
+  end
+  local function get_lhs(entry)
+    return utils.display_termcodes(entry.lhs)
+  end
+
+  local displayer = require("telescope.pickers.entry_display").create {
+    separator = "▏",
+    items = {
+      { width = 2 },
+      { width = opts.width_lhs },
+      { remaining = true },
+    },
+  }
+  local make_display = function(entry)
+    return displayer {
+      entry.mode,
+      get_lhs(entry),
+      get_desc(entry),
+    }
+  end
+
+  return function(entry)
+    return {
+      mode = entry.mode,
+      lhs = get_lhs(entry),
+      desc = get_desc(entry),
+      --
+      valid = entry ~= "",
+      value = entry,
+      ordinal = entry.mode .. " " .. get_lhs(entry) .. " " .. get_desc(entry),
+      display = make_display,
+    }
+  end
+end
+
 function make_entry.gen_from_highlights()
   local make_display = function(entry)
     local display = entry.value

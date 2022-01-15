@@ -74,6 +74,20 @@ telescope.setup({opts})                                    *telescope.setup()*
         - "descending" (default)
         - "ascending"
 
+                                              *telescope.defaults.tiebreak*
+    tiebreak: ~
+        A function that determines how to break a tie when two entries have
+        the same score.
+        Having a function that always returns false would keep the entries in
+        the order they are found, so existing_entry before current_entry.
+        Vice versa always returning true would place the current_entry
+        before the existing_entry.
+
+        Signature: function(current_entry, existing_entry, prompt) -> boolean
+
+        Default: function that breaks the tie based on the length of the
+                 entry's ordinal
+
                                     *telescope.defaults.selection_strategy*
     selection_strategy: ~
         Determines how the cursor acts after each sort iteration.
@@ -778,35 +792,6 @@ builtin.fd()                                                    *builtin.fd()*
     This is an alias for the `find_files` picker
 
 
-
-builtin.file_browser({opts})                          *builtin.file_browser()*
-    Lists files and folders in your current working directory, open files,
-    navigate your filesystem, and create new files and folders
-    - Default keymaps:
-      - `<cr>`: opens the currently selected file, or navigates to the
-        currently selected directory
-      - `<C-e>`: creates new file in current directory, creates new directory
-        if the name contains a trailing '/'
-        - Note: you can create files nested into several directories with
-          `<C-e>`, i.e. `lua/telescope/init.lua` would create the file
-          `init.lua` inside of `lua/telescope` and will create the necessary
-          folders (similar to how `mkdir -p` would work) if they do not already
-          exist
-
-
-    Parameters: ~
-        {opts} (table)  options to pass to the picker
-
-    Options: ~
-        {cwd}      (string)   root dir to browse from (default: cwd, use
-                              utils.buffer_dir() to search relative to open
-                              buffer)
-        {depth}    (number)   file tree depth to display (default: 1)
-        {dir_icon} (string)   change the icon for a directory. (default: )
-        {hidden}   (boolean)  determines whether to show hidden files or not
-                              (default: false)
-
-
 builtin.treesitter()                                    *builtin.treesitter()*
     Lists function names, variables, and other symbols from treesitter queries
     - Default keymaps:
@@ -1395,7 +1380,9 @@ builtin.lsp_range_code_actions({opts})      *builtin.lsp_range_code_actions()*
 
     Options: ~
         {timeout}    (number)  timeout for the sync call (default: 10000)
-        {start_line} (number)  where the code action ends (default: handled by
+        {start_line} (number)  where the code action starts (default: handled
+                               by :'<,'>Telescope lsp_range_code_actions)
+        {end_line}   (number)  where the code action ends (default: handled by
                                :'<,'>Telescope lsp_range_code_actions)
 
 

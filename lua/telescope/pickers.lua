@@ -105,6 +105,7 @@ function Picker:new(opts)
 
     scroll_strategy = get_default(opts.scroll_strategy, config.values.scroll_strategy),
     sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
+    tiebreak = get_default(opts.tiebreak, config.values.tiebreak),
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
     layout_strategy = layout_strategy,
@@ -766,6 +767,7 @@ function Picker:add_selection(row)
   self._multi:add(entry)
 
   self:update_prefix(entry, row)
+  self:get_status_updater(self.prompt_win, self.prompt_bufnr)()
   self.highlighter:hi_multiselect(row, true)
 end
 
@@ -776,6 +778,7 @@ function Picker:remove_selection(row)
   self._multi:drop(entry)
 
   self:update_prefix(entry, row)
+  self:get_status_updater(self.prompt_win, self.prompt_bufnr)()
   self.highlighter:hi_multiselect(row, false)
 end
 
@@ -801,6 +804,7 @@ function Picker:toggle_selection(row)
   self._multi:toggle(entry)
 
   self:update_prefix(entry, row)
+  self:get_status_updater(self.prompt_win, self.prompt_bufnr)()
   self.highlighter:hi_multiselect(row, self._multi:is_selected(entry))
 end
 
@@ -1225,7 +1229,8 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
   local count = 0
 
   local cb_add = function(score, entry)
-    self.manager:add_entry(self, score, entry)
+    -- may need the prompt for tiebreak
+    self.manager:add_entry(self, score, entry, prompt)
     status_updater { completed = false }
   end
 

@@ -47,7 +47,7 @@ local function list_or_jump(action, title, opts)
   opts = opts or {}
 
   local params = vim.lsp.util.make_position_params()
-  vim.lsp.buf_request(0, action, params, function(err, result, _ctx, _config)
+  vim.lsp.buf_request(0, action, params, function(err, result, ctx, _config)
     if err then
       vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
       return
@@ -72,7 +72,7 @@ local function list_or_jump(action, title, opts)
       elseif opts.jump_type == "vsplit" then
         vim.cmd "vnew"
       end
-      vim.lsp.util.jump_to_location(flattened_results[1])
+      vim.lsp.util.jump_to_location(flattened_results[1], vim.lsp.get_client_by_id(ctx.client_id).offset_encoding)
     else
       local locations = vim.lsp.util.locations_to_items(flattened_results)
       pickers.new(opts, {

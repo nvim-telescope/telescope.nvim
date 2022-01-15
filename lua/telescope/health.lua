@@ -25,7 +25,7 @@ local optional_dependencies = {
     package = {
       {
         name = "fd",
-        binaries = { "fd", "fdfind" },
+        binaries = { "fdfind", "fd" },
         url = "[sharkdp/fd](https://github.com/sharkdp/fd)",
         optional = true,
       },

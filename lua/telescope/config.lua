@@ -154,6 +154,25 @@ append(
 )
 
 append(
+  "tiebreak",
+  function(current_entry, existing_entry, _)
+    return #current_entry.ordinal < #existing_entry.ordinal
+  end,
+  [[
+  A function that determines how to break a tie when two entries have
+  the same score.
+  Having a function that always returns false would keep the entries in
+  the order they are found, so existing_entry before current_entry.
+  Vice versa always returning true would place the current_entry
+  before the existing_entry.
+
+  Signature: function(current_entry, existing_entry, prompt) -> boolean
+
+  Default: function that breaks the tie based on the length of the
+           entry's ordinal]]
+)
+
+append(
   "selection_strategy",
   "reset",
   [[
@@ -344,6 +363,7 @@ append(
 append(
   "get_status_text",
   function(self)
+    local ww = #(self:get_multi_selection())
     local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
     local yy = self.stats.processed or 0
     if xx == 0 and yy == 0 then
@@ -356,7 +376,11 @@ append(
     -- else
     --   status_icon = "*"
     -- end
-    return string.format("%s / %s", xx, yy)
+    if ww == 0 then
+      return string.format("%s / %s", xx, yy)
+    else
+      return string.format("%s / %s / %s", ww, xx, yy)
+    end
   end,
   [[
   A function that determines what the virtual text looks like.

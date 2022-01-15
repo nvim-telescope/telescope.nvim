@@ -105,7 +105,7 @@ function EntryManager:_append_container(picker, new_container, should_update)
   end
 end
 
-function EntryManager:add_entry(picker, score, entry)
+function EntryManager:add_entry(picker, score, entry, prompt)
   score = score or 0
 
   local max_res = self.max_results
@@ -137,7 +137,7 @@ function EntryManager:add_entry(picker, score, entry)
       return self:_insert_container_before(picker, index, node, new_container)
     end
 
-    if score < 1 and container[2] == score and #entry.ordinal < #container[1].ordinal then
+    if score < 1 and container[2] == score and picker.tiebreak(entry, container[1], prompt) then
       return self:_insert_container_before(picker, index, node, new_container)
     end
 
