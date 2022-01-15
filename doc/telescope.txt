@@ -792,6 +792,7 @@ builtin.fd()                                                    *builtin.fd()*
     This is an alias for the `find_files` picker
 
 
+
 builtin.treesitter()                                    *builtin.treesitter()*
     Lists function names, variables, and other symbols from treesitter queries
     - Default keymaps:
