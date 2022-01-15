@@ -344,6 +344,10 @@ builtin.tagstack = require_on_exported_call("telescope.builtin.internal").tagsta
 ---@field ignore_filename boolean: dont show filenames (default: true)
 builtin.jumplist = require_on_exported_call("telescope.builtin.internal").jumplist
 
+--- List all optional plugin in 'packpath', load the plugin on `<cr>`
+---@param opts table: options to pass to the picker
+builtin.packadd = require_on_exported_call("telescope.builtin.internal").packadd
+
 --
 --
 -- LSP-related Pickers

@@ -1241,6 +1241,33 @@ internal.jumplist = function(opts)
   }):find()
 end
 
+internal.packadd = function (opts)
+  opts = opts or {}
+
+  local plugin_list = vim.fn.getcompletion("", "packadd")
+
+  pickers.new(opts, {
+    prompt_title = "Optional Plugin",
+    finder = finders.new_table({
+      results = plugin_list
+    }),
+    sorter = conf.generic_sorter(opts),
+    attach_mappings = function (prompt_bufnr)
+      actions.select_default:replace(function ()
+        local selection = action_state.get_selected_entry()
+        if selection == nil then
+          print "[telescope] Nothing currently selected"
+          return
+        end
+
+        actions.close(prompt_bufnr)
+        vim.api.nvim_command("packadd " .. selection[1])
+      end)
+      return true
+    end
+  }):find()
+end
+
 local function apply_checks(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)
