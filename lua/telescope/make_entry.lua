@@ -110,29 +110,9 @@ do
     ordinal = 1,
   }
 
-  local find = (function()
-    if Path.path.sep == "\\" then
-      return function(t)
-        local start, _, filename, lnum, col, text = string.find(t, [[([^:]+):(%d+):(%d+):(.*)]])
-
-        -- Handle Windows drive letter (e.g. "C:") at the beginning (if present)
-        if start == 3 then
-          filename = string.sub(t.value, 1, 3) .. filename
-        end
-
-        return filename, lnum, col, text
-      end
-    else
-      return function(t)
-        local _, _, filename, lnum, col, text = string.find(t, [[([^:]+):(%d+):(%d+):(.*)]])
-        return filename, lnum, col, text
-      end
-    end
-  end)()
-
   -- Gets called only once to parse everything out for the vimgrep, after that looks up directly.
   local parse = function(t)
-    local filename, lnum, col, text = find(t.value)
+    local _, _, filename, lnum, col, text = string.find(t.value, [[(.+):(%d+):(%d+):(.*)]])
 
     local ok
     ok, lnum = pcall(tonumber, lnum)
