@@ -930,6 +930,8 @@ function Picker:set_selection(row)
     return
   end
 
+  local old_entry
+
   -- TODO: Probably should figure out what the rows are that made this happen...
   --        Probably something with setting a row that's too high for this?
   --        Not sure.
@@ -939,13 +941,15 @@ function Picker:set_selection(row)
     -- Check if previous selection is still visible
     if self._selection_entry and self.manager:find_entry(self._selection_entry) then
       -- Find old selection, and update prefix and highlights
-      local old_entry = self._selection_entry
+      old_entry = self._selection_entry
       local old_row = self:get_row(self.manager:find_entry(old_entry))
 
       self._selection_entry = entry
 
-      self:update_prefix(old_entry, old_row)
-      self.highlighter:hi_multiselect(old_row, self:is_multi_selected(old_entry))
+      if old_row >= 0 then
+        self:update_prefix(old_entry, old_row)
+        self.highlighter:hi_multiselect(old_row, self:is_multi_selected(old_entry))
+      end
     else
       self._selection_entry = entry
     end
@@ -974,7 +978,7 @@ function Picker:set_selection(row)
     return
   end
 
-  if self._selection_entry == entry and self._selection_row == row then
+  if old_entry == entry and self._selection_row == row then
     return
   end
 
