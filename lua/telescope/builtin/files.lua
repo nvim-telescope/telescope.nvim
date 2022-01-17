@@ -72,6 +72,14 @@ files.live_grep = function(opts)
     additional_args = opts.additional_args(opts)
   end
 
+  if opts.type_filter then
+    additional_args[#additional_args + 1] = "--type=" .. opts.type_filter
+  end
+
+  if opts.glob_pattern then
+    additional_args[#additional_args + 1] = "--glob=" .. opts.glob_pattern
+  end
+
   local live_grepper = finders.new_job(function(prompt)
     -- TODO: Probably could add some options for smart case and whatever else rg offers.
 
