@@ -266,10 +266,10 @@ lsp.code_actions = function(opts)
     end
 
   local execute_action = opts.execute_action
-    or function(action)
+    or function(action, offset_encoding)
       if action.edit or type(action.command) == "table" then
         if action.edit then
-          vim.lsp.util.apply_workspace_edit(action.edit)
+          vim.lsp.util.apply_workspace_edit(action.edit, offset_encoding)
         end
         if type(action.command) == "table" then
           vim.lsp.buf.execute_command(action.command)
@@ -297,6 +297,9 @@ lsp.code_actions = function(opts)
         actions.close(prompt_bufnr)
         local action = selection.value.command
         local client = selection.value.client
+        local eff_execute = function(transformed)
+          execute_action(transformed, client.offset_encoding)
+        end
         if
           not action.edit
           and client
@@ -309,13 +312,13 @@ lsp.code_actions = function(opts)
               return
             end
             if resolved_action then
-              execute_action(transform_action(resolved_action))
+              eff_execute(transform_action(resolved_action))
             else
-              execute_action(transform_action(action))
+              eff_execute(transform_action(action))
             end
           end)
         else
-          execute_action(transform_action(action))
+          eff_execute(transform_action(action))
         end
       end)
 
