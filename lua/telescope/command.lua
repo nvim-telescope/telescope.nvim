@@ -182,7 +182,10 @@ local function run_command(args)
 
   if rawget(extensions, cmd) then
     extensions[cmd][cmd](opts)
+    return
   end
+
+  print "[Telescope] unknown command"
 end
 
 -- @Summary get extensions sub command
