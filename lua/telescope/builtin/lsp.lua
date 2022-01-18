@@ -16,7 +16,7 @@ lsp.references = function(opts)
   local params = vim.lsp.util.make_position_params()
   params.context = { includeDeclaration = true }
 
-  vim.lsp.buf_request(0, "textDocument/references", params, function(err, result, _ctx, _config)
+  vim.lsp.buf_request(0, "textDocument/references", params, function(err, result, ctx, _config)
     if err then
       vim.api.nvim_err_writeln("Error when finding references: " .. err.message)
       return
@@ -24,7 +24,10 @@ lsp.references = function(opts)
 
     local locations = {}
     if result then
-      vim.list_extend(locations, vim.lsp.util.locations_to_items(result) or {})
+      vim.list_extend(
+        locations,
+        vim.lsp.util.locations_to_items(result, vim.lsp.get_client_by_id(ctx.client_id).offset_encoding) or {}
+      )
     end
 
     if vim.tbl_isempty(locations) then
