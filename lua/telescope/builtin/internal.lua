@@ -952,8 +952,8 @@ end
 
 -- TODO: make filtering include the mapping and the action
 internal.keymaps = function(opts)
-  opts.modes = utils.get_default(opts.modes, { "n", "i", "c", "x" })
-  opts.show_plug = utils.get_default(opts.show_plug, true)
+  opts.modes = vim.F.if_nil(opts.modes, { "n", "i", "c", "x" })
+  opts.show_plug = vim.F.if_nil(opts.show_plug, true)
 
   local keymap_encountered = {} -- used to make sure no duplicates are inserted into keymaps_table
   local keymaps_table = {}
@@ -967,7 +967,7 @@ internal.keymaps = function(opts)
         keymap_encountered[keymap_key] = true
         if opts.show_plug or not string.find(keymap.lhs, "<Plug>") then
           table.insert(keymaps_table, keymap)
-          max_len_lhs = math.max(max_len_lhs, string.len(utils.display_termcodes(keymap.lhs)))
+          max_len_lhs = math.max(max_len_lhs, #utils.display_termcodes(keymap.lhs))
         end
       end
     end
