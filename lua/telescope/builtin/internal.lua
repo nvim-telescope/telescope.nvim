@@ -62,6 +62,8 @@ internal.builtin = function(opts)
     end
   end
 
+  opts.bufnr = vim.api.nvim_get_current_buf()
+  opts.winnr = vim.api.nvim_get_current_win()
   pickers.new(opts, {
     prompt_title = title,
     finder = finders.new_table {

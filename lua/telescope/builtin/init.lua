@@ -448,6 +448,8 @@ local apply_config = function(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)
       opts = opts or {}
+      opts.bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
+      opts.winnr = opts.winnr or vim.api.nvim_get_current_win()
       local pconf = pickers_conf[k] or {}
       local defaults = (function()
         if pconf.theme then
