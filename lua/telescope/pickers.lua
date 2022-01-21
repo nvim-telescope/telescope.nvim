@@ -339,7 +339,7 @@ function Picker:find()
   self.original_win_id = a.nvim_get_current_win()
 
   -- User autocmd run it before create Telescope window
-  vim.cmd [[doautocmd User TelescopeFindPre]]
+  vim.api.nvim_exec_autocmds("User TelescopeFindPre", {})
 
   -- Create three windows:
   -- 1. Prompt window
@@ -508,22 +508,26 @@ function Picker:find()
     end,
   })
 
+  vim.api.nvim_create_augroup("PickerInsert", {})
   -- TODO: Use WinLeave as well?
-  local on_buf_leave = string.format(
-    [[  autocmd BufLeave <buffer> ++nested ++once :silent lua require('telescope.pickers').on_close_prompt(%s)]],
-    prompt_bufnr
-  )
-
-  local on_vim_resize = string.format(
-    [[  autocmd VimResized <buffer> ++nested :lua require('telescope.pickers').on_resize_window(%s)]],
-    prompt_bufnr
-  )
-
-  vim.cmd [[augroup PickerInsert]]
-  vim.cmd [[  au!]]
-  vim.cmd(on_buf_leave)
-  vim.cmd(on_vim_resize)
-  vim.cmd [[augroup END]]
+  vim.api.nvim_create_autocmd("BufLeave", {
+    buffer = prompt_bufnr,
+    group = "PickerInsert",
+    nested = true,
+    once = true,
+    callback = function()
+      require("telescope.pickers").on_close_prompt(prompt_bufnr)
+    end,
+  })
+  vim.api.nvim_create_autocmd("VimResized", {
+    buffer = prompt_bufnr,
+    group = "PickerInsert",
+    nested = true,
+    once = true,
+    callback = function()
+      require("telescope.pickers").on_resize_window(prompt_bufnr)
+    end,
+  })
 
   self.prompt_bufnr = prompt_bufnr
 
