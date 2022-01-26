@@ -395,11 +395,18 @@ layout_strategies.horizontal = make_documented_layout(
 
 --- Centered layout with a combined block of the prompt
 --- and results aligned to the middle of the screen.
---- The preview window is then placed in the remaining space above.
+--- The preview window is then placed in the remaining
+--- space above or below, according to `anchor` or `mirror`.
 --- Particularly useful for creating dropdown menus
---- (see |telescope.themes| and |themes.get_dropdown()|`).
+--- (see |telescope.themes| and |themes.get_dropdown()|).
 ---
---- Note that the `anchor` option can only pin this layout to the left or right edges.
+--- Note that vertical anchoring, i.e. `anchor` containing
+--- `"N"` or `"S"`, will override `mirror` config. For `"N"`
+--- anchoring preview will be placed below prompt/result
+--- block. For `"S"` anchoring preview will be placed above
+--- prompt/result block. For horizontal only anchoring preview
+--- will be placed according to `mirror` config, default is
+--- above the prompt/result block.
 ---
 --- <pre>
 --- ┌──────────────────────────────────────────────────┐
@@ -476,24 +483,37 @@ layout_strategies.center = make_documented_layout(
       error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
     end
 
-    if not layout_config.mirror then
-      preview.line = 1 + bs
-      preview.height = topline - (2 * bs + 2)
+    local width_padding = math.floor((max_columns - width) / 2) + bs + 1
+    results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
+
+    local anchor = layout_config.anchor or ""
+    local anchor_pos = resolve.resolve_anchor_pos(anchor, width, height, max_columns, max_lines)
+    adjust_pos(anchor_pos, prompt, results, preview)
+
+    -- Vertical anchoring (S or N variations) ignores layout_config.mirror
+    anchor = anchor:upper()
+    local mirror
+    if anchor:find "S" then
+      mirror = false
+    elseif anchor:find "N" then
+      mirror = true
     else
-      preview.line = topline + (results.height + (2 * bs + 2))
-      preview.height = max_lines - preview.line + (1 - bs)
+      mirror = layout_config.mirror
+    end
+
+    -- Set preview position
+    local block_line = math.min(results.line, prompt.line)
+    if not mirror then -- Preview at top
+      preview.line = 1 + bs
+      preview.height = block_line - (2 + 2 * bs)
+    else -- Preview at bottom
+      preview.line = block_line + results.height + 2 + 2 * bs
+      preview.height = max_lines - preview.line - bs + 1
     end
 
     if not (self.previewer and max_lines >= layout_config.preview_cutoff) then
       preview.height = 0
     end
-
-    local width_padding = math.floor((max_columns - width) / 2) + bs + 1
-    results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
-
-    local anchor_pos = resolve.resolve_anchor_pos(layout_config.anchor or "", width, height, max_columns, max_lines)
-    anchor_pos[2] = 0 -- only use horizontal anchoring
-    adjust_pos(anchor_pos, prompt, results, preview)
 
     if tbln then
       prompt.line = prompt.line + 1
