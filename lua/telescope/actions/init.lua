@@ -9,6 +9,7 @@
 
 local a = vim.api
 
+local builtin = require "telescope.builin"
 local config = require "telescope.config"
 local state = require "telescope.state"
 local utils = require "telescope.utils"
@@ -822,6 +823,26 @@ end
 actions.open_loclist = function(_)
   vim.cmd [[lopen]]
 end
+
+--- Ask user to enter filemask and then open live_grep with this filemask
+--- Makes sence to map this action only for live_grep picker.
+--- This action is not mapped on default.
+---@param prompt_bufnr number: The prompt bufnr
+actions.filemask_filter = function(prompt_bufnr)
+  local filemask = vim.fn.input("Enter filemask: ")
+  a.nvim_command("normal :esc<CR>")
+  if not filemask or #filemask == 0 then
+    return
+  end
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  local promt = picker:_get_prompt()
+  actions.close(prompt_bufnr)
+  vim.schedule(builtin.live_grep {
+    default_text = promt,
+    additional_args = function () return {"-g", filemask} end
+  })
+end
+
 
 --- Delete the selected buffer or all the buffers selected using multi selection.
 ---@param prompt_bufnr number: The prompt bufnr
