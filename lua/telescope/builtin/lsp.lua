@@ -65,6 +65,8 @@ local function list_or_jump(action, title, opts)
       vim.list_extend(flattened_results, result)
     end
 
+    local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
+
     if #flattened_results == 0 then
       return
     elseif #flattened_results == 1 and opts.jump_type ~= "never" then
@@ -75,9 +77,9 @@ local function list_or_jump(action, title, opts)
       elseif opts.jump_type == "vsplit" then
         vim.cmd "vnew"
       end
-      vim.lsp.util.jump_to_location(flattened_results[1], vim.lsp.get_client_by_id(ctx.client_id).offset_encoding)
+      vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding)
     else
-      local locations = vim.lsp.util.locations_to_items(flattened_results)
+      local locations = vim.lsp.util.locations_to_items(flattened_results, offset_encoding)
       pickers.new(opts, {
         prompt_title = title,
         finder = finders.new_table {
