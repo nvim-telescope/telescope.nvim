@@ -1096,7 +1096,8 @@ internal.autocommands = function(opts)
     end
 
     if current_ft and cmd then
-      source_file, source_lnum = line:match "Last set from (.*) line (.*)"
+      source_file = line:match "Last set from (.*) line %d*$" or line:match "Last set from (.*)$"
+      source_lnum = line:match "line (%d*)$" or "1"
       if source_file then
         local autocmd = {}
         autocmd.event = current_event
