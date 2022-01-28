@@ -1240,6 +1240,12 @@ builtin.keymaps({opts})                                    *builtin.keymaps()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
+    Options: ~
+        {modes}     (table)    a list of short-named keymap modes to search
+                               (default: { "n", "i", "c", "x" })
+        {show_plug} (boolean)  if true, the keymaps for which the lhs contains
+                               "<Plug>" are also shown (default: true)
+
 
 builtin.filetypes({opts})                                *builtin.filetypes()*
     Lists all available filetypes, sets currently open buffer's filetype to

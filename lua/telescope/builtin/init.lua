@@ -314,6 +314,8 @@ builtin.registers = require_on_exported_call("telescope.builtin.internal").regis
 
 --- Lists normal mode keymappings, runs the selected keymap on `<cr>`
 ---@param opts table: options to pass to the picker
+---@field modes table: a list of short-named keymap modes to search (default: { "n", "i", "c", "x" })
+---@field show_plug boolean: if true, the keymaps for which the lhs contains "<Plug>" are also shown (default: true)
 builtin.keymaps = require_on_exported_call("telescope.builtin.internal").keymaps
 
 --- Lists all available filetypes, sets currently open buffer's filetype to selected filetype in Telescope on `<cr>`
