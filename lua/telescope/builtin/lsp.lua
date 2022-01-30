@@ -16,7 +16,7 @@ lsp.references = function(opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
   params.context = { includeDeclaration = true }
 
-  vim.lsp.buf_request(opts.bufnr, "textDocument/references", params, function(err, result, _, _)
+  vim.lsp.buf_request(opts.bufnr, "textDocument/references", params, function(err, result, ctx, _config)
     if err then
       vim.api.nvim_err_writeln("Error when finding references: " .. err.message)
       return
@@ -24,7 +24,10 @@ lsp.references = function(opts)
 
     local locations = {}
     if result then
-      vim.list_extend(locations, vim.lsp.util.locations_to_items(result) or {})
+      vim.list_extend(
+        locations,
+        vim.lsp.util.locations_to_items(result, vim.lsp.get_client_by_id(ctx.client_id).offset_encoding) or {}
+      )
     end
 
     if vim.tbl_isempty(locations) then
@@ -47,7 +50,7 @@ local function list_or_jump(action, title, opts)
   opts = opts or {}
 
   local params = vim.lsp.util.make_position_params(opts.winnr)
-  vim.lsp.buf_request(opts.bufnr, action, params, function(err, result, _, _)
+  vim.lsp.buf_request(opts.bufnr, action, params, function(err, result, ctx, _config)
     if err then
       vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
       return
@@ -74,7 +77,7 @@ local function list_or_jump(action, title, opts)
       elseif opts.jump_type == "vsplit" then
         vim.cmd "vnew"
       end
-      vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding)
+      vim.lsp.util.jump_to_location(flattened_results[1], vim.lsp.get_client_by_id(ctx.client_id).offset_encoding)
     else
       local locations = vim.lsp.util.locations_to_items(flattened_results, offset_encoding)
       pickers.new(opts, {
@@ -151,7 +154,12 @@ lsp.code_actions = function(opts)
     diagnostics = vim.lsp.diagnostic.get_line_diagnostics(opts.bufnr, lnum - 1),
   }
 
-  local results_lsp, err = vim.lsp.buf_request_sync(opts.bufnr, "textDocument/codeAction", params, opts.timeout)
+  local results_lsp, err = vim.lsp.buf_request_sync(
+    opts.bufnr,
+    "textDocument/codeAction",
+    params,
+    vim.F.if_nil(opts.timeout, 10000)
+  )
 
   if err then
     print("ERROR: " .. err)
@@ -264,10 +272,10 @@ lsp.code_actions = function(opts)
     end
 
   local execute_action = opts.execute_action
-    or function(action, _)
+    or function(action, offset_encoding)
       if action.edit or type(action.command) == "table" then
         if action.edit then
-          vim.lsp.util.apply_workspace_edit(action.edit)
+          vim.lsp.util.apply_workspace_edit(action.edit, offset_encoding)
         end
         if type(action.command) == "table" then
           vim.lsp.buf.execute_command(action.command)
@@ -440,7 +448,6 @@ local function apply_checks(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)
       opts = opts or {}
-      opts.timeout = vim.F.if_nil(opts.timeout, 10000)
 
       local feature_name = feature_map[k]
       if feature_name and not check_capabilities(feature_name, opts.bufnr) then
