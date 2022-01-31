@@ -15,10 +15,12 @@ describe("builtin.find_files", function()
     tester.run_file "find_files__with_ctrl_n"
   end)
 
-  for _, configuration in ipairs {
-    { sorting_strategy = "descending" },
-    { sorting_strategy = "ascending" },
-  } do
+  for _, configuration in
+    ipairs {
+      { sorting_strategy = "descending" },
+      { sorting_strategy = "ascending" },
+    }
+  do
     it("should not display devicons when disabled: " .. disp(configuration), function()
       tester.run_string(string.format(
         [[
