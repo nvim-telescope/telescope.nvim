@@ -146,11 +146,36 @@ lsp.document_symbols = function(opts)
   end)
 end
 
+local function get_code_action_diagnostics(bufnr, lnum)
+  local diag = vim.diagnostic.get(bufnr, { lnum = lnum - 1 })[1]
+  -- reshape according to
+  -- https://microsoft.github.io/language-server-protocol/specifications/specification-3-17/#diagnostic
+  diag = {
+    range = {
+      ["end"] = {
+        character = diag.end_col,
+        line = diag.lnum,
+      },
+      start = {
+        character = diag.col,
+        line = diag.lnum,
+      },
+    },
+    severity = diag.severity,
+    code = diag.user_data.lsp.code,
+    source = diag.source,
+    message = diag.message,
+    tags = diag.user_data.lsp.tags,
+  }
+  return { diag }
+end
+
 lsp.code_actions = function(opts)
-  local params = vim.F.if_nil(opts.params, vim.lsp.util.make_range_params())
+  local params = vim.F.if_nil(opts.params, vim.lsp.util.make_range_params(opts.winnr))
+  local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
 
   params.context = {
-    diagnostics = vim.lsp.diagnostic.get_line_diagnostics(),
+    diagnostics = get_code_action_diagnostics(opts.bufnr, lnum),
   }
 
   local results_lsp, err = vim.lsp.buf_request_sync(
