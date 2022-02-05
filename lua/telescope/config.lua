@@ -237,6 +237,15 @@ append(
 )
 
 append(
+  "wrap_results",
+  false,
+  [[
+  Word wrap the search results
+
+  Default: false]]
+)
+
+append(
   "prompt_prefix",
   "> ",
   [[
