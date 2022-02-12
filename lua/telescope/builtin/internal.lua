@@ -1154,10 +1154,6 @@ internal.autocommands = function(opts)
 end
 
 internal.spell_suggest = function(opts)
-  if not vim.wo.spell then
-    return false
-  end
-
   local cursor_word = vim.fn.expand "<cword>"
   local suggestions = vim.fn.spellsuggest(cursor_word)
 
