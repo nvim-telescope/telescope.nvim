@@ -91,9 +91,23 @@ utils.quickfix_items_to_entries = function(locations)
 end
 
 utils.filter_symbols = function(results, opts)
-  if opts.symbols == nil then
+  local has_ignore = opts.ignore_symbols ~= nil
+  local has_symbols = opts.symbols ~= nil
+
+  if has_symbols and has_ignore then
+    error "Either opts.symbols or opts.ignore_symbols, can't process opposing options at the same time ;)'"
+    return
+  elseif not (has_ignore or has_symbols) then
     return results
+  elseif has_ignore then
+    if type(opts.ignore_symbols) == "string" then
+      opts.ignore_symbols = { opts.ignore_symbols }
+    end
+    return vim.tbl_filter(function(item)
+      return not vim.tbl_contains(opts.ignore_symbols, string.lower(item.kind))
+    end, results)
   end
+
   local valid_symbols = vim.tbl_map(string.lower, vim.lsp.protocol.SymbolKind)
 
   local filtered_symbols = {}
