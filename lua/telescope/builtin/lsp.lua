@@ -13,8 +13,10 @@ local utils = require "telescope.utils"
 local lsp = {}
 
 lsp.references = function(opts)
+  local filepath = vim.api.nvim_buf_get_name(opts.bufnr)
+  local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
   local params = vim.lsp.util.make_position_params(opts.winnr)
-  params.context = { includeDeclaration = true }
+  params.context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) }
 
   vim.lsp.buf_request(opts.bufnr, "textDocument/references", params, function(err, result, ctx, _config)
     if err then
@@ -24,10 +26,11 @@ lsp.references = function(opts)
 
     local locations = {}
     if result then
-      vim.list_extend(
-        locations,
-        vim.lsp.util.locations_to_items(result, vim.lsp.get_client_by_id(ctx.client_id).offset_encoding) or {}
-      )
+      local results = vim.lsp.util.locations_to_items(result, vim.lsp.get_client_by_id(ctx.client_id).offset_encoding)
+      locations = vim.tbl_filter(function(v)
+        -- Remove current line from result
+        return not (v.filename == filepath and v.lnum == lnum)
+      end, results or {})
     end
 
     if vim.tbl_isempty(locations) then
