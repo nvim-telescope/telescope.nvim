@@ -878,6 +878,11 @@ builtin.git_files({opts})                                *builtin.git_files()*
         {use_git_root}       (boolean)  if we should use git root as cwd or
                                         the cwd (important for submodule)
                                         (default: true)
+        {use_per_file_cwd}  (boolean)   if true, uses the current file's
+                                        directory as the working directory.
+                                        Results will be in the context
+                                        of the current file's repository.
+                                        (default: false)
         {show_untracked}     (boolean)  if true, adds `--others` flag to
                                         command and shows untracked files
                                         (default: true)

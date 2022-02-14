@@ -20,6 +20,7 @@ git.files = function(opts)
 
   local show_untracked = utils.get_default(opts.show_untracked, true)
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
+  local use_per_file_cwd = utils.get_default(opts.use_per_file_cwd, false)
   if show_untracked and recurse_submodules then
     error "Git does not support both --others and --recurse-submodules"
   end
@@ -36,6 +37,7 @@ git.files = function(opts)
         git_command,
         show_untracked and "--others" or nil,
         recurse_submodules and "--recurse-submodules" or nil,
+        use_per_file_cwd and "--full-name" or nil,
       },
       opts
     ),
@@ -349,9 +351,19 @@ git.status = function(opts)
 end
 
 local set_opts_cwd = function(opts)
+  local use_per_file_cwd = utils.get_default(opts.use_per_file_cwd, false)
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)
+  elseif use_per_file_cwd then
+    -- Run git commands in the context of the current file's repository.
+    -- A per-buffer git repository is used when finding files when used in conjunction
+    -- with the default use_git_root option.
+    opts.cwd = vim.fn.expand('%:h:p')
   else
+    opts.cwd = vim.loop.cwd()
+  end
+  -- Fallback to the current directory when vim.fn.expand('...') returns an empty result.
+  if opts.cwd == nil or opts.cwd == '' then
     opts.cwd = vim.loop.cwd()
   end
 
