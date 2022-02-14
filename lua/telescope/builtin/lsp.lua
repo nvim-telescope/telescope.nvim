@@ -13,10 +13,10 @@ local utils = require "telescope.utils"
 local lsp = {}
 
 lsp.references = function(opts)
-  local params = vim.lsp.util.make_position_params()
+  local params = vim.lsp.util.make_position_params(opts.winnr)
   params.context = { includeDeclaration = true }
 
-  vim.lsp.buf_request(0, "textDocument/references", params, function(err, result, ctx, _config)
+  vim.lsp.buf_request(opts.bufnr, "textDocument/references", params, function(err, result, ctx, _config)
     if err then
       vim.api.nvim_err_writeln("Error when finding references: " .. err.message)
       return
@@ -49,8 +49,8 @@ end
 local function list_or_jump(action, title, opts)
   opts = opts or {}
 
-  local params = vim.lsp.util.make_position_params()
-  vim.lsp.buf_request(0, action, params, function(err, result, ctx, _config)
+  local params = vim.lsp.util.make_position_params(opts.winnr)
+  vim.lsp.buf_request(opts.bufnr, action, params, function(err, result, ctx, _config)
     if err then
       vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
       return
@@ -106,9 +106,8 @@ lsp.implementations = function(opts)
 end
 
 lsp.document_symbols = function(opts)
-  local bufnr = vim.api.nvim_get_current_buf()
-  local params = vim.lsp.util.make_position_params()
-  vim.lsp.buf_request(0, "textDocument/documentSymbol", params, function(err, result, _ctx, _config)
+  local params = vim.lsp.util.make_position_params(opts.winnr)
+  vim.lsp.buf_request(opts.bufnr, "textDocument/documentSymbol", params, function(err, result, _, _)
     if err then
       vim.api.nvim_err_writeln("Error when finding document symbols: " .. err.message)
       return
@@ -119,7 +118,7 @@ lsp.document_symbols = function(opts)
       return
     end
 
-    local locations = vim.lsp.util.symbols_to_items(result or {}, bufnr) or {}
+    local locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr) or {}
     locations = utils.filter_symbols(locations, opts)
     if locations == nil then
       -- error message already printed in `utils.filter_symbols`
@@ -127,6 +126,7 @@ lsp.document_symbols = function(opts)
     end
 
     if vim.tbl_isempty(locations) then
+      print "locations table empty"
       return
     end
 
@@ -147,14 +147,15 @@ lsp.document_symbols = function(opts)
 end
 
 lsp.code_actions = function(opts)
-  local params = vim.F.if_nil(opts.params, vim.lsp.util.make_range_params())
+  local params = vim.F.if_nil(opts.params, vim.lsp.util.make_range_params(opts.winnr))
+  local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
 
   params.context = {
-    diagnostics = vim.lsp.diagnostic.get_line_diagnostics(),
+    diagnostics = vim.lsp.diagnostic.get_line_diagnostics(opts.bufnr, lnum - 1),
   }
 
   local results_lsp, err = vim.lsp.buf_request_sync(
-    0,
+    opts.bufnr,
     "textDocument/codeAction",
     params,
     vim.F.if_nil(opts.timeout, 10000)
@@ -334,20 +335,19 @@ lsp.code_actions = function(opts)
 end
 
 lsp.range_code_actions = function(opts)
-  opts.params = vim.lsp.util.make_given_range_params({ opts.start_line, 1 }, { opts.end_line, 1 })
+  opts.params = vim.lsp.util.make_given_range_params({ opts.start_line, 1 }, { opts.end_line, 1 }, opts.bufnr)
   lsp.code_actions(opts)
 end
 
 lsp.workspace_symbols = function(opts)
-  local bufnr = vim.api.nvim_get_current_buf()
   local params = { query = opts.query or "" }
-  vim.lsp.buf_request(0, "workspace/symbol", params, function(err, server_result, _ctx, _config)
+  vim.lsp.buf_request(opts.bufnr, "workspace/symbol", params, function(err, server_result, _, _)
     if err then
       vim.api.nvim_err_writeln("Error when finding workspace symbols: " .. err.message)
       return
     end
 
-    local locations = vim.lsp.util.symbols_to_items(server_result or {}, bufnr) or {}
+    local locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr) or {}
     locations = utils.filter_symbols(locations, opts)
     if locations == nil then
       -- error message already printed in `utils.filter_symbols`
@@ -400,21 +400,19 @@ local function get_workspace_symbols_requester(bufnr, opts)
 end
 
 lsp.dynamic_workspace_symbols = function(opts)
-  local curr_bufnr = vim.api.nvim_get_current_buf()
-
   pickers.new(opts, {
     prompt_title = "LSP Dynamic Workspace Symbols",
     finder = finders.new_dynamic {
       entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
-      fn = get_workspace_symbols_requester(curr_bufnr, opts),
+      fn = get_workspace_symbols_requester(opts.bufnr, opts),
     },
     previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),
   }):find()
 end
 
-local function check_capabilities(feature)
-  local clients = vim.lsp.buf_get_clients(0)
+local function check_capabilities(feature, bufnr)
+  local clients = vim.lsp.buf_get_clients(bufnr)
 
   local supported_client = false
   for _, client in pairs(clients) do
@@ -452,7 +450,7 @@ local function apply_checks(mod)
       opts = opts or {}
 
       local feature_name = feature_map[k]
-      if feature_name and not check_capabilities(feature_name) then
+      if feature_name and not check_capabilities(feature_name, opts.bufnr) then
         return
       end
       v(opts)

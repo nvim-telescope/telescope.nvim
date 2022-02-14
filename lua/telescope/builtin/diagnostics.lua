@@ -86,6 +86,9 @@ local diagnostics_to_tbl = function(opts)
 end
 
 diagnostics.get = function(opts)
+  if opts.bufnr ~= 0 then
+    opts.bufnr = nil
+  end
   if opts.bufnr == nil then
     opts.path_display = vim.F.if_nil(opts.path_display, {})
   end

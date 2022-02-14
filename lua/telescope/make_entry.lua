@@ -536,7 +536,7 @@ function make_entry.gen_from_treesitter(opts)
   return function(entry)
     local ts_utils = require "nvim-treesitter.ts_utils"
     local start_row, start_col, end_row, _ = ts_utils.get_node_range(entry.node)
-    local node_text = ts_utils.get_node_text(entry.node)[1]
+    local node_text = ts_utils.get_node_text(entry.node, bufnr)[1]
     return {
       valid = true,
 
@@ -906,7 +906,7 @@ function make_entry.gen_from_ctags(opts)
   opts = opts or {}
 
   local cwd = vim.fn.expand(opts.cwd or vim.loop.cwd())
-  local current_file = Path:new(vim.fn.expand "%"):normalize(cwd)
+  local current_file = Path:new(vim.api.nvim_buf_get_name(opts.bufnr)):normalize(cwd)
 
   local display_items = {
     { remaining = true },
