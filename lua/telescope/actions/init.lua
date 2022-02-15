@@ -667,7 +667,7 @@ end
 
 --- Sends the selected entries to the quickfix list, replacing the previous entries.
 actions.send_selected_to_qflist = function(prompt_bufnr)
-  send_selected_to_qf(prompt_bufnr, "r")
+  send_selected_to_qf(prompt_bufnr, " ")
 end
 
 --- Adds the selected entries to the quickfix list, keeping the previous entries.
@@ -677,7 +677,7 @@ end
 
 --- Sends all entries to the quickfix list, replacing the previous entries.
 actions.send_to_qflist = function(prompt_bufnr)
-  send_all_to_qf(prompt_bufnr, "r")
+  send_all_to_qf(prompt_bufnr, " ")
 end
 
 --- Adds all entries to the quickfix list, keeping the previous entries.
@@ -687,7 +687,7 @@ end
 
 --- Sends the selected entries to the location list, replacing the previous entries.
 actions.send_selected_to_loclist = function(prompt_bufnr)
-  send_selected_to_qf(prompt_bufnr, "r", "loclist")
+  send_selected_to_qf(prompt_bufnr, " ", "loclist")
 end
 
 --- Adds the selected entries to the location list, keeping the previous entries.
@@ -697,7 +697,7 @@ end
 
 --- Sends all entries to the location list, replacing the previous entries.
 actions.send_to_loclist = function(prompt_bufnr)
-  send_all_to_qf(prompt_bufnr, "r", "loclist")
+  send_all_to_qf(prompt_bufnr, " ", "loclist")
 end
 
 --- Adds all entries to the location list, keeping the previous entries.
@@ -717,7 +717,7 @@ end
 --- Sends the selected entries to the quickfix list, replacing the previous entries.
 --- If no entry was selected, sends all entries.
 actions.smart_send_to_qflist = function(prompt_bufnr)
-  smart_send(prompt_bufnr, "r")
+  smart_send(prompt_bufnr, " ")
 end
 
 --- Adds the selected entries to the quickfix list, keeping the previous entries.
@@ -729,7 +729,7 @@ end
 --- Sends the selected entries to the location list, replacing the previous entries.
 --- If no entry was selected, sends all entries.
 actions.smart_send_to_loclist = function(prompt_bufnr)
-  smart_send(prompt_bufnr, "r", "loclist")
+  smart_send(prompt_bufnr, " ", "loclist")
 end
 
 --- Adds the selected entries to the location list, keeping the previous entries.

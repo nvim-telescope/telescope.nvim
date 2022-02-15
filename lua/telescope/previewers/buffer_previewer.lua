@@ -930,7 +930,11 @@ previewers.autocommands = defaulter(function(_)
       end
 
       vim.api.nvim_buf_add_highlight(self.state.bufnr, ns_previewer, "TelescopePreviewLine", selected_row + 1, 0, -1)
-      vim.api.nvim_win_set_cursor(status.preview_win, { selected_row, 0 })
+      -- set the cursor position after self.state.bufnr is connected to the
+      -- preview window (which is scheduled in new_buffer_previewer)
+      vim.schedule(function()
+        vim.api.nvim_win_set_cursor(status.preview_win, { selected_row, 0 })
+      end)
 
       self.state.last_set_bufnr = self.state.bufnr
     end,

@@ -271,16 +271,14 @@ files.treesitter = function(opts)
   end
 
   local parsers = require "nvim-treesitter.parsers"
-  if not parsers.has_parser() then
+  if not parsers.has_parser(parsers.get_buf_lang(opts.bufnr)) then
     print "No parser for the current buffer"
     return
   end
 
   local ts_locals = require "nvim-treesitter.locals"
-  local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
-
   local results = {}
-  for _, definitions in ipairs(ts_locals.get_definitions(bufnr)) do
+  for _, definitions in ipairs(ts_locals.get_definitions(opts.bufnr)) do
     local entries = prepare_match(definitions)
     for _, entry in ipairs(entries) do
       table.insert(results, entry)
@@ -307,17 +305,16 @@ end
 
 files.current_buffer_fuzzy_find = function(opts)
   -- All actions are on the current buffer
-  local bufnr = vim.api.nvim_get_current_buf()
-  local filename = vim.fn.expand(vim.api.nvim_buf_get_name(bufnr))
-  local filetype = vim.api.nvim_buf_get_option(bufnr, "filetype")
+  local filename = vim.fn.expand(vim.api.nvim_buf_get_name(opts.bufnr))
+  local filetype = vim.api.nvim_buf_get_option(opts.bufnr, "filetype")
 
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local lines = vim.api.nvim_buf_get_lines(opts.bufnr, 0, -1, false)
   local lines_with_numbers = {}
 
   for lnum, line in ipairs(lines) do
     table.insert(lines_with_numbers, {
       lnum = lnum,
-      bufnr = bufnr,
+      bufnr = opts.bufnr,
       filename = filename,
       text = line,
     })
@@ -329,9 +326,9 @@ files.current_buffer_fuzzy_find = function(opts)
   end
   local _, ts_configs = pcall(require, "nvim-treesitter.configs")
 
-  local parser_ok, parser = pcall(vim.treesitter.get_parser, bufnr, filetype)
+  local parser_ok, parser = pcall(vim.treesitter.get_parser, opts.bufnr, filetype)
   local query_ok, query = pcall(vim.treesitter.get_query, filetype, "highlights")
-  if parser_ok and query_ok and ts_ok and ts_configs.is_enabled("highlight", filetype, bufnr) then
+  if parser_ok and query_ok and ts_ok and ts_configs.is_enabled("highlight", filetype, opts.bufnr) then
     local root = parser:parse()[1]:root()
 
     local highlighter = vim.treesitter.highlighter.new(parser)
@@ -344,7 +341,7 @@ files.current_buffer_fuzzy_find = function(opts)
         return obj
       end,
     })
-    for id, node in query:iter_captures(root, bufnr, 0, -1) do
+    for id, node in query:iter_captures(root, opts.bufnr, 0, -1) do
       local hl = highlighter_query:_get_hl_from_capture(id)
       if hl and type(hl) ~= "number" then
         local row1, col1, row2, col2 = node:range()

@@ -62,6 +62,8 @@ internal.builtin = function(opts)
     end
   end
 
+  opts.bufnr = vim.api.nvim_get_current_buf()
+  opts.winnr = vim.api.nvim_get_current_win()
   pickers.new(opts, {
     prompt_title = title,
     finder = finders.new_table {
@@ -1154,10 +1156,6 @@ internal.autocommands = function(opts)
 end
 
 internal.spell_suggest = function(opts)
-  if not vim.wo.spell then
-    return false
-  end
-
   local cursor_word = vim.fn.expand "<cword>"
   local suggestions = vim.fn.spellsuggest(cursor_word)
 

@@ -352,12 +352,10 @@ builtin.jumplist = require_on_exported_call("telescope.builtin.internal").jumpli
 
 --- Lists LSP references for word under the cursor, jumps to reference on `<cr>`
 ---@param opts table: options to pass to the picker
----@field timeout number: timeout for the sync call (default: 10000)
 builtin.lsp_references = require_on_exported_call("telescope.builtin.lsp").references
 
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
----@field timeout number: timeout for the sync call (default: 10000)
 ---@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
 ---@field ignore_filename boolean: dont show filenames (default: true)
 builtin.lsp_definitions = require_on_exported_call("telescope.builtin.lsp").definitions
@@ -365,14 +363,12 @@ builtin.lsp_definitions = require_on_exported_call("telescope.builtin.lsp").defi
 --- Goto the definition of the type of the word under the cursor, if there's only one,
 --- otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
----@field timeout number: timeout for the sync call (default: 10000)
 ---@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
 ---@field ignore_filename boolean: dont show filenames (default: true)
 builtin.lsp_type_definitions = require("telescope.builtin.lsp").type_definitions
 
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
----@field timeout number: timeout for the sync call (default: 10000)
 ---@field jump_type string: how to goto implementation if there is only one, values: "tab", "split", "vsplit", "never"
 ---@field ignore_filename boolean: dont show filenames (default: true)
 builtin.lsp_implementations = require_on_exported_call("telescope.builtin.lsp").implementations
@@ -393,7 +389,6 @@ builtin.lsp_range_code_actions = require_on_exported_call("telescope.builtin.lsp
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
----@field timeout number: timeout for the sync call (default: 10000)
 ---@field ignore_filename boolean: dont show filenames (default: true)
 ---@field show_line boolean: if true, shows the content of the line the tag is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
@@ -405,7 +400,6 @@ builtin.lsp_document_symbols = require_on_exported_call("telescope.builtin.lsp")
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
 ---@field query string: for what to query the workspace (default: "")
----@field timeout number: timeout for the sync call (default: 10000)
 ---@field ignore_filename boolean: dont show filenames (default: false)
 ---@field show_line boolean: if true, shows the content of the line the tag is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
@@ -448,6 +442,8 @@ local apply_config = function(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)
       opts = opts or {}
+      opts.bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
+      opts.winnr = opts.winnr or vim.api.nvim_get_current_win()
       local pconf = pickers_conf[k] or {}
       local defaults = (function()
         if pconf.theme then
