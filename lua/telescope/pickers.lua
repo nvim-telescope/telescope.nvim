@@ -363,10 +363,10 @@ function Picker:find()
   end
 
   local results_win, results_opts, results_border_win = self:_create_window(
-      "",
-      popup_opts.results,
-      not self.wrap_results
-    )
+    "",
+    popup_opts.results,
+    not self.wrap_results
+  )
 
   local results_bufnr = a.nvim_win_get_buf(results_win)
 
