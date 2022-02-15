@@ -69,6 +69,7 @@ function Picker:new(opts)
     preview_title = opts.preview_title,
 
     prompt_prefix = get_default(opts.prompt_prefix, config.values.prompt_prefix),
+    wrap_results = get_default(opts.wrap_results, config.values.wrap_results),
     selection_caret = get_default(opts.selection_caret, config.values.selection_caret),
     entry_prefix = get_default(opts.entry_prefix, config.values.entry_prefix),
     multi_icon = get_default(opts.multi_icon, config.values.multi_icon),
@@ -314,9 +315,7 @@ function Picker:_create_window(bufnr, popup_opts, nowrap)
   local win, opts = popup.create(what, popup_opts)
 
   a.nvim_win_set_option(win, "winblend", self.window.winblend)
-  if nowrap then
-    a.nvim_win_set_option(win, "wrap", false)
-  end
+  a.nvim_win_set_option(win, "wrap", not nowrap)
   local border_win = opts and opts.border and opts.border.win_id
   if border_win then
     a.nvim_win_set_option(border_win, "winblend", self.window.winblend)
@@ -363,7 +362,11 @@ function Picker:find()
     popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
   end
 
-  local results_win, results_opts, results_border_win = self:_create_window("", popup_opts.results, true)
+  local results_win, results_opts, results_border_win = self:_create_window(
+    "",
+    popup_opts.results,
+    not self.wrap_results
+  )
 
   local results_bufnr = a.nvim_win_get_buf(results_win)
 
