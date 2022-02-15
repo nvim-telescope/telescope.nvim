@@ -179,6 +179,12 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: 0
 
+                                          *telescope.defaults.wrap_results*
+    wrap_results: ~
+        Word wrap the search results
+
+        Default: false
+
                                          *telescope.defaults.prompt_prefix*
     prompt_prefix: ~
         The character(s) that will be shown in front of Telescope's prompt.
