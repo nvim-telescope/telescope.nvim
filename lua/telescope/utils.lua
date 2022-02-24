@@ -485,7 +485,7 @@ utils.notify = function(funname, opts)
     error("Invalid error level", 2)
   end
 
-  vim.notify(("[%s] %s:"):format(funname, opts.msg), level, {
+  vim.notify(("[telescope.%s]: %s"):format(funname, opts.msg), level, {
     title = title,
     on_open = function()
       if opts.report then

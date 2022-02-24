@@ -26,8 +26,8 @@ local resolver = require "telescope.config.resolve"
 
 local actions = setmetatable({}, {
   __index = function(_, k)
-    utils.notify("acitons", {
-      msg = "Key does not exist for 'telescope.actions': " .. tostring(k),
+    utils.notify("actions.init", {
+      msg = ("'%s' key does not exist"):format(tostring(k)),
       level = "ERROR",
       panic = true,
       report = true,
