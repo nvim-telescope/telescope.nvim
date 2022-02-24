@@ -91,6 +91,7 @@ That's the next step to scrolling.
 --]]
 
 local get_default = require("telescope.utils").get_default
+local utils = require "telescope.utils"
 
 local resolver = {}
 local _resolve_map = {}
@@ -149,7 +150,12 @@ end] = function(selector, val)
       end
     end
 
-    error("invalid configuration option for padding:" .. tostring(value))
+    utils.notify("config", {
+      msg = "invalid configuration option for padding:" .. tostring(value),
+      level = "ERROR",
+      panic = true,
+      report = true,
+    })
   end
 
   return function(...)
@@ -183,7 +189,12 @@ resolver.resolve_height = function(val)
     end
   end
 
-  error("invalid configuration option for height:" .. tostring(val))
+  utils.notify("config", {
+    msg = "invalid configuration option for height:" .. tostring(val),
+    level = "ERROR",
+    panic = true,
+    report = true,
+  })
 end
 
 --- Converts input to a function that returns the width.
@@ -210,7 +221,12 @@ resolver.resolve_width = function(val)
     end
   end
 
-  error("invalid configuration option for width:" .. tostring(val))
+  utils.notify("config", {
+    msg = "invalid configuration option for width:" .. tostring(val),
+    level = "ERROR",
+    panic = true,
+    report = true,
+  })
 end
 
 --- Calculates the adjustment required to move the picker from the middle of the screen to

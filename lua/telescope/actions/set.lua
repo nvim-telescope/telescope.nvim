@@ -15,6 +15,7 @@ local a = vim.api
 local log = require "telescope.log"
 local Path = require "plenary.path"
 local state = require "telescope.state"
+local utils = require "telescope.utils"
 
 local action_state = require "telescope.actions.state"
 
@@ -22,7 +23,12 @@ local transform_mod = require("telescope.actions.mt").transform_mod
 
 local action_set = setmetatable({}, {
   __index = function(_, k)
-    error("'telescope.actions.set' does not have a value: " .. tostring(k))
+    utils.notify("actions_set", {
+      msg = "'telescope.actions.set' does not have a value: " .. tostring(k),
+      level = "ERROR",
+      panic = true,
+      report = true,
+    })
   end,
 })
 
@@ -74,7 +80,11 @@ do
   edit_buffer = function(command, bufnr)
     command = map[command]
     if command == nil then
-      error "There was no associated buffer command"
+      utils.notify("edit_buffer", {
+        msg = "There was no associated buffer command",
+        level = "ERROR",
+        panic = true,
+      })
     end
     vim.cmd(string.format("%s %d", command, bufnr))
   end
@@ -88,7 +98,10 @@ action_set.edit = function(prompt_bufnr, command)
   local entry = action_state.get_selected_entry()
 
   if not entry then
-    print "[telescope] Nothing currently selected"
+    utils.notify("actions.edit", {
+      msg = "Nothing currently selected",
+      level = "WARN",
+    })
     return
   end
 
@@ -105,7 +118,10 @@ action_set.edit = function(prompt_bufnr, command)
     -- to put stuff into `filename`
     local value = entry.value
     if not value then
-      print "Could not do anything with blank line..."
+      utils.notify("actions.edit", {
+        msg = "Could not do anything with blank line...",
+        level = "WARN",
+      })
       return
     end
 

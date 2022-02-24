@@ -163,10 +163,14 @@ files.find_files = function(opts)
   end)()
 
   if not find_command then
-    print(
-      "You need to install either find, fd, or rg. "
-        .. "You can also submit a PR to add support for another file finder :)"
-    )
+    utils.notify("find_files", {
+      msg = {
+
+        "You need to install either find, fd, or rg. ",
+        "You can also submit a PR to add support for another file finder :)",
+      },
+      level = "ERROR",
+    })
     return
   end
 
@@ -267,13 +271,19 @@ files.treesitter = function(opts)
 
   local has_nvim_treesitter, _ = pcall(require, "nvim-treesitter")
   if not has_nvim_treesitter then
-    print "You need to install nvim-treesitter"
+    utils.notify("treesitter", {
+      msg = "User need to install nvim-treesitter needs to be installed",
+      level = "ERROR",
+    })
     return
   end
 
   local parsers = require "nvim-treesitter.parsers"
   if not parsers.has_parser(parsers.get_buf_lang(opts.bufnr)) then
-    print "No parser for the current buffer"
+    utils.notify("treesitter", {
+      msg = "No parser for the current buffer",
+      level = "WARN",
+    })
     return
   end
 
@@ -397,7 +407,10 @@ end
 files.tags = function(opts)
   local tagfiles = opts.ctags_file and { opts.ctags_file } or vim.fn.tagfiles()
   if vim.tbl_isempty(tagfiles) then
-    print "No tags file found. Create one with ctags -R"
+    utils.notify("tags", {
+      msg = "No tags file found. Create one with ctags -R",
+      level = "ERROR",
+    })
     return
   end
 

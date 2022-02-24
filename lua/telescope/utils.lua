@@ -50,7 +50,10 @@ utils.filter_symbols = function(results, opts)
   local filtered_symbols
 
   if has_symbols and has_ignore then
-    error "Either opts.symbols or opts.ignore_symbols, can't process opposing options at the same time!"
+    utils.notify("filter_symbols", {
+      msg = "Either opts.symbols or opts.ignore_symbols, can't process opposing options at the same time!",
+      level = "ERROR",
+    })
     return
   elseif not (has_ignore or has_symbols) then
     return results
@@ -59,7 +62,10 @@ utils.filter_symbols = function(results, opts)
       opts.ignore_symbols = { opts.ignore_symbols }
     end
     if type(opts.ignore_symbols) ~= "table" then
-      print "Please pass ignore_symbols as either a string or a list of strings"
+      utils.notify("filter_symbols", {
+        msg = "Please pass ignore_symbols as either a string or a list of strings",
+        level = "ERROR",
+      })
       return
     end
 
@@ -72,7 +78,10 @@ utils.filter_symbols = function(results, opts)
       opts.symbols = { opts.symbols }
     end
     if type(opts.symbols) ~= "table" then
-      print "Please pass filtering symbols as either a string or a list of strings"
+      utils.notify("filter_symbols", {
+        msg = "Please pass filtering symbols as either a string or a list of strings",
+        level = "ERROR",
+      })
       return
     end
 
@@ -113,10 +122,16 @@ utils.filter_symbols = function(results, opts)
   -- print message that filtered_symbols is now empty
   if has_symbols then
     local symbols = table.concat(opts.symbols, ", ")
-    print(string.format("%s symbol(s) were not part of the query results", symbols))
+    utils.notify("filter_symbols", {
+      msg = string.format("%s symbol(s) were not part of the query results", symbols),
+      level = "WARN",
+    })
   elseif has_ignore then
     local symbols = table.concat(opts.ignore_symbols, ", ")
-    print(string.format("%s ignore_symbol(s) have removed everything from the query result", symbols))
+    utils.notify("filter_symbols", {
+      msg = string.format("%s ignore_symbol(s) have removed everything from the query result", symbols),
+      level = "WARN",
+    })
   end
 end
 
@@ -370,7 +385,11 @@ end
 
 function utils.get_os_command_output(cmd, cwd)
   if type(cmd) ~= "table" then
-    print "Telescope: [get_os_command_output]: cmd has to be a table"
+    utils.notify("get_os_command_output", {
+      msg = "cmd has to be a table",
+      level = "ERROR",
+      report = true,
+    })
     return {}
   end
   local command = table.remove(cmd, 1)
@@ -456,5 +475,31 @@ utils.get_devicons = load_once(function()
     end
   end
 end)
+
+local title = "Telescope.nvim"
+
+--- TODO: is function name can be accessed by debug api????
+utils.notify = function(funname, opts)
+  local level = vim.log.levels[opts.level]
+  if not level then
+    error("Invalid error level", 2)
+  end
+
+  vim.notify(("[%s] %s:"):format(funname, opts.msg), level, {
+    title = title,
+    on_open = function()
+      if opts.report then
+        vim.loop.new_timer():start(2000, 0, function()
+          local message = "Previous error shouldn't have happend. Please Report"
+          vim.notify(message, level, { title = title, timeout = 3000 })
+        end)
+      end
+    end,
+  })
+  if opts.panic then
+    -- TODO: should we just panic with something wrong happend?
+    error(opts.msg, 2)
+  end
+end
 
 return utils

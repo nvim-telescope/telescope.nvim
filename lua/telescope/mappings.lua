@@ -3,6 +3,7 @@ local a = vim.api
 
 local actions = require "telescope.actions"
 local config = require "telescope.config"
+local utils = require "telescope.utils"
 
 local mappings = {}
 
@@ -187,10 +188,15 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     local attach_results = attach_mappings(prompt_bufnr, map)
 
     if attach_results == nil then
-      error(
-        "Attach mappings must always return a value. `true` means use default mappings, "
-          .. "`false` means only use attached mappings"
-      )
+      utils.notify("mappings.apply_keymap", {
+        msg = {
+          "Attach mappings must always return a value. `true` means use default mappings, ",
+          "`false` means only use attached mappings",
+        },
+        level = "ERROR",
+        report = true,
+        panic = true,
+      })
     end
 
     if not attach_results then

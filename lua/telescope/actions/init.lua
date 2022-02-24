@@ -26,9 +26,21 @@ local resolver = require "telescope.config.resolve"
 
 local actions = setmetatable({}, {
   __index = function(_, k)
-    error("Key does not exist for 'telescope.actions': " .. tostring(k))
+    utils.notify("acitons", {
+      msg = "Key does not exist for 'telescope.actions': " .. tostring(k),
+      level = "ERROR",
+      panic = true,
+      report = true,
+    })
   end,
 })
+
+local warn_no_selection = function(funname)
+  return utils.notify(funname, {
+    msg = "Nothing currently selected",
+    level = "WARN",
+  })
+end
 
 --- Move the selection to the next entry
 ---@param prompt_bufnr number: The prompt bufnr
@@ -275,7 +287,7 @@ end
 actions.edit_command_line = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()
   if selection == nil then
-    print "[telescope] Nothing currently selected"
+    warn_no_selection "edit_command_line"
     return
   end
   actions.close(prompt_bufnr)
@@ -285,7 +297,7 @@ end
 actions.set_command_line = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()
   if selection == nil then
-    print "[telescope] Nothing currently selected"
+    warn_no_selection "set_command_line"
     return
   end
   actions.close(prompt_bufnr)
@@ -296,7 +308,7 @@ end
 actions.edit_search_line = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()
   if selection == nil then
-    print "[telescope] Nothing currently selected"
+    warn_no_selection "edit_search_line"
     return
   end
   actions.close(prompt_bufnr)
@@ -306,7 +318,7 @@ end
 actions.set_search_line = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()
   if selection == nil then
-    print "[telescope] Nothing currently selected"
+    warn_no_selection "set_search_line"
     return
   end
   actions.close(prompt_bufnr)
@@ -338,7 +350,7 @@ end
 actions.paste_register = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()
   if selection == nil then
-    print "[telescope] Nothing currently selected"
+    warn_no_selection "paste_register"
     return
   end
 
@@ -346,7 +358,12 @@ actions.paste_register = function(prompt_bufnr)
 
   -- ensure that the buffer can be written to
   if vim.api.nvim_buf_get_option(vim.api.nvim_get_current_buf(), "modifiable") then
-    print "Paste!"
+    -- maybe annoying?
+    utils.notify("actions.paste_register", {
+      msg = "Paste!",
+      level = "INFO",
+    })
+
     vim.api.nvim_paste(selection.content, true, -1)
   end
 end
@@ -370,7 +387,7 @@ end
 actions.insert_value = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()
   if selection == nil then
-    print "[telescope] Nothing currently selected"
+    warn_no_selection "actions.insert_value"
     return
   end
 
@@ -388,11 +405,18 @@ actions.git_create_branch = function(prompt_bufnr)
   local new_branch = action_state.get_current_line()
 
   if new_branch == "" then
-    print "Please enter the name of the new branch to create"
+    -- maybe annoying?
+    utils.notify("actions.paste_register", {
+      msg = "Missing the new branch name",
+      level = "ERROR",
+    })
   else
     local confirmation = vim.fn.input(string.format('Create new branch "%s"? [y/n]: ', new_branch))
     if string.len(confirmation) == 0 or string.sub(string.lower(confirmation), 0, 1) ~= "y" then
-      print(string.format('Didn\'t create branch "%s"', new_branch))
+      utils.notify("actions.git_create_branch", {
+        msg = string.format('Didn\'t create branch "%s"', new_branch),
+        level = "ERROR",
+      })
       return
     end
 
@@ -400,11 +424,19 @@ actions.git_create_branch = function(prompt_bufnr)
 
     local _, ret, stderr = utils.get_os_command_output({ "git", "checkout", "-b", new_branch }, cwd)
     if ret == 0 then
-      print(string.format("Switched to a new branch: %s", new_branch))
+      utils.notify("actions.git_create_branch", {
+        msg = string.format("Switched to a new branch: %s", new_branch),
+        level = "INFO",
+      })
     else
-      print(
-        string.format('Error when creating new branch: %s Git returned "%s"', new_branch, table.concat(stderr, "  "))
-      )
+      utils.notify("actions.git_create_branch", {
+        msg = string.format(
+          'Error when creating new branch: %s Git returned "%s"',
+          new_branch,
+          table.concat(stderr, "  ")
+        ),
+        level = "INFO",
+      })
     end
   end
 end
@@ -414,15 +446,21 @@ end
 actions.git_apply_stash = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()
   if selection == nil then
-    print "[telescope] Nothing currently selected"
+    warn_no_selection "git_apply_stash"
     return
   end
   actions.close(prompt_bufnr)
   local _, ret, stderr = utils.get_os_command_output { "git", "stash", "apply", "--index", selection.value }
   if ret == 0 then
-    print("applied: " .. selection.value)
+    utils.notify("actions.git_apply_stash", {
+      msg = "applied: " .. selection.value,
+      level = "INFO",
+    })
   else
-    print(string.format('Error when applying: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  ")))
+    utils.notify("actions.git_apply_stash", {
+      msg = string.format('Error when applying: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  ")),
+      level = "ERROR",
+    })
   end
 end
 
@@ -432,15 +470,25 @@ actions.git_checkout = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
   if selection == nil then
-    print "[telescope] Nothing currently selected"
+    warn_no_selection "git_checkout"
     return
   end
   actions.close(prompt_bufnr)
   local _, ret, stderr = utils.get_os_command_output({ "git", "checkout", selection.value }, cwd)
   if ret == 0 then
-    print("Checked out: " .. selection.value)
+    utils.notify("actions.git_checkout", {
+      msg = "Checked out: " .. selection.value,
+      level = "INFO",
+    })
   else
-    print(string.format('Error when checking out: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  ")))
+    utils.notify("actions.git_checkout", {
+      msg = string.format(
+        'Error when checking out: %s. Git returned: "%s"',
+        selection.value,
+        table.concat(stderr, "  ")
+      ),
+      level = "ERORR",
+    })
   end
 end
 
@@ -452,7 +500,7 @@ actions.git_switch_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
   if selection == nil then
-    print "[telescope] Nothing currently selected"
+    warn_no_selection "git_switch_branch"
     return
   end
   actions.close(prompt_bufnr)
@@ -463,9 +511,27 @@ actions.git_switch_branch = function(prompt_bufnr)
   end
   local _, ret, stderr = utils.get_os_command_output({ "git", "switch", branch }, cwd)
   if ret == 0 then
-    print("Switched to: " .. branch)
+    utils.notify("actions.git_switch_branch", {
+      msg = "Switched to: " .. branch,
+      level = "INFO",
+    })
+    utils.notify("actions.git_checkout", {
+      msg = string.format(
+        'Error when switching to: %s. Git returned: "%s"',
+        selection.value,
+        table.concat(stderr, "  ")
+      ),
+      level = "ERORR",
+    })
   else
-    print(string.format('Error when switching to: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  ")))
+    utils.notify("actions.git_switch_branch", {
+      msg = string.format(
+        'Error when switching to: %s. Git returned: "%s"',
+        selection.value,
+        table.concat(stderr, "  ")
+      ),
+      level = "ERORR",
+    })
   end
 end
 
@@ -474,7 +540,7 @@ local function make_git_branch_action(opts)
     local cwd = action_state.get_current_picker(prompt_bufnr).cwd
     local selection = action_state.get_selected_entry()
     if selection == nil then
-      print "[telescope] Nothing currently selected"
+      warn_no_selection "make_git_branch_action"
       return
     end
 
@@ -489,9 +555,15 @@ local function make_git_branch_action(opts)
     actions.close(prompt_bufnr)
     local _, ret, stderr = utils.get_os_command_output(opts.command(selection.value), cwd)
     if ret == 0 then
-      print(string.format(opts.success_message, selection.value))
+      utils.notify("make_git_branch_action", {
+        msg = string.format(opts.success_message, selection.value),
+        level = "ERROR",
+      })
     else
-      print(string.format(opts.error_message, selection.value, table.concat(stderr, "  ")))
+      utils.notify("make_git_branch_action", {
+        msg = string.format(opts.error_message, selection.value, table.concat(stderr, "  ")),
+        level = "INFO",
+      })
     end
   end
 end
@@ -547,7 +619,7 @@ local git_reset_branch = function(prompt_bufnr, mode)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
   if selection == nil then
-    print "[telescope] Nothing currently selected"
+    warn_no_selection "git_reset_branch"
     return
   end
 
@@ -559,9 +631,15 @@ local git_reset_branch = function(prompt_bufnr, mode)
   actions.close(prompt_bufnr)
   local _, ret, stderr = utils.get_os_command_output({ "git", "reset", mode, selection.value }, cwd)
   if ret == 0 then
-    print("Reset to: " .. selection.value)
+    utils.notify("actions.git_reset_branch", {
+      msg = "Reset to: " .. selection.value,
+      level = "INFO",
+    })
   else
-    print(string.format('Error when resetting to: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  ")))
+    utils.notify("actions.git_reset_branch", {
+      msg = string.format('Rest to: %s. Git returned: "%s"', selection.value, table.concat(stderr, "  ")),
+      level = "ERROR",
+    })
   end
 end
 
@@ -587,7 +665,8 @@ actions.git_checkout_current_buffer = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
   if selection == nil then
-    print "[telescope] Nothing currently selected"
+    warn_no_selection "git_checkout_current_buffer"
+
     return
   end
   actions.close(prompt_bufnr)
@@ -600,7 +679,7 @@ actions.git_staging_toggle = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
   local selection = action_state.get_selected_entry()
   if selection == nil then
-    print "[telescope] Nothing currently selected"
+    warn_no_selection "git_staging_toggle"
     return
   end
   if selection.status:sub(2) == " " then
@@ -744,7 +823,11 @@ actions.complete_tag = function(prompt_bufnr)
   local delimiter = current_picker.sorter._delimiter
 
   if not tags then
-    print "No tag pre-filtering set for this picker"
+    utils.notify("actions.complete_tag", {
+      msg = "No tag pre-filtering set for this picker",
+      level = "ERROR",
+    })
+
     return
   end
 
@@ -771,7 +854,10 @@ actions.complete_tag = function(prompt_bufnr)
   end
 
   if vim.tbl_isempty(filtered_tags) then
-    print "No matches found"
+    utils.notify("complete_tag", {
+      msg = "No matches found",
+      level = "INFO",
+    })
     return
   end
 

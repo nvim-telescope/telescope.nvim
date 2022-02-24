@@ -15,13 +15,21 @@ local git = {}
 
 git.files = function(opts)
   if opts.is_bare then
-    error "This operation must be run in a work tree"
+    utils.notify("git_files", {
+      msg = "This operation must be run in a work tree",
+      level = "ERROR",
+    })
+    return
   end
 
   local show_untracked = utils.get_default(opts.show_untracked, true)
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
   if show_untracked and recurse_submodules then
-    error "Git does not support both --others and --recurse-submodules"
+    utils.notify("git_files", {
+      msg = "Git does not support both --others and --recurse-submodules",
+      level = "ERROR",
+    })
+    return
   end
 
   -- By creating the entry maker after the cwd options,
@@ -300,7 +308,11 @@ end
 
 git.status = function(opts)
   if opts.is_bare then
-    error "This operation must be run in a work tree"
+    utils.notify("git_status", {
+      msg = "This operation must be run in a work tree",
+      level = "ERROR",
+    })
+    return
   end
 
   local gen_new_finder = function()
@@ -315,6 +327,10 @@ git.status = function(opts)
 
     if table.getn(output) == 0 then
       print "No changes found"
+      utils.notify("git_status", {
+        msg = "No changes found",
+        level = "WARN",
+      })
       return
     end
 
@@ -364,7 +380,11 @@ local set_opts_cwd = function(opts)
     local in_bare = utils.get_os_command_output({ "git", "rev-parse", "--is-bare-repository" }, opts.cwd)
 
     if in_worktree[1] ~= "true" and in_bare[1] ~= "true" then
-      error(opts.cwd .. " is not a git directory")
+      utils.notify("builtin.git", {
+        msg = opts.cwd .. " is not a git directory",
+        level = "ERROR",
+        panic = true,
+      })
     elseif in_worktree[1] ~= "true" and in_bare[1] == "true" then
       opts.is_bare = true
     end

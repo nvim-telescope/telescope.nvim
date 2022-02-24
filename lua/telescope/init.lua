@@ -1,4 +1,5 @@
 local _extensions = require "telescope._extensions"
+local utils = require "telescope.utils"
 
 local telescope = {}
 
@@ -78,7 +79,11 @@ function telescope.setup(opts)
   opts = opts or {}
 
   if opts.default then
-    error "'default' is not a valid value for setup. See 'defaults'"
+    utils.notify("setup", {
+      msg = "'default' is not a valid value for setup. See 'defaults'",
+      level = "ERROR",
+      panic = true,
+    })
   end
 
   require("telescope.config").set_defaults(opts.defaults)

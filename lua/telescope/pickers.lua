@@ -49,7 +49,11 @@ function Picker:new(opts)
   opts = opts or {}
 
   if opts.layout_strategy and opts.get_window_options then
-    error "layout_strategy and get_window_options are not compatible keys"
+    utils.notify("pickers.new", {
+      msg = "layout_strategy and get_window_options are not compatible keys",
+      level = "ERROR",
+      panic = true,
+    })
   end
 
   -- Reset actions for any replaced / enhanced actions.
@@ -274,7 +278,11 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
         start = hl
         finish = hl
       else
-        error "Invalid higlighter fn"
+        utils.notify("pickers.highlight_one_row", {
+          msg = "Invalid higlighter fn",
+          level = "ERROR",
+          panic = true,
+        })
       end
 
       self:_increment "highlights"
@@ -438,7 +446,12 @@ function Picker:find()
         end)
       end
     else
-      error("Invalid setting for initial_mode: " .. self.initial_mode)
+      utils.notify("pickers.find", {
+        msg = "Invalid setting for initial_mode: " .. self.initial_mode,
+        level = "ERROR",
+        report = true,
+        panic = true,
+      })
     end
 
     await_schedule()
@@ -639,7 +652,12 @@ local update_scroll = function(win, oldinfo, oldcursor, strategy, buf_maxline)
     vim.api.nvim_win_set_cursor(win, { oldinfo.botline, 0 })
     vim.api.nvim_win_set_cursor(win, oldcursor)
   else
-    error(debug.traceback("Unknown sorting strategy: " .. (strategy or "")))
+    utils.notify("pickers.update_scroll", {
+      msg = debug.traceback("Unknown sorting strategy: " .. (strategy or "")),
+      level = "ERROR",
+      report = true,
+      panic = true,
+    })
   end
 end
 
@@ -1344,7 +1362,12 @@ function Picker:_do_selection(prompt)
       self:set_selection(self:get_reset_row())
     end
   else
-    error("Unknown selection strategy: " .. selection_strategy)
+    utils.notify("pickers._do_selection", {
+      msg = "Unknown selection strategy: " .. selection_strategy,
+      level = "ERROR",
+      report = true,
+      panic = true,
+    })
   end
 end
 
