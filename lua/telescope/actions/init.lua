@@ -26,8 +26,8 @@ local resolver = require "telescope.config.resolve"
 
 local actions = setmetatable({}, {
   __index = function(_, k)
-    utils.notify("actions.init", {
-      msg = ("'%s' key does not exist"):format(tostring(k)),
+    utils.notify("actions", {
+      msg = ("'%s' does not exist."):format(tostring(k)),
       level = "ERROR",
       panic = true,
       report = true,
@@ -414,7 +414,7 @@ actions.git_create_branch = function(prompt_bufnr)
     local confirmation = vim.fn.input(string.format('Create new branch "%s"? [y/n]: ', new_branch))
     if string.len(confirmation) == 0 or string.sub(string.lower(confirmation), 0, 1) ~= "y" then
       utils.notify("actions.git_create_branch", {
-        msg = string.format('Didn\'t create branch "%s"', new_branch),
+        msg = string.format('fail to create branch: "%s"', new_branch),
         level = "ERROR",
       })
       return
@@ -453,7 +453,7 @@ actions.git_apply_stash = function(prompt_bufnr)
   local _, ret, stderr = utils.get_os_command_output { "git", "stash", "apply", "--index", selection.value }
   if ret == 0 then
     utils.notify("actions.git_apply_stash", {
-      msg = "applied: " .. selection.value,
+      msg = ("applied: '%s' "):format(selection.value),
       level = "INFO",
     })
   else
@@ -477,7 +477,7 @@ actions.git_checkout = function(prompt_bufnr)
   local _, ret, stderr = utils.get_os_command_output({ "git", "checkout", selection.value }, cwd)
   if ret == 0 then
     utils.notify("actions.git_checkout", {
-      msg = "Checked out: " .. selection.value,
+      msg = ("Checked out: "):format(selection.value),
       level = "INFO",
     })
   else
@@ -512,7 +512,7 @@ actions.git_switch_branch = function(prompt_bufnr)
   local _, ret, stderr = utils.get_os_command_output({ "git", "switch", branch }, cwd)
   if ret == 0 then
     utils.notify("actions.git_switch_branch", {
-      msg = "Switched to: " .. branch,
+      msg = ("Switched to: `%s` "):format(branch),
       level = "INFO",
     })
     utils.notify("actions.git_checkout", {
@@ -632,7 +632,7 @@ local git_reset_branch = function(prompt_bufnr, mode)
   local _, ret, stderr = utils.get_os_command_output({ "git", "reset", mode, selection.value }, cwd)
   if ret == 0 then
     utils.notify("actions.git_reset_branch", {
-      msg = "Reset to: " .. selection.value,
+      msg = ("Reset to: `%s`"):format(selection.value),
       level = "INFO",
     })
   else

@@ -71,6 +71,16 @@ local calc_tabline = function(max_lines)
   return max_lines, tbln
 end
 
+local throw_unknown_prompt_position = function(self, config)
+  local msg = string.format("`%s` is unknown prompt_position:", self.window.prompt_position)
+  utils.notify("layout_strategies", {
+    msg = { msg, vim.inspect(config) },
+    level = "ERROR",
+    panic = true,
+    report = true,
+  })
+end
+
 -- Helper function for capping over/undersized width/height, and calculating spacing
 --@param cur_size number: size to be capped
 --@param max_size any: the maximum size, e.g. max_lines or max_columns
@@ -222,7 +232,7 @@ layout_strategies._format = function(name)
       end
     else
       utils.notify("layout_strategies", {
-        msg = "Unknown type:" .. type(val),
+        msg = ("expected string or table but found `%s`"):format(type(val)),
         level = "ERROR",
         panic = true,
         report = true,
@@ -379,12 +389,7 @@ layout_strategies.horizontal = make_documented_layout(
       results.line = preview.line
       prompt.line = results.line + results.height + 1 + bs
     else
-      utils.notify("layout_strategies", {
-        msg = string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)),
-        level = "ERROR",
-        panic = true,
-        report = true,
-      })
+      throw_unknown_prompt_position(self, layout_config)
     end
 
     local anchor_pos = resolve.resolve_anchor_pos(layout_config.anchor or "", width, height, max_columns, max_lines)
@@ -491,12 +496,7 @@ layout_strategies.center = make_documented_layout(
         prompt.title = { { pos = "S", text = prompt.title } }
       end
     else
-      utils.notify("layout_strategies", {
-        msg = string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)),
-        level = "ERROR",
-        panic = true,
-        report = true,
-      })
+      throw_unknown_prompt_position(self, layout_config)
     end
 
     local width_padding = math.floor((max_columns - width) / 2) + bs + 1
@@ -732,16 +732,7 @@ layout_strategies.vertical = make_documented_layout(
         results.line = (preview.height == 0) and preview.line or preview.line + preview.height + (1 + bs)
         prompt.line = results.line + results.height + (1 + bs)
       else
-        utils.notify("layout_strategies", {
-          msg = string.format(
-            "Unknown prompt_position: %s\n%s",
-            self.window.prompt_position,
-            vim.inspect(layout_config)
-          ),
-          level = "ERROR",
-          panic = true,
-          report = true,
-        })
+        throw_unknown_prompt_position(self, layout_config)
       end
     else
       if layout_config.prompt_position == "top" then
@@ -753,16 +744,7 @@ layout_strategies.vertical = make_documented_layout(
         prompt.line = results.line + results.height + (1 + bs)
         preview.line = prompt.line + prompt.height + (1 + bs)
       else
-        utils.notify("layout_strategies", {
-          msg = string.format(
-            "Unknown prompt_position: %s\n%s",
-            self.window.prompt_position,
-            vim.inspect(layout_config)
-          ),
-          level = "ERROR",
-          panic = true,
-          report = true,
-        })
+        throw_unknown_prompt_position(self, layout_config)
       end
     end
 
@@ -936,16 +918,7 @@ layout_strategies.bottom_pane = make_documented_layout(
         results.border = { 1, 1, 0, 1 }
       end
     else
-      utils.notify("layout_strategies", {
-        msg = {
-          "Unknown prompt_position: ",
-          tostring(self.window.prompt_position),
-          vim.inspect(layout_config),
-        },
-        level = "ERROR",
-        panic = true,
-        report = true,
-      })
+      throw_unknown_prompt_position(self, layout_config)
     end
 
     -- Col

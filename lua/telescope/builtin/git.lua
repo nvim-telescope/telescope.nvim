@@ -381,7 +381,7 @@ local set_opts_cwd = function(opts)
 
     if in_worktree[1] ~= "true" and in_bare[1] ~= "true" then
       utils.notify("builtin.git", {
-        msg = opts.cwd .. " is not a git directory",
+        msg = ("'%s' is not a git directory"):format(opts.cwd),
         level = "ERROR",
         panic = true,
       })

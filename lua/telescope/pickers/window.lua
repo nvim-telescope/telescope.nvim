@@ -9,7 +9,7 @@ function p_window.get_window_options(picker, max_columns, max_lines)
 
   if not getter then
     utils.notify("pickers.window", {
-      msg = "Not a valid layout strategy: " .. layout_strategy,
+      msg = ("`%s` is not a valid layout strategy"):format(layout_strategy),
       level = "ERROR",
       panic = true,
     })

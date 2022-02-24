@@ -13,8 +13,8 @@ local transform_mod = require("telescope.actions.mt").transform_mod
 
 local action_layout = setmetatable({}, {
   __index = function(_, k)
-    utils.notify("acitons.layout", {
-      msg = "does not have a value: " .. tostring(k),
+    utils.notify("actions.layout", {
+      msg = ("'%s' does not have a value!"):format(tostring(k)),
       level = "ERROR",
       panic = true,
       report = true,
@@ -130,8 +130,8 @@ local get_cycle_layout = function(dir)
       picker.previewer = (new_layout.previewer == nil and picker.all_previewers[picker.current_previewer_index])
         or new_layout.previewer
     else
-      utils.notify("acitons.layout", {
-        msg = "Not a valid layout setup: " .. vim.inspect(new_layout) .. "\nShould be a string or a table",
+      utils.notify("actions.layout", {
+        msg = ("Invalid layout setup, expected string or a table got '%s'"):format(vim.inspect(new_layout)),
         level = "ERROR",
         panic = true,
         report = true,

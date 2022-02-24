@@ -165,7 +165,6 @@ files.find_files = function(opts)
   if not find_command then
     utils.notify("find_files", {
       msg = {
-
         "You need to install either find, fd, or rg. ",
         "You can also submit a PR to add support for another file finder :)",
       },

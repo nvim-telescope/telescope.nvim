@@ -129,7 +129,7 @@ internal.resume = function(opts)
   local picker = cached_pickers[opts.cache_index]
   if picker == nil then
     utils.notify("resume", {
-      msg = string.format("Index too large as there are only %s pickers cached", #cached_pickers),
+      msg = string.format("Index too large as there are only `%s` pickers cached", #cached_pickers),
       level = "ERROR",
     })
     return

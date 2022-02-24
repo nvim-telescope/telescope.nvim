@@ -42,7 +42,7 @@ return function(opts)
     --   writer = job_opts.writer
     if opts.writer then
       utils.notify("async_job_finder", {
-        msg = "async_job_finder.writer is not yet implemented",
+        msg = "[writer] is not yet implemented",
         level = "ERROR",
         panic = true,
       })
