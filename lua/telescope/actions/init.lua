@@ -26,12 +26,13 @@ local resolver = require "telescope.config.resolve"
 
 local actions = setmetatable({}, {
   __index = function(_, k)
-    utils.notify("actions", {
-      msg = ("'%s' does not exist."):format(tostring(k)),
-      level = "ERROR",
-      panic = true,
-      report = true,
-    })
+    error() -- really that what it took to slient it?
+    -- utils.notify("actions", {
+    --   msg = ("'%s' does not exist."):format(tostring(k)),
+    --   level = "TRACE",
+    --   panic = true,
+    --   report = true,
+    -- })
   end,
 })
 
