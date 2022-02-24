@@ -192,8 +192,7 @@ resolver.resolve_height = function(val)
       return v(3, val)
     end
   end
-
-  throw_invalid_config_option("height", value)
+  throw_invalid_config_option("height", val)
 end
 
 --- Converts input to a function that returns the width.
@@ -220,7 +219,7 @@ resolver.resolve_width = function(val)
     end
   end
 
-  throw_invalid_config_option("width", value)
+  throw_invalid_config_option("width", val)
 end
 
 --- Calculates the adjustment required to move the picker from the middle of the screen to
