@@ -1631,11 +1631,15 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
 layout_strategies.center()                        *layout_strategies.center()*
     Centered layout with a combined block of the prompt and results aligned to
     the middle of the screen. The preview window is then placed in the
-    remaining space above. Particularly useful for creating dropdown menus (see
-    |telescope.themes| and |themes.get_dropdown()|`).
+    remaining space above or below, according to `anchor` or `mirror`.
+    Particularly useful for creating dropdown menus (see |telescope.themes| and
+    |themes.get_dropdown()|).
 
-    Note that the `anchor` option can only pin this layout to the left or right
-    edges.
+    Note that vertical anchoring, i.e. `anchor` containing `"N"` or `"S"`, will
+    override `mirror` config. For `"N"` anchoring preview will be placed below
+    prompt/result block. For `"S"` anchoring preview will be placed above
+    prompt/result block. For horizontal only anchoring preview will be placed
+    according to `mirror` config, default is above the prompt/result block.
 
     ┌──────────────────────────────────────────────────┐
     │    ┌────────────────────────────────────────┐    │
