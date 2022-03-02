@@ -12,7 +12,7 @@
 ---           ["?"] = action_generate.which_key {
 ---             name_width = 20, -- typically leads to smaller floats
 ---             max_height = 0.5, -- increase potential maximum height
----             seperator = " > ", -- change sep between mode, keybind, and name
+---             separator = " > ", -- change sep between mode, keybind, and name
 ---             close_with_action = false, -- do not close float on action
 ---           },
 ---         },
@@ -36,13 +36,13 @@ local action_generate = {}
 ---@field mode_width number: fixed width of mode to be shown (default: 1)
 ---@field keybind_width number: fixed width of keybind to be shown (default: 7)
 ---@field name_width number: fixed width of action name to be shown (default: 30)
----@field column_padding string: string to split; can be used for vertical seperator (default: "  ")
+---@field column_padding string: string to split; can be used for vertical separator (default: "  ")
 ---@field mode_hl string: hl group of mode (default: TelescopeResultsConstant)
 ---@field keybind_hl string: hl group of keybind (default: TelescopeResultsVariable)
 ---@field name_hl string: hl group of action name (default: TelescopeResultsFunction)
 ---@field column_indent number: number of left-most spaces before keybinds are shown (default: 4)
 ---@field line_padding number: row padding in top and bottom of float (default: 1)
----@field separator string: seperator string between mode, key bindings, and action (default: " -> ")
+---@field separator string: separator string between mode, key bindings, and action (default: " -> ")
 ---@field close_with_action boolean: registered action will close keymap float (default: true)
 ---@field normal_hl string: winhl of "Normal" for keymap hints floating window (default: "TelescopePrompt")
 ---@field border_hl string: winhl of "Normal" for keymap borders (default: "TelescopePromptBorder")
