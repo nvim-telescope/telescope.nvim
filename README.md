@@ -76,6 +76,9 @@ Plug 'nvim-telescope/telescope.nvim'
 
 Using [dein](https://github.com/Shougo/dein.vim)
 
+System dependency(for grep):
+  1.ripgrep
+
 ```viml
 call dein#add('nvim-lua/plenary.nvim')
 call dein#add('nvim-telescope/telescope.nvim')
