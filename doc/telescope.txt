@@ -2425,7 +2425,7 @@ General usage:
           ["?"] = action_generate.which_key {
             name_width = 20, -- typically leads to smaller floats
             max_height = 0.5, -- increase potential maximum height
-            seperator = " > ", -- change sep between mode, keybind, and name
+            separator = " > ", -- change sep between mode, keybind, and name
             close_with_action = false, -- do not close float on action
           },
         },
@@ -2461,7 +2461,7 @@ action_generate.which_key({opts})                *action_generate.which_key()*
         {name_width}             (number)   fixed width of action name to be
                                             shown (default: 30)
         {column_padding}         (string)   string to split; can be used for
-                                            vertical seperator (default: " ")
+                                            vertical separator (default: " ")
         {mode_hl}                (string)   hl group of mode (default:
                                             TelescopeResultsConstant)
         {keybind_hl}             (string)   hl group of keybind (default:
@@ -2472,7 +2472,7 @@ action_generate.which_key({opts})                *action_generate.which_key()*
                                             keybinds are shown (default: 4)
         {line_padding}           (number)   row padding in top and bottom of
                                             float (default: 1)
-        {separator}              (string)   seperator string between mode, key
+        {separator}              (string)   separator string between mode, key
                                             bindings, and action (default: "
                                             -> ")
         {close_with_action}      (boolean)  registered action will close
