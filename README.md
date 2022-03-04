@@ -44,6 +44,10 @@ This section should guide you to run your first builtin pickers.
 [Neovim (v0.6.0)](https://github.com/neovim/neovim/releases/tag/v0.6.0) or the
 latest neovim nightly commit is required for `telescope.nvim` to work.
 
+### Required dependencies
+
+- [nvim-lua/plenary.nvim](https://github.com/nvim-lua/plenary.nvim) is required.
+
 ### Suggested dependencies
 
 - [BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) is required for
