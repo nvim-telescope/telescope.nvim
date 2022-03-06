@@ -11,7 +11,7 @@ This will provide standard mechanism for accessing information from an entry.
 local from_entry = {}
 
 function from_entry.path(entry, validate)
-  local path = entry.path and vim.fn.fnameescape(entry.path) or nil
+  local path = entry.path or nil
   if path == nil then
     path = entry.filename
   end
