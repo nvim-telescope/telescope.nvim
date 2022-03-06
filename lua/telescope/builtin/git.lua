@@ -348,6 +348,29 @@ git.status = function(opts)
   }):find()
 end
 
+git.worktrees = function(opts)
+  opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_worktrees(opts))
+
+  pickers.new(opts, {
+    prompt_title = "Git Worktrees",
+    finder = finders.new_oneshot_job(
+      vim.tbl_flatten {
+        { "git", "worktree", "list" },
+      },
+      opts
+    ),
+    sorter = conf.file_sorter(opts),
+    attach_mappings = function()
+      actions.select_default:replace(function(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        vim.cmd("cd " .. selection.value)
+      end)
+      return true
+    end,
+  }):find()
+end
+
 local set_opts_cwd = function(opts)
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)

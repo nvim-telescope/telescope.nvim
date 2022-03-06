@@ -307,6 +307,43 @@ function make_entry.gen_from_git_commits(opts)
   end
 end
 
+function make_entry.gen_from_git_worktrees(opts)
+  opts = opts or {}
+
+  local displayer = entry_display.create {
+    separator = " ",
+    items = {
+      { width = 20 },
+      { remaining = true },
+    },
+  }
+
+  local make_display = function(entry)
+    return displayer {
+      { string.sub(entry.ordinal, 2, -2), "TelescopeResultsIdentifier" },
+      { entry.sha },
+    }
+  end
+
+  return function(entry)
+    if entry == "" then
+      return nil
+    end
+
+    local splitted = utils.max_split(entry)
+    local path = splitted[1]
+    local branch_name = splitted[3]
+    local sha = splitted[2]
+
+    return {
+      value = path,
+      ordinal = branch_name,
+      sha = sha,
+      display = make_display,
+    }
+  end
+end
+
 function make_entry.gen_from_quickfix(opts)
   opts = opts or {}
 

@@ -318,6 +318,7 @@ Built-in functions. Ready to be bound to any key you like.
 | `builtin.git_branches`              | Lists all branches with log preview, checkout action `<cr>`, track action `<C-t>` and rebase action`<C-r>` |
 | `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multi-selection still WIP)               |
 | `builtin.git_stash`                 | Lists stash items in current repository with ability to apply them on `<cr>`                               |
+| `builtin.git_worktress`             | Lists worktrees in current bare repository with ability to change directory on `<cr>`                      |
 
 ### Treesitter Picker
 
