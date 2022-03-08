@@ -278,8 +278,8 @@ files.treesitter = function(opts)
 
   local ts_locals = require "nvim-treesitter.locals"
   local results = {}
-  for _, definitions in ipairs(ts_locals.get_definitions(opts.bufnr)) do
-    local entries = prepare_match(definitions)
+  for _, definition in ipairs(ts_locals.get_definitions(opts.bufnr)) do
+    local entries = prepare_match(ts_locals.get_local_nodes(definition))
     for _, entry in ipairs(entries) do
       table.insert(results, entry)
     end
