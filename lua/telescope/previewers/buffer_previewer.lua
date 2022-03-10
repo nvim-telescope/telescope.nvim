@@ -434,6 +434,7 @@ previewers.vimgrep = defaulter(function(opts)
   local cwd = opts.cwd or vim.loop.cwd()
 
   local jump_to_line = function(self, bufnr, lnum)
+    pcall(vim.api.nvim_buf_clear_namespace, bufnr, ns_previewer, 0, -1)
     if lnum and lnum > 0 then
       pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewLine", lnum - 1, 0, -1)
       pcall(vim.api.nvim_win_set_cursor, self.state.winid, { lnum, 0 })
@@ -441,24 +442,12 @@ previewers.vimgrep = defaulter(function(opts)
         vim.cmd "norm! zz"
       end)
     end
-
-    self.state.last_set_bufnr = bufnr
   end
 
   return previewers.new_buffer_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
       return Path:new(from_entry.path(entry, true)):normalize(cwd)
-    end,
-
-    setup = function()
-      return { last_set_bufnr = nil }
-    end,
-
-    teardown = function(self)
-      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
-        vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_previewer, 0, -1)
-      end
     end,
 
     get_buffer_by_name = function(_, entry)
@@ -469,10 +458,6 @@ previewers.vimgrep = defaulter(function(opts)
       local p = from_entry.path(entry, true)
       if p == nil or p == "" then
         return
-      end
-
-      if self.state.last_set_bufnr then
-        pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
       end
 
       -- Workaround for unnamed buffer when using builtin.buffer
