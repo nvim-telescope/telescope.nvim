@@ -17,7 +17,7 @@ local filter = vim.tbl_filter
 local files = {}
 
 local escape_chars = function(string)
-  return string.gsub(string, "[%(|%)|\\|%[|%]|%-|%{%}|%?|%+|%*|%^|%$]", {
+  return string.gsub(string, "[%(|%)|\\|%[|%]|%-|%{%}|%?|%+|%*|%^|%$|%.]", {
     ["\\"] = "\\\\",
     ["-"] = "\\-",
     ["("] = "\\(",
@@ -31,6 +31,7 @@ local escape_chars = function(string)
     ["*"] = "\\*",
     ["^"] = "\\^",
     ["$"] = "\\$",
+    ["."] = "\\.",
   })
 end
 
