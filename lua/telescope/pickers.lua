@@ -804,6 +804,9 @@ end
 ---@param row number: the number of the chosen row
 function Picker:toggle_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
+  if entry == nil then
+    return
+  end
   self._multi:toggle(entry)
 
   self:update_prefix(entry, row)
