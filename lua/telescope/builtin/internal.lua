@@ -663,6 +663,7 @@ internal.man_pages = function(opts)
     return is_darwin and { "apropos", " " } or { "apropos", "" }
   end)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts)
+  opts.env = { PATH = vim.env.PATH, MANPATH = vim.env.MANPATH }
 
   pickers.new(opts, {
     prompt_title = "Man",

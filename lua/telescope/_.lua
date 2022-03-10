@@ -299,6 +299,22 @@ M.convert_opts = function(o)
 
   obj.args = args
 
+  if o.env then
+    if type(o.env) ~= "table" then
+      error(debug.traceback "'env' has to be a table")
+    end
+
+    local transform = {}
+    for k, v in pairs(o.env) do
+      if type(k) == "number" then
+        table.insert(transform, v)
+      elseif type(k) == "string" then
+        table.insert(transform, k .. "=" .. tostring(v))
+      end
+    end
+    obj.env = transform
+  end
+
   return command, obj
 end
 

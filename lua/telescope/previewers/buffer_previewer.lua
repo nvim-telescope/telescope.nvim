@@ -610,7 +610,7 @@ end, {})
 
 previewers.man = defaulter(function(opts)
   local pager = utils.get_lazy_default(opts.PAGER, function()
-    return vim.fn.executable "col" == 1 and "col -bx" or ""
+    return vim.fn.executable "col" == 1 and { "col", "-bx" } or { "cat" }
   end)
   return previewers.new_buffer_previewer {
     title = "Man Preview",
@@ -620,8 +620,9 @@ previewers.man = defaulter(function(opts)
 
     define_preview = function(self, entry, status)
       local win_width = vim.api.nvim_win_get_width(self.state.winid)
-      putils.job_maker({ "man", entry.section, entry.value }, self.state.bufnr, {
-        env = { ["PAGER"] = pager, ["MANWIDTH"] = win_width },
+      putils.job_maker(vim.deepcopy(pager), self.state.bufnr, {
+        writer = { "man", entry.section, entry.value },
+        env = { ["MANWIDTH"] = win_width, PATH = vim.env.PATH, MANPATH = vim.env.MANPATH },
         value = entry.value .. "/" .. entry.section,
         bufname = self.state.bufname,
       })

@@ -33,12 +33,25 @@ utils.job_maker = function(cmd, bufnr, opts)
   -- if any of them are missing, cache will be skipped
   if opts.bufname ~= opts.value or not opts.bufname or not opts.value then
     local command = table.remove(cmd, 1)
+    local writer = (function()
+      if opts.writer ~= nil then
+        local wcommand = table.remove(opts.writer, 1)
+        return Job:new {
+          command = wcommand,
+          args = opts.writer,
+          env = opts.env,
+          cwd = opts.cwd,
+        }
+      end
+    end)()
+
     Job
       :new({
         command = command,
         args = cmd,
         env = opts.env,
         cwd = opts.cwd,
+        writer = writer,
         on_exit = vim.schedule_wrap(function(j)
           if not vim.api.nvim_buf_is_valid(bufnr) then
             return
