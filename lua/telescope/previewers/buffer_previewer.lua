@@ -434,7 +434,7 @@ previewers.vimgrep = defaulter(function(opts)
   local cwd = opts.cwd or vim.loop.cwd()
 
   local jump_to_line = function(self, bufnr, lnum)
-    vim.api.nvim_buf_clear_namespace(bufnr, ns_previewer, 0, -1)
+    pcall(vim.api.nvim_buf_clear_namespace, bufnr, ns_previewer, 0, -1)
     if lnum and lnum > 0 then
       pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewLine", lnum - 1, 0, -1)
       pcall(vim.api.nvim_win_set_cursor, self.state.winid, { lnum, 0 })
