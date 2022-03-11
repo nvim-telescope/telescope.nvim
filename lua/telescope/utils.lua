@@ -93,9 +93,10 @@ end
 utils.filter_symbols = function(results, opts)
   local has_ignore = opts.ignore_symbols ~= nil
   local has_symbols = opts.symbols ~= nil
+  local filtered_symbols
 
   if has_symbols and has_ignore then
-    error "Either opts.symbols or opts.ignore_symbols, can't process opposing options at the same time ;)'"
+    error "Either opts.symbols or opts.ignore_symbols, can't process opposing options at the same time!"
     return
   elseif not (has_ignore or has_symbols) then
     return results
@@ -103,46 +104,33 @@ utils.filter_symbols = function(results, opts)
     if type(opts.ignore_symbols) == "string" then
       opts.ignore_symbols = { opts.ignore_symbols }
     end
-    return vim.tbl_filter(function(item)
+    if type(opts.ignore_symbols) ~= "table" then
+      print "Please pass ignore_symbols as either a string or a list of strings"
+      return
+    end
+
+    opts.ignore_symbols = vim.tbl_map(string.lower, opts.ignore_symbols)
+    filtered_symbols = vim.tbl_filter(function(item)
       return not vim.tbl_contains(opts.ignore_symbols, string.lower(item.kind))
+    end, results)
+  elseif has_symbols then
+    if type(opts.symbols) == "string" then
+      opts.symbols = { opts.symbols }
+    end
+    if type(opts.symbols) ~= "table" then
+      print "Please pass filtering symbols as either a string or a list of strings"
+      return
+    end
+
+    opts.symbols = vim.tbl_map(string.lower, opts.symbols)
+    filtered_symbols = vim.tbl_filter(function(item)
+      return vim.tbl_contains(opts.symbols, string.lower(item.kind))
     end, results)
   end
 
-  local valid_symbols = vim.tbl_map(string.lower, vim.lsp.protocol.SymbolKind)
-
-  local filtered_symbols = {}
-  if type(opts.symbols) == "string" then
-    opts.symbols = string.lower(opts.symbols)
-    if vim.tbl_contains(valid_symbols, opts.symbols) then
-      for _, result in ipairs(results) do
-        if string.lower(result.kind) == opts.symbols then
-          table.insert(filtered_symbols, result)
-        end
-      end
-    else
-      print(string.format("%s is not a valid symbol per `vim.lsp.protocol.SymbolKind`", opts.symbols))
-    end
-  elseif type(opts.symbols) == "table" then
-    opts.symbols = vim.tbl_map(string.lower, opts.symbols)
-    local mismatched_symbols = {}
-    for _, symbol in ipairs(opts.symbols) do
-      if vim.tbl_contains(valid_symbols, symbol) then
-        for _, result in ipairs(results) do
-          if string.lower(result.kind) == symbol then
-            table.insert(filtered_symbols, result)
-          end
-        end
-      else
-        table.insert(mismatched_symbols, symbol)
-        mismatched_symbols = table.concat(mismatched_symbols, ", ")
-        print(string.format("%s are not valid symbols per `vim.lsp.protocol.SymbolKind`", mismatched_symbols))
-      end
-    end
-  else
-    print "Please pass filtering symbols as either a string or a list of strings"
-    return
-  end
-
+  -- TODO(conni2461): If you understand this correctly then we sort the results table based on the bufnr
+  -- If you ask me this should be its own function, that happens after the filtering part and should be
+  -- called in the lsp function directly
   local current_buf = vim.api.nvim_get_current_buf()
   if not vim.tbl_isempty(filtered_symbols) then
     -- filter adequately for workspace symbols
@@ -167,9 +155,15 @@ utils.filter_symbols = function(results, opts)
     end)
     return filtered_symbols
   end
-  -- only account for string|table as function otherwise already printed message and returned nil
-  local symbols = type(opts.symbols) == "string" and opts.symbols or table.concat(opts.symbols, ", ")
-  print(string.format("%s symbol(s) were not part of the query results", symbols))
+
+  -- print message that filtered_symbols is now empty
+  if has_symbols then
+    local symbols = table.concat(opts.symbols, ", ")
+    print(string.format("%s symbol(s) were not part of the query results", symbols))
+  elseif has_ignore then
+    local symbols = table.concat(opts.ignore_symbols, ", ")
+    print(string.format("%s ignore_symbol(s) have removed everything from the query result", symbols))
+  end
 end
 
 utils.path_smart = (function()

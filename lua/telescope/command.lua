@@ -64,6 +64,7 @@ local split_keywords = {
   ["sections"] = true,
   ["search_dirs"] = true,
   ["symbols"] = true,
+  ["ignore_symbols"] = true,
 }
 
 -- convert command line string arguments to
