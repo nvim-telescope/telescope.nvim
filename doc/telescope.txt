@@ -1410,7 +1410,6 @@ builtin.lsp_document_symbols({opts})          *builtin.lsp_document_symbols()*
                                             false)
         {symbols}           (string|table)  filter results by symbol kind(s)
         {ignore_symbols}    (string|table)  list of symbols to ignore
-                                            (default: nil)
         {symbol_highlights} (table)         string -> string. Matches symbol
                                             with hl_group
 
@@ -1435,7 +1434,6 @@ builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
                                             false)
         {symbols}           (string|table)  filter results by symbol kind(s)
         {ignore_symbols}    (string|table)  list of symbols to ignore
-                                            (default: nil)
         {symbol_highlights} (table)         string -> string. Matches symbol
                                             with hl_group
 
@@ -1458,7 +1456,6 @@ builtin.lsp_dynamic_workspace_symbols({opts}) *builtin.lsp_dynamic_workspace_sym
                                             (default: false)
         {symbols}           (string|table)  filter results by symbol kind(s)
         {ignore_symbols}    (string|table)  list of symbols to ignore
-                                            (default: nil)
         {symbol_highlights} (table)         string -> string. Matches symbol
                                             with hl_group
 
