@@ -393,6 +393,7 @@ builtin.lsp_range_code_actions = require_on_exported_call("telescope.builtin.lsp
 ---@field ignore_filename boolean: dont show filenames (default: true)
 ---@field show_line boolean: if true, shows the content of the line the tag is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
+---@field ignore_symbols string|table: list of symbols to ignore
 ---@field symbol_highlights table: string -> string. Matches symbol with hl_group
 builtin.lsp_document_symbols = require_on_exported_call("telescope.builtin.lsp").document_symbols
 
@@ -404,6 +405,7 @@ builtin.lsp_document_symbols = require_on_exported_call("telescope.builtin.lsp")
 ---@field ignore_filename boolean: dont show filenames (default: false)
 ---@field show_line boolean: if true, shows the content of the line the tag is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
+---@field ignore_symbols string|table: list of symbols to ignore
 ---@field symbol_highlights table: string -> string. Matches symbol with hl_group
 builtin.lsp_workspace_symbols = require_on_exported_call("telescope.builtin.lsp").workspace_symbols
 
@@ -414,6 +416,7 @@ builtin.lsp_workspace_symbols = require_on_exported_call("telescope.builtin.lsp"
 ---@field ignore_filename boolean: dont show filenames (default: false)
 ---@field show_line boolean: if true, shows the content of the line the symbol is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
+---@field ignore_symbols string|table: list of symbols to ignore
 ---@field symbol_highlights table: string -> string. Matches symbol with hl_group
 builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.builtin.lsp").dynamic_workspace_symbols
 
