@@ -1356,10 +1356,7 @@ pickers.new = function(opts, defaults)
   local result = {}
 
   for k, v in pairs(opts) do
-    assert(
-        type(k) == "string" or type(k) == "number",
-        "Should be string or number, found: " .. type(k)
-    )
+    assert(type(k) == "string" or type(k) == "number", "Should be string or number, found: " .. type(k))
     result[k] = v
   end
 
