@@ -1342,10 +1342,12 @@ builtin.lsp_type_definitions({opts})          *builtin.lsp_type_definitions()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {jump_type}       (string)   how to goto definition if there is only
-                                     one, values: "tab", "split", "vsplit",
-                                     "never"
-        {ignore_filename} (boolean)  dont show filenames (default: true)
+        {jump_type}           (string)   how to goto definition if there is
+                                         only one, values: "tab", "split",
+                                         "vsplit", "never"
+        {ignore_filename}     (boolean)  dont show filenames (default: true)
+        {include_declaration} (boolean)  include symbol declaration in the lsp
+                                         references (default: true)
 
 
 builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
