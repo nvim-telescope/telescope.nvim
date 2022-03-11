@@ -112,7 +112,7 @@ do
 
   -- Gets called only once to parse everything out for the vimgrep, after that looks up directly.
   local parse = function(t)
-    local _, _, filename, lnum, col, text = string.find(t.value, [[(.+):(%d+):(%d+):(.*)]])
+    local _, _, filename, lnum, col, text = string.find(t.value, [[(..-):(%d+):(%d+):(.*)]])
 
     local ok
     ok, lnum = pcall(tonumber, lnum)
