@@ -41,13 +41,23 @@ local diagnostics_to_tbl = function(opts)
     end
   end
 
+  opts.root_dir = opts.root_dir == true and vim.loop.cwd() or opts.root_dir
+
   local bufnr_name_map = {}
-  local preprocess_diag = function(diagnostic)
+  local filter_diag = function(diagnostic)
     if bufnr_name_map[diagnostic.bufnr] == nil then
       bufnr_name_map[diagnostic.bufnr] = vim.api.nvim_buf_get_name(diagnostic.bufnr)
     end
 
-    local buffer_diag = {
+    local root_dir_test = not opts.root_dir
+      or string.sub(bufnr_name_map[diagnostic.bufnr], 1, #opts.root_dir) == opts.root_dir
+    local listed_test = not opts.no_unlisted or vim.api.nvim_buf_get_option(diagnostic.bufnr, "buflisted")
+
+    return root_dir_test and listed_test
+  end
+
+  local preprocess_diag = function(diagnostic)
+    return {
       bufnr = diagnostic.bufnr,
       filename = bufnr_name_map[diagnostic.bufnr],
       lnum = diagnostic.lnum + 1,
@@ -55,11 +65,12 @@ local diagnostics_to_tbl = function(opts)
       text = vim.trim(diagnostic.message:gsub("[\n]", "")),
       type = severities[diagnostic.severity] or severities[1],
     }
-    return buffer_diag
   end
 
   for _, d in ipairs(vim.diagnostic.get(opts.bufnr, diagnosis_opts)) do
-    table.insert(items, preprocess_diag(d))
+    if filter_diag(d) then
+      table.insert(items, preprocess_diag(d))
+    end
   end
 
   -- sort results by bufnr (prioritize cur buf), severity, lnum

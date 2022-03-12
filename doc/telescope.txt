@@ -1461,7 +1461,7 @@ builtin.lsp_dynamic_workspace_symbols({opts}) *builtin.lsp_dynamic_workspace_sym
 
 
 builtin.diagnostics({opts})                            *builtin.diagnostics()*
-    Lists diagnostics for current or all open buffers
+    Lists diagnostics
     - Fields:
       - `All severity flags can be passed as `string` or `number` as per
         `:vim.diagnostic.severity:`
@@ -1474,22 +1474,27 @@ builtin.diagnostics({opts})                            *builtin.diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {bufnr}          (string|number)  if nil get diagnostics for all open
-                                          buffers. Use 0 for current buffer
-        {severity}       (string|number)  filter diagnostics by severity name
-                                          (string) or id (number)
-        {severity_limit} (string|number)  keep diagnostics equal or more
-                                          severe wrt severity name (string) or
-                                          id (number)
-        {severity_bound} (string|number)  keep diagnostics equal or less
-                                          severe wrt severity name (string) or
-                                          id (number)
-        {no_sign}        (boolean)        hide DiagnosticSigns from Results
-                                          (default: false)
-        {line_width}     (number)         set length of diagnostic entry text
-                                          in Results
-        {namespace}      (number)         limit your diagnostics to a specific
-                                          namespace
+        {bufnr}          (string|number)   if nil get diagnostics for all open
+                                           buffers. Use 0 for current buffer
+        {severity}       (string|number)   filter diagnostics by severity name
+                                           (string) or id (number)
+        {severity_limit} (string|number)   keep diagnostics equal or more
+                                           severe wrt severity name (string)
+                                           or id (number)
+        {severity_bound} (string|number)   keep diagnostics equal or less
+                                           severe wrt severity name (string)
+                                           or id (number)
+        {root_dir}       (string|boolean)  if set to string, get diagnostics
+                                           only for buffers under this dir
+                                           otherwise cwd
+        {no_unlisted}    (boolean)         if true, get diagnostics only for
+                                           listed buffers
+        {no_sign}        (boolean)         hide DiagnosticSigns from Results
+                                           (default: false)
+        {line_width}     (number)          set length of diagnostic entry text
+                                           in Results
+        {namespace}      (number)          limit your diagnostics to a
+                                           specific namespace
 
 
 
