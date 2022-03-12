@@ -433,8 +433,8 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 ---@field severity string|number: filter diagnostics by severity name (string) or id (number)
 ---@field severity_limit string|number: keep diagnostics equal or more severe wrt severity name (string) or id (number)
 ---@field severity_bound string|number: keep diagnostics equal or less severe wrt severity name (string) or id (number)
----@field root_dir string|boolean: if set to string, get diagnostics only for buffers under this directory. If set to true, uses current working directory.
----@field no_unlisted boolean: if true, get diagnostics only for listed buffers. Useful to exclude diagnostics from language servers that report diagnostics for whole projects.
+---@field root_dir string|boolean: if set to string, get diagnostics only for buffers under this dir otherwise cwd
+---@field no_unlisted boolean: if true, get diagnostics only for listed buffers
 ---@field no_sign boolean: hide DiagnosticSigns from Results (default: false)
 ---@field line_width number: set length of diagnostic entry text in Results
 ---@field namespace number: limit your diagnostics to a specific namespace
