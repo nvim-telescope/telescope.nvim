@@ -209,7 +209,7 @@ files.find_files = function(opts)
       log.warn "The `no_ignore` key is not available for the `find` command in `find_files`."
     end
     if follow then
-      table.insert(find_command, "-L")
+      table.insert(find_command, 2, "-L")
     end
     if search_dirs then
       table.remove(find_command, 2)
