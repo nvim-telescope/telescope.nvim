@@ -709,9 +709,9 @@ function Picker:delete_selection(delete_cb)
   end
 
   self:refresh()
-  vim.schedule(function()
+  vim.defer_fn(function()
     self.selection_strategy = original_selection_strategy
-  end)
+  end, 50)
 end
 
 function Picker:set_prompt(str)
@@ -755,7 +755,16 @@ end
 --- Get the row number of the current selection
 ---@return number
 function Picker:get_selection_row()
-  return self._selection_row or self.max_results
+  if self._selection_row then
+    -- If the current row is no longer selectable than reduce it to num_results - 1, so the next selectable row.
+    -- This makes selection_strategy `row` work much better if the selected row is no longer part of the output.
+    local num_results = self.manager:num_results()
+    if num_results <= self._selection_row then
+      return num_results - 1
+    end
+    return self._selection_row
+  end
+  return self.max_results
 end
 
 --- Move the current selection by `change` steps
@@ -1277,13 +1286,6 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
     end
 
     self.sorter:score(prompt, entry, cb_add, cb_filter)
-
-    -- Only on the first addition do we want to set the selection.
-    -- This allows us to handle moving the cursor to the bottom or top of the window
-    -- depending on the strategy.
-    if count == 1 then
-      self:_do_selection(prompt)
-    end
   end
 end
 
