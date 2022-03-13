@@ -26,7 +26,7 @@ function from_entry.path(entry, validate, escape)
     path = entry.value
   end
   if path == nil then
-    print("Invalid entry", vim.inspect(entry))
+    require("telescope.log").error(string.format("Invalid Entry: '%s'", vim.inspect(entry)))
     return
   end
 

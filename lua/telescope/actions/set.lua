@@ -15,6 +15,7 @@ local a = vim.api
 local log = require "telescope.log"
 local Path = require "plenary.path"
 local state = require "telescope.state"
+local utils = require "telescope.utils"
 
 local action_state = require "telescope.actions.state"
 
@@ -88,7 +89,10 @@ action_set.edit = function(prompt_bufnr, command)
   local entry = action_state.get_selected_entry()
 
   if not entry then
-    print "[telescope] Nothing currently selected"
+    utils.notify("actions.set.edit", {
+      msg = "Nothing currently selected",
+      level = "WARN",
+    })
     return
   end
 
@@ -105,7 +109,10 @@ action_set.edit = function(prompt_bufnr, command)
     -- to put stuff into `filename`
     local value = entry.value
     if not value then
-      print "Could not do anything with blank line..."
+      utils.notify("actions.set.edit", {
+        msg = "Could not do anything with blank line...",
+        level = "WARN",
+      })
       return
     end
 

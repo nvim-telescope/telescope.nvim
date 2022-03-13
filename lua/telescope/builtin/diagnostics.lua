@@ -2,6 +2,7 @@ local conf = require("telescope.config").values
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
 local pickers = require "telescope.pickers"
+local utils = require "telescope.utils"
 
 local diagnostics = {}
 
@@ -28,7 +29,10 @@ local diagnostics_to_tbl = function(opts)
   local diagnosis_opts = { severity = {}, namespace = opts.namespace }
   if opts.severity ~= nil then
     if opts.severity_limit ~= nil or opts.severity_bound ~= nil then
-      print "Invalid severity parameters. Both a specific severity and a limit/bound is not allowed"
+      utils.notify("builtin.diagnostics", {
+        msg = "Invalid severity parameters. Both a specific severity and a limit/bound is not allowed",
+        level = "ERROR",
+      })
       return {}
     end
     diagnosis_opts.severity = opts.severity
@@ -110,7 +114,10 @@ diagnostics.get = function(opts)
   local locations = diagnostics_to_tbl(opts)
 
   if vim.tbl_isempty(locations) then
-    print "No diagnostics found"
+    utils.notify("builtin.diagnostics", {
+      msg = "No diagnostics found",
+      level = "INFO",
+    })
     return
   end
 

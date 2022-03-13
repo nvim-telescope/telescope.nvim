@@ -220,7 +220,7 @@ layout_strategies._format = function(name)
         table.insert(results, string.format("    - %s", line))
       end
     else
-      error("Unknown type:" .. type(val))
+      error(string.format("expected string or table but found '%s'", type(val)))
     end
   end
 
@@ -902,7 +902,7 @@ layout_strategies.bottom_pane = make_documented_layout(
         results.border = { 1, 1, 0, 1 }
       end
     else
-      error("Unknown prompt_position: " .. tostring(self.window.prompt_position) .. "\n" .. vim.inspect(layout_config))
+      error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
     end
 
     -- Col

@@ -84,7 +84,7 @@ internal.builtin = function(opts)
       actions.select_default:replace(function(_)
         local selection = action_state.get_selected_entry()
         if not selection then
-          print "[telescope] Nothing currently selected"
+          utils.__warn_no_selection "builtin.builtin"
           return
         end
 
@@ -113,12 +113,18 @@ internal.resume = function(opts)
 
   local cached_pickers = state.get_global_key "cached_pickers"
   if cached_pickers == nil or vim.tbl_isempty(cached_pickers) then
-    print "No picker(s) cached."
+    utils.notify("builtin.resume", {
+      msg = "No cached picker(s).",
+      level = "INFO",
+    })
     return
   end
   local picker = cached_pickers[opts.cache_index]
   if picker == nil then
-    print(string.format("Index too large as there are only %s pickers cached", #cached_pickers))
+    utils.notify("builtin.resume", {
+      msg = string.format("Index too large as there are only '%s' pickers cached", #cached_pickers),
+      level = "ERROR",
+    })
     return
   end
   -- reset layout strategy and get_window_options if default as only one is valid
@@ -144,7 +150,10 @@ end
 internal.pickers = function(opts)
   local cached_pickers = state.get_global_key "cached_pickers"
   if cached_pickers == nil or vim.tbl_isempty(cached_pickers) then
-    print "No picker(s) cached."
+    utils.notify("builtin.pickers", {
+      msg = "No cached picker(s).",
+      level = "INFO",
+    })
     return
   end
 
@@ -213,7 +222,7 @@ internal.planets = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-          print "[telescope] Nothing currently selected"
+          utils.__warn_no_selection "builtin.planets"
           return
         end
 
@@ -243,10 +252,11 @@ internal.symbols = function(opts)
   end
 
   if #files == 0 then
-    print(
-      "No sources found! Check out https://github.com/nvim-telescope/telescope-symbols.nvim "
-        .. "for some prebuild symbols or how to create you own symbol source."
-    )
+    utils.notify("builtin.symbols", {
+      msg = "No sources found! Check out https://github.com/nvim-telescope/telescope-symbols.nvim "
+        .. "for some prebuild symbols or how to create you own symbol source.",
+      level = "ERROR",
+    })
     return
   end
 
@@ -317,7 +327,7 @@ internal.commands = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-          print "[telescope] Nothing currently selected"
+          utils.__warn_no_selection "builtin.commands"
           return
         end
 
@@ -505,7 +515,7 @@ internal.vim_options = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-          print "[telescope] Nothing currently selected"
+          utils.__warn_no_selection "builtin.vim_options"
           return
         end
 
@@ -636,7 +646,7 @@ internal.help_tags = function(opts)
       action_set.select:replace(function(_, cmd)
         local selection = action_state.get_selected_entry()
         if selection == nil then
-          print "[telescope] Nothing currently selected"
+          utils.__warn_no_selection "builtin.help_tags"
           return
         end
 
@@ -674,7 +684,7 @@ internal.man_pages = function(opts)
       action_set.select:replace(function(_, cmd)
         local selection = action_state.get_selected_entry()
         if selection == nil then
-          print "[telescope] Nothing currently selected"
+          utils.__warn_no_selection "builtin.man_pages"
           return
         end
 
@@ -725,13 +735,16 @@ internal.reloader = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-          print "[telescope] Nothing currently selected"
+          utils.__warn_no_selection "builtin.reloader"
           return
         end
 
         actions.close(prompt_bufnr)
         require("plenary.reload").reload_module(selection.value)
-        print(string.format("[%s] - module reloaded", selection.value))
+        utils.notify("builtin.reloader", {
+          msg = string.format("[%s] - module reloaded", selection.value),
+          level = "INFO",
+        })
       end)
 
       return true
@@ -878,7 +891,7 @@ internal.colorscheme = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-          print "[telescope] Nothing currently selected"
+          utils.__warn_no_selection "builtin.colorscheme"
           return
         end
 
@@ -995,7 +1008,7 @@ internal.keymaps = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-          print "[telescope] Nothing currently selected"
+          utils.__warn_no_selection "builtin.keymaps"
           return
         end
 
@@ -1046,7 +1059,7 @@ internal.highlights = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-          print "[telescope] Nothing currently selected"
+          utils.__warn_no_selection "builtin.highlights"
           return
         end
 
@@ -1143,7 +1156,7 @@ internal.autocommands = function(opts)
       action_set.select:replace(function(_, type)
         local selection = action_state.get_selected_entry()
         if selection == nil then
-          print "[telescope] Nothing currently selected"
+          utils.__warn_no_selection "builtin.autocommands"
           return
         end
 
@@ -1170,7 +1183,7 @@ internal.spell_suggest = function(opts)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if selection == nil then
-          print "[telescope] Nothing currently selected"
+          utils.__warn_no_selection "builtin.spell_suggest"
           return
         end
 
@@ -1202,7 +1215,10 @@ internal.tagstack = function(opts)
   end
 
   if vim.tbl_isempty(tags) then
-    print "No tagstack available"
+    utils.notify("builtin.tagstack", {
+      msg = "No tagstack available",
+      level = "WARN",
+    })
     return
   end
 

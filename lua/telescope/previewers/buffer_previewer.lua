@@ -948,7 +948,7 @@ previewers.highlights = defaulter(function(_)
             if v ~= "" then
               if v:sub(1, 1) == " " then
                 local part_of_old = v:match "%s+(.*)"
-                hl_groups[table.getn(hl_groups)] = hl_groups[table.getn(hl_groups)] .. part_of_old
+                hl_groups[#hl_groups] = hl_groups[#hl_groups] .. part_of_old
               else
                 table.insert(hl_groups, v)
               end
