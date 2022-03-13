@@ -758,9 +758,19 @@ function Picker:get_selection_row()
   if self._selection_row then
     -- If the current row is no longer selectable than reduce it to num_results - 1, so the next selectable row.
     -- This makes selection_strategy `row` work much better if the selected row is no longer part of the output.
-    local num_results = self.manager:num_results()
-    if num_results <= self._selection_row then
-      return num_results - 1
+    --TODO(conni2461): Maybe this can be moved to scroller. (currently in a hotfix so not viable)
+    if self.selection_strategy == "row" then
+      local num_results = self.manager:num_results()
+      if self.sorting_strategy == "ascending" then
+        if self._selection_row >= num_results then
+          return num_results - 1
+        end
+      else
+        local max = self.max_results - num_results
+        if self._selection_row < max then
+          return self.max_results - num_results
+        end
+      end
     end
     return self._selection_row
   end
