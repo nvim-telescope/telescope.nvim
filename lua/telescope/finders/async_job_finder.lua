@@ -40,11 +40,7 @@ return function(opts)
     -- if job_opts.writer and Job.is_job(job_opts.writer) then
     --   writer = job_opts.writer
     if opts.writer then
-      require("telescope.utils").notify("async_job_finder", {
-        msg = "[writer] is not yet implemented",
-        level = "ERROR",
-        panic = true,
-      })
+      error "async_job_finder.writer is not yet implemented"
       writer = async_job.writer(opts.writer)
     end
 

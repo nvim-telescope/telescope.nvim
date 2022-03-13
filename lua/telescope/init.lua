@@ -78,11 +78,7 @@ function telescope.setup(opts)
   opts = opts or {}
 
   if opts.default then
-    require("telescope.utils").notify("setup", {
-      msg = "'default' is not a valid value for setup. See 'defaults'",
-      level = "ERROR",
-      panic = true,
-    })
+    error "'default' is not a valid value for setup. See 'defaults'"
   end
 
   require("telescope.config").set_defaults(opts.defaults)

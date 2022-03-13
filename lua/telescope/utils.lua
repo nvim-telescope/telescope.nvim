@@ -477,7 +477,7 @@ end)
 
 --- Telescope Wrapper around vim.notify
 ---@param funname string: name of the function that will be
----@param opts table: opts.level string, opts.msg string, opts.panic boolean
+---@param opts table: opts.level string, opts.msg string
 utils.notify = function(funname, opts)
   local level = vim.log.levels[opts.level]
   if not level then
@@ -487,9 +487,6 @@ utils.notify = function(funname, opts)
   vim.notify(string.format("[telescope.%s]: %s", funname, opts.msg), level, {
     title = "telescope.nvim",
   })
-  if opts.panic then
-    error(opts.msg, 2)
-  end
 end
 
 utils.__warn_no_selection = function(name)

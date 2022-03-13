@@ -96,11 +96,7 @@ local resolver = {}
 local _resolve_map = {}
 
 local throw_invalid_config_option = function(key, value)
-  require("telescope.utils").notify("config.resolve", {
-    msg = string.format("Invalid configuration option for '%s': '%s'", key, tostring(value)),
-    level = "ERROR",
-    panic = true,
-  })
+  error(string.format("Invalid configuration option for '%s': '%s'", key, tostring(value)), 2)
 end
 
 -- Booleans

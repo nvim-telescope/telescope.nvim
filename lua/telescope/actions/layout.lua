@@ -7,17 +7,12 @@
 local action_state = require "telescope.actions.state"
 local state = require "telescope.state"
 local layout_strats = require "telescope.pickers.layout_strategies"
-local utils = require "telescope.utils"
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 
 local action_layout = setmetatable({}, {
   __index = function(_, k)
-    utils.notify("actions.layout", {
-      msg = string.format("'%s' does not have a value!", tostring(k)),
-      level = "ERROR",
-      panic = true,
-    })
+    error("'telescope.actions.layout' does not have a value: " .. tostring(k))
   end,
 })
 
@@ -129,11 +124,7 @@ local get_cycle_layout = function(dir)
       picker.previewer = (new_layout.previewer == nil and picker.all_previewers[picker.current_previewer_index])
         or new_layout.previewer
     else
-      utils.notify("actions.layout", {
-        msg = string.format("Invalid layout setup, expected string or a table got '%s'", vim.inspect(new_layout)),
-        level = "ERROR",
-        panic = true,
-      })
+      error("Not a valid layout setup: " .. vim.inspect(new_layout) .. "\nShould be a string or a table")
     end
 
     picker:full_layout_update()

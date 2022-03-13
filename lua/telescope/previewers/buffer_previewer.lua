@@ -49,7 +49,7 @@ local function defaulter(f, default_opts)
     __call = function()
       local ok, err = pcall(f(default_opts))
       if not ok then
-        require("telescope.log").error(debug.traceback(err))
+        error(debug.traceback(err))
       end
     end,
   }

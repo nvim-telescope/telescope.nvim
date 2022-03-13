@@ -23,11 +23,7 @@ local transform_mod = require("telescope.actions.mt").transform_mod
 
 local action_set = setmetatable({}, {
   __index = function(_, k)
-    utils.notify("actions_set", {
-      msg = string.format("'%s' does not have a value!", tostring(k)),
-      level = "ERROR",
-      panic = true,
-    })
+    error("'telescope.actions.set' does not have a value: " .. tostring(k))
   end,
 })
 
@@ -79,11 +75,7 @@ do
   edit_buffer = function(command, bufnr)
     command = map[command]
     if command == nil then
-      utils.notify("actions.set.edit_buffer", {
-        msg = "There was no associated buffer command",
-        level = "ERROR",
-        panic = true,
-      })
+      error "There was no associated buffer command"
     end
     vim.cmd(string.format("%s %d", command, bufnr))
   end

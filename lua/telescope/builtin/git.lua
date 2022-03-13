@@ -380,11 +380,7 @@ local set_opts_cwd = function(opts)
     local in_bare = utils.get_os_command_output({ "git", "rev-parse", "--is-bare-repository" }, opts.cwd)
 
     if in_worktree[1] ~= "true" and in_bare[1] ~= "true" then
-      utils.notify("builtin.git_*", {
-        msg = string.format("'%s' is not a git directory", opts.cwd),
-        level = "ERROR",
-        panic = true,
-      })
+      error(opts.cwd .. " is not a git directory")
     elseif in_worktree[1] ~= "true" and in_bare[1] == "true" then
       opts.is_bare = true
     end
