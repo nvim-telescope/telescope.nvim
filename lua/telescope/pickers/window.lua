@@ -1,5 +1,4 @@
 local resolve = require "telescope.config.resolve"
-local utils = require "telescope.utils"
 
 local p_window = {}
 
@@ -8,8 +7,8 @@ function p_window.get_window_options(picker, max_columns, max_lines)
   local getter = require("telescope.pickers.layout_strategies")[layout_strategy]
 
   if not getter then
-    utils.notify("pickers.window", {
-      msg = ("`%s` is not a valid layout strategy"):format(layout_strategy),
+    require("telescope.utils").notify("pickers.window", {
+      msg = string.format("'%s' is not a valid layout strategy", layout_strategy),
       level = "ERROR",
       panic = true,
     })

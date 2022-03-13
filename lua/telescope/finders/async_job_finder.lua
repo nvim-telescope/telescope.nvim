@@ -1,6 +1,5 @@
 local async_job = require "telescope._"
 local LinesPipe = require("telescope._").LinesPipe
-local utils = require "telescope.utils"
 
 local make_entry = require "telescope.make_entry"
 local log = require "telescope.log"
@@ -41,7 +40,7 @@ return function(opts)
     -- if job_opts.writer and Job.is_job(job_opts.writer) then
     --   writer = job_opts.writer
     if opts.writer then
-      utils.notify("async_job_finder", {
+      require("telescope.utils").notify("async_job_finder", {
         msg = "[writer] is not yet implemented",
         level = "ERROR",
         panic = true,

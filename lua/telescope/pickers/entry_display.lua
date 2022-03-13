@@ -39,7 +39,7 @@ entry_display.create = function(configuration)
   return function(self, picker)
     local results = {}
     local highlights = {}
-    for i = 1, table.getn(generator) do
+    for i = 1, #generator do
       if self[i] ~= nil then
         local str, hl = generator[i](self[i], picker)
         if hl then

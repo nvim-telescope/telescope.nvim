@@ -112,11 +112,8 @@ end
 ---@return string: the next history item
 function histories.History:get_next(line, picker)
   if not self.enabled then
-    utils.notify("hisotry.get_next", {
-      msg = {
-        "You are cycling to next the history item but history is disabled.",
-        "Read ':help telescope.defaults.history'",
-      },
+    utils.notify("History:get_next", {
+      msg = "You are cycling to next the history item but history is disabled. Read ':help telescope.defaults.history'",
       level = "WARN",
     })
     return false
@@ -140,11 +137,8 @@ end
 ---@return string: the previous history item
 function histories.History:get_prev(line, picker)
   if not self.enabled then
-    utils.notify("hisotry.get_prev", {
-      msg = {
-        "You are cycling to next the history item but history is disabled.",
-        "Read ':help telescope.defaults.history'",
-      },
+    utils.notify("History:get_prev", {
+      msg = "You are cycling to next the history item but history is disabled. Read ':help telescope.defaults.history'",
       level = "WARN",
     })
     return false

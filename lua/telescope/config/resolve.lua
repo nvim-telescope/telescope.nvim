@@ -91,18 +91,15 @@ That's the next step to scrolling.
 --]]
 
 local get_default = require("telescope.utils").get_default
-local utils = require "telescope.utils"
 
 local resolver = {}
 local _resolve_map = {}
 
 local throw_invalid_config_option = function(key, value)
-  local msg = "Invalid configuration option for `%s`: `%s`"
-  utils.notify("config", {
-    msg = msg:format(key, tostring(value)),
+  require("telescope.utils").notify("config.resolve", {
+    msg = string.format("Invalid configuration option for '%s': '%s'", key, tostring(value)),
     level = "ERROR",
     panic = true,
-    report = true,
   })
 end
 

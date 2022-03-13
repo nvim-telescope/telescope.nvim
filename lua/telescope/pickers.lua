@@ -447,9 +447,8 @@ function Picker:find()
       end
     else
       utils.notify("pickers.find", {
-        msg = ("`%s` is invalid setting for initial_mode"):format(self.initial_mode),
+        msg = string.format("'%s' is invalid setting for initial_mode", self.initial_mode),
         level = "ERROR",
-        report = true,
         panic = true,
       })
     end
@@ -652,11 +651,9 @@ local update_scroll = function(win, oldinfo, oldcursor, strategy, buf_maxline)
     vim.api.nvim_win_set_cursor(win, { oldinfo.botline, 0 })
     vim.api.nvim_win_set_cursor(win, oldcursor)
   else
-    local msg = ("`%s` is unknown sorting strategy "):format(strategy or "")
     utils.notify("pickers.update_scroll", {
-      msg = msg,
+      msg = string.format("'%s' is unknown sorting strategy", strategy or ""),
       level = "ERROR",
-      report = true,
       panic = true,
     })
   end
@@ -1363,11 +1360,9 @@ function Picker:_do_selection(prompt)
       self:set_selection(self:get_reset_row())
     end
   else
-    local msg = ("`%s` is selection strategy "):format(selection_strategy)
     utils.notify("pickers._do_selection", {
-      msg = msg,
+      msg = string.format("'%s' is selection strategy", selection_strategy),
       level = "ERROR",
-      report = true,
       panic = true,
     })
   end

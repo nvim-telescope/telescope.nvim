@@ -1,16 +1,14 @@
-local utils = require "telescope.utils"
 local extensions = {}
 
 extensions._loaded = {}
 extensions._config = {}
 extensions._health = {}
 
-local load_ext_errmsg = "'%s' extension doesn't exist or isn't installed: %s"
 local load_extension = function(name)
   local ok, ext = pcall(require, "telescope._extensions." .. name)
   if not ok then
-    utils.notify("extensions", {
-      msg = load_ext_errmsg:format(name, ext),
+    require("telescope.utils").notify("extensions", {
+      msg = string.format("'%s' extension doesn't exist or isn't installed: %s", name, ext),
       level = "ERROR",
       panic = true,
     })

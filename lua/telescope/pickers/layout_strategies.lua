@@ -72,12 +72,10 @@ local calc_tabline = function(max_lines)
 end
 
 local throw_unknown_prompt_position = function(self, config)
-  local msg = string.format("`%s` is unknown prompt_position:", self.window.prompt_position)
   utils.notify("layout_strategies", {
-    msg = { msg, vim.inspect(config) },
+    msg = string.format("'%s' is unknown prompt_position: %s", self.window.prompt_position, vim.inspect(config)),
     level = "ERROR",
     panic = true,
-    report = true,
   })
 end
 
@@ -232,10 +230,9 @@ layout_strategies._format = function(name)
       end
     else
       utils.notify("layout_strategies", {
-        msg = ("expected string or table but found `%s`"):format(type(val)),
+        msg = string.format("expected string or table but found '%s'", type(val)),
         level = "ERROR",
         panic = true,
-        report = true,
       })
     end
   end

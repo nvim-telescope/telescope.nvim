@@ -49,12 +49,7 @@ local function defaulter(f, default_opts)
     __call = function()
       local ok, err = pcall(f(default_opts))
       if not ok then
-        utils.notify("buffer_previewer", {
-          msg = debug.traceback(err),
-          level = "ERROR",
-          report = true,
-          panic = true,
-        })
+        require("telescope.log").error(debug.traceback(err))
       end
     end,
   }
@@ -953,7 +948,7 @@ previewers.highlights = defaulter(function(_)
             if v ~= "" then
               if v:sub(1, 1) == " " then
                 local part_of_old = v:match "%s+(.*)"
-                hl_groups[table.getn(hl_groups)] = hl_groups[table.getn(hl_groups)] .. part_of_old
+                hl_groups[#hl_groups] = hl_groups[#hl_groups] .. part_of_old
               else
                 table.insert(hl_groups, v)
               end

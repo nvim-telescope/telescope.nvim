@@ -388,7 +388,6 @@ function utils.get_os_command_output(cmd, cwd)
     utils.notify("get_os_command_output", {
       msg = "cmd has to be a table",
       level = "ERROR",
-      report = true,
     })
     return {}
   end
@@ -476,30 +475,28 @@ utils.get_devicons = load_once(function()
   end
 end)
 
-local title = "Telescope.nvim"
-
---- TODO: is function name can be accessed by debug api????
+--- Telescope Wrapper around vim.notify
+---@param funname string: name of the function that will be
+---@param opts table: opts.level string, opts.msg string, opts.panic boolean
 utils.notify = function(funname, opts)
   local level = vim.log.levels[opts.level]
   if not level then
     error("Invalid error level", 2)
   end
 
-  vim.notify(("[telescope.%s]: %s"):format(funname, opts.msg), level, {
-    title = title,
-    on_open = function()
-      if opts.report then
-        vim.loop.new_timer():start(2000, 0, function()
-          local message = "Previous error shouldn't have happend. Please Report"
-          vim.notify(message, level, { title = title, timeout = 3000 })
-        end)
-      end
-    end,
+  vim.notify(string.format("[telescope.%s]: %s", funname, opts.msg), level, {
+    title = "telescope.nvim",
   })
   if opts.panic then
-    -- TODO: should we just panic with something wrong happend?
     error(opts.msg, 2)
   end
+end
+
+utils.__warn_no_selection = function(name)
+  utils.notify(name, {
+    msg = "Nothing currently selected",
+    level = "WARN",
+  })
 end
 
 return utils

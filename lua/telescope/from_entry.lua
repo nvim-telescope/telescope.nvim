@@ -1,4 +1,3 @@
-local utils = require "telescope.utils"
 --[[ =============================================================================
 
 Get metadata from entries.
@@ -27,11 +26,7 @@ function from_entry.path(entry, validate, escape)
     path = entry.value
   end
   if path == nil then
-    utils.notify("from_entry.path", {
-      msg = ("Invalid Entry: '%s'"):format(vim.inspect(entry)),
-      level = "ERROR",
-      report = true,
-    })
+    require("telescope.log").error(string.format("Invalid Entry: '%s'", vim.inspect(entry)))
     return
   end
 

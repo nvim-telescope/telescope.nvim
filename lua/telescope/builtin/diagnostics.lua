@@ -29,7 +29,7 @@ local diagnostics_to_tbl = function(opts)
   local diagnosis_opts = { severity = {}, namespace = opts.namespace }
   if opts.severity ~= nil then
     if opts.severity_limit ~= nil or opts.severity_bound ~= nil then
-      utils.notify("diagnostics", {
+      utils.notify("builtin.diagnostics", {
         msg = "Invalid severity parameters. Both a specific severity and a limit/bound is not allowed",
         level = "ERROR",
       })
@@ -114,7 +114,7 @@ diagnostics.get = function(opts)
   local locations = diagnostics_to_tbl(opts)
 
   if vim.tbl_isempty(locations) then
-    utils.notify("diagnostics.get", {
+    utils.notify("builtin.diagnostics", {
       msg = "No diagnostics found",
       level = "INFO",
     })

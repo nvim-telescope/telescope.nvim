@@ -15,7 +15,7 @@ local git = {}
 
 git.files = function(opts)
   if opts.is_bare then
-    utils.notify("git_files", {
+    utils.notify("builtin.git_files", {
       msg = "This operation must be run in a work tree",
       level = "ERROR",
     })
@@ -25,7 +25,7 @@ git.files = function(opts)
   local show_untracked = utils.get_default(opts.show_untracked, true)
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
   if show_untracked and recurse_submodules then
-    utils.notify("git_files", {
+    utils.notify("builtin.git_files", {
       msg = "Git does not support both --others and --recurse-submodules",
       level = "ERROR",
     })
@@ -308,7 +308,7 @@ end
 
 git.status = function(opts)
   if opts.is_bare then
-    utils.notify("git_status", {
+    utils.notify("builtin.git_status", {
       msg = "This operation must be run in a work tree",
       level = "ERROR",
     })
@@ -320,14 +320,14 @@ git.status = function(opts)
     local git_cmd = { "git", "status", "-s", "--", "." }
 
     if expand_dir then
-      table.insert(git_cmd, table.getn(git_cmd) - 1, "-u")
+      table.insert(git_cmd, #git_cmd - 1, "-u")
     end
 
     local output = utils.get_os_command_output(git_cmd, opts.cwd)
 
-    if table.getn(output) == 0 then
+    if #output == 0 then
       print "No changes found"
-      utils.notify("git_status", {
+      utils.notify("builtin.git_status", {
         msg = "No changes found",
         level = "WARN",
       })
@@ -380,8 +380,8 @@ local set_opts_cwd = function(opts)
     local in_bare = utils.get_os_command_output({ "git", "rev-parse", "--is-bare-repository" }, opts.cwd)
 
     if in_worktree[1] ~= "true" and in_bare[1] ~= "true" then
-      utils.notify("builtin.git", {
-        msg = ("'%s' is not a git directory"):format(opts.cwd),
+      utils.notify("builtin.git_*", {
+        msg = string.format("'%s' is not a git directory", opts.cwd),
         level = "ERROR",
         panic = true,
       })

@@ -14,10 +14,9 @@ local transform_mod = require("telescope.actions.mt").transform_mod
 local action_layout = setmetatable({}, {
   __index = function(_, k)
     utils.notify("actions.layout", {
-      msg = ("'%s' does not have a value!"):format(tostring(k)),
+      msg = string.format("'%s' does not have a value!", tostring(k)),
       level = "ERROR",
       panic = true,
-      report = true,
     })
   end,
 })
@@ -131,10 +130,9 @@ local get_cycle_layout = function(dir)
         or new_layout.previewer
     else
       utils.notify("actions.layout", {
-        msg = ("Invalid layout setup, expected string or a table got '%s'"):format(vim.inspect(new_layout)),
+        msg = string.format("Invalid layout setup, expected string or a table got '%s'", vim.inspect(new_layout)),
         level = "ERROR",
         panic = true,
-        report = true,
       })
     end
 

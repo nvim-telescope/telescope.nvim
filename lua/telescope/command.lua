@@ -120,8 +120,8 @@ command.convert_user_opts = function(user_opts)
 
   local _switch_metatable = {
     __index = function(_, k)
-      utils.notify("git_reset_branch", {
-        msg = string.format("Type of %s does not match", k),
+      utils.notify("command", {
+        msg = string.format("Type of '%s' does not match", k),
         level = "WARN",
       })
     end,
@@ -157,10 +157,9 @@ end
 local function run_command(args)
   local user_opts = args or {}
   if next(user_opts) == nil and not user_opts.cmd then
-    utils.notify("run_command", {
+    utils.notify("command", {
       msg = "Command missing arguments",
       level = "ERROR",
-      report = true,
     })
     return
   end
@@ -197,7 +196,6 @@ local function run_command(args)
   utils.notify("run_command", {
     msg = "Unknown command",
     level = "ERROR",
-    report = true,
   })
 end
 

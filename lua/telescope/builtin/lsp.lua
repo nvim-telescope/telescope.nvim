@@ -117,7 +117,7 @@ lsp.document_symbols = function(opts)
     end
 
     if not result or vim.tbl_isempty(result) then
-      utils.notify("lsp_document_symbols", {
+      utils.notify("builtin.lsp_document_symbols", {
         msg = "No results from textDocument/documentSymbol",
         level = "INFO",
       })
@@ -132,7 +132,7 @@ lsp.document_symbols = function(opts)
     end
 
     if vim.tbl_isempty(locations) then
-      utils.notify("lsp_document_symbols", {
+      utils.notify("builtin.lsp_document_symbols", {
         msg = "No document_symbol locations found",
         level = "INFO",
       })
@@ -171,17 +171,17 @@ lsp.code_actions = function(opts)
   )
 
   if err then
-    utils.notify("lsp_code_actions", {
+    utils.notify("builin.lsp_code_actions", {
       msg = err,
-      level = "WARN",
+      level = "ERROR",
     })
     return
   end
 
   if not results_lsp or vim.tbl_isempty(results_lsp) then
-    utils.notify("lsp_document_symbols", {
+    utils.notify("builtin.lsp_document_symbols", {
       msg = "No results from textDocument/codeAction",
-      level = "WARN",
+      level = "INFO",
     })
     return
   end
@@ -218,7 +218,7 @@ lsp.code_actions = function(opts)
   end
 
   if #results == 0 then
-    utils.notify("lsp_document_symbols", {
+    utils.notify("builtin.lsp_document_symbols", {
       msg = "No code actions available",
       level = "INFO",
     })
@@ -332,7 +332,10 @@ lsp.code_actions = function(opts)
         then
           client.request("codeAction/resolve", action, function(resolved_err, resolved_action)
             if resolved_err then
-              vim.notify(resolved_err.code .. ": " .. resolved_err.message, vim.log.levels.ERROR)
+              utils.notify("builtin.lsp_code_actions", {
+                msg = string.format("codeAction/resolve failed: %s : %s", resolved_err.code, resolved_err.message),
+                level = "ERROR",
+              })
               return
             end
             if resolved_action then
@@ -373,11 +376,9 @@ lsp.workspace_symbols = function(opts)
     end
 
     if vim.tbl_isempty(locations) then
-      utils.notify("lsp_workspace_symbols", {
-        msg = {
-          "No results from workspace/symbol. Maybe try a different query: ",
-          "Telescope lsp_workspace_symbols query=example",
-        },
+      utils.notify("builtin.lsp_workspace_symbols", {
+        msg = "No results from workspace/symbol. Maybe try a different query: "
+          .. "'Telescope lsp_workspace_symbols query=example'",
         level = "INFO",
       })
       return
@@ -447,12 +448,12 @@ local function check_capabilities(feature, bufnr)
     return true
   else
     if #clients == 0 then
-      utils.notify("check_capabilities", {
+      utils.notify("builtin.lsp_*", {
         msg = "no client attached",
         level = "INFO",
       })
     else
-      utils.notify("check_capabilities", {
+      utils.notify("builtin.lsp_*", {
         msg = "server does not support " .. feature,
         level = "INFO",
       })

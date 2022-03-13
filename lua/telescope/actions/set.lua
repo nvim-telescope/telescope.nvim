@@ -24,10 +24,9 @@ local transform_mod = require("telescope.actions.mt").transform_mod
 local action_set = setmetatable({}, {
   __index = function(_, k)
     utils.notify("actions_set", {
-      msg = ("'%s' does not have a value!"):format(tostring(k)),
+      msg = string.format("'%s' does not have a value!", tostring(k)),
       level = "ERROR",
       panic = true,
-      report = true,
     })
   end,
 })
@@ -80,7 +79,7 @@ do
   edit_buffer = function(command, bufnr)
     command = map[command]
     if command == nil then
-      utils.notify("edit_buffer", {
+      utils.notify("actions.set.edit_buffer", {
         msg = "There was no associated buffer command",
         level = "ERROR",
         panic = true,
@@ -98,7 +97,7 @@ action_set.edit = function(prompt_bufnr, command)
   local entry = action_state.get_selected_entry()
 
   if not entry then
-    utils.notify("actions.edit", {
+    utils.notify("actions.set.edit", {
       msg = "Nothing currently selected",
       level = "WARN",
     })
@@ -118,7 +117,7 @@ action_set.edit = function(prompt_bufnr, command)
     -- to put stuff into `filename`
     local value = entry.value
     if not value then
-      utils.notify("actions.edit", {
+      utils.notify("actions.set.edit", {
         msg = "Could not do anything with blank line...",
         level = "WARN",
       })
