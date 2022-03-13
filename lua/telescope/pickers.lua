@@ -8,7 +8,6 @@ local channel = require("plenary.async.control").channel
 local popup = require "plenary.popup"
 
 local actions = require "telescope.actions"
-local action_set = require "telescope.actions.set"
 local config = require "telescope.config"
 local debounce = require "telescope.debounce"
 local deprecated = require "telescope.deprecated"
@@ -52,13 +51,15 @@ function Picker:new(opts)
     error "layout_strategy and get_window_options are not compatible keys"
   end
 
-  -- Reset actions for any replaced / enhanced actions.
-  -- TODO: Think about how we could remember to NOT have to do this...
-  --        I almost forgot once already, cause I'm not smart enough to always do it.
-  actions._clear()
-  action_set._clear()
-
   deprecated.options(opts)
+
+  -- We need to clear at the beginning not on close because after close we can still have select:post
+  -- etc ...
+  require("telescope.actions.mt").clear_all()
+  -- TODO(conni2461): This seems like the better solution but it won't clear actions that were never mapped
+  -- for _, v in ipairs(keymap_store[prompt_bufnr]) do
+  --   pcall(v.clear)
+  -- end
 
   local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
 
@@ -1446,6 +1447,7 @@ function pickers.on_close_prompt(prompt_bufnr)
   end
 
   picker.close_windows(status)
+  mappings.clear(prompt_bufnr)
 end
 
 function pickers.on_resize_window(prompt_bufnr)

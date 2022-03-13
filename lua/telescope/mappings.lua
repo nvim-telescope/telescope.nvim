@@ -222,10 +222,6 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
       end
     end
   end
-
-  vim.cmd(
-    string.format([[autocmd BufDelete %s :lua require('telescope.mappings').clear(%s)]], prompt_bufnr, prompt_bufnr)
-  )
 end
 
 mappings.execute_keymap = function(prompt_bufnr, keymap_identifier)
