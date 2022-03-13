@@ -36,58 +36,12 @@ utils.get_lazy_default = function(x, defaulter, ...)
   end
 end
 
-local function reversedipairsiter(t, i)
-  i = i - 1
-  if i ~= 0 then
-    return i, t[i]
-  end
-end
-
-utils.reversed_ipairs = function(t)
-  return reversedipairsiter, t, #t + 1
-end
-
-utils.default_table_mt = {
-  __index = function(t, k)
-    local obj = {}
-    rawset(t, k, obj)
-    return obj
-  end,
-}
-
 utils.repeated_table = function(n, val)
   local empty_lines = {}
   for _ = 1, n do
     table.insert(empty_lines, val)
   end
   return empty_lines
-end
-
-utils.quickfix_items_to_entries = function(locations)
-  local results = {}
-
-  for _, entry in ipairs(locations) do
-    local vimgrep_str = entry.vimgrep_str
-      or string.format(
-        "%s:%s:%s: %s",
-        vim.fn.fnamemodify(entry.display_filename or entry.filename, ":."),
-        entry.lnum,
-        entry.col,
-        entry.text
-      )
-
-    table.insert(results, {
-      valid = true,
-      value = entry,
-      ordinal = vimgrep_str,
-      display = vimgrep_str,
-
-      start = entry.start,
-      finish = entry.finish,
-    })
-  end
-
-  return results
 end
 
 utils.filter_symbols = function(results, opts)
