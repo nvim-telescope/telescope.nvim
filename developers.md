@@ -23,6 +23,7 @@ do this. After that, this document will present a technical explanation of
 pickers, finders, actions and the previewer. You can find more information
 in specific help pages and we will probably move some of the technical stuff to
 our vim help docs in the future.
+You will also find some more advanced examples here.
 
 This guide is mainly for telescope so it will assume that you already have some knowledge of the Lua
 programming language. If not then you can find information for Lua here:
