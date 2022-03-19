@@ -116,11 +116,11 @@ local get_cycle_layout = function(dir)
     local new_layout = picker.__cycle_layout_list[picker.__layout_index]
     if type(new_layout) == "string" then
       picker.layout_strategy = new_layout
-      picker.layout_config = nil
+      picker.layout_config = {}
       picker.previewer = picker.all_previewers and picker.all_previewers[1] or nil
     elseif type(new_layout) == "table" then
       picker.layout_strategy = new_layout.layout_strategy
-      picker.layout_config = new_layout.layout_config
+      picker.layout_config = new_layout.layout_config or {}
       picker.previewer = (new_layout.previewer == nil and picker.all_previewers[picker.current_previewer_index])
         or new_layout.previewer
     else
