@@ -326,7 +326,7 @@ telescope.setup({opts})                                    *telescope.setup()*
                      default: stdpath("data")/telescope_history
           - limit:   The amount of entries that will be written in the
                      history.
-                     Warning: If limit is set to nil it will grown unbound.
+                     Warning: If limit is set to nil it will grow unbound.
                      default: 100
           - handler: A lua function that implements the history.
                      This is meant as a developer setting for extensions to
