@@ -690,6 +690,16 @@ append(
       ["jj"] = { "<esc>", type = "command" },
       ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },)
       ...,
+
+  You can also add additional options for mappings of any type
+  ("action" and "command"). For example:
+
+      ...,
+      ["<C-j>"] = {
+        action = actions.move_selection_next,
+        opts = { nowait = true, silent = true }
+      },
+      ...,
   ]]
 )
 
