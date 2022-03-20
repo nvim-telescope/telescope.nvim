@@ -172,6 +172,16 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
   a.nvim_buf_set_keymap(prompt_bufnr, mode, key_bind, map_string, opts)
 end
 
+local extract_keymap_opts = function(key_func)
+  if type(key_func) == "table" and key_func.opts ~= nil then
+    -- we can't clear this because key_func could be a table from the config.
+    -- If we clear it the table ref would lose opts after the first bind
+    -- We need to copy it so noremap and silent won't be part of the table ref after the first bind
+    return vim.deepcopy(key_func.opts)
+  end
+  return {}
+end
+
 mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
   local applied_mappings = { n = {}, i = {} }
 
@@ -205,7 +215,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
       local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
       if not applied_mappings[mode][key_bind_internal] then
         applied_mappings[mode][key_bind_internal] = true
-        telescope_map(prompt_bufnr, mode, key_bind, key_func)
+        telescope_map(prompt_bufnr, mode, key_bind, key_func, extract_keymap_opts(key_func))
       end
     end
   end
@@ -218,7 +228,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
       local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
       if not applied_mappings[mode][key_bind_internal] then
         applied_mappings[mode][key_bind_internal] = true
-        telescope_map(prompt_bufnr, mode, key_bind, key_func)
+        telescope_map(prompt_bufnr, mode, key_bind, key_func, extract_keymap_opts(key_func))
       end
     end
   end
