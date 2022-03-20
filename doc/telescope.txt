@@ -1024,7 +1024,7 @@ builtin.resume({opts})                                      *builtin.resume()*
 
 
 builtin.pickers({opts})                                    *builtin.pickers()*
-    Opens a picker over previously cached pickers in there preserved states
+    Opens a picker over previously cached pickers in their preserved states
     (incl. multi selections)
     - Default keymaps:
       - `<C-x>`: delete the selected cached picker

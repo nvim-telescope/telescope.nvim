@@ -210,7 +210,7 @@ builtin.builtin = require_on_exported_call("telescope.builtin.internal").builtin
 ---@field cache_index number: what picker to resume, where 1 denotes most recent (default: 1)
 builtin.resume = require_on_exported_call("telescope.builtin.internal").resume
 
---- Opens a picker over previously cached pickers in there preserved states (incl. multi selections)
+--- Opens a picker over previously cached pickers in their preserved states (incl. multi selections)
 --- - Default keymaps:
 ---   - `<C-x>`: delete the selected cached picker
 --- - Notes:
