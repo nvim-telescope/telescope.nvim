@@ -9,11 +9,68 @@ local pfiletype = require "plenary.filetype"
 local pscan = require "plenary.scandir"
 
 local buf_delete = utils.buf_delete
-local defaulter = utils.make_default_callable
 
 local previewers = {}
 
 local ns_previewer = vim.api.nvim_create_namespace "telescope.previewers"
+
+local has_file = 1 == vim.fn.executable "file"
+
+-- TODO(fdschmidt93) switch to Job once file_maker callbacks get cleaned up with plenary async
+-- avoids SIGABRT from utils.get_os_command_output due to vim.time in fs_stat cb
+local function capture(cmd, raw)
+  local f = assert(io.popen(cmd, "r"))
+  local s = assert(f:read "*a")
+  f:close()
+  if raw then
+    return s
+  end
+  s = string.gsub(s, "^%s+", "")
+  s = string.gsub(s, "%s+$", "")
+  s = string.gsub(s, "[\n\r]+", " ")
+  return s
+end
+
+local function defaulter(f, default_opts)
+  default_opts = default_opts or {}
+  return {
+    new = function(opts)
+      if conf.preview == false and not opts.preview then
+        return false
+      end
+      opts.preview = type(opts.preview) ~= "table" and {} or opts.preview
+      if type(conf.preview) == "table" then
+        for k, v in pairs(conf.preview) do
+          opts.preview[k] = vim.F.if_nil(opts.preview[k], v)
+        end
+      end
+      return f(opts)
+    end,
+    __call = function()
+      local ok, err = pcall(f(default_opts))
+      if not ok then
+        error(debug.traceback(err))
+      end
+    end,
+  }
+end
+
+-- modified vim.split to incorporate a timer
+local function split(s, sep, plain, opts)
+  opts = opts or {}
+  local t = {}
+  for c in vim.gsplit(s, sep, plain) do
+    table.insert(t, c)
+    if opts.preview.timeout then
+      local diff_time = (vim.loop.hrtime() - opts.start_time) / 1e6
+      if diff_time > opts.preview.timeout then
+        return
+      end
+    end
+  end
+  return t
+end
+local bytes_to_megabytes = math.pow(1024, 2)
 
 local color_hash = {
   ["p"] = "TelescopePreviewPipe",
@@ -81,16 +138,37 @@ local search_teardown = function(self)
   end
 end
 
+local scroll_fn = function(self, direction)
+  if not self.state then
+    return
+  end
+
+  local input = direction > 0 and [[]] or [[]]
+  local count = math.abs(direction)
+
+  vim.api.nvim_win_call(self.state.winid, function()
+    vim.cmd([[normal! ]] .. count .. input)
+  end)
+end
+
 previewers.file_maker = function(filepath, bufnr, opts)
   opts = opts or {}
+  opts.preview = opts.preview or {}
+  opts.preview.timeout = vim.F.if_nil(opts.preview.timeout, 250) -- in ms
+  opts.preview.filesize_limit = vim.F.if_nil(opts.preview.filesize_limit, 25) -- in mb
+  opts.preview.msg_bg_fillchar = vim.F.if_nil(opts.preview.msg_bg_fillchar, "╱") -- in mb
   if opts.use_ft_detect == nil then
     opts.use_ft_detect = true
   end
-  local ft = opts.use_ft_detect and pfiletype.detect(filepath)
-
+  opts.ft = opts.use_ft_detect and pfiletype.detect(filepath)
   if opts.bufname ~= filepath then
     if not vim.in_fast_event() then
       filepath = vim.fn.expand(filepath)
+    end
+    if type(opts.preview.filetype_hook) == "function" then
+      if not opts.preview.filetype_hook(filepath, bufnr, opts) then
+        return
+      end
     end
     vim.loop.fs_stat(filepath, function(_, stat)
       if not stat then
@@ -109,19 +187,72 @@ previewers.file_maker = function(filepath, bufnr, opts)
           end),
         })
       else
+        if opts.preview.check_mime_type == true and has_file and opts.ft == "" then
+          -- avoid SIGABRT in buffer previewer happening with utils.get_os_command_output
+          local output = capture(string.format([[file --mime-type -b "%s"]], filepath))
+          local mime_type = vim.split(output, "/")[1]
+          if mime_type ~= "text" and mime_type ~= "inode" then
+            if type(opts.preview.mime_hook) == "function" then
+              vim.schedule_wrap(opts.preview.mime_hook)(filepath, bufnr, opts)
+            else
+              vim.schedule_wrap(putils.set_preview_message)(
+                bufnr,
+                opts.winid,
+                "Binary cannot be previewed",
+                opts.preview.msg_bg_fillchar
+              )
+            end
+            return
+          end
+        end
+
+        if opts.preview.filesize_limit then
+          local mb_filesize = math.floor(stat.size / bytes_to_megabytes)
+          if mb_filesize > opts.preview.filesize_limit then
+            if type(opts.preview.filesize_hook) == "function" then
+              vim.schedule_wrap(opts.preview.filesize_hook)(filepath, bufnr, opts)
+            else
+              vim.schedule_wrap(putils.set_preview_message)(
+                bufnr,
+                opts.winid,
+                "File exceeds preview size limit",
+                opts.preview.msg_bg_fillchar
+              )
+            end
+            return
+          end
+        end
+
+        opts.start_time = vim.loop.hrtime()
         Path:new(filepath):_read_async(vim.schedule_wrap(function(data)
           if not vim.api.nvim_buf_is_valid(bufnr) then
             return
           end
-          local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, vim.split(data, "[\r]?\n"))
-          if not ok then
+          local processed_data = split(data, "[\r]?\n", _, opts)
+
+          if processed_data then
+            local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, processed_data)
+            if not ok then
+              return
+            end
+
+            if opts.callback then
+              opts.callback(bufnr)
+            end
+            putils.highlighter(bufnr, opts.ft, opts)
+          else
+            if type(opts.preview.timeout_hook) == "function" then
+              vim.schedule_wrap(opts.preview.timeout_hook)(filepath, bufnr, opts)
+            else
+              vim.schedule_wrap(putils.set_preview_message)(
+                bufnr,
+                opts.winid,
+                "Previewer timed out",
+                opts.preview.msg_bg_fillchar
+              )
+            end
             return
           end
-
-          if opts.callback then
-            opts.callback(bufnr)
-          end
-          putils.highlighter(bufnr, ft)
         end))
       end
     end)
@@ -146,8 +277,6 @@ previewers.new_buffer_previewer = function(opts)
 
   local opt_setup = opts.setup
   local opt_teardown = opts.teardown
-  local opt_title = opts.title
-  local opt_dyn_title = opts.dyn_title
 
   local old_bufs = {}
   local bufname_table = {}
@@ -185,24 +314,6 @@ previewers.new_buffer_previewer = function(opts)
     end
   end
 
-  function opts.title(self)
-    if opt_title then
-      if type(opt_title) == "function" then
-        return opt_title(self)
-      else
-        return opt_title
-      end
-    end
-    return "Preview"
-  end
-
-  function opts.dyn_title(self, entry)
-    if opt_dyn_title then
-      return opt_dyn_title(self, entry)
-    end
-    return "Preview"
-  end
-
   function opts.setup(self)
     local state = {}
     if opt_setup then
@@ -234,6 +345,8 @@ previewers.new_buffer_previewer = function(opts)
         buf_delete(bufnr)
       end
     end
+    -- enable resuming picker with existing previewer to avoid lookup of deleted bufs
+    bufname_table = {}
   end
 
   function opts.preview_fn(self, entry, status)
@@ -256,11 +369,11 @@ previewers.new_buffer_previewer = function(opts)
         end
       end)
 
-      -- TODO(conni2461): We only have to set options once. Right?
       vim.api.nvim_win_set_option(status.preview_win, "winhl", "Normal:TelescopePreviewNormal")
       vim.api.nvim_win_set_option(status.preview_win, "signcolumn", "no")
       vim.api.nvim_win_set_option(status.preview_win, "foldlevel", 100)
       vim.api.nvim_win_set_option(status.preview_win, "wrap", false)
+      vim.api.nvim_win_set_option(status.preview_win, "scrollbind", false)
 
       self.state.winid = status.preview_win
       self.state.bufname = nil
@@ -282,18 +395,7 @@ previewers.new_buffer_previewer = function(opts)
   end
 
   if not opts.scroll_fn then
-    function opts.scroll_fn(self, direction)
-      if not self.state then
-        return
-      end
-
-      local input = direction > 0 and [[]] or [[]]
-      local count = math.abs(direction)
-
-      vim.api.nvim_buf_call(self.state.bufnr, function()
-        vim.cmd([[normal! ]] .. count .. input)
-      end)
-    end
+    opts.scroll_fn = scroll_fn
   end
 
   return Previewer:new(opts)
@@ -319,6 +421,8 @@ previewers.cat = defaulter(function(opts)
       end
       conf.buffer_previewer_maker(p, self.state.bufnr, {
         bufname = self.state.bufname,
+        winid = self.state.winid,
+        preview = opts.preview,
       })
     end,
   }
@@ -329,6 +433,7 @@ previewers.vimgrep = defaulter(function(opts)
   local cwd = opts.cwd or vim.loop.cwd()
 
   local jump_to_line = function(self, bufnr, lnum)
+    pcall(vim.api.nvim_buf_clear_namespace, bufnr, ns_previewer, 0, -1)
     if lnum and lnum > 0 then
       pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewLine", lnum - 1, 0, -1)
       pcall(vim.api.nvim_win_set_cursor, self.state.winid, { lnum, 0 })
@@ -336,24 +441,12 @@ previewers.vimgrep = defaulter(function(opts)
         vim.cmd "norm! zz"
       end)
     end
-
-    self.state.last_set_bufnr = bufnr
   end
 
   return previewers.new_buffer_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
       return Path:new(from_entry.path(entry, true)):normalize(cwd)
-    end,
-
-    setup = function()
-      return { last_set_bufnr = nil }
-    end,
-
-    teardown = function(self)
-      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
-        vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_previewer, 0, -1)
-      end
     end,
 
     get_buffer_by_name = function(_, entry)
@@ -366,10 +459,6 @@ previewers.vimgrep = defaulter(function(opts)
         return
       end
 
-      if self.state.last_set_bufnr then
-        pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
-      end
-
       -- Workaround for unnamed buffer when using builtin.buffer
       if entry.bufnr and (p == "[No Name]" or vim.api.nvim_buf_get_option(entry.bufnr, "buftype") ~= "") then
         local lines = vim.api.nvim_buf_get_lines(entry.bufnr, 0, -1, false)
@@ -378,6 +467,8 @@ previewers.vimgrep = defaulter(function(opts)
       else
         conf.buffer_previewer_maker(p, self.state.bufnr, {
           bufname = self.state.bufname,
+          winid = self.state.winid,
+          preview = opts.preview,
           callback = function(bufnr)
             jump_to_line(self, bufnr, entry.lnum)
           end,
@@ -435,8 +526,9 @@ previewers.ctags = defaulter(function(_)
     define_preview = function(self, entry, status)
       conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
         bufname = self.state.bufname,
+        winid = self.state.winid,
         callback = function(bufnr)
-          vim.api.nvim_buf_call(bufnr, function()
+          pcall(vim.api.nvim_buf_call, bufnr, function()
             determine_jump(entry)(self, bufnr)
           end)
         end,
@@ -455,7 +547,7 @@ previewers.builtin = defaulter(function(_)
     end,
 
     define_preview = function(self, entry, status)
-      local module_name = vim.fn.fnamemodify(entry.filename, ":t:r")
+      local module_name = vim.fn.fnamemodify(vim.fn.fnamemodify(entry.filename, ":h"), ":t")
       local text
       if entry.text:sub(1, #module_name) ~= module_name then
         text = module_name .. "." .. entry.text
@@ -465,6 +557,7 @@ previewers.builtin = defaulter(function(_)
 
       conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
         bufname = self.state.bufname,
+        winid = self.state.winid,
         callback = function(bufnr)
           search_cb_jump(self, bufnr, text)
         end,
@@ -489,6 +582,7 @@ previewers.help = defaulter(function(_)
 
       conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
         bufname = self.state.bufname,
+        winid = self.state.winid,
         callback = function(bufnr)
           putils.regex_highlighter(bufnr, "help")
           search_cb_jump(self, bufnr, query)
@@ -500,7 +594,7 @@ end, {})
 
 previewers.man = defaulter(function(opts)
   local pager = utils.get_lazy_default(opts.PAGER, function()
-    return vim.fn.executable "col" == 1 and "col -bx" or ""
+    return vim.fn.executable "col" == 1 and { "col", "-bx" } or { "cat" }
   end)
   return previewers.new_buffer_previewer {
     title = "Man Preview",
@@ -510,8 +604,9 @@ previewers.man = defaulter(function(opts)
 
     define_preview = function(self, entry, status)
       local win_width = vim.api.nvim_win_get_width(self.state.winid)
-      putils.job_maker({ "man", entry.section, entry.value }, self.state.bufnr, {
-        env = { ["PAGER"] = pager, ["MANWIDTH"] = win_width },
+      putils.job_maker(vim.deepcopy(pager), self.state.bufnr, {
+        writer = { "man", entry.section, entry.value },
+        env = { ["MANWIDTH"] = win_width, PATH = vim.env.PATH, MANPATH = vim.env.MANPATH },
         value = entry.value .. "/" .. entry.section,
         bufname = self.state.bufname,
       })
@@ -528,19 +623,43 @@ previewers.git_branch_log = defaulter(function(opts)
       if hstart then
         local hend = hstart + 7
         if hend < #line then
-          vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, "TelescopeResultsIdentifier", i - 1, hstart - 1, hend)
+          pcall(
+            vim.api.nvim_buf_add_highlight,
+            bufnr,
+            ns_previewer,
+            "TelescopeResultsIdentifier",
+            i - 1,
+            hstart - 1,
+            hend
+          )
         end
       end
       local _, cstart = line:find "- %("
       if cstart then
         local cend = string.find(line, "%) ")
         if cend then
-          vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, "TelescopeResultsConstant", i - 1, cstart - 1, cend)
+          pcall(
+            vim.api.nvim_buf_add_highlight,
+            bufnr,
+            ns_previewer,
+            "TelescopeResultsConstant",
+            i - 1,
+            cstart - 1,
+            cend
+          )
         end
       end
       local dstart, _ = line:find " %(%d"
       if dstart then
-        vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, "TelescopeResultsSpecialComment", i - 1, dstart, #line)
+        pcall(
+          vim.api.nvim_buf_add_highlight,
+          bufnr,
+          ns_previewer,
+          "TelescopeResultsSpecialComment",
+          i - 1,
+          dstart,
+          #line
+        )
       end
     end
   end
@@ -732,6 +851,7 @@ previewers.git_file_diff = defaulter(function(opts)
         end
         conf.buffer_previewer_maker(p, self.state.bufnr, {
           bufname = self.state.bufname,
+          winid = self.state.winid,
         })
       else
         putils.job_maker({ "git", "--no-pager", "diff", entry.value }, self.state.bufnr, {
@@ -795,7 +915,11 @@ previewers.autocommands = defaulter(function(_)
       end
 
       vim.api.nvim_buf_add_highlight(self.state.bufnr, ns_previewer, "TelescopePreviewLine", selected_row + 1, 0, -1)
-      vim.api.nvim_win_set_cursor(status.preview_win, { selected_row + 1, 0 })
+      -- set the cursor position after self.state.bufnr is connected to the
+      -- preview window (which is scheduled in new_buffer_previewer)
+      vim.schedule(function()
+        pcall(vim.api.nvim_win_set_cursor, status.preview_win, { selected_row, 0 })
+      end)
 
       self.state.last_set_bufnr = self.state.bufnr
     end,
@@ -824,7 +948,7 @@ previewers.highlights = defaulter(function(_)
             if v ~= "" then
               if v:sub(1, 1) == " " then
                 local part_of_old = v:match "%s+(.*)"
-                hl_groups[table.getn(hl_groups)] = hl_groups[table.getn(hl_groups)] .. part_of_old
+                hl_groups[#hl_groups] = hl_groups[#hl_groups] .. part_of_old
               else
                 table.insert(hl_groups, v)
               end
@@ -853,6 +977,90 @@ previewers.highlights = defaulter(function(_)
           0,
           #entry.value
         )
+      end)
+    end,
+  }
+end, {})
+
+previewers.pickers = defaulter(function(_)
+  local ns_telescope_multiselection = vim.api.nvim_create_namespace "telescope_mulitselection"
+  local get_row = function(picker, preview_height, index)
+    if picker.sorting_strategy == "ascending" then
+      return index - 1
+    else
+      return preview_height - index
+    end
+  end
+  return previewers.new_buffer_previewer {
+
+    dyn_title = function(_, entry)
+      if entry.value.default_text and entry.value.default_text ~= "" then
+        return string.format("%s ─ %s", entry.value.prompt_title, entry.value.default_text)
+      end
+      return entry.value.prompt_title
+    end,
+
+    get_buffer_by_name = function(_, entry)
+      return tostring(entry.value.prompt_bufnr)
+    end,
+
+    teardown = function(self)
+      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
+        vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_telescope_multiselection, 0, -1)
+      end
+    end,
+
+    define_preview = function(self, entry, status)
+      putils.with_preview_window(status, nil, function()
+        local ns_telescope_entry = vim.api.nvim_create_namespace "telescope_entry"
+        local preview_height = vim.api.nvim_win_get_height(status.preview_win)
+
+        if self.state.bufname then
+          return
+        end
+
+        local picker = entry.value
+        -- prefill buffer to be able to set lines individually
+        local placeholder = utils.repeated_table(preview_height, "")
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, placeholder)
+
+        for index = 1, math.min(preview_height, picker.manager:num_results()) do
+          local row = get_row(picker, preview_height, index)
+          local e = picker.manager:get_entry(index)
+
+          local display, display_highlight
+          -- if-clause as otherwise function return values improperly unpacked
+          if type(e.display) == "function" then
+            display, display_highlight = e:display()
+          else
+            display = e.display
+          end
+
+          vim.api.nvim_buf_set_lines(self.state.bufnr, row, row + 1, false, { display })
+
+          if display_highlight ~= nil then
+            for _, hl_block in ipairs(display_highlight) do
+              vim.api.nvim_buf_add_highlight(
+                self.state.bufnr,
+                ns_telescope_entry,
+                hl_block[2],
+                row,
+                hl_block[1][1],
+                hl_block[1][2]
+              )
+            end
+          end
+          if picker._multi:is_selected(e) then
+            vim.api.nvim_buf_add_highlight(
+              self.state.bufnr,
+              ns_telescope_multiselection,
+              "TelescopeMultiSelection",
+              row,
+              0,
+              -1
+            )
+          end
+        end
       end)
     end,
   }

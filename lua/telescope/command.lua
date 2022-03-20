@@ -45,6 +45,7 @@ local themes = require "telescope.themes"
 local builtin = require "telescope.builtin"
 local extensions = require("telescope._extensions").manager
 local config = require "telescope.config"
+local utils = require "telescope.utils"
 local command = {}
 
 local arg_value = {
@@ -64,11 +65,12 @@ local split_keywords = {
   ["sections"] = true,
   ["search_dirs"] = true,
   ["symbols"] = true,
+  ["ignore_symbols"] = true,
 }
 
 -- convert command line string arguments to
 -- lua number boolean type and nil value
-local function convert_user_opts(user_opts)
+command.convert_user_opts = function(user_opts)
   local default_opts = config.values
 
   local _switch = {
@@ -102,12 +104,15 @@ local function convert_user_opts(user_opts)
         if err ~= nil then
           -- discard invalid lua expression
           user_opts[key] = nil
-        elseif select("#", assert(eval)()) == 1 and type(assert(eval)()) == "table" then
-          -- allow if return a single table only
-          user_opts[key] = assert(eval)()
-        else
-          -- otherwise return nil (allows split check later)
-          user_opts[key] = nil
+        elseif eval ~= nil then
+          ok, eval = pcall(eval)
+          if ok and type(eval) == "table" then
+            -- allow if return a table only
+            user_opts[key] = eval
+          else
+            -- otherwise return nil (allows split check later)
+            user_opts[key] = nil
+          end
         end
       end
     end,
@@ -115,7 +120,10 @@ local function convert_user_opts(user_opts)
 
   local _switch_metatable = {
     __index = function(_, k)
-      print(string.format("Type of %s does not match", k))
+      utils.notify("command", {
+        msg = string.format("Type of '%s' does not match", k),
+        level = "WARN",
+      })
     end,
   }
 
@@ -129,6 +137,8 @@ local function convert_user_opts(user_opts)
       end
     elseif default_opts[key] ~= nil then
       _switch[type(default_opts[key])](key, val)
+    elseif tonumber(val) ~= nil then
+      _switch["number"](key, val)
     else
       _switch["string"](key, val)
     end
@@ -147,7 +157,10 @@ end
 local function run_command(args)
   local user_opts = args or {}
   if next(user_opts) == nil and not user_opts.cmd then
-    print "[Telescope] your command miss args"
+    utils.notify("command", {
+      msg = "Command missing arguments",
+      level = "ERROR",
+    })
     return
   end
 
@@ -157,11 +170,12 @@ local function run_command(args)
   local theme = user_opts.theme or ""
 
   if next(opts) ~= nil then
-    convert_user_opts(opts)
+    command.convert_user_opts(opts)
   end
 
   if string.len(theme) > 0 then
-    opts = themes[theme](opts)
+    local func = themes[theme] or themes["get_" .. theme]
+    opts = func(opts)
   end
 
   if string.len(extension_type) > 0 and extension_type ~= '"' then
@@ -176,7 +190,13 @@ local function run_command(args)
 
   if rawget(extensions, cmd) then
     extensions[cmd][cmd](opts)
+    return
   end
+
+  utils.notify("run_command", {
+    msg = "Unknown command",
+    level = "ERROR",
+  })
 end
 
 -- @Summary get extensions sub command

@@ -9,7 +9,7 @@
 ---
 --- Furthermore, there are a collection of previewers already defined which
 --- can be used for every picker, as long as the entries of the picker provide
---- the necessary fields. The more important once are
+--- the necessary fields. The more important ones are
 ---   - `previewers.cat`
 ---   - `previewers.vimgrep`
 ---   - `previewers.qflist`
@@ -77,11 +77,11 @@ end
 --- It requires you to specify one table entry `get_command(entry, status)`.
 --- This `get_command` function has to return the terminal command that will be
 --- executed for each entry. Example:
---- <pre>
+--- <code>
 ---   get_command = function(entry, status)
 ---     return { 'bat', entry.path }
 ---   end
---- </pre>
+--- </code>
 ---
 --- Additionally you can define:
 --- - `title` a static title for example "File Preview"
@@ -219,12 +219,12 @@ previewers.qflist = term_previewer.qflist
 ---     - `require('telescope.previewers.utils').ts_highlighter(bufnr, ft)`
 ---   - If you want to use `vim.fn.search` or similar you need to run it in
 ---     that specific buffer context. Do
---- <pre>
+--- <code>
 ---       vim.api.nvim_buf_call(bufnr, function()
 ---         -- for example `search` and `matchadd`
 ---       end)
 ---     to achieve that.
---- </pre>
+--- </code>
 ---   - If you want to read a file into the buffer it's best to use
 ---     `buffer_previewer_maker`. But access this function with
 ---     `require('telescope.config').values.buffer_previewer_maker`
@@ -305,6 +305,7 @@ previewers.help = buffer_previewer.help
 previewers.man = buffer_previewer.man
 previewers.autocommands = buffer_previewer.autocommands
 previewers.highlights = buffer_previewer.highlights
+previewers.pickers = buffer_previewer.pickers
 
 --- A deprecated way of displaying content more easily. Was written at a time,
 --- where the buffer_previewer interface wasn't present. Nowadays it's easier

@@ -18,7 +18,7 @@ local scroll_calculators = {
       if row >= finish then
         return start
       elseif row < start then
-        return finish - 1
+        return (finish - 1 < 0) and finish or finish - 1
       end
 
       return row
@@ -29,7 +29,7 @@ local scroll_calculators = {
     return function(max_results, num_results, row)
       local start, finish = range_fn(max_results, num_results)
 
-      if row >= finish then
+      if row >= finish and finish > 0 then
         return finish - 1
       elseif row < start then
         return start
@@ -67,7 +67,7 @@ scroller.create = function(scroll_strategy, sorting_strategy)
       )
     end
 
-    if result >= max_results then
+    if result > max_results then
       error(
         string.format(
           "Must never exceed max results: { result = %s, args = { %s %s %s } }",

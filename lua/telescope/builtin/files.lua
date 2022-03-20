@@ -1,4 +1,3 @@
-local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 local action_set = require "telescope.actions.set"
 local finders = require "telescope.finders"
@@ -10,9 +9,7 @@ local utils = require "telescope.utils"
 local conf = require("telescope.config").values
 local log = require "telescope.log"
 
-local scan = require "plenary.scandir"
 local Path = require "plenary.path"
-local os_sep = Path.path.sep
 
 local flatten = vim.tbl_flatten
 local filter = vim.tbl_filter
@@ -20,7 +17,7 @@ local filter = vim.tbl_filter
 local files = {}
 
 local escape_chars = function(string)
-  return string.gsub(string, "[%(|%)|\\|%[|%]|%-|%{%}|%?|%+|%*|%^|%$]", {
+  return string.gsub(string, "[%(|%)|\\|%[|%]|%-|%{%}|%?|%+|%*|%^|%$|%.]", {
     ["\\"] = "\\\\",
     ["-"] = "\\-",
     ["("] = "\\(",
@@ -34,6 +31,7 @@ local escape_chars = function(string)
     ["*"] = "\\*",
     ["^"] = "\\^",
     ["$"] = "\\$",
+    ["."] = "\\.",
   })
 end
 
@@ -85,18 +83,14 @@ files.live_grep = function(opts)
 
     if search_dirs then
       table.insert(search_list, search_dirs)
-    else
-      table.insert(search_list, ".")
     end
 
     if grep_open_files then
       search_list = filelist
     end
 
-    return flatten { vimgrep_arguments, additional_args, prompt, search_list }
-  end, opts.entry_maker or make_entry.gen_from_vimgrep(
-    opts
-  ), opts.max_results, opts.cwd)
+    return flatten { vimgrep_arguments, additional_args, "--", prompt, search_list }
+  end, opts.entry_maker or make_entry.gen_from_vimgrep(opts), opts.max_results, opts.cwd)
 
   pickers.new(opts, {
     prompt_title = "Live Grep",
@@ -131,6 +125,7 @@ files.grep_string = function(opts)
     vimgrep_arguments,
     additional_args,
     word_match,
+    "--",
     search,
   }
 
@@ -138,12 +133,10 @@ files.grep_string = function(opts)
     for _, path in ipairs(search_dirs) do
       table.insert(args, vim.fn.expand(path))
     end
-  else
-    table.insert(args, ".")
   end
 
   pickers.new(opts, {
-    prompt_title = "Find Word",
+    prompt_title = "Find Word (" .. word .. ")",
     finder = finders.new_oneshot_job(args, opts),
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
@@ -153,7 +146,31 @@ end
 -- TODO: Maybe just change this to `find`.
 -- TODO: Support `find` and maybe let people do other stuff with it as well.
 files.find_files = function(opts)
-  local find_command = opts.find_command
+  local find_command = (function()
+    if opts.find_command then
+      return opts.find_command
+    elseif 1 == vim.fn.executable "fd" then
+      return { "fd", "--type", "f" }
+    elseif 1 == vim.fn.executable "fdfind" then
+      return { "fdfind", "--type", "f" }
+    elseif 1 == vim.fn.executable "rg" then
+      return { "rg", "--files" }
+    elseif 1 == vim.fn.executable "find" and vim.fn.has "win32" == 0 then
+      return { "find", ".", "-type", "f" }
+    elseif 1 == vim.fn.executable "where" then
+      return { "where", "/r", ".", "*" }
+    end
+  end)()
+
+  if not find_command then
+    utils.notify("builtin.find_files", {
+      msg = "You need to install either find, fd, or rg",
+      level = "ERROR",
+    })
+    return
+  end
+
+  local command = find_command[1]
   local hidden = opts.hidden
   local no_ignore = opts.no_ignore
   local follow = opts.follow
@@ -165,98 +182,54 @@ files.find_files = function(opts)
     end
   end
 
-  if not find_command then
-    if 1 == vim.fn.executable "fd" then
-      find_command = { "fd", "--type", "f" }
-      if hidden then
-        table.insert(find_command, "--hidden")
-      end
-      if no_ignore then
-        table.insert(find_command, "--no-ignore")
-      end
-      if follow then
-        table.insert(find_command, "-L")
-      end
-      if search_dirs then
+  if command == "fd" or command == "fdfind" or command == "rg" then
+    if hidden then
+      table.insert(find_command, "--hidden")
+    end
+    if no_ignore then
+      table.insert(find_command, "--no-ignore")
+    end
+    if follow then
+      table.insert(find_command, "-L")
+    end
+    if search_dirs then
+      if command ~= "rg" then
         table.insert(find_command, ".")
-        for _, v in pairs(search_dirs) do
-          table.insert(find_command, v)
-        end
       end
-    elseif 1 == vim.fn.executable "fdfind" then
-      find_command = { "fdfind", "--type", "f" }
-      if hidden then
-        table.insert(find_command, "--hidden")
-      end
-      if no_ignore then
-        table.insert(find_command, "--no-ignore")
-      end
-      if follow then
-        table.insert(find_command, "-L")
-      end
-      if search_dirs then
-        table.insert(find_command, ".")
-        for _, v in pairs(search_dirs) do
-          table.insert(find_command, v)
-        end
-      end
-    elseif 1 == vim.fn.executable "rg" then
-      find_command = { "rg", "--files" }
-      if hidden then
-        table.insert(find_command, "--hidden")
-      end
-      if no_ignore then
-        table.insert(find_command, "--no-ignore")
-      end
-      if follow then
-        table.insert(find_command, "-L")
-      end
-      if search_dirs then
-        for _, v in pairs(search_dirs) do
-          table.insert(find_command, v)
-        end
-      end
-    elseif 1 == vim.fn.executable "find" and vim.fn.has "win32" == 0 then
-      find_command = { "find", ".", "-type", "f" }
-      if not hidden then
-        table.insert(find_command, { "-not", "-path", "*/.*" })
-        find_command = flatten(find_command)
-      end
-      if no_ignore ~= nil then
-        log.warn "The `no_ignore` key is not available for the `find` command in `find_files`."
-      end
-      if follow then
-        table.insert(find_command, "-L")
-      end
-      if search_dirs then
-        table.remove(find_command, 2)
-        for _, v in pairs(search_dirs) do
-          table.insert(find_command, 2, v)
-        end
-      end
-    elseif 1 == vim.fn.executable "where" then
-      find_command = { "where", "/r", ".", "*" }
-      if hidden ~= nil then
-        log.warn "The `hidden` key is not available for the Windows `where` command in `find_files`."
-      end
-      if no_ignore ~= nil then
-        log.warn "The `no_ignore` key is not available for the Windows `where` command in `find_files`."
-      end
-      if follow ~= nil then
-        log.warn "The `follow` key is not available for the Windows `where` command in `find_files`."
-      end
-      if search_dirs ~= nil then
-        log.warn "The `search_dirs` key is not available for the Windows `where` command in `find_files`."
+      for _, v in pairs(search_dirs) do
+        table.insert(find_command, v)
       end
     end
-  end
-
-  if not find_command then
-    print(
-      "You need to install either find, fd, or rg. "
-        .. "You can also submit a PR to add support for another file finder :)"
-    )
-    return
+  elseif command == "find" then
+    if not hidden then
+      table.insert(find_command, { "-not", "-path", "*/.*" })
+      find_command = flatten(find_command)
+    end
+    if no_ignore ~= nil then
+      log.warn "The `no_ignore` key is not available for the `find` command in `find_files`."
+    end
+    if follow then
+      table.insert(find_command, 2, "-L")
+    end
+    if search_dirs then
+      table.remove(find_command, 2)
+      for _, v in pairs(search_dirs) do
+        table.insert(find_command, 2, v)
+      end
+    end
+  elseif command == "where" then
+    if hidden ~= nil then
+      log.warn "The `hidden` key is not available for the Windows `where` command in `find_files`."
+    end
+    if no_ignore ~= nil then
+      log.warn "The `no_ignore` key is not available for the Windows `where` command in `find_files`."
+    end
+    if follow ~= nil then
+      log.warn "The `follow` key is not available for the Windows `where` command in `find_files`."
+    end
+    if search_dirs ~= nil then
+      log.warn "The `search_dirs` key is not available for the Windows `where` command in `find_files`."
+    end
   end
 
   if opts.cwd then
@@ -277,7 +250,7 @@ local function prepare_match(entry, kind)
   local entries = {}
 
   if entry.node then
-    entry["kind"] = kind
+    entry["kind"] = vim.F.if_nil(kind, "")
     table.insert(entries, entry)
   else
     for name, item in pairs(entry) do
@@ -288,161 +261,32 @@ local function prepare_match(entry, kind)
   return entries
 end
 
-files.file_browser = function(opts)
-  opts = opts or {}
-
-  local is_dir = function(value)
-    return value:sub(-1, -1) == os_sep
-  end
-
-  opts.depth = opts.depth or 1
-  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
-  opts.new_finder = opts.new_finder
-    or function(path)
-      opts.cwd = path
-      local data = {}
-
-      scan.scan_dir(path, {
-        hidden = opts.hidden or false,
-        add_dirs = true,
-        depth = opts.depth,
-        on_insert = function(entry, typ)
-          table.insert(data, typ == "directory" and (entry .. os_sep) or entry)
-        end,
-      })
-      table.insert(data, 1, ".." .. os_sep)
-
-      local maker = function()
-        local mt = {}
-        mt.cwd = opts.cwd
-        mt.display = function(entry)
-          local hl_group
-          local display = utils.transform_path(opts, entry.value)
-          if is_dir(entry.value) then
-            display = display .. os_sep
-            if not opts.disable_devicons then
-              display = (opts.dir_icon or "") .. " " .. display
-              hl_group = "Default"
-            end
-          else
-            display, hl_group = utils.transform_devicons(entry.value, display, opts.disable_devicons)
-          end
-
-          if hl_group then
-            return display, { { { 1, 3 }, hl_group } }
-          else
-            return display
-          end
-        end
-
-        mt.__index = function(t, k)
-          local raw = rawget(mt, k)
-          if raw then
-            return raw
-          end
-
-          if k == "path" then
-            local retpath = Path:new({ t.cwd, t.value }):absolute()
-            if not vim.loop.fs_access(retpath, "R", nil) then
-              retpath = t.value
-            end
-            if is_dir(t.value) then
-              retpath = retpath .. os_sep
-            end
-            return retpath
-          end
-
-          return rawget(t, rawget({ value = 1 }, k))
-        end
-
-        return function(line)
-          local tbl = { line }
-          tbl.ordinal = Path:new(line):make_relative(opts.cwd)
-          return setmetatable(tbl, mt)
-        end
-      end
-
-      return finders.new_table { results = data, entry_maker = maker() }
-    end
-
-  pickers.new(opts, {
-    prompt_title = "File Browser",
-    finder = opts.new_finder(opts.cwd),
-    previewer = conf.file_previewer(opts),
-    sorter = conf.file_sorter(opts),
-    attach_mappings = function(prompt_bufnr, map)
-      action_set.select:replace_if(function()
-        return is_dir(action_state.get_selected_entry().path)
-      end, function()
-        local new_cwd = vim.fn.expand(action_state.get_selected_entry().path:sub(1, -2))
-        local current_picker = action_state.get_current_picker(prompt_bufnr)
-        current_picker.cwd = new_cwd
-        current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
-      end)
-
-      local create_new_file = function()
-        local current_picker = action_state.get_current_picker(prompt_bufnr)
-        local file = action_state.get_current_line()
-        if file == "" then
-          print(
-            "To create a new file or directory(add "
-              .. os_sep
-              .. " at the end of file) "
-              .. "write the desired new into the prompt and press <C-e>. "
-              .. "It works for not existing nested input as well."
-              .. "Example: this"
-              .. os_sep
-              .. "is"
-              .. os_sep
-              .. "a"
-              .. os_sep
-              .. "new_file.lua"
-          )
-          return
-        end
-
-        local fpath = current_picker.cwd .. os_sep .. file
-        if not is_dir(fpath) then
-          actions.close(prompt_bufnr)
-          Path:new(fpath):touch { parents = true }
-          vim.cmd(string.format(":e %s", fpath))
-        else
-          Path:new(fpath:sub(1, -2)):mkdir { parents = true }
-          local new_cwd = vim.fn.expand(fpath)
-          current_picker.cwd = new_cwd
-          current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
-        end
-      end
-
-      map("i", "<C-e>", create_new_file)
-      map("n", "<C-e>", create_new_file)
-      return true
-    end,
-  }):find()
-end
-
 --  TODO: finish docs for opts.show_line
 files.treesitter = function(opts)
   opts.show_line = utils.get_default(opts.show_line, true)
 
   local has_nvim_treesitter, _ = pcall(require, "nvim-treesitter")
   if not has_nvim_treesitter then
-    print "You need to install nvim-treesitter"
+    utils.notify("builtin.treesitter", {
+      msg = "User need to install nvim-treesitter needs to be installed",
+      level = "ERROR",
+    })
     return
   end
 
   local parsers = require "nvim-treesitter.parsers"
-  if not parsers.has_parser() then
-    print "No parser for the current buffer"
+  if not parsers.has_parser(parsers.get_buf_lang(opts.bufnr)) then
+    utils.notify("builtin.treesitter", {
+      msg = "No parser for the current buffer",
+      level = "ERROR",
+    })
     return
   end
 
   local ts_locals = require "nvim-treesitter.locals"
-  local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
-
   local results = {}
-  for _, definitions in ipairs(ts_locals.get_definitions(bufnr)) do
-    local entries = prepare_match(definitions)
+  for _, definition in ipairs(ts_locals.get_definitions(opts.bufnr)) do
+    local entries = prepare_match(ts_locals.get_local_nodes(definition))
     for _, entry in ipairs(entries) do
       table.insert(results, entry)
     end
@@ -468,17 +312,16 @@ end
 
 files.current_buffer_fuzzy_find = function(opts)
   -- All actions are on the current buffer
-  local bufnr = vim.api.nvim_get_current_buf()
-  local filename = vim.fn.expand(vim.api.nvim_buf_get_name(bufnr))
-  local filetype = vim.api.nvim_buf_get_option(bufnr, "filetype")
+  local filename = vim.fn.expand(vim.api.nvim_buf_get_name(opts.bufnr))
+  local filetype = vim.api.nvim_buf_get_option(opts.bufnr, "filetype")
 
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local lines = vim.api.nvim_buf_get_lines(opts.bufnr, 0, -1, false)
   local lines_with_numbers = {}
 
   for lnum, line in ipairs(lines) do
     table.insert(lines_with_numbers, {
       lnum = lnum,
-      bufnr = bufnr,
+      bufnr = opts.bufnr,
       filename = filename,
       text = line,
     })
@@ -488,10 +331,11 @@ files.current_buffer_fuzzy_find = function(opts)
   if ts_ok then
     filetype = ts_parsers.ft_to_lang(filetype)
   end
+  local _, ts_configs = pcall(require, "nvim-treesitter.configs")
 
-  local parser_ok, parser = pcall(vim.treesitter.get_parser, bufnr, filetype)
+  local parser_ok, parser = pcall(vim.treesitter.get_parser, opts.bufnr, filetype)
   local query_ok, query = pcall(vim.treesitter.get_query, filetype, "highlights")
-  if parser_ok and query_ok then
+  if parser_ok and query_ok and ts_ok and ts_configs.is_enabled("highlight", filetype, opts.bufnr) then
     local root = parser:parse()[1]:root()
 
     local highlighter = vim.treesitter.highlighter.new(parser)
@@ -504,9 +348,9 @@ files.current_buffer_fuzzy_find = function(opts)
         return obj
       end,
     })
-    for id, node in query:iter_captures(root, bufnr, 0, -1) do
-      local hl = highlighter_query.hl_cache[id]
-      if hl then
+    for id, node in query:iter_captures(root, opts.bufnr, 0, -1) do
+      local hl = highlighter_query:_get_hl_from_capture(id)
+      if hl and type(hl) ~= "number" then
         local row1, col1, row2, col2 = node:range()
 
         if row1 == row2 then
@@ -524,7 +368,7 @@ files.current_buffer_fuzzy_find = function(opts)
           while row < row2 + 1 do
             row = row + 1
 
-            for index = 0, #lines[row] do
+            for index = 0, #(lines[row] or {}) do
               line_highlights[row][index] = hl
             end
           end
@@ -557,19 +401,21 @@ files.current_buffer_fuzzy_find = function(opts)
 end
 
 files.tags = function(opts)
-  local ctags_file = opts.ctags_file or "tags"
-
-  if not vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438) then
-    print "Tags file does not exists. Create one with ctags -R"
+  local tagfiles = opts.ctags_file and { opts.ctags_file } or vim.fn.tagfiles()
+  if vim.tbl_isempty(tagfiles) then
+    utils.notify("builtin.tags", {
+      msg = "No tags file found. Create one with ctags -R",
+      level = "ERROR",
+    })
     return
   end
 
-  local fd = assert(vim.loop.fs_open(vim.fn.expand(ctags_file, true), "r", 438))
-  local stat = assert(vim.loop.fs_fstat(fd))
-  local data = assert(vim.loop.fs_read(fd, stat.size, 0))
-  assert(vim.loop.fs_close(fd))
-
-  local results = vim.split(data, "\n")
+  local results = {}
+  for _, ctags_file in ipairs(tagfiles) do
+    for line in Path:new(vim.fn.expand(ctags_file, true)):iter() do
+      results[#results + 1] = line
+    end
+  end
 
   pickers.new(opts, {
     prompt_title = "Tags",

@@ -1,5 +1,5 @@
-if !has('nvim-0.5')
-  echoerr "Telescope.nvim requires at least nvim-0.5. Please update or uninstall"
+if !has('nvim-0.6.0')
+  echoerr "Telescope.nvim requires at least nvim-0.6.0. See `:h telescope.changelog-1549`"
   finish
 end
 
@@ -12,12 +12,13 @@ let g:loaded_telescope = 1
 highlight default link TelescopeSelection Visual
 highlight default link TelescopeSelectionCaret TelescopeSelection
 highlight default link TelescopeMultiSelection Type
+highlight default link TelescopeMultiIcon Identifier
 
 " "Normal" in the floating windows created by telescope.
 highlight default link TelescopeNormal Normal
-
-" "Normal" in the preview floating windows created by telescope.
-highlight default link TelescopePreviewNormal Normal
+highlight default link TelescopePreviewNormal TelescopeNormal
+highlight default link TelescopePromptNormal TelescopeNormal
+highlight default link TelescopeResultsNormal TelescopeNormal
 
 " Border highlight groups.
 "   Use TelescopeBorder to override the default.
@@ -26,6 +27,16 @@ highlight default link TelescopeBorder TelescopeNormal
 highlight default link TelescopePromptBorder TelescopeBorder
 highlight default link TelescopeResultsBorder TelescopeBorder
 highlight default link TelescopePreviewBorder TelescopeBorder
+
+" Title highlight groups.
+"   Use TelescopeTitle to override the default.
+"   Otherwise set them specifically
+highlight default link TelescopeTitle TelescopeBorder
+highlight default link TelescopePromptTitle TelescopeTitle
+highlight default link TelescopeResultsTitle TelescopeTitle
+highlight default link TelescopePreviewTitle TelescopeTitle
+
+highlight default link TelescopePromptCounter NonText
 
 " Used for highlighting characters that you match.
 highlight default link TelescopeMatching Special
@@ -53,6 +64,8 @@ highlight default link TelescopePreviewSize String
 highlight default link TelescopePreviewUser Constant
 highlight default link TelescopePreviewGroup Constant
 highlight default link TelescopePreviewDate Directory
+highlight default link TelescopePreviewMessage TelescopePreviewNormal
+highlight default link TelescopePreviewMessageFillchar TelescopePreviewMessage
 
 " Used for Picker specific Results highlighting
 highlight default link TelescopeResultsClass Function
@@ -111,4 +124,4 @@ function! s:telescope_complete(arg,line,pos)
 endfunction
 
 " Telescope Commands with complete
-command! -nargs=* -range -complete=custom,s:telescope_complete Telescope    lua require('telescope.command').load_command(<line1>, <line2>, <count>, <f-args>)
+command! -nargs=* -range -complete=custom,s:telescope_complete Telescope    lua require('telescope.command').load_command(<line1>, <line2>, <count>, unpack({<f-args>}))

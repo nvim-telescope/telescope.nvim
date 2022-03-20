@@ -138,14 +138,14 @@ function Sorter:score(prompt, entry, cb_add, cb_filter)
     if self.tags then
       self.tags:insert(entry)
     end
-    filter_score, prompt = self:filter_function(prompt, entry)
+    filter_score, prompt = self:filter_function(prompt, entry, cb_add, cb_filter)
   end
 
   if filter_score == FILTERED then
     return cb_filter(entry)
   end
 
-  local score = self:scoring_function(prompt or "", ordinal, entry)
+  local score = self:scoring_function(prompt or "", ordinal, entry, cb_add, cb_filter)
   if score == FILTERED then
     self:_mark_discarded(prompt, ordinal)
     return cb_filter(entry)
@@ -244,7 +244,7 @@ sorters.get_fuzzy_file = function(opts)
       if N == 0 or N < ngram_len then
         -- TODO: If the character is in the line,
         -- then it should get a point or somethin.
-        return 0
+        return 1
       end
 
       local prompt_lower = prompt:lower()
@@ -352,7 +352,7 @@ sorters.get_generic_fuzzy_sorter = function(opts)
     -- entry (the whole entry)
     scoring_function = function(_, prompt, line, _)
       if prompt == 0 or #prompt < ngram_len then
-        return 0
+        return 1
       end
 
       local prompt_lower = prompt:lower()
@@ -417,14 +417,14 @@ sorters.fuzzy_with_index_bias = function(opts)
   local fuzzy_sorter = sorters.get_generic_fuzzy_sorter(opts)
 
   return Sorter:new {
-    scoring_function = function(_, prompt, _, entry)
-      local base_score = fuzzy_sorter:score(prompt, entry)
+    scoring_function = function(_, prompt, line, entry, cb_add, cb_filter)
+      local base_score = fuzzy_sorter:scoring_function(prompt, line, cb_add, cb_filter)
 
-      if base_score == -1 then
-        return -1
+      if base_score == FILTERED then
+        return FILTERED
       end
 
-      if base_score == 0 then
+      if not base_score or base_score == 0 then
         return entry.index
       else
         return math.min(math.pow(entry.index, 0.25), 2) * base_score
@@ -484,7 +484,7 @@ sorters.highlighter_only = function(opts)
 
   return Sorter:new {
     scoring_function = function()
-      return 0
+      return 1
     end,
 
     highlighter = function(_, prompt, display)
@@ -496,7 +496,7 @@ end
 sorters.empty = function()
   return Sorter:new {
     scoring_function = function()
-      return 0
+      return 1
     end,
   }
 end
@@ -531,6 +531,10 @@ sorters.get_substr_matcher = function()
   return Sorter:new {
     highlighter = substr_highlighter,
     scoring_function = function(_, prompt, _, entry)
+      if #prompt == 0 then
+        return 1
+      end
+
       local display = entry.ordinal:lower()
 
       local search_terms = util.max_split(prompt, "%s")

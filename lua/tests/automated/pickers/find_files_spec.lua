@@ -15,10 +15,12 @@ describe("builtin.find_files", function()
     tester.run_file "find_files__with_ctrl_n"
   end)
 
-  for _, configuration in ipairs {
-    { sorting_strategy = "descending" },
-    { sorting_strategy = "ascending" },
-  } do
+  for _, configuration in
+    ipairs {
+      { sorting_strategy = "descending" },
+      { sorting_strategy = "ascending" },
+    }
+  do
     it("should not display devicons when disabled: " .. disp(configuration), function()
       tester.run_string(string.format(
         [[
@@ -38,12 +40,13 @@ describe("builtin.find_files", function()
           sorter = require('telescope.sorters').get_fzy_sorter(),
           layout_strategy = 'center',
           layout_config = {
-            height = max_results,
+            height = max_results + 1,
             width = 0.9,
           },
-        }, vim.fn.json_decode([==[%s]==])))
+          border = false,
+        }, vim.json.decode([==[%s]==])))
       ]],
-        vim.fn.json_encode(configuration)
+        vim.json.encode(configuration)
       ))
     end)
 
@@ -57,6 +60,8 @@ describe("builtin.find_files", function()
 
       tester.run_string(string.format(
         [[
+        local max_results = 5
+
         tester.builtin_picker('find_files', 'README.md', {
           post_typed = {
             { %s, function() return #GetResults() end },
@@ -66,13 +71,14 @@ describe("builtin.find_files", function()
           sorter = require('telescope.sorters').get_fzy_sorter(),
           layout_strategy = 'center',
           layout_config = {
-            height = max_results,
+            height = max_results + 1,
             width = 0.9,
           },
-        }, vim.fn.json_decode([==[%s]==])))
+          border = false,
+        }, vim.json.decode([==[%s]==])))
       ]],
         expected,
-        vim.fn.json_encode(configuration)
+        vim.json.encode(configuration)
       ))
     end)
 
@@ -95,9 +101,9 @@ describe("builtin.find_files", function()
         }, vim.tbl_extend("force", {
           disable_devicons = false,
           sorter = require('telescope.sorters').get_fzy_sorter(),
-        }, vim.fn.json_decode([==[%s]==])))
+        }, vim.json.decode([==[%s]==])))
       ]],
-        vim.fn.json_encode(configuration)
+        vim.json.encode(configuration)
       ))
     end)
   end

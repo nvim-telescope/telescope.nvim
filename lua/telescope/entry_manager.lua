@@ -2,27 +2,6 @@ local log = require "telescope.log"
 
 local LinkedList = require "telescope.algos.linked_list"
 
---[[
-
-OK, new idea.
-We can do linked list here.
-To convert at the end to quickfix, just run the list.
-...
-
-start node
-end node
-
-if past loop of must have scores,
-  then we can just add to end node and shift end node to current node.
-  etc.
-
-
-  always inserts a row, because we clear everything before?
-
-  can also optimize by keeping worst acceptable score around.
-
---]]
-
 local EntryManager = {}
 EntryManager.__index = EntryManager
 
@@ -126,7 +105,7 @@ function EntryManager:_append_container(picker, new_container, should_update)
   end
 end
 
-function EntryManager:add_entry(picker, score, entry)
+function EntryManager:add_entry(picker, score, entry, prompt)
   score = score or 0
 
   local max_res = self.max_results
@@ -158,7 +137,7 @@ function EntryManager:add_entry(picker, score, entry)
       return self:_insert_container_before(picker, index, node, new_container)
     end
 
-    if score < 1 and container[2] == score and #entry.ordinal < #container[1].ordinal then
+    if score < 1 and container[2] == score and picker.tiebreak(entry, container[1], prompt) then
       return self:_insert_container_before(picker, index, node, new_container)
     end
 
