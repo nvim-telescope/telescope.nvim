@@ -179,6 +179,11 @@ function actions.center(_)
   vim.cmd ":normal! zz"
 end
 
+--- Perform default action on selection, usually something like<br>
+--- `:edit <selection>`
+---
+--- i.e. open the selection in the current buffer
+---@param prompt_bufnr number: The prompt bufnr
 actions.select_default = {
   pre = function(prompt_bufnr)
     action_state.get_current_history():append(
@@ -191,6 +196,11 @@ actions.select_default = {
   end,
 }
 
+--- Perform 'horizontal' action on selection, usually something like<br>
+---`:new <selection>`
+---
+--- i.e. open the selection in a new horizontal split
+---@param prompt_bufnr number: The prompt bufnr
 actions.select_horizontal = {
   pre = function(prompt_bufnr)
     action_state.get_current_history():append(
@@ -203,6 +213,11 @@ actions.select_horizontal = {
   end,
 }
 
+--- Perform 'vertical' action on selection, usually something like<br>
+---`:vnew <selection>`
+---
+--- i.e. open the selection in a new vertical split
+---@param prompt_bufnr number: The prompt bufnr
 actions.select_vertical = {
   pre = function(prompt_bufnr)
     action_state.get_current_history():append(
@@ -215,6 +230,11 @@ actions.select_vertical = {
   end,
 }
 
+--- Perform 'tab' action on selection, usually something like<br>
+---`:tabedit <selection>`
+---
+--- i.e. open the selection in a new tab
+---@param prompt_bufnr number: The prompt bufnr
 actions.select_tab = {
   pre = function(prompt_bufnr)
     action_state.get_current_history():append(
