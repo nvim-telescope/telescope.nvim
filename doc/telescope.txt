@@ -1966,6 +1966,50 @@ actions.toggle_all({prompt_bufnr})                      *actions.toggle_all()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.select_default({prompt_bufnr})              *actions.select_default()*
+    Perform default action on selection, usually something like
+    `:edit <selection>`
+
+    i.e. open the selection in the current buffer
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_horizontal({prompt_bufnr})        *actions.select_horizontal()*
+    Perform 'horizontal' action on selection, usually something like
+    `:new <selection>`
+
+    i.e. open the selection in a new horizontal split
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_vertical({prompt_bufnr})            *actions.select_vertical()*
+    Perform 'vertical' action on selection, usually something like
+    `:vnew <selection>`
+
+    i.e. open the selection in a new vertical split
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_tab({prompt_bufnr})                      *actions.select_tab()*
+    Perform 'tab' action on selection, usually something like
+    `:tabedit <selection>`
+
+    i.e. open the selection in a new tab
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 actions.git_create_branch({prompt_bufnr})        *actions.git_create_branch()*
     Create and checkout a new git branch if it doesn't already exist
 
