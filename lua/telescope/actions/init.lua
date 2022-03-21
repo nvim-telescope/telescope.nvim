@@ -249,6 +249,18 @@ actions.select_tab = {
 
 -- TODO: consider adding float!
 -- https://github.com/nvim-telescope/telescope.nvim/issues/365
+actions.select_popup = {
+  pre = function(prompt_bufnr)
+    action_state.get_current_history():append(
+      action_state.get_current_line(),
+      action_state.get_current_picker(prompt_bufnr)
+    )
+  end,
+  action = function(prompt_bufnr)
+    --actions.file_popup(prompt_bufnr)
+    return action_set.select(prompt_bufnr, "popup")
+  end,
+}
 
 function actions.file_edit(prompt_bufnr)
   return action_set.edit(prompt_bufnr, "edit")
