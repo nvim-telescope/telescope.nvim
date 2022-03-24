@@ -112,7 +112,7 @@ do
 
   -- Gets called only once to parse everything out for the vimgrep, after that looks up directly.
   local parse = function(t)
-    local _, _, filename, lnum, col, text = string.find(t.value, [[(.+):(%d+):(%d+):(.*)]])
+    local _, _, filename, lnum, col, text = string.find(t.value, [[(..-):(%d+):(%d+):(.*)]])
 
     local ok
     ok, lnum = pcall(tonumber, lnum)
@@ -611,6 +611,11 @@ function make_entry.gen_from_apropos(opts)
 
   return function(line)
     local keyword, cmd, section, desc = line:match "^((.-)%s*%(([^)]+)%).-)%s+%-%s+(.*)$"
+    -- apropos might return alternatives for the cmd which are split on `,` and breaks everything else
+    -- for example on void linux it will return `alacritty, Alacritty` which will later result in
+    -- `man 1 alacritty, Alacritty`. So we just take the first one.
+    -- doing this outside of regex because of obvious reasons
+    cmd = vim.split(cmd, ",")[1]
     return keyword
         and sections[section]
         and {

@@ -95,6 +95,10 @@ local get_default = require("telescope.utils").get_default
 local resolver = {}
 local _resolve_map = {}
 
+local throw_invalid_config_option = function(key, value)
+  error(string.format("Invalid configuration option for '%s': '%s'", key, tostring(value)), 2)
+end
+
 -- Booleans
 _resolve_map[function(val)
   return val == false
@@ -148,8 +152,7 @@ end] = function(selector, val)
         return v(selector, value)
       end
     end
-
-    error("invalid configuration option for padding:" .. tostring(value))
+    throw_invalid_config_option("padding", value)
   end
 
   return function(...)
@@ -182,8 +185,7 @@ resolver.resolve_height = function(val)
       return v(3, val)
     end
   end
-
-  error("invalid configuration option for height:" .. tostring(val))
+  throw_invalid_config_option("height", val)
 end
 
 --- Converts input to a function that returns the width.
@@ -210,7 +212,7 @@ resolver.resolve_width = function(val)
     end
   end
 
-  error("invalid configuration option for width:" .. tostring(val))
+  throw_invalid_config_option("width", val)
 end
 
 --- Calculates the adjustment required to move the picker from the middle of the screen to

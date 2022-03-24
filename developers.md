@@ -230,7 +230,7 @@ for the entries being displayed. For an example of an entry maker take a look at
 `lua/telescope/make_entry.lua`.
 
 A good way to make your `display` more like a table is to use a `displayer` which can be found in
-`lua/telescope/entry_display.lua`. A simpler example of `displayer` is the
+`lua/telescope/pickers/entry_display.lua`. A simpler example of `displayer` is the
 function `gen_from_git_commits` in `make_entry.lua`.
 
 The `ordinal` is also required, which is used for sorting. As already mentioned

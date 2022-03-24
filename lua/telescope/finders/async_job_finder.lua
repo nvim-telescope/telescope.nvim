@@ -50,6 +50,7 @@ return function(opts)
       command = job_opts.command,
       args = job_opts.args,
       cwd = job_opts.cwd or opts.cwd,
+      env = job_opts.env or opts.env,
       writer = writer,
 
       stdout = stdout,

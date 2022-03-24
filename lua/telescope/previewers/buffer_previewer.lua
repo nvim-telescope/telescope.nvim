@@ -369,7 +369,6 @@ previewers.new_buffer_previewer = function(opts)
         end
       end)
 
-      -- TODO(conni2461): We only have to set options once. Right?
       vim.api.nvim_win_set_option(status.preview_win, "winhl", "Normal:TelescopePreviewNormal")
       vim.api.nvim_win_set_option(status.preview_win, "signcolumn", "no")
       vim.api.nvim_win_set_option(status.preview_win, "foldlevel", 100)
@@ -434,6 +433,7 @@ previewers.vimgrep = defaulter(function(opts)
   local cwd = opts.cwd or vim.loop.cwd()
 
   local jump_to_line = function(self, bufnr, lnum)
+    pcall(vim.api.nvim_buf_clear_namespace, bufnr, ns_previewer, 0, -1)
     if lnum and lnum > 0 then
       pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewLine", lnum - 1, 0, -1)
       pcall(vim.api.nvim_win_set_cursor, self.state.winid, { lnum, 0 })
@@ -441,24 +441,12 @@ previewers.vimgrep = defaulter(function(opts)
         vim.cmd "norm! zz"
       end)
     end
-
-    self.state.last_set_bufnr = bufnr
   end
 
   return previewers.new_buffer_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
       return Path:new(from_entry.path(entry, true)):normalize(cwd)
-    end,
-
-    setup = function()
-      return { last_set_bufnr = nil }
-    end,
-
-    teardown = function(self)
-      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
-        vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_previewer, 0, -1)
-      end
     end,
 
     get_buffer_by_name = function(_, entry)
@@ -469,10 +457,6 @@ previewers.vimgrep = defaulter(function(opts)
       local p = from_entry.path(entry, true)
       if p == nil or p == "" then
         return
-      end
-
-      if self.state.last_set_bufnr then
-        pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
       end
 
       -- Workaround for unnamed buffer when using builtin.buffer
@@ -610,7 +594,7 @@ end, {})
 
 previewers.man = defaulter(function(opts)
   local pager = utils.get_lazy_default(opts.PAGER, function()
-    return vim.fn.executable "col" == 1 and "col -bx" or ""
+    return vim.fn.executable "col" == 1 and { "col", "-bx" } or { "cat" }
   end)
   return previewers.new_buffer_previewer {
     title = "Man Preview",
@@ -620,8 +604,9 @@ previewers.man = defaulter(function(opts)
 
     define_preview = function(self, entry, status)
       local win_width = vim.api.nvim_win_get_width(self.state.winid)
-      putils.job_maker({ "man", entry.section, entry.value }, self.state.bufnr, {
-        env = { ["PAGER"] = pager, ["MANWIDTH"] = win_width },
+      putils.job_maker(vim.deepcopy(pager), self.state.bufnr, {
+        writer = { "man", entry.section, entry.value },
+        env = { ["MANWIDTH"] = win_width, PATH = vim.env.PATH, MANPATH = vim.env.MANPATH },
         value = entry.value .. "/" .. entry.section,
         bufname = self.state.bufname,
       })
@@ -933,7 +918,7 @@ previewers.autocommands = defaulter(function(_)
       -- set the cursor position after self.state.bufnr is connected to the
       -- preview window (which is scheduled in new_buffer_previewer)
       vim.schedule(function()
-        vim.api.nvim_win_set_cursor(status.preview_win, { selected_row, 0 })
+        pcall(vim.api.nvim_win_set_cursor, status.preview_win, { selected_row, 0 })
       end)
 
       self.state.last_set_bufnr = self.state.bufnr
@@ -963,7 +948,7 @@ previewers.highlights = defaulter(function(_)
             if v ~= "" then
               if v:sub(1, 1) == " " then
                 local part_of_old = v:match "%s+(.*)"
-                hl_groups[table.getn(hl_groups)] = hl_groups[table.getn(hl_groups)] .. part_of_old
+                hl_groups[#hl_groups] = hl_groups[#hl_groups] .. part_of_old
               else
                 table.insert(hl_groups, v)
               end

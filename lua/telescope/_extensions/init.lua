@@ -7,7 +7,7 @@ extensions._health = {}
 local load_extension = function(name)
   local ok, ext = pcall(require, "telescope._extensions." .. name)
   if not ok then
-    error("This extension doesn't exist or is not installed: " .. name .. "\n" .. ext)
+    error(string.format("'%s' extension doesn't exist or isn't installed: %s", name, ext))
   end
   return ext
 end

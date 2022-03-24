@@ -17,7 +17,7 @@ local filter = vim.tbl_filter
 local files = {}
 
 local escape_chars = function(string)
-  return string.gsub(string, "[%(|%)|\\|%[|%]|%-|%{%}|%?|%+|%*|%^|%$]", {
+  return string.gsub(string, "[%(|%)|\\|%[|%]|%-|%{%}|%?|%+|%*|%^|%$|%.]", {
     ["\\"] = "\\\\",
     ["-"] = "\\-",
     ["("] = "\\(",
@@ -31,6 +31,7 @@ local escape_chars = function(string)
     ["*"] = "\\*",
     ["^"] = "\\^",
     ["$"] = "\\$",
+    ["."] = "\\.",
   })
 end
 
@@ -162,10 +163,10 @@ files.find_files = function(opts)
   end)()
 
   if not find_command then
-    print(
-      "You need to install either find, fd, or rg. "
-        .. "You can also submit a PR to add support for another file finder :)"
-    )
+    utils.notify("builtin.find_files", {
+      msg = "You need to install either find, fd, or rg",
+      level = "ERROR",
+    })
     return
   end
 
@@ -208,7 +209,7 @@ files.find_files = function(opts)
       log.warn "The `no_ignore` key is not available for the `find` command in `find_files`."
     end
     if follow then
-      table.insert(find_command, "-L")
+      table.insert(find_command, 2, "-L")
     end
     if search_dirs then
       table.remove(find_command, 2)
@@ -266,20 +267,26 @@ files.treesitter = function(opts)
 
   local has_nvim_treesitter, _ = pcall(require, "nvim-treesitter")
   if not has_nvim_treesitter then
-    print "You need to install nvim-treesitter"
+    utils.notify("builtin.treesitter", {
+      msg = "User need to install nvim-treesitter needs to be installed",
+      level = "ERROR",
+    })
     return
   end
 
   local parsers = require "nvim-treesitter.parsers"
   if not parsers.has_parser(parsers.get_buf_lang(opts.bufnr)) then
-    print "No parser for the current buffer"
+    utils.notify("builtin.treesitter", {
+      msg = "No parser for the current buffer",
+      level = "ERROR",
+    })
     return
   end
 
   local ts_locals = require "nvim-treesitter.locals"
   local results = {}
-  for _, definitions in ipairs(ts_locals.get_definitions(opts.bufnr)) do
-    local entries = prepare_match(definitions)
+  for _, definition in ipairs(ts_locals.get_definitions(opts.bufnr)) do
+    local entries = prepare_match(ts_locals.get_local_nodes(definition))
     for _, entry in ipairs(entries) do
       table.insert(results, entry)
     end
@@ -396,7 +403,10 @@ end
 files.tags = function(opts)
   local tagfiles = opts.ctags_file and { opts.ctags_file } or vim.fn.tagfiles()
   if vim.tbl_isempty(tagfiles) then
-    print "No tags file found. Create one with ctags -R"
+    utils.notify("builtin.tags", {
+      msg = "No tags file found. Create one with ctags -R",
+      level = "ERROR",
+    })
     return
   end
 

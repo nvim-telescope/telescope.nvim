@@ -326,7 +326,7 @@ telescope.setup({opts})                                    *telescope.setup()*
                      default: stdpath("data")/telescope_history
           - limit:   The amount of entries that will be written in the
                      history.
-                     Warning: If limit is set to nil it will grown unbound.
+                     Warning: If limit is set to nil it will grow unbound.
                      default: 100
           - handler: A lua function that implements the history.
                      This is meant as a developer setting for extensions to
@@ -538,6 +538,16 @@ telescope.setup({opts})                                    *telescope.setup()*
             ...,
             ["jj"] = { "<esc>", type = "command" },
             ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },)
+            ...,
+
+        You can also add additional options for mappings of any type
+        ("action" and "command"). For example:
+
+            ...,
+            ["<C-j>"] = {
+              action = actions.move_selection_next,
+              opts = { nowait = true, silent = true }
+            },
             ...,
 
 
@@ -1024,7 +1034,7 @@ builtin.resume({opts})                                      *builtin.resume()*
 
 
 builtin.pickers({opts})                                    *builtin.pickers()*
-    Opens a picker over previously cached pickers in there preserved states
+    Opens a picker over previously cached pickers in their preserved states
     (incl. multi selections)
     - Default keymaps:
       - `<C-x>`: delete the selected cached picker
@@ -1342,10 +1352,12 @@ builtin.lsp_type_definitions({opts})          *builtin.lsp_type_definitions()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {jump_type}       (string)   how to goto definition if there is only
-                                     one, values: "tab", "split", "vsplit",
-                                     "never"
-        {ignore_filename} (boolean)  dont show filenames (default: true)
+        {jump_type}           (string)   how to goto definition if there is
+                                         only one, values: "tab", "split",
+                                         "vsplit", "never"
+        {ignore_filename}     (boolean)  dont show filenames (default: true)
+        {include_declaration} (boolean)  include symbol declaration in the lsp
+                                         references (default: true)
 
 
 builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*
@@ -1407,6 +1419,7 @@ builtin.lsp_document_symbols({opts})          *builtin.lsp_document_symbols()*
                                             line the tag is found on (default:
                                             false)
         {symbols}           (string|table)  filter results by symbol kind(s)
+        {ignore_symbols}    (string|table)  list of symbols to ignore
         {symbol_highlights} (table)         string -> string. Matches symbol
                                             with hl_group
 
@@ -1430,6 +1443,7 @@ builtin.lsp_workspace_symbols({opts})        *builtin.lsp_workspace_symbols()*
                                             line the tag is found on (default:
                                             false)
         {symbols}           (string|table)  filter results by symbol kind(s)
+        {ignore_symbols}    (string|table)  list of symbols to ignore
         {symbol_highlights} (table)         string -> string. Matches symbol
                                             with hl_group
 
@@ -1451,12 +1465,13 @@ builtin.lsp_dynamic_workspace_symbols({opts}) *builtin.lsp_dynamic_workspace_sym
                                             line the symbol is found on
                                             (default: false)
         {symbols}           (string|table)  filter results by symbol kind(s)
+        {ignore_symbols}    (string|table)  list of symbols to ignore
         {symbol_highlights} (table)         string -> string. Matches symbol
                                             with hl_group
 
 
 builtin.diagnostics({opts})                            *builtin.diagnostics()*
-    Lists diagnostics for current or all open buffers
+    Lists diagnostics
     - Fields:
       - `All severity flags can be passed as `string` or `number` as per
         `:vim.diagnostic.severity:`
@@ -1469,22 +1484,27 @@ builtin.diagnostics({opts})                            *builtin.diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {bufnr}          (string|number)  if nil get diagnostics for all open
-                                          buffers. Use 0 for current buffer
-        {severity}       (string|number)  filter diagnostics by severity name
-                                          (string) or id (number)
-        {severity_limit} (string|number)  keep diagnostics equal or more
-                                          severe wrt severity name (string) or
-                                          id (number)
-        {severity_bound} (string|number)  keep diagnostics equal or less
-                                          severe wrt severity name (string) or
-                                          id (number)
-        {no_sign}        (boolean)        hide DiagnosticSigns from Results
-                                          (default: false)
-        {line_width}     (number)         set length of diagnostic entry text
-                                          in Results
-        {namespace}      (number)         limit your diagnostics to a specific
-                                          namespace
+        {bufnr}          (string|number)   if nil get diagnostics for all open
+                                           buffers. Use 0 for current buffer
+        {severity}       (string|number)   filter diagnostics by severity name
+                                           (string) or id (number)
+        {severity_limit} (string|number)   keep diagnostics equal or more
+                                           severe wrt severity name (string)
+                                           or id (number)
+        {severity_bound} (string|number)   keep diagnostics equal or less
+                                           severe wrt severity name (string)
+                                           or id (number)
+        {root_dir}       (string|boolean)  if set to string, get diagnostics
+                                           only for buffers under this dir
+                                           otherwise cwd
+        {no_unlisted}    (boolean)         if true, get diagnostics only for
+                                           listed buffers
+        {no_sign}        (boolean)         hide DiagnosticSigns from Results
+                                           (default: false)
+        {line_width}     (number)          set length of diagnostic entry text
+                                           in Results
+        {namespace}      (number)          limit your diagnostics to a
+                                           specific namespace
 
 
 
@@ -1631,11 +1651,15 @@ layout_strategies.horizontal()                *layout_strategies.horizontal()*
 layout_strategies.center()                        *layout_strategies.center()*
     Centered layout with a combined block of the prompt and results aligned to
     the middle of the screen. The preview window is then placed in the
-    remaining space above. Particularly useful for creating dropdown menus (see
-    |telescope.themes| and |themes.get_dropdown()|`).
+    remaining space above or below, according to `anchor` or `mirror`.
+    Particularly useful for creating dropdown menus (see |telescope.themes| and
+    |themes.get_dropdown()|).
 
-    Note that the `anchor` option can only pin this layout to the left or right
-    edges.
+    Note that vertical anchoring, i.e. `anchor` containing `"N"` or `"S"`, will
+    override `mirror` config. For `"N"` anchoring preview will be placed below
+    prompt/result block. For `"S"` anchoring preview will be placed above
+    prompt/result block. For horizontal only anchoring preview will be placed
+    according to `mirror` config, default is above the prompt/result block.
 
     ┌──────────────────────────────────────────────────┐
     │    ┌────────────────────────────────────────┐    │
@@ -1946,6 +1970,50 @@ actions.toggle_all({prompt_bufnr})                      *actions.toggle_all()*
     Toggle multi selection for all entries.
     - Note: toggled entries may include results not visible in the results
       popup.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_default({prompt_bufnr})              *actions.select_default()*
+    Perform default action on selection, usually something like
+    `:edit <selection>`
+
+    i.e. open the selection in the current buffer
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_horizontal({prompt_bufnr})        *actions.select_horizontal()*
+    Perform 'horizontal' action on selection, usually something like
+    `:new <selection>`
+
+    i.e. open the selection in a new horizontal split
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_vertical({prompt_bufnr})            *actions.select_vertical()*
+    Perform 'vertical' action on selection, usually something like
+    `:vnew <selection>`
+
+    i.e. open the selection in a new vertical split
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_tab({prompt_bufnr})                      *actions.select_tab()*
+    Perform 'tab' action on selection, usually something like
+    `:tabedit <selection>`
+
+    i.e. open the selection in a new tab
 
 
     Parameters: ~
@@ -2421,7 +2489,7 @@ General usage:
           ["?"] = action_generate.which_key {
             name_width = 20, -- typically leads to smaller floats
             max_height = 0.5, -- increase potential maximum height
-            seperator = " > ", -- change sep between mode, keybind, and name
+            separator = " > ", -- change sep between mode, keybind, and name
             close_with_action = false, -- do not close float on action
           },
         },
@@ -2457,7 +2525,7 @@ action_generate.which_key({opts})                *action_generate.which_key()*
         {name_width}             (number)   fixed width of action name to be
                                             shown (default: 30)
         {column_padding}         (string)   string to split; can be used for
-                                            vertical seperator (default: " ")
+                                            vertical separator (default: " ")
         {mode_hl}                (string)   hl group of mode (default:
                                             TelescopeResultsConstant)
         {keybind_hl}             (string)   hl group of keybind (default:
@@ -2468,7 +2536,7 @@ action_generate.which_key({opts})                *action_generate.which_key()*
                                             keybinds are shown (default: 4)
         {line_padding}           (number)   row padding in top and bottom of
                                             float (default: 1)
-        {separator}              (string)   seperator string between mode, key
+        {separator}              (string)   separator string between mode, key
                                             bindings, and action (default: "
                                             -> ")
         {close_with_action}      (boolean)  registered action will close

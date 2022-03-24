@@ -10,8 +10,15 @@ This will provide standard mechanism for accessing information from an entry.
 
 local from_entry = {}
 
-function from_entry.path(entry, validate)
-  local path = entry.path and vim.fn.fnameescape(entry.path) or nil
+function from_entry.path(entry, validate, escape)
+  escape = vim.F.if_nil(escape, true)
+  local path
+  if escape then
+    path = entry.path and vim.fn.fnameescape(entry.path) or nil
+  else
+    path = entry.path
+  end
+
   if path == nil then
     path = entry.filename
   end
@@ -19,7 +26,7 @@ function from_entry.path(entry, validate)
     path = entry.value
   end
   if path == nil then
-    print("Invalid entry", vim.inspect(entry))
+    require("telescope.log").error(string.format("Invalid Entry: '%s'", vim.inspect(entry)))
     return
   end
 
