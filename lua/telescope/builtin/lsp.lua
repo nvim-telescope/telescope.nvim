@@ -171,7 +171,7 @@ lsp.code_actions = function(opts)
   )
 
   if err then
-    utils.notify("builin.lsp_code_actions", {
+    utils.notify("builtin.lsp_code_actions", {
       msg = err,
       level = "ERROR",
     })
