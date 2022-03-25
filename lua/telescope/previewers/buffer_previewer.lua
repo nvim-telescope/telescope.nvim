@@ -160,7 +160,6 @@ previewers.file_maker = function(filepath, bufnr, opts)
   if opts.use_ft_detect == nil then
     opts.use_ft_detect = true
   end
-  opts.ft = opts.use_ft_detect and pfiletype.detect(filepath)
   if opts.bufname ~= filepath then
     if not vim.in_fast_event() then
       filepath = vim.fn.expand(filepath)
@@ -187,7 +186,7 @@ previewers.file_maker = function(filepath, bufnr, opts)
           end),
         })
       else
-        if opts.preview.check_mime_type == true and has_file and opts.ft == "" then
+        if opts.preview.check_mime_type == true and has_file then
           -- avoid SIGABRT in buffer previewer happening with utils.get_os_command_output
           local output = capture(string.format([[file --mime-type -b "%s"]], filepath))
           local mime_type = vim.split(output, "/")[1]
@@ -222,6 +221,8 @@ previewers.file_maker = function(filepath, bufnr, opts)
             return
           end
         end
+
+        opts.ft = opts.use_ft_detect and pfiletype.detect(filepath)
 
         opts.start_time = vim.loop.hrtime()
         Path:new(filepath):_read_async(vim.schedule_wrap(function(data)
