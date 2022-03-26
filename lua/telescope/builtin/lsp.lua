@@ -281,7 +281,7 @@ lsp.code_actions = function(opts)
       -- Fixed Java/jdtls compatibility with Telescope
       -- See fix_zero_version commentary for more information
       local command = (action.command and action.command.command) or action.command
-      if not (command == "java.apply.workspaceEdit") then
+      if command ~= "java.apply.workspaceEdit" then
         return action
       end
       local arguments = (action.command and action.command.arguments) or action.arguments
