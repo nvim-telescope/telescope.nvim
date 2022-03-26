@@ -431,10 +431,12 @@ files.tags = function(opts)
           local selection = action_state.get_selected_entry()
 
           if selection.scode then
-            local scode = string.gsub(selection.scode, "[$]$", "")
-            scode = string.gsub(scode, [[\\]], [[\]])
-            scode = string.gsub(scode, [[\/]], [[/]])
-            scode = string.gsub(scode, "[*]", [[\*]])
+            -- un-escape / then escape required
+            -- special chars for vim.fn.search()
+            -- ] ~ *
+            local scode = selection.scode:gsub([[\/]], "/"):gsub("[%]~*]", function(x)
+              return "\\" .. x
+            end)
 
             vim.cmd "norm! gg"
             vim.fn.search(scode)

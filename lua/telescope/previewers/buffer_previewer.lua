@@ -484,10 +484,12 @@ previewers.ctags = defaulter(function(_)
   local determine_jump = function(entry)
     if entry.scode then
       return function(self)
-        local scode = string.gsub(entry.scode, "[$]$", "")
-        scode = string.gsub(scode, [[\\]], [[\]])
-        scode = string.gsub(scode, [[\/]], [[/]])
-        scode = string.gsub(scode, "[*]", [[\*]])
+        -- un-escape / then escape required
+        -- special chars for vim.fn.search()
+        -- ] ~ *
+        local scode = entry.scode:gsub([[\/]], "/"):gsub("[%]~*]", function(x)
+          return "\\" .. x
+        end)
 
         pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
         vim.cmd "norm! gg"
