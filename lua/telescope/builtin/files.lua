@@ -434,10 +434,9 @@ files.tags = function(opts)
             -- un-escape / then escape required
             -- special chars for vim.fn.search()
             -- ] ~ *
-            local scode = selection.scode:gsub([[\/]], "/"):gsub("[%]~*]",
-              function(x)
-                return "\\" .. x
-              end)
+            local scode = selection.scode:gsub([[\/]], "/"):gsub("[%]~*]", function(x)
+              return "\\" .. x
+            end)
 
             vim.cmd "norm! gg"
             vim.fn.search(scode)

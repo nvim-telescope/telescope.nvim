@@ -487,10 +487,9 @@ previewers.ctags = defaulter(function(_)
         -- un-escape / then escape required
         -- special chars for vim.fn.search()
         -- ] ~ *
-        local scode = entry.scode:gsub([[\/]], "/"):gsub("[%]~*]",
-          function(x)
-            return "\\" .. x
-          end)
+        local scode = entry.scode:gsub([[\/]], "/"):gsub("[%]~*]", function(x)
+          return "\\" .. x
+        end)
 
         pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
         vim.cmd "norm! gg"
