@@ -478,7 +478,7 @@ actions.git_checkout = function(prompt_bufnr)
   local _, ret, stderr = utils.get_os_command_output({ "git", "checkout", selection.value }, cwd)
   if ret == 0 then
     utils.notify("actions.git_checkout", {
-      msg = string.format("Checked out: ", selection.value),
+      msg = string.format("Checked out: %s", selection.value),
       level = "INFO",
     })
   else
