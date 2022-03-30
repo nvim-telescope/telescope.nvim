@@ -282,6 +282,70 @@ describe("actions", function()
     eq(3, called_count)
   end)
 
+  it(
+    "can call replace fn even when combined before replace registered the fn (because that happens with mappings)",
+    function()
+      local a = transform_mod {
+        x = function()
+          return "x"
+        end,
+        y = function()
+          return "y"
+        end,
+      }
+
+      local called_count = 0
+      local count_inc = function()
+        called_count = called_count + 1
+      end
+
+      local x_plus_y = a.x + a.y
+      a.x:replace(function()
+        count_inc()
+      end)
+      a.y:replace(function()
+        count_inc()
+      end)
+
+      x_plus_y()
+
+      eq(2, called_count)
+    end
+  )
+
+  it(
+    "can call enhance fn even when combined before enhance registed fns (because that happens with mappings)",
+    function()
+      local a = transform_mod {
+        x = function()
+          return "x"
+        end,
+        y = function()
+          return "y"
+        end,
+      }
+
+      local called_count = 0
+      local count_inc = function()
+        called_count = called_count + 1
+      end
+
+      local x_plus_y = a.x + a.y
+      a.y:enhance {
+        pre = count_inc,
+        post = count_inc,
+      }
+
+      a.x:enhance {
+        post = count_inc,
+      }
+
+      x_plus_y()
+
+      eq(3, called_count)
+    end
+  )
+
   it("clears enhance", function()
     local a = transform_mod {
       x = function()
