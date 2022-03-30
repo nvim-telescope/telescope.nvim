@@ -250,7 +250,6 @@ local function prepare_match(entry, kind)
   local entries = {}
 
   if entry.node then
-    entry["kind"] = vim.F.if_nil(kind, "")
     table.insert(entries, entry)
   else
     for name, item in pairs(entry) do
@@ -288,6 +287,7 @@ files.treesitter = function(opts)
   for _, definition in ipairs(ts_locals.get_definitions(opts.bufnr)) do
     local entries = prepare_match(ts_locals.get_local_nodes(definition))
     for _, entry in ipairs(entries) do
+      entry.kind = vim.F.if_nil(entry.kind, "")
       table.insert(results, entry)
     end
   end
