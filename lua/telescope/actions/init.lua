@@ -488,7 +488,7 @@ actions.git_checkout = function(prompt_bufnr)
         selection.value,
         table.concat(stderr, " ")
       ),
-      level = "ERORR",
+      level = "ERROR",
     })
   end
 end
