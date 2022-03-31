@@ -24,8 +24,22 @@ local append_action_copy = function(new, v, old)
   new._post[v] = old._post[v]
 end
 
---TODO(conni2461): Not a fan of this solution/hack. Needs to be addressed
+-- TODO(conni2461): Not a fan of this solution/hack. Needs to be addressed
 local all_mts = {}
+
+--TODO(conni2461): It gets worse. This is so bad but because we have now n mts for n actions
+--                 We have to check all actions for relevant mts to set replace and before, after
+--                 Its not bad for performance because its being called on startup when we attach mappings.
+--                 Its just a bad solution
+local find_all_relevant_mts = function(action_name, f)
+  for _, mt in ipairs(all_mts) do
+    for fun, _ in pairs(mt._func) do
+      if fun == action_name then
+        f(mt)
+      end
+    end
+  end
+end
 
 --- an action is metatable which allows replacement(prepend or append) of the function
 ---@class Action
@@ -122,12 +136,14 @@ action_mt.create = function()
     assert(#self == 1, "Cannot replace an already combined action")
 
     local action_name = self[1]
+    find_all_relevant_mts(action_name, function(another)
+      if not another._replacements[action_name] then
+        another._replacements[action_name] = {}
+      end
 
-    if not mt._replacements[action_name] then
-      mt._replacements[action_name] = {}
-    end
+      table.insert(another._replacements[action_name], 1, tbl)
+    end)
 
-    table.insert(mt._replacements[action_name], 1, tbl)
     return self
   end
 
@@ -135,13 +151,15 @@ action_mt.create = function()
     assert(#self == 1, "Cannot enhance already combined actions")
 
     local action_name = self[1]
-    if opts.pre then
-      mt._pre[action_name] = opts.pre
-    end
+    find_all_relevant_mts(action_name, function(another)
+      if opts.pre then
+        another._pre[action_name] = opts.pre
+      end
 
-    if opts.post then
-      mt._post[action_name] = opts.post
-    end
+      if opts.post then
+        another._post[action_name] = opts.post
+      end
+    end)
 
     return self
   end
