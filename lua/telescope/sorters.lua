@@ -382,15 +382,15 @@ sorters.get_generic_fuzzy_sorter = function(opts)
 
       -- TODO: Copied from ashkan.
       local denominator = (
-          (10 * match_count / #prompt_ngrams)
-          -- biases for shorter strings
-          -- TODO(ashkan): this can bias towards repeated finds of the same
-          -- subpattern with overlapping_ngrams
-          + 3 * match_count * ngram_len / #line
-          + consecutive_matches
-          + N / (contains_string or (2 * #line)) -- + 30/(c1 or 2*N)
+        (10 * match_count / #prompt_ngrams)
+        -- biases for shorter strings
+        -- TODO(ashkan): this can bias towards repeated finds of the same
+        -- subpattern with overlapping_ngrams
+        + 3 * match_count * ngram_len / #line
+        + consecutive_matches
+        + N / (contains_string or (2 * #line)) -- + 30/(c1 or 2*N)
 
-        )
+      )
 
       if denominator == 0 or denominator ~= denominator then
         return -1
