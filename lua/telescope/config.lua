@@ -420,6 +420,27 @@ append(
 )
 
 append(
+  "results_title",
+  "Results",
+  [[
+  Defines the default title of the results window. A false value
+  can be used to hide the title altogether.
+
+  Default: "Results"]]
+)
+
+append(
+  "prompt_title",
+  "Prompt",
+  [[
+  Defines the default title of the prompt window. A false value
+  can be used to hide the title altogether. Most of the times builtins
+  define a prompt_title which will be prefered over this default.
+
+  Default: "Prompt"]]
+)
+
+append(
   "history",
   {
     path = vim.fn.stdpath "data" .. os_sep .. "telescope_history",

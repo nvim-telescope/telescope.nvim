@@ -307,6 +307,21 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: false
 
+                                         *telescope.defaults.results_title*
+    results_title: ~
+        Defines the default title of the results window. A false value
+        can be used to hide the title altogether.
+
+        Default: "Results"
+
+                                          *telescope.defaults.prompt_title*
+    prompt_title: ~
+        Defines the default title of the prompt window. A false value
+        can be used to hide the title altogether. Most of the times builtins
+        define a prompt_title which will be prefered over this default.
+
+        Default: "Prompt"
+
                                                *telescope.defaults.history*
     history: ~
         This field handles the configuration for prompt history.
