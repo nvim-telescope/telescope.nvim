@@ -110,6 +110,8 @@ function Picker:new(opts)
     tiebreak = get_default(opts.tiebreak, config.values.tiebreak),
     selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
 
+    push_cursor_on_edit = get_default(opts.push_cursor_on_edit, false),
+
     layout_strategy = layout_strategy,
     layout_config = config.smarter_depth_2_extend(opts.layout_config or {}, config.values.layout_config or {}),
 
