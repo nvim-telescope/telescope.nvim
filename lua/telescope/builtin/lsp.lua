@@ -45,6 +45,7 @@ lsp.references = function(opts)
       },
       previewer = conf.qflist_previewer(opts),
       sorter = conf.generic_sorter(opts),
+      push_cursor_on_edit = true,
     }):find()
   end)
 end
@@ -151,6 +152,7 @@ lsp.document_symbols = function(opts)
         tag = "symbol_type",
         sorter = conf.generic_sorter(opts),
       },
+      push_cursor_on_edit = true,
     }):find()
   end)
 end
