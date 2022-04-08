@@ -64,8 +64,8 @@ function Picker:new(opts)
   local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
 
   local obj = setmetatable({
-    prompt_title = get_default(opts.prompt_title, "Prompt"),
-    results_title = get_default(opts.results_title, "Results"),
+    prompt_title = get_default(opts.prompt_title, config.values.prompt_title),
+    results_title = get_default(opts.results_title, config.values.results_title),
     -- either whats passed in by the user or whats defined by the previewer
     preview_title = opts.preview_title,
 
@@ -461,7 +461,7 @@ function Picker:find()
       local prompt = self:_get_next_filtered_prompt()
 
       -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
-      if self.cache_picker == false or not (self.cache_picker.is_cached == true) then
+      if self.cache_picker == false or self.cache_picker.is_cached ~= true then
         self.sorter:_start(prompt)
         self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats)
 
