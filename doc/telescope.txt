@@ -1342,6 +1342,12 @@ builtin.lsp_references({opts})                      *builtin.lsp_references()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
+    Options: ~
+        {include_declaration}  (boolean)  include symbol declaration in the
+                                          lsp references (default: true)
+        {include_current_line} (boolean)  include current line (default:
+                                          false)
+
 
 builtin.lsp_definitions({opts})                    *builtin.lsp_definitions()*
     Goto the definition of the word under the cursor, if there's only one,
@@ -1367,12 +1373,10 @@ builtin.lsp_type_definitions({opts})          *builtin.lsp_type_definitions()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {jump_type}           (string)   how to goto definition if there is
-                                         only one, values: "tab", "split",
-                                         "vsplit", "never"
-        {ignore_filename}     (boolean)  dont show filenames (default: true)
-        {include_declaration} (boolean)  include symbol declaration in the lsp
-                                         references (default: true)
+        {jump_type}       (string)   how to goto definition if there is only
+                                     one, values: "tab", "split", "vsplit",
+                                     "never"
+        {ignore_filename} (boolean)  dont show filenames (default: true)
 
 
 builtin.lsp_implementations({opts})            *builtin.lsp_implementations()*

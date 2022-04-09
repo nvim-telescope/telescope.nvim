@@ -352,6 +352,8 @@ builtin.jumplist = require_on_exported_call("telescope.builtin.internal").jumpli
 
 --- Lists LSP references for word under the cursor, jumps to reference on `<cr>`
 ---@param opts table: options to pass to the picker
+---@field include_declaration boolean: include symbol declaration in the lsp references (default: true)
+---@field include_current_line boolean: include current line (default: false)
 builtin.lsp_references = require_on_exported_call("telescope.builtin.lsp").references
 
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
@@ -365,7 +367,6 @@ builtin.lsp_definitions = require_on_exported_call("telescope.builtin.lsp").defi
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
 ---@field ignore_filename boolean: dont show filenames (default: true)
----@field include_declaration boolean: include symbol declaration in the lsp references (default: true)
 builtin.lsp_type_definitions = require("telescope.builtin.lsp").type_definitions
 
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
