@@ -820,6 +820,7 @@ internal.buffers = function(opts)
 end
 
 internal.colorscheme = function(opts)
+  local before_background = vim.o.background
   local before_color = vim.api.nvim_exec("colorscheme", true)
   local need_restore = true
 
@@ -910,6 +911,7 @@ internal.colorscheme = function(opts)
     picker.close_windows = function(status)
       close_windows(status)
       if need_restore then
+        vim.o.background = before_background
         vim.cmd("colorscheme " .. before_color)
       end
     end
