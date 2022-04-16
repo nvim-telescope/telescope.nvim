@@ -82,16 +82,12 @@ end
 git.stash = function(opts)
   opts.show_branch = vim.F.if_nil(opts.show_branch, true)
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_stash(opts))
+  local git_command = vim.F.if_nil(opts.git_command, { "git", "--no-pager", "stash", "list" })
 
   pickers.new(opts, {
     prompt_title = "Git Stash",
     finder = finders.new_oneshot_job(
-      vim.tbl_flatten {
-        "git",
-        "--no-pager",
-        "stash",
-        "list",
-      },
+      vim.tbl_flatten(git_command),
       opts
     ),
     previewer = previewers.git_stash_diff.new(opts),
@@ -193,8 +189,9 @@ git.branches = function(opts)
     .. "%(authorname)"
     .. "%(upstream:lstrip=2)"
     .. "%(committerdate:format-local:%Y/%m/%d %H:%M:%S)"
+  local git_command = vim.F.if_nil(opts.git_command, { "git", "for-each-ref", "--perl", "--format" })
   local output = utils.get_os_command_output(
-    { "git", "for-each-ref", "--perl", "--format", format, opts.pattern },
+    vim.tbl_flatten { git_command, format, opts.pattern },
     opts.cwd
   )
 
@@ -317,13 +314,13 @@ git.status = function(opts)
 
   local gen_new_finder = function()
     local expand_dir = utils.if_nil(opts.expand_dir, true, opts.expand_dir)
-    local git_cmd = { "git", "status", "-s", "--", "." }
+    local git_command = vim.F.if_nil(opts.git_command, { "git", "status", "-s", "--", "." })
 
     if expand_dir then
-      table.insert(git_cmd, #git_cmd - 1, "-u")
+      table.insert(git_command, #git_command - 1, "-u")
     end
 
-    local output = utils.get_os_command_output(git_cmd, opts.cwd)
+    local output = utils.get_os_command_output(git_command, opts.cwd)
 
     if #output == 0 then
       print "No changes found"

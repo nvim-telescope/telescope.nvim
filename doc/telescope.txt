@@ -983,6 +983,8 @@ builtin.git_branches({opts})                          *builtin.git_branches()*
         {use_git_root} (boolean)  if we should use git root as cwd or the cwd
                                   (important for submodule) (default: true)
         {pattern}      (string)   specify the pattern to match all refs
+        {git_command}  (table)    command that will be exectued.
+                                  {"git","for-each-ref","--perl","--format"}
 
 
 builtin.git_status({opts})                              *builtin.git_status()*
@@ -1002,6 +1004,8 @@ builtin.git_status({opts})                              *builtin.git_status()*
         {git_icons}    (table)    string -> string. Matches name with icon
                                   (see source code, make_entry.lua
                                   git_icon_defaults)
+        {git_command}  (table)    command that will be exectued.
+                                  {"git","status","-s","--","."}
 
 
 builtin.git_stash({opts})                                *builtin.git_stash()*
@@ -1019,6 +1023,8 @@ builtin.git_stash({opts})                                *builtin.git_stash()*
                                   (important for submodule) (default: true)
         {show_branch}  (boolean)  if we should display the branch name for git
                                   stash entries (default: true)
+        {git_command}  (table)    command that will be exectued.
+                                  {"git","--no-pager","stash","list"}
 
 
 builtin.builtin({opts})                                    *builtin.builtin()*
