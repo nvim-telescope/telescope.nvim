@@ -372,6 +372,7 @@ function Picker:find()
   )
 
   local results_bufnr = a.nvim_win_get_buf(results_win)
+  pcall(a.nvim_buf_set_option, results_bufnr, "tabstop", 1) -- #1834
 
   self.results_bufnr = results_bufnr
   self.results_win = results_win
@@ -389,6 +390,7 @@ function Picker:find()
 
   local prompt_win, prompt_opts, prompt_border_win = self:_create_window("", popup_opts.prompt)
   local prompt_bufnr = a.nvim_win_get_buf(prompt_win)
+  pcall(a.nvim_buf_set_option, prompt_bufnr, "tabstop", 1) -- #1834
 
   self.prompt_bufnr = prompt_bufnr
   self.prompt_win = prompt_win
