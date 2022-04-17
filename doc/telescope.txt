@@ -1887,6 +1887,54 @@ resolver.resolve_anchor_pos()                  *resolver.resolve_anchor_pos()*
 
 Actions functions that are useful for people creating their own mappings.
 
+Actions can be either normal functions that expect the prompt_bufnr as first
+argument (1) or they can be a custom telescope type called "action" (2).
+
+(1) The `prompt_bufnr` of a normal function denotes the identifier of your
+picker which can be used to access the picker state. In practice, users most
+commonly access from both picker and global state via the following:
+
+>
+-- for utility functions
+local action_state = require "telescope.actions.state"
+
+local actions = {}
+actions.do_stuff = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr) -- picker state
+  local entry = action_state.get_selected_entry()
+end
+<
+
+See |telescope.actions.state| for more information.
+
+(2) To transform a module of functions into a module of "action"s, you need to
+do the following:
+
+>
+local transform_mod = require("telescope.actions.mt").transform_mod
+
+local mod = {}
+mod.a1 = function(prompt_bufnr)
+  -- your code goes here
+  -- You can access the picker/global state as described above in (1).
+end
+
+mod.a2 = function(prompt_bufnr)
+  -- your code goes here
+end
+mod = transform_mod(mod)
+
+-- Now the following is possible. This means that actions a2 will be executed
+-- after action a1. You can chain as many actions as you want.
+local action = mod.a1 + mod.a2
+action(bufnr)
+<
+
+Another interesing thing to do is that these actions now have functions you can
+call. These functions include `:replace(f)`, `:replace_if(f, c)`,
+`replace_map(tbl)` and `enhance(tbl)`. More information on these functions can
+be found in the `developers.md` and `lua/tests/automated/action_spec.lua` file.
+
 actions.move_selection_next({prompt_bufnr})    *actions.move_selection_next()*
     Move the selection to the next entry
 
@@ -1995,6 +2043,47 @@ actions.toggle_all({prompt_bufnr})                      *actions.toggle_all()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.preview_scrolling_up({prompt_bufnr})  *actions.preview_scrolling_up()*
+    Scroll the preview window up
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.preview_scrolling_down({prompt_bufnr}) *actions.preview_scrolling_down()*
+    Scroll the preview window down
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.results_scrolling_up({prompt_bufnr})  *actions.results_scrolling_up()*
+    Scroll the results window up
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.results_scrolling_down({prompt_bufnr}) *actions.results_scrolling_down()*
+    Scroll the results window down
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.center({prompt_bufnr})                              *actions.center()*
+    Center the cursor in the window, can be used after selecting a file to edit
+    You can just map `actions.select_default + actions.center`
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 actions.select_default({prompt_bufnr})              *actions.select_default()*
     Perform default action on selection, usually something like
     `:edit <selection>`
@@ -2033,6 +2122,124 @@ actions.select_tab({prompt_bufnr})                      *actions.select_tab()*
     `:tabedit <selection>`
 
     i.e. open the selection in a new tab
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.file_edit({prompt_bufnr})                        *actions.file_edit()*
+    Perform file edit on selection, usually something like
+    `:edit <selection>`
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.file_split({prompt_bufnr})                      *actions.file_split()*
+    Perform file split on selection, usually something like
+    `:new <selection>`
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.file_vsplit({prompt_bufnr})                    *actions.file_vsplit()*
+    Perform file vsplit on selection, usually something like
+    `:vnew <selection>`
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.file_tab({prompt_bufnr})                          *actions.file_tab()*
+    Perform file tab on selection, usually something like
+    `:tabedit <selection>`
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.close({prompt_bufnr})                                *actions.close()*
+    Close the Telescope window, usually used within an action
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions._close({prompt_bufnr}, {keepinsert})                *actions._close()*
+    Close the Telescope window and specify if you want to keep insert mode or
+    not
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)   The prompt bufnr
+        {keepinsert}   (boolean)  Remain in INSERT mode if true
+
+
+actions.edit_command_line({prompt_bufnr})        *actions.edit_command_line()*
+    Set a value in the command line and dont run it, making it editable.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.set_command_line({prompt_bufnr})          *actions.set_command_line()*
+    Set a value in the command line and run it
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.edit_search_line({prompt_bufnr})          *actions.edit_search_line()*
+    Set a value in the search line and dont search for it, making it editable.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.set_search_line({prompt_bufnr})            *actions.set_search_line()*
+    Set a value in the search line and search for it
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.edit_register({prompt_bufnr})                *actions.edit_register()*
+    Edit a register
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.paste_register({prompt_bufnr})              *actions.paste_register()*
+    Paste the selected register into the buffer
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.insert_symbol({prompt_bufnr})                *actions.insert_symbol()*
+    Insert a symbol into the current buffer (while switching to normal mode)
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.insert_symbol_i({prompt_bufnr})            *actions.insert_symbol_i()*
+    Insert a symbol into the current buffer and keeping the insert mode.
 
 
     Parameters: ~
@@ -2129,6 +2336,14 @@ actions.git_reset_hard({prompt_bufnr})              *actions.git_reset_hard()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.git_checkout_current_buffer({prompt_bufnr}) *actions.git_checkout_current_buffer()*
+    Checkout a specific file for a given sha
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 actions.git_staging_toggle({prompt_bufnr})      *actions.git_staging_toggle()*
     Stage/unstage selected file
 
@@ -2137,82 +2352,153 @@ actions.git_staging_toggle({prompt_bufnr})      *actions.git_staging_toggle()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.send_selected_to_qflist()          *actions.send_selected_to_qflist()*
+actions.send_selected_to_qflist({prompt_bufnr}) *actions.send_selected_to_qflist()*
     Sends the selected entries to the quickfix list, replacing the previous
     entries.
 
 
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
-actions.add_selected_to_qflist()            *actions.add_selected_to_qflist()*
+
+actions.add_selected_to_qflist({prompt_bufnr}) *actions.add_selected_to_qflist()*
     Adds the selected entries to the quickfix list, keeping the previous
     entries.
 
 
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
-actions.send_to_qflist()                            *actions.send_to_qflist()*
+
+actions.send_to_qflist({prompt_bufnr})              *actions.send_to_qflist()*
     Sends all entries to the quickfix list, replacing the previous entries.
 
 
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
-actions.add_to_qflist()                              *actions.add_to_qflist()*
+
+actions.add_to_qflist({prompt_bufnr})                *actions.add_to_qflist()*
     Adds all entries to the quickfix list, keeping the previous entries.
 
 
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
-actions.send_selected_to_loclist()        *actions.send_selected_to_loclist()*
+
+actions.send_selected_to_loclist({prompt_bufnr}) *actions.send_selected_to_loclist()*
     Sends the selected entries to the location list, replacing the previous
     entries.
 
 
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
-actions.add_selected_to_loclist()          *actions.add_selected_to_loclist()*
+
+actions.add_selected_to_loclist({prompt_bufnr}) *actions.add_selected_to_loclist()*
     Adds the selected entries to the location list, keeping the previous
     entries.
 
 
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
-actions.send_to_loclist()                          *actions.send_to_loclist()*
+
+actions.send_to_loclist({prompt_bufnr})            *actions.send_to_loclist()*
     Sends all entries to the location list, replacing the previous entries.
 
 
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
-actions.add_to_loclist()                            *actions.add_to_loclist()*
+
+actions.add_to_loclist({prompt_bufnr})              *actions.add_to_loclist()*
     Adds all entries to the location list, keeping the previous entries.
 
 
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
-actions.smart_send_to_qflist()                *actions.smart_send_to_qflist()*
+
+actions.smart_send_to_qflist({prompt_bufnr})  *actions.smart_send_to_qflist()*
     Sends the selected entries to the quickfix list, replacing the previous
     entries. If no entry was selected, sends all entries.
 
 
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
-actions.smart_add_to_qflist()                  *actions.smart_add_to_qflist()*
+
+actions.smart_add_to_qflist({prompt_bufnr})    *actions.smart_add_to_qflist()*
     Adds the selected entries to the quickfix list, keeping the previous
     entries. If no entry was selected, adds all entries.
 
 
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
-actions.smart_send_to_loclist()              *actions.smart_send_to_loclist()*
+
+actions.smart_send_to_loclist({prompt_bufnr}) *actions.smart_send_to_loclist()*
     Sends the selected entries to the location list, replacing the previous
     entries. If no entry was selected, sends all entries.
 
 
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
-actions.smart_add_to_loclist()                *actions.smart_add_to_loclist()*
+
+actions.smart_add_to_loclist({prompt_bufnr})  *actions.smart_add_to_loclist()*
     Adds the selected entries to the location list, keeping the previous
     entries. If no entry was selected, adds all entries.
 
 
-
-actions.open_qflist()                                  *actions.open_qflist()*
-    Open the quickfix list
-
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions.open_loclist()                                *actions.open_loclist()*
-    Open the location list
+actions.complete_tag({prompt_bufnr})                  *actions.complete_tag()*
+    Open completion menu containing the tags which can be used to filter the
+    results in a faster way
 
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.cycle_history_next({prompt_bufnr})      *actions.cycle_history_next()*
+    Cycle to the next search prompt in the history
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.cycle_history_prev({prompt_bufnr})      *actions.cycle_history_prev()*
+    Cycle to the previous search prompt in the history
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.open_qflist({prompt_bufnr})                    *actions.open_qflist()*
+    Open the quickfix list. It makes sense to use this in combination with one
+    of the send_to_qflist actions `actions.smart_send_to_qflist +
+    actions.open_qflist`
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.open_loclist({prompt_bufnr})                  *actions.open_loclist()*
+    Open the location list. It makes sense to use this in combination with one
+    of the send_to_loclist actions `actions.smart_send_to_qflist +
+    actions.open_qflist`
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.delete_buffer({prompt_bufnr})                *actions.delete_buffer()*
