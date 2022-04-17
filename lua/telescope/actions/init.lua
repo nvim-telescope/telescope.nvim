@@ -724,6 +724,8 @@ local git_reset_branch = function(prompt_bufnr, mode)
       level = "ERROR",
     })
   end
+
+  action_utils.restore_buffers()
 end
 
 --- Reset to selected git commit using mixed mode
