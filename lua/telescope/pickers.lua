@@ -51,6 +51,10 @@ function Picker:new(opts)
     error "layout_strategy and get_window_options are not compatible keys"
   end
 
+  if vim.fn.win_gettype() == "command" then
+    error "Can't open telescope from command-line window. See E11"
+  end
+
   deprecated.options(opts)
 
   -- We need to clear at the beginning not on close because after close we can still have select:post
