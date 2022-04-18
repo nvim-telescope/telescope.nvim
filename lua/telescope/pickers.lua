@@ -1278,6 +1278,7 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
 
   local cb_filter = function(_)
     self:_increment "filtered"
+    status_updater { completed = false }
   end
 
   return function(entry)
