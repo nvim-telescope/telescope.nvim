@@ -324,6 +324,10 @@ function make_entry.gen_from_quickfix(opts)
 
     local line_info = { table.concat({ entry.lnum, entry.col }, ":"), "TelescopeResultsLineNr" }
 
+    if opts.trim_text then
+      entry.text = entry.text:gsub("^%s*(.-)%s*$", "%1")
+    end
+
     return displayer {
       line_info,
       entry.text:gsub(".* | ", ""),

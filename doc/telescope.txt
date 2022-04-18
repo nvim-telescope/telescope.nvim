@@ -1110,6 +1110,7 @@ builtin.quickfix({opts})                        *telescope.builtin.quickfix()*
 
     Options: ~
         {ignore_filename} (boolean)  dont show filenames (default: true)
+        {trim_text}       (boolean)  trim results text (default: false)
 
 
 builtin.loclist({opts})                          *telescope.builtin.loclist()*
@@ -1122,6 +1123,7 @@ builtin.loclist({opts})                          *telescope.builtin.loclist()*
 
     Options: ~
         {ignore_filename} (boolean)  dont show filenames (default: true)
+        {trim_text}       (boolean)  trim results text (default: false)
 
 
 builtin.oldfiles({opts})                        *telescope.builtin.oldfiles()*
@@ -1321,6 +1323,7 @@ builtin.tagstack({opts})                        *telescope.builtin.tagstack()*
 
     Options: ~
         {ignore_filename} (boolean)  dont show filenames (default: true)
+        {trim_text}       (boolean)  trim results text (default: false)
 
 
 builtin.jumplist({opts})                        *telescope.builtin.jumplist()*
@@ -1332,6 +1335,7 @@ builtin.jumplist({opts})                        *telescope.builtin.jumplist()*
 
     Options: ~
         {ignore_filename} (boolean)  dont show filenames (default: true)
+        {trim_text}       (boolean)  trim results text (default: false)
 
 
 builtin.lsp_references({opts})            *telescope.builtin.lsp_references()*
@@ -1347,6 +1351,7 @@ builtin.lsp_references({opts})            *telescope.builtin.lsp_references()*
                                           lsp references (default: true)
         {include_current_line} (boolean)  include current line (default:
                                           false)
+        {trim_text}            (boolean)  trim results text (default: false)
 
 
 builtin.lsp_definitions({opts})          *telescope.builtin.lsp_definitions()*
@@ -1362,6 +1367,7 @@ builtin.lsp_definitions({opts})          *telescope.builtin.lsp_definitions()*
                                      one, values: "tab", "split", "vsplit",
                                      "never"
         {ignore_filename} (boolean)  dont show filenames (default: true)
+        {trim_text}       (boolean)  trim results text (default: false)
 
 
 builtin.lsp_type_definitions({opts}) *telescope.builtin.lsp_type_definitions()*
@@ -1377,6 +1383,7 @@ builtin.lsp_type_definitions({opts}) *telescope.builtin.lsp_type_definitions()*
                                      one, values: "tab", "split", "vsplit",
                                      "never"
         {ignore_filename} (boolean)  dont show filenames (default: true)
+        {trim_text}       (boolean)  trim results text (default: false)
 
 
 builtin.lsp_implementations({opts})  *telescope.builtin.lsp_implementations()*
@@ -1392,6 +1399,7 @@ builtin.lsp_implementations({opts})  *telescope.builtin.lsp_implementations()*
                                      only one, values: "tab", "split",
                                      "vsplit", "never"
         {ignore_filename} (boolean)  dont show filenames (default: true)
+        {trim_text}       (boolean)  trim results text (default: false)
 
 
 builtin.lsp_code_actions({opts})        *telescope.builtin.lsp_code_actions()*
