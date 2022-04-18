@@ -1,4 +1,5 @@
 ---@tag telescope.command
+---@config { ["module"] = "telescope.command" }
 
 ---@brief [[
 ---

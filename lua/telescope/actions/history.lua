@@ -4,6 +4,9 @@ local utils = require "telescope.utils"
 
 local uv = vim.loop
 
+---@tag telescope.actions.history
+---@config { ["module"] = "telescope.actions.history" }
+
 ---@brief [[
 --- A base implementation of a prompt history that provides a simple history
 --- and can be replaced with a custom implementation.
@@ -22,7 +25,6 @@ local uv = vim.loop
 ---
 --- See github.com/nvim-telescope/telescope-smart-history.nvim
 ---@brief ]]
----@tag telescope.actions.history
 
 -- TODO(conni2461): currently not present in plenary path only sync.
 -- But sync is just unnecessary here

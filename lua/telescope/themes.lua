@@ -4,6 +4,7 @@
 -- local opts = themes.get_dropdown { winblend = 3 }
 
 ---@tag telescope.themes
+---@config { ["module"] = "telescope.themes" }
 
 ---@brief [[
 --- Themes are ways to combine several elements of styling together.

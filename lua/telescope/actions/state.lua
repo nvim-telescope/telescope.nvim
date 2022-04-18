@@ -1,4 +1,5 @@
 ---@tag telescope.actions.state
+---@config { ["module"] = "telescope.actions.state" }
 
 ---@brief [[
 --- Functions to be used to determine the current state of telescope.

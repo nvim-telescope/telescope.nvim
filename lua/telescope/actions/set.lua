@@ -1,4 +1,5 @@
 ---@tag telescope.actions.set
+---@config { ["module"] = "telescope.actions.set" }
 
 ---@brief [[
 --- Telescope action sets are used to provide an interface for managing

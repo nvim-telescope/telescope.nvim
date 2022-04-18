@@ -1,4 +1,5 @@
 ---@tag telescope.previewers
+---@config { ["module"] = "telescope.previewers" }
 
 ---@brief [[
 --- Provides a Previewer table that has to be implemented by each previewer.
