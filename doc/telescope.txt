@@ -496,7 +496,8 @@ telescope.setup({opts})                                    *telescope.setup()*
 
                                         *telescope.defaults.color_devicons*
     color_devicons: ~
-        Boolean if devicons should be enabled or not.
+        Boolean if devicons should be enabled or not. If set to false, the
+        "TelescopeResultsFileIcon" highlight group is used.
         Hint: Coloring only works if |termguicolors| is enabled.
 
         Default: true

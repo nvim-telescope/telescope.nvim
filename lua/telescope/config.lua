@@ -650,7 +650,8 @@ append(
   "color_devicons",
   true,
   [[
-  Boolean if devicons should be enabled or not.
+  Boolean if devicons should be enabled or not. If set to false, the
+  "TelescopeResultsFileIcon" highlight group is used.
   Hint: Coloring only works if |termguicolors| is enabled.
 
   Default: true]]
