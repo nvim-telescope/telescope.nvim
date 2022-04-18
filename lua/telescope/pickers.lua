@@ -415,6 +415,15 @@ function Picker:find()
 
   vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
 
+  -- make sure the initial view on the results buffer is where we will add new entries
+  if self.sorting_strategy == "ascending" then
+    vim.api.nvim_win_set_cursor(results_win, { 1, 0 })
+  elseif self.sorting_strategy == "descending" then
+    vim.api.nvim_win_set_cursor(results_win, { self.max_results, 0 })
+  else
+    log.warn("Picker:find() does not understand self.sorting_strategy == '" .. self.sorting_strategy .. "'.")
+  end
+
   local status_updater = self:get_status_updater(prompt_win, prompt_bufnr)
   local debounced_status = debounce.throttle_leading(status_updater, 50)
 
@@ -473,6 +482,9 @@ function Picker:find()
         self:_reset_highlights()
         local process_result = self:get_result_processor(find_id, prompt, debounced_status)
         local process_complete = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
+
+        -- clear old results
+        vim.api.nvim_buf_set_lines(results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
 
         local ok, msg = pcall(function()
           self.finder(prompt, process_result, process_complete)
