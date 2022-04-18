@@ -159,5 +159,21 @@ functions. Note that there is no longer a workspace diagnostics. You can only
 get all diagnostics for all open buffers.
 
 
+                                                    *telescope.changelog-1851*
+
+Date: December 10, 2021
+PR: https://github.com/nvim-telescope/telescope.nvim/pull/1851
+
+Telescope requires now Neovim release 0.7.0 or a more recent nightly.
+If you are running Neovim nightly, you need to make sure that you are on the
+LATEST version. Every other commit is not supported. So make sure you build
+the newest nightly before reporting issues.
+In the future, we will adopt a different release strategy. This release
+strategy follows the approach that the latest telescope.nvim master will only
+work with latest Neovim nightly and we will provide tags for specific Neovim
+versions. You can read more about this strategy here:
+https://github.com/nvim-telescope/telescope.nvim/issues/1772
+
+
 
  vim:tw=78:ts=8:ft=help:norl:
