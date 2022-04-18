@@ -1,4 +1,5 @@
 ---@tag telescope.actions.utils
+---@config { ["module"] = "telescope.actions.utils" }
 
 ---@brief [[
 --- Utilities to wrap functions around picker selections and entries.

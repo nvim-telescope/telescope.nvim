@@ -1,7 +1,5 @@
 ---@tag telescope.actions
-
--- TODO: Add @module to make it so we can have the prefix.
---@module telescope.actions
+---@config { ["module"] = "telescope.actions" }
 
 ---@brief [[
 --- Actions functions that are useful for people creating their own mappings.
@@ -12,41 +10,39 @@
 --- (1) The `prompt_bufnr` of a normal function denotes the identifier of your
 --- picker which can be used to access the picker state. In practice, users
 --- most commonly access from both picker and global state via the following:
----
 --- <code>
---- -- for utility functions
---- local action_state = require "telescope.actions.state"
+---   -- for utility functions
+---   local action_state = require "telescope.actions.state"
 ---
---- local actions = {}
---- actions.do_stuff = function(prompt_bufnr)
----   local current_picker = action_state.get_current_picker(prompt_bufnr) -- picker state
----   local entry = action_state.get_selected_entry()
---- end
+---   local actions = {}
+---   actions.do_stuff = function(prompt_bufnr)
+---     local current_picker = action_state.get_current_picker(prompt_bufnr) -- picker state
+---     local entry = action_state.get_selected_entry()
+---   end
 --- </code>
 ---
 --- See |telescope.actions.state| for more information.
 ---
 --- (2) To transform a module of functions into a module of "action"s, you need
 --- to do the following:
----
 --- <code>
---- local transform_mod = require("telescope.actions.mt").transform_mod
+---   local transform_mod = require("telescope.actions.mt").transform_mod
 ---
---- local mod = {}
---- mod.a1 = function(prompt_bufnr)
----   -- your code goes here
----   -- You can access the picker/global state as described above in (1).
---- end
+---   local mod = {}
+---   mod.a1 = function(prompt_bufnr)
+---     -- your code goes here
+---     -- You can access the picker/global state as described above in (1).
+---   end
 ---
---- mod.a2 = function(prompt_bufnr)
----   -- your code goes here
---- end
---- mod = transform_mod(mod)
+---   mod.a2 = function(prompt_bufnr)
+---     -- your code goes here
+---   end
+---   mod = transform_mod(mod)
 ---
---- -- Now the following is possible. This means that actions a2 will be executed
---- -- after action a1. You can chain as many actions as you want.
---- local action = mod.a1 + mod.a2
---- action(bufnr)
+---   -- Now the following is possible. This means that actions a2 will be executed
+---   -- after action a1. You can chain as many actions as you want.
+---   local action = mod.a1 + mod.a2
+---   action(bufnr)
 --- </code>
 ---
 --- Another interesing thing to do is that these actions now have functions you

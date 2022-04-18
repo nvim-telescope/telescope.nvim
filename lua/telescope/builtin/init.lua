@@ -1,6 +1,6 @@
 ---@tag telescope.builtin
 
----@config { ['field_heading'] = "Options" }
+---@config { ['field_heading'] = "Options", ["module"] = "telescope.builtin" }
 
 ---@brief [[
 --- Telescope Builtins is a collection of community maintained pickers to support common workflows. It can be used as
