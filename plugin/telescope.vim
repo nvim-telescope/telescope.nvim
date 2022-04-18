@@ -82,6 +82,7 @@ highlight default link TelescopeResultsIdentifier Identifier
 highlight default link TelescopeResultsNumber Number
 highlight default link TelescopeResultsComment Comment
 highlight default link TelescopeResultsSpecialComment SpecialComment
+highlight default link TelescopeResultsFileIcon Normal
 
 " Used for git status Results highlighting
 highlight default link TelescopeResultsDiffChange DiffChange

@@ -437,7 +437,7 @@ utils.transform_devicons = load_once(function()
       if conf.color_devicons then
         return icon_display, icon_highlight
       else
-        return icon_display
+        return icon_display, "TelescopeResultsFileIcon"
       end
     end
   else
@@ -465,7 +465,7 @@ utils.get_devicons = load_once(function()
       if conf.color_devicons then
         return icon, icon_highlight
       else
-        return icon
+        return icon, "TelescopeResultsFileIcon"
       end
     end
   else
