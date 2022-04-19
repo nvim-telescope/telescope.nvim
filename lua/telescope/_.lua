@@ -53,9 +53,6 @@ function AsyncJob:close(force)
   self:_for_each_pipe(function(p)
     p:close(force)
   end)
-  if not self.handle:is_closing() then
-    self.handle:close()
-  end
 
   log.debug "[async_job] closed"
 end
@@ -67,6 +64,9 @@ M.spawn = function(opts)
     self.uv_opts,
     async.void(function()
       self:close(false)
+      if not self.handle:is_closing() then
+        self.handle:close()
+      end
     end)
   )
 
