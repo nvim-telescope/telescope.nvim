@@ -911,9 +911,6 @@ function Picker:refresh(finder, opts)
     end
     self:change_prompt_prefix(handle(opts.new_prefix))
   end
-  if opts.reset_prompt then
-    self:reset_prompt()
-  end
 
   if finder then
     self.finder:close()
@@ -921,7 +918,12 @@ function Picker:refresh(finder, opts)
     self._multi = vim.F.if_nil(opts.multi, MultiSelect:new())
   end
 
-  self._on_lines(nil, nil, nil, 0, 1)
+  -- reset already triggers finder loop
+  if opts.reset_prompt then
+    self:reset_prompt()
+  else
+    self._on_lines(nil, nil, nil, 0, 1)
+  end
 end
 
 ---Set the selection to the provided `row`
