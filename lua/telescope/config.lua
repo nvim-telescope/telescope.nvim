@@ -182,7 +182,8 @@ append(
   - "reset" (default)
   - "follow"
   - "row"
-  - "closest"]]
+  - "closest"
+  - "none"]]
 )
 
 append(
