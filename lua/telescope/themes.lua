@@ -70,7 +70,7 @@ end
 ---
 ---     `local builtin = require('telescope.builtin')`
 ---     `local themes = require('telescope.themes')`
----     `builtin.lsp_code_actions(themes.get_cursor())`
+---     `builtin.lsp_references(themes.get_cursor())`
 --- </code>
 function themes.get_cursor(opts)
   opts = opts or {}
