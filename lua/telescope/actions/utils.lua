@@ -108,7 +108,13 @@ function utils._get_anon_function_name(func_ref)
   local Path = require "plenary.path"
   local info = debug.getinfo(func_ref)
   local fname
-  for i, line in ipairs(Path:new(info.short_src):readlines()) do
+  -- if fn defined in string (ie loadstring) source is string
+  -- if fn defined in file, source is file name prefixed with a `@´
+  local path = Path:new((info.source:gsub("@", "")))
+  if not path:exists() then
+    return "<anonymous>"
+  end
+  for i, line in ipairs(path:readlines()) do
     if i == info.linedefined then
       fname = line
       break
@@ -119,11 +125,15 @@ function utils._get_anon_function_name(func_ref)
   if (fname:match "=" == nil) and (fname:match "function %S+%(" == nil) then
     return "<anonymous>"
   else
-    -- (1) remove function
-    -- (2) whitespace and equal
-    -- (3) anything in parenthesis incl. parentheses themselves
-    -- (4) remove TABLE. prefix if available
-    local patterns = { { "function", "" }, { "local", "" }, { "[%s=]", "" }, { "%((.+)%)", "" }, { "(.+)%.", "" } }
+    local patterns = {
+      { "function", "" }, -- remove function
+      { "local", "" }, -- remove local
+      { "[%s=]", "" }, -- remove whitespace and =
+      { [=[%[["']]=], "" }, -- remove left-hand bracket of table assignment
+      { [=[["']%]]=], "" }, -- remove right-ahnd bracket of table assignment
+      { "%((.+)%)", "" }, -- remove function arguments
+      { "(.+)%.", "" }, -- remove TABLE. prefix if available
+    }
     for _, tbl in ipairs(patterns) do
       fname = (fname:gsub(tbl[1], tbl[2])) -- make sure only string is returned
     end
