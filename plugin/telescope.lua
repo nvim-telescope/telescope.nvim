@@ -3,7 +3,7 @@ if 1 ~= vim.fn.has "nvim-0.7.0" then
   return
 end
 
-if vim.g.loaded_telescope then
+if vim.g.loaded_telescope == 1 then
   return
 end
 vim.g.loaded_telescope = 1
