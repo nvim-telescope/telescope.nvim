@@ -357,6 +357,7 @@ end
 
 --- Close the Telescope window, usually used within an action<br>
 --- Deprecated and no longer needed, does the same as |telescope.actions.close|. Might be removed in the future
+---@deprecated
 ---@param prompt_bufnr number: The prompt bufnr
 actions._close = function(prompt_bufnr)
   actions.close(prompt_bufnr)
