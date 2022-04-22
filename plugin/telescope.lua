@@ -97,13 +97,13 @@ end
 
 -- This is like "<C-R>" in your terminal.
 --     To use it, do `cmap <C-R> <Plug>(TelescopeFuzzyCommandSearch)
---TODO(conni2461): Make it lua make it awesome
-vim.cmd [==[
-  cnoremap <silent> <Plug>(TelescopeFuzzyCommandSearch) <C-\>e
-      \ "lua require('telescope.builtin').command_history {
-        \ default_text = [=[" . escape(getcmdline(), '"') . "]=]
-        \ }"<CR><CR>
-]==]
+vim.keymap.set(
+  "c",
+  "<Plug>(TelescopeFuzzyCommandSearch)",
+  "<C-\\>e \"lua require('telescope.builtin').command_history "
+    .. '{ default_text = [=[" . escape(getcmdline(), \'"\') . "]=] }"<CR><CR>',
+  { silent = true, noremap = true }
+)
 
 vim.api.nvim_create_user_command("Telescope", function(opts)
   require("telescope.command").load_command(opts.line1, opts.line2, opts.count, unpack(opts.fargs))
