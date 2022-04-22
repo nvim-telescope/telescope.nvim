@@ -348,17 +348,13 @@ end
 
 --- Close the Telescope window and specify if you want to keep insert mode or not
 ---@param prompt_bufnr number: The prompt bufnr
----@param keepinsert boolean: Remain in INSERT mode if true
-actions._close = function(prompt_bufnr, keepinsert)
+actions._close = function(prompt_bufnr)
   action_state.get_current_history():reset()
   local picker = action_state.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
   local original_win_id = picker.original_win_id
 
   actions.close_pum(prompt_bufnr)
-  if not keepinsert then
-    vim.cmd [[stopinsert]]
-  end
 
   vim.api.nvim_win_close(prompt_win, true)
   pcall(vim.cmd, string.format([[silent bdelete! %s]], prompt_bufnr))

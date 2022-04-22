@@ -2179,14 +2179,13 @@ actions.close({prompt_bufnr})                      *telescope.actions.close()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
-actions._close({prompt_bufnr}, {keepinsert})      *telescope.actions._close()*
+actions._close({prompt_bufnr})                    *telescope.actions._close()*
     Close the Telescope window and specify if you want to keep insert mode or
     not
 
 
     Parameters: ~
-        {prompt_bufnr} (number)   The prompt bufnr
-        {keepinsert}   (boolean)  Remain in INSERT mode if true
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.edit_command_line({prompt_bufnr}) *telescope.actions.edit_command_line()*

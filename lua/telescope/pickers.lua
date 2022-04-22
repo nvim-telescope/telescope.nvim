@@ -432,21 +432,18 @@ function Picker:find()
     pcall(a.nvim_buf_set_option, prompt_bufnr, "filetype", "TelescopePrompt")
     pcall(a.nvim_buf_set_option, results_bufnr, "filetype", "TelescopeResults")
 
-    if self.initial_mode == "insert" or self.initial_mode == "normal" then
-      -- required for set_prompt to work adequately
+    if self.default_text then
+      self:set_prompt(self.default_text)
+    end
+    -- if self.initial_mode == "normal" then
+    --   await_schedule(function()
+    --     vim.cmd [[stopinsert]]
+    --   end)
+    if self.initial_mode == "insert" then
       vim.schedule(function()
         vim.cmd [[startinsert!]]
       end)
-      if self.default_text then
-        self:set_prompt(self.default_text)
-      end
-      if self.initial_mode == "normal" then
-        -- otherwise (i) insert mode exitted faster than `picker:set_prompt`; (ii) cursor on wrong pos
-        await_schedule(function()
-          vim.cmd [[stopinsert]]
-        end)
-      end
-    else
+    elseif self.initial_mode ~= "normal" then
       error("Invalid setting for initial_mode: " .. self.initial_mode)
     end
 
@@ -723,16 +720,10 @@ function Picker:delete_selection(delete_cb)
 end
 
 function Picker:set_prompt(str)
-  if vim.fn.has "nvim-0.7" == 1 then
-    local prompt_text = self.prompt_prefix .. (str or "")
-    vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, 1, false, { prompt_text })
-    vim.api.nvim_win_set_cursor(self.prompt_win, { 1, #prompt_text })
-    self:_reset_prefix_color()
-  else
-    vim.schedule(function()
-      vim.api.nvim_feedkeys(str, "n", false)
-    end)
-  end
+  local prompt_text = self.prompt_prefix .. (str or "")
+  vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, 1, false, { prompt_text })
+  vim.api.nvim_win_set_cursor(self.prompt_win, { 1, #prompt_text })
+  self:_reset_prefix_color()
 end
 
 --- Closes the windows for the prompt, results and preview
