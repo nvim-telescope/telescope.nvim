@@ -1,5 +1,5 @@
-if !has('nvim-0.6.0')
-  echoerr "Telescope.nvim requires at least nvim-0.6.0. See `:h telescope.changelog-1549`"
+if !has('nvim-0.7.0')
+  echoerr "Telescope.nvim requires at least nvim-0.7.0. See `:h telescope.changelog-1549`"
   finish
 end
 
