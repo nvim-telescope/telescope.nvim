@@ -103,4 +103,36 @@ function utils.get_registered_mappings(prompt_bufnr)
   return ret
 end
 
+-- Best effort to infer function names for actions.which_key
+function utils._get_anon_function_name(func_ref)
+  local Path = require "plenary.path"
+  local info = debug.getinfo(func_ref)
+  local fname
+  for i, line in ipairs(Path:new(info.short_src):readlines()) do
+    if i == info.linedefined then
+      fname = line
+      break
+    end
+  end
+
+  -- test if assignment or named function, otherwise anon
+  if (fname:match "=" == nil) and (fname:match "function %S+%(" == nil) then
+    return "<anonymous>"
+  else
+    -- (1) remove function
+    -- (2) whitespace and equal
+    -- (3) anything in parenthesis incl. parentheses themselves
+    -- (4) remove TABLE. prefix if available
+    local patterns = { { "function", "" }, { "local", "" }, { "[%s=]", "" }, { "%((.+)%)", "" }, { "(.+)%.", "" } }
+    for _, tbl in ipairs(patterns) do
+      fname = (fname:gsub(tbl[1], tbl[2])) -- make sure only string is returned
+    end
+    -- not sure if this can happen, catch all just in case
+    if fname == nil or fname == "" then
+      return "<anonymous>"
+    end
+    return fname
+  end
+end
+
 return utils
