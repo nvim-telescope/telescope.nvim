@@ -54,6 +54,8 @@ function AsyncJob:close(force)
     p:close(force)
   end)
 
+  uv.process_kill(self.handle, "SIGTERM")
+
   log.debug "[async_job] closed"
 end
 
