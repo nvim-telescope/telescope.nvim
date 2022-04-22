@@ -1,5 +1,5 @@
-if !has('nvim-0.6.0')
-  echoerr "Telescope.nvim requires at least nvim-0.6.0. See `:h telescope.changelog-1549`"
+if !has('nvim-0.7.0')
+  echoerr "Telescope.nvim requires at least nvim-0.7.0. See `:h telescope.changelog-1851`"
   finish
 end
 
@@ -82,6 +82,7 @@ highlight default link TelescopeResultsIdentifier Identifier
 highlight default link TelescopeResultsNumber Number
 highlight default link TelescopeResultsComment Comment
 highlight default link TelescopeResultsSpecialComment SpecialComment
+highlight default link TelescopeResultsFileIcon Normal
 
 " Used for git status Results highlighting
 highlight default link TelescopeResultsDiffChange DiffChange

@@ -1,6 +1,6 @@
 ---@tag telescope.builtin
 
----@config { ['field_heading'] = "Options" }
+---@config { ['field_heading'] = "Options", ["module"] = "telescope.builtin" }
 
 ---@brief [[
 --- Telescope Builtins is a collection of community maintained pickers to support common workflows. It can be used as
@@ -26,8 +26,8 @@
 --- </code>
 ---@brief ]]
 
-if 1 ~= vim.fn.has "nvim-0.6.0" then
-  vim.api.nvim_err_writeln "This plugins requires neovim 0.6.0"
+if 1 ~= vim.fn.has "nvim-0.7.0" then
+  vim.api.nvim_err_writeln "This plugins requires neovim 0.7.0"
   vim.api.nvim_err_writeln "Please update your neovim."
   return
 end
@@ -240,11 +240,13 @@ builtin.commands = require_on_exported_call("telescope.builtin.internal").comman
 --- Lists items in the quickfix list, jumps to location on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field ignore_filename boolean: dont show filenames (default: true)
+---@field trim_text boolean: trim results text (default: false)
 builtin.quickfix = require_on_exported_call("telescope.builtin.internal").quickfix
 
 --- Lists items from the current window's location list, jumps to location on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field ignore_filename boolean: dont show filenames (default: true)
+---@field trim_text boolean: trim results text (default: false)
 builtin.loclist = require_on_exported_call("telescope.builtin.internal").loclist
 
 --- Lists previously open files, opens on `<cr>`
@@ -337,11 +339,13 @@ builtin.spell_suggest = require_on_exported_call("telescope.builtin.internal").s
 --- Lists the tag stack for the current window, jumps to tag on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field ignore_filename boolean: dont show filenames (default: true)
+---@field trim_text boolean: trim results text (default: false)
 builtin.tagstack = require_on_exported_call("telescope.builtin.internal").tagstack
 
 --- Lists items from Vim's jumplist, jumps to location on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field ignore_filename boolean: dont show filenames (default: true)
+---@field trim_text boolean: trim results text (default: false)
 builtin.jumplist = require_on_exported_call("telescope.builtin.internal").jumplist
 
 --- List all optional plugin in 'packpath', load the plugin on `<cr>`
@@ -356,12 +360,16 @@ builtin.packadd = require_on_exported_call("telescope.builtin.internal").packadd
 
 --- Lists LSP references for word under the cursor, jumps to reference on `<cr>`
 ---@param opts table: options to pass to the picker
+---@field include_declaration boolean: include symbol declaration in the lsp references (default: true)
+---@field include_current_line boolean: include current line (default: false)
+---@field trim_text boolean: trim results text (default: false)
 builtin.lsp_references = require_on_exported_call("telescope.builtin.lsp").references
 
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
 ---@field ignore_filename boolean: dont show filenames (default: true)
+---@field trim_text boolean: trim results text (default: false)
 builtin.lsp_definitions = require_on_exported_call("telescope.builtin.lsp").definitions
 
 --- Goto the definition of the type of the word under the cursor, if there's only one,
@@ -369,13 +377,14 @@ builtin.lsp_definitions = require_on_exported_call("telescope.builtin.lsp").defi
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
 ---@field ignore_filename boolean: dont show filenames (default: true)
----@field include_declaration boolean: include symbol declaration in the lsp references (default: true)
+---@field trim_text boolean: trim results text (default: false)
 builtin.lsp_type_definitions = require("telescope.builtin.lsp").type_definitions
 
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto implementation if there is only one, values: "tab", "split", "vsplit", "never"
 ---@field ignore_filename boolean: dont show filenames (default: true)
+---@field trim_text boolean: trim results text (default: false)
 builtin.lsp_implementations = require_on_exported_call("telescope.builtin.lsp").implementations
 
 --- Lists any LSP actions for the word under the cursor which can be triggered with `<cr>`

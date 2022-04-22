@@ -1,4 +1,5 @@
 ---@tag telescope.actions.generate
+---@config { ["module"] = "telescope.actions.generate" }
 
 ---@brief [[
 --- Module for convenience to override defaults of corresponding |telescope.actions| at |telescope.setup()|.

@@ -178,9 +178,10 @@ internal.pickers = function(opts)
       actions.select_default:replace(function(prompt_bufnr)
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         local selection_index = current_picker:get_index(current_picker:get_selection_row())
-        actions._close(prompt_bufnr, cached_pickers[selection_index].initial_mode == "insert")
+        actions.close(prompt_bufnr)
         opts.cache_picker = opts._cache_picker
         opts["cache_index"] = selection_index
+        opts["initial_mode"] = cached_pickers[selection_index].initial_mode
         internal.resume(opts)
       end)
       map("i", "<C-x>", actions.remove_selected_picker)
@@ -820,6 +821,7 @@ internal.buffers = function(opts)
 end
 
 internal.colorscheme = function(opts)
+  local before_background = vim.o.background
   local before_color = vim.api.nvim_exec("colorscheme", true)
   local need_restore = true
 
@@ -910,6 +912,7 @@ internal.colorscheme = function(opts)
     picker.close_windows = function(status)
       close_windows(status)
       if need_restore then
+        vim.o.background = before_background
         vim.cmd("colorscheme " .. before_color)
       end
     end
@@ -933,6 +936,7 @@ internal.marks = function(opts)
     },
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
+    push_cursor_on_edit = true,
   }):find()
 end
 

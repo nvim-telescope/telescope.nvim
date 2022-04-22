@@ -1,4 +1,5 @@
 ---@tag telescope.layout
+---@config { ["module"] = "telescope.layout" }
 
 ---@brief [[
 --- The layout of telescope pickers can be adjusted using the
