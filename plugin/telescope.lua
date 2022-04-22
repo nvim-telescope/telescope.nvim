@@ -6,7 +6,7 @@ end
 if vim.g.loaded_telescope then
   return
 end
-vim.g.loaded_telescope = true
+vim.g.loaded_telescope = 1
 
 local highlights = {
   -- Sets the highlight for selected items within the picker.
