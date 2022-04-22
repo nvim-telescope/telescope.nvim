@@ -178,9 +178,10 @@ internal.pickers = function(opts)
       actions.select_default:replace(function(prompt_bufnr)
         local current_picker = action_state.get_current_picker(prompt_bufnr)
         local selection_index = current_picker:get_index(current_picker:get_selection_row())
-        actions._close(prompt_bufnr, cached_pickers[selection_index].initial_mode == "insert")
+        actions.close(prompt_bufnr)
         opts.cache_picker = opts._cache_picker
         opts["cache_index"] = selection_index
+        opts["initial_mode"] = cached_pickers[selection_index].initial_mode
         internal.resume(opts)
       end)
       map("i", "<C-x>", actions.remove_selected_picker)

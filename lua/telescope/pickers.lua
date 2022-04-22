@@ -432,21 +432,19 @@ function Picker:find()
     pcall(a.nvim_buf_set_option, prompt_bufnr, "filetype", "TelescopePrompt")
     pcall(a.nvim_buf_set_option, results_bufnr, "filetype", "TelescopeResults")
 
-    -- TODO(async): I wonder if this should actually happen _before_ we nvim_buf_attach.
-    -- This way the buffer would always start with what we think it should when we start the loop.
-    if self.initial_mode == "insert" or self.initial_mode == "normal" then
-      -- required for set_prompt to work adequately
-      vim.cmd [[startinsert!]]
-      if self.default_text then
-        self:set_prompt(self.default_text)
-      end
-      if self.initial_mode == "normal" then
-        -- otherwise (i) insert mode exitted faster than `picker:set_prompt`; (ii) cursor on wrong pos
-        await_schedule(function()
-          vim.cmd [[stopinsert]]
-        end)
-      end
-    else
+    if self.default_text then
+      self:set_prompt(self.default_text)
+    end
+
+    if self.initial_mode == "insert" then
+      vim.schedule(function()
+        -- startinsert! did not reliable do `A` no idea why, i even looked at the source code
+        -- Example: live_grep -> type something -> quit -> Telescope pickers -> resume -> cursor of by one
+        if vim.fn.mode() ~= "i" then
+          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<ESC>A", true, false, true), "n", true)
+        end
+      end)
+    elseif self.initial_mode ~= "normal" then
       error("Invalid setting for initial_mode: " .. self.initial_mode)
     end
 
@@ -722,10 +720,8 @@ function Picker:delete_selection(delete_cb)
   end, 50)
 end
 
-function Picker:set_prompt(str)
-  -- TODO(conni2461): As soon as prompt_buffers are fix use this:
-  -- vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, 1, false, { str })
-  vim.api.nvim_feedkeys(str, "n", false)
+function Picker:set_prompt(text)
+  self:reset_prompt(text)
 end
 
 --- Closes the windows for the prompt, results and preview
@@ -890,7 +886,6 @@ end
 function Picker:reset_prompt(text)
   local prompt_text = self.prompt_prefix .. (text or "")
   vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, -1, false, { prompt_text })
-
   self:_reset_prefix_color(self._current_prefix_hl_group)
 
   if text then
@@ -1223,7 +1218,7 @@ end
 --- Close all open Telescope pickers
 function Picker:close_existing_pickers()
   for _, prompt_bufnr in ipairs(state.get_existing_prompts()) do
-    pcall(actions._close, prompt_bufnr, true)
+    pcall(actions.close, prompt_bufnr)
   end
 end
 
@@ -1529,7 +1524,6 @@ function Picker:_resume_picker()
   self.cache_picker.is_cached = false
   -- if text changed, required to set anew to restart finder; otherwise hl and selection
   if self.cache_picker.cached_prompt ~= self.default_text then
-    self:reset_prompt()
     self:set_prompt(self.default_text)
   else
     -- scheduling required to apply highlighting and selection appropriately
