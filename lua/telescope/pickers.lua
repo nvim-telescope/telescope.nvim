@@ -1216,7 +1216,7 @@ end
 --- Close all open Telescope pickers
 function Picker:close_existing_pickers()
   for _, prompt_bufnr in ipairs(state.get_existing_prompts()) do
-    pcall(actions._close, prompt_bufnr, true)
+    pcall(actions.close, prompt_bufnr)
   end
 end
 

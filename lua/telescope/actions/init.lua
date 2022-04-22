@@ -343,12 +343,6 @@ end
 --- Close the Telescope window, usually used within an action
 ---@param prompt_bufnr number: The prompt bufnr
 actions.close = function(prompt_bufnr)
-  actions._close(prompt_bufnr, false)
-end
-
---- Close the Telescope window and specify if you want to keep insert mode or not
----@param prompt_bufnr number: The prompt bufnr
-actions._close = function(prompt_bufnr)
   action_state.get_current_history():reset()
   local picker = action_state.get_current_picker(prompt_bufnr)
   local prompt_win = state.get_status(prompt_bufnr).prompt_win
@@ -359,6 +353,13 @@ actions._close = function(prompt_bufnr)
   vim.api.nvim_win_close(prompt_win, true)
   pcall(vim.cmd, string.format([[silent bdelete! %s]], prompt_bufnr))
   pcall(a.nvim_set_current_win, original_win_id)
+end
+
+--- Close the Telescope window, usually used within an action<br>
+--- Deprecated and no longer needed, does the same as |telescope.actions.close|. Might be removed in the future
+---@param prompt_bufnr number: The prompt bufnr
+actions._close = function(prompt_bufnr)
+  actions.close(prompt_bufnr)
 end
 
 local set_edit_line = function(prompt_bufnr, fname, prefix, postfix)
@@ -456,7 +457,7 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.insert_symbol_i = function(prompt_bufnr)
   local symbol = action_state.get_selected_entry().value[1]
-  actions._close(prompt_bufnr, true)
+  actions.close(prompt_bufnr)
   vim.schedule(function()
     vim.cmd [[startinsert]]
     vim.api.nvim_put({ symbol }, "", true, true)
