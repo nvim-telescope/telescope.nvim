@@ -1128,6 +1128,16 @@ actions.which_key = function(prompt_bufnr, opts)
           table.insert(mappings, { mode = v.mode, keybind = v.keybind, name = name })
         end
       end
+    elseif type(v.func) == "function" then
+      if not opts.only_show_current_mode or mode == v.mode then
+        local fname = action_utils._get_anon_function_name(v.func)
+        table.insert(mappings, { mode = v.mode, keybind = v.keybind, name = fname })
+        utils.notify("actions.which_key", {
+          msg = "No name available for anonymous functions.",
+          level = "INFO",
+          once = true,
+        })
+      end
     end
   end
 
