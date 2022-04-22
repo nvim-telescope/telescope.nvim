@@ -1129,12 +1129,16 @@ actions.which_key = function(prompt_bufnr, opts)
     elseif type(v.func) == "function" then
       if not opts.only_show_current_mode or mode == v.mode then
         local fname = action_utils._get_anon_function_name(v.func)
+        -- telescope.setup mappings might result in function names that reflect the keys
+        fname = fname:lower() == v.keybind:lower() and "<anonymous>" or fname
         table.insert(mappings, { mode = v.mode, keybind = v.keybind, name = fname })
-        utils.notify("actions.which_key", {
-          msg = "No name available for anonymous functions.",
-          level = "INFO",
-          once = true,
-        })
+        if fname == "<anonymous>" then
+          utils.notify("actions.which_key", {
+            msg = "No name available for anonymous functions.",
+            level = "INFO",
+            once = true,
+          })
+        end
       end
     end
   end
