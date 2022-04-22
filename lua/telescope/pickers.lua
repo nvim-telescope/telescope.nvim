@@ -435,13 +435,12 @@ function Picker:find()
     if self.default_text then
       self:set_prompt(self.default_text)
     end
-    -- if self.initial_mode == "normal" then
-    --   await_schedule(function()
-    --     vim.cmd [[stopinsert]]
-    --   end)
+
     if self.initial_mode == "insert" then
       vim.schedule(function()
-        vim.cmd [[startinsert!]]
+        -- startinsert! did not reliable do `A` no idea why, i even looked at the source code
+        -- Example: live_grep -> type something -> quit -> Telescope pickers -> resume -> cursor of by one
+        vim.api.nvim_feedkeys("A", "n", true)
       end)
     elseif self.initial_mode ~= "normal" then
       error("Invalid setting for initial_mode: " .. self.initial_mode)
@@ -719,11 +718,8 @@ function Picker:delete_selection(delete_cb)
   end, 50)
 end
 
-function Picker:set_prompt(str)
-  local prompt_text = self.prompt_prefix .. (str or "")
-  vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, 1, false, { prompt_text })
-  vim.api.nvim_win_set_cursor(self.prompt_win, { 1, #prompt_text })
-  self:_reset_prefix_color()
+function Picker:set_prompt(text)
+  self:reset_prompt(text)
 end
 
 --- Closes the windows for the prompt, results and preview
@@ -888,7 +884,6 @@ end
 function Picker:reset_prompt(text)
   local prompt_text = self.prompt_prefix .. (text or "")
   vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, -1, false, { prompt_text })
-
   self:_reset_prefix_color(self._current_prefix_hl_group)
 
   if text then
@@ -1527,7 +1522,6 @@ function Picker:_resume_picker()
   self.cache_picker.is_cached = false
   -- if text changed, required to set anew to restart finder; otherwise hl and selection
   if self.cache_picker.cached_prompt ~= self.default_text then
-    self:reset_prompt()
     self:set_prompt(self.default_text)
   else
     -- scheduling required to apply highlighting and selection appropriately
