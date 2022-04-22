@@ -97,6 +97,7 @@ telescope.setup({opts})                                    *telescope.setup()*
         - "follow"
         - "row"
         - "closest"
+        - "none"
 
                                        *telescope.defaults.scroll_strategy*
     scroll_strategy: ~
