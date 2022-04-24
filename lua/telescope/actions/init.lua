@@ -800,6 +800,7 @@ local send_selected_to_qf = function(prompt_bufnr, mode, target)
     vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
   else
     vim.fn.setqflist(qf_entries, mode)
+    vim.fn.setqflist({}, "a", { title = picker.prompt_title })
   end
 end
 
@@ -818,6 +819,7 @@ local send_all_to_qf = function(prompt_bufnr, mode, target)
     vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
   else
     vim.fn.setqflist(qf_entries, mode)
+    vim.fn.setqflist({}, "a", { title = picker.prompt_title })
   end
 end
 
