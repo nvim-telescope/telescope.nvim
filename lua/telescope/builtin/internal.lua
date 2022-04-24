@@ -359,7 +359,6 @@ internal.commands = function(opts)
 end
 
 internal.quickfix = function(opts)
-  opts = opts or {}
   local qf_identifier = opts.id or vim.F.if_nil(opts.nr, "$")
   local locations = vim.fn.getqflist({ [opts.id and "id" or "nr"] = qf_identifier, items = true }).items
 
@@ -379,14 +378,13 @@ internal.quickfix = function(opts)
 end
 
 internal.quickfixhistory = function(opts)
-  opts = opts or {}
   local qflists = {}
   for i = 1, 10 do -- (n)vim keeps at most 10 quickfix lists in full
-    local qflist = vim.fn.getqflist { nr = i, all = true }
-    if not qflist or (type(qflist) == "table" and vim.tbl_isempty(qflist.items)) then
-      break
+    -- qf weirdness: id = 0 gets id of quickfix list nr
+    local qflist = vim.fn.getqflist { nr = i, id = 0, title = true, items = true }
+    if not vim.tbl_isempty(qflist.items) then
+      table.insert(qflists, qflist)
     end
-    table.insert(qflists, qflist)
   end
   local entry_maker = opts.make_entry
     or function(entry)
@@ -396,6 +394,7 @@ internal.quickfixhistory = function(opts)
         display = entry.title or "Untitled",
         nr = entry.nr,
         id = entry.id,
+        items = entry.items,
       }
     end
   local qf_entry_maker = make_entry.gen_from_quickfix(opts)
@@ -406,6 +405,7 @@ internal.quickfixhistory = function(opts)
       entry_maker = entry_maker,
     },
     previewer = previewers.new_buffer_previewer {
+      title = "Quickfix List Preview",
       dyn_title = function(_, entry)
         return entry.title
       end,
@@ -415,13 +415,12 @@ internal.quickfixhistory = function(opts)
       end,
 
       define_preview = function(self, entry)
-        local qflist = vim.fn.getqflist({ nr = entry.nr, items = true }).items
-        local entries = vim.tbl_map(function(i)
-          return qf_entry_maker(i):display()
-        end, qflist)
         if self.state.bufname then
           return
         end
+        local entries = vim.tbl_map(function(i)
+          return qf_entry_maker(i):display()
+        end, entry.items)
         vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, entries)
       end,
     },
