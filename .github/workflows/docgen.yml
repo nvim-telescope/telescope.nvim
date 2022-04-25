@@ -39,9 +39,7 @@ jobs:
         run: |
           # We have to build the parser every single time to keep up with parser changes
           cd ~/.local/share/nvim/site/pack/vendor/start/tree-sitter-lua
-          mkdir -p build parser
-          cc -o ./build/parser.so -I./src src/parser.c src/scanner.cc -shared -Os -lstdc++ -fPIC
-          ln -s ../build/parser.so parser/lua.so
+          make dist
           cd -
 
       - name: Generating docs
