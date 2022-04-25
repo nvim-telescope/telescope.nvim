@@ -27,8 +27,7 @@
 ---@brief ]]
 
 if 1 ~= vim.fn.has "nvim-0.7.0" then
-  vim.api.nvim_err_writeln "This plugins requires neovim 0.7.0"
-  vim.api.nvim_err_writeln "Please update your neovim."
+  vim.api.nvim_err_writeln "Telescope.nvim requires at least nvim-0.7.0. See `:h telescope.changelog-1851`"
   return
 end
 
