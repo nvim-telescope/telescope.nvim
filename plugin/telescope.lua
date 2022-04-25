@@ -106,10 +106,9 @@ vim.keymap.set(
 )
 
 vim.api.nvim_create_user_command("Telescope", function(opts)
-  require("telescope.command").load_command(opts.line1, opts.line2, opts.count, unpack(opts.fargs))
+  require("telescope.command").load_command(unpack(opts.fargs))
 end, {
   nargs = "*",
-  range = true,
   complete = function(_, line)
     local builtin_list = vim.tbl_keys(require "telescope.builtin")
     local extensions_list = vim.tbl_keys(require("telescope._extensions").manager)

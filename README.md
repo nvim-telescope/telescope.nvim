@@ -301,8 +301,6 @@ Built-in functions. Ready to be bound to any key you like.
 | `builtin.lsp_document_symbols`              | Lists LSP document symbols in the current buffer                                                                          |
 | `builtin.lsp_workspace_symbols`             | Lists LSP document symbols in the current workspace                                                                       |
 | `builtin.lsp_dynamic_workspace_symbols`     | Dynamically Lists LSP for all workspace symbols                                                                           |
-| `builtin.lsp_code_actions`                  | Lists any LSP actions for the word under the cursor, that can be triggered with `<cr>`                                    |
-| `builtin.lsp_range_code_actions`            | Lists any LSP actions for a given range, that can be triggered with `<cr>`                                                |
 | `builtin.diagnostics`                       | Lists Diagnostics for all open buffers or a specific buffer. Use option `bufnr=0` for current buffer.                     |
 | `builtin.lsp_implementations`               | Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope         |
 | `builtin.lsp_definitions`                   | Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope            |

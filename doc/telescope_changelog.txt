@@ -161,7 +161,7 @@ get all diagnostics for all open buffers.
 
                                                     *telescope.changelog-1851*
 
-Date: December 10, 2021
+Date: April 22, 2022
 PR: https://github.com/nvim-telescope/telescope.nvim/pull/1851
 
 Telescope requires now Neovim release 0.7.0 or a more recent nightly.
@@ -173,6 +173,26 @@ strategy follows the approach that the latest telescope.nvim master will only
 work with latest Neovim nightly and we will provide tags for specific Neovim
 versions. You can read more about this strategy here:
 https://github.com/nvim-telescope/telescope.nvim/issues/1772
+
+
+                                                    *telescope.changelog-1866*
+
+Date: April 25, 2022
+PR: https://github.com/nvim-telescope/telescope.nvim/pull/1866
+
+We decided to remove both `lsp_code_actions` and `lsp_range_code_actions`.
+Currently, both functions are highly duplicated code from neovim, with fewer
+features, because it's out of date. So rather that we copy over the required
+changes to fix some bugs or implement client side code actions, we decided to
+remove both of them and suggest you use `vim.lsp.buf.code_actions` and
+`vim.lsp.buf.range_code_actions`. The transition to it is easy thanks to
+`vim.ui.select` which allows you to override the select UI. We provide a small
+extension for quite some time that make it easy to use telescope for
+`vim.ui.select`. You can found the code here
+https://github.com/nvim-telescope/telescope-ui-select.nvim. It offers the same
+displaying as the current version of `lsp_code_actions`. An alternative is
+https://github.com/stevearc/dressing.nvim which has support for multiple
+different backends including telescope.
 
 
 

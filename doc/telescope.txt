@@ -1403,33 +1403,6 @@ builtin.lsp_implementations({opts})  *telescope.builtin.lsp_implementations()*
         {trim_text}       (boolean)  trim results text (default: false)
 
 
-builtin.lsp_code_actions({opts})        *telescope.builtin.lsp_code_actions()*
-    Lists any LSP actions for the word under the cursor which can be triggered
-    with `<cr>`
-
-
-    Parameters: ~
-        {opts} (table)  options to pass to the picker
-
-    Options: ~
-        {timeout} (number)  timeout for the sync call (default: 10000)
-
-
-builtin.lsp_range_code_actions({opts}) *telescope.builtin.lsp_range_code_actions()*
-    Lists any LSP actions for a given range, that can be triggered with `<cr>`
-
-
-    Parameters: ~
-        {opts} (table)  options to pass to the picker
-
-    Options: ~
-        {timeout}    (number)  timeout for the sync call (default: 10000)
-        {start_line} (number)  where the code action starts (default: handled
-                               by :'<,'>Telescope lsp_range_code_actions)
-        {end_line}   (number)  where the code action ends (default: handled by
-                               :'<,'>Telescope lsp_range_code_actions)
-
-
 builtin.lsp_document_symbols({opts}) *telescope.builtin.lsp_document_symbols()*
     Lists LSP document symbols in the current buffer
     - Default keymaps:
@@ -1564,7 +1537,7 @@ themes.get_cursor()                            *telescope.themes.get_cursor()*
 
         `local builtin = require('telescope.builtin')`
         `local themes = require('telescope.themes')`
-        `builtin.lsp_code_actions(themes.get_cursor())`
+        `builtin.lsp_references(themes.get_cursor())`
 <
 
 
