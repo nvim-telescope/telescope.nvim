@@ -614,13 +614,15 @@ internal.help_tags = function(opts)
         if not line:match "^!_TAG_" then
           local fields = vim.split(line, delimiter, true)
           if #fields == 3 and not tags_map[fields[1]] then
-            table.insert(tags, {
-              name = fields[1],
-              filename = help_files[fields[2]],
-              cmd = fields[3],
-              lang = lang,
-            })
-            tags_map[fields[1]] = true
+            if fields[1] ~= "help-tags" or fields[2] ~= "tags" then
+              table.insert(tags, {
+                name = fields[1],
+                filename = help_files[fields[2]],
+                cmd = fields[3],
+                lang = lang,
+              })
+              tags_map[fields[1]] = true
+            end
           end
         end
       end
