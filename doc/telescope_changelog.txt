@@ -184,8 +184,8 @@ We decided to remove both `lsp_code_actions` and `lsp_range_code_actions`.
 Currently, both functions are highly duplicated code from neovim, with fewer
 features, because it's out of date. So rather that we copy over the required
 changes to fix some bugs or implement client side code actions, we decided to
-remove both of them and suggest you use `vim.lsp.buf.code_actions` and
-`vim.lsp.buf.range_code_actions`. The transition to it is easy thanks to
+remove both of them and suggest you use `vim.lsp.buf.code_action` and
+`vim.lsp.buf.range_code_action`. The transition to it is easy thanks to
 `vim.ui.select` which allows you to override the select UI. We provide a small
 extension for quite some time that make it easy to use telescope for
 `vim.ui.select`. You can found the code here
