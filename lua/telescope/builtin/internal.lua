@@ -314,8 +314,18 @@ internal.commands = function(opts)
         local command_iter = vim.api.nvim_get_commands {}
         local commands = {}
 
+        local need_buf_command = vim.F.if_nil(opts.show_buf_command, true)
+
         for _, cmd in pairs(command_iter) do
           table.insert(commands, cmd)
+        end
+
+        if need_buf_command then
+            local buf_command_iter = vim.api.nvim_buf_get_commands(0, {})
+            buf_command_iter[true] = nil -- remove the redundant entry
+            for _, cmd in pairs(buf_command_iter) do
+                table.insert(commands, cmd)
+            end
         end
 
         return commands
