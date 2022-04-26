@@ -920,17 +920,14 @@ function make_entry.gen_from_ctags(opts)
   local display_items = {
     { remaining = true },
   }
+
   local hidden = utils.is_path_hidden(opts)
   if not hidden then
-    table.insert(display_items, 1, { width = 30 })
+    table.insert(display_items, 1, { width = vim.F.if_nil(opts.fname_width, 30) })
   end
 
   if opts.show_line then
     table.insert(display_items, 1, { width = 30 })
-  end
-
-  if opts.fname_width then
-    table.insert(display_items, 1, { width = opts.fname_width })
   end
 
   local displayer = entry_display.create {
