@@ -402,10 +402,8 @@ function Picker:find()
 
   -- Prompt prefix
   local prompt_prefix = self.prompt_prefix
-  if prompt_prefix ~= "" then
-    a.nvim_buf_set_option(prompt_bufnr, "buftype", "prompt")
-    vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
-  end
+  a.nvim_buf_set_option(prompt_bufnr, "buftype", "prompt")
+  vim.fn.prompt_setprompt(prompt_bufnr, prompt_prefix)
   self.prompt_prefix = prompt_prefix
   self:_reset_prefix_color()
 
