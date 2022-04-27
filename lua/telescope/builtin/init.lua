@@ -234,6 +234,7 @@ builtin.symbols = require_on_exported_call("telescope.builtin.internal").symbols
 
 --- Lists available plugin/user commands and runs them on `<cr>`
 ---@param opts table: options to pass to the picker
+---@field show_buf_command boolean: show buf local command (Default: true)
 builtin.commands = require_on_exported_call("telescope.builtin.internal").commands
 
 --- Lists items in the quickfix list, jumps to location on `<cr>`
