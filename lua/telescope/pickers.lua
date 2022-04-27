@@ -440,10 +440,7 @@ function Picker:find()
         -- Example: live_grep -> type something -> quit -> Telescope pickers -> resume -> cursor of by one
         local mode = vim.api.nvim_get_mode().mode
         if mode ~= "i" then
-          if mode ~= "n" then
-            vim.api.nvim_input "<ESC>"
-          end
-          vim.api.nvim_input "A"
+          vim.api.nvim_input(mode ~= "n" and "<ESC>A" or "A")
         end
       end)
     elseif self.initial_mode ~= "normal" then
