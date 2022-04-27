@@ -438,8 +438,12 @@ function Picker:find()
       vim.schedule(function()
         -- startinsert! did not reliable do `A` no idea why, i even looked at the source code
         -- Example: live_grep -> type something -> quit -> Telescope pickers -> resume -> cursor of by one
-        if vim.fn.mode() ~= "i" then
-          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<ESC>A", true, false, true), "n", true)
+        local mode = vim.api.nvim_get_mode().mode
+        if mode ~= "i" then
+          if mode ~= "n" then
+            vim.api.nvim_input "<ESC>"
+          end
+          vim.api.nvim_input "A"
         end
       end)
     elseif self.initial_mode ~= "normal" then
