@@ -57,7 +57,7 @@ action_mt.create = function()
         if t._static_pre[action_name] then
           t._static_pre[action_name](...)
         end
-        if t._pre[action_name] then
+        if vim.tbl_isempty(t._replacements) and t._pre[action_name] then
           t._pre[action_name](...)
         end
 
@@ -71,7 +71,7 @@ action_mt.create = function()
         if t._static_post[action_name] then
           t._static_post[action_name](...)
         end
-        if t._post[action_name] then
+        if vim.tbl_isempty(t._replacements) and t._post[action_name] then
           t._post[action_name](...)
         end
       end
