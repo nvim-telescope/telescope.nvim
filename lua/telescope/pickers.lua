@@ -436,11 +436,11 @@ function Picker:find()
 
     if self.initial_mode == "insert" then
       vim.schedule(function()
-        -- startinsert! did not reliable do `A` no idea why, i even looked at the source code
         -- Example: live_grep -> type something -> quit -> Telescope pickers -> resume -> cursor of by one
+        -- vim.cmd doesn't schedule appropriately, bypass with `nvim_input` (echon to clear "startinsert" msg)
         local mode = vim.fn.mode()
         if mode ~= "i" then
-          a.nvim_input(mode ~= "n" and "<ESC>A" or "A")
+          a.nvim_input(mode ~= "n" and "<ESC>:startinsert!|echon ''<CR>" or ":startinsert!|echon ''<CR>")
         end
       end)
     elseif self.initial_mode ~= "normal" then
