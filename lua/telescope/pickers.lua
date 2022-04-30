@@ -731,23 +731,15 @@ end
 ---@param status table: table containing information on the picker
 --- and associated windows. Generally obtained from `state.get_status`
 function Picker.close_windows(status)
-  local prompt_win = status.prompt_win
-  local results_win = status.results_win
-  local preview_win = status.preview_win
+  utils.win_delete("results_win", status.results_win, true, true)
+  utils.win_delete("preview_win", status.preview_win, true, true)
 
-  local prompt_border_win = status.prompt_border_win
-  local results_border_win = status.results_border_win
-  local preview_border_win = status.preview_border_win
-
-  utils.win_delete("results_win", results_win, true, true)
-  utils.win_delete("preview_win", preview_win, true, true)
-
-  utils.win_delete("prompt_border_win", prompt_border_win, true, true)
-  utils.win_delete("results_border_win", results_border_win, true, true)
-  utils.win_delete("preview_border_win", preview_border_win, true, true)
+  utils.win_delete("prompt_border_win", status.prompt_border_win, true, true)
+  utils.win_delete("results_border_win", status.results_border_win, true, true)
+  utils.win_delete("preview_border_win", status.preview_border_win, true, true)
 
   vim.defer_fn(function()
-    utils.win_delete("prompt_win", prompt_win, true)
+    utils.win_delete("prompt_win", status.prompt_win, true)
   end, 10)
 
   state.clear_status(status.prompt_bufnr)
@@ -1468,6 +1460,11 @@ function pickers.on_close_prompt(prompt_bufnr)
 
   picker.close_windows(status)
   mappings.clear(prompt_bufnr)
+  vim.api.nvim_clear_autocmds {
+    group = "PickerInsert",
+    event = "BufLeave",
+    buffer = prompt_bufnr,
+  }
 end
 
 function pickers.on_resize_window(prompt_bufnr)
