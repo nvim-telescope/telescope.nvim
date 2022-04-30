@@ -657,7 +657,7 @@ internal.help_tags = function(opts)
         if cmd == "default" or cmd == "horizontal" then
           vim.cmd("help " .. selection.value)
         elseif cmd == "vertical" then
-          vim.cmd("vert bo help " .. selection.value)
+          vim.cmd("vert help " .. selection.value)
         elseif cmd == "tab" then
           vim.cmd("tab help " .. selection.value)
         end
