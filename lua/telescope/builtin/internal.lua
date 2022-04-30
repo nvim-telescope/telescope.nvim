@@ -696,7 +696,7 @@ internal.man_pages = function(opts)
         if cmd == "default" or cmd == "horizontal" then
           vim.cmd("Man " .. args)
         elseif cmd == "vertical" then
-          vim.cmd("vert bo Man " .. args)
+          vim.cmd("vert Man " .. args)
         elseif cmd == "tab" then
           vim.cmd("tab Man " .. args)
         end
