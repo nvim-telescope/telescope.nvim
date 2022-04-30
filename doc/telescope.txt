@@ -1103,6 +1103,9 @@ builtin.commands({opts})                        *telescope.builtin.commands()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
+    Options: ~
+        {show_buf_command} (boolean)  show buf local command (Default: true)
+
 
 builtin.quickfix({opts})                        *telescope.builtin.quickfix()*
     Lists items in the quickfix list, jumps to location on `<cr>`
