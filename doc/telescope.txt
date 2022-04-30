@@ -3189,7 +3189,7 @@ So you have a history for:
 - live_grep project_2
 - etc
 
-See github.com/nvim-telescope/telescope-smart-history.nvim
+See https://github.com/nvim-telescope/telescope-smart-history.nvim
 
 histories.History()                      *telescope.actions.history.History()*
     Manages prompt history

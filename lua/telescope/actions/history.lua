@@ -23,7 +23,7 @@ local uv = vim.loop
 --- - live_grep   project_2
 --- - etc
 ---
---- See github.com/nvim-telescope/telescope-smart-history.nvim
+--- See https://github.com/nvim-telescope/telescope-smart-history.nvim
 ---@brief ]]
 
 -- TODO(conni2461): currently not present in plenary path only sync.
