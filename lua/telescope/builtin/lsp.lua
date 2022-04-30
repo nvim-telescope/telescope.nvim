@@ -236,7 +236,7 @@ local function check_capabilities(feature, bufnr)
 
   local supported_client = false
   for _, client in pairs(clients) do
-    supported_client = client.resolved_capabilities[feature]
+    supported_client = client.server_capabilities[feature]
     if supported_client then
       break
     end
@@ -261,12 +261,12 @@ local function check_capabilities(feature, bufnr)
 end
 
 local feature_map = {
-  ["document_symbols"] = "document_symbol",
-  ["references"] = "find_references",
-  ["definitions"] = "goto_definition",
-  ["type_definitions"] = "type_definition",
-  ["implementations"] = "implementation",
-  ["workspace_symbols"] = "workspace_symbol",
+  ["document_symbols"] = "documentSymbolProvider",
+  ["references"] = "referencesProvider",
+  ["definitions"] = "definitionProvider",
+  ["type_definitions"] = "typeDefinitionProvider",
+  ["implementations"] = "implementationProvider",
+  ["workspace_symbols"] = "workspaceSymbolProvider",
 }
 
 local function apply_checks(mod)
