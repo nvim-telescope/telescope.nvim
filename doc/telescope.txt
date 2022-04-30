@@ -235,7 +235,9 @@ telescope.setup({opts})                                    *telescope.setup()*
         - "tail"      only display the file name, and not the path
         - "absolute"  display absolute paths
         - "smart"     remove as much from the path as possible to only show
-                      the difference between the displayed paths
+                      the difference between the displayed paths.
+                      Warning: The nature of the algorithm might have a negative
+                      performance impact!
         - "shorten"   only display the first character of each directory in
                       the path
         - "truncate"  truncates the start of the path when the whole path will
