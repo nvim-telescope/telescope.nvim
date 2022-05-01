@@ -1,13 +1,8 @@
 local conf = require("telescope.config").values
 local utils = require "telescope.utils"
 local Path = require "plenary.path"
-local putils = require "telescope.previewers.utils"
 local from_entry = require "telescope.from_entry"
 local Previewer = require "telescope.previewers.previewer"
-
-local flatten = vim.tbl_flatten
-local buf_delete = utils.buf_delete
-local job_is_running = utils.job_is_running
 
 local defaulter = utils.make_default_callable
 
@@ -56,7 +51,7 @@ local bat_maker = function(filename, lnum, start, finish)
     end
   end
 
-  return flatten {
+  return vim.tbl_flatten {
     command,
     bat_options,
     "--",
@@ -120,27 +115,24 @@ previewers.new_termopen_previewer = function(opts)
   local opt_teardown = opts.teardown
 
   local old_bufs = {}
+  local bufentry_table = {}
+  local term_ids = {}
 
   local function get_term_id(self)
-    if not self.state then
-      return nil
+    if self.state then
+      return self.state.termopen_id
     end
-    return self.state.termopen_id
   end
 
   local function get_bufnr(self)
-    if not self.state then
-      return nil
+    if self.state then
+      return self.state.termopen_bufnr
     end
-    return self.state.termopen_bufnr
   end
 
   local function set_term_id(self, value)
-    if job_is_running(get_term_id(self)) then
-      vim.fn.jobstop(get_term_id(self))
-    end
-    if self.state then
-      self.state.termopen_id = value
+    if self.state and term_ids[self.state.termopen_bufnr] == nil then
+      term_ids[self.state.termopen_bufnr] = value
     end
   end
 
@@ -150,6 +142,18 @@ previewers.new_termopen_previewer = function(opts)
     end
     if self.state then
       self.state.termopen_bufnr = value
+    end
+  end
+
+  local function get_bufnr_by_bufentry(self, value)
+    if self.state then
+      return bufentry_table[value]
+    end
+  end
+
+  local function set_bufentry(self, value)
+    if self.state and value then
+      bufentry_table[value] = get_bufnr(self)
     end
   end
 
@@ -166,17 +170,17 @@ previewers.new_termopen_previewer = function(opts)
       opt_teardown(self)
     end
 
-    local term_id = get_term_id(self)
-    if term_id and utils.job_is_running(term_id) then
-      vim.fn.jobclose(term_id)
-    end
-
-    set_term_id(self, nil)
     set_bufnr(self, nil)
+    set_bufentry(self, nil)
 
     for _, bufnr in ipairs(old_bufs) do
-      buf_delete(bufnr)
+      local term_id = term_ids[bufnr]
+      if term_id and utils.job_is_running(term_id) then
+        vim.fn.jobstop(term_id)
+      end
+      utils.buf_delete(bufnr)
     end
+    bufentry_table = {}
   end
 
   function opts.preview_fn(self, entry, status)
@@ -184,24 +188,28 @@ previewers.new_termopen_previewer = function(opts)
       set_bufnr(self, vim.api.nvim_win_get_buf(status.preview_win))
     end
 
-    set_bufnr(self, vim.api.nvim_create_buf(false, true))
+    local prev_bufnr = get_bufnr_by_bufentry(self, entry)
+    if prev_bufnr then
+      self.state.bufnr = prev_bufnr
+      vim.api.nvim_win_set_buf(status.preview_win, self.state.bufnr)
+    else
+      local bufnr = vim.api.nvim_create_buf(false, true)
+      set_bufnr(self, bufnr)
+      vim.api.nvim_win_set_buf(status.preview_win, bufnr)
 
-    local bufnr = get_bufnr(self)
-    vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+      local term_opts = {
+        cwd = opts.cwd or vim.loop.cwd(),
+        env = conf.set_env,
+      }
 
-    local term_opts = {
-      cwd = opts.cwd or vim.fn.getcwd(),
-      env = conf.set_env,
-    }
-
-    putils.with_preview_window(status, bufnr, function()
       local cmd = opts.get_command(entry, status)
       if cmd then
-        set_term_id(self, vim.fn.termopen(cmd, term_opts))
+        vim.api.nvim_buf_call(bufnr, function()
+          set_term_id(self, vim.fn.termopen(cmd, term_opts))
+        end)
       end
-    end)
-
-    vim.api.nvim_buf_set_name(bufnr, tostring(bufnr))
+      set_bufentry(self, entry)
+    end
   end
 
   if not opts.send_input then

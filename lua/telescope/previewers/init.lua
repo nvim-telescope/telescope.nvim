@@ -95,9 +95,6 @@ end
 ---
 --- Furthermore, it will forward all `config.set_env` environment variables to
 --- that terminal process.
----
---- While this interface is a good start, it was replaced with the way more
---- flexible `buffer_previewer` and is now deprecated.
 previewers.new_termopen_previewer = term_previewer.new_termopen_previewer
 
 --- Provides a `termopen_previewer` which has the ability to display files.

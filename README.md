@@ -334,14 +334,14 @@ Built-in functions. Ready to be bound to any key you like.
 
 ## Previewers
 
-| Previewers                         | Description                                                     |
-|------------------------------------|-----------------------------------------------------------------|
-| `previewers.vim_buffer_cat.new`    | Default previewer for files. Uses vim buffers                   |
-| `previewers.vim_buffer_vimgrep.new`| Default previewer for grep and similar. Uses vim buffers        |
-| `previewers.vim_buffer_qflist.new` | Default previewer for qflist. Uses vim buffers                  |
-| `previewers.cat.new`               | Deprecated previewer for files. Uses `cat`/`bat`                |
-| `previewers.vimgrep.new`           | Deprecated previewer for grep and similar. Uses `cat`/`bat`     |
-| `previewers.qflist.new`            | Deprecated previewer for qflist. Uses `cat`/`bat`               |
+| Previewers                         | Description                                               |
+|------------------------------------|-----------------------------------------------------------|
+| `previewers.vim_buffer_cat.new`    | Default previewer for files. Uses vim buffers             |
+| `previewers.vim_buffer_vimgrep.new`| Default previewer for grep and similar. Uses vim buffers  |
+| `previewers.vim_buffer_qflist.new` | Default previewer for qflist. Uses vim buffers            |
+| `previewers.cat.new`               | Terminal previewer for files. Uses `cat`/`bat`            |
+| `previewers.vimgrep.new`           | Terminal previewer for grep and similar. Uses `cat`/`bat` |
+| `previewers.qflist.new`            | Terminal previewer for qflist. Uses `cat`/`bat`           |
 
 The default previewers are from now on `vim_buffer_` previewers. They use vim
 buffers for displaying files and use tree-sitter or regex for file highlighting.
