@@ -540,7 +540,7 @@ function make_entry.gen_from_treesitter(opts)
   return function(entry)
     local ts_utils = require "nvim-treesitter.ts_utils"
     local start_row, start_col, end_row, _ = ts_utils.get_node_range(entry.node)
-    local node_text = ts_utils.get_node_text(entry.node, bufnr)[1]
+    local node_text = vim.treesitter.get_node_text(entry.node, bufnr)
     return {
       valid = true,
 
