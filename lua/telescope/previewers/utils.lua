@@ -181,4 +181,18 @@ utils.set_preview_message = function(bufnr, winid, message, fillchar)
   end
 end
 
+utils.buf_term_preview = function(bufnr, job_opts)
+  local chan = vim.api.nvim_open_term(bufnr, {})
+  job_opts = vim.tbl_extend("keep", job_opts, {
+    on_stdout = vim.schedule_wrap(function(_, line, _)
+      vim.api.nvim_chan_send(chan, line .. "\r\n")
+    end),
+    on_exit = vim.schedule_wrap(vim.api.nvim_buf_call)(bufnr, function()
+      -- this sets the scroll correctly but for some reason it gets reset?
+      vim.cmd [[normal! gg]]
+    end),
+  })
+  Job:new(job_opts):start()
+end
+
 return utils

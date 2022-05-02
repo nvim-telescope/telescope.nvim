@@ -222,7 +222,13 @@ previewers.file_maker = function(filepath, bufnr, opts)
             return
           end
         end
-
+        local previewed
+        if opts.preview.command and type(opts.preview.command) == "function" then
+          previewed = opts.preview.command(filepath, bufnr, opts)
+        end
+        if previewed then
+          return
+        end
         opts.start_time = vim.loop.hrtime()
         Path:new(filepath):_read_async(vim.schedule_wrap(function(data)
           if not vim.api.nvim_buf_is_valid(bufnr) then
