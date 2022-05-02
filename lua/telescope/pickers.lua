@@ -924,6 +924,7 @@ function Picker:set_selection(row)
   end
 
   row = self.scroller(self.max_results, self.manager:num_results(), row)
+  local results_bufnr = self.results_bufnr
 
   if not self:can_select_row(row) then
     -- If the current selected row exceeds number of currently displayed
@@ -936,17 +937,18 @@ function Picker:set_selection(row)
     end
   end
 
-  local results_bufnr = self.results_bufnr
-  if not a.nvim_buf_is_valid(results_bufnr) then
-    return
-  end
+  if self.cache_picker == false or self.cache_picker.is_cached ~= true then
+    if not a.nvim_buf_is_valid(results_bufnr) then
+      return
+    end
 
-  if row > a.nvim_buf_line_count(results_bufnr) then
-    log.debug(
-      string.format("Should not be possible to get row this large %s %s", row, a.nvim_buf_line_count(results_bufnr))
-    )
+    if row > a.nvim_buf_line_count(results_bufnr) then
+      log.debug(
+        string.format("Should not be possible to get row this large %s %s", row, a.nvim_buf_line_count(results_bufnr))
+      )
 
-    return
+      return
+    end
   end
 
   local entry = self.manager:get_entry(self:get_index(row))
@@ -962,7 +964,10 @@ function Picker:set_selection(row)
   --        Probably something with setting a row that's too high for this?
   --        Not sure.
   local set_ok, set_errmsg = pcall(function()
-    local prompt = self:_get_prompt()
+    local prompt = ""
+    if a.nvim_buf_is_valid(self.prompt_bufnr) then
+      prompt = self:_get_prompt()
+    end
 
     -- Check if previous selection is still visible
     if self._selection_entry and self.manager:find_entry(self._selection_entry) then
@@ -972,7 +977,7 @@ function Picker:set_selection(row)
 
       self._selection_entry = entry
 
-      if old_row >= 0 then
+      if a.nvim_buf_is_valid(results_bufnr) and old_row >= 0 then
         self:update_prefix(old_entry, old_row)
         self.highlighter:hi_multiselect(old_row, self:is_multi_selected(old_entry))
       end
@@ -980,23 +985,24 @@ function Picker:set_selection(row)
       self._selection_entry = entry
     end
 
-    local caret = self:update_prefix(entry, row)
+    if a.nvim_buf_is_valid(results_bufnr) then
+      local caret = self:update_prefix(entry, row)
 
-    local display, _ = entry_display.resolve(self, entry)
-    display = caret .. display
+      local display, _ = entry_display.resolve(self, entry)
+      display = caret .. display
 
-    -- TODO: You should go back and redraw the highlights for this line from the sorter.
-    -- That's the only smart thing to do.
-    if not a.nvim_buf_is_valid(results_bufnr) then
-      log.debug "Invalid buf somehow..."
-      return
+      -- TODO: You should go back and redraw the highlights for this line from the sorter.
+      -- That's the only smart thing to do.
+      if not a.nvim_buf_is_valid(results_bufnr) then
+        log.debug "Invalid buf somehow..."
+        return
+      end
+      -- don't highlight any whitespace at the end of caret
+      self.highlighter:hi_selection(row, caret:match "(.*%S)")
+      self.highlighter:hi_sorter(row, prompt, display)
+
+      self.highlighter:hi_multiselect(row, self:is_multi_selected(entry))
     end
-
-    -- don't highlight any whitespace at the end of caret
-    self.highlighter:hi_selection(row, caret:match "(.*%S)")
-    self.highlighter:hi_sorter(row, prompt, display)
-
-    self.highlighter:hi_multiselect(row, self:is_multi_selected(entry))
   end)
 
   if not set_ok then
@@ -1011,10 +1017,15 @@ function Picker:set_selection(row)
   -- TODO: Get row & text in the same obj
   self._selection_entry = entry
   self._selection_row = row
+  if self.cache_picker and self.cache_picker.is_cached then
+    self.cache_picker.selection_row = row
+  end
 
   self:refresh_previewer()
 
-  vim.api.nvim_win_set_cursor(self.results_win, { row + 1, 0 })
+  if a.nvim_win_is_valid(self.results_win) then
+    a.nvim_win_set_cursor(self.results_win, { row + 1, 0 })
+  end
 end
 
 --- Update prefix for entry on a given row

@@ -36,7 +36,18 @@ action_set.shift_selection = function(prompt_bufnr, change)
   local count = vim.v.count
   count = count == 0 and 1 or count
   count = a.nvim_get_mode().mode == "n" and count or 1
-  action_state.get_current_picker(prompt_bufnr):move_selection(change * count)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  if not picker then
+    local cached_pickers = state.get_global_key "cached_pickers"
+    picker = cached_pickers and cached_pickers[1] or nil
+  end
+  if not picker then
+    utils.notify("action_set.shift_selection", {
+      msg = "No picker available to select from",
+      level = "WARN",
+    })
+  end
+  picker:move_selection(change * count)
 end
 
 --- Select the current entry. This is the action set to overwrite common
@@ -131,10 +142,11 @@ action_set.edit = function(prompt_bufnr, command)
   local entry_bufnr = entry.bufnr
 
   local picker = action_state.get_current_picker(prompt_bufnr)
-  require("telescope.actions").close(prompt_bufnr)
-
-  if picker.push_cursor_on_edit then
-    vim.cmd "normal! m'"
+  if picker then
+    require("telescope.actions").close(prompt_bufnr)
+    if picker.push_cursor_on_edit then
+      vim.cmd "normal! m'"
+    end
   end
 
   if entry_bufnr then

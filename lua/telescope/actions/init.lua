@@ -75,13 +75,15 @@ local actions = setmetatable({}, {
   end,
 })
 
---- Move the selection to the next entry
+--- Move the selection to the next entry for (last) open(ed) picker.
+--- - Note: requires caching to access entries from previous pickers, see  |telescope.defaults.cache_picker|
 ---@param prompt_bufnr number: The prompt bufnr
 actions.move_selection_next = function(prompt_bufnr)
   action_set.shift_selection(prompt_bufnr, 1)
 end
 
 --- Move the selection to the previous entry
+--- - Note: requires caching to access entries from previous pickers, see  |telescope.defaults.cache_picker|
 ---@param prompt_bufnr number: The prompt bufnr
 actions.move_selection_previous = function(prompt_bufnr)
   action_set.shift_selection(prompt_bufnr, -1)
@@ -242,10 +244,10 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_default = {
   pre = function(prompt_bufnr)
-    action_state.get_current_history():append(
-      action_state.get_current_line(),
-      action_state.get_current_picker(prompt_bufnr)
-    )
+    local current_picker = action_state.get_current_picker(prompt_bufnr)
+    if current_picker then
+      action_state.get_current_history():append(action_state.get_current_line(), current_picker)
+    end
   end,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "default")
