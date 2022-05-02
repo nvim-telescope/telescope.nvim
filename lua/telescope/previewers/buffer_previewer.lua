@@ -165,8 +165,8 @@ previewers.file_maker = function(filepath, bufnr, opts)
     if not vim.in_fast_event() then
       filepath = vim.fn.expand(filepath)
     end
-    if type(opts.preview.filetype_hook) == "function" then
-      if not opts.preview.filetype_hook(filepath, bufnr, opts) then
+    if type(opts.preview.hook) == "function" then
+      if not opts.preview.hook(filepath, bufnr, vim.tbl_deep_extend("keep", { kind = "filetype" }, opts)) then
         return
       end
     end
@@ -192,8 +192,8 @@ previewers.file_maker = function(filepath, bufnr, opts)
           local output = capture(string.format([[file --mime-type -b "%s"]], filepath))
           local mime_type = vim.split(output, "/")[1]
           if mime_type ~= "text" and mime_type ~= "inode" then
-            if type(opts.preview.mime_hook) == "function" then
-              vim.schedule_wrap(opts.preview.mime_hook)(filepath, bufnr, opts)
+            if type(opts.preview.hook) == "function" then
+              vim.schedule_wrap(opts.preview.hook)(filepath, bufnr, vim.tbl_deep_extend("keep", { kind = "mime" }, opts))
             else
               vim.schedule_wrap(putils.set_preview_message)(
                 bufnr,
@@ -209,8 +209,8 @@ previewers.file_maker = function(filepath, bufnr, opts)
         if opts.preview.filesize_limit then
           local mb_filesize = math.floor(stat.size / bytes_to_megabytes)
           if mb_filesize > opts.preview.filesize_limit then
-            if type(opts.preview.filesize_hook) == "function" then
-              vim.schedule_wrap(opts.preview.filesize_hook)(filepath, bufnr, opts)
+            if type(opts.preview.hook) == "function" then
+              vim.schedule_wrap(opts.preview.hook)(filepath, bufnr, vim.tbl_deep_extend("keep", { kind = "filesize" }, opts))
             else
               vim.schedule_wrap(putils.set_preview_message)(
                 bufnr,
@@ -241,8 +241,8 @@ previewers.file_maker = function(filepath, bufnr, opts)
             end
             putils.highlighter(bufnr, opts.ft, opts)
           else
-            if type(opts.preview.timeout_hook) == "function" then
-              vim.schedule_wrap(opts.preview.timeout_hook)(filepath, bufnr, opts)
+            if type(opts.preview.hook) == "function" then
+              vim.schedule_wrap(opts.preview.hook)(filepath, bufnr, vim.tbl_deep_extend("keep", { kind = "timeout" }, opts))
             else
               vim.schedule_wrap(putils.set_preview_message)(
                 bufnr,

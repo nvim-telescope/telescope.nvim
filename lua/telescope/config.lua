@@ -544,8 +544,8 @@ append(
                           Default: 250
       - hook(s):          Function(s) that takes `(filepath, bufnr, opts)`, where opts
                           exposes winid and ft (filetype).
-                          Available hooks (in order of priority):
-                          {filetype, mime, filesize, timeout}_hook
+                          Available `kind`s of hooks (in order of priority):
+                          {"filetype", "mime", "filesize", "timeout"}
                           Important: the filetype_hook must return true or false
                           to indicate whether to continue (true) previewing or not (false),
                           respectively.
@@ -554,32 +554,36 @@ append(
                           ... -- preview is called in telescope.setup { ... }
                             preview = {
                               -- 1) Do not show previewer for certain files
-                              filetype_hook = function(filepath, bufnr, opts)
-                                -- you could analogously check opts.ft for filetypes
-                                local excluded = vim.tbl_filter(function(ending)
-                                  return filepath:match(ending)
-                                end, {
-                                  ".*%.csv",
-                                  ".*%.toml",
-                                })
-                                if not vim.tbl_isempty(excluded) then
-                                  putils.set_preview_message(
-                                    bufnr,
-                                    opts.winid,
-                                    string.format("I don't like %s files!",
-                                    excluded[1]:sub(5, -1))
-                                  )
-                                  return false
+                              hook = function(filepath, bufnr, opts)
+                                if opts.kind == "filesize" then
+                                  -- you could analogously check opts.ft for filetypes
+                                  local excluded = vim.tbl_filter(function(ending)
+                                    return filepath:match(ending)
+                                  end, {
+                                    ".*%.csv",
+                                    ".*%.toml",
+                                  })
+                                  if not vim.tbl_isempty(excluded) then
+                                    putils.set_preview_message(
+                                      bufnr,
+                                      opts.winid,
+                                      string.format("I don't like %s files!",
+                                      excluded[1]:sub(5, -1))
+                                    )
+                                    return false
+                                  end
                                 end
                                 return true
                               end,
                               -- 2) Truncate lines to preview window for too large files
-                              filesize_hook = function(filepath, bufnr, opts)
-                                local path = require("plenary.path"):new(filepath)
-                                -- opts exposes winid
-                                local height = vim.api.nvim_win_get_height(opts.winid)
-                                local lines = vim.split(path:head(height), "[\r]?\n")
-                                vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+                              hook = function(filepath, bufnr, opts)
+                                if opts.kind == "filesize" then
+                                  local path = require("plenary.path"):new(filepath)
+                                  -- opts exposes winid
+                                  local height = vim.api.nvim_win_get_height(opts.winid)
+                                  local lines = vim.split(path:head(height), "[\r]?\n")
+                                  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+                                end
                               end,
                             }
                           The configuration recipes for relevant examples.
