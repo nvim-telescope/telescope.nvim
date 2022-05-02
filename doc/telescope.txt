@@ -1921,7 +1921,9 @@ call. These functions include `:replace(f)`, `:replace_if(f, c)`,
 be found in the `developers.md` and `lua/tests/automated/action_spec.lua` file.
 
 actions.move_selection_next({prompt_bufnr}) *telescope.actions.move_selection_next()*
-    Move the selection to the next entry
+    Move the selection to the next entry for (last) open(ed) picker.
+    - Note: requires caching to access entries from previous pickers, see 
+      |telescope.defaults.cache_picker|
 
 
     Parameters: ~
@@ -1930,6 +1932,8 @@ actions.move_selection_next({prompt_bufnr}) *telescope.actions.move_selection_ne
 
 actions.move_selection_previous({prompt_bufnr}) *telescope.actions.move_selection_previous()*
     Move the selection to the previous entry
+    - Note: requires caching to access entries from previous pickers, see 
+      |telescope.defaults.cache_picker|
 
 
     Parameters: ~
