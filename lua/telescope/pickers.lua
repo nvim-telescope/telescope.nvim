@@ -434,21 +434,23 @@ function Picker:find()
       self:set_prompt(self.default_text)
     end
 
-    local mode = vim.fn.mode()
-    if self.initial_mode == "insert" then
+    if vim.tbl_contains({ "insert", "normal" }, self.initial_mode) then
       vim.schedule(function()
-        -- Example: live_grep -> type something -> quit -> Telescope pickers -> resume -> cursor of by one
-        -- vim.cmd doesn't schedule appropriately, bypass with `nvim_input`
-        -- echon to clear "startinsert" msg & histdel('cmd', -1) to not pollute command history with startinsert
-        if mode ~= "i" then
-          local cmd = ":startinsert!|call histdel('cmd', -1)|echon ''<CR>"
-          a.nvim_input(mode ~= "n" and "<ESC>" .. cmd or cmd)
+        local mode = vim.fn.mode()
+        if self.initial_mode == "normal" then
+          if mode ~= "n" then
+            a.nvim_input "<ESC>"
+          end
+        else
+          -- Example: live_grep -> type something -> quit -> Telescope pickers -> resume -> cursor of by one
+          -- vim.cmd doesn't schedule appropriately, bypass with `nvim_input`
+          -- histdel('cmd', -1) to not pollute command history with startinsert & echon to clear "startinsert" msg
+          if mode ~= "i" then
+            local cmd = ":startinsert!|call histdel('cmd', -1)|echon ''<CR>"
+            a.nvim_input(mode ~= "n" and "<ESC>" .. cmd or cmd)
+          end
         end
       end)
-    elseif self.initial_mode == "normal" then
-      if mode ~= "n" then
-        vim.schedule_wrap(a.nvim_input)("<ESC>")
-      end
     else
       error("Invalid setting for initial_mode: " .. self.initial_mode)
     end
