@@ -133,6 +133,7 @@ previewers.new_termopen_previewer = function(opts)
   local function set_term_id(self, value)
     if self.state and term_ids[self.state.termopen_bufnr] == nil then
       term_ids[self.state.termopen_bufnr] = value
+      self.state.termopen_id = value
     end
   end
 
@@ -190,8 +191,9 @@ previewers.new_termopen_previewer = function(opts)
 
     local prev_bufnr = get_bufnr_by_bufentry(self, entry)
     if prev_bufnr then
-      self.state.bufnr = prev_bufnr
-      vim.api.nvim_win_set_buf(status.preview_win, self.state.bufnr)
+      self.state.termopen_bufnr = prev_bufnr
+      vim.api.nvim_win_set_buf(status.preview_win, self.state.termopen_bufnr)
+      self.state.termopen_id = term_ids[self.state.termopen_bufnr]
     else
       local bufnr = vim.api.nvim_create_buf(false, true)
       set_bufnr(self, bufnr)
