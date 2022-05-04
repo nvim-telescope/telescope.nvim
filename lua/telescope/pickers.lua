@@ -423,29 +423,34 @@ function Picker:find()
 
   local find_id = self:_next_find_id()
 
+  if self.default_text then
+    self:set_prompt(self.default_text)
+  end
+
+  if vim.tbl_contains({ "insert", "normal" }, self.initial_mode) then
+    local mode = vim.fn.mode()
+    local keys
+    if self.initial_mode == "normal" then
+      -- n: A<ESC> makes sure cursor is at always at end of prompt w/o default_text
+      keys = mode ~= "n" and "<ESC>A<ESC>" or "A<ESC>"
+    else
+      -- always fully retrigger insert mode: required for going from one picker to next
+      keys = mode ~= "n" and "<ESC>A" or "A"
+    end
+    a.nvim_feedkeys(a.nvim_replace_termcodes(keys, true, false, true), "n", true)
+  else
+    utils.notify(
+      "pickers.find",
+      { msg = "`initial_mode` should be one of ['normal', 'insert'] but passed " .. self.initial_mode, level = "ERROR" }
+    )
+  end
+
   local main_loop = async.void(function()
     self.sorter:_init()
 
     -- Do filetype last, so that users can register at the last second.
     pcall(a.nvim_buf_set_option, prompt_bufnr, "filetype", "TelescopePrompt")
     pcall(a.nvim_buf_set_option, results_bufnr, "filetype", "TelescopeResults")
-
-    if self.default_text then
-      self:set_prompt(self.default_text)
-    end
-
-    if self.initial_mode == "insert" then
-      vim.schedule(function()
-        -- startinsert! did not reliable do `A` no idea why, i even looked at the source code
-        -- Example: live_grep -> type something -> quit -> Telescope pickers -> resume -> cursor of by one
-        local mode = vim.fn.mode()
-        if mode ~= "i" then
-          a.nvim_input(mode ~= "n" and "<ESC>A" or "A")
-        end
-      end)
-    elseif self.initial_mode ~= "normal" then
-      error("Invalid setting for initial_mode: " .. self.initial_mode)
-    end
 
     await_schedule()
 
