@@ -880,6 +880,8 @@ builtin.tags({opts})                                *telescope.builtin.tags()*
                                     true)
         {only_sort_tags} (boolean)  if true we will only sort tags (default:
                                     false)
+        {fname_width}    (number)   defines the width of the filename section
+                                    (default: 30)
 
 
 builtin.current_buffer_tags({opts})  *telescope.builtin.current_buffer_tags()*
@@ -899,6 +901,8 @@ builtin.current_buffer_tags({opts})  *telescope.builtin.current_buffer_tags()*
                                     true)
         {only_sort_tags} (boolean)  if true we will only sort tags (default:
                                     false)
+        {fname_width}    (number)   defines the width of the filename section
+                                    (default: 30)
 
 
 builtin.git_files({opts})                      *telescope.builtin.git_files()*
