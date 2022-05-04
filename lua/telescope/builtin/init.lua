@@ -241,7 +241,13 @@ builtin.commands = require_on_exported_call("telescope.builtin.internal").comman
 ---@param opts table: options to pass to the picker
 ---@field ignore_filename boolean: dont show filenames (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field nr number: specify the quickfix list number
 builtin.quickfix = require_on_exported_call("telescope.builtin.internal").quickfix
+
+--- Lists all quickfix lists in your history and open them with `builtin.quickfix`. It seems that neovim
+--- only keeps the full history for 10 lists
+---@param opts table: options to pass to the picker
+builtin.quickfixhistory = require_on_exported_call("telescope.builtin.internal").quickfixhistory
 
 --- Lists items from the current window's location list, jumps to location on `<cr>`
 ---@param opts table: options to pass to the picker
