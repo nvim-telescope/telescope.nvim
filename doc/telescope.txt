@@ -1117,6 +1117,17 @@ builtin.quickfix({opts})                        *telescope.builtin.quickfix()*
     Options: ~
         {ignore_filename} (boolean)  dont show filenames (default: true)
         {trim_text}       (boolean)  trim results text (default: false)
+        {nr}              (number)   specify the quickfix list number
+
+
+builtin.quickfixhistory({opts})          *telescope.builtin.quickfixhistory()*
+    Lists all quickfix lists in your history and open them with
+    `builtin.quickfix`. It seems that neovim only keeps the full history for 10
+    lists
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
 
 
 builtin.loclist({opts})                          *telescope.builtin.loclist()*

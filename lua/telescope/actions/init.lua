@@ -794,12 +794,15 @@ local send_selected_to_qf = function(prompt_bufnr, mode, target)
     table.insert(qf_entries, entry_to_qf(entry))
   end
 
+  local prompt = picker:_get_prompt()
   actions.close(prompt_bufnr)
 
   if target == "loclist" then
     vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
   else
+    local qf_title = string.format([[%s (%s)]], picker.prompt_title, prompt)
     vim.fn.setqflist(qf_entries, mode)
+    vim.fn.setqflist({}, "a", { title = qf_title })
   end
 end
 
@@ -812,12 +815,15 @@ local send_all_to_qf = function(prompt_bufnr, mode, target)
     table.insert(qf_entries, entry_to_qf(entry))
   end
 
+  local prompt = picker:_get_prompt()
   actions.close(prompt_bufnr)
 
   if target == "loclist" then
     vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
   else
     vim.fn.setqflist(qf_entries, mode)
+    local qf_title = string.format([[%s (%s)]], picker.prompt_title, prompt)
+    vim.fn.setqflist({}, "a", { title = qf_title })
   end
 end
 

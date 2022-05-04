@@ -359,7 +359,8 @@ internal.commands = function(opts)
 end
 
 internal.quickfix = function(opts)
-  local locations = vim.fn.getqflist()
+  local qf_identifier = opts.id or vim.F.if_nil(opts.nr, "$")
+  local locations = vim.fn.getqflist({ [opts.id and "id" or "nr"] = qf_identifier, items = true }).items
 
   if vim.tbl_isempty(locations) then
     return
@@ -373,6 +374,65 @@ internal.quickfix = function(opts)
     },
     previewer = conf.qflist_previewer(opts),
     sorter = conf.generic_sorter(opts),
+  }):find()
+end
+
+internal.quickfixhistory = function(opts)
+  local qflists = {}
+  for i = 1, 10 do -- (n)vim keeps at most 10 quickfix lists in full
+    -- qf weirdness: id = 0 gets id of quickfix list nr
+    local qflist = vim.fn.getqflist { nr = i, id = 0, title = true, items = true }
+    if not vim.tbl_isempty(qflist.items) then
+      table.insert(qflists, qflist)
+    end
+  end
+  local entry_maker = opts.make_entry
+    or function(entry)
+      return {
+        value = entry.title or "Untitled",
+        ordinal = entry.title or "Untitled",
+        display = entry.title or "Untitled",
+        nr = entry.nr,
+        id = entry.id,
+        items = entry.items,
+      }
+    end
+  local qf_entry_maker = make_entry.gen_from_quickfix(opts)
+  pickers.new(opts, {
+    prompt_title = "Quickfix History",
+    finder = finders.new_table {
+      results = qflists,
+      entry_maker = entry_maker,
+    },
+    previewer = previewers.new_buffer_previewer {
+      title = "Quickfix List Preview",
+      dyn_title = function(_, entry)
+        return entry.title
+      end,
+
+      get_buffer_by_name = function(_, entry)
+        return "quickfixlist_" .. tostring(entry.nr)
+      end,
+
+      define_preview = function(self, entry)
+        if self.state.bufname then
+          return
+        end
+        local entries = vim.tbl_map(function(i)
+          return qf_entry_maker(i):display()
+        end, entry.items)
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, entries)
+      end,
+    },
+    sorter = conf.generic_sorter(opts),
+    attach_mappings = function(_, _)
+      action_set.select:replace(function(prompt_bufnr)
+        local nr = action_state.get_selected_entry().nr
+        actions.close(prompt_bufnr)
+        internal.quickfix { nr = nr }
+      end)
+      return true
+    end,
   }):find()
 end
 
