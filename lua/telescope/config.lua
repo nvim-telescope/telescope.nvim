@@ -542,13 +542,13 @@ append(
                           complete within `timeout` milliseconds.
                           Set to false to not timeout preview.
                           Default: 250
-      - hook(s):          Function(s) that takes `(filepath, bufnr, opts)`, where opts
-                          exposes winid and ft (filetype).
-                          Available `kind`s of hooks (in order of priority):
-                          {"filetype", "mime", "filesize", "timeout"}
-                          Important: the filetype_hook must return true or false
-                          to indicate whether to continue (true) previewing or not (false),
-                          respectively.
+      - hook(s):          Function that takes `(filepath, bufnr, opts)`, where opts
+                          exposes winid, ft (filetype), and the kind of hook.
+                          Available `kind`s of hooks (in order):
+                          {"filetype", "directory", "mime", "filesize", "timeout"}
+                          IMPORTANT: the hook must return `true` if previewing is
+                          supposed to be aborted, i.e. a hook assumes preview 
+                          responsibily.
                           Two examples:
                           local putils = require("telescope.previewers.utils")
                           ... -- preview is called in telescope.setup { ... }

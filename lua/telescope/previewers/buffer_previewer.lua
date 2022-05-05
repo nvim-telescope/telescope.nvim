@@ -16,21 +16,6 @@ local ns_previewer = vim.api.nvim_create_namespace "telescope.previewers"
 
 local has_file = 1 == vim.fn.executable "file"
 
--- TODO(fdschmidt93) switch to Job once file_maker callbacks get cleaned up with plenary async
--- avoids SIGABRT from utils.get_os_command_output due to vim.time in fs_stat cb
-local function capture(cmd, raw)
-  local f = assert(io.popen(cmd, "r"))
-  local s = assert(f:read "*a")
-  f:close()
-  if raw then
-    return s
-  end
-  s = string.gsub(s, "^%s+", "")
-  s = string.gsub(s, "%s+$", "")
-  s = string.gsub(s, "[\n\r]+", " ")
-  return s
-end
-
 local function defaulter(f, default_opts)
   default_opts = default_opts or {}
   return {
@@ -70,6 +55,7 @@ local function split(s, sep, plain, opts)
   end
   return t
 end
+
 local bytes_to_megabytes = math.pow(1024, 2)
 
 local color_hash = {
@@ -166,114 +152,97 @@ previewers.file_maker = function(filepath, bufnr, opts)
       filepath = vim.fn.expand(filepath)
     end
     if type(opts.preview.hook) == "function" then
-      if not opts.preview.hook(filepath, bufnr, vim.tbl_deep_extend("keep", { kind = "filetype" }, opts)) then
+      if opts.preview.hook(filepath, bufnr, vim.tbl_deep_extend("keep", { kind = "filetype" }, opts)) then
         return
       end
     end
-    vim.loop.fs_stat(filepath, function(_, stat)
-      if not stat then
-        return
-      end
-      if stat.type == "directory" then
-        pscan.ls_async(filepath, {
-          hidden = true,
-          group_directories_first = true,
-          on_exit = vim.schedule_wrap(function(data, sections)
-            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
-            colorize_ls(bufnr, data, sections)
-            if opts.callback then
-              opts.callback(bufnr)
-            end
-          end),
-        })
-      else
-        if opts.preview.check_mime_type == true and has_file and opts.ft == "" then
-          -- avoid SIGABRT in buffer previewer happening with utils.get_os_command_output
-          local output = capture(string.format([[file --mime-type -b "%s"]], filepath))
-          local mime_type = vim.split(output, "/")[1]
-          if mime_type ~= "text" and mime_type ~= "inode" then
-            if type(opts.preview.hook) == "function" then
-              vim.schedule_wrap(opts.preview.hook)(
-                filepath,
-                bufnr,
-                vim.tbl_deep_extend("keep", { kind = "mime" }, opts)
-              )
-            else
-              vim.schedule_wrap(putils.set_preview_message)(
-                bufnr,
-                opts.winid,
-                "Binary cannot be previewed",
-                opts.preview.msg_bg_fillchar
-              )
-            end
-            return
-          end
-        end
-
-        if opts.preview.filesize_limit then
-          local mb_filesize = math.floor(stat.size / bytes_to_megabytes)
-          if mb_filesize > opts.preview.filesize_limit then
-            if type(opts.preview.hook) == "function" then
-              vim.schedule_wrap(opts.preview.hook)(
-                filepath,
-                bufnr,
-                vim.tbl_deep_extend("keep", { kind = "filesize" }, opts)
-              )
-            else
-              vim.schedule_wrap(putils.set_preview_message)(
-                bufnr,
-                opts.winid,
-                "File exceeds preview size limit",
-                opts.preview.msg_bg_fillchar
-              )
-            end
-            return
-          end
-        end
-        local previewed
-        if opts.preview.command and type(opts.preview.command) == "function" then
-          previewed = opts.preview.command(filepath, bufnr, opts)
-        end
-        if previewed then
+    vim.loop.fs_stat(
+      filepath,
+      vim.schedule_wrap(function(_, stat)
+        if not stat then
           return
         end
-        opts.start_time = vim.loop.hrtime()
-        Path:new(filepath):_read_async(vim.schedule_wrap(function(data)
-          if not vim.api.nvim_buf_is_valid(bufnr) then
-            return
-          end
-          local processed_data = split(data, "[\r]?\n", _, opts)
-
-          if processed_data then
-            local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, processed_data)
-            if not ok then
+        if stat.type == "directory" then
+          if type(opts.preview.hook) == "function" then
+            if opts.preview.hook(filepath, bufnr, vim.tbl_deep_extend("keep", { kind = "directory" }, opts)) then
               return
             end
-
-            if opts.callback then
-              opts.callback(bufnr)
-            end
-            putils.highlighter(bufnr, opts.ft, opts)
-          else
-            if type(opts.preview.hook) == "function" then
-              vim.schedule_wrap(opts.preview.hook)(
-                filepath,
-                bufnr,
-                vim.tbl_deep_extend("keep", { kind = "timeout" }, opts)
-              )
-            else
-              vim.schedule_wrap(putils.set_preview_message)(
-                bufnr,
-                opts.winid,
-                "Previewer timed out",
-                opts.preview.msg_bg_fillchar
-              )
-            end
-            return
           end
-        end))
-      end
-    end)
+          pscan.ls_async(filepath, {
+            hidden = true,
+            group_directories_first = true,
+            on_exit = vim.schedule_wrap(function(data, sections)
+              vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
+              colorize_ls(bufnr, data, sections)
+              if opts.callback then
+                opts.callback(bufnr)
+              end
+            end),
+          })
+        else
+          if opts.preview.check_mime_type == true and has_file and opts.ft == "" then
+            local output = utils.get_os_command_output({ "file", "--mime-type", "-b", filepath })[1]
+            local mime_type = vim.split(output, "/")[1]
+            if mime_type ~= "text" and mime_type ~= "inode" then
+              if type(opts.preview.hook) == "function" then
+                if not opts.preview.hook(filepath, bufnr, vim.tbl_deep_extend("keep", { kind = "mime" }, opts)) then
+                  putils.set_preview_message(
+                    bufnr,
+                    opts.winid,
+                    "Binary cannot be previewed",
+                    opts.preview.msg_bg_fillchar
+                  )
+                end
+                return
+              end
+            end
+          end
+
+          if opts.preview.filesize_limit then
+            local mb_filesize = math.floor(stat.size / bytes_to_megabytes)
+            if mb_filesize > opts.preview.filesize_limit then
+              if type(opts.preview.hook) == "function" then
+                if not opts.preview.hook(filepath, bufnr, vim.tbl_deep_extend("keep", { kind = "filesize" }, opts)) then
+                  putils.set_preview_message(
+                    bufnr,
+                    opts.winid,
+                    "File exceeds preview size limit",
+                    opts.preview.msg_bg_fillchar
+                  )
+                end
+              end
+              return
+            end
+          end
+          opts.start_time = vim.loop.hrtime()
+          Path:new(filepath):_read_async(vim.schedule_wrap(function(data)
+            if not vim.api.nvim_buf_is_valid(bufnr) then
+              return
+            end
+            local processed_data = split(data, "[\r]?\n", _, opts)
+
+            if processed_data then
+              local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, processed_data)
+              if not ok then
+                return
+              end
+
+              if opts.callback then
+                opts.callback(bufnr)
+              end
+              putils.highlighter(bufnr, opts.ft, opts)
+            else
+              if type(opts.preview.hook) == "function" then
+                if not opts.preview.hook(filepath, bufnr, vim.tbl_deep_extend("keep", { kind = "timeout" }, opts)) then
+                  putils.set_preview_message(bufnr, opts.winid, "Previewer timed out", opts.preview.msg_bg_fillchar)
+                end
+              end
+              return
+            end
+          end))
+        end
+      end)
+    )
   else
     if opts.callback then
       if vim.in_fast_event() then
