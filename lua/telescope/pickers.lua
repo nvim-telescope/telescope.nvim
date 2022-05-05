@@ -743,9 +743,9 @@ function Picker.close_windows(status)
   utils.win_delete("results_border_win", status.results_border_win, true, true)
   utils.win_delete("preview_border_win", status.preview_border_win, true, true)
 
-  vim.defer_fn(function()
-    utils.win_delete("prompt_win", status.prompt_win, true)
-  end, 10)
+  -- we cant use win_delete. We first need to close and then delete the buffer
+  vim.api.nvim_win_close(status.prompt_win, true)
+  utils.buf_delete(status.prompt_bufnr)
 
   state.clear_status(status.prompt_bufnr)
 end
@@ -1463,13 +1463,14 @@ function pickers.on_close_prompt(prompt_bufnr)
     picker.finder:close()
   end
 
-  picker.close_windows(status)
-  mappings.clear(prompt_bufnr)
+  -- so we dont call close_windows multiple times we clear that autocmd
   vim.api.nvim_clear_autocmds {
     group = "PickerInsert",
     event = "BufLeave",
     buffer = prompt_bufnr,
   }
+  picker.close_windows(status)
+  mappings.clear(prompt_bufnr)
 end
 
 function pickers.on_resize_window(prompt_bufnr)
