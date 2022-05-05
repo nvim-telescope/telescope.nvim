@@ -193,7 +193,11 @@ previewers.file_maker = function(filepath, bufnr, opts)
           local mime_type = vim.split(output, "/")[1]
           if mime_type ~= "text" and mime_type ~= "inode" then
             if type(opts.preview.hook) == "function" then
-              vim.schedule_wrap(opts.preview.hook)(filepath, bufnr, vim.tbl_deep_extend("keep", { kind = "mime" }, opts))
+              vim.schedule_wrap(opts.preview.hook)(
+                filepath,
+                bufnr,
+                vim.tbl_deep_extend("keep", { kind = "mime" }, opts)
+              )
             else
               vim.schedule_wrap(putils.set_preview_message)(
                 bufnr,
@@ -210,7 +214,11 @@ previewers.file_maker = function(filepath, bufnr, opts)
           local mb_filesize = math.floor(stat.size / bytes_to_megabytes)
           if mb_filesize > opts.preview.filesize_limit then
             if type(opts.preview.hook) == "function" then
-              vim.schedule_wrap(opts.preview.hook)(filepath, bufnr, vim.tbl_deep_extend("keep", { kind = "filesize" }, opts))
+              vim.schedule_wrap(opts.preview.hook)(
+                filepath,
+                bufnr,
+                vim.tbl_deep_extend("keep", { kind = "filesize" }, opts)
+              )
             else
               vim.schedule_wrap(putils.set_preview_message)(
                 bufnr,
@@ -248,7 +256,11 @@ previewers.file_maker = function(filepath, bufnr, opts)
             putils.highlighter(bufnr, opts.ft, opts)
           else
             if type(opts.preview.hook) == "function" then
-              vim.schedule_wrap(opts.preview.hook)(filepath, bufnr, vim.tbl_deep_extend("keep", { kind = "timeout" }, opts))
+              vim.schedule_wrap(opts.preview.hook)(
+                filepath,
+                bufnr,
+                vim.tbl_deep_extend("keep", { kind = "timeout" }, opts)
+              )
             else
               vim.schedule_wrap(putils.set_preview_message)(
                 bufnr,
