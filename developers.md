@@ -20,9 +20,12 @@
 So you want to develop your own picker and/or extension for telescope? Then you
 are in the right place! This file will first present an introduction on how to
 do this. After that, this document will present a technical explanation of
-pickers, finders, actions and the previewer. You can find more information
-in specific help pages and we will probably move some of the technical stuff to
-our vim help docs in the future.
+pickers, finders, actions and the previewer. Should you now yet have an idea of
+the general telescope architecture and its components, it is first recommend to
+familiarize yourself with the architectural flow-chart that is provided in
+vim docs (`:h telescope.nvim`). You can find more information in specific help
+pages and we will probably move some of the technical stuff to our vim help docs
+in the future.
 
 This guide is mainly for telescope so it will assume that you already have some knowledge of the Lua
 programming language. If not then you can find information for Lua here:

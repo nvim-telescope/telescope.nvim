@@ -23,35 +23,35 @@ local telescope = {}
 ---
 ---  The below flow chart illustrates a simplified telescope architecture:
 --- <pre>
---- ┌───────────────────────────────────────────────────────┐
---- │  ┌────────┐                                           │
---- │  │ Multi  │                                ┌───────+  │
---- │  │ Select │    ┌───────┐                   │ Entry │  │
---- │  └─────┬──*    │ Entry │    ┌────────+     │ Maker │  │
---- │        │   ┌───│Manager│────│ Sorter │┐    └───┬───*  │
---- │        ▼   ▼   └───────*    └────────┘│        │      │
---- │        1────────┐                 2───┴──┐     │      │
---- │ ┌────► │ Picker │                 │Finder│◄────┘      │
---- │ │ ┌──► └───┬────┘                 └──────*            │
---- │ │ │        │       3────────+         ▲               │
---- │ │ │        └───────│ Prompt │─────────┘               │
---- │ │ │                └───┬────┘                         │
---- │ │ │4───────────+   ┌───┴────┐  ┌────────┐  ┌────────┐ │
---- │ │ └┤ Results   │   │ Prompt │  │(Attach)│  │Actions │ │
---- │ │  └───────────┘   │ Buffer │◄─┤Mappings│◄─┤User Fn │ │
---- │ │  5───────────┐   └────────┘  └────────┘  └────────┘ │
---- │ └──┤ Previewer │                                      │
---- │    └───────────┘         telescope.nvim architecture  │
---- └───────────────────────────────────────────────────────┘
+--- ┌───────────────────────────────────────────────────────────┐
+--- │      ┌────────┐                                           │
+--- │      │ Multi  │                                ┌───────+  │
+--- │      │ Select │    ┌───────┐                   │ Entry │  │
+--- │      └─────┬──*    │ Entry │    ┌────────+     │ Maker │  │
+--- │            │   ┌───│Manager│────│ Sorter │┐    └───┬───*  │
+--- │            ▼   ▼   └───────*    └────────┘│        │      │
+--- │            1────────┐                 2───┴──┐     │      │
+--- │      ┌─────│ Picker │                 │Finder│◄────┘      │
+--- │      ▼     └───┬────┘                 └──────*            │
+--- │ ┌────────┐     │       3────────+         ▲               │
+--- │ │Selected│     └───────│ Prompt │─────────┘               │
+--- │ │ Entry  │             └───┬────┘                         │
+--- │ └────────*             ┌───┴────┐  ┌────────┐  ┌────────┐ │
+--- │     │  ▲    4─────────┐│ Prompt │  │(Attach)│  │Actions │ │
+--- │     ▼  └──► │ Results ││ Buffer │◄─┤Mappings│◄─┤User Fn │ │
+--- │5─────────┐  └─────────┘└────────┘  └────────┘  └────────┘ │
+--- ││Previewer│                                                │
+--- │└─────────┘                   telescope.nvim architecture  │
+--- └───────────────────────────────────────────────────────────┘
 ---
 ---   + The `Entry Maker` at least defines
 ---     - value: "raw" result of the finder
 ---     - ordinal: string to be sorted derived from value
 ---     - display: line representation of entry in results buffer
 ---
----   * The finder, entry manager, and multi selections
+---   * The finder, entry manager, selected entry, and multi selections
 ---     comprises `entries` constructed by the `Entry Maker` from
----     raw results of the finder
+---     raw results of the finder (`value`s)
 ---
 ---  Primary components:
 ---   1 Picker: central UI dedicated to varying use cases
@@ -66,7 +66,9 @@ local telescope = {}
 --- </pre>
 ---
 ---  A practical introduction into telescope customization is our
----  `developers.md` (top-level of repo) and `:h telescope.actions`.
+---  `developers.md` (top-level of repo) and `:h telescope.actions` that
+---  showcase how to access information about the state of the picker (current
+---  selection, etc.).
 --- <pre>
 --- To find out more:
 --- https://github.com/nvim-telescope/telescope.nvim
@@ -82,9 +84,8 @@ local telescope = {}
 ---   :h telescope.actions.set
 ---   :h telescope.actions.utils
 ---   :h telescope.actions.generate
----   :h telescope.previewers
 ---   :h telescope.actions.history
----
+---   :h telescope.previewers
 --- </pre>
 ---@brief ]]
 
