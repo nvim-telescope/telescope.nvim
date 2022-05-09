@@ -21,6 +21,54 @@ local telescope = {}
 ---   5. Read |telescope.builtin| to check which builtin pickers are offered and what options these implement
 ---   6. Profit
 ---
+---  The below flow chart illustrates a simplified telescope architecture:
+--- <pre>
+--- ┌───────────────────────────────────────────────────────────┐
+--- │      ┌────────┐                                           │
+--- │      │ Multi  │                                ┌───────+  │
+--- │      │ Select │    ┌───────┐                   │ Entry │  │
+--- │      └─────┬──*    │ Entry │    ┌────────+     │ Maker │  │
+--- │            │   ┌───│Manager│────│ Sorter │┐    └───┬───*  │
+--- │            ▼   ▼   └───────*    └────────┘│        │      │
+--- │            1────────┐                 2───┴──┐     │      │
+--- │      ┌─────│ Picker │                 │Finder│◄────┘      │
+--- │      ▼     └───┬────┘                 └──────*            │
+--- │ ┌────────┐     │       3────────+         ▲               │
+--- │ │Selected│     └───────│ Prompt │─────────┘               │
+--- │ │ Entry  │             └───┬────┘                         │
+--- │ └────────*             ┌───┴────┐  ┌────────┐  ┌────────┐ │
+--- │     │  ▲    4─────────┐│ Prompt │  │(Attach)│  │Actions │ │
+--- │     ▼  └──► │ Results ││ Buffer │◄─┤Mappings│◄─┤User Fn │ │
+--- │5─────────┐  └─────────┘└────────┘  └────────┘  └────────┘ │
+--- ││Previewer│                                                │
+--- │└─────────┘                   telescope.nvim architecture  │
+--- └───────────────────────────────────────────────────────────┘
+---
+---   + The `Entry Maker` at least defines
+---     - value: "raw" result of the finder
+---     - ordinal: string to be sorted derived from value
+---     - display: line representation of entry in results buffer
+---
+---   * The finder, entry manager, selected entry, and multi selections
+---     comprises `entries` constructed by the `Entry Maker` from
+---     raw results of the finder (`value`s)
+---
+---  Primary components:
+---   1 Picker: central UI dedicated to varying use cases
+---             (finding files, grepping, diagnostics, etc.)
+---             see :h telescope.builtin
+---   2 Finder: pipe or interactively generates results to pick over
+---   3 Prompt: user input that triggers the finder which sorts results
+---             in order into the entry manager
+---   4 Results: listed entries scored by sorter from finder results
+---   5 Previewer: preview of context of selected entry
+---                see :h telescope.previewers
+--- </pre>
+---
+---  A practical introduction into telescope customization is our
+---  `developers.md` (top-level of repo) and `:h telescope.actions` that
+---  showcase how to access information about the state of the picker (current
+---  selection, etc.).
 --- <pre>
 --- To find out more:
 --- https://github.com/nvim-telescope/telescope.nvim
@@ -36,8 +84,8 @@ local telescope = {}
 ---   :h telescope.actions.set
 ---   :h telescope.actions.utils
 ---   :h telescope.actions.generate
----   :h telescope.previewers
 ---   :h telescope.actions.history
+---   :h telescope.previewers
 --- </pre>
 ---@brief ]]
 
