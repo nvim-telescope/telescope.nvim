@@ -684,8 +684,12 @@ end
 
 function make_entry.gen_from_keymaps(opts)
   local function get_desc(entry)
-    return entry.desc or entry.rhs or "Lua function"
+    if entry.callback and not entry.desc then
+      return require("telescope.actions.utils")._get_anon_function_name(entry.callback)
+    end
+    return vim.F.if_nil(entry.desc, entry.rhs)
   end
+
   local function get_lhs(entry)
     return utils.display_termcodes(entry.lhs)
   end
