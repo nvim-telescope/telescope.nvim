@@ -6,6 +6,7 @@ local entry_display = {}
 entry_display.truncate = strings.truncate
 
 entry_display.create = function(configuration)
+  configuration.prompt_bufnr = vim.F.if_nil(configuration.prompt_bufnr, vim.api.nvim_get_current_buf())
   local generator = {}
   for _, v in ipairs(configuration.items) do
     if v.width then
@@ -13,7 +14,7 @@ entry_display.create = function(configuration)
       local width
       table.insert(generator, function(item)
         if width == nil then
-          local status = state.get_status(vim.api.nvim_get_current_buf())
+          local status = state.get_status(configuration.prompt_bufnr)
           local s = {}
           s[1] = vim.api.nvim_win_get_width(status.results_win) - #status.picker.selection_caret
           s[2] = vim.api.nvim_win_get_height(status.results_win)
