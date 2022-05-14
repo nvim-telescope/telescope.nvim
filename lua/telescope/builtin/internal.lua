@@ -993,11 +993,10 @@ internal.colorscheme = function(opts)
 end
 
 internal.marks = function(opts)
-  local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
   local local_marks = {
-    items = vim.fn.getmarklist(bufnr),
+    items = vim.fn.getmarklist(opts.bufnr),
     name_func = function(_, line)
-      return vim.api.nvim_buf_get_lines(bufnr, line - 1, line, false)[1]
+      return vim.api.nvim_buf_get_lines(opts.bufnr, line - 1, line, false)[1]
     end,
   }
   local global_marks = {
@@ -1009,7 +1008,7 @@ internal.marks = function(opts)
   }
   local marks_table = {}
   local marks_others = {}
-  local bufname = vim.api.nvim_buf_get_name(bufnr)
+  local bufname = vim.api.nvim_buf_get_name(opts.bufnr)
   for _, cnf in ipairs { local_marks, global_marks } do
     for _, v in ipairs(cnf.items) do
       -- strip the first single quote character
@@ -1024,7 +1023,7 @@ internal.marks = function(opts)
         col = col,
         filename = v.file or bufname,
       }
-      -- non alphanumeric markers goes to last
+      -- non alphanumeric marks goes to last
       if mark:match "%w" then
         table.insert(marks_table, row)
       else
