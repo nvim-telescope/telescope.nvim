@@ -993,11 +993,45 @@ internal.colorscheme = function(opts)
 end
 
 internal.marks = function(opts)
-  local marks = vim.api.nvim_exec("marks", true)
-  local marks_table = vim.fn.split(marks, "\n")
-
-  -- Pop off the header.
-  table.remove(marks_table, 1)
+  local local_marks = {
+    items = vim.fn.getmarklist(opts.bufnr),
+    name_func = function(_, line)
+      return vim.api.nvim_buf_get_lines(opts.bufnr, line - 1, line, false)[1]
+    end,
+  }
+  local global_marks = {
+    items = vim.fn.getmarklist(),
+    name_func = function(mark, _)
+      -- get buffer name if it is opened, otherwise get file name
+      return vim.api.nvim_get_mark(mark, {})[4]
+    end,
+  }
+  local marks_table = {}
+  local marks_others = {}
+  local bufname = vim.api.nvim_buf_get_name(opts.bufnr)
+  for _, cnf in ipairs { local_marks, global_marks } do
+    for _, v in ipairs(cnf.items) do
+      -- strip the first single quote character
+      local mark = string.sub(v.mark, 2, 3)
+      local _, lnum, col, _ = unpack(v.pos)
+      local name = cnf.name_func(mark, lnum)
+      -- same format to :marks command
+      local line = string.format("%s %6d %4d %s", mark, lnum, col - 1, name)
+      local row = {
+        line = line,
+        lnum = lnum,
+        col = col,
+        filename = v.file or bufname,
+      }
+      -- non alphanumeric marks goes to last
+      if mark:match "%w" then
+        table.insert(marks_table, row)
+      else
+        table.insert(marks_others, row)
+      end
+    end
+  end
+  marks_table = vim.fn.extend(marks_table, marks_others)
 
   pickers.new(opts, {
     prompt_title = "Marks",
