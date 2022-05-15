@@ -5,7 +5,6 @@ local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
 local pickers = require "telescope.pickers"
 local utils = require "telescope.utils"
-local action_set = require "telescope.actions.set"
 
 local lsp = {}
 
@@ -39,9 +38,6 @@ lsp.references = function(opts)
       return
     end
 
-	local from = {vim.fn.bufnr('%'), vim.fn.line('.'), vim.fn.col('.'), 0}
-	local items = {{tagname=vim.fn.expand('<cword>'), from=from}}
-	local win = vim.fn.win_getid()
     pickers.new(opts, {
       prompt_title = "LSP References",
       finder = finders.new_table {
@@ -49,15 +45,9 @@ lsp.references = function(opts)
         entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
       },
       previewer = conf.qflist_previewer(opts),
-	  attach_mappings = function(prompt_bufnr)
-		  actions.select_default:replace(function()
-			vim.fn.settagstack(win, {items=items}, 't')
-			action_set.select(prompt_bufnr, "default")
-		  end)
-		  return true
-	  end,
       sorter = conf.generic_sorter(opts),
       push_cursor_on_edit = true,
+      push_tagstack_on_edit = true,
     }):find()
   end)
 end
@@ -96,9 +86,6 @@ local function list_or_jump(action, title, opts)
       vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding)
     else
       local locations = vim.lsp.util.locations_to_items(flattened_results, offset_encoding)
-	  local from = {vim.fn.bufnr('%'), vim.fn.line('.'), vim.fn.col('.'), 0}
-	  local items = {{tagname=vim.fn.expand('<cword>'), from=from}}
-	  local win = vim.fn.win_getid()
       pickers.new(opts, {
         prompt_title = title,
         finder = finders.new_table {
@@ -106,14 +93,9 @@ local function list_or_jump(action, title, opts)
           entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
         },
         previewer = conf.qflist_previewer(opts),
-		attach_mappings = function(prompt_bufnr)
-			actions.select_default:replace(function()
-				vim.fn.settagstack(win, {items=items}, 't')
-				action_set.select(prompt_bufnr, "default")
-			end)
-			return true
-		end,
         sorter = conf.generic_sorter(opts),
+        push_cursor_on_edit = true,
+        push_tagstack_on_edit = true,
       }):find()
     end
   end)
@@ -175,6 +157,7 @@ lsp.document_symbols = function(opts)
         sorter = conf.generic_sorter(opts),
       },
       push_cursor_on_edit = true,
+      push_tagstack_on_edit = true,
     }):find()
   end)
 end
