@@ -130,8 +130,12 @@ action_set.edit = function(prompt_bufnr, command)
 
   local entry_bufnr = entry.bufnr
 
-  local picker = action_state.get_current_picker(prompt_bufnr)
   require("telescope.actions").close(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  local win_id = picker.get_selection_window(picker, entry)
+  if win_id ~= 0 and a.nvim_get_current_win() ~= win_id then
+    vim.api.nvim_set_current_win(win_id)
+  end
 
   if picker.push_cursor_on_edit then
     vim.cmd "normal! m'"
