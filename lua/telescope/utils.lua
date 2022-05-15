@@ -179,10 +179,14 @@ end)()
 
 utils.path_tail = (function()
   local os_sep = utils.get_separator()
-  local match_string = "[^" .. os_sep .. "]*$"
 
   return function(path)
-    return string.match(path, match_string)
+    for i = #path, 1, -1 do
+      if path:sub(i, i) == os_sep then
+        return path:sub(i + 1, -1)
+      end
+    end
+    return path
   end
 end)()
 
@@ -431,7 +435,7 @@ utils.transform_devicons = load_once(function()
         return display
       end
 
-      local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, "%a+$"), { default = true })
+      local icon, icon_highlight = devicons.get_icon(utils.path_tail(filename), nil, { default = true })
       local icon_display = (icon or " ") .. " " .. (display or "")
 
       if conf.color_devicons then
@@ -461,7 +465,7 @@ utils.get_devicons = load_once(function()
         return ""
       end
 
-      local icon, icon_highlight = devicons.get_icon(filename, string.match(filename, "%a+$"), { default = true })
+      local icon, icon_highlight = devicons.get_icon(utils.path_tail(filename), nil, { default = true })
       if conf.color_devicons then
         return icon, icon_highlight
       else
