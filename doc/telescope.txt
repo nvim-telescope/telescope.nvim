@@ -977,7 +977,7 @@ builtin.git_files({opts})                      *telescope.builtin.git_files()*
                                         (default: true)
         {show_untracked}     (boolean)  if true, adds `--others` flag to
                                         command and shows untracked files
-                                        (default: true)
+                                        (default: false)
         {recurse_submodules} (boolean)  if true, adds the
                                         `--recurse-submodules` flag to command
                                         (default: false)

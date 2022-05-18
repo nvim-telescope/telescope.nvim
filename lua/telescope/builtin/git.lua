@@ -22,7 +22,7 @@ git.files = function(opts)
     return
   end
 
-  local show_untracked = utils.get_default(opts.show_untracked, true)
+  local show_untracked = utils.get_default(opts.show_untracked, false)
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
   if show_untracked and recurse_submodules then
     utils.notify("builtin.git_files", {
