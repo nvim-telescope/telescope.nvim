@@ -1564,8 +1564,9 @@ builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {bufnr}          (string|number)   if nil get diagnostics for all open
-                                           buffers. Use 0 for current buffer
+        {bufnr}          (number|nil)      Buffer number to get diagnostics
+                                           from. Use 0 for current buffer or
+                                           nil for all buffers
         {severity}       (string|number)   filter diagnostics by severity name
                                            (string) or id (number)
         {severity_limit} (string|number)   keep diagnostics equal or more
