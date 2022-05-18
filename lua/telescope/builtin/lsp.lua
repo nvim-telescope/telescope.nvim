@@ -47,6 +47,7 @@ lsp.references = function(opts)
       previewer = conf.qflist_previewer(opts),
       sorter = conf.generic_sorter(opts),
       push_cursor_on_edit = true,
+      push_tagstack_on_edit = true,
     }):find()
   end)
 end
@@ -93,6 +94,8 @@ local function list_or_jump(action, title, opts)
         },
         previewer = conf.qflist_previewer(opts),
         sorter = conf.generic_sorter(opts),
+        push_cursor_on_edit = true,
+        push_tagstack_on_edit = true,
       }):find()
     end
   end)
@@ -154,6 +157,7 @@ lsp.document_symbols = function(opts)
         sorter = conf.generic_sorter(opts),
       },
       push_cursor_on_edit = true,
+      push_tagstack_on_edit = true,
     }):find()
   end)
 end

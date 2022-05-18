@@ -1042,6 +1042,7 @@ internal.marks = function(opts)
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
     push_cursor_on_edit = true,
+    push_tagstack_on_edit = true,
   }):find()
 end
 
