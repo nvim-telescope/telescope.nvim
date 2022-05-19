@@ -65,8 +65,6 @@ local action_utils = require "telescope.actions.utils"
 local action_set = require "telescope.actions.set"
 local entry_display = require "telescope.pickers.entry_display"
 local from_entry = require "telescope.from_entry"
-local async = require "plenary.async"
-local await_schedule = async.util.scheduler
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 local resolver = require "telescope.config.resolve"
@@ -345,20 +343,17 @@ end
 --- Close the Telescope window, usually used within an action
 ---@param prompt_bufnr number: The prompt bufnr
 actions.close = function(prompt_bufnr)
-  action_state.get_current_history():reset()
   local picker = action_state.get_current_picker(prompt_bufnr)
   local original_win_id = picker.original_win_id
   local original_cursor = a.nvim_win_get_cursor(original_win_id)
 
   actions.close_pum(prompt_bufnr)
-  await_schedule(function()
-    if a.nvim_win_is_valid(original_win_id) then
-      a.nvim_win_set_cursor(original_win_id, original_cursor)
-    end
-  end)
 
   require("telescope.pickers").on_close_prompt(prompt_bufnr)
   pcall(a.nvim_set_current_win, original_win_id)
+  if a.nvim_get_mode().mode == "i" then
+    pcall(a.nvim_win_set_cursor, original_win_id, { original_cursor[1], original_cursor[2] + 1 })
+  end
 end
 
 --- Close the Telescope window, usually used within an action<br>

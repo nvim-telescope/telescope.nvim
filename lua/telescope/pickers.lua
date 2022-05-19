@@ -1416,6 +1416,7 @@ end
 function pickers.on_close_prompt(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
+  require("telescope.actions.state").get_current_history():reset()
 
   if type(picker.cache_picker) == "table" then
     local cached_pickers = state.get_global_key "cached_pickers" or {}
