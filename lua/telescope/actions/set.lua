@@ -132,6 +132,7 @@ action_set.edit = function(prompt_bufnr, command)
 
   local picker = action_state.get_current_picker(prompt_bufnr)
   require("telescope.pickers").on_close_prompt(prompt_bufnr)
+  pcall(vim.api.nvim_set_current_win, picker.original_win_id)
   local win_id = picker.get_selection_window(picker, entry)
 
   if picker.push_cursor_on_edit then
