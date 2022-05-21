@@ -600,7 +600,7 @@ function Picker:find()
 end
 
 --- A helper function to update picker windows when layout options are changed
-function Picker:recalculate_layout()
+function Picker:_recalculate_layout()
   local line_count = vim.o.lines - vim.o.cmdheight
   if vim.o.laststatus ~= 0 then
     line_count = line_count - 1
@@ -697,10 +697,10 @@ local update_scroll = function(win, oldinfo, oldcursor, strategy, buf_maxline)
 end
 
 --- A wrapper for `Picker:recalculate_layout()` that also handles maintaining cursor position
-function Picker:full_layout_update()
+function Picker:_full_layout_update()
   local oldinfo = vim.fn.getwininfo(self.results_win)[1]
   local oldcursor = vim.api.nvim_win_get_cursor(self.results_win)
-  self:recalculate_layout()
+  self:_recalculate_layout()
   self:refresh_previewer()
 
   -- update scrolled position
