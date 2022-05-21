@@ -774,6 +774,33 @@ as there are spaces in the option.
 
 
 ================================================================================
+Picker                                                                *Picker*
+
+
+
+pickers.new({opts}, {defaults})                                *pickers.new()*
+    Wrapper function for `Picker:new` that incorporates user provided `opts`
+    with the telescope `defaults`
+
+
+    Parameters: ~
+        {opts}     (table)
+        {defaults} (table)
+
+    Return: ~
+        Picker
+
+
+pickers.on_close_prompt({prompt_bufnr})            *pickers.on_close_prompt()*
+    Close the picker which has prompt with buffer number `prompt_bufnr`
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)
+
+
+
+================================================================================
                                                              *telescope.builtin*
 
 Telescope Builtins is a collection of community maintained pickers to support
