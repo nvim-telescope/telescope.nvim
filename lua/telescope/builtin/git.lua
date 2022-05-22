@@ -22,8 +22,8 @@ git.files = function(opts)
     return
   end
 
-  local show_untracked = utils.get_default(opts.show_untracked, false)
-  local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
+  local show_untracked = vim.F.if_nil(opts.show_untracked, false)
+  local recurse_submodules = vim.F.if_nil(opts.recurse_submodules, false)
   if show_untracked and recurse_submodules then
     utils.notify("builtin.git_files", {
       msg = "Git does not support both --others and --recurse-submodules",
@@ -317,7 +317,7 @@ git.status = function(opts)
   end
 
   local gen_new_finder = function()
-    local expand_dir = utils.if_nil(opts.expand_dir, true, opts.expand_dir)
+    local expand_dir = vim.F.if_nil(opts.expand_dir, true)
     local git_cmd = { "git", "status", "-s", "--", "." }
 
     if expand_dir then
@@ -374,7 +374,7 @@ local set_opts_cwd = function(opts)
 
   -- Find root of git directory and remove trailing newline characters
   local git_root, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
-  local use_git_root = utils.get_default(opts.use_git_root, true)
+  local use_git_root = vim.F.if_nil(opts.use_git_root, true)
 
   if ret ~= 0 then
     local in_worktree = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
