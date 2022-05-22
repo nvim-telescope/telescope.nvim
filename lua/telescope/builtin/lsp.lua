@@ -186,7 +186,7 @@ lsp.workspace_symbols = function(opts)
       return
     end
 
-    opts.ignore_filename = utils.get_default(opts.ignore_filename, false)
+    opts.ignore_filename = vim.F.if_nil(opts.ignore_filename, false)
 
     pickers.new(opts, {
       prompt_title = "LSP Workspace Symbols",
