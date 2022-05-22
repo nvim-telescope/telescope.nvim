@@ -783,6 +783,17 @@ append(
   Example: { "%.npz" } -- ignore all npz files
   See: https://www.lua.org/manual/5.1/manual.html#5.4.1 for more
   information about lua regex
+  Note: `file_ignore_patterns` will be used in all pickers that have a
+  file associated. This might lead to the problem that lsp_ pickers
+  aren't displaying results because they might be ignored by
+  `file_ignore_patterns`. For example, setting up node_modules as ignored
+  will never show node_modules in any results, even if you are
+  interested in lsp_ results.
+
+  If you only want `file_ignore_patterns` for `find_files` and
+  `grep_string`/`live_grep` it is suggested that you setup `gitignore`
+  and have fd and or ripgrep installed because both tools will not show
+  `gitignore`d files on default.
 
   Default: nil]]
 )
