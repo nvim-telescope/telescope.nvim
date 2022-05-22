@@ -718,8 +718,11 @@ function Picker:delete_selection(delete_cb)
     return x > y
   end)
   for _, index in ipairs(selection_index) do
-    local selection = table.remove(self.finder.results, index)
-    delete_cb(selection)
+    local selection = self.finder.results[index]
+    local delete_cb_return = delete_cb(selection)
+    if delete_cb_return then
+        local selection = table.remove(self.finder.results, index)
+    end
   end
 
   if used_multi_select then
