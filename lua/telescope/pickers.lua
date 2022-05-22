@@ -24,8 +24,6 @@ local p_window = require "telescope.pickers.window"
 local EntryManager = require "telescope.entry_manager"
 local MultiSelect = require "telescope.pickers.multi"
 
-local get_default = utils.get_default
-
 local truncate = require("plenary.strings").truncate
 local strdisplaywidth = require("plenary.strings").strdisplaywidth
 
@@ -65,27 +63,27 @@ function Picker:new(opts)
   --   pcall(v.clear)
   -- end
 
-  local layout_strategy = get_default(opts.layout_strategy, config.values.layout_strategy)
+  local layout_strategy = vim.F.if_nil(opts.layout_strategy, config.values.layout_strategy)
 
   local obj = setmetatable({
-    prompt_title = get_default(opts.prompt_title, config.values.prompt_title),
-    results_title = get_default(opts.results_title, config.values.results_title),
+    prompt_title = vim.F.if_nil(opts.prompt_title, config.values.prompt_title),
+    results_title = vim.F.if_nil(opts.results_title, config.values.results_title),
     -- either whats passed in by the user or whats defined by the previewer
     preview_title = opts.preview_title,
 
-    prompt_prefix = get_default(opts.prompt_prefix, config.values.prompt_prefix),
-    wrap_results = get_default(opts.wrap_results, config.values.wrap_results),
-    selection_caret = get_default(opts.selection_caret, config.values.selection_caret),
-    entry_prefix = get_default(opts.entry_prefix, config.values.entry_prefix),
-    multi_icon = get_default(opts.multi_icon, config.values.multi_icon),
+    prompt_prefix = vim.F.if_nil(opts.prompt_prefix, config.values.prompt_prefix),
+    wrap_results = vim.F.if_nil(opts.wrap_results, config.values.wrap_results),
+    selection_caret = vim.F.if_nil(opts.selection_caret, config.values.selection_caret),
+    entry_prefix = vim.F.if_nil(opts.entry_prefix, config.values.entry_prefix),
+    multi_icon = vim.F.if_nil(opts.multi_icon, config.values.multi_icon),
 
-    initial_mode = get_default(opts.initial_mode, config.values.initial_mode),
+    initial_mode = vim.F.if_nil(opts.initial_mode, config.values.initial_mode),
     _original_mode = vim.api.nvim_get_mode().mode,
-    debounce = get_default(tonumber(opts.debounce), nil),
+    debounce = vim.F.if_nil(tonumber(opts.debounce), nil),
 
     _finder_attached = true,
     default_text = opts.default_text,
-    get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
+    get_status_text = vim.F.if_nil(opts.get_status_text, config.values.get_status_text),
     _on_input_filter_cb = opts.on_input_filter_cb or function() end,
 
     finder = assert(opts.finder, "Finder is required."),
@@ -96,7 +94,7 @@ function Picker:new(opts)
 
     default_selection_index = opts.default_selection_index,
 
-    get_selection_window = get_default(opts.get_selection_window, config.values.get_selection_window),
+    get_selection_window = vim.F.if_nil(opts.get_selection_window, config.values.get_selection_window),
 
     cwd = opts.cwd,
 
@@ -107,32 +105,32 @@ function Picker:new(opts)
         and opts._multi
       or MultiSelect:new(),
 
-    track = get_default(opts.track, false),
+    track = vim.F.if_nil(opts.track, false),
     stats = {},
 
     attach_mappings = opts.attach_mappings,
-    file_ignore_patterns = get_default(opts.file_ignore_patterns, config.values.file_ignore_patterns),
+    file_ignore_patterns = vim.F.if_nil(opts.file_ignore_patterns, config.values.file_ignore_patterns),
 
-    scroll_strategy = get_default(opts.scroll_strategy, config.values.scroll_strategy),
-    sorting_strategy = get_default(opts.sorting_strategy, config.values.sorting_strategy),
-    tiebreak = get_default(opts.tiebreak, config.values.tiebreak),
-    selection_strategy = get_default(opts.selection_strategy, config.values.selection_strategy),
+    scroll_strategy = vim.F.if_nil(opts.scroll_strategy, config.values.scroll_strategy),
+    sorting_strategy = vim.F.if_nil(opts.sorting_strategy, config.values.sorting_strategy),
+    tiebreak = vim.F.if_nil(opts.tiebreak, config.values.tiebreak),
+    selection_strategy = vim.F.if_nil(opts.selection_strategy, config.values.selection_strategy),
 
-    push_cursor_on_edit = get_default(opts.push_cursor_on_edit, false),
-    push_tagstack_on_edit = get_default(opts.push_tagstack_on_edit, false),
+    push_cursor_on_edit = vim.F.if_nil(opts.push_cursor_on_edit, false),
+    push_tagstack_on_edit = vim.F.if_nil(opts.push_tagstack_on_edit, false),
 
     layout_strategy = layout_strategy,
     layout_config = config.smarter_depth_2_extend(opts.layout_config or {}, config.values.layout_config or {}),
 
-    __cycle_layout_list = get_default(opts.cycle_layout_list, config.values.cycle_layout_list),
+    __cycle_layout_list = vim.F.if_nil(opts.cycle_layout_list, config.values.cycle_layout_list),
 
     window = {
-      winblend = get_default(
+      winblend = vim.F.if_nil(
         opts.winblend,
         type(opts.window) == "table" and opts.window.winblend or config.values.winblend
       ),
-      border = get_default(opts.border, type(opts.window) == "table" and opts.window.border or config.values.border),
-      borderchars = get_default(
+      border = vim.F.if_nil(opts.border, type(opts.window) == "table" and opts.window.border or config.values.border),
+      borderchars = vim.F.if_nil(
         opts.borderchars,
         type(opts.window) == "table" and opts.window.borderchars or config.values.borderchars
       ),

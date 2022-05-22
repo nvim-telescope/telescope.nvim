@@ -20,6 +20,7 @@ utils.get_separator = function()
 end
 
 utils.if_nil = function(x, was_nil, was_not_nil)
+  log.error "telescope.utils.if_nil is deprecated and will be removed. Please use vim.F.if_nil"
   if x == nil then
     return was_nil
   else
@@ -28,6 +29,7 @@ utils.if_nil = function(x, was_nil, was_not_nil)
 end
 
 utils.get_default = function(x, default)
+  log.error "telescope.utils.get_default is deprecated and will be removed. Please use vim.F.if_nil"
   return utils.if_nil(x, default, x)
 end
 
@@ -198,7 +200,7 @@ utils.path_tail = (function()
 end)()
 
 utils.is_path_hidden = function(opts, path_display)
-  path_display = path_display or utils.get_default(opts.path_display, require("telescope.config").values.path_display)
+  path_display = path_display or vim.F.if_nil(opts.path_display, require("telescope.config").values.path_display)
 
   return path_display == nil
     or path_display == "hidden"
@@ -235,7 +237,7 @@ utils.transform_path = function(opts, path)
     return path
   end
 
-  local path_display = utils.get_default(opts.path_display, require("telescope.config").values.path_display)
+  local path_display = vim.F.if_nil(opts.path_display, require("telescope.config").values.path_display)
 
   local transformed_path = path
 
