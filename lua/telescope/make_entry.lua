@@ -817,6 +817,7 @@ function make_entry.gen_from_vimoptions()
     items = {
       { width = 25 },
       { width = 12 },
+      { width = 11 },
       { remaining = true },
     },
   }
@@ -825,6 +826,7 @@ function make_entry.gen_from_vimoptions()
     return displayer {
       { entry.value.name, "Keyword" },
       { "[" .. entry.value.type .. "]", "Type" },
+      { "[" .. entry.value.scope .. "]", "Identifier" },
       utils.display_termcodes(tostring(entry.value.value)),
     }
   end
@@ -836,13 +838,17 @@ function make_entry.gen_from_vimoptions()
         name = o.name,
         value = o.default,
         type = o.type,
+        scope = o.scope,
       },
-      ordinal = o.name,
+      ordinal = string.format("%s %s %s", o.name, o.type, o.scope),
     }
 
     local ok, value = pcall(vim.api.nvim_get_option, o.name)
     if ok then
       entry.value.value = value
+      entry.ordinal = entry.ordinal .. " " .. utils.display_termcodes(tostring(value))
+    else
+      entry.ordinal = entry.ordinal .. " " .. utils.display_termcodes(tostring(o.default))
     end
 
     return entry
