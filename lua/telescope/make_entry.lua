@@ -754,7 +754,7 @@ function make_entry.gen_from_picker(opts)
     return {
       value = entry,
       text = entry.prompt_title,
-      ordinal = string.format("%s %s", entry.prompt_title, utils.get_default(entry.default_text, "")),
+      ordinal = string.format("%s %s", entry.prompt_title, vim.F.if_nil(entry.default_text, "")),
       display = make_display,
     }
   end
@@ -978,7 +978,7 @@ function make_entry.gen_from_diagnostics(opts)
   end)()
 
   local display_items = {
-    { width = utils.if_nil(signs, 8, 10) },
+    { width = signs ~= nil and 10 or 8 },
     { remaining = true },
   }
   local line_width = vim.F.if_nil(opts.line_width, 0.5)

@@ -272,7 +272,7 @@ end
 
 --  TODO: finish docs for opts.show_line
 files.treesitter = function(opts)
-  opts.show_line = utils.get_default(opts.show_line, true)
+  opts.show_line = vim.F.if_nil(opts.show_line, true)
 
   local has_nvim_treesitter, _ = pcall(require, "nvim-treesitter")
   if not has_nvim_treesitter then
