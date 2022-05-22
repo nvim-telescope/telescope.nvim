@@ -83,6 +83,7 @@ function Picker:new(opts)
     _original_mode = vim.api.nvim_get_mode().mode,
     debounce = get_default(tonumber(opts.debounce), nil),
 
+    _finder_attached = true,
     default_text = opts.default_text,
     get_status_text = get_default(opts.get_status_text, config.values.get_status_text),
     _on_input_filter_cb = opts.on_input_filter_cb or function() end,
@@ -505,10 +506,12 @@ function Picker:find()
   -- Register attach
   vim.api.nvim_buf_attach(prompt_bufnr, false, {
     on_lines = function(...)
-      find_id = self:_next_find_id()
+      if self._finder_attached then
+        find_id = self:_next_find_id()
 
-      status_updater { completed = false }
-      self._on_lines(...)
+        status_updater { completed = false }
+        self._on_lines(...)
+      end
     end,
 
     on_detach = function()
@@ -1365,6 +1368,16 @@ function Picker:_do_selection(prompt)
     else
       self:set_selection(self:get_reset_row())
     end
+  elseif selection_strategy == "none" then
+    if self._selection_entry then
+      local old_entry, old_row = self._selection_entry, self._selection_row
+      self:reset_selection() -- required to reset selection before updating prefix
+      if old_row >= 0 then
+        self:update_prefix(old_entry, old_row)
+        self.highlighter:hi_multiselect(old_row, self:is_multi_selected(old_entry))
+      end
+    end
+    return
   else
     error("Unknown selection strategy: " .. selection_strategy)
   end
@@ -1493,6 +1506,11 @@ end
 function Picker:_reset_highlights()
   self.highlighter:clear_display()
   vim.api.nvim_buf_clear_namespace(self.results_bufnr, ns_telescope_matching, 0, -1)
+end
+
+-- Toggles whether finder is attached to prompt buffer input
+function Picker:_toggle_finder_attach()
+  self._finder_attached = not self._finder_attached
 end
 
 function Picker:_detach()
