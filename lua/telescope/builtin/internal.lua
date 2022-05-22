@@ -32,7 +32,7 @@ end
 local internal = {}
 
 internal.builtin = function(opts)
-  opts.include_extensions = utils.get_default(opts.include_extensions, false)
+  opts.include_extensions = vim.F.if_nil(opts.include_extensions, false)
 
   local objs = {}
 
@@ -464,7 +464,7 @@ end
 
 internal.oldfiles = function(opts)
   opts = apply_cwd_only_aliases(opts)
-  opts.include_current_session = utils.get_default(opts.include_current_session, true)
+  opts.include_current_session = vim.F.if_nil(opts.include_current_session, true)
 
   local current_buffer = vim.api.nvim_get_current_buf()
   local current_file = vim.api.nvim_buf_get_name(current_buffer)
@@ -610,8 +610,8 @@ internal.vim_options = function(opts)
 end
 
 internal.help_tags = function(opts)
-  opts.lang = utils.get_default(opts.lang, vim.o.helplang)
-  opts.fallback = utils.get_default(opts.fallback, true)
+  opts.lang = vim.F.if_nil(opts.lang, vim.o.helplang)
+  opts.fallback = vim.F.if_nil(opts.fallback, true)
   opts.file_ignore_patterns = {}
 
   local langs = vim.split(opts.lang, ",", true)
@@ -714,7 +714,7 @@ internal.help_tags = function(opts)
 end
 
 internal.man_pages = function(opts)
-  opts.sections = utils.get_default(opts.sections, { "1" })
+  opts.sections = vim.F.if_nil(opts.sections, { "1" })
   assert(vim.tbl_islist(opts.sections), "sections should be a list")
   opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
     local is_darwin = vim.loop.os_uname().sysname == "Darwin"
