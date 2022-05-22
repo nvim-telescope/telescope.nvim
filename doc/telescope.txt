@@ -655,6 +655,17 @@ telescope.setup({opts})                                    *telescope.setup()*
         Example: { "%.npz" } -- ignore all npz files
         See: https://www.lua.org/manual/5.1/manual.html#5.4.1 for more
         information about lua regex
+        Note: `file_ignore_patterns` will be used in all pickers that have a
+        file associated. This might lead to the problem that lsp_ pickers
+        aren't displaying results because they might be ignored by
+        `file_ignore_patterns`. For example, setting up node_modules as ignored
+        will never show node_modules in any results, even if you are
+        interested in lsp_ results.
+
+        If you only want `file_ignore_patterns` for `find_files` and
+        `grep_string`/`live_grep` it is suggested that you setup `gitignore`
+        and have fd and or ripgrep installed because both tools will not show
+        `gitignore`d files on default.
 
         Default: nil
 
@@ -1941,6 +1952,39 @@ resolver.resolve_anchor_pos()         *telescope.resolve.resolve_anchor_pos()*
         the picker will move to the corresponding edge/corner e.g. "NW" -> "top
         left corner", "E" -> "right edge", "S" -> "bottom edge"
 
+
+
+
+================================================================================
+                                                               *telescope.utils*
+
+Utilities for writing telescope pickers
+
+utils.transform_path({opts}, {path})        *telescope.utils.transform_path()*
+    Transform path is a util function that formats a path based on path_display
+    found in `opts` or the default value from config. It is meant to be used in
+    make_entry to have a uniform interface for builtins as well as extensions
+    utilizing the same user configuration Note: It is only supported inside
+    `make_entry`/`make_display` the use of this function outside of telescope
+    might yield to undefined behavior and will not be addressed by us
+
+
+    Parameters: ~
+        {opts} (table)   The opts the users passed into the picker. Might
+                         contains a path_display key
+        {path} (string)  The path that should be formated
+
+    Return: ~
+        string: The transformed path ready to be displayed
+
+
+utils.notify({funname}, {opts})                     *telescope.utils.notify()*
+    Telescope Wrapper around vim.notify
+
+
+    Parameters: ~
+        {funname} (string)  name of the function that will be
+        {opts}    (table)   opts.level string, opts.msg string, opts.once bool
 
 
 
