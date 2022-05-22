@@ -1,3 +1,10 @@
+---@tag telescope.utils
+---@config { ["module"] = "telescope.utils" }
+
+---@brief [[
+--- Utilities for writing telescope pickers
+---@brief ]]
+
 local Path = require "plenary.path"
 local Job = require "plenary.job"
 
@@ -210,6 +217,16 @@ local calc_result_length = function(truncate_len)
   return type(truncate_len) == "number" and len - truncate_len or len
 end
 
+--- Transform path is a util function that formats a path based on path_display
+--- found in `opts` or the default value from config.
+--- It is meant to be used in make_entry to have a uniform interface for
+--- builtins as well as extensions utilizing the same user configuration
+--- Note: It is only supported inside `make_entry`/`make_display` the use of
+--- this function outside of telescope might yield to undefined behavior and will
+--- not be addressed by us
+---@param opts table: The opts the users passed into the picker. Might contains a path_display key
+---@param path string: The path that should be formated
+---@return string: The transformed path ready to be displayed
 utils.transform_path = function(opts, path)
   if path == nil then
     return
