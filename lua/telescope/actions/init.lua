@@ -604,7 +604,7 @@ actions.git_switch_branch = function(prompt_bufnr)
         selection.value,
         table.concat(stderr, " ")
       ),
-      level = "ERORR",
+      level = "ERROR",
     })
   end
 end
