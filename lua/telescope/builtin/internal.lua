@@ -349,7 +349,7 @@ internal.commands = function(opts)
           vim.cmd(cmd)
         else
           vim.cmd [[stopinsert]]
-          vim.fn.feedkeys(cmd)
+          vim.fn.feedkeys(cmd, "n")
         end
       end)
 
