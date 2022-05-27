@@ -181,6 +181,7 @@ files.find_files = function(opts)
   local command = find_command[1]
   local hidden = opts.hidden
   local no_ignore = opts.no_ignore
+  local no_wildignore = opts.no_wildignore
   local follow = opts.follow
   local search_dirs = opts.search_dirs
 
@@ -196,6 +197,12 @@ files.find_files = function(opts)
     end
     if no_ignore then
       table.insert(find_command, "--no-ignore")
+    end
+    if not no_wildignore then
+      for _, ignore_pattern in pairs(vim.opt.wildignore:get()) do
+        table.insert(find_command, { "--exclude", ignore_pattern })
+      end
+      find_command = flatten(find_command)
     end
     if follow then
       table.insert(find_command, "-L")
@@ -216,6 +223,19 @@ files.find_files = function(opts)
     if no_ignore ~= nil then
       log.warn "The `no_ignore` key is not available for the `find` command in `find_files`."
     end
+    if not no_wildignore then
+      local wildignore = vim.opt.wildignore:get()
+      local wildignore_end = #wildignore
+      table.insert(find_command, { "-not", "(" })
+      for idx, ignore_pattern in pairs(wildignore) do
+        table.insert(find_command, { "-path", ignore_pattern })
+        if idx ~= wildignore_end then
+          table.insert(find_command, "-or")
+        end
+      end
+      find_command = flatten(find_command)
+      table.insert(find_command, ")")
+    end
     if follow then
       table.insert(find_command, 2, "-L")
     end
@@ -231,6 +251,9 @@ files.find_files = function(opts)
     end
     if no_ignore ~= nil then
       log.warn "The `no_ignore` key is not available for the Windows `where` command in `find_files`."
+    end
+    if no_wildignore ~= nil then
+      log.warn "The `no_wildignore` key is not available for the Windows `where` command in `find_files`."
     end
     if follow ~= nil then
       log.warn "The `follow` key is not available for the Windows `where` command in `find_files`."
