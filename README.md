@@ -263,7 +263,7 @@ Built-in functions. Ready to be bound to any key you like.
 | `builtin.git_files`                 | Fuzzy search through the output of `git ls-files` command, respects .gitignore, optionally ignores untracked files                |
 | `builtin.grep_string`               | Searches for the string under your cursor in your current working directory                                                       |
 | `builtin.live_grep`                 | Search for a string in your current working directory and get results live as you type (respecting .gitignore)                    |
-| `builtin.git_grep`                  | Search for a string in the files tracked by Git, uses the output of `git grep` command                                            |
+| `builtin.git_live_grep`             | Search for a string in the files tracked by Git, uses the output of `git grep` command                                            |
 
 ### Vim Pickers
 

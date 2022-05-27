@@ -53,9 +53,9 @@ git.files = function(opts)
   }):find()
 end
 
-git.grep = function(opts)
+git.live_grep = function(opts)
   if opts.is_bare then
-    utils.notify("builtin.git_grep", {
+    utils.notify("builtin.git_live_grep", {
       msg = "This operation must be run in a work tree",
       level = "ERROR",
     })
@@ -66,7 +66,7 @@ git.grep = function(opts)
 
   local git_command = vim.F.if_nil(opts.git_command, { "git", "grep", "--line-number", "--column" })
 
-  local live_git_grepper = finders.new_job(function(prompt)
+  local git_live_grepper = finders.new_job(function(prompt)
     if not prompt or prompt == "" then
       return nil
     end
@@ -74,8 +74,8 @@ git.grep = function(opts)
   end, opts.entry_maker or make_entry.gen_from_vimgrep(opts), opts.max_results, opts.cwd)
 
   pickers.new(opts, {
-    prompt_title = "Git Grep",
-    finder = live_git_grepper,
+    prompt_title = "Git Live Grep",
+    finder = git_live_grepper,
     previewer = conf.grep_previewer(opts),
     sorter = sorters.highlighter_only(opts),
   }):find()

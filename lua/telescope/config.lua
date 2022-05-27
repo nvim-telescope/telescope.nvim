@@ -823,7 +823,7 @@ append(
   end,
   [[
     Function pointer to the default vim_grep previewer. It is mostly
-    used for live_grep, grep_string, git_grep and similar.
+    used for live_grep, grep_string, git_live_grep and similar.
     You can change this function pointer to either use your own
     previewer or use the command-line program bat as the previewer:
       require("telescope.previewers").vimgrep.new
