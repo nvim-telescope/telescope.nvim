@@ -64,7 +64,7 @@ git.live_grep = function(opts)
 
   local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
 
-  local git_command = vim.F.if_nil(opts.git_command, { "git", "grep", "--line-number", "--column" })
+  local git_command = vim.F.if_nil(opts.git_command, { "git", "grep", "--line-number", "--column", "-I" })
 
   local git_live_grepper = finders.new_job(function(prompt)
     if not prompt or prompt == "" then
