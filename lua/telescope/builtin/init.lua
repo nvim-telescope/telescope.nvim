@@ -137,6 +137,16 @@ builtin.current_buffer_tags = require_on_exported_call("telescope.builtin.files"
 ---@field git_command table: command that will be exectued. {"git","ls-files","--exclude-standard","--cached"}
 builtin.git_files = require_on_exported_call("telescope.builtin.git").files
 
+--- Search for a string in files tracked by Git and get results live as you type. This command lists the output of
+--- the `git grep` command
+---@param opts table: options to pass to the picker
+---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to command (default: false)
+---@field git_command table: command that will be exectued. {"git", "grep", "--line-number", "--column"}
+---@field max_results number: define a upper result value
+builtin.git_grep = require_on_exported_call("telescope.builtin.git").grep
+
 --- Lists commits for current directory with diff preview
 --- - Default keymaps:
 ---   - `<cr>`: checks out the currently selected commit

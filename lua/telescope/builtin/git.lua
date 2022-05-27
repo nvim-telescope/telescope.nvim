@@ -4,12 +4,13 @@ local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
 local pickers = require "telescope.pickers"
 local previewers = require "telescope.previewers"
+local sorters = require "telescope.sorters"
 local utils = require "telescope.utils"
 local entry_display = require "telescope.pickers.entry_display"
+local conf = require("telescope.config").values
+
 local strings = require "plenary.strings"
 local Path = require "plenary.path"
-
-local conf = require("telescope.config").values
 
 local git = {}
 
@@ -49,6 +50,34 @@ git.files = function(opts)
     ),
     previewer = conf.file_previewer(opts),
     sorter = conf.file_sorter(opts),
+  }):find()
+end
+
+git.grep = function(opts)
+  if opts.is_bare then
+    utils.notify("builtin.git_grep", {
+      msg = "This operation must be run in a work tree",
+      level = "ERROR",
+    })
+    return
+  end
+
+  local recurse_submodules = utils.get_default(opts.recurse_submodules, false)
+
+  local git_command = vim.F.if_nil(opts.git_command, { "git", "grep", "--line-number", "--column" })
+
+  local live_git_grepper = finders.new_job(function(prompt)
+    if not prompt or prompt == "" then
+      return nil
+    end
+    return vim.tbl_flatten { git_command, recurse_submodules, "--", prompt }
+  end, opts.entry_maker or make_entry.gen_from_vimgrep(opts), opts.max_results, opts.cwd)
+
+  pickers.new(opts, {
+    prompt_title = "Git Grep",
+    finder = live_git_grepper,
+    previewer = conf.grep_previewer(opts),
+    sorter = sorters.highlighter_only(opts),
   }):find()
 end
 
