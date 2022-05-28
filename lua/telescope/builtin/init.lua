@@ -143,7 +143,7 @@ builtin.git_files = require_on_exported_call("telescope.builtin.git").files
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to command (default: false)
----@field git_command table: command that will be exectued. {"git", "grep", "--line-number", "--column", "-I"}
+---@field git_command table: command that will be exectued. {"git", "grep", "--line-number", "--column", "-I", "--ignore-case"}
 ---@field max_results number: define a upper result value
 builtin.git_live_grep = require_on_exported_call("telescope.builtin.git").live_grep
 
