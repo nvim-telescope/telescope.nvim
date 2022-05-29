@@ -200,9 +200,9 @@ files.find_files = function(opts)
     end
     if not no_wildignore then
       for _, ignore_pattern in pairs(vim.opt.wildignore:get()) do
-        table.insert(find_command, { "--exclude", ignore_pattern })
+        table.insert(find_command, "--exclude")
+        table.insert(find_command, ignore_pattern)
       end
-      find_command = flatten(find_command)
     end
     if follow then
       table.insert(find_command, "-L")
@@ -226,14 +226,15 @@ files.find_files = function(opts)
     if not no_wildignore then
       local wildignore = vim.opt.wildignore:get()
       local wildignore_end = #wildignore
-      table.insert(find_command, { "-not", "(" })
+      table.insert(find_command, "-not")
+      table.insert(find_command, "(")
       for idx, ignore_pattern in pairs(wildignore) do
-        table.insert(find_command, { "-path", ignore_pattern })
+        table.insert(find_command, "-path")
+        table.insert(find_command, ignore_pattern)
         if idx ~= wildignore_end then
           table.insert(find_command, "-or")
         end
       end
-      find_command = flatten(find_command)
       table.insert(find_command, ")")
     end
     if follow then
