@@ -236,6 +236,7 @@ files.find_files = function(opts)
         table.insert(find_command, "(")
         for idx, ignore_pattern in pairs(wildignore) do
           table.insert(find_command, "-path")
+          ignore_pattern = "*" .. ignore_pattern .. "*"
           table.insert(find_command, ignore_pattern)
           if idx ~= wildignore_end then
             table.insert(find_command, "-or")
