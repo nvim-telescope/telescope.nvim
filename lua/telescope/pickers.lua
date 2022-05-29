@@ -692,7 +692,7 @@ end
 ---
 --- Example usage in telescope:
 ---   - `actions.delete_buffer()`
----@param delete_cb function: called with each deleted selection
+---@param delete_cb function: called for each selection fn(s) -> bool|nil (true|nil removes the entry from the results)
 function Picker:delete_selection(delete_cb)
   vim.validate { delete_cb = { delete_cb, "f" } }
   local original_selection_strategy = self.selection_strategy
@@ -718,10 +718,9 @@ function Picker:delete_selection(delete_cb)
     return x > y
   end)
   for _, index in ipairs(selection_index) do
-    local selection = self.finder.results[index]
-    local delete_cb_return = delete_cb(selection)
-    if delete_cb_return then
-        local selection = table.remove(self.finder.results, index)
+    local delete_cb_return = delete_cb(self.finder.results[index])
+    if delete_cb_return == nil or delete_cb_return == true then
+      table.remove(self.finder.results, index)
     end
   end
 
