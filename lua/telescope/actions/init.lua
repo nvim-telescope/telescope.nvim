@@ -1020,7 +1020,9 @@ end
 actions.delete_buffer = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:delete_selection(function(selection)
-    vim.api.nvim_buf_delete(selection.bufnr, { force = false })
+    local force = vim.api.nvim_buf_get_option(selection.bufnr, "buftype") == "terminal"
+    local ok = pcall(vim.api.nvim_buf_delete, selection.bufnr, { force = force })
+    return ok
   end)
 end
 
