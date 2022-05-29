@@ -200,7 +200,12 @@ files.find_files = function(opts)
     end
     if not no_wildignore then
       for _, ignore_pattern in pairs(vim.opt.wildignore:get()) do
-        table.insert(find_command, "--exclude")
+        if command == "rg" then
+          table.insert(find_command, "--glob")
+          ignore_pattern = "!" .. ignore_pattern
+        else
+          table.insert(find_command, "--exclude")
+        end
         table.insert(find_command, ignore_pattern)
       end
     end
