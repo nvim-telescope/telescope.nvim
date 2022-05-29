@@ -144,6 +144,11 @@ internal.resume = function(opts)
     picker.cache_picker.disabled = true
   end
   opts.cache_picker = nil
+  picker.previewer = picker.all_previewers
+  if picker.hidden_previewer then
+    picker.hidden_previewer = nil
+    opts.previewer = vim.F.if_nil(opts.previewer, false)
+  end
   pickers.new(opts, picker):find()
 end
 
