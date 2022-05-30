@@ -459,7 +459,8 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.insert_symbol_i = function(prompt_bufnr)
   local symbol = action_state.get_selected_entry().value[1]
-  actions.close(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  pcall(a.nvim_set_current_win, picker.original_win_id)
   vim.schedule(function()
     vim.cmd [[startinsert]]
     vim.api.nvim_put({ symbol }, "", true, true)
