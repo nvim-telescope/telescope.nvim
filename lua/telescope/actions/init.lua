@@ -351,7 +351,7 @@ actions.close = function(prompt_bufnr)
 
   require("telescope.pickers").on_close_prompt(prompt_bufnr)
   pcall(a.nvim_set_current_win, original_win_id)
-  if a.nvim_get_mode().mode == "i" then
+  if a.nvim_get_mode().mode == "i" and picker._original_mode ~= "i" then
     pcall(a.nvim_win_set_cursor, original_win_id, { original_cursor[1], original_cursor[2] + 1 })
   end
 end
@@ -459,8 +459,7 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.insert_symbol_i = function(prompt_bufnr)
   local symbol = action_state.get_selected_entry().value[1]
-  local picker = action_state.get_current_picker(prompt_bufnr)
-  pcall(a.nvim_set_current_win, picker.original_win_id)
+  actions.close(prompt_bufnr)
   vim.schedule(function()
     vim.cmd [[startinsert]]
     vim.api.nvim_put({ symbol }, "", true, true)

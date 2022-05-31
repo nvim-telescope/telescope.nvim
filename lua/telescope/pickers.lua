@@ -80,6 +80,7 @@ function Picker:new(opts)
     multi_icon = get_default(opts.multi_icon, config.values.multi_icon),
 
     initial_mode = get_default(opts.initial_mode, config.values.initial_mode),
+    _original_mode = vim.api.nvim_get_mode().mode,
     debounce = get_default(tonumber(opts.debounce), nil),
 
     default_text = opts.default_text,
