@@ -351,7 +351,7 @@ actions.close = function(prompt_bufnr)
 
   require("telescope.pickers").on_close_prompt(prompt_bufnr)
   pcall(a.nvim_set_current_win, original_win_id)
-  if a.nvim_get_mode().mode == "i" then
+  if a.nvim_get_mode().mode == "i" and picker._original_mode ~= "i" then
     pcall(a.nvim_win_set_cursor, original_win_id, { original_cursor[1], original_cursor[2] + 1 })
   end
 end
