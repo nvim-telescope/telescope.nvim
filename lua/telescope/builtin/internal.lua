@@ -205,7 +205,7 @@ internal.planets = function(opts)
     end
   end
 
-  pickers.new({
+  pickers.new(opts, {
     prompt_title = "Planets",
     finder = finders.new_table {
       results = acceptable_files,
