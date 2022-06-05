@@ -212,6 +212,36 @@ action_set.scroll_results = function(prompt_bufnr, direction)
   action_set.shift_selection(prompt_bufnr, math.floor(speed) * direction)
 end
 
+--- Select the current previewer and open it in a new scratch buffer.
+---
+---@param prompt_bufnr number: The prompt bufnr
+---@param type string: The type of selection to make
+--          Valid types include: "default", "horizontal", "vertical", "tabedit"
+action_set.select_preview = function(prompt_bufnr, type, opts)
+  opts = opts or {}
+  opts.ft = utils.get_default(opts.ft, nil)
+
+  local picker = action_state.get_current_picker(prompt_bufnr) -- picker state
+
+  -- copy previewer content in new buffer
+  local preview_bufnr = picker.previewer.state.bufnr
+  local lines = vim.api.nvim_buf_get_lines(preview_bufnr, 0, -1, false)
+  local new_bufnr = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(new_bufnr, 0, -1, true, lines)
+
+  -- set context mark for jumplist
+  pcall(vim.api.nvim_set_current_win, picker.original_win_id)
+  vim.cmd "normal! m'"
+
+  -- open new buffer
+  edit_buffer(action_state.select_key_to_edit_key(type), new_bufnr)
+  if opts.ft == nil then
+    vim.cmd "filetype detect"
+  else
+    vim.api.nvim_buf_set_option(new_bufnr, 'filetype', opts.ft)
+  end
+end
+
 -- ==================================================
 -- Transforms modules and sets the corect metatables.
 -- ==================================================
