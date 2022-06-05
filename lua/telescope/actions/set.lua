@@ -222,6 +222,13 @@ action_set.select_preview = function(prompt_bufnr, type, opts)
   opts.ft = utils.get_default(opts.ft, nil)
 
   local picker = action_state.get_current_picker(prompt_bufnr) -- picker state
+  if picker.previewer.state == nil then
+    utils.notify("action_set.select_preview", {
+      msg = "There is no previewer open",
+      level = "ERROR",
+    })
+    return
+  end
 
   -- copy previewer content in new buffer
   local preview_bufnr = picker.previewer.state.bufnr
