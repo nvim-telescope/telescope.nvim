@@ -144,6 +144,7 @@ lsp.document_symbols = function(opts)
       return
     end
 
+    opts.path_display = { "hidden" }
     pickers.new(opts, {
       prompt_title = "LSP Document Symbols",
       finder = finders.new_table {

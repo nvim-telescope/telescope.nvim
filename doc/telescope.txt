@@ -1532,8 +1532,6 @@ builtin.lsp_workspace_symbols({opts}) *telescope.builtin.lsp_workspace_symbols()
     Options: ~
         {query}             (string)        for what to query the workspace
                                             (default: "")
-        {ignore_filename}   (boolean)       dont show filenames (default:
-                                            false)
         {show_line}         (boolean)       if true, shows the content of the
                                             line the tag is found on (default:
                                             false)
@@ -1554,8 +1552,6 @@ builtin.lsp_dynamic_workspace_symbols({opts}) *telescope.builtin.lsp_dynamic_wor
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {ignore_filename}   (boolean)       dont show filenames (default:
-                                            false)
         {show_line}         (boolean)       if true, shows the content of the
                                             line the symbol is found on
                                             (default: false)
