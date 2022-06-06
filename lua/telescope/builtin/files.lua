@@ -181,6 +181,7 @@ files.find_files = function(opts)
   local command = find_command[1]
   local hidden = opts.hidden
   local no_ignore = opts.no_ignore
+  local no_ignore_parent = opts.no_ignore_parent
   local follow = opts.follow
   local search_dirs = opts.search_dirs
 
@@ -196,6 +197,9 @@ files.find_files = function(opts)
     end
     if no_ignore then
       table.insert(find_command, "--no-ignore")
+    end
+    if no_ignore_parent then
+      table.insert(find_command, "--no-ignore-parent")
     end
     if follow then
       table.insert(find_command, "-L")
@@ -216,6 +220,9 @@ files.find_files = function(opts)
     if no_ignore ~= nil then
       log.warn "The `no_ignore` key is not available for the `find` command in `find_files`."
     end
+    if no_ignore_parent ~= nil then
+      log.warn "The `no_ignore_parent` key is not available for the `find` command in `find_files`."
+    end
     if follow then
       table.insert(find_command, 2, "-L")
     end
@@ -231,6 +238,9 @@ files.find_files = function(opts)
     end
     if no_ignore ~= nil then
       log.warn "The `no_ignore` key is not available for the Windows `where` command in `find_files`."
+    end
+    if no_ignore_parent ~= nil then
+      log.warn "The `no_ignore_parent` key is not available for the Windows `where` command in `find_files`."
     end
     if follow ~= nil then
       log.warn "The `follow` key is not available for the Windows `where` command in `find_files`."
