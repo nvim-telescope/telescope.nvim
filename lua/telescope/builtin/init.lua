@@ -81,6 +81,7 @@ builtin.grep_string = require_on_exported_call("telescope.builtin.files").grep_s
 ---@field follow boolean: if true, follows symlinks (i.e. uses `-L` flag for the `find` command)
 ---@field hidden boolean: determines whether to show hidden files or not (default: false)
 ---@field no_ignore boolean: show files ignored by .gitignore, .ignore, etc. (default: false)
+---@field no_ignore_parent boolean: show files ignored by .gitignore, .ignore, etc. in parent dirs. (default: false)
 ---@field search_dirs table: directory/directories to search in
 builtin.find_files = require_on_exported_call("telescope.builtin.files").find_files
 
