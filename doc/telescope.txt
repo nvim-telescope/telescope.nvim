@@ -878,19 +878,22 @@ builtin.find_files({opts})                    *telescope.builtin.find_files()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {cwd}          (string)   root dir to search from (default: cwd, use
-                                  utils.buffer_dir() to search relative to
-                                  open buffer)
-        {find_command} (table)    command line arguments for `find_files` to
-                                  use for the search, overrides default:
-                                  config
-        {follow}       (boolean)  if true, follows symlinks (i.e. uses `-L`
-                                  flag for the `find` command)
-        {hidden}       (boolean)  determines whether to show hidden files or
-                                  not (default: false)
-        {no_ignore}    (boolean)  show files ignored by .gitignore, .ignore,
-                                  etc. (default: false)
-        {search_dirs}  (table)    directory/directories to search in
+        {cwd}              (string)   root dir to search from (default: cwd,
+                                      use utils.buffer_dir() to search
+                                      relative to open buffer)
+        {find_command}     (table)    command line arguments for `find_files`
+                                      to use for the search, overrides
+                                      default: config
+        {follow}           (boolean)  if true, follows symlinks (i.e. uses
+                                      `-L` flag for the `find` command)
+        {hidden}           (boolean)  determines whether to show hidden files
+                                      or not (default: false)
+        {no_ignore}        (boolean)  show files ignored by .gitignore,
+                                      .ignore, etc. (default: false)
+        {no_ignore_parent} (boolean)  show files ignored by .gitignore,
+                                      .ignore, etc. in parent dirs. (default:
+                                      false)
+        {search_dirs}      (table)    directory/directories to search in
 
 
 builtin.fd()                                          *telescope.builtin.fd()*
