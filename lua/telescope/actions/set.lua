@@ -18,6 +18,8 @@ local Path = require "plenary.path"
 local state = require "telescope.state"
 local utils = require "telescope.utils"
 
+local pfiletype = require "plenary.filetype"
+
 local action_state = require "telescope.actions.state"
 
 local transform_mod = require("telescope.actions.mt").transform_mod
@@ -213,14 +215,10 @@ action_set.scroll_results = function(prompt_bufnr, direction)
 end
 
 --- Select the current previewer and open it in a new scratch buffer.
----
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param type string: The type of selection to make
 --          Valid types include: "default", "horizontal", "vertical", "tabedit"
-action_set.select_preview = function(prompt_bufnr, type, opts)
-  opts = opts or {}
-  opts.ft = utils.get_default(opts.ft, nil)
-
+action_set.select_preview = function(prompt_bufnr, type)
   local picker = action_state.get_current_picker(prompt_bufnr) -- picker state
   if picker.previewer == nil or picker.previewer.state == nil then
     utils.notify("action_set.select_preview", {
@@ -242,10 +240,24 @@ action_set.select_preview = function(prompt_bufnr, type, opts)
 
   -- open new buffer
   edit_buffer(action_state.select_key_to_edit_key(type), new_bufnr)
-  if opts.ft == nil then
-    vim.cmd "filetype detect"
+  local entry = action_state.get_selected_entry()
+  local filename, row, col
+  if entry.path or entry.filename then
+    filename = entry.path or entry.filename
+    row = entry.row or entry.lnum
+    col = entry.col
+    local ft = pfiletype.detect(filename)
+    if ft ~= nil then
+      a.nvim_buf_set_option(new_bufnr, "filetype", ft)
+    end
   else
-    vim.api.nvim_buf_set_option(new_bufnr, 'filetype', opts.ft)
+    vim.cmd "filetype detect"
+  end
+  if row and col then
+    local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, { row, col })
+    if not ok then
+      log.debug("Failed to move to cursor:", err_msg, row, col)
+    end
   end
 end
 
