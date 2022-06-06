@@ -417,20 +417,11 @@ files.tags = function(opts)
     })
     return
   end
-
-  local results = {}
-  for _, ctags_file in ipairs(tagfiles) do
-    for line in Path:new(vim.fn.expand(ctags_file, true)):iter() do
-      results[#results + 1] = line
-    end
-  end
+  opts.entry_maker = utils.get_default(opts.entry_maker, make_entry.gen_from_ctags(opts))
 
   pickers.new(opts, {
     prompt_title = "Tags",
-    finder = finders.new_table {
-      results = results,
-      entry_maker = opts.entry_maker or make_entry.gen_from_ctags(opts),
-    },
+    finder = finders.new_oneshot_job(flatten {"cat", tagfiles}, opts),
     previewer = previewers.ctags.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function()
