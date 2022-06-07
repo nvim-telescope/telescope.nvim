@@ -410,6 +410,9 @@ end
 
 files.tags = function(opts)
   local tagfiles = opts.ctags_file and { opts.ctags_file } or vim.fn.tagfiles()
+  for i,ctags_file in ipairs(tagfiles) do
+    tagfiles[i] = vim.fn.expand(ctags_file, true)
+  end
   if vim.tbl_isempty(tagfiles) then
     utils.notify("builtin.tags", {
       msg = "No tags file found. Create one with ctags -R",
