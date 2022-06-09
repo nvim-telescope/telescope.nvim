@@ -71,7 +71,7 @@ builtin.live_grep = require_on_exported_call("telescope.builtin.files").live_gre
 ---@field word_match string: can be set to `-w` to enable exact word matches
 ---@field additional_args function: function(opts) which returns a table of additional arguments to be passed on
 ---@field disable_coordinates boolean: don't show the line and row numbers (default: false)
----@field sort_only_text boolean: only sort the text, not the file, line or row (default: false)
+---@field only_sort_text boolean: only sort the text, not the file, line or row (default: false)
 builtin.grep_string = require_on_exported_call("telescope.builtin.files").grep_string
 
 --- Search for files (respecting .gitignore)

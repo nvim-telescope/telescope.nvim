@@ -854,7 +854,7 @@ builtin.grep_string({opts})                  *telescope.builtin.grep_string()*
                                           on
         {disable_coordinates} (boolean)   don't show the line and row numbers
                                           (default: false)
-        {sort_only_text}      (boolean)   only sort the text, not the file,
+        {only_sort_text}      (boolean)   only sort the text, not the file,
                                           line or row (default: false)
 
 
