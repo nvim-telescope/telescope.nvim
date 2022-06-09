@@ -754,7 +754,7 @@ function make_entry.gen_from_picker(opts)
     return {
       value = entry,
       text = entry.prompt_title,
-      ordinal = string.format("%s %s", entry.prompt_title, utils.get_default(entry.default_text, "")),
+      ordinal = string.format("%s %s", entry.prompt_title, vim.F.if_nil(entry.default_text, "")),
       display = make_display,
     }
   end
@@ -811,98 +811,45 @@ function make_entry.gen_from_buffer_lines(opts)
 end
 
 function make_entry.gen_from_vimoptions()
-  local process_one_opt = function(o)
-    local ok, value_origin
-
-    local option = {
-      name = "",
-      description = "",
-      current_value = "",
-      default_value = "",
-      value_type = "",
-      set_by_user = false,
-      last_set_from = "",
-    }
-
-    local is_global = false
-    for _, v in ipairs(o.scope) do
-      if v == "global" then
-        is_global = true
-      end
-    end
-
-    if not is_global then
-      return
-    end
-
-    if is_global then
-      option.name = o.full_name
-
-      ok, option.current_value = pcall(vim.api.nvim_get_option, o.full_name)
-      if not ok then
-        return
-      end
-
-      local str_funcname = o.short_desc()
-      option.description = assert(loadstring(str_funcname))()
-      -- if #option.description > opts.desc_col_length then
-      --   opts.desc_col_length = #option.description
-      -- end
-
-      if o.defaults ~= nil then
-        option.default_value = o.defaults.if_true.vim or o.defaults.if_true.vi
-      end
-
-      if type(option.default_value) == "function" then
-        option.default_value = "Macro: " .. option.default_value()
-      end
-
-      option.value_type = (type(option.current_value) == "boolean" and "bool" or type(option.current_value))
-
-      if option.current_value ~= option.default_value then
-        option.set_by_user = true
-        value_origin = vim.fn.execute("verbose set " .. o.full_name .. "?")
-        if string.match(value_origin, "Last set from") then
-          -- TODO: parse file and line number as separate items
-          option.last_set_from = value_origin:gsub("^.*Last set from ", "")
-        end
-      end
-
-      return option
-    end
-  end
-
   local displayer = entry_display.create {
     separator = "",
     hl_chars = { ["["] = "TelescopeBorder", ["]"] = "TelescopeBorder" },
     items = {
       { width = 25 },
       { width = 12 },
+      { width = 11 },
       { remaining = true },
     },
   }
 
   local make_display = function(entry)
     return displayer {
-      { entry.name, "Keyword" },
-      { "[" .. entry.value_type .. "]", "Type" },
-      utils.display_termcodes(tostring(entry.current_value)),
-      entry.description,
+      { entry.value.name, "Keyword" },
+      { "[" .. entry.value.type .. "]", "Type" },
+      { "[" .. entry.value.scope .. "]", "Identifier" },
+      utils.display_termcodes(tostring(entry.value.value)),
     }
   end
 
-  return function(line)
-    local entry = process_one_opt(line)
-    if not entry then
-      return
-    end
+  return function(o)
+    local entry = {
+      display = make_display,
+      value = {
+        name = o.name,
+        value = o.default,
+        type = o.type,
+        scope = o.scope,
+      },
+      ordinal = string.format("%s %s %s", o.name, o.type, o.scope),
+    }
 
-    entry.valid = true
-    entry.display = make_display
-    entry.value = line
-    entry.ordinal = line.full_name
-    -- entry.raw_value = d.raw_value
-    -- entry.last_set_from = d.last_set_from
+    local ok, value = pcall(vim.api.nvim_get_option, o.name)
+    if ok then
+      entry.value.value = value
+      entry.ordinal = entry.ordinal .. " " .. utils.display_termcodes(tostring(value))
+    else
+      entry.ordinal = entry.ordinal .. " " .. utils.display_termcodes(tostring(o.default))
+    end
 
     return entry
   end
@@ -1031,7 +978,7 @@ function make_entry.gen_from_diagnostics(opts)
   end)()
 
   local display_items = {
-    { width = utils.if_nil(signs, 8, 10) },
+    { width = signs ~= nil and 10 or 8 },
     { remaining = true },
   }
   local line_width = vim.F.if_nil(opts.line_width, 0.5)

@@ -81,6 +81,7 @@ builtin.grep_string = require_on_exported_call("telescope.builtin.files").grep_s
 ---@field follow boolean: if true, follows symlinks (i.e. uses `-L` flag for the `find` command)
 ---@field hidden boolean: determines whether to show hidden files or not (default: false)
 ---@field no_ignore boolean: show files ignored by .gitignore, .ignore, etc. (default: false)
+---@field no_ignore_parent boolean: show files ignored by .gitignore, .ignore, etc. in parent dirs. (default: false)
 ---@field search_dirs table: directory/directories to search in
 builtin.find_files = require_on_exported_call("telescope.builtin.files").find_files
 
@@ -132,7 +133,7 @@ builtin.current_buffer_tags = require_on_exported_call("telescope.builtin.files"
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
----@field show_untracked boolean: if true, adds `--others` flag to command and shows untracked files (default: true)
+---@field show_untracked boolean: if true, adds `--others` flag to command and shows untracked files (default: false)
 ---@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to command (default: false)
 ---@field git_command table: command that will be exectued. {"git","ls-files","--exclude-standard","--cached"}
 builtin.git_files = require_on_exported_call("telescope.builtin.git").files
