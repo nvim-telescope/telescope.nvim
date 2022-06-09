@@ -112,7 +112,10 @@ git.bcommits = function(opts)
   opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
   opts.current_file = vim.F.if_nil(opts.current_file, vim.api.nvim_buf_get_name(opts.bufnr))
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
-  local git_command = vim.F.if_nil(opts.git_command, { "git", "log", "--pretty=oneline", "--abbrev-commit" })
+  local git_command = vim.F.if_nil(
+    opts.git_command,
+    { "git", "log", "--pretty=oneline", "--abbrev-commit", "--follow" }
+  )
 
   pickers.new(opts, {
     prompt_title = "Git BCommits",
