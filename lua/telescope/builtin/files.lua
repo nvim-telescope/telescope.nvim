@@ -410,7 +410,7 @@ end
 
 files.tags = function(opts)
   local tagfiles = opts.ctags_file and { opts.ctags_file } or vim.fn.tagfiles()
-  for i,ctags_file in ipairs(tagfiles) do
+  for i, ctags_file in ipairs(tagfiles) do
     tagfiles[i] = vim.fn.expand(ctags_file, true)
   end
   if vim.tbl_isempty(tagfiles) then
@@ -420,11 +420,11 @@ files.tags = function(opts)
     })
     return
   end
-  opts.entry_maker = utils.get_default(opts.entry_maker, make_entry.gen_from_ctags(opts))
+  opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_ctags(opts))
 
   pickers.new(opts, {
     prompt_title = "Tags",
-    finder = finders.new_oneshot_job(flatten {"cat", tagfiles}, opts),
+    finder = finders.new_oneshot_job(flatten { "cat", tagfiles }, opts),
     previewer = previewers.ctags.new(opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function()
