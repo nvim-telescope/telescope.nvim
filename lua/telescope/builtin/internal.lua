@@ -33,7 +33,7 @@ local internal = {}
 
 internal.builtin = function(opts)
   opts.include_extensions = utils.get_default(opts.include_extensions, false)
-  opts.use_default_opts = utils.get_default(opts.use_default_opts, false)
+  opts.use_default_opts = vim.F.if_nil(opts.use_default_opts, false)
 
   local objs = {}
 
