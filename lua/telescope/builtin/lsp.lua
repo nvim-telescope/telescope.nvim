@@ -52,9 +52,93 @@ lsp.references = function(opts)
   end)
 end
 
-local function list_or_jump(action, title, opts)
-  opts = opts or {}
+local function call_hierarchy(opts, method, title, direction, item)
+  vim.lsp.buf_request(opts.bufnr, method, { item = item }, function(err, result)
+    if err then
+      vim.api.nvim_err_writeln("Error handling " .. title .. ": " .. err)
+      return
+    end
 
+    if not result or vim.tbl_isempty(result) then
+      return
+    end
+
+    local locations = {}
+    for _, ch_call in pairs(result) do
+      local ch_item = ch_call[direction]
+      for _, range in pairs(ch_call.fromRanges) do
+        table.insert(locations, {
+          filename = vim.uri_to_fname(ch_item.uri),
+          text = ch_item.name,
+          lnum = range.start.line + 1,
+          col = range.start.character + 1,
+        })
+      end
+    end
+
+    pickers.new(opts, {
+      prompt_title = title,
+      finder = finders.new_table {
+        results = locations,
+        entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
+      },
+      previewer = conf.qflist_previewer(opts),
+      sorter = conf.generic_sorter(opts),
+      push_cursor_on_edit = true,
+      push_tagstack_on_edit = true,
+    }):find()
+  end)
+end
+
+local function pick_call_hierarchy_item(call_hierarchy_items)
+  if not call_hierarchy_items then
+    return
+  end
+  if #call_hierarchy_items == 1 then
+    return call_hierarchy_items[1]
+  end
+  local items = {}
+  for i, item in pairs(call_hierarchy_items) do
+    local entry = item.detail or item.name
+    table.insert(items, string.format("%d. %s", i, entry))
+  end
+  local choice = vim.fn.inputlist(items)
+  if choice < 1 or choice > #items then
+    return
+  end
+  return choice
+end
+
+local function calls(opts, direction)
+  local params = vim.lsp.util.make_position_params()
+  vim.lsp.buf_request(opts.bufnr, "textDocument/prepareCallHierarchy", params, function(err, result)
+    if err then
+      vim.api.nvim_err_writeln("Error when preparing call hierarchy: " .. err)
+      return
+    end
+
+    local call_hierarchy_item = pick_call_hierarchy_item(result)
+    if not call_hierarchy_item then
+      return
+    end
+
+    if direction == "from" then
+      call_hierarchy(opts, "callHierarchy/incomingCalls", "LSP Incoming Calls", direction, call_hierarchy_item)
+    else
+      call_hierarchy(opts, "callHierarchy/outgoingCalls", "LSP Outgoing Calls", direction, call_hierarchy_item)
+    end
+  end)
+end
+
+lsp.incoming_calls = function(opts)
+  calls(opts, "from")
+end
+
+lsp.outgoing_calls = function(opts)
+  calls(opts, "to")
+end
+
+local function list_or_jump(action, title, opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
   vim.lsp.buf_request(opts.bufnr, action, params, function(err, result, ctx, _)
     if err then
@@ -271,6 +355,8 @@ local feature_map = {
   ["type_definitions"] = "typeDefinitionProvider",
   ["implementations"] = "implementationProvider",
   ["workspace_symbols"] = "workspaceSymbolProvider",
+  ["incoming_calls"] = "callHierarchyProvider",
+  ["outgoing_calls"] = "callHierarchyProvider",
 }
 
 local function apply_checks(mod)
