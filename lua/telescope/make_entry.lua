@@ -26,6 +26,21 @@ local lsp_type_highlight = {
   ["Variable"] = "TelescopeResultsVariable",
 }
 
+local get_filename_fn = function()
+  local bufnr_name_cache = {}
+  return function(bufnr)
+    bufnr = vim.F.if_nil(bufnr, 0)
+    local c = bufnr_name_cache[bufnr]
+    if c then
+      return c
+    end
+
+    local n = vim.api.nvim_buf_get_name(bufnr)
+    bufnr_name_cache[bufnr] = n
+    return n
+  end
+end
+
 local make_entry = {}
 
 do
@@ -309,40 +324,49 @@ end
 
 function make_entry.gen_from_quickfix(opts)
   opts = opts or {}
+  local show_line = vim.F.if_nil(opts.show_line, true)
 
-  local displayer = entry_display.create {
-    separator = "▏",
-    items = {
-      { width = 8 },
-      { width = 0.45 },
-      { remaining = true },
-    },
+  local hidden = utils.is_path_hidden(opts)
+  local items = {
+    { width = vim.F.if_nil(opts.fname_width, 30) },
+    { remaining = true },
   }
-
-  local make_display = function(entry)
-    local filename = utils.transform_path(opts, entry.filename)
-
-    local line_info = { table.concat({ entry.lnum, entry.col }, ":"), "TelescopeResultsLineNr" }
-
-    if opts.trim_text then
-      entry.text = entry.text:gsub("^%s*(.-)%s*$", "%1")
-    end
-
-    return displayer {
-      line_info,
-      entry.text:gsub(".* | ", ""),
-      filename,
-    }
+  if hidden then
+    items[1] = 8
+  end
+  if not show_line then
+    table.remove(items, 1)
   end
 
+  local displayer = entry_display.create { separator = "▏", items = items }
+
+  local make_display = function(entry)
+    local input = {}
+    if not hidden then
+      table.insert(input, string.format("%s:%d:%d", utils.transform_path(opts, entry.filename), entry.lnum, entry.col))
+    else
+      table.insert(input, string.format("%4d:%2d", entry.lnum, entry.col))
+    end
+
+    if show_line then
+      local text = entry.text
+      if opts.trim_text then
+        text = text:gsub("^%s*(.-)%s*$", "%1")
+      end
+      text = text:gsub(".* | ", "")
+      table.insert(input, text)
+    end
+
+    return displayer(input)
+  end
+
+  local get_filename = get_filename_fn()
   return function(entry)
-    local filename = entry.filename or vim.api.nvim_buf_get_name(entry.bufnr)
+    local filename = vim.F.if_nil(entry.filename, get_filename(entry.bufnr))
 
     return {
-      valid = true,
-
       value = entry,
-      ordinal = (not opts.ignore_filename and filename or "") .. " " .. entry.text,
+      ordinal = (not hidden and filename or "") .. " " .. entry.text,
       display = make_display,
 
       bufnr = entry.bufnr,
@@ -361,14 +385,22 @@ function make_entry.gen_from_lsp_symbols(opts)
 
   local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
 
+  -- Default we have two columns, symbol and type(unbound)
+  -- If path is not hidden then its, filepath, symbol and type(still unbound)
+  -- If show_line is also set, type is bound to len 8
   local display_items = {
-    { width = opts.symbol_width or 25 }, -- symbol
-    { width = opts.symbol_type_width or 8 }, -- symbol type
-    { remaining = true }, -- filename{:optional_lnum+col} OR content preview
+    { width = opts.symbol_width or 25 },
+    { remaining = true },
   }
 
-  if opts.ignore_filename and opts.show_line then
-    table.insert(display_items, 2, { width = 6 })
+  local hidden = utils.is_path_hidden(opts)
+  if not hidden then
+    table.insert(display_items, 1, { width = vim.F.if_nil(opts.fname_width, 30) })
+  end
+
+  if opts.show_line then
+    -- bound type to len 8 or custom
+    table.insert(display_items, #display_items, { width = opts.symbol_type_width or 8 })
   end
 
   local displayer = entry_display.create {
@@ -376,51 +408,43 @@ function make_entry.gen_from_lsp_symbols(opts)
     hl_chars = { ["["] = "TelescopeBorder", ["]"] = "TelescopeBorder" },
     items = display_items,
   }
+  local type_highlight = vim.F.if_nil(opts.symbol_highlights or lsp_type_highlight)
 
   local make_display = function(entry)
     local msg
 
-    -- what to show in the last column: filename or symbol information
-    if opts.ignore_filename then -- ignore the filename and show line preview instead
-      -- TODO: fixme - if ignore_filename is set for workspace, bufnr will be incorrect
-      msg = vim.api.nvim_buf_get_lines(bufnr, entry.lnum - 1, entry.lnum, false)[1] or ""
-      msg = vim.trim(msg)
+    if opts.show_line then
+      msg = vim.trim(vim.F.if_nil(vim.api.nvim_buf_get_lines(bufnr, entry.lnum - 1, entry.lnum, false)[1], ""))
+    end
+
+    if hidden then
+      return displayer {
+        entry.symbol_name,
+        { entry.symbol_type:lower(), type_highlight[entry.symbol_type] },
+        msg,
+      }
     else
-      local filename = utils.transform_path(opts, entry.filename)
-
-      if opts.show_line then -- show inline line info
-        filename = filename .. " [" .. entry.lnum .. ":" .. entry.col .. "]"
-      end
-      msg = filename
+      return displayer {
+        utils.transform_path(opts, entry.filename),
+        entry.symbol_name,
+        { entry.symbol_type:lower(), type_highlight[entry.symbol_type] },
+        msg,
+      }
     end
-
-    local type_highlight = opts.symbol_highlights or lsp_type_highlight
-    local display_columns = {
-      entry.symbol_name,
-      { entry.symbol_type:lower(), type_highlight[entry.symbol_type], type_highlight[entry.symbol_type] },
-      msg,
-    }
-
-    if opts.ignore_filename and opts.show_line then
-      table.insert(display_columns, 2, { entry.lnum .. ":" .. entry.col, "TelescopeResultsLineNr" })
-    end
-
-    return displayer(display_columns)
   end
 
+  local get_filename = get_filename_fn()
   return function(entry)
-    local filename = entry.filename or vim.api.nvim_buf_get_name(entry.bufnr)
+    local filename = vim.F.if_nil(entry.filename, get_filename(entry.bufnr))
     local symbol_msg = entry.text
     local symbol_type, symbol_name = symbol_msg:match "%[(.+)%]%s+(.*)"
-
     local ordinal = ""
-    if not opts.ignore_filename and filename then
+    if not hidden and filename then
       ordinal = filename .. " "
     end
     ordinal = ordinal .. symbol_name .. " " .. (symbol_type or "unknown")
-    return {
-      valid = true,
 
+    return {
       value = entry,
       ordinal = ordinal,
       display = make_display,
@@ -484,8 +508,6 @@ function make_entry.gen_from_buffer(opts)
     local line_count = vim.api.nvim_buf_line_count(entry.bufnr)
 
     return {
-      valid = true,
-
       value = bufname,
       ordinal = entry.bufnr .. " : " .. bufname,
       display = make_display,
@@ -537,13 +559,12 @@ function make_entry.gen_from_treesitter(opts)
     return displayer(display_columns)
   end
 
+  local get_filename = get_filename_fn()
   return function(entry)
     local ts_utils = require "nvim-treesitter.ts_utils"
     local start_row, start_col, end_row, _ = ts_utils.get_node_range(entry.node)
     local node_text = vim.treesitter.get_node_text(entry.node, bufnr)
     return {
-      valid = true,
-
       value = entry.node,
       kind = entry.kind,
       ordinal = node_text .. " " .. (entry.kind or "unknown"),
@@ -551,7 +572,7 @@ function make_entry.gen_from_treesitter(opts)
 
       node_text = node_text,
 
-      filename = vim.api.nvim_buf_get_name(bufnr),
+      filename = get_filename(bufnr),
       -- need to add one since the previewer substacts one
       lnum = start_row + 1,
       col = start_col,
@@ -668,7 +689,6 @@ function make_entry.gen_from_registers(_)
 
   return function(entry)
     return {
-      valid = true,
       value = entry,
       ordinal = entry,
       content = vim.fn.getreg(entry),
@@ -800,7 +820,6 @@ function make_entry.gen_from_buffer_lines(opts)
     end
 
     return {
-      valid = true,
       ordinal = entry.text,
       display = make_display,
       filename = entry.filename,
@@ -982,7 +1001,8 @@ function make_entry.gen_from_diagnostics(opts)
     { remaining = true },
   }
   local line_width = vim.F.if_nil(opts.line_width, 0.5)
-  if not utils.is_path_hidden(opts) then
+  local hidden = utils.is_path_hidden(opts)
+  if not hidden then
     table.insert(display_items, 2, { width = line_width })
   end
   local displayer = entry_display.create {
@@ -1000,10 +1020,6 @@ function make_entry.gen_from_diagnostics(opts)
       "Diagnostic" .. entry.type,
     }
 
-    --TODO(conni2461): I dont like that this is symbol lnum:col | msg | filename
-    --                 i want: symbol filename:lnum:col | msg
-    --                 or    : symbol lnum:col | msg
-    --                 I think this is more natural
     return displayer {
       line_info,
       entry.text,
@@ -1014,7 +1030,7 @@ function make_entry.gen_from_diagnostics(opts)
   return function(entry)
     return {
       value = entry,
-      ordinal = ("%s %s"):format(not opts.ignore_filename and entry.filename or "", entry.text),
+      ordinal = ("%s %s"):format(not hidden and entry.filename or "", entry.text),
       display = make_display,
       filename = entry.filename,
       type = entry.type,
@@ -1104,7 +1120,6 @@ function make_entry.gen_from_commands(_)
       definition = entry.definition,
       --
       value = entry,
-      valid = true,
       ordinal = entry.name,
       display = make_display,
     }
