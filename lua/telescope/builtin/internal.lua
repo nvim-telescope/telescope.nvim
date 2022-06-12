@@ -33,6 +33,7 @@ local internal = {}
 
 internal.builtin = function(opts)
   opts.include_extensions = vim.F.if_nil(opts.include_extensions, false)
+  opts.use_default_opts = vim.F.if_nil(opts.use_default_opts, false)
 
   local objs = {}
 
@@ -91,15 +92,20 @@ internal.builtin = function(opts)
         -- we do this to avoid any surprises
         opts.include_extensions = nil
 
+        local picker_opts
+        if not opts.use_default_opts then
+          picker_opts = opts
+        end
+
         if string.match(selection.text, " : ") then
           -- Call appropriate function from extensions
           local split_string = vim.split(selection.text, " : ")
           local ext = split_string[1]
           local func = split_string[2]
-          require("telescope").extensions[ext][func](opts)
+          require("telescope").extensions[ext][func](picker_opts)
         else
           -- Call appropriate telescope builtin
-          require("telescope.builtin")[selection.text](opts)
+          require("telescope.builtin")[selection.text](picker_opts)
         end
       end)
       return true

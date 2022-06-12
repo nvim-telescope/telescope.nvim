@@ -1112,6 +1112,8 @@ builtin.builtin({opts})                          *telescope.builtin.builtin()*
     Options: ~
         {include_extensions} (boolean)  if true will show the pickers of the
                                         installed extensions (default: false)
+        {use_default_opts}   (boolean)  if the selected picker should use its
+                                        default options (default: false)
 
 
 builtin.resume({opts})                            *telescope.builtin.resume()*
