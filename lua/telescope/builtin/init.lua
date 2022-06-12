@@ -245,8 +245,9 @@ builtin.commands = require_on_exported_call("telescope.builtin.internal").comman
 
 --- Lists items in the quickfix list, jumps to location on `<cr>`
 ---@param opts table: options to pass to the picker
----@field ignore_filename boolean: dont show filenames (default: true)
+---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field nr number: specify the quickfix list number
 builtin.quickfix = require_on_exported_call("telescope.builtin.internal").quickfix
 
@@ -257,8 +258,9 @@ builtin.quickfixhistory = require_on_exported_call("telescope.builtin.internal")
 
 --- Lists items from the current window's location list, jumps to location on `<cr>`
 ---@param opts table: options to pass to the picker
----@field ignore_filename boolean: dont show filenames (default: true)
+---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field fname_width number: defines the width of the filename section (default: 30)
 builtin.loclist = require_on_exported_call("telescope.builtin.internal").loclist
 
 --- Lists previously open files, opens on `<cr>`
@@ -350,14 +352,16 @@ builtin.spell_suggest = require_on_exported_call("telescope.builtin.internal").s
 
 --- Lists the tag stack for the current window, jumps to tag on `<cr>`
 ---@param opts table: options to pass to the picker
----@field ignore_filename boolean: dont show filenames (default: true)
+---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field fname_width number: defines the width of the filename section (default: 30)
 builtin.tagstack = require_on_exported_call("telescope.builtin.internal").tagstack
 
 --- Lists items from Vim's jumplist, jumps to location on `<cr>`
 ---@param opts table: options to pass to the picker
----@field ignore_filename boolean: dont show filenames (default: true)
+---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field fname_width number: defines the width of the filename section (default: 30)
 builtin.jumplist = require_on_exported_call("telescope.builtin.internal").jumplist
 
 --
@@ -371,35 +375,38 @@ builtin.jumplist = require_on_exported_call("telescope.builtin.internal").jumpli
 ---@field include_declaration boolean: include symbol declaration in the lsp references (default: true)
 ---@field include_current_line boolean: include current line (default: false)
 ---@field trim_text boolean: trim results text (default: false)
+---@field fname_width number: defines the width of the filename section (default: 30)
 builtin.lsp_references = require_on_exported_call("telescope.builtin.lsp").references
 
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
----@field ignore_filename boolean: dont show filenames (default: true)
+---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field fname_width number: defines the width of the filename section (default: 30)
 builtin.lsp_definitions = require_on_exported_call("telescope.builtin.lsp").definitions
 
 --- Goto the definition of the type of the word under the cursor, if there's only one,
 --- otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
----@field ignore_filename boolean: dont show filenames (default: true)
+---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field fname_width number: defines the width of the filename section (default: 30)
 builtin.lsp_type_definitions = require("telescope.builtin.lsp").type_definitions
 
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto implementation if there is only one, values: "tab", "split", "vsplit", "never"
----@field ignore_filename boolean: dont show filenames (default: true)
+---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field fname_width number: defines the width of the filename section (default: 30)
 builtin.lsp_implementations = require_on_exported_call("telescope.builtin.lsp").implementations
 
 --- Lists LSP document symbols in the current buffer
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
----@field ignore_filename boolean: dont show filenames (default: true)
 ---@field show_line boolean: if true, shows the content of the line the tag is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
 ---@field ignore_symbols string|table: list of symbols to ignore
@@ -411,7 +418,6 @@ builtin.lsp_document_symbols = require_on_exported_call("telescope.builtin.lsp")
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
 ---@field query string: for what to query the workspace (default: "")
----@field ignore_filename boolean: dont show filenames (default: false)
 ---@field show_line boolean: if true, shows the content of the line the tag is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
 ---@field ignore_symbols string|table: list of symbols to ignore
@@ -422,7 +428,6 @@ builtin.lsp_workspace_symbols = require_on_exported_call("telescope.builtin.lsp"
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
----@field ignore_filename boolean: dont show filenames (default: false)
 ---@field show_line boolean: if true, shows the content of the line the symbol is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
 ---@field ignore_symbols string|table: list of symbols to ignore
