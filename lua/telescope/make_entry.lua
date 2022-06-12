@@ -324,30 +324,40 @@ end
 
 function make_entry.gen_from_quickfix(opts)
   opts = opts or {}
+  local show_line = vim.F.if_nil(opts.show_line, true)
 
-  local displayer = entry_display.create {
-    separator = "▏",
-    items = {
-      { width = 8 },
-      { width = 0.45 },
-      { remaining = true },
-    },
+  local hidden = utils.is_path_hidden(opts)
+  local items = {
+    { width = vim.F.if_nil(opts.fname_width, 30) },
+    { remaining = true },
   }
+  if hidden then
+    items[1] = 8
+  end
+  if not show_line then
+    table.remove(items, 1)
+  end
+
+  local displayer = entry_display.create { separator = "▏", items = items }
 
   local make_display = function(entry)
-    local filename = utils.transform_path(opts, entry.filename)
-
-    local line_info = { table.concat({ entry.lnum, entry.col }, ":"), "TelescopeResultsLineNr" }
-
-    if opts.trim_text then
-      entry.text = entry.text:gsub("^%s*(.-)%s*$", "%1")
+    local input = {}
+    if not hidden then
+      table.insert(input, string.format("%s:%d:%d", utils.transform_path(opts, entry.filename), entry.lnum, entry.col))
+    else
+      table.insert(input, string.format("%4d:%2d", entry.lnum, entry.col))
     end
 
-    return displayer {
-      line_info,
-      entry.text:gsub(".* | ", ""),
-      filename,
-    }
+    if show_line then
+      local text = entry.text
+      if opts.trim_text then
+        text = text:gsub("^%s*(.-)%s*$", "%1")
+      end
+      text = text:gsub(".* | ", "")
+      table.insert(input, text)
+    end
+
+    return displayer(input)
   end
 
   local get_filename = get_filename_fn()
@@ -356,7 +366,7 @@ function make_entry.gen_from_quickfix(opts)
 
     return {
       value = entry,
-      ordinal = (not opts.ignore_filename and filename or "") .. " " .. entry.text,
+      ordinal = (not hidden and filename or "") .. " " .. entry.text,
       display = make_display,
 
       bufnr = entry.bufnr,
@@ -991,7 +1001,8 @@ function make_entry.gen_from_diagnostics(opts)
     { remaining = true },
   }
   local line_width = vim.F.if_nil(opts.line_width, 0.5)
-  if not utils.is_path_hidden(opts) then
+  local hidden = utils.is_path_hidden(opts)
+  if not hidden then
     table.insert(display_items, 2, { width = line_width })
   end
   local displayer = entry_display.create {
@@ -1009,10 +1020,6 @@ function make_entry.gen_from_diagnostics(opts)
       "Diagnostic" .. entry.type,
     }
 
-    --TODO(conni2461): I dont like that this is symbol lnum:col | msg | filename
-    --                 i want: symbol filename:lnum:col | msg
-    --                 or    : symbol lnum:col | msg
-    --                 I think this is more natural
     return displayer {
       line_info,
       entry.text,
@@ -1023,7 +1030,7 @@ function make_entry.gen_from_diagnostics(opts)
   return function(entry)
     return {
       value = entry,
-      ordinal = ("%s %s"):format(not opts.ignore_filename and entry.filename or "", entry.text),
+      ordinal = ("%s %s"):format(not hidden and entry.filename or "", entry.text),
       display = make_display,
       filename = entry.filename,
       type = entry.type,
