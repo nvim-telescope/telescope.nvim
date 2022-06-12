@@ -827,8 +827,8 @@ builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
         {grep_open_files}     (boolean)   if true, restrict search to open
                                           files only, mutually exclusive with
                                           `search_dirs`
-        {search_dirs}         (table)     directory/directories to search in,
-                                          mutually exclusive with
+        {search_dirs}         (table)     directory/directories/files to
+                                          search, mutually exclusive with
                                           `grep_open_files`
         {glob_pattern}        (string)    argument to be used with `--glob`,
                                           e.g. "*.toml", can use the opposite
@@ -855,7 +855,8 @@ builtin.grep_string({opts})                  *telescope.builtin.grep_string()*
                                           cwd, use utils.buffer_dir() to
                                           search relative to open buffer)
         {search}              (string)    the query to search
-        {search_dirs}         (table)     directory/directories to search in
+        {search_dirs}         (table)     directory/directories/files to
+                                          search
         {use_regex}           (boolean)   if true, special characters won't be
                                           escaped, allows for using regex
                                           (default: false)
@@ -894,8 +895,8 @@ builtin.find_files({opts})                    *telescope.builtin.find_files()*
         {no_ignore_parent} (boolean)         show files ignored by .gitignore,
                                              .ignore, etc. in parent dirs.
                                              (default: false)
-        {search_dirs}      (table)           directory/directories to search
-                                             in
+        {search_dirs}      (table)           directory/directories/files to
+                                             search
 
 
 builtin.fd()                                          *telescope.builtin.fd()*
@@ -2830,7 +2831,8 @@ Generally used from within other |telescope.actions|
 utils.map_entries({prompt_bufnr}, {f}) *telescope.actions.utils.map_entries()*
     Apply `f` to the entries of the current picker.
     - Notes:
-      - Mapped entries may include results not visible in the results popup.
+      - Mapped entries include all currently filtered results, not just the
+        visible onces.
       - Indices are 1-indexed, whereas rows are 0-indexed.
     - Warning: `map_entries` has no return value.
       - The below example showcases how to collect results
