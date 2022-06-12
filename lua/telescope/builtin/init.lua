@@ -54,7 +54,7 @@ end
 ---@param opts table: options to pass to the picker
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
----@field search_dirs table: directory/directories to search in, mutually exclusive with `grep_open_files`
+---@field search_dirs table: directory/directories/files to search, mutually exclusive with `grep_open_files`
 ---@field glob_pattern string: argument to be used with `--glob`, e.g. "*.toml", can use the opposite "!*.toml"
 ---@field type_filter string: argument to be used with `--type`, e.g. "rust", see `rg --type-list`
 ---@field additional_args function: function(opts) which returns a table of additional arguments to be passed on
@@ -66,7 +66,7 @@ builtin.live_grep = require_on_exported_call("telescope.builtin.files").live_gre
 ---@param opts table: options to pass to the picker
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field search string: the query to search
----@field search_dirs table: directory/directories to search in
+---@field search_dirs table: directory/directories/files to search
 ---@field use_regex boolean: if true, special characters won't be escaped, allows for using regex (default: false)
 ---@field word_match string: can be set to `-w` to enable exact word matches
 ---@field additional_args function: function(opts) which returns a table of additional arguments to be passed on
@@ -82,7 +82,7 @@ builtin.grep_string = require_on_exported_call("telescope.builtin.files").grep_s
 ---@field hidden boolean: determines whether to show hidden files or not (default: false)
 ---@field no_ignore boolean: show files ignored by .gitignore, .ignore, etc. (default: false)
 ---@field no_ignore_parent boolean: show files ignored by .gitignore, .ignore, etc. in parent dirs. (default: false)
----@field search_dirs table: directory/directories to search in
+---@field search_dirs table: directory/directories/files to search
 builtin.find_files = require_on_exported_call("telescope.builtin.files").find_files
 
 --- This is an alias for the `find_files` picker
