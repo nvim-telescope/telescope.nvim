@@ -1054,26 +1054,24 @@ function make_entry.gen_from_autocommands(_)
 
   local make_display = function(entry)
     return displayer {
-      { entry.event, "vimAutoEvent" },
-      { entry.group, "vimAugroup" },
-      { entry.ft_pattern, "vimAutoCmdSfxList" },
-      entry.command,
+      { entry.value.event, "vimAutoEvent" },
+      { entry.value.group_name, "vimAugroup" },
+      { entry.value.pattern, "vimAutoCmdSfxList" },
+      entry.value.command,
     }
   end
 
-  -- TODO: <action> dump current filtered items to buffer
   return function(entry)
+    local group_name = vim.F.if_nil(entry.group_name, "<anonymous>")
     return {
-      event = entry.event,
-      group = entry.group,
-      ft_pattern = entry.ft_pattern,
-      command = entry.command,
-      value = string.format("+%d %s", entry.source_lnum, entry.source_file),
-      source_file = entry.source_file,
-      source_lnum = entry.source_lnum,
+      value = {
+        event = entry.event,
+        group_name = group_name,
+        pattern = entry.pattern,
+        command = entry.command,
+      },
       --
-      valid = true,
-      ordinal = entry.event .. " " .. entry.group .. " " .. entry.ft_pattern .. " " .. entry.command,
+      ordinal = entry.event .. " " .. group_name .. " " .. entry.pattern .. " " .. entry.command,
       display = make_display,
     }
   end
