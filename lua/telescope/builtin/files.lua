@@ -153,11 +153,12 @@ files.grep_string = function(opts)
   }):find()
 end
 
--- TODO: Maybe just change this to `find`.
--- TODO: Support `find` and maybe let people do other stuff with it as well.
 files.find_files = function(opts)
   local find_command = (function()
     if opts.find_command then
+      if type(opts.find_command) == "function" then
+        return opts.find_command(opts)
+      end
       return opts.find_command
     elseif 1 == vim.fn.executable "fd" then
       return { "fd", "--type", "f" }
