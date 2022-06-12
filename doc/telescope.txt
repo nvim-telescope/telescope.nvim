@@ -1195,9 +1195,11 @@ builtin.quickfix({opts})                        *telescope.builtin.quickfix()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
-        {nr}              (number)   specify the quickfix list number
+        {show_line}   (boolean)  show results text (default: true)
+        {trim_text}   (boolean)  trim results text (default: false)
+        {fname_width} (number)   defines the width of the filename section
+                                 (default: 30)
+        {nr}          (number)   specify the quickfix list number
 
 
 builtin.quickfixhistory({opts})          *telescope.builtin.quickfixhistory()*
@@ -1219,8 +1221,10 @@ builtin.loclist({opts})                          *telescope.builtin.loclist()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
+        {show_line}   (boolean)  show results text (default: true)
+        {trim_text}   (boolean)  trim results text (default: false)
+        {fname_width} (number)   defines the width of the filename section
+                                 (default: 30)
 
 
 builtin.oldfiles({opts})                        *telescope.builtin.oldfiles()*
@@ -1419,8 +1423,10 @@ builtin.tagstack({opts})                        *telescope.builtin.tagstack()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
+        {show_line}   (boolean)  show results text (default: true)
+        {trim_text}   (boolean)  trim results text (default: false)
+        {fname_width} (number)   defines the width of the filename section
+                                 (default: 30)
 
 
 builtin.jumplist({opts})                        *telescope.builtin.jumplist()*
@@ -1431,8 +1437,10 @@ builtin.jumplist({opts})                        *telescope.builtin.jumplist()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
+        {show_line}   (boolean)  show results text (default: true)
+        {trim_text}   (boolean)  trim results text (default: false)
+        {fname_width} (number)   defines the width of the filename section
+                                 (default: 30)
 
 
 builtin.lsp_references({opts})            *telescope.builtin.lsp_references()*
@@ -1449,6 +1457,8 @@ builtin.lsp_references({opts})            *telescope.builtin.lsp_references()*
         {include_current_line} (boolean)  include current line (default:
                                           false)
         {trim_text}            (boolean)  trim results text (default: false)
+        {fname_width}          (number)   defines the width of the filename
+                                          section (default: 30)
 
 
 builtin.lsp_definitions({opts})          *telescope.builtin.lsp_definitions()*
@@ -1460,11 +1470,12 @@ builtin.lsp_definitions({opts})          *telescope.builtin.lsp_definitions()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {jump_type}       (string)   how to goto definition if there is only
-                                     one, values: "tab", "split", "vsplit",
-                                     "never"
-        {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
+        {jump_type}   (string)   how to goto definition if there is only one,
+                                 values: "tab", "split", "vsplit", "never"
+        {show_line}   (boolean)  show results text (default: true)
+        {trim_text}   (boolean)  trim results text (default: false)
+        {fname_width} (number)   defines the width of the filename section
+                                 (default: 30)
 
 
 builtin.lsp_type_definitions({opts}) *telescope.builtin.lsp_type_definitions()*
@@ -1476,11 +1487,12 @@ builtin.lsp_type_definitions({opts}) *telescope.builtin.lsp_type_definitions()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {jump_type}       (string)   how to goto definition if there is only
-                                     one, values: "tab", "split", "vsplit",
-                                     "never"
-        {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
+        {jump_type}   (string)   how to goto definition if there is only one,
+                                 values: "tab", "split", "vsplit", "never"
+        {show_line}   (boolean)  show results text (default: true)
+        {trim_text}   (boolean)  trim results text (default: false)
+        {fname_width} (number)   defines the width of the filename section
+                                 (default: 30)
 
 
 builtin.lsp_implementations({opts})  *telescope.builtin.lsp_implementations()*
@@ -1492,11 +1504,13 @@ builtin.lsp_implementations({opts})  *telescope.builtin.lsp_implementations()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {jump_type}       (string)   how to goto implementation if there is
-                                     only one, values: "tab", "split",
-                                     "vsplit", "never"
-        {ignore_filename} (boolean)  dont show filenames (default: true)
-        {trim_text}       (boolean)  trim results text (default: false)
+        {jump_type}   (string)   how to goto implementation if there is only
+                                 one, values: "tab", "split", "vsplit",
+                                 "never"
+        {show_line}   (boolean)  show results text (default: true)
+        {trim_text}   (boolean)  trim results text (default: false)
+        {fname_width} (number)   defines the width of the filename section
+                                 (default: 30)
 
 
 builtin.lsp_document_symbols({opts}) *telescope.builtin.lsp_document_symbols()*
@@ -1510,8 +1524,6 @@ builtin.lsp_document_symbols({opts}) *telescope.builtin.lsp_document_symbols()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {ignore_filename}   (boolean)       dont show filenames (default:
-                                            true)
         {show_line}         (boolean)       if true, shows the content of the
                                             line the tag is found on (default:
                                             false)
@@ -1534,8 +1546,6 @@ builtin.lsp_workspace_symbols({opts}) *telescope.builtin.lsp_workspace_symbols()
     Options: ~
         {query}             (string)        for what to query the workspace
                                             (default: "")
-        {ignore_filename}   (boolean)       dont show filenames (default:
-                                            false)
         {show_line}         (boolean)       if true, shows the content of the
                                             line the tag is found on (default:
                                             false)
@@ -1556,8 +1566,6 @@ builtin.lsp_dynamic_workspace_symbols({opts}) *telescope.builtin.lsp_dynamic_wor
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {ignore_filename}   (boolean)       dont show filenames (default:
-                                            false)
         {show_line}         (boolean)       if true, shows the content of the
                                             line the symbol is found on
                                             (default: false)
