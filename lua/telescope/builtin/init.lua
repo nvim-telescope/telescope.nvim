@@ -205,6 +205,7 @@ builtin.git_stash = require_on_exported_call("telescope.builtin.git").stash
 --- Lists all of the community maintained pickers built into Telescope
 ---@param opts table: options to pass to the picker
 ---@field include_extensions boolean: if true will show the pickers of the installed extensions (default: false)
+---@field use_default_opts boolean: if the selected picker should use its default options (default: false)
 builtin.builtin = require_on_exported_call("telescope.builtin.internal").builtin
 
 --- Opens the previous picker in the identical state (incl. multi selections)
