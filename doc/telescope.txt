@@ -1464,6 +1464,32 @@ builtin.lsp_references({opts})            *telescope.builtin.lsp_references()*
                                           section (default: 30)
 
 
+builtin.lsp_incoming_calls({opts})    *telescope.builtin.lsp_incoming_calls()*
+    Lists LSP incoming calls for word under the cursor, jumps to reference on
+    `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Options: ~
+        {show_line} (boolean)  show results text (default: true)
+        {trim_text} (boolean)  trim results text (default: false)
+
+
+builtin.lsp_outgoing_calls({opts})    *telescope.builtin.lsp_outgoing_calls()*
+    Lists LSP outgoing calls for word under the cursor, jumps to reference on
+    `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+    Options: ~
+        {show_line} (boolean)  show results text (default: true)
+        {trim_text} (boolean)  trim results text (default: false)
+
+
 builtin.lsp_definitions({opts})          *telescope.builtin.lsp_definitions()*
     Goto the definition of the word under the cursor, if there's only one,
     otherwise show all options in Telescope
