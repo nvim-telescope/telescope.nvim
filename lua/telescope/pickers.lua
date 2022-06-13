@@ -965,6 +965,9 @@ function Picker:set_selection(row)
   state.set_global_key("selected_entry", entry)
 
   if not entry then
+    -- also refresh previewer when there is no entry selected, so the preview window is cleared
+    self._selection_entry = entry
+    self:refresh_previewer()
     return
   end
 
@@ -1068,10 +1071,6 @@ end
 --- Refresh the previewer based on the current `status` of the picker
 function Picker:refresh_previewer()
   local status = state.get_status(self.prompt_bufnr)
-  if not self._selection_entry then
-    -- if selection_entry is nil there is nothing to be previewed
-    return
-  end
   if self.previewer and status.preview_win and a.nvim_win_is_valid(status.preview_win) then
     self:_increment "previewed"
 
