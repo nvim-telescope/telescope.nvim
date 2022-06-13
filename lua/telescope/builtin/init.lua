@@ -55,7 +55,7 @@ end
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
 ---@field search_dirs table: directory/directories/files to search, mutually exclusive with `grep_open_files`
----@field glob_pattern string: argument to be used with `--glob`, e.g. "*.toml", can use the opposite "!*.toml"
+---@field glob_pattern string|table: argument to be used with `--glob`, e.g. "*.toml", can use the opposite "!*.toml"
 ---@field type_filter string: argument to be used with `--type`, e.g. "rust", see `rg --type-list`
 ---@field additional_args function: function(opts) which returns a table of additional arguments to be passed on
 ---@field max_results number: define a upper result value
