@@ -954,12 +954,11 @@ function make_entry.gen_from_ctags(opts)
     end
 
     if opts.only_current_file then
-      local cache_key = current_file .. file
-      if current_file_cache[cache_key] == nil then
-        current_file_cache[cache_key] = Path:new(file):normalize(cwd) == current_file
+      if current_file_cache[file] == nil then
+        current_file_cache[file] = Path:new(file):normalize(cwd) == current_file
       end
 
-      if current_file_cache[cache_key] == false then
+      if current_file_cache[file] == false then
         return nil
       end
     end
