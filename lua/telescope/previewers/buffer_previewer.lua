@@ -385,8 +385,12 @@ previewers.new_buffer_previewer = function(opts)
 
     opts.define_preview(self, entry, status)
 
-    putils.with_preview_window(status, nil, function()
-      vim.cmd "do User TelescopePreviewerLoaded"
+    vim.schedule(function()
+      if vim.api.nvim_buf_is_valid(self.state.bufnr) then
+        vim.api.nvim_buf_call(self.state.bufnr, function()
+          vim.cmd "do User TelescopePreviewerLoaded"
+        end)
+      end
     end)
 
     if opts.get_buffer_by_name then
