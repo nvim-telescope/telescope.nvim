@@ -76,8 +76,12 @@ files.live_grep = function(opts)
     additional_args[#additional_args + 1] = "--type=" .. opts.type_filter
   end
 
-  if opts.glob_pattern then
+  if type(opts.glob_pattern) == "string" then
     additional_args[#additional_args + 1] = "--glob=" .. opts.glob_pattern
+  elseif type(opts.glob_pattern) == "table" then
+    for i = 1, #opts.glob_pattern do
+      additional_args[#additional_args + 1] = "--glob=" .. opts.glob_pattern[i]
+    end
   end
 
   local live_grepper = finders.new_job(function(prompt)

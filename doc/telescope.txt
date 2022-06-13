@@ -821,26 +821,28 @@ builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {cwd}                 (string)    root dir to search from (default:
-                                          cwd, use utils.buffer_dir() to
-                                          search relative to open buffer)
-        {grep_open_files}     (boolean)   if true, restrict search to open
-                                          files only, mutually exclusive with
-                                          `search_dirs`
-        {search_dirs}         (table)     directory/directories/files to
-                                          search, mutually exclusive with
-                                          `grep_open_files`
-        {glob_pattern}        (string)    argument to be used with `--glob`,
-                                          e.g. "*.toml", can use the opposite
-                                          "!*.toml"
-        {type_filter}         (string)    argument to be used with `--type`,
-                                          e.g. "rust", see `rg --type-list`
-        {additional_args}     (function)  function(opts) which returns a table
-                                          of additional arguments to be passed
-                                          on
-        {max_results}         (number)    define a upper result value
-        {disable_coordinates} (boolean)   don't show the line & row numbers
-                                          (default: false)
+        {cwd}                 (string)        root dir to search from
+                                              (default: cwd, use
+                                              utils.buffer_dir() to search
+                                              relative to open buffer)
+        {grep_open_files}     (boolean)       if true, restrict search to open
+                                              files only, mutually exclusive
+                                              with `search_dirs`
+        {search_dirs}         (table)         directory/directories/files to
+                                              search, mutually exclusive with
+                                              `grep_open_files`
+        {glob_pattern}        (string|table)  argument to be used with
+                                              `--glob`, e.g. "*.toml", can use
+                                              the opposite "!*.toml"
+        {type_filter}         (string)        argument to be used with
+                                              `--type`, e.g. "rust", see `rg
+                                              --type-list`
+        {additional_args}     (function)      function(opts) which returns a
+                                              table of additional arguments to
+                                              be passed on
+        {max_results}         (number)        define a upper result value
+        {disable_coordinates} (boolean)       don't show the line & row
+                                              numbers (default: false)
 
 
 builtin.grep_string({opts})                  *telescope.builtin.grep_string()*
