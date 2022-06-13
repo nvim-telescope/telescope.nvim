@@ -935,7 +935,7 @@ function make_entry.gen_from_ctags(opts)
     end
   end
 
-  local file_storage = {}
+  local current_file_cache = {}
   return function(line)
     if line == "" or line:sub(1, 1) == "!" then
       return nil
@@ -954,18 +954,13 @@ function make_entry.gen_from_ctags(opts)
     end
 
     if opts.only_current_file then
-      local calculated = file_storage[current_file]
-      if calculated == nil then
-        local norm = Path:new(file):normalize(cwd)
-        if norm ~= current_file then
-          file_storage[current_file] = false
-          return
-        end
-        file_storage[current_file] = true
-      else
-        if calculated == false then
-          return
-        end
+      local cache_key = current_file .. file
+      if current_file_cache[cache_key] == nil then
+        current_file_cache[cache_key] = Path:new(file):normalize(cwd) == current_file
+      end
+
+      if current_file_cache[cache_key] == false then
+        return nil
       end
     end
 
