@@ -935,6 +935,7 @@ function make_entry.gen_from_ctags(opts)
     end
   end
 
+  local current_file_cache = {}
   return function(line)
     if line == "" or line:sub(1, 1) == "!" then
       return nil
@@ -952,8 +953,14 @@ function make_entry.gen_from_ctags(opts)
       file = string.gsub(file, "/", "\\")
     end
 
-    if opts.only_current_file and file ~= current_file then
-      return nil
+    if opts.only_current_file then
+      if current_file_cache[file] == nil then
+        current_file_cache[file] = Path:new(file):normalize(cwd) == current_file
+      end
+
+      if current_file_cache[file] == false then
+        return nil
+      end
     end
 
     local tag_entry = {}
