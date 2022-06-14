@@ -3,13 +3,17 @@ local LinkedList = require "telescope.algos.linked_list"
 local EntryManager = {}
 EntryManager.__index = EntryManager
 
-function EntryManager:new(num_sorted)
-  num_sorted = num_sorted or 500
+--- Create a new entry manager
+---@param max_to_sort number: How many entries to keep sorted
+---@param maxsize number: The "max" number of entries to store.
+---@return table
+function EntryManager:new(max_to_sort, maxsize)
+  max_to_sort = max_to_sort or 500
 
   return setmetatable({
     dirty = true,
-    linked_states = LinkedList:new { track_at = num_sorted },
-    num_sorted = num_sorted,
+    linked_states = LinkedList:new { track_at = max_to_sort, maxsize = maxsize },
+    max_to_sort = max_to_sort,
     worst_acceptable_score = math.huge,
   }, self)
 end
@@ -84,7 +88,7 @@ end
 function EntryManager:add_entry(picker, score, entry, prompt)
   score = score or 0
 
-  local num_sorted = self.num_sorted
+  local max_to_sort = self.max_to_sort
   local worst_score = self.worst_acceptable_score
   local size = self.linked_states.size
 
@@ -114,12 +118,12 @@ function EntryManager:add_entry(picker, score, entry, prompt)
     end
 
     -- Don't add results that are too bad.
-    if index >= num_sorted then
+    if index >= max_to_sort then
       return self:_append_container(picker, new_container, false)
     end
   end
 
-  if self.linked_states.size >= num_sorted then
+  if self.linked_states.size >= max_to_sort then
     self.worst_acceptable_score = math.min(self.worst_acceptable_score, score)
   end
 

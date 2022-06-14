@@ -169,6 +169,8 @@ action_set.edit = function(prompt_bufnr, command)
       log.debug("Failed to move to cursor:", err_msg, row, col)
     end
   end
+
+  vim.cmd [[stopinsert]]
 end
 
 --- Scrolls the previewer up or down.

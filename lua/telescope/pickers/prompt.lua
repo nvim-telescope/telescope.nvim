@@ -1,6 +1,6 @@
 local M = {}
 
-M.set_prompt = function(picker)
+M.set_prompt = function(self)
   self._current_prefix_hl_group = hl_group or nil
 
   if self.prompt_prefix ~= "" then
