@@ -156,11 +156,10 @@ git.bcommits = function(opts)
         vim.cmd "diffthis"
 
         vim.api.nvim_create_autocmd("WinClosed", {
-          event = "WinClosed",
           buffer = bufnr,
           nested = true,
           once = true,
-          function()
+          callback = function()
             vim.api.nvim_buf_delete(bufnr, { force = true })
           end,
         })
