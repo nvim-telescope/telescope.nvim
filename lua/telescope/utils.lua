@@ -410,6 +410,13 @@ function utils.get_os_command_output(cmd, cwd)
   return stdout, ret, stderr
 end
 
+function utils.win_set_buf_noautocmd(win, buf)
+  local save_ei = vim.o.eventignore
+  vim.o.eventignore = "all"
+  vim.api.nvim_win_set_buf(win, buf)
+  vim.o.eventignore = save_ei
+end
+
 local load_once = function(f)
   local resolved = nil
   return function(...)
