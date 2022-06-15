@@ -333,7 +333,7 @@ previewers.new_buffer_previewer = function(opts)
       -- Push in another buffer so the last one will not be cleaned up
       if preview_window_id then
         local bufnr = vim.api.nvim_create_buf(false, true)
-        vim.api.nvim_win_set_buf(preview_window_id, bufnr)
+        utils.win_set_buf_noautocmd(preview_window_id, bufnr)
       end
     end
 
@@ -358,14 +358,14 @@ previewers.new_buffer_previewer = function(opts)
     if opts.get_buffer_by_name and get_bufnr_by_bufname(self, opts.get_buffer_by_name(self, entry)) then
       self.state.bufname = opts.get_buffer_by_name(self, entry)
       self.state.bufnr = get_bufnr_by_bufname(self, self.state.bufname)
-      vim.api.nvim_win_set_buf(status.preview_win, self.state.bufnr)
+      utils.win_set_buf_noautocmd(status.preview_win, self.state.bufnr)
     else
       local bufnr = vim.api.nvim_create_buf(false, true)
       set_bufnr(self, bufnr)
 
       vim.schedule(function()
         if vim.api.nvim_buf_is_valid(bufnr) then
-          vim.api.nvim_win_set_buf(status.preview_win, bufnr)
+          utils.win_set_buf_noautocmd(status.preview_win, bufnr)
         end
       end)
 
