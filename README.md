@@ -96,7 +96,7 @@ use {
 ### checkhealth
 
 Make sure you call `:checkhealth telescope` after installing telescope to ensure
-everything is setup correctly.
+everything is set up correctly.
 
 After this setup you can continue reading here or switch to `:help telescope`
 to get an understanding of how to use Telescope and how to configure it.
@@ -192,7 +192,7 @@ EOF
 ## Default Mappings
 
 Mappings are fully customizable.
-Many familiar mapping patterns are setup as defaults.
+Many familiar mapping patterns are set up as defaults.
 
 | Mappings       | Action                                               |
 |----------------|------------------------------------------------------|
