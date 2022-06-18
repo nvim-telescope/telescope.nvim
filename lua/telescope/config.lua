@@ -373,7 +373,7 @@ append(
 
 append(
   "get_status_text",
-  function(self)
+  function(self, opts)
     local ww = #(self:get_multi_selection())
     local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
     local yy = self.stats.processed or 0
@@ -381,16 +381,14 @@ append(
       return ""
     end
 
-    -- local status_icon
-    -- if opts.completed then
-    --   status_icon = "✔️"
-    -- else
-    --   status_icon = "*"
-    -- end
+    local plus = " "
+    if not opts.completed then
+        plus = "+"
+    end
     if ww == 0 then
-      return string.format("%s / %s", xx, yy)
+      return string.format("%s / %s%s", xx, yy, plus)
     else
-      return string.format("%s / %s / %s", ww, xx, yy)
+      return string.format("%s / %s / %s%s", ww, xx, yy, plus)
     end
   end,
   [[

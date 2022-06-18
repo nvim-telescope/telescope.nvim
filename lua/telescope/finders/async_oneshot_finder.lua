@@ -1,100 +1,89 @@
 local async = require "plenary.async"
 local async_job = require "telescope._"
 local LinesPipe = require("telescope._").LinesPipe
-
 local make_entry = require "telescope.make_entry"
 
-local await_count = 1000
-
-return function(opts)
+local function config_from_opts(opts)
   opts = opts or {}
+  return {
+    entry_maker = opts.entry_maker or make_entry.gen_from_string,
+    cwd = opts.cwd,
+    env = opts.env,
+    fn_command = assert(opts.fn_command, "Must pass 'fn_command'"),
+    results = opts.results or {},
+  }
+end
 
-  local entry_maker = opts.entry_maker or make_entry.gen_from_string
-  local cwd = opts.cwd
-  local env = opts.env
-  local fn_command = assert(opts.fn_command, "Must pass `fn_command`")
+local function finder_factory(opts)
+  local config = config_from_opts(opts)
+  -- TODO is it better to work on a copy?
+  local cached = config.results
+  local job, stdout
 
-  local results = vim.F.if_nil(opts.results, {})
-  local num_results = #results
+  local function start_job_once()
+    start_job_once = function() end
+    local call = config.fn_command()
+    stdout = LinesPipe()
+    job = async_job.spawn {
+      command = call.command,
+      args = call.args,
+      cwd = config.cwd,
+      env = config.env,
+      stdout = stdout,
+    }
+  end
 
-  local job_started = false
-  local job_completed = false
-  local stdout = nil
+  --[[
+  -- A finder is a callable with arguments (prompt, process_result, process_complete).
+  -- In general, the results it produces can depend on prompt.
+  -- For this one-shot finder here the results dont depend on prompt.
+  -- The user searches the results only based on fuzzy matching.
+  -- A finder callable should yield and not block too often.
+  -- Call process_result(entry) to add a new entry.
+  -- Exit early if process_result() returns true.
+  -- Always call process_complete() before exiting.
+  -- The picker relies on finder to reproduce all the same entries again when the prompt changes.
+  --]]
+  local function produce_entries(_, _, process_result, process_complete)
+    start_job_once()
 
-  local job
-
-  return setmetatable({
-    close = function()
-      if job then
-        job:close()
-      end
-    end,
-    results = results,
-  }, {
-    __call = function(_, prompt, process_result, process_complete)
-      if not job_started then
-        local job_opts = fn_command()
-
-        -- TODO: Handle writers.
-        -- local writer
-        -- if job_opts.writer and Job.is_job(job_opts.writer) then
-        --   writer = job_opts.writer
-        -- elseif job_opts.writer then
-        --   writer = Job:new(job_opts.writer)
-        -- end
-
-        stdout = LinesPipe()
-        job = async_job.spawn {
-          command = job_opts.command,
-          args = job_opts.args,
-          cwd = cwd,
-          env = env,
-
-          stdout = stdout,
-        }
-
-        job_started = true
-      end
-
-      if not job_completed then
-        if not vim.tbl_isempty(results) then
-          for _, v in ipairs(results) do
-            process_result(v)
-          end
-        end
-        for line in stdout:iter(false) do
-          num_results = num_results + 1
-
-          if num_results % await_count then
-            async.util.scheduler()
-          end
-
-          local v = entry_maker(line)
-          results[num_results] = v
-          process_result(v)
-        end
-
+    for _, entry in ipairs(cached) do
+      -- TODO ok something is very wrong here, scheduler waits until we are on the main thread? then we always need it
+      -- or should process_result do it itself, because they want to call vim.api stuff
+      -- original did something like every 1000 iterations, but that makes no sense because you dont know how fast is your command
+      -- how does this relate to await_schedule()? ah the same. just an alias
+      async.util.scheduler()
+      if process_result(entry) then
         process_complete()
-        job_completed = true
-
         return
       end
+    end
 
-      local current_count = num_results
-      for index = 1, current_count do
-        -- TODO: Figure out scheduling...
-        if index % await_count then
-          async.util.scheduler()
-        end
-
-        if process_result(results[index]) then
-          break
+    if stdout then
+      for line in stdout:iter(false) do
+        local entry = config.entry_maker(line)
+        table.insert(cached, entry)
+        async.util.scheduler()
+        if process_result(entry) then
+          process_complete()
+          return
         end
       end
+      stdout = nil
+    end
 
-      if job_completed then
-        process_complete()
-      end
-    end,
-  })
+    process_complete()
+  end
+
+  local function close()
+    if job then
+      job:close()
+      job = nil
+    end
+  end
+
+  local finder = setmetatable({ close = close }, { __call = produce_entries })
+  return finder
 end
+
+return finder_factory
