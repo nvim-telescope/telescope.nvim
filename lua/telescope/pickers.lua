@@ -122,6 +122,8 @@ function Picker:new(opts)
     layout_strategy = layout_strategy,
     layout_config = config.smarter_depth_2_extend(opts.layout_config or {}, config.values.layout_config or {}),
 
+    on_picker_find_pre = opts.on_picker_find_pre,
+
     __cycle_layout_list = vim.F.if_nil(opts.cycle_layout_list, config.values.cycle_layout_list),
 
     window = {
@@ -428,6 +430,12 @@ function Picker:find()
 
   if self.default_text then
     self:set_prompt(self.default_text)
+  end
+
+  if self.on_picker_find_pre then
+    for _, on_picker_find_pre_item in ipairs(self.on_picker_find_pre) do
+      on_picker_find_pre_item(self)
+    end
   end
 
   if vim.tbl_contains({ "insert", "normal" }, self.initial_mode) then
