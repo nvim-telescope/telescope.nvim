@@ -1947,14 +1947,17 @@ Provides "resolver functions" to allow more customisable inputs for options.
 
 resolver.resolve_height()                 *telescope.resolve.resolve_height()*
     Converts input to a function that returns the height. The input must take
-    one of four forms:
+    one of five forms:
     1. 0 <= number < 1
        This means total height as a percentage.
     2. 1 <= number
        This means total height as a fixed number.
     3. function
        Must have signature: function(self, max_columns, max_lines): number
-    4. table of the form: {padding = `foo`}
+    4. table of the form: { val, max = ..., min = ... }
+       val has to be in the first form 0 <= val < 1 and only one is given, 
+       `min` or `max` as fixed number
+    5. table of the form: {padding = `foo`}
        where `foo` has one of the previous three forms.
        The height is then set to be the remaining space after padding. For
        example, if the window has height 50, and the input is {padding = 5}, 
@@ -1967,14 +1970,17 @@ resolver.resolve_height()                 *telescope.resolve.resolve_height()*
 
 resolver.resolve_width()                   *telescope.resolve.resolve_width()*
     Converts input to a function that returns the width. The input must take
-    one of four forms:
+    one of five forms:
     1. 0 <= number < 1
        This means total width as a percentage.
     2. 1 <= number
        This means total width as a fixed number.
     3. function
        Must have signature: function(self, max_columns, max_lines): number
-    4. table of the form: {padding = `foo`}
+    4. table of the form: { val, max = ..., min = ... }
+       val has to be in the first form 0 <= val < 1 and only one is given, 
+       `min` or `max` as fixed number
+    5. table of the form: {padding = `foo`}
        where `foo` has one of the previous three forms.
        The width is then set to be the remaining space after padding. For
        example, if the window has width 100, and the input is {padding = 5}, 
