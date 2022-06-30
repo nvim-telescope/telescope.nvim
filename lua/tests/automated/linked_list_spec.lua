@@ -129,5 +129,15 @@ describe("LinkedList", function()
 
       assert.are.same("first", l.tracked)
     end)
+
+    it("should discard appends after maxsize has passed", function()
+      local l = LinkedList:new { maxsize = 2 }
+      l:append(1)
+      l:append(2)
+      l:append(3)
+      l:append(4)
+
+      assert.are.same(2, l.size)
+    end)
   end)
 end)

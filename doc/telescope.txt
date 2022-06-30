@@ -2690,9 +2690,7 @@ action_set.scroll_previewer({prompt_bufnr}, {direction}) *telescope.actions.set.
 
 
 action_set.scroll_results({prompt_bufnr}, {direction}) *telescope.actions.set.scroll_results()*
-    Scrolls the results up or down. Defaults to a half page scroll, but can be
-    overridden using the `scroll_speed` option in `layout_config`. See
-    |telescope.layout| for more details.
+    Scrolls the results up or down. Moves `count` movements.
 
 
     Parameters: ~

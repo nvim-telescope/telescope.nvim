@@ -1,12 +1,11 @@
-require("plenary.reload").reload_module "plenary"
-require("plenary.reload").reload_module "telescope"
+local tester = require "telescope.testharness"
+local runner = require "telescope.testharness.runner"
+local helper = require "telescope.testharness.helpers"
 
-local tester = require "telescope.pickers._test"
-local helper = require "telescope.pickers._test_helpers"
-
-tester.builtin_picker("find_files", "telescope<c-n>", {
+runner.picker("find_files", "plugin<c-n>", {
   post_close = {
-    tester.not_ { "plugin/telescope.vim", helper.get_file },
+    tester.not_ { "telescope.vim", helper.get_file },
+    { "TelescopePrompt.lua", helper.get_file },
   },
 }, {
   sorting_strategy = "descending",

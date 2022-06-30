@@ -1,3 +1,6 @@
+-- TODO: I think it could be cool to set different functions depending on what configuration
+-- you have (so for example, if you do not pass maxsize, we never check it)
+
 local LinkedList = {}
 LinkedList.__index = LinkedList
 
@@ -16,6 +19,17 @@ function LinkedList:new(opts)
     track_at = track_at,
     _tracked_node = nil,
     tracked = nil,
+
+    -- maxsize
+    --      Use this to keep a limit on the nodes that we have.
+    --      It's possible that we will insert MORE than this for some circumstances,
+    --      so it's not a strict limit. But if something is appended after maxsize has
+    --      been met, then we will just drop the item
+    --
+    --      We could fix that limitation by fixing all the other places, but my intuition
+    --      is that it doesn't matter because the large percentage of additions are just appends
+    --      (after the track at is passed)
+    maxsize = opts.maxsize,
   }, self)
 end
 
@@ -31,6 +45,10 @@ local create_node = function(item)
 end
 
 function LinkedList:append(item)
+  if self.maxsize and self.maxsize <= self.size then
+    return
+  end
+
   local final_size = self:_increment()
 
   local node = create_node(item)
