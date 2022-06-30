@@ -276,7 +276,10 @@ utils.transform_path = function(opts, path)
         if opts.__length == nil then
           opts.__length = calc_result_length(path_display.truncate)
         end
-        transformed_path = truncate(transformed_path, opts.__length, nil, -1)
+        if opts.__prefix == nil then
+          opts.__prefix = 0
+        end
+        transformed_path = truncate(transformed_path, opts.__length - opts.__prefix, nil, -1)
       end
     end
 
