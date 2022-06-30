@@ -1,3 +1,40 @@
+---@tag telescope.make_entry
+
+---@brief [[
+---
+--- Each picker has a finder made up of two parts, the results which are the
+--- data to be displayed, and the entry_maker. These entry_makers are functions
+--- returned from make_entry functions. These will be referrd to as
+--- entry_makers in the following documentation.
+---
+--- Every entry maker returns a function which accepts the data to be used for
+--- an entry. This function will return an entry table (or nil, meaning skip
+--- this entry) which contains of the - following important keys:
+--- - value any: value key can be anything but still required
+--- - valid bool: is an optional key because it defaults to true but if the key
+---   is set to false it will not be displayed by the picker. (optional)
+--- - ordinal string: is the text that is used for filtering (required)
+--- - display string|function: is either a string of the text that is being
+---   displayed or a function receiving the entry at a later stage, when the entry
+---   is actually being displayed. A function can be useful here if complex
+---   calculation have to be done. `make_entry` can also return a second value
+---   a highlight array which will then apply to the line. Highlight entry in
+---   this array has the following signature `{ { start_col, end_col }, hl_group }`
+---   (required).
+--- - filename string: will be interpreted by the default `<cr>` action as
+---   open this file (optional)
+--- - bufnr number: will be interpreted by the default `<cr>` action as open
+---   this buffer (optional)
+--- - lnum number: lnum value which will be interpreted by the default `<cr>`
+---   action as a jump to this line (optional)
+--- - col number: col value which will be interpreted by the default `<cr>`
+---   action as a jump to this column (optional)
+---
+--- More information on easier displaying, see |telescope.pickers.entry_display|
+---
+--- TODO: Document something we call `entry_index`
+---@brief ]]
+
 local entry_display = require "telescope.pickers.entry_display"
 local utils = require "telescope.utils"
 local strings = require "plenary.strings"
@@ -190,9 +227,6 @@ do
     return { filename, lnum, col, text }
   end
 
-  --- Special options:
-  ---  - disable_coordinates: Don't show the line & row numbers
-  ---  - only_sort_text: Only sort via the text. Ignore filename and other items
   function make_entry.gen_from_vimgrep(opts)
     local mt_vimgrep_entry
 
@@ -919,8 +953,6 @@ function make_entry.gen_from_vimoptions(opts)
   end
 end
 
---- Special options:
----  - only_sort_tags: Only sort via tag name. Ignore filename and other items
 function make_entry.gen_from_ctags(opts)
   opts = opts or {}
 
