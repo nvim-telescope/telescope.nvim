@@ -431,6 +431,8 @@ actions.edit_register = function(prompt_bufnr)
 end
 
 --- Paste the selected register into the buffer
+---
+--- Note: only meant to be used inside builtin.registers
 ---@param prompt_bufnr number: The prompt bufnr
 actions.paste_register = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()

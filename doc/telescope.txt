@@ -2380,6 +2380,8 @@ actions.edit_register({prompt_bufnr})      *telescope.actions.edit_register()*
 actions.paste_register({prompt_bufnr})    *telescope.actions.paste_register()*
     Paste the selected register into the buffer
 
+    Note: only meant to be used inside builtin.registers
+
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
