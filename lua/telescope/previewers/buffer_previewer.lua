@@ -715,8 +715,12 @@ previewers.git_stash_diff = defaulter(function(opts)
         value = entry.value,
         bufname = self.state.bufname,
         cwd = opts.cwd,
+        callback = function(bufnr)
+          if vim.api.nvim_buf_is_valid(bufnr) then
+            putils.regex_highlighter(bufnr, "diff")
+          end
+        end,
       })
-      putils.regex_highlighter(self.state.bufnr, "diff")
     end,
   }
 end, {})
@@ -741,10 +745,12 @@ previewers.git_commit_diff_to_parent = defaulter(function(opts)
         bufname = self.state.bufname,
         cwd = opts.cwd,
         callback = function(bufnr)
-          search_cb_jump(self, bufnr, opts.current_line)
+          if vim.api.nvim_buf_is_valid(bufnr) then
+            search_cb_jump(self, bufnr, opts.current_line)
+            putils.regex_highlighter(bufnr, "diff")
+          end
         end,
       })
-      putils.regex_highlighter(self.state.bufnr, "diff")
     end,
   }
 end, {})
@@ -770,10 +776,12 @@ previewers.git_commit_diff_to_head = defaulter(function(opts)
         bufname = self.state.bufname,
         cwd = opts.cwd,
         callback = function(bufnr)
-          search_cb_jump(self, bufnr, opts.current_line)
+          if vim.api.nvim_buf_is_valid(bufnr) then
+            search_cb_jump(self, bufnr, opts.current_line)
+            putils.regex_highlighter(bufnr, "diff")
+          end
         end,
       })
-      putils.regex_highlighter(self.state.bufnr, "diff")
     end,
   }
 end, {})
@@ -799,10 +807,12 @@ previewers.git_commit_diff_as_was = defaulter(function(opts)
         bufname = self.state.bufname,
         cwd = opts.cwd,
         callback = function(bufnr)
-          search_cb_jump(self, bufnr, opts.current_line)
+          if vim.api.nvim_buf_is_valid(bufnr) then
+            search_cb_jump(self, bufnr, opts.current_line)
+            putils.regex_highlighter(bufnr, ft)
+          end
         end,
       })
-      putils.highlighter(self.state.bufnr, ft)
     end,
   }
 end, {})
@@ -864,8 +874,12 @@ previewers.git_file_diff = defaulter(function(opts)
           value = entry.value,
           bufname = self.state.bufname,
           cwd = opts.cwd,
+          callback = function(bufnr)
+            if vim.api.nvim_buf_is_valid(bufnr) then
+              putils.regex_highlighter(bufnr, "diff")
+            end
+          end,
         })
-        putils.regex_highlighter(self.state.bufnr, "diff")
       end
     end,
   }
