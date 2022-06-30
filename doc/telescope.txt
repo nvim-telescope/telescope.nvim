@@ -2007,6 +2007,101 @@ resolver.resolve_anchor_pos()         *telescope.resolve.resolve_anchor_pos()*
 
 
 ================================================================================
+                                                          *telescope.make_entry*
+
+Each picker has a finder made up of two parts, the results which are the data
+to be displayed, and the entry_maker. These entry_makers are functions returned
+from make_entry functions. These will be referrd to as entry_makers in the
+following documentation.
+
+Every entry maker returns a function which accepts the data to be used for an
+entry. This function will return an entry table (or nil, meaning skip this
+entry) which contains of the - following important keys:
+- value any: value key can be anything but still required
+- valid bool: is an optional key because it defaults to true but if the key is
+  set to false it will not be displayed by the picker. (optional)
+- ordinal string: is the text that is used for filtering (required)
+- display string|function: is either a string of the text that is being 
+  displayed or a function receiving the entry at a later stage, when the entry 
+  is actually being displayed. A function can be useful here if complex 
+  calculation have to be done. `make_entry` can also return a second value a
+  highlight array which will then apply to the line. Highlight entry in this
+  array has the following signature `{ { start_col, end_col }, hl_group }` 
+  (required).
+- filename string: will be interpreted by the default `<cr>` action as open
+  this file (optional)
+- bufnr number: will be interpreted by the default `<cr>` action as open this
+  buffer (optional)
+- lnum number: lnum value which will be interpreted by the default `<cr>` 
+  action as a jump to this line (optional)
+- col number: col value which will be interpreted by the default `<cr>` action
+  as a jump to this column (optional)
+
+More information on easier displaying, see |telescope.pickers.entry_display|
+
+TODO: Document something we call `entry_index`
+
+
+================================================================================
+                                               *telescope.pickers.entry_display*
+
+Entry Display is used to format each entry shown in the result panel.
+
+Entry Display create() will give us a function based on the configuration of
+column widths we pass into it. We then can use this function n times to return
+a string based on structured input.
+
+Note that if you call `create()` inside `make_display` it will be called for
+every single entry. So it is suggested to do this outside of `make_display` for
+the best performance.
+
+The create function will use the column widths passed to it in
+configaration.items. Each item in that table is the number of characters in the
+column. It's also possible for the final column to not have a fixed width, this
+will be shown in the configuartion as 'remaining = true'.
+
+An example of this configuration is shown for the buffers picker
+>
+local displayer = entry_display.create {
+  separator = " ",
+  items = {
+    { width = opts.bufnr_width },
+    { width = 4 },
+    { width = icon_width },
+    { remaining = true },
+  },
+}
+<
+
+This shows 4 columns, the first is defined in the opts as the width we'll use
+when display_string the number of the buffer. The second has a fixed width of 4
+and the 3rd column's widht will be decided by the width of the icons we use.
+The fourth column will use the remaining space. Finally we have also defined
+the seperator between each column will be the space " ".
+
+An example of how the display reference will be used is shown, again for the
+buffers picker:
+>
+return displayer {
+  { entry.bufnr, "TelescopeResultsNumber" },
+  { entry.indicator, "TelescopeResultsComment" },
+  { icon, hl_group },
+  display_bufname .. ":" .. entry.lnum,
+}
+<
+
+There are two types of values each column can have. Either a simple String or a
+table containing the String as well as the hl_group.
+
+The displayer can return values, string and an optional highlights. String is
+all the text to be displayed for this entry as a single string. If parts of the
+string are to be highlighted they will be described in the highlights table.
+
+For better understanding of how create() and displayer are used it's best to
+look at the code in make_entry.lua.
+
+
+================================================================================
                                                                *telescope.utils*
 
 Utilities for writing telescope pickers
