@@ -1,7 +1,6 @@
 local strings = require "plenary.strings"
 local deprecated = require "telescope.deprecated"
 local sorters = require "telescope.sorters"
-local if_nil = vim.F.if_nil
 local os_sep = require("plenary.path").path.sep
 local has_win = vim.fn.has "win32" == 1
 
@@ -69,7 +68,7 @@ config.descriptions = {}
 config.pickers = _TelescopeConfigurationPickers
 
 function config.set_pickers(pickers)
-  pickers = if_nil(pickers, {})
+  pickers = vim.F.if_nil(pickers, {})
 
   for k, v in pairs(pickers) do
     config.pickers[k] = v
@@ -182,7 +181,8 @@ append(
   - "reset" (default)
   - "follow"
   - "row"
-  - "closest"]]
+  - "closest"
+  - "none"]]
 )
 
 append(
@@ -593,8 +593,17 @@ append(
                           highlighting, which falls back to regex-based highlighting.
                           `true`: treesitter highlighting for all available filetypes
                           `false`: regex-based highlighting for all filetypes
-                          `table`: table of filetypes for which to attach treesitter
-                          highlighting
+                          `table`: following nvim-treesitters highlighting options:
+                            It contains two keys:
+                              - enable boolean|table: if boolean, enable all ts
+                                                      highlighing with that flag,
+                                                      disable still considered.
+                                                      Containing a list of filetypes,
+                                                      that are enabled, disabled
+                                                      ignored because it doesnt make
+                                                      any sense in this case.
+                              - disable table: containing a list of filetypes
+                                               that are disabled
                           Default: true
       - msg_bg_fillchar:  Character to fill background of unpreviewable buffers with
                           Default: "╱"
@@ -783,6 +792,17 @@ append(
   Example: { "%.npz" } -- ignore all npz files
   See: https://www.lua.org/manual/5.1/manual.html#5.4.1 for more
   information about lua regex
+  Note: `file_ignore_patterns` will be used in all pickers that have a
+  file associated. This might lead to the problem that lsp_ pickers
+  aren't displaying results because they might be ignored by
+  `file_ignore_patterns`. For example, setting up node_modules as ignored
+  will never show node_modules in any results, even if you are
+  interested in lsp_ results.
+
+  If you only want `file_ignore_patterns` for `find_files` and
+  `grep_string`/`live_grep` it is suggested that you setup `gitignore`
+  and have fd and or ripgrep installed because both tools will not show
+  `gitignore`d files on default.
 
   Default: nil]]
 )
@@ -865,8 +885,8 @@ append(
 -- @param tele_defaults table: (optional) a table containing all of the defaults
 --    for telescope [defaults to `telescope_defaults`]
 function config.set_defaults(user_defaults, tele_defaults)
-  user_defaults = if_nil(user_defaults, {})
-  tele_defaults = if_nil(tele_defaults, telescope_defaults)
+  user_defaults = vim.F.if_nil(user_defaults, {})
+  tele_defaults = vim.F.if_nil(tele_defaults, telescope_defaults)
 
   -- Check if using layout keywords outside of `layout_config`
   deprecated.options(user_defaults)
@@ -874,8 +894,8 @@ function config.set_defaults(user_defaults, tele_defaults)
   local function get(name, default_val)
     if name == "layout_config" then
       return smarter_depth_2_extend(
-        if_nil(user_defaults[name], {}),
-        vim.tbl_deep_extend("keep", if_nil(config.values[name], {}), if_nil(default_val, {}))
+        vim.F.if_nil(user_defaults[name], {}),
+        vim.tbl_deep_extend("keep", vim.F.if_nil(config.values[name], {}), vim.F.if_nil(default_val, {}))
       )
     end
     if name == "history" or name == "cache_picker" or name == "preview" then
@@ -884,8 +904,8 @@ function config.set_defaults(user_defaults, tele_defaults)
       end
 
       return smarter_depth_2_extend(
-        if_nil(user_defaults[name], {}),
-        vim.tbl_deep_extend("keep", if_nil(config.values[name], {}), if_nil(default_val, {}))
+        vim.F.if_nil(user_defaults[name], {}),
+        vim.tbl_deep_extend("keep", vim.F.if_nil(config.values[name], {}), vim.F.if_nil(default_val, {}))
       )
     end
     return first_non_null(user_defaults[name], config.values[name], default_val)

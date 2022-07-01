@@ -431,6 +431,8 @@ actions.edit_register = function(prompt_bufnr)
 end
 
 --- Paste the selected register into the buffer
+---
+--- Note: only meant to be used inside builtin.registers
 ---@param prompt_bufnr number: The prompt bufnr
 actions.paste_register = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()
@@ -1020,7 +1022,9 @@ end
 actions.delete_buffer = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:delete_selection(function(selection)
-    vim.api.nvim_buf_delete(selection.bufnr, { force = false })
+    local force = vim.api.nvim_buf_get_option(selection.bufnr, "buftype") == "terminal"
+    local ok = pcall(vim.api.nvim_buf_delete, selection.bufnr, { force = force })
+    return ok
   end)
 end
 
@@ -1059,22 +1063,22 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.which_key = function(prompt_bufnr, opts)
   opts = opts or {}
-  opts.max_height = utils.get_default(opts.max_height, 0.4)
-  opts.only_show_current_mode = utils.get_default(opts.only_show_current_mode, true)
-  opts.mode_width = utils.get_default(opts.mode_width, 1)
-  opts.keybind_width = utils.get_default(opts.keybind_width, 7)
-  opts.name_width = utils.get_default(opts.name_width, 30)
-  opts.line_padding = utils.get_default(opts.line_padding, 1)
-  opts.separator = utils.get_default(opts.separator, " -> ")
-  opts.close_with_action = utils.get_default(opts.close_with_action, true)
-  opts.normal_hl = utils.get_default(opts.normal_hl, "TelescopePrompt")
-  opts.border_hl = utils.get_default(opts.border_hl, "TelescopePromptBorder")
-  opts.winblend = utils.get_default(opts.winblend, config.values.winblend)
-  opts.column_padding = utils.get_default(opts.column_padding, "  ")
+  opts.max_height = vim.F.if_nil(opts.max_height, 0.4)
+  opts.only_show_current_mode = vim.F.if_nil(opts.only_show_current_mode, true)
+  opts.mode_width = vim.F.if_nil(opts.mode_width, 1)
+  opts.keybind_width = vim.F.if_nil(opts.keybind_width, 7)
+  opts.name_width = vim.F.if_nil(opts.name_width, 30)
+  opts.line_padding = vim.F.if_nil(opts.line_padding, 1)
+  opts.separator = vim.F.if_nil(opts.separator, " -> ")
+  opts.close_with_action = vim.F.if_nil(opts.close_with_action, true)
+  opts.normal_hl = vim.F.if_nil(opts.normal_hl, "TelescopePrompt")
+  opts.border_hl = vim.F.if_nil(opts.border_hl, "TelescopePromptBorder")
+  opts.winblend = vim.F.if_nil(opts.winblend, config.values.winblend)
+  opts.column_padding = vim.F.if_nil(opts.column_padding, "  ")
 
   -- Assigning into 'opts.column_indent' would override a number with a string and
   -- cause issues with subsequent calls, keep a local copy of the string instead
-  local column_indent = table.concat(utils.repeated_table(utils.get_default(opts.column_indent, 4), " "))
+  local column_indent = table.concat(utils.repeated_table(vim.F.if_nil(opts.column_indent, 4), " "))
 
   -- close on repeated keypress
   local km_bufs = (function()
@@ -1111,9 +1115,9 @@ actions.which_key = function(prompt_bufnr, opts)
 
   local make_display = function(mapping)
     return displayer {
-      { mapping.mode, utils.get_default(opts.mode_hl, "TelescopeResultsConstant") },
-      { mapping.keybind, utils.get_default(opts.keybind_hl, "TelescopeResultsVariable") },
-      { mapping.name, utils.get_default(opts.name_hl, "TelescopeResultsFunction") },
+      { mapping.mode, vim.F.if_nil(opts.mode_hl, "TelescopeResultsConstant") },
+      { mapping.keybind, vim.F.if_nil(opts.keybind_hl, "TelescopeResultsVariable") },
+      { mapping.name, vim.F.if_nil(opts.name_hl, "TelescopeResultsFunction") },
     }
   end
 

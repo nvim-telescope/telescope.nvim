@@ -13,7 +13,7 @@ local utils = {}
 
 --- Apply `f` to the entries of the current picker.
 --- - Notes:
----   - Mapped entries may include results not visible in the results popup.
+---   - Mapped entries include all currently filtered results, not just the visible onces.
 ---   - Indices are 1-indexed, whereas rows are 0-indexed.
 --- - Warning: `map_entries` has no return value.
 ---   - The below example showcases how to collect results

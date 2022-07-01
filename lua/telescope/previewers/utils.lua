@@ -82,12 +82,26 @@ end
 utils.highlighter = function(bufnr, ft, opts)
   opts = opts or {}
   opts.preview = opts.preview or {}
-  opts.preview.treesitter = vim.F.if_nil(
-    opts.preview.treesitter,
-    type(conf.preview) == "table" and conf.preview.treesitter
-  )
-  local ts_highlighting = opts.preview.treesitter == true
-    or type(opts.preview.treesitter) == "table" and vim.tbl_contains(opts.preview.treesitter, ft)
+  opts.preview.treesitter = vim.F.if_nil(opts.preview.treesitter, conf.preview.treesitter)
+  if type(opts.preview.treesitter) == "boolean" then
+    local temp = { enable = opts.preview.treesitter }
+    opts.preview.treesitter = temp
+  end
+
+  local ts_highlighting = (function()
+    if type(opts.preview.treesitter.enable) == "table" then
+      if vim.tbl_contains(opts.preview.treesitter.enable, ft) then
+        return true
+      end
+      return false
+    end
+
+    if vim.tbl_contains(vim.F.if_nil(opts.preview.treesitter.disable, {}), ft) then
+      return false
+    end
+
+    return opts.preview.treesitter.enable == nil or opts.preview.treesitter.enable == true
+  end)()
 
   local ts_success
   if ts_highlighting then

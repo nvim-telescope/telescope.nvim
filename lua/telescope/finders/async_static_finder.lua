@@ -24,6 +24,7 @@ return function(opts)
 
   return setmetatable({
     results = results,
+    entry_maker = entry_maker,
     close = function() end,
   }, {
     __call = function(_, _, process_result, process_complete)
