@@ -593,8 +593,17 @@ append(
                           highlighting, which falls back to regex-based highlighting.
                           `true`: treesitter highlighting for all available filetypes
                           `false`: regex-based highlighting for all filetypes
-                          `table`: table of filetypes for which to attach treesitter
-                          highlighting
+                          `table`: following nvim-treesitters highlighting options:
+                            It contains two keys:
+                              - enable boolean|table: if boolean, enable all ts
+                                                      highlighing with that flag,
+                                                      disable still considered.
+                                                      Containing a list of filetypes,
+                                                      that are enabled, disabled
+                                                      ignored because it doesnt make
+                                                      any sense in this case.
+                              - disable table: containing a list of filetypes
+                                               that are disabled
                           Default: true
       - msg_bg_fillchar:  Character to fill background of unpreviewable buffers with
                           Default: "╱"
