@@ -458,6 +458,9 @@ files.tags = function(opts)
       action_set.select:enhance {
         post = function()
           local selection = action_state.get_selected_entry()
+          if not selection then
+            return
+          end
 
           if selection.scode then
             -- un-escape / then escape required

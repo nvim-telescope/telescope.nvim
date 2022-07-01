@@ -386,6 +386,10 @@ previewers.new_buffer_previewer = function(opts)
     opts.define_preview(self, entry, status)
 
     vim.schedule(function()
+      if not self or not self.state or not self.state.bufnr then
+        return
+      end
+
       if vim.api.nvim_buf_is_valid(self.state.bufnr) then
         vim.api.nvim_buf_call(self.state.bufnr, function()
           vim.cmd "do User TelescopePreviewerLoaded"
