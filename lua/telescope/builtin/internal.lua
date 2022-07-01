@@ -1189,7 +1189,7 @@ internal.autocommands = function(opts)
           return false
         end
         local val = selection.value
-        local group_name = val.group_name ~= "<anonymous>" or ""
+        local group_name = val.group_name ~= "<anonymous>" and val.group_name or ""
         local output = vim.fn.execute("verb autocmd " .. group_name .. " " .. val.event .. " " .. val.pattern, "silent")
         for line in output:gmatch "[^\r\n]+" do
           local source_file = line:match "Last set from (.*) line %d*$" or line:match "Last set from (.*)$"
