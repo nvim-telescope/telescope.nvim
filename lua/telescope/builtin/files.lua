@@ -201,6 +201,7 @@ files.find_files = function(opts)
   local no_ignore_parent = opts.no_ignore_parent
   local follow = opts.follow
   local search_dirs = opts.search_dirs
+  local search_file = opts.search_file
 
   if search_dirs then
     for k, v in pairs(search_dirs) do
@@ -221,8 +222,16 @@ files.find_files = function(opts)
     if follow then
       table.insert(find_command, "-L")
     end
+    if search_file then
+      if command == "rg" then
+        table.insert(find_command, "-g")
+        table.insert(find_command, "*" .. search_file .. "*")
+      else
+        table.insert(find_command, search_file)
+      end
+    end
     if search_dirs then
-      if command ~= "rg" then
+      if command ~= "rg" and not search_file then
         table.insert(find_command, ".")
       end
       for _, v in pairs(search_dirs) do
@@ -242,6 +251,10 @@ files.find_files = function(opts)
     end
     if follow then
       table.insert(find_command, 2, "-L")
+    end
+    if search_file then
+      table.insert(find_command, "-name")
+      table.insert(find_command, "*" .. search_file .. "*")
     end
     if search_dirs then
       table.remove(find_command, 2)
@@ -264,6 +277,9 @@ files.find_files = function(opts)
     end
     if search_dirs ~= nil then
       log.warn "The `search_dirs` key is not available for the Windows `where` command in `find_files`."
+    end
+    if search_file ~= nil then
+      log.warn "The `search_file` key is not available for the Windows `where` command in `find_files`."
     end
   end
 

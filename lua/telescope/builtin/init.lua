@@ -83,6 +83,7 @@ builtin.grep_string = require_on_exported_call("telescope.builtin.files").grep_s
 ---@field no_ignore boolean: show files ignored by .gitignore, .ignore, etc. (default: false)
 ---@field no_ignore_parent boolean: show files ignored by .gitignore, .ignore, etc. in parent dirs. (default: false)
 ---@field search_dirs table: directory/directories/files to search
+---@field search_file string: specify a filename to search for
 builtin.find_files = require_on_exported_call("telescope.builtin.files").find_files
 
 --- This is an alias for the `find_files` picker
