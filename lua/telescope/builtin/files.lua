@@ -252,6 +252,10 @@ files.find_files = function(opts)
     if follow then
       table.insert(find_command, 2, "-L")
     end
+    if search_file then
+      table.insert(find_command, "-name")
+      table.insert(find_command, "*" .. search_file .. "*")
+    end
     if search_dirs then
       table.remove(find_command, 2)
       for _, v in pairs(search_dirs) do
