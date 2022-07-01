@@ -899,6 +899,7 @@ builtin.find_files({opts})                    *telescope.builtin.find_files()*
                                              (default: false)
         {search_dirs}      (table)           directory/directories/files to
                                              search
+        {search_file}      (string)          specify a filename to search for
 
 
 builtin.fd()                                          *telescope.builtin.fd()*

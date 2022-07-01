@@ -224,7 +224,6 @@ files.find_files = function(opts)
     end
     if search_file then
       if command == "rg" then
-        table.insert(find_command, "--files")
         table.insert(find_command, "-g")
         table.insert(find_command, "*" .. search_file .. "*")
       else
@@ -517,4 +516,3 @@ local function apply_checks(mod)
 end
 
 return apply_checks(files)
-
