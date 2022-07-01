@@ -30,7 +30,7 @@ function from_entry.path(entry, validate, escape)
     return
   end
 
-  if validate and not vim.fn.filereadable(path) then
+  if validate and vim.fn.filereadable(path) == 0 then
     return
   end
 
