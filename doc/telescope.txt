@@ -2811,6 +2811,16 @@ actions.which_key({prompt_bufnr})              *telescope.actions.which_key()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.to_fuzzy_refine({prompt_bufnr})  *telescope.actions.to_fuzzy_refine()*
+    Move from a none fuzzy search to a fuzzy one
+    This action is meant to be used in live_grep and
+    lsp_dynamic_workspace_symbols
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 
 ================================================================================
                                                        *telescope.actions.state*
