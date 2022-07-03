@@ -215,7 +215,7 @@ community):
 - feat: Add entry_index for entry_makers (#1850)
 - feat: refine with new_table (#1115)
 
-The last one is one of the most existing new features, because it  allows  you
+The last one is one of the most exciting new features, because it allows you
 to go from live_grep into a fuzzy environment with the following mapping
 `<C-Space>`. It's a general interface we now implemented for `live_grep` and
 `lsp_dynamic_workspace_symbols` but it could also be easily implemented for
@@ -223,11 +223,11 @@ other builtins, by us or the user. It's now available for extension developers.
 We will add documentation in the next couple of days and improve it by adding
 more options to configure it after the initial 0.1 release.
 
-But with all longer development phases, there are also some breaking changes.
-This is the main reason we moved development to a separate branch, for the
-past two months. We can't promise that there won't be more breaking changes,
-but it is the plan that this is the last set of breaking changes prior to the
-0.1 release on July, 12. We are deeply sorry for the inconvenience. The
+But as with all longer development phases, there are also some breaking
+changes. This is the main reason we moved development to a separate branch, for
+the past two months. We can't promise that there won't be more breaking
+changes, but it is the plan that this is the last set of breaking changes prior
+to the 0.1 release on July, 12. We are deeply sorry for the inconvenience. The
 following breaking changes are included in this PR:
 - break(git_files): change `show_untracked` default to false. Can be changed
   back with `:Telescope git_files show_untracked=true`
