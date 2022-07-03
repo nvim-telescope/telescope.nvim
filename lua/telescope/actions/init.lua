@@ -54,7 +54,7 @@
 
 local a = vim.api
 
-local config = require "telescope.config"
+local conf = require("telescope.config").values
 local state = require "telescope.state"
 local utils = require "telescope.utils"
 local popup = require "plenary.popup"
@@ -1073,7 +1073,7 @@ actions.which_key = function(prompt_bufnr, opts)
   opts.close_with_action = vim.F.if_nil(opts.close_with_action, true)
   opts.normal_hl = vim.F.if_nil(opts.normal_hl, "TelescopePrompt")
   opts.border_hl = vim.F.if_nil(opts.border_hl, "TelescopePromptBorder")
-  opts.winblend = vim.F.if_nil(opts.winblend, config.values.winblend)
+  opts.winblend = vim.F.if_nil(opts.winblend, conf.winblend)
   opts.column_padding = vim.F.if_nil(opts.column_padding, "  ")
 
   -- Assigning into 'opts.column_indent' would override a number with a string and
@@ -1271,6 +1271,28 @@ actions.which_key = function(prompt_bufnr, opts)
       })
     end)
   end
+end
+
+--- Move from a none fuzzy search to a fuzzy one<br>
+--- This action is meant to be used in live_grep and lsp_dynamic_workspace_symbols
+---@param prompt_bufnr number: The prompt bufnr
+actions.to_fuzzy_refine = function(prompt_bufnr)
+  local line = action_state.get_current_line()
+  local prefix = (function()
+    local title = action_state.get_current_picker(prompt_bufnr).prompt_title
+    if title == "Live Grep" then
+      return "Find Word"
+    elseif title == "LSP Dynamic Workspace Symbols" then
+      return "LSP Workspace Symbols"
+    else
+      return "Fuzzy over"
+    end
+  end)()
+
+  require("telescope.actions.generate").refine(prompt_bufnr, {
+    prompt_title = string.format("%s (%s)", prefix, line),
+    sorter = conf.generic_sorter {},
+  })
 end
 
 -- ==================================================

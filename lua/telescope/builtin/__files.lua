@@ -1,5 +1,6 @@
 local action_state = require "telescope.actions.state"
 local action_set = require "telescope.actions.set"
+local actions = require "telescope.actions"
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
 local pickers = require "telescope.pickers"
@@ -112,13 +113,7 @@ files.live_grep = function(opts)
     -- and then we could get the highlight positions directly.
     sorter = sorters.highlighter_only(opts),
     attach_mappings = function(_, map)
-      map("i", "<c-space>", function(prompt_bufnr)
-        local line = action_state.get_current_line()
-        require("telescope.actions.generate").refine(prompt_bufnr, {
-          prompt_title = "Find Word (" .. line .. ")",
-          sorter = conf.generic_sorter(opts),
-        })
-      end)
+      map("i", "<c-space>", actions.to_fuzzy_refine)
       return true
     end,
   }):find()
