@@ -866,8 +866,12 @@ builtin.grep_string({opts})                  *telescope.builtin.grep_string()*
                                           cwd, use utils.buffer_dir() to
                                           search relative to open buffer)
         {search}              (string)    the query to search
+        {grep_open_files}     (boolean)   if true, restrict search to open
+                                          files only, mutually exclusive with
+                                          `search_dirs`
         {search_dirs}         (table)     directory/directories/files to
-                                          search
+                                          search, mutually exclusive with
+                                          `grep_open_files`
         {use_regex}           (boolean)   if true, special characters won't be
                                           escaped, allows for using regex
                                           (default: false)

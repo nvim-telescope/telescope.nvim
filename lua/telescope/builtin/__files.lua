@@ -36,6 +36,29 @@ local escape_chars = function(string)
   })
 end
 
+local get_open_filelist = function(grep_open_files, cwd)
+  if not grep_open_files then
+    return nil
+  end
+
+  local bufnrs = filter(function(b)
+    if 1 ~= vim.fn.buflisted(b) then
+      return false
+    end
+    return true
+  end, vim.api.nvim_list_bufs())
+  if not next(bufnrs) then
+    return
+  end
+
+  local filelist = {}
+  for _, bufnr in ipairs(bufnrs) do
+    local file = vim.api.nvim_buf_get_name(bufnr)
+    table.insert(filelist, Path:new(file):make_relative(cwd))
+  end
+  return filelist
+end
+
 -- Special keys:
 --  opts.search_dirs -- list of directory to search in
 --  opts.grep_open_files -- boolean to restrict search to open files
@@ -45,24 +68,8 @@ files.live_grep = function(opts)
   local grep_open_files = opts.grep_open_files
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
 
-  local filelist = {}
-
-  if grep_open_files then
-    local bufnrs = filter(function(b)
-      if 1 ~= vim.fn.buflisted(b) then
-        return false
-      end
-      return true
-    end, vim.api.nvim_list_bufs())
-    if not next(bufnrs) then
-      return
-    end
-
-    for _, bufnr in ipairs(bufnrs) do
-      local file = vim.api.nvim_buf_get_name(bufnr)
-      table.insert(filelist, Path:new(file):make_relative(opts.cwd))
-    end
-  elseif search_dirs then
+  local filelist = get_open_filelist(grep_open_files, opts.cwd)
+  if search_dirs then
     for i, path in ipairs(search_dirs) do
       search_dirs[i] = vim.fn.expand(path)
     end
@@ -94,11 +101,9 @@ files.live_grep = function(opts)
 
     local search_list = {}
 
-    if search_dirs then
-      table.insert(search_list, search_dirs)
-    end
-
     if grep_open_files then
+      table.insert(search_list, search_dirs)
+    elseif search_dirs then
       search_list = filelist
     end
 
@@ -119,10 +124,6 @@ files.live_grep = function(opts)
   }):find()
 end
 
--- Special keys:
---  opts.search -- the string to search.
---  opts.search_dirs -- list of directory to search in
---  opts.use_regex -- special characters won't be escaped
 files.grep_string = function(opts)
   -- TODO: This should probably check your visual selection as well, if you've got one
 
@@ -131,7 +132,9 @@ files.grep_string = function(opts)
   local word = opts.search or vim.fn.expand "<cword>"
   local search = opts.use_regex and word or escape_chars(word)
   local word_match = opts.word_match
+  local grep_open_files = opts.grep_open_files
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
+  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
 
   local title_word = word:gsub("\n", "\\n")
 
@@ -148,7 +151,11 @@ files.grep_string = function(opts)
     search,
   }
 
-  if search_dirs then
+  if grep_open_files then
+    for _, file in ipairs(get_open_filelist(grep_open_files, opts.cwd)) do
+      table.insert(args, file)
+    end
+  elseif search_dirs then
     for _, path in ipairs(search_dirs) do
       table.insert(args, vim.fn.expand(path))
     end
