@@ -205,7 +205,7 @@ do
   }
 
   -- Gets called only once to parse everything out for the vimgrep, after that looks up directly.
-  local parse = function(t)
+  local parse_with_col = function(t)
     local _, _, filename, lnum, col, text = string.find(t.value, [[(..-):(%d+):(%d+):(.*)]])
 
     local ok
@@ -227,10 +227,31 @@ do
     return { filename, lnum, col, text }
   end
 
-  function make_entry.gen_from_vimgrep(opts)
-    local mt_vimgrep_entry
+  local parse_without_col = function(t)
+    local _, _, filename, lnum, text = string.find(t.value, [[(..-):(%d+):(.*)]])
 
+    local ok
+    ok, lnum = pcall(tonumber, lnum)
+    if not ok then
+      lnum = nil
+    end
+
+    t.filename = filename
+    t.lnum = lnum
+    t.col = nil
+    t.text = text
+
+    return { filename, lnum, nil, text }
+  end
+
+  function make_entry.gen_from_vimgrep(opts)
     opts = opts or {}
+
+    local mt_vimgrep_entry
+    local parse = parse_with_col
+    if opts.__inverted == true then
+      parse = parse_without_col
+    end
 
     local disable_devicons = opts.disable_devicons
     local disable_coordinates = opts.disable_coordinates
@@ -279,7 +300,11 @@ do
 
         local coordinates = ""
         if not disable_coordinates then
-          coordinates = string.format("%s:%s:", entry.lnum, entry.col)
+          if entry.col then
+            coordinates = string.format("%s:%s:", entry.lnum, entry.col)
+          else
+            coordinates = string.format("%s:", entry.lnum)
+          end
         end
 
         local display, hl_group = utils.transform_devicons(
