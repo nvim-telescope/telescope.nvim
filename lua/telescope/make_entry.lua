@@ -413,7 +413,7 @@ function make_entry.gen_from_quickfix(opts)
     { remaining = true },
   }
   if hidden then
-    items[1] = 8
+    items[1] = { width = 8 }
   end
   if not show_line then
     table.remove(items, 1)
