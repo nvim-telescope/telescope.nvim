@@ -204,9 +204,7 @@ utils.is_path_hidden = function(opts, path_display)
 
   return path_display == nil
     or path_display == "hidden"
-    or type(path_display) ~= "table"
-    or vim.tbl_contains(path_display, "hidden")
-    or path_display.hidden
+    or type(path_display) == "table" and (vim.tbl_contains(path_display, "hidden") or path_display.hidden)
 end
 
 local is_uri = function(filename)
