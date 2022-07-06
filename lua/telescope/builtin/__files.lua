@@ -126,43 +126,43 @@ end
 
 files.grep_string = function(opts)
   -- TODO: This should probably check your visual selection as well, if you've got one
-
-  local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
-  local search_dirs = opts.search_dirs
-  local word = opts.search or vim.fn.expand "<cword>"
-  local search = opts.use_regex and word or escape_chars(word)
-  local word_match = opts.word_match
-  local grep_open_files = opts.grep_open_files
-  opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
-
-  local title_word = word:gsub("\n", "\\n")
+  local vimgrep_arguments = vim.F.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
+  local word = vim.F.if_nil(opts.search, vim.fn.expand "<cword>")
+  local search = opts.use_regex and word or escape_chars(word)
 
   local additional_args = {}
   if opts.additional_args ~= nil and type(opts.additional_args) == "function" then
     additional_args = opts.additional_args(opts)
   end
 
+  if search == "" then
+    search = { "-v", "--", "^[[:space:]]*$" }
+    opts.__inverted = true
+  else
+    search = { "--", search }
+  end
+
   local args = flatten {
     vimgrep_arguments,
     additional_args,
-    word_match,
-    "--",
+    opts.word_match,
     search,
   }
 
-  if grep_open_files then
-    for _, file in ipairs(get_open_filelist(grep_open_files, opts.cwd)) do
+  if opts.grep_open_files then
+    for _, file in ipairs(get_open_filelist(opts.grep_open_files, opts.cwd)) do
       table.insert(args, file)
     end
-  elseif search_dirs then
-    for _, path in ipairs(search_dirs) do
+  elseif opts.search_dirs then
+    for _, path in ipairs(opts.search_dirs) do
       table.insert(args, vim.fn.expand(path))
     end
   end
 
+  opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
   pickers.new(opts, {
-    prompt_title = "Find Word (" .. title_word .. ")",
+    prompt_title = "Find Word (" .. word:gsub("\n", "\\n") .. ")",
     finder = finders.new_oneshot_job(args, opts),
     previewer = conf.grep_previewer(opts),
     sorter = conf.generic_sorter(opts),
