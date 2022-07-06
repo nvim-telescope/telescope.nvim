@@ -66,7 +66,8 @@ builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_g
 ---@param opts table: options to pass to the picker
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field search string: the query to search
----@field search_dirs table: directory/directories/files to search
+---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
+---@field search_dirs table: directory/directories/files to search, mutually exclusive with `grep_open_files`
 ---@field use_regex boolean: if true, special characters won't be escaped, allows for using regex (default: false)
 ---@field word_match string: can be set to `-w` to enable exact word matches
 ---@field additional_args function: function(opts) which returns a table of additional arguments to be passed on
