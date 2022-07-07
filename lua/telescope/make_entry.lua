@@ -1181,6 +1181,9 @@ function make_entry.gen_from_autocommands(opts)
     if entry.desc and (entry.callback or vim.startswith(command, "<lua: ")) then
       command = entry.desc
     end
+    if command == nil or command == "" then
+      command = "<lua function>"
+    end
     return make_entry.set_default_entry_mt({
       value = {
         event = entry.event,
