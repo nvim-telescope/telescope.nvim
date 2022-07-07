@@ -102,9 +102,9 @@ files.live_grep = function(opts)
     local search_list = {}
 
     if grep_open_files then
-      table.insert(search_list, search_dirs)
-    elseif search_dirs then
       search_list = filelist
+    elseif search_dirs then
+      search_list = search_dirs
     end
 
     return flatten { vimgrep_arguments, additional_args, "--", prompt, search_list }
