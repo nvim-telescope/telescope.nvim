@@ -147,11 +147,8 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
 
   local map_string
   if opts.expr then
-    map_string = string.format(
-      [[luaeval("require('telescope.mappings').execute_keymap(%s, %s)")]],
-      prompt_bufnr,
-      key_id
-    )
+    map_string =
+      string.format([[luaeval("require('telescope.mappings').execute_keymap(%s, %s)")]], prompt_bufnr, key_id)
   else
     if mode == "i" and not opts.expr then
       prefix = "<cmd>"
@@ -161,12 +158,8 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
       prefix = ":"
     end
 
-    map_string = string.format(
-      "%slua require('telescope.mappings').execute_keymap(%s, %s)<CR>",
-      prefix,
-      prompt_bufnr,
-      key_id
-    )
+    map_string =
+      string.format("%slua require('telescope.mappings').execute_keymap(%s, %s)<CR>", prefix, prompt_bufnr, key_id)
   end
 
   a.nvim_buf_set_keymap(prompt_bufnr, mode, key_bind, map_string, opts)

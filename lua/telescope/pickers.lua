@@ -372,11 +372,8 @@ function Picker:find()
     popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
   end
 
-  local results_win, results_opts, results_border_win = self:_create_window(
-    "",
-    popup_opts.results,
-    not self.wrap_results
-  )
+  local results_win, results_opts, results_border_win =
+    self:_create_window("", popup_opts.results, not self.wrap_results)
 
   local results_bufnr = a.nvim_win_get_buf(results_win)
   pcall(a.nvim_buf_set_option, results_bufnr, "tabstop", 1) -- #1834

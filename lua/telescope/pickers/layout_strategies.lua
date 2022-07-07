@@ -693,11 +693,8 @@ layout_strategies.vertical = make_documented_layout(
       -- Cap over/undersized height (with previewer)
       height, h_space = calc_size_and_spacing(height, max_lines, bs, 3, 6, 2)
 
-      preview.height = resolve.resolve_height(vim.F.if_nil(layout_config.preview_height, 0.5))(
-        self,
-        max_columns,
-        height
-      )
+      preview.height =
+        resolve.resolve_height(vim.F.if_nil(layout_config.preview_height, 0.5))(self, max_columns, height)
     else
       -- Cap over/undersized height (without previewer)
       height, h_space = calc_size_and_spacing(height, max_lines, bs, 2, 4, 1)

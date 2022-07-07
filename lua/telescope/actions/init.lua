@@ -242,10 +242,9 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_default = {
   pre = function(prompt_bufnr)
-    action_state.get_current_history():append(
-      action_state.get_current_line(),
-      action_state.get_current_picker(prompt_bufnr)
-    )
+    action_state
+      .get_current_history()
+      :append(action_state.get_current_line(), action_state.get_current_picker(prompt_bufnr))
   end,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "default")
@@ -259,10 +258,9 @@ actions.select_default = {
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_horizontal = {
   pre = function(prompt_bufnr)
-    action_state.get_current_history():append(
-      action_state.get_current_line(),
-      action_state.get_current_picker(prompt_bufnr)
-    )
+    action_state
+      .get_current_history()
+      :append(action_state.get_current_line(), action_state.get_current_picker(prompt_bufnr))
   end,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "horizontal")
@@ -276,10 +274,9 @@ actions.select_horizontal = {
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_vertical = {
   pre = function(prompt_bufnr)
-    action_state.get_current_history():append(
-      action_state.get_current_line(),
-      action_state.get_current_picker(prompt_bufnr)
-    )
+    action_state
+      .get_current_history()
+      :append(action_state.get_current_line(), action_state.get_current_picker(prompt_bufnr))
   end,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "vertical")
@@ -293,10 +290,9 @@ actions.select_vertical = {
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_tab = {
   pre = function(prompt_bufnr)
-    action_state.get_current_history():append(
-      action_state.get_current_line(),
-      action_state.get_current_picker(prompt_bufnr)
-    )
+    action_state
+      .get_current_history()
+      :append(action_state.get_current_line(), action_state.get_current_picker(prompt_bufnr))
   end,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "tab")
@@ -1175,10 +1171,8 @@ actions.which_key = function(prompt_bufnr, opts)
     + opts.name_width
     + (3 * #opts.separator)
   local num_total_columns = math.floor((vim.o.columns - #column_indent) / entry_width)
-  opts.num_rows = math.min(
-    math.ceil(#mappings / num_total_columns),
-    resolver.resolve_height(opts.max_height)(_, _, vim.o.lines)
-  )
+  opts.num_rows =
+    math.min(math.ceil(#mappings / num_total_columns), resolver.resolve_height(opts.max_height)(_, _, vim.o.lines))
   local total_available_entries = opts.num_rows * num_total_columns
   local winheight = opts.num_rows + 2 * opts.line_padding
 

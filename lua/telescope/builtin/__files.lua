@@ -110,18 +110,20 @@ files.live_grep = function(opts)
     return flatten { vimgrep_arguments, additional_args, "--", prompt, search_list }
   end, opts.entry_maker or make_entry.gen_from_vimgrep(opts), opts.max_results, opts.cwd)
 
-  pickers.new(opts, {
-    prompt_title = "Live Grep",
-    finder = live_grepper,
-    previewer = conf.grep_previewer(opts),
-    -- TODO: It would be cool to use `--json` output for this
-    -- and then we could get the highlight positions directly.
-    sorter = sorters.highlighter_only(opts),
-    attach_mappings = function(_, map)
-      map("i", "<c-space>", actions.to_fuzzy_refine)
-      return true
-    end,
-  }):find()
+  pickers
+    .new(opts, {
+      prompt_title = "Live Grep",
+      finder = live_grepper,
+      previewer = conf.grep_previewer(opts),
+      -- TODO: It would be cool to use `--json` output for this
+      -- and then we could get the highlight positions directly.
+      sorter = sorters.highlighter_only(opts),
+      attach_mappings = function(_, map)
+        map("i", "<c-space>", actions.to_fuzzy_refine)
+        return true
+      end,
+    })
+    :find()
 end
 
 files.grep_string = function(opts)
@@ -161,12 +163,14 @@ files.grep_string = function(opts)
   end
 
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
-  pickers.new(opts, {
-    prompt_title = "Find Word (" .. word:gsub("\n", "\\n") .. ")",
-    finder = finders.new_oneshot_job(args, opts),
-    previewer = conf.grep_previewer(opts),
-    sorter = conf.generic_sorter(opts),
-  }):find()
+  pickers
+    .new(opts, {
+      prompt_title = "Find Word (" .. word:gsub("\n", "\\n") .. ")",
+      finder = finders.new_oneshot_job(args, opts),
+      previewer = conf.grep_previewer(opts),
+      sorter = conf.generic_sorter(opts),
+    })
+    :find()
 end
 
 files.find_files = function(opts)
@@ -291,12 +295,14 @@ files.find_files = function(opts)
 
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
 
-  pickers.new(opts, {
-    prompt_title = "Find Files",
-    finder = finders.new_oneshot_job(find_command, opts),
-    previewer = conf.file_previewer(opts),
-    sorter = conf.file_sorter(opts),
-  }):find()
+  pickers
+    .new(opts, {
+      prompt_title = "Find Files",
+      finder = finders.new_oneshot_job(find_command, opts),
+      previewer = conf.file_previewer(opts),
+      sorter = conf.file_sorter(opts),
+    })
+    :find()
 end
 
 local function prepare_match(entry, kind)
@@ -349,18 +355,20 @@ files.treesitter = function(opts)
     return
   end
 
-  pickers.new(opts, {
-    prompt_title = "Treesitter Symbols",
-    finder = finders.new_table {
-      results = results,
-      entry_maker = opts.entry_maker or make_entry.gen_from_treesitter(opts),
-    },
-    previewer = conf.grep_previewer(opts),
-    sorter = conf.prefilter_sorter {
-      tag = "kind",
-      sorter = conf.generic_sorter(opts),
-    },
-  }):find()
+  pickers
+    .new(opts, {
+      prompt_title = "Treesitter Symbols",
+      finder = finders.new_table {
+        results = results,
+        entry_maker = opts.entry_maker or make_entry.gen_from_treesitter(opts),
+      },
+      previewer = conf.grep_previewer(opts),
+      sorter = conf.prefilter_sorter {
+        tag = "kind",
+        sorter = conf.generic_sorter(opts),
+      },
+    })
+    :find()
 end
 
 files.current_buffer_fuzzy_find = function(opts)
@@ -432,25 +440,27 @@ files.current_buffer_fuzzy_find = function(opts)
     opts.line_highlights = line_highlights
   end
 
-  pickers.new(opts, {
-    prompt_title = "Current Buffer Fuzzy",
-    finder = finders.new_table {
-      results = lines_with_numbers,
-      entry_maker = opts.entry_maker or make_entry.gen_from_buffer_lines(opts),
-    },
-    sorter = conf.generic_sorter(opts),
-    previewer = conf.grep_previewer(opts),
-    attach_mappings = function()
-      action_set.select:enhance {
-        post = function()
-          local selection = action_state.get_selected_entry()
-          vim.api.nvim_win_set_cursor(0, { selection.lnum, 0 })
-        end,
-      }
+  pickers
+    .new(opts, {
+      prompt_title = "Current Buffer Fuzzy",
+      finder = finders.new_table {
+        results = lines_with_numbers,
+        entry_maker = opts.entry_maker or make_entry.gen_from_buffer_lines(opts),
+      },
+      sorter = conf.generic_sorter(opts),
+      previewer = conf.grep_previewer(opts),
+      attach_mappings = function()
+        action_set.select:enhance {
+          post = function()
+            local selection = action_state.get_selected_entry()
+            vim.api.nvim_win_set_cursor(0, { selection.lnum, 0 })
+          end,
+        }
 
-      return true
-    end,
-  }):find()
+        return true
+      end,
+    })
+    :find()
 end
 
 files.tags = function(opts)
@@ -467,38 +477,40 @@ files.tags = function(opts)
   end
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_ctags(opts))
 
-  pickers.new(opts, {
-    prompt_title = "Tags",
-    finder = finders.new_oneshot_job(flatten { "cat", tagfiles }, opts),
-    previewer = previewers.ctags.new(opts),
-    sorter = conf.generic_sorter(opts),
-    attach_mappings = function()
-      action_set.select:enhance {
-        post = function()
-          local selection = action_state.get_selected_entry()
-          if not selection then
-            return
-          end
+  pickers
+    .new(opts, {
+      prompt_title = "Tags",
+      finder = finders.new_oneshot_job(flatten { "cat", tagfiles }, opts),
+      previewer = previewers.ctags.new(opts),
+      sorter = conf.generic_sorter(opts),
+      attach_mappings = function()
+        action_set.select:enhance {
+          post = function()
+            local selection = action_state.get_selected_entry()
+            if not selection then
+              return
+            end
 
-          if selection.scode then
-            -- un-escape / then escape required
-            -- special chars for vim.fn.search()
-            -- ] ~ *
-            local scode = selection.scode:gsub([[\/]], "/"):gsub("[%]~*]", function(x)
-              return "\\" .. x
-            end)
+            if selection.scode then
+              -- un-escape / then escape required
+              -- special chars for vim.fn.search()
+              -- ] ~ *
+              local scode = selection.scode:gsub([[\/]], "/"):gsub("[%]~*]", function(x)
+                return "\\" .. x
+              end)
 
-            vim.cmd "norm! gg"
-            vim.fn.search(scode)
-            vim.cmd "norm! zz"
-          else
-            vim.api.nvim_win_set_cursor(0, { selection.lnum, 0 })
-          end
-        end,
-      }
-      return true
-    end,
-  }):find()
+              vim.cmd "norm! gg"
+              vim.fn.search(scode)
+              vim.cmd "norm! zz"
+            else
+              vim.api.nvim_win_set_cursor(0, { selection.lnum, 0 })
+            end
+          end,
+        }
+        return true
+      end,
+    })
+    :find()
 end
 
 files.current_buffer_tags = function(opts)

@@ -45,28 +45,26 @@ utils.job_maker = function(cmd, bufnr, opts)
       end
     end)()
 
-    Job
-      :new({
-        command = command,
-        args = cmd,
-        env = opts.env,
-        cwd = opts.cwd,
-        writer = writer,
-        on_exit = vim.schedule_wrap(function(j)
-          if not vim.api.nvim_buf_is_valid(bufnr) then
-            return
-          end
-          if opts.mode == "append" then
-            vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, j:result())
-          elseif opts.mode == "insert" then
-            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, j:result())
-          end
-          if opts.callback then
-            opts.callback(bufnr, j:result())
-          end
-        end),
-      })
-      :start()
+    Job:new({
+      command = command,
+      args = cmd,
+      env = opts.env,
+      cwd = opts.cwd,
+      writer = writer,
+      on_exit = vim.schedule_wrap(function(j)
+        if not vim.api.nvim_buf_is_valid(bufnr) then
+          return
+        end
+        if opts.mode == "append" then
+          vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, j:result())
+        elseif opts.mode == "insert" then
+          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, j:result())
+        end
+        if opts.callback then
+          opts.callback(bufnr, j:result())
+        end
+      end),
+    }):start()
   else
     if opts.callback then
       opts.callback(bufnr)

@@ -37,70 +37,76 @@ git.files = function(opts)
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_file(opts))
   local git_command = vim.F.if_nil(opts.git_command, { "git", "ls-files", "--exclude-standard", "--cached" })
 
-  pickers.new(opts, {
-    prompt_title = "Git Files",
-    finder = finders.new_oneshot_job(
-      vim.tbl_flatten {
-        git_command,
-        show_untracked and "--others" or nil,
-        recurse_submodules and "--recurse-submodules" or nil,
-      },
-      opts
-    ),
-    previewer = conf.file_previewer(opts),
-    sorter = conf.file_sorter(opts),
-  }):find()
+  pickers
+    .new(opts, {
+      prompt_title = "Git Files",
+      finder = finders.new_oneshot_job(
+        vim.tbl_flatten {
+          git_command,
+          show_untracked and "--others" or nil,
+          recurse_submodules and "--recurse-submodules" or nil,
+        },
+        opts
+      ),
+      previewer = conf.file_previewer(opts),
+      sorter = conf.file_sorter(opts),
+    })
+    :find()
 end
 
 git.commits = function(opts)
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
   local git_command = vim.F.if_nil(opts.git_command, { "git", "log", "--pretty=oneline", "--abbrev-commit", "--", "." })
 
-  pickers.new(opts, {
-    prompt_title = "Git Commits",
-    finder = finders.new_oneshot_job(git_command, opts),
-    previewer = {
-      previewers.git_commit_diff_to_parent.new(opts),
-      previewers.git_commit_diff_to_head.new(opts),
-      previewers.git_commit_diff_as_was.new(opts),
-      previewers.git_commit_message.new(opts),
-    },
-    sorter = conf.file_sorter(opts),
-    attach_mappings = function(_, map)
-      actions.select_default:replace(actions.git_checkout)
-      map("i", "<c-r>m", actions.git_reset_mixed)
-      map("n", "<c-r>m", actions.git_reset_mixed)
-      map("i", "<c-r>s", actions.git_reset_soft)
-      map("n", "<c-r>s", actions.git_reset_soft)
-      map("i", "<c-r>h", actions.git_reset_hard)
-      map("n", "<c-r>h", actions.git_reset_hard)
-      return true
-    end,
-  }):find()
+  pickers
+    .new(opts, {
+      prompt_title = "Git Commits",
+      finder = finders.new_oneshot_job(git_command, opts),
+      previewer = {
+        previewers.git_commit_diff_to_parent.new(opts),
+        previewers.git_commit_diff_to_head.new(opts),
+        previewers.git_commit_diff_as_was.new(opts),
+        previewers.git_commit_message.new(opts),
+      },
+      sorter = conf.file_sorter(opts),
+      attach_mappings = function(_, map)
+        actions.select_default:replace(actions.git_checkout)
+        map("i", "<c-r>m", actions.git_reset_mixed)
+        map("n", "<c-r>m", actions.git_reset_mixed)
+        map("i", "<c-r>s", actions.git_reset_soft)
+        map("n", "<c-r>s", actions.git_reset_soft)
+        map("i", "<c-r>h", actions.git_reset_hard)
+        map("n", "<c-r>h", actions.git_reset_hard)
+        return true
+      end,
+    })
+    :find()
 end
 
 git.stash = function(opts)
   opts.show_branch = vim.F.if_nil(opts.show_branch, true)
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_stash(opts))
 
-  pickers.new(opts, {
-    prompt_title = "Git Stash",
-    finder = finders.new_oneshot_job(
-      vim.tbl_flatten {
-        "git",
-        "--no-pager",
-        "stash",
-        "list",
-      },
-      opts
-    ),
-    previewer = previewers.git_stash_diff.new(opts),
-    sorter = conf.file_sorter(opts),
-    attach_mappings = function()
-      actions.select_default:replace(actions.git_apply_stash)
-      return true
-    end,
-  }):find()
+  pickers
+    .new(opts, {
+      prompt_title = "Git Stash",
+      finder = finders.new_oneshot_job(
+        vim.tbl_flatten {
+          "git",
+          "--no-pager",
+          "stash",
+          "list",
+        },
+        opts
+      ),
+      previewer = previewers.git_stash_diff.new(opts),
+      sorter = conf.file_sorter(opts),
+      attach_mappings = function()
+        actions.select_default:replace(actions.git_apply_stash)
+        return true
+      end,
+    })
+    :find()
 end
 
 local get_current_buf_line = function(winnr)
@@ -112,83 +118,83 @@ git.bcommits = function(opts)
   opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
   opts.current_file = vim.F.if_nil(opts.current_file, vim.api.nvim_buf_get_name(opts.bufnr))
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
-  local git_command = vim.F.if_nil(
-    opts.git_command,
-    { "git", "log", "--pretty=oneline", "--abbrev-commit", "--follow" }
-  )
+  local git_command =
+    vim.F.if_nil(opts.git_command, { "git", "log", "--pretty=oneline", "--abbrev-commit", "--follow" })
 
-  pickers.new(opts, {
-    prompt_title = "Git BCommits",
-    finder = finders.new_oneshot_job(
-      vim.tbl_flatten {
-        git_command,
-        opts.current_file,
+  pickers
+    .new(opts, {
+      prompt_title = "Git BCommits",
+      finder = finders.new_oneshot_job(
+        vim.tbl_flatten {
+          git_command,
+          opts.current_file,
+        },
+        opts
+      ),
+      previewer = {
+        previewers.git_commit_diff_to_parent.new(opts),
+        previewers.git_commit_diff_to_head.new(opts),
+        previewers.git_commit_diff_as_was.new(opts),
+        previewers.git_commit_message.new(opts),
       },
-      opts
-    ),
-    previewer = {
-      previewers.git_commit_diff_to_parent.new(opts),
-      previewers.git_commit_diff_to_head.new(opts),
-      previewers.git_commit_diff_as_was.new(opts),
-      previewers.git_commit_message.new(opts),
-    },
-    sorter = conf.file_sorter(opts),
-    attach_mappings = function()
-      actions.select_default:replace(actions.git_checkout_current_buffer)
-      local transfrom_file = function()
-        return opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd) or ""
-      end
+      sorter = conf.file_sorter(opts),
+      attach_mappings = function()
+        actions.select_default:replace(actions.git_checkout_current_buffer)
+        local transfrom_file = function()
+          return opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd) or ""
+        end
 
-      local get_buffer_of_orig = function(selection)
-        local value = selection.value .. ":" .. transfrom_file()
-        local content = utils.get_os_command_output({ "git", "--no-pager", "show", value }, opts.cwd)
+        local get_buffer_of_orig = function(selection)
+          local value = selection.value .. ":" .. transfrom_file()
+          local content = utils.get_os_command_output({ "git", "--no-pager", "show", value }, opts.cwd)
 
-        local bufnr = vim.api.nvim_create_buf(false, true)
-        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
-        vim.api.nvim_buf_set_name(bufnr, "Original")
-        return bufnr
-      end
+          local bufnr = vim.api.nvim_create_buf(false, true)
+          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
+          vim.api.nvim_buf_set_name(bufnr, "Original")
+          return bufnr
+        end
 
-      local vimdiff = function(selection, command)
-        local ft = vim.bo.filetype
-        vim.cmd "diffthis"
+        local vimdiff = function(selection, command)
+          local ft = vim.bo.filetype
+          vim.cmd "diffthis"
 
-        local bufnr = get_buffer_of_orig(selection)
-        vim.cmd(string.format("%s %s", command, bufnr))
-        vim.bo.filetype = ft
-        vim.cmd "diffthis"
+          local bufnr = get_buffer_of_orig(selection)
+          vim.cmd(string.format("%s %s", command, bufnr))
+          vim.bo.filetype = ft
+          vim.cmd "diffthis"
 
-        vim.api.nvim_create_autocmd("WinClosed", {
-          buffer = bufnr,
-          nested = true,
-          once = true,
-          callback = function()
-            vim.api.nvim_buf_delete(bufnr, { force = true })
-          end,
-        })
-      end
+          vim.api.nvim_create_autocmd("WinClosed", {
+            buffer = bufnr,
+            nested = true,
+            once = true,
+            callback = function()
+              vim.api.nvim_buf_delete(bufnr, { force = true })
+            end,
+          })
+        end
 
-      actions.select_vertical:replace(function(prompt_bufnr)
-        actions.close(prompt_bufnr)
-        local selection = action_state.get_selected_entry()
-        vimdiff(selection, "leftabove vert sbuffer")
-      end)
+        actions.select_vertical:replace(function(prompt_bufnr)
+          actions.close(prompt_bufnr)
+          local selection = action_state.get_selected_entry()
+          vimdiff(selection, "leftabove vert sbuffer")
+        end)
 
-      actions.select_horizontal:replace(function(prompt_bufnr)
-        actions.close(prompt_bufnr)
-        local selection = action_state.get_selected_entry()
-        vimdiff(selection, "belowright sbuffer")
-      end)
+        actions.select_horizontal:replace(function(prompt_bufnr)
+          actions.close(prompt_bufnr)
+          local selection = action_state.get_selected_entry()
+          vimdiff(selection, "belowright sbuffer")
+        end)
 
-      actions.select_tab:replace(function(prompt_bufnr)
-        actions.close(prompt_bufnr)
-        local selection = action_state.get_selected_entry()
-        vim.cmd("tabedit " .. transfrom_file())
-        vimdiff(selection, "leftabove vert sbuffer")
-      end)
-      return true
-    end,
-  }):find()
+        actions.select_tab:replace(function(prompt_bufnr)
+          actions.close(prompt_bufnr)
+          local selection = action_state.get_selected_entry()
+          vim.cmd("tabedit " .. transfrom_file())
+          vimdiff(selection, "leftabove vert sbuffer")
+        end)
+        return true
+      end,
+    })
+    :find()
 end
 
 git.branches = function(opts)
@@ -197,10 +203,8 @@ git.branches = function(opts)
     .. "%(authorname)"
     .. "%(upstream:lstrip=2)"
     .. "%(committerdate:format-local:%Y/%m/%d %H:%M:%S)"
-  local output = utils.get_os_command_output(
-    { "git", "for-each-ref", "--perl", "--format", format, opts.pattern },
-    opts.cwd
-  )
+  local output =
+    utils.get_os_command_output({ "git", "for-each-ref", "--perl", "--format", format, opts.pattern }, opts.cwd)
 
   local results = {}
   local widths = {
@@ -273,41 +277,43 @@ git.branches = function(opts)
     }
   end
 
-  pickers.new(opts, {
-    prompt_title = "Git Branches",
-    finder = finders.new_table {
-      results = results,
-      entry_maker = function(entry)
-        entry.value = entry.name
-        entry.ordinal = entry.name
-        entry.display = make_display
-        return make_entry.set_default_entry_mt(entry, opts)
+  pickers
+    .new(opts, {
+      prompt_title = "Git Branches",
+      finder = finders.new_table {
+        results = results,
+        entry_maker = function(entry)
+          entry.value = entry.name
+          entry.ordinal = entry.name
+          entry.display = make_display
+          return make_entry.set_default_entry_mt(entry, opts)
+        end,
+      },
+      previewer = previewers.git_branch_log.new(opts),
+      sorter = conf.file_sorter(opts),
+      attach_mappings = function(_, map)
+        actions.select_default:replace(actions.git_checkout)
+        map("i", "<c-t>", actions.git_track_branch)
+        map("n", "<c-t>", actions.git_track_branch)
+
+        map("i", "<c-r>", actions.git_rebase_branch)
+        map("n", "<c-r>", actions.git_rebase_branch)
+
+        map("i", "<c-a>", actions.git_create_branch)
+        map("n", "<c-a>", actions.git_create_branch)
+
+        map("i", "<c-s>", actions.git_switch_branch)
+        map("n", "<c-s>", actions.git_switch_branch)
+
+        map("i", "<c-d>", actions.git_delete_branch)
+        map("n", "<c-d>", actions.git_delete_branch)
+
+        map("i", "<c-y>", actions.git_merge_branch)
+        map("n", "<c-y>", actions.git_merge_branch)
+        return true
       end,
-    },
-    previewer = previewers.git_branch_log.new(opts),
-    sorter = conf.file_sorter(opts),
-    attach_mappings = function(_, map)
-      actions.select_default:replace(actions.git_checkout)
-      map("i", "<c-t>", actions.git_track_branch)
-      map("n", "<c-t>", actions.git_track_branch)
-
-      map("i", "<c-r>", actions.git_rebase_branch)
-      map("n", "<c-r>", actions.git_rebase_branch)
-
-      map("i", "<c-a>", actions.git_create_branch)
-      map("n", "<c-a>", actions.git_create_branch)
-
-      map("i", "<c-s>", actions.git_switch_branch)
-      map("n", "<c-s>", actions.git_switch_branch)
-
-      map("i", "<c-d>", actions.git_delete_branch)
-      map("n", "<c-d>", actions.git_delete_branch)
-
-      map("i", "<c-y>", actions.git_merge_branch)
-      map("n", "<c-y>", actions.git_merge_branch)
-      return true
-    end,
-  }):find()
+    })
+    :find()
 end
 
 git.status = function(opts)
@@ -349,23 +355,25 @@ git.status = function(opts)
     return
   end
 
-  pickers.new(opts, {
-    prompt_title = "Git Status",
-    finder = initial_finder,
-    previewer = previewers.git_file_diff.new(opts),
-    sorter = conf.file_sorter(opts),
-    attach_mappings = function(prompt_bufnr, map)
-      actions.git_staging_toggle:enhance {
-        post = function()
-          action_state.get_current_picker(prompt_bufnr):refresh(gen_new_finder(), { reset_prompt = true })
-        end,
-      }
+  pickers
+    .new(opts, {
+      prompt_title = "Git Status",
+      finder = initial_finder,
+      previewer = previewers.git_file_diff.new(opts),
+      sorter = conf.file_sorter(opts),
+      attach_mappings = function(prompt_bufnr, map)
+        actions.git_staging_toggle:enhance {
+          post = function()
+            action_state.get_current_picker(prompt_bufnr):refresh(gen_new_finder(), { reset_prompt = true })
+          end,
+        }
 
-      map("i", "<tab>", actions.git_staging_toggle)
-      map("n", "<tab>", actions.git_staging_toggle)
-      return true
-    end,
-  }):find()
+        map("i", "<tab>", actions.git_staging_toggle)
+        map("n", "<tab>", actions.git_staging_toggle)
+        return true
+      end,
+    })
+    :find()
 end
 
 local set_opts_cwd = function(opts)

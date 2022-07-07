@@ -39,17 +39,19 @@ lsp.references = function(opts)
       return
     end
 
-    pickers.new(opts, {
-      prompt_title = "LSP References",
-      finder = finders.new_table {
-        results = locations,
-        entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
-      },
-      previewer = conf.qflist_previewer(opts),
-      sorter = conf.generic_sorter(opts),
-      push_cursor_on_edit = true,
-      push_tagstack_on_edit = true,
-    }):find()
+    pickers
+      .new(opts, {
+        prompt_title = "LSP References",
+        finder = finders.new_table {
+          results = locations,
+          entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
+        },
+        previewer = conf.qflist_previewer(opts),
+        sorter = conf.generic_sorter(opts),
+        push_cursor_on_edit = true,
+        push_tagstack_on_edit = true,
+      })
+      :find()
   end)
 end
 
@@ -77,17 +79,19 @@ local function call_hierarchy(opts, method, title, direction, item)
       end
     end
 
-    pickers.new(opts, {
-      prompt_title = title,
-      finder = finders.new_table {
-        results = locations,
-        entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
-      },
-      previewer = conf.qflist_previewer(opts),
-      sorter = conf.generic_sorter(opts),
-      push_cursor_on_edit = true,
-      push_tagstack_on_edit = true,
-    }):find()
+    pickers
+      .new(opts, {
+        prompt_title = title,
+        finder = finders.new_table {
+          results = locations,
+          entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
+        },
+        previewer = conf.qflist_previewer(opts),
+        sorter = conf.generic_sorter(opts),
+        push_cursor_on_edit = true,
+        push_tagstack_on_edit = true,
+      })
+      :find()
   end)
 end
 
@@ -171,17 +175,19 @@ local function list_or_jump(action, title, opts)
       vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding)
     else
       local locations = vim.lsp.util.locations_to_items(flattened_results, offset_encoding)
-      pickers.new(opts, {
-        prompt_title = title,
-        finder = finders.new_table {
-          results = locations,
-          entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
-        },
-        previewer = conf.qflist_previewer(opts),
-        sorter = conf.generic_sorter(opts),
-        push_cursor_on_edit = true,
-        push_tagstack_on_edit = true,
-      }):find()
+      pickers
+        .new(opts, {
+          prompt_title = title,
+          finder = finders.new_table {
+            results = locations,
+            entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
+          },
+          previewer = conf.qflist_previewer(opts),
+          sorter = conf.generic_sorter(opts),
+          push_cursor_on_edit = true,
+          push_tagstack_on_edit = true,
+        })
+        :find()
     end
   end)
 end
@@ -230,20 +236,22 @@ lsp.document_symbols = function(opts)
     end
 
     opts.path_display = { "hidden" }
-    pickers.new(opts, {
-      prompt_title = "LSP Document Symbols",
-      finder = finders.new_table {
-        results = locations,
-        entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
-      },
-      previewer = conf.qflist_previewer(opts),
-      sorter = conf.prefilter_sorter {
-        tag = "symbol_type",
-        sorter = conf.generic_sorter(opts),
-      },
-      push_cursor_on_edit = true,
-      push_tagstack_on_edit = true,
-    }):find()
+    pickers
+      .new(opts, {
+        prompt_title = "LSP Document Symbols",
+        finder = finders.new_table {
+          results = locations,
+          entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
+        },
+        previewer = conf.qflist_previewer(opts),
+        sorter = conf.prefilter_sorter {
+          tag = "symbol_type",
+          sorter = conf.generic_sorter(opts),
+        },
+        push_cursor_on_edit = true,
+        push_tagstack_on_edit = true,
+      })
+      :find()
   end)
 end
 
@@ -273,18 +281,20 @@ lsp.workspace_symbols = function(opts)
 
     opts.ignore_filename = vim.F.if_nil(opts.ignore_filename, false)
 
-    pickers.new(opts, {
-      prompt_title = "LSP Workspace Symbols",
-      finder = finders.new_table {
-        results = locations,
-        entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
-      },
-      previewer = conf.qflist_previewer(opts),
-      sorter = conf.prefilter_sorter {
-        tag = "symbol_type",
-        sorter = conf.generic_sorter(opts),
-      },
-    }):find()
+    pickers
+      .new(opts, {
+        prompt_title = "LSP Workspace Symbols",
+        finder = finders.new_table {
+          results = locations,
+          entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
+        },
+        previewer = conf.qflist_previewer(opts),
+        sorter = conf.prefilter_sorter {
+          tag = "symbol_type",
+          sorter = conf.generic_sorter(opts),
+        },
+      })
+      :find()
   end)
 end
 
@@ -309,19 +319,21 @@ local function get_workspace_symbols_requester(bufnr, opts)
 end
 
 lsp.dynamic_workspace_symbols = function(opts)
-  pickers.new(opts, {
-    prompt_title = "LSP Dynamic Workspace Symbols",
-    finder = finders.new_dynamic {
-      entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
-      fn = get_workspace_symbols_requester(opts.bufnr, opts),
-    },
-    previewer = conf.qflist_previewer(opts),
-    sorter = sorters.highlighter_only(opts),
-    attach_mappings = function(_, map)
-      map("i", "<c-space>", actions.to_fuzzy_refine)
-      return true
-    end,
-  }):find()
+  pickers
+    .new(opts, {
+      prompt_title = "LSP Dynamic Workspace Symbols",
+      finder = finders.new_dynamic {
+        entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
+        fn = get_workspace_symbols_requester(opts.bufnr, opts),
+      },
+      previewer = conf.qflist_previewer(opts),
+      sorter = sorters.highlighter_only(opts),
+      attach_mappings = function(_, map)
+        map("i", "<c-space>", actions.to_fuzzy_refine)
+        return true
+      end,
+    })
+    :find()
 end
 
 local function check_capabilities(feature, bufnr)
