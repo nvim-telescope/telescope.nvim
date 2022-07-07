@@ -925,7 +925,7 @@ previewers.autocommands = defaulter(function(_)
           end
           table.insert(
             display,
-            string.format("  %-14s▏%-08s %s", item.value.event, item.value.ft_pattern, item.value.command)
+            string.format("  %-14s▏%-08s %s", item.value.event, item.value.pattern, item.value.command)
           )
         end
 

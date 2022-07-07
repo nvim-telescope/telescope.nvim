@@ -1177,12 +1177,16 @@ function make_entry.gen_from_autocommands(opts)
 
   return function(entry)
     local group_name = vim.F.if_nil(entry.group_name, "<anonymous>")
+    local command = entry.command
+    if entry.desc and vim.startswith(command, "<lua: ") then
+      command = entry.desc
+    end
     return make_entry.set_default_entry_mt({
       value = {
         event = entry.event,
         group_name = group_name,
         pattern = entry.pattern,
-        command = entry.command,
+        command = command,
       },
       --
       ordinal = entry.event .. " " .. group_name .. " " .. entry.pattern .. " " .. entry.command,
