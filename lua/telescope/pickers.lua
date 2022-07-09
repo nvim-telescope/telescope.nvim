@@ -41,7 +41,42 @@ local pickers = {}
 local Picker = {}
 Picker.__index = Picker
 
---- Create new picker
+--- Create new picker.
+--- - Notes:
+---   - The options listed here generally apply to all pickers
+---   - Many options can be globally configured via |telescope.defaults|
+---   - With few exceptions, any default option can be overridden individually
+---   - Individual pickers may have own defaults, see also |telescope.builtin|
+---@param opts table: options to pass picker
+---@field prompt_title string: see |telescope.defaults.prompt_title|
+---@field results_title string: see |telescope.defaults.results_title|
+---@field preview_title string: see |telescope.defaults.preview_title|
+---@field prompt_prefix string: see |telescope.defaults.prompt_prefix|
+---@field wrap_results boolean: see |telescope.defaults.wrap_results|
+---@field selection_caret string: see |telescope.defaults.selection_caret|
+---@field entry_prefix string: see |telescope.defaults.entry_prefix|
+---@field multi_icon string: see |telescope.defaults.multi_icon|
+---@field initial_mode string: see |telescope.defaults.initial_mode|
+---@field debounce number: wait at least `debounce` ms before retriggering finder loop (e.g. on new prompt)
+---@field default_text string: initial prompt text of picker to search for
+---@field get_status_text function: see |telescope.defaults.get_status_text|
+---@field _on_input_filter_cb function: function(prompt, picker) and returns { prompt = ..., updated_finder = ... }
+---@field finder function: telescope finder, see DEVELOPERS.md
+---@field sorter function: telescope sorter, to be documented
+---@field all_previewers table: see |telescope.previewers|
+---@field default_selection_index = selection index at picker startup (default: 1)
+---@field get_selection_window function: see |telescope.defaults.get_selection_window|
+---@field cwd string: current working directory of picker
+---@field attach_mappings function: customize picker actions, please refer to DEVELOPERS.md
+---@field file_ignore_patterns table: see |telescope.defaults.file_ignore_patterns|
+---@field scroll_strategy string: see |telescope.defaults.scroll_strategy|
+---@field sorting_strategy string: see |telescope.defaults.sorting_strategy|
+---@field tiebreak function: see |telescope.defaults.tiebreak|
+---@field selection_strategy string: see |telescope.defaults.selection_strategy|
+---@field push_cursor_on_edit = get_default(opts.push_cursor_on_edit, false),
+---@field push_tagstack_on_edit = get_default(opts.push_tagstack_on_edit, false),
+---@field layout_config table: see |telescope.defaults.layout_config|
+---@field cache_picker table|boolean: see |telescope.defaults.cache_picker|
 function Picker:new(opts)
   opts = opts or {}
 
@@ -564,7 +599,7 @@ function Picker:find()
 end
 
 --- A helper function to update picker windows when layout options are changed
-function Picker:recalculate_layout()
+function Picker:_recalculate_layout()
   local line_count = vim.o.lines - vim.o.cmdheight
   if vim.o.laststatus ~= 0 then
     line_count = line_count - 1
@@ -661,10 +696,10 @@ local update_scroll = function(win, oldinfo, oldcursor, strategy, buf_maxline)
 end
 
 --- A wrapper for `Picker:recalculate_layout()` that also handles maintaining cursor position
-function Picker:full_layout_update()
+function Picker:_full_layout_update()
   local oldinfo = vim.fn.getwininfo(self.results_win)[1]
   local oldcursor = vim.api.nvim_win_get_cursor(self.results_win)
-  self:recalculate_layout()
+  self:_recalculate_layout()
   self:refresh_previewer()
 
   -- update scrolled position
@@ -1523,7 +1558,7 @@ end
 
 function Picker:_get_next_filtered_prompt()
   local prompt = self:_get_prompt()
-  local on_input_result = self._on_input_filter_cb(prompt) or {}
+  local on_input_result = self._on_input_filter_cb(prompt, self) or {}
 
   local new_prompt = on_input_result.prompt
   if new_prompt then

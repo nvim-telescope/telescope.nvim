@@ -13,6 +13,7 @@ docs.test = function()
   local input_files = {
     "./lua/telescope/init.lua",
     "./lua/telescope/command.lua",
+    "./lua/telescope/pickers.lua",
     "./lua/telescope/builtin/init.lua",
     "./lua/telescope/themes.lua",
     "./lua/telescope/pickers/layout_strategies.lua",
