@@ -250,11 +250,11 @@ previewers.cat = defaulter(function(opts)
   return previewers.new_termopen_previewer {
     title = "File Preview",
     dyn_title = function(_, entry)
-      return Path:new(from_entry.path(entry, true)):normalize(cwd)
+      return Path:new(from_entry.path(entry, false, false)):normalize(cwd)
     end,
 
     get_command = function(entry)
-      local p = from_entry.path(entry, true)
+      local p = from_entry.path(entry, true, false)
       if p == nil or p == "" then
         return
       end
@@ -273,14 +273,14 @@ previewers.vimgrep = defaulter(function(opts)
   return previewers.new_termopen_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
-      return Path:new(from_entry.path(entry, true)):normalize(cwd)
+      return Path:new(from_entry.path(entry, false, false)):normalize(cwd)
     end,
 
     get_command = function(entry, status)
       local win_id = status.preview_win
       local height = vim.api.nvim_win_get_height(win_id)
 
-      local p = from_entry.path(entry, true)
+      local p = from_entry.path(entry, true, false)
       if p == nil or p == "" then
         return
       end
@@ -308,14 +308,14 @@ previewers.qflist = defaulter(function(opts)
   return previewers.new_termopen_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
-      return Path:new(from_entry.path(entry, true)):normalize(cwd)
+      return Path:new(from_entry.path(entry, false, false)):normalize(cwd)
     end,
 
     get_command = function(entry, status)
       local win_id = status.preview_win
       local height = vim.api.nvim_win_get_height(win_id)
 
-      local p = from_entry.path(entry, true)
+      local p = from_entry.path(entry, true, false)
       if p == nil or p == "" then
         return
       end

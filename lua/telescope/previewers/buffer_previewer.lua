@@ -415,11 +415,11 @@ previewers.cat = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "File Preview",
     dyn_title = function(_, entry)
-      return Path:new(from_entry.path(entry, true)):normalize(cwd)
+      return Path:new(from_entry.path(entry, false, false)):normalize(cwd)
     end,
 
     get_buffer_by_name = function(_, entry)
-      return from_entry.path(entry, true)
+      return from_entry.path(entry, false)
     end,
 
     define_preview = function(self, entry, status)
@@ -454,11 +454,11 @@ previewers.vimgrep = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
-      return Path:new(from_entry.path(entry, true)):normalize(cwd)
+      return Path:new(from_entry.path(entry, false, false)):normalize(cwd)
     end,
 
     get_buffer_by_name = function(_, entry)
-      return from_entry.path(entry, true)
+      return from_entry.path(entry, false)
     end,
 
     define_preview = function(self, entry, status)

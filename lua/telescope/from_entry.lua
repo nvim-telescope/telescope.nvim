@@ -12,13 +12,7 @@ local from_entry = {}
 
 function from_entry.path(entry, validate, escape)
   escape = vim.F.if_nil(escape, true)
-  local path
-  if escape then
-    path = entry.path and vim.fn.fnameescape(entry.path) or nil
-  else
-    path = entry.path
-  end
-
+  local path = entry.path
   if path == nil then
     path = entry.filename
   end
@@ -35,7 +29,9 @@ function from_entry.path(entry, validate, escape)
   if validate and invalid == 0 then
     return
   end
-
+  if escape then
+    return vim.fn.fnameescape(path)
+  end
   return path
 end
 
