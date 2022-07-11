@@ -486,7 +486,120 @@ function make_entry.gen_from_quickfix(opts)
   end
 end
 
+local lsp_entry_maker = function(display_maker, opts)
+
+  return function(entry)
+
+    local get_filename = get_filename_fn()
+    local filename = vim.F.if_nil(entry.filename, get_filename(entry.bufnr))
+    local symbol_msg = entry.text
+    local symbol_type, symbol_name = symbol_msg:match "%[(.+)%]%s+(.*)"
+    local ordinal = ""
+    if not opts.hidden and filename then
+      ordinal = filename .. " "
+    end
+    ordinal = ordinal .. symbol_name .. " " .. (symbol_type or "unknown")
+    return make_entry.set_default_entry_mt({
+      value = entry,
+      ordinal = ordinal,
+      display = display_maker,
+
+      filename = filename,
+      lnum = entry.lnum,
+      col = entry.col,
+      symbol_name = symbol_name,
+      symbol_type = symbol_type,
+      start = entry.start,
+      finish = entry.finish,
+    }, opts)
+
+  end
+
+end
+
 function make_entry.gen_from_lsp_symbols(opts)
+  opts = opts or {}
+
+  local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
+
+  local columns = {}
+  local hidden = utils.is_path_hidden(opts)
+  if not hidden then
+    columns.path = { width = vim.F.if_nil(opts.fname_width, 30) }
+  end
+
+  if opts.show_line then
+    columns.line = { width = opts.line_col_width or 15 }
+  end
+
+  columns.symbol_name = { width = opts.symbol_name_width or 20 }
+  columns.symbol_type = { width = opts.symbol_type_width or 8 }
+
+  local remaining = opts.remaining_column
+  if remaining then
+    local col = vim.tbl_get(columns, remaining)
+    if col then
+      columns[remaining] = { remaining = true }
+    end
+  end
+
+  local display_items = {}
+  if opts.column_order then
+    for _, value in ipairs(opts.column_order) do
+      table.insert(display_items, columns[value])
+    end
+  else
+    local order = {}
+    for key, value in pairs(columns) do
+      table.insert(display_items, value)
+      table.insert(order, key)
+    end
+    opts.column_order = order
+  end
+
+  local displayer = entry_display.create {
+    separator = opts.column_separator or " ",
+    hl_chars = { ["["] = "TelescopeBorder", ["]"] = "TelescopeBorder" },
+    items = display_items,
+  }
+
+  local type_highlight = vim.F.if_nil(opts.symbol_highlights or lsp_type_highlight)
+  local type_transform = opts.type_transform or function(type_str) return type_str:lower() end
+
+  local make_display = function(entry)
+
+    local display_funcs = {
+      path = function()
+        return utils.transform_path(opts, entry.filename)
+      end,
+
+      symbol_name = function()
+        return entry.symbol_name
+      end,
+
+      symbol_type = function()
+        return { type_transform(entry.symbol_type), type_highlight[entry.symbol_type] }
+      end,
+
+      line = function()
+        return vim.trim(
+          vim.F.if_nil(vim.api.nvim_buf_get_lines(
+            bufnr, entry.lnum - 1, entry.lnum, false)[1], ""))
+      end
+    }
+
+    local displayer_args = {}
+    for _, value in ipairs(opts.column_order) do
+      table.insert(displayer_args, display_funcs[value]())
+    end
+
+    return displayer(displayer_args)
+  end
+
+  return opts.entry_maker or lsp_entry_maker(make_display, opts)
+end
+
+function make_entry.gen_from_lsp_symbols_alt(opts)
   opts = opts or {}
 
   local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
@@ -514,6 +627,7 @@ function make_entry.gen_from_lsp_symbols(opts)
     hl_chars = { ["["] = "TelescopeBorder", ["]"] = "TelescopeBorder" },
     items = display_items,
   }
+
   local type_highlight = vim.F.if_nil(opts.symbol_highlights or lsp_type_highlight)
   local type_transform = opts.type_transform or function(type_str)
     return type_str:lower()
@@ -542,30 +656,7 @@ function make_entry.gen_from_lsp_symbols(opts)
     end
   end
 
-  local get_filename = get_filename_fn()
-  return function(entry)
-    local filename = vim.F.if_nil(entry.filename, get_filename(entry.bufnr))
-    local symbol_msg = entry.text
-    local symbol_type, symbol_name = symbol_msg:match "%[(.+)%]%s+(.*)"
-    local ordinal = ""
-    if not hidden and filename then
-      ordinal = filename .. " "
-    end
-    ordinal = ordinal .. symbol_name .. " " .. (symbol_type or "unknown")
-    return make_entry.set_default_entry_mt({
-      value = entry,
-      ordinal = ordinal,
-      display = make_display,
-
-      filename = filename,
-      lnum = entry.lnum,
-      col = entry.col,
-      symbol_name = symbol_name,
-      symbol_type = symbol_type,
-      start = entry.start,
-      finish = entry.finish,
-    }, opts)
-  end
+  return opts.entry_maker or lsp_entry_maker(make_display, opts)
 end
 
 function make_entry.gen_from_buffer(opts)
@@ -758,7 +849,7 @@ function make_entry.gen_from_apropos(opts)
           section = section,
           keyword = keyword,
         }, opts)
-      or nil
+        or nil
   end
 end
 
