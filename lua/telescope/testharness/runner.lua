@@ -111,7 +111,8 @@ runner.create_on_complete = function(input, test_cases)
   end
 
   return function()
-    local action = {}
+    local action
+
     repeat
       action = table.remove(actions, 1)
       if action then
