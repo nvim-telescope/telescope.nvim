@@ -15,6 +15,7 @@ docs.test = function()
     "./lua/telescope/command.lua",
     "./lua/telescope/builtin/init.lua",
     "./lua/telescope/themes.lua",
+    "./lua/telescope/mappings.lua",
     "./lua/telescope/pickers/layout_strategies.lua",
     "./lua/telescope/config/resolve.lua",
     "./lua/telescope/make_entry.lua",

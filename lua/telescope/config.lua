@@ -153,25 +153,6 @@ append(
 )
 
 append(
-  "tiebreak",
-  function(current_entry, existing_entry, _)
-    return #current_entry.ordinal < #existing_entry.ordinal
-  end,
-  [[
-  A function that determines how to break a tie when two entries have
-  the same score.
-  Having a function that always returns false would keep the entries in
-  the order they are found, so existing_entry before current_entry.
-  Vice versa always returning true would place the current_entry
-  before the existing_entry.
-
-  Signature: function(current_entry, existing_entry, prompt) -> boolean
-
-  Default: function that breaks the tie based on the length of the
-           entry's ordinal]]
-)
-
-append(
   "selection_strategy",
   "reset",
   [[
@@ -443,6 +424,28 @@ append(
 )
 
 append(
+  "mappings",
+  {},
+  [[
+  Your mappings to override telescope's default mappings.
+
+  See: ~
+      |telescope.mappings|
+  ]]
+)
+
+append(
+  "default_mappings",
+  nil,
+  [[
+  Not recommended to use except for advanced users.
+
+  Will allow you to completely remove all of telescope's default maps
+  and use your own.
+  ]]
+)
+
+append(
   "history",
   {
     path = vim.fn.stdpath "data" .. os_sep .. "telescope_history",
@@ -669,85 +672,6 @@ append(
 )
 
 append(
-  "mappings",
-  {},
-  [[
-  Your mappings to override telescope's default mappings.
-
-  Format is:
-  {
-    mode = { ..keys }
-  }
-
-  where {mode} is the one character letter for a mode
-  ('i' for insert, 'n' for normal).
-
-  For example:
-
-  mappings = {
-    i = {
-      ["<esc>"] = require('telescope.actions').close,
-    },
-  }
-
-
-  To disable a keymap, put [map] = false
-    So, to not map "<C-n>", just put
-
-      ...,
-      ["<C-n>"] = false,
-      ...,
-
-    Into your config.
-
-
-  otherwise, just set the mapping to the function that you want it to
-  be.
-
-      ...,
-      ["<C-i>"] = require('telescope.actions').select_default,
-      ...,
-
-  If the function you want is part of `telescope.actions`, then you can
-  simply give a string.
-    For example, the previous option is equivalent to:
-
-      ...,
-      ["<C-i>"] = "select_default",
-      ...,
-
-  You can also add other mappings using tables with `type = "command"`.
-    For example:
-
-      ...,
-      ["jj"] = { "<esc>", type = "command" },
-      ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },)
-      ...,
-
-  You can also add additional options for mappings of any type
-  ("action" and "command"). For example:
-
-      ...,
-      ["<C-j>"] = {
-        action = actions.move_selection_next,
-        opts = { nowait = true, silent = true }
-      },
-      ...,
-  ]]
-)
-
-append(
-  "default_mappings",
-  nil,
-  [[
-  Not recommended to use except for advanced users.
-
-  Will allow you to completely remove all of telescope's default maps
-  and use your own.
-  ]]
-)
-
-append(
   "file_sorter",
   sorters.get_fzy_sorter,
   [[
@@ -781,6 +705,25 @@ append(
   Its usually used for lsp_*_symbols and lsp_*_diagnostics
 
   Default: require("telescope.sorters").prefilter]]
+)
+
+append(
+  "tiebreak",
+  function(current_entry, existing_entry, _)
+    return #current_entry.ordinal < #existing_entry.ordinal
+  end,
+  [[
+  A function that determines how to break a tie when two entries have
+  the same score.
+  Having a function that always returns false would keep the entries in
+  the order they are found, so existing_entry before current_entry.
+  Vice versa always returning true would place the current_entry
+  before the existing_entry.
+
+  Signature: function(current_entry, existing_entry, prompt) -> boolean
+
+  Default: function that breaks the tie based on the length of the
+           entry's ordinal]]
 )
 
 append(

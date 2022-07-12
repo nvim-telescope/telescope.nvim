@@ -119,20 +119,6 @@ telescope.setup({opts})                                    *telescope.setup()*
         - "descending" (default)
         - "ascending"
 
-                                              *telescope.defaults.tiebreak*
-    tiebreak: ~
-        A function that determines how to break a tie when two entries have
-        the same score.
-        Having a function that always returns false would keep the entries in
-        the order they are found, so existing_entry before current_entry.
-        Vice versa always returning true would place the current_entry
-        before the existing_entry.
-
-        Signature: function(current_entry, existing_entry, prompt) -> boolean
-
-        Default: function that breaks the tie based on the length of the
-                 entry's ordinal
-
                                     *telescope.defaults.selection_strategy*
     selection_strategy: ~
         Determines how the cursor acts after each sort iteration.
@@ -370,6 +356,22 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: "Prompt"
 
+                                              *telescope.defaults.mappings*
+    mappings: ~
+        Your mappings to override telescope's default mappings.
+
+        See: ~
+            |telescope.mappings|
+
+
+                                      *telescope.defaults.default_mappings*
+    default_mappings: ~
+        Not recommended to use except for advanced users.
+
+        Will allow you to completely remove all of telescope's default maps
+        and use your own.
+
+
                                                *telescope.defaults.history*
     history: ~
         This field handles the configuration for prompt history.
@@ -559,79 +561,6 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: true
 
-                                              *telescope.defaults.mappings*
-    mappings: ~
-        Your mappings to override telescope's default mappings.
-
-        Format is:
-        {
-          mode = { ..keys }
-        }
-
-        where {mode} is the one character letter for a mode
-        ('i' for insert, 'n' for normal).
-
-        For example:
-
-        mappings = {
-          i = {
-            ["<esc>"] = require('telescope.actions').close,
-          },
-        }
-
-
-        To disable a keymap, put [map] = false
-          So, to not map "<C-n>", just put
-
-            ...,
-            ["<C-n>"] = false,
-            ...,
-
-          Into your config.
-
-
-        otherwise, just set the mapping to the function that you want it to
-        be.
-
-            ...,
-            ["<C-i>"] = require('telescope.actions').select_default,
-            ...,
-
-        If the function you want is part of `telescope.actions`, then you can
-        simply give a string.
-          For example, the previous option is equivalent to:
-
-            ...,
-            ["<C-i>"] = "select_default",
-            ...,
-
-        You can also add other mappings using tables with `type = "command"`.
-          For example:
-
-            ...,
-            ["jj"] = { "<esc>", type = "command" },
-            ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },)
-            ...,
-
-        You can also add additional options for mappings of any type
-        ("action" and "command"). For example:
-
-            ...,
-            ["<C-j>"] = {
-              action = actions.move_selection_next,
-              opts = { nowait = true, silent = true }
-            },
-            ...,
-
-
-                                      *telescope.defaults.default_mappings*
-    default_mappings: ~
-        Not recommended to use except for advanced users.
-
-        Will allow you to completely remove all of telescope's default maps
-        and use your own.
-
-
                                            *telescope.defaults.file_sorter*
     file_sorter: ~
         A function pointer that specifies the file_sorter. This sorter will
@@ -657,6 +586,20 @@ telescope.setup({opts})                                    *telescope.setup()*
         Its usually used for lsp_*_symbols and lsp_*_diagnostics
 
         Default: require("telescope.sorters").prefilter
+
+                                              *telescope.defaults.tiebreak*
+    tiebreak: ~
+        A function that determines how to break a tie when two entries have
+        the same score.
+        Having a function that always returns false would keep the entries in
+        the order they are found, so existing_entry before current_entry.
+        Vice versa always returning true would place the current_entry
+        before the existing_entry.
+
+        Signature: function(current_entry, existing_entry, prompt) -> boolean
+
+        Default: function that breaks the tie based on the length of the
+                 entry's ordinal
 
                                   *telescope.defaults.file_ignore_patterns*
     file_ignore_patterns: ~
@@ -1714,6 +1657,128 @@ themes.get_ivy()                                  *telescope.themes.get_ivy()*
 <
 
 
+
+
+================================================================================
+MAPPINGS                                                    *telescope.mappings*
+
+|telescope.mappings| is used to configure the keybindings within a telescope
+picker. These keybinds are only local to the picker window and will be cleared
+once you exit the picker.
+
+We provide multiple different ways of configuring, as described below, to
+provide an easy to use experience for changing the default behavior of
+telescope or extending for your own purposes.
+
+To see many of the builtin actions that you can use as values for this table,
+see |telescope.actions|
+
+Format is:
+>
+  {
+    mode = { ..keys }
+  }
+<
+
+where {mode} is the one character letter for a mode ('i' for insert, 'n' for
+normal).
+
+For example:
+>
+  mappings = {
+    i = {
+      ["<esc>"] = require('telescope.actions').close,
+    },
+  }
+<
+
+To disable a keymap, put `[map] = false`
+For example:
+>
+  {
+    ...,
+    ["<C-n>"] = false,
+    ...,
+  }
+<
+Into your config.
+
+To override behavior of a key, simply set the value to be a function (either by
+requiring an action or by writing your own function)
+>
+  {
+    ...,
+    ["<C-i>"] = require('telescope.actions').select_default,
+    ...,
+  }
+<
+
+If the function you want is part of `telescope.actions`, then you can simply
+give a string. For example, the previous option is equivalent to:
+>
+  {
+    ...,
+    ["<C-i>"] = "select_default",
+    ...,
+  }
+<
+
+You can also add other mappings using tables with `type = "command"`. For
+example:
+>
+  {
+    ...,
+    ["jj"] = { "<esc>", type = "command" },
+    ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },)
+    ...,
+  }
+<
+
+You can also add additional options for mappings of any type ("action" and
+"command"). For example:
+>
+  {
+    ...,
+    ["<C-j>"] = {
+      action = actions.move_selection_next,
+      opts = { nowait = true, silent = true }
+    },
+    ...,
+  }
+<
+
+There are three main places you can configure |telescope.mappings|. These are
+ordered from the lowest priority to the highest priority.
+
+1. |telescope.defaults.mappings|
+2. In the |telescope.setup()| table, inside a picker with a given name, use the
+   `mappings` key
+>
+  require("telescope").setup {
+    pickers = {
+      find_files = {
+        mappings = {
+          n = {
+            ["kj"] = "close",
+          },
+        },
+      },
+    },
+  }
+<
+3. `attach_mappings` function for a particular picker.
+>
+  require("telescope.builtin").find_files {
+    attach_mappings = function(_, map)
+      map("i", "asdf", function(_prompt_bufnr)
+        print "You typed asdf"
+      end)
+      -- needs to return true if you want to map default_mappings and
+      -- false if not
+      return true
+    end,
+  }
+<
 
 
 ================================================================================
