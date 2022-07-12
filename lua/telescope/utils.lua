@@ -19,20 +19,6 @@ utils.get_separator = function()
   return Path.path.sep
 end
 
-utils.if_nil = function(x, was_nil, was_not_nil)
-  log.error "telescope.utils.if_nil is deprecated and will be removed. Please use vim.F.if_nil"
-  if x == nil then
-    return was_nil
-  else
-    return was_not_nil
-  end
-end
-
-utils.get_default = function(x, default)
-  log.error "telescope.utils.get_default is deprecated and will be removed. Please use vim.F.if_nil"
-  return utils.if_nil(x, default, x)
-end
-
 utils.cycle = function(i, n)
   return i % n == 0 and n or i % n
 end
