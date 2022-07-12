@@ -1,5 +1,5 @@
 ================================================================================
-                                                                *telescope.nvim*
+INTRODUCTION                                                    *telescope.nvim*
 
 Telescope.nvim is a plugin for fuzzy finding and neovim. It helps you search,
 filter, find and pick things in Lua.
@@ -732,14 +732,6 @@ telescope.setup({opts})                                    *telescope.setup()*
                         extensions
 
 
-telescope.register_extension({mod})           *telescope.register_extension()*
-    Register an extension. To be used by plugin authors.
-
-
-    Parameters: ~
-        {mod} (table)  Module
-
-
 telescope.load_extension({name})                  *telescope.load_extension()*
     Load an extension.
     - Notes:
@@ -748,6 +740,14 @@ telescope.load_extension({name})                  *telescope.load_extension()*
 
     Parameters: ~
         {name} (string)  Name of the extension
+
+
+telescope.register_extension({mod})           *telescope.register_extension()*
+    Register an extension. To be used by plugin authors.
+
+
+    Parameters: ~
+        {mod} (table)  Module
 
 
 telescope.extensions()                                *telescope.extensions()*
@@ -760,7 +760,7 @@ telescope.extensions()                                *telescope.extensions()*
 
 
 ================================================================================
-                                                             *telescope.command*
+COMMAND                                                      *telescope.command*
 
 Telescope commands can be called through two apis, the lua api and the viml
 api.
@@ -795,7 +795,7 @@ as there are spaces in the option.
 
 
 ================================================================================
-                                                             *telescope.builtin*
+BUILTIN                                                      *telescope.builtin*
 
 Telescope Builtins is a collection of community maintained pickers to support
 common workflows. It can be used as reference when writing PRs, Telescope
@@ -1671,7 +1671,7 @@ builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
 
 
 ================================================================================
-                                                              *telescope.themes*
+THEMES                                                        *telescope.themes*
 
 Themes are ways to combine several elements of styling together.
 
@@ -1717,7 +1717,7 @@ themes.get_ivy()                                  *telescope.themes.get_ivy()*
 
 
 ================================================================================
-                                                              *telescope.layout*
+LAYOUT                                                        *telescope.layout*
 
 The layout of telescope pickers can be adjusted using the
 |telescope.defaults.layout_strategy| and |telescope.defaults.layout_config|
@@ -1966,7 +1966,7 @@ layout_strategies.bottom_pane()               *telescope.layout.bottom_pane()*
 
 
 ================================================================================
-                                                             *telescope.resolve*
+RESOLVE                                                      *telescope.resolve*
 
 Provides "resolver functions" to allow more customisable inputs for options.
 
@@ -2032,7 +2032,7 @@ resolver.resolve_anchor_pos()         *telescope.resolve.resolve_anchor_pos()*
 
 
 ================================================================================
-                                                          *telescope.make_entry*
+MAKE_ENTRY                                                *telescope.make_entry*
 
 Each picker has a finder made up of two parts, the results which are the data
 to be displayed, and the entry_maker. These entry_makers are functions returned
@@ -2068,7 +2068,7 @@ TODO: Document something we call `entry_index`
 
 
 ================================================================================
-                                               *telescope.pickers.entry_display*
+ENTRY_DISPLAY                                  *telescope.pickers.entry_display*
 
 Entry Display is used to format each entry shown in the result panel.
 
@@ -2127,7 +2127,7 @@ look at the code in make_entry.lua.
 
 
 ================================================================================
-                                                               *telescope.utils*
+UTILS                                                          *telescope.utils*
 
 Utilities for writing telescope pickers
 
@@ -2160,7 +2160,7 @@ utils.notify({funname}, {opts})                     *telescope.utils.notify()*
 
 
 ================================================================================
-                                                             *telescope.actions*
+ACTIONS                                                      *telescope.actions*
 
 Actions functions that are useful for people creating their own mappings.
 
@@ -2838,7 +2838,7 @@ actions.to_fuzzy_refine({prompt_bufnr})  *telescope.actions.to_fuzzy_refine()*
 
 
 ================================================================================
-                                                       *telescope.actions.state*
+ACTIONS_STATE                                          *telescope.actions.state*
 
 Functions to be used to determine the current state of telescope.
 
@@ -2864,7 +2864,7 @@ action_state.get_current_picker({prompt_bufnr}) *telescope.actions.state.get_cur
 
 
 ================================================================================
-                                                         *telescope.actions.set*
+ACTIONS_SET                                              *telescope.actions.set*
 
 Telescope action sets are used to provide an interface for managing actions
 that all primarily do the same thing, but with slight tweaks.
@@ -2929,7 +2929,7 @@ action_set.scroll_results({prompt_bufnr}, {direction}) *telescope.actions.set.sc
 
 
 ================================================================================
-                                                      *telescope.actions.layout*
+ACTIONS_LAYOUT                                        *telescope.actions.layout*
 
 The layout actions are actions to be used to change the layout of a picker.
 
@@ -2988,7 +2988,7 @@ action_layout.cycle_layout_prev({prompt_bufnr}) *telescope.actions.layout.cycle_
 
 
 ================================================================================
-                                                       *telescope.actions.utils*
+ACTIONS_UTILS                                          *telescope.actions.utils*
 
 Utilities to wrap functions around picker selections and entries.
 
@@ -3068,7 +3068,7 @@ utils.get_registered_mappings({prompt_bufnr}) *telescope.actions.utils.get_regis
 
 
 ================================================================================
-                                                    *telescope.actions.generate*
+ACTIONS_GENERATE                                    *telescope.actions.generate*
 
 Module for convenience to override defaults of corresponding
 |telescope.actions| at |telescope.setup()|.
@@ -3146,7 +3146,7 @@ action_generate.which_key({opts})     *telescope.actions.generate.which_key()*
 
 
 ================================================================================
-                                                          *telescope.previewers*
+PREVIEWERS                                                *telescope.previewers*
 
 Provides a Previewer table that has to be implemented by each previewer. To
 achieve this, this module also provides two wrappers that abstract most of the
@@ -3472,7 +3472,7 @@ previewers.display_content()          *telescope.previewers.display_content()*
 
 
 ================================================================================
-                                                     *telescope.actions.history*
+HISTORY                                              *telescope.actions.history*
 
 A base implementation of a prompt history that provides a simple history and
 can be replaced with a custom implementation.

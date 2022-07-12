@@ -90,6 +90,7 @@ local telescope = {}
 ---@brief ]]
 
 ---@tag telescope.nvim
+---@config { ["name"] = "INTRODUCTION" }
 
 --- Setup function to be run by user. Configures the defaults, pickers and
 --- extensions of telescope.
@@ -134,18 +135,18 @@ function telescope.setup(opts)
   _extensions.set_config(opts.extensions)
 end
 
---- Register an extension. To be used by plugin authors.
----@param mod table: Module
-function telescope.register_extension(mod)
-  return _extensions.register(mod)
-end
-
 --- Load an extension.
 --- - Notes:
 ---   - Loading triggers ext setup via the config passed in |telescope.setup|
 ---@param name string: Name of the extension
 function telescope.load_extension(name)
   return _extensions.load(name)
+end
+
+--- Register an extension. To be used by plugin authors.
+---@param mod table: Module
+function telescope.register_extension(mod)
+  return _extensions.register(mod)
 end
 
 --- Use telescope.extensions to reference any extensions within your configuration. <br>
