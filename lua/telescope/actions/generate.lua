@@ -66,8 +66,13 @@ action_generate.refine = function(prompt_bufnr, opts)
   opts.reset_multi_selection = vim.F.if_nil(opts.reset_multi_selection, false)
   opts.reset_prompt = vim.F.if_nil(opts.reset_prompt, true)
   opts.sorter = vim.F.if_nil(opts.sorter, config.values.generic_sorter {})
+  local push_history = vim.F.if_nil(opts.push_history, true)
 
   local current_picker = action_state.get_current_picker(prompt_bufnr)
+  local current_line = action_state.get_current_line()
+  if push_history then
+    action_state.get_current_history():append(current_line, current_picker)
+  end
 
   -- title
   if opts.prompt_title then
@@ -97,15 +102,14 @@ action_generate.refine = function(prompt_bufnr, opts)
     end,
   }
 
-  if not opts.reset_multi_selection and action_state.get_current_line() ~= "" then
+  if not opts.reset_multi_selection and current_line ~= "" then
     opts.multi = current_picker._multi
   end
 
   if opts.prompt_to_prefix then
-    local prompt = action_state.get_current_line()
     local current_prefix = current_picker.prompt_prefix
     local suffix = current_prefix ~= opts.prompt_prefix and current_prefix or ""
-    opts.new_prefix = suffix .. prompt .. " " .. opts.prompt_prefix
+    opts.new_prefix = suffix .. current_line .. " " .. opts.prompt_prefix
   end
   current_picker:refresh(new_finder, opts)
 end
