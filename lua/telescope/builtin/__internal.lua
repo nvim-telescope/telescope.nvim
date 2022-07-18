@@ -83,7 +83,7 @@ internal.builtin = function(opts)
       previewer = previewers.builtin.new(opts),
       sorter = conf.generic_sorter(opts),
       attach_mappings = function(_)
-        actions.select_default:replace(function(_)
+        actions.select_default:replace(function(prompt_bufnr)
           local selection = action_state.get_selected_entry()
           if not selection then
             utils.__warn_no_selection "builtin.builtin"
@@ -98,6 +98,7 @@ internal.builtin = function(opts)
             picker_opts = opts
           end
 
+          actions.close(prompt_bufnr)
           if string.match(selection.text, " : ") then
             -- Call appropriate function from extensions
             local split_string = vim.split(selection.text, " : ")
