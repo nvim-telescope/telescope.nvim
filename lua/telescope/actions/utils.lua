@@ -96,8 +96,11 @@ function utils.get_registered_mappings(prompt_bufnr)
   for _, mode in ipairs { "n", "i" } do
     local mode_mappings = vim.api.nvim_buf_get_keymap(prompt_bufnr, mode)
     for _, mapping in ipairs(mode_mappings) do
-      local funcid = findnth(mapping.rhs, 2)
-      table.insert(ret, { mode = mode, keybind = mapping.lhs, func = __TelescopeKeymapStore[prompt_bufnr][funcid] })
+      -- ensure only telescope mappings
+      if mapping.rhs and string.find(mapping.rhs, [[require%('telescope.mappings'%).execute_keymap]]) then
+        local funcid = findnth(mapping.rhs, 2)
+        table.insert(ret, { mode = mode, keybind = mapping.lhs, func = __TelescopeKeymapStore[prompt_bufnr][funcid] })
+      end
     end
   end
   return ret
