@@ -429,12 +429,14 @@ function Picker:find()
     self:set_prompt(self.default_text)
   end
 
-  if vim.tbl_contains({ "insert", "normal" }, self.initial_mode) then
+  if vim.tbl_contains({ "insert", "normal", "select" }, self.initial_mode) then
     local mode = vim.fn.mode()
     local keys
     if self.initial_mode == "normal" then
       -- n: A<ESC> makes sure cursor is at always at end of prompt w/o default_text
       keys = mode ~= "n" and "<ESC>A<ESC>" or "A<ESC>"
+    elseif self.initial_mode == "select" then
+      keys = mode ~= "n" and [[<ESC>^v$<C-g>]] or [[^v$<C-g>]]
     else
       -- always fully retrigger insert mode: required for going from one picker to next
       keys = mode ~= "n" and "<ESC>A" or "A"
