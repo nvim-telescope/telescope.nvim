@@ -1103,7 +1103,7 @@ actions.which_key = function(prompt_bufnr, opts)
   local displayer = entry_display.create {
     separator = opts.separator,
     items = {
-      { width = opts.mode_with },
+      { width = opts.mode_width },
       { width = opts.keybind_width },
       { width = opts.name_width },
     },
