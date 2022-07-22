@@ -799,7 +799,6 @@ function Picker:add_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:add(entry)
 
-  self:update_prefix(entry, row)
   self:get_status_updater(self.prompt_win, self.prompt_bufnr)()
   self.highlighter:hi_multiselect(row, true)
 end
@@ -810,7 +809,6 @@ function Picker:remove_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:drop(entry)
 
-  self:update_prefix(entry, row)
   self:get_status_updater(self.prompt_win, self.prompt_bufnr)()
   self.highlighter:hi_multiselect(row, false)
 end
@@ -839,7 +837,6 @@ function Picker:toggle_selection(row)
   end
   self._multi:toggle(entry)
 
-  self:update_prefix(entry, row)
   self:get_status_updater(self.prompt_win, self.prompt_bufnr)()
   self.highlighter:hi_multiselect(row, self._multi:is_selected(entry))
 end
@@ -987,7 +984,6 @@ function Picker:set_selection(row)
       self._selection_entry = entry
 
       if old_row >= 0 then
-        self:update_prefix(old_entry, old_row)
         self.highlighter:hi_multiselect(old_row, self:is_multi_selected(old_entry))
       end
     else
@@ -1046,25 +1042,7 @@ function Picker:update_prefix(entry, row)
     return t
   end
 
-  local line = vim.api.nvim_buf_get_lines(self.results_bufnr, row, row + 1, false)[1]
-  if not line then
-    log.trace(string.format("no line found at row %d in buffer %d", row, self.results_bufnr))
-    return
-  end
-
-  local old_caret = string.sub(line, 0, #prefix(true)) == prefix(true) and prefix(true)
-    or string.sub(line, 0, #prefix(true, true)) == prefix(true, true) and prefix(true, true)
-    or string.sub(line, 0, #prefix(false)) == prefix(false) and prefix(false)
-    or string.sub(line, 0, #prefix(false, true)) == prefix(false, true) and prefix(false, true)
-  if old_caret == false then
-    log.warn(string.format("can't identify old caret in line: %s", line))
-    return
-  end
-
-  local pre = prefix(entry == self._selection_entry, self:is_multi_selected(entry))
-  -- Only change the first couple characters, nvim_buf_set_text leaves the existing highlights
-  -- a.nvim_buf_set_text(self.results_bufnr, row, 0, row, #old_caret, { pre })
-  return pre
+  return prefix(entry == self._selection_entry, self:is_multi_selected(entry))
 end
 
 --- Refresh the previewer based on the current `status` of the picker
@@ -1164,7 +1142,6 @@ function Picker:entry_adder(index, entry, _, insert)
     if display_highlights then
       self.highlighter:hi_display(row, prefix, display_highlights)
     end
-    self:update_prefix(entry, row)
     self:highlight_one_row(self.results_bufnr, self:_get_prompt(), display, row)
   end
 
@@ -1371,7 +1348,6 @@ function Picker:_do_selection(prompt)
       local old_entry, old_row = self._selection_entry, self._selection_row
       self:reset_selection() -- required to reset selection before updating prefix
       if old_row >= 0 then
-        self:update_prefix(old_entry, old_row)
         self.highlighter:hi_multiselect(old_row, self:is_multi_selected(old_entry))
       end
     end

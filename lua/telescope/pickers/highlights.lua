@@ -8,6 +8,11 @@ local ns_telescope_selection = a.nvim_create_namespace "telescope_selection"
 local ns_telescope_multiselection = a.nvim_create_namespace "telescope_multiselection"
 local ns_telescope_entry = a.nvim_create_namespace "telescope_entry"
 
+-- Priorities for extmark highlights. Example: Treesitter is set to 100
+local DISPLAY_HIGHLIGHTS_PRIORITY = 110
+local SORTER_HIGHLIGHTS_PRIORITY = 120
+local SELECTION_HIGHLIGHTS_PRIORITY = 130
+
 local Highlighter = {}
 Highlighter.__index = Highlighter
 
@@ -25,19 +30,19 @@ function Highlighter:hi_display(row, prefix, display_highlights)
   end
 
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
+  if not a.nvim_buf_is_valid(results_bufnr) then
+    return
+  end
 
   a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_entry, row, row + 1)
-  local len_prefix = #prefix
 
   for _, hl_block in ipairs(display_highlights) do
-    a.nvim_buf_add_highlight(
-      results_bufnr,
-      ns_telescope_entry,
-      hl_block[2],
-      row,
-      len_prefix + hl_block[1][1],
-      len_prefix + hl_block[1][2]
-    )
+    a.nvim_buf_set_extmark(results_bufnr, ns_telescope_entry, row, #prefix + hl_block[1][1], {
+      end_col = #prefix + hl_block[1][2],
+      hl_group = hl_block[2],
+      priority = DISPLAY_HIGHLIGHTS_PRIORITY,
+      strict = false,
+    })
   end
 end
 
@@ -69,15 +74,6 @@ function Highlighter:hi_selection(row, caret)
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
 
   a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
-  -- a.nvim_buf_add_highlight(results_bufnr, ns_telescope_selection, "TelescopeSelectionCaret", row, 0, #caret)
-
-  -- a.nvim_buf_set_extmark(
-  --   results_bufnr,
-  --   ns_telescope_selection,
-  --   row,
-  --   #caret,
-  --   { end_line = row + 1, hl_eol = conf.hl_result_eol, hl_group = "TelescopeSelection" }
-  -- )
   
   -- Skip if there is nothing on the actual line
   if a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] == "" then
@@ -92,7 +88,7 @@ function Highlighter:hi_selection(row, caret)
     virt_text_pos = "overlay",
     end_col = offset,
     hl_group = "TelescopeSelectionCaret",
-    -- priority = TODO:,
+    priority = SELECTION_HIGHLIGHTS_PRIORITY,
     strict = true,
   })
 
@@ -101,7 +97,7 @@ function Highlighter:hi_selection(row, caret)
     end_line = row + 1,
     hl_eol = conf.hl_result_eol,
     hl_group = "TelescopeSelection",
-    -- priority = ???
+    priority = SELECTION_HIGHLIGHTS_PRIORITY,
   })
 
 end
@@ -121,14 +117,14 @@ function Highlighter:hi_multiselect(row, is_selected)
   end
 
   if is_selected then
-    local multi_icon = self.picker.multi_icon 
+    local multi_icon = self.picker.multi_icon
     local offset = #multi_icon -- TODO: Get a real offset here
     a.nvim_buf_set_extmark(results_bufnr, ns_telescope_multiselection, row, offset, {
       virt_text = { { multi_icon, "TelescopeMultiIcon" } },
       virt_text_pos = "overlay",
       end_col = offset,
       hl_group = "TelescopeMultiIcon",
-      -- priority = ???,
+      priority = SELECTION_HIGHLIGHTS_PRIORITY,
     })
 
     -- highlight the text after the multi_icon
@@ -137,21 +133,6 @@ function Highlighter:hi_multiselect(row, is_selected)
       end_col = #line,
       hl_group = "TelescopeMultiSelection"
     })
-  else
-    local existing_marks = a.nvim_buf_get_extmarks(
-      results_bufnr,
-      ns_telescope_multiselection,
-      { row, 0 },
-      { row, -1 },
-      {}
-    )
-
-    -- This is still kind of weird to me, since it seems like I'm erasing stuff
-    -- when I shouldn't... Perhaps it's about the gravity of the extmark?
-    if #existing_marks > 0 then
-      log.trace("Clearing highlight multi select row: ", row)
-
-    end
   end
 end
 
