@@ -794,7 +794,7 @@ function make_entry.gen_from_registers(opts)
   return function(entry)
     return make_entry.set_default_entry_mt({
       value = entry,
-      ordinal = entry,
+      ordinal = vim.fn.getreg(entry),
       content = vim.fn.getreg(entry),
       display = make_display,
     }, opts)

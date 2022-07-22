@@ -1089,8 +1089,9 @@ internal.registers = function(opts)
         results = registers_table,
         entry_maker = opts.entry_maker or make_entry.gen_from_registers(opts),
       },
-      -- use levenshtein as n-gram doesn't support <2 char matches
-      sorter = sorters.get_levenshtein_sorter(),
+			-- levenshtein doesn't seem to work with ordinal = register content
+			-- so changed to get_generic_fuzzy_sorter
+      sorter = sorters.get_generic_fuzzy_sorter(),
       attach_mappings = function(_, map)
         actions.select_default:replace(actions.paste_register)
         map("i", "<C-e>", actions.edit_register)
