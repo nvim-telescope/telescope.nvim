@@ -1117,6 +1117,8 @@ builtin.planets({opts})                          *telescope.builtin.planets()*
     Options: ~
         {show_pluto} (boolean)  we love pluto (default: false, because its a
                                 hidden feature)
+        {show_moon}  (boolean)  we love the moon (default: false, because its
+                                a hidden feature)
 
 
 builtin.symbols({opts})                          *telescope.builtin.symbols()*
