@@ -69,19 +69,55 @@ function Highlighter:hi_selection(row, caret)
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
 
   a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
-  a.nvim_buf_add_highlight(results_bufnr, ns_telescope_selection, "TelescopeSelectionCaret", row, 0, #caret)
+  -- a.nvim_buf_add_highlight(results_bufnr, ns_telescope_selection, "TelescopeSelectionCaret", row, 0, #caret)
 
-  a.nvim_buf_set_extmark(
-    results_bufnr,
-    ns_telescope_selection,
-    row,
-    #caret,
-    { end_line = row + 1, hl_eol = conf.hl_result_eol, hl_group = "TelescopeSelection" }
-  )
+  -- a.nvim_buf_set_extmark(
+  --   results_bufnr,
+  --   ns_telescope_selection,
+  --   row,
+  --   #caret,
+  --   { end_line = row + 1, hl_eol = conf.hl_result_eol, hl_group = "TelescopeSelection" }
+  -- )
+  
+  -- Skip if there is nothing on the actual line
+  if a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] == "" then
+    return
+  end
+
+  local offset = #caret -- TODO: Don't have an offset yet, may need to add one. Need to know if we can derive it from the caret or not
+
+  -- Highlight the caret
+  a.nvim_buf_set_extmark(results_bufnr, ns_telescope_selection, row, 0, {
+    virt_text = { { caret, "TelescopeSelectionCaret" } },
+    virt_text_pos = "overlay",
+    end_col = offset,
+    hl_group = "TelescopeSelectionCaret",
+    -- priority = TODO:,
+    strict = true,
+  })
+
+  -- Highlight the text after the caret
+  a.nvim_buf_set_extmark(results_bufnr, ns_telescope_selection, row, offset, {
+    end_line = row + 1,
+    hl_eol = conf.hl_result_eol,
+    hl_group = "TelescopeSelection",
+    -- priority = ???
+  })
+
 end
 
 function Highlighter:hi_multiselect(row, is_selected)
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
+
+  local multi_icon = self.picker.multi_icon 
+  local offset = #multi_icon -- TODO: Get a real offset here
+  vim.api.nvim_buf_set_extmark(results_bufnr, ns_telescope_multiselection, row, offset, {
+    virt_text = { { multi_icon, "TelescopeMultiIcon" } },
+    virt_text_pos = "overlay",
+    end_col = offset,
+    hl_group = "TelescopeMultiIcon",
+    -- priority = ???,
+  })
 
   if is_selected then
     vim.api.nvim_buf_add_highlight(results_bufnr, ns_telescope_multiselection, "TelescopeMultiSelection", row, 0, -1)
@@ -89,14 +125,16 @@ function Highlighter:hi_multiselect(row, is_selected)
       local line = vim.api.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1]
       local pos = line:find(self.picker.multi_icon)
       if pos and pos <= math.max(#self.picker.selection_caret, #self.picker.entry_prefix) then
-        vim.api.nvim_buf_add_highlight(
-          results_bufnr,
-          ns_telescope_multiselection,
-          "TelescopeMultiIcon",
-          row,
-          pos - 1,
-          pos - 1 + #self.picker.multi_icon
-        )
+
+
+        -- vim.api.nvim_buf_add_highlight(
+        --   results_bufnr,
+        --   ns_telescope_multiselection,
+        --   "TelescopeMultiIcon",
+        --   row,
+        --   pos - 1,
+        --   pos - 1 + #self.picker.multi_icon
+        -- )
       end
     end
   else

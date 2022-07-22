@@ -1063,7 +1063,7 @@ function Picker:update_prefix(entry, row)
 
   local pre = prefix(entry == self._selection_entry, self:is_multi_selected(entry))
   -- Only change the first couple characters, nvim_buf_set_text leaves the existing highlights
-  a.nvim_buf_set_text(self.results_bufnr, row, 0, row, #old_caret, { pre })
+  -- a.nvim_buf_set_text(self.results_bufnr, row, 0, row, #old_caret, { pre })
   return pre
 end
 
