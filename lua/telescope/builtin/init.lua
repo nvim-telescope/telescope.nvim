@@ -135,6 +135,7 @@ builtin.current_buffer_tags = require_on_exported_call("telescope.builtin.__file
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field use_buffer_path boolean: if we should use the current buffer path as cwd (important if you use repo tool) (default: false) 
 ---@field show_untracked boolean: if true, adds `--others` flag to command and shows untracked files (default: false)
 ---@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to command (default: false)
 ---@field git_command table: command that will be exectued. {"git","ls-files","--exclude-standard","--cached"}
@@ -149,6 +150,7 @@ builtin.git_files = require_on_exported_call("telescope.builtin.__git").files
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field use_buffer_path boolean: if we should use the current buffer path as cwd (important if you use repo tool) (default: false) 
 ---@field git_command table: command that will be exectued. {"git","log","--pretty=oneline","--abbrev-commit","--","."}
 builtin.git_commits = require_on_exported_call("telescope.builtin.__git").commits
 
@@ -161,6 +163,7 @@ builtin.git_commits = require_on_exported_call("telescope.builtin.__git").commit
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field use_buffer_path boolean: if we should use the current buffer path as cwd (important if you use repo tool) (default: false) 
 ---@field current_file string: specify the current file that should be used for bcommits (default: current buffer)
 ---@field git_command table: command that will be exectued. {"git","log","--pretty=oneline","--abbrev-commit"}
 builtin.git_bcommits = require_on_exported_call("telescope.builtin.__git").bcommits
@@ -176,6 +179,7 @@ builtin.git_bcommits = require_on_exported_call("telescope.builtin.__git").bcomm
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field use_buffer_path boolean: if we should use the current buffer path as cwd (important if you use repo tool) (default: false) 
 ---@field pattern string: specify the pattern to match all refs
 builtin.git_branches = require_on_exported_call("telescope.builtin.__git").branches
 
@@ -186,6 +190,7 @@ builtin.git_branches = require_on_exported_call("telescope.builtin.__git").branc
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field use_buffer_path boolean: if we should use the current buffer path as cwd (important if you use repo tool) (default: false) 
 ---@field git_icons table: string -> string. Matches name with icon (see source code, make_entry.lua git_icon_defaults)
 builtin.git_status = require_on_exported_call("telescope.builtin.__git").status
 
@@ -195,6 +200,7 @@ builtin.git_status = require_on_exported_call("telescope.builtin.__git").status
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field use_buffer_path boolean: if we should use the current buffer path as cwd (important if you use repo tool) (default: false) 
 ---@field show_branch boolean: if we should display the branch name for git stash entries (default: true)
 builtin.git_stash = require_on_exported_call("telescope.builtin.__git").stash
 

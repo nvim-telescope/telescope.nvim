@@ -381,8 +381,12 @@ local set_opts_cwd = function(opts)
     opts.cwd = vim.fn.expand(opts.cwd)
   else
     opts.cwd = vim.loop.cwd()
-  end
-
+		if opts.use_buffer_path then
+			local buffer_filename = vim.api.nvim_buf_get_name(opts.bufnr)
+  		local buffer_path = buffer_filename:match("(.*[/\\])")
+			opts.cwd = buffer_path
+		end
+	end
   -- Find root of git directory and remove trailing newline characters
   local git_root, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
   local use_git_root = vim.F.if_nil(opts.use_git_root, true)
