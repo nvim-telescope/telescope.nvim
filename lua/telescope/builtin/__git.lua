@@ -384,7 +384,9 @@ local set_opts_cwd = function(opts)
 		if opts.use_buffer_path then
 			local buffer_filename = vim.api.nvim_buf_get_name(opts.bufnr)
   		local buffer_path = buffer_filename:match("(.*[/\\])")
-			opts.cwd = buffer_path
+			if buffer_path then
+				opts.cwd = buffer_path
+			end
 		end
 	end
   -- Find root of git directory and remove trailing newline characters
