@@ -7,11 +7,12 @@ local highlights = {}
 local ns_telescope_selection = a.nvim_create_namespace "telescope_selection"
 local ns_telescope_multiselection = a.nvim_create_namespace "telescope_multiselection"
 local ns_telescope_entry = a.nvim_create_namespace "telescope_entry"
+local ns_telescope_matching = a.nvim_create_namespace "telescope_matching"
 
 -- Priorities for extmark highlights. Example: Treesitter is set to 100
 local DISPLAY_HIGHLIGHTS_PRIORITY = 110
-local SORTER_HIGHLIGHTS_PRIORITY = 120
-local SELECTION_HIGHLIGHTS_PRIORITY = 130
+local SELECTION_HIGHLIGHTS_PRIORITY = 120
+local SORTER_HIGHLIGHTS_PRIORITY = 130
 
 local Highlighter = {}
 Highlighter.__index = Highlighter
@@ -45,7 +46,7 @@ function Highlighter:hi_display(row, prefix, display_highlights)
     })
   end
 end
-
+  
 function Highlighter:clear_display()
   if
     not self
@@ -61,12 +62,41 @@ end
 
 function Highlighter:hi_sorter(row, prompt, display)
   local picker = self.picker
+  local sorter = picker.sorter
   if not picker.sorter or not picker.sorter.highlighter then
     return
   end
 
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
-  picker:highlight_one_row(results_bufnr, prompt, display, row)
+  if not a.nvim_buf_is_valid(results_bufnr) then
+    return
+  end
+
+  local sorter_highlights = sorter:highlighter(prompt, display)
+
+  if sorter_highlights then
+    for _, hl in ipairs(sorter_highlights) do
+      local highlight, start, finish
+      if type(hl) == "table" then
+        highlight = hl.highlight or "TelescopeMatching"
+        start = hl.start
+        finish = hl.finish or hl.start
+      elseif type(hl) == "number" then
+        highlight = "TelescopeMatching"
+        start = hl
+        finish = hl
+      else
+        error "Invalid highlight"
+      end
+
+      a.nvim_buf_set_extmark(results_bufnr, ns_telescope_matching, row, start - 1, {
+        end_col = finish,
+        hl_group = highlight,
+        priority = SORTER_HIGHLIGHTS_PRIORITY,
+        strict = false
+      })
+    end
+  end
 end
 
 function Highlighter:hi_selection(row, caret)
@@ -119,6 +149,7 @@ function Highlighter:hi_multiselect(row, is_selected)
   if is_selected then
     local multi_icon = self.picker.multi_icon
     local offset = #multi_icon -- TODO: Get a real offset here
+
     a.nvim_buf_set_extmark(results_bufnr, ns_telescope_multiselection, row, offset, {
       virt_text = { { multi_icon, "TelescopeMultiIcon" } },
       virt_text_pos = "overlay",

@@ -262,43 +262,6 @@ function Picker:clear_extra_rows(results_bufnr)
   log.trace("Clearing:", worst_line)
 end
 
---- Highlight the entry corresponding to the given row
----@param results_bufnr number: the buffer number of the results buffer
----@param prompt table: table with information about the prompt buffer
----@param display string: the text corresponding to the given row
----@param row number: the number of the chosen row
-function Picker:highlight_one_row(results_bufnr, prompt, display, row)
-  if not self.sorter.highlighter then
-    return
-  end
-
-  local highlights = self.sorter:highlighter(prompt, display)
-
-  if highlights then
-    for _, hl in ipairs(highlights) do
-      local highlight, start, finish
-      if type(hl) == "table" then
-        highlight = hl.highlight or "TelescopeMatching"
-        start = hl.start
-        finish = hl.finish or hl.start
-      elseif type(hl) == "number" then
-        highlight = "TelescopeMatching"
-        start = hl
-        finish = hl
-      else
-        error "Invalid higlighter fn"
-      end
-
-      self:_increment "highlights"
-
-      vim.api.nvim_buf_add_highlight(results_bufnr, ns_telescope_matching, highlight, row, start - 1, finish)
-    end
-  end
-
-  local entry = self.manager:get_entry(self:get_index(row))
-  self.highlighter:hi_multiselect(row, self:is_multi_selected(entry))
-end
-
 --- Check if the given row number can be selected
 ---@param row number: the number of the chosen row in the results buffer
 ---@return boolean
@@ -1142,7 +1105,7 @@ function Picker:entry_adder(index, entry, _, insert)
     if display_highlights then
       self.highlighter:hi_display(row, prefix, display_highlights)
     end
-    self:highlight_one_row(self.results_bufnr, self:_get_prompt(), display, row)
+    self.highlighter:hi_sorter(row, self:_get_prompt(), display)
   end
 
   if not set_ok then
