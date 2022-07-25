@@ -110,7 +110,7 @@ function Highlighter:hi_selection(row, caret)
     return
   end
 
-  local offset = #caret -- TODO: Don't have an offset yet, may need to add one. Need to know if we can derive it from the caret or not
+  local offset = #caret
 
   -- Highlight the caret
   a.nvim_buf_set_extmark(results_bufnr, ns_telescope_selection, row, 0, {
@@ -148,7 +148,7 @@ function Highlighter:hi_multiselect(row, is_selected)
 
   if is_selected then
     local multi_icon = self.picker.multi_icon
-    local offset = #multi_icon -- TODO: Get a real offset here
+    local offset = #multi_icon
 
     a.nvim_buf_set_extmark(results_bufnr, ns_telescope_multiselection, row, offset, {
       virt_text = { { multi_icon, "TelescopeMultiIcon" } },
@@ -159,7 +159,6 @@ function Highlighter:hi_multiselect(row, is_selected)
     })
 
     -- highlight the text after the multi_icon
-    -- TODO: test with multi-byte prefixes
     a.nvim_buf_set_extmark(results_bufnr, ns_telescope_multiselection, row, offset, {
       end_col = #line,
       hl_group = "TelescopeMultiSelection"
