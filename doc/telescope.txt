@@ -6,7 +6,7 @@ filter, find and pick things in Lua.
 
 Getting started with telescope:
   1. Run `:checkhealth telescope` to make sure everything is installed.
-  2. Evalulate it working with `:Telescope find_files` or `:lua
+  2. Evaluate it working with `:Telescope find_files` or `:lua
      require("telescope.builtin").find_files()`
   3. Put a `require("telescope").setup() call somewhere in your neovim config.
   4. Read |telescope.setup| to check what config keys are available and what
