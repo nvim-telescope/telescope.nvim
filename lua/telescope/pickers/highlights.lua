@@ -128,7 +128,6 @@ function Highlighter:hi_selection(row, caret)
     hl_group = "TelescopeSelection",
     priority = SELECTION_HIGHLIGHTS_PRIORITY,
   })
-
 end
 
 function Highlighter:hi_multiselect(row, is_selected)
