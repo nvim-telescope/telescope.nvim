@@ -1,5 +1,4 @@
 local a = vim.api
-local log = require "telescope.log"
 local conf = require("telescope.config").values
 
 local highlights = {}
@@ -46,7 +45,7 @@ function Highlighter:hi_display(row, prefix, display_highlights)
     })
   end
 end
-  
+
 function Highlighter:clear_display()
   if
     not self
@@ -104,7 +103,7 @@ function Highlighter:hi_selection(row, caret)
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
 
   a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
-  
+
   -- Skip if there is nothing on the actual line
   if a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] == "" then
     return
