@@ -93,7 +93,7 @@ function Highlighter:hi_sorter(row, prompt, display)
         end_col = finish,
         hl_group = highlight,
         priority = SORTER_HIGHLIGHTS_PRIORITY,
-        strict = false
+        strict = false,
       })
     end
   end
@@ -161,7 +161,7 @@ function Highlighter:hi_multiselect(row, is_selected)
     -- highlight the text after the multi_icon
     a.nvim_buf_set_extmark(results_bufnr, ns_telescope_multiselection, row, offset, {
       end_col = #line,
-      hl_group = "TelescopeMultiSelection"
+      hl_group = "TelescopeMultiSelection",
     })
   end
 end
