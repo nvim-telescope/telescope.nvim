@@ -139,7 +139,7 @@ end] = function(_, val)
 end
 
 _resolve_map[function(val)
-  return type(val) == "table" and val[1] >= 0 and val[1] < 1 and val["max"] ~= nil
+  return type(val) == "table" and val["max"] ~= nil and val[1] ~= nil and val[1] >= 0 and val[1] < 1
 end] =
   function(selector, val)
     return function(...)
@@ -149,7 +149,7 @@ end] =
   end
 
 _resolve_map[function(val)
-  return type(val) == "table" and val[1] >= 0 and val[1] < 1 and val["min"] ~= nil
+  return type(val) == "table" and val["min"] ~= nil and val[1] ~= nil and val[1] >= 0 and val[1] < 1
 end] =
   function(selector, val)
     return function(...)

@@ -71,24 +71,34 @@ wiki.
 
 ### Installation
 
+It is suggested to either use the latest release
+[tag](https://github.com/nvim-telescope/telescope.nvim/tags) or our release
+branch (which will get consistent updates)
+[0.1.x](https://github.com/nvim-telescope/telescope.nvim/tree/0.1.x).
+
+It is not suggested to run latest master.
+
 Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```viml
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.0' }
+" or                                , { 'branch': '0.1.x' }
 ```
 
 Using [dein](https://github.com/Shougo/dein.vim)
 
 ```viml
 call dein#add('nvim-lua/plenary.nvim')
-call dein#add('nvim-telescope/telescope.nvim')
+call dein#add('nvim-telescope/telescope.nvim', { 'rev': '0.1.0' })
+" or                                         , { 'rev': '0.1.x' })
 ```
 Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
 use {
-  'nvim-telescope/telescope.nvim',
+  'nvim-telescope/telescope.nvim', tag = '0.1.0',
+-- or                            , branch = '0.1.x',
   requires = { {'nvim-lua/plenary.nvim'} }
 }
 ```

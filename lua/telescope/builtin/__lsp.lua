@@ -58,7 +58,7 @@ end
 local function call_hierarchy(opts, method, title, direction, item)
   vim.lsp.buf_request(opts.bufnr, method, { item = item }, function(err, result)
     if err then
-      vim.api.nvim_err_writeln("Error handling " .. title .. ": " .. err)
+      vim.api.nvim_err_writeln("Error handling " .. title .. ": " .. err.message)
       return
     end
 

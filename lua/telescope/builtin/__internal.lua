@@ -83,7 +83,7 @@ internal.builtin = function(opts)
       previewer = previewers.builtin.new(opts),
       sorter = conf.generic_sorter(opts),
       attach_mappings = function(_)
-        actions.select_default:replace(function(_)
+        actions.select_default:replace(function(prompt_bufnr)
           local selection = action_state.get_selected_entry()
           if not selection then
             utils.__warn_no_selection "builtin.builtin"
@@ -98,6 +98,7 @@ internal.builtin = function(opts)
             picker_opts = opts
           end
 
+          actions.close(prompt_bufnr)
           if string.match(selection.text, " : ") then
             -- Call appropriate function from extensions
             local split_string = vim.split(selection.text, " : ")
@@ -208,6 +209,7 @@ end
 
 internal.planets = function(opts)
   local show_pluto = opts.show_pluto or false
+  local show_moon = opts.show_moon or false
 
   local sourced_file = require("plenary.debug_utils").sourced_filepath()
   local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h:h")
@@ -215,7 +217,7 @@ internal.planets = function(opts)
   local globbed_files = vim.fn.globpath(base_directory .. "/data/memes/planets/", "*", true, true)
   local acceptable_files = {}
   for _, v in ipairs(globbed_files) do
-    if show_pluto or not v:find "pluto" then
+    if (show_pluto or not v:find "pluto") and (show_moon or not v:find "moon") then
       table.insert(acceptable_files, vim.fn.fnamemodify(v, ":t"))
     end
   end

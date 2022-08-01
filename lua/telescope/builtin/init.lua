@@ -228,6 +228,7 @@ builtin.pickers = require_on_exported_call("telescope.builtin.__internal").picke
 --- Use the telescope...
 ---@param opts table: options to pass to the picker
 ---@field show_pluto boolean: we love pluto (default: false, because its a hidden feature)
+---@field show_moon boolean: we love the moon (default: false, because its a hidden feature)
 builtin.planets = require_on_exported_call("telescope.builtin.__internal").planets
 
 --- Lists symbols inside of `data/telescope-sources/*.json` found in your runtime path
