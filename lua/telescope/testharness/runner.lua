@@ -1,5 +1,6 @@
 local builtin = require "telescope.builtin"
 
+local DELAY = vim.g.telescope_test_delay or 50
 local runner = {}
 
 -- State is test variable
@@ -145,10 +146,10 @@ runner.create_on_complete = function(input, test_cases)
             end
           end
 
-          vim.defer_fn(end_test_cases, 30)
-        end, 30)
-      end, 30)
-    end, 30)
+          vim.defer_fn(end_test_cases, DELAY)
+        end, DELAY)
+      end, DELAY)
+    end, DELAY)
   end
 end
 
