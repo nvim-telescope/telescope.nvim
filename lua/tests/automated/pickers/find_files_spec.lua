@@ -9,13 +9,14 @@ describe("builtin.find_files", function()
     tester.run_file "find_files__readme"
   end)
 
-  for _, configuration in ipairs {
-    { sorting_strategy = "descending" },
-    { sorting_strategy = "ascending" },
-  } do
-    it("should not display devicons when disabled: " .. disp(configuration), function()
-      tester.run_string(string.format(
-        [[
+  if vim.fn.has "mac" == 0 then
+    for _, configuration in ipairs {
+      { sorting_strategy = "descending" },
+      { sorting_strategy = "ascending" },
+    } do
+      it("should not display devicons when disabled: " .. disp(configuration), function()
+        tester.run_string(string.format(
+          [[
         local max_results = 5
 
         runner.picker('find_files', 'README.md', {
@@ -37,9 +38,10 @@ describe("builtin.find_files", function()
           },
         }, vim.json.decode([==[%s]==])))
       ]],
-        vim.json.encode(configuration)
-      ))
-    end)
+          vim.json.encode(configuration)
+        ))
+      end)
+    end
 
     pending("use devicons, if it has it when enabled", function()
       if not pcall(require, "nvim-web-devicons") then
