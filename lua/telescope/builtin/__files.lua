@@ -180,12 +180,12 @@ files.find_files = function(opts)
         return opts.find_command(opts)
       end
       return opts.find_command
+    elseif 1 == vim.fn.executable "rg" then
+      return { "rg", "--files" }
     elseif 1 == vim.fn.executable "fd" then
       return { "fd", "--type", "f" }
     elseif 1 == vim.fn.executable "fdfind" then
       return { "fdfind", "--type", "f" }
-    elseif 1 == vim.fn.executable "rg" then
-      return { "rg", "--files" }
     elseif 1 == vim.fn.executable "find" and vim.fn.has "win32" == 0 then
       return { "find", ".", "-type", "f" }
     elseif 1 == vim.fn.executable "where" then
