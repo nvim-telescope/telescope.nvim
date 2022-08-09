@@ -462,8 +462,8 @@ previewers.vimgrep = defaulter(function(opts)
     end,
 
     define_preview = function(self, entry, status)
-      -- bypass path validation for terminal buffers that don't have appropriate path
-      local has_buftype = vim.api.nvim_buf_get_option(entry.bufnr, "buftype") ~= ""
+      -- builtin.buffers: bypass path validation for terminal buffers that don't have appropriate path
+      local has_buftype = entry.bufnr and vim.api.nvim_buf_get_option(entry.bufnr, "buftype") ~= "" or false
       local p
       if not has_buftype then
         p = from_entry.path(entry, true)
