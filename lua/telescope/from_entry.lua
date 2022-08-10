@@ -24,6 +24,7 @@ function from_entry.path(entry, validate, escape)
     return
   end
 
+  path = vim.fn.fnamemodify(path, ":p")
   -- only 0 if neither filereadable nor directory
   local invalid = vim.fn.filereadable(path) + vim.fn.isdirectory(path)
   if validate and invalid == 0 then
