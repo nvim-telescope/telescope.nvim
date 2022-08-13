@@ -37,6 +37,8 @@ local JobFinder = _callable_obj()
 ---
 ---@param opts table Keys:
 --     fn_command function The function to call
+--     fn_preprocess function The optional function to be called for each line before calling entry_maker.
+--       Allows for creating multiple entries (table) from single line.
 function JobFinder:new(opts)
   opts = opts or {}
 
@@ -46,6 +48,7 @@ function JobFinder:new(opts)
   local obj = setmetatable({
     entry_maker = opts.entry_maker or make_entry.gen_from_string,
     fn_command = opts.fn_command,
+    fn_preprocess = opts.fn_preprocess,
     cwd = opts.cwd,
     writer = opts.writer,
 
@@ -69,12 +72,22 @@ function JobFinder:_find(prompt, process_result, process_complete)
     if not line or line == "" then
       return
     end
-
-    if self.entry_maker then
-      line = self.entry_maker(line)
+    -- If fn_preprocess is defined, call it for each line producing multiple results.
+    -- Call entry_maker on each result.
+    if self.fn_preprocess ~= nil then
+      local lines = self.fn_preprocess(line)
+      for _, item in ipairs (lines) do
+        if self.entry_maker then
+          item = self.entry_maker(item)
+        end
+        process_result(item)
+      end
+    else
+      if self.entry_maker then
+        line = self.entry_maker(line)
+      end
+      process_result(line)
     end
-
-    process_result(line)
   end
 
   local opts = self:fn_command(prompt)
@@ -123,6 +136,7 @@ function DynamicFinder:new(opts)
     curr_buf = opts.curr_buf,
     fn = opts.fn,
     entry_maker = opts.entry_maker or make_entry.gen_from_string,
+    fn_preprocess = opts.fn_preprocess,
   }, self)
 
   return obj
@@ -154,23 +168,24 @@ finders.new_async_job = function(opts)
   if opts.writer then
     return finders._new(opts)
   end
-
   return async_job_finder(opts)
 end
 
-finders.new_job = function(command_generator, entry_maker, _, cwd)
+finders.new_job = function(command_generator, entry_maker, _, cwd, fn_preprocess)
   return async_job_finder {
     command_generator = command_generator,
     entry_maker = entry_maker,
     cwd = cwd,
+    fn_preprocess = fn_preprocess,
   }
 end
 
 --- One shot job
 ---@param command_list string[]: Command list to execute.
 ---@param opts table: stuff
---         @key entry_maker function Optional: function(line: string) => table
---         @key cwd string
+---        @key entry_maker function Optional: function(line: string) => table
+---        @key cwd string
+---        @key fn_preprocess function Optional: function(line: string) => table
 finders.new_oneshot_job = function(command_list, opts)
   opts = opts or {}
 
@@ -184,6 +199,7 @@ finders.new_oneshot_job = function(command_list, opts)
 
     cwd = opts.cwd,
     maximum_results = opts.maximum_results,
+    fn_preprocess = opts.fn_preprocess,
 
     fn_command = function()
       return {
