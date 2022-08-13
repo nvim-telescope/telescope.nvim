@@ -1742,7 +1742,7 @@ You can also add additional options for mappings of any type ("action" and
   {
     ...,
     ["<C-j>"] = {
-      action = actions.move_selection_next,
+      actions.move_selection_next, type = "action",
       opts = { nowait = true, silent = true }
     },
     ...,
