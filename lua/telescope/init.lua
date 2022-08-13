@@ -13,7 +13,7 @@ local telescope = {}
 ---
 --- Getting started with telescope:
 ---   1. Run `:checkhealth telescope` to make sure everything is installed.
----   2. Evalulate it working with
+---   2. Evaluate it working with
 ---      `:Telescope find_files` or
 ---      `:lua require("telescope.builtin").find_files()`
 ---   3. Put a `require("telescope").setup() call somewhere in your neovim config.
