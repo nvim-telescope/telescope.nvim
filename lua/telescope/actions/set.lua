@@ -67,6 +67,7 @@ end
 local edit_buffer
 do
   local map = {
+    drop = "drop",
     edit = "buffer",
     new = "sbuffer",
     vnew = "vert sbuffer",
