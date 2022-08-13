@@ -765,8 +765,7 @@ options you want to use. Here's an example with the live_grep picker:
 <
 
 builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
-    Search for a string and get results live as you type (respecting
-    .gitignore)
+    Search for a string and get results live as you type, respects .gitignore
 
 
     Parameters: ~
@@ -938,8 +937,7 @@ builtin.current_buffer_tags({opts})  *telescope.builtin.current_buffer_tags()*
 
 builtin.git_files({opts})                      *telescope.builtin.git_files()*
     Fuzzy search for files tracked by Git. This command lists the output of the
-    `git ls-files` command, respects .gitignore, and optionally ignores
-    untracked files
+    `git ls-files` command, respects .gitignore
     - Default keymaps:
       - `<cr>`: opens the currently selected file
 
