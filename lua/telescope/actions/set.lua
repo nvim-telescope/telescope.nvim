@@ -79,7 +79,11 @@ do
     if command == nil then
       error "There was no associated buffer command"
     end
-    vim.cmd(string.format("%s %d", command, bufnr))
+    if command ~= "drop" then
+      vim.cmd(string.format("%s %d", command, bufnr))
+    else
+      vim.cmd(string.format("%s %s", command, vim.api.nvim_buf_get_name(bufnr)))
+    end
   end
 end
 
