@@ -80,7 +80,7 @@
 ---   {
 ---     ...,
 ---     ["<C-j>"] = {
----       action = actions.move_selection_next,
+---       actions.move_selection_next, type = "action",
 ---       opts = { nowait = true, silent = true }
 ---     },
 ---     ...,
