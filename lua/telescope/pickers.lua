@@ -1048,7 +1048,7 @@ function Picker:update_prefix(entry, row)
 
   local line = vim.api.nvim_buf_get_lines(self.results_bufnr, row, row + 1, false)[1]
   if not line then
-    log.warn(string.format("no line found at row %d in buffer %d", row, self.results_bufnr))
+    log.trace(string.format("no line found at row %d in buffer %d", row, self.results_bufnr))
     return
   end
 
