@@ -9,9 +9,10 @@ local ns_telescope_entry = a.nvim_create_namespace "telescope_entry"
 local ns_telescope_matching = a.nvim_create_namespace "telescope_matching"
 
 -- Priorities for extmark highlights. Example: Treesitter is set to 100
+local SELECTION_MULTISELECT_PRIORITY = 100
 local DISPLAY_HIGHLIGHTS_PRIORITY = 110
-local SELECTION_HIGHLIGHTS_PRIORITY = 120
-local SORTER_HIGHLIGHTS_PRIORITY = 130
+local SELECTION_HIGHLIGHTS_PRIORITY = 130
+local SORTER_HIGHLIGHTS_PRIORITY = 140
 
 local Highlighter = {}
 Highlighter.__index = Highlighter
@@ -61,7 +62,6 @@ end
 
 function Highlighter:hi_sorter(row, prompt, display)
   local picker = self.picker
-  local sorter = picker.sorter
   if not picker.sorter or not picker.sorter.highlighter then
     return
   end
@@ -71,7 +71,7 @@ function Highlighter:hi_sorter(row, prompt, display)
     return
   end
 
-  local sorter_highlights = sorter:highlighter(prompt, display)
+  local sorter_highlights = picker.sorter:highlighter(prompt, display)
 
   if sorter_highlights then
     for _, hl in ipairs(sorter_highlights) do
@@ -105,7 +105,8 @@ function Highlighter:hi_selection(row, caret)
   a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
 
   -- Skip if there is nothing on the actual line
-  if a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] == "" then
+  local line = a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1]
+  if line == nil or line == "" then
     return
   end
 
@@ -140,7 +141,7 @@ function Highlighter:hi_multiselect(row, is_selected)
   a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_multiselection, row, row + 1)
 
   local line = a.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1]
-  if not line then
+  if line == nil or line == "" then
     return
   end
 
@@ -160,6 +161,7 @@ function Highlighter:hi_multiselect(row, is_selected)
     a.nvim_buf_set_extmark(results_bufnr, ns_telescope_multiselection, row, offset, {
       end_col = #line,
       hl_group = "TelescopeMultiSelection",
+      priority = SELECTION_MULTISELECT_PRIORITY,
     })
   end
 end
