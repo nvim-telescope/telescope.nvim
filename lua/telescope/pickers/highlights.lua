@@ -118,6 +118,7 @@ function Highlighter:hi_selection(row, caret)
     virt_text_pos = "overlay",
     end_col = offset,
     hl_group = "TelescopeSelectionCaret",
+    hl_mode = "combine",
     priority = SELECTION_HIGHLIGHTS_PRIORITY,
     strict = true,
   })
@@ -153,10 +154,16 @@ function Highlighter:hi_multiselect(row, is_selected)
       virt_text = { { multi_icon, "TelescopeMultiIcon" } },
       virt_text_pos = "overlay",
       end_col = offset,
+      hl_mode = "combine",
       hl_group = "TelescopeMultiIcon",
       priority = SELECTION_HIGHLIGHTS_PRIORITY,
     })
-
+    -- highlight the caret
+    a.nvim_buf_set_extmark(results_bufnr, ns_telescope_multiselection, row, 0, {
+      end_col = #self.picker.selection_caret,
+      hl_group = "TelescopeMultiSelection",
+      priority = SELECTION_MULTISELECT_PRIORITY,
+    })
     -- highlight the text after the multi_icon
     a.nvim_buf_set_extmark(results_bufnr, ns_telescope_multiselection, row, offset, {
       end_col = #line,
