@@ -655,6 +655,7 @@ function make_entry.gen_from_tabpage(opts)
     opts.__prefix = opts.bufnr_width + 4 + icon_width + 3 + 1 + #tostring(entry.lnum)
     local display_bufname = utils.transform_path(opts, entry.filename)
     local icon, hl_group = utils.get_devicons(entry.filename, disable_devicons)
+
     return displayer {
       { entry.tabidx, "TelescopeResultsNumber" },
       { entry.indicator, "TelescopeResultsComment" },
@@ -680,6 +681,8 @@ function make_entry.gen_from_tabpage(opts)
       display = make_display,
 
       tabidx = entry.tabidx,
+      winnr = entry.winnr,
+
       bufnr = entry.bufnr,
       filename = bufname,
       -- account for potentially stale lnum as getbufinfo might not be updated or from resuming buffers picker

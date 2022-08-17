@@ -939,11 +939,13 @@ internal.tabpages = function(opts)
 
   local tabpages = {}
   for tabidx, tabnr in ipairs(tabnrs) do
-    for _, bufnr in ipairs(vim.fn.tabpagebuflist(tabnr)) do
+    for _, winnr in ipairs(vim.api.nvim_tabpage_list_wins(tabnr)) do
+      local bufnr = vim.api.nvim_win_get_buf(winnr)
       if isValidBuffer(bufnr) then
         local flag = bufnr == vim.fn.bufnr "" and "%" or (bufnr == vim.fn.bufnr "#" and "#" or " ")
         local element = {
           tabidx = tabidx,
+          winnr = winnr,
           bufnr = bufnr,
           flag = flag,
           info = vim.fn.getbufinfo(bufnr)[1],
@@ -959,16 +961,26 @@ internal.tabpages = function(opts)
   end
 
   pickers
-    .new(opts, {
-      prompt_title = "Tabpages",
-      finder = finders.new_table {
-        results = tabpages,
-        entry_maker = opts.entry_maker or make_entry.gen_from_tabpage(opts),
-      },
-      previewer = conf.grep_previewer(opts),
-      sorter = conf.generic_sorter(opts),
-    })
-    :find()
+      .new(opts, {
+        prompt_title = "Tabpages",
+        finder = finders.new_table {
+          results = tabpages,
+          entry_maker = opts.entry_maker or make_entry.gen_from_tabpage(opts),
+        },
+        previewer = conf.grep_previewer(opts),
+        sorter = conf.generic_sorter(opts),
+        attach_mappings = function(prompt_bufnr)
+          actions.select_default:replace(function()
+            local selection = action_state.get_selected_entry()
+            if selection == nil then return end
+            actions.close(prompt_bufnr)
+            vim.api.nvim_set_current_win(selection.winnr)
+          end)
+
+          return true
+        end,
+      })
+      :find()
 end
 
 internal.colorscheme = function(opts)
