@@ -925,7 +925,7 @@ internal.tabpages = function(opts)
   for tabidx, tabnr in ipairs(tabnrs) do
     -- in each tabpage, iterate through each window
     for _, winnr in ipairs(vim.api.nvim_tabpage_list_wins(tabnr)) do
-      -- then get the corresponding buffer number inside that window 
+      -- then get the corresponding buffer number inside that window
       local bufnr = vim.api.nvim_win_get_buf(winnr)
       -- if a window is holding a listed buffer, it will be added and shown in picker
       -- if multiple windows are holding the same buffer, multiple rows will be shown
@@ -949,27 +949,29 @@ internal.tabpages = function(opts)
   end
 
   pickers
-      .new(opts, {
-        prompt_title = "Tabpages",
-        finder = finders.new_table {
-          results = wins,
-          entry_maker = opts.entry_maker or make_entry.gen_from_tabpage(opts),
-        },
-        previewer = conf.grep_previewer(opts),
-        sorter = conf.generic_sorter(opts),
-        attach_mappings = function(prompt_bufnr)
-          -- default action on <cr> is switch to that tabpage and focus to that window
-          actions.select_default:replace(function()
-            local selection = action_state.get_selected_entry()
-            if selection == nil then return end
-            actions.close(prompt_bufnr)
-            vim.api.nvim_set_current_win(selection.winnr)
-          end)
+    .new(opts, {
+      prompt_title = "Tabpages",
+      finder = finders.new_table {
+        results = wins,
+        entry_maker = opts.entry_maker or make_entry.gen_from_tabpage(opts),
+      },
+      previewer = conf.grep_previewer(opts),
+      sorter = conf.generic_sorter(opts),
+      attach_mappings = function(prompt_bufnr)
+        -- default action on <cr> is switch to that tabpage and focus to that window
+        actions.select_default:replace(function()
+          local selection = action_state.get_selected_entry()
+          if selection == nil then
+            return
+          end
+          actions.close(prompt_bufnr)
+          vim.api.nvim_set_current_win(selection.winnr)
+        end)
 
-          return true
-        end,
-      })
-      :find()
+        return true
+      end,
+    })
+    :find()
 end
 
 internal.colorscheme = function(opts)
