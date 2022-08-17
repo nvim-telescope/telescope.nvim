@@ -279,6 +279,7 @@ Built-in functions. Ready to be bound to any key you like.
 | Functions                           | Description                                                                                                                                                 |
 |-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `builtin.buffers`                   | Lists open buffers in current neovim instance                                                                                                               |
+| `builtin.tabpages`                  | Lists open windows in each tabpage in current neovim instance, opens selected window on `<cr>`
 | `builtin.oldfiles`                  | Lists previously open files                                                                                                                                 |
 | `builtin.commands`                  | Lists available plugin/user commands and runs them on `<cr>`                                                                                                |
 | `builtin.tags`                      | Lists tags in current directory with tag location file preview (users are required to run ctags -R to generate tags or update when introducing new changes) |
