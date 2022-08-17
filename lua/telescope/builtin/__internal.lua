@@ -914,56 +914,28 @@ end
 
 internal.tabpages = function(opts)
   opts = apply_cwd_only_aliases(opts)
-  local bufnrs = filter(function(b)
-    if 1 ~= vim.fn.buflisted(b) then
-      return false
-    end
-    -- only hide unloaded buffers if opts.show_all_buffers is false, keep them listed if true or nil
-    if opts.show_all_buffers == false and not vim.api.nvim_buf_is_loaded(b) then
-      return false
-    end
-    if opts.ignore_current_buffer and b == vim.api.nvim_get_current_buf() then
-      return false
-    end
-    if opts.cwd_only and not string.find(vim.api.nvim_buf_get_name(b), vim.loop.cwd(), 1, true) then
-      return false
-    end
-    return true
-  end, vim.api.nvim_list_bufs())
-  if not next(bufnrs) then
+  local tabnrs = vim.api.nvim_list_tabpages()
+
+  if not next(tabnrs) then
     return
-  end
-  if opts.sort_mru then
-    table.sort(bufnrs, function(a, b)
-      return vim.fn.getbufinfo(a)[1].lastused > vim.fn.getbufinfo(b)[1].lastused
-    end)
   end
 
   local tabpages = {}
-  local default_selection_idx = 1
-  for _, bufnr in ipairs(bufnrs) do
-    local flag = bufnr == vim.fn.bufnr "" and "%" or (bufnr == vim.fn.bufnr "#" and "#" or " ")
-
-    if opts.sort_lastused and not opts.ignore_current_buffer and flag == "#" then
-      default_selection_idx = 2
-    end
-
-    local element = {
-      bufnr = bufnr,
-      flag = flag,
-      info = vim.fn.getbufinfo(bufnr)[1],
-    }
-
-    if opts.sort_lastused and (flag == "#" or flag == "%") then
-      local idx = ((tabpages[1] ~= nil and tabpages[1].flag == "%") and 2 or 1)
-      table.insert(tabpages, idx, element)
-    else
+  for tabidx, tabnr in ipairs(tabnrs) do
+    for _, bufnr in ipairs(vim.fn.tabpagebuflist(tabnr)) do
+      local flag = bufnr == vim.fn.bufnr "" and "%" or (bufnr == vim.fn.bufnr "#" and "#" or " ")
+      local element = {
+        tabidx = tabidx,
+        bufnr = bufnr,
+        flag = flag,
+        info = vim.fn.getbufinfo(bufnr)[1],
+      }
       table.insert(tabpages, element)
     end
   end
 
   if not opts.bufnr_width then
-    local max_bufnr = math.max(unpack(bufnrs))
+    local max_bufnr = math.max(unpack(tabnrs))
     opts.bufnr_width = #tostring(max_bufnr)
   end
 
@@ -972,11 +944,10 @@ internal.tabpages = function(opts)
       prompt_title = "Tabpages",
       finder = finders.new_table {
         results = tabpages,
-        entry_maker = opts.entry_maker or make_entry.gen_from_buffer(opts),
+        entry_maker = opts.entry_maker or make_entry.gen_from_tabpage(opts),
       },
       previewer = conf.grep_previewer(opts),
       sorter = conf.generic_sorter(opts),
-      default_selection_index = default_selection_idx,
     })
     :find()
 end
