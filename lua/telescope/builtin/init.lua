@@ -316,6 +316,8 @@ builtin.reloader = require_on_exported_call("telescope.builtin.__internal").relo
 ---@field bufnr_width number: Defines the width of the buffer numbers in front of the filenames  (default: dynamic)
 builtin.buffers = require_on_exported_call("telescope.builtin.__internal").buffers
 
+builtin.tabpages = require_on_exported_call("telescope.builtin.__internal").tabpages
+
 --- Lists available colorschemes and applies them on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field enable_preview boolean: if true, will preview the selected color
