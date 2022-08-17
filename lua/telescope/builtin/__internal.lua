@@ -920,34 +920,34 @@ internal.tabpages = function(opts)
     return
   end
 
-  local tabpages = {}
+  local wins = {}
   for tabidx, tabnr in ipairs(tabnrs) do
     for _, winnr in ipairs(vim.api.nvim_tabpage_list_wins(tabnr)) do
       local bufnr = vim.api.nvim_win_get_buf(winnr)
       if vim.fn.buflisted(bufnr) == 1 then
         local flag = bufnr == vim.fn.bufnr "" and "%" or (bufnr == vim.fn.bufnr "#" and "#" or " ")
-        local element = {
+        local win = {
           tabidx = tabidx,
           winnr = winnr,
           bufnr = bufnr,
           flag = flag,
           info = vim.fn.getbufinfo(bufnr)[1],
         }
-        table.insert(tabpages, element)
+        table.insert(wins, win)
       end
     end
   end
 
-  if not opts.bufnr_width then
-    local max_bufnr = math.max(unpack(tabnrs))
-    opts.bufnr_width = #tostring(max_bufnr)
+  if not opts.tabidx_width then
+    local max_tabidx = #tabnrs
+    opts.tabidx_width = #tostring(max_tabidx)
   end
 
   pickers
       .new(opts, {
         prompt_title = "Tabpages",
         finder = finders.new_table {
-          results = tabpages,
+          results = wins,
           entry_maker = opts.entry_maker or make_entry.gen_from_tabpage(opts),
         },
         previewer = conf.grep_previewer(opts),
