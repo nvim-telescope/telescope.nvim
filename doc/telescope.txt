@@ -1302,6 +1302,15 @@ builtin.buffers({opts})                          *telescope.builtin.buffers()*
                                            (default: dynamic)
 
 
+builtin.tabpages({opts})                        *telescope.builtin.tabpages()*
+    Lists open windows in each tabpage in current neovim instance, opens
+    selected window on `<cr>`
+
+
+    Parameters: ~
+        {opts} (table)  options to pass to the picker
+
+
 builtin.colorscheme({opts})                  *telescope.builtin.colorscheme()*
     Lists available colorschemes and applies them on `<cr>`
 
