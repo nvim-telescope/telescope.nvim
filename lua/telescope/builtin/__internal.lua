@@ -943,6 +943,16 @@ internal.tabpages = function(opts)
     end
   end
 
+  -- selection index defaults to 1, then try to set it to the current window
+  local default_selection_index = 1
+  local current_winnr = vim.api.nvim_get_current_win()
+  for i, win in ipairs(wins) do
+    if win.winnr == current_winnr then
+      default_selection_index = i
+      break
+    end
+  end
+
   if not opts.tabidx_width then
     local max_tabidx = #tabnrs
     opts.tabidx_width = #tostring(max_tabidx)
@@ -957,6 +967,7 @@ internal.tabpages = function(opts)
       },
       previewer = conf.grep_previewer(opts),
       sorter = conf.generic_sorter(opts),
+      default_selection_index = default_selection_index,
       attach_mappings = function(prompt_bufnr)
         -- default action on <cr> is switch to that tabpage and focus to that window
         actions.select_default:replace(function()
