@@ -677,7 +677,7 @@ function make_entry.gen_from_tabpage(opts)
 
     return make_entry.set_default_entry_mt({
       value = bufname,
-      ordinal = entry.bufnr .. " : " .. bufname,
+      ordinal = entry.tabidx .. " : " .. bufname,
       display = make_display,
 
       tabidx = entry.tabidx,
