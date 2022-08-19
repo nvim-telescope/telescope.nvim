@@ -65,7 +65,7 @@ builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_g
 ---@field search_dirs table: directory/directories/files to search, mutually exclusive with `grep_open_files`
 ---@field use_regex boolean: if true, special characters won't be escaped, allows for using regex (default: false)
 ---@field word_match string: can be set to `-w` to enable exact word matches
----@field additional_args function: function(opts) which returns a table of additional arguments to be passed on
+---@field additional_args function|table: additional arguments to be passed on. Can be fn(opts) -> tbl
 ---@field disable_coordinates boolean: don't show the line and row numbers (default: false)
 ---@field only_sort_text boolean: only sort the text, not the file, line or row (default: false)
 builtin.grep_string = require_on_exported_call("telescope.builtin.__files").grep_string
