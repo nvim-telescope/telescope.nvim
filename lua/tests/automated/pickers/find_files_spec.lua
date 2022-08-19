@@ -26,7 +26,7 @@ describe("builtin.find_files", function()
         runner.picker('find_files', 'README.md', {
           post_typed = {
             { "> README.md", GetPrompt },
-            { "  README.md", GetBestResult },
+            { "> README.md", GetBestResult },
           },
           post_close = {
             { 'README.md', GetFile },
@@ -112,7 +112,7 @@ describe("builtin.find_files", function()
           {
             {
               "  lua/tests/fixtures/file_a.txt",
-              "  lua/tests/fixtures/file_abc.txt",
+              "> lua/tests/fixtures/file_abc.txt",
             }, GetResults
           },
         },
