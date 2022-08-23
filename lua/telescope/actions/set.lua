@@ -68,6 +68,7 @@ local edit_buffer
 do
   local map = {
     drop = "drop",
+    ["tab drop"] = "tab drop",
     edit = "buffer",
     new = "sbuffer",
     vnew = "vert sbuffer",
@@ -79,7 +80,7 @@ do
     if command == nil then
       error "There was no associated buffer command"
     end
-    if command ~= "drop" then
+    if command ~= "drop" and command ~= "tab drop" then
       vim.cmd(string.format("%s %d", command, bufnr))
     else
       vim.cmd(string.format("%s %s", command, vim.api.nvim_buf_get_name(bufnr)))
