@@ -858,9 +858,7 @@ function config.set_defaults(user_defaults, tele_defaults)
     assert(description, "Config values must always have a description")
 
     config.values[name] = get(name, default_val)
-    if description then
-      config.descriptions[name] = strings.dedent(description)
-    end
+    config.descriptions[name] = strings.dedent(description)
   end
 
   for key, info in pairs(tele_defaults) do
