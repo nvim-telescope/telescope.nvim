@@ -531,7 +531,6 @@ function Picker:find()
     buffer = prompt_bufnr,
     group = "PickerInsert",
     nested = true,
-    once = true,
     callback = function()
       require("telescope.pickers").on_resize_window(prompt_bufnr)
     end,
