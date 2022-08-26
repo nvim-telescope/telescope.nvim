@@ -430,6 +430,7 @@ sorters.fuzzy_with_index_bias = function(opts)
         return math.min(math.pow(entry.index, 0.25), 2) * base_score
       end
     end,
+    highlighter = fuzzy_sorter.highlighter,
   }
 end
 
