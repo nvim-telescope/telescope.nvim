@@ -409,8 +409,12 @@ files.current_buffer_fuzzy_find = function(opts)
         return obj
       end,
     })
+
+    -- update to changes on Neovim master, see https://github.com/neovim/neovim/pull/19931
+    -- TODO(clason): remove when dropping support for Neovim 0.7
+    local on_nvim_master = vim.fn.has "nvim-0.8" == 1
     for id, node in query:iter_captures(root, opts.bufnr, 0, -1) do
-      local hl = highlighter_query:_get_hl_from_capture(id)
+      local hl = on_nvim_master and query.captures[id] or highlighter_query:_get_hl_from_capture(id)
       if hl and type(hl) ~= "number" then
         local row1, col1, row2, col2 = node:range()
 
