@@ -180,12 +180,12 @@ files.find_files = function(opts)
         return opts.find_command(opts)
       end
       return opts.find_command
-    elseif 1 == vim.fn.executable "fd" then
-      return { "fd", "--type", "f" }
-    elseif 1 == vim.fn.executable "fdfind" then
-      return { "fdfind", "--type", "f" }
     elseif 1 == vim.fn.executable "rg" then
-      return { "rg", "--files" }
+      return { "rg", "--files", "--color", "never" }
+    elseif 1 == vim.fn.executable "fd" then
+      return { "fd", "--type", "f", "--color", "never" }
+    elseif 1 == vim.fn.executable "fdfind" then
+      return { "fdfind", "--type", "f", "--color", "never" }
     elseif 1 == vim.fn.executable "find" and vim.fn.has "win32" == 0 then
       return { "find", ".", "-type", "f" }
     elseif 1 == vim.fn.executable "where" then
@@ -409,8 +409,12 @@ files.current_buffer_fuzzy_find = function(opts)
         return obj
       end,
     })
+
+    -- update to changes on Neovim master, see https://github.com/neovim/neovim/pull/19931
+    -- TODO(clason): remove when dropping support for Neovim 0.7
+    local on_nvim_master = vim.fn.has "nvim-0.8" == 1
     for id, node in query:iter_captures(root, opts.bufnr, 0, -1) do
-      local hl = highlighter_query:_get_hl_from_capture(id)
+      local hl = on_nvim_master and query.captures[id] or highlighter_query:_get_hl_from_capture(id)
       if hl and type(hl) ~= "number" then
         local row1, col1, row2, col2 = node:range()
 
