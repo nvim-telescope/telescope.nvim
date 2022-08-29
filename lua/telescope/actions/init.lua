@@ -329,7 +329,7 @@ actions.select_tab_drop = {
     )
   end,
   action = function(prompt_bufnr)
-    return action_set.select(prompt_bufnr, "tab drop")
+    return action_set.select(prompt_bufnr, "tab_drop")
   end,
 }
 
