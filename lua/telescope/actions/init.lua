@@ -299,6 +299,23 @@ actions.select_tab = {
   end,
 }
 
+--- Perform 'drop' action on selection, usually something like<br>
+---`:drop <selection>`
+---
+--- i.e. open the selection in a new tab
+---@param prompt_bufnr number: The prompt bufnr
+actions.select_drop = {
+  pre = function(prompt_bufnr)
+    action_state.get_current_history():append(
+      action_state.get_current_line(),
+      action_state.get_current_picker(prompt_bufnr)
+    )
+  end,
+  action = function(prompt_bufnr)
+    return action_set.select(prompt_bufnr, "drop")
+  end,
+}
+
 --- Perform 'tab drop' action on selection, usually something like<br>
 ---`:tab drop <selection>`
 ---
