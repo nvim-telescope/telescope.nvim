@@ -299,6 +299,30 @@ actions.select_tab = {
   end,
 }
 
+--- Open the current previewer in a scratch buffer in the current window
+---@param prompt_bufnr number: The prompt bufnr
+actions.select_preview_default = function(prompt_bufnr, opts)
+  return action_set.select_preview(prompt_bufnr, "default", opts)
+end
+
+--- Open the current previewer in a scratch buffer in a horizontal split
+---@param prompt_bufnr number: The prompt bufnr
+actions.select_preview_horizontal = function(prompt_bufnr, opts)
+  return action_set.select_preview(prompt_bufnr, "horizontal", opts)
+end
+
+--- Open the current previewer in a scratch buffer in a vertical split
+---@param prompt_bufnr number: The prompt bufnr
+actions.select_preview_vertical = function(prompt_bufnr, opts)
+  return action_set.select_preview(prompt_bufnr, "vertical", opts)
+end
+
+--- Open the current previewer in a scratch buffer in a new tab
+---@param prompt_bufnr number: The prompt bufnr
+actions.select_preview_tab = function(prompt_bufnr, opts)
+  return action_set.select_preview(prompt_bufnr, "tab", opts)
+end
+
 -- TODO: consider adding float!
 -- https://github.com/nvim-telescope/telescope.nvim/issues/365
 
