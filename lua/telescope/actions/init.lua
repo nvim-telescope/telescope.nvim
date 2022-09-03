@@ -1128,7 +1128,7 @@ actions.which_key = function(prompt_bufnr, opts)
           name = name == "" and action or name .. " + " .. action
         end
       end
-      if name and name ~= "which_key" then
+      if name and name ~= "which_key" and name ~= "nop" then
         if not opts.only_show_current_mode or mode == v.mode then
           table.insert(mappings, { mode = v.mode, keybind = v.keybind, name = name })
         end
@@ -1288,6 +1288,8 @@ actions.to_fuzzy_refine = function(prompt_bufnr)
     sorter = conf.generic_sorter {},
   })
 end
+
+actions.nop = function(_) end
 
 -- ==================================================
 -- Transforms modules and sets the correct metatables.
