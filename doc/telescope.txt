@@ -2470,6 +2470,28 @@ actions.select_tab({prompt_bufnr})            *telescope.actions.select_tab()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.select_drop({prompt_bufnr})          *telescope.actions.select_drop()*
+    Perform 'drop' action on selection, usually something like
+    `:drop <selection>`
+
+    i.e. open the selection in a window
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.select_tab_drop({prompt_bufnr})  *telescope.actions.select_tab_drop()*
+    Perform 'tab drop' action on selection, usually something like
+    `:tab drop <selection>`
+
+    i.e. open the selection in a new tab
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 actions.file_edit({prompt_bufnr})              *telescope.actions.file_edit()*
     Perform file edit on selection, usually something like
     `:edit <selection>`

@@ -302,7 +302,7 @@ actions.select_tab = {
 --- Perform 'drop' action on selection, usually something like<br>
 ---`:drop <selection>`
 ---
---- i.e. open the selection in a new tab
+--- i.e. open the selection in a window
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_drop = {
   pre = function(prompt_bufnr)
