@@ -126,9 +126,6 @@ local treesitter_attach = function(bufnr, ft)
   end
 
   local config = ts_configs.get_module "highlight"
-  for k, v in pairs(config.custom_captures) do
-    vim.treesitter.highlighter.hl_map[k] = v
-  end
   vim.treesitter.highlighter.new(ts_parsers.get_parser(bufnr, lang))
   local is_table = type(config.additional_vim_regex_highlighting) == "table"
   if
