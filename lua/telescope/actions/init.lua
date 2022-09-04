@@ -306,10 +306,9 @@ actions.select_tab = {
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_drop = {
   pre = function(prompt_bufnr)
-    action_state.get_current_history():append(
-      action_state.get_current_line(),
-      action_state.get_current_picker(prompt_bufnr)
-    )
+    action_state
+      .get_current_history()
+      :append(action_state.get_current_line(), action_state.get_current_picker(prompt_bufnr))
   end,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "drop")
@@ -323,10 +322,9 @@ actions.select_drop = {
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_tab_drop = {
   pre = function(prompt_bufnr)
-    action_state.get_current_history():append(
-      action_state.get_current_line(),
-      action_state.get_current_picker(prompt_bufnr)
-    )
+    action_state
+      .get_current_history()
+      :append(action_state.get_current_line(), action_state.get_current_picker(prompt_bufnr))
   end,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "tab drop")
