@@ -51,7 +51,7 @@ latest neovim nightly commit is required for `telescope.nvim` to work.
 ### Suggested dependencies
 
 - [BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) is required for
-  `live_grep` and `grep_string`
+  `live_grep` and `grep_string` and is the first priority for `find_files`.
 
 We also suggest you install one native telescope sorter to significantly improve
 sorting performance. Take a look at either
