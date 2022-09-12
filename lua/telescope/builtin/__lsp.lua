@@ -25,7 +25,7 @@ lsp.references = function(opts)
     local locations = {}
     if result then
       local results = vim.lsp.util.locations_to_items(result, vim.lsp.get_client_by_id(ctx.client_id).offset_encoding)
-      if include_current_line then
+      if not include_current_line then
         locations = vim.tbl_filter(function(v)
           -- Remove current line from result
           return not (v.filename == filepath and v.lnum == lnum)
