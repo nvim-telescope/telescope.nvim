@@ -116,6 +116,8 @@ to get an understanding of how to use Telescope and how to configure it.
 Try the command `:Telescope find_files<cr>`
   to see if `telescope.nvim` is installed correctly.
 
+Using VimL:
+
 ```viml
 " Find files using Telescope command-line sugar.
 nnoremap <leader>ff <cmd>Telescope find_files<cr>
@@ -128,6 +130,16 @@ nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<cr>
 nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<cr>
 nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
 nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
+```
+
+Using Lua:
+
+```lua
+local builtin = require('telescope.builtin')
+vim.keymap.set('n', 'ff', builtin.find_files, {})
+vim.keymap.set('n', 'fg', builtin.live_grep, {})
+vim.keymap.set('n', 'fb', builtin.buffers, {})
+vim.keymap.set('n', 'fh', builtin.help_tags, {})
 ```
 
 See [builtin pickers](#pickers) for a list of all builtin functions.
