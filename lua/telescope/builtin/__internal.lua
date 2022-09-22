@@ -1089,9 +1089,7 @@ internal.registers = function(opts)
         results = registers_table,
         entry_maker = opts.entry_maker or make_entry.gen_from_registers(opts),
       },
-			-- levenshtein doesn't seem to work with ordinal = register content
-			-- so changed to get_generic_fuzzy_sorter
-      sorter = sorters.get_generic_fuzzy_sorter(),
+      sorter = conf.generic_sorter(opts),
       attach_mappings = function(_, map)
         actions.select_default:replace(actions.paste_register)
         map("i", "<C-e>", actions.edit_register)
