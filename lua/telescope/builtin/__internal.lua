@@ -7,7 +7,6 @@ local Path = require "plenary.path"
 local pickers = require "telescope.pickers"
 local previewers = require "telescope.previewers"
 local p_window = require "telescope.pickers.window"
-local sorters = require "telescope.sorters"
 local state = require "telescope.state"
 local utils = require "telescope.utils"
 
