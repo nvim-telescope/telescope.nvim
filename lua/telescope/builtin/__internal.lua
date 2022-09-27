@@ -7,7 +7,6 @@ local Path = require "plenary.path"
 local pickers = require "telescope.pickers"
 local previewers = require "telescope.previewers"
 local p_window = require "telescope.pickers.window"
-local sorters = require "telescope.sorters"
 local state = require "telescope.state"
 local utils = require "telescope.utils"
 
@@ -1089,8 +1088,7 @@ internal.registers = function(opts)
         results = registers_table,
         entry_maker = opts.entry_maker or make_entry.gen_from_registers(opts),
       },
-      -- use levenshtein as n-gram doesn't support <2 char matches
-      sorter = sorters.get_levenshtein_sorter(),
+      sorter = conf.generic_sorter(opts),
       attach_mappings = function(_, map)
         actions.select_default:replace(actions.paste_register)
         map("i", "<C-e>", actions.edit_register)
