@@ -392,7 +392,11 @@ local set_opts_cwd = function(opts)
     local in_bare = utils.get_os_command_output({ "git", "rev-parse", "--is-bare-repository" }, opts.cwd)
 
     if in_worktree[1] ~= "true" and in_bare[1] ~= "true" then
-      error(opts.cwd .. " is not a git directory")
+      utils.notify("builtin.git", {
+        msg = opts.cwd .. " is not a git directory",
+        level = "ERROR",
+      })
+      return false
     elseif in_worktree[1] ~= "true" and in_bare[1] == "true" then
       opts.is_bare = true
     end
@@ -401,6 +405,8 @@ local set_opts_cwd = function(opts)
       opts.cwd = git_root[1]
     end
   end
+
+  return true
 end
 
 local function apply_checks(mod)
@@ -408,8 +414,10 @@ local function apply_checks(mod)
     mod[k] = function(opts)
       opts = vim.F.if_nil(opts, {})
 
-      set_opts_cwd(opts)
-      v(opts)
+      local ok = set_opts_cwd(opts)
+      if ok then
+        v(opts)
+      end
     end
   end
 
