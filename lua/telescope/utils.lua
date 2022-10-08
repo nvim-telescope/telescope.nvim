@@ -452,7 +452,7 @@ utils.transform_devicons = load_once(function()
       if conf.color_devicons then
         return icon_display, icon_highlight
       else
-        return icon_display, "TelescopeResultsFileIcon"
+        return icon_display, nil
       end
     end
   else
@@ -480,7 +480,7 @@ utils.get_devicons = load_once(function()
       if conf.color_devicons then
         return icon, icon_highlight
       else
-        return icon, "TelescopeResultsFileIcon"
+        return icon, nil
       end
     end
   else
