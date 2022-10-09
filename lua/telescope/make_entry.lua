@@ -1132,7 +1132,7 @@ function make_entry.gen_from_diagnostics(opts)
     local pos = string.format("%4d:%2d", entry.lnum, entry.col)
     local line_info = {
       (signs and signs[entry.type] .. " " or "") .. pos,
-      "Diagnostic" .. entry.type,
+      "DiagnosticSign" .. entry.type,
     }
 
     return displayer {
