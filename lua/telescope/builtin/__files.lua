@@ -217,32 +217,30 @@ files.find_files = function(opts)
 
   if command == "fd" or command == "fdfind" or command == "rg" then
     if hidden then
-      table.insert(find_command, "--hidden")
+      find_command[#find_command + 1] = "--hidden"
     end
     if no_ignore then
-      table.insert(find_command, "--no-ignore")
+      find_command[#find_command + 1] = "--no-ignore"
     end
     if no_ignore_parent then
-      table.insert(find_command, "--no-ignore-parent")
+      find_command[#find_command + 1] = "--no-ignore-parent"
     end
     if follow then
-      table.insert(find_command, "-L")
+      find_command[#find_command + 1] = "-L"
     end
     if search_file then
       if command == "rg" then
-        table.insert(find_command, "-g")
-        table.insert(find_command, "*" .. search_file .. "*")
+        find_command[#find_command + 1] = "-g"
+        find_command[#find_command + 1] = "*" .. search_file .. "*"
       else
-        table.insert(find_command, search_file)
+        find_command[#find_command + 1] = search_file
       end
     end
     if search_dirs then
       if command ~= "rg" and not search_file then
-        table.insert(find_command, ".")
+        find_command[#find_command + 1] = "."
       end
-      for _, v in pairs(search_dirs) do
-        table.insert(find_command, v)
-      end
+      vim.list_extend(find_command, search_dirs)
     end
   elseif command == "find" then
     if not hidden then
