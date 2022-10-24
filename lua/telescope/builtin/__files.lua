@@ -76,8 +76,12 @@ files.live_grep = function(opts)
   end
 
   local additional_args = {}
-  if opts.additional_args ~= nil and type(opts.additional_args) == "function" then
-    additional_args = opts.additional_args(opts)
+  if opts.additional_args ~= nil then
+    if type(opts.additional_args) == "function" then
+      additional_args = opts.additional_args(opts)
+    elseif type(opts.additional_args) == "table" then
+      additional_args = opts.additional_args
+    end
   end
 
   if opts.type_filter then
@@ -134,8 +138,12 @@ files.grep_string = function(opts)
   local search = opts.use_regex and word or escape_chars(word)
 
   local additional_args = {}
-  if opts.additional_args ~= nil and type(opts.additional_args) == "function" then
-    additional_args = opts.additional_args(opts)
+  if opts.additional_args ~= nil then
+    if type(opts.additional_args) == "function" then
+      additional_args = opts.additional_args(opts)
+    elseif type(opts.additional_args) == "table" then
+      additional_args = opts.additional_args
+    end
   end
 
   if search == "" then
