@@ -59,6 +59,31 @@ local get_open_filelist = function(grep_open_files, cwd)
   return filelist
 end
 
+local opts_contain_invert = function(args)
+  local invert = false
+  local files_with_matches = false
+
+  for _, v in ipairs(args) do
+    if v == "--invert-match" then
+      invert = true
+    elseif v == "--files-with-matches" or v == "--files-without-match" then
+      files_with_matches = true
+    end
+
+    if #v >= 2 and v:sub(1, 1) == "-" and v:sub(2, 2) ~= "-" then
+      for i = 2, #v do
+        local vi = v:sub(i, i)
+        if vi == "v" then
+          invert = true
+        elseif vi == "l" then
+          files_with_matches = true
+        end
+      end
+    end
+  end
+  return invert, files_with_matches
+end
+
 -- Special keys:
 --  opts.search_dirs -- list of directory to search in
 --  opts.grep_open_files -- boolean to restrict search to open files
@@ -96,9 +121,10 @@ files.live_grep = function(opts)
     end
   end
 
-  local live_grepper = finders.new_job(function(prompt)
-    -- TODO: Probably could add some options for smart case and whatever else rg offers.
+  local args = flatten { vimgrep_arguments, additional_args }
+  opts.__inverted, opts.__matches = opts_contain_invert(args)
 
+  local live_grepper = finders.new_job(function(prompt)
     if not prompt or prompt == "" then
       return nil
     end
@@ -111,7 +137,7 @@ files.live_grep = function(opts)
       search_list = search_dirs
     end
 
-    return flatten { vimgrep_arguments, additional_args, "--", prompt, search_list }
+    return flatten { args, "--", prompt, search_list }
   end, opts.entry_maker or make_entry.gen_from_vimgrep(opts), opts.max_results, opts.cwd)
 
   pickers
@@ -148,7 +174,6 @@ files.grep_string = function(opts)
 
   if search == "" then
     search = { "-v", "--", "^[[:space:]]*$" }
-    opts.__inverted = true
   else
     search = { "--", search }
   end
@@ -159,6 +184,7 @@ files.grep_string = function(opts)
     opts.word_match,
     search,
   }
+  opts.__inverted, opts.__matches = opts_contain_invert(args)
 
   if opts.grep_open_files then
     for _, file in ipairs(get_open_filelist(opts.grep_open_files, opts.cwd)) do

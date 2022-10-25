@@ -244,12 +244,23 @@ do
     return { filename, lnum, nil, text }
   end
 
+  local parse_only_filename = function(t)
+    t.filename = t.value
+    t.lnum = nil
+    t.col = nil
+    t.text = ""
+
+    return { t.filename, nil, nil, "" }
+  end
+
   function make_entry.gen_from_vimgrep(opts)
     opts = opts or {}
 
     local mt_vimgrep_entry
     local parse = parse_with_col
-    if opts.__inverted == true then
+    if opts.__matches == true then
+      parse = parse_only_filename
+    elseif opts.__inverted == true then
       parse = parse_without_col
     end
 
@@ -290,7 +301,7 @@ do
       end
     end
 
-    local display_string = "%s:%s%s"
+    local display_string = "%s%s%s"
 
     mt_vimgrep_entry = {
       cwd = vim.fn.expand(opts.cwd or vim.loop.cwd()),
@@ -300,10 +311,12 @@ do
 
         local coordinates = ""
         if not disable_coordinates then
-          if entry.col then
-            coordinates = string.format("%s:%s:", entry.lnum, entry.col)
-          else
-            coordinates = string.format("%s:", entry.lnum)
+          if entry.lnum then
+            if entry.col then
+              coordinates = string.format(":%s:%s:", entry.lnum, entry.col)
+            else
+              coordinates = string.format(":%s:", entry.lnum)
+            end
           end
         end
 
