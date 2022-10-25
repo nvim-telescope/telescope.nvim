@@ -66,7 +66,7 @@ local opts_contain_invert = function(args)
   for _, v in ipairs(args) do
     if v == "--invert-match" then
       invert = true
-    elseif v == "--files-with-matches" then
+    elseif v == "--files-with-matches" or v == "--files-without-match" then
       files_with_matches = true
     end
 
