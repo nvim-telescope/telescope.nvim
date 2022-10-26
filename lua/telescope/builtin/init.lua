@@ -474,9 +474,10 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 builtin.diagnostics = require_on_exported_call("telescope.builtin.__diagnostics").get
 
 local apply_config = function(mod)
-  local pickers_conf = require("telescope.config").pickers
   for k, v in pairs(mod) do
     mod[k] = function(opts)
+      local pickers_conf = require("telescope.config").pickers
+
       opts = opts or {}
       opts.bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
       opts.winnr = opts.winnr or vim.api.nvim_get_current_win()
