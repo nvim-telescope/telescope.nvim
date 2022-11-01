@@ -372,6 +372,7 @@ builtin.jumplist = require_on_exported_call("telescope.builtin.__internal").jump
 ---@param opts table: options to pass to the picker
 ---@field include_declaration boolean: include symbol declaration in the lsp references (default: true)
 ---@field include_current_line boolean: include current line (default: false)
+---@field jump_type string: how to goto reference if there is only one, values: "tab", "split", "vsplit", "never"
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
