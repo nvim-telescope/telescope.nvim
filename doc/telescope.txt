@@ -1749,7 +1749,7 @@ You can also add additional options for mappings of any type ("action" and
   }
 <
 
-There are three main places you can configure |telescope.mappings|. These are
+There are four main places you can configure |telescope.mappings|. These are
 ordered from the lowest priority to the highest priority.
 
 1. |telescope.defaults.mappings|
@@ -1768,7 +1768,19 @@ ordered from the lowest priority to the highest priority.
     },
   }
 <
-3. `attach_mappings` function for a particular picker.
+3. The `mappings` key for a particular picker.
+>
+  require("telescope.builtin").fd {
+    mappings = {
+      i = {
+        asdf = function()
+          print "You typed asdf"
+        end,
+      },
+    },
+  }
+<
+4. `attach_mappings` function for a particular picker.
 >
   require("telescope.builtin").find_files {
     attach_mappings = function(_, map)
