@@ -71,12 +71,9 @@ git.commits = function(opts)
       sorter = conf.file_sorter(opts),
       attach_mappings = function(_, map)
         actions.select_default:replace(actions.git_checkout)
-        map("i", "<c-r>m", actions.git_reset_mixed)
-        map("n", "<c-r>m", actions.git_reset_mixed)
-        map("i", "<c-r>s", actions.git_reset_soft)
-        map("n", "<c-r>s", actions.git_reset_soft)
-        map("i", "<c-r>h", actions.git_reset_hard)
-        map("n", "<c-r>h", actions.git_reset_hard)
+        map({ "i", "n" }, "<c-r>m", actions.git_reset_mixed)
+        map({ "i", "n" }, "<c-r>s", actions.git_reset_soft)
+        map({ "i", "n" }, "<c-r>h", actions.git_reset_hard)
         return true
       end,
     })
@@ -293,23 +290,12 @@ git.branches = function(opts)
       sorter = conf.file_sorter(opts),
       attach_mappings = function(_, map)
         actions.select_default:replace(actions.git_checkout)
-        map("i", "<c-t>", actions.git_track_branch)
-        map("n", "<c-t>", actions.git_track_branch)
-
-        map("i", "<c-r>", actions.git_rebase_branch)
-        map("n", "<c-r>", actions.git_rebase_branch)
-
-        map("i", "<c-a>", actions.git_create_branch)
-        map("n", "<c-a>", actions.git_create_branch)
-
-        map("i", "<c-s>", actions.git_switch_branch)
-        map("n", "<c-s>", actions.git_switch_branch)
-
-        map("i", "<c-d>", actions.git_delete_branch)
-        map("n", "<c-d>", actions.git_delete_branch)
-
-        map("i", "<c-y>", actions.git_merge_branch)
-        map("n", "<c-y>", actions.git_merge_branch)
+        map({ "i", "n" }, "<c-t>", actions.git_track_branch)
+        map({ "i", "n" }, "<c-r>", actions.git_rebase_branch)
+        map({ "i", "n" }, "<c-a>", actions.git_create_branch)
+        map({ "i", "n" }, "<c-s>", actions.git_switch_branch)
+        map({ "i", "n" }, "<c-d>", actions.git_delete_branch)
+        map({ "i", "n" }, "<c-y>", actions.git_merge_branch)
         return true
       end,
     })
@@ -368,8 +354,7 @@ git.status = function(opts)
           end,
         }
 
-        map("i", "<tab>", actions.git_staging_toggle)
-        map("n", "<tab>", actions.git_staging_toggle)
+        map({ "i", "n" }, "<tab>", actions.git_staging_toggle)
         return true
       end,
     })

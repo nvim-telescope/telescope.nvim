@@ -198,8 +198,7 @@ internal.pickers = function(opts)
           opts["initial_mode"] = cached_pickers[selection_index].initial_mode
           internal.resume(opts)
         end)
-        map("i", "<C-x>", actions.remove_selected_picker)
-        map("n", "<C-x>", actions.remove_selected_picker)
+        map({ "i", "n" }, "<C-x>", actions.remove_selected_picker)
         return true
       end,
     })
@@ -556,10 +555,8 @@ internal.command_history = function(opts)
       sorter = conf.generic_sorter(opts),
 
       attach_mappings = function(_, map)
-        map("i", "<CR>", actions.set_command_line)
-        map("n", "<CR>", actions.set_command_line)
-        map("n", "<C-e>", actions.edit_command_line)
-        map("i", "<C-e>", actions.edit_command_line)
+        map({ "i", "n" }, "<CR>", actions.set_command_line)
+        map({ "i", "n" }, "<C-e>", actions.edit_command_line)
 
         -- TODO: Find a way to insert the text... it seems hard.
         -- map('i', '<C-i>', actions.insert_value, { expr = true })
@@ -588,10 +585,8 @@ internal.search_history = function(opts)
       sorter = conf.generic_sorter(opts),
 
       attach_mappings = function(_, map)
-        map("i", "<CR>", actions.set_search_line)
-        map("n", "<CR>", actions.set_search_line)
-        map("n", "<C-e>", actions.edit_search_line)
-        map("i", "<C-e>", actions.edit_search_line)
+        map({ "i", "n" }, "<CR>", actions.set_search_line)
+        map({ "i", "n" }, "<C-e>", actions.edit_search_line)
 
         -- TODO: Find a way to insert the text... it seems hard.
         -- map('i', '<C-i>', actions.insert_value, { expr = true })
@@ -1091,7 +1086,7 @@ internal.registers = function(opts)
       sorter = conf.generic_sorter(opts),
       attach_mappings = function(_, map)
         actions.select_default:replace(actions.paste_register)
-        map("i", "<C-e>", actions.edit_register)
+        map({ "i", "n" }, "<C-e>", actions.edit_register)
 
         return true
       end,
