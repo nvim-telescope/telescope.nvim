@@ -1420,6 +1420,9 @@ builtin.lsp_references({opts})            *telescope.builtin.lsp_references()*
                                           lsp references (default: true)
         {include_current_line} (boolean)  include current line (default:
                                           false)
+        {jump_type}            (string)   how to goto reference if there is
+                                          only one, values: "tab", "split",
+                                          "vsplit", "never"
         {fname_width}          (number)   defines the width of the filename
                                           section (default: 30)
         {show_line}            (boolean)  show results text (default: true)
