@@ -112,6 +112,11 @@
 ---       map("i", "asdf", function(_prompt_bufnr)
 ---         print "You typed asdf"
 ---       end)
+---
+---       map({"i", "n"}, "<C-r>", function(_prompt_bufnr)
+---         print "You typed <C-r>"
+---       end)
+---
 ---       -- needs to return true if you want to map default_mappings and
 ---       -- false if not
 ---       return true
@@ -284,12 +289,18 @@ end
 mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
   local applied_mappings = { n = {}, i = {} }
 
-  local map = function(mode, key_bind, key_func, opts)
-    mode = string.lower(mode)
-    local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
-    applied_mappings[mode][key_bind_internal] = true
+  local map = function(modes, key_bind, key_func, opts)
+    if type(modes) == "string" then
+      modes = { modes }
+    end
 
-    telescope_map(prompt_bufnr, mode, key_bind, key_func, opts)
+    for _, mode in pairs(modes) do
+      mode = string.lower(mode)
+      local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
+      applied_mappings[mode][key_bind_internal] = true
+
+      telescope_map(prompt_bufnr, mode, key_bind, key_func, opts)
+    end
   end
 
   if attach_mappings then
