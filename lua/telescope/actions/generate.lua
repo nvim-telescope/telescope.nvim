@@ -75,11 +75,11 @@ action_generate.refine = function(prompt_bufnr, opts)
   end
 
   -- title
-  if opts.prompt_title then
+  if opts.prompt_title and current_picker.prompt_border then
     current_picker.prompt_border:change_title(opts.prompt_title)
   end
 
-  if opts.results_title then
+  if opts.results_title and current_picker.results_border then
     current_picker.results_border:change_title(opts.results_title)
   end
 
