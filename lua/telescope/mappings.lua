@@ -112,6 +112,11 @@
 ---       map("i", "asdf", function(_prompt_bufnr)
 ---         print "You typed asdf"
 ---       end)
+---
+---       map({"i", "n"}, "<C-r>", function(_prompt_bufnr)
+---         print "You typed <C-r>"
+---       end)
+---
 ---       -- needs to return true if you want to map default_mappings and
 ---       -- false if not
 ---       return true
