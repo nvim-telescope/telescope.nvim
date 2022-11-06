@@ -285,7 +285,9 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
   local applied_mappings = { n = {}, i = {} }
 
   local map = function(modes, key_bind, key_func, opts)
-    if type(modes) == "string" then modes = { modes } end
+    if type(modes) == "string" then
+      modes = { modes }
+    end
 
     for _, mode in pairs(modes) do
       mode = string.lower(mode)
