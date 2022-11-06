@@ -672,6 +672,18 @@ append(
 )
 
 append(
+  "error_mode",
+  "lua",
+  [[
+  How frontend errors are handled. Possible options:
+  - "lua": can be useful for scripting, using pcall
+  - "notify": uses vim.notify to print errors
+  - "silent": dont show errors
+
+  Default: lua]]
+)
+
+append(
   "file_sorter",
   sorters.get_fzy_sorter,
   [[
