@@ -48,8 +48,13 @@ lsp.references = function(opts)
         vim.cmd "vnew"
       end
       -- jump to location
-      vim.api.nvim_win_set_buf(0, opts.bufnr)
-      vim.api.nvim_win_set_cursor(0, { locations[1].lnum, locations[1].col - 1 })
+      local location = locations[1]
+      local bufnr = opts.bufnr
+      if location.filename then
+        bufnr = vim.uri_to_bufnr(vim.uri_from_fname(location.filename))
+      end
+      vim.api.nvim_win_set_buf(0, bufnr)
+      vim.api.nvim_win_set_cursor(0, { location.lnum, location.col - 1 })
       return
     end
 
