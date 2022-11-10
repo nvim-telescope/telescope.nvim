@@ -727,6 +727,15 @@ append(
 )
 
 append(
+  "file_entry_encoding",
+  nil,
+  [[
+  The encoding of file entry.
+
+  Default: nil]]
+)
+
+append(
   "file_ignore_patterns",
   nil,
   [[
