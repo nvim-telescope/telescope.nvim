@@ -193,6 +193,9 @@ do
     end
 
     return function(line)
+      if opts.file_entry_encoding then
+        line = vim.iconv(line, opts.file_entry_encoding, 'utf8')
+      end
       return setmetatable({ line }, mt_file_entry)
     end
   end
