@@ -325,6 +325,7 @@ files.find_files = function(opts)
     opts.cwd = vim.fn.expand(opts.cwd)
   end
 
+  opts.file_entry_encoding = opts.file_entry_encoding or conf.file_entry_encoding
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
 
   pickers
