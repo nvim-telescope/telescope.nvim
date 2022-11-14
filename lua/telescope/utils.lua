@@ -446,7 +446,8 @@ utils.transform_devicons = load_once(function()
         return display
       end
 
-      local icon, icon_highlight = devicons.get_icon(utils.path_tail(filename), nil, { default = true })
+      local basename = utils.path_tail(filename)
+      local icon, icon_highlight = devicons.get_icon(basename, vim.fn.fnamemodify(basename, ":e:e"), { default = true })
       local icon_display = (icon or " ") .. " " .. (display or "")
 
       if conf.color_devicons then
@@ -476,7 +477,8 @@ utils.get_devicons = load_once(function()
         return ""
       end
 
-      local icon, icon_highlight = devicons.get_icon(utils.path_tail(filename), nil, { default = true })
+      local basename = utils.path_tail(filename)
+      local icon, icon_highlight = devicons.get_icon(basename, vim.fn.fnamemodify(basename, ":e:e"), { default = true })
       if conf.color_devicons then
         return icon, icon_highlight
       else
