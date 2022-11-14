@@ -447,6 +447,7 @@ utils.transform_devicons = load_once(function()
       end
 
       local basename = utils.path_tail(filename)
+      -- the double :e:e gets multipart extensions, if one exists, like *.test.js, for example
       local icon, icon_highlight = devicons.get_icon(basename, vim.fn.fnamemodify(basename, ":e:e"), { default = true })
       local icon_display = (icon or " ") .. " " .. (display or "")
 
@@ -478,6 +479,7 @@ utils.get_devicons = load_once(function()
       end
 
       local basename = utils.path_tail(filename)
+      -- the double :e:e gets multipart extensions, if one exists, like *.test.js, for example
       local icon, icon_highlight = devicons.get_icon(basename, vim.fn.fnamemodify(basename, ":e:e"), { default = true })
       if conf.color_devicons then
         return icon, icon_highlight
