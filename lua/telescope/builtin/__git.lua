@@ -201,7 +201,7 @@ git.branches = function(opts)
     .. "%(upstream:lstrip=2)"
     .. "%(committerdate:format-local:%Y/%m/%d %H:%M:%S)"
   local output =
-    utils.get_os_command_output({ "git", "for-each-ref", "--perl", "--format", format, opts.pattern }, opts.cwd)
+    utils.get_os_command_output({ "git", "for-each-ref", "--perl", "--format", format, "--sort", "-authordate", opts.pattern }, opts.cwd)
 
   local results = {}
   local widths = {
