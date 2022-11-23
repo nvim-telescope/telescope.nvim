@@ -542,10 +542,20 @@ internal.command_history = function(opts)
   local history_list = vim.split(history_string, "\n")
 
   local results = {}
+  local filter_fn = opts.filter_fn
+
   for i = #history_list, 3, -1 do
     local item = history_list[i]
     local _, finish = string.find(item, "%d+ +")
-    table.insert(results, string.sub(item, finish + 1))
+    local cmd = string.sub(item, finish + 1)
+
+    if filter_fn then
+      if filter_fn(cmd) then
+        table.insert(results, cmd)
+      end
+    else
+      table.insert(results, cmd)
+    end
   end
 
   pickers

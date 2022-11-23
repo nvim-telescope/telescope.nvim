@@ -271,6 +271,7 @@ builtin.oldfiles = require_on_exported_call("telescope.builtin.__internal").oldf
 --- - Default keymaps:
 ---   - `<C-e>`: open the command line with the text of the currently selected result populated in it
 ---@param opts table: options to pass to the picker
+---@field filter_fn function: filter fn(cmd:string). true if the history command should be presented.
 builtin.command_history = require_on_exported_call("telescope.builtin.__internal").command_history
 
 --- Lists searches that were executed recently, and reruns them on `<cr>`

@@ -1213,6 +1213,10 @@ builtin.command_history({opts})          *telescope.builtin.command_history()*
     Parameters: ~
         {opts} (table)  options to pass to the picker
 
+    Options: ~
+        {filter_fn} (function)  filter fn(cmd:string). true if the history
+                                command should be presented.
+
 
 builtin.search_history({opts})            *telescope.builtin.search_history()*
     Lists searches that were executed recently, and reruns them on `<cr>`
