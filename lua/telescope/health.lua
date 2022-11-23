@@ -5,6 +5,16 @@ local is_win = vim.api.nvim_call_function("has", { "win32" }) == 1
 
 local optional_dependencies = {
   {
+    finder_name = "nvim-treesitter",
+    package = {
+      {
+        name = "nvim-treesitter",
+        url = "[nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter)",
+        optional = true,
+      },
+    },
+  },
+  {
     finder_name = "live-grep",
     package = {
       {
@@ -28,12 +38,7 @@ local optional_dependencies = {
 }
 
 local required_plugins = {
-  { lib = "plenary", optional = false },
-  {
-    lib = "nvim-treesitter",
-    optional = true,
-    info = "",
-  },
+  { lib = "plenary", optional = false }
 }
 
 local check_binary_installed = function(package)
