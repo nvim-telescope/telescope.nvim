@@ -47,6 +47,7 @@ latest neovim nightly commit is required for `telescope.nvim` to work.
 ### Required dependencies
 
 - [nvim-lua/plenary.nvim](https://github.com/nvim-lua/plenary.nvim) is required.
+- [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) is required.
 
 ### Suggested dependencies
 
@@ -65,7 +66,6 @@ wiki.
 ### Optional dependencies
 
 - [sharkdp/fd](https://github.com/sharkdp/fd) (finder)
-- [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) (finder/preview)
 - [neovim LSP]( https://neovim.io/doc/user/lsp.html) (picker)
 - [devicons](https://github.com/kyazdani42/nvim-web-devicons) (icons)
 
@@ -99,7 +99,7 @@ Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 use {
   'nvim-telescope/telescope.nvim', tag = '0.1.0',
 -- or                            , branch = '0.1.x',
-  requires = { {'nvim-lua/plenary.nvim'} }
+  requires = { {'nvim-lua/plenary.nvim'} , {'nvim-treesitter/nvim-treesitter'} }
 }
 ```
 
