@@ -1119,7 +1119,10 @@ internal.keymaps = function(opts)
       local keymap_key = keymap.buffer .. keymap.mode .. keymap.lhs -- should be distinct for every keymap
       if not keymap_encountered[keymap_key] then
         keymap_encountered[keymap_key] = true
-        if opts.show_plug or not string.find(keymap.lhs, "<Plug>") then
+        if
+          (opts.show_plug or not string.find(keymap.lhs, "<Plug>"))
+          and (not opts.lhs_filter or opts.lhs_filter(keymap.lhs))
+        then
           table.insert(keymaps_table, keymap)
           max_len_lhs = math.max(max_len_lhs, #utils.display_termcodes(keymap.lhs))
         end
