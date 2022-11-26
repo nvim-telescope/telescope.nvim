@@ -1347,6 +1347,8 @@ builtin.keymaps({opts})                          *telescope.builtin.keymaps()*
                                 (default: { "n", "i", "c", "x" })
         {show_plug}  (boolean)  if true, the keymaps for which the lhs contains
                                 "<Plug>" are also shown (default: true)
+        {only_buf}   (boolean)  if true, only show the buffer-local keymaps
+                                (default: false)
         {lhs_filter} (function) filter(lhs:string) -> boolean. true if the
                                 keymap should be shown (optional)
 

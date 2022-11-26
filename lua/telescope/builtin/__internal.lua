@@ -1108,7 +1108,7 @@ end
 internal.keymaps = function(opts)
   opts.modes = vim.F.if_nil(opts.modes, { "n", "i", "c", "x" })
   opts.show_plug = vim.F.if_nil(opts.show_plug, true)
-  opts.only_buf_local = vim.F.if_nil(opts.only_buf_local, false)
+  opts.only_buf = vim.F.if_nil(opts.only_buf, false)
 
   local keymap_encountered = {} -- used to make sure no duplicates are inserted into keymaps_table
   local keymaps_table = {}
@@ -1134,7 +1134,7 @@ internal.keymaps = function(opts)
   for _, mode in pairs(opts.modes) do
     local global = vim.api.nvim_get_keymap(mode)
     local buf_local = vim.api.nvim_buf_get_keymap(0, mode)
-    if not opts.only_buf_local then
+    if not opts.only_buf then
       extract_keymaps(global)
     end
     extract_keymaps(buf_local)
