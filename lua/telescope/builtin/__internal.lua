@@ -1115,6 +1115,7 @@ end
 internal.keymaps = function(opts)
   opts.modes = vim.F.if_nil(opts.modes, { "n", "i", "c", "x" })
   opts.show_plug = vim.F.if_nil(opts.show_plug, true)
+  opts.only_buf = vim.F.if_nil(opts.only_buf, false)
 
   local keymap_encountered = {} -- used to make sure no duplicates are inserted into keymaps_table
   local keymaps_table = {}
@@ -1126,7 +1127,10 @@ internal.keymaps = function(opts)
       local keymap_key = keymap.buffer .. keymap.mode .. keymap.lhs -- should be distinct for every keymap
       if not keymap_encountered[keymap_key] then
         keymap_encountered[keymap_key] = true
-        if opts.show_plug or not string.find(keymap.lhs, "<Plug>") then
+        if
+          (opts.show_plug or not string.find(keymap.lhs, "<Plug>"))
+          and (not opts.lhs_filter or opts.lhs_filter(keymap.lhs))
+        then
           table.insert(keymaps_table, keymap)
           max_len_lhs = math.max(max_len_lhs, #utils.display_termcodes(keymap.lhs))
         end
@@ -1137,7 +1141,9 @@ internal.keymaps = function(opts)
   for _, mode in pairs(opts.modes) do
     local global = vim.api.nvim_get_keymap(mode)
     local buf_local = vim.api.nvim_buf_get_keymap(0, mode)
-    extract_keymaps(global)
+    if not opts.only_buf then
+      extract_keymaps(global)
+    end
     extract_keymaps(buf_local)
   end
   opts.width_lhs = max_len_lhs + 1
