@@ -192,11 +192,15 @@ do
       return rawget(t, rawget(lookup_keys, k))
     end
 
-    return function(line)
-      if opts.file_entry_encoding then
+    if opts.file_entry_encoding then
+      return function(line)
         line = vim.iconv(line, opts.file_entry_encoding, 'utf8')
+        return setmetatable({ line }, mt_file_entry)
       end
-      return setmetatable({ line }, mt_file_entry)
+    else
+      return function(line)
+        return setmetatable({ line }, mt_file_entry)
+      end
     end
   end
 end
