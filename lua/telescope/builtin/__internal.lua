@@ -459,8 +459,8 @@ internal.quickfixhistory = function(opts)
         map({ "i", "n" }, "<C-q>", function(prompt_bufnr)
           local nr = action_state.get_selected_entry().nr
           actions.close(prompt_bufnr)
-          vim.cmd(nr .. 'chistory')
-          vim.cmd('copen')
+          vim.cmd(nr .. "chistory")
+          vim.cmd("copen")
         end)
         return true
       end,
