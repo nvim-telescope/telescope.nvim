@@ -449,11 +449,18 @@ internal.quickfixhistory = function(opts)
         end,
       },
       sorter = conf.generic_sorter(opts),
-      attach_mappings = function(_, _)
+      attach_mappings = function(_, map)
         action_set.select:replace(function(prompt_bufnr)
           local nr = action_state.get_selected_entry().nr
           actions.close(prompt_bufnr)
           internal.quickfix { nr = nr }
+        end)
+
+        map({ "i", "n" }, "<C-q>", function(prompt_bufnr)
+          local nr = action_state.get_selected_entry().nr
+          actions.close(prompt_bufnr)
+          vim.cmd(nr .. 'chistory')
+          vim.cmd('copen')
         end)
         return true
       end,
