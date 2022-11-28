@@ -194,7 +194,7 @@ do
 
     if opts.file_entry_encoding then
       return function(line)
-        line = vim.iconv(line, opts.file_entry_encoding, 'utf8')
+        line = vim.iconv(line, opts.file_entry_encoding, "utf8")
         return setmetatable({ line }, mt_file_entry)
       end
     else
