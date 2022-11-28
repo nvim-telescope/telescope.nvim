@@ -838,25 +838,26 @@ builtin.find_files({opts})                    *telescope.builtin.find_files()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {cwd}              (string)          root dir to search from (default:
-                                             cwd, use utils.buffer_dir() to
-                                             search relative to open buffer)
-        {find_command}     (function|table)  cmd to use for the search. Can be
-                                             a fn(opts) -> tbl (default:
-                                             autodetect)
-        {follow}           (boolean)         if true, follows symlinks (i.e.
-                                             uses `-L` flag for the `find`
-                                             command)
-        {hidden}           (boolean)         determines whether to show hidden
-                                             files or not (default: false)
-        {no_ignore}        (boolean)         show files ignored by .gitignore,
-                                             .ignore, etc. (default: false)
-        {no_ignore_parent} (boolean)         show files ignored by .gitignore,
-                                             .ignore, etc. in parent dirs.
-                                             (default: false)
-        {search_dirs}      (table)           directory/directories/files to
-                                             search
-        {search_file}      (string)          specify a filename to search for
+        {cwd}                 (string)         root dir to search from (default:
+                                               cwd, use utils.buffer_dir() to
+                                               search relative to open buffer)
+        {find_command}        (function|table) cmd to use for the search. Can be
+                                               a fn(opts) -> tbl (default:
+                                               autodetect)
+        {file_entry_encoding} (string)         encoding of output of `find_command`
+        {follow}              (boolean)        if true, follows symlinks (i.e.
+                                               uses `-L` flag for the `find`
+                                               command)
+        {hidden}              (boolean)        determines whether to show hidden
+                                               files or not (default: false)
+        {no_ignore}           (boolean)        show files ignored by .gitignore,
+                                               .ignore, etc. (default: false)
+        {no_ignore_parent}    (boolean)        show files ignored by .gitignore,
+                                               .ignore, etc. in parent dirs.
+                                               (default: false)
+        {search_dirs}         (table)          directory/directories/files to
+                                               search
+        {search_file}         (string)         specify a filename to search for
 
 
 builtin.fd()                                          *telescope.builtin.fd()*
