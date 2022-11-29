@@ -74,6 +74,7 @@ builtin.grep_string = require_on_exported_call("telescope.builtin.__files").grep
 ---@param opts table: options to pass to the picker
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field find_command function|table: cmd to use for the search. Can be a fn(opts) -> tbl (default: autodetect)
+---@field file_entry_encoding string: encoding of output of `find_command`
 ---@field follow boolean: if true, follows symlinks (i.e. uses `-L` flag for the `find` command)
 ---@field hidden boolean: determines whether to show hidden files or not (default: false)
 ---@field no_ignore boolean: show files ignored by .gitignore, .ignore, etc. (default: false)
@@ -271,6 +272,7 @@ builtin.oldfiles = require_on_exported_call("telescope.builtin.__internal").oldf
 --- - Default keymaps:
 ---   - `<C-e>`: open the command line with the text of the currently selected result populated in it
 ---@param opts table: options to pass to the picker
+---@field filter_fn function: filter fn(cmd:string). true if the history command should be presented.
 builtin.command_history = require_on_exported_call("telescope.builtin.__internal").command_history
 
 --- Lists searches that were executed recently, and reruns them on `<cr>`
@@ -330,6 +332,8 @@ builtin.registers = require_on_exported_call("telescope.builtin.__internal").reg
 ---@param opts table: options to pass to the picker
 ---@field modes table: a list of short-named keymap modes to search (default: { "n", "i", "c", "x" })
 ---@field show_plug boolean: if true, the keymaps for which the lhs contains "<Plug>" are also shown (default: true)
+---@field only_buf boolean: if true, only show the buffer-local keymaps (default: false)
+---@field lhs_filter function: filter(lhs:string) -> boolean. true if the keymap should be shown (optional)
 builtin.keymaps = require_on_exported_call("telescope.builtin.__internal").keymaps
 
 --- Lists all available filetypes, sets currently open buffer's filetype to selected filetype in Telescope on `<cr>`
