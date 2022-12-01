@@ -434,6 +434,7 @@ end
 
 utils.file_extension = function(filename)
   local parts = vim.split(filename, "%.")
+  -- this check enables us to get multi-part extensions, like *.test.js for example
   if #parts > 2 then
     return table.concat(vim.list_slice(parts, #parts - 1), ".")
   else
@@ -456,7 +457,6 @@ utils.transform_devicons = load_once(function()
       end
 
       local basename = utils.path_tail(filename)
-      -- the double :e:e gets multipart extensions, if one exists, like *.test.js, for example
       local icon, icon_highlight = devicons.get_icon(basename, utils.file_extension(basename), { default = true })
       local icon_display = (icon or " ") .. " " .. (display or "")
 
@@ -488,7 +488,6 @@ utils.get_devicons = load_once(function()
       end
 
       local basename = utils.path_tail(filename)
-      -- the double :e:e gets multipart extensions, if one exists, like *.test.js, for example
       local icon, icon_highlight = devicons.get_icon(basename, utils.file_extension(basename), { default = true })
       if conf.color_devicons then
         return icon, icon_highlight
