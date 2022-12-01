@@ -432,6 +432,16 @@ local load_once = function(f)
   end
 end
 
+utils.file_extension = function(filename)
+  local parts = vim.split(filename, "%.")
+  -- this check enables us to get multi-part extensions, like *.test.js for example
+  if #parts > 2 then
+    return table.concat(vim.list_slice(parts, #parts - 1), ".")
+  else
+    return table.concat(vim.list_slice(parts, #parts), ".")
+  end
+end
+
 utils.transform_devicons = load_once(function()
   local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
@@ -446,7 +456,8 @@ utils.transform_devicons = load_once(function()
         return display
       end
 
-      local icon, icon_highlight = devicons.get_icon(utils.path_tail(filename), nil, { default = true })
+      local basename = utils.path_tail(filename)
+      local icon, icon_highlight = devicons.get_icon(basename, utils.file_extension(basename), { default = true })
       local icon_display = (icon or " ") .. " " .. (display or "")
 
       if conf.color_devicons then
@@ -476,7 +487,8 @@ utils.get_devicons = load_once(function()
         return ""
       end
 
-      local icon, icon_highlight = devicons.get_icon(utils.path_tail(filename), nil, { default = true })
+      local basename = utils.path_tail(filename)
+      local icon, icon_highlight = devicons.get_icon(basename, utils.file_extension(basename), { default = true })
       if conf.color_devicons then
         return icon, icon_highlight
       else
