@@ -1260,7 +1260,7 @@ function make_entry.gen_from_commands(opts)
       attrs,
       entry.nargs,
       entry.complete or "",
-      entry.definition,
+      entry.definition:gsub("\n", " "),
     }
   end
 
