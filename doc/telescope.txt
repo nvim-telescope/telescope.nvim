@@ -838,26 +838,31 @@ builtin.find_files({opts})                    *telescope.builtin.find_files()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {cwd}                 (string)         root dir to search from (default:
-                                               cwd, use utils.buffer_dir() to
-                                               search relative to open buffer)
-        {find_command}        (function|table) cmd to use for the search. Can be
-                                               a fn(opts) -> tbl (default:
-                                               autodetect)
-        {file_entry_encoding} (string)         encoding of output of `find_command`
-        {follow}              (boolean)        if true, follows symlinks (i.e.
-                                               uses `-L` flag for the `find`
-                                               command)
-        {hidden}              (boolean)        determines whether to show hidden
-                                               files or not (default: false)
-        {no_ignore}           (boolean)        show files ignored by .gitignore,
-                                               .ignore, etc. (default: false)
-        {no_ignore_parent}    (boolean)        show files ignored by .gitignore,
-                                               .ignore, etc. in parent dirs.
-                                               (default: false)
-        {search_dirs}         (table)          directory/directories/files to
-                                               search
-        {search_file}         (string)         specify a filename to search for
+        {cwd}                 (string)          root dir to search from
+                                                (default: cwd, use
+                                                utils.buffer_dir() to search
+                                                relative to open buffer)
+        {find_command}        (function|table)  cmd to use for the search. Can
+                                                be a fn(opts) -> tbl (default:
+                                                autodetect)
+        {file_entry_encoding} (string)          encoding of output of
+                                                `find_command`
+        {follow}              (boolean)         if true, follows symlinks
+                                                (i.e. uses `-L` flag for the
+                                                `find` command)
+        {hidden}              (boolean)         determines whether to show
+                                                hidden files or not (default:
+                                                false)
+        {no_ignore}           (boolean)         show files ignored by
+                                                .gitignore, .ignore, etc.
+                                                (default: false)
+        {no_ignore_parent}    (boolean)         show files ignored by
+                                                .gitignore, .ignore, etc. in
+                                                parent dirs. (default: false)
+        {search_dirs}         (table)           directory/directories/files to
+                                                search
+        {search_file}         (string)          specify a filename to search
+                                                for
 
 
 builtin.fd()                                          *telescope.builtin.fd()*
@@ -1344,14 +1349,15 @@ builtin.keymaps({opts})                          *telescope.builtin.keymaps()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {modes}      (table)    a list of short-named keymap modes to search
-                                (default: { "n", "i", "c", "x" })
-        {show_plug}  (boolean)  if true, the keymaps for which the lhs contains
-                                "<Plug>" are also shown (default: true)
-        {only_buf}   (boolean)  if true, only show the buffer-local keymaps
-                                (default: false)
-        {lhs_filter} (function) filter(lhs:string) -> boolean. true if the
-                                keymap should be shown (optional)
+        {modes}      (table)     a list of short-named keymap modes to search
+                                 (default: { "n", "i", "c", "x" })
+        {show_plug}  (boolean)   if true, the keymaps for which the lhs
+                                 contains "<Plug>" are also shown (default:
+                                 true)
+        {only_buf}   (boolean)   if true, only show the buffer-local keymaps
+                                 (default: false)
+        {lhs_filter} (function)  filter(lhs:string) -> boolean. true if the
+                                 keymap should be shown (optional)
 
 
 builtin.filetypes({opts})                      *telescope.builtin.filetypes()*

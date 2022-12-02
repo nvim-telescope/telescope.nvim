@@ -457,7 +457,10 @@ utils.transform_devicons = load_once(function()
       end
 
       local basename = utils.path_tail(filename)
-      local icon, icon_highlight = devicons.get_icon(basename, utils.file_extension(basename), { default = true })
+      local icon, icon_highlight = devicons.get_icon(basename, utils.file_extension(basename), { default = false })
+      if not icon then
+        icon, icon_highlight = devicons.get_icon(basename, nil, { default = true })
+      end
       local icon_display = (icon or " ") .. " " .. (display or "")
 
       if conf.color_devicons then
@@ -488,7 +491,10 @@ utils.get_devicons = load_once(function()
       end
 
       local basename = utils.path_tail(filename)
-      local icon, icon_highlight = devicons.get_icon(basename, utils.file_extension(basename), { default = true })
+      local icon, icon_highlight = devicons.get_icon(basename, utils.file_extension(basename), { default = false })
+      if not icon then
+        icon, icon_highlight = devicons.get_icon(basename, nil, { default = true })
+      end
       if conf.color_devicons then
         return icon, icon_highlight
       else
