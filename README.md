@@ -524,7 +524,7 @@ Telescope user autocmds:
 ## Extensions
 
 Telescope provides the capabilities to create & register extensions, which
-improve telescope in a variety of ways.
+improves telescope in a variety of ways.
 
 Some extensions provide integration with external tools, outside of the scope of
 `builtins`.  Others provide performance enhancements by using compiled C and
