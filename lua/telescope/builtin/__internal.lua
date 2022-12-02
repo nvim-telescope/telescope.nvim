@@ -884,23 +884,25 @@ internal.buffers = function(opts)
   local buffers = {}
   local default_selection_idx = 1
   for _, bufnr in ipairs(bufnrs) do
-    local flag = bufnr == vim.fn.bufnr "" and "%" or (bufnr == vim.fn.bufnr "#" and "#" or " ")
+    if not opts.filter_fn or opts.filter_fn(bufnr) then
+      local flag = bufnr == vim.fn.bufnr "" and "%" or (bufnr == vim.fn.bufnr "#" and "#" or " ")
 
-    if opts.sort_lastused and not opts.ignore_current_buffer and flag == "#" then
-      default_selection_idx = 2
-    end
+      if opts.sort_lastused and not opts.ignore_current_buffer and flag == "#" then
+        default_selection_idx = 2
+      end
 
-    local element = {
-      bufnr = bufnr,
-      flag = flag,
-      info = vim.fn.getbufinfo(bufnr)[1],
-    }
+      local element = {
+        bufnr = bufnr,
+        flag = flag,
+        info = vim.fn.getbufinfo(bufnr)[1],
+      }
 
-    if opts.sort_lastused and (flag == "#" or flag == "%") then
-      local idx = ((buffers[1] ~= nil and buffers[1].flag == "%") and 2 or 1)
-      table.insert(buffers, idx, element)
-    else
-      table.insert(buffers, element)
+      if opts.sort_lastused and (flag == "#" or flag == "%") then
+        local idx = ((buffers[1] ~= nil and buffers[1].flag == "%") and 2 or 1)
+        table.insert(buffers, idx, element)
+      else
+        table.insert(buffers, element)
+      end
     end
   end
 

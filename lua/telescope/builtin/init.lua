@@ -311,6 +311,7 @@ builtin.reloader = require_on_exported_call("telescope.builtin.__internal").relo
 ---@field sort_lastused boolean: Sorts current and last buffer to the top and selects the lastused (default: false)
 ---@field sort_mru boolean: Sorts all buffers after most recent used. Not just the current and last one (default: false)
 ---@field bufnr_width number: Defines the width of the buffer numbers in front of the filenames  (default: dynamic)
+---@field filter_fn function: filter fn(bufnr:number). true if the buffer should be presented.
 builtin.buffers = require_on_exported_call("telescope.builtin.__internal").buffers
 
 --- Lists available colorschemes and applies them on `<cr>`
