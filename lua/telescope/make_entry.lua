@@ -1233,15 +1233,17 @@ function make_entry.gen_from_autocommands(opts)
 end
 
 function make_entry.gen_from_commands(opts)
+  local command_columns = opts.command_columns or {} 
+
   local displayer = entry_display.create {
     separator = "▏",
     items = {
-      { width = 0.2 },
-      { width = 4 },
-      { width = 4 },
-      { width = 11 },
+      { width = command_columns.name or 0.2 },
+      { width = command_columns.attrs or 4 },
+      { width = command_columns.nargs or 4 },
+      { width = command_columns.complete or 11 },
       { remaining = true },
-    },
+    } 
   }
 
   local make_display = function(entry)
@@ -1255,12 +1257,14 @@ function make_entry.gen_from_commands(opts)
     if entry.register then
       attrs = attrs .. '"'
     end
+
     return displayer {
-      { entry.name, "TelescopeResultsIdentifier" },
-      attrs,
-      entry.nargs,
-      entry.complete or "",
-      entry.definition:gsub("\n", " "),
+      command_columns.name ~= 0 and
+      { entry.name, "TelescopeResultsIdentifier" } or nil,
+      command_columns.attrs ~= 0 and attrs or nil,
+      command_columns.nargs ~= 0 and entry.nargs or nil,
+      command_columns.complete ~= 0 and (entry.complete or "") or nil,
+      command_columns.definition ~= 0 and entry.definition:gsub("\n", " ") or nil,
     }
   end
 
