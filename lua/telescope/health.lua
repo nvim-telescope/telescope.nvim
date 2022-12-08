@@ -9,6 +9,7 @@ local optional_dependencies = {
     package = {
       {
         name = "rg",
+        binaries = { "rg" },
         url = "[BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep)",
         optional = false,
       },
