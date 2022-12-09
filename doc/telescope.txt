@@ -1292,7 +1292,7 @@ builtin.reloader({opts})                        *telescope.builtin.reloader()*
 
 builtin.buffers({opts})                          *telescope.builtin.buffers()*
     Lists open buffers in current neovim instance, opens selected buffer on
-    `<cr>`
+    `<cr>`. It also focuses already opened files in the tabs by default.
 
 
     Parameters: ~

@@ -69,7 +69,7 @@ do
   local map = {
     drop = "drop",
     ["tab drop"] = "tab drop",
-    edit = "buffer",
+    edit = "tabnext",
     new = "sbuffer",
     vnew = "vert sbuffer",
     tabedit = "tab sb",
