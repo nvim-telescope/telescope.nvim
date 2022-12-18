@@ -316,7 +316,7 @@ do
       display = function(entry)
         local display_filename = utils.transform_path(opts, entry.filename)
 
-        local coordinates = ""
+        local coordinates = ":"
         if not disable_coordinates then
           if entry.lnum then
             if entry.col then
