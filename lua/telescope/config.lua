@@ -194,8 +194,8 @@ append(
   "cycle_layout_list",
   { "horizontal", "vertical" },
   [[
-  Determines the layouts to cycle through when using `actions.cycle_layout_next`
-  and `actions.cycle_layout_prev`.
+  Determines the layouts to cycle through when using `actions.layout.cycle_layout_next`
+  and `actions.layout.cycle_layout_prev`.
   Should be a list of "layout setups".
   Each "layout setup" can take one of two forms:
   1. string <br>
@@ -611,7 +611,7 @@ append(
       - msg_bg_fillchar:  Character to fill background of unpreviewable buffers with
                           Default: "╱"
       - hide_on_startup:  Hide previewer when picker starts. Previewer can be toggled
-                          with actions.toggle_preview.
+                          with actions.layout.toggle_preview.
                           Default: false
     ]]
 )
