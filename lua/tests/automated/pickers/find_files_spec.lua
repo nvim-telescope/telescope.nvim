@@ -94,7 +94,7 @@ describe("builtin.find_files", function()
     ]]
   end)
 
-  it("should find the pickers.lua", function()
+it("should find the pickers.lua", function()
     tester.run_string [[
       runner.picker('find_files', 'pickers.lua', {
         post_close = {
@@ -107,12 +107,12 @@ describe("builtin.find_files", function()
 
   it("should be able to c-n the items", function()
     tester.run_string [[
-      runner.picker('find_files', 'fixtures/file<c-n>', {
+      runner.picker('find_files', 'fixtures/find_files/file<c-n>', {
         post_typed = {
           {
             {
-              "  lua/tests/fixtures/file_a.txt",
-              "> lua/tests/fixtures/file_abc.txt",
+              "  lua/tests/fixtures/find_files/file_a.txt",
+              "> lua/tests/fixtures/find_files/file_abc.txt",
             }, GetResults
           },
         },
@@ -129,9 +129,9 @@ describe("builtin.find_files", function()
 
   it("should be able to get the current selection", function()
     tester.run_string [[
-      runner.picker('find_files', 'fixtures/file_abc', {
+      runner.picker('find_files', 'fixtures/find_files/file_abc', {
         post_typed = {
-          { 'lua/tests/fixtures/file_abc.txt', GetSelectionValue },
+          { 'lua/tests/fixtures/find_files/file_abc.txt', GetSelectionValue },
         }
       })
     ]]

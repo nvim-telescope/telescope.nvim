@@ -526,6 +526,9 @@ internal.oldfiles = function(opts)
   if opts.cwd_only then
     local cwd = vim.loop.cwd()
     cwd = cwd:gsub([[\]], [[\\]])
+    -- escape tildes which are used by icloud on mac
+    -- example: ~/Library/Mobile Documents/com~apple~CloudDocs/
+    cwd = cwd:gsub([[~]], [[\~]])
     results = vim.tbl_filter(function(file)
       return vim.fn.matchstrpos(file, cwd)[2] ~= -1
     end, results)
