@@ -431,17 +431,27 @@ function make_entry.gen_from_git_commits(opts)
       return nil
     end
 
-    local sha, msg = string.match(entry, "([^ ]+) (.+)")
+    local marker, sha, msg = string.match(entry, "([*\\/| ]+) +([0-9a-f]*) +(.*)")
+
+    if not sha then
+        marker = entry
+        sha = ""
+        msg = ""
+    end
 
     if not msg then
-      sha = entry
       msg = "<empty commit message>"
     end
 
+    marker, _ = string.gsub(marker, "\\", "+")
+    marker, _ = string.gsub(marker, "/", "-")
+    marker, _ = string.gsub(marker, "+", "/")
+    marker, _ = string.gsub(marker, "-", "\\")
+
     return make_entry.set_default_entry_mt({
       value = sha,
-      ordinal = sha .. " " .. msg,
-      msg = msg,
+      ordinal = marker .. " " .. sha .. " " .. msg,
+      msg = marker .. " " .. msg,
       display = make_display,
       current_file = opts.current_file,
     }, opts)
