@@ -434,9 +434,9 @@ function make_entry.gen_from_git_commits(opts)
     local marker, sha, msg = string.match(entry, "([*\\/| ]+) +([0-9a-f]*) +(.*)")
 
     if not sha then
-        marker = entry
-        sha = ""
-        msg = ""
+      marker = entry
+      sha = ""
+      msg = ""
     end
 
     if not msg then
