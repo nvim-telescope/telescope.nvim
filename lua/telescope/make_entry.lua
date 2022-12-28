@@ -4,23 +4,23 @@
 ---
 --- Each picker has a finder made up of two parts, the results which are the
 --- data to be displayed, and the entry_maker. These entry_makers are functions
---- returned from make_entry functions. These will be referrd to as
+--- returned from make_entry functions. These will be referred to as
 --- entry_makers in the following documentation.
 ---
---- Every entry maker returns a function which accepts the data to be used for
+--- Every entry maker returns a function that accepts the data to be used for
 --- an entry. This function will return an entry table (or nil, meaning skip
---- this entry) which contains of the - following important keys:
+--- this entry) which contains the following important keys:
 --- - value any: value key can be anything but still required
 --- - valid bool: is an optional key because it defaults to true but if the key
----   is set to false it will not be displayed by the picker. (optional)
+---   is set to false it will not be displayed by the picker (optional)
 --- - ordinal string: is the text that is used for filtering (required)
 --- - display string|function: is either a string of the text that is being
 ---   displayed or a function receiving the entry at a later stage, when the entry
----   is actually being displayed. A function can be useful here if complex
----   calculation have to be done. `make_entry` can also return a second value
+---   is actually being displayed. A function can be useful here if a complex
+---   calculation has to be done. `make_entry` can also return a second value
 ---   a highlight array which will then apply to the line. Highlight entry in
 ---   this array has the following signature `{ { start_col, end_col }, hl_group }`
----   (required).
+---   (required)
 --- - filename string: will be interpreted by the default `<cr>` action as
 ---   open this file (optional)
 --- - bufnr number: will be interpreted by the default `<cr>` action as open
@@ -30,7 +30,7 @@
 --- - col number: col value which will be interpreted by the default `<cr>`
 ---   action as a jump to this column (optional)
 ---
---- More information on easier displaying, see |telescope.pickers.entry_display|
+--- For more information on easier displaying, see |telescope.pickers.entry_display|
 ---
 --- TODO: Document something we call `entry_index`
 ---@brief ]]
