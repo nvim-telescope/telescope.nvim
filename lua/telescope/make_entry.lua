@@ -1342,7 +1342,13 @@ function make_entry.gen_from_git_status(opts)
     if entry == "" then
       return nil
     end
-    local mod, file = string.match(entry, "(..).*%s[->%s]?(.+)")
+
+    local mod, file = entry:match "^(..) (.+)$"
+    -- Ignore entries that are the PATH in XY ORIG_PATH PATH
+    -- (renamed or copied files)
+    if not mod then
+      return nil
+    end
 
     return setmetatable({
       value = file,

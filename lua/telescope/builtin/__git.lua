@@ -314,7 +314,7 @@ git.status = function(opts)
 
   local gen_new_finder = function()
     local expand_dir = vim.F.if_nil(opts.expand_dir, true)
-    local git_cmd = { "git", "status", "-s", "--", "." }
+    local git_cmd = { "git", "status", "-z", "--", "." }
 
     if expand_dir then
       table.insert(git_cmd, #git_cmd - 1, "-u")
@@ -332,7 +332,7 @@ git.status = function(opts)
     end
 
     return finders.new_table {
-      results = output,
+      results = vim.split(output[1], " ", { trimempty = true }),
       entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_status(opts)),
     }
   end
