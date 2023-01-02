@@ -14,7 +14,7 @@ vim.api.nvim_command(":enew")
 -- Attempt to find the file in the
 runner.picker("oldfiles", "oldfiles-escape-tilde.md", {
   post_typed = {
-    { '> oldfiles-escape-tilde.md', helper.get_best_result },
+    { '>  oldfiles-escape-tilde.md', helper.get_best_result },
   },
 }, {
 	only_cwd=true
