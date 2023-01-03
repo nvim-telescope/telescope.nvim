@@ -1,8 +1,3 @@
--- Just skip on mac, it has flaky CI for some reason
-if vim.fn.has "mac" == 1 then
-  return
-end
-
 local tester = require "telescope.testharness"
 
 local disp = function(val)
@@ -12,6 +7,10 @@ end
 describe("builtin.find_files", function()
   it("should find the readme", function()
     tester.run_file "find_files__readme"
+  end)
+
+  it("should handle cycling for full list", function()
+    tester.run_file "find_files__scrolling_descending_cycle"
   end)
 
   for _, configuration in ipairs {
@@ -94,7 +93,7 @@ describe("builtin.find_files", function()
     ]]
   end)
 
-it("should find the pickers.lua", function()
+  it("should find the pickers.lua", function()
     tester.run_string [[
       runner.picker('find_files', 'pickers.lua', {
         post_close = {
