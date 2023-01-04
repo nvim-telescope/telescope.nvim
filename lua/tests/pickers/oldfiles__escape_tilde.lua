@@ -20,7 +20,7 @@ vim.api.nvim_set_current_dir(previous_cwd)
 -- Attempt to find the file in the
 runner.picker("oldfiles", "oldfiles-escape-tilde.md", {
   post_typed = {
-    { "> lua/tests/fixtures/oldfiles~escape~tilde/oldfiles-escape-tilde.md", helper.get_best_result },
+    { ">  lua/tests/fixtures/oldfiles~escape~tilde/oldfiles-escape-tilde.md", helper.get_best_result },
   },
 }, {
   only_cwd = true,
