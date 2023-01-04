@@ -11,21 +11,7 @@ end
 
 describe("builtin.find_files", function()
   it("should find the readme", function()
-  -- Just skip on mac, it has flaky CI for some reason:
-  -- Testing: 	/Users/runner/work/telescope.nvim/telescope.nvim/lua/tests/automated/pickers/find_files_spec.lua
-  -- Fail	||	builtin.find_files should find the readme
-  --             .../start/telescope.nvim/lua/telescope/testharness/init.lua:58: Test Case: post_close // 1
-  --             Expected objects to be the same.
-  --             Passed in:
-  --             (string) ''
-  --             Expected:
-  --             (string) 'README.md'
-  --             stack traceback:
-  --             	.../start/telescope.nvim/lua/telescope/testharness/init.lua:58: in function 'check_results'
-  --             	.../start/telescope.nvim/lua/telescope/testharness/init.lua:104: in function 'run_file'
-  --             	...ope.nvim/lua/tests/automated/pickers/find_files_spec.lua:9: in function <...ope.nvim/lua/tests/automated/pickers/find_files_spec.lua:8>
-
-  tester.run_file "find_files__readme"
+    tester.run_file "find_files__readme"
   end)
 
   it("should handle cycling for full list", function()
