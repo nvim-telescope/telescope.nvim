@@ -524,7 +524,7 @@ internal.oldfiles = function(opts)
   end
 
   if opts.cwd_only then
-    local cwd = vim.loop.cwd()
+    local cwd = vim.loop.cwd() .. "/"
     cwd = cwd:gsub([[\]], [[\\]])
     results = vim.tbl_filter(function(file)
       return vim.fn.matchstrpos(file, cwd)[2] ~= -1
