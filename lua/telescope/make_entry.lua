@@ -624,7 +624,18 @@ function make_entry.gen_from_buffer(opts)
     local readonly = vim.api.nvim_buf_get_option(entry.bufnr, "readonly") and "=" or " "
     local changed = entry.info.changed == 1 and "+" or " "
     local indicator = entry.flag .. hidden .. readonly .. changed
-    local line_count = vim.api.nvim_buf_line_count(entry.bufnr)
+    local lnum = 1
+
+    -- account for potentially stale lnum as getbufinfo might not be updated or from resuming buffers picker
+    if entry.info.lnum ~= 0 then
+      -- but make sure the buffer is loaded, otherwise line_count is 0
+      if vim.api.nvim_buf_is_loaded(entry.bufnr) then
+        local line_count = vim.api.nvim_buf_line_count(entry.bufnr)
+        lnum = math.max(math.min(entry.info.lnum, line_count), 1)
+      else
+        lnum = entry.info.lnum
+      end
+    end
 
     return make_entry.set_default_entry_mt({
       value = bufname,
@@ -633,8 +644,7 @@ function make_entry.gen_from_buffer(opts)
 
       bufnr = entry.bufnr,
       filename = bufname,
-      -- account for potentially stale lnum as getbufinfo might not be updated or from resuming buffers picker
-      lnum = entry.info.lnum ~= 0 and math.max(math.min(entry.info.lnum, line_count), 1) or 1,
+      lnum = lnum,
       indicator = indicator,
     }, opts)
   end
