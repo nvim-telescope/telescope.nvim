@@ -71,13 +71,16 @@ local opts_contain_invert = function(args)
     end
 
     if #v >= 2 and v:sub(1, 1) == "-" and v:sub(2, 2) ~= "-" then
+      local non_option = false
       for i = 2, #v do
         local vi = v:sub(i, i)
         if vi == "=" then -- ignore option -g=xxx
           break
-        elseif vi == "v" then
+        elseif vi == "g" or vi == "f" or vi == "m" or vi == "e" or vi == "r" or vi == "t" or vi == "T" then
+          non_option = true
+        elseif non_option == false and vi == "v" then
           invert = true
-        elseif vi == "l" then
+        elseif non_option == false and vi == "l" then
           files_with_matches = true
         end
       end
