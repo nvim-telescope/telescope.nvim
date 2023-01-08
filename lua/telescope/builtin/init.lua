@@ -172,6 +172,7 @@ builtin.git_bcommits = require_on_exported_call("telescope.builtin.__git").bcomm
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field show_remote_tracking_branches boolean: show remote tracking branches like origin/main (default: true)
 ---@field pattern string: specify the pattern to match all refs
 builtin.git_branches = require_on_exported_call("telescope.builtin.__git").branches
 
