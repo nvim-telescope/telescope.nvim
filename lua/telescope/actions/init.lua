@@ -235,6 +235,13 @@ actions.center = function(prompt_bufnr)
   vim.cmd ":normal! zz"
 end
 
+local function jump_to_line()
+  local line_no = state.get_global_key "line_no"
+  if line_no then
+    vim.cmd["normal!"](line_no .. "G")
+  end
+end
+
 --- Perform default action on selection, usually something like<br>
 --- `:edit <selection>`
 ---
@@ -248,6 +255,9 @@ actions.select_default = {
   end,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "default")
+  end,
+  post = function()
+    jump_to_line()
   end,
 }
 
@@ -265,6 +275,9 @@ actions.select_horizontal = {
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "horizontal")
   end,
+  post = function()
+    jump_to_line()
+  end,
 }
 
 --- Perform 'vertical' action on selection, usually something like<br>
@@ -280,6 +293,9 @@ actions.select_vertical = {
   end,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "vertical")
+  end,
+  post = function()
+    jump_to_line()
   end,
 }
 
@@ -297,6 +313,9 @@ actions.select_tab = {
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "tab")
   end,
+  post = function()
+    jump_to_line()
+  end,
 }
 
 --- Perform 'drop' action on selection, usually something like<br>
@@ -313,6 +332,9 @@ actions.select_drop = {
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "drop")
   end,
+  post = function()
+    jump_to_line()
+  end,
 }
 
 --- Perform 'tab drop' action on selection, usually something like<br>
@@ -328,6 +350,9 @@ actions.select_tab_drop = {
   end,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "tab drop")
+  end,
+  post = function()
+    jump_to_line()
   end,
 }
 

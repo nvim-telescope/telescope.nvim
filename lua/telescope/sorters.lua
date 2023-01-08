@@ -1,5 +1,6 @@
 local log = require "telescope.log"
 local util = require "telescope.utils"
+local global_state = require "telescope.state"
 
 local sorters = {}
 
@@ -444,6 +445,14 @@ sorters.get_fzy_sorter = function(opts)
     discard = true,
 
     scoring_function = function(_, prompt, line)
+      local i = prompt:find(":", 1, true) -- Specify the line number by colon
+      if i then
+        global_state.set_global_key("line_no", tonumber(prompt:sub(i + 1)))
+        prompt = prompt:sub(1, i - 1)
+      else
+        global_state.set_global_key("line_no", nil)
+      end
+
       -- Check for actual matches before running the scoring alogrithm.
       if not fzy.has_match(prompt, line) then
         return -1
@@ -471,6 +480,10 @@ sorters.get_fzy_sorter = function(opts)
     -- fzy.compute function, which does all the work. But, this doesn't affect
     -- perceived performance.
     highlighter = function(_, prompt, display)
+      local i = prompt:find(":", 1, true)
+      if i then
+        prompt = prompt:sub(1, i - 1)
+      end
       return fzy.positions(prompt, display)
     end,
   }
