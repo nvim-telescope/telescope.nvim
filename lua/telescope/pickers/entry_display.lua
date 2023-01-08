@@ -12,7 +12,7 @@
 --- for the best performance.
 ---
 --- The create function will use the column widths passed to it in
---- configaration.items. Each item in that table is the number of characters in
+--- configuration.items. Each item in that table is the number of characters in
 --- the column. It's also possible for the final column to not have a fixed
 --- width, this will be shown in the configuration as 'remaining = true'.
 ---

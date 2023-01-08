@@ -13,7 +13,7 @@ local utils = {}
 
 --- Apply `f` to the entries of the current picker.
 --- - Notes:
----   - Mapped entries include all currently filtered results, not just the visible onces.
+---   - Mapped entries include all currently filtered results, not just the visible ones.
 ---   - Indices are 1-indexed, whereas rows are 0-indexed.
 --- - Warning: `map_entries` has no return value.
 ---   - The below example showcases how to collect results
@@ -26,7 +26,7 @@ local utils = {}
 ---     local prompt_bufnr = vim.api.nvim_get_current_buf()
 ---     local current_picker = action_state.get_current_picker(prompt_bufnr)
 ---     local results = {}
----       action_utils.map_entries(prompt_bufnr, function(entry, index, row)
+---     action_utils.map_entries(prompt_bufnr, function(entry, index, row)
 ---       results[row] = entry.value
 ---     end)
 ---     return results
@@ -50,7 +50,7 @@ end
 
 --- Apply `f` to the multi selections of the current picker and return a table of mapped selections.
 --- - Notes:
----   - Mapped selections may include results not visible in the results popup.
+---   - Mapped selections may include results not visible in the results pop up.
 ---   - Selected entries are returned in order of their selection.
 --- - Warning: `map_selections` has no return value.
 ---   - The below example showcases how to collect results
@@ -63,7 +63,7 @@ end
 ---     local prompt_bufnr = vim.api.nvim_get_current_buf()
 ---     local current_picker = action_state.get_current_picker(prompt_bufnr)
 ---     local results = {}
----       action_utils.map_selections(prompt_bufnr, function(entry, index)
+---     action_utils.map_selections(prompt_bufnr, function(entry, index)
 ---       results[index] = entry.value
 ---     end)
 ---     return results
