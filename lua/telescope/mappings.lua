@@ -148,6 +148,8 @@ mappings.default_mappings = config.values.default_mappings
       ["<C-v>"] = actions.select_vertical,
       ["<C-t>"] = actions.select_tab,
 
+      ["<C-r>"] = actions.delete_file,
+
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
 

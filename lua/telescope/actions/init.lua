@@ -267,6 +267,22 @@ actions.select_horizontal = {
   end,
 }
 
+--- Perform deletes the current file telescope has selcted
+actions.delete_file = {
+  action = function(prompt_bufnr)
+    local content = require("telescope.actions.state").get_selected_entry()
+
+    local path = content.cwd .. "/" .. content.value
+    local shortPath = vim.fn.pathshorten(vim.fn.fnamemodify(path, ":."))
+
+    vim.ui.input({ prompt = "Do you want to delete the file " .. shortPath .. " (y/n): " }, function(input)
+      if input == "y" then
+        vim.cmd("!rm -rf " .. path)
+      end
+    end)
+  end,
+}
+
 --- Perform 'vertical' action on selection, usually something like<br>
 ---`:vnew <selection>`
 ---
