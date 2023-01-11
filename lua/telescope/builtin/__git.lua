@@ -203,6 +203,7 @@ git.branches = function(opts)
     { "git", "for-each-ref", "--perl", "--format", format, "--sort", "-authordate", opts.pattern },
     opts.cwd
   )
+  local show_remote_tracking_branches = vim.F.if_nil(opts.show_remote_tracking_branches, true)
 
   local results = {}
   local widths = {
@@ -225,7 +226,11 @@ git.branches = function(opts)
     }
     local prefix
     if vim.startswith(entry.refname, "refs/remotes/") then
-      prefix = "refs/remotes/"
+      if show_remote_tracking_branches then
+        prefix = "refs/remotes/"
+      else
+        return
+      end
     elseif vim.startswith(entry.refname, "refs/heads/") then
       prefix = "refs/heads/"
     else
