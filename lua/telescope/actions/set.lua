@@ -169,6 +169,14 @@ action_set.edit = function(prompt_bufnr, command)
     end
   end
 
+  if not row then
+    local line_no = state.get_global_key "line_no"
+    if line_no then
+      row = line_no
+      col = 0
+    end
+  end
+
   if row and col then
     local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, { row, col })
     if not ok then

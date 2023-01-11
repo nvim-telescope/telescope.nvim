@@ -471,6 +471,7 @@ function Picker:find()
       local start_time = vim.loop.hrtime()
 
       local prompt = self:_get_next_filtered_prompt()
+      prompt = self:_handle_line_number(prompt)
 
       -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
       if self.cache_picker == false or self.cache_picker.is_cached ~= true then
@@ -1535,6 +1536,33 @@ function Picker:_get_next_filtered_prompt()
   if new_finder then
     self.finder:close()
     self.finder = new_finder
+  end
+
+  return prompt
+end
+
+function Picker:_handle_line_number(prompt)
+  local line_no
+
+  -- find the last colon, if it separates a number, we regard that as a line number
+  for i = #prompt, 1, -1 do
+    if prompt:sub(i, i) == ":" then
+      line_no = tonumber(prompt:sub(i + 1))
+      if line_no then
+        prompt = prompt:sub(1, i - 1)
+      end
+      break
+    end
+  end
+
+  if line_no then
+    state.set_global_key("line_no", line_no)
+    self:refresh_previewer()
+  else
+    if state.get_global_key "line_no" then
+      state.set_global_key("line_no", nil)
+      self:refresh_previewer()
+    end
   end
 
   return prompt

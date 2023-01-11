@@ -414,6 +414,18 @@ end
 previewers.cat = defaulter(function(opts)
   opts = opts or {}
   local cwd = opts.cwd or vim.loop.cwd()
+  local global_state = require "telescope.state"
+  local function jump_to_line(bufnr, winid)
+    vim.api.nvim_buf_call(bufnr, function()
+      local line_no = global_state.get_global_key "line_no"
+      pcall(vim.api.nvim_buf_clear_namespace, bufnr, ns_previewer, 0, -1)
+      if line_no then
+        pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewMatch", line_no - 1, 0, -1)
+        pcall(vim.api.nvim_win_set_cursor, winid, { line_no, 0 })
+      end
+    end)
+  end
+
   return previewers.new_buffer_previewer {
     title = "File Preview",
     dyn_title = function(_, entry)
@@ -433,6 +445,9 @@ previewers.cat = defaulter(function(opts)
         bufname = self.state.bufname,
         winid = self.state.winid,
         preview = opts.preview,
+        callback = function(bufnr)
+          jump_to_line(bufnr, self.state.winid)
+        end,
       })
     end,
   }
