@@ -164,15 +164,27 @@ lsp.references = function(opts)
   local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
   local include_current_line = vim.F.if_nil(opts.include_current_line, false)
 
+  local original_results_filter = opts.results_filter
+  local current_line_filter = nil
+
   -- If we shouldn't include the current line, add a function to filter it out
   -- from the LSP results.
   if not include_current_line then
-    opts.results_filter = function(v)
+    current_line_filter = function(v)
       return not (v.filename == filepath and v.lnum == lnum)
     end
   end
 
-  return list_or_jump("textDocument/references", "LSP References", opts)
+  local new_opts = vim.deepcopy(opts)
+
+  -- TODO: comment this
+  if type(original_results_filter) == "function" and type(current_line_filter) == "function" then
+    new_opts.results_filter = function(v) return (original_results_filter(v) and current_line_filter(v)) end
+  elseif type(current_line_filter) == "function" then
+    new_opts.results_filter = current_line_filter
+  end
+
+  return list_or_jump("textDocument/references", "LSP References", new_opts)
 end
 
 lsp.definitions = function(opts)
