@@ -177,9 +177,15 @@ lsp.references = function(opts)
 
   local new_opts = vim.deepcopy(opts)
 
-  -- TODO: comment this
-  if type(original_results_filter) == "function" and type(current_line_filter) == "function" then
-    new_opts.results_filter = function(v) return (original_results_filter(v) and current_line_filter(v)) end
+  -- If there is already a `results_filter`, we want to honor the results of
+  -- that filter as well.
+  if type(original_results_filter) == "function" and
+    type(current_line_filter) == "function" then
+    new_opts.results_filter = function(v)
+      return original_results_filter(v) and current_line_filter(v)
+    end
+  -- Otherwise, we'll set `results_filter` only if we have a
+  -- `current_line_filter`.
   elseif type(current_line_filter) == "function" then
     new_opts.results_filter = current_line_filter
   end
