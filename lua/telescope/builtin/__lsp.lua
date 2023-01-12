@@ -112,7 +112,7 @@ local function list_or_jump(action, title, opts)
       vim.list_extend(flattened_results, result)
     end
 
-    if not vim.F.if_nil(opts.results_filter) then
+    if type(opts.results_filter) == "function" then
       flattened_results = vim.tbl_filter(opts.results_filter, flattened_results)
     end
 
