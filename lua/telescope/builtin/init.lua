@@ -379,7 +379,7 @@ builtin.jumplist = require_on_exported_call("telescope.builtin.__internal").jump
 ---@param opts table: options to pass to the picker
 ---@field include_declaration boolean: include symbol declaration in the lsp references (default: true)
 ---@field include_current_line boolean: include current line (default: false)
----@field jump_type string: how to goto reference if there is only one, values: "tab", "split", "vsplit", "never"
+---@field jump_type string: how to goto reference if there is only one and the definition file is different from the current file, values: "tab", "split", "vsplit", "never"
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
@@ -401,7 +401,7 @@ builtin.lsp_outgoing_calls = require_on_exported_call("telescope.builtin.__lsp")
 
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
----@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
+---@field jump_type string: how to goto definition if there is only one and the definition file is different from the current file, values: "tab", "split", "vsplit", "never"
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
@@ -410,7 +410,7 @@ builtin.lsp_definitions = require_on_exported_call("telescope.builtin.__lsp").de
 --- Goto the definition of the type of the word under the cursor, if there's only one,
 --- otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
----@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
+---@field jump_type string: how to goto definition if there is only one and the definition file is different from the current file, values: "tab", "split", "vsplit", "never"
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
@@ -418,7 +418,7 @@ builtin.lsp_type_definitions = require("telescope.builtin.__lsp").type_definitio
 
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
----@field jump_type string: how to goto implementation if there is only one, values: "tab", "split", "vsplit", "never"
+---@field jump_type string: how to goto implementation if there is only one and the definition file is different from the current file, values: "tab", "split", "vsplit", "never"
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
