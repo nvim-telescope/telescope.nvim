@@ -409,6 +409,8 @@ files.treesitter = function(opts)
 end
 
 files.current_buffer_fuzzy_find = function(opts)
+  -- add current cursor position to jumplist
+  vim.cmd [[ normal! m' ]]
   -- All actions are on the current buffer
   local filename = vim.fn.expand(vim.api.nvim_buf_get_name(opts.bufnr))
   local filetype = vim.api.nvim_buf_get_option(opts.bufnr, "filetype")
