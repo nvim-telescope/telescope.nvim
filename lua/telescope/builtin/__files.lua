@@ -162,10 +162,16 @@ files.live_grep = function(opts)
 end
 
 files.grep_string = function(opts)
-  -- TODO: This should probably check your visual selection as well, if you've got one
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
   local vimgrep_arguments = vim.F.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
-  local word = vim.F.if_nil(opts.search, vim.fn.expand "<cword>")
+  local word
+  if vim.fn.mode() == 'v' then
+    vim.cmd([[sil norm "vy]])
+    local sele = vim.fn.getreg('v')
+    word = vim.F.if_nil(opts.search, sele)
+  else
+    word = vim.F.if_nil(opts.search, vim.fn.expand "<cword>")
+  end
   local search = opts.use_regex and word or escape_chars(word)
 
   local additional_args = {}
