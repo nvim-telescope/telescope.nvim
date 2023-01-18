@@ -168,10 +168,10 @@ files.grep_string = function(opts)
   local visual = vim.fn.mode() == "v"
 
   if visual == true then
-    local saved_reg = vim.fn.getreg('v')
+    local saved_reg = vim.fn.getreg("v")
     vim.cmd([[sil norm "vy]])
-    local sele = vim.fn.getreg('v')
-    vim.fn.setreg('v', saved_reg)
+    local sele = vim.fn.getreg("v")
+    vim.fn.setreg("v", saved_reg)
     word = vim.F.if_nil(opts.search, sele)
   else
     word = vim.F.if_nil(opts.search, vim.fn.expand "<cword>")
