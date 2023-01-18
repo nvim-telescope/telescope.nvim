@@ -57,7 +57,7 @@ end
 ---@field disable_coordinates boolean: don't show the line & row numbers (default: false)
 builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_grep
 
---- Searches for the string under your cursor in your current working directory
+--- Searches for the string under your cursor or the visual selection in your current working directory
 ---@param opts table: options to pass to the picker
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field search string: the query to search
