@@ -166,8 +166,10 @@ files.grep_string = function(opts)
   local vimgrep_arguments = vim.F.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
   local word
   if vim.fn.mode() == 'v' then
+    local saved_reg = vim.fn.getreg('v')
     vim.cmd([[sil norm "vy]])
     local sele = vim.fn.getreg('v')
+    vim.fn.setreg('v', saved_reg)
     word = vim.F.if_nil(opts.search, sele)
   else
     word = vim.F.if_nil(opts.search, vim.fn.expand "<cword>")
