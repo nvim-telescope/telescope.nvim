@@ -165,7 +165,9 @@ files.grep_string = function(opts)
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
   local vimgrep_arguments = vim.F.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
   local word
-  if vim.fn.mode() == 'v' then
+  local visual = vim.fn.mode() == "v"
+
+  if visual == true then
     local saved_reg = vim.fn.getreg('v')
     vim.cmd([[sil norm "vy]])
     local sele = vim.fn.getreg('v')
@@ -191,12 +193,22 @@ files.grep_string = function(opts)
     search = { "--", search }
   end
 
-  local args = flatten {
-    vimgrep_arguments,
-    additional_args,
-    opts.word_match,
-    search,
-  }
+  local args
+  if visual == true then
+    args = flatten {
+      vimgrep_arguments,
+      additional_args,
+      search,
+    }
+  else
+    args = flatten {
+      vimgrep_arguments,
+      additional_args,
+      opts.word_match,
+      search,
+    }
+  end
+
   opts.__inverted, opts.__matches = opts_contain_invert(args)
 
   if opts.grep_open_files then
