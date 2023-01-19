@@ -507,7 +507,8 @@ append(
                           indices larger than `cache_picker.num_pickers` will
                           be cleared.
                           Default: 1
-      - limit_entries:    The amount of entries that will be written in the
+      - limit_entries:    The amount of entries that will be saved for each
+                          picker
                           Default: 1000
     ]]
 )
