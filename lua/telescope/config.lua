@@ -508,7 +508,7 @@ append(
                           be cleared.
                           Default: 1
       - limit_entries:    The amount of entries that will be saved for each
-                          picker
+                          picker.
                           Default: 1000
     ]]
 )
