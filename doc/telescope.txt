@@ -2719,7 +2719,7 @@ actions.git_track_branch({prompt_bufnr}) *telescope.actions.git_track_branch()*
 
 
 actions.git_delete_branch({prompt_bufnr}) *telescope.actions.git_delete_branch()*
-    Delete the currently selected branch
+    Delete all the selected branches
 
 
     Parameters: ~
