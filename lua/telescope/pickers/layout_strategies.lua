@@ -38,7 +38,6 @@
 ---     - columns       : (number) Columns in the vim window
 ---     - lines         : (number) Lines in the vim window
 ---     - layout_config : (table) The configuration values specific to the picker.
----
 --- </pre>
 ---
 --- This means you can create your own layout strategy if you want! Just be aware
@@ -550,6 +549,7 @@ layout_strategies.center = make_documented_layout(
 --- │                                                  │
 --- └──────────────────────────────────────────────────┘
 --- </pre>
+---@eval { ["description"] = require("telescope.pickers.layout_strategies")._format("cursor") }
 layout_strategies.cursor = make_documented_layout(
   "cursor",
   vim.tbl_extend("error", {

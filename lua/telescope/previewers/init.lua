@@ -221,8 +221,8 @@ previewers.qflist = term_previewer.qflist
 ---       vim.api.nvim_buf_call(bufnr, function()
 ---         -- for example `search` and `matchadd`
 ---       end)
----     to achieve that.
 --- </code>
+---     to achieve that.
 ---   - If you want to read a file into the buffer it's best to use
 ---     `buffer_previewer_maker`. But access this function with
 ---     `require('telescope.config').values.buffer_previewer_maker`

@@ -11,24 +11,23 @@
 --- an entry. This function will return an entry table (or nil, meaning skip
 --- this entry) which contains the following important keys:
 --- - value any: value key can be anything but still required
---- - valid bool: is an optional key because it defaults to true but if the key
----   is set to false it will not be displayed by the picker (optional)
---- - ordinal string: is the text that is used for filtering (required)
+--- - valid bool (optional): is an optional key because it defaults to true but if the key
+---   is set to false it will not be displayed by the picker
+--- - ordinal string: is the text that is used for filtering
 --- - display string|function: is either a string of the text that is being
 ---   displayed or a function receiving the entry at a later stage, when the entry
 ---   is actually being displayed. A function can be useful here if a complex
----   calculation has to be done. `make_entry` can also return a second value
+---   calculation has to be done. `make_entry` can also return a second value -
 ---   a highlight array which will then apply to the line. Highlight entry in
 ---   this array has the following signature `{ { start_col, end_col }, hl_group }`
----   (required)
---- - filename string: will be interpreted by the default `<cr>` action as
----   open this file (optional)
---- - bufnr number: will be interpreted by the default `<cr>` action as open
----   this buffer (optional)
---- - lnum number: lnum value which will be interpreted by the default `<cr>`
----   action as a jump to this line (optional)
---- - col number: col value which will be interpreted by the default `<cr>`
----   action as a jump to this column (optional)
+--- - filename string (optional): will be interpreted by the default `<cr>` action as
+---   open this file
+--- - bufnr number (optional): will be interpreted by the default `<cr>` action as open
+---   this buffer
+--- - lnum number (optional): lnum value which will be interpreted by the default `<cr>`
+---   action as a jump to this line
+--- - col number (optional): col value which will be interpreted by the default `<cr>`
+---   action as a jump to this column
 ---
 --- For more information on easier displaying, see |telescope.pickers.entry_display|
 ---
