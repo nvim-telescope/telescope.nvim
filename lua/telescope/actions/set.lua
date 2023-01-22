@@ -83,7 +83,7 @@ do
     if command ~= "drop" and command ~= "tab drop" then
       vim.cmd(string.format("%s %d", command, bufnr))
     else
-      vim.cmd(string.format("%s %s", command, vim.api.nvim_buf_get_name(bufnr)))
+      vim.cmd(string.format("%s %s", command, vim.fn.fnameescape(vim.api.nvim_buf_get_name(bufnr))))
     end
   end
 end
