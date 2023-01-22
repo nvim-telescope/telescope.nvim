@@ -2,9 +2,9 @@
 ---@config { ["module"] = "telescope.actions" }
 
 ---@brief [[
---- Actions functions that are useful for people creating their own mappings.
+--- These functions are useful for people creating their own mappings.
 ---
---- Actions can be either normal functions that expect the prompt_bufnr as
+--- Actions can be either normal functions that expect the `prompt_bufnr` as
 --- first argument (1) or they can be a custom telescope type called "action" (2).
 ---
 --- (1) The `prompt_bufnr` of a normal function denotes the identifier of your
@@ -45,7 +45,7 @@
 ---   action(bufnr)
 --- </code>
 ---
---- Another interesing thing to do is that these actions now have functions you
+--- Another interesting thing to do is that these actions now have functions you
 --- can call. These functions include `:replace(f)`, `:replace_if(f, c)`,
 --- `replace_map(tbl)` and `enhance(tbl)`. More information on these functions
 --- can be found in the `developers.md` and `lua/tests/automated/action_spec.lua`
@@ -150,7 +150,7 @@ actions.toggle_selection = function(prompt_bufnr)
 end
 
 --- Multi select all entries.
---- - Note: selected entries may include results not visible in the results popup.
+--- - Note: selected entries may include results not visible in the results pop up.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_all = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -187,7 +187,7 @@ actions.drop_all = function(prompt_bufnr)
 end
 
 --- Toggle multi selection for all entries.
---- - Note: toggled entries may include results not visible in the results popup.
+--- - Note: toggled entries may include results not visible in the results pop up.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.toggle_all = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -403,7 +403,7 @@ local set_edit_line = function(prompt_bufnr, fname, prefix, postfix)
   a.nvim_feedkeys(a.nvim_replace_termcodes(prefix .. selection.value .. postfix, true, false, true), "t", true)
 end
 
---- Set a value in the command line and dont run it, making it editable.
+--- Set a value in the command line and don't run it, making it editable.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.edit_command_line = function(prompt_bufnr)
   set_edit_line(prompt_bufnr, "actions.edit_command_line", ":")
@@ -422,7 +422,7 @@ actions.set_command_line = function(prompt_bufnr)
   vim.cmd(selection.value)
 end
 
---- Set a value in the search line and dont search for it, making it editable.
+--- Set a value in the search line and don't search for it, making it editable.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.edit_search_line = function(prompt_bufnr)
   set_edit_line(prompt_bufnr, "actions.edit_search_line", "/")
