@@ -964,7 +964,7 @@ builtin.git_files({opts})                      *telescope.builtin.git_files()*
         {recurse_submodules} (boolean)  if true, adds the
                                         `--recurse-submodules` flag to command
                                         (default: false)
-        {git_command}        (table)    command that will be exectued.
+        {git_command}        (table)    command that will be executed.
                                         {"git","ls-files","--exclude-standard","--cached"}
 
 
@@ -984,7 +984,7 @@ builtin.git_commits({opts})                  *telescope.builtin.git_commits()*
         {cwd}          (string)   specify the path of the repo
         {use_git_root} (boolean)  if we should use git root as cwd or the cwd
                                   (important for submodule) (default: true)
-        {git_command}  (table)    command that will be exectued.
+        {git_command}  (table)    command that will be executed.
                                   {"git","log","--pretty=oneline","--abbrev-commit","--","."}
 
 
@@ -1006,7 +1006,7 @@ builtin.git_bcommits({opts})                *telescope.builtin.git_bcommits()*
                                   (important for submodule) (default: true)
         {current_file} (string)   specify the current file that should be used
                                   for bcommits (default: current buffer)
-        {git_command}  (table)    command that will be exectued.
+        {git_command}  (table)    command that will be executed.
                                   {"git","log","--pretty=oneline","--abbrev-commit"}
 
 
