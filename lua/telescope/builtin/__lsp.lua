@@ -18,6 +18,7 @@ lsp.references = function(opts)
   local locations = {}
   local count = 0
   local picker
+  -- add t2 to t1 if lnum and col is unique
   local add_unique = function(t1, t2)
     for _, v in ipairs(t2) do
       local add = true
@@ -58,7 +59,7 @@ lsp.references = function(opts)
     if vim.tbl_isempty(locations) then
       return
     end
-
+    -- make sure all client run before jump
     count = count + 1
     if #locations == 1 and count == buf_clients_num and opts.jump_type ~= "never" then
       if opts.jump_type == "tab" then
