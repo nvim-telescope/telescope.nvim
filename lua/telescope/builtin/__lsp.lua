@@ -14,6 +14,24 @@ lsp.references = function(opts)
   local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
   local params = vim.lsp.util.make_position_params(opts.winnr)
   local include_current_line = vim.F.if_nil(opts.include_current_line, false)
+  local buf_clients_num = #vim.tbl_keys(vim.lsp.get_active_clients { bufnr = opts.bufnr })
+  local locations = {}
+  local count = 0
+  local picker
+  local add_unique = function(t1, t2)
+    for _, v in ipairs(t2) do
+      local add = true
+      for _, check in ipairs(t1) do
+        if check.lnum == v.lnum and check.col == v.col then
+          add = false
+          break
+        end
+      end
+      if add then
+        table.insert(t1, v)
+      end
+    end
+  end
   params.context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) }
 
   vim.lsp.buf_request(opts.bufnr, "textDocument/references", params, function(err, result, ctx, _)
@@ -22,16 +40,18 @@ lsp.references = function(opts)
       return
     end
 
-    local locations = {}
     if result then
       local results = vim.lsp.util.locations_to_items(result, vim.lsp.get_client_by_id(ctx.client_id).offset_encoding)
       if not include_current_line then
-        locations = vim.tbl_filter(function(v)
-          -- Remove current line from result
-          return not (v.filename == filepath and v.lnum == lnum)
-        end, vim.F.if_nil(results, {}))
+        add_unique(
+          locations,
+          vim.tbl_filter(function(v)
+            -- Remove current line from result
+            return not (v.filename == filepath and v.lnum == lnum)
+          end, vim.F.if_nil(results, {}))
+        )
       else
-        locations = vim.F.if_nil(results, {})
+        add_unique(locations, vim.F.if_nil(results, {}))
       end
     end
 
@@ -39,7 +59,8 @@ lsp.references = function(opts)
       return
     end
 
-    if #locations == 1 and opts.jump_type ~= "never" then
+    count = count + 1
+    if #locations == 1 and count == buf_clients_num and opts.jump_type ~= "never" then
       if opts.jump_type == "tab" then
         vim.cmd "tabedit"
       elseif opts.jump_type == "split" then
@@ -58,8 +79,8 @@ lsp.references = function(opts)
       return
     end
 
-    pickers
-      .new(opts, {
+    if not picker and #locations > 1 then
+      picker = pickers.new(opts, {
         prompt_title = "LSP References",
         finder = finders.new_table {
           results = locations,
@@ -70,7 +91,10 @@ lsp.references = function(opts)
         push_cursor_on_edit = true,
         push_tagstack_on_edit = true,
       })
-      :find()
+      picker:find()
+    elseif picker then
+      picker:refresh()
+    end
   end)
 end
 
