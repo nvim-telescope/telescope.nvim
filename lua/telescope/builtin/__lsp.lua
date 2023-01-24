@@ -14,22 +14,16 @@ lsp.references = function(opts)
   local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
   local params = vim.lsp.util.make_position_params(opts.winnr)
   local include_current_line = vim.F.if_nil(opts.include_current_line, false)
-  local buf_clients_num = #vim.tbl_keys(vim.lsp.get_active_clients { bufnr = opts.bufnr })
   local locations = {}
-  local count = 0
+  local locations_hash = {}
   local picker
-  -- add t2 to t1 if lnum and col is unique
-  local add_unique = function(t1, t2)
+  local add_unique_locations = function(t1, t2)
     for _, v in ipairs(t2) do
-      local add = true
-      for _, check in ipairs(t1) do
-        if check.lnum == v.lnum and check.col == v.col then
-          add = false
-          break
-        end
-      end
-      if add then
+      -- use hash to determinte if location is unique.
+      local hash = (v.filename .. v.col .. v.lnum .. v.text)
+      if not locations_hash[hash] then
         table.insert(t1, v)
+        locations_hash[hash] = true
       end
     end
   end
@@ -44,7 +38,7 @@ lsp.references = function(opts)
     if result then
       local results = vim.lsp.util.locations_to_items(result, vim.lsp.get_client_by_id(ctx.client_id).offset_encoding)
       if not include_current_line then
-        add_unique(
+        add_unique_locations(
           locations,
           vim.tbl_filter(function(v)
             -- Remove current line from result
@@ -52,7 +46,7 @@ lsp.references = function(opts)
           end, vim.F.if_nil(results, {}))
         )
       else
-        add_unique(locations, vim.F.if_nil(results, {}))
+        add_unique_locations(locations, vim.F.if_nil(results, {}))
       end
     end
 
@@ -60,8 +54,7 @@ lsp.references = function(opts)
       return
     end
     -- make sure all client run before jump
-    count = count + 1
-    if #locations == 1 and count == buf_clients_num and opts.jump_type ~= "never" then
+    if #locations == 1 and opts.jump_type ~= "never" then
       if opts.jump_type == "tab" then
         vim.cmd "tabedit"
       elseif opts.jump_type == "split" then
@@ -80,7 +73,7 @@ lsp.references = function(opts)
       return
     end
 
-    if not picker and #locations > 1 then
+    if not picker then
       picker = pickers.new(opts, {
         prompt_title = "LSP References",
         finder = finders.new_table {
