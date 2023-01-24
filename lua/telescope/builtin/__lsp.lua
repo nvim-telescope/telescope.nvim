@@ -53,7 +53,7 @@ lsp.references = function(opts)
     if vim.tbl_isempty(locations) then
       return
     end
-    -- make sure all client run before jump
+
     if #locations == 1 and opts.jump_type ~= "never" then
       if opts.jump_type == "tab" then
         vim.cmd "tabedit"
