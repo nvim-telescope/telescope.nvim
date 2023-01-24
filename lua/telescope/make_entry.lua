@@ -831,7 +831,7 @@ function make_entry.gen_from_registers(opts)
   end
 
   return function(entry)
-    local contents = vim.fn.getreg(entry)
+    local contents = vim.fn.getreg(entry, 1)
     return make_entry.set_default_entry_mt({
       value = entry,
       ordinal = string.format("%s %s", entry, contents),
