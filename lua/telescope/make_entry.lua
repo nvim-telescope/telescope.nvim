@@ -463,7 +463,10 @@ function make_entry.gen_from_quickfix(opts)
 
   local hidden = utils.is_path_hidden(opts)
   local items = {
-    { width = vim.F.if_nil(opts.fname_width, 30) },
+    {
+      width = vim.F.if_nil(opts.fname_width, 30),
+      direction = vim.F.if_nil(opts.fname_direction, 1),
+    },
     { remaining = true },
   }
   if hidden then
@@ -530,7 +533,10 @@ function make_entry.gen_from_lsp_symbols(opts)
 
   local hidden = utils.is_path_hidden(opts)
   if not hidden then
-    table.insert(display_items, 1, { width = vim.F.if_nil(opts.fname_width, 30) })
+    table.insert(display_items, 1, {
+      width = vim.F.if_nil(opts.fname_width, 30),
+      direction = vim.F.if_nil(opts.fname_direction, 1),
+    })
   end
 
   if opts.show_line then
@@ -1044,7 +1050,10 @@ function make_entry.gen_from_ctags(opts)
   local idx = 1
   local hidden = utils.is_path_hidden(opts)
   if not hidden then
-    table.insert(display_items, idx, { width = vim.F.if_nil(opts.fname_width, 30) })
+    table.insert(display_items, idx, {
+      width = vim.F.if_nil(opts.fname_width, 30),
+      direction = vim.F.if_nil(opts.fname_direction, 1),
+    })
     idx = idx + 1
   end
 

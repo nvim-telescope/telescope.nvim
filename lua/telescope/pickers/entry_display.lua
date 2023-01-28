@@ -80,9 +80,9 @@ entry_display.create = function(configuration)
           width = resolve.resolve_width(v.width)(nil, s[1], s[2])
         end
         if type(item) == "table" then
-          return strings.align_str(entry_display.truncate(item[1], width), width, justify), item[2]
+          return strings.align_str(entry_display.truncate(item[1], width, nil, v.direction), width, justify), item[2]
         else
-          return strings.align_str(entry_display.truncate(item, width), width, justify)
+          return strings.align_str(entry_display.truncate(item, width, nil, v.direction), width, justify)
         end
       end)
     else

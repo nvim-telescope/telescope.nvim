@@ -107,6 +107,7 @@ builtin.current_buffer_fuzzy_find = require_on_exported_call("telescope.builtin.
 ---@field show_line boolean: if true, shows the content of the line the tag is found on in the picker (default: true)
 ---@field only_sort_tags boolean: if true we will only sort tags (default: false)
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 builtin.tags = require_on_exported_call("telescope.builtin.__files").tags
 
 --- Lists all of the tags for the currently open buffer, with a preview
@@ -116,6 +117,7 @@ builtin.tags = require_on_exported_call("telescope.builtin.__files").tags
 ---@field show_line boolean: if true, shows the content of the line the tag is found on in the picker (default: true)
 ---@field only_sort_tags boolean: if true we will only sort tags (default: false)
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 builtin.current_buffer_tags = require_on_exported_call("telescope.builtin.__files").current_buffer_tags
 
 --
@@ -248,6 +250,7 @@ builtin.commands = require_on_exported_call("telescope.builtin.__internal").comm
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 ---@field nr number: specify the quickfix list number
 builtin.quickfix = require_on_exported_call("telescope.builtin.__internal").quickfix
 
@@ -261,6 +264,7 @@ builtin.quickfixhistory = require_on_exported_call("telescope.builtin.__internal
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 builtin.loclist = require_on_exported_call("telescope.builtin.__internal").loclist
 
 --- Lists previously open files, opens on `<cr>`
@@ -358,6 +362,7 @@ builtin.spell_suggest = require_on_exported_call("telescope.builtin.__internal")
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 builtin.tagstack = require_on_exported_call("telescope.builtin.__internal").tagstack
 
 --- Lists items from Vim's jumplist, jumps to location on `<cr>`
@@ -365,6 +370,7 @@ builtin.tagstack = require_on_exported_call("telescope.builtin.__internal").tags
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 builtin.jumplist = require_on_exported_call("telescope.builtin.__internal").jumplist
 
 --
@@ -379,6 +385,7 @@ builtin.jumplist = require_on_exported_call("telescope.builtin.__internal").jump
 ---@field include_current_line boolean: include current line (default: false)
 ---@field jump_type string: how to goto reference if there is only one, values: "tab", "split", "vsplit", "never"
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 builtin.lsp_references = require_on_exported_call("telescope.builtin.__lsp").references
@@ -386,6 +393,7 @@ builtin.lsp_references = require_on_exported_call("telescope.builtin.__lsp").ref
 --- Lists LSP incoming calls for word under the cursor, jumps to reference on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 builtin.lsp_incoming_calls = require_on_exported_call("telescope.builtin.__lsp").incoming_calls
@@ -393,6 +401,7 @@ builtin.lsp_incoming_calls = require_on_exported_call("telescope.builtin.__lsp")
 --- Lists LSP outgoing calls for word under the cursor, jumps to reference on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 builtin.lsp_outgoing_calls = require_on_exported_call("telescope.builtin.__lsp").outgoing_calls
@@ -401,6 +410,7 @@ builtin.lsp_outgoing_calls = require_on_exported_call("telescope.builtin.__lsp")
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 builtin.lsp_definitions = require_on_exported_call("telescope.builtin.__lsp").definitions
@@ -410,6 +420,7 @@ builtin.lsp_definitions = require_on_exported_call("telescope.builtin.__lsp").de
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto definition if there is only one, values: "tab", "split", "vsplit", "never"
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 builtin.lsp_type_definitions = require("telescope.builtin.__lsp").type_definitions
@@ -418,6 +429,7 @@ builtin.lsp_type_definitions = require("telescope.builtin.__lsp").type_definitio
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto implementation if there is only one, values: "tab", "split", "vsplit", "never"
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 builtin.lsp_implementations = require_on_exported_call("telescope.builtin.__lsp").implementations
@@ -427,6 +439,7 @@ builtin.lsp_implementations = require_on_exported_call("telescope.builtin.__lsp"
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 ---@field show_line boolean: if true, shows the content of the line the tag is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
 ---@field ignore_symbols string|table: list of symbols to ignore
@@ -439,6 +452,7 @@ builtin.lsp_document_symbols = require_on_exported_call("telescope.builtin.__lsp
 ---@param opts table: options to pass to the picker
 ---@field query string: for what to query the workspace (default: "")
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 ---@field show_line boolean: if true, shows the content of the line the tag is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
 ---@field ignore_symbols string|table: list of symbols to ignore
@@ -450,6 +464,7 @@ builtin.lsp_workspace_symbols = require_on_exported_call("telescope.builtin.__ls
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field fname_direction number: defines the truncation direction of the filename section (default: 1)
 ---@field show_line boolean: if true, shows the content of the line the symbol is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
 ---@field ignore_symbols string|table: list of symbols to ignore
