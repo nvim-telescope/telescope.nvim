@@ -265,6 +265,7 @@ builtin.loclist = require_on_exported_call("telescope.builtin.__internal").locli
 
 --- Lists previously open files, opens on `<cr>`
 ---@param opts table: options to pass to the picker
+---@field cwd string: specify a working directory to filter oldfiles by
 ---@field only_cwd boolean: show only files in the cwd (default: false)
 ---@field cwd_only boolean: alias for only_cwd
 builtin.oldfiles = require_on_exported_call("telescope.builtin.__internal").oldfiles
@@ -305,6 +306,7 @@ builtin.reloader = require_on_exported_call("telescope.builtin.__internal").relo
 
 --- Lists open buffers in current neovim instance, opens selected buffer on `<cr>`
 ---@param opts table: options to pass to the picker
+---@field cwd string: specify a working directory to filter buffers list by
 ---@field show_all_buffers boolean: if true, show all buffers, including unloaded buffers (default: true)
 ---@field ignore_current_buffer boolean: if true, don't show the current buffer in the list (default: false)
 ---@field only_cwd boolean: if true, only show buffers in the current working directory (default: false)
