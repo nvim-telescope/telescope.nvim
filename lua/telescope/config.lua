@@ -454,6 +454,7 @@ append(
     handler = function(...)
       return require("telescope.actions.history").get_simple_history(...)
     end,
+    cycle_wrap = false,
   },
   [[
   This field handles the configuration for prompt history.
@@ -469,20 +470,25 @@ append(
     },
 
   Fields:
-    - path:    The path to the telescope history as string.
-               Default: stdpath("data")/telescope_history
-    - limit:   The amount of entries that will be written in the
-               history.
-               Warning: If limit is set to nil it will grow unbound.
-               Default: 100
-    - handler: A lua function that implements the history.
-               This is meant as a developer setting for extensions to
-               override the history handling, e.g.,
-               https://github.com/nvim-telescope/telescope-smart-history.nvim,
-               which allows context sensitive (cwd + picker) history.
+    - path:       The path to the telescope history as string.
+                  Default: stdpath("data")/telescope_history
+    - limit:      The amount of entries that will be written in the
+                  history.
+                  Warning: If limit is set to nil it will grow unbound.
+                  Default: 100
+    - handler:    A lua function that implements the history.
+                  This is meant as a developer setting for extensions to
+                  override the history handling, e.g.,
+                  https://github.com/nvim-telescope/telescope-smart-history.nvim,
+                  which allows context sensitive (cwd + picker) history.
 
-               Default:
-               require('telescope.actions.history').get_simple_history]]
+                  Default:
+                  require('telescope.actions.history').get_simple_history
+    - cycle_wrap: Indicates whether the cycle_history_next and
+                  cycle_history_prev functions should wrap around to the
+                  beginning or end of the history entries on reaching
+                  their respective ends
+                  Default: false]]
 )
 
 append(
