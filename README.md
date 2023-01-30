@@ -67,7 +67,7 @@ wiki.
 - [sharkdp/fd](https://github.com/sharkdp/fd) (finder)
 - [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) (finder/preview)
 - [neovim LSP]( https://neovim.io/doc/user/lsp.html) (picker)
-- [devicons](https://github.com/kyazdani42/nvim-web-devicons) (icons)
+- [devicons](https://github.com/nvim-tree/nvim-web-devicons) (icons)
 
 ### Installation
 
