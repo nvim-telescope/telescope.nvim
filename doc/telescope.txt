@@ -1214,6 +1214,8 @@ builtin.oldfiles({opts})                        *telescope.builtin.oldfiles()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
+        {cwd}      (string)   specify a working directory to filter oldfiles
+                              by
         {only_cwd} (boolean)  show only files in the cwd (default: false)
         {cwd_only} (boolean)  alias for only_cwd
 
@@ -1301,6 +1303,8 @@ builtin.buffers({opts})                          *telescope.builtin.buffers()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
+        {cwd}                   (string)   specify a working directory to
+                                           filter buffers list by
         {show_all_buffers}      (boolean)  if true, show all buffers,
                                            including unloaded buffers
                                            (default: true)
