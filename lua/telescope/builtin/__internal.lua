@@ -523,8 +523,9 @@ internal.oldfiles = function(opts)
     end
   end
 
-  if opts.cwd_only then
-    local cwd = vim.loop.cwd() .. utils.get_separator()
+  if opts.cwd_only or opts.cwd then
+    local cwd = opts.cwd_only and vim.loop.cwd() or opts.cwd
+    cwd = cwd .. utils.get_separator()
     cwd = cwd:gsub([[\]], [[\\]])
     results = vim.tbl_filter(function(file)
       return vim.fn.matchstrpos(file, cwd)[2] ~= -1
@@ -868,6 +869,9 @@ internal.buffers = function(opts)
       return false
     end
     if opts.cwd_only and not string.find(vim.api.nvim_buf_get_name(b), vim.loop.cwd(), 1, true) then
+      return false
+    end
+    if not opts.cwd_only and opts.cwd and not string.find(vim.api.nvim_buf_get_name(b), opts.cwd, 1, true) then
       return false
     end
     return true
