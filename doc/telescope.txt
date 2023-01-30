@@ -388,20 +388,25 @@ telescope.setup({opts})                                    *telescope.setup()*
           },
 
         Fields:
-          - path:    The path to the telescope history as string.
-                     Default: stdpath("data")/telescope_history
-          - limit:   The amount of entries that will be written in the
-                     history.
-                     Warning: If limit is set to nil it will grow unbound.
-                     Default: 100
-          - handler: A lua function that implements the history.
-                     This is meant as a developer setting for extensions to
-                     override the history handling, e.g.,
-                     https://github.com/nvim-telescope/telescope-smart-history.nvim,
-                     which allows context sensitive (cwd + picker) history.
+          - path:       The path to the telescope history as string.
+                        Default: stdpath("data")/telescope_history
+          - limit:      The amount of entries that will be written in the
+                        history.
+                        Warning: If limit is set to nil it will grow unbound.
+                        Default: 100
+          - handler:    A lua function that implements the history.
+                        This is meant as a developer setting for extensions to
+                        override the history handling, e.g.,
+                        https://github.com/nvim-telescope/telescope-smart-history.nvim,
+                        which allows context sensitive (cwd + picker) history.
 
-                     Default:
-                     require('telescope.actions.history').get_simple_history
+                        Default:
+                        require('telescope.actions.history').get_simple_history
+          - cycle_wrap: Indicates whether the cycle_history_next and
+                        cycle_history_prev functions should wrap around to the
+                        beginning or end of the history entries on reaching
+                        their respective ends
+                        Default: false
 
                                           *telescope.defaults.cache_picker*
     cache_picker: ~
@@ -3633,14 +3638,17 @@ histories.History()                      *telescope.actions.history.History()*
 
 
     Fields: ~
-        {enabled} (boolean)  Will indicate if History is enabled or disabled
-        {path}    (string)   Will point to the location of the history file
-        {limit}   (string)   Will have the limit of the history. Can be nil,
-                             if limit is disabled.
-        {content} (table)    History table. Needs to be filled by your own
-                             History implementation
-        {index}   (number)   Used to keep track of the next or previous index.
-                             Default is #content + 1
+        {enabled}    (boolean)  Will indicate if History is enabled or
+                                disabled
+        {path}       (string)   Will point to the location of the history file
+        {limit}      (string)   Will have the limit of the history. Can be
+                                nil, if limit is disabled.
+        {content}    (table)    History table. Needs to be filled by your own
+                                History implementation
+        {index}      (number)   Used to keep track of the next or previous
+                                index. Default is #content + 1
+        {cycle_wrap} (boolean)  Controls if history will wrap on reaching
+                                beginning or end
 
 
 histories.History:new({opts})        *telescope.actions.history.History:new()*

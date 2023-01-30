@@ -484,9 +484,10 @@ append(
 
                   Default:
                   require('telescope.actions.history').get_simple_history
-    - cycle_wrap: Indicates whether the cycle_history_next and cycle_history_prev
-                  functions should wrap around to the beginning or end of the
-                  history entries on reaching their respective ends
+    - cycle_wrap: Indicates whether the cycle_history_next and
+                  cycle_history_prev functions should wrap around to the
+                  beginning or end of the history entries on reaching
+                  their respective ends
                   Default: false]]
 )
 
