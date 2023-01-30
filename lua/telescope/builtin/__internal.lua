@@ -750,8 +750,16 @@ internal.man_pages = function(opts)
   opts.sections = vim.F.if_nil(opts.sections, { "1" })
   assert(vim.tbl_islist(opts.sections), "sections should be a list")
   opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
-    local is_darwin = vim.loop.os_uname().sysname == "Darwin"
-    return is_darwin and { "apropos", " " } or { "apropos", "" }
+    local uname = vim.loop.os_uname()
+    local sysname = string.lower(uname.sysname)
+    if sysname == "darwin" then
+      local major_version = tonumber(vim.fn.matchlist(uname.release, [[^\(\d\+\)\..*]])[2]) or 0
+      return major_version >= 22 and { "apropos", "." } or { "apropos", " " }
+    elseif sysname == "freebsd" then
+      return { "apropos", "." }
+    else
+      return { "apropos", "" }
+    end
   end)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts)
   opts.env = { PATH = vim.env.PATH, MANPATH = vim.env.MANPATH }
