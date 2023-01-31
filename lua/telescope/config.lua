@@ -831,6 +831,28 @@ append(
     Default: require("telescope.previewers").buffer_previewer_maker]]
 )
 
+ append(
+   "git_log_graph",
+   {
+    show = false,
+    all_branches = false,
+    inverted = false
+  },
+  [[
+  Show git log with --graph option.
+    Args:
+    - show                      showing the graph or not
+        false (default)
+        true
+    - all_branches              showing all branches with graph
+        false (default)
+        true
+    - inverted                  if first git log showing on the top
+        false (default)
+        true
+    Default: {show = false, all_branches = false, inverted = false}]]
+ )
+
 -- @param user_defaults table: a table where keys are the names of options,
 --    and values are the ones the user wants
 -- @param tele_defaults table: (optional) a table containing all of the defaults

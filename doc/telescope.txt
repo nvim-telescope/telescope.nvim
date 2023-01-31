@@ -677,6 +677,21 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: require("telescope.previewers").buffer_previewer_maker
 
+                                         *telescope.defaults.git_log_graph*
+    git_log_graph: ~
+        Show git log with --graph option.
+          Args:
+          - show                      showing the graph or not
+              false (default)
+              true
+          - all_branches              showing all branches with graph
+              false (default)
+              true
+          - inverted                  if first git log showing on the top
+              false (default)
+              true
+          Default: {show = false, all_branches = false, inverted = false}
+
     Parameters: ~
         {opts} (table)  Configuration opts. Keys: defaults, pickers,
                         extensions

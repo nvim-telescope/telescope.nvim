@@ -409,6 +409,7 @@ end
 
 function make_entry.gen_from_git_commits(opts)
   opts = opts or {}
+  local git_log_graph = opts.git_log_graph or {}
 
   local displayer = entry_display.create {
     separator = " ",
@@ -442,10 +443,11 @@ function make_entry.gen_from_git_commits(opts)
       msg = "<empty commit message>"
     end
 
-    marker, _ = string.gsub(marker, "\\", "+")
-    marker, _ = string.gsub(marker, "/", "-")
-    marker, _ = string.gsub(marker, "+", "/")
-    marker, _ = string.gsub(marker, "-", "\\")
+    if not git_log_graph.inverted then
+      marker, _ = string.gsub(marker, "\\", "+")
+      marker, _ = string.gsub(marker, "/", "-")
+      marker, _ = string.gsub(marker, "+", "/")
+    end
 
     return make_entry.set_default_entry_mt({
       value = sha,
