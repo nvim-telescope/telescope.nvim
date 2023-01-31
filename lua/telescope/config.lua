@@ -831,12 +831,12 @@ append(
     Default: require("telescope.previewers").buffer_previewer_maker]]
 )
 
- append(
-   "git_log_graph",
-   {
+append(
+  "git_log_graph",
+  {
     show = false,
     all_branches = false,
-    inverted = false
+    inverted = false,
   },
   [[
   Show git log with --graph option.
@@ -851,7 +851,7 @@ append(
         false (default)
         true
     Default: {show = false, all_branches = false, inverted = false}]]
- )
+)
 
 -- @param user_defaults table: a table where keys are the names of options,
 --    and values are the ones the user wants
