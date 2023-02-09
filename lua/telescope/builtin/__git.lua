@@ -357,7 +357,18 @@ git.status = function(opts)
       attach_mappings = function(prompt_bufnr, map)
         actions.git_staging_toggle:enhance {
           post = function()
-            action_state.get_current_picker(prompt_bufnr):refresh(gen_new_finder(), { reset_prompt = true })
+            local picker = action_state.get_current_picker(prompt_bufnr)
+
+            -- temporarily register a callback which keeps selection on refresh
+            local selection = picker:get_selection_row()
+            local callbacks = { unpack(picker._completion_callbacks) } -- shallow copy
+            picker:register_completion_callback(function(self)
+              self:set_selection(selection)
+              self._completion_callbacks = callbacks
+            end)
+
+            -- refresh
+            picker:refresh(gen_new_finder(), { reset_prompt = false })
           end,
         }
 
