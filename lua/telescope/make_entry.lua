@@ -272,6 +272,7 @@ do
 
     local disable_devicons = opts.disable_devicons
     local disable_coordinates = opts.disable_coordinates
+    local disable_filenames = opts.disable_filenames
     local only_sort_text = opts.only_sort_text
 
     local execute_keys = {
@@ -313,15 +314,18 @@ do
       cwd = vim.fn.expand(opts.cwd or vim.loop.cwd()),
 
       display = function(entry)
-        local display_filename = utils.transform_path(opts, entry.filename)
+        local display_filename = ""
+        if not disable_filenames then
+          display_filename = string.format("%s:", utils.transform_path(opts, entry.filename))
+        end
 
         local coordinates = ":"
         if not disable_coordinates then
           if entry.lnum then
             if entry.col then
-              coordinates = string.format(":%s:%s:", entry.lnum, entry.col)
+              coordinates = string.format("%s:%s:", entry.lnum, entry.col)
             else
-              coordinates = string.format(":%s:", entry.lnum)
+              coordinates = string.format("%s:", entry.lnum)
             end
           end
         end

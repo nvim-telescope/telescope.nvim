@@ -801,6 +801,8 @@ builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
         {max_results}         (number)          define a upper result value
         {disable_coordinates} (boolean)         don't show the line & row
                                                 numbers (default: false)
+        {disable_filenames}   (boolean)         don't show the file path
+                                                (default: false)
 
 
 builtin.grep_string({opts})                  *telescope.builtin.grep_string()*
