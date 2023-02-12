@@ -103,6 +103,25 @@ use {
 }
 ```
 
+Using [lazy.nvim](https://github.com/folke/lazy.nvim)
+
+```lua
+-- init.lua:
+    {
+    'nvim-telescope/telescope.nvim', tag = '0.1.1',
+-- or                              , branch = '0.1.1',
+      dependencies = { 'nvim-lua/plenary.nvim' }
+    }
+
+-- plugins/telescope.lua:
+return {
+    {
+    'nvim-telescope/telescope.nvim', tag = '0.1.1',
+-- or                              , branch = '0.1.1',
+      dependencies = { 'nvim-lua/plenary.nvim' }
+    }
+```
+
 ### checkhealth
 
 Make sure you call `:checkhealth telescope` after installing telescope to ensure
