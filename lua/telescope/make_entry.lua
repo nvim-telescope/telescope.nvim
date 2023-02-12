@@ -696,8 +696,7 @@ function make_entry.gen_from_treesitter(opts)
 
   local get_filename = get_filename_fn()
   return function(entry)
-    local ts_utils = require "nvim-treesitter.ts_utils"
-    local start_row, start_col, end_row, _ = ts_utils.get_node_range(entry.node)
+    local start_row, start_col, end_row, _ = vim.treesitter.get_node_range(entry.node)
     local node_text = vim.treesitter.get_node_text(entry.node, bufnr)
     return make_entry.set_default_entry_mt({
       value = entry.node,
