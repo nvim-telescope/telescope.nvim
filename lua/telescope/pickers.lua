@@ -77,6 +77,7 @@ function Picker:new(opts)
     entry_prefix = vim.F.if_nil(opts.entry_prefix, config.values.entry_prefix),
     multi_icon = vim.F.if_nil(opts.multi_icon, config.values.multi_icon),
 
+    theme = vim.F.if_nil(opts.theme, "dropdown"),
     initial_mode = vim.F.if_nil(opts.initial_mode, config.values.initial_mode),
     _original_mode = vim.api.nvim_get_mode().mode,
     debounce = vim.F.if_nil(tonumber(opts.debounce), nil),

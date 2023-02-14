@@ -64,6 +64,74 @@ function themes.get_dropdown(opts)
   return vim.tbl_deep_extend("force", theme_opts, opts)
 end
 
+--- Minimal style theme.
+---
+--- Usage:
+--- <code>
+---     local opts = {...} -- picker options
+---     local builtin = require('telescope.builtin')
+---     local themes = require('telescope.themes')
+---     builtin.find_files(themes.get_minimal(opts))
+--- </code>
+function themes.get_minimal(opts)
+  opts = opts or {}
+
+  local theme_opts = {
+    theme = "minimal",
+
+    results_title = false,
+
+    sorting_strategy = "ascending",
+    layout_strategy = "horizontal",
+    layout_config = {
+      preview_cutoff = 1, -- Preview should always show (unless previewer = false)
+
+      width = function(_, max_columns, _)
+        return math.min(max_columns, 80)
+      end,
+
+      height = function(_, _, max_lines)
+        return math.min(max_lines, 15)
+      end,
+    },
+
+    border = true,
+    borderchars = {
+      prompt = { "─", "│", "x", "│", "╭", "┬", "│", "│" },
+      results = { "─", "│", "─", "│", "├", "┤", "┴", "╰" },
+      preview = { "─", "│", "─", " ", "─", "╮", "╯", "─" },
+    },
+  }
+  if opts.layout_config and opts.layout_config.prompt_position == "bottom" then
+    theme_opts.borderchars = {
+      results = { "─", "│", "x", "│", "╭", "┬", "│", "│" },
+      prompt = { "─", "│", "─", "│", "├", "┤", "┴", "╰" },
+      preview = { "─", "│", "─", " ", "─", "╮", "╯", "─" },
+    }
+  end
+
+  if opts.layout_strategy and opts.layout_strategy == "vertical" then
+    local top = { "─", "│", "x", "│", "╭", "╮", "│", "│" }
+    local middle = { "─", "│", "─", "│", "├", "┤", "┴", "╰" }
+    local bottom = { "─", "│", "─", "│", "├", "┤", "╯", "╰" }
+
+    if opts.layout_config and opts.layout_config.prompt_position == "bottom" then
+      theme_opts.borderchars = {
+        results = top,
+        prompt = middle,
+        preview = bottom,
+      }
+    else
+      theme_opts.borderchars = {
+        prompt = top,
+        results = middle,
+        preview = bottom,
+      }
+    end
+  end
+  return vim.tbl_deep_extend("force", theme_opts, opts)
+end
+
 --- Cursor style theme.
 ---
 --- Usage:

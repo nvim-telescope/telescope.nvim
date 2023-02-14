@@ -344,7 +344,7 @@ layout_strategies.horizontal = make_documented_layout(
     height, h_space = calc_size_and_spacing(height, max_lines, bs, 2, 4, 1)
 
     prompt.height = 1
-    results.height = height - prompt.height - h_space
+    results.height = height - prompt.height - h_space + (self.theme == "minimal" and 1 or 0)
 
     if self.previewer then
       preview.height = height - 2 * bs
@@ -367,10 +367,12 @@ layout_strategies.horizontal = make_documented_layout(
     preview.line = math.floor((max_lines - height) / 2) + bs + 1
     if layout_config.prompt_position == "top" then
       prompt.line = preview.line
-      results.line = prompt.line + prompt.height + 1 + bs
+      results.line = prompt.line + prompt.height + bs + (self.theme == "minimal" and 0 or 1)
+      results.zindex = prompt.zindex + (self.theme == "minimal" and 1 or 0)
     elseif layout_config.prompt_position == "bottom" then
       results.line = preview.line
-      prompt.line = results.line + results.height + 1 + bs
+      prompt.line = results.line + results.height + bs + (self.theme == "minimal" and 0 or 1)
+      prompt.zindex = results.zindex + (self.theme == "minimal" and 1 or 0)
     else
       error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
     end
@@ -728,12 +730,15 @@ layout_strategies.vertical = make_documented_layout(
     else
       if layout_config.prompt_position == "top" then
         prompt.line = height_padding + (1 + bs)
-        results.line = prompt.line + prompt.height + (1 + bs)
-        preview.line = results.line + results.height + (1 + bs)
+        results.line = prompt.line + prompt.height + (1 + bs) - (self.theme == "minimal" and 1 or 0)
+        preview.line = results.line + results.height + (1 + bs) - (self.theme == "minimal" and 1 or 0)
+        preview.zindex = results.zindex + (self.theme == "minimal" and 1 or 0)
       elseif layout_config.prompt_position == "bottom" then
         results.line = height_padding + (1 + bs)
-        prompt.line = results.line + results.height + (1 + bs)
-        preview.line = prompt.line + prompt.height + (1 + bs)
+        prompt.line = results.line + results.height + (1 + bs) - (self.theme == "minimal" and 1 or 0)
+        preview.line = prompt.line + prompt.height + (1 + bs) - (self.theme == "minimal" and 1 or 0)
+        prompt.zindex = results.zindex + (self.theme == "minimal" and 1 or 0)
+        preview.zindex = prompt.zindex + (self.theme == "minimal" and 1 or 0)
       else
         error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
       end

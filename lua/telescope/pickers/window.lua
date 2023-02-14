@@ -23,6 +23,7 @@ function p_window.get_initial_window_options(picker)
     borderchars = popup_borderchars.preview,
     enter = false,
     highlight = false,
+    zindex = 50
   }
 
   local results = {
@@ -30,6 +31,7 @@ function p_window.get_initial_window_options(picker)
     border = popup_border.results,
     borderchars = popup_borderchars.results,
     enter = false,
+    zindex = 50
   }
 
   local prompt = {
@@ -37,6 +39,7 @@ function p_window.get_initial_window_options(picker)
     border = popup_border.prompt,
     borderchars = popup_borderchars.prompt,
     enter = true,
+    zindex = 50
   }
 
   return {
