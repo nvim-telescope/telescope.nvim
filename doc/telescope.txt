@@ -1523,6 +1523,10 @@ builtin.lsp_document_symbols({opts}) *telescope.builtin.lsp_document_symbols()*
     Options: ~
         {fname_width}       (number)        defines the width of the filename
                                             section (default: 30)
+        {symbol_width}      (number)        defines the width of the symbol
+                                            section (default: 25)
+        {symbol_type_width} (number)        defines the width of the symbol
+                                            type section (default: 8)
         {show_line}         (boolean)       if true, shows the content of the
                                             line the tag is found on (default:
                                             false)
@@ -1547,6 +1551,10 @@ builtin.lsp_workspace_symbols({opts}) *telescope.builtin.lsp_workspace_symbols()
                                             (default: "")
         {fname_width}       (number)        defines the width of the filename
                                             section (default: 30)
+        {symbol_width}      (number)        defines the width of the symbol
+                                            section (default: 25)
+        {symbol_type_width} (number)        defines the width of the symbol
+                                            type section (default: 8)
         {show_line}         (boolean)       if true, shows the content of the
                                             line the tag is found on (default:
                                             false)

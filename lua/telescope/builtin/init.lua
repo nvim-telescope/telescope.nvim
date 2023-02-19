@@ -421,6 +421,8 @@ builtin.lsp_implementations = require_on_exported_call("telescope.builtin.__lsp"
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
 ---@param opts table: options to pass to the picker
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field symbol_width number: defines the width of the symbol section (default: 25)
+---@field symbol_type_width number: defines the width of the symbol type section (default: 8)
 ---@field show_line boolean: if true, shows the content of the line the tag is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
 ---@field ignore_symbols string|table: list of symbols to ignore
@@ -433,6 +435,8 @@ builtin.lsp_document_symbols = require_on_exported_call("telescope.builtin.__lsp
 ---@param opts table: options to pass to the picker
 ---@field query string: for what to query the workspace (default: "")
 ---@field fname_width number: defines the width of the filename section (default: 30)
+---@field symbol_width number: defines the width of the symbol section (default: 25)
+---@field symbol_type_width number: defines the width of the symbol type section (default: 8)
 ---@field show_line boolean: if true, shows the content of the line the tag is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
 ---@field ignore_symbols string|table: list of symbols to ignore
