@@ -21,15 +21,8 @@ dependencies = {
 }
 
 source = {
-  url = 'https://github.com/nvim-telescope/telescope.nvim/archive/refs/tags/' .. MODREV .. '.zip',
-  dir = 'telescope.nvim-' .. MODREV
+  url = 'git://github.com/nvim-telescope/telescope.nvim',
 }
-
-if MODREV == 'scm' then
-  source = {
-    url = 'git://github.com/nvim-telescope/telescope.nvim',
-  }
-end
 
 build = {
   type = 'builtin',
