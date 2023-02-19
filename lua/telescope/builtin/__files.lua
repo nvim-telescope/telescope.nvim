@@ -162,10 +162,20 @@ files.live_grep = function(opts)
 end
 
 files.grep_string = function(opts)
-  -- TODO: This should probably check your visual selection as well, if you've got one
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
   local vimgrep_arguments = vim.F.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
-  local word = vim.F.if_nil(opts.search, vim.fn.expand "<cword>")
+  local word
+  local visual = vim.fn.mode() == "v"
+
+  if visual == true then
+    local saved_reg = vim.fn.getreg "v"
+    vim.cmd [[noautocmd sil norm "vy]]
+    local sele = vim.fn.getreg "v"
+    vim.fn.setreg("v", saved_reg)
+    word = vim.F.if_nil(opts.search, sele)
+  else
+    word = vim.F.if_nil(opts.search, vim.fn.expand "<cword>")
+  end
   local search = opts.use_regex and word or escape_chars(word)
 
   local additional_args = {}
@@ -183,12 +193,22 @@ files.grep_string = function(opts)
     search = { "--", search }
   end
 
-  local args = flatten {
-    vimgrep_arguments,
-    additional_args,
-    opts.word_match,
-    search,
-  }
+  local args
+  if visual == true then
+    args = flatten {
+      vimgrep_arguments,
+      additional_args,
+      search,
+    }
+  else
+    args = flatten {
+      vimgrep_arguments,
+      additional_args,
+      opts.word_match,
+      search,
+    }
+  end
+
   opts.__inverted, opts.__matches = opts_contain_invert(args)
 
   if opts.grep_open_files then

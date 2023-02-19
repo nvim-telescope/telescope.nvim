@@ -303,7 +303,7 @@ Built-in functions. Ready to be bound to any key you like.
 |-------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `builtin.find_files`                | Lists files in your current working directory, respects .gitignore                                                                                                       |
 | `builtin.git_files`                 | Fuzzy search through the output of `git ls-files` command, respects .gitignore                                                                                           |
-| `builtin.grep_string`               | Searches for the string under your cursor in your current working directory                                                                                              |
+| `builtin.grep_string`               | Searches for the string under your cursor or selection in your current working directory                                                                                              |
 | `builtin.live_grep`                 | Search for a string in your current working directory and get results live as you type, respects .gitignore. (Requires [ripgrep](https://github.com/BurntSushi/ripgrep)) |
 
 ### Vim Pickers
