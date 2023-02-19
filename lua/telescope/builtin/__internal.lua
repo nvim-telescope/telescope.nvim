@@ -367,6 +367,7 @@ internal.commands = function(opts)
 
           if val.nargs == "0" then
             vim.cmd(cmd)
+            vim.fn.histadd("cmd", val.name)
           else
             vim.cmd [[stopinsert]]
             vim.fn.feedkeys(cmd, "n")
