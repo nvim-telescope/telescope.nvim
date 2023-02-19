@@ -685,18 +685,34 @@ actions.git_track_branch = make_git_branch_action {
   end,
 }
 
---- Delete the currently selected branch
+--- Delete all currently selected branches
 ---@param prompt_bufnr number: The prompt bufnr
-actions.git_delete_branch = make_git_branch_action {
-  should_confirm = true,
-  action_name = "actions.git_delete_branch",
-  confirmation_question = "Do you really wanna delete branch %s? [Y/n] ",
-  success_message = "Deleted branch: %s",
-  error_message = "Error when deleting branch: %s. Git returned: '%s'",
-  command = function(branch_name)
-    return { "git", "branch", "-D", branch_name }
-  end,
-}
+actions.git_delete_branch = function(prompt_bufnr)
+  local confirmation = vim.fn.input "Do you really want to delete the selected branches? [Y/n] "
+  if confirmation ~= "" and string.lower(confirmation) ~= "y" then
+    return
+  end
+
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  local action_name = "actions.git_delete_branch"
+  picker:delete_selection(function(selection)
+    local branch = selection.value
+    print("Deleting branch " .. branch)
+    local _, ret, stderr = utils.get_os_command_output({ "git", "branch", "-D", branch }, picker.cwd)
+    if ret == 0 then
+      utils.notify(action_name, {
+        msg = string.format("Deleted branch: %s", branch),
+        level = "INFO",
+      })
+    else
+      utils.notify(action_name, {
+        msg = string.format("Error when deleting branch: %s. Git returned: '%s'", branch, table.concat(stderr, " ")),
+        level = "ERROR",
+      })
+    end
+    return ret == 0
+  end)
+end
 
 --- Merge the currently selected branch
 ---@param prompt_bufnr number: The prompt bufnr
