@@ -500,6 +500,7 @@ files.current_buffer_fuzzy_find = function(opts)
 
         return true
       end,
+      push_cursor_on_edit = true,
     })
     :find()
 end
