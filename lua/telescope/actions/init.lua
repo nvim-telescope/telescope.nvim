@@ -688,7 +688,7 @@ actions.git_track_branch = make_git_branch_action {
 --- Delete the currently selected branches
 ---@param prompt_bufnr number: The prompt bufnr
 actions.git_delete_branch = function(prompt_bufnr)
-  local confirmation = vim.fn.input("Do you really want to delete the selected branches? [Y/n] ")
+  local confirmation = vim.fn.input "Do you really want to delete the selected branches? [Y/n] "
   if confirmation ~= "" and string.lower(confirmation) ~= "y" then
     return
   end
