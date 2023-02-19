@@ -40,12 +40,14 @@ lsp.references = function(opts)
     end
 
     if #locations == 1 and opts.jump_type ~= "never" then
-      if opts.jump_type == "tab" then
-        vim.cmd "tabedit"
-      elseif opts.jump_type == "split" then
-        vim.cmd "new"
-      elseif opts.jump_type == "vsplit" then
-        vim.cmd "vnew"
+      if filepath ~= locations[1].filename then
+        if opts.jump_type == "tab" then
+          vim.cmd "tabedit"
+        elseif opts.jump_type == "split" then
+          vim.cmd "new"
+        elseif opts.jump_type == "vsplit" then
+          vim.cmd "vnew"
+        end
       end
       -- jump to location
       local location = locations[1]
@@ -184,12 +186,14 @@ local function list_or_jump(action, title, opts)
     if #flattened_results == 0 then
       return
     elseif #flattened_results == 1 and opts.jump_type ~= "never" then
-      if opts.jump_type == "tab" then
-        vim.cmd "tabedit"
-      elseif opts.jump_type == "split" then
-        vim.cmd "new"
-      elseif opts.jump_type == "vsplit" then
-        vim.cmd "vnew"
+      if params.textDocument.uri ~= flattened_results[1].uri then
+        if opts.jump_type == "tab" then
+          vim.cmd "tabedit"
+        elseif opts.jump_type == "split" then
+          vim.cmd "new"
+        elseif opts.jump_type == "vsplit" then
+          vim.cmd "vnew"
+        end
       end
       vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding)
     else
