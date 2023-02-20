@@ -456,9 +456,6 @@ files.current_buffer_fuzzy_find = function(opts)
   if parser_ok and query_ok and ts_ok and ts_configs.is_enabled("highlight", filetype, opts.bufnr) then
     local root = parser:parse()[1]:root()
 
-    local highlighter = vim.treesitter.highlighter.new(parser)
-    local highlighter_query = highlighter:get_query(filetype)
-
     local line_highlights = setmetatable({}, {
       __index = function(t, k)
         local obj = {}
@@ -469,9 +466,23 @@ files.current_buffer_fuzzy_find = function(opts)
 
     -- update to changes on Neovim master, see https://github.com/neovim/neovim/pull/19931
     -- TODO(clason): remove when dropping support for Neovim 0.7
-    local on_nvim_master = vim.fn.has "nvim-0.8" == 1
+    local get_hl_from_capture = (function()
+      if vim.fn.has "nvim-0.8" == 1 then
+        return function(q, id)
+          return "@" .. q.captures[id]
+        end
+      else
+        local highlighter = vim.treesitter.highlighter.new(parser)
+        local highlighter_query = highlighter:get_query(filetype)
+
+        return function(_, id)
+          return highlighter_query:_get_hl_from_capture(id)
+        end
+      end
+    end)()
+
     for id, node in query:iter_captures(root, opts.bufnr, 0, -1) do
-      local hl = on_nvim_master and query.captures[id] or highlighter_query:_get_hl_from_capture(id)
+      local hl = get_hl_from_capture(query, id)
       if hl and type(hl) ~= "number" then
         local row1, col1, row2, col2 = node:range()
 
