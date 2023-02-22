@@ -159,6 +159,7 @@ builtin.git_files = require_on_exported_call("telescope.builtin.__git").files
 builtin.git_commits = require_on_exported_call("telescope.builtin.__git").commits
 
 --- Lists commits for current buffer with diff preview
+--- In visual mode, lists commits for the selected lines
 --- - Default keymaps or your overridden `select_` keys:
 ---   - `<cr>`: checks out the currently selected commit
 ---   - `<c-v>`: opens a diff in a vertical split

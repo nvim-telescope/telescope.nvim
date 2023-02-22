@@ -116,17 +116,38 @@ git.bcommits = function(opts)
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
   opts.git_command =
     vim.F.if_nil(opts.git_command, git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--follow" }, opts))
+  local visual = string.find(vim.fn.mode(), "[vV]") ~= nil
+
+  if visual == true then
+    -- filter lines by visual selection range
+    local line_number_start = vim.fn.line "v"
+    local line_number_end = vim.fn.line "."
+    local line_range =
+      string.format("%d,%d:%s", line_number_start, line_number_end, Path:new(opts.current_file):make_relative(opts.cwd))
+    -- remove incompatible arguments from git_command
+    local visual_git_command = {}
+    for _, v in ipairs(git_command) do
+      if v ~= "--follow" then
+        table.insert(visual_git_command, v)
+      end
+    end
+    git_command = vim.tbl_flatten {
+      visual_git_command,
+      "--no-patch",
+      "-L",
+      line_range,
+    }
+  else
+    git_command = vim.tbl_flatten {
+      git_command,
+      opts.current_file,
+    }
+  end
 
   pickers
     .new(opts, {
       prompt_title = "Git BCommits",
-      finder = finders.new_oneshot_job(
-        vim.tbl_flatten {
-          opts.git_command,
-          opts.current_file,
-        },
-        opts
-      ),
+      finder = finders.new_oneshot_job(opts.git_command, opts),
       previewer = {
         previewers.git_commit_diff_to_parent.new(opts),
         previewers.git_commit_diff_to_head.new(opts),
