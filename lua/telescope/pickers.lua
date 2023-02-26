@@ -460,6 +460,10 @@ function Picker:find()
 
     await_schedule()
 
+    -- we need to set the prefix color after changing mode since
+    -- https://github.com/neovim/neovim/commit/cbf9199d65325c1167d7eeb02a34c85d243e781c
+    self:_reset_prefix_color()
+
     while true do
       -- Wait for the next input
       rx.last()
