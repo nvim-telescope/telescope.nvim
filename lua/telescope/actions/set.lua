@@ -110,7 +110,7 @@ action_set.edit = function(prompt_bufnr, command)
 
     -- TODO: Check for off-by-one
     row = entry.row or entry.lnum
-    col = vim.F.if_nil(entry.col, 1)
+    col = entry.col
   elseif not entry.bufnr then
     -- TODO: Might want to remove this and force people
     -- to put stuff into `filename`
@@ -167,6 +167,11 @@ action_set.edit = function(prompt_bufnr, command)
       filename = Path:new(vim.fn.fnameescape(filename)):normalize(vim.loop.cwd())
       pcall(vim.cmd, string.format("%s %s", command, filename))
     end
+  end
+
+  if row == nil or col == nil then
+    local pos = vim.api.nvim_win_get_cursor(0)
+    row, col = pos[1], pos[2] + 1
   end
 
   if row and col then
