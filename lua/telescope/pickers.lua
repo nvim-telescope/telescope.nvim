@@ -90,7 +90,7 @@ function Picker:new(opts)
     sorter = opts.sorter or require("telescope.sorters").empty(),
 
     all_previewers = opts.previewer,
-    current_previewer_index = 1,
+    current_previewer_index = opts.current_previewer_index or 1,
 
     default_selection_index = opts.default_selection_index,
 
@@ -147,8 +147,8 @@ function Picker:new(opts)
     if obj.all_previewers[1] == nil then
       obj.all_previewers = { obj.all_previewers }
     end
-    obj.previewer = obj.all_previewers[1]
-    if obj.preview_title == nil then
+    obj.previewer = obj.all_previewers[obj.current_previewer_index]
+    if obj.preview_title == nil or #obj.all_previewers > 1 then
       obj.preview_title = obj.previewer:title(nil, config.values.dynamic_preview_title)
     else
       obj.fix_preview_title = true
