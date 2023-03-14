@@ -881,7 +881,7 @@ previewers.git_file_diff = defaulter(function(opts)
           winid = self.state.winid,
         })
       else
-        putils.job_maker({ "git", "--no-pager", "diff", entry.value }, self.state.bufnr, {
+        putils.job_maker({ "git", "--no-pager", "diff", "HEAD", "--", entry.value }, self.state.bufnr, {
           value = entry.value,
           bufname = self.state.bufname,
           cwd = opts.cwd,
