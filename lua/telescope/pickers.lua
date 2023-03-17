@@ -1559,15 +1559,24 @@ function Picker:_resume_picker()
     index = index + 1
   end
   self.cache_picker.is_cached = false
+  local on_resume_complete = function()
+    if vim.api.nvim_buf_is_valid(self.prompt_bufnr) then
+      vim.api.nvim_buf_call(self.prompt_bufnr, function()
+        vim.cmd "do User TelescopeResumePost"
+      end)
+    end
+  end
   -- if text changed, required to set anew to restart finder; otherwise hl and selection
   if self.cache_picker.cached_prompt ~= self.default_text then
     self:set_prompt(self.default_text)
+    on_resume_complete()
   else
     -- scheduling required to apply highlighting and selection appropriately
     await_schedule(function()
       if self.cache_picker.selection_row ~= nil then
         self:set_selection(self.cache_picker.selection_row)
       end
+      on_resume_complete()
     end)
   end
 end
