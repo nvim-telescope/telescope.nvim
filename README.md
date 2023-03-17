@@ -539,6 +539,7 @@ Telescope user autocmds:
 |---------------------------------|---------------------------------------------------------|
 | `User TelescopeFindPre`         | Do it before Telescope creates all the floating windows |
 | `User TelescopePreviewerLoaded` | Do it after Telescope previewer window is created       |
+| `User TelescopeResumePost`      | Do it after Telescope resume action is fully completed  |
 
 ## Extensions
 
