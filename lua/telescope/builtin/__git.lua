@@ -116,38 +116,110 @@ git.bcommits = function(opts)
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
   opts.git_command =
     vim.F.if_nil(opts.git_command, git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--follow" }, opts))
-  local visual = string.find(vim.fn.mode(), "[vV]") ~= nil
-
-  if visual == true then
-    -- filter lines by visual selection range
-    local line_number_start = vim.fn.line "v"
-    local line_number_end = vim.fn.line "."
-    local line_range =
-      string.format("%d,%d:%s", line_number_start, line_number_end, Path:new(opts.current_file):make_relative(opts.cwd))
-    -- remove incompatible arguments from git_command
-    local visual_git_command = {}
-    for _, v in ipairs(git_command) do
-      if v ~= "--follow" then
-        table.insert(visual_git_command, v)
-      end
-    end
-    git_command = vim.tbl_flatten {
-      visual_git_command,
-      "--no-patch",
-      "-L",
-      line_range,
-    }
-  else
-    git_command = vim.tbl_flatten {
-      git_command,
-      opts.current_file,
-    }
-  end
 
   pickers
     .new(opts, {
       prompt_title = "Git BCommits",
-      finder = finders.new_oneshot_job(opts.git_command, opts),
+      finder = finders.new_oneshot_job(
+        vim.tbl_flatten {
+          opts.git_command,
+          opts.current_file,
+        },
+        opts
+      ),
+      previewer = {
+        previewers.git_commit_diff_to_parent.new(opts),
+        previewers.git_commit_diff_to_head.new(opts),
+        previewers.git_commit_diff_as_was.new(opts),
+        previewers.git_commit_message.new(opts),
+      },
+      sorter = conf.file_sorter(opts),
+      attach_mappings = function()
+        actions.select_default:replace(actions.git_checkout_current_buffer)
+        local transfrom_file = function()
+          return opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd) or ""
+        end
+
+        local get_buffer_of_orig = function(selection)
+          local value = selection.value .. ":" .. transfrom_file()
+          local content = utils.get_os_command_output({ "git", "--no-pager", "show", value }, opts.cwd)
+
+          local bufnr = vim.api.nvim_create_buf(false, true)
+          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
+          vim.api.nvim_buf_set_name(bufnr, "Original")
+          return bufnr
+        end
+
+        local vimdiff = function(selection, command)
+          local ft = vim.bo.filetype
+          vim.cmd "diffthis"
+
+          local bufnr = get_buffer_of_orig(selection)
+          vim.cmd(string.format("%s %s", command, bufnr))
+          vim.bo.filetype = ft
+          vim.cmd "diffthis"
+
+          vim.api.nvim_create_autocmd("WinClosed", {
+            buffer = bufnr,
+            nested = true,
+            once = true,
+            callback = function()
+              vim.api.nvim_buf_delete(bufnr, { force = true })
+            end,
+          })
+        end
+
+        actions.select_vertical:replace(function(prompt_bufnr)
+          actions.close(prompt_bufnr)
+          local selection = action_state.get_selected_entry()
+          vimdiff(selection, "leftabove vert sbuffer")
+        end)
+
+        actions.select_horizontal:replace(function(prompt_bufnr)
+          actions.close(prompt_bufnr)
+          local selection = action_state.get_selected_entry()
+          vimdiff(selection, "belowright sbuffer")
+        end)
+
+        actions.select_tab:replace(function(prompt_bufnr)
+          actions.close(prompt_bufnr)
+          local selection = action_state.get_selected_entry()
+          vim.cmd("tabedit " .. transfrom_file())
+          vimdiff(selection, "leftabove vert sbuffer")
+        end)
+        return true
+      end,
+    })
+    :find()
+end
+
+git.bcommits_range = function(opts)
+  opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
+  opts.current_file = vim.F.if_nil(opts.current_file, vim.api.nvim_buf_get_name(opts.bufnr))
+  opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
+  local git_command =
+    vim.F.if_nil(opts.git_command, { "git", "log", "--pretty=oneline", "--abbrev-commit", "--no-patch", "-L" })
+  local visual = string.find(vim.fn.mode(), "[vV]") ~= nil
+
+  local line_number_start = opts.start
+  local line_number_stop = vim.F.if_nil(opts.stop, line_number_start)
+  if visual then
+    line_number_start = vim.F.if_nil(line_number_start, vim.fn.line "v")
+    line_number_stop = vim.F.if_nil(line_number_stop, vim.fn.line ".")
+  end
+  local line_range =
+    string.format("%d,%d:%s", line_number_start, line_number_stop, Path:new(opts.current_file):make_relative(opts.cwd))
+
+  pickers
+    .new(opts, {
+      prompt_title = "Git BCommits in range",
+      finder = finders.new_oneshot_job(
+        vim.tbl_flatten {
+          git_command,
+          line_range,
+        },
+        opts
+      ),
       previewer = {
         previewers.git_commit_diff_to_parent.new(opts),
         previewers.git_commit_diff_to_head.new(opts),
