@@ -223,22 +223,23 @@ lsp.implementations = function(opts)
   return list_or_jump("textDocument/implementation", "LSP Implementations", opts)
 end
 
-local post_filter_symbols = function(filtered_symbols)
-  if vim.tbl_isempty(filtered_symbols) then
-    return filtered_symbols
+local symbols_sorter = function(symbols)
+  if vim.tbl_isempty(symbols) then
+    return symbols
   end
 
   local current_buf = vim.api.nvim_get_current_buf()
 
-  -- filter adequately for workspace symbols
+  -- sort adequately for workspace symbols
   local filename_to_bufnr = {}
-  for _, symbol in ipairs(filtered_symbols) do
+  for _, symbol in ipairs(symbols) do
     if filename_to_bufnr[symbol.filename] == nil then
       filename_to_bufnr[symbol.filename] = vim.uri_to_bufnr(vim.uri_from_fname(symbol.filename))
     end
-    symbol["bufnr"] = filename_to_bufnr[symbol.filename]
+    symbol.bufnr = filename_to_bufnr[symbol.filename]
   end
-  table.sort(filtered_symbols, function(a, b)
+
+  table.sort(symbols, function(a, b)
     if a.bufnr == b.bufnr then
       return a.lnum < b.lnum
     end
@@ -250,7 +251,8 @@ local post_filter_symbols = function(filtered_symbols)
     end
     return a.bufnr < b.bufnr
   end)
-  return filtered_symbols
+
+  return symbols
 end
 
 lsp.document_symbols = function(opts)
@@ -270,7 +272,7 @@ lsp.document_symbols = function(opts)
     end
 
     local locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr) or {}
-    locations = utils.filter_symbols(locations, opts, post_filter_symbols)
+    locations = utils.filter_symbols(locations, opts, symbols_sorter)
     if locations == nil then
       -- error message already printed in `utils.filter_symbols`
       return
@@ -313,7 +315,7 @@ lsp.workspace_symbols = function(opts)
     end
 
     local locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr) or {}
-    locations = utils.filter_symbols(locations, opts, post_filter_symbols)
+    locations = utils.filter_symbols(locations, opts, symbols_sorter)
     if locations == nil then
       -- error message already printed in `utils.filter_symbols`
       return
@@ -361,7 +363,7 @@ local function get_workspace_symbols_requester(bufnr, opts)
 
     local locations = vim.lsp.util.symbols_to_items(res or {}, bufnr) or {}
     if not vim.tbl_isempty(locations) then
-      locations = utils.filter_symbols(locations, opts, post_filter_symbols) or {}
+      locations = utils.filter_symbols(locations, opts, symbols_sorter) or {}
     end
     return locations
   end
