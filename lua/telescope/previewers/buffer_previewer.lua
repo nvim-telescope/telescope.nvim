@@ -60,7 +60,8 @@ local function split(s, sep, plain, opts)
   opts = opts or {}
   local t = {}
   for c in vim.gsplit(s, sep, plain) do
-    table.insert(t, c)
+    local line = opts.file_encoding and vim.iconv(c, opts.file_encoding, "utf8") or c
+    table.insert(t, line)
     if opts.preview.timeout then
       local diff_time = (vim.loop.hrtime() - opts.start_time) / 1e6
       if diff_time > opts.preview.timeout then
@@ -464,6 +465,7 @@ previewers.cat = defaulter(function(opts)
         bufname = self.state.bufname,
         winid = self.state.winid,
         preview = opts.preview,
+        file_encoding = opts.file_encoding,
       })
     end,
   }
@@ -518,6 +520,7 @@ previewers.vimgrep = defaulter(function(opts)
           callback = function(bufnr)
             jump_to_line(self, bufnr, entry.lnum)
           end,
+          file_encoding = opts.file_encoding,
         })
       end
     end,

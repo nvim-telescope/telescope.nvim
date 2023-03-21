@@ -326,9 +326,10 @@ do
           end
         end
 
+        local text = opts.file_encoding and vim.iconv(entry.text, opts.file_encoding, "utf8") or entry.text
         local display, hl_group, icon = utils.transform_devicons(
           entry.filename,
-          string.format(display_string, display_filename, coordinates, entry.text),
+          string.format(display_string, display_filename, coordinates, text),
           disable_devicons
         )
 
