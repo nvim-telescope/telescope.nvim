@@ -1074,9 +1074,11 @@ builtin.git_bcommits_range({opts})   *telescope.builtin.git_bcommits_range()*
         {git_command}  (table)    command that will be executed.
                                   {"git","log","--pretty=oneline","--abbrev-commit","--no-patch","-L"}
         {start}        (number)   the first line in the range
-                                  (optional in visual mode)
+                                  (optional in visual or operator mode)
         {stop}         (number)   the last line in the range
-                                  (optional in visual mode)
+                                  (optional in visual or operator mode)
+        {operator}     (boolean)  select lines in operator-pending mode
+                                  (default: false)
 
 builtin.git_branches({opts})                *telescope.builtin.git_branches()*
     List branches for current directory, with output from `git log --oneline`

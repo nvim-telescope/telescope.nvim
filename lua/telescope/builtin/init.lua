@@ -186,6 +186,7 @@ builtin.git_bcommits = require_on_exported_call("telescope.builtin.__git").bcomm
 ---@field git_command table: command that will be executed. {"git","log","--pretty=oneline","--abbrev-commit","--no-patch","-L"}
 ---@field start number: the first line in the range (optional in visual or operator mode)
 ---@field stop number: the last line in the range (optional in visual or operator mode)
+---@field operator boolean: select lines in operator-pending mode (default: false)
 builtin.git_bcommits_range = require_on_exported_call("telescope.builtin.__git").bcommits_range
 
 --- List branches for current directory, with output from `git log --oneline` shown in the preview window

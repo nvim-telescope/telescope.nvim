@@ -193,6 +193,14 @@ git.bcommits = function(opts)
     :find()
 end
 
+local last_bcommits_range_opts = {}
+
+local bcommits_range_callback = function()
+  last_bcommits_range_opts.operator = false
+  last_bcommits_range_opts.operator_callback = true
+  git.bcommits_range(last_bcommits_range_opts)
+end
+
 git.bcommits_range = function(opts)
   opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
   opts.current_file = vim.F.if_nil(opts.current_file, vim.api.nvim_buf_get_name(opts.bufnr))
@@ -206,6 +214,14 @@ git.bcommits_range = function(opts)
   if visual then
     line_number_start = vim.F.if_nil(line_number_start, vim.fn.line "v")
     line_number_stop = vim.F.if_nil(line_number_stop, vim.fn.line ".")
+  elseif opts.operator then
+    last_bcommits_range_opts = opts
+    vim.o.operatorfunc = "v:lua.require'telescope.builtin.__git'.bcommits_range_callback"
+    vim.api.nvim_feedkeys("g@", "n", false)
+    return
+  elseif opts.operator_callback then
+    line_number_start = vim.fn.line "'["
+    line_number_stop = vim.fn.line "']"
   end
   local line_range =
     string.format("%d,%d:%s", line_number_start, line_number_stop, Path:new(opts.current_file):make_relative(opts.cwd))
@@ -545,4 +561,4 @@ local function apply_checks(mod)
   return mod
 end
 
-return apply_checks(git)
+return vim.tbl_extend("keep", apply_checks(git), { bcommits_range_callback = bcommits_range_callback })
