@@ -91,6 +91,8 @@ builtin.fd = builtin.find_files
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by kind of ts node you want to see (i.e. `:var:`)
 ---@field show_line boolean: if true, shows the row:column that the result is found at (default: true)
 ---@field bufnr number: specify the buffer number where treesitter should run. (default: current buffer)
+---@field symbols string|table: filter results by symbol kind(s)
+---@field ignore_symbols string|table: list of symbols to ignore
 ---@field symbol_highlights table: string -> string. Matches symbol with hl_group
 builtin.treesitter = require_on_exported_call("telescope.builtin.__files").treesitter
 

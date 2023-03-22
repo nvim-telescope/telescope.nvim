@@ -39,7 +39,7 @@ utils.repeated_table = function(n, val)
   return empty_lines
 end
 
-utils.filter_symbols = function(results, opts)
+utils.filter_symbols = function(results, opts, post_filter)
   local has_ignore = opts.ignore_symbols ~= nil
   local has_symbols = opts.symbols ~= nil
   local filtered_symbols
@@ -86,31 +86,11 @@ utils.filter_symbols = function(results, opts)
     end, results)
   end
 
-  -- TODO(conni2461): If you understand this correctly then we sort the results table based on the bufnr
-  -- If you ask me this should be its own function, that happens after the filtering part and should be
-  -- called in the lsp function directly
-  local current_buf = vim.api.nvim_get_current_buf()
+  if type(post_filter) == "function" then
+    filtered_symbols = post_filter(filtered_symbols)
+  end
+
   if not vim.tbl_isempty(filtered_symbols) then
-    -- filter adequately for workspace symbols
-    local filename_to_bufnr = {}
-    for _, symbol in ipairs(filtered_symbols) do
-      if filename_to_bufnr[symbol.filename] == nil then
-        filename_to_bufnr[symbol.filename] = vim.uri_to_bufnr(vim.uri_from_fname(symbol.filename))
-      end
-      symbol["bufnr"] = filename_to_bufnr[symbol.filename]
-    end
-    table.sort(filtered_symbols, function(a, b)
-      if a.bufnr == b.bufnr then
-        return a.lnum < b.lnum
-      end
-      if a.bufnr == current_buf then
-        return true
-      end
-      if b.bufnr == current_buf then
-        return false
-      end
-      return a.bufnr < b.bufnr
-    end)
     return filtered_symbols
   end
 
