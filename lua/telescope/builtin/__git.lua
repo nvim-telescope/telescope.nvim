@@ -209,22 +209,22 @@ git.bcommits_range = function(opts)
     vim.F.if_nil(opts.git_command, { "git", "log", "--pretty=oneline", "--abbrev-commit", "--no-patch", "-L" })
   local visual = string.find(vim.fn.mode(), "[vV]") ~= nil
 
-  local line_number_start = opts.start
-  local line_number_stop = vim.F.if_nil(opts.stop, line_number_start)
+  local line_number_first = opts.first
+  local line_number_last = vim.F.if_nil(opts.last, line_number_first)
   if visual then
-    line_number_start = vim.F.if_nil(line_number_start, vim.fn.line "v")
-    line_number_stop = vim.F.if_nil(line_number_stop, vim.fn.line ".")
+    line_number_first = vim.F.if_nil(line_number_first, vim.fn.line "v")
+    line_number_last = vim.F.if_nil(line_number_last, vim.fn.line ".")
   elseif opts.operator then
     last_bcommits_range_opts = opts
     vim.o.operatorfunc = "v:lua.require'telescope.builtin.__git'.bcommits_range_callback"
     vim.api.nvim_feedkeys("g@", "n", false)
     return
   elseif opts.operator_callback then
-    line_number_start = vim.fn.line "'["
-    line_number_stop = vim.fn.line "']"
+    line_number_first = vim.fn.line "'["
+    line_number_last = vim.fn.line "']"
   end
   local line_range =
-    string.format("%d,%d:%s", line_number_start, line_number_stop, Path:new(opts.current_file):make_relative(opts.cwd))
+    string.format("%d,%d:%s", line_number_first, line_number_last, Path:new(opts.current_file):make_relative(opts.cwd))
 
   pickers
     .new(opts, {
