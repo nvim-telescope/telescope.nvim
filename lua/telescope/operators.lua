@@ -1,6 +1,6 @@
 local operators = {}
 
-local last_operator = {}
+local last_operator = { callback = function(_) end, opts = {} }
 
 --- Execute the last saved operator callback and options
 operators.operator_callback = function()
