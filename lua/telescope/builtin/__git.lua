@@ -2,6 +2,7 @@ local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
+local operators = require "telescope.operators"
 local pickers = require "telescope.pickers"
 local previewers = require "telescope.previewers"
 local utils = require "telescope.utils"
@@ -193,14 +194,6 @@ git.bcommits = function(opts)
     :find()
 end
 
-local last_bcommits_range_opts = {}
-
-local bcommits_range_callback = function()
-  last_bcommits_range_opts.operator = false
-  last_bcommits_range_opts.operator_callback = true
-  git.bcommits_range(last_bcommits_range_opts)
-end
-
 git.bcommits_range = function(opts)
   opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
   opts.current_file = vim.F.if_nil(opts.current_file, vim.api.nvim_buf_get_name(opts.bufnr))
@@ -215,9 +208,9 @@ git.bcommits_range = function(opts)
     line_number_first = vim.F.if_nil(line_number_first, vim.fn.line "v")
     line_number_last = vim.F.if_nil(line_number_last, vim.fn.line ".")
   elseif opts.operator then
-    last_bcommits_range_opts = opts
-    vim.o.operatorfunc = "v:lua.require'telescope.builtin.__git'.bcommits_range_callback"
-    vim.api.nvim_feedkeys("g@", "n", false)
+    opts.operator = false
+    opts.operator_callback = true
+    operators.run_operator(git.bcommits_range, opts)
     return
   elseif opts.operator_callback then
     line_number_first = vim.fn.line "'["
@@ -561,4 +554,4 @@ local function apply_checks(mod)
   return mod
 end
 
-return vim.tbl_extend("keep", apply_checks(git), { bcommits_range_callback = bcommits_range_callback })
+return apply_checks(git)
