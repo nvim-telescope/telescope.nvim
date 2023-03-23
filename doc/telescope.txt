@@ -1055,6 +1055,7 @@ builtin.git_bcommits({opts})                *telescope.builtin.git_bcommits()*
 builtin.git_bcommits_range({opts})   *telescope.builtin.git_bcommits_range()*
     Lists commits for a range of lines in the current buffer with diff preview
     In visual mode, lists commits for the selected lines
+    With operator mode enabled, lists commits inside the text object/motion
     - Default keymaps or your overridden `select_` keys:
       - `<cr>`: checks out the currently selected commit
       - `<c-v>`: opens a diff in a vertical split
@@ -1071,12 +1072,14 @@ builtin.git_bcommits_range({opts})   *telescope.builtin.git_bcommits_range()*
                                   (important for submodule) (default: true)
         {current_file} (string)   specify the current file that should be used
                                   for bcommits (default: current buffer)
-        {git_command}  (table)    command that will be executed.
+        {git_command}  (table)    command that will be executed. the last
+                                  element must be "-L".
                                   {"git","log","--pretty=oneline","--abbrev-commit","--no-patch","-L"}
-        {start}        (number)   the first line in the range
-                                  (optional in visual or operator mode)
-        {stop}         (number)   the last line in the range
-                                  (optional in visual or operator mode)
+        {first}        (number)   the first line number in the range
+                                  (optional in visual or operator mode;
+                                   runs git_bcommits if nil otherwise)
+        {last}         (number)   the last line number in the range
+                                  (default: the value of first)
         {operator}     (boolean)  select lines in operator-pending mode
                                   (default: false)
 

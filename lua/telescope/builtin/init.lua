@@ -174,6 +174,7 @@ builtin.git_bcommits = require_on_exported_call("telescope.builtin.__git").bcomm
 
 --- Lists commits for a range of lines in the current buffer with diff preview
 --- In visual mode, lists commits for the selected lines
+--- With operator mode enabled, lists commits inside the text object/motion
 --- - Default keymaps or your overridden `select_` keys:
 ---   - `<cr>`: checks out the currently selected commit
 ---   - `<c-v>`: opens a diff in a vertical split
@@ -183,8 +184,8 @@ builtin.git_bcommits = require_on_exported_call("telescope.builtin.__git").bcomm
 ---@field cwd string: specify the path of the repo
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field current_file string: specify the current file that should be used for bcommits (default: current buffer)
----@field git_command table: command that will be executed. {"git","log","--pretty=oneline","--abbrev-commit","--no-patch","-L"}
----@field first number: the first line number in the range (optional in visual or operator mode)
+---@field git_command table: command that will be executed. the last element must be "-L". {"git","log","--pretty=oneline","--abbrev-commit","--no-patch","-L"}
+---@field first number: the first line number in the range (optional in visual or operator mode; runs git_bcommits if nil otherwise)
 ---@field last number: the last line number in the range (default: the value of `first`)
 ---@field operator boolean: select lines in operator-pending mode (default: false)
 builtin.git_bcommits_range = require_on_exported_call("telescope.builtin.__git").bcommits_range
