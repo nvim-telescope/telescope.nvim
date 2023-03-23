@@ -216,11 +216,8 @@ git.bcommits_range = function(opts)
     line_number_first = vim.fn.line "'["
     line_number_last = vim.fn.line "']"
   elseif line_number_first == nil then
-    table.remove(git_command)
-    table.insert(git_command, "--follow")
-    opts.git_command = git_command
-    git.bcommits(opts)
-    return
+    line_number_first = vim.F.if_nil(line_number_first, vim.fn.line ".")
+    line_number_last = vim.F.if_nil(line_number_last, vim.fn.line ".")
   end
   local line_range =
     string.format("%d,%d:%s", line_number_first, line_number_last, Path:new(opts.current_file):make_relative(opts.cwd))
