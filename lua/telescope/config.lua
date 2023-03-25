@@ -626,7 +626,7 @@ append(
 
 append(
   "vimgrep_arguments",
-  { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
+  { "rg", "--vimgrep", "--smart-case" },
   [[
     Defines the command that will be used for `live_grep` and `grep_string`
     pickers.
@@ -638,11 +638,7 @@ append(
 
     Default: {
       "rg",
-      "--color=never",
-      "--no-heading",
-      "--with-filename",
-      "--line-number",
-      "--column",
+      "--vimgrep",
       "--smart-case"
     }]]
 )
