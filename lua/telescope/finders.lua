@@ -204,8 +204,13 @@ finders.new_table = function(t)
   return async_static_finder(t)
 end
 
-finders.new_dynamic = function(t)
-  return DynamicFinder:new(t)
+--- Used to create a finder from a function.
+--
+---@param opts table: stuff
+--         @key fn function() => list[string]
+--         @key entry_maker function Optional: function(line: string) => table
+finders.new_dynamic = function(opts)
+  return DynamicFinder:new(opts)
 end
 
 return finders
