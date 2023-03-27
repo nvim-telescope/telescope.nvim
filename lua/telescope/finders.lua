@@ -65,16 +65,22 @@ function JobFinder:_find(prompt, process_result, process_complete)
     self.job:shutdown()
   end
 
+  local line_num = 0
   local on_output = function(_, line, _)
+    line_num = line_num + 1
     if not line or line == "" then
       return
     end
 
+    local entry
     if self.entry_maker then
-      line = self.entry_maker(line)
+      entry = self.entry_maker(line)
+      entry.index = line_num
+    else
+      entry = line
     end
 
-    process_result(line)
+    process_result(entry)
   end
 
   local opts = self:fn_command(prompt)
@@ -131,8 +137,12 @@ end
 function DynamicFinder:_find(prompt, process_result, process_complete)
   local results = self.fn(prompt)
 
+  local result_num = 0
   for _, result in ipairs(results) do
-    if process_result(self.entry_maker(result)) then
+    result_num = result_num + 1
+    local entry = self.entry_maker(result)
+    entry.index = result_num
+    if process_result(entry) then
       return
     end
   end
