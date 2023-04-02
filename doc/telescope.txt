@@ -886,13 +886,16 @@ builtin.treesitter()                          *telescope.builtin.treesitter()*
 
 
     Options: ~
-        {show_line}         (boolean)  if true, shows the row:column that the
-                                       result is found at (default: true)
-        {bufnr}             (number)   specify the buffer number where
-                                       treesitter should run. (default:
-                                       current buffer)
-        {symbol_highlights} (table)    string -> string. Matches symbol with
-                                       hl_group
+        {show_line}         (boolean)       if true, shows the row:column that
+                                            the result is found at (default:
+                                            true)
+        {bufnr}             (number)        specify the buffer number where
+                                            treesitter should run. (default:
+                                            current buffer)
+        {symbols}           (string|table)  filter results by symbol kind(s)
+        {ignore_symbols}    (string|table)  list of symbols to ignore
+        {symbol_highlights} (table)         string -> string. Matches symbol
+                                            with hl_group
 
 
 builtin.current_buffer_fuzzy_find({opts}) *telescope.builtin.current_buffer_fuzzy_find()*
