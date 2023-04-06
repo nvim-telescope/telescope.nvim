@@ -1157,9 +1157,17 @@ function make_entry.gen_from_diagnostics(opts)
     { remaining = true },
   }
   local line_width = vim.F.if_nil(opts.line_width, 0.5)
+  local line_width_opts = { width = line_width }
+  if type(line_width) == "string" then
+    if line_width == "full" then
+      line_width_opts = {}
+    else
+      error(string.format("'%s' is not a valid value for line_width", line_width))
+    end
+  end
   local hidden = utils.is_path_hidden(opts)
   if not hidden then
-    table.insert(display_items, 2, { width = line_width })
+    table.insert(display_items, 2, line_width_opts)
   end
   local displayer = entry_display.create {
     separator = "▏",
