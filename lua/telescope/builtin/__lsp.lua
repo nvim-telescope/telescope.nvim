@@ -196,7 +196,8 @@ local function list_or_jump(action, title, opts)
           vim.cmd "vnew"
         end
       end
-      vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding)
+
+      vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding, opts.reuse_win)
     else
       local locations = vim.lsp.util.locations_to_items(flattened_results, offset_encoding)
       pickers
