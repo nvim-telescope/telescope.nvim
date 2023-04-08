@@ -407,6 +407,7 @@ builtin.lsp_outgoing_calls = require_on_exported_call("telescope.builtin.__lsp")
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field reuse_win boolean: jump to existing window if buffer is already opened (default: false)
 builtin.lsp_definitions = require_on_exported_call("telescope.builtin.__lsp").definitions
 
 --- Goto the definition of the type of the word under the cursor, if there's only one,
@@ -416,6 +417,7 @@ builtin.lsp_definitions = require_on_exported_call("telescope.builtin.__lsp").de
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field reuse_win boolean: jump to existing window if buffer is already opened (default: false)
 builtin.lsp_type_definitions = require("telescope.builtin.__lsp").type_definitions
 
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
@@ -424,6 +426,7 @@ builtin.lsp_type_definitions = require("telescope.builtin.__lsp").type_definitio
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field reuse_win boolean: jump to existing window if buffer is already opened (default: false)
 builtin.lsp_implementations = require_on_exported_call("telescope.builtin.__lsp").implementations
 
 --- Lists LSP document symbols in the current buffer
