@@ -36,6 +36,9 @@ lsp.references = function(opts)
     end
 
     if vim.tbl_isempty(locations) then
+      if opts.on_no_result then
+        opts.on_no_result()
+      end
       return
     end
 
@@ -84,6 +87,9 @@ local function call_hierarchy(opts, method, title, direction, item)
     end
 
     if not result or vim.tbl_isempty(result) then
+      if opts.on_no_result then
+        opts.on_no_result()
+      end
       return
     end
 
@@ -184,6 +190,9 @@ local function list_or_jump(action, title, opts)
     local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
 
     if #flattened_results == 0 then
+      if opts.on_no_result then
+        opts.on_no_result()
+      end
       return
     elseif #flattened_results == 1 and opts.jump_type ~= "never" then
       if params.textDocument.uri ~= flattened_results[1].uri then

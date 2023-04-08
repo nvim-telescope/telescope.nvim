@@ -385,6 +385,7 @@ builtin.jumplist = require_on_exported_call("telescope.builtin.__internal").jump
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field on_no_result function: what to do in case of no results (default: nil)
 builtin.lsp_references = require_on_exported_call("telescope.builtin.__lsp").references
 
 --- Lists LSP incoming calls for word under the cursor, jumps to reference on `<cr>`
@@ -392,6 +393,7 @@ builtin.lsp_references = require_on_exported_call("telescope.builtin.__lsp").ref
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field on_no_result function: what to do in case of no results (default: nil)
 builtin.lsp_incoming_calls = require_on_exported_call("telescope.builtin.__lsp").incoming_calls
 
 --- Lists LSP outgoing calls for word under the cursor, jumps to reference on `<cr>`
@@ -399,6 +401,7 @@ builtin.lsp_incoming_calls = require_on_exported_call("telescope.builtin.__lsp")
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field on_no_result function: what to do in case of no results (default: nil)
 builtin.lsp_outgoing_calls = require_on_exported_call("telescope.builtin.__lsp").outgoing_calls
 
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
@@ -407,6 +410,7 @@ builtin.lsp_outgoing_calls = require_on_exported_call("telescope.builtin.__lsp")
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field on_no_result function: what to do in case of no results (default: nil)
 builtin.lsp_definitions = require_on_exported_call("telescope.builtin.__lsp").definitions
 
 --- Goto the definition of the type of the word under the cursor, if there's only one,
@@ -416,6 +420,7 @@ builtin.lsp_definitions = require_on_exported_call("telescope.builtin.__lsp").de
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field on_no_result function: what to do in case of no results (default: nil)
 builtin.lsp_type_definitions = require("telescope.builtin.__lsp").type_definitions
 
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
@@ -424,6 +429,7 @@ builtin.lsp_type_definitions = require("telescope.builtin.__lsp").type_definitio
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field on_no_result function: what to do in case of no results (default: nil)
 builtin.lsp_implementations = require_on_exported_call("telescope.builtin.__lsp").implementations
 
 --- Lists LSP document symbols in the current buffer
