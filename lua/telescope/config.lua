@@ -633,7 +633,8 @@ append(
     Hint: Make sure that color is currently set to `never` because we do
     not yet interpret color codes
     Hint 2: Make sure that these options are in your changes arguments:
-      "--no-heading", "--with-filename", "--line-number", "--column"
+      ("--no-heading", "--with-filename", "--line-number", "--column") or
+      "--vimgrep"
     because we need them so the ripgrep output is in the correct format.
 
     Default: {
