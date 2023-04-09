@@ -291,6 +291,37 @@ lsp.document_symbols = function(opts)
     end
 
     opts.path_display = { "hidden" }
+
+    -- Add icon and find the max length of symbol so we can use that to size the kind column accordingly.
+    local symbol_type_max_width = 0
+    local symbol_type_length = function(location)
+      local config = require("telescope.config").values.lsp_symbol_icon
+      local mode = "text"
+      if config ~= false then
+        mode = config.mode
+      end
+
+      local lengths_for_modes = {
+        ["icon"] = location.icon:len(),
+        ["text"] = location.kind:len(),
+        ["icon_text"] = location.icon:len() + location.kind:len(),
+        ["text_icon"] = location.kind:len() + location.icon:len(),
+      }
+
+      return lengths_for_modes[mode];
+    end
+
+    for _, location in pairs(locations) do
+      location.icon = utils.get_lsp_symbol_icon(location.kind)
+
+      local len = symbol_type_length(location)
+      if len > symbol_type_max_width then
+        symbol_type_max_width = len
+      end
+    end
+
+    opts.symbol_type_width = symbol_type_max_width + 1
+
     pickers
       .new(opts, {
         prompt_title = "LSP Document Symbols",

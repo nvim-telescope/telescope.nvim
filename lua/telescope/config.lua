@@ -828,6 +828,57 @@ append(
     Default: require("telescope.previewers").buffer_previewer_maker]]
 )
 
+append(
+  "lsp_symbol_icon",
+  {
+    mode = "icon_text",
+    icon_postfix = " ",
+    icon_prefix = "",
+    not_found_fallback = " ",
+    lspkind_preset = "default",
+    substitutions = {
+      Namespace = "Module"
+    }
+  },
+  [[
+    Symbol icons provides terse context at a glance and can be combined
+    with the lsp kind name (e.g. method, variable, etc) to inform about
+    the type of a given symbol.
+
+    This field handles configuration for symbol- icons and text shown
+    next to lsp symbols when using lsp_*_symbols pickers.
+    This functionality depends on `lspkind`
+    (https://github.com/onsails/lspkind.nvim). If `lspkind` is not available
+    all icons just appear as the empty string.
+
+    Fields:
+      - mode:                 Show only icon or icon and text.
+                              `icon`: Show only the icon.
+                              `text`: Show only the text.
+                              `icon_text`: Show icon and text.
+                              `text_icon`: Show text and icon.
+                              Default: icon_text
+      - icon_prefix:          A string to add before the icon.
+                              Default: ""
+      - icon_postfix:         A string to add after the icon.
+                              Default: " "
+      - not_found_fallback:   A string to use in case an icon for a symbol
+                              was not found.
+                              Default: " "
+      - lspkind_preset:       The preset to use with `lspkind`. The valid
+                              values are the same as with `lspkind`.
+                              `default`: Requires nerd-font.
+                              `codicons`: Requires codicons font.
+      - substitutions:        Sometimes the symbol kind reported by LSP does
+                              not match an icon in `lspkind`, but there may be
+                              another obvious candidate. Use this table to make
+                              that substitution.
+                              Default: {
+                                Namespace = "Module"
+                              }
+    ]]
+)
+
 -- @param user_defaults table: a table where keys are the names of options,
 --    and values are the ones the user wants
 -- @param tele_defaults table: (optional) a table containing all of the defaults
@@ -846,7 +897,7 @@ function config.set_defaults(user_defaults, tele_defaults)
         vim.tbl_deep_extend("keep", vim.F.if_nil(config.values[name], {}), vim.F.if_nil(default_val, {}))
       )
     end
-    if name == "history" or name == "cache_picker" or name == "preview" then
+    if name == "history" or name == "cache_picker" or name == "preview" or name == "lsp_symbol_icon" then
       if user_defaults[name] == false or config.values[name] == false then
         return false
       end

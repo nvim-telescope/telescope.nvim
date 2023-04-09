@@ -489,6 +489,30 @@ utils.get_devicons = load_once(function()
   end
 end)
 
+utils.get_lsp_symbol_icon = load_once(function()
+  local has_lspkind, lspkind = pcall(require, "lspkind")
+  local config = require("telescope.config").values.lsp_symbol_icon
+
+  if has_lspkind == false or config == false then
+    return function(_, _)
+      return ""
+    end
+  end
+
+  return function(kind)
+    local icon = lspkind.symbolic(config.substitutions[kind] or kind, {
+      mode = "symbol",
+      preset = config.lspkind_preset
+    })
+
+    if icon == nil or icon == "" then
+      icon = config.not_found_fallback
+    end
+
+    return config.icon_prefix .. icon .. config.icon_postfix
+  end
+end)
+
 --- Telescope Wrapper around vim.notify
 ---@param funname string: name of the function that will be
 ---@param opts table: opts.level string, opts.msg string, opts.once bool
