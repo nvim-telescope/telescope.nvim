@@ -157,13 +157,13 @@ do
 
     mt_file_entry.cwd = cwd
     mt_file_entry.display = function(entry)
-      local hl_group
+      local hl_group, icon
       local display = utils.transform_path(opts, entry.value)
 
-      display, hl_group = utils.transform_devicons(entry.value, display, disable_devicons)
+      display, hl_group, icon = utils.transform_devicons(entry.value, display, disable_devicons)
 
       if hl_group then
-        return display, { { { 1, 3 }, hl_group } }
+        return display, { { { 1, #icon }, hl_group } }
       else
         return display
       end
@@ -326,14 +326,14 @@ do
           end
         end
 
-        local display, hl_group = utils.transform_devicons(
+        local display, hl_group, icon = utils.transform_devicons(
           entry.filename,
           string.format(display_string, display_filename, coordinates, entry.text),
           disable_devicons
         )
 
         if hl_group then
-          return display, { { { 1, 3 }, hl_group } }
+          return display, { { { 1, #icon }, hl_group } }
         else
           return display
         end
