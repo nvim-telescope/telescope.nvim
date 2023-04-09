@@ -169,9 +169,15 @@ action_set.edit = function(prompt_bufnr, command)
     end
   end
 
-  if row == nil or col == nil then
-    local pos = vim.api.nvim_win_get_cursor(0)
-    row, col = pos[1], pos[2] + 1
+  local pos = vim.api.nvim_win_get_cursor(0)
+  if col == nil then
+    if row == pos[1] then
+      col = pos[2] + 1
+    elseif row == nil then
+      row, col = pos[1], pos[2] + 1
+    else
+      col = 1
+    end
   end
 
   if row and col then
