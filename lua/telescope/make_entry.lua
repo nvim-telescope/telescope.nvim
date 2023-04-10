@@ -514,7 +514,7 @@ function make_entry.gen_from_lsp_symbols(opts)
   -- If path is not hidden then its, filepath, symbol and type(still unbound)
   -- If show_line is also set, type is bound to len 8
   local display_items = {
-    { width = opts.symbol_type_width ~= nil and opts.symbol_type_width or 8 },
+    { width = opts.symbol_name_width ~= nil and opts.symbol_name_width or 8 },
     { remaining = true },
   }
 
@@ -535,7 +535,7 @@ function make_entry.gen_from_lsp_symbols(opts)
   }
   local type_highlight = vim.F.if_nil(opts.symbol_highlights or lsp_type_highlight)
 
-  local display_text = function(entry)
+  local display_text_for_symbol_kind = function(entry)
     local config = require("telescope.config").values.lsp_symbol_icon
     local mode = "text"
     if config ~= false then
@@ -561,14 +561,14 @@ function make_entry.gen_from_lsp_symbols(opts)
 
     if hidden then
       return displayer {
-        { display_text(entry), type_highlight[entry.symbol_type] },
         entry.symbol_name,
+        { display_text_for_symbol_kind(entry), type_highlight[entry.symbol_type] },
         msg,
       }
     else
       return displayer {
+        { display_text_for_symbol_kind(entry), type_highlight[entry.symbol_type] },
         utils.transform_path(opts, entry.filename),
-        { display_text(entry), type_highlight[entry.symbol_type] },
         entry.symbol_name,
         msg,
       }
