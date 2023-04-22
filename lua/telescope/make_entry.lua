@@ -1152,8 +1152,15 @@ function make_entry.gen_from_diagnostics(opts)
     return signs
   end)()
 
+  local sign_width
+  if opts.disable_coordinates then
+    sign_width = signs ~= nil and 2 or 0
+  else
+    sign_width = signs ~= nil and 10 or 8
+  end
+
   local display_items = {
-    { width = signs ~= nil and 10 or 8 },
+    { width = sign_width },
     { remaining = true },
   }
   local line_width = vim.F.if_nil(opts.line_width, 0.5)
@@ -1171,8 +1178,9 @@ function make_entry.gen_from_diagnostics(opts)
 
     -- add styling of entries
     local pos = string.format("%4d:%2d", entry.lnum, entry.col)
+    local line_info_text = signs and signs[entry.type] .. " " or ""
     local line_info = {
-      (signs and signs[entry.type] .. " " or "") .. pos,
+      opts.disable_coordinates and line_info_text or line_info_text .. pos,
       "DiagnosticSign" .. entry.type,
     }
 
