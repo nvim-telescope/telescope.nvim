@@ -3,6 +3,7 @@ local start = health.start or health.report_start
 local ok = health.ok or health.report_ok
 local warn = health.warn or health.report_warn
 local error = health.error or health.report_error
+local info = health.info or health.report_info
 
 local extension_module = require "telescope._extensions"
 local extension_info = require("telescope").extensions
