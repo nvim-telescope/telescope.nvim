@@ -118,7 +118,7 @@ end, {
     if n == 0 then
       return vim.tbl_filter(function(val)
         return vim.startswith(val, l[2])
-      end, vim.tbl_extend("force", builtin_list, extensions_list))
+      end, vim.tbl_flatten({builtin_list, extensions_list}))
     end
 
     if n == 1 then
