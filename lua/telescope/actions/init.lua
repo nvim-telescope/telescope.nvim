@@ -394,13 +394,14 @@ end
 
 local set_edit_line = function(prompt_bufnr, fname, prefix, postfix)
   postfix = vim.F.if_nil(postfix, "")
+  postfix = a.nvim_replace_termcodes(postfix, true, false, true)
   local selection = action_state.get_selected_entry()
   if selection == nil then
     utils.__warn_no_selection(fname)
     return
   end
   actions.close(prompt_bufnr)
-  a.nvim_feedkeys(a.nvim_replace_termcodes(prefix .. selection.value .. postfix, true, false, true), "t", true)
+  a.nvim_feedkeys(prefix .. selection.value .. postfix, "n", true)
 end
 
 --- Set a value in the command line and don't run it, making it editable.
