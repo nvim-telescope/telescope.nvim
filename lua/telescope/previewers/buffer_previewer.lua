@@ -122,8 +122,8 @@ local handle_directory_preview = function(filepath, bufnr, opts)
 
   local set_colorize_lines
   if opts.preview.ls_short then
-    local PATH_SECTION = 6
     set_colorize_lines = function(data, sections)
+      local PATH_SECTION = Path.path.sep == "\\" and 4 or 6
       local paths = {}
       for i, line in ipairs(data) do
         local section = sections[i][PATH_SECTION]
@@ -132,7 +132,7 @@ local handle_directory_preview = function(filepath, bufnr, opts)
       end
       vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, paths)
       for i, path in ipairs(paths) do
-        local hl = color_hash[PATH_SECTION](data[i])
+        local hl = color_hash[6](data[i])
         vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, hl, i - 1, 0, #path)
       end
     end
