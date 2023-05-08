@@ -383,7 +383,7 @@ files.treesitter = function(opts)
   local has_nvim_treesitter, _ = pcall(require, "nvim-treesitter")
   if not has_nvim_treesitter then
     utils.notify("builtin.treesitter", {
-      msg = "User need to install nvim-treesitter needs to be installed",
+      msg = "This picker requires nvim-treesitter",
       level = "ERROR",
     })
     return
@@ -451,16 +451,10 @@ files.current_buffer_fuzzy_find = function(opts)
     })
   end
 
-  local ts_ok, ts_parsers = pcall(require, "nvim-treesitter.parsers")
-  if ts_ok then
-    filetype = ts_parsers.ft_to_lang(filetype)
-  end
-  local _, ts_configs = pcall(require, "nvim-treesitter.configs")
-
-  local parser_ok, parser = pcall(vim.treesitter.get_parser, opts.bufnr, filetype)
-  local get_query = vim.treesitter.query.get or vim.treesitter.get_query
-  local query_ok, query = pcall(get_query, filetype, "highlights")
-  if parser_ok and query_ok and ts_ok and ts_configs.is_enabled("highlight", filetype, opts.bufnr) then
+  local lang = vim.treesitter.language.get_lang(filetype)
+  if lang and utils.has_ts_parser(lang) then
+    local parser = vim.treesitter.get_parser(opts.bufnr, lang)
+    local query = vim.treesitter.query.get(lang, "highlights")
     local root = parser:parse()[1]:root()
 
     local line_highlights = setmetatable({}, {
@@ -471,25 +465,8 @@ files.current_buffer_fuzzy_find = function(opts)
       end,
     })
 
-    -- update to changes on Neovim master, see https://github.com/neovim/neovim/pull/19931
-    -- TODO(clason): remove when dropping support for Neovim 0.7
-    local get_hl_from_capture = (function()
-      if vim.fn.has "nvim-0.8" == 1 then
-        return function(q, id)
-          return "@" .. q.captures[id]
-        end
-      else
-        local highlighter = vim.treesitter.highlighter.new(parser)
-        local highlighter_query = highlighter:get_query(filetype)
-
-        return function(_, id)
-          return highlighter_query:_get_hl_from_capture(id)
-        end
-      end
-    end)()
-
     for id, node in query:iter_captures(root, opts.bufnr, 0, -1) do
-      local hl = get_hl_from_capture(query, id)
+      local hl = "@" .. query.captures[id]
       if hl and type(hl) ~= "number" then
         local row1, col1, row2, col2 = node:range()
 
