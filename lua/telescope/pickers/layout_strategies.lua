@@ -775,9 +775,13 @@ layout_strategies.flex = make_documented_layout(
 
     if max_columns < flip_columns and max_lines > flip_lines then
       self.__flex_strategy = "vertical"
+      self.layout_config.flip_columns = nil
+      self.layout_config.flip_lines = nil
       return layout_strategies.vertical(self, max_columns, max_lines, layout_config.vertical)
     else
       self.__flex_strategy = "horizontal"
+      self.layout_config.flip_columns = nil
+      self.layout_config.flip_lines = nil
       return layout_strategies.horizontal(self, max_columns, max_lines, layout_config.horizontal)
     end
   end
