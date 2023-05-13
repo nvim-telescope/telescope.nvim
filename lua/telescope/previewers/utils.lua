@@ -1,4 +1,4 @@
-local context_manager = require "plenary.context_manager"
+context_manager = require "plenary.context_manager"
 local ts_utils = require "telescope.utils"
 local strings = require "plenary.strings"
 local conf = require("telescope.config").values
@@ -200,6 +200,58 @@ utils.set_preview_message = function(bufnr, winid, message, fillchar)
       { virt_text = { { line, "TelescopePreviewMessage" } }, virt_text_pos = "overlay", virt_text_win_col = col }
     )
   end
+end
+
+local last_non_empty_line = function(lines)
+  for i = #lines, 1, -1 do
+    local line = lines[i]
+    if line ~= "" then
+      return line
+    end
+  end
+  return ""
+end
+
+--- Move the selection to the previous entry
+---@param job_opts table: see plenary.job opts table
+--- - Note: `on_{stdout, exit}` are carefully tuned default functions to preview output & typically not to be overridden
+---@field timeout number: preview blocks at most for `timeout` milliseconds (default: defaults.preview.timeout)
+utils.buf_term_preview = function(bufnr, job_opts)
+  local timeout = vim.F.if_nil(job_opts.timeout, conf.preview.timeout or 250)
+  local chan = vim.api.nvim_open_term(bufnr, {})
+  local job_lines = {}
+  job_opts = vim.tbl_extend("keep", job_opts, {
+    on_stdout = vim.schedule_wrap(function(_, line, _)
+      table.insert(job_lines, line)
+    end),
+    on_exit = vim.schedule_wrap(function()
+      -- pcall as smashing/exiting might result into invalid channel
+      local ok = pcall(vim.api.nvim_chan_send, chan, table.concat(job_lines, "\r\n"))
+      local line
+      if ok then
+        -- need to gsub ansi codes
+        -- creds to https://stackoverflow.com/questions/48948630/lua-ansi-escapes-patternk
+        line = last_non_empty_line(job_lines):gsub("[\27\155][][()#;?%d]*[A-PRZcf-ntqry=><~]", "")
+      end
+      -- chan_send is practically async, we have to await completion
+      -- until we can scroll buffer to top
+      vim.wait(timeout, function()
+        -- open_term results in bufnr having some empty last lines (seemingly non-deterministic number)
+        -- fetch second to last line and check against command output
+        local last_line
+        if vim.api.nvim_buf_is_valid(bufnr) then
+          last_line = last_non_empty_line(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false))
+        end
+        if last_line == line then -- manually verified check passed frequently
+          return true
+        end
+      end, 5, false)
+      vim.api.nvim_buf_call(bufnr, function()
+        vim.cmd [[ normal! gg ]]
+      end)
+    end),
+  })
+  Job:new(job_opts):start()
 end
 
 return utils
