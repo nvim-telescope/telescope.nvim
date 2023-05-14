@@ -458,7 +458,9 @@ function Picker:find()
 
     -- we need to set the prefix color after changing mode since
     -- https://github.com/neovim/neovim/commit/cbf9199d65325c1167d7eeb02a34c85d243e781c
-    self:_reset_prefix_color()
+    if vim.fn.has "nvim-9.0" == 1 then
+      self:_reset_prefix_color()
+    end
 
     while true do
       -- Wait for the next input
