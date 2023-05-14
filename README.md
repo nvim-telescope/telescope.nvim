@@ -593,7 +593,9 @@ For writing your own picker and for information about the API please read the
 
 - [What is Telescope? (Video)](https://www.twitch.tv/teej_dv/clip/RichDistinctPlumberPastaThat)
 - [More advanced configuration (Video)](https://www.twitch.tv/videos/756229115)
-- [Example video](https://www.youtube.com/watch?v=65AVwHZflsU)
+- [telescope.nvim 0.1 reflection (Video)](https://www.youtube.com/watch?v=3WEAjCXFiiM)
+- [Why Telescope? (Video)](https://www.youtube.com/watch?v=8SqFt5h2Lsg)
+- [Telescope and Nvim 0.5 Intro (Video)](https://www.youtube.com/watch?v=guxLXcG1kzQ)
 
 ## Contributing
 
