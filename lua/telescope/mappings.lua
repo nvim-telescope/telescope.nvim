@@ -199,30 +199,6 @@ mappings.default_mappings = config.values.default_mappings
     },
   }
 
-__TelescopeKeymapStore = __TelescopeKeymapStore
-  or setmetatable({}, {
-    __index = function(t, k)
-      rawset(t, k, {})
-
-      return rawget(t, k)
-    end,
-  })
-local keymap_store = __TelescopeKeymapStore
-
-local _mapping_key_id = 0
-local get_next_id = function()
-  _mapping_key_id = _mapping_key_id + 1
-  return _mapping_key_id
-end
-
-local assign_function = function(prompt_bufnr, func)
-  local func_id = get_next_id()
-
-  keymap_store[prompt_bufnr][func_id] = func
-
-  return func_id
-end
-
 local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
   if not key_func then
     return
@@ -256,26 +232,11 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
     end
   end
 
-  local key_id = assign_function(prompt_bufnr, key_func)
-  local prefix
-
-  local rhs
-  if opts.expr then
-    rhs = function()
-      return require("telescope.mappings").execute_keymap(prompt_bufnr, key_id)
-    end
-  else
-    if mode == "i" and not opts.expr then
-      prefix = "<cmd>"
-    elseif mode == "n" then
-      prefix = ":<C-U>"
-    else
-      prefix = ":"
-    end
-
-    rhs = string.format("%slua require('telescope.mappings').execute_keymap(%s, %s)<CR>", prefix, prompt_bufnr, key_id)
-  end
-  vim.keymap.set(mode, key_bind, rhs, vim.tbl_extend("force", opts, { buffer = prompt_bufnr }))
+  vim.keymap.set(mode, key_bind, function()
+    local ret = key_func(prompt_bufnr)
+    vim.api.nvim_exec_autocmds("User", { pattern = "TelescopeKeymap" })
+    return ret
+  end, vim.tbl_extend("force", opts, { buffer = prompt_bufnr }))
 end
 
 local extract_keymap_opts = function(key_func)
@@ -344,22 +305,6 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
       end
     end
   end
-end
-
--- TODO: conni2461 we no longer need this workaround and could just call the actual function
-mappings.execute_keymap = function(prompt_bufnr, keymap_identifier)
-  local key_func = keymap_store[prompt_bufnr][keymap_identifier]
-
-  assert(key_func, string.format("Unsure of how we got this failure: %s %s", prompt_bufnr, keymap_identifier))
-
-  -- return the result because of expr for insert
-  local ret = key_func(prompt_bufnr)
-  vim.api.nvim_exec_autocmds("User", { pattern = "TelescopeKeymap" })
-  return ret
-end
-
-mappings.clear = function(prompt_bufnr)
-  keymap_store[prompt_bufnr] = nil
 end
 
 return mappings
