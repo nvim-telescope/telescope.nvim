@@ -621,6 +621,10 @@ append(
       - hide_on_startup:  Hide previewer when picker starts. Previewer can be toggled
                           with actions.layout.toggle_preview.
                           Default: false
+      - ls_short:         Determines whether to use the `--short` flag for the `ls`
+                          command when previewing directories. Otherwise will result
+                          to using `--long`.
+                          Default: false
     ]]
 )
 
