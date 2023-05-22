@@ -57,8 +57,14 @@ return function(opts)
     }
 
     for line in stdout:iter(true) do
-      if process_result(entry_maker(line)) then
-        return
+      local entries, consider_multiple = entry_maker(line)
+      if not consider_multiple then
+        entries = { entries }
+      end
+      for _, entry in ipairs(entries) do
+        if process_result(entry) then
+          return
+        end
       end
     end
 
