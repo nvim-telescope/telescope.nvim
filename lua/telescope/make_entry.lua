@@ -163,7 +163,7 @@ do
       display, hl_group, icon = utils.transform_devicons(entry.value, display, disable_devicons)
 
       if hl_group then
-        return display, { { { 1, #icon }, hl_group } }
+        return display, { { { 0, #icon }, hl_group } }
       else
         return display
       end
@@ -326,7 +326,7 @@ do
         )
 
         if hl_group then
-          return display, { { { 1, #icon }, hl_group } }
+          return display, { { { 0, #icon }, hl_group } }
         else
           return display
         end
