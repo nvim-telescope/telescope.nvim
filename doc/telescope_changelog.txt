@@ -255,4 +255,17 @@ following breaking changes are included in this PR:
 <
 
 
+                                                    *telescope.changelog-2499*
+
+Date: May 24, 2023
+PR: https://github.com/nvim-telescope/telescope.nvim/pull/2499
+
+We decided to bump the minimum Neovim version to 0.9.0, in order to remove a
+couple of no longer required workarounds. That includes using upstream
+treesitter implementation in favor of nvim-treesitter.
+If you still have a requirement for Neovim 0.7 or 0.8, we also have a stable
+branch 0.1.x (or version, currently 0.1.1) which will not receive this version
+bump and will continue to offer support for older Neovim versions.
+
+
  vim:tw=78:ts=8:ft=help:norl:

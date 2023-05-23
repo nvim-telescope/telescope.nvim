@@ -15,11 +15,7 @@ jobs:
             manager: sudo apt-get
             packages: -y ripgrep
           - os: ubuntu-22.04
-            rev: v0.7.2/nvim-linux64.tar.gz
-            manager: sudo apt-get
-            packages: -y ripgrep
-          - os: ubuntu-22.04
-            rev: v0.8.1/nvim-linux64.tar.gz
+            rev: v0.9.0/nvim-linux64.tar.gz
             manager: sudo apt-get
             packages: -y ripgrep
           - os: macos-12
@@ -27,11 +23,7 @@ jobs:
             manager: brew
             packages: ripgrep
           - os: macos-12
-            rev: v0.7.2/nvim-macos.tar.gz
-            manager: brew
-            packages: ripgrep
-          - os: macos-12
-            rev: v0.8.1/nvim-macos.tar.gz
+            rev: v0.9.0/nvim-macos.tar.gz
             manager: brew
             packages: ripgrep
     steps:
