@@ -426,7 +426,14 @@ previewers.new_buffer_previewer = function(opts)
 
       if vim.api.nvim_buf_is_valid(self.state.bufnr) then
         vim.api.nvim_buf_call(self.state.bufnr, function()
-          vim.cmd "do User TelescopePreviewerLoaded"
+          vim.api.nvim_exec_autocmds("User", {
+            pattern = "TelescopePreviewerLoaded",
+            data = {
+              title = entry.preview_title,
+              bufname = self.state.bufname,
+              filetype = pfiletype.detect(self.state.bufname),
+            },
+          })
         end)
       end
     end)

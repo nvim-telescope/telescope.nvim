@@ -400,8 +400,27 @@ to configure more filetypes, take a look at
 
 If you want to configure the `vim_buffer_` previewer (e.g. you want the line to wrap), do this:
 
-```vim
-autocmd User TelescopePreviewerLoaded setlocal wrap
+```lua
+vim.api.nvim_create_autocmd("User", {
+  pattern = "TelescopePreviewerLoaded",
+  callback = function(args)
+    if args.data.filetype ~= "help" then
+      vim.bo.number = true
+    elseif args.data.bufname:match("*.csv") then
+      vim.bo.wrap = false
+    end
+  end,
+})
+```
+
+A data field is passed to the callback, which contains the filetype and the buffer name.
+
+```lua
+{
+  title: string, # preview window title
+  filetype: string,
+  bufname: string,
+}
 ```
 
 ## Sorters
