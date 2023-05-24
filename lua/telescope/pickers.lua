@@ -1495,7 +1495,12 @@ function pickers.on_close_prompt(prompt_bufnr)
     event = "BufLeave",
     buffer = prompt_bufnr,
   }
-  picker.close_windows(status)
+
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<esc>", true, true, true), "n", true)
+  vim.defer_fn(function()
+    picker.close_windows(status)
+  end, 0)
+
   mappings.clear(prompt_bufnr)
 end
 
