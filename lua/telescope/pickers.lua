@@ -857,7 +857,7 @@ end
 function Picker:_reset_prefix_color(hl_group)
   self._current_prefix_hl_group = hl_group or nil
 
-  if self.prompt_prefix ~= "" then
+  if self.prompt_prefix ~= "" and a.nvim_buf_is_valid(self.prompt_bufnr) then
     vim.api.nvim_buf_add_highlight(
       self.prompt_bufnr,
       ns_telescope_prompt_prefix,
