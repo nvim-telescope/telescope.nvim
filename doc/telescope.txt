@@ -1516,6 +1516,8 @@ builtin.lsp_definitions({opts})          *telescope.builtin.lsp_definitions()*
                                  (default: 30)
         {show_line}   (boolean)  show results text (default: true)
         {trim_text}   (boolean)  trim results text (default: false)
+        {reuse_win}   (boolean)  jump to existing window if buffer is already
+                                 opened (default: false)
 
 
 builtin.lsp_type_definitions({opts}) *telescope.builtin.lsp_type_definitions()*
@@ -1535,6 +1537,8 @@ builtin.lsp_type_definitions({opts}) *telescope.builtin.lsp_type_definitions()*
                                  (default: 30)
         {show_line}   (boolean)  show results text (default: true)
         {trim_text}   (boolean)  trim results text (default: false)
+        {reuse_win}   (boolean)  jump to existing window if buffer is already
+                                 opened (default: false)
 
 
 builtin.lsp_implementations({opts})  *telescope.builtin.lsp_implementations()*
@@ -1554,6 +1558,8 @@ builtin.lsp_implementations({opts})  *telescope.builtin.lsp_implementations()*
                                  (default: 30)
         {show_line}   (boolean)  show results text (default: true)
         {trim_text}   (boolean)  trim results text (default: false)
+        {reuse_win}   (boolean)  jump to existing window if buffer is already
+                                 opened (default: false)
 
 
 builtin.lsp_document_symbols({opts}) *telescope.builtin.lsp_document_symbols()*
