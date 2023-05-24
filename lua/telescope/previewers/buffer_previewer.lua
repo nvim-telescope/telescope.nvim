@@ -5,7 +5,6 @@ local putils = require "telescope.previewers.utils"
 local Previewer = require "telescope.previewers.previewer"
 local conf = require("telescope.config").values
 
-local pfiletype = require "plenary.filetype"
 local pscan = require "plenary.scandir"
 
 local buf_delete = utils.buf_delete
@@ -201,7 +200,6 @@ previewers.file_maker = function(filepath, bufnr, opts)
   if opts.use_ft_detect == nil then
     opts.use_ft_detect = true
   end
-  opts.ft = opts.use_ft_detect and pfiletype.detect(filepath)
   if opts.bufname ~= filepath then
     if not vim.in_fast_event() then
       filepath = vim.fn.expand(filepath)
@@ -218,76 +216,74 @@ previewers.file_maker = function(filepath, bufnr, opts)
       if stat.type == "directory" then
         handle_directory_preview(filepath, bufnr, opts)
       else
-        if opts.preview.check_mime_type == true and has_file and opts.ft == "" then
-          -- avoid SIGABRT in buffer previewer happening with utils.get_os_command_output
-          local output = capture(string.format([[file --mime-type -b "%s"]], filepath))
-          local mime_type = vim.split(output, "/")
-          if mime_type[1] ~= "text" and mime_type[1] ~= "inode" and mime_type[2] ~= "json" then
-            if type(opts.preview.mime_hook) == "function" then
-              vim.schedule_wrap(opts.preview.mime_hook)(filepath, bufnr, opts)
-            else
-              vim.schedule_wrap(putils.set_preview_message)(
-                bufnr,
-                opts.winid,
-                "Binary cannot be previewed",
-                opts.preview.msg_bg_fillchar
-              )
-            end
-            return
-          end
-          if mime_type[2] == "json" then
-            opts.ft = "json"
-          end
-        end
-
-        if opts.preview.filesize_limit then
-          local mb_filesize = math.floor(stat.size / bytes_to_megabytes)
-          if mb_filesize > opts.preview.filesize_limit then
-            if type(opts.preview.filesize_hook) == "function" then
-              vim.schedule_wrap(opts.preview.filesize_hook)(filepath, bufnr, opts)
-            else
-              vim.schedule_wrap(putils.set_preview_message)(
-                bufnr,
-                opts.winid,
-                "File exceeds preview size limit",
-                opts.preview.msg_bg_fillchar
-              )
-            end
-            return
-          end
-        end
-
-        opts.start_time = vim.loop.hrtime()
-        Path:new(filepath):_read_async(vim.schedule_wrap(function(data)
-          if not vim.api.nvim_buf_is_valid(bufnr) then
-            return
-          end
-          local processed_data = split(data, "[\r]?\n", _, opts)
-
-          if processed_data then
-            local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, processed_data)
-            if not ok then
+        vim.schedule(function()
+          opts.ft = opts.use_ft_detect and putils.filetype_detect(filepath)
+          if opts.preview.check_mime_type == true and has_file and (opts.ft == nil or opts.ft == "") then
+            -- avoid SIGABRT in buffer previewer happening with utils.get_os_command_output
+            local output = capture(string.format([[file --mime-type -b "%s"]], filepath))
+            local mime_type = vim.split(output, "/")
+            if mime_type[1] ~= "text" and mime_type[1] ~= "inode" and mime_type[2] ~= "json" then
+              if type(opts.preview.mime_hook) == "function" then
+                opts.preview.mime_hook(filepath, bufnr, opts)
+              else
+                putils.set_preview_message(
+                  bufnr,
+                  opts.winid,
+                  "Binary cannot be previewed",
+                  opts.preview.msg_bg_fillchar
+                )
+              end
               return
             end
-
-            if opts.callback then
-              opts.callback(bufnr)
+            if mime_type[2] == "json" then
+              opts.ft = "json"
             end
-            putils.highlighter(bufnr, opts.ft, opts)
-          else
-            if type(opts.preview.timeout_hook) == "function" then
-              vim.schedule_wrap(opts.preview.timeout_hook)(filepath, bufnr, opts)
-            else
-              vim.schedule_wrap(putils.set_preview_message)(
-                bufnr,
-                opts.winid,
-                "Previewer timed out",
-                opts.preview.msg_bg_fillchar
-              )
-            end
-            return
           end
-        end))
+
+          if opts.preview.filesize_limit then
+            local mb_filesize = math.floor(stat.size / bytes_to_megabytes)
+            if mb_filesize > opts.preview.filesize_limit then
+              if type(opts.preview.filesize_hook) == "function" then
+                opts.preview.filesize_hook(filepath, bufnr, opts)
+              else
+                putils.set_preview_message(
+                  bufnr,
+                  opts.winid,
+                  "File exceeds preview size limit",
+                  opts.preview.msg_bg_fillchar
+                )
+              end
+              return
+            end
+          end
+
+          opts.start_time = vim.loop.hrtime()
+          Path:new(filepath):_read_async(vim.schedule_wrap(function(data)
+            if not vim.api.nvim_buf_is_valid(bufnr) then
+              return
+            end
+            local processed_data = split(data, "[\r]?\n", _, opts)
+
+            if processed_data then
+              local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, processed_data)
+              if not ok then
+                return
+              end
+
+              if opts.callback then
+                opts.callback(bufnr)
+              end
+              putils.highlighter(bufnr, opts.ft, opts)
+            else
+              if type(opts.preview.timeout_hook) == "function" then
+                opts.preview.timeout_hook(filepath, bufnr, opts)
+              else
+                putils.set_preview_message(bufnr, opts.winid, "Previewer timed out", opts.preview.msg_bg_fillchar)
+              end
+              return
+            end
+          end))
+        end)
       end
     end)
   else
@@ -431,7 +427,7 @@ previewers.new_buffer_previewer = function(opts)
             data = {
               title = entry.preview_title,
               bufname = self.state.bufname,
-              filetype = pfiletype.detect(self.state.bufname or ""),
+              filetype = putils.filetype_detect(self.state.bufname or ""),
             },
           })
         end)
@@ -851,7 +847,7 @@ previewers.git_commit_diff_as_was = defaulter(function(opts)
       local cmd = { "git", "--no-pager", "show" }
       local cf = opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd)
       local value = cf and (entry.value .. ":" .. cf) or entry.value
-      local ft = cf and pfiletype.detect(value) or "diff"
+      local ft = cf and putils.filetype_detect(value) or "diff"
       table.insert(cmd, value)
 
       putils.job_maker(cmd, self.state.bufnr, {
