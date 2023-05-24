@@ -382,6 +382,8 @@ end
 local set_opts_cwd = function(opts)
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)
+  elseif opts.use_file_path then
+    opts.cwd = vim.fn.finddir(".git", vim.fn.expand "%:p" .. ";")
   else
     opts.cwd = vim.loop.cwd()
   end

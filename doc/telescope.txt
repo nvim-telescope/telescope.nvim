@@ -967,6 +967,8 @@ builtin.git_files({opts})                      *telescope.builtin.git_files()*
 
     Options: ~
         {cwd}                (string)   specify the path of the repo
+        {use_file_path}      (boolean)  if we should use the current buffer
+                                        git root (default: false)
         {use_git_root}       (boolean)  if we should use git root as cwd or
                                         the cwd (important for submodule)
                                         (default: true)
@@ -993,11 +995,13 @@ builtin.git_commits({opts})                  *telescope.builtin.git_commits()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {cwd}          (string)   specify the path of the repo
-        {use_git_root} (boolean)  if we should use git root as cwd or the cwd
-                                  (important for submodule) (default: true)
-        {git_command}  (table)    command that will be executed.
-                                  {"git","log","--pretty=oneline","--abbrev-commit","--","."}
+        {cwd}           (string)   specify the path of the repo
+        {use_file_path} (boolean)  if we should use the current buffer git
+                                   root (default: false)
+        {use_git_root}  (boolean)  if we should use git root as cwd or the cwd
+                                   (important for submodule) (default: true)
+        {git_command}   (table)    command that will be executed.
+                                   {"git","log","--pretty=oneline","--abbrev-commit","--","."}
 
 
 builtin.git_bcommits({opts})                *telescope.builtin.git_bcommits()*
@@ -1013,13 +1017,15 @@ builtin.git_bcommits({opts})                *telescope.builtin.git_bcommits()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {cwd}          (string)   specify the path of the repo
-        {use_git_root} (boolean)  if we should use git root as cwd or the cwd
-                                  (important for submodule) (default: true)
-        {current_file} (string)   specify the current file that should be used
-                                  for bcommits (default: current buffer)
-        {git_command}  (table)    command that will be executed.
-                                  {"git","log","--pretty=oneline","--abbrev-commit"}
+        {cwd}           (string)   specify the path of the repo
+        {use_file_path} (boolean)  if we should use the current buffer git
+                                   root (default: false)
+        {use_git_root}  (boolean)  if we should use git root as cwd or the cwd
+                                   (important for submodule) (default: true)
+        {current_file}  (string)   specify the current file that should be
+                                   used for bcommits (default: current buffer)
+        {git_command}   (table)    command that will be executed.
+                                   {"git","log","--pretty=oneline","--abbrev-commit"}
 
 
 builtin.git_branches({opts})                *telescope.builtin.git_branches()*
@@ -1042,6 +1048,9 @@ builtin.git_branches({opts})                *telescope.builtin.git_branches()*
     Options: ~
         {cwd}                           (string)   specify the path of the
                                                    repo
+        {use_file_path}                 (boolean)  if we should use the
+                                                   current buffer git root
+                                                   (default: false)
         {use_git_root}                  (boolean)  if we should use git root
                                                    as cwd or the cwd
                                                    (important for submodule)
@@ -1064,12 +1073,14 @@ builtin.git_status({opts})                    *telescope.builtin.git_status()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {cwd}          (string)   specify the path of the repo
-        {use_git_root} (boolean)  if we should use git root as cwd or the cwd
-                                  (important for submodule) (default: true)
-        {git_icons}    (table)    string -> string. Matches name with icon
-                                  (see source code, make_entry.lua
-                                  git_icon_defaults)
+        {cwd}           (string)   specify the path of the repo
+        {use_file_path} (boolean)  if we should use the current buffer git
+                                   root (default: false)
+        {use_git_root}  (boolean)  if we should use git root as cwd or the cwd
+                                   (important for submodule) (default: true)
+        {git_icons}     (table)    string -> string. Matches name with icon
+                                   (see source code, make_entry.lua
+                                   git_icon_defaults)
 
 
 builtin.git_stash({opts})                      *telescope.builtin.git_stash()*
@@ -1082,11 +1093,13 @@ builtin.git_stash({opts})                      *telescope.builtin.git_stash()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {cwd}          (string)   specify the path of the repo
-        {use_git_root} (boolean)  if we should use git root as cwd or the cwd
-                                  (important for submodule) (default: true)
-        {show_branch}  (boolean)  if we should display the branch name for git
-                                  stash entries (default: true)
+        {cwd}           (string)   specify the path of the repo
+        {use_file_path} (boolean)  if we should use the current buffer git
+                                   root (default: false)
+        {use_git_root}  (boolean)  if we should use git root as cwd or the cwd
+                                   (important for submodule) (default: true)
+        {show_branch}   (boolean)  if we should display the branch name for
+                                   git stash entries (default: true)
 
 
 builtin.builtin({opts})                          *telescope.builtin.builtin()*
