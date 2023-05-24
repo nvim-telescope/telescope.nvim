@@ -116,7 +116,7 @@ end, {
     local n = #l - 2
 
     if n == 0 then
-      local commands = vim.tbl_flatten({builtin_list, extensions_list})
+      local commands = vim.tbl_flatten { builtin_list, extensions_list }
       table.sort(commands)
 
       return vim.tbl_filter(function(val)
