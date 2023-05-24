@@ -456,7 +456,9 @@ end
 actions.insert_symbol = function(prompt_bufnr)
   local symbol = action_state.get_selected_entry().value[1]
   actions.close(prompt_bufnr)
-  vim.api.nvim_put({ symbol }, "", true, true)
+  vim.defer_fn(function()
+    vim.api.nvim_put({ symbol }, "", true, true)
+  end, 0)
 end
 
 --- Insert a symbol into the current buffer and keeping the insert mode.
@@ -464,10 +466,12 @@ end
 actions.insert_symbol_i = function(prompt_bufnr)
   local symbol = action_state.get_selected_entry().value[1]
   actions.close(prompt_bufnr)
-  vim.schedule(function()
+  vim.defer_fn(function()
     vim.cmd [[startinsert]]
-    vim.api.nvim_put({ symbol }, "", true, true)
-  end)
+    local pos = vim.api.nvim_win_get_cursor(0)
+    local ll = #vim.api.nvim_buf_get_lines(0, pos[1] - 1, pos[1], true)[1]
+    vim.api.nvim_put({ symbol }, "", (pos[2] + 1) == ll, true)
+  end, 0)
 end
 
 -- TODO: Think about how to do this.
