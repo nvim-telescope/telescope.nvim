@@ -1406,8 +1406,11 @@ builtin.keymaps({opts})                          *telescope.builtin.keymaps()*
                                  true)
         {only_buf}   (boolean)   if true, only show the buffer-local keymaps
                                  (default: false)
-        {lhs_filter} (function)  filter(lhs:string) -> boolean. true if the
-                                 keymap should be shown (optional)
+        {lhs_filter} (function)  filter(lhs:string) -> boolean. true for
+                                 keymap.lhs if the keymap should be shown
+                                 (optional)
+        {filter}     (function)  filter(km:keymap) -> boolean. true for the
+                                 keymap if it should be shown (optional)
 
 
 builtin.filetypes({opts})                      *telescope.builtin.filetypes()*
