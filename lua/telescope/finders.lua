@@ -75,7 +75,9 @@ function JobFinder:_find(prompt, process_result, process_complete)
     local entry
     if self.entry_maker then
       entry = self.entry_maker(line)
-      entry.index = line_num
+      if entry then
+        entry.index = line_num
+      end
     else
       entry = line
     end
@@ -141,7 +143,9 @@ function DynamicFinder:_find(prompt, process_result, process_complete)
   for _, result in ipairs(results) do
     result_num = result_num + 1
     local entry = self.entry_maker(result)
-    entry.index = result_num
+    if entry then
+      entry.index = result_num
+    end
     if process_result(entry) then
       return
     end

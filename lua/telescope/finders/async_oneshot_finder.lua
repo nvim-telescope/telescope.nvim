@@ -71,7 +71,9 @@ return function(opts)
           end
 
           local entry = entry_maker(line)
-          entry.index = num_results
+          if entry then
+            entry.index = num_results
+          end
           results[num_results] = entry
           process_result(entry)
         end
