@@ -431,7 +431,7 @@ previewers.new_buffer_previewer = function(opts)
             data = {
               title = entry.preview_title,
               bufname = self.state.bufname,
-              filetype = pfiletype.detect(self.state.bufname),
+              filetype = pfiletype.detect(self.state.bufname or ""),
             },
           })
         end)
