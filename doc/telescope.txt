@@ -1454,19 +1454,21 @@ builtin.lsp_references({opts})            *telescope.builtin.lsp_references()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {include_declaration}  (boolean)  include symbol declaration in the
-                                          lsp references (default: true)
-        {include_current_line} (boolean)  include current line (default:
-                                          false)
-        {jump_type}            (string)   how to goto reference if there is
-                                          only one and the definition file is
-                                          different from the current file,
-                                          values: "tab", "split", "vsplit",
-                                          "never"
-        {fname_width}          (number)   defines the width of the filename
-                                          section (default: 30)
-        {show_line}            (boolean)  show results text (default: true)
-        {trim_text}            (boolean)  trim results text (default: false)
+        {include_declaration}  (boolean)   include symbol declaration in the
+                                           lsp references (default: true)
+        {include_current_line} (boolean)   include current line (default:
+                                           false)
+        {jump_type}            (string)    how to goto reference if there is
+                                           only one and the definition file is
+                                           different from the current file,
+                                           values: "tab", "split", "vsplit",
+                                           "never"
+        {fname_width}          (number)    defines the width of the filename
+                                           section (default: 30)
+        {show_line}            (boolean)   show results text (default: true)
+        {trim_text}            (boolean)   trim results text (default: false)
+        {on_no_result}         (function)  what to do in case of no results
+                                           (default: nil)
 
 
 builtin.lsp_incoming_calls({opts})    *telescope.builtin.lsp_incoming_calls()*
@@ -1478,10 +1480,12 @@ builtin.lsp_incoming_calls({opts})    *telescope.builtin.lsp_incoming_calls()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {fname_width} (number)   defines the width of the filename section
-                                 (default: 30)
-        {show_line}   (boolean)  show results text (default: true)
-        {trim_text}   (boolean)  trim results text (default: false)
+        {fname_width}  (number)    defines the width of the filename section
+                                   (default: 30)
+        {show_line}    (boolean)   show results text (default: true)
+        {trim_text}    (boolean)   trim results text (default: false)
+        {on_no_result} (function)  what to do in case of no results (default:
+                                   nil)
 
 
 builtin.lsp_outgoing_calls({opts})    *telescope.builtin.lsp_outgoing_calls()*
@@ -1493,10 +1497,12 @@ builtin.lsp_outgoing_calls({opts})    *telescope.builtin.lsp_outgoing_calls()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {fname_width} (number)   defines the width of the filename section
-                                 (default: 30)
-        {show_line}   (boolean)  show results text (default: true)
-        {trim_text}   (boolean)  trim results text (default: false)
+        {fname_width}  (number)    defines the width of the filename section
+                                   (default: 30)
+        {show_line}    (boolean)   show results text (default: true)
+        {trim_text}    (boolean)   trim results text (default: false)
+        {on_no_result} (function)  what to do in case of no results (default:
+                                   nil)
 
 
 builtin.lsp_definitions({opts})          *telescope.builtin.lsp_definitions()*
@@ -1508,14 +1514,16 @@ builtin.lsp_definitions({opts})          *telescope.builtin.lsp_definitions()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {jump_type}   (string)   how to goto definition if there is only one
-                                 and the definition file is different from the
-                                 current file, values: "tab", "split",
-                                 "vsplit", "never"
-        {fname_width} (number)   defines the width of the filename section
-                                 (default: 30)
-        {show_line}   (boolean)  show results text (default: true)
-        {trim_text}   (boolean)  trim results text (default: false)
+        {jump_type}    (string)    how to goto definition if there is only one
+                                   and the definition file is different from
+                                   the current file, values: "tab", "split",
+                                   "vsplit", "never"
+        {fname_width}  (number)    defines the width of the filename section
+                                   (default: 30)
+        {show_line}    (boolean)   show results text (default: true)
+        {trim_text}    (boolean)   trim results text (default: false)
+        {on_no_result} (function)  what to do in case of no results (default:
+                                   nil)
 
 
 builtin.lsp_type_definitions({opts}) *telescope.builtin.lsp_type_definitions()*
@@ -1527,14 +1535,16 @@ builtin.lsp_type_definitions({opts}) *telescope.builtin.lsp_type_definitions()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {jump_type}   (string)   how to goto definition if there is only one
-                                 and the definition file is different from the
-                                 current file, values: "tab", "split",
-                                 "vsplit", "never"
-        {fname_width} (number)   defines the width of the filename section
-                                 (default: 30)
-        {show_line}   (boolean)  show results text (default: true)
-        {trim_text}   (boolean)  trim results text (default: false)
+        {jump_type}    (string)    how to goto definition if there is only one
+                                   and the definition file is different from
+                                   the current file, values: "tab", "split",
+                                   "vsplit", "never"
+        {fname_width}  (number)    defines the width of the filename section
+                                   (default: 30)
+        {show_line}    (boolean)   show results text (default: true)
+        {trim_text}    (boolean)   trim results text (default: false)
+        {on_no_result} (function)  what to do in case of no results (default:
+                                   nil)
 
 
 builtin.lsp_implementations({opts})  *telescope.builtin.lsp_implementations()*
@@ -1546,14 +1556,16 @@ builtin.lsp_implementations({opts})  *telescope.builtin.lsp_implementations()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {jump_type}   (string)   how to goto implementation if there is only
-                                 one and the definition file is different from
-                                 the current file, values: "tab", "split",
-                                 "vsplit", "never"
-        {fname_width} (number)   defines the width of the filename section
-                                 (default: 30)
-        {show_line}   (boolean)  show results text (default: true)
-        {trim_text}   (boolean)  trim results text (default: false)
+        {jump_type}    (string)    how to goto implementation if there is only
+                                   one and the definition file is different
+                                   from the current file, values: "tab",
+                                   "split", "vsplit", "never"
+        {fname_width}  (number)    defines the width of the filename section
+                                   (default: 30)
+        {show_line}    (boolean)   show results text (default: true)
+        {trim_text}    (boolean)   trim results text (default: false)
+        {on_no_result} (function)  what to do in case of no results (default:
+                                   nil)
 
 
 builtin.lsp_document_symbols({opts}) *telescope.builtin.lsp_document_symbols()*
