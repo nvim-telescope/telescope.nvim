@@ -753,7 +753,9 @@ function Picker.close_windows(status)
   utils.win_delete("preview_border_win", status.preview_border_win, true, true)
 
   -- we cant use win_delete. We first need to close and then delete the buffer
-  vim.api.nvim_win_close(status.prompt_win, true)
+  if vim.api.nvim_win_is_valid(status.prompt_win) then
+    vim.api.nvim_win_close(status.prompt_win, true)
+  end
   utils.buf_delete(status.prompt_bufnr)
 
   state.clear_status(status.prompt_bufnr)
