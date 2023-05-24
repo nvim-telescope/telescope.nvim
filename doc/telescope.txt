@@ -802,6 +802,8 @@ builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
         {max_results}         (number)          define a upper result value
         {disable_coordinates} (boolean)         don't show the line & row
                                                 numbers (default: false)
+        {file_encoding}       (string)          file encoding for the entry &
+                                                previewer
 
 
 builtin.grep_string({opts})                  *telescope.builtin.grep_string()*
@@ -837,6 +839,8 @@ builtin.grep_string({opts})                  *telescope.builtin.grep_string()*
         {only_sort_text}      (boolean)         only sort the text, not the
                                                 file, line or row (default:
                                                 false)
+        {file_encoding}       (string)          file encoding for the entry &
+                                                previewer
 
 
 builtin.find_files({opts})                    *telescope.builtin.find_files()*
@@ -872,6 +876,8 @@ builtin.find_files({opts})                    *telescope.builtin.find_files()*
                                                 search
         {search_file}         (string)          specify a filename to search
                                                 for
+        {file_encoding}       (string)          file encoding for the
+                                                previewer
 
 
 builtin.fd()                                          *telescope.builtin.fd()*
@@ -897,6 +903,7 @@ builtin.treesitter()                          *telescope.builtin.treesitter()*
         {ignore_symbols}    (string|table)  list of symbols to ignore
         {symbol_highlights} (table)         string -> string. Matches symbol
                                             with hl_group
+        {file_encoding}     (string)        file encoding for the previewer
 
 
 builtin.current_buffer_fuzzy_find({opts}) *telescope.builtin.current_buffer_fuzzy_find()*
@@ -909,6 +916,7 @@ builtin.current_buffer_fuzzy_find({opts}) *telescope.builtin.current_buffer_fuzz
     Options: ~
         {skip_empty_lines} (boolean)  if true we don't display empty lines
                                       (default: false)
+        {file_encoding}    (string)   file encoding for the previewer
 
 
 builtin.tags({opts})                                *telescope.builtin.tags()*
@@ -980,6 +988,7 @@ builtin.git_files({opts})                      *telescope.builtin.git_files()*
                                         (default: false)
         {git_command}        (table)    command that will be executed.
                                         {"git","ls-files","--exclude-standard","--cached"}
+        {file_encoding}      (string)   file encoding for the previewer
 
 
 builtin.git_commits({opts})                  *telescope.builtin.git_commits()*
@@ -1237,10 +1246,11 @@ builtin.oldfiles({opts})                        *telescope.builtin.oldfiles()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {cwd}      (string)   specify a working directory to filter oldfiles
-                              by
-        {only_cwd} (boolean)  show only files in the cwd (default: false)
-        {cwd_only} (boolean)  alias for only_cwd
+        {cwd}           (string)   specify a working directory to filter
+                                   oldfiles by
+        {only_cwd}      (boolean)  show only files in the cwd (default: false)
+        {cwd_only}      (boolean)  alias for only_cwd
+        {file_encoding} (string)   file encoding for the previewer
 
 
 builtin.command_history({opts})          *telescope.builtin.command_history()*
@@ -1346,6 +1356,7 @@ builtin.buffers({opts})                          *telescope.builtin.buffers()*
         {bufnr_width}           (number)   Defines the width of the buffer
                                            numbers in front of the filenames 
                                            (default: dynamic)
+        {file_encoding}         (string)   file encoding for the previewer
 
 
 builtin.colorscheme({opts})                  *telescope.builtin.colorscheme()*
@@ -1365,6 +1376,9 @@ builtin.marks({opts})                              *telescope.builtin.marks()*
 
     Parameters: ~
         {opts} (table)  options to pass to the picker
+
+    Options: ~
+        {file_encoding} (string)  file encoding for the previewer
 
 
 builtin.registers({opts})                      *telescope.builtin.registers()*
@@ -1480,6 +1494,7 @@ builtin.lsp_references({opts})            *telescope.builtin.lsp_references()*
                                           section (default: 30)
         {show_line}            (boolean)  show results text (default: true)
         {trim_text}            (boolean)  trim results text (default: false)
+        {file_encoding}        (string)   file encoding for the previewer
 
 
 builtin.lsp_incoming_calls({opts})    *telescope.builtin.lsp_incoming_calls()*
@@ -1491,10 +1506,11 @@ builtin.lsp_incoming_calls({opts})    *telescope.builtin.lsp_incoming_calls()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {fname_width} (number)   defines the width of the filename section
-                                 (default: 30)
-        {show_line}   (boolean)  show results text (default: true)
-        {trim_text}   (boolean)  trim results text (default: false)
+        {fname_width}   (number)   defines the width of the filename section
+                                   (default: 30)
+        {show_line}     (boolean)  show results text (default: true)
+        {trim_text}     (boolean)  trim results text (default: false)
+        {file_encoding} (string)   file encoding for the previewer
 
 
 builtin.lsp_outgoing_calls({opts})    *telescope.builtin.lsp_outgoing_calls()*
@@ -1506,10 +1522,11 @@ builtin.lsp_outgoing_calls({opts})    *telescope.builtin.lsp_outgoing_calls()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {fname_width} (number)   defines the width of the filename section
-                                 (default: 30)
-        {show_line}   (boolean)  show results text (default: true)
-        {trim_text}   (boolean)  trim results text (default: false)
+        {fname_width}   (number)   defines the width of the filename section
+                                   (default: 30)
+        {show_line}     (boolean)  show results text (default: true)
+        {trim_text}     (boolean)  trim results text (default: false)
+        {file_encoding} (string)   file encoding for the previewer
 
 
 builtin.lsp_definitions({opts})          *telescope.builtin.lsp_definitions()*
@@ -1521,16 +1538,17 @@ builtin.lsp_definitions({opts})          *telescope.builtin.lsp_definitions()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {jump_type}   (string)   how to goto definition if there is only one
-                                 and the definition file is different from the
-                                 current file, values: "tab", "split",
-                                 "vsplit", "never"
-        {fname_width} (number)   defines the width of the filename section
-                                 (default: 30)
-        {show_line}   (boolean)  show results text (default: true)
-        {trim_text}   (boolean)  trim results text (default: false)
-        {reuse_win}   (boolean)  jump to existing window if buffer is already
-                                 opened (default: false)
+        {jump_type}     (string)   how to goto definition if there is only one
+                                   and the definition file is different from
+                                   the current file, values: "tab", "split",
+                                   "vsplit", "never"
+        {fname_width}   (number)   defines the width of the filename section
+                                   (default: 30)
+        {show_line}     (boolean)  show results text (default: true)
+        {trim_text}     (boolean)  trim results text (default: false)
+        {reuse_win}     (boolean)  jump to existing window if buffer is
+                                   already opened (default: false)
+        {file_encoding} (string)   file encoding for the previewer
 
 
 builtin.lsp_type_definitions({opts}) *telescope.builtin.lsp_type_definitions()*
@@ -1542,16 +1560,17 @@ builtin.lsp_type_definitions({opts}) *telescope.builtin.lsp_type_definitions()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {jump_type}   (string)   how to goto definition if there is only one
-                                 and the definition file is different from the
-                                 current file, values: "tab", "split",
-                                 "vsplit", "never"
-        {fname_width} (number)   defines the width of the filename section
-                                 (default: 30)
-        {show_line}   (boolean)  show results text (default: true)
-        {trim_text}   (boolean)  trim results text (default: false)
-        {reuse_win}   (boolean)  jump to existing window if buffer is already
-                                 opened (default: false)
+        {jump_type}     (string)   how to goto definition if there is only one
+                                   and the definition file is different from
+                                   the current file, values: "tab", "split",
+                                   "vsplit", "never"
+        {fname_width}   (number)   defines the width of the filename section
+                                   (default: 30)
+        {show_line}     (boolean)  show results text (default: true)
+        {trim_text}     (boolean)  trim results text (default: false)
+        {reuse_win}     (boolean)  jump to existing window if buffer is
+                                   already opened (default: false)
+        {file_encoding} (string)   file encoding for the previewer
 
 
 builtin.lsp_implementations({opts})  *telescope.builtin.lsp_implementations()*
@@ -1563,16 +1582,17 @@ builtin.lsp_implementations({opts})  *telescope.builtin.lsp_implementations()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {jump_type}   (string)   how to goto implementation if there is only
-                                 one and the definition file is different from
-                                 the current file, values: "tab", "split",
-                                 "vsplit", "never"
-        {fname_width} (number)   defines the width of the filename section
-                                 (default: 30)
-        {show_line}   (boolean)  show results text (default: true)
-        {trim_text}   (boolean)  trim results text (default: false)
-        {reuse_win}   (boolean)  jump to existing window if buffer is already
-                                 opened (default: false)
+        {jump_type}     (string)   how to goto implementation if there is only
+                                   one and the definition file is different
+                                   from the current file, values: "tab",
+                                   "split", "vsplit", "never"
+        {fname_width}   (number)   defines the width of the filename section
+                                   (default: 30)
+        {show_line}     (boolean)  show results text (default: true)
+        {trim_text}     (boolean)  trim results text (default: false)
+        {reuse_win}     (boolean)  jump to existing window if buffer is
+                                   already opened (default: false)
+        {file_encoding} (string)   file encoding for the previewer
 
 
 builtin.lsp_document_symbols({opts}) *telescope.builtin.lsp_document_symbols()*
@@ -1599,6 +1619,7 @@ builtin.lsp_document_symbols({opts}) *telescope.builtin.lsp_document_symbols()*
         {ignore_symbols}    (string|table)  list of symbols to ignore
         {symbol_highlights} (table)         string -> string. Matches symbol
                                             with hl_group
+        {file_encoding}     (string)        file encoding for the previewer
 
 
 builtin.lsp_workspace_symbols({opts}) *telescope.builtin.lsp_workspace_symbols()*
@@ -1627,6 +1648,7 @@ builtin.lsp_workspace_symbols({opts}) *telescope.builtin.lsp_workspace_symbols()
         {ignore_symbols}    (string|table)  list of symbols to ignore
         {symbol_highlights} (table)         string -> string. Matches symbol
                                             with hl_group
+        {file_encoding}     (string)        file encoding for the previewer
 
 
 builtin.lsp_dynamic_workspace_symbols({opts}) *telescope.builtin.lsp_dynamic_workspace_symbols()*
@@ -1649,6 +1671,7 @@ builtin.lsp_dynamic_workspace_symbols({opts}) *telescope.builtin.lsp_dynamic_wor
         {ignore_symbols}    (string|table)  list of symbols to ignore
         {symbol_highlights} (table)         string -> string. Matches symbol
                                             with hl_group
+        {file_encoding}     (string)        file encoding for the previewer
 
 
 builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
