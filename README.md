@@ -404,10 +404,11 @@ If you want to configure the `vim_buffer_` previewer (e.g. you want the line to 
 vim.api.nvim_create_autocmd("User", {
   pattern = "TelescopePreviewerLoaded",
   callback = function(args)
-  if args.data.filetype ~= "help" then
-    vim.bo.number = true
-  elseif args.data.bufname:match("*.csv")
-    vim.bo.wrap = false
+    if args.data.filetype ~= "help" then
+      vim.bo.number = true
+    elseif args.data.bufname:match("*.csv") then
+      vim.bo.wrap = false
+    end
   end,
 })
 ```
@@ -416,8 +417,9 @@ A data field is passed to the callback, which contains the filetype and the buff
 
 ```lua
 {
+  title: string, # preview window title
   filetype: string,
-  bufname: string
+  bufname: string,
 }
 ```
 
