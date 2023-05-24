@@ -72,18 +72,36 @@ do
     edit = "buffer",
     new = "sbuffer",
     vnew = "vert sbuffer",
+    ["leftabove new"] = "leftabove sbuffer",
+    ["leftabove vnew"] = "leftabove vert sbuffer",
+    ["rightbelow new"] = "rightbelow sbuffer",
+    ["rightbelow vnew"] = "rightbelow vert sbuffer",
+    ["topleft new"] = "topleft sbuffer",
+    ["topleft vnew"] = "topleft vert sbuffer",
+    ["botright new"] = "botright sbuffer",
+    ["botright vnew"] = "botright vert sbuffer",
     tabedit = "tab sb",
   }
 
   edit_buffer = function(command, bufnr)
-    command = map[command]
-    if command == nil then
-      error "There was no associated buffer command"
+    local buf_command = map[command]
+    if buf_command == nil then
+      local valid_commands = vim.tbl_map(function(cmd)
+        return string.format("%q", cmd)
+      end, vim.tbl_keys(map))
+      table.sort(valid_commands)
+      error(
+        string.format(
+          "There was no associated buffer command for %q.\nValid commands are: %s.",
+          command,
+          table.concat(valid_commands, ", ")
+        )
+      )
     end
-    if command ~= "drop" and command ~= "tab drop" then
-      vim.cmd(string.format("%s %d", command, bufnr))
+    if buf_command ~= "drop" and buf_command ~= "tab drop" then
+      vim.cmd(string.format("%s %d", buf_command, bufnr))
     else
-      vim.cmd(string.format("%s %s", command, vim.fn.fnameescape(vim.api.nvim_buf_get_name(bufnr))))
+      vim.cmd(string.format("%s %s", buf_command, vim.fn.fnameescape(vim.api.nvim_buf_get_name(bufnr))))
     end
   end
 end
@@ -91,7 +109,21 @@ end
 --- Edit a file based on the current selection.
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param command string: The command to use to open the file.
---      Valid commands include: "edit", "new", "vedit", "tabedit"
+--      Valid commands are:
+--      - "edit"
+--      - "new"
+--      - "vedit"
+--      - "tabedit"
+--      - "drop"
+--      - "tab drop"
+--      - "leftabove new"
+--      - "leftabove vnew"
+--      - "rightbelow new"
+--      - "rightbelow vnew"
+--      - "topleft new"
+--      - "topleft vnew"
+--      - "botright new"
+--      - "botright vnew"
 action_set.edit = function(prompt_bufnr, command)
   local entry = action_state.get_selected_entry()
 
