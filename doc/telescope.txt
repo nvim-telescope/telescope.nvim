@@ -1646,28 +1646,31 @@ builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {bufnr}          (number|nil)      Buffer number to get diagnostics
-                                           from. Use 0 for current buffer or
-                                           nil for all buffers
-        {severity}       (string|number)   filter diagnostics by severity name
-                                           (string) or id (number)
-        {severity_limit} (string|number)   keep diagnostics equal or more
-                                           severe wrt severity name (string)
-                                           or id (number)
-        {severity_bound} (string|number)   keep diagnostics equal or less
-                                           severe wrt severity name (string)
-                                           or id (number)
-        {root_dir}       (string|boolean)  if set to string, get diagnostics
-                                           only for buffers under this dir
-                                           otherwise cwd
-        {no_unlisted}    (boolean)         if true, get diagnostics only for
-                                           listed buffers
-        {no_sign}        (boolean)         hide DiagnosticSigns from Results
-                                           (default: false)
-        {line_width}     (number)          set length of diagnostic entry text
-                                           in Results
-        {namespace}      (number)          limit your diagnostics to a
-                                           specific namespace
+        {bufnr}               (number|nil)      Buffer number to get
+                                                diagnostics from. Use 0 for
+                                                current buffer or nil for all
+                                                buffers
+        {severity}            (string|number)   filter diagnostics by severity
+                                                name (string) or id (number)
+        {severity_limit}      (string|number)   keep diagnostics equal or more
+                                                severe wrt severity name
+                                                (string) or id (number)
+        {severity_bound}      (string|number)   keep diagnostics equal or less
+                                                severe wrt severity name
+                                                (string) or id (number)
+        {root_dir}            (string|boolean)  if set to string, get
+                                                diagnostics only for buffers
+                                                under this dir otherwise cwd
+        {no_unlisted}         (boolean)         if true, get diagnostics only
+                                                for listed buffers
+        {no_sign}             (boolean)         hide DiagnosticSigns from
+                                                Results (default: false)
+        {line_width}          (number)          set length of diagnostic entry
+                                                text in Results
+        {namespace}           (number)          limit your diagnostics to a
+                                                specific namespace
+        {disable_coordinates} (boolean)         don't show the line & row
+                                                numbers (default: false)
 
 
 
