@@ -75,6 +75,12 @@ local actions = setmetatable({}, {
   end,
 })
 
+local append_to_history = function(prompt_bufnr)
+  action_state
+    .get_current_history()
+    :append(action_state.get_current_line(), action_state.get_current_picker(prompt_bufnr))
+end
+
 --- Move the selection to the next entry
 ---@param prompt_bufnr number: The prompt bufnr
 actions.move_selection_next = function(prompt_bufnr)
@@ -241,11 +247,7 @@ end
 --- i.e. open the selection in the current buffer
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_default = {
-  pre = function(prompt_bufnr)
-    action_state
-      .get_current_history()
-      :append(action_state.get_current_line(), action_state.get_current_picker(prompt_bufnr))
-  end,
+  pre = append_to_history,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "default")
   end,
@@ -257,11 +259,7 @@ actions.select_default = {
 --- i.e. open the selection in a new horizontal split
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_horizontal = {
-  pre = function(prompt_bufnr)
-    action_state
-      .get_current_history()
-      :append(action_state.get_current_line(), action_state.get_current_picker(prompt_bufnr))
-  end,
+  pre = append_to_history,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "horizontal")
   end,
@@ -273,11 +271,7 @@ actions.select_horizontal = {
 --- i.e. open the selection in a new vertical split
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_vertical = {
-  pre = function(prompt_bufnr)
-    action_state
-      .get_current_history()
-      :append(action_state.get_current_line(), action_state.get_current_picker(prompt_bufnr))
-  end,
+  pre = append_to_history,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "vertical")
   end,
@@ -289,11 +283,7 @@ actions.select_vertical = {
 --- i.e. open the selection in a new tab
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_tab = {
-  pre = function(prompt_bufnr)
-    action_state
-      .get_current_history()
-      :append(action_state.get_current_line(), action_state.get_current_picker(prompt_bufnr))
-  end,
+  pre = append_to_history,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "tab")
   end,
@@ -305,11 +295,7 @@ actions.select_tab = {
 --- i.e. open the selection in a window
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_drop = {
-  pre = function(prompt_bufnr)
-    action_state
-      .get_current_history()
-      :append(action_state.get_current_line(), action_state.get_current_picker(prompt_bufnr))
-  end,
+  pre = append_to_history,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "drop")
   end,
@@ -321,11 +307,7 @@ actions.select_drop = {
 --- i.e. open the selection in a new tab
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_tab_drop = {
-  pre = function(prompt_bufnr)
-    action_state
-      .get_current_history()
-      :append(action_state.get_current_line(), action_state.get_current_picker(prompt_bufnr))
-  end,
+  pre = append_to_history,
   action = function(prompt_bufnr)
     return action_set.select(prompt_bufnr, "tab drop")
   end,
@@ -872,51 +854,68 @@ end
 
 --- Sends the selected entries to the quickfix list, replacing the previous entries.
 ---@param prompt_bufnr number: The prompt bufnr
-actions.send_selected_to_qflist = function(prompt_bufnr)
-  send_selected_to_qf(prompt_bufnr, " ")
-end
-
+actions.send_selected_to_qflist = {
+  pre = append_to_history,
+  action = function(prompt_bufnr)
+    send_selected_to_qf(prompt_bufnr, " ")
+  end,
+}
 --- Adds the selected entries to the quickfix list, keeping the previous entries.
 ---@param prompt_bufnr number: The prompt bufnr
-actions.add_selected_to_qflist = function(prompt_bufnr)
-  send_selected_to_qf(prompt_bufnr, "a")
-end
-
+actions.add_selected_to_qflist = {
+  pre = append_to_history,
+  action = function(prompt_bufnr)
+    send_selected_to_qf(prompt_bufnr, "a")
+  end,
+}
 --- Sends all entries to the quickfix list, replacing the previous entries.
 ---@param prompt_bufnr number: The prompt bufnr
-actions.send_to_qflist = function(prompt_bufnr)
-  send_all_to_qf(prompt_bufnr, " ")
-end
-
+actions.send_to_qflist = {
+  pre = append_to_history,
+  action = function(prompt_bufnr)
+    send_all_to_qf(prompt_bufnr, " ")
+  end,
+}
 --- Adds all entries to the quickfix list, keeping the previous entries.
 ---@param prompt_bufnr number: The prompt bufnr
-actions.add_to_qflist = function(prompt_bufnr)
-  send_all_to_qf(prompt_bufnr, "a")
-end
-
+actions.add_to_qflist = {
+  pre = append_to_history,
+  action = function(prompt_bufnr)
+    send_all_to_qf(prompt_bufnr, "a")
+  end,
+}
 --- Sends the selected entries to the location list, replacing the previous entries.
 ---@param prompt_bufnr number: The prompt bufnr
-actions.send_selected_to_loclist = function(prompt_bufnr)
-  send_selected_to_qf(prompt_bufnr, " ", "loclist")
-end
-
+actions.send_selected_to_loclist = {
+  pre = append_to_history,
+  action = function(prompt_bufnr)
+    send_selected_to_qf(prompt_bufnr, " ", "loclist")
+  end,
+}
 --- Adds the selected entries to the location list, keeping the previous entries.
 ---@param prompt_bufnr number: The prompt bufnr
-actions.add_selected_to_loclist = function(prompt_bufnr)
-  send_selected_to_qf(prompt_bufnr, "a", "loclist")
-end
-
+actions.add_selected_to_loclist = {
+  pre = append_to_history,
+  action = function(prompt_bufnr)
+    send_selected_to_qf(prompt_bufnr, "a", "loclist")
+  end,
+}
 --- Sends all entries to the location list, replacing the previous entries.
 ---@param prompt_bufnr number: The prompt bufnr
-actions.send_to_loclist = function(prompt_bufnr)
-  send_all_to_qf(prompt_bufnr, " ", "loclist")
-end
-
+actions.send_to_loclist = {
+  pre = append_to_history,
+  action = function(prompt_bufnr)
+    send_all_to_qf(prompt_bufnr, " ", "loclist")
+  end,
+}
 --- Adds all entries to the location list, keeping the previous entries.
 ---@param prompt_bufnr number: The prompt bufnr
-actions.add_to_loclist = function(prompt_bufnr)
-  send_all_to_qf(prompt_bufnr, "a", "loclist")
-end
+actions.add_to_loclist = {
+  pre = append_to_history,
+  action = function(prompt_bufnr)
+    send_all_to_qf(prompt_bufnr, "a", "loclist")
+  end,
+}
 
 local smart_send = function(prompt_bufnr, mode, target)
   local picker = action_state.get_current_picker(prompt_bufnr)
@@ -930,31 +929,39 @@ end
 --- Sends the selected entries to the quickfix list, replacing the previous entries.
 --- If no entry was selected, sends all entries.
 ---@param prompt_bufnr number: The prompt bufnr
-actions.smart_send_to_qflist = function(prompt_bufnr)
-  smart_send(prompt_bufnr, " ")
-end
-
+actions.smart_send_to_qflist = {
+  pre = append_to_history,
+  action = function(prompt_bufnr)
+    smart_send(prompt_bufnr, " ")
+  end,
+}
 --- Adds the selected entries to the quickfix list, keeping the previous entries.
 --- If no entry was selected, adds all entries.
 ---@param prompt_bufnr number: The prompt bufnr
-actions.smart_add_to_qflist = function(prompt_bufnr)
-  smart_send(prompt_bufnr, "a")
-end
-
+actions.smart_add_to_qflist = {
+  pre = append_to_history,
+  action = function(prompt_bufnr)
+    smart_send(prompt_bufnr, "a")
+  end,
+}
 --- Sends the selected entries to the location list, replacing the previous entries.
 --- If no entry was selected, sends all entries.
 ---@param prompt_bufnr number: The prompt bufnr
-actions.smart_send_to_loclist = function(prompt_bufnr)
-  smart_send(prompt_bufnr, " ", "loclist")
-end
-
+actions.smart_send_to_loclist = {
+  pre = append_to_history,
+  action = function(prompt_bufnr)
+    smart_send(prompt_bufnr, " ", "loclist")
+  end,
+}
 --- Adds the selected entries to the location list, keeping the previous entries.
 --- If no entry was selected, adds all entries.
 ---@param prompt_bufnr number: The prompt bufnr
-actions.smart_add_to_loclist = function(prompt_bufnr)
-  smart_send(prompt_bufnr, "a", "loclist")
-end
-
+actions.smart_add_to_loclist = {
+  pre = append_to_history,
+  action = function(prompt_bufnr)
+    smart_send(prompt_bufnr, "a", "loclist")
+  end,
+}
 --- Open completion menu containing the tags which can be used to filter the results in a faster way
 ---@param prompt_bufnr number: The prompt bufnr
 actions.complete_tag = function(prompt_bufnr)
