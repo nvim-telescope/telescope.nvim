@@ -489,6 +489,12 @@ utils.get_devicons = load_once(function()
   end
 end)
 
+--- Checks if treesitter parser for language is installed
+---@param lang string
+utils.has_ts_parser = function(lang)
+  return pcall(vim.treesitter.language.add, lang)
+end
+
 --- Telescope Wrapper around vim.notify
 ---@param funname string: name of the function that will be
 ---@param opts table: opts.level string, opts.msg string, opts.once bool

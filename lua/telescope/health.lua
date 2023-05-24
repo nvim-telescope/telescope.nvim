@@ -38,7 +38,7 @@ local required_plugins = {
   {
     lib = "nvim-treesitter",
     optional = true,
-    info = "",
+    info = "(Required for `:Telescope treesitter`.)",
   },
 }
 
