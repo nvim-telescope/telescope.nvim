@@ -38,10 +38,10 @@ Result of `resolve` should be a table with:
 !!NOT IMPLEMENTED YET!!
 
 height =
-    1. 0 <= number <= 1
+    1. 0 <= number < 1
         This means total height as a percentage
 
-    2. 1 < number
+    2. 1 <= number
         This means total height as a fixed number
 
     3. function(picker, columns, lines)
@@ -109,7 +109,7 @@ end
 
 -- Percentages
 _resolve_map[function(val)
-  return type(val) == "number" and val >= 0 and val <= 1
+  return type(val) == "number" and val >= 0 and val < 1
 end] = function(selector, val)
   return function(...)
     local selected = select(selector, ...)
@@ -119,7 +119,7 @@ end
 
 -- Numbers
 _resolve_map[function(val)
-  return type(val) == "number" and val > 1
+  return type(val) == "number" and val >= 1
 end] = function(selector, val)
   return function(...)
     local selected = select(selector, ...)
@@ -139,7 +139,7 @@ end] = function(_, val)
 end
 
 _resolve_map[function(val)
-  return type(val) == "table" and val["max"] ~= nil and val[1] ~= nil and val[1] >= 0 and val[1] <= 1
+  return type(val) == "table" and val["max"] ~= nil and val[1] ~= nil and val[1] >= 0 and val[1] < 1
 end] = function(
   selector,
   val
@@ -151,7 +151,7 @@ end] = function(
 end
 
 _resolve_map[function(val)
-  return type(val) == "table" and val["min"] ~= nil and val[1] ~= nil and val[1] >= 0 and val[1] <= 1
+  return type(val) == "table" and val["min"] ~= nil and val[1] ~= nil and val[1] >= 0 and val[1] < 1
 end] = function(
   selector,
   val
@@ -184,15 +184,15 @@ end
 
 --- Converts input to a function that returns the height.
 --- The input must take one of five forms:
---- 1. 0 <= number <= 1 <br>
+--- 1. 0 <= number < 1 <br>
 ---     This means total height as a percentage.
---- 2. 1 < number <br>
+--- 2. 1 <= number <br>
 ---     This means total height as a fixed number.
 --- 3. function <br>
 ---     Must have signature:
 ---       function(self, max_columns, max_lines): number
 --- 4. table of the form: { val, max = ..., min = ... } <br>
----     val has to be in the first form 0 <= val <= 1 and only one is given,
+---     val has to be in the first form 0 <= val < 1 and only one is given,
 ---     `min` or `max` as fixed number
 --- 5. table of the form: {padding = `foo`} <br>
 ---     where `foo` has one of the previous three forms. <br>
@@ -213,15 +213,15 @@ end
 
 --- Converts input to a function that returns the width.
 --- The input must take one of five forms:
---- 1. 0 <= number <= 1 <br>
+--- 1. 0 <= number < 1 <br>
 ---     This means total width as a percentage.
---- 2. 1 < number <br>
+--- 2. 1 <= number <br>
 ---     This means total width as a fixed number.
 --- 3. function <br>
 ---     Must have signature:
 ---       function(self, max_columns, max_lines): number
 --- 4. table of the form: { val, max = ..., min = ... } <br>
----     val has to be in the first form 0 <= val <= 1 and only one is given,
+---     val has to be in the first form 0 <= val < 1 and only one is given,
 ---     `min` or `max` as fixed number
 --- 5. table of the form: {padding = `foo`} <br>
 ---     where `foo` has one of the previous three forms. <br>
