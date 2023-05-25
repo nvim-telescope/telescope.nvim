@@ -69,18 +69,15 @@ entry_display.create = function(configuration)
   local generator = {}
   for _, v in ipairs(configuration.items) do
     if v.width then
-      -- dumb workaround, because resolve_width now resolves 1 as percentage and no longer as absolute number
-      if v.width == 1 then
-        v.width = 1.001
-      end
       local justify = v.right_justify
       local width
       table.insert(generator, function(item)
         if width == nil then
           local status = state.get_status(vim.F.if_nil(configuration.prompt_bufnr, vim.api.nvim_get_current_buf()))
-          local s1 = vim.api.nvim_win_get_width(status.results_win) - #status.picker.selection_caret
-          local s2 = vim.api.nvim_win_get_height(status.results_win)
-          width = math.floor(resolve.resolve_width(v.width)(nil, s1, s2))
+          local s = {}
+          s[1] = vim.api.nvim_win_get_width(status.results_win) - #status.picker.selection_caret
+          s[2] = vim.api.nvim_win_get_height(status.results_win)
+          width = resolve.resolve_width(v.width)(nil, s[1], s[2])
         end
         if type(item) == "table" then
           return strings.align_str(entry_display.truncate(item[1], width), width, justify), item[2]
