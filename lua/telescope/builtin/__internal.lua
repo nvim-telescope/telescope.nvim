@@ -62,6 +62,10 @@ internal.builtin = function(opts)
     end
   end
 
+  table.sort(objs, function(a, b)
+    return a.text < b.text
+  end)
+
   opts.bufnr = vim.api.nvim_get_current_buf()
   opts.winnr = vim.api.nvim_get_current_win()
   pickers
@@ -519,7 +523,8 @@ internal.oldfiles = function(opts)
   end
 
   for _, file in ipairs(vim.v.oldfiles) do
-    if vim.loop.fs_stat(file) and not vim.tbl_contains(results, file) and file ~= current_file then
+    local file_stat = vim.loop.fs_stat(file)
+    if file_stat and file_stat.type == "file" and not vim.tbl_contains(results, file) and file ~= current_file then
       table.insert(results, file)
     end
   end
@@ -574,7 +579,7 @@ internal.command_history = function(opts)
       sorter = conf.generic_sorter(opts),
 
       attach_mappings = function(_, map)
-        map({ "i", "n" }, "<CR>", actions.set_command_line)
+        actions.select_default:replace(actions.set_command_line)
         map({ "i", "n" }, "<C-e>", actions.edit_command_line)
 
         -- TODO: Find a way to insert the text... it seems hard.
@@ -604,7 +609,7 @@ internal.search_history = function(opts)
       sorter = conf.generic_sorter(opts),
 
       attach_mappings = function(_, map)
-        map({ "i", "n" }, "<CR>", actions.set_search_line)
+        actions.select_default:replace(actions.set_search_line)
         map({ "i", "n" }, "<C-e>", actions.edit_search_line)
 
         -- TODO: Find a way to insert the text... it seems hard.
@@ -1124,7 +1129,6 @@ internal.registers = function(opts)
     :find()
 end
 
--- TODO: make filtering include the mapping and the action
 internal.keymaps = function(opts)
   opts.modes = vim.F.if_nil(opts.modes, { "n", "i", "c", "x" })
   opts.show_plug = vim.F.if_nil(opts.show_plug, true)
@@ -1143,6 +1147,7 @@ internal.keymaps = function(opts)
         if
           (opts.show_plug or not string.find(keymap.lhs, "<Plug>"))
           and (not opts.lhs_filter or opts.lhs_filter(keymap.lhs))
+          and (not opts.filter or opts.filter(keymap))
         then
           table.insert(keymaps_table, keymap)
           max_len_lhs = math.max(max_len_lhs, #utils.display_termcodes(keymap.lhs))

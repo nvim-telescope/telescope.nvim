@@ -186,7 +186,8 @@ local function list_or_jump(action, title, opts)
     if #flattened_results == 0 then
       return
     elseif #flattened_results == 1 and opts.jump_type ~= "never" then
-      if params.textDocument.uri ~= flattened_results[1].uri then
+      local uri = params.textDocument.uri
+      if uri ~= flattened_results[1].uri and uri ~= flattened_results[1].targetUri then
         if opts.jump_type == "tab" then
           vim.cmd "tabedit"
         elseif opts.jump_type == "split" then
@@ -195,7 +196,8 @@ local function list_or_jump(action, title, opts)
           vim.cmd "vnew"
         end
       end
-      vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding)
+
+      vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding, opts.reuse_win)
     else
       local locations = vim.lsp.util.locations_to_items(flattened_results, offset_encoding)
       pickers

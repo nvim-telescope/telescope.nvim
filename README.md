@@ -42,7 +42,7 @@ Telescope Wiki</sub>
 
 This section should guide you to run your first builtin pickers.
 
-[Neovim (v0.7.0)](https://github.com/neovim/neovim/releases/tag/v0.7.0) or the
+[Neovim (v0.9.0)](https://github.com/neovim/neovim/releases/tag/v0.9.0) or the
 latest neovim nightly commit is required for `telescope.nvim` to work.
 
 ### Required dependencies
@@ -357,7 +357,7 @@ Built-in functions. Ready to be bound to any key you like.
 |-------------------------------------|------------------------------------------------------------------------------------------------------------|
 | `builtin.git_commits`               | Lists git commits with diff preview, checkout action `<cr>`, reset mixed `<C-r>m`, reset soft `<C-r>s` and reset hard `<C-r>h` |
 | `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checks them out on `<cr>`                                 |
-| `builtin.git_branches`              | Lists all branches with log preview, checkout action `<cr>`, track action `<C-t>` and rebase action`<C-r>` |
+| `builtin.git_branches`              | Lists all branches with log preview, checkout action `<cr>`, track action `<C-t>`, rebase action`<C-r>`, create action `<C-a>`, switch action `<C-s>`, delete action `<C-d>` and merge action `<C-y>` |
 | `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multi-selection still WIP)               |
 | `builtin.git_stash`                 | Lists stash items in current repository with ability to apply them on `<cr>`                               |
 
@@ -400,8 +400,27 @@ to configure more filetypes, take a look at
 
 If you want to configure the `vim_buffer_` previewer (e.g. you want the line to wrap), do this:
 
-```vim
-autocmd User TelescopePreviewerLoaded setlocal wrap
+```lua
+vim.api.nvim_create_autocmd("User", {
+  pattern = "TelescopePreviewerLoaded",
+  callback = function(args)
+    if args.data.filetype ~= "help" then
+      vim.bo.number = true
+    elseif args.data.bufname:match("*.csv") then
+      vim.bo.wrap = false
+    end
+  end,
+})
+```
+
+A data field is passed to the callback, which contains the filetype and the buffer name.
+
+```lua
+{
+  title: string, # preview window title
+  filetype: string,
+  bufname: string,
+}
 ```
 
 ## Sorters
@@ -539,6 +558,7 @@ Telescope user autocmds:
 |---------------------------------|---------------------------------------------------------|
 | `User TelescopeFindPre`         | Do it before Telescope creates all the floating windows |
 | `User TelescopePreviewerLoaded` | Do it after Telescope previewer window is created       |
+| `User TelescopeResumePost`      | Do it after Telescope resume action is fully completed  |
 
 ## Extensions
 
@@ -593,7 +613,9 @@ For writing your own picker and for information about the API please read the
 
 - [What is Telescope? (Video)](https://www.twitch.tv/teej_dv/clip/RichDistinctPlumberPastaThat)
 - [More advanced configuration (Video)](https://www.twitch.tv/videos/756229115)
-- [Example video](https://www.youtube.com/watch?v=65AVwHZflsU)
+- [telescope.nvim 0.1 reflection (Video)](https://www.youtube.com/watch?v=3WEAjCXFiiM)
+- [Why Telescope? (Video)](https://www.youtube.com/watch?v=8SqFt5h2Lsg)
+- [Telescope and Nvim 0.5 Intro (Video)](https://www.youtube.com/watch?v=guxLXcG1kzQ)
 
 ## Contributing
 

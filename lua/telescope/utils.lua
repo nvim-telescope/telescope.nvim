@@ -440,13 +440,14 @@ utils.transform_devicons = load_once(function()
       local icon, icon_highlight = devicons.get_icon(basename, utils.file_extension(basename), { default = false })
       if not icon then
         icon, icon_highlight = devicons.get_icon(basename, nil, { default = true })
+        icon = icon or " "
       end
-      local icon_display = (icon or " ") .. " " .. (display or "")
+      local icon_display = icon .. " " .. (display or "")
 
       if conf.color_devicons then
-        return icon_display, icon_highlight
+        return icon_display, icon_highlight, icon
       else
-        return icon_display, nil
+        return icon_display, nil, icon
       end
     end
   else
@@ -487,6 +488,12 @@ utils.get_devicons = load_once(function()
     end
   end
 end)
+
+--- Checks if treesitter parser for language is installed
+---@param lang string
+utils.has_ts_parser = function(lang)
+  return pcall(vim.treesitter.language.add, lang)
+end
 
 --- Telescope Wrapper around vim.notify
 ---@param funname string: name of the function that will be

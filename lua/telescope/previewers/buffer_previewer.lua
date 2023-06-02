@@ -60,7 +60,8 @@ local function split(s, sep, plain, opts)
   opts = opts or {}
   local t = {}
   for c in vim.gsplit(s, sep, plain) do
-    table.insert(t, c)
+    local line = opts.file_encoding and vim.iconv(c, opts.file_encoding, "utf8") or c
+    table.insert(t, line)
     if opts.preview.timeout then
       local diff_time = (vim.loop.hrtime() - opts.start_time) / 1e6
       if diff_time > opts.preview.timeout then
@@ -95,7 +96,7 @@ color_hash[6] = function(line)
   return color_hash[line:sub(1, 1)]
 end
 
-local colorize_ls = function(bufnr, data, sections)
+local colorize_ls_long = function(bufnr, data, sections)
   local windows_add = Path.path.sep == "\\" and 2 or 0
   for lnum, line in ipairs(data) do
     local section = sections[lnum]
@@ -115,6 +116,44 @@ local colorize_ls = function(bufnr, data, sections)
       )
     end
   end
+end
+
+local handle_directory_preview = function(filepath, bufnr, opts)
+  opts.preview.ls_short = vim.F.if_nil(opts.preview.ls_short, false)
+
+  local set_colorize_lines
+  if opts.preview.ls_short then
+    set_colorize_lines = function(data, sections)
+      local PATH_SECTION = Path.path.sep == "\\" and 4 or 6
+      local paths = {}
+      for i, line in ipairs(data) do
+        local section = sections[i][PATH_SECTION]
+        local path = line:sub(section.start_index, section.end_index)
+        table.insert(paths, path)
+      end
+      vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, paths)
+      for i, path in ipairs(paths) do
+        local hl = color_hash[6](data[i])
+        vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, hl, i - 1, 0, #path)
+      end
+    end
+  else
+    set_colorize_lines = function(data, sections)
+      vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
+      colorize_ls_long(bufnr, data, sections)
+    end
+  end
+
+  pscan.ls_async(filepath, {
+    hidden = true,
+    group_directories_first = true,
+    on_exit = vim.schedule_wrap(function(data, sections)
+      set_colorize_lines(data, sections)
+      if opts.callback then
+        opts.callback(bufnr)
+      end
+    end),
+  })
 end
 
 local search_cb_jump = function(self, bufnr, query)
@@ -190,23 +229,13 @@ previewers.file_maker = function(filepath, bufnr, opts)
         return
       end
       if stat.type == "directory" then
-        pscan.ls_async(filepath, {
-          hidden = true,
-          group_directories_first = true,
-          on_exit = vim.schedule_wrap(function(data, sections)
-            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
-            colorize_ls(bufnr, data, sections)
-            if opts.callback then
-              opts.callback(bufnr)
-            end
-          end),
-        })
+        handle_directory_preview(filepath, bufnr, opts)
       else
         if opts.preview.check_mime_type == true and has_file and opts.ft == "" then
           -- avoid SIGABRT in buffer previewer happening with utils.get_os_command_output
           local output = capture(string.format([[file --mime-type -b "%s"]], filepath))
-          local mime_type = vim.split(output, "/")[1]
-          if mime_type ~= "text" and mime_type ~= "inode" then
+          local mime_type = vim.split(output, "/")
+          if mime_type[1] ~= "text" and mime_type[1] ~= "inode" and mime_type[2] ~= "json" then
             if type(opts.preview.mime_hook) == "function" then
               vim.schedule_wrap(opts.preview.mime_hook)(filepath, bufnr, opts)
             else
@@ -218,6 +247,9 @@ previewers.file_maker = function(filepath, bufnr, opts)
               )
             end
             return
+          end
+          if mime_type[2] == "json" then
+            opts.ft = "json"
           end
         end
 
@@ -407,7 +439,14 @@ previewers.new_buffer_previewer = function(opts)
 
       if vim.api.nvim_buf_is_valid(self.state.bufnr) then
         vim.api.nvim_buf_call(self.state.bufnr, function()
-          vim.cmd "do User TelescopePreviewerLoaded"
+          vim.api.nvim_exec_autocmds("User", {
+            pattern = "TelescopePreviewerLoaded",
+            data = {
+              title = entry.preview_title,
+              bufname = self.state.bufname,
+              filetype = pfiletype.detect(self.state.bufname or ""),
+            },
+          })
         end)
       end
     end)
@@ -450,6 +489,7 @@ previewers.cat = defaulter(function(opts)
         bufname = self.state.bufname,
         winid = self.state.winid,
         preview = opts.preview,
+        file_encoding = opts.file_encoding,
       })
     end,
   }
@@ -504,6 +544,7 @@ previewers.vimgrep = defaulter(function(opts)
           callback = function(bufnr)
             jump_to_line(self, bufnr, entry.lnum)
           end,
+          file_encoding = opts.file_encoding,
         })
       end
     end,

@@ -775,9 +775,13 @@ layout_strategies.flex = make_documented_layout(
 
     if max_columns < flip_columns and max_lines > flip_lines then
       self.__flex_strategy = "vertical"
+      self.layout_config.flip_columns = nil
+      self.layout_config.flip_lines = nil
       return layout_strategies.vertical(self, max_columns, max_lines, layout_config.vertical)
     else
       self.__flex_strategy = "horizontal"
+      self.layout_config.flip_columns = nil
+      self.layout_config.flip_lines = nil
       return layout_strategies.horizontal(self, max_columns, max_lines, layout_config.horizontal)
     end
   end
@@ -897,6 +901,9 @@ layout_strategies.bottom_pane = make_documented_layout(
       end
       if type(results.title) == "string" then
         results.title = { { pos = "S", text = results.title } }
+      end
+      if type(preview.title) == "string" then
+        preview.title = { { pos = "S", text = preview.title } }
       end
     elseif layout_config.prompt_position == "bottom" then
       results.line = max_lines - results.height - (1 + bs) + 1
