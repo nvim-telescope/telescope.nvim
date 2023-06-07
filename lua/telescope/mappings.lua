@@ -198,6 +198,8 @@ mappings.default_mappings = config.values.default_mappings
       ["?"] = actions.which_key,
     },
   }
+-- select mode mirrors insert mode
+mappings.default_mappings.s = mappings.default_mappings.i
 
 __TelescopeKeymapStore = __TelescopeKeymapStore
   or setmetatable({}, {
@@ -265,7 +267,7 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
       return require("telescope.mappings").execute_keymap(prompt_bufnr, key_id)
     end
   else
-    if mode == "i" and not opts.expr then
+    if (mode == "i" or mode:find "s") and not opts.expr then
       prefix = "<cmd>"
     elseif mode == "n" then
       prefix = ":<C-U>"
@@ -289,7 +291,7 @@ local extract_keymap_opts = function(key_func)
 end
 
 mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
-  local applied_mappings = { n = {}, i = {} }
+  local applied_mappings = { n = {}, i = {}, s = {} }
 
   local map = function(modes, key_bind, key_func, opts)
     if type(modes) == "string" then
