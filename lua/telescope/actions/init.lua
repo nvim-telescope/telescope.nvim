@@ -780,7 +780,7 @@ actions.git_checkout_current_buffer = function(prompt_bufnr)
     return
   end
   actions.close(prompt_bufnr)
-  utils.get_os_command_output({ "git", "checkout", selection.value, "--", selection.file }, cwd)
+  utils.get_os_command_output({ "git", "checkout", selection.value, "--", selection.current_file }, cwd)
   vim.cmd "checktime"
 end
 
