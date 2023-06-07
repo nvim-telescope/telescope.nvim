@@ -1021,7 +1021,7 @@ end
 --- `actions.smart_send_to_qflist + actions.open_qflist`
 ---@param prompt_bufnr number: The prompt bufnr
 actions.open_qflist = function(prompt_bufnr)
-  vim.cmd [[copen]]
+  vim.cmd [[botright copen]]
 end
 
 --- Open the location list. It makes sense to use this in combination with one of the send_to_loclist actions
