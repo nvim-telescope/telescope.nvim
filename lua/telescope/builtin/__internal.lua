@@ -465,7 +465,7 @@ internal.quickfixhistory = function(opts)
           local nr = action_state.get_selected_entry().nr
           actions.close(prompt_bufnr)
           vim.cmd(nr .. "chistory")
-          vim.cmd "copen"
+          vim.cmd "botright copen"
         end)
         return true
       end,
