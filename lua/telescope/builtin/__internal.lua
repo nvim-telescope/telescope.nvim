@@ -1078,7 +1078,7 @@ internal.marks = function(opts)
 end
 
 internal.registers = function(opts)
-  local registers_table = { '"', "_", "#", "=", "_", "/", "*", "+", ":", ".", "%" }
+  local registers_table = { '"', "-", "#", "=", "/", "*", "+", ":", ".", "%" }
 
   -- named
   for i = 0, 9 do
