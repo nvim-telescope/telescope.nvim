@@ -240,9 +240,14 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
     key_func = actions[key_func]
   elseif type(key_func) == "table" then
     if key_func.type == "command" then
-      a.nvim_buf_set_keymap(prompt_bufnr, mode, key_bind, key_func[1], opts or {
-        silent = true,
-      })
+      vim.keymap.set(
+        mode,
+        key_bind,
+        key_func[1],
+        vim.tbl_extend("force", opts or {
+          silent = true,
+        }, { buffer = prompt_bufnr })
+      )
       return
     elseif key_func.type == "action_key" then
       key_func = actions[key_func[1]]
@@ -254,10 +259,11 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
   local key_id = assign_function(prompt_bufnr, key_func)
   local prefix
 
-  local map_string
+  local rhs
   if opts.expr then
-    map_string =
-      string.format([[luaeval("require('telescope.mappings').execute_keymap(%s, %s)")]], prompt_bufnr, key_id)
+    rhs = function()
+      return require("telescope.mappings").execute_keymap(prompt_bufnr, key_id)
+    end
   else
     if mode == "i" and not opts.expr then
       prefix = "<cmd>"
@@ -267,11 +273,9 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
       prefix = ":"
     end
 
-    map_string =
-      string.format("%slua require('telescope.mappings').execute_keymap(%s, %s)<CR>", prefix, prompt_bufnr, key_id)
+    rhs = string.format("%slua require('telescope.mappings').execute_keymap(%s, %s)<CR>", prefix, prompt_bufnr, key_id)
   end
-
-  a.nvim_buf_set_keymap(prompt_bufnr, mode, key_bind, map_string, opts)
+  vim.keymap.set(mode, key_bind, rhs, vim.tbl_extend("force", opts, { buffer = prompt_bufnr }))
 end
 
 local extract_keymap_opts = function(key_func)
@@ -342,13 +346,16 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
   end
 end
 
+-- TODO: conni2461 we no longer need this workaround and could just call the actual function
 mappings.execute_keymap = function(prompt_bufnr, keymap_identifier)
   local key_func = keymap_store[prompt_bufnr][keymap_identifier]
 
   assert(key_func, string.format("Unsure of how we got this failure: %s %s", prompt_bufnr, keymap_identifier))
 
-  key_func(prompt_bufnr)
+  -- return the result because of expr for insert
+  local ret = key_func(prompt_bufnr)
   vim.api.nvim_exec_autocmds("User", { pattern = "TelescopeKeymap" })
+  return ret
 end
 
 mappings.clear = function(prompt_bufnr)
