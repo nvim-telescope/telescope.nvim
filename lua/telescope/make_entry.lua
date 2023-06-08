@@ -834,7 +834,7 @@ end
 function make_entry.gen_from_keymaps(opts)
   local function get_desc(entry)
     if entry.callback and not entry.desc then
-      return require("telescope.actions.utils")._get_anon_function_name(entry.callback)
+      return require("telescope.actions.utils")._get_anon_function_name(debug.getinfo(entry.callback))
     end
     return vim.F.if_nil(entry.desc, entry.rhs)
   end
