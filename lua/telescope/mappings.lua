@@ -199,6 +199,23 @@ mappings.default_mappings = config.values.default_mappings
     },
   }
 
+-- normal names are prefixed with telescope|
+-- encoded objects are prefixed with telescopej|
+local get_desc_for_keyfunc = function(v)
+  if type(v) == "table" then
+    local name = ""
+    for _, action in ipairs(v) do
+      if type(action) == "string" then
+        name = name == "" and action or name .. " + " .. action
+      end
+    end
+    return "telescope|" .. name
+  elseif type(v) == "function" then
+    local info = debug.getinfo(v)
+    return "telescopej|" .. vim.json.encode { source = info.source, linedefined = info.linedefined }
+  end
+end
+
 local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
   if not key_func then
     return
@@ -236,7 +253,7 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
     local ret = key_func(prompt_bufnr)
     vim.api.nvim_exec_autocmds("User", { pattern = "TelescopeKeymap" })
     return ret
-  end, vim.tbl_extend("force", opts, { buffer = prompt_bufnr }))
+  end, vim.tbl_extend("force", opts, { buffer = prompt_bufnr, desc = get_desc_for_keyfunc(key_func) }))
 end
 
 local extract_keymap_opts = function(key_func)
