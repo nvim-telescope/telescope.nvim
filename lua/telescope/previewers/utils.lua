@@ -10,7 +10,7 @@ local utils = {}
 
 local detect_from_shebang = function(p)
   local s = p:readbyterange(0, 256)
-  if not s then
+  if s then
     local lines = vim.split(s, "\n")
     return vim.filetype.match { contents = lines }
   end
@@ -40,7 +40,7 @@ utils.filetype_detect = function(filepath)
   end
 
   local p = Path:new(filepath)
-  if p and p:exists() then
+  if p and p:is_file() then
     match = detect_from_shebang(p)
     if match and match ~= "" then
       return match
