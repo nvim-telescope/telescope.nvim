@@ -10,7 +10,7 @@ local utils = {}
 
 local detect_from_shebang = function(p)
   local s = p:readbyterange(0, 256)
-  if not s then
+  if s then
     local lines = vim.split(s, "\n")
     return vim.filetype.match { contents = lines }
   end
