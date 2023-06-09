@@ -218,6 +218,7 @@ previewers.file_maker = function(filepath, bufnr, opts)
       else
         vim.schedule(function()
           opts.ft = opts.use_ft_detect and putils.filetype_detect(filepath)
+          local possible_binary = false
           if opts.preview.check_mime_type == true and has_file and (opts.ft == nil or opts.ft == "") then
             -- avoid SIGABRT in buffer previewer happening with utils.get_os_command_output
             local output = capture(string.format([[file --mime-type -b "%s"]], filepath))
@@ -225,15 +226,10 @@ previewers.file_maker = function(filepath, bufnr, opts)
             if mime_type[1] ~= "text" and mime_type[1] ~= "inode" and mime_type[2] ~= "json" then
               if type(opts.preview.mime_hook) == "function" then
                 opts.preview.mime_hook(filepath, bufnr, opts)
+                return
               else
-                putils.set_preview_message(
-                  bufnr,
-                  opts.winid,
-                  "Binary cannot be previewed",
-                  opts.preview.msg_bg_fillchar
-                )
+                possible_binary = true
               end
-              return
             end
             if mime_type[2] == "json" then
               opts.ft = "json"
@@ -267,6 +263,21 @@ previewers.file_maker = function(filepath, bufnr, opts)
             if processed_data then
               local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, processed_data)
               if not ok then
+                return
+              end
+              -- last resort, if ft is still empty at this point in time,
+              -- we need to determine the filetype using the buffer contents
+              if opts.ft == nil or opts.ft == "" then
+                opts.ft = vim.filetype.match { filename = filepath, buf = bufnr }
+              end
+              -- if we still dont have a ft we need to display the binary message
+              if opts.ft == nil or opts.ft == "" and possible_binary then
+                putils.set_preview_message(
+                  bufnr,
+                  opts.winid,
+                  "Binary cannot be previewed",
+                  opts.preview.msg_bg_fillchar
+                )
                 return
               end
 
