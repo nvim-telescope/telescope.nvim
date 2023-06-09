@@ -204,11 +204,6 @@ previewers.file_maker = function(filepath, bufnr, opts)
     if not vim.in_fast_event() then
       filepath = vim.fn.expand(filepath)
     end
-    if type(opts.preview.filetype_hook) == "function" then
-      if not opts.preview.filetype_hook(filepath, bufnr, opts) then
-        return
-      end
-    end
     vim.loop.fs_stat(filepath, function(_, stat)
       if not stat then
         return
@@ -219,6 +214,11 @@ previewers.file_maker = function(filepath, bufnr, opts)
         vim.schedule(function()
           opts.ft = opts.use_ft_detect and putils.filetype_detect(filepath)
           local possible_binary = false
+          if type(opts.preview.filetype_hook) == "function" and opts.ft ~= nil and opts.ft ~= "" then
+            if not opts.preview.filetype_hook(filepath, bufnr, opts) then
+              return
+            end
+          end
           if opts.preview.check_mime_type == true and has_file and (opts.ft == nil or opts.ft == "") then
             -- avoid SIGABRT in buffer previewer happening with utils.get_os_command_output
             local output = capture(string.format([[file --mime-type -b "%s"]], filepath))
@@ -269,6 +269,14 @@ previewers.file_maker = function(filepath, bufnr, opts)
               -- we need to determine the filetype using the buffer contents
               if opts.ft == nil or opts.ft == "" then
                 opts.ft = vim.filetype.match { filename = filepath, buf = bufnr }
+              end
+              -- we need to attempt to call filetype hook at this point "again"
+              -- previously only if we had a valid filetype, now every time
+              -- also if there will never be a filetype
+              if type(opts.preview.filetype_hook) == "function" then
+                if not opts.preview.filetype_hook(filepath, bufnr, opts) then
+                  return
+                end
               end
               -- if we still dont have a ft we need to display the binary message
               if opts.ft == nil or opts.ft == "" and possible_binary then
