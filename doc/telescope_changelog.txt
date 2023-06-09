@@ -268,4 +268,15 @@ branch 0.1.x (or version, currently 0.1.1) which will not receive this version
 bump and will continue to offer support for older Neovim versions.
 
 
+                                                    *telescope.changelog-2529*
+
+Date: June 09, 2023
+PR: https://github.com/nvim-telescope/telescope.nvim/pull/2529
+
+We finally removed usage of `plenary.filetype` to determine filetypes for
+previewing and replaced it with `vim.filetype`. So if you have highlighting
+issues you no longer have to configure `plenary`, but rather read
+|vim.filetype|.
+
+
  vim:tw=78:ts=8:ft=help:norl:

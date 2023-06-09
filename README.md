@@ -390,13 +390,15 @@ Built-in functions. Ready to be bound to any key you like.
 The default previewers are from now on `vim_buffer_` previewers. They use vim
 buffers for displaying files and use tree-sitter or regex for file highlighting.
 
-These previewers are guessing the filetype of the selected file, so there might
-be cases where they miss, leading to wrong highlights. This is because we can't
-determine the filetype in the traditional way: We don't do `bufload` and instead
-read the file asynchronously with `vim.loop.fs_` and attach only a highlighter;
-otherwise the speed of the previewer would slow down considerably. If you want
-to configure more filetypes, take a look at
-[plenary wiki](https://github.com/nvim-lua/plenary.nvim#plenaryfiletype).
+These previewers are using `vim.filetype` to guess the filetype for the
+selected file. The guessing is done by inspecting the filename, the head of the
+file(shebang) and the tail of the file (modeline). If you have trouble with
+filetype detection you should read `:help vim.filetype`.
+
+We need to do it manually because we can't determine the filetype in the
+traditional way: We don't do `bufload` and instead read the file asynchronously
+with `vim.loop.fs_` and attach only a highlighter; otherwise the speed of the
+previewer would slow down considerably.
 
 If you want to configure the `vim_buffer_` previewer (e.g. you want the line to wrap), do this:
 

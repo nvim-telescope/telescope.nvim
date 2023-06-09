@@ -4,8 +4,54 @@ local strings = require "plenary.strings"
 local conf = require("telescope.config").values
 
 local Job = require "plenary.job"
+local Path = require "plenary.path"
 
 local utils = {}
+
+local detect_from_shebang = function(p)
+  local s = p:readbyterange(0, 256)
+  if not s then
+    local lines = vim.split(s, "\n")
+    return vim.filetype.match { contents = lines }
+  end
+end
+
+local parse_modeline = function(tail)
+  if tail:find "vim:" then
+    return tail:match ".*:ft=([^: ]*):.*$" or ""
+  end
+end
+
+local detect_from_modeline = function(p)
+  local s = p:readbyterange(-256, 256)
+  if s then
+    local lines = vim.split(s, "\n")
+    local idx = lines[#lines] ~= "" and #lines or #lines - 1
+    if idx >= 1 then
+      return parse_modeline(lines[idx])
+    end
+  end
+end
+
+utils.filetype_detect = function(filepath)
+  local match = vim.filetype.match { filename = filepath }
+  if match and match ~= "" then
+    return match
+  end
+
+  local p = Path:new(filepath)
+  if p and p:exists() then
+    match = detect_from_shebang(p)
+    if match and match ~= "" then
+      return match
+    end
+
+    match = detect_from_modeline(p)
+    if match and match ~= "" then
+      return match
+    end
+  end
+end
 
 utils.with_preview_window = function(status, bufnr, callable)
   if bufnr and vim.api.nvim_buf_call and false then

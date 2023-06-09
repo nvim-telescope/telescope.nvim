@@ -540,8 +540,8 @@ append(
 
     Fields:
       - check_mime_type:  Use `file` if available to try to infer whether the
-                          file to preview is a binary if plenary's
-                          filetype detection fails.
+                          file to preview is a binary if filetype
+                          detection fails.
                           Windows users get `file` from:
                           https://github.com/julian-r/file-windows
                           Set to false to attempt to preview any mime type.
@@ -594,11 +594,10 @@ append(
                               end,
                             }
                           The configuration recipes for relevant examples.
-                          Note: if plenary does not recognize your filetype yet --
-                          1) Please consider contributing to:
-                             $PLENARY_REPO/data/plenary/filetypes/builtin.lua
-                          2) Register your filetype locally as per link
-                             https://github.com/nvim-lua/plenary.nvim#plenaryfiletype
+                          Note: we use vim.filetype filetype detection,
+                                so if you have troubles with files not
+                                highlighting correctly, please read
+                                |vim.filetype|
                           Default: nil
       - treesitter:       Determines whether the previewer performs treesitter
                           highlighting, which falls back to regex-based highlighting.
