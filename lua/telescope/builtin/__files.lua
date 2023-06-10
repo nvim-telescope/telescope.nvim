@@ -75,49 +75,16 @@ local get_open_filelist = function(grep_open_files, cwd)
   return filelist
 end
 
-local opts_contain_invert = function(args)
-  local invert = false
-  local files_with_matches = false
-
-  for _, v in ipairs(args) do
-    if v == "--invert-match" then
-      invert = true
-    elseif v == "--files-with-matches" or v == "--files-without-match" then
-      files_with_matches = true
-    end
-
-    if #v >= 2 and v:sub(1, 1) == "-" and v:sub(2, 2) ~= "-" then
-      local non_option = false
-      for i = 2, #v do
-        local vi = v:sub(i, i)
-        if vi == "=" then -- ignore option -g=xxx
-          break
-        elseif vi == "g" or vi == "f" or vi == "m" or vi == "e" or vi == "r" or vi == "t" or vi == "T" then
-          non_option = true
-        elseif non_option == false and vi == "v" then
-          invert = true
-        elseif non_option == false and vi == "l" then
-          files_with_matches = true
-        end
-      end
-    end
-  end
-  return invert, files_with_matches
-end
-
--- Special keys:
---  opts.search_dirs -- list of directory to search in
---  opts.grep_open_files -- boolean to restrict search to open files
-files.live_grep = function(opts)
+---@param opts table: picker options
+---@return table? # rg options
+---@return table? # search paths
+local get_vimgrep_args = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   if not has_rg_program("live_grep", vimgrep_arguments[1]) then
     return
   end
-  local search_dirs = opts.search_dirs
-  local grep_open_files = opts.grep_open_files
-  opts.cwd = opts.cwd and utils.path_expand(opts.cwd) or vim.loop.cwd()
 
-  local filelist = get_open_filelist(grep_open_files, opts.cwd)
+  local search_dirs = opts.search_dirs
   if search_dirs then
     for i, path in ipairs(search_dirs) do
       search_dirs[i] = utils.path_expand(path)
@@ -133,49 +100,96 @@ files.live_grep = function(opts)
     end
   end
 
-  if opts.type_filter then
-    additional_args[#additional_args + 1] = "--type=" .. opts.type_filter
-  end
-
   if type(opts.glob_pattern) == "string" then
-    additional_args[#additional_args + 1] = "--glob=" .. opts.glob_pattern
+    table.insert(additional_args, "--glob=" .. opts.glob_pattern)
   elseif type(opts.glob_pattern) == "table" then
     for i = 1, #opts.glob_pattern do
-      additional_args[#additional_args + 1] = "--glob=" .. opts.glob_pattern[i]
+      table.insert(additional_args, "--glob=" .. opts.glob_pattern[i])
     end
   end
 
+  if opts.type_filter then
+    table.insert(additional_args, "--type=" .. opts.type_filter)
+  end
   if opts.file_encoding then
-    additional_args[#additional_args + 1] = "--encoding=" .. opts.file_encoding
+    table.insert(additional_args, "--encoding=" .. opts.file_encoding)
   end
 
-  local args = flatten { vimgrep_arguments, additional_args }
-  opts.__inverted, opts.__matches = opts_contain_invert(args)
+  local search_paths = {}
+  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
+  local open_files = get_open_filelist(opts.grep_open_files, opts.cwd)
+  if open_files then
+    search_paths = open_files
+  elseif opts.search_dirs then
+    for _, path in ipairs(opts.search_dirs) do
+      table.insert(search_paths, vim.fn.expand(path))
+    end
+  end
+
+  return flatten { vimgrep_arguments, additional_args }, search_paths
+end
+
+---@param rg_opts table: list of rg options
+---@return table, boolean: rg options and whether `--json` was applied
+local add_json_opt = function(rg_opts)
+  local JSON_UNSUPPORT_FLAGS = {
+    USE_FILE_ENTRY_MAKER = { "-l", "--files-with-matches", "--files-without-match" },
+    IGNORE = { "--files", "--count", "--count-matches", "-c" },
+  }
+
+  local json_arg = { enabled = false, index = -1 }
+  for idx, arg in ipairs(rg_opts) do
+    if vim.tbl_contains(JSON_UNSUPPORT_FLAGS.USE_FILE_ENTRY_MAKER, arg) then
+      if json_arg.enabled then
+        table.remove(rg_opts, json_arg.index)
+      end
+      return rg_opts, false
+    elseif vim.tbl_contains(JSON_UNSUPPORT_FLAGS.IGNORE, arg) then
+      utils.notify("add_json_opt", {
+        msg = string.format(
+          "%s not supported by grep_string or live_grep - ignoring",
+          table.concat(JSON_UNSUPPORT_FLAGS.IGNORE, ", ")
+        ),
+        level = "WARN",
+      })
+      table.remove(rg_opts, idx)
+    elseif arg == "--json" then
+      json_arg.enabled = true
+      json_arg.index = idx
+    end
+  end
+
+  if not json_arg.enabled then
+    table.insert(rg_opts, "--json")
+  end
+  return rg_opts, true
+end
+
+files.live_grep = function(opts)
+  opts.__finder = "live_grep"
+  local rg_opts, search_paths = get_vimgrep_args(opts)
+  if rg_opts == nil then
+    return
+  end
+
+  local json_enabled
+  rg_opts, json_enabled = add_json_opt(rg_opts)
+  local entry_maker = json_enabled and make_entry.gen_from_vimgrep_json(opts) or make_entry.gen_from_file(opts)
 
   local live_grepper = finders.new_job(function(prompt)
     if not prompt or prompt == "" then
       return nil
     end
 
-    local search_list = {}
-
-    if grep_open_files then
-      search_list = filelist
-    elseif search_dirs then
-      search_list = search_dirs
-    end
-
-    return flatten { args, "--", prompt, search_list }
-  end, opts.entry_maker or make_entry.gen_from_vimgrep(opts), opts.max_results, opts.cwd)
+    return flatten { rg_opts, "--", prompt, search_paths }
+  end, opts.entry_maker or entry_maker, opts.max_results, opts.cwd)
 
   pickers
     .new(opts, {
       prompt_title = "Live Grep",
       finder = live_grepper,
       previewer = conf.grep_previewer(opts),
-      -- TODO: It would be cool to use `--json` output for this
-      -- and then we could get the highlight positions directly.
-      sorter = sorters.highlighter_only(opts),
+      sorter = sorters.empty(),
       attach_mappings = function(_, map)
         map("i", "<c-space>", actions.to_fuzzy_refine)
         return true
@@ -185,10 +199,12 @@ files.live_grep = function(opts)
 end
 
 files.grep_string = function(opts)
-  local vimgrep_arguments = vim.F.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
-  if not has_rg_program("grep_string", vimgrep_arguments[1]) then
+  opts.__finder = "grep_string"
+  local rg_opts, search_paths = get_vimgrep_args(opts)
+  if rg_opts == nil then
     return
   end
+
   local word
   local visual = vim.fn.mode() == "v"
 
@@ -201,60 +217,26 @@ files.grep_string = function(opts)
   else
     word = vim.F.if_nil(opts.search, vim.fn.expand "<cword>")
   end
-  local search = opts.use_regex and word or escape_chars(word)
+  local pattern = opts.use_regex and word or escape_chars(word)
 
-  local additional_args = {}
-  if opts.additional_args ~= nil then
-    if type(opts.additional_args) == "function" then
-      additional_args = opts.additional_args(opts)
-    elseif type(opts.additional_args) == "table" then
-      additional_args = opts.additional_args
-    end
+  if visual then
+    table.insert(rg_opts, opts.word_match)
   end
 
-  if opts.file_encoding then
-    additional_args[#additional_args + 1] = "--encoding=" .. opts.file_encoding
+  if pattern == "" then
+    table.insert(rg_opts, "-v")
+    pattern = "^[[:space:]]*$"
   end
 
-  if search == "" then
-    search = { "-v", "--", "^[[:space:]]*$" }
-  else
-    search = { "--", search }
-  end
+  local json_enabled
+  rg_opts, json_enabled = add_json_opt(rg_opts)
+  local entry_maker = json_enabled and make_entry.gen_from_vimgrep_json(opts) or make_entry.gen_from_file(opts)
+  opts.entry_maker = opts.entry_maker or entry_maker
 
-  local args
-  if visual == true then
-    args = flatten {
-      vimgrep_arguments,
-      additional_args,
-      search,
-    }
-  else
-    args = flatten {
-      vimgrep_arguments,
-      additional_args,
-      opts.word_match,
-      search,
-    }
-  end
-
-  opts.__inverted, opts.__matches = opts_contain_invert(args)
-
-  if opts.grep_open_files then
-    for _, file in ipairs(get_open_filelist(opts.grep_open_files, opts.cwd)) do
-      table.insert(args, file)
-    end
-  elseif opts.search_dirs then
-    for _, path in ipairs(opts.search_dirs) do
-      table.insert(args, utils.path_expand(path))
-    end
-  end
-
-  opts.entry_maker = opts.entry_maker or make_entry.gen_from_vimgrep(opts)
   pickers
     .new(opts, {
       prompt_title = "Find Word (" .. word:gsub("\n", "\\n") .. ")",
-      finder = finders.new_oneshot_job(args, opts),
+      finder = finders.new_oneshot_job(flatten { rg_opts, "--", pattern, search_paths }, opts),
       previewer = conf.grep_previewer(opts),
       sorter = conf.generic_sorter(opts),
     })
