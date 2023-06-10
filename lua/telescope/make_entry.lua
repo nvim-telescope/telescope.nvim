@@ -369,6 +369,117 @@ do
   end
 end
 
+function make_entry.gen_from_vimgrep_json(opts)
+  opts = opts or {}
+  local cwd = vim.fn.expand(opts.cwd or vim.loop.cwd() or "")
+
+  local function bytes_or_text_to_str(data)
+    if data.bytes ~= nil then
+      return require("telescope.algos.base64").decode(data.bytes)
+    else
+      return data.text
+    end
+  end
+
+  local mt_vimgrep_entry = {}
+  mt_vimgrep_entry.display = function(entry)
+    local display_filename = utils.transform_path(opts, entry.filename)
+
+    local coordinates = ":"
+    if not opts.disable_coordinates then
+      if entry.lnum then
+        if entry.col then
+          coordinates = string.format(":%s:%s:", entry.lnum, entry.col)
+        else
+          coordinates = string.format(":%s:", entry.lnum)
+        end
+      end
+    end
+
+    local file_pos, hl_group, icon = utils.transform_devicons(
+      entry.filename,
+      string.format("%s%s", display_filename, coordinates),
+      opts.disable_devicons
+    )
+    local file_pos_len = strings.strdisplaywidth(file_pos)
+
+    local displayer = entry_display.create {
+      separator = "",
+      items = {
+        { width = file_pos_len },
+        { remaining = true },
+      },
+    }
+
+    return displayer {
+      {
+        file_pos,
+        function()
+          return {
+            { { 0, #icon }, hl_group },
+            { { #icon, file_pos_len }, "" },
+          }
+        end,
+      },
+      {
+        entry.text,
+        function()
+          if opts.__finder == "grep_string" then
+            return {}
+          end
+
+          local highlights = {}
+          for _, submatch in ipairs(entry.submatches) do
+            table.insert(highlights, { { submatch["start"], submatch["end"] }, "TelescopeMatching" })
+          end
+          return highlights
+        end,
+      },
+    }
+  end
+
+  mt_vimgrep_entry.__index = function(t, k)
+    local override = handle_entry_index(opts, t, k)
+    if override then
+      return override
+    end
+
+    local raw = rawget(mt_vimgrep_entry, k)
+    if raw then
+      return raw
+    end
+
+    if k == "path" then
+      return Path:new({ cwd, t.filename }):absolute()
+    end
+
+    if k == "text" then
+      return t.value
+    end
+
+    if k == "ordinal" then
+      local text = t.text
+      return opts.only_sort_text and text or text .. " " .. t.filename
+    end
+  end
+
+  return function(line)
+    local msg = vim.json.decode(line)
+    if msg == nil or msg.type ~= "match" then
+      return
+    end
+
+    local text = bytes_or_text_to_str(msg.data.lines):gsub("%s+$", "")
+    return setmetatable({
+      value = text,
+      filename = bytes_or_text_to_str(msg.data.path),
+      lnum = msg.data.line_number,
+      col = #msg.data.submatches ~= 0 and msg.data.submatches[1].start + 1 or nil,
+      submatches = msg.data.submatches,
+    }, mt_vimgrep_entry)
+  end
+end
+
 function make_entry.gen_from_git_stash(opts)
   local displayer = entry_display.create {
     separator = " ",
