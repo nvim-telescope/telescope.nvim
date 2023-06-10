@@ -52,8 +52,9 @@ end
 ---@field search_dirs table: directory/directories/files to search, mutually exclusive with `grep_open_files`
 ---@field glob_pattern string|table: argument to be used with `--glob`, e.g. "*.toml", can use the opposite "!*.toml"
 ---@field type_filter string: argument to be used with `--type`, e.g. "rust", see `rg --type-list`
+---@field use_regex boolean: if true, special characters won't be escaped, allows for using regex (default: false)
+---@field word_match string: can be set to `-w` to enable exact word matches
 ---@field additional_args function|table: additional arguments to be passed on. Can be fn(opts) -> tbl
----@field max_results number: define a upper result value
 ---@field disable_coordinates boolean: don't show the line & row numbers (default: false)
 ---@field file_encoding string: file encoding for the entry & previewer
 builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_grep
@@ -64,11 +65,13 @@ builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_g
 ---@field search string: the query to search
 ---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
 ---@field search_dirs table: directory/directories/files to search, mutually exclusive with `grep_open_files`
+---@field glob_pattern string|table: argument to be used with `--glob`, e.g. "*.toml", can use the opposite "!*.toml"
+---@field type_filter string: argument to be used with `--type`, e.g. "rust", see `rg --type-list`
+---@field additional_args function|table: additional arguments to be passed on. Can be fn(opts) -> tbl
 ---@field use_regex boolean: if true, special characters won't be escaped, allows for using regex (default: false)
 ---@field word_match string: can be set to `-w` to enable exact word matches
----@field additional_args function|table: additional arguments to be passed on. Can be fn(opts) -> tbl
----@field disable_coordinates boolean: don't show the line and row numbers (default: false)
 ---@field only_sort_text boolean: only sort the text, not the file, line or row (default: false)
+---@field disable_coordinates boolean: don't show the line and row numbers (default: false)
 ---@field file_encoding string: file encoding for the entry & previewer
 builtin.grep_string = require_on_exported_call("telescope.builtin.__files").grep_string
 
