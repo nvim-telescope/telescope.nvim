@@ -33,6 +33,10 @@ local detect_from_modeline = function(p)
 end
 
 utils.filetype_detect = function(filepath)
+  if type(filepath) ~= string then
+    filepath = tostring(filepath)
+  end
+
   local match = vim.filetype.match { filename = filepath }
   if match and match ~= "" then
     return match
