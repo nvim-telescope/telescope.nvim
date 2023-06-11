@@ -271,7 +271,7 @@ previewers.file_maker = function(filepath, bufnr, opts)
                 opts.ft = vim.filetype.match { filename = filepath, buf = bufnr }
               end
               -- if we still dont have a ft we need to display the binary message
-              if opts.ft == nil or opts.ft == "" and possible_binary then
+              if (opts.ft == nil or opts.ft == "") and possible_binary then
                 putils.set_preview_message(
                   bufnr,
                   opts.winid,
