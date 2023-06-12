@@ -39,7 +39,7 @@ function Previewer:preview(entry, status)
     end
 
     if vim.api.nvim_buf_is_valid(self._empty_bufnr) then
-      vim.api.nvim_win_set_buf(status.preview_win, self._empty_bufnr)
+      vim.api.nvim_win_set_buf(status.layout.preview.winid, self._empty_bufnr)
     end
     return
   end

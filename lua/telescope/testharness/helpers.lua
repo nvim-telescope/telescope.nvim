@@ -7,7 +7,7 @@ end
 
 test_helpers.get_results_bufnr = function()
   local state = require "telescope.state"
-  return state.get_status(vim.api.nvim_get_current_buf()).results_bufnr
+  return state.get_status(vim.api.nvim_get_current_buf()).layout.results.bufnr
 end
 
 test_helpers.get_file = function()

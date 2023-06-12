@@ -26,10 +26,11 @@ action_layout.toggle_preview = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local status = state.get_status(picker.prompt_bufnr)
 
-  if picker.previewer and status.preview_win then
+  local preview_winid = status.layout.preview and status.layout.preview.winid
+  if picker.previewer and preview_winid then
     picker.hidden_previewer = picker.previewer
     picker.previewer = nil
-  elseif picker.hidden_previewer and not status.preview_win then
+  elseif picker.hidden_previewer and not preview_winid then
     picker.previewer = picker.hidden_previewer
     picker.hidden_previewer = nil
   else

@@ -188,6 +188,16 @@ append(
   Default: 'horizontal']]
 )
 
+append(
+  "create_layout",
+  nil,
+  [[
+  Configure the layout of Telescope pickers.
+  See |telescope.pickers.layout| for details.
+
+  Default: 'nil']]
+)
+
 append("layout_config", layout_config_defaults, layout_config_description)
 
 append(

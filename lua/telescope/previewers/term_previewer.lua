@@ -185,19 +185,20 @@ previewers.new_termopen_previewer = function(opts)
   end
 
   function opts.preview_fn(self, entry, status)
+    local preview_winid = status.layout.preview and status.layout.preview.winid
     if get_bufnr(self) == nil then
-      set_bufnr(self, vim.api.nvim_win_get_buf(status.preview_win))
+      set_bufnr(self, vim.api.nvim_win_get_buf(preview_winid))
     end
 
     local prev_bufnr = get_bufnr_by_bufentry(self, entry)
     if prev_bufnr then
       self.state.termopen_bufnr = prev_bufnr
-      utils.win_set_buf_noautocmd(status.preview_win, self.state.termopen_bufnr)
+      utils.win_set_buf_noautocmd(preview_winid, self.state.termopen_bufnr)
       self.state.termopen_id = term_ids[self.state.termopen_bufnr]
     else
       local bufnr = vim.api.nvim_create_buf(false, true)
       set_bufnr(self, bufnr)
-      utils.win_set_buf_noautocmd(status.preview_win, bufnr)
+      utils.win_set_buf_noautocmd(preview_winid, bufnr)
 
       local term_opts = {
         cwd = opts.cwd or vim.loop.cwd(),
@@ -277,7 +278,7 @@ previewers.vimgrep = defaulter(function(opts)
     end,
 
     get_command = function(entry, status)
-      local win_id = status.preview_win
+      local win_id = status.layout.preview and status.layout.preview.winid
       local height = vim.api.nvim_win_get_height(win_id)
 
       local p = from_entry.path(entry, true, false)
@@ -312,7 +313,7 @@ previewers.qflist = defaulter(function(opts)
     end,
 
     get_command = function(entry, status)
-      local win_id = status.preview_win
+      local win_id = status.layout.preview and status.layout.preview.winid
       local height = vim.api.nvim_win_get_height(win_id)
 
       local p = from_entry.path(entry, true, false)
