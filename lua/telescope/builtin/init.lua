@@ -483,7 +483,7 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 ---@field root_dir string|boolean: if set to string, get diagnostics only for buffers under this dir otherwise cwd
 ---@field no_unlisted boolean: if true, get diagnostics only for listed buffers
 ---@field no_sign boolean: hide DiagnosticSigns from Results (default: false)
----@field line_width string|number: Set length of diagnostic entry text in Results. Use 'full' for full untruncated text
+---@field line_width string|number: set length of diagnostic entry text in Results. Use 'full' for full untruncated text
 ---@field namespace number: limit your diagnostics to a specific namespace
 builtin.diagnostics = require_on_exported_call("telescope.builtin.__diagnostics").get
 

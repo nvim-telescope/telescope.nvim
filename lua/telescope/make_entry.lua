@@ -1162,7 +1162,10 @@ function make_entry.gen_from_diagnostics(opts)
     if line_width == "full" then
       line_width_opts = {}
     else
-      error(string.format("'%s' is not a valid value for line_width", line_width))
+      utils.notify("make_entry.gen_from_diagnostics", {
+        msg = string.format("'%s' is not a valid value for line_width", line_width),
+        level = "ERROR",
+      })
     end
   end
   local hidden = utils.is_path_hidden(opts)
