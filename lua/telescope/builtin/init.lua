@@ -482,7 +482,7 @@ builtin.lsp_workspace_symbols = require_on_exported_call("telescope.builtin.__ls
 
 --- Dynamically lists LSP for all workspace symbols
 --- - Default keymaps:
----   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`), only work after refining to fuzzy search using <C-space>
+---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`), only works after refining to fuzzy search using <C-space>
 ---@param opts table: options to pass to the picker
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: if true, shows the content of the line the symbol is found on (default: false)
