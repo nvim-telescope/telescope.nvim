@@ -2532,6 +2532,22 @@ actions.preview_scrolling_down({prompt_bufnr}) *telescope.actions.preview_scroll
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.preview_scrolling_left({prompt_bufnr}) *telescope.actions.preview_scrolling_left()*
+    Scroll the preview window to the left
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.preview_scrolling_right({prompt_bufnr}) *telescope.actions.preview_scrolling_right()*
+    Scroll the preview window to the right
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 actions.results_scrolling_up({prompt_bufnr}) *telescope.actions.results_scrolling_up()*
     Scroll the results window up
 
@@ -2542,6 +2558,22 @@ actions.results_scrolling_up({prompt_bufnr}) *telescope.actions.results_scrollin
 
 actions.results_scrolling_down({prompt_bufnr}) *telescope.actions.results_scrolling_down()*
     Scroll the results window down
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.results_scrolling_left({prompt_bufnr}) *telescope.actions.results_scrolling_left()*
+    Scroll the results window to the left
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.results_scrolling_right({prompt_bufnr}) *telescope.actions.results_scrolling_right()*
+    Scroll the results window to the right
 
 
     Parameters: ~
@@ -3407,6 +3439,7 @@ previewers.Previewer()                      *telescope.previewers.Previewer()*
     - `:teardown()`
     - `:send_input(input)`
     - `:scroll_fn(direction)`
+    - `:scroll_horizontal_fn(direction)`
 
     `Previewer:new()` expects a table as input with following keys:
       - `setup` function(self): Will be called the first time preview will be 
@@ -3422,6 +3455,8 @@ previewers.Previewer()                      *telescope.previewers.Previewer()*
         `termopen_previewer` and it can be used to send input to the terminal 
         application, like less.
       - `scroll_fn` function(self, direction): Used to make scrolling work.
+      - `scroll_horizontal_fn` function(self, direction): Used to make
+	horizontal scrolling work.
 
 
 

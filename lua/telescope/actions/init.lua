@@ -222,6 +222,18 @@ actions.preview_scrolling_down = function(prompt_bufnr)
   action_set.scroll_previewer(prompt_bufnr, 1)
 end
 
+--- Scroll the preview window to the left
+---@param prompt_bufnr number: The prompt bufnr
+actions.preview_scrolling_left = function(prompt_bufnr)
+  action_set.scroll_horizontal_previewer(prompt_bufnr, -1)
+end
+
+--- Scroll the preview window to the right
+---@param prompt_bufnr number: The prompt bufnr
+actions.preview_scrolling_right = function(prompt_bufnr)
+  action_set.scroll_horizontal_previewer(prompt_bufnr, 1)
+end
+
 --- Scroll the results window up
 ---@param prompt_bufnr number: The prompt bufnr
 actions.results_scrolling_up = function(prompt_bufnr)
@@ -232,6 +244,18 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.results_scrolling_down = function(prompt_bufnr)
   action_set.scroll_results(prompt_bufnr, 1)
+end
+
+--- Scroll the results window to the left
+---@param prompt_bufnr number: The prompt bufnr
+actions.results_scrolling_left = function(prompt_bufnr)
+  action_set.scroll_horizontal_results(prompt_bufnr, -1)
+end
+
+--- Scroll the results window to the right
+---@param prompt_bufnr number: The prompt bufnr
+actions.results_scrolling_right = function(prompt_bufnr)
+  action_set.scroll_horizontal_results(prompt_bufnr, 1)
 end
 
 --- Center the cursor in the window, can be used after selecting a file to edit

@@ -241,6 +241,27 @@ action_set.scroll_previewer = function(prompt_bufnr, direction)
   previewer:scroll_fn(math.floor(speed * direction))
 end
 
+--- Scrolls the previewer to the left or right.
+--- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
+--- option in `layout_config`. See |telescope.layout| for more details.
+---@param prompt_bufnr number: The prompt bufnr
+---@param direction number: The direction of the scrolling
+--      Valid directions include: "1", "-1"
+action_set.scroll_horizontal_previewer = function(prompt_bufnr, direction)
+  local previewer = action_state.get_current_picker(prompt_bufnr).previewer
+  local status = state.get_status(prompt_bufnr)
+
+  -- Check if we actually have a previewer and a preview window
+  if type(previewer) ~= "table" or previewer.scroll_horizontal_fn == nil or status.preview_win == nil then
+    return
+  end
+
+  local default_speed = vim.api.nvim_win_get_height(status.preview_win) / 2
+  local speed = status.picker.layout_config.scroll_speed or default_speed
+
+  previewer:scroll_horizontal_fn(math.floor(speed * direction))
+end
+
 --- Scrolls the results up or down.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
 --- option in `layout_config`. See |telescope.layout| for more details.
@@ -259,6 +280,24 @@ action_set.scroll_results = function(prompt_bufnr, direction)
   end)
 
   action_set.shift_selection(prompt_bufnr, math.floor(speed) * direction)
+end
+
+--- Scrolls the results to the left or right.
+--- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
+--- option in `layout_config`. See |telescope.layout| for more details.
+---@param prompt_bufnr number: The prompt bufnr
+---@param direction number: The direction of the scrolling
+--      Valid directions include: "1", "-1"
+action_set.scroll_horizontal_results = function(prompt_bufnr, direction)
+  local status = state.get_status(prompt_bufnr)
+  local default_speed = vim.api.nvim_win_get_height(status.results_win) / 2
+  local speed = status.picker.layout_config.scroll_speed or default_speed
+
+  local input = direction > 0 and [[zl]] or [[zh]]
+
+  vim.api.nvim_win_call(status.results_win, function()
+    vim.cmd([[normal! ]] .. math.floor(speed) .. input)
+  end)
 end
 
 -- ==================================================

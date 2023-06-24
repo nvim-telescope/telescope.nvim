@@ -47,6 +47,7 @@ local previewers = {}
 --- - `:teardown()`
 --- - `:send_input(input)`
 --- - `:scroll_fn(direction)`
+--- - `:scroll_horizontal_fn(direction)`
 ---
 --- `Previewer:new()` expects a table as input with following keys:
 ---   - `setup` function(self): Will be called the first time preview will be
@@ -64,6 +65,8 @@ local previewers = {}
 ---                                         used to send input to the terminal
 ---                                         application, like less.
 ---   - `scroll_fn` function(self, direction): Used to make scrolling work.
+---   - `scroll_horizontal_fn` function(self, direction): Used to make
+---                                                       horizontal scrolling work.
 previewers.Previewer = Previewer
 
 --- A shorthand for creating a new Previewer.

@@ -189,6 +189,19 @@ local scroll_fn = function(self, direction)
   end)
 end
 
+local scroll_horizontal_fn = function(self, direction)
+  if not self.state then
+    return
+  end
+
+  local input = direction > 0 and [[zl]] or [[zh]]
+  local count = math.abs(direction)
+
+  vim.api.nvim_win_call(self.state.winid, function()
+    vim.cmd([[normal! ]] .. count .. input)
+  end)
+end
+
 previewers.file_maker = function(filepath, bufnr, opts)
   opts = vim.F.if_nil(opts, {})
   -- TODO(conni2461): here shouldn't be any hardcoded magic numbers ...
@@ -460,6 +473,10 @@ previewers.new_buffer_previewer = function(opts)
 
   if not opts.scroll_fn then
     opts.scroll_fn = scroll_fn
+  end
+
+  if not opts.scroll_horizontal_fn then
+    opts.scroll_horizontal_fn = scroll_horizontal_fn
   end
 
   return Previewer:new(opts)
