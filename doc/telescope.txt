@@ -1657,7 +1657,8 @@ builtin.lsp_dynamic_workspace_symbols({opts}) *telescope.builtin.lsp_dynamic_wor
     Dynamically lists LSP for all workspace symbols
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query by type of
-        symbol you want to see (i.e. `:variable:`)
+        symbol you want to see (i.e. `:variable:`), only works after refining
+        to fuzzy search using <C-space>
 
 
     Parameters: ~
@@ -3168,10 +3169,32 @@ action_set.scroll_previewer({prompt_bufnr}, {direction}) *telescope.actions.set.
         {direction}    (number)  The direction of the scrolling
 
 
+action_set.scroll_horizontal_previewer({prompt_bufnr}, {direction}) *telescope.actions.set.scroll_horizontal_previewer()*
+    Scrolls the previewer to the left or right. Defaults to a half page scroll,
+    but can be overridden using the `scroll_speed` option in `layout_config`.
+    See |telescope.layout| for more details.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {direction}    (number)  The direction of the scrolling
+
+
 action_set.scroll_results({prompt_bufnr}, {direction}) *telescope.actions.set.scroll_results()*
     Scrolls the results up or down. Defaults to a half page scroll, but can be
     overridden using the `scroll_speed` option in `layout_config`. See
     |telescope.layout| for more details.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+        {direction}    (number)  The direction of the scrolling
+
+
+action_set.scroll_horizontal_results({prompt_bufnr}, {direction}) *telescope.actions.set.scroll_horizontal_results()*
+    Scrolls the results to the left or right. Defaults to a half page scroll,
+    but can be overridden using the `scroll_speed` option in `layout_config`.
+    See |telescope.layout| for more details.
 
 
     Parameters: ~
@@ -3455,8 +3478,8 @@ previewers.Previewer()                      *telescope.previewers.Previewer()*
         `termopen_previewer` and it can be used to send input to the terminal 
         application, like less.
       - `scroll_fn` function(self, direction): Used to make scrolling work.
-      - `scroll_horizontal_fn` function(self, direction): Used to make
-	horizontal scrolling work.
+      - `scroll_horizontal_fn` function(self, direction): Used to make 
+        horizontal scrolling work.
 
 
 
