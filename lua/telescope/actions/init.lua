@@ -804,7 +804,7 @@ actions.git_checkout_current_buffer = function(prompt_bufnr)
     return
   end
   actions.close(prompt_bufnr)
-  utils.get_os_command_output({ "git", "checkout", selection.value, "--", selection.file }, cwd)
+  utils.get_os_command_output({ "git", "checkout", selection.value, "--", selection.current_file }, cwd)
   vim.cmd "checktime"
 end
 
@@ -1085,7 +1085,7 @@ end
 --- `actions.smart_send_to_qflist + actions.open_qflist`
 ---@param prompt_bufnr number: The prompt bufnr
 actions.open_qflist = function(prompt_bufnr)
-  vim.cmd [[copen]]
+  vim.cmd [[botright copen]]
 end
 
 --- Open the location list. It makes sense to use this in combination with one of the send_to_loclist actions
@@ -1202,26 +1202,10 @@ actions.which_key = function(prompt_bufnr, opts)
   local mappings = {}
   local mode = a.nvim_get_mode().mode
   for _, v in pairs(action_utils.get_registered_mappings(prompt_bufnr)) do
-    -- holds true for registered keymaps
-    if type(v.func) == "table" then
-      local name = ""
-      for _, action in ipairs(v.func) do
-        if type(action) == "string" then
-          name = name == "" and action or name .. " + " .. action
-        end
-      end
-      if name and name ~= "which_key" and name ~= "nop" then
-        if not opts.only_show_current_mode or mode == v.mode then
-          table.insert(mappings, { mode = v.mode, keybind = v.keybind, name = name })
-        end
-      end
-    elseif type(v.func) == "function" then
+    if v.desc and v.desc ~= "which_key" and v.desc ~= "nop" then
       if not opts.only_show_current_mode or mode == v.mode then
-        local fname = action_utils._get_anon_function_name(v.func)
-        -- telescope.setup mappings might result in function names that reflect the keys
-        fname = fname:lower() == v.keybind:lower() and "<anonymous>" or fname
-        table.insert(mappings, { mode = v.mode, keybind = v.keybind, name = fname })
-        if fname == "<anonymous>" then
+        table.insert(mappings, { mode = v.mode, keybind = v.keybind, name = v.desc })
+        if v.desc == "<anonymous>" then
           utils.notify("actions.which_key", {
             msg = "No name available for anonymous functions.",
             level = "INFO",

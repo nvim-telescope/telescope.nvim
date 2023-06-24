@@ -326,10 +326,9 @@ do
           end
         end
 
-        local text = opts.file_encoding and vim.iconv(entry.text, opts.file_encoding, "utf8") or entry.text
         local display, hl_group, icon = utils.transform_devicons(
           entry.filename,
-          string.format(display_string, display_filename, coordinates, text),
+          string.format(display_string, display_filename, coordinates, entry.text),
           disable_devicons
         )
 
@@ -834,7 +833,7 @@ end
 function make_entry.gen_from_keymaps(opts)
   local function get_desc(entry)
     if entry.callback and not entry.desc then
-      return require("telescope.actions.utils")._get_anon_function_name(entry.callback)
+      return require("telescope.actions.utils")._get_anon_function_name(debug.getinfo(entry.callback))
     end
     return vim.F.if_nil(entry.desc, entry.rhs)
   end

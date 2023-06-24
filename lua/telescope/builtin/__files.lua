@@ -126,6 +126,10 @@ files.live_grep = function(opts)
     end
   end
 
+  if opts.file_encoding then
+    additional_args[#additional_args + 1] = "--encoding=" .. opts.file_encoding
+  end
+
   local args = flatten { vimgrep_arguments, additional_args }
   opts.__inverted, opts.__matches = opts_contain_invert(args)
 
@@ -185,6 +189,10 @@ files.grep_string = function(opts)
     elseif type(opts.additional_args) == "table" then
       additional_args = opts.additional_args
     end
+  end
+
+  if opts.file_encoding then
+    additional_args[#additional_args + 1] = "--encoding=" .. opts.file_encoding
   end
 
   if search == "" then
