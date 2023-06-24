@@ -1086,7 +1086,14 @@ function make_entry.gen_from_ctags(opts)
 
   local current_file_cache = {}
   return function(line)
-    if line == "" or line:sub(1, 1) == "!" then
+    if line == "" then
+      return nil
+    end
+    local tag_file
+    tag_file, line = string.match(line, '([^:]+):(.+)')
+
+    -- do not include tag file format
+    if line:sub(1, 1) == "!" then
       return nil
     end
 
@@ -1096,6 +1103,12 @@ function make_entry.gen_from_ctags(opts)
     if not tag then
       -- hasktags gives us: 'tags\tfile\tlnum'
       tag, file, lnum = string.match(line, "([^\t]+)\t([^\t]+)\t(%d+).*")
+    end
+
+    -- append tag file path
+    if vim.opt.tagrelative:get() then
+      local tag_path = Path:new(tag_file):parent():make_relative(cwd)
+      file = tag_path .. "/" .. file
     end
 
     if Path.path.sep == "\\" then
