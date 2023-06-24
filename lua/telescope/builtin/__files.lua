@@ -538,7 +538,7 @@ files.tags = function(opts)
   end)()
 
   if not tags_command then
-    utils.notify("builtin.find_files", {
+    utils.notify("builtin.tags", {
       msg = "You need to install either grep or rg",
       level = "ERROR",
     })
