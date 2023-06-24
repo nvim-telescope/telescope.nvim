@@ -450,6 +450,10 @@ function make_entry.gen_from_vimgrep_json(opts)
     end
 
     if k == "path" then
+      local path = Path:new(t.filename)
+      if path:is_absolute() then
+        return t.filename
+      end
       return Path:new({ cwd, t.filename }):absolute()
     end
 
