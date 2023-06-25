@@ -534,7 +534,7 @@ files.tags = function(opts)
     if 1 == vim.fn.executable "rg" then
       return { "rg", "-H", "-N", "--no-heading", "--color", "never", "-v", "^!|^$" }
     elseif 1 == vim.fn.executable "grep" then
-      return { "grep", "-H", "--color=never", "-v", "^!\\|^$"}
+      return { "grep", "-H", "--color=never", "-v", "^!\\|^$" }
     end
   end)()
 

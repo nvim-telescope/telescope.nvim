@@ -1088,7 +1088,7 @@ function make_entry.gen_from_ctags(opts)
   return function(line)
     local tag_file
     -- split line by ':'
-    tag_file, line = string.match(line, '([^:]+):(.+)')
+    tag_file, line = string.match(line, "([^:]+):(.+)")
 
     local tag, file, scode, lnum
     -- ctags gives us: 'tags\tfile\tsource'
