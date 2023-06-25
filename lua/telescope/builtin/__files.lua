@@ -529,11 +529,12 @@ files.current_buffer_fuzzy_find = function(opts)
 end
 
 files.tags = function(opts)
+  -- find lines not matching tags file format (begins with !) or empty lines.
   local tags_command = (function()
     if 1 == vim.fn.executable "rg" then
-      return { "rg", "-H", "-N", "--no-heading", "--color", "never", "^" }
+      return { "rg", "-H", "-N", "--no-heading", "--color", "never", "-v", "^!|^$" }
     elseif 1 == vim.fn.executable "grep" then
-      return { "grep", "-H", "--color=never", "^"}
+      return { "grep", "-H", "--color=never", "-v", "^!\\|^$"}
     end
   end)()
 

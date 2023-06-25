@@ -1086,16 +1086,9 @@ function make_entry.gen_from_ctags(opts)
 
   local current_file_cache = {}
   return function(line)
-    if line == "" then
-      return nil
-    end
     local tag_file
+    -- split line by ':'
     tag_file, line = string.match(line, '([^:]+):(.+)')
-
-    -- do not include tag file format
-    if line:sub(1, 1) == "!" then
-      return nil
-    end
 
     local tag, file, scode, lnum
     -- ctags gives us: 'tags\tfile\tsource'
@@ -1107,8 +1100,8 @@ function make_entry.gen_from_ctags(opts)
 
     -- append tag file path
     if vim.opt.tagrelative:get() then
-      local tag_path = Path:new(tag_file):parent():make_relative(cwd)
-      file = tag_path .. "/" .. file
+      local tag_path = Path:new(tag_file):parent()
+      file = Path:new(tag_path .. "/" .. file):normalize(cwd)
     end
 
     if Path.path.sep == "\\" then
