@@ -439,7 +439,7 @@ builtin.lsp_definitions = require_on_exported_call("telescope.builtin.__lsp").de
 ---@field trim_text boolean: trim results text (default: false)
 ---@field reuse_win boolean: jump to existing window if buffer is already opened (default: false)
 ---@field file_encoding string: file encoding for the previewer
-builtin.lsp_type_definitions = require("telescope.builtin.__lsp").type_definitions
+builtin.lsp_type_definitions = require_on_exported_call("telescope.builtin.__lsp").type_definitions
 
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
