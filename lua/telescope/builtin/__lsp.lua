@@ -348,46 +348,47 @@ lsp.dynamic_workspace_symbols = function(opts)
     :find()
 end
 
-local function check_capabilities(feature, bufnr)
-  --TODO(clason): remove when dropping support for Nvim 0.9
-  local clients = vim.fn.has "nvim-0.10" == 1 and vim.lsp.get_clients { bufnr = bufnr }
-    or vim.lsp.buf_get_clients(bufnr)
-
-  local supported_client = false
-  for _, client in pairs(clients) do
-    supported_client = client.server_capabilities[feature]
-    if supported_client then
-      break
-    end
-  end
-
-  if supported_client then
-    return true
-  else
-    if #clients == 0 then
-      utils.notify("builtin.lsp_*", {
-        msg = "no client attached",
-        level = "INFO",
-      })
+local function check_capabilities(method, bufnr)
+  local clients = (function()
+    if vim.fn.has "nvim-0.10" == 1 then
+      return vim.lsp.get_clients { bufnr = bufnr }
+    elseif vim.lsp.get_active_clients then
+      return vim.lsp.get_active_clients { bufnr = bufnr }
     else
-      utils.notify("builtin.lsp_*", {
-        msg = "server does not support " .. feature,
-        level = "INFO",
-      })
+      return vim.lsp.buf_get_clients(bufnr)
     end
-    return false
+  end)()
+
+  for _, client in pairs(clients) do
+    -- we always pass opts, even though older nvim version might not have a second param
+    if client.supports_method(method, { bufnr = bufnr }) then
+      return true
+    end
   end
+
+  if #clients == 0 then
+    utils.notify("builtin.lsp_*", {
+      msg = "no client attached",
+      level = "INFO",
+    })
+  else
+    utils.notify("builtin.lsp_*", {
+      msg = "server does not support " .. method,
+      level = "INFO",
+    })
+  end
+  return false
 end
 
 local feature_map = {
-  ["document_symbols"] = "documentSymbolProvider",
-  ["references"] = "referencesProvider",
-  ["definitions"] = "definitionProvider",
-  ["type_definitions"] = "typeDefinitionProvider",
-  ["implementations"] = "implementationProvider",
-  ["workspace_symbols"] = "workspaceSymbolProvider",
-  ["incoming_calls"] = "callHierarchyProvider",
-  ["outgoing_calls"] = "callHierarchyProvider",
+  ["document_symbols"] = "textDocument/documentSymbol",
+  ["references"] = "textDocument/references",
+  ["definitions"] = "textDocument/definition",
+  ["type_definitions"] = "textDocument/typeDefinition",
+  ["implementations"] = "textDocument/implementation",
+  ["workspace_symbols"] = "workspace/symbol",
+  ["incoming_calls"] = "callHierarchy/incomingCalls",
+  ["outgoing_calls"] = "callHierarchy/outgoingCalls",
 }
 
 local function apply_checks(mod)
@@ -395,8 +396,8 @@ local function apply_checks(mod)
     mod[k] = function(opts)
       opts = opts or {}
 
-      local feature_name = feature_map[k]
-      if feature_name and not check_capabilities(feature_name, opts.bufnr) then
+      local method = feature_map[k]
+      if method and not check_capabilities(method, opts.bufnr) then
         return
       end
       v(opts)
