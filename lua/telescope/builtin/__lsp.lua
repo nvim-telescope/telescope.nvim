@@ -393,44 +393,38 @@ lsp.dynamic_workspace_symbols = function(opts)
     :find()
 end
 
-local function check_capabilities(feature, bufnr)
-  local clients = vim.lsp.buf_get_clients(bufnr)
+local function check_capabilities(method, bufnr)
+  local clients = vim.lsp.get_active_clients { bufnr = bufnr }
 
-  local supported_client = false
   for _, client in pairs(clients) do
-    supported_client = client.server_capabilities[feature]
-    if supported_client then
-      break
+    if client.supports_method(method, { bufnr = bufnr }) then
+      return true
     end
   end
 
-  if supported_client then
-    return true
+  if #clients == 0 then
+    utils.notify("builtin.lsp_*", {
+      msg = "no client attached",
+      level = "INFO",
+    })
   else
-    if #clients == 0 then
-      utils.notify("builtin.lsp_*", {
-        msg = "no client attached",
-        level = "INFO",
-      })
-    else
-      utils.notify("builtin.lsp_*", {
-        msg = "server does not support " .. feature,
-        level = "INFO",
-      })
-    end
-    return false
+    utils.notify("builtin.lsp_*", {
+      msg = "server does not support " .. method,
+      level = "INFO",
+    })
   end
+  return false
 end
 
 local feature_map = {
-  ["document_symbols"] = "documentSymbolProvider",
-  ["references"] = "referencesProvider",
-  ["definitions"] = "definitionProvider",
-  ["type_definitions"] = "typeDefinitionProvider",
-  ["implementations"] = "implementationProvider",
-  ["workspace_symbols"] = "workspaceSymbolProvider",
-  ["incoming_calls"] = "callHierarchyProvider",
-  ["outgoing_calls"] = "callHierarchyProvider",
+  ["document_symbols"] = "textDocument/documentSymbol",
+  ["references"] = "textDocument/references",
+  ["definitions"] = "textDocument/definition",
+  ["type_definitions"] = "textDocument/typeDefinition",
+  ["implementations"] = "textDocument/implementation",
+  ["workspace_symbols"] = "workspace/symbol",
+  ["incoming_calls"] = "callHierarchy/incomingCalls",
+  ["outgoing_calls"] = "callHierarchy/outgoingCalls",
 }
 
 local function apply_checks(mod)
@@ -438,8 +432,8 @@ local function apply_checks(mod)
     mod[k] = function(opts)
       opts = opts or {}
 
-      local feature_name = feature_map[k]
-      if feature_name and not check_capabilities(feature_name, opts.bufnr) then
+      local method = feature_map[k]
+      if method and not check_capabilities(method, opts.bufnr) then
         return
       end
       v(opts)
