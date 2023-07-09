@@ -8,6 +8,7 @@ local conf = require("telescope.config").values
 local pscan = require "plenary.scandir"
 
 local buf_delete = utils.buf_delete
+local git_command = utils.__git_command
 
 local previewers = {}
 
@@ -757,8 +758,7 @@ previewers.git_branch_log = defaulter(function(opts)
     end,
 
     define_preview = function(self, entry)
-      local cmd = {
-        "git",
+      local cmd = git_command({
         "--no-pager",
         "log",
         "--graph",
@@ -766,7 +766,7 @@ previewers.git_branch_log = defaulter(function(opts)
         "--abbrev-commit",
         "--date=relative",
         entry.value,
-      }
+      }, opts)
 
       putils.job_maker(cmd, self.state.bufnr, {
         value = entry.value,
@@ -791,7 +791,8 @@ previewers.git_stash_diff = defaulter(function(opts)
     end,
 
     define_preview = function(self, entry, _)
-      putils.job_maker({ "git", "--no-pager", "stash", "show", "-p", entry.value }, self.state.bufnr, {
+      local cmd = git_command({ "--no-pager", "stash", "show", "-p", entry.value }, opts)
+      putils.job_maker(cmd, self.state.bufnr, {
         value = entry.value,
         bufname = self.state.bufname,
         cwd = opts.cwd,
@@ -814,7 +815,7 @@ previewers.git_commit_diff_to_parent = defaulter(function(opts)
     end,
 
     define_preview = function(self, entry)
-      local cmd = { "git", "--no-pager", "diff", entry.value .. "^!" }
+      local cmd = git_command({ "--no-pager", "diff", entry.value .. "^!" }, opts)
       if opts.current_file then
         table.insert(cmd, "--")
         table.insert(cmd, opts.current_file)
@@ -845,7 +846,7 @@ previewers.git_commit_diff_to_head = defaulter(function(opts)
     end,
 
     define_preview = function(self, entry)
-      local cmd = { "git", "--no-pager", "diff", "--cached", entry.value }
+      local cmd = git_command({ "--no-pager", "diff", "--cached", entry.value }, opts)
       if opts.current_file then
         table.insert(cmd, "--")
         table.insert(cmd, opts.current_file)
@@ -876,7 +877,7 @@ previewers.git_commit_diff_as_was = defaulter(function(opts)
     end,
 
     define_preview = function(self, entry)
-      local cmd = { "git", "--no-pager", "show" }
+      local cmd = git_command({ "--no-pager", "show" }, opts)
       local cf = opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd)
       local value = cf and (entry.value .. ":" .. cf) or entry.value
       local ft = cf and putils.filetype_detect(value) or "diff"
@@ -910,7 +911,7 @@ previewers.git_commit_message = defaulter(function(opts)
     end,
 
     define_preview = function(self, entry)
-      local cmd = { "git", "--no-pager", "log", "-n 1", entry.value }
+      local cmd = git_command({ "--no-pager", "log", "-n 1", entry.value }, opts)
 
       putils.job_maker(cmd, self.state.bufnr, {
         value = entry.value,
@@ -950,7 +951,8 @@ previewers.git_file_diff = defaulter(function(opts)
           winid = self.state.winid,
         })
       else
-        putils.job_maker({ "git", "--no-pager", "diff", "HEAD", "--", entry.value }, self.state.bufnr, {
+        local cmd = git_command({ "--no-pager", "diff", "HEAD", "--", entry.value }, opts)
+        putils.job_maker(cmd, self.state.bufnr, {
           value = entry.value,
           bufname = self.state.bufname,
           cwd = opts.cwd,
