@@ -15,6 +15,10 @@ local get_status = require("telescope.state").get_status
 
 local utils = {}
 
+utils.smart_path_expand = function(path)
+  return path:match "^[%#<]" and vim.fn.expand(path) or vim.fn.fnameescape(path)
+end
+
 utils.get_separator = function()
   return Path.path.sep
 end
@@ -220,7 +224,7 @@ utils.transform_path = function(opts, path)
         if opts.cwd then
           cwd = opts.cwd
           if not vim.in_fast_event() then
-            cwd = vim.fn.expand(opts.cwd)
+            cwd = utils.smart_path_expand(opts.cwd)
           end
         else
           cwd = vim.loop.cwd()
