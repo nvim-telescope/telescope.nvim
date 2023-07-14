@@ -638,6 +638,22 @@ telescope.setup({opts})                                    *telescope.setup()*
           Default: `function() return 0 end`
 
 
+                                         *telescope.defaults.git_worktrees*
+    git_worktrees: ~
+        A table of arrays of detached working trees with keys `gitdir` and `toplevel`.
+        Used to pass `--git-dir` and `--work-tree` flags to git commands when telescope fails
+        to infer the top-level directory of a given working tree based on cwd.
+        Example:
+        git_worktrees = {
+          {
+            toplevel = vim.env.HOME,
+            gitdir = vim.env.HOME .. '/.cfg'
+          }
+        }
+
+        Default: nil
+
+
                                         *telescope.defaults.file_previewer*
     file_previewer: ~
         Function pointer to the default file_previewer. It is mostly used

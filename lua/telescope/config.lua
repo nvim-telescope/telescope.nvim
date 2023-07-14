@@ -773,6 +773,25 @@ append(
 )
 
 append(
+  "git_worktrees",
+  nil,
+  [[
+  A table of arrays of detached working trees with keys `gitdir` and `toplevel`.
+  Used to pass `--git-dir` and `--work-tree` flags to git commands when telescope fails
+  to infer the top-level directory of a given working tree based on cwd.
+  Example:
+  git_worktrees = {
+    {
+      toplevel = vim.env.HOME,
+      gitdir = vim.env.HOME .. '/.cfg'
+    }
+  }
+
+  Default: nil
+  ]]
+)
+
+append(
   "file_previewer",
   function(...)
     return require("telescope.previewers").vim_buffer_cat.new(...)
