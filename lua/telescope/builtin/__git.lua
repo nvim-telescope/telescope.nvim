@@ -384,13 +384,12 @@ local try_worktrees = function(opts)
 
   if vim.tbl_isarray(worktrees) then
     for _, wt in ipairs(worktrees) do
-      local paths, ret = get_git_command_output(
-        { "rev-parse", "--show-toplevel", "--absolute-git-dir" },
-        { toplevel = wt.toplevel, gitdir = wt.gitdir }
-      )
-      if ret == 0 then
-        opts.toplevel = paths[1]
-        opts.gitdir = paths[2]
+      if vim.startswith(opts.cwd, wt.toplevel) then
+        opts.toplevel = wt.toplevel
+        opts.gitdir = wt.gitdir
+        if opts.use_git_root then
+          opts.cwd = wt.toplevel
+        end
         return
       end
     end
@@ -399,18 +398,30 @@ local try_worktrees = function(opts)
   error(opts.cwd .. " is not a git directory")
 end
 
+local current_path_toplevel = function()
+  local gitdir = vim.fn.finddir(".git", vim.fn.expand "%:p" .. ";")
+  if gitdir == "" then
+    return nil
+  end
+  return Path:new(gitdir):parent():absolute()
+end
+
 local set_opts_cwd = function(opts)
+  opts.use_git_root = vim.F.if_nil(opts.use_git_root, true)
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)
   elseif opts.use_file_path then
-    opts.cwd = vim.fn.finddir(".git", vim.fn.expand "%:p" .. ";")
+    opts.cwd = current_path_toplevel()
+    if not opts.cwd then
+      opts.cwd = vim.fn.expand "%:p:h"
+      try_worktrees(opts)
+      return
+    end
   else
     opts.cwd = vim.loop.cwd()
   end
 
-  -- Find root of git directory and remove trailing newline characters
-  local git_root, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
-  local use_git_root = vim.F.if_nil(opts.use_git_root, true)
+  local toplevel, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
 
   if ret ~= 0 then
     local in_worktree = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
@@ -422,8 +433,8 @@ local set_opts_cwd = function(opts)
       opts.is_bare = true
     end
   else
-    if use_git_root then
-      opts.cwd = git_root[1]
+    if opts.use_git_root then
+      opts.cwd = toplevel[1]
     end
   end
 end
