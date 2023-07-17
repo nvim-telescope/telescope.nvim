@@ -53,7 +53,12 @@ lsp.references = function(opts)
       local location = locations[1]
       local bufnr = opts.bufnr
       if location.filename then
-        bufnr = vim.uri_to_bufnr(vim.uri_from_fname(location.filename))
+        local uri = location.filename
+        if not utils.is_uri(uri) then
+          uri = vim.uri_from_fname(uri)
+        end
+
+        bufnr = vim.uri_to_bufnr(uri)
       end
       vim.api.nvim_win_set_buf(0, bufnr)
       vim.api.nvim_win_set_cursor(0, { location.lnum, location.col - 1 })
