@@ -519,7 +519,9 @@ builtin.diagnostics = require_on_exported_call("telescope.builtin.__diagnostics"
 local apply_config = function(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)
+      local conf = require("telescope.config").values
       local pickers_conf = require("telescope.config").pickers
+      local utils = require "telescope.utils"
 
       opts = opts or {}
       opts.bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
@@ -551,7 +553,26 @@ local apply_config = function(mod)
         end
       end
 
-      v(vim.tbl_extend("force", defaults, opts))
+      local error_mode = vim.F.if_nil(opts.error_mode, conf.error_mode)
+      if error_mode == "lua" then
+        v(vim.tbl_extend("force", defaults, opts))
+      elseif error_mode == "notify" then
+        local ok, msg = pcall(v, vim.tbl_extend("force", defaults, opts))
+        if not ok then
+          utils.notify("builtin." .. k, {
+            msg = msg,
+            level = "ERROR",
+          })
+        end
+      elseif error_mode == "silent" then
+        pcall(v, vim.tbl_extend("force", defaults, opts))
+      else
+        utils.notify("builtin." .. k, {
+          msg = string.format("error_mode %s is not a valid error mode", error_mode),
+          level = "ERROR",
+        })
+        v(vim.tbl_extend("force", defaults, opts))
+      end
     end
   end
 

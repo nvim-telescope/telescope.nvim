@@ -568,6 +568,15 @@ telescope.setup({opts})                                    *telescope.setup()*
 
         Default: true
 
+                                            *telescope.defaults.error_mode*
+    error_mode: ~
+        How frontend errors are handled. Possible options:
+        - "lua": can be useful for scripting, using pcall
+        - "notify": uses vim.notify to print errors
+        - "silent": dont show errors
+
+        Default: lua
+
                                            *telescope.defaults.file_sorter*
     file_sorter: ~
         A function pointer that specifies the file_sorter. This sorter will
