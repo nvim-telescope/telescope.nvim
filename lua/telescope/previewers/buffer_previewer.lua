@@ -511,11 +511,34 @@ previewers.vimgrep = defaulter(function(opts)
   opts = opts or {}
   local cwd = opts.cwd or vim.loop.cwd()
 
-  local jump_to_line = function(self, bufnr, lnum)
+  local jump_to_line = function(self, bufnr, entry)
     pcall(vim.api.nvim_buf_clear_namespace, bufnr, ns_previewer, 0, -1)
-    if lnum and lnum > 0 then
-      pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewLine", lnum - 1, 0, -1)
-      pcall(vim.api.nvim_win_set_cursor, self.state.winid, { lnum, 0 })
+
+    if entry.lnum and entry.lnum > 0 then
+      local lnum, lnend = entry.lnum - 1, (entry.lnend or entry.lnum) - 1
+
+      local col, colend = 0, -1
+      -- Both col delimiters should be provided for them to take effect.
+      -- This is to ensure that column range highlighting was opted in, as `col`
+      -- is already used to determine the buffer jump position elsewhere.
+      if entry.col and entry.colend then
+        col, colend = entry.col - 1, entry.colend - 1
+      end
+
+      for i = lnum, lnend do
+        pcall(
+          vim.api.nvim_buf_add_highlight,
+          bufnr,
+          ns_previewer,
+          "TelescopePreviewLine",
+          i,
+          i == lnum and col or 0,
+          i == lnend and colend or -1
+        )
+      end
+
+      local middle_ln = math.floor(lnum + (lnend - lnum) / 2)
+      pcall(vim.api.nvim_win_set_cursor, self.state.winid, { middle_ln + 1, 0 })
       vim.api.nvim_buf_call(bufnr, function()
         vim.cmd "norm! zz"
       end)
@@ -547,14 +570,14 @@ previewers.vimgrep = defaulter(function(opts)
       if entry.bufnr and (p == "[No Name]" or has_buftype) then
         local lines = vim.api.nvim_buf_get_lines(entry.bufnr, 0, -1, false)
         vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
-        jump_to_line(self, self.state.bufnr, entry.lnum)
+        jump_to_line(self, self.state.bufnr, entry)
       else
         conf.buffer_previewer_maker(p, self.state.bufnr, {
           bufname = self.state.bufname,
           winid = self.state.winid,
           preview = opts.preview,
           callback = function(bufnr)
-            jump_to_line(self, bufnr, entry.lnum)
+            jump_to_line(self, bufnr, entry)
           end,
           file_encoding = opts.file_encoding,
         })
