@@ -198,8 +198,10 @@ git.bcommits_range = function(opts)
   opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
   opts.current_file = vim.F.if_nil(opts.current_file, vim.api.nvim_buf_get_name(opts.bufnr))
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
-  local git_command =
-    vim.F.if_nil(opts.git_command, { "git", "log", "--pretty=oneline", "--abbrev-commit", "--no-patch", "-L" })
+  opts.git_command = vim.F.if_nil(
+    opts.git_command,
+    git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--no-patch", "-L" }, opts)
+  )
   local visual = string.find(vim.fn.mode(), "[vV]") ~= nil
 
   local line_number_first = opts.first
@@ -227,7 +229,7 @@ git.bcommits_range = function(opts)
       prompt_title = "Git BCommits in range",
       finder = finders.new_oneshot_job(
         vim.tbl_flatten {
-          git_command,
+          opts.git_command,
           line_range,
         },
         opts
