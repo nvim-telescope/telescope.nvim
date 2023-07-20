@@ -17,6 +17,8 @@ local filter = vim.tbl_filter
 
 local files = {}
 
+local previous_ignore_file = nil
+
 local escape_chars = function(string)
   return string.gsub(string, "[%(|%)|\\|%[|%]|%-|%{%}|%?|%+|%*|%^|%$|%.]", {
     ["\\"] = "\\\\",
@@ -240,6 +242,25 @@ files.grep_string = function(opts)
     :find()
 end
 
+local function create_patterns_ignore_file(patterns)
+  if previous_ignore_file then
+    return previous_ignore_file
+  end
+  local ignore_file = vim.fn.tempname()
+  local ignore_file_handle = io.open(ignore_file, "w")
+  if not ignore_file_handle then
+    return nil
+  end
+  local ignore_file_contents = ""
+  for _, pattern in ipairs(patterns) do
+    ignore_file_contents = ignore_file_contents .. pattern .. "\n"
+  end
+  ignore_file_handle:write(ignore_file_contents)
+  ignore_file_handle:close()
+  previous_ignore_file = ignore_file
+  return ignore_file
+end
+
 files.find_files = function(opts)
   local find_command = (function()
     if opts.find_command then
@@ -275,6 +296,7 @@ files.find_files = function(opts)
   local follow = opts.follow
   local search_dirs = opts.search_dirs
   local search_file = opts.search_file
+  local ignore_patterns = opts.ignore_patterns
 
   if search_dirs then
     for k, v in pairs(search_dirs) do
@@ -291,6 +313,13 @@ files.find_files = function(opts)
     end
     if no_ignore_parent then
       find_command[#find_command + 1] = "--no-ignore-parent"
+    end
+    if ignore_patterns then
+      local ignore_file = create_patterns_ignore_file(ignore_patterns)
+      if ignore_file then
+        find_command[#find_command + 1] = "--ignore-file"
+        find_command[#find_command + 1] = ignore_file
+      end
     end
     if follow then
       find_command[#find_command + 1] = "-L"

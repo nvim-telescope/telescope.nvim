@@ -81,6 +81,7 @@ builtin.grep_string = require_on_exported_call("telescope.builtin.__files").grep
 ---@field hidden boolean: determines whether to show hidden files or not (default: false)
 ---@field no_ignore boolean: show files ignored by .gitignore, .ignore, etc. (default: false)
 ---@field no_ignore_parent boolean: show files ignored by .gitignore, .ignore, etc. in parent dirs. (default: false)
+---@field ignore_patterns table: list of patterns to ignore
 ---@field search_dirs table: directory/directories/files to search
 ---@field search_file string: specify a filename to search for
 ---@field file_encoding string: file encoding for the previewer
