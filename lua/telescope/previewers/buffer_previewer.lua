@@ -256,7 +256,7 @@ previewers.file_maker = function(filepath, bufnr, opts)
   end
   if opts.bufname ~= filepath then
     if not vim.in_fast_event() then
-      filepath = vim.fn.expand(filepath)
+      filepath = utils.smart_path_expand(filepath)
     end
     vim.loop.fs_stat(filepath, function(_, stat)
       if not stat then
