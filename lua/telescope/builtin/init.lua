@@ -551,6 +551,14 @@ local apply_config = function(mod)
         end
       end
 
+      if defaults.attach_mappings and opts.attach_mappings then
+        local opts_attach = opts.attach_mappings
+        opts.attach_mappings = function(prompt_bufnr, map)
+          defaults.attach_mappings(prompt_bufnr, map)
+          return opts_attach(prompt_bufnr, map)
+        end
+      end
+
       v(vim.tbl_extend("force", defaults, opts))
     end
   end
