@@ -1075,10 +1075,10 @@ builtin.git_bcommits_range({opts})   *telescope.builtin.git_bcommits_range()*
         {git_command}  (table)    command that will be executed. the last
                                   element must be "-L".
                                   {"git","log","--pretty=oneline","--abbrev-commit","--no-patch","-L"}
-        {first}        (number)   the first line number in the range
+        {from}         (number)   the first line number in the range
                                   (default: current line)
-        {last}         (number)   the last line number in the range
-                                  (default: the value of first)
+        {to}           (number)   the last line number in the range
+                                  (default: the value of `from`)
         {operator}     (boolean)  select lines in operator-pending mode
                                   (default: false)
 

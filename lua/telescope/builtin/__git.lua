@@ -204,8 +204,8 @@ git.bcommits_range = function(opts)
   )
   local visual = string.find(vim.fn.mode(), "[vV]") ~= nil
 
-  local line_number_first = opts.first
-  local line_number_last = vim.F.if_nil(opts.last, line_number_first)
+  local line_number_first = opts.from
+  local line_number_last = vim.F.if_nil(opts.to, line_number_first)
   if visual then
     line_number_first = vim.F.if_nil(line_number_first, vim.fn.line "v")
     line_number_last = vim.F.if_nil(line_number_last, vim.fn.line ".")
