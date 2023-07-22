@@ -1052,10 +1052,10 @@ builtin.git_bcommits({opts})                *telescope.builtin.git_bcommits()*
                                    {"git","log","--pretty=oneline","--abbrev-commit"}
 
 
-builtin.git_bcommits_range({opts})   *telescope.builtin.git_bcommits_range()*
+builtin.git_bcommits_range({opts})    *telescope.builtin.git_bcommits_range()*
     Lists commits for a range of lines in the current buffer with diff preview
-    In visual mode, lists commits for the selected lines
-    With operator mode enabled, lists commits inside the text object/motion
+    In visual mode, lists commits for the selected lines With operator mode
+    enabled, lists commits inside the text object/motion
     - Default keymaps or your overridden `select_` keys:
       - `<cr>`: checks out the currently selected commit
       - `<c-v>`: opens a diff in a vertical split
@@ -1075,12 +1075,13 @@ builtin.git_bcommits_range({opts})   *telescope.builtin.git_bcommits_range()*
         {git_command}  (table)    command that will be executed. the last
                                   element must be "-L".
                                   {"git","log","--pretty=oneline","--abbrev-commit","--no-patch","-L"}
-        {from}         (number)   the first line number in the range
-                                  (default: current line)
-        {to}           (number)   the last line number in the range
-                                  (default: the value of `from`)
+        {from}         (number)   the first line number in the range (default:
+                                  current line)
+        {to}           (number)   the last line number in the range (default:
+                                  the value of `from`)
         {operator}     (boolean)  select lines in operator-pending mode
                                   (default: false)
+
 
 builtin.git_branches({opts})                *telescope.builtin.git_branches()*
     List branches for current directory, with output from `git log --oneline`
