@@ -430,16 +430,16 @@ function Picker:find()
   end
 
   if vim.tbl_contains({ "insert", "normal" }, self.initial_mode) then
-    local mode = vim.fn.mode()
-    local keys
+    -- Note that `feedkeys()` should not be used to change modes, as
+    -- the user may have queued keystrokes that would be processed first,
+    -- interfering with desired operation.
     if self.initial_mode == "normal" then
-      -- n: A<ESC> makes sure cursor is at always at end of prompt w/o default_text
-      keys = mode ~= "n" and "<ESC>A<ESC>" or "A<ESC>"
+      -- Ensure cursor is at always at end of prompt w/o default_text
+      vim.cmd "normal! $"
     else
       -- always fully retrigger insert mode: required for going from one picker to next
-      keys = mode ~= "n" and "<ESC>A" or "A"
+      vim.cmd "startinsert!"
     end
-    a.nvim_feedkeys(a.nvim_replace_termcodes(keys, true, false, true), "n", true)
   else
     utils.notify(
       "pickers.find",
