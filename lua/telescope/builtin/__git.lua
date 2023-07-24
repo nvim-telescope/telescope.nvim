@@ -459,7 +459,7 @@ end
 local set_opts_cwd = function(opts)
   opts.use_git_root = vim.F.if_nil(opts.use_git_root, true)
   if opts.cwd then
-    opts.cwd = vim.fn.expand(opts.cwd)
+    opts.cwd = utils.path_expand(opts.cwd)
   elseif opts.use_file_path then
     opts.cwd = current_path_toplevel()
     if not opts.cwd then

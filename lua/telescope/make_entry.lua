@@ -149,7 +149,7 @@ do
   function make_entry.gen_from_file(opts)
     opts = opts or {}
 
-    local cwd = vim.fn.expand(opts.cwd or vim.loop.cwd())
+    local cwd = utils.path_expand(opts.cwd or vim.loop.cwd())
 
     local disable_devicons = opts.disable_devicons
 
@@ -310,7 +310,7 @@ do
     local display_string = "%s%s%s"
 
     mt_vimgrep_entry = {
-      cwd = vim.fn.expand(opts.cwd or vim.loop.cwd()),
+      cwd = utils.path_expand(opts.cwd or vim.loop.cwd()),
 
       display = function(entry)
         local display_filename = utils.transform_path(opts, entry.filename)
@@ -592,7 +592,7 @@ function make_entry.gen_from_buffer(opts)
     },
   }
 
-  local cwd = vim.fn.expand(opts.cwd or vim.loop.cwd())
+  local cwd = utils.path_expand(opts.cwd or vim.loop.cwd())
 
   local make_display = function(entry)
     -- bufnr_width + modes + icon + 3 spaces + : + lnum
@@ -1011,7 +1011,7 @@ end
 function make_entry.gen_from_ctags(opts)
   opts = opts or {}
 
-  local cwd = vim.fn.expand(opts.cwd or vim.loop.cwd())
+  local cwd = utils.path_expand(opts.cwd or vim.loop.cwd())
   local current_file = Path:new(vim.api.nvim_buf_get_name(opts.bufnr)):normalize(cwd)
 
   local display_items = {

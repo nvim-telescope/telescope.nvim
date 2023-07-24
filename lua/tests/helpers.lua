@@ -3,6 +3,7 @@ local make_entry = require "telescope.make_entry"
 local previewers = require "telescope.previewers"
 local pickers = require "telescope.pickers"
 local sorters = require "telescope.sorters"
+local utils = require "telescope.utils"
 
 local helpers = {}
 
@@ -24,7 +25,7 @@ helpers.auto_find_files = function(opts)
   end
 
   if opts.cwd then
-    opts.cwd = vim.fn.expand(opts.cwd)
+    opts.cwd = utils.path_expand(opts.cwd)
   end
 
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
