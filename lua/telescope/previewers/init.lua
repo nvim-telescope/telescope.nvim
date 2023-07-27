@@ -254,7 +254,8 @@ previewers.vim_buffer_cat = buffer_previewer.cat
 --- It uses the `buffer_previewer` interface. To integrate this one into your
 --- own picker make sure that the field `path` or `filename` and `lnum` is set
 --- in each entry. If the latter is not present, it will default to the first
---- line.
+--- line. Additionally, `lnend`, `col` and `colend` can be set to highlight a
+--- text range instead of a single line. All line/column values are 1-indexed.
 --- The preferred way of using this previewer is like this
 --- `require('telescope.config').values.grep_previewer`
 --- This will respect user configuration and will use `termopen_previewer` in
