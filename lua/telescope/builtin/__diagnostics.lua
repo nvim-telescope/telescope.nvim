@@ -68,6 +68,7 @@ local diagnostics_to_tbl = function(opts)
       col = diagnostic.col + 1,
       text = vim.trim(diagnostic.message:gsub("[\n]", "")),
       type = severities[diagnostic.severity] or severities[1],
+      severity = diagnostic.severity or 1,
     }
   end
 
@@ -79,6 +80,9 @@ local diagnostics_to_tbl = function(opts)
 
   -- sort results by bufnr (prioritize cur buf), severity, lnum
   table.sort(items, function(a, b)
+    if opts.severity_sort and a.severity ~= b.severity then
+      return a.severity < b.severity
+    end
     if a.bufnr == b.bufnr then
       if a.type == b.type then
         return a.lnum < b.lnum

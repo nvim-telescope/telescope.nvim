@@ -1744,6 +1744,9 @@ builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
                                                 buffers
         {severity}            (string|number)   filter diagnostics by severity
                                                 name (string) or id (number)
+        {severity_sort}       (boolean)         Prioritize severity when
+                                                sorting diagnostics items
+						(default: false)
         {severity_limit}      (string|number)   keep diagnostics equal or more
                                                 severe wrt severity name
                                                 (string) or id (number)

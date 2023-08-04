@@ -523,6 +523,7 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 ---   - `<C-l>`: show autocompletion menu to prefilter your query with the diagnostic you want to see (i.e. `:warning:`)
 ---@param opts table: options to pass to the picker
 ---@field bufnr number|nil: Buffer number to get diagnostics from. Use 0 for current buffer or nil for all buffers
+---@field severity_sort|boolean: Prioritize severity when sorting diagnostics items
 ---@field severity string|number: filter diagnostics by severity name (string) or id (number)
 ---@field severity_limit string|number: keep diagnostics equal or more severe wrt severity name (string) or id (number)
 ---@field severity_bound string|number: keep diagnostics equal or less severe wrt severity name (string) or id (number)
