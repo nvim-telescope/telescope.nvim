@@ -521,6 +521,9 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 ---   - `All severity flags can be passed as `string` or `number` as per `:vim.diagnostic.severity:`
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query with the diagnostic you want to see (i.e. `:warning:`)
+--- - sort_by option:
+---   - "buffer": order by bufnr (prioritizing current bufnr), severity, lnum
+---   - "severity": order by severity, bufnr (prioritizing current bufnr), lnum
 ---@param opts table: options to pass to the picker
 ---@field bufnr number|nil: Buffer number to get diagnostics from. Use 0 for current buffer or nil for all buffers
 ---@field severity string|number: filter diagnostics by severity name (string) or id (number)
@@ -532,6 +535,7 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 ---@field line_width number: set length of diagnostic entry text in Results
 ---@field namespace number: limit your diagnostics to a specific namespace
 ---@field disable_coordinates boolean: don't show the line & row numbers (default: false)
+---@field sort_by string: sort order of the diagnostics results; see above notes (default: "buffer")
 builtin.diagnostics = require_on_exported_call("telescope.builtin.__diagnostics").get
 
 local apply_config = function(mod)
