@@ -1732,6 +1732,9 @@ builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query with the
         diagnostic you want to see (i.e. `:warning:`)
+    - sort_by option:
+      - "buffer": order by bufnr (prioritizing current bufnr), severity, lnum
+      - "severity": order by severity, bufnr (prioritizing current bufnr), lnum
 
 
     Parameters: ~
@@ -1763,6 +1766,9 @@ builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
                                                 specific namespace
         {disable_coordinates} (boolean)         don't show the line & row
                                                 numbers (default: false)
+        {sort_by}             (string)          sort order of the diagnostics
+                                                results; see above notes
+                                                (default: "buffer")
 
 
 
