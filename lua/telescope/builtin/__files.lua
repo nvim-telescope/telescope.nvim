@@ -36,22 +36,6 @@ local escape_chars = function(string)
   })
 end
 
-local has_rg = function(picker_name)
-  if vim.fn.executable "rg" == 1 then
-    return true
-  end
-
-  utils.notify(picker_name, {
-    msg = string.format(
-      "'ripgrep' is a required dependency for the %s picker. "
-        .. "Visit https://github.com/BurntSushi/ripgrep#installation for installation instructions.",
-      picker_name
-    ),
-    level = "ERROR",
-  })
-  return false
-end
-
 local get_open_filelist = function(grep_open_files, cwd)
   if not grep_open_files then
     return nil
@@ -109,10 +93,6 @@ end
 --  opts.search_dirs -- list of directory to search in
 --  opts.grep_open_files -- boolean to restrict search to open files
 files.live_grep = function(opts)
-  if not has_rg "live_grep" then
-    return
-  end
-
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
   local grep_open_files = opts.grep_open_files
@@ -186,10 +166,6 @@ files.live_grep = function(opts)
 end
 
 files.grep_string = function(opts)
-  if not has_rg "grep_string" then
-    return
-  end
-
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
   local vimgrep_arguments = vim.F.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
   local word
