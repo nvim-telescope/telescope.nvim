@@ -789,7 +789,7 @@ function Picker:get_selection_row()
     end
     return self._selection_row
   end
-  return self.max_results
+  return self:get_reset_row()
 end
 
 --- Move the current selection by `change` steps

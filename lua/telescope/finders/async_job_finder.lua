@@ -33,6 +33,7 @@ return function(opts)
 
     local job_opts = fn_command(prompt)
     if not job_opts then
+      process_complete()
       return
     end
 

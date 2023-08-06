@@ -87,6 +87,7 @@ function JobFinder:_find(prompt, process_result, process_complete)
 
   local opts = self:fn_command(prompt)
   if not opts then
+    process_complete()
     return
   end
 
