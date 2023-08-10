@@ -174,8 +174,11 @@ utils.is_path_hidden = function(opts, path_display)
 end
 
 local URI_SCHEME_PATTERN = "^([a-zA-Z]+[a-zA-Z0-9.+-]*):.*"
+local WINDOWS_ROOT_PATTERN = "^[a-zA-Z]:\\"
 utils.is_uri = function(filename)
-  return filename:match(URI_SCHEME_PATTERN) ~= nil
+  local is_uri_match = filename:match(URI_SCHEME_PATTERN) ~= nil
+  local is_windows_root_match = filename:match(WINDOWS_ROOT_PATTERN)
+  return is_uri_match and not is_windows_root_match
 end
 
 local calc_result_length = function(truncate_len)
