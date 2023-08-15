@@ -13,6 +13,8 @@ local log = require "telescope.log"
 local truncate = require("plenary.strings").truncate
 local get_status = require("telescope.state").get_status
 
+local is_windows = vim.fn.has "win32" == 1 or vim.fn.has "win32unix" == 1
+
 local utils = {}
 
 utils.get_separator = function()
@@ -29,6 +31,14 @@ utils.get_lazy_default = function(x, defaulter, ...)
   else
     return x
   end
+end
+
+utils.is_windows = function()
+  return is_windows
+end
+
+utils.escape_windows_special_chars = function(string)
+  return string:gsub("%(", "\\("):gsub("%)", "\\)")
 end
 
 utils.repeated_table = function(n, val)
@@ -186,6 +196,7 @@ local calc_result_length = function(truncate_len)
   local len = vim.api.nvim_win_get_width(status.results_win) - status.picker.selection_caret:len() - 2
   return type(truncate_len) == "number" and len - truncate_len or len
 end
+
 
 --- Transform path is a util function that formats a path based on path_display
 --- found in `opts` or the default value from config.
