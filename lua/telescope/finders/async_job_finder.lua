@@ -1,5 +1,6 @@
 local async_job = require "telescope._"
 local LinesPipe = require("telescope._").LinesPipe
+local ErrorPipe = require("telescope._").ErrorPipe
 
 local make_entry = require "telescope.make_entry"
 local log = require "telescope.log"
@@ -46,6 +47,7 @@ return function(opts)
     end
 
     local stdout = LinesPipe()
+    local stderr = ErrorPipe()
 
     job = async_job.spawn {
       command = job_opts.command,
@@ -55,7 +57,10 @@ return function(opts)
       writer = writer,
 
       stdout = stdout,
+      stderr = stderr,
     }
+
+    stderr:start()
 
     local line_num = 0
     for line in stdout:iter(true) do
