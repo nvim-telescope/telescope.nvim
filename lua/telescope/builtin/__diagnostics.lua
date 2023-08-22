@@ -69,7 +69,7 @@ local diagnostics_to_tbl = function(opts)
   opts.severity_limit = convert_diagnostic_type(severities, opts.severity_limit)
   opts.severity_bound = convert_diagnostic_type(severities, opts.severity_bound)
 
-  local diagnosis_opts = { severity = {}, namespace = opts.namespace }
+  local diagnosis_opts = { severity = nil, namespace = opts.namespace }
   if opts.severity ~= nil then
     if opts.severity_limit ~= nil or opts.severity_bound ~= nil then
       utils.notify("builtin.diagnostics", {
