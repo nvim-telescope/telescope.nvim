@@ -69,7 +69,7 @@ local diagnostics_to_tbl = function(opts)
   opts.severity_limit = convert_diagnostic_type(severities, opts.severity_limit)
   opts.severity_bound = convert_diagnostic_type(severities, opts.severity_bound)
 
-  local diagnosis_opts = { severity = nil, namespace = opts.namespace }
+  local diagnosis_opts = { severity = {}, namespace = opts.namespace }
   if opts.severity ~= nil then
     if opts.severity_limit ~= nil or opts.severity_bound ~= nil then
       utils.notify("builtin.diagnostics", {
@@ -86,6 +86,9 @@ local diagnostics_to_tbl = function(opts)
     if opts.severity_bound ~= nil then
       diagnosis_opts.severity["max"] = opts.severity_bound
     end
+  end
+  if vim.version() > vim.version.parse "0.9.1" and vim.tbl_isempty(diagnosis_opts.severity) then
+    diagnosis_opts.severity = nil
   end
 
   opts.root_dir = opts.root_dir == true and vim.loop.cwd() or opts.root_dir
