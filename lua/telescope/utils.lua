@@ -194,7 +194,7 @@ utils.is_path_hidden = function(opts, path_display)
 end
 
 utils.is_uri = function(filename)
-  local char = string.byte(filename, 1)
+  local char = string.byte(filename, 1) or 0
 
   -- is alpha?
   if char < 65 or (char > 90 and char < 97) or char > 122 then
