@@ -518,6 +518,27 @@ actions.insert_value = function(prompt_bufnr)
   return selection.value
 end
 
+--- Ask user to confirm an action
+---@param prompt string: The prompt for confirmation
+---@param default_value string: The default value of user input
+---@param yes_values table: List of positive user confirmations ({"y", "yes"} by default)
+---@return boolean: Whether user confirmed the prompt
+local function ask_to_confirm(prompt, default_value, yes_values)
+  yes_values = yes_values or { "y", "yes" }
+  default_value = default_value or ""
+  local confirmation = vim.fn.input(prompt, default_value)
+  confirmation = string.lower(confirmation)
+  if string.len(confirmation) == 0 then
+    return false
+  end
+  for _, v in pairs(yes_values) do
+    if v == confirmation then
+      return true
+    end
+  end
+  return false
+end
+
 --- Create and checkout a new git branch if it doesn't already exist
 ---@param prompt_bufnr number: The prompt bufnr
 actions.git_create_branch = function(prompt_bufnr)
@@ -530,11 +551,11 @@ actions.git_create_branch = function(prompt_bufnr)
       level = "ERROR",
     })
   else
-    local confirmation = vim.fn.input(string.format("Create new branch '%s'? [y/n]: ", new_branch))
-    if string.len(confirmation) == 0 or string.sub(string.lower(confirmation), 0, 1) ~= "y" then
+    local confirmation = ask_to_confirm(string.format("Create new branch '%s'? [y/n]: ", new_branch))
+    if not confirmation then
       utils.notify("actions.git_create_branch", {
-        msg = string.format("fail to create branch: '%s'", new_branch),
-        level = "ERROR",
+        msg = string.format("branch creation canceled: '%s'", new_branch),
+        level = "INFO",
       })
       return
     end
@@ -658,8 +679,12 @@ local function make_git_branch_action(opts)
 
     local should_confirm = opts.should_confirm
     if should_confirm then
-      local confirmation = vim.fn.input(string.format(opts.confirmation_question, selection.value))
-      if confirmation ~= "" and string.lower(confirmation) ~= "y" then
+      local confirmation = ask_to_confirm(string.format(opts.confirmation_question, selection.value), "y")
+      if not confirmation then
+        utils.notify(opts.action_name, {
+          msg = "action canceled",
+          level = "INFO",
+        })
         return
       end
     end
@@ -695,8 +720,12 @@ actions.git_track_branch = make_git_branch_action {
 --- Delete all currently selected branches
 ---@param prompt_bufnr number: The prompt bufnr
 actions.git_delete_branch = function(prompt_bufnr)
-  local confirmation = vim.fn.input "Do you really want to delete the selected branches? [Y/n] "
-  if confirmation ~= "" and string.lower(confirmation) ~= "y" then
+  local confirmation = ask_to_confirm("Do you really want to delete the selected branches? [Y/n] ", "y")
+  if not confirmation then
+    utils.notify("actions.git_delete_branch", {
+      msg = "action canceled",
+      level = "INFO",
+    })
     return
   end
 
@@ -755,8 +784,13 @@ local git_reset_branch = function(prompt_bufnr, mode)
     return
   end
 
-  local confirmation = vim.fn.input("Do you really wanna " .. mode .. " reset to " .. selection.value .. "? [Y/n] ")
-  if confirmation ~= "" and string.lower(confirmation) ~= "y" then
+  local confirmation =
+    ask_to_confirm("Do you really wanna " .. mode .. " reset to " .. selection.value .. "? [Y/n] ", "y")
+  if not confirmation then
+    utils.notify("actions.git_reset_branch", {
+      msg = "action canceled",
+      level = "INFO",
+    })
     return
   end
 
