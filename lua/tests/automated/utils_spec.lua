@@ -27,6 +27,7 @@ describe("is_uri", function()
       "hello",
       "hello:",
       "123",
+      "",
     }
     for _, input in ipairs(inputs) do
       it(input, function()
