@@ -2,6 +2,7 @@ local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
+local operators = require "telescope.operators"
 local pickers = require "telescope.pickers"
 local previewers = require "telescope.previewers"
 local utils = require "telescope.utils"
@@ -10,8 +11,13 @@ local strings = require "plenary.strings"
 local Path = require "plenary.path"
 
 local conf = require("telescope.config").values
+local git_command = utils.__git_command
 
 local git = {}
+
+local get_git_command_output = function(args, opts)
+  return utils.get_os_command_output(git_command(args, opts), opts.cwd)
+end
 
 git.files = function(opts)
   if opts.is_bare then
@@ -35,14 +41,14 @@ git.files = function(opts)
   -- By creating the entry maker after the cwd options,
   -- we ensure the maker uses the cwd options when being created.
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_file(opts))
-  local git_command = vim.F.if_nil(opts.git_command, { "git", "ls-files", "--exclude-standard", "--cached" })
+  opts.git_command = vim.F.if_nil(opts.git_command, git_command({ "ls-files", "--exclude-standard", "--cached" }, opts))
 
   pickers
     .new(opts, {
       prompt_title = "Git Files",
       finder = finders.new_oneshot_job(
         vim.tbl_flatten {
-          git_command,
+          opts.git_command,
           show_untracked and "--others" or nil,
           recurse_submodules and "--recurse-submodules" or nil,
         },
@@ -56,12 +62,13 @@ end
 
 git.commits = function(opts)
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
-  local git_command = vim.F.if_nil(opts.git_command, { "git", "log", "--pretty=oneline", "--abbrev-commit", "--", "." })
+  opts.git_command =
+    vim.F.if_nil(opts.git_command, git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--", "." }, opts))
 
   pickers
     .new(opts, {
       prompt_title = "Git Commits",
-      finder = finders.new_oneshot_job(git_command, opts),
+      finder = finders.new_oneshot_job(opts.git_command, opts),
       previewer = {
         previewers.git_commit_diff_to_parent.new(opts),
         previewers.git_commit_diff_to_head.new(opts),
@@ -83,19 +90,12 @@ end
 git.stash = function(opts)
   opts.show_branch = vim.F.if_nil(opts.show_branch, true)
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_stash(opts))
+  opts.git_command = vim.F.if_nil(opts.git_command, git_command({ "--no-pager", "stash", "list" }, opts))
 
   pickers
     .new(opts, {
       prompt_title = "Git Stash",
-      finder = finders.new_oneshot_job(
-        vim.tbl_flatten {
-          "git",
-          "--no-pager",
-          "stash",
-          "list",
-        },
-        opts
-      ),
+      finder = finders.new_oneshot_job(opts.git_command, opts),
       previewer = previewers.git_stash_diff.new(opts),
       sorter = conf.file_sorter(opts),
       attach_mappings = function()
@@ -111,87 +111,132 @@ local get_current_buf_line = function(winnr)
   return vim.trim(vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(winnr), lnum - 1, lnum, false)[1])
 end
 
+local bcommits_picker = function(opts, title, finder)
+  return pickers.new(opts, {
+    prompt_title = title,
+    finder = finder,
+    previewer = {
+      previewers.git_commit_diff_to_parent.new(opts),
+      previewers.git_commit_diff_to_head.new(opts),
+      previewers.git_commit_diff_as_was.new(opts),
+      previewers.git_commit_message.new(opts),
+    },
+    sorter = conf.file_sorter(opts),
+    attach_mappings = function()
+      actions.select_default:replace(actions.git_checkout_current_buffer)
+      local transfrom_file = function()
+        return opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd) or ""
+      end
+
+      local get_buffer_of_orig = function(selection)
+        local value = selection.value .. ":" .. transfrom_file()
+        local content = utils.get_os_command_output({ "git", "--no-pager", "show", value }, opts.cwd)
+
+        local bufnr = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
+        vim.api.nvim_buf_set_name(bufnr, "Original")
+        return bufnr
+      end
+
+      local vimdiff = function(selection, command)
+        local ft = vim.bo.filetype
+        vim.cmd "diffthis"
+
+        local bufnr = get_buffer_of_orig(selection)
+        vim.cmd(string.format("%s %s", command, bufnr))
+        vim.bo.filetype = ft
+        vim.cmd "diffthis"
+
+        vim.api.nvim_create_autocmd("WinClosed", {
+          buffer = bufnr,
+          nested = true,
+          once = true,
+          callback = function()
+            vim.api.nvim_buf_delete(bufnr, { force = true })
+          end,
+        })
+      end
+
+      actions.select_vertical:replace(function(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        vimdiff(selection, "leftabove vert sbuffer")
+      end)
+
+      actions.select_horizontal:replace(function(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        vimdiff(selection, "belowright sbuffer")
+      end)
+
+      actions.select_tab:replace(function(prompt_bufnr)
+        actions.close(prompt_bufnr)
+        local selection = action_state.get_selected_entry()
+        vim.cmd("tabedit " .. transfrom_file())
+        vimdiff(selection, "leftabove vert sbuffer")
+      end)
+      return true
+    end,
+  })
+end
+
 git.bcommits = function(opts)
   opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
   opts.current_file = vim.F.if_nil(opts.current_file, vim.api.nvim_buf_get_name(opts.bufnr))
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
-  local git_command =
-    vim.F.if_nil(opts.git_command, { "git", "log", "--pretty=oneline", "--abbrev-commit", "--follow" })
+  opts.git_command =
+    vim.F.if_nil(opts.git_command, git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--follow" }, opts))
 
-  pickers
-    .new(opts, {
-      prompt_title = "Git BCommits",
-      finder = finders.new_oneshot_job(
-        vim.tbl_flatten {
-          git_command,
-          opts.current_file,
-        },
-        opts
-      ),
-      previewer = {
-        previewers.git_commit_diff_to_parent.new(opts),
-        previewers.git_commit_diff_to_head.new(opts),
-        previewers.git_commit_diff_as_was.new(opts),
-        previewers.git_commit_message.new(opts),
-      },
-      sorter = conf.file_sorter(opts),
-      attach_mappings = function()
-        actions.select_default:replace(actions.git_checkout_current_buffer)
-        local transfrom_file = function()
-          return opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd) or ""
-        end
+  local title = "Git BCommits"
+  local finder = finders.new_oneshot_job(
+    vim.tbl_flatten {
+      opts.git_command,
+      opts.current_file,
+    },
+    opts
+  )
+  bcommits_picker(opts, title, finder):find()
+end
 
-        local get_buffer_of_orig = function(selection)
-          local value = selection.value .. ":" .. transfrom_file()
-          local content = utils.get_os_command_output({ "git", "--no-pager", "show", value }, opts.cwd)
+git.bcommits_range = function(opts)
+  opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
+  opts.current_file = vim.F.if_nil(opts.current_file, vim.api.nvim_buf_get_name(opts.bufnr))
+  opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
+  opts.git_command = vim.F.if_nil(
+    opts.git_command,
+    git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--no-patch", "-L" }, opts)
+  )
+  local visual = string.find(vim.fn.mode(), "[vV]") ~= nil
 
-          local bufnr = vim.api.nvim_create_buf(false, true)
-          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
-          vim.api.nvim_buf_set_name(bufnr, "Original")
-          return bufnr
-        end
+  local line_number_first = opts.from
+  local line_number_last = vim.F.if_nil(opts.to, line_number_first)
+  if visual then
+    line_number_first = vim.F.if_nil(line_number_first, vim.fn.line "v")
+    line_number_last = vim.F.if_nil(line_number_last, vim.fn.line ".")
+  elseif opts.operator then
+    opts.operator = false
+    opts.operator_callback = true
+    operators.run_operator(git.bcommits_range, opts)
+    return
+  elseif opts.operator_callback then
+    line_number_first = vim.fn.line "'["
+    line_number_last = vim.fn.line "']"
+  elseif line_number_first == nil then
+    line_number_first = vim.F.if_nil(line_number_first, vim.fn.line ".")
+    line_number_last = vim.F.if_nil(line_number_last, vim.fn.line ".")
+  end
+  local line_range =
+    string.format("%d,%d:%s", line_number_first, line_number_last, Path:new(opts.current_file):make_relative(opts.cwd))
 
-        local vimdiff = function(selection, command)
-          local ft = vim.bo.filetype
-          vim.cmd "diffthis"
-
-          local bufnr = get_buffer_of_orig(selection)
-          vim.cmd(string.format("%s %s", command, bufnr))
-          vim.bo.filetype = ft
-          vim.cmd "diffthis"
-
-          vim.api.nvim_create_autocmd("WinClosed", {
-            buffer = bufnr,
-            nested = true,
-            once = true,
-            callback = function()
-              vim.api.nvim_buf_delete(bufnr, { force = true })
-            end,
-          })
-        end
-
-        actions.select_vertical:replace(function(prompt_bufnr)
-          actions.close(prompt_bufnr)
-          local selection = action_state.get_selected_entry()
-          vimdiff(selection, "leftabove vert sbuffer")
-        end)
-
-        actions.select_horizontal:replace(function(prompt_bufnr)
-          actions.close(prompt_bufnr)
-          local selection = action_state.get_selected_entry()
-          vimdiff(selection, "belowright sbuffer")
-        end)
-
-        actions.select_tab:replace(function(prompt_bufnr)
-          actions.close(prompt_bufnr)
-          local selection = action_state.get_selected_entry()
-          vim.cmd("tabedit " .. transfrom_file())
-          vimdiff(selection, "leftabove vert sbuffer")
-        end)
-        return true
-      end,
-    })
-    :find()
+  local title = "Git BCommits in range"
+  local finder = finders.new_oneshot_job(
+    vim.tbl_flatten {
+      opts.git_command,
+      line_range,
+    },
+    opts
+  )
+  bcommits_picker(opts, title, finder):find()
 end
 
 git.branches = function(opts)
@@ -200,10 +245,12 @@ git.branches = function(opts)
     .. "%(authorname)"
     .. "%(upstream:lstrip=2)"
     .. "%(committerdate:format-local:%Y/%m/%d %H:%M:%S)"
-  local output = utils.get_os_command_output(
-    { "git", "for-each-ref", "--perl", "--format", format, "--sort", "-authordate", opts.pattern },
-    opts.cwd
+
+  local output = get_git_command_output(
+    { "for-each-ref", "--perl", "--format", format, "--sort", "-authordate", opts.pattern },
+    opts
   )
+
   local show_remote_tracking_branches = vim.F.if_nil(opts.show_remote_tracking_branches, true)
 
   local results = {}
@@ -217,7 +264,7 @@ git.branches = function(opts)
     return string.gsub(v, "\\([\\'])", "%1")
   end
   local parse_line = function(line)
-    local fields = vim.split(string.sub(line, 2, -2), "''", true)
+    local fields = vim.split(string.sub(line, 2, -2), "''")
     local entry = {
       head = fields[1],
       refname = unescape_single_quote(fields[2]),
@@ -320,7 +367,7 @@ git.status = function(opts)
 
   local gen_new_finder = function()
     local expand_dir = vim.F.if_nil(opts.expand_dir, true)
-    local git_cmd = { "git", "status", "-z", "--", "." }
+    local git_cmd = git_command({ "status", "-z", "--", "." }, opts)
 
     if expand_dir then
       table.insert(git_cmd, #git_cmd - 1, "-u")
@@ -329,7 +376,6 @@ git.status = function(opts)
     local output = utils.get_os_command_output(git_cmd, opts.cwd)
 
     if #output == 0 then
-      print "No changes found"
       utils.notify("builtin.git_status", {
         msg = "No changes found",
         level = "WARN",
@@ -379,29 +425,62 @@ git.status = function(opts)
     :find()
 end
 
+local try_worktrees = function(opts)
+  local worktrees = conf.git_worktrees
+
+  if vim.tbl_isarray(worktrees) then
+    for _, wt in ipairs(worktrees) do
+      if vim.startswith(opts.cwd, wt.toplevel) then
+        opts.toplevel = wt.toplevel
+        opts.gitdir = wt.gitdir
+        if opts.use_git_root then
+          opts.cwd = wt.toplevel
+        end
+        return
+      end
+    end
+  end
+
+  error(opts.cwd .. " is not a git directory")
+end
+
+local current_path_toplevel = function()
+  local gitdir = vim.fn.finddir(".git", vim.fn.expand "%:p" .. ";")
+  if gitdir == "" then
+    return nil
+  end
+  return Path:new(gitdir):parent():absolute()
+end
+
 local set_opts_cwd = function(opts)
+  opts.use_git_root = vim.F.if_nil(opts.use_git_root, true)
   if opts.cwd then
     opts.cwd = vim.fn.expand(opts.cwd)
+  elseif opts.use_file_path then
+    opts.cwd = current_path_toplevel()
+    if not opts.cwd then
+      opts.cwd = vim.fn.expand "%:p:h"
+      try_worktrees(opts)
+      return
+    end
   else
     opts.cwd = vim.loop.cwd()
   end
 
-  -- Find root of git directory and remove trailing newline characters
-  local git_root, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
-  local use_git_root = vim.F.if_nil(opts.use_git_root, true)
+  local toplevel, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
 
   if ret ~= 0 then
     local in_worktree = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
     local in_bare = utils.get_os_command_output({ "git", "rev-parse", "--is-bare-repository" }, opts.cwd)
 
     if in_worktree[1] ~= "true" and in_bare[1] ~= "true" then
-      error(opts.cwd .. " is not a git directory")
+      try_worktrees(opts)
     elseif in_worktree[1] ~= "true" and in_bare[1] == "true" then
       opts.is_bare = true
     end
   else
-    if use_git_root then
-      opts.cwd = git_root[1]
+    if opts.use_git_root then
+      opts.cwd = toplevel[1]
     end
   end
 end

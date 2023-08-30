@@ -1,5 +1,5 @@
-if 1 ~= vim.fn.has "nvim-0.7.0" then
-  vim.api.nvim_err_writeln "Telescope.nvim requires at least nvim-0.7.0. See `:h telescope.changelog-1851`"
+if 1 ~= vim.fn.has "nvim-0.9.0" then
+  vim.api.nvim_err_writeln "Telescope.nvim requires at least nvim-0.9.0. See `:h telescope.changelog-2499`"
   return
 end
 
@@ -116,9 +116,12 @@ end, {
     local n = #l - 2
 
     if n == 0 then
+      local commands = vim.tbl_flatten { builtin_list, extensions_list }
+      table.sort(commands)
+
       return vim.tbl_filter(function(val)
         return vim.startswith(val, l[2])
-      end, vim.tbl_extend("force", builtin_list, extensions_list))
+      end, commands)
     end
 
     if n == 1 then
@@ -128,13 +131,18 @@ end, {
 
       if #is_extension > 0 then
         local extensions_subcommand_dict = require("telescope.command").get_extensions_subcommand()
+        local commands = extensions_subcommand_dict[l[2]]
+        table.sort(commands)
+
         return vim.tbl_filter(function(val)
           return vim.startswith(val, l[3])
-        end, extensions_subcommand_dict[l[2]])
+        end, commands)
       end
     end
 
     local options_list = vim.tbl_keys(require("telescope.config").values)
+    table.sort(options_list)
+
     return vim.tbl_filter(function(val)
       return vim.startswith(val, l[#l])
     end, options_list)

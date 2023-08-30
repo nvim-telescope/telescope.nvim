@@ -53,7 +53,12 @@ lsp.references = function(opts)
       local location = locations[1]
       local bufnr = opts.bufnr
       if location.filename then
-        bufnr = vim.uri_to_bufnr(vim.uri_from_fname(location.filename))
+        local uri = location.filename
+        if not utils.is_uri(uri) then
+          uri = vim.uri_from_fname(uri)
+        end
+
+        bufnr = vim.uri_to_bufnr(uri)
       end
       vim.api.nvim_win_set_buf(0, bufnr)
       vim.api.nvim_win_set_cursor(0, { location.lnum, location.col - 1 })
@@ -186,7 +191,8 @@ local function list_or_jump(action, title, opts)
     if #flattened_results == 0 then
       return
     elseif #flattened_results == 1 and opts.jump_type ~= "never" then
-      if params.textDocument.uri ~= flattened_results[1].uri then
+      local uri = params.textDocument.uri
+      if uri ~= flattened_results[1].uri and uri ~= flattened_results[1].targetUri then
         if opts.jump_type == "tab" then
           vim.cmd "tabedit"
         elseif opts.jump_type == "split" then
@@ -195,7 +201,8 @@ local function list_or_jump(action, title, opts)
           vim.cmd "vnew"
         end
       end
-      vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding)
+
+      vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding, opts.reuse_win)
     else
       local locations = vim.lsp.util.locations_to_items(flattened_results, offset_encoding)
       pickers
@@ -391,44 +398,38 @@ lsp.dynamic_workspace_symbols = function(opts)
     :find()
 end
 
-local function check_capabilities(feature, bufnr)
-  local clients = vim.lsp.buf_get_clients(bufnr)
+local function check_capabilities(method, bufnr)
+  local clients = vim.lsp.get_active_clients { bufnr = bufnr }
 
-  local supported_client = false
   for _, client in pairs(clients) do
-    supported_client = client.server_capabilities[feature]
-    if supported_client then
-      break
+    if client.supports_method(method, { bufnr = bufnr }) then
+      return true
     end
   end
 
-  if supported_client then
-    return true
+  if #clients == 0 then
+    utils.notify("builtin.lsp_*", {
+      msg = "no client attached",
+      level = "INFO",
+    })
   else
-    if #clients == 0 then
-      utils.notify("builtin.lsp_*", {
-        msg = "no client attached",
-        level = "INFO",
-      })
-    else
-      utils.notify("builtin.lsp_*", {
-        msg = "server does not support " .. feature,
-        level = "INFO",
-      })
-    end
-    return false
+    utils.notify("builtin.lsp_*", {
+      msg = "server does not support " .. method,
+      level = "INFO",
+    })
   end
+  return false
 end
 
 local feature_map = {
-  ["document_symbols"] = "documentSymbolProvider",
-  ["references"] = "referencesProvider",
-  ["definitions"] = "definitionProvider",
-  ["type_definitions"] = "typeDefinitionProvider",
-  ["implementations"] = "implementationProvider",
-  ["workspace_symbols"] = "workspaceSymbolProvider",
-  ["incoming_calls"] = "callHierarchyProvider",
-  ["outgoing_calls"] = "callHierarchyProvider",
+  ["document_symbols"] = "textDocument/documentSymbol",
+  ["references"] = "textDocument/references",
+  ["definitions"] = "textDocument/definition",
+  ["type_definitions"] = "textDocument/typeDefinition",
+  ["implementations"] = "textDocument/implementation",
+  ["workspace_symbols"] = "workspace/symbol",
+  ["incoming_calls"] = "callHierarchy/incomingCalls",
+  ["outgoing_calls"] = "callHierarchy/outgoingCalls",
 }
 
 local function apply_checks(mod)
@@ -436,8 +437,8 @@ local function apply_checks(mod)
     mod[k] = function(opts)
       opts = opts or {}
 
-      local feature_name = feature_map[k]
-      if feature_name and not check_capabilities(feature_name, opts.bufnr) then
+      local method = feature_map[k]
+      if method and not check_capabilities(method, opts.bufnr) then
         return
       end
       v(opts)

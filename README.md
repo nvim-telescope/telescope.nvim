@@ -42,7 +42,7 @@ Telescope Wiki</sub>
 
 This section should guide you to run your first builtin pickers.
 
-[Neovim (v0.7.0)](https://github.com/neovim/neovim/releases/tag/v0.7.0) or the
+[Neovim (v0.9.0)](https://github.com/neovim/neovim/releases/tag/v0.9.0) or the
 latest neovim nightly commit is required for `telescope.nvim` to work.
 
 ### Required dependencies
@@ -83,7 +83,7 @@ Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```viml
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.1' }
+Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.2' }
 " or                                , { 'branch': '0.1.x' }
 ```
 
@@ -91,14 +91,14 @@ Using [dein](https://github.com/Shougo/dein.vim)
 
 ```viml
 call dein#add('nvim-lua/plenary.nvim')
-call dein#add('nvim-telescope/telescope.nvim', { 'rev': '0.1.1' })
+call dein#add('nvim-telescope/telescope.nvim', { 'rev': '0.1.2' })
 " or                                         , { 'rev': '0.1.x' })
 ```
 Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
 use {
-  'nvim-telescope/telescope.nvim', tag = '0.1.1',
+  'nvim-telescope/telescope.nvim', tag = '0.1.2',
 -- or                            , branch = '0.1.x',
   requires = { {'nvim-lua/plenary.nvim'} }
 }
@@ -109,15 +109,15 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim)
 ```lua
 -- init.lua:
     {
-    'nvim-telescope/telescope.nvim', tag = '0.1.1',
--- or                              , branch = '0.1.1',
+    'nvim-telescope/telescope.nvim', tag = '0.1.2',
+-- or                              , branch = '0.1.x',
       dependencies = { 'nvim-lua/plenary.nvim' }
     }
 
 -- plugins/telescope.lua:
 return {
-    'nvim-telescope/telescope.nvim', tag = '0.1.1',
--- or                              , branch = '0.1.1',
+    'nvim-telescope/telescope.nvim', tag = '0.1.2',
+-- or                              , branch = '0.1.x',
       dependencies = { 'nvim-lua/plenary.nvim' }
     }
 ```
@@ -248,6 +248,10 @@ Many familiar mapping patterns are set up as defaults.
 | `<C-t>`        | Go to a file in a new tab                            |
 | `<C-u>`        | Scroll up in preview window                          |
 | `<C-d>`        | Scroll down in preview window                        |
+| `<C-f>`        | Scroll left in preview window                        |
+| `<C-k>`        | Scroll right in preview window                       |
+| `<M-f>`        | Scroll left in results window                        |
+| `<M-k>`        | Scroll right in results window                       |
 | `<C-/>`        | Show mappings for picker actions (insert mode)       |
 | `?`            | Show mappings for picker actions (normal mode)       |
 | `<C-c>`        | Close telescope                                      |
@@ -357,7 +361,8 @@ Built-in functions. Ready to be bound to any key you like.
 |-------------------------------------|------------------------------------------------------------------------------------------------------------|
 | `builtin.git_commits`               | Lists git commits with diff preview, checkout action `<cr>`, reset mixed `<C-r>m`, reset soft `<C-r>s` and reset hard `<C-r>h` |
 | `builtin.git_bcommits`              | Lists buffer's git commits with diff preview and checks them out on `<cr>`                                 |
-| `builtin.git_branches`              | Lists all branches with log preview, checkout action `<cr>`, track action `<C-t>` and rebase action`<C-r>` |
+| `builtin.git_bcommits_range`        | Lists buffer's git commits in a range of lines. Use options `from` and `to` to specify the range. In visual mode, lists commits for the selected lines |
+| `builtin.git_branches`              | Lists all branches with log preview, checkout action `<cr>`, track action `<C-t>`, rebase action`<C-r>`, create action `<C-a>`, switch action `<C-s>`, delete action `<C-d>` and merge action `<C-y>` |
 | `builtin.git_status`                | Lists current changes per file with diff preview and add action. (Multi-selection still WIP)               |
 | `builtin.git_stash`                 | Lists stash items in current repository with ability to apply them on `<cr>`                               |
 
@@ -390,18 +395,39 @@ Built-in functions. Ready to be bound to any key you like.
 The default previewers are from now on `vim_buffer_` previewers. They use vim
 buffers for displaying files and use tree-sitter or regex for file highlighting.
 
-These previewers are guessing the filetype of the selected file, so there might
-be cases where they miss, leading to wrong highlights. This is because we can't
-determine the filetype in the traditional way: We don't do `bufload` and instead
-read the file asynchronously with `vim.loop.fs_` and attach only a highlighter;
-otherwise the speed of the previewer would slow down considerably. If you want
-to configure more filetypes, take a look at
-[plenary wiki](https://github.com/nvim-lua/plenary.nvim#plenaryfiletype).
+These previewers are using `vim.filetype` to guess the filetype for the
+selected file. The guessing is done by inspecting the filename, the head of the
+file(shebang) and the tail of the file (modeline). If you have trouble with
+filetype detection you should read `:help vim.filetype`.
+
+We need to do it manually because we can't determine the filetype in the
+traditional way: We don't do `bufload` and instead read the file asynchronously
+with `vim.loop.fs_` and attach only a highlighter; otherwise the speed of the
+previewer would slow down considerably.
 
 If you want to configure the `vim_buffer_` previewer (e.g. you want the line to wrap), do this:
 
-```vim
-autocmd User TelescopePreviewerLoaded setlocal wrap
+```lua
+vim.api.nvim_create_autocmd("User", {
+  pattern = "TelescopePreviewerLoaded",
+  callback = function(args)
+    if args.data.filetype ~= "help" then
+      vim.wo.number = true
+    elseif args.data.bufname:match("*.csv") then
+      vim.wo.wrap = false
+    end
+  end,
+})
+```
+
+A data field is passed to the callback, which contains the filetype and the buffer name.
+
+```lua
+{
+  title: string, # preview window title
+  filetype: string,
+  bufname: string,
+}
 ```
 
 ## Sorters
@@ -539,6 +565,7 @@ Telescope user autocmds:
 |---------------------------------|---------------------------------------------------------|
 | `User TelescopeFindPre`         | Do it before Telescope creates all the floating windows |
 | `User TelescopePreviewerLoaded` | Do it after Telescope previewer window is created       |
+| `User TelescopeResumePost`      | Do it after Telescope resume action is fully completed  |
 
 ## Extensions
 
@@ -593,7 +620,9 @@ For writing your own picker and for information about the API please read the
 
 - [What is Telescope? (Video)](https://www.twitch.tv/teej_dv/clip/RichDistinctPlumberPastaThat)
 - [More advanced configuration (Video)](https://www.twitch.tv/videos/756229115)
-- [Example video](https://www.youtube.com/watch?v=65AVwHZflsU)
+- [telescope.nvim 0.1 reflection (Video)](https://www.youtube.com/watch?v=3WEAjCXFiiM)
+- [Why Telescope? (Video)](https://www.youtube.com/watch?v=8SqFt5h2Lsg)
+- [Telescope and Nvim 0.5 Intro (Video)](https://www.youtube.com/watch?v=guxLXcG1kzQ)
 
 ## Contributing
 

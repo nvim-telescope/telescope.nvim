@@ -55,6 +55,7 @@ end
 ---@field additional_args function|table: additional arguments to be passed on. Can be fn(opts) -> tbl
 ---@field max_results number: define a upper result value
 ---@field disable_coordinates boolean: don't show the line & row numbers (default: false)
+---@field file_encoding string: file encoding for the entry & previewer
 builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_grep
 
 --- Searches for the string under your cursor or the visual selection in your current working directory
@@ -68,6 +69,7 @@ builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_g
 ---@field additional_args function|table: additional arguments to be passed on. Can be fn(opts) -> tbl
 ---@field disable_coordinates boolean: don't show the line and row numbers (default: false)
 ---@field only_sort_text boolean: only sort the text, not the file, line or row (default: false)
+---@field file_encoding string: file encoding for the entry & previewer
 builtin.grep_string = require_on_exported_call("telescope.builtin.__files").grep_string
 
 --- Search for files (respecting .gitignore)
@@ -81,6 +83,7 @@ builtin.grep_string = require_on_exported_call("telescope.builtin.__files").grep
 ---@field no_ignore_parent boolean: show files ignored by .gitignore, .ignore, etc. in parent dirs. (default: false)
 ---@field search_dirs table: directory/directories/files to search
 ---@field search_file string: specify a filename to search for
+---@field file_encoding string: file encoding for the previewer
 builtin.find_files = require_on_exported_call("telescope.builtin.__files").find_files
 
 --- This is an alias for the `find_files` picker
@@ -94,11 +97,13 @@ builtin.fd = builtin.find_files
 ---@field symbols string|table: filter results by symbol kind(s)
 ---@field ignore_symbols string|table: list of symbols to ignore
 ---@field symbol_highlights table: string -> string. Matches symbol with hl_group
+---@field file_encoding string: file encoding for the previewer
 builtin.treesitter = require_on_exported_call("telescope.builtin.__files").treesitter
 
 --- Live fuzzy search inside of the currently open buffer
 ---@param opts table: options to pass to the picker
 ---@field skip_empty_lines boolean: if true we don't display empty lines (default: false)
+---@field file_encoding string: file encoding for the previewer
 builtin.current_buffer_fuzzy_find = require_on_exported_call("telescope.builtin.__files").current_buffer_fuzzy_find
 
 --- Lists tags in current directory with tag location file preview (users are required to run ctags -R to generate tags
@@ -132,10 +137,12 @@ builtin.current_buffer_tags = require_on_exported_call("telescope.builtin.__file
 ---   - `<cr>`: opens the currently selected file
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
+---@field use_file_path boolean: if we should use the current buffer git root (default: false)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field show_untracked boolean: if true, adds `--others` flag to command and shows untracked files (default: false)
 ---@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to command (default: false)
 ---@field git_command table: command that will be executed. {"git","ls-files","--exclude-standard","--cached"}
+---@field file_encoding string: file encoding for the previewer
 builtin.git_files = require_on_exported_call("telescope.builtin.__git").files
 
 --- Lists commits for current directory with diff preview
@@ -146,6 +153,7 @@ builtin.git_files = require_on_exported_call("telescope.builtin.__git").files
 ---   - `<C-r>h`: resets current branch to selected commit using hard mode
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
+---@field use_file_path boolean: if we should use the current buffer git root (default: false)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field git_command table: command that will be executed. {"git","log","--pretty=oneline","--abbrev-commit","--","."}
 builtin.git_commits = require_on_exported_call("telescope.builtin.__git").commits
@@ -158,10 +166,29 @@ builtin.git_commits = require_on_exported_call("telescope.builtin.__git").commit
 ---   - `<c-t>`: opens a diff in a new tab
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
+---@field use_file_path boolean: if we should use the current buffer git root (default: false)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field current_file string: specify the current file that should be used for bcommits (default: current buffer)
 ---@field git_command table: command that will be executed. {"git","log","--pretty=oneline","--abbrev-commit"}
 builtin.git_bcommits = require_on_exported_call("telescope.builtin.__git").bcommits
+
+--- Lists commits for a range of lines in the current buffer with diff preview
+--- In visual mode, lists commits for the selected lines
+--- With operator mode enabled, lists commits inside the text object/motion
+--- - Default keymaps or your overridden `select_` keys:
+---   - `<cr>`: checks out the currently selected commit
+---   - `<c-v>`: opens a diff in a vertical split
+---   - `<c-x>`: opens a diff in a horizontal split
+---   - `<c-t>`: opens a diff in a new tab
+---@param opts table: options to pass to the picker
+---@field cwd string: specify the path of the repo
+---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field current_file string: specify the current file that should be used for bcommits (default: current buffer)
+---@field git_command table: command that will be executed. the last element must be "-L". {"git","log","--pretty=oneline","--abbrev-commit","--no-patch","-L"}
+---@field from number: the first line number in the range (default: current line)
+---@field to number: the last line number in the range (default: the value of `from`)
+---@field operator boolean: select lines in operator-pending mode (default: false)
+builtin.git_bcommits_range = require_on_exported_call("telescope.builtin.__git").bcommits_range
 
 --- List branches for current directory, with output from `git log --oneline` shown in the preview window
 --- - Default keymaps:
@@ -173,6 +200,7 @@ builtin.git_bcommits = require_on_exported_call("telescope.builtin.__git").bcomm
 ---   - `<C-y>`: merges the currently selected branch, with confirmation prompt before deletion
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
+---@field use_file_path boolean: if we should use the current buffer git root (default: false)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field show_remote_tracking_branches boolean: show remote tracking branches like origin/main (default: true)
 ---@field pattern string: specify the pattern to match all refs
@@ -184,6 +212,7 @@ builtin.git_branches = require_on_exported_call("telescope.builtin.__git").branc
 ---   - `<cr>`: opens the currently selected file
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
+---@field use_file_path boolean: if we should use the current buffer git root (default: false)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field git_icons table: string -> string. Matches name with icon (see source code, make_entry.lua git_icon_defaults)
 builtin.git_status = require_on_exported_call("telescope.builtin.__git").status
@@ -193,6 +222,7 @@ builtin.git_status = require_on_exported_call("telescope.builtin.__git").status
 ---   - `<cr>`: runs `git apply` for currently selected stash
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
+---@field use_file_path boolean: if we should use the current buffer git root (default: false)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field show_branch boolean: if we should display the branch name for git stash entries (default: true)
 builtin.git_stash = require_on_exported_call("telescope.builtin.__git").stash
@@ -270,6 +300,7 @@ builtin.loclist = require_on_exported_call("telescope.builtin.__internal").locli
 ---@field cwd string: specify a working directory to filter oldfiles by
 ---@field only_cwd boolean: show only files in the cwd (default: false)
 ---@field cwd_only boolean: alias for only_cwd
+---@field file_encoding string: file encoding for the previewer
 builtin.oldfiles = require_on_exported_call("telescope.builtin.__internal").oldfiles
 
 --- Lists commands that were executed recently, and reruns them on `<cr>`
@@ -316,6 +347,7 @@ builtin.reloader = require_on_exported_call("telescope.builtin.__internal").relo
 ---@field sort_lastused boolean: Sorts current and last buffer to the top and selects the lastused (default: false)
 ---@field sort_mru boolean: Sorts all buffers after most recent used. Not just the current and last one (default: false)
 ---@field bufnr_width number: Defines the width of the buffer numbers in front of the filenames  (default: dynamic)
+---@field file_encoding string: file encoding for the previewer
 builtin.buffers = require_on_exported_call("telescope.builtin.__internal").buffers
 
 --- Lists available colorschemes and applies them on `<cr>`
@@ -325,6 +357,7 @@ builtin.colorscheme = require_on_exported_call("telescope.builtin.__internal").c
 
 --- Lists vim marks and their value, jumps to the mark on `<cr>`
 ---@param opts table: options to pass to the picker
+---@field file_encoding string: file encoding for the previewer
 builtin.marks = require_on_exported_call("telescope.builtin.__internal").marks
 
 --- Lists vim registers, pastes the contents of the register on `<cr>`
@@ -338,7 +371,8 @@ builtin.registers = require_on_exported_call("telescope.builtin.__internal").reg
 ---@field modes table: a list of short-named keymap modes to search (default: { "n", "i", "c", "x" })
 ---@field show_plug boolean: if true, the keymaps for which the lhs contains "<Plug>" are also shown (default: true)
 ---@field only_buf boolean: if true, only show the buffer-local keymaps (default: false)
----@field lhs_filter function: filter(lhs:string) -> boolean. true if the keymap should be shown (optional)
+---@field lhs_filter function: filter(lhs:string) -> boolean. true for keymap.lhs if the keymap should be shown (optional)
+---@field filter function: filter(km:keymap) -> boolean. true for the keymap if it should be shown (optional)
 builtin.keymaps = require_on_exported_call("telescope.builtin.__internal").keymaps
 
 --- Lists all available filetypes, sets currently open buffer's filetype to selected filetype in Telescope on `<cr>`
@@ -385,6 +419,7 @@ builtin.jumplist = require_on_exported_call("telescope.builtin.__internal").jump
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field file_encoding string: file encoding for the previewer
 builtin.lsp_references = require_on_exported_call("telescope.builtin.__lsp").references
 
 --- Lists LSP incoming calls for word under the cursor, jumps to reference on `<cr>`
@@ -392,6 +427,7 @@ builtin.lsp_references = require_on_exported_call("telescope.builtin.__lsp").ref
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field file_encoding string: file encoding for the previewer
 builtin.lsp_incoming_calls = require_on_exported_call("telescope.builtin.__lsp").incoming_calls
 
 --- Lists LSP outgoing calls for word under the cursor, jumps to reference on `<cr>`
@@ -399,6 +435,7 @@ builtin.lsp_incoming_calls = require_on_exported_call("telescope.builtin.__lsp")
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field file_encoding string: file encoding for the previewer
 builtin.lsp_outgoing_calls = require_on_exported_call("telescope.builtin.__lsp").outgoing_calls
 
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
@@ -407,6 +444,8 @@ builtin.lsp_outgoing_calls = require_on_exported_call("telescope.builtin.__lsp")
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field reuse_win boolean: jump to existing window if buffer is already opened (default: false)
+---@field file_encoding string: file encoding for the previewer
 builtin.lsp_definitions = require_on_exported_call("telescope.builtin.__lsp").definitions
 
 --- Goto the definition of the type of the word under the cursor, if there's only one,
@@ -416,7 +455,9 @@ builtin.lsp_definitions = require_on_exported_call("telescope.builtin.__lsp").de
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
-builtin.lsp_type_definitions = require("telescope.builtin.__lsp").type_definitions
+---@field reuse_win boolean: jump to existing window if buffer is already opened (default: false)
+---@field file_encoding string: file encoding for the previewer
+builtin.lsp_type_definitions = require_on_exported_call("telescope.builtin.__lsp").type_definitions
 
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
@@ -424,6 +465,8 @@ builtin.lsp_type_definitions = require("telescope.builtin.__lsp").type_definitio
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
+---@field reuse_win boolean: jump to existing window if buffer is already opened (default: false)
+---@field file_encoding string: file encoding for the previewer
 builtin.lsp_implementations = require_on_exported_call("telescope.builtin.__lsp").implementations
 
 --- Lists LSP document symbols in the current buffer
@@ -437,6 +480,7 @@ builtin.lsp_implementations = require_on_exported_call("telescope.builtin.__lsp"
 ---@field symbols string|table: filter results by symbol kind(s)
 ---@field ignore_symbols string|table: list of symbols to ignore
 ---@field symbol_highlights table: string -> string. Matches symbol with hl_group
+---@field file_encoding string: file encoding for the previewer
 builtin.lsp_document_symbols = require_on_exported_call("telescope.builtin.__lsp").document_symbols
 
 --- Lists LSP document symbols in the current workspace
@@ -451,17 +495,19 @@ builtin.lsp_document_symbols = require_on_exported_call("telescope.builtin.__lsp
 ---@field symbols string|table: filter results by symbol kind(s)
 ---@field ignore_symbols string|table: list of symbols to ignore
 ---@field symbol_highlights table: string -> string. Matches symbol with hl_group
+---@field file_encoding string: file encoding for the previewer
 builtin.lsp_workspace_symbols = require_on_exported_call("telescope.builtin.__lsp").workspace_symbols
 
 --- Dynamically lists LSP for all workspace symbols
 --- - Default keymaps:
----   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
+---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`), only works after refining to fuzzy search using <C-space>
 ---@param opts table: options to pass to the picker
 ---@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: if true, shows the content of the line the symbol is found on (default: false)
 ---@field symbols string|table: filter results by symbol kind(s)
 ---@field ignore_symbols string|table: list of symbols to ignore
 ---@field symbol_highlights table: string -> string. Matches symbol with hl_group
+---@field file_encoding string: file encoding for the previewer
 builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.builtin.__lsp").dynamic_workspace_symbols
 
 --
@@ -475,6 +521,9 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 ---   - `All severity flags can be passed as `string` or `number` as per `:vim.diagnostic.severity:`
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query with the diagnostic you want to see (i.e. `:warning:`)
+--- - sort_by option:
+---   - "buffer": order by bufnr (prioritizing current bufnr), severity, lnum
+---   - "severity": order by severity, bufnr (prioritizing current bufnr), lnum
 ---@param opts table: options to pass to the picker
 ---@field bufnr number|nil: Buffer number to get diagnostics from. Use 0 for current buffer or nil for all buffers
 ---@field severity string|number: filter diagnostics by severity name (string) or id (number)
@@ -485,6 +534,8 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 ---@field no_sign boolean: hide DiagnosticSigns from Results (default: false)
 ---@field line_width string|number: set length of diagnostic entry text in Results. Use 'full' for full untruncated text
 ---@field namespace number: limit your diagnostics to a specific namespace
+---@field disable_coordinates boolean: don't show the line & row numbers (default: false)
+---@field sort_by string: sort order of the diagnostics results; see above notes (default: "buffer")
 builtin.diagnostics = require_on_exported_call("telescope.builtin.__diagnostics").get
 
 local apply_config = function(mod)
@@ -518,6 +569,14 @@ local apply_config = function(mod)
         local opts_attach = opts.attach_mappings
         opts.attach_mappings = function(prompt_bufnr, map)
           pconf.attach_mappings(prompt_bufnr, map)
+          return opts_attach(prompt_bufnr, map)
+        end
+      end
+
+      if defaults.attach_mappings and opts.attach_mappings then
+        local opts_attach = opts.attach_mappings
+        opts.attach_mappings = function(prompt_bufnr, map)
+          defaults.attach_mappings(prompt_bufnr, map)
           return opts_attach(prompt_bufnr, map)
         end
       end

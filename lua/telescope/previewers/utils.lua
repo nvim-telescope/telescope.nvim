@@ -1,25 +1,58 @@
-local context_manager = require "plenary.context_manager"
 local ts_utils = require "telescope.utils"
 local strings = require "plenary.strings"
 local conf = require("telescope.config").values
 
-local has_ts, _ = pcall(require, "nvim-treesitter")
-local _, ts_configs = pcall(require, "nvim-treesitter.configs")
-local _, ts_parsers = pcall(require, "nvim-treesitter.parsers")
-
 local Job = require "plenary.job"
+local Path = require "plenary.path"
 
 local utils = {}
 
-utils.with_preview_window = function(status, bufnr, callable)
-  if bufnr and vim.api.nvim_buf_call and false then
-    vim.api.nvim_buf_call(bufnr, callable)
-  else
-    return context_manager.with(function()
-      vim.cmd(string.format("noautocmd call nvim_set_current_win(%s)", status.preview_win))
-      coroutine.yield()
-      vim.cmd(string.format("noautocmd call nvim_set_current_win(%s)", status.prompt_win))
-    end, callable)
+local detect_from_shebang = function(p)
+  local s = p:readbyterange(0, 256)
+  if s then
+    local lines = vim.split(s, "\n")
+    return vim.filetype.match { contents = lines }
+  end
+end
+
+local parse_modeline = function(tail)
+  if tail:find "vim:" then
+    return tail:match ".*:ft=([^: ]*):.*$" or ""
+  end
+end
+
+local detect_from_modeline = function(p)
+  local s = p:readbyterange(-256, 256)
+  if s then
+    local lines = vim.split(s, "\n")
+    local idx = lines[#lines] ~= "" and #lines or #lines - 1
+    if idx >= 1 then
+      return parse_modeline(lines[idx])
+    end
+  end
+end
+
+utils.filetype_detect = function(filepath)
+  if type(filepath) ~= string then
+    filepath = tostring(filepath)
+  end
+
+  local match = vim.filetype.match { filename = filepath }
+  if match and match ~= "" then
+    return match
+  end
+
+  local p = Path:new(filepath)
+  if p and p:is_file() then
+    match = detect_from_shebang(p)
+    if match and match ~= "" then
+      return match
+    end
+
+    match = detect_from_modeline(p)
+    if match and match ~= "" then
+      return match
+    end
   end
 end
 
@@ -131,36 +164,13 @@ utils.regex_highlighter = function(bufnr, ft)
   return false
 end
 
-local treesitter_attach = function(bufnr, ft)
-  local lang = ts_parsers.ft_to_lang(ft)
-  if not ts_configs.is_enabled("highlight", lang, bufnr) then
-    return false
-  end
-
-  local config = ts_configs.get_module "highlight"
-  vim.treesitter.highlighter.new(ts_parsers.get_parser(bufnr, lang))
-  local is_table = type(config.additional_vim_regex_highlighting) == "table"
-  if
-    config.additional_vim_regex_highlighting
-    and (not is_table or vim.tbl_contains(config.additional_vim_regex_highlighting, lang))
-  then
-    vim.api.nvim_buf_set_option(bufnr, "syntax", ft)
-  end
-  return true
-end
-
 -- Attach ts highlighter
 utils.ts_highlighter = function(bufnr, ft)
-  if not has_ts then
-    has_ts, _ = pcall(require, "nvim-treesitter")
-    if has_ts then
-      _, ts_configs = pcall(require, "nvim-treesitter.configs")
-      _, ts_parsers = pcall(require, "nvim-treesitter.parsers")
+  if has_filetype(ft) then
+    local lang = vim.treesitter.language.get_lang(ft)
+    if lang and ts_utils.has_ts_parser(lang) then
+      return vim.treesitter.start(bufnr, lang)
     end
-  end
-
-  if has_ts and has_filetype(ft) then
-    return treesitter_attach(bufnr, ft)
   end
   return false
 end

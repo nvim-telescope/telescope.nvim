@@ -72,18 +72,36 @@ do
     edit = "buffer",
     new = "sbuffer",
     vnew = "vert sbuffer",
+    ["leftabove new"] = "leftabove sbuffer",
+    ["leftabove vnew"] = "leftabove vert sbuffer",
+    ["rightbelow new"] = "rightbelow sbuffer",
+    ["rightbelow vnew"] = "rightbelow vert sbuffer",
+    ["topleft new"] = "topleft sbuffer",
+    ["topleft vnew"] = "topleft vert sbuffer",
+    ["botright new"] = "botright sbuffer",
+    ["botright vnew"] = "botright vert sbuffer",
     tabedit = "tab sb",
   }
 
   edit_buffer = function(command, bufnr)
-    command = map[command]
-    if command == nil then
-      error "There was no associated buffer command"
+    local buf_command = map[command]
+    if buf_command == nil then
+      local valid_commands = vim.tbl_map(function(cmd)
+        return string.format("%q", cmd)
+      end, vim.tbl_keys(map))
+      table.sort(valid_commands)
+      error(
+        string.format(
+          "There was no associated buffer command for %q.\nValid commands are: %s.",
+          command,
+          table.concat(valid_commands, ", ")
+        )
+      )
     end
-    if command ~= "drop" and command ~= "tab drop" then
-      vim.cmd(string.format("%s %d", command, bufnr))
+    if buf_command ~= "drop" and buf_command ~= "tab drop" then
+      vim.cmd(string.format("%s %d", buf_command, bufnr))
     else
-      vim.cmd(string.format("%s %s", command, vim.fn.fnameescape(vim.api.nvim_buf_get_name(bufnr))))
+      vim.cmd(string.format("%s %s", buf_command, vim.fn.fnameescape(vim.api.nvim_buf_get_name(bufnr))))
     end
   end
 end
@@ -91,7 +109,21 @@ end
 --- Edit a file based on the current selection.
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param command string: The command to use to open the file.
---      Valid commands include: "edit", "new", "vedit", "tabedit"
+--      Valid commands are:
+--      - "edit"
+--      - "new"
+--      - "vedit"
+--      - "tabedit"
+--      - "drop"
+--      - "tab drop"
+--      - "leftabove new"
+--      - "leftabove vnew"
+--      - "rightbelow new"
+--      - "rightbelow vnew"
+--      - "topleft new"
+--      - "topleft vnew"
+--      - "botright new"
+--      - "botright vnew"
 action_set.edit = function(prompt_bufnr, command)
   local entry = action_state.get_selected_entry()
 
@@ -164,14 +196,20 @@ action_set.edit = function(prompt_bufnr, command)
     -- check if we didn't pick a different buffer
     -- prevents restarting lsp server
     if vim.api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
-      filename = Path:new(vim.fn.fnameescape(filename)):normalize(vim.loop.cwd())
-      pcall(vim.cmd, string.format("%s %s", command, filename))
+      filename = Path:new(filename):normalize(vim.loop.cwd())
+      pcall(vim.cmd, string.format("%s %s", command, vim.fn.fnameescape(filename)))
     end
   end
 
-  if row == nil or col == nil then
-    local pos = vim.api.nvim_win_get_cursor(0)
-    row, col = pos[1], pos[2] + 1
+  local pos = vim.api.nvim_win_get_cursor(0)
+  if col == nil then
+    if row == pos[1] then
+      col = pos[2] + 1
+    elseif row == nil then
+      row, col = pos[1], pos[2] + 1
+    else
+      col = 1
+    end
   end
 
   if row and col then
@@ -203,6 +241,27 @@ action_set.scroll_previewer = function(prompt_bufnr, direction)
   previewer:scroll_fn(math.floor(speed * direction))
 end
 
+--- Scrolls the previewer to the left or right.
+--- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
+--- option in `layout_config`. See |telescope.layout| for more details.
+---@param prompt_bufnr number: The prompt bufnr
+---@param direction number: The direction of the scrolling
+--      Valid directions include: "1", "-1"
+action_set.scroll_horizontal_previewer = function(prompt_bufnr, direction)
+  local previewer = action_state.get_current_picker(prompt_bufnr).previewer
+  local status = state.get_status(prompt_bufnr)
+
+  -- Check if we actually have a previewer and a preview window
+  if type(previewer) ~= "table" or previewer.scroll_horizontal_fn == nil or status.preview_win == nil then
+    return
+  end
+
+  local default_speed = vim.api.nvim_win_get_height(status.preview_win) / 2
+  local speed = status.picker.layout_config.scroll_speed or default_speed
+
+  previewer:scroll_horizontal_fn(math.floor(speed * direction))
+end
+
 --- Scrolls the results up or down.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
 --- option in `layout_config`. See |telescope.layout| for more details.
@@ -221,6 +280,24 @@ action_set.scroll_results = function(prompt_bufnr, direction)
   end)
 
   action_set.shift_selection(prompt_bufnr, math.floor(speed) * direction)
+end
+
+--- Scrolls the results to the left or right.
+--- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
+--- option in `layout_config`. See |telescope.layout| for more details.
+---@param prompt_bufnr number: The prompt bufnr
+---@param direction number: The direction of the scrolling
+--      Valid directions include: "1", "-1"
+action_set.scroll_horizontal_results = function(prompt_bufnr, direction)
+  local status = state.get_status(prompt_bufnr)
+  local default_speed = vim.api.nvim_win_get_height(status.results_win) / 2
+  local speed = status.picker.layout_config.scroll_speed or default_speed
+
+  local input = direction > 0 and [[zl]] or [[zh]]
+
+  vim.api.nvim_win_call(status.results_win, function()
+    vim.cmd([[normal! ]] .. math.floor(speed) .. input)
+  end)
 end
 
 -- ==================================================

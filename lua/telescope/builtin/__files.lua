@@ -36,6 +36,22 @@ local escape_chars = function(string)
   })
 end
 
+local has_rg_program = function(picker_name, program)
+  if vim.fn.executable(program) == 1 then
+    return true
+  end
+
+  utils.notify(picker_name, {
+    msg = string.format(
+      "'ripgrep', or similar alternative, is a required dependency for the %s picker. "
+        .. "Visit https://github.com/BurntSushi/ripgrep#installation for installation instructions.",
+      picker_name
+    ),
+    level = "ERROR",
+  })
+  return false
+end
+
 local get_open_filelist = function(grep_open_files, cwd)
   if not grep_open_files then
     return nil
@@ -94,6 +110,9 @@ end
 --  opts.grep_open_files -- boolean to restrict search to open files
 files.live_grep = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
+  if not has_rg_program("live_grep", vimgrep_arguments[1]) then
+    return
+  end
   local search_dirs = opts.search_dirs
   local grep_open_files = opts.grep_open_files
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
@@ -124,6 +143,10 @@ files.live_grep = function(opts)
     for i = 1, #opts.glob_pattern do
       additional_args[#additional_args + 1] = "--glob=" .. opts.glob_pattern[i]
     end
+  end
+
+  if opts.file_encoding then
+    additional_args[#additional_args + 1] = "--encoding=" .. opts.file_encoding
   end
 
   local args = flatten { vimgrep_arguments, additional_args }
@@ -162,8 +185,10 @@ files.live_grep = function(opts)
 end
 
 files.grep_string = function(opts)
-  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
   local vimgrep_arguments = vim.F.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
+  if not has_rg_program("grep_string", vimgrep_arguments[1]) then
+    return
+  end
   local word
   local visual = vim.fn.mode() == "v"
 
@@ -185,6 +210,10 @@ files.grep_string = function(opts)
     elseif type(opts.additional_args) == "table" then
       additional_args = opts.additional_args
     end
+  end
+
+  if opts.file_encoding then
+    additional_args[#additional_args + 1] = "--encoding=" .. opts.file_encoding
   end
 
   if search == "" then
@@ -383,7 +412,7 @@ files.treesitter = function(opts)
   local has_nvim_treesitter, _ = pcall(require, "nvim-treesitter")
   if not has_nvim_treesitter then
     utils.notify("builtin.treesitter", {
-      msg = "User need to install nvim-treesitter needs to be installed",
+      msg = "This picker requires nvim-treesitter",
       level = "ERROR",
     })
     return
@@ -451,15 +480,10 @@ files.current_buffer_fuzzy_find = function(opts)
     })
   end
 
-  local ts_ok, ts_parsers = pcall(require, "nvim-treesitter.parsers")
-  if ts_ok then
-    filetype = ts_parsers.ft_to_lang(filetype)
-  end
-  local _, ts_configs = pcall(require, "nvim-treesitter.configs")
-
-  local parser_ok, parser = pcall(vim.treesitter.get_parser, opts.bufnr, filetype)
-  local query_ok, query = pcall(vim.treesitter.get_query, filetype, "highlights")
-  if parser_ok and query_ok and ts_ok and ts_configs.is_enabled("highlight", filetype, opts.bufnr) then
+  local lang = vim.treesitter.language.get_lang(filetype)
+  if lang and utils.has_ts_parser(lang) then
+    local parser = vim.treesitter.get_parser(opts.bufnr, lang)
+    local query = vim.treesitter.query.get(lang, "highlights")
     local root = parser:parse()[1]:root()
 
     local line_highlights = setmetatable({}, {
@@ -470,25 +494,8 @@ files.current_buffer_fuzzy_find = function(opts)
       end,
     })
 
-    -- update to changes on Neovim master, see https://github.com/neovim/neovim/pull/19931
-    -- TODO(clason): remove when dropping support for Neovim 0.7
-    local get_hl_from_capture = (function()
-      if vim.fn.has "nvim-0.8" == 1 then
-        return function(q, id)
-          return "@" .. q.captures[id]
-        end
-      else
-        local highlighter = vim.treesitter.highlighter.new(parser)
-        local highlighter_query = highlighter:get_query(filetype)
-
-        return function(_, id)
-          return highlighter_query:_get_hl_from_capture(id)
-        end
-      end
-    end)()
-
     for id, node in query:iter_captures(root, opts.bufnr, 0, -1) do
-      local hl = get_hl_from_capture(query, id)
+      local hl = "@" .. query.captures[id]
       if hl and type(hl) ~= "number" then
         local row1, col1, row2, col2 = node:range()
 
@@ -531,6 +538,10 @@ files.current_buffer_fuzzy_find = function(opts)
         action_set.select:enhance {
           post = function()
             local selection = action_state.get_selected_entry()
+            if not selection then
+              return
+            end
+
             vim.api.nvim_win_set_cursor(0, { selection.lnum, 0 })
           end,
         }
