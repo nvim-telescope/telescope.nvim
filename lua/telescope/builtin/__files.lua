@@ -538,6 +538,10 @@ files.current_buffer_fuzzy_find = function(opts)
         action_set.select:enhance {
           post = function()
             local selection = action_state.get_selected_entry()
+            if not selection then
+              return
+            end
+
             vim.api.nvim_win_set_cursor(0, { selection.lnum, 0 })
           end,
         }
