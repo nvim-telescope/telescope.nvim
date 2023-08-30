@@ -1165,15 +1165,8 @@ function make_entry.gen_from_diagnostics(opts)
   }
   local line_width = vim.F.if_nil(opts.line_width, 0.5)
   local line_width_opts = { width = line_width }
-  if type(line_width) == "string" then
-    if line_width == "full" then
-      line_width_opts = {}
-    else
-      utils.notify("make_entry.gen_from_diagnostics", {
-        msg = string.format("'%s' is not a valid value for line_width", line_width),
-        level = "ERROR",
-      })
-    end
+  if type(line_width) == "string" and line_width == "full" then
+    line_width_opts = {}
   end
   local hidden = utils.is_path_hidden(opts)
   if not hidden then
