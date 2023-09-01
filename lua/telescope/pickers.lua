@@ -493,12 +493,6 @@ function Picker:find()
           log.warn("Finder failed with msg: ", msg)
         end
 
-        await_schedule()
-        if not vim.api.nvim_win_is_valid(self.results_win) then
-          return
-        end
-        vim.api.nvim_win_call(self.results_win, vim.cmd.redraw)
-
         local diff_time = (vim.loop.hrtime() - start_time) / 1e6
         if self.debounce and diff_time < self.debounce then
           async.util.sleep(self.debounce - diff_time)
@@ -518,14 +512,6 @@ function Picker:find()
 
         status_updater { completed = false }
         self._on_lines(...)
-
-        vim.schedule(function()
-          if not vim.api.nvim_win_is_valid(self.results_win) then
-            return
-          end
-          vim.api.nvim_win_call(self.results_win, vim.cmd.redraw)
-        end)
-        self:move_selection(self.sorting_strategy == "ascending" and 1 or -1)
       end
     end,
 
@@ -1351,6 +1337,8 @@ function Picker:get_result_completor(results_bufnr, find_id, prompt, status_upda
       local visible_result_rows = vim.api.nvim_win_get_height(self.results_win)
       vim.api.nvim_win_set_cursor(self.results_win, { self.max_results - visible_result_rows, 1 })
       vim.api.nvim_win_set_cursor(self.results_win, { self.max_results, 1 })
+    else
+      vim.api.nvim_win_set_cursor(self.results_win, { self:get_selection_row(), 0 })
     end
     self:_on_complete()
   end)
