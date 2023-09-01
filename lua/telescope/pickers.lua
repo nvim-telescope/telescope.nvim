@@ -493,15 +493,11 @@ function Picker:find()
           log.warn("Finder failed with msg: ", msg)
         end
 
-        -- add an nvim_win_set_cursor to force the results win be redrawn
-        vim.schedule(function()
-          if not vim.api.nvim_win_is_valid(self.results_win) then
-            return
-          end
-          vim.api.nvim_win_call(self.results_win, function()
-            vim.cmd "redraw"
-          end)
-        end)
+        await_schedule()
+        if not vim.api.nvim_win_is_valid(self.results_win) then
+          return
+        end
+        vim.api.nvim_win_call(self.results_win, vim.cmd.redraw)
 
         local diff_time = (vim.loop.hrtime() - start_time) / 1e6
         if self.debounce and diff_time < self.debounce then
@@ -523,7 +519,12 @@ function Picker:find()
         status_updater { completed = false }
         self._on_lines(...)
 
-        self:move_selection(self.sorting_strategy == "ascending" and 1 or -1)
+        vim.schedule(function()
+          if not vim.api.nvim_win_is_valid(self.results_win) then
+            return
+          end
+          vim.api.nvim_win_call(self.results_win, vim.cmd.redraw)
+        end)
       end
     end,
 
