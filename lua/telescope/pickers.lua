@@ -499,7 +499,7 @@ function Picker:find()
             return
           end
           vim.api.nvim_win_call(self.results_win, function()
-            vim.cmd "redraw!"
+            vim.cmd "redraw"
           end)
         end)
 
@@ -523,11 +523,9 @@ function Picker:find()
         status_updater { completed = false }
         self._on_lines(...)
 
-        if self.sorting_strategy == "ascending" then
-          self:move_selection(1)
-        else
-          self:move_selection(-1)
-        end
+        vim.api.nvim_win_call(self.results_win, function()
+          vim.cmd "redraw"
+        end)
       end
     end,
 
