@@ -520,6 +520,14 @@ function Picker:find()
 
         status_updater { completed = false }
         self._on_lines(...)
+
+        if self.sorting_strategy then
+          if self.sorting_strategy == "ascending" then
+            self:move_selection(1)
+          else
+            self:move_selection(-1)
+          end
+        end
       end
     end,
 
