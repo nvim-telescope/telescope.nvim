@@ -498,7 +498,9 @@ function Picker:find()
           if not vim.api.nvim_win_is_valid(self.results_win) then
             return
           end
-          vim.api.nvim_win_set_cursor(self.results_win, vim.api.nvim_win_get_cursor(self.results_win))
+          vim.api.nvim_win_call(self.results_win, function()
+            vim.cmd "redraw!"
+          end)
         end)
 
         local diff_time = (vim.loop.hrtime() - start_time) / 1e6
