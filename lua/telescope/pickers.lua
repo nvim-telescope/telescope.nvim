@@ -525,6 +525,7 @@ function Picker:find()
           end
           vim.api.nvim_win_call(self.results_win, vim.cmd.redraw)
         end)
+        self:move_selection(self.sorting_strategy == "ascending" and 1 or -1)
       end
     end,
 
