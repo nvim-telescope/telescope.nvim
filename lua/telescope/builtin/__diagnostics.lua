@@ -87,7 +87,7 @@ local diagnostics_to_tbl = function(opts)
       diagnosis_opts.severity["max"] = opts.severity_bound
     end
   end
-  if vim.version() > vim.version.parse "0.9.1" and vim.tbl_isempty(diagnosis_opts.severity) then
+  if vim.version().minor > 9 and vim.tbl_isempty(diagnosis_opts.severity) then
     diagnosis_opts.severity = nil
   end
 
