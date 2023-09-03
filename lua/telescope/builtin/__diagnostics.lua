@@ -146,6 +146,14 @@ diagnostics.get = function(opts)
     return
   end
 
+  if type(opts.line_width) == "string" and opts.line_width ~= "full" then
+    utils.notify("builtin.diagnostics", {
+      msg = string.format("'%s' is not a valid value for line_width", opts.line_width),
+      level = "ERROR",
+    })
+    return
+  end
+
   opts.path_display = vim.F.if_nil(opts.path_display, "hidden")
   pickers
     .new(opts, {
