@@ -559,4 +559,12 @@ utils.__git_command = function(args, opts)
   return vim.list_extend(_args, args)
 end
 
+utils.list_find = function(func, list)
+  for i, v in ipairs(list) do
+    if func(v, i, list) then
+      return i, v
+    end
+  end
+end
+
 return utils
