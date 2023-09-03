@@ -555,4 +555,30 @@ utils.__warn_no_selection = function(name)
   })
 end
 
+--- Generate git command optionally with git env variables
+---@param args string[]
+---@param opts? table
+---@return string[]
+utils.__git_command = function(args, opts)
+  opts = opts or {}
+
+  local _args = { "git" }
+  if opts.gitdir then
+    vim.list_extend(_args, { "--git-dir", opts.gitdir })
+  end
+  if opts.toplevel then
+    vim.list_extend(_args, { "--work-tree", opts.toplevel })
+  end
+
+  return vim.list_extend(_args, args)
+end
+
+utils.list_find = function(func, list)
+  for i, v in ipairs(list) do
+    if func(v, i, list) then
+      return i, v
+    end
+  end
+end
+
 return utils

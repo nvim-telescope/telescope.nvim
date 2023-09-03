@@ -1060,12 +1060,25 @@ end
 --- This action is not mapped by default and only intended for |builtin.pickers|.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.remove_selected_picker = function(prompt_bufnr)
-  local current_picker = action_state.get_current_picker(prompt_bufnr)
-  local selection_index = current_picker:get_index(current_picker:get_selection_row())
+  local curr_picker = action_state.get_current_picker(prompt_bufnr)
+  local curr_entry = action_state.get_selected_entry()
   local cached_pickers = state.get_global_key "cached_pickers"
-  current_picker:delete_selection(function()
+
+  if not curr_entry then
+    return
+  end
+
+  local selection_index, _ = utils.list_find(function(v)
+    if curr_entry.value == v.value then
+      return true
+    end
+    return false
+  end, curr_picker.finder.results)
+
+  curr_picker:delete_selection(function()
     table.remove(cached_pickers, selection_index)
   end)
+
   if #cached_pickers == 0 then
     actions.close(prompt_bufnr)
   end
