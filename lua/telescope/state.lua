@@ -25,7 +25,9 @@ function state.clear_status(prompt_bufnr)
 end
 
 function state.get_existing_prompts()
-  return vim.tbl_keys(TelescopeGlobalState)
+  return vim.tbl_filter(function(key)
+    return type(key) == "number"
+  end, TelescopeGlobalState)
 end
 
 return state
