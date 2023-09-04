@@ -27,7 +27,7 @@ end
 function state.get_existing_prompts()
   return vim.tbl_filter(function(key)
     return type(key) == "number"
-  end, TelescopeGlobalState)
+  end, vim.tbl_keys(TelescopeGlobalState))
 end
 
 return state
