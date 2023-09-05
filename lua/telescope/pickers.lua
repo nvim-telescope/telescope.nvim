@@ -73,6 +73,7 @@ local function default_create_layout(picker)
       local popup_opts = picker:get_window_options(vim.o.columns, line_count)
 
       -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
+      popup_opts.results.focusable = true
       popup_opts.results.minheight = popup_opts.results.height
       popup_opts.results.highlight = "TelescopeResultsNormal"
       popup_opts.results.borderhighlight = "TelescopeResultsBorder"
@@ -81,7 +82,9 @@ local function default_create_layout(picker)
       popup_opts.prompt.highlight = "TelescopePromptNormal"
       popup_opts.prompt.borderhighlight = "TelescopePromptBorder"
       popup_opts.prompt.titlehighlight = "TelescopePromptTitle"
+
       if popup_opts.preview then
+        popup_opts.preview.focusable = true
         popup_opts.preview.minheight = popup_opts.preview.height
         popup_opts.preview.highlight = "TelescopePreviewNormal"
         popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
@@ -163,6 +166,7 @@ local function default_create_layout(picker)
           popup.move(results_win, popup_opts.results)
           popup.move(preview_win, popup_opts.preview)
         else
+          popup_opts.preview.focusable = true
           popup_opts.preview.highlight = "TelescopePreviewNormal"
           popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
           popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
@@ -521,6 +525,9 @@ end
 function Picker:find()
   self:close_existing_pickers()
   self:reset_selection()
+
+  self.__original_mousemoveevent = vim.o.mousemoveevent
+  vim.o.mousemoveevent = true
 
   self.original_win_id = a.nvim_get_current_win()
 
@@ -1581,6 +1588,8 @@ function pickers.on_close_prompt(prompt_bufnr)
     buffer = prompt_bufnr,
   }
   picker.close_windows(status)
+
+  vim.o.mousemoveevent = picker.__original_mousemoveevent
 end
 
 function pickers.on_resize_window(prompt_bufnr)
