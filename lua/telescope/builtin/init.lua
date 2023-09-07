@@ -48,6 +48,7 @@ end
 --- Search for a string and get results live as you type, respects .gitignore
 ---@param opts table: options to pass to the picker
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+---@field default_text string: initial text that will pre-populate the search box
 ---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
 ---@field search_dirs table: directory/directories/files to search, mutually exclusive with `grep_open_files`
 ---@field glob_pattern string|table: argument to be used with `--glob`, e.g. "*.toml", can use the opposite "!*.toml"
@@ -61,6 +62,7 @@ builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_g
 --- Searches for the string under your cursor or the visual selection in your current working directory
 ---@param opts table: options to pass to the picker
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+---@field default_text string: initial text that will pre-populate the search box
 ---@field search string: the query to search
 ---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
 ---@field search_dirs table: directory/directories/files to search, mutually exclusive with `grep_open_files`
@@ -75,6 +77,7 @@ builtin.grep_string = require_on_exported_call("telescope.builtin.__files").grep
 --- Search for files (respecting .gitignore)
 ---@param opts table: options to pass to the picker
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+---@field default_text string: initial text that will pre-populate the search box
 ---@field find_command function|table: cmd to use for the search. Can be a fn(opts) -> tbl (default: autodetect)
 ---@field file_entry_encoding string: encoding of output of `find_command`
 ---@field follow boolean: if true, follows symlinks (i.e. uses `-L` flag for the `find` command)
@@ -111,6 +114,7 @@ builtin.current_buffer_fuzzy_find = require_on_exported_call("telescope.builtin.
 ---@param opts table: options to pass to the picker
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field ctags_file string: specify a particular ctags file to use
+---@field default_text string: initial text that will pre-populate the search box
 ---@field show_line boolean: if true, shows the content of the line the tag is found on in the picker (default: true)
 ---@field only_sort_tags boolean: if true we will only sort tags (default: false)
 ---@field fname_width number: defines the width of the filename section (default: 30)
@@ -120,6 +124,7 @@ builtin.tags = require_on_exported_call("telescope.builtin.__files").tags
 ---@param opts table: options to pass to the picker
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field ctags_file string: specify a particular ctags file to use
+---@field default_text string: initial text that will pre-populate the search box
 ---@field show_line boolean: if true, shows the content of the line the tag is found on in the picker (default: true)
 ---@field only_sort_tags boolean: if true we will only sort tags (default: false)
 ---@field fname_width number: defines the width of the filename section (default: 30)
@@ -137,6 +142,7 @@ builtin.current_buffer_tags = require_on_exported_call("telescope.builtin.__file
 ---   - `<cr>`: opens the currently selected file
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
+---@field default_text string: initial text that will pre-populate the search box
 ---@field use_file_path boolean: if we should use the current buffer git root (default: false)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field show_untracked boolean: if true, adds `--others` flag to command and shows untracked files (default: false)
@@ -153,6 +159,7 @@ builtin.git_files = require_on_exported_call("telescope.builtin.__git").files
 ---   - `<C-r>h`: resets current branch to selected commit using hard mode
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
+---@field default_text string: initial text that will pre-populate the search box
 ---@field use_file_path boolean: if we should use the current buffer git root (default: false)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field git_command table: command that will be executed. {"git","log","--pretty=oneline","--abbrev-commit","--","."}
@@ -166,6 +173,7 @@ builtin.git_commits = require_on_exported_call("telescope.builtin.__git").commit
 ---   - `<c-t>`: opens a diff in a new tab
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
+---@field default_text string: initial text that will pre-populate the search box
 ---@field use_file_path boolean: if we should use the current buffer git root (default: false)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field current_file string: specify the current file that should be used for bcommits (default: current buffer)
@@ -182,6 +190,7 @@ builtin.git_bcommits = require_on_exported_call("telescope.builtin.__git").bcomm
 ---   - `<c-t>`: opens a diff in a new tab
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
+---@field default_text string: initial text that will pre-populate the search box
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field current_file string: specify the current file that should be used for bcommits (default: current buffer)
 ---@field git_command table: command that will be executed. the last element must be "-L". {"git","log","--pretty=oneline","--abbrev-commit","--no-patch","-L"}
@@ -200,6 +209,7 @@ builtin.git_bcommits_range = require_on_exported_call("telescope.builtin.__git")
 ---   - `<C-y>`: merges the currently selected branch, with confirmation prompt before deletion
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
+---@field default_text string: initial text that will pre-populate the search box
 ---@field use_file_path boolean: if we should use the current buffer git root (default: false)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field show_remote_tracking_branches boolean: show remote tracking branches like origin/main (default: true)
@@ -212,6 +222,7 @@ builtin.git_branches = require_on_exported_call("telescope.builtin.__git").branc
 ---   - `<cr>`: opens the currently selected file
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
+---@field default_text string: initial text that will pre-populate the search box
 ---@field use_file_path boolean: if we should use the current buffer git root (default: false)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field git_icons table: string -> string. Matches name with icon (see source code, make_entry.lua git_icon_defaults)
@@ -222,6 +233,7 @@ builtin.git_status = require_on_exported_call("telescope.builtin.__git").status
 ---   - `<cr>`: runs `git apply` for currently selected stash
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify the path of the repo
+---@field default_text string: initial text that will pre-populate the search box
 ---@field use_file_path boolean: if we should use the current buffer git root (default: false)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field show_branch boolean: if we should display the branch name for git stash entries (default: true)
