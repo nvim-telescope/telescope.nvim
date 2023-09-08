@@ -148,7 +148,7 @@ function Picker:new(opts)
       obj.all_previewers = { obj.all_previewers }
     end
     obj.previewer = obj.all_previewers[obj.current_previewer_index]
-    if obj.preview_title == nil or #obj.all_previewers > 1 then
+    if obj.preview_title == nil or #obj.all_previewers > 1 or opts.resumed_picker and opts.fix_preview_title ~= true then
       obj.preview_title = obj.previewer:title(nil, config.values.dynamic_preview_title)
     else
       obj.fix_preview_title = true
