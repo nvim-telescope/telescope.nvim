@@ -161,6 +161,7 @@ internal.resume = function(opts)
     picker.hidden_previewer = nil
     opts.previewer = vim.F.if_nil(opts.previewer, false)
   end
+  opts.resumed_picker = true
   pickers.new(opts, picker):find()
 end
 
