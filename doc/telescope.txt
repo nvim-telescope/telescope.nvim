@@ -1760,8 +1760,9 @@ builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
                                                 for listed buffers
         {no_sign}             (boolean)         hide DiagnosticSigns from
                                                 Results (default: false)
-        {line_width}          (number)          set length of diagnostic entry
-                                                text in Results
+        {line_width}          (string|number)   set length of diagnostic entry
+                                                text in Results. Use 'full'
+                                                for full untruncated text
         {namespace}           (number)          limit your diagnostics to a
                                                 specific namespace
         {disable_coordinates} (boolean)         don't show the line & row
