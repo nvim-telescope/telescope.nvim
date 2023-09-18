@@ -563,7 +563,8 @@ actions.git_create_branch = function(prompt_bufnr)
 
     actions.close(prompt_bufnr)
 
-    local _, ret, stderr = utils.get_os_command_output({ "git", "checkout", "-b", new_branch }, cwd)
+    local git_command = utils.__git_command
+    local _, ret, stderr = utils.get_os_command_output(git_command { "checkout", "-b", new_branch }, cwd)
     if ret == 0 then
       utils.notify("actions.git_create_branch", {
         msg = string.format("Switched to a new branch: %s", new_branch),
@@ -591,7 +592,9 @@ actions.git_apply_stash = function(prompt_bufnr)
     return
   end
   actions.close(prompt_bufnr)
-  local _, ret, stderr = utils.get_os_command_output { "git", "stash", "apply", "--index", selection.value }
+
+  local git_command = utils.__git_command
+  local _, ret, stderr = utils.get_os_command_output(git_command { "stash", "apply", "--index", selection.value })
   if ret == 0 then
     utils.notify("actions.git_apply_stash", {
       msg = string.format("applied: '%s' ", selection.value),
@@ -616,7 +619,9 @@ actions.git_checkout = function(prompt_bufnr)
     return
   end
   actions.close(prompt_bufnr)
-  local _, ret, stderr = utils.get_os_command_output({ "git", "checkout", selection.value }, cwd)
+
+  local git_command = utils.__git_command
+  local _, ret, stderr = utils.get_os_command_output(git_command { "checkout", selection.value }, cwd)
   if ret == 0 then
     utils.notify("actions.git_checkout", {
       msg = string.format("Checked out: %s", selection.value),
@@ -653,7 +658,9 @@ actions.git_switch_branch = function(prompt_bufnr)
   if string.match(selection.refname, pattern) then
     branch = string.gsub(selection.refname, pattern, "")
   end
-  local _, ret, stderr = utils.get_os_command_output({ "git", "switch", branch }, cwd)
+
+  local git_command = utils.__git_command
+  local _, ret, stderr = utils.get_os_command_output(git_command { "switch", branch }, cwd)
   if ret == 0 then
     utils.notify("actions.git_switch_branch", {
       msg = string.format("Switched to: '%s'", branch),
@@ -738,7 +745,9 @@ actions.git_delete_branch = function(prompt_bufnr)
   picker:delete_selection(function(selection)
     local branch = selection.value
     print("Deleting branch " .. branch)
-    local _, ret, stderr = utils.get_os_command_output({ "git", "branch", "-D", branch }, picker.cwd)
+
+    local git_command = utils.__git_command
+    local _, ret, stderr = utils.get_os_command_output(git_command { "branch", "-D", branch }, picker.cwd)
     if ret == 0 then
       utils.notify(action_name, {
         msg = string.format("Deleted branch: %s", branch),
@@ -798,9 +807,10 @@ local git_reset_branch = function(prompt_bufnr, mode)
     })
     return
   end
-
   actions.close(prompt_bufnr)
-  local _, ret, stderr = utils.get_os_command_output({ "git", "reset", mode, selection.value }, cwd)
+
+  local git_command = utils.__git_command
+  local _, ret, stderr = utils.get_os_command_output(git_command { "reset", mode, selection.value }, cwd)
   if ret == 0 then
     utils.notify("actions.git_rebase_branch", {
       msg = string.format("Reset to: '%s'", selection.value),
@@ -843,7 +853,9 @@ actions.git_checkout_current_buffer = function(prompt_bufnr)
     return
   end
   actions.close(prompt_bufnr)
-  utils.get_os_command_output({ "git", "checkout", selection.value, "--", selection.current_file }, cwd)
+
+  local git_command = utils.__git_command
+  utils.get_os_command_output(git_command { "checkout", selection.value, "--", selection.current_file }, cwd)
   vim.cmd "checktime"
 end
 
@@ -857,10 +869,12 @@ actions.git_staging_toggle = function(prompt_bufnr)
     utils.__warn_no_selection "actions.git_staging_toggle"
     return
   end
+
+  local git_command = utils.__git_command
   if selection.status:sub(2) == " " then
-    utils.get_os_command_output({ "git", "restore", "--staged", selection.value }, cwd)
+    utils.get_os_command_output(git_command { "restore", "--staged", selection.value }, cwd)
   else
-    utils.get_os_command_output({ "git", "add", selection.value }, cwd)
+    utils.get_os_command_output(git_command { "add", selection.value }, cwd)
   end
 end
 
