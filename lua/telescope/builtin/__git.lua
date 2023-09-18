@@ -425,72 +425,10 @@ git.status = function(opts)
     :find()
 end
 
-local try_worktrees = function(opts)
-  local worktrees = conf.git_worktrees
-
-  if vim.tbl_isarray(worktrees) then
-    for _, wt in ipairs(worktrees) do
-      if vim.startswith(opts.cwd, wt.toplevel) then
-        opts.toplevel = wt.toplevel
-        opts.gitdir = wt.gitdir
-        if opts.use_git_root then
-          opts.cwd = wt.toplevel
-        end
-        return
-      end
-    end
-  end
-
-  error(opts.cwd .. " is not a git directory")
-end
-
-local current_path_toplevel = function()
-  local gitdir = vim.fn.finddir(".git", vim.fn.expand "%:p" .. ";")
-  if gitdir == "" then
-    return nil
-  end
-  return Path:new(gitdir):parent():absolute()
-end
-
-local set_opts_cwd = function(opts)
-  opts.use_git_root = vim.F.if_nil(opts.use_git_root, true)
-  if opts.cwd then
-    opts.cwd = vim.fn.expand(opts.cwd)
-  elseif opts.use_file_path then
-    opts.cwd = current_path_toplevel()
-    if not opts.cwd then
-      opts.cwd = vim.fn.expand "%:p:h"
-      try_worktrees(opts)
-      return
-    end
-  else
-    opts.cwd = vim.loop.cwd()
-  end
-
-  local toplevel, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
-
-  if ret ~= 0 then
-    local in_worktree = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
-    local in_bare = utils.get_os_command_output({ "git", "rev-parse", "--is-bare-repository" }, opts.cwd)
-
-    if in_worktree[1] ~= "true" and in_bare[1] ~= "true" then
-      try_worktrees(opts)
-    elseif in_worktree[1] ~= "true" and in_bare[1] == "true" then
-      opts.is_bare = true
-    end
-  else
-    if opts.use_git_root then
-      opts.cwd = toplevel[1]
-    end
-  end
-end
-
-local function apply_checks(mod)
+local function build_picker(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)
       opts = vim.F.if_nil(opts, {})
-
-      set_opts_cwd(opts)
       v(opts)
     end
   end
@@ -498,4 +436,4 @@ local function apply_checks(mod)
   return mod
 end
 
-return apply_checks(git)
+return build_picker(git)

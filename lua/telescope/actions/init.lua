@@ -543,6 +543,7 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.git_create_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+
   local new_branch = action_state.get_current_line()
 
   if new_branch == "" then
@@ -608,6 +609,7 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.git_checkout = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+
   local selection = action_state.get_selected_entry()
   if selection == nil then
     utils.__warn_no_selection "actions.git_checkout"
@@ -639,6 +641,7 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.git_switch_branch = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+
   local selection = action_state.get_selected_entry()
   if selection == nil then
     utils.__warn_no_selection "actions.git_switch_branch"
@@ -671,6 +674,7 @@ end
 local function make_git_branch_action(opts)
   return function(prompt_bufnr)
     local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+
     local selection = action_state.get_selected_entry()
     if selection == nil then
       utils.__warn_no_selection(opts.action_name)
@@ -778,6 +782,7 @@ actions.git_rebase_branch = make_git_branch_action {
 
 local git_reset_branch = function(prompt_bufnr, mode)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+
   local selection = action_state.get_selected_entry()
   if selection == nil then
     utils.__warn_no_selection "actions.git_reset_branch"
@@ -831,10 +836,10 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.git_checkout_current_buffer = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+
   local selection = action_state.get_selected_entry()
   if selection == nil then
     utils.__warn_no_selection "actions.git_checkout_current_buffer"
-
     return
   end
   actions.close(prompt_bufnr)
@@ -846,6 +851,7 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.git_staging_toggle = function(prompt_bufnr)
   local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+
   local selection = action_state.get_selected_entry()
   if selection == nil then
     utils.__warn_no_selection "actions.git_staging_toggle"
