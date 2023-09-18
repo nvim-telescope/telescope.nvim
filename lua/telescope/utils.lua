@@ -541,12 +541,74 @@ utils.__warn_no_selection = function(name)
   })
 end
 
+local set_git_opts = function(opts)
+  local current_path_toplevel = function()
+    local gitdir = vim.fn.finddir(".git", vim.fn.expand "%:p" .. ";")
+    if gitdir == "" then
+      return nil
+    end
+    return Path:new(gitdir):parent():absolute()
+  end
+
+  local try_worktrees = function()
+    local worktrees = require("telescope.config").values.git_worktrees
+
+    if vim.tbl_isarray(worktrees) then
+      for _, wt in ipairs(worktrees) do
+        if vim.startswith(opts.cwd, wt.toplevel) then
+          opts.toplevel = wt.toplevel
+          opts.gitdir = wt.gitdir
+          if opts.use_git_root then
+            opts.cwd = wt.toplevel
+          end
+          return
+        end
+      end
+    end
+
+    error(opts.cwd .. " is not a git directory")
+  end
+
+  opts.use_git_root = vim.F.if_nil(opts.use_git_root, true)
+  if opts.cwd then
+    opts.cwd = vim.fn.expand(opts.cwd)
+  elseif opts.use_file_path then
+    opts.cwd = current_path_toplevel()
+    if not opts.cwd then
+      opts.cwd = vim.fn.expand "%:p:h"
+      try_worktrees()
+      return
+    end
+  else
+    opts.cwd = vim.loop.cwd()
+  end
+
+  local toplevel, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
+
+  if ret ~= 0 then
+    local in_worktree = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, opts.cwd)
+    local in_bare = utils.get_os_command_output({ "git", "rev-parse", "--is-bare-repository" }, opts.cwd)
+
+    if in_worktree[1] ~= "true" and in_bare[1] ~= "true" then
+      try_worktrees()
+    elseif in_worktree[1] ~= "true" and in_bare[1] == "true" then
+      opts.is_bare = true
+    end
+  else
+    if opts.use_git_root then
+      opts.cwd = toplevel[1]
+    end
+  end
+end
+
 --- Generate git command optionally with git env variables
 ---@param args string[]
 ---@param opts? table
 ---@return string[]
 utils.__git_command = function(args, opts)
   opts = opts or {}
+
+  set_git_opts(opts)
 
   local _args = { "git" }
   if opts.gitdir then
