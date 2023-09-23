@@ -668,6 +668,43 @@ actions.git_switch_branch = function(prompt_bufnr)
   end
 end
 
+--- Action to rename selected git branch
+--- @param prompt_bufnr number: The prompt bufnr
+actions.git_rename_branch = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    utils.__warn_no_selection "actions.git_rename_branch"
+    return
+  end
+  -- Keeps the selected branch name for the input that asks for the new branch name
+  local new_branch = vim.fn.input("New branch name: ", selection.value)
+  if new_branch == "" then
+    utils.notify("actions.git_rename_branch", {
+      msg = "Missing the new branch name",
+      level = "ERROR",
+    })
+  else
+    actions.close(prompt_bufnr)
+    local _, ret, stderr = utils.get_os_command_output({ "git", "branch", "-m", selection.value, new_branch }, cwd)
+    if ret == 0 then
+      utils.notify("actions.git_rename_branch", {
+        msg = string.format("Renamed branch: '%s'", selection.value),
+        level = "INFO",
+      })
+    else
+      utils.notify("actions.git_rename_branch", {
+        msg = string.format(
+          "Error when renaming branch: %s. Git returned: '%s'",
+          selection.value,
+          table.concat(stderr, " ")
+        ),
+        level = "ERROR",
+      })
+    end
+  end
+end
+
 local function make_git_branch_action(opts)
   return function(prompt_bufnr)
     local cwd = action_state.get_current_picker(prompt_bufnr).cwd
