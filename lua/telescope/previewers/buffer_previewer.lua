@@ -409,32 +409,33 @@ previewers.new_buffer_previewer = function(opts)
   end
 
   function opts.preview_fn(self, entry, status)
+    local preview_winid = status.layout.preview and status.layout.preview.winid
     if get_bufnr(self) == nil then
-      set_bufnr(self, vim.api.nvim_win_get_buf(status.preview_win))
-      preview_window_id = status.preview_win
+      set_bufnr(self, vim.api.nvim_win_get_buf(preview_winid))
+      preview_window_id = preview_winid
     end
 
     if opts.get_buffer_by_name and get_bufnr_by_bufname(self, opts.get_buffer_by_name(self, entry)) then
       self.state.bufname = opts.get_buffer_by_name(self, entry)
       self.state.bufnr = get_bufnr_by_bufname(self, self.state.bufname)
-      utils.win_set_buf_noautocmd(status.preview_win, self.state.bufnr)
+      utils.win_set_buf_noautocmd(preview_winid, self.state.bufnr)
     else
       local bufnr = vim.api.nvim_create_buf(false, true)
       set_bufnr(self, bufnr)
 
       vim.schedule(function()
         if vim.api.nvim_buf_is_valid(bufnr) then
-          utils.win_set_buf_noautocmd(status.preview_win, bufnr)
+          utils.win_set_buf_noautocmd(preview_winid, bufnr)
         end
       end)
 
-      vim.api.nvim_win_set_option(status.preview_win, "winhl", "Normal:TelescopePreviewNormal")
-      vim.api.nvim_win_set_option(status.preview_win, "signcolumn", "no")
-      vim.api.nvim_win_set_option(status.preview_win, "foldlevel", 100)
-      vim.api.nvim_win_set_option(status.preview_win, "wrap", false)
-      vim.api.nvim_win_set_option(status.preview_win, "scrollbind", false)
+      vim.api.nvim_win_set_option(preview_winid, "winhl", "Normal:TelescopePreviewNormal")
+      vim.api.nvim_win_set_option(preview_winid, "signcolumn", "no")
+      vim.api.nvim_win_set_option(preview_winid, "foldlevel", 100)
+      vim.api.nvim_win_set_option(preview_winid, "wrap", false)
+      vim.api.nvim_win_set_option(preview_winid, "scrollbind", false)
 
-      self.state.winid = status.preview_win
+      self.state.winid = preview_winid
       self.state.bufname = nil
     end
 
@@ -1012,13 +1013,15 @@ previewers.autocommands = defaulter(function(_)
         pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
       end
 
+      local preview_winid = status.layout.preview and status.layout.preview.winid
+
       local selected_row = 0
       if self.state.bufname ~= entry.value.group_name then
         local display = {}
         table.insert(display, string.format(" augroup: %s - [ %d entries ]", entry.value.group_name, #results))
         -- TODO: calculate banner width/string in setup()
         -- TODO: get column characters to be the same HL group as border
-        table.insert(display, string.rep("─", vim.fn.getwininfo(status.preview_win)[1].width))
+        table.insert(display, string.rep("─", vim.fn.getwininfo(preview_winid)[1].width))
 
         for idx, item in ipairs(results) do
           if item == entry then
@@ -1046,7 +1049,7 @@ previewers.autocommands = defaulter(function(_)
       -- set the cursor position after self.state.bufnr is connected to the
       -- preview window (which is scheduled in new_buffer_previewer)
       vim.schedule(function()
-        pcall(vim.api.nvim_win_set_cursor, status.preview_win, { selected_row, 0 })
+        pcall(vim.api.nvim_win_set_cursor, preview_winid, { selected_row, 0 })
       end)
 
       self.state.last_set_bufnr = self.state.bufnr

@@ -203,7 +203,7 @@ end
 
 local calc_result_length = function(truncate_len)
   local status = get_status(vim.api.nvim_get_current_buf())
-  local len = vim.api.nvim_win_get_width(status.results_win) - status.picker.selection_caret:len() - 2
+  local len = vim.api.nvim_win_get_width(status.layout.results.winid) - status.picker.selection_caret:len() - 2
   return type(truncate_len) == "number" and len - truncate_len or len
 end
 

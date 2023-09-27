@@ -75,8 +75,8 @@ entry_display.create = function(configuration)
         if width == nil then
           local status = state.get_status(vim.F.if_nil(configuration.prompt_bufnr, vim.api.nvim_get_current_buf()))
           local s = {}
-          s[1] = vim.api.nvim_win_get_width(status.results_win) - #status.picker.selection_caret
-          s[2] = vim.api.nvim_win_get_height(status.results_win)
+          s[1] = vim.api.nvim_win_get_width(status.layout.results.winid) - #status.picker.selection_caret
+          s[2] = vim.api.nvim_win_get_height(status.layout.results.winid)
           width = resolve.resolve_width(v.width)(nil, s[1], s[2])
         end
         if type(item) == "table" then
