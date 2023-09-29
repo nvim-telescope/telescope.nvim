@@ -936,9 +936,11 @@ builtin.current_buffer_fuzzy_find({opts}) *telescope.builtin.current_buffer_fuzz
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {skip_empty_lines} (boolean)  if true we don't display empty lines
-                                      (default: false)
-        {file_encoding}    (string)   file encoding for the previewer
+        {skip_empty_lines}     (boolean)  if true we don't display empty lines
+                                          (default: false)
+        {results_ts_highlight} (boolean)  highlight result entries with
+                                          treesitter (default: true)
+        {file_encoding}        (string)   file encoding for the previewer
 
 
 builtin.tags({opts})                                *telescope.builtin.tags()*
@@ -3018,6 +3020,11 @@ actions.git_switch_branch({prompt_bufnr}) *telescope.actions.git_switch_branch()
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_rename_branch()            *telescope.actions.git_rename_branch()*
+    Action to rename selected git branch
+
 
 
 actions.git_track_branch({prompt_bufnr}) *telescope.actions.git_track_branch()*

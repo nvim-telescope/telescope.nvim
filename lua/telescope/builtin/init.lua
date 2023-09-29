@@ -103,6 +103,7 @@ builtin.treesitter = require_on_exported_call("telescope.builtin.__files").trees
 --- Live fuzzy search inside of the currently open buffer
 ---@param opts table: options to pass to the picker
 ---@field skip_empty_lines boolean: if true we don't display empty lines (default: false)
+---@field results_ts_highlight boolean: highlight result entries with treesitter (default: true)
 ---@field file_encoding string: file encoding for the previewer
 builtin.current_buffer_fuzzy_find = require_on_exported_call("telescope.builtin.__files").current_buffer_fuzzy_find
 
