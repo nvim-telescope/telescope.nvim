@@ -535,6 +535,7 @@ append(
   {
     check_mime_type = not has_win,
     filesize_limit = 25,
+    highlight_limit = 1,
     timeout = 250,
     treesitter = true,
     msg_bg_fillchar = "╱",
@@ -559,6 +560,9 @@ append(
       - filesize_limit:   The maximum file size in MB attempted to be previewed.
                           Set to false to attempt to preview any file size.
                           Default: 25
+      - highlight_limit:  The maximum file size in MB attempted to be highlighted.
+                          Set to false to attempt to highlight any file size.
+                          Default: 1
       - timeout:          Timeout the previewer if the preview did not
                           complete within `timeout` milliseconds.
                           Set to false to not timeout preview.

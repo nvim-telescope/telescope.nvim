@@ -182,8 +182,8 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
       end
     end
 
+    local mb_filesize = stat.size / bytes_to_megabytes
     if opts.preview.filesize_limit then
-      local mb_filesize = math.floor(stat.size / bytes_to_megabytes)
       if mb_filesize > opts.preview.filesize_limit then
         if type(opts.preview.filesize_hook) == "function" then
           opts.preview.filesize_hook(filepath, bufnr, opts)
@@ -228,7 +228,10 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
         if opts.callback then
           opts.callback(bufnr)
         end
-        putils.highlighter(bufnr, opts.ft, opts)
+
+        if not (opts.preview.highlight_limit and mb_filesize > opts.preview.highlight_limit) then
+          putils.highlighter(bufnr, opts.ft, opts)
+        end
       else
         if type(opts.preview.timeout_hook) == "function" then
           opts.preview.timeout_hook(filepath, bufnr, opts)
@@ -243,12 +246,14 @@ end
 
 local PREVIEW_TIMEOUT_MS = 250
 local PREVIEW_FILESIZE_MB = 25
+local PREVIEW_HIGHLIGHT_MB = 1
 
 previewers.file_maker = function(filepath, bufnr, opts)
   opts = vim.F.if_nil(opts, {})
   opts.preview = vim.F.if_nil(opts.preview, {})
   opts.preview.timeout = vim.F.if_nil(opts.preview.timeout, PREVIEW_TIMEOUT_MS)
   opts.preview.filesize_limit = vim.F.if_nil(opts.preview.filesize_limit, PREVIEW_FILESIZE_MB)
+  opts.preview.highlight_limit = vim.F.if_nil(opts.preview.highlight_limit, PREVIEW_HIGHLIGHT_MB)
   opts.preview.msg_bg_fillchar = vim.F.if_nil(opts.preview.msg_bg_fillchar, "╱")
   opts.preview.treesitter = vim.F.if_nil(opts.preview.treesitter, true)
   if opts.use_ft_detect == nil then
