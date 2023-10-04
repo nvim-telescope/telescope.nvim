@@ -181,7 +181,7 @@ customizations globally, or individually per picker.
 ### Telescope setup structure
 
 ```lua
-require('telescope').setup{
+require('telescope').setup({
   defaults = {
     -- Default configuration for telescope goes here:
     -- config_key = value,
@@ -210,7 +210,7 @@ require('telescope').setup{
     -- }
     -- please take a look at the readme of the extension you want to configure
   }
-}
+})
 ```
 
 To look at what default configuration options exist please read: `:help
@@ -513,7 +513,7 @@ Telescope find_files theme=dropdown
 Or you can configure it in the pickers table in `telescope.setup`:
 
 ```lua
-require('telescope').setup{
+require('telescope').setup({
   defaults = {
     -- ...
   },
@@ -525,7 +525,7 @@ require('telescope').setup{
   extensions = {
     -- ...
   }
-}
+})
 ```
 
 Themes should work with every `telescope.builtin` function. If you wish to make
