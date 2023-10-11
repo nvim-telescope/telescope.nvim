@@ -1409,7 +1409,8 @@ actions.which_key = function(prompt_bufnr, opts)
   -- only set up autocommand after showing preview completed
   if opts.close_with_action then
     vim.schedule(function()
-      vim.api.nvim_create_autocmd("User TelescopeKeymap", {
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "TelescopeKeymap",
         once = true,
         callback = function()
           pcall(vim.api.nvim_win_close, km_win_id, true)
