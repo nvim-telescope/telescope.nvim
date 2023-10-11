@@ -40,25 +40,27 @@ lsp.references = function(opts)
     end
 
     if #locations == 1 and opts.jump_type ~= "never" then
-      if filepath ~= locations[1].filename then
+      local location = locations[1]
+      local filename = location.filename
+      if filepath ~= filename then
         if opts.jump_type == "tab" then
           vim.cmd "tabedit"
         elseif opts.jump_type == "split" then
           vim.cmd "new"
         elseif opts.jump_type == "vsplit" then
           vim.cmd "vnew"
+        else
+          vim.cmd ("badd " .. (filename or "[No Name]"))
         end
       end
       -- jump to location
-      local location = locations[1]
       local bufnr = opts.bufnr
-      if location.filename then
-        local uri = location.filename
-        if not utils.is_uri(uri) then
-          uri = vim.uri_from_fname(uri)
+      if filename then
+        if not utils.is_uri(filename) then
+          filename = vim.uri_from_fname(filename)
         end
 
-        bufnr = vim.uri_to_bufnr(uri)
+        bufnr = vim.uri_to_bufnr(filename)
       end
       vim.api.nvim_win_set_buf(0, bufnr)
       vim.api.nvim_win_set_cursor(0, { location.lnum, location.col - 1 })
