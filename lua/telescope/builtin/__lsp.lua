@@ -47,6 +47,8 @@ lsp.references = function(opts)
           vim.cmd "new"
         elseif opts.jump_type == "vsplit" then
           vim.cmd "vnew"
+        elseif opts.jump_type == "tab drop" then
+          vim.cmd("tab drop " .. locations[1].filename)
         end
       end
       -- jump to location
