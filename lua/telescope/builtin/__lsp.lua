@@ -197,6 +197,9 @@ local function list_or_jump(action, title, opts)
           vim.cmd "new"
         elseif opts.jump_type == "vsplit" then
           vim.cmd "vnew"
+        elseif opts.jump_type == "tab drop" then
+          local file_path = vim.uri_to_fname(flattened_results[1].uri)
+          vim.cmd("tab drop " .. file_path)
         end
       end
 
