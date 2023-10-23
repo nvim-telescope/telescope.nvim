@@ -812,11 +812,12 @@ local send_all_to_qf = function(prompt_bufnr, mode, target)
   local prompt = picker:_get_prompt()
   actions.close(prompt_bufnr)
 
+  local qf_title = string.format([[%s (%s)]], picker.prompt_title, prompt)
   if target == "loclist" then
     vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
+    vim.fn.setloclist(picker.original_win_id, {}, "a", { title = qf_title })
   else
     vim.fn.setqflist(qf_entries, mode)
-    local qf_title = string.format([[%s (%s)]], picker.prompt_title, prompt)
     vim.fn.setqflist({}, "a", { title = qf_title })
   end
 end
