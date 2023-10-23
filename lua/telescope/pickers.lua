@@ -605,10 +605,6 @@ function Picker:find()
 
     await_schedule()
 
-    -- we need to set the prefix color after changing mode since
-    -- https://github.com/neovim/neovim/commit/cbf9199d65325c1167d7eeb02a34c85d243e781c
-    self:_reset_prefix_color()
-
     while true do
       -- Wait for the next input
       rx.last()
@@ -620,6 +616,10 @@ function Picker:find()
         log.debug("ON_LINES: Invalid prompt_bufnr", self.prompt_bufnr)
         return
       end
+
+      -- we kinda always wanna reset the color, because of `cc` and `dd` commands,
+      -- which also delete the prefix and after prefix deletion we need to reapply highlighting
+      self:_reset_prefix_color()
 
       local start_time = vim.loop.hrtime()
 
