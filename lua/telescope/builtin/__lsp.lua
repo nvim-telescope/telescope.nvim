@@ -200,10 +200,8 @@ local function list_or_jump(action, title, opts)
         elseif opts.jump_type == "vsplit" then
           vim.cmd "vnew"
         elseif opts.jump_type == "tab drop" then
-          local file_uri = ""
-          if flattened_results[1].uri ~= nil then
-            file_uri = flattened_results[1].uri
-          else
+          local file_uri = flattened_results[1].uri
+          if file_uri == nil then
             file_uri = flattened_results[1].targetUri
           end
           local file_path = vim.uri_to_fname(file_uri)
