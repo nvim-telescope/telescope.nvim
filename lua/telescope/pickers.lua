@@ -1544,9 +1544,14 @@ function pickers.on_close_prompt(prompt_bufnr)
           picker.manager = EntryManager:new(picker.max_results, picker.entry_adder, picker.stats)
         end
       end
-      picker.default_text = picker:_get_prompt()
+      local curr_prompt = picker:_get_prompt()
+      picker.default_text = curr_prompt
       picker.cache_picker.selection_row = picker._selection_row
-      picker.cache_picker.cached_prompt = picker:_get_prompt()
+      -- Check if curr_prompt is not empty and then only set picket.cache_picker.cached_prompt
+      if (curr_prompt ~= "") or (curr_prompt ~= " ") then
+        print("curr_prompt", curr_prompt)
+        picker.cache_picker.cached_prompt = curr_prompt
+      end
       picker.cache_picker.is_cached = true
       table.insert(cached_pickers, 1, picker)
 
