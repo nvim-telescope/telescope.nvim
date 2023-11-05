@@ -1550,7 +1550,13 @@ function pickers.on_close_prompt(prompt_bufnr)
       -- Check if curr_prompt is not empty and then only set picket.cache_picker.cached_prompt
       print("curr_prompt", curr_prompt)
       -- Check if curr_prompt is not null
-      if (curr_prompt ~= "") and (curr_prompt ~= " ") and (curr_prompt ~= nil) then
+      if (curr_prompt == nil) then
+        print("Prompt is nil")
+      end
+      if (not curr_prompt) then
+        print("This worked instead")
+      end
+      if (curr_prompt ~= "") and (curr_prompt ~= " ") and (not curr_prompt) then
         picker.cache_picker.cached_prompt = curr_prompt
       end
       picker.cache_picker.is_cached = true
