@@ -1548,8 +1548,8 @@ function pickers.on_close_prompt(prompt_bufnr)
       picker.default_text = curr_prompt
       picker.cache_picker.selection_row = picker._selection_row
       -- Check if curr_prompt is not empty and then only set picket.cache_picker.cached_prompt
+      print("curr_prompt", curr_prompt)
       if (curr_prompt ~= "") or (curr_prompt ~= " ") then
-        print("curr_prompt", curr_prompt)
         picker.cache_picker.cached_prompt = curr_prompt
       end
       picker.cache_picker.is_cached = true
