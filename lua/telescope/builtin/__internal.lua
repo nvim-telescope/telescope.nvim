@@ -1074,7 +1074,17 @@ internal.marks = function(opts)
   local marks_table = {}
   local marks_others = {}
   local bufname = vim.api.nvim_buf_get_name(opts.bufnr)
-  for _, cnf in ipairs { local_marks, global_marks } do
+  local all_marks = {}
+  opts.mark_type = vim.F.if_nil(opts.mark_type, "all")
+  if opts.mark_type == "all" then
+    all_marks = { local_marks, global_marks }
+  elseif opts.mark_type == "local" then
+    all_marks = { local_marks }
+  elseif opts.mark_type == "global" then
+    all_marks = { global_marks }
+  end
+
+  for _, cnf in ipairs(all_marks) do
     for _, v in ipairs(cnf.items) do
       -- strip the first single quote character
       local mark = string.sub(v.mark, 2, 3)
