@@ -359,6 +359,7 @@ builtin.colorscheme = require_on_exported_call("telescope.builtin.__internal").c
 --- Lists vim marks and their value, jumps to the mark on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field file_encoding string: file encoding for the previewer
+---@field mark_type "all"|"global"|"local": filter marks by type (default: "all")
 builtin.marks = require_on_exported_call("telescope.builtin.__internal").marks
 
 --- Lists vim registers, pastes the contents of the register on `<cr>`
