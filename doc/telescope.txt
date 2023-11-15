@@ -1437,6 +1437,8 @@ builtin.marks({opts})                              *telescope.builtin.marks()*
 
     Options: ~
         {file_encoding} (string)  file encoding for the previewer
+        {mark_type}     (string)  filter marks by type (default: "all",
+                                  options: "all"|"global"|"local")
 
 
 builtin.registers({opts})                      *telescope.builtin.registers()*
