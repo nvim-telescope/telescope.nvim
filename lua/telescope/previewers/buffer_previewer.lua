@@ -329,6 +329,7 @@ local scroll_horizontal_fn = function(self, direction)
   local count = math.abs(direction)
 
   vim.api.nvim_win_call(self.state.winid, function()
+    vim.api.nvim_win_set_option(self.state.winid, "virtualedit", "all")
     vim.cmd([[normal! ]] .. count .. input)
   end)
 end
