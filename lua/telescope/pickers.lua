@@ -134,7 +134,9 @@ local function default_create_layout(picker)
       if vim.api.nvim_win_is_valid(self.prompt.winid) then
         vim.api.nvim_win_close(self.prompt.winid, true)
       end
-      utils.buf_delete(self.prompt.bufnr)
+      vim.schedule(function()
+        utils.buf_delete(self.prompt.bufnr)
+      end)
     end,
     ---@param self TelescopeLayout
     update = function(self)
