@@ -367,26 +367,12 @@ git.status = function(opts)
 
   local gen_new_finder = function()
     local expand_dir = vim.F.if_nil(opts.expand_dir, true)
-    local git_cmd = git_command({ "status", "-z", "--", "." }, opts)
-
+    local git_cmd = git_command({ "status", "--porcelain=v1", "--", "." }, opts)
     if expand_dir then
       table.insert(git_cmd, #git_cmd - 1, "-u")
     end
-
-    local output = utils.get_os_command_output(git_cmd, opts.cwd)
-
-    if #output == 0 then
-      utils.notify("builtin.git_status", {
-        msg = "No changes found",
-        level = "WARN",
-      })
-      return
-    end
-
-    return finders.new_table {
-      results = vim.split(output[1], " ", { trimempty = true }),
-      entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_status(opts)),
-    }
+    opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_status(opts))
+    return finders.new_oneshot_job(git_cmd, opts)
   end
 
   local initial_finder = gen_new_finder()
@@ -400,6 +386,18 @@ git.status = function(opts)
       finder = initial_finder,
       previewer = previewers.git_file_diff.new(opts),
       sorter = conf.file_sorter(opts),
+      on_complete = {
+        function(self)
+          local lines = self.manager:num_results()
+          if lines == 0 then
+            utils.notify("builtin.git_status", {
+              msg = "No changes found",
+              level = "ERROR",
+            })
+            actions.close(self.prompt_bufnr)
+          end
+        end,
+      },
       attach_mappings = function(prompt_bufnr, map)
         actions.git_staging_toggle:enhance {
           post = function()
