@@ -384,6 +384,7 @@ files.find_files = function(opts)
   pickers
     .new(opts, {
       prompt_title = "Find Files",
+      files_picker = true,
       finder = finders.new_oneshot_job(find_command, opts),
       previewer = conf.file_previewer(opts),
       sorter = conf.file_sorter(opts),
