@@ -319,6 +319,8 @@ function Picker:new(opts)
     cache_picker = config.resolve_table_opts(opts.cache_picker, vim.deepcopy(config.values.cache_picker)),
 
     __scrolling_limit = tonumber(vim.F.if_nil(opts.temp__scrolling_limit, 250)),
+
+    __allow_locations_input = opts.__locations_input or false,
   }, self)
 
   obj.create_layout = opts.create_layout or config.values.create_layout or default_create_layout
@@ -626,6 +628,24 @@ function Picker:find()
       local start_time = vim.loop.hrtime()
 
       local prompt = self:_get_next_filtered_prompt()
+      if self.__allow_locations_input == true then
+        local filename, line_number, column_number = utils.__separate_file_path_location(prompt)
+
+        if line_number or column_number then
+          state.set_global_key("prompt_location", { row = line_number, col = column_number })
+          self:refresh_previewer()
+        elseif state.get_global_key "prompt_location" then
+          state.set_global_key("prompt_location", nil)
+          self:refresh_previewer()
+        end
+
+        -- it is important to continue behaving as if there is no location in prompt
+        prompt = filename
+      elseif state.get_global_key "prompt_location" then
+        -- in case new picker that does not support locations is opened clear the location
+        -- without refreshing previewer
+        state.set_global_key("prompt_location", nil)
+      end
 
       -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
       if self.cache_picker == false or self.cache_picker.is_cached ~= true then
@@ -1046,6 +1066,13 @@ function Picker:set_selection(row)
   end
 
   local entry = self.manager:get_entry(self:get_index(row))
+
+  local prompt_location = state.get_global_key "prompt_location"
+  if entry and prompt_location then
+    entry.lnum = prompt_location.row or 0
+    entry.col = prompt_location.col or 0
+  end
+
   state.set_global_key("selected_entry", entry)
 
   if not entry then
