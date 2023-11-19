@@ -912,6 +912,10 @@ internal.buffers = function(opts)
     end)
   end
 
+  if opts.sort_buffers then
+    table.sort(bufnrs, opts.sort_buffers)
+  end
+
   local buffers = {}
   local default_selection_idx = 1
   for _, bufnr in ipairs(bufnrs) do
