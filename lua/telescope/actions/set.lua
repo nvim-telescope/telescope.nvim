@@ -208,6 +208,12 @@ action_set.edit = function(prompt_bufnr, command)
     end)
   end
 
+  local prompt_location = picker:get_local_key "prompt_location"
+  if prompt_location then
+    row = prompt_location.row or 0
+    col = prompt_location.col or 0
+  end
+
   local pos = vim.api.nvim_win_get_cursor(0)
   if col == nil then
     if row == pos[1] then

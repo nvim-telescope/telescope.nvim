@@ -1,3 +1,4 @@
+local state = require "telescope.state"
 local action_state = require "telescope.actions.state"
 local action_set = require "telescope.actions.set"
 local actions = require "telescope.actions"
@@ -385,6 +386,17 @@ files.find_files = function(opts)
     .new(opts, {
       prompt_title = "Find Files",
       files_picker = true,
+      on_input_filter_cb = function(prompt, picker)
+        local filename, lnum, col = utils.separate_file_path_location(prompt)
+
+        if lnum or col then
+          picker:set_local_key("prompt_location", { row = lnum, col = col })
+        elseif state.get_global_key "prompt_location" then
+          picker:get_local_key("prompt_location", nil)
+        end
+
+        return { prompt = filename }
+      end,
       finder = finders.new_oneshot_job(find_command, opts),
       previewer = conf.file_previewer(opts),
       sorter = conf.file_sorter(opts),

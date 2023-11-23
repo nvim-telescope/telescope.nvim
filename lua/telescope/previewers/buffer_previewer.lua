@@ -488,9 +488,10 @@ end
 previewers.cat = defaulter(function(opts)
   opts = opts or {}
   local cwd = opts.cwd or vim.loop.cwd()
-  local function jump_to_line(bufnr, winid)
+  local function jump_to_line(bufnr, winid, picker)
     pcall(vim.api.nvim_buf_clear_namespace, bufnr, ns_previewer, 0, -1)
-    local location = global_state.get_global_key "prompt_location"
+    local location = picker:get_local_key "prompt_location"
+    print(location)
 
     if location and location.row > 0 then
       local highlight_range = location.col and location.col > 0 and { location.col - 1, location.col } or { 0, -1 }
@@ -521,7 +522,7 @@ previewers.cat = defaulter(function(opts)
       return from_entry.path(entry, false)
     end,
 
-    define_preview = function(self, entry)
+    define_preview = function(self, entry, status)
       local p = from_entry.path(entry, true)
       if p == nil or p == "" then
         return
@@ -532,7 +533,7 @@ previewers.cat = defaulter(function(opts)
         preview = opts.preview,
         file_encoding = opts.file_encoding,
         callback = function(bufnr)
-          jump_to_line(bufnr, self.state.winid)
+          jump_to_line(bufnr, self.state.winid, status.picker)
         end,
       })
     end,

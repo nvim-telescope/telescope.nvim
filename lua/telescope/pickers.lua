@@ -320,7 +320,7 @@ function Picker:new(opts)
 
     __scrolling_limit = tonumber(vim.F.if_nil(opts.temp__scrolling_limit, 250)),
 
-    allow_location_input = opts.files_picker or false,
+    __local_state = {},
   }, self)
 
   obj.create_layout = opts.create_layout or config.values.create_layout or default_create_layout
@@ -628,24 +628,6 @@ function Picker:find()
       local start_time = vim.loop.hrtime()
 
       local prompt = self:_get_next_filtered_prompt()
-      if self.allow_location_input == true then
-        local filename, line_number, column_number = utils.separate_file_path_location(prompt)
-
-        if line_number or column_number then
-          state.set_global_key("prompt_location", { row = line_number, col = column_number })
-          self:refresh_previewer()
-        elseif state.get_global_key "prompt_location" then
-          state.set_global_key("prompt_location", nil)
-          self:refresh_previewer()
-        end
-
-        -- it is important to continue behaving as if there is no location in prompt
-        prompt = filename
-      elseif state.get_global_key "prompt_location" then
-        -- in case new picker that does not support locations is opened clear the location
-        -- without refreshing previewer
-        state.set_global_key("prompt_location", nil)
-      end
 
       -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
       if self.cache_picker == false or self.cache_picker.is_cached ~= true then
@@ -1066,12 +1048,6 @@ function Picker:set_selection(row)
   end
 
   local entry = self.manager:get_entry(self:get_index(row))
-
-  local prompt_location = state.get_global_key "prompt_location"
-  if entry and prompt_location then
-    entry.lnum = prompt_location.row or 0
-    entry.col = prompt_location.col or 0
-  end
 
   state.set_global_key("selected_entry", entry)
 
@@ -1651,11 +1627,12 @@ end
 
 function Picker:_get_next_filtered_prompt()
   local prompt = self:_get_prompt()
-  local on_input_result = self._on_input_filter_cb(prompt) or {}
+  local on_input_result = self._on_input_filter_cb(prompt, self) or {}
 
   local new_prompt = on_input_result.prompt
   if new_prompt then
     prompt = new_prompt
+    self:refresh_previewer()
   end
 
   local new_finder = on_input_result.updated_finder
@@ -1695,6 +1672,14 @@ function Picker:_resume_picker()
       on_resume_complete()
     end)
   end
+end
+
+function Picker:set_local_key(key, value)
+  self.__local_state[key] = value
+end
+
+function Picker:get_local_key(key)
+  return self.__local_state[key]
 end
 
 pickers._Picker = Picker
