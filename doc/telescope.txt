@@ -2574,6 +2574,12 @@ utils.notify({funname}, {opts})                     *telescope.utils.notify()*
         {opts}    (table)   opts.level string, opts.msg string, opts.once bool
 
 
+utils.separate_file_path_location() *telescope.utils.separate_file_path_location()*
+    Takes the path and parses optional cursor location `$file:$line:$column` If
+    line or column not present `0` returne returned.
+
+
+
 
 ================================================================================
 ACTIONS                                                      *telescope.actions*
