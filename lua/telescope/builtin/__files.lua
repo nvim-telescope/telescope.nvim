@@ -108,6 +108,7 @@ end
 -- Special keys:
 --  opts.search_dirs -- list of directory to search in
 --  opts.grep_open_files -- boolean to restrict search to open files
+--  opts.follow -- boolean to allow search to follow symlinks
 files.live_grep = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   if not has_rg_program("live_grep", vimgrep_arguments[1]) then
@@ -115,6 +116,7 @@ files.live_grep = function(opts)
   end
   local search_dirs = opts.search_dirs
   local grep_open_files = opts.grep_open_files
+  local follow = opts.follow
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
 
   local filelist = get_open_filelist(grep_open_files, opts.cwd)
@@ -135,6 +137,10 @@ files.live_grep = function(opts)
 
   if opts.type_filter then
     additional_args[#additional_args + 1] = "--type=" .. opts.type_filter
+  end
+
+  if opts.follow then
+    additional_args[#additional_args + 1] = "--follow="
   end
 
   if type(opts.glob_pattern) == "string" then
