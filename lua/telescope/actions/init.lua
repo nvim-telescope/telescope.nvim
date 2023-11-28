@@ -83,14 +83,19 @@ end
 
 --- Move the selection to the next entry
 ---@param prompt_bufnr number: The prompt bufnr
-actions.move_selection_next = function(prompt_bufnr)
-  action_set.shift_selection(prompt_bufnr, 1)
+---@param change number: The amount to shift the selection by
+actions.move_selection_next = function(prompt_bufnr, change)
+  action_set.shift_selection(prompt_bufnr, change or 1)
 end
 
 --- Move the selection to the previous entry
 ---@param prompt_bufnr number: The prompt bufnr
-actions.move_selection_previous = function(prompt_bufnr)
-  action_set.shift_selection(prompt_bufnr, -1)
+---@param change number: The amount to shift the selection by
+actions.move_selection_previous = function(prompt_bufnr, change)
+  if change and change > 0 then
+    change = -1 * change
+  end
+  action_set.shift_selection(prompt_bufnr, change or -1)
 end
 
 --- Move the selection to the entry that has a worse score

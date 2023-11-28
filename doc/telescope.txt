@@ -2626,20 +2626,22 @@ can call. These functions include `:replace(f)`, `:replace_if(f, c)`,
 `replace_map(tbl)` and `enhance(tbl)`. More information on these functions can
 be found in the `developers.md` and `lua/tests/automated/action_spec.lua` file.
 
-actions.move_selection_next({prompt_bufnr}) *telescope.actions.move_selection_next()*
+actions.move_selection_next({prompt_bufnr, change}) *telescope.actions.move_selection_next()*
     Move the selection to the next entry
 
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
+        {change} (number) The amount to shift the selection by (default: 1)
 
 
-actions.move_selection_previous({prompt_bufnr}) *telescope.actions.move_selection_previous()*
+actions.move_selection_previous({prompt_bufnr, change}) *telescope.actions.move_selection_previous()*
     Move the selection to the previous entry
 
 
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
+        {change} (number) The amount to shift the selection by (default: -1)
 
 
 actions.move_selection_worse({prompt_bufnr}) *telescope.actions.move_selection_worse()*
