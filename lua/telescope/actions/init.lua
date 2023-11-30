@@ -1464,12 +1464,8 @@ actions.delete_mark = function(prompt_bufnr)
     local bufnr = vim.fn.bufnr(bufname)
     local mark = selection.ordinal:sub(1, 1)
 
-    local function is_uppercase_mark(mark)
-      return 65 <= mark:byte() and mark:byte() <= 90
-    end
-
     local success = false
-    if is_uppercase_mark(mark) then
+    if mark:match("%u") then
       success = pcall(vim.api.nvim_del_mark, mark)
     else
       success = pcall(vim.api.nvim_buf_del_mark, bufnr, mark)
