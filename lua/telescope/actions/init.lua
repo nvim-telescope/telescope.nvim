@@ -1464,8 +1464,8 @@ actions.delete_mark = function(prompt_bufnr)
     local bufnr = vim.fn.bufnr(bufname)
     local mark = selection.ordinal:sub(1, 1)
 
-    local success = false
-    if mark:match("%u") then
+    local success
+    if mark:match "%u" then
       success = pcall(vim.api.nvim_del_mark, mark)
     else
       success = pcall(vim.api.nvim_buf_del_mark, bufnr, mark)
