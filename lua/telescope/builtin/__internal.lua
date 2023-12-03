@@ -912,7 +912,7 @@ internal.buffers = function(opts)
     end)
   end
 
-  if opts.sort_buffers then
+  if type(opts.sort_buffers) == "function" then
     table.sort(bufnrs, opts.sort_buffers)
   end
 
