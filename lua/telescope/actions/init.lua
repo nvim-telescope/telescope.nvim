@@ -1455,6 +1455,25 @@ actions.to_fuzzy_refine = function(prompt_bufnr)
   })
 end
 
+--- Delete the selected mark or all the marks selected using multi selection.
+---@param prompt_bufnr number: The prompt bufnr
+actions.delete_mark = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  current_picker:delete_selection(function(selection)
+    local bufname = selection.filename
+    local bufnr = vim.fn.bufnr(bufname)
+    local mark = selection.ordinal:sub(1, 1)
+
+    local success
+    if mark:match "%u" then
+      success = pcall(vim.api.nvim_del_mark, mark)
+    else
+      success = pcall(vim.api.nvim_buf_del_mark, bufnr, mark)
+    end
+    return success
+  end)
+end
+
 actions.nop = function(_) end
 
 -- ==================================================

@@ -3311,6 +3311,15 @@ actions.to_fuzzy_refine({prompt_bufnr})  *telescope.actions.to_fuzzy_refine()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.delete_mark({prompt_bufnr})      *telescope.actions.delete_mark()*
+    Delete the selected mark or all the marks selected using multi
+    selection.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 
 ================================================================================
 ACTIONS_STATE                                          *telescope.actions.state*
