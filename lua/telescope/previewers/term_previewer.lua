@@ -225,7 +225,8 @@ previewers.new_termopen_previewer = function(opts)
           return
         end
 
-        vim.fn.chansend(term_id, termcode)
+        vim.fn.chansend(term_id, termcode .. (utils.is_windows() and "\r\n" or ""))
+        vim.api.nvim_buf_call(self.state.termopen_bufnr, function() vim.cmd("normal! G") end)
       end
     end
   end
