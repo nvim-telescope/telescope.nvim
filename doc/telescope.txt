@@ -897,6 +897,10 @@ builtin.find_files({opts})                    *telescope.builtin.find_files()*
         {no_ignore_parent}    (boolean)         show files ignored by
                                                 .gitignore, .ignore, etc. in
                                                 parent dirs. (default: false)
+        {previewer}           (boolean)         determines whether to display
+                                                a file preview
+        {prompt}              (string)          title of the prompt (default:
+                                                Find Files)
         {search_dirs}         (table)           directory/directories/files to
                                                 search
         {search_file}         (string)          specify a filename to search
