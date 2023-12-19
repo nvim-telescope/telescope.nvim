@@ -195,9 +195,13 @@ mappings.default_mappings = config.values.default_mappings
 
       ["<C-u>"] = actions.preview_scrolling_up,
       ["<C-d>"] = actions.preview_scrolling_down,
+      ["<C-f>"] = actions.preview_scrolling_left,
+      ["<C-k>"] = actions.preview_scrolling_right,
 
       ["<PageUp>"] = actions.results_scrolling_up,
       ["<PageDown>"] = actions.results_scrolling_down,
+      ["<M-f>"] = actions.results_scrolling_left,
+      ["<M-k>"] = actions.results_scrolling_right,
 
       ["?"] = actions.which_key,
     },
