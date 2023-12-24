@@ -165,7 +165,7 @@ diagnostics.get = function(opts)
         results = locations,
         entry_maker = opts.entry_maker or make_entry.gen_from_diagnostics(opts),
       },
-      previewer = conf.qflist_previewer(opts),
+      previewer = opts.previewer or conf.qflist_previewer(opts),
       sorter = conf.prefilter_sorter {
         tag = "type",
         sorter = conf.generic_sorter(opts),
