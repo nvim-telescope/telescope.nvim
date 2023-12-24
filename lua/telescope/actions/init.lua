@@ -1413,7 +1413,7 @@ actions.which_key = function(prompt_bufnr, opts)
   if opts.close_with_action then
     close_event, close_pattern, close_buffer = "User", "TelescopeKeymap", nil
   else
-    close_event, close_pattern, close_buffer = "BufDelete", nil, prompt_bufnr
+    close_event, close_pattern, close_buffer = "BufWinLeave", nil, prompt_bufnr
   end
   -- only set up autocommand after showing preview completed
   vim.schedule(function()
