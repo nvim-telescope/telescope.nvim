@@ -51,7 +51,7 @@ local ns_telescope_prompt_prefix = a.nvim_create_namespace "telescope_prompt_pre
 -- 2. Options window
 -- 3. Preview window
 --
----@param picker Picker
+---@param picker TelescopeBasePicker
 local function default_create_layout(picker)
   local function make_border(border)
     if not border then
@@ -215,13 +215,107 @@ local pickers = {}
 
 -- TODO: Add overscroll option for results buffer
 
----@class Picker
+---@class TelescopeBasePickerOpts
+---@field prompt_title string?
+---@field results_title string?
+---@field preview_title string?
+---@field prompt_prefix string?
+---@field wrap_results boolean?
+---@field selection_caret string?
+---@field entry_prefix string?
+---@field multi_icon string?
+---@field initial_mode ('insert'|'normal')?
+---@field debounce number?
+---@field default_text string?
+---@field get_status_text (fun(picker: TelescopeBasePicker): string)?
+---@field on_input_filter_cb (fun(prompt: string): any)?
+---@field finder Finder?
+---@field sorter Sorter?
+---@field previewer (Previewer[])?
+---@field current_previewer_index number?
+---@field default_selection_index number?
+---@field get_selection_window (fun(picker: TelescopeBasePicker, entry: table): number)?
+---@field cwd string?
+---@field _completion_callbacks ((fun(picker: TelescopeBasePicker): nil)[])?
+---@field manager TelescopeEntryManager?
+---@field _multi MultiSelect?
+---@field track boolean?
+---@field attach_mappings (fun(prompt_bufnr: integer, map: fun()): boolean)?
+---@field file_ignore_patterns (string[])?
+---@field scroll_strategy ('cycle'|'limit')?
+---@field sorting_strategy ('descending'|'ascending')?
+---@field tiebreak (fun(current_entry: any, existing_entry: any, prompt: string): boolean)?
+---@field selection_strategy ('reset'|'follow'|'row'|'closest'|'none')?
+---@field push_cursor_on_edit boolean?
+---@field push_tagstack_on_edit boolean?
+---@field layout_strategy ('horizontal'|'vertical'|'center'|'cursor'|'flex'|'bottom_pane')?
+---@field layout_config table?
+---@field cycle_layout_list (string[])?
+---@field winblend number?
+---@field window table?
+---@field border boolean?
+---@field borderchars (string[])?
+---@field cache_picker table?
+---@field private temp__scrolling_limit number?
+---@field create_layout fun()?
+---@field get_window_options fun()?
+---@field resumed_picker boolean?
+---@field fix_preview_title boolean?
+---@field private __hide_previewer boolean?
+---@field on_complete ((fun(picker: TelescopeBasePicker): nil)[])?
+
 --- Picker is the main UI that shows up to interact w/ your results.
 -- Takes a filter & a previewer
+---@class TelescopeBasePicker
+---@field prompt_title string
+---@field results_title string
+---@field preview_title string
+---@field prompt_prefix string
+---@field wrap_results boolean
+---@field selection_caret string
+---@field entry_prefix string
+---@field multi_icon string
+---@field initial_mode 'insert'|'normal'
+---@field private _original_mode string
+---@field debounce number?
+---@field private _finder_attached boolean
+---@field default_text string
+---@field get_status_text fun(self: TelescopeBasePicker): string
+---@field private _on_input_filter_cb fun(prompt: string): table
+---@field finder Finder
+---@field sorter Sorter
+---@field all_previewers Previewer[]
+---@field current_previewer_index number
+---@field default_selection_index number?
+---@field get_selection_window fun(self: TelescopeBasePicker, entry: table): number
+---@field cwd string?
+---@field private _find_id number
+---@field private _completion_callbacks (fun(self: TelescopeBasePicker): nil)[]
+---@field manager TelescopeEntryManager
+---@field private _multi MultiSelect
+---@field track boolean
+---@field stats table
+---@field attach_mappings? fun(prompt_bufnr: integer, map: fun()): boolean
+---@field file_ignore_patterns string[]
+---@field scroll_strategy 'cycle'|'limit'
+---@field sorting_strategy 'descending'|'ascending'
+---@field tiebreak fun(current_entry: any, existing_entry: any, prompt: string): boolean
+---@field selection_strategy 'reset'|'follow'|'row'|'closest'|'none'
+---@field push_cursor_on_edit boolean
+---@field push_tagstack_on_edit boolean
+---@field layout_strategy 'horizontal'|'vertical'|'center'|'cursor'|'flex'|'bottom_pane'
+---@field private __cycle_layout_list string[]
+---@field winblend number
+---@field window table
+---@field cache_picker table
+---@field scroller TelescopeScroller
+---@field highlighter TelescopeHighlighter
 local Picker = {}
 Picker.__index = Picker
 
 --- Create new picker
+---@param opts TelescopeBasePickerOpts
+---@return TelescopeBasePicker
 function Picker:new(opts)
   opts = opts or {}
 
@@ -242,8 +336,6 @@ function Picker:new(opts)
   -- for _, v in ipairs(keymap_store[prompt_bufnr]) do
   --   pcall(v.clear)
   -- end
-
-  local layout_strategy = vim.F.if_nil(opts.layout_strategy, config.values.layout_strategy)
 
   local obj = setmetatable({
     prompt_title = vim.F.if_nil(opts.prompt_title, config.values.prompt_title),
@@ -299,7 +391,7 @@ function Picker:new(opts)
     push_cursor_on_edit = vim.F.if_nil(opts.push_cursor_on_edit, false),
     push_tagstack_on_edit = vim.F.if_nil(opts.push_tagstack_on_edit, false),
 
-    layout_strategy = layout_strategy,
+    layout_strategy = vim.F.if_nil(opts.layout_strategy, config.values.layout_strategy),
     layout_config = config.smarter_depth_2_extend(opts.layout_config or {}, config.values.layout_config or {}),
 
     __cycle_layout_list = vim.F.if_nil(opts.cycle_layout_list, config.values.cycle_layout_list),
@@ -319,12 +411,11 @@ function Picker:new(opts)
     cache_picker = config.resolve_table_opts(opts.cache_picker, vim.deepcopy(config.values.cache_picker)),
 
     __scrolling_limit = tonumber(vim.F.if_nil(opts.temp__scrolling_limit, 250)),
-
     __locations_input = vim.F.if_nil(opts.__locations_input, false),
-  }, self)
 
-  obj.create_layout = opts.create_layout or config.values.create_layout or default_create_layout
-  obj.get_window_options = opts.get_window_options or p_window.get_window_options
+    create_layout = opts.create_layout or config.values.create_layout or default_create_layout,
+    get_window_options = opts.get_window_options or p_window.get_window_options,
+  }, self)
 
   if obj.all_previewers ~= nil and obj.all_previewers ~= false then
     if obj.all_previewers[1] == nil then
@@ -451,7 +542,7 @@ end
 
 --- Highlight the entry corresponding to the given row
 ---@param results_bufnr number: the buffer number of the results buffer
----@param prompt table: table with information about the prompt buffer
+---@param prompt string: table with information about the prompt buffer
 ---@param display string: the text corresponding to the given row
 ---@param row number: the number of the chosen row
 function Picker:highlight_one_row(results_bufnr, prompt, display, row)
@@ -506,7 +597,7 @@ function Picker:_next_find_id()
 end
 
 --- A helper function for creating each of the windows in a picker
----@param bufnr number: the buffer number to be used in the window
+---@param bufnr number|string: the buffer number to be used in the window
 ---@param popup_opts table: options to pass to `popup.create`
 function Picker:_create_window(bufnr, popup_opts)
   local what = bufnr or ""
@@ -999,7 +1090,7 @@ function Picker:reset_prompt(text)
   end
 end
 
----@param finder finder: telescope finder (see telescope/finders.lua)
+---@param finder Finder: telescope finder (see telescope/finders.lua)
 ---@param opts table: options to pass when refreshing the picker
 ---@field new_prefix string|table: either as string or { new_string, hl_group }
 ---@field reset_prompt bool: whether to reset the prompt
@@ -1507,7 +1598,7 @@ end
 --- with the telescope `defaults`
 ---@param opts table
 ---@param defaults table
----@return Picker
+---@return TelescopeBasePicker
 pickers.new = function(opts, defaults)
   opts = opts or {}
   defaults = defaults or {}
@@ -1620,6 +1711,7 @@ function pickers.on_resize_window(prompt_bufnr)
 end
 
 --- Get the prompt text without the prompt prefix.
+---@return string
 function Picker:_get_prompt()
   local cursor_line = vim.api.nvim_win_get_cursor(self.prompt_win)[1] - 1
   return vim.api

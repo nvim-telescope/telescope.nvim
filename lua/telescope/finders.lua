@@ -7,6 +7,10 @@ local async_static_finder = require "telescope.finders.async_static_finder"
 local async_oneshot_finder = require "telescope.finders.async_oneshot_finder"
 local async_job_finder = require "telescope.finders.async_job_finder"
 
+---@class Finder
+---@field results table
+---@field close fun()
+
 local finders = {}
 
 local _callable_obj = function()

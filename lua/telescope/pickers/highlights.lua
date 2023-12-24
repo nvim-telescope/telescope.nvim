@@ -8,6 +8,8 @@ local ns_telescope_selection = a.nvim_create_namespace "telescope_selection"
 local ns_telescope_multiselection = a.nvim_create_namespace "telescope_multiselection"
 local ns_telescope_entry = a.nvim_create_namespace "telescope_entry"
 
+---@class TelescopeHighlighter
+---@field picker TelescopeBasePicker
 local Highlighter = {}
 Highlighter.__index = Highlighter
 

@@ -1,5 +1,7 @@
 local scroller = {}
 
+---@class TelescopeScroller
+
 local range_calculators = {
   ascending = function(max_results, num_results)
     return 0, math.min(max_results, num_results)

@@ -105,10 +105,9 @@ local opts_contain_invert = function(args)
   return invert, files_with_matches
 end
 
--- Special keys:
---  opts.search_dirs -- list of directory to search in
---  opts.grep_open_files -- boolean to restrict search to open files
+---@param opts? TelescopeLiveGrepOpts
 files.live_grep = function(opts)
+  opts = opts or {}
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   if not has_rg_program("live_grep", vimgrep_arguments[1]) then
     return
