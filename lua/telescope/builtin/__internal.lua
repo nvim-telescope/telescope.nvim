@@ -383,12 +383,11 @@ internal.commands = function(opts)
           local cmd = string.format([[:%s ]], val.name)
 
           if val.nargs == "0" then
-            vim.cmd(cmd)
-            vim.fn.histadd("cmd", val.name)
-          else
-            vim.cmd [[stopinsert]]
-            vim.fn.feedkeys(cmd, "n")
+            local cr = vim.api.nvim_replace_termcodes("<cr>", true, false, true)
+            cmd = cmd .. cr
           end
+          vim.cmd [[stopinsert]]
+          vim.api.nvim_feedkeys(cmd, "t", false)
         end)
 
         return true
