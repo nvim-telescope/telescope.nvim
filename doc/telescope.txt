@@ -1055,6 +1055,8 @@ builtin.git_status({opts})                    *telescope.builtin.git_status()*
         {git_icons}    (table)    string -> string. Matches name with icon
                                   (see source code, make_entry.lua
                                   git_icon_defaults)
+        {expand_dir}   (boolean)  pass flag `-uall` to show files in untracked
+                                  directories (default: true)
 
 
 builtin.git_stash({opts})                      *telescope.builtin.git_stash()*
