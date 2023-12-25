@@ -1039,6 +1039,11 @@ internal.colorscheme = function(opts)
         actions.close(prompt_bufnr)
         need_restore = false
         vim.cmd("colorscheme " .. selection.value)
+		
+		local on_change_cb = opts.on_change
+        if on_change_cb then
+          on_change_cb(selection.value, before_color)
+        end
       end)
 
       return true

@@ -1433,6 +1433,10 @@ builtin.colorscheme({opts})                  *telescope.builtin.colorscheme()*
 
     Options: ~
         {enable_preview} (boolean)  if true, will preview the selected color
+		
+        {on_change} (function)  Function to call when the colorscheme is
+                        changed that takes (new_value, old_value) 
+                        as arguments
 
 
 builtin.marks({opts})                              *telescope.builtin.marks()*

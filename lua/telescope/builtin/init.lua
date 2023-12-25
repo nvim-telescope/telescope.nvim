@@ -356,6 +356,7 @@ builtin.buffers = require_on_exported_call("telescope.builtin.__internal").buffe
 --- Lists available colorschemes and applies them on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field enable_preview boolean: if true, will preview the selected color
+---@field on_change function: on_change(new_value:string, old_value:string). Runs after a colorscheme is selected (default: nil)
 builtin.colorscheme = require_on_exported_call("telescope.builtin.__internal").colorscheme
 
 --- Lists vim marks and their value, jumps to the mark on `<cr>`
