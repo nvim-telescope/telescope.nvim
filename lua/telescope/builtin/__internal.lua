@@ -1040,9 +1040,8 @@ internal.colorscheme = function(opts)
         need_restore = false
         vim.cmd("colorscheme " .. selection.value)
 		
-		local on_change_cb = opts.on_change
-        if on_change_cb then
-          on_change_cb(selection.value, before_color)
+        if opts.on_change then
+          opts.on_change(selection.value, before_color)
         end
       end)
 
