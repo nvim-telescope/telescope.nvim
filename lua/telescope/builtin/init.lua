@@ -216,6 +216,7 @@ builtin.git_branches = require_on_exported_call("telescope.builtin.__git").branc
 ---@field use_file_path boolean: if we should use the current buffer git root (default: false)
 ---@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
 ---@field git_icons table: string -> string. Matches name with icon (see source code, make_entry.lua git_icon_defaults)
+---@field expand_dir boolean: pass flag `-uall` to show files in untracked directories (default: true)
 builtin.git_status = require_on_exported_call("telescope.builtin.__git").status
 
 --- Lists stash items in current repository
