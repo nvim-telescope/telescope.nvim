@@ -254,6 +254,7 @@ files.grep_string = function(opts)
   pickers
     .new(opts, {
       prompt_title = "Find Word (" .. word:gsub("\n", "\\n") .. ")",
+      default_text = word,  -- Make sure the picker shows the selected word in the prompt
       finder = finders.new_oneshot_job(args, opts),
       previewer = conf.grep_previewer(opts),
       sorter = conf.generic_sorter(opts),
