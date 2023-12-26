@@ -1552,9 +1552,9 @@ function pickers.on_close_prompt(prompt_bufnr)
       if not (curr_prompt == nil or curr_prompt == "") then
         picker.cache_picker.cached_prompt = curr_prompt
         table.insert(cached_pickers, 1, picker)
-      end
 
-      picker.cache_picker.is_cached = true
+        picker.cache_picker.is_cached = true
+      end
 
       -- release pickers
       if picker.cache_picker.num_pickers > 0 then
