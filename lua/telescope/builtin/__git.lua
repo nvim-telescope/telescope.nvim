@@ -390,13 +390,7 @@ git.status = function(opts)
       on_complete = {
         function(self)
           local lines = self.manager:num_results()
-
-          -- HACK: unable to `self._get_prompt()` directly
-          local cursor_line = vim.api.nvim_win_get_cursor(self.prompt_win)[1] - 1
-          local prompt = vim.api
-            .nvim_buf_get_lines(self.prompt_bufnr, cursor_line, cursor_line + 1, false)[1]
-            :sub(#self.prompt_prefix + 1)
-
+          local prompt = action_state.get_current_line()
           if lines == 0 and prompt == "" then
             utils.notify("builtin.git_status", {
               msg = "No changes found",
