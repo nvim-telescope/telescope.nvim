@@ -835,7 +835,7 @@ function make_entry.gen_from_keymaps(opts)
     if entry.callback and not entry.desc then
       return require("telescope.actions.utils")._get_anon_function_name(debug.getinfo(entry.callback))
     end
-    return vim.F.if_nil(entry.desc, entry.rhs)
+    return vim.F.if_nil(entry.desc, entry.rhs):gsub("\n", "\\n")
   end
 
   local function get_lhs(entry)
@@ -872,14 +872,15 @@ function make_entry.gen_from_keymaps(opts)
   end
 
   return function(entry)
+    local desc = get_desc(entry)
+    local lhs = get_lhs(entry)
     return make_entry.set_default_entry_mt({
       mode = entry.mode,
-      lhs = get_lhs(entry),
-      desc = get_desc(entry),
-      --
+      lhs = lhs,
+      desc = desc,
       valid = entry ~= "",
       value = entry,
-      ordinal = entry.mode .. " " .. get_lhs(entry) .. " " .. get_desc(entry),
+      ordinal = entry.mode .. " " .. lhs .. " " .. desc,
       display = make_display,
     }, opts)
   end
