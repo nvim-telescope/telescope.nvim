@@ -959,7 +959,7 @@ end
 
 internal.colorscheme = function(opts)
   local before_background = vim.o.background
-  local before_color = vim.api.nvim_exec("colorscheme", true)
+  local before_color = vim.cmd.colorscheme()
   local need_restore = true
 
   local colors = opts.colors or { before_color }
@@ -999,7 +999,7 @@ internal.colorscheme = function(opts)
               del_win(status.layout.preview.border.winid)
             end
           end
-          vim.cmd("colorscheme " .. entry.value)
+          vim.cmd.colorscheme(entry.value)
         end,
       }
     else
@@ -1015,7 +1015,7 @@ internal.colorscheme = function(opts)
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
             vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
           end
-          vim.cmd("colorscheme " .. entry.value)
+          vim.cmd.colorscheme(entry.value)
         end,
       }
     end
@@ -1038,7 +1038,7 @@ internal.colorscheme = function(opts)
 
         actions.close(prompt_bufnr)
         need_restore = false
-        vim.cmd("colorscheme " .. selection.value)
+        vim.cmd.colorscheme(selection.value)
       end)
 
       return true
@@ -1052,7 +1052,7 @@ internal.colorscheme = function(opts)
       close_windows(status)
       if need_restore then
         vim.o.background = before_background
-        vim.cmd("colorscheme " .. before_color)
+        vim.cmd.colorscheme(before_color)
       end
     end
   end
