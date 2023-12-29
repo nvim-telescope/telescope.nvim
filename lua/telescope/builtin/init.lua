@@ -231,6 +231,32 @@ builtin.git_stash = require_on_exported_call("telescope.builtin.__git").stash
 
 --
 --
+-- Cscope Pickers
+--
+--
+
+--- Lists tags in current directory with tag location file preview (users are required to run ctags -R to generate tags
+--- or update when introducing new changes)
+---@param opts table: options to pass to the picker
+---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+builtin.cscope_references = require_on_exported_call("telescope.builtin.__cscope").references
+
+--- Lists tags in current directory with tag location file preview (users are required to run ctags -R to generate tags
+--- or update when introducing new changes)
+---@param opts table: options to pass to the picker
+---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+builtin.cscope_definitions = require_on_exported_call("telescope.builtin.__cscope").definitions
+
+---@param opts table: options to pass to the picker
+---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+builtin.cscope_called_by_this_function = require_on_exported_call("telescope.builtin.__cscope").called_by_this_function
+
+---@param opts table: options to pass to the picker
+---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+builtin.cscope_calling_this_function = require_on_exported_call("telescope.builtin.__cscope").calling_this_function
+
+--
+--
 -- Internal and Vim-related Pickers
 --
 --
