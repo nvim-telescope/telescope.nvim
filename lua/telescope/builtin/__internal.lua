@@ -959,7 +959,7 @@ end
 
 internal.colorscheme = function(opts)
   local before_background = vim.o.background
-  local before_color = vim.cmd.colorscheme()
+  local before_color = vim.api.nvim_exec2("colorscheme", { output = true }).output
   local need_restore = true
 
   local colors = opts.colors or { before_color }
