@@ -979,14 +979,12 @@ previewers.git_file_diff = defaulter(function(opts)
         if p == nil or p == "" then
           return
         end
-        conf.buffer_previewer_maker(
-          p,
-          self.state.bufnr,
-          vim.tbl_extend("force", opts, {
-            bufname = self.state.bufname,
-            winid = self.state.winid,
-          })
-        )
+        conf.buffer_previewer_maker(p, self.state.bufnr, {
+          bufname = self.state.bufname,
+          winid = self.state.winid,
+          preview = opts.preview,
+          file_encoding = opts.file_encoding,
+        })
       else
         local cmd = git_command({ "--no-pager", "diff", "HEAD", "--", entry.value }, opts)
         putils.job_maker(cmd, self.state.bufnr, {
