@@ -268,6 +268,9 @@ files.find_files = function(opts)
         return opts.find_command(opts)
       end
       return opts.find_command
+    elseif 1 == vim.fn.executable "bfs" then
+      -- Use https://github.com/tavianator/bfs
+      return { "bfs", "-type", "f", "-nocolor" }
     elseif 1 == vim.fn.executable "rg" then
       return { "rg", "--files", "--color", "never" }
     elseif 1 == vim.fn.executable "fd" then

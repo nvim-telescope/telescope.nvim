@@ -21,7 +21,18 @@ local optional_dependencies = {
     },
   },
   {
-    finder_name = "find-files",
+    finder_name = "find-files (bfs)",
+    package = {
+      {
+        name = "bfs",
+        binaries = { "bfs" },
+        url = "[tavianator/bfs](https://github.com/tavianator/bfs)",
+        optional = true,
+      },
+    },
+  },
+  {
+    finder_name = "find-files (fd)",
     package = {
       {
         name = "fd",
