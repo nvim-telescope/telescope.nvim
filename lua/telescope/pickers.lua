@@ -547,9 +547,7 @@ function Picker:find()
   pcall(a.nvim_buf_set_option, self.results_bufnr, "tabstop", 1) -- #1834
   pcall(a.nvim_buf_set_option, self.prompt_bufnr, "tabstop", 1) -- #1834
   a.nvim_buf_set_option(self.prompt_bufnr, "buftype", "prompt")
-  if not self.wrap_results then
-    a.nvim_win_set_option(self.results_win, "wrap", false)
-  end
+  a.nvim_win_set_option(self.results_win, "wrap", self.wrap_results)
   a.nvim_win_set_option(self.prompt_win, "wrap", true)
   if self.preview_win then
     a.nvim_win_set_option(self.preview_win, "wrap", true)
