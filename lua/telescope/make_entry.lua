@@ -467,7 +467,7 @@ function make_entry.gen_from_quickfix(opts)
         text = vim.trim(text)
       end
       text = text:gsub(".* | ", "")
-      display_string = display_string .. " " .. text
+      display_string = display_string .. ":" .. text
     end
 
     return display_string
