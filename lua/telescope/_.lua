@@ -162,6 +162,10 @@ function LinesPipe:iter(schedule)
       return
     end
 
+    if read == nil and (previous ~= nil and #previous > 0) then
+      read = "\n"
+    end
+
     read = string.gsub(read or "", "\r", "")
     return (previous or "") .. read
   end
