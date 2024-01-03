@@ -464,7 +464,7 @@ function make_entry.gen_from_quickfix(opts)
     if show_line then
       local text = entry.text
       if opts.trim_text then
-        text = text:gsub("^%s*(.-)%s*$", "%1")
+        text = vim.trim(text)
       end
       text = text:gsub(".* | ", "")
       display_string = display_string .. " " .. text
