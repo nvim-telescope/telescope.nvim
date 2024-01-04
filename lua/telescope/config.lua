@@ -1,6 +1,7 @@
 local strings = require "plenary.strings"
 local deprecated = require "telescope.deprecated"
 local sorters = require "telescope.sorters"
+local utils = require "telescope.utils"
 local os_sep = require("plenary.path").path.sep
 local has_win = vim.fn.has "win32" == 1
 
@@ -863,6 +864,88 @@ append(
 
     Default: require("telescope.previewers").buffer_previewer_maker]]
 )
+
+append(
+  "group_by_options",
+  {
+    defaults = {
+      group_getter = function(field)
+        return function(object)
+          return object[field]
+        end
+      end,
+      header_renderer = function(opts, value)
+        return { { value .. ":", opts.group_by.header_highlights } }
+      end,
+      header_highlights = { "@constant", "Bold" },
+    },
+    fields = {
+      ["filename"] = {
+        header_renderer = function(opts, value)
+          local devicon, devicon_hl = utils.get_devicons(value, opts.group_by.disable_devicons)
+          return {
+            { devicon .. (opts.group_by.disable_devicons and "" or " "), devicon_hl },
+            { utils.transform_path(opts, value) .. ":", opts.group_by.header_highlights },
+          }
+        end,
+      },
+    },
+  },
+  [[
+    This field defines the default behaviors of the group_by picker argument.
+
+    Fields:
+      - defaults:   specifies the default values for fields of the options.
+      - fields:     a dictionary whose keys are field names, and whose values
+                    are the default values for fields of the options when
+                    grouping by the key. Overrides the values in `defaults`
+                    for those keys.
+
+    Fields of the final options object (an object with these fields may also
+    be passed as the `group_by` argument to a picker call):
+      - field:               name of the field to group by.
+      - group_getter:        a function that, once provided with a field name,
+                             returns a function that extracts the group by key
+                             from an object.
+      - header_renderer:     a function that renders the headers for the groups
+                             being displayed.
+      - header_highlights:   highlights to be used for the group_by headers.
+                             Default: `{ "@constant", "Bold" }`.
+      - disable_devicons:    If the group by key is `filename`, controls whether
+                             the group by headers include devicons.
+                             Default: false.]]
+)
+
+-- @param argument string|table: if string, the name of the field to group by.
+--      If a table, contains the overrides for default options.
+function config.resolve_group_by_opts(argument)
+  if argument == nil then
+    return nil
+  end
+
+  local options = argument
+  if type(argument) == "string" then
+    options = config.values.group_by_options.fields[argument] or {}
+    options.field = argument
+  end
+
+  if argument.field ~= nil then
+    options = vim.tbl_deep_extend("keep", options, config.values.group_by_options.fields[argument.field])
+  end
+
+  if config.values.group_by_options ~= nil then
+    options = vim.tbl_deep_extend("keep", options, vim.F.if_nil(config.values.group_by_options.defaults, {}))
+  end
+
+  if options.field ~= nil then
+    options = vim.tbl_deep_extend("keep", options, telescope_defaults.group_by_options[1].fields[options.field])
+  end
+  options = vim.tbl_deep_extend("keep", options, telescope_defaults.group_by_options[1].defaults)
+
+  options._resolved_group_getter = options.group_getter(options.field)
+
+  return options
+end
 
 -- @param user_defaults table: a table where keys are the names of options,
 --    and values are the ones the user wants
