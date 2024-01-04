@@ -169,8 +169,8 @@ utils.is_path_hidden = function(opts, path_display)
   path_display = path_display or vim.F.if_nil(opts.path_display, require("telescope.config").values.path_display)
 
   return path_display == nil
-      or path_display == "hidden"
-      or type(path_display) == "table" and (vim.tbl_contains(path_display, "hidden") or path_display.hidden)
+    or path_display == "hidden"
+    or type(path_display) == "table" and (vim.tbl_contains(path_display, "hidden") or path_display.hidden)
 end
 
 utils.is_uri = function(filename)
@@ -183,17 +183,17 @@ utils.is_uri = function(filename)
 
   for i = 2, #filename do
     char = string.byte(filename, i)
-    if char == 58 then                                            -- `:`
+    if char == 58 then -- `:`
       return i < #filename and string.byte(filename, i + 1) ~= 92 -- `\`
     elseif
-        not (
-          (char >= 48 and char <= 57)     -- 0-9
-          or (char >= 65 and char <= 90)  -- A-Z
-          or (char >= 97 and char <= 122) -- a-z
-          or char == 43                   -- `+`
-          or char == 46                   -- `.`
-          or char == 45                   -- `-`
-        )
+      not (
+        (char >= 48 and char <= 57) -- 0-9
+        or (char >= 65 and char <= 90) -- A-Z
+        or (char >= 97 and char <= 122) -- a-z
+        or char == 43 -- `+`
+        or char == 46 -- `.`
+        or char == 45 -- `-`
+      )
     then
       return false
     end
