@@ -423,7 +423,6 @@ builtin.lsp_references = require_on_exported_call("telescope.builtin.__lsp").ref
 
 --- Lists LSP incoming calls for word under the cursor, jumps to reference on `<cr>`
 ---@param opts table: options to pass to the picker
----@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 ---@field file_encoding string: file encoding for the previewer
@@ -431,7 +430,6 @@ builtin.lsp_incoming_calls = require_on_exported_call("telescope.builtin.__lsp")
 
 --- Lists LSP outgoing calls for word under the cursor, jumps to reference on `<cr>`
 ---@param opts table: options to pass to the picker
----@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 ---@field file_encoding string: file encoding for the previewer
