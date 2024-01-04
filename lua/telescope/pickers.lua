@@ -320,7 +320,7 @@ function Picker:new(opts)
 
     __scrolling_limit = tonumber(vim.F.if_nil(opts.temp__scrolling_limit, 250)),
 
-    __allow_locations_input = opts.__locations_input or false,
+    __locations_input = vim.F.if_nil(opts.__locations_input, false),
   }, self)
 
   obj.create_layout = opts.create_layout or config.values.create_layout or default_create_layout
@@ -628,7 +628,7 @@ function Picker:find()
       local start_time = vim.loop.hrtime()
 
       local prompt = self:_get_next_filtered_prompt()
-      if self.__allow_locations_input == true then
+      if self.__locations_input == true then
         local filename, line_number, column_number = utils.__separate_file_path_location(prompt)
 
         if line_number or column_number then
