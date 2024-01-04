@@ -460,7 +460,6 @@ function make_entry.gen_from_quickfix(opts)
       display_string = string.format("%4d:%2d", entry.lnum, entry.col)
     end
 
-
     if show_line then
       local text = entry.text
       if opts.trim_text then
