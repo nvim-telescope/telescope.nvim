@@ -868,7 +868,8 @@ internal.buffers = function(opts)
     if cwd:sub(-1) ~= Path.path.sep then
       cwd = cwd .. Path.path.sep
     end
-    return vim.api.nvim_buf_get_name(bufnr):find(cwd) == nil
+    local bufname_prefix = vim.api.nvim_buf_get_name(bufnr):sub(1, #cwd)
+    return bufname_prefix ~= cwd
   end
 
   local bufnrs = vim.tbl_filter(function(bufnr)
