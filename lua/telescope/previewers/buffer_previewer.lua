@@ -488,29 +488,6 @@ end
 previewers.cat = defaulter(function(opts)
   opts = opts or {}
   local cwd = opts.cwd or vim.loop.cwd()
-  local function jump_to_line(bufnr, winid)
-    pcall(vim.api.nvim_buf_clear_namespace, bufnr, ns_previewer, 0, -1)
-    local location = global_state.get_global_key "prompt_location"
-
-    if location and location.row > 0 then
-      local highlight_range = location.col and location.col > 0 and { location.col - 1, location.col } or { 0, -1 }
-
-      pcall(
-        vim.api.nvim_buf_add_highlight,
-        bufnr,
-        ns_previewer,
-        "TelescopePreviewLine",
-        location.row - 1,
-        highlight_range[1],
-        highlight_range[2]
-      )
-
-      pcall(vim.api.nvim_win_set_cursor, winid, { location.row, location.col })
-      vim.api.nvim_buf_call(bufnr, function()
-        vim.cmd "norm! zz"
-      end)
-    end
-  end
   return previewers.new_buffer_previewer {
     title = "File Preview",
     dyn_title = function(_, entry)
@@ -531,9 +508,6 @@ previewers.cat = defaulter(function(opts)
         winid = self.state.winid,
         preview = opts.preview,
         file_encoding = opts.file_encoding,
-        callback = function(bufnr)
-          jump_to_line(bufnr, self.state.winid)
-        end,
       })
     end,
   }
@@ -550,11 +524,10 @@ previewers.vimgrep = defaulter(function(opts)
       local lnum, lnend = entry.lnum - 1, (entry.lnend or entry.lnum) - 1
 
       local col, colend = 0, -1
-      -- Both col delimiters should be provided for them to take effect.
-      -- This is to ensure that column range highlighting was opted in, as `col`
-      -- is already used to determine the buffer jump position elsewhere.
       if entry.col and entry.colend then
         col, colend = entry.col - 1, entry.colend - 1
+      elseif entry.col and entry.col > 0 and not entry.colend then
+        col, colend = entry.col - 1, entry.col
       end
 
       for i = lnum, lnend do

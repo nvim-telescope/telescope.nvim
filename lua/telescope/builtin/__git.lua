@@ -55,7 +55,7 @@ git.files = function(opts)
         },
         opts
       ),
-      previewer = conf.file_previewer(opts),
+      previewer = conf.grep_previewer(opts),
       sorter = conf.file_sorter(opts),
     })
     :find()

@@ -633,17 +633,14 @@ function Picker:find()
 
         if line_number or column_number then
           state.set_global_key("prompt_location", { row = line_number, col = column_number })
-          self:refresh_previewer()
         elseif state.get_global_key "prompt_location" then
           state.set_global_key("prompt_location", nil)
-          self:refresh_previewer()
         end
 
         -- it is important to continue behaving as if there is no location in prompt
         prompt = filename
       elseif state.get_global_key "prompt_location" then
         -- in case new picker that does not support locations is opened clear the location
-        -- without refreshing previewer
         state.set_global_key("prompt_location", nil)
       end
 
@@ -1130,6 +1127,7 @@ function Picker:set_selection(row)
     return
   end
 
+  self:refresh_previewer()
   if old_entry == entry and self._selection_row == row then
     return
   end
@@ -1137,8 +1135,6 @@ function Picker:set_selection(row)
   -- TODO: Get row & text in the same obj
   self._selection_entry = entry
   self._selection_row = row
-
-  self:refresh_previewer()
 
   vim.api.nvim_win_set_cursor(self.results_win, { row + 1, 0 })
 end

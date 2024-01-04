@@ -386,7 +386,7 @@ files.find_files = function(opts)
       prompt_title = "Find Files",
       __locations_input = true,
       finder = finders.new_oneshot_job(find_command, opts),
-      previewer = conf.file_previewer(opts),
+      previewer = conf.grep_previewer(opts),
       sorter = conf.file_sorter(opts),
     })
     :find()
