@@ -12,8 +12,6 @@ local utils = require "telescope.utils"
 
 local conf = require("telescope.config").values
 
-local filter = vim.tbl_filter
-
 -- Makes sure aliased options are set correctly
 local function apply_cwd_only_aliases(opts)
   local has_cwd_only = opts.cwd_only ~= nil
@@ -865,25 +863,39 @@ end
 
 internal.buffers = function(opts)
   opts = apply_cwd_only_aliases(opts)
-  local bufnrs = filter(function(b)
-    if 1 ~= vim.fn.buflisted(b) then
+
+  local function buf_not_in_cwd(bufnr, cwd)
+    if cwd:sub(-1) ~= Path.path.sep then
+      cwd = cwd .. Path.path.sep
+    end
+    return vim.api.nvim_buf_get_name(bufnr):find(cwd) == nil
+  end
+
+  local bufnrs = vim.tbl_filter(function(bufnr)
+    if 1 ~= vim.fn.buflisted(bufnr) then
       return false
     end
     -- only hide unloaded buffers if opts.show_all_buffers is false, keep them listed if true or nil
-    if opts.show_all_buffers == false and not vim.api.nvim_buf_is_loaded(b) then
+    if opts.show_all_buffers == false and not vim.api.nvim_buf_is_loaded(bufnr) then
       return false
     end
-    if opts.ignore_current_buffer and b == vim.api.nvim_get_current_buf() then
+    if opts.ignore_current_buffer and bufnr == vim.api.nvim_get_current_buf() then
       return false
     end
-    if opts.cwd_only and not string.find(vim.api.nvim_buf_get_name(b), vim.loop.cwd(), 1, true) then
+    if opts.cwd_only and buf_not_in_cwd(bufnr, vim.loop.cwd()) then
+      return false
+    end
+    if not opts.cwd_only and opts.cwd and buf_not_in_cwd(bufnr, opts.cwd) then
       return false
     end
     return true
   end, vim.api.nvim_list_bufs())
+
   if not next(bufnrs) then
+    utils.notify("builtin.buffers", { msg = "No buffers found with the provided options", level = "INFO" })
     return
   end
+
   if opts.sort_mru then
     table.sort(bufnrs, function(a, b)
       return vim.fn.getbufinfo(a)[1].lastused > vim.fn.getbufinfo(b)[1].lastused
