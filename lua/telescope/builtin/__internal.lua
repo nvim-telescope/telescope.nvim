@@ -384,8 +384,10 @@ internal.commands = function(opts)
             local cr = vim.api.nvim_replace_termcodes("<cr>", true, false, true)
             cmd = cmd .. cr
           end
-          vim.cmd [[stopinsert]]
-          vim.api.nvim_feedkeys(cmd, "t", false)
+          vim.schedule(function()
+            vim.cmd [[stopinsert]]
+            vim.api.nvim_feedkeys(cmd, "t", false)
+          end)
         end)
 
         return true
