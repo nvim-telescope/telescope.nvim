@@ -524,10 +524,11 @@ previewers.vimgrep = defaulter(function(opts)
       local lnum, lnend = entry.lnum - 1, (entry.lnend or entry.lnum) - 1
 
       local col, colend = 0, -1
+      -- Both col delimiters should be provided for them to take effect.
+      -- This is to ensure that column range highlighting was opted in, as `col`
+      -- is already used to determine the buffer jump position elsewhere.
       if entry.col and entry.colend then
         col, colend = entry.col - 1, entry.colend - 1
-      elseif entry.col and entry.col > 0 and not entry.colend then
-        col, colend = entry.col - 1, entry.col
       end
 
       for i = lnum, lnend do

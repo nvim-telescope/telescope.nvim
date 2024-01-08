@@ -1067,7 +1067,13 @@ function Picker:set_selection(row)
   local prompt_location = state.get_global_key "prompt_location"
   if entry and prompt_location then
     entry.lnum = prompt_location.row or 0
-    entry.col = prompt_location.col or 0
+    if prompt_location.col and prompt_location.col > 0 then
+      entry.col = prompt_location.col
+      entry.colend = prompt_location.col + 1
+    else
+      entry.col = 1 -- we do + 1 here because previewer does -1
+      entry.colend = 0
+    end
   end
 
   state.set_global_key("selected_entry", entry)
