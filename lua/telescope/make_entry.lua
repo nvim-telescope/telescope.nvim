@@ -452,37 +452,24 @@ function make_entry.gen_from_quickfix(opts)
   local show_line = vim.F.if_nil(opts.show_line, true)
 
   local hidden = utils.is_path_hidden(opts)
-  local items = {
-    { width = vim.F.if_nil(opts.fname_width, 30) },
-    { remaining = true },
-  }
-  if hidden then
-    items[1] = { width = 8 }
-  end
-  if not show_line then
-    table.remove(items, 1)
-  end
-
-  local displayer = entry_display.create { separator = "▏", items = items }
 
   local make_display = function(entry)
-    local input = {}
-    if not hidden then
-      table.insert(input, string.format("%s:%d:%d", utils.transform_path(opts, entry.filename), entry.lnum, entry.col))
-    else
-      table.insert(input, string.format("%4d:%2d", entry.lnum, entry.col))
+    local display_filename = utils.transform_path(opts, entry.filename)
+    local display_string = string.format("%s:%d:%d", display_filename, entry.lnum, entry.col)
+    if hidden then
+      display_string = string.format("%4d:%2d", entry.lnum, entry.col)
     end
 
     if show_line then
       local text = entry.text
       if opts.trim_text then
-        text = text:gsub("^%s*(.-)%s*$", "%1")
+        text = vim.trim(text)
       end
       text = text:gsub(".* | ", "")
-      table.insert(input, text)
+      display_string = display_string .. ":" .. text
     end
 
-    return displayer(input)
+    return display_string
   end
 
   local get_filename = get_filename_fn()

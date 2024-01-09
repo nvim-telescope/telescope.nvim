@@ -281,7 +281,6 @@ builtin.commands = require_on_exported_call("telescope.builtin.__internal").comm
 ---@param opts table: options to pass to the picker
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
----@field fname_width number: defines the width of the filename section (default: 30)
 ---@field nr number: specify the quickfix list number
 builtin.quickfix = require_on_exported_call("telescope.builtin.__internal").quickfix
 
@@ -294,7 +293,6 @@ builtin.quickfixhistory = require_on_exported_call("telescope.builtin.__internal
 ---@param opts table: options to pass to the picker
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
----@field fname_width number: defines the width of the filename section (default: 30)
 builtin.loclist = require_on_exported_call("telescope.builtin.__internal").loclist
 
 --- Lists previously open files, opens on `<cr>`
@@ -399,14 +397,12 @@ builtin.spell_suggest = require_on_exported_call("telescope.builtin.__internal")
 ---@param opts table: options to pass to the picker
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
----@field fname_width number: defines the width of the filename section (default: 30)
 builtin.tagstack = require_on_exported_call("telescope.builtin.__internal").tagstack
 
 --- Lists items from Vim's jumplist, jumps to location on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
----@field fname_width number: defines the width of the filename section (default: 30)
 builtin.jumplist = require_on_exported_call("telescope.builtin.__internal").jumplist
 
 --
@@ -420,7 +416,6 @@ builtin.jumplist = require_on_exported_call("telescope.builtin.__internal").jump
 ---@field include_declaration boolean: include symbol declaration in the lsp references (default: true)
 ---@field include_current_line boolean: include current line (default: false)
 ---@field jump_type string: how to goto reference if there is only one and the definition file is different from the current file, values: "tab", "tab drop", "split", "vsplit", "never"
----@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 ---@field file_encoding string: file encoding for the previewer
@@ -428,7 +423,6 @@ builtin.lsp_references = require_on_exported_call("telescope.builtin.__lsp").ref
 
 --- Lists LSP incoming calls for word under the cursor, jumps to reference on `<cr>`
 ---@param opts table: options to pass to the picker
----@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 ---@field file_encoding string: file encoding for the previewer
@@ -436,7 +430,6 @@ builtin.lsp_incoming_calls = require_on_exported_call("telescope.builtin.__lsp")
 
 --- Lists LSP outgoing calls for word under the cursor, jumps to reference on `<cr>`
 ---@param opts table: options to pass to the picker
----@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 ---@field file_encoding string: file encoding for the previewer
@@ -445,7 +438,6 @@ builtin.lsp_outgoing_calls = require_on_exported_call("telescope.builtin.__lsp")
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto definition if there is only one and the definition file is different from the current file, values: "tab", "tab drop", "split", "vsplit", "never"
----@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 ---@field reuse_win boolean: jump to existing window if buffer is already opened (default: false)
@@ -456,7 +448,6 @@ builtin.lsp_definitions = require_on_exported_call("telescope.builtin.__lsp").de
 --- otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto definition if there is only one and the definition file is different from the current file, values: "tab", "tab drop", "split", "vsplit", "never"
----@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 ---@field reuse_win boolean: jump to existing window if buffer is already opened (default: false)
@@ -466,7 +457,6 @@ builtin.lsp_type_definitions = require_on_exported_call("telescope.builtin.__lsp
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto implementation if there is only one and the definition file is different from the current file, values: "tab", "tab drop", "split", "vsplit", "never"
----@field fname_width number: defines the width of the filename section (default: 30)
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
 ---@field reuse_win boolean: jump to existing window if buffer is already opened (default: false)
