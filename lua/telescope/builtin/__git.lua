@@ -420,6 +420,7 @@ git.status = function(opts)
         }
 
         map({ "i", "n" }, "<tab>", actions.git_staging_toggle)
+        map("n", "<del>", actions.git_restore)
         return true
       end,
     })
