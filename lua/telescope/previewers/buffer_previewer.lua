@@ -4,6 +4,7 @@ local utils = require "telescope.utils"
 local putils = require "telescope.previewers.utils"
 local Previewer = require "telescope.previewers.previewer"
 local conf = require("telescope.config").values
+local global_state = require "telescope.state"
 
 local pscan = require "plenary.scandir"
 
@@ -345,8 +346,6 @@ previewers.new_buffer_previewer = function(opts)
 
   local old_bufs = {}
   local bufname_table = {}
-
-  local global_state = require "telescope.state"
   local preview_window_id
 
   local function get_bufnr(self)

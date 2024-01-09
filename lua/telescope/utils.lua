@@ -567,4 +567,40 @@ utils.list_find = function(func, list)
   end
 end
 
+--- Takes the path and parses optional cursor location `$file:$line:$column`
+--- If line or column not present `0` returned.
+--- @param path string
+utils.__separate_file_path_location = function(path)
+  local location_numbers = {}
+  for i = #path, 1, -1 do
+    if path:sub(i, i) == ":" then
+      if i == #path then
+        path = path:sub(1, i - 1)
+      else
+        local location_value = tonumber(path:sub(i + 1))
+        if location_value then
+          table.insert(location_numbers, location_value)
+          path = path:sub(1, i - 1)
+
+          if #location_numbers == 2 then
+            -- There couldn't be more than 2 : separated number
+            break
+          end
+        end
+      end
+    end
+  end
+
+  if #location_numbers == 2 then
+    -- because of the reverse the line number will be second
+    return path, location_numbers[2], location_numbers[1]
+  end
+
+  if #location_numbers == 1 then
+    return path, location_numbers[1], 0
+  end
+
+  return path, 0, 0
+end
+
 return utils

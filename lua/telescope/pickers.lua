@@ -319,6 +319,8 @@ function Picker:new(opts)
     cache_picker = config.resolve_table_opts(opts.cache_picker, vim.deepcopy(config.values.cache_picker)),
 
     __scrolling_limit = tonumber(vim.F.if_nil(opts.temp__scrolling_limit, 250)),
+
+    __locations_input = vim.F.if_nil(opts.__locations_input, false),
   }, self)
 
   obj.create_layout = opts.create_layout or config.values.create_layout or default_create_layout
@@ -624,6 +626,21 @@ function Picker:find()
       local start_time = vim.loop.hrtime()
 
       local prompt = self:_get_next_filtered_prompt()
+      if self.__locations_input == true then
+        local filename, line_number, column_number = utils.__separate_file_path_location(prompt)
+
+        if line_number or column_number then
+          state.set_global_key("prompt_location", { row = line_number, col = column_number })
+        elseif state.get_global_key "prompt_location" then
+          state.set_global_key("prompt_location", nil)
+        end
+
+        -- it is important to continue behaving as if there is no location in prompt
+        prompt = filename
+      elseif state.get_global_key "prompt_location" then
+        -- in case new picker that does not support locations is opened clear the location
+        state.set_global_key("prompt_location", nil)
+      end
 
       -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
       if self.cache_picker == false or self.cache_picker.is_cached ~= true then
@@ -1044,6 +1061,19 @@ function Picker:set_selection(row)
   end
 
   local entry = self.manager:get_entry(self:get_index(row))
+
+  local prompt_location = state.get_global_key "prompt_location"
+  if entry and prompt_location then
+    entry.lnum = prompt_location.row or 0
+    if prompt_location.col and prompt_location.col > 0 then
+      entry.col = prompt_location.col
+      entry.colend = prompt_location.col + 1
+    else
+      entry.col = 1 -- we do + 1 here because previewer does -1
+      entry.colend = 0
+    end
+  end
+
   state.set_global_key("selected_entry", entry)
 
   if not entry then
@@ -1101,6 +1131,7 @@ function Picker:set_selection(row)
     return
   end
 
+  self:refresh_previewer()
   if old_entry == entry and self._selection_row == row then
     return
   end
@@ -1108,8 +1139,6 @@ function Picker:set_selection(row)
   -- TODO: Get row & text in the same obj
   self._selection_entry = entry
   self._selection_row = row
-
-  self:refresh_previewer()
 
   vim.api.nvim_win_set_cursor(self.results_win, { row + 1, 0 })
 end

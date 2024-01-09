@@ -46,6 +46,7 @@ git.files = function(opts)
   pickers
     .new(opts, {
       prompt_title = "Git Files",
+      __locations_input = true,
       finder = finders.new_oneshot_job(
         vim.tbl_flatten {
           opts.git_command,
@@ -54,7 +55,7 @@ git.files = function(opts)
         },
         opts
       ),
-      previewer = conf.file_previewer(opts),
+      previewer = conf.grep_previewer(opts),
       sorter = conf.file_sorter(opts),
     })
     :find()
