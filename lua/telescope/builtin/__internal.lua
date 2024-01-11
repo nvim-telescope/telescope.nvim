@@ -1109,7 +1109,7 @@ internal.marks = function(opts)
         line = line,
         lnum = lnum,
         col = col,
-        filename = v.file or bufname,
+        filename = vim.fs.normalize(v.file or bufname),
       }
       -- non alphanumeric marks goes to last
       if mark:match "%w" then
