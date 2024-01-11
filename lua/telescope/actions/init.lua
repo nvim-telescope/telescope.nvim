@@ -1241,6 +1241,9 @@ actions.which_key = function(prompt_bufnr, opts)
   opts.normal_hl = vim.F.if_nil(opts.normal_hl, "TelescopePrompt")
   opts.border_hl = vim.F.if_nil(opts.border_hl, "TelescopePromptBorder")
   opts.winblend = vim.F.if_nil(opts.winblend, conf.winblend)
+  if type(opts.winblend) == "function" then
+    opts.winblend = opts.winblend()
+  end
   opts.column_padding = vim.F.if_nil(opts.column_padding, "  ")
 
   -- Assigning into 'opts.column_indent' would override a number with a string and
