@@ -560,12 +560,13 @@ internal.oldfiles = function(opts)
   pickers
     .new(opts, {
       prompt_title = "Oldfiles",
+      __locations_input = true,
       finder = finders.new_table {
         results = results,
         entry_maker = opts.entry_maker or make_entry.gen_from_file(opts),
       },
       sorter = conf.file_sorter(opts),
-      previewer = conf.file_previewer(opts),
+      previewer = conf.grep_previewer(opts),
     })
     :find()
 end
