@@ -569,7 +569,10 @@ end
 
 --- Takes the path and parses optional cursor location `$file:$line:$column`
 --- If line or column not present `0` returned.
---- @param path string
+---@param path string
+---@return string path
+---@return integer? lnum
+---@return integer? col
 utils.__separate_file_path_location = function(path)
   local location_numbers = {}
   for i = #path, 1, -1 do
@@ -600,7 +603,7 @@ utils.__separate_file_path_location = function(path)
     return path, location_numbers[1], 0
   end
 
-  return path, 0, 0
+  return path, nil, nil
 end
 
 return utils
