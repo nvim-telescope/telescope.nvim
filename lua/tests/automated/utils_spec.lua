@@ -108,8 +108,6 @@ describe("separates file path location", function()
     {
       input = "file:",
       file = "file",
-      row = 0,
-      col = 0,
     },
   }
 
