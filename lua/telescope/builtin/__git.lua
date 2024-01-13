@@ -19,6 +19,27 @@ local get_git_command_output = function(args, opts)
   return utils.get_os_command_output(git_command(args, opts), opts.cwd)
 end
 
+git.conflicts = function(opts)
+  opts.git_command =
+    vim.F.if_nil(opts.git_command, git_command({ "diff", "--name-only", "--diff-filter=U", "--relative" }, opts))
+  opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_file(opts))
+
+  pickers
+    .new(opts, {
+      prompt_title = "Git Files",
+      __locations_input = true,
+      finder = finders.new_oneshot_job(
+        vim.tbl_flatten {
+          opts.git_command,
+        },
+        opts
+      ),
+      previewer = conf.grep_previewer(opts),
+      sorter = conf.file_sorter(opts),
+    })
+    :find()
+end
+
 git.files = function(opts)
   if opts.is_bare then
     utils.notify("builtin.git_files", {
