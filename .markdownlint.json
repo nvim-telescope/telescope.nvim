@@ -1,0 +1,6 @@
+{
+  "line-length": false,
+  "no-multiline-string": false,
+  "no-inline-html": false,
+  "no-bare-urls": false
+}
