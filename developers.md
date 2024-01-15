@@ -30,6 +30,7 @@ in the future.
 
 This guide is mainly for telescope so it will assume that you already have some knowledge of the Lua
 programming language. If not then you can find information for Lua here:
+
 - [Lua 5.1 Manual](https://www.lua.org/manual/5.1/)
 - [Getting started using Lua in Neovim](https://github.com/nanotee/nvim-lua-guide)
 
@@ -42,6 +43,7 @@ scratch file, in which we will develop the picker and run it each time using
 ### Requires
 
 The most important includes are the following modules:
+
 ```lua
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
@@ -51,6 +53,7 @@ local conf = require("telescope.config").values
 - `pickers`: main module which is used to create a new picker.
 - `finders`: provides interfaces to fill the picker with items.
 - `config`: `values` table which holds the user's configuration.
+
 So to make it easier we access this table directly in `conf`.
 
 ### First Picker
@@ -137,12 +140,10 @@ local action_state = require "telescope.actions.state"
 ```
 
 - `actions`: holds all actions that can be mapped by a user. We also need it to
-  access the default action so we can replace it. Also see `:help
-  telescope.actions`
+  access the default action so we can replace it. Also see `:help telescope.actions`
 
 - `action_state`: gives us a few utility functions we can use to get the
-  current picker, current selection or current line. Also see `:help
-  telescope.actions.state`
+  current picker, current selection or current line. Also see `:help telescope.actions.state`
 
 So let's replace the default action. For that we need to define a new key value
 pair in our table that we pass into `pickers.new`, for example after `sorter`.
@@ -244,6 +245,7 @@ sorting key.
 
 There are other important keys which can be set, but do not make sense in the
 current context as we are not dealing with files:
+
 - `path`: to set the absolute path of the file to make sure it's always found
 - `lnum`: to specify a line number in the file. This will allow the
   `conf.grep_previewer` to show that line and the default action to jump to
@@ -286,7 +288,7 @@ picker via the `:Telescope` command, the following has to be done.
 
 Structure your plugin as follows, so it can be found by telescope:
 
-```
+```sh
 .
 └── lua
     ├── plugin_name             # Your actual plugin code
@@ -323,7 +325,6 @@ The exports table declares the exported pickers that can then be accessed via
 that you name the key like the plugin, so you can access it with `Telescope
 plugin_name`.
 
-
 ## Technical
 
 ### Picker
@@ -345,7 +346,9 @@ Picker:new{
 ```
 
 ### Finders
+
 <!-- TODO what are finders -->
+
 ```lua
 -- lua/telescope/finders.lua
 Finder:new{
@@ -367,14 +370,14 @@ TODO: Talk about what actions vs actions sets are
 ##### Relevant Files
 
 - `lua/telescope/actions/init.lua`
-    - The most "user-facing" of the files, which has the builtin actions that we provide
+  - The most "user-facing" of the files, which has the builtin actions that we provide
 - `lua/telescope/actions/set.lua`
-    - The second most "user-facing" of the files. This provides actions that are consumed by several builtin actions, which allows for only overriding ONE item, instead of copying the same configuration / function several times.
+  - The second most "user-facing" of the files. This provides actions that are consumed by several builtin actions, which allows for only overriding ONE item, instead of copying the same configuration / function several times.
 - `lua/telescope/actions/state.lua`
-    - Provides APIs for interacting with the state of telescope from within actions.
-    - These are useful for writing your own actions and interacting with telescope
+  - Provides APIs for interacting with the state of telescope from within actions.
+  - These are useful for writing your own actions and interacting with telescope
 - `lua/telescope/actions/mt.lua`
-    - You probably don't need to look at this, but it defines the behavior of actions.
+  - You probably don't need to look at this, but it defines the behavior of actions.
 
 ##### `:replace(function)`
 
