@@ -456,7 +456,6 @@ builtin.lsp_definitions = require_on_exported_call("telescope.builtin.__lsp").de
 ---@field file_encoding string: file encoding for the previewer
 ---@field results_filter function: if included, filters results where `results_filter(v)` is `true`. (default: nil)
 builtin.lsp_type_definitions = require_on_exported_call("telescope.builtin.__lsp").type_definitions
-builtin.lsp_type_definitions = require("telescope.builtin.__lsp").type_definitions
 
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
