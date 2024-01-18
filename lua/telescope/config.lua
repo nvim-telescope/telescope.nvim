@@ -219,12 +219,15 @@ append(
 
 append(
   "winblend",
-  0,
+  function()
+    return vim.o.winblend
+  end,
   [[
   Configure winblend for telescope floating windows. See |winblend| for
-  more information.
+  more information. Type can be a number or a function returning a
+  number
 
-  Default: 0]]
+  Default: function() return vim.o.winblend end]]
 )
 
 append(

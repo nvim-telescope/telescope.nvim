@@ -244,6 +244,11 @@ function Picker:new(opts)
   -- end
 
   local layout_strategy = vim.F.if_nil(opts.layout_strategy, config.values.layout_strategy)
+  local winblend =
+    vim.F.if_nil(opts.winblend, type(opts.window) == "table" and opts.window.winblend or config.values.winblend)
+  if type(winblend) == "function" then
+    winblend = winblend()
+  end
 
   local obj = setmetatable({
     prompt_title = vim.F.if_nil(opts.prompt_title, config.values.prompt_title),
@@ -305,10 +310,7 @@ function Picker:new(opts)
     __cycle_layout_list = vim.F.if_nil(opts.cycle_layout_list, config.values.cycle_layout_list),
 
     window = {
-      winblend = vim.F.if_nil(
-        opts.winblend,
-        type(opts.window) == "table" and opts.window.winblend or config.values.winblend
-      ),
+      winblend = winblend,
       border = vim.F.if_nil(opts.border, type(opts.window) == "table" and opts.window.border or config.values.border),
       borderchars = vim.F.if_nil(
         opts.borderchars,
