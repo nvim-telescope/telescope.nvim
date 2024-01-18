@@ -1,8 +1,23 @@
 local utils = require "telescope.utils"
 
+---@class Previewer
+---@field state table
+---@field private _title_fn TitleFn
+---@field private _dyn_title_fn TitleFn
+---@field private _setup_func any
+---@field private _teardown_func any
+---@field private _send_input any
+---@field private _scroll_fn any
+---@field private _scroll_horizontal_fn any
+---@field preview_fn any
+---@field private _empty_bufnr any
 local Previewer = {}
 Previewer.__index = Previewer
 
+---@alias TitleFn  fun(self:Previewer?, entry:table?): string
+
+---@param value string | fun(previewer: Previewer, entry: table): string
+---@return TitleFn | nil
 local force_function_wrap = function(value)
   if value ~= nil then
     if type(value) ~= "function" then

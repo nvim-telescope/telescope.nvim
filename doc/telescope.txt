@@ -797,12 +797,8 @@ options you want to use. Here's an example with the live_grep picker:
   })
 <
 
-builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
-    Search for a string and get results live as you type, respects .gitignore
-
-
-    Parameters: ~
-        {opts} (table)  options to pass to the picker
+TelescopeLiveGrepOpts                                  *TelescopeLiveGrepOpts*
+    TelescopeBasePickerOpts
 
     Options: ~
         {cwd}                 (string)          root dir to search from
@@ -812,7 +808,7 @@ builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
         {grep_open_files}     (boolean)         if true, restrict search to
                                                 open files only, mutually
                                                 exclusive with `search_dirs`
-        {search_dirs}         (table)           directory/directories/files to
+        {search_dirs}         (string[])        directory/directories/files to
                                                 search, mutually exclusive
                                                 with `grep_open_files`
         {glob_pattern}        (string|table)    argument to be used with
@@ -829,6 +825,15 @@ builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
                                                 numbers (default: false)
         {file_encoding}       (string)          file encoding for the entry &
                                                 previewer
+        {vimgrep_arguments}   (string[])        cmd to use for the search
+
+
+builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
+    Search for a string and get results live as you type, respects .gitignore
+
+
+    Parameters: ~
+        {opts} (TelescopeLiveGrepOpts)  options to pass to the picker
 
 
 builtin.grep_string({opts})                  *telescope.builtin.grep_string()*

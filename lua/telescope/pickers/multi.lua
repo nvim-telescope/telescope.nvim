@@ -1,3 +1,5 @@
+---@class MultiSelect
+---@field private _entries table
 local MultiSelect = {}
 MultiSelect.__index = MultiSelect
 

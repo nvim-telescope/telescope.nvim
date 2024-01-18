@@ -2,6 +2,12 @@ local log = require "telescope.log"
 
 local LinkedList = require "telescope.algos.linked_list"
 
+---@class TelescopeEntryManager
+---@field linked_states any
+---@field info any
+---@field max_results any
+---@field set_entry any
+---@field worst_acceptable_score any
 local EntryManager = {}
 EntryManager.__index = EntryManager
 
