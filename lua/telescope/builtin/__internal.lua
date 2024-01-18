@@ -1261,6 +1261,33 @@ internal.filetypes = function(opts)
     :find()
 end
 
+internal.compilers = function(opts)
+  local compilers = vim.fn.getcompletion("", "compiler")
+
+  pickers
+    .new(opts, {
+      prompt_title = "Compilers",
+      finder = finders.new_table {
+        results = compilers,
+      },
+      sorter = conf.generic_sorter(opts),
+      attach_mappings = function(prompt_bufnr)
+        actions.select_default:replace(function()
+          local selection = action_state.get_selected_entry()
+          if selection == nil then
+            print "[telescope] Nothing currently selected"
+            return
+          end
+
+          actions.close(prompt_bufnr)
+          vim.cmd("compiler " .. selection[1])
+        end)
+        return true
+      end,
+    })
+    :find()
+end
+
 internal.highlights = function(opts)
   local highlights = vim.fn.getcompletion("", "highlight")
 

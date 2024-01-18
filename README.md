@@ -335,6 +335,7 @@ Built-in functions. Ready to be bound to any key you like.
 | `builtin.spell_suggest`             | Lists spelling suggestions for the current word under the cursor, replaces word with selected suggestion on `<cr>`                                          |
 | `builtin.keymaps`                   | Lists normal mode keymappings                                                                                                                               |
 | `builtin.filetypes`                 | Lists all available filetypes                                                                                                                               |
+| `builtin.compilers`                 | Lists all available compilers                                                                                                                               |
 | `builtin.highlights`                | Lists all available highlights                                                                                                                              |
 | `builtin.current_buffer_fuzzy_find` | Live fuzzy search inside of the currently open buffer                                                                                                       |
 | `builtin.current_buffer_tags`       | Lists all of the tags for the currently open buffer, with a preview                                                                                         |

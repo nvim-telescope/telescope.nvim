@@ -381,6 +381,10 @@ builtin.keymaps = require_on_exported_call("telescope.builtin.__internal").keyma
 ---@param opts table: options to pass to the picker
 builtin.filetypes = require_on_exported_call("telescope.builtin.__internal").filetypes
 
+--- Lists all available compilers, sets compiler for currently opened buffer to selected compiler in Telescope on `<cr>`
+---@param opts table: options to pass to the picker
+builtin.compilers = require_on_exported_call("telescope.builtin.__internal").compilers
+
 --- Lists all available highlights
 ---@param opts table: options to pass to the picker
 builtin.highlights = require_on_exported_call("telescope.builtin.__internal").highlights
