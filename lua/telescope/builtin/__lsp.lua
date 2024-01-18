@@ -97,6 +97,13 @@ end
 
 local function list_or_jump(action, title, opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
+  -- The `references` request can also conditionally includes the declaration of the referenced item.
+  -- See the LSP docs for more details:
+  -- https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#referenceParams
+  if action == "textDocument/references" then
+    params.context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) }
+  end
+
   vim.lsp.buf_request(opts.bufnr, action, params, function(err, result, ctx, _)
     if err then
       vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
