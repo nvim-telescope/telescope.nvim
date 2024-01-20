@@ -3311,7 +3311,6 @@ actions.insert_original_cword({prompt_bufnr}) *telescope.actions.insert_original
     Insert the word under the cursor of the original (pre-Telescope) window
 
 
-
     Parameters: ~
         {prompt_bufnr} (number)  The prompt bufnr
 
