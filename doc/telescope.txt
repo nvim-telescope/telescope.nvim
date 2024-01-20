@@ -3307,6 +3307,14 @@ actions.delete_mark({prompt_bufnr})          *telescope.actions.delete_mark()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.insert_original_cword({prompt_bufnr}) *telescope.actions.insert_original_cword()*
+    Insert the word under the cursor of the original (pre-Telescope) window
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 
 ================================================================================
 ACTIONS_STATE                                          *telescope.actions.state*
