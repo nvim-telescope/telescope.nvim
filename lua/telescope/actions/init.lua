@@ -1484,7 +1484,7 @@ actions.delete_mark = function(prompt_bufnr)
   end)
 end
 
---- Insert the word under the cursor of the original (pre-Telescope) window<br>
+--- Insert the word under the cursor of the original (pre-Telescope) window
 ---@param prompt_bufnr number: The prompt bufnr
 actions.insert_original_cword = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
