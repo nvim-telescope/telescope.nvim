@@ -1332,7 +1332,7 @@ function make_entry.gen_from_git_status(opts)
     return displayer {
       { status_x.icon or empty_space, status_x.hl },
       { status_y.icon or empty_space, status_y.hl },
-      entry.value,
+      utils.transform_path(opts, entry.path),
     }
   end
 
