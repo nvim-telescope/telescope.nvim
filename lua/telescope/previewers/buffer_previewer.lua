@@ -504,7 +504,7 @@ end, {})
 
 previewers.qflist = previewers.vimgrep
 
-previewers.ctags = defaulter(function(_)
+previewers.ctags = defaulter(function(opts)
   local determine_jump = function(entry)
     if entry.scode then
       return function(self)
@@ -553,17 +553,19 @@ previewers.ctags = defaulter(function(_)
       conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
         bufname = self.state.bufname,
         winid = self.state.winid,
+        preview = opts.preview,
         callback = function(bufnr)
           pcall(vim.api.nvim_buf_call, bufnr, function()
             determine_jump(entry)(self, bufnr)
           end)
         end,
+        file_encoding = opts.file_encoding,
       })
     end,
   }
 end, {})
 
-previewers.builtin = defaulter(function(_)
+previewers.builtin = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "Grep Preview",
     teardown = search_teardown,
@@ -584,15 +586,17 @@ previewers.builtin = defaulter(function(_)
       conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
         bufname = self.state.bufname,
         winid = self.state.winid,
+        preview = opts.preview,
         callback = function(bufnr)
           search_cb_jump(self, bufnr, text)
         end,
+        file_encoding = opts.file_encoding,
       })
     end,
   }
 end, {})
 
-previewers.help = defaulter(function(_)
+previewers.help = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "Help Preview",
     teardown = search_teardown,
@@ -609,10 +613,12 @@ previewers.help = defaulter(function(_)
       conf.buffer_previewer_maker(entry.filename, self.state.bufnr, {
         bufname = self.state.bufname,
         winid = self.state.winid,
+        preview = opts.preview,
         callback = function(bufnr)
           putils.regex_highlighter(bufnr, "help")
           search_cb_jump(self, bufnr, query)
         end,
+        file_encoding = opts.file_encoding,
       })
     end,
   }
@@ -888,6 +894,8 @@ previewers.git_file_diff = defaulter(function(opts)
         conf.buffer_previewer_maker(p, self.state.bufnr, {
           bufname = self.state.bufname,
           winid = self.state.winid,
+          preview = opts.preview,
+          file_encoding = opts.file_encoding,
         })
       else
         putils.job_maker({ "git", "--no-pager", "diff", "HEAD", "--", entry.value }, self.state.bufnr, {
