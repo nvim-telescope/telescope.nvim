@@ -1939,7 +1939,7 @@ ordered from the lowest priority to the highest priority.
 
       map({"i", "n"}, "<C-r>", function(_prompt_bufnr)
         print "You typed <C-r>"
-      end)
+      end, { desc = "desc for which key"})
 
       -- needs to return true if you want to map default_mappings and
       -- false if not
