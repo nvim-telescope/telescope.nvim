@@ -2357,21 +2357,6 @@ layout_strategies.bottom_pane()               *telescope.layout.bottom_pane()*
 
     For an easy ivy configuration, see |themes.get_ivy()|
 
-    `picker.layout_config` shared options:
-      - height:
-        - How tall to make Telescope's entire layout
-        - See |resolver.resolve_height()|
-      - mirror: Flip the location of the results/prompt and preview windows
-      - prompt_position:
-        - Where to place prompt window.
-        - Available Values: 'bottom', 'top'
-      - scroll_speed: The number of lines to scroll through the previewer
-
-    `picker.layout_config` unique options:
-      - preview_cutoff: When columns are less than this value, the preview will be disabled
-      - preview_width:
-        - Change the width of Telescope's preview window
-        - See |resolver.resolve_width()|
 
 
 
