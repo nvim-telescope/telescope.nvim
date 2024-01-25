@@ -113,7 +113,7 @@
 ---
 ---       map({"i", "n"}, "<C-r>", function(_prompt_bufnr)
 ---         print "You typed <C-r>"
----       end)
+---       end, { desc = "desc for which key"})
 ---
 ---       -- needs to return true if you want to map default_mappings and
 ---       -- false if not
@@ -210,17 +210,24 @@ mappings.default_mappings = config.values.default_mappings
 
 -- normal names are prefixed with telescope|
 -- encoded objects are prefixed with telescopej|
-local get_desc_for_keyfunc = function(v)
-  if type(v) == "table" then
+---@param key_func table|fun()
+---@param opts table
+---@return string?
+local get_desc_for_keyfunc = function(key_func, opts)
+  if opts and opts.desc then
+    return "telescope|" .. opts.desc
+  end
+
+  if type(key_func) == "table" then
     local name = ""
-    for _, action in ipairs(v) do
+    for _, action in ipairs(key_func) do
       if type(action) == "string" then
         name = name == "" and action or name .. " + " .. action
       end
     end
     return "telescope|" .. name
-  elseif type(v) == "function" then
-    local info = debug.getinfo(v)
+  elseif type(key_func) == "function" then
+    local info = debug.getinfo(key_func)
     return "telescopej|" .. vim.json.encode { source = info.source, linedefined = info.linedefined }
   end
 end
@@ -262,7 +269,7 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
     local ret = key_func(prompt_bufnr)
     vim.api.nvim_exec_autocmds("User", { pattern = "TelescopeKeymap" })
     return ret
-  end, vim.tbl_extend("force", opts, { buffer = prompt_bufnr, desc = get_desc_for_keyfunc(key_func) }))
+  end, vim.tbl_extend("force", opts, { buffer = prompt_bufnr, desc = get_desc_for_keyfunc(key_func, opts) }))
 end
 
 local extract_keymap_opts = function(key_func)
