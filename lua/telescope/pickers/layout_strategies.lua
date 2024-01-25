@@ -113,11 +113,11 @@ local adjust_pos = function(pos, ...)
   end
 end
 
---@param strategy_name string: the name of the layout_strategy we are validating for
---@param configuration table: table with keys for each option available
---@param values table: table containing all of the non-default options we want to set
---@param default_layout_config table: table with the default values to configure layouts
---@return table: table containing the combined options (defaults and non-defaults)
+---@param strategy_name string: the name of the layout_strategy we are validating for
+---@param configuration table: table with keys for each option available
+---@param values table: table containing all of the non-default options we want to set
+---@param default_layout_config table: table with the default values to configure layouts
+---@return table: table containing the combined options (defaults and non-defaults)
 local function validate_layout_config(strategy_name, configuration, values, default_layout_config)
   assert(strategy_name, "It is required to have a strategy name for validation.")
   local valid_configuration_keys = get_valid_configuration_keys(configuration)
@@ -159,7 +159,7 @@ local function validate_layout_config(strategy_name, configuration, values, defa
   end
 
   -- Always set the values passed first.
-  for k in pairs(values) do
+  for k in pairs(values[strategy_name]) do
     if not valid_configuration_keys[k] then
       -- TODO: At some point we'll move to error here,
       --    but it's a bit annoying to just straight up crash everyone's stuff.
