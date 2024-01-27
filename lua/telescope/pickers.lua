@@ -1548,8 +1548,15 @@ function pickers.on_close_prompt(prompt_bufnr)
       picker.default_text = curr_prompt
       picker.cache_picker.selection_row = picker._selection_row
 
-      -- only cache if prompt is not empty
-      if not (curr_prompt == nil or curr_prompt == "") then
+      if picker.cache_picker.ignore_empty_prompt then
+        -- Ignore empty prompts if `cache_picker.ignore_empty_prompt` is set to true
+        if not (curr_prompt == nil or curr_prompt == "") then
+          picker.cache_picker.cached_prompt = curr_prompt
+          table.insert(cached_pickers, 1, picker)
+
+          picker.cache_picker.is_cached = true
+        end
+      else
         picker.cache_picker.cached_prompt = curr_prompt
         table.insert(cached_pickers, 1, picker)
 
