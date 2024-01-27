@@ -2975,7 +2975,7 @@ action_state.get_selected_entry() *telescope.actions.state.get_selected_entry()*
 
 
 action_state.get_current_line()   *telescope.actions.state.get_current_line()*
-    Gets the current line
+    Gets the current line in the search prompt
 
 
 
