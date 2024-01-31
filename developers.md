@@ -334,9 +334,9 @@ This section is an overview of how custom pickers can be created and configured.
 -- lua/telescope/pickers.lua
 Picker:new{
   prompt_title            = "",
-  finder                  = FUNCTION, -- see lua/telescope/finder.lua
-  sorter                  = FUNCTION, -- see lua/telescope/sorter.lua
-  previewer               = FUNCTION, -- see lua/telescope/previewer.lua
+  finder                  = FUNCTION, -- see lua/telescope/finders.lua
+  sorter                  = FUNCTION, -- see lua/telescope/sorters.lua
+  previewer               = FUNCTION, -- see lua/telescope/previewers/previewer.lua
   selection_strategy      = "reset", -- follow, reset, row
   border                  = {},
   borderchars             = {"─", "│", "─", "│", "┌", "┐", "┘", "└"},
