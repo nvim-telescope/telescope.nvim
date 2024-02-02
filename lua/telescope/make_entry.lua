@@ -403,20 +403,18 @@ function make_entry.gen_from_vimgrep_json(opts)
       opts.disable_devicons
     )
 
-    return file_pos .. entry.text,
-      (function()
-        local match_hi = "TelescopeMatching"
-        if opts.__finder == "grep_string" then
-          match_hi = "TelescopeMatchingAlternate"
-        end
+    local match_hi = "TelescopeMatching"
+    if opts.__finder == "grep_string" then
+      match_hi = "TelescopeMatchingAlternate"
+    end
 
-        local highlights = { { { 0, strings.strdisplaywidth(icon) }, hl_group or "" } }
-        local file_pos_len = #file_pos
-        for _, submatch in ipairs(entry.submatches) do
-          table.insert(highlights, { { submatch["start"] + file_pos_len, submatch["end"] + file_pos_len }, match_hi })
-        end
-        return highlights
-      end)()
+    local highlights = { { { 0, strings.strdisplaywidth(icon) }, hl_group or "" } }
+    local file_pos_len = #file_pos
+    for _, submatch in ipairs(entry.submatches) do
+      table.insert(highlights, { { submatch["start"] + file_pos_len, submatch["end"] + file_pos_len }, match_hi })
+    end
+
+    return file_pos .. entry.text, highlights
   end
 
   mt_vimgrep_entry.__index = function(t, k)
