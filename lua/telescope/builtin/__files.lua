@@ -76,7 +76,8 @@ local get_open_filelist = function(grep_open_files, cwd)
 end
 
 ---@param opts table: picker options
----@return table, table: rg options and search paths
+---@return table? # rg options
+---@return table? # search paths
 local get_vimgrep_args = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   if not has_rg_program("live_grep", vimgrep_arguments[1]) then
@@ -171,6 +172,9 @@ files.live_grep = function(opts)
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
 
   local rg_opts, search_paths = get_vimgrep_args(opts)
+  if rg_opts == nil then
+    return
+  end
 
   local json_enabled
   rg_opts, json_enabled = add_json_opt(rg_opts)
@@ -199,19 +203,13 @@ files.live_grep = function(opts)
 end
 
 files.grep_string = function(opts)
-<<<<<<< HEAD
-  local vimgrep_arguments = vim.F.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
-  if not has_rg_program("grep_string", vimgrep_arguments[1]) then
-    return
-  end
-||||||| parent of 121a535 (feat: vimgrep entry maker using `rg --json`)
-  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
-  local vimgrep_arguments = vim.F.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
-=======
   opts.__finder = "grep_string"
   opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
   local rg_opts, search_paths = get_vimgrep_args(opts)
->>>>>>> 121a535 (feat: vimgrep entry maker using `rg --json`)
+  if rg_opts == nil then
+    return
+  end
+
   local word
   local visual = vim.fn.mode() == "v"
 

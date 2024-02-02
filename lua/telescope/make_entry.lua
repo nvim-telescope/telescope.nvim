@@ -259,6 +259,7 @@ do
     return { t.filename, nil, nil, "" }
   end
 
+  ---@deprecated prefer gen_from_vimgrep_json
   function make_entry.gen_from_vimgrep(opts)
     opts = opts or {}
 
@@ -375,7 +376,7 @@ function make_entry.gen_from_vimgrep_json(opts)
 
   local function bytes_or_text_to_str(data)
     if data.bytes ~= nil then
-      return require("telescope.algos.base64").decode(data.bytes)
+      return vim.base64.decode(data.bytes)
     else
       return data.text
     end
@@ -401,41 +402,21 @@ function make_entry.gen_from_vimgrep_json(opts)
       string.format("%s%s", display_filename, coordinates),
       opts.disable_devicons
     )
-    local file_pos_len = strings.strdisplaywidth(file_pos)
 
-    local displayer = entry_display.create {
-      separator = "",
-      items = {
-        { width = file_pos_len },
-        { remaining = true },
-      },
-    }
+    return file_pos .. entry.text,
+      (function()
+        local match_hi = "TelescopeMatching"
+        if opts.__finder == "grep_string" then
+          match_hi = "TelescopeMatchingAlternate"
+        end
 
-    return displayer {
-      {
-        file_pos,
-        function()
-          return {
-            { { 0, #icon }, hl_group },
-            { { #icon, file_pos_len }, "" },
-          }
-        end,
-      },
-      {
-        entry.text,
-        function()
-          if opts.__finder == "grep_string" then
-            return {}
-          end
-
-          local highlights = {}
-          for _, submatch in ipairs(entry.submatches) do
-            table.insert(highlights, { { submatch["start"], submatch["end"] }, "TelescopeMatching" })
-          end
-          return highlights
-        end,
-      },
-    }
+        local highlights = { { { 0, strings.strdisplaywidth(icon) }, hl_group or "" } }
+        local file_pos_len = #file_pos
+        for _, submatch in ipairs(entry.submatches) do
+          table.insert(highlights, { { submatch["start"] + file_pos_len, submatch["end"] + file_pos_len }, match_hi })
+        end
+        return highlights
+      end)()
   end
 
   mt_vimgrep_entry.__index = function(t, k)

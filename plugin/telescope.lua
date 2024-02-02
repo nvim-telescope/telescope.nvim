@@ -41,6 +41,7 @@ local highlights = {
 
   -- Used for highlighting characters that you match.
   TelescopeMatching = { default = true, link = "Special" },
+  TelescopeMatchingAlternate = { default = true, link = "SpecialChar" },
 
   -- Used for the prompt prefix
   TelescopePromptPrefix = { default = true, link = "Identifier" },
