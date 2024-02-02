@@ -83,11 +83,8 @@ local get_vimgrep_args = function(opts)
   if not has_rg_program("live_grep", vimgrep_arguments[1]) then
     return
   end
-  local search_dirs = opts.search_dirs
-  local grep_open_files = opts.grep_open_files
-  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
 
-  local filelist = get_open_filelist(grep_open_files, opts.cwd)
+  local search_dirs = opts.search_dirs
   if search_dirs then
     for i, path in ipairs(search_dirs) do
       search_dirs[i] = vim.fn.expand(path)
@@ -119,6 +116,7 @@ local get_vimgrep_args = function(opts)
   end
 
   local search_paths = {}
+  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
   local open_files = get_open_filelist(opts.grep_open_files, opts.cwd)
   if open_files then
     search_paths = open_files
@@ -169,8 +167,6 @@ end
 
 files.live_grep = function(opts)
   opts.__finder = "live_grep"
-  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
-
   local rg_opts, search_paths = get_vimgrep_args(opts)
   if rg_opts == nil then
     return
@@ -204,7 +200,6 @@ end
 
 files.grep_string = function(opts)
   opts.__finder = "grep_string"
-  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
   local rg_opts, search_paths = get_vimgrep_args(opts)
   if rg_opts == nil then
     return
