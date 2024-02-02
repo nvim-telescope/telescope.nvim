@@ -458,6 +458,7 @@ function make_entry.gen_from_vimgrep_json(opts)
       filename = bytes_or_text_to_str(msg.data.path),
       lnum = msg.data.line_number,
       col = #msg.data.submatches ~= 0 and msg.data.submatches[1].start + 1 or nil,
+      colend = #msg.data.submatches ~= 0 and msg.data.submatches[1]["end"] + 1 or nil,
       submatches = msg.data.submatches,
     }, mt_vimgrep_entry)
   end
