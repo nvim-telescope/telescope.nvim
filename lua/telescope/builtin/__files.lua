@@ -544,7 +544,20 @@ files.current_buffer_fuzzy_find = function(opts)
               return
             end
 
-            vim.api.nvim_win_set_cursor(0, { selection.lnum, 0 })
+            local searched_for = require("telescope.actions.state").get_current_line()
+            local first_search_char = string.sub(searched_for, 1, 1)
+
+            local column_as_is = string.find(selection.text, first_search_char)
+            local reversed_char
+            if first_search_char == string.upper(first_search_char) then
+              reversed_char = string.lower(first_search_char)
+            else
+              reversed_char = string.upper(first_search_char)
+            end
+            local column_reversed = string.find(selection.text, reversed_char)
+            local column = math.min(column_as_is or math.huge, column_reversed or math.huge)
+
+            vim.api.nvim_win_set_cursor(0, { selection.lnum, column })
           end,
         }
 
