@@ -506,7 +506,7 @@ append(
   {
     num_pickers = 1,
     limit_entries = 1000,
-    ignore_empty_prompt = false,
+    ignore_empty_prompt = true,
   },
   [[
     This field handles the configuration for picker caching.
@@ -528,9 +528,9 @@ append(
       - limit_entries:        The amount of entries that will be saved for each
                               picker.
                               Default: 1000
-      - ignore_empty_prompt:  If true, the picker will not be cached if the
+      - ignore_empty_prompt:  If false, the picker will be cached even if the
                               prompt is empty (i.e., no text has been typed at the time of closing the prompt).
-                              Default: false
+                              Default: true
     ]]
 )
 
