@@ -124,7 +124,7 @@ local search_cb_jump = function(self, bufnr, query)
   end
   vim.api.nvim_buf_call(bufnr, function()
     pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
-    vim.cmd "norm! gg"
+    vim.cmd "keepjumps norm! gg"
     vim.fn.search(query, "W")
     vim.cmd "norm! zz"
 
@@ -519,7 +519,7 @@ previewers.ctags = defaulter(function(opts)
         end)
 
         pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
-        vim.cmd "norm! gg"
+        vim.cmd "keepjumps norm! gg"
         vim.fn.search(scode, "W")
         vim.cmd "norm! zz"
 
@@ -1019,7 +1019,7 @@ previewers.highlights = defaulter(function(_)
         end
 
         pcall(vim.api.nvim_buf_clear_namespace, self.state.bufnr, ns_previewer, 0, -1)
-        vim.cmd "norm! gg"
+        vim.cmd "keepjumps norm! gg"
         vim.fn.search(entry.value .. " ")
         local lnum = vim.fn.line "."
         -- That one is actually a match but its better to use it like that then matchadd
