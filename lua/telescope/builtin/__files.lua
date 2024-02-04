@@ -591,7 +591,7 @@ files.tags = function(opts)
                 return "\\" .. x
               end)
 
-              vim.cmd "norm! gg"
+              vim.cmd "keepjumps norm! gg"
               vim.fn.search(scode)
               vim.cmd "norm! zz"
             else
