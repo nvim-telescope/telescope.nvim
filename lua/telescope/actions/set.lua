@@ -227,6 +227,24 @@ action_set.edit = function(prompt_bufnr, command)
   end
 end
 
+---@param prompt_bufnr integer
+---@return table? previewer
+---@return number? speed
+local __scroll_previewer = function(prompt_bufnr)
+  local previewer = action_state.get_current_picker(prompt_bufnr).previewer
+  local status = state.get_status(prompt_bufnr)
+  local preview_winid = status.layout.preview and status.layout.preview.winid
+
+  -- Check if we actually have a previewer and a preview window
+  if type(previewer) ~= "table" or not preview_winid then
+    return
+  end
+
+  local default_speed = vim.api.nvim_win_get_height(preview_winid) / 2
+  local speed = status.picker.layout_config.scroll_speed or default_speed
+  return previewer, speed
+end
+
 --- Scrolls the previewer up or down.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
 --- option in `layout_config`. See |telescope.layout| for more details.
@@ -234,19 +252,10 @@ end
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_previewer = function(prompt_bufnr, direction)
-  local previewer = action_state.get_current_picker(prompt_bufnr).previewer
-  local status = state.get_status(prompt_bufnr)
-
-  local preview_winid = status.layout.preview and status.layout.preview.winid
-  -- Check if we actually have a previewer and a preview window
-  if type(previewer) ~= "table" or previewer.scroll_fn == nil or preview_winid == nil then
-    return
+  local previewer, speed = __scroll_previewer(prompt_bufnr)
+  if previewer and previewer.scroll_fn then
+    previewer:scroll_fn(math.floor(speed * direction))
   end
-
-  local default_speed = vim.api.nvim_win_get_height(status.layout.preview.winid) / 2
-  local speed = status.picker.layout_config.scroll_speed or default_speed
-
-  previewer:scroll_fn(math.floor(speed * direction))
 end
 
 --- Scrolls the previewer to the left or right.
@@ -256,18 +265,10 @@ end
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_horizontal_previewer = function(prompt_bufnr, direction)
-  local previewer = action_state.get_current_picker(prompt_bufnr).previewer
-  local status = state.get_status(prompt_bufnr)
-
-  -- Check if we actually have a previewer and a preview window
-  if type(previewer) ~= "table" or previewer.scroll_horizontal_fn == nil or status.preview_win == nil then
-    return
+  local previewer, speed = __scroll_previewer(prompt_bufnr)
+  if previewer and previewer.scroll_horizontal_fn then
+    previewer:scroll_horizontal_fn(math.floor(speed * direction))
   end
-
-  local default_speed = vim.api.nvim_win_get_height(status.preview_win) / 2
-  local speed = status.picker.layout_config.scroll_speed or default_speed
-
-  previewer:scroll_horizontal_fn(math.floor(speed * direction))
 end
 
 --- Scrolls the results up or down.
