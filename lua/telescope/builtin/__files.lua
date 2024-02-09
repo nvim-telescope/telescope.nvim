@@ -527,6 +527,8 @@ files.current_buffer_fuzzy_find = function(opts)
     opts.line_highlights = line_highlights
   end
 
+  local column = 0
+
   pickers
     .new(opts, {
       prompt_title = "Current Buffer Fuzzy",
@@ -538,26 +540,23 @@ files.current_buffer_fuzzy_find = function(opts)
       previewer = conf.grep_previewer(opts),
       attach_mappings = function()
         action_set.select:enhance {
+          pre = function(bufnr)
+            local selection = action_state.get_selected_entry()
+            if not selection then
+              return
+            end
+            local current_picker = action_state.get_current_picker(bufnr)
+            local searched_for = require("telescope.actions.state").get_current_line()
+            local highlighted = current_picker.sorter:highlighter(searched_for, selection.ordinal)
+            column = highlighted[1]
+          end,
           post = function()
             local selection = action_state.get_selected_entry()
             if not selection then
               return
             end
 
-            local searched_for = require("telescope.actions.state").get_current_line()
-            local first_search_char = string.sub(searched_for, 1, 1)
-
-            local column_as_is = string.find(selection.text, first_search_char)
-            local reversed_char
-            if first_search_char == string.upper(first_search_char) then
-              reversed_char = string.lower(first_search_char)
-            else
-              reversed_char = string.upper(first_search_char)
-            end
-            local column_reversed = string.find(selection.text, reversed_char)
-            local column = math.min(column_as_is or math.huge, column_reversed or math.huge)
-
-            vim.api.nvim_win_set_cursor(0, { selection.lnum, column })
+            vim.api.nvim_win_set_cursor(0, { selection.lnum, column or 0 })
           end,
         }
 
