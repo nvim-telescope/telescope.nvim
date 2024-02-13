@@ -949,6 +949,9 @@ internal.buffers = function(opts)
       local idx = ((buffers[1] ~= nil and buffers[1].flag == "%") and 2 or 1)
       table.insert(buffers, idx, element)
     else
+      if opts.select_current and flag == "%" then
+        default_selection_idx = bufnr
+      end
       table.insert(buffers, element)
     end
   end
