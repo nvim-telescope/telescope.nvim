@@ -1232,6 +1232,7 @@ function make_entry.gen_from_autocommands(opts)
         group_name = group_name,
         pattern = entry.pattern,
         command = command,
+        callback = entry.callback,
       },
       --
       ordinal = entry.event .. " " .. group_name .. " " .. entry.pattern .. " " .. entry.command,
