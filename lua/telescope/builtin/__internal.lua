@@ -1311,6 +1311,19 @@ internal.autocommands = function(opts)
             return false
           end
           local val = selection.value
+          local cb = val.callback
+          if vim.is_callable(cb) then
+            if type(cb) ~= "string" then
+              local f = type(cb) == "function" and cb or rawget(getmetatable(cb), "__call")
+              local info = debug.getinfo(f, "S")
+              local file = info.source:match "^@(.+)"
+              local lnum = info.linedefined
+              if file and (lnum or 0) > 0 then
+                selection.filename, selection.lnum, selection.col = file, lnum, 1
+                return false
+              end
+            end
+          end
           local group_name = val.group_name ~= "<anonymous>" and val.group_name or ""
           local output =
             vim.fn.execute("verb autocmd " .. group_name .. " " .. val.event .. " " .. val.pattern, "silent")
