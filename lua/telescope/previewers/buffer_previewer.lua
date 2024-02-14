@@ -748,8 +748,8 @@ previewers.git_branch_log = defaulter(function(opts)
     for i = 1, #content do
       local line = content[i]
       local _, hstart = line:find "[%*%s|]*"
+      local _, hend, _ = line:find "[%*%s|]*%s(%w*)"
       if hstart then
-        local hend = hstart + 7
         if hend < #line then
           pcall(
             vim.api.nvim_buf_add_highlight,
