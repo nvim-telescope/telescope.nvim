@@ -546,12 +546,7 @@ files.current_buffer_fuzzy_find = function(opts)
           local current_picker = action_state.get_current_picker(prompt_bufnr)
           local searched_for = require("telescope.actions.state").get_current_line()
           local highlighted = current_picker.sorter:highlighter(searched_for, selection.ordinal)
-          local column = math.min(unpack(highlighted))
-          if column then
-            column = column - 1
-          else
-            column = 0
-          end
+          local column = math.min(unpack(highlighted) or 1) - 1
 
           actions.close(prompt_bufnr)
           vim.schedule(function()
