@@ -537,16 +537,22 @@ files.current_buffer_fuzzy_find = function(opts)
       sorter = conf.generic_sorter(opts),
       previewer = conf.grep_previewer(opts),
       attach_mappings = function()
-        action_set.select:enhance {
-          post = function()
-            local selection = action_state.get_selected_entry()
-            if not selection then
-              return
-            end
+        actions.select_default:replace(function(prompt_bufnr)
+          local selection = action_state.get_selected_entry()
+          if not selection then
+            utils.__warn_no_selection "builtin.current_buffer_fuzzy_find"
+            return
+          end
+          local current_picker = action_state.get_current_picker(prompt_bufnr)
+          local searched_for = require("telescope.actions.state").get_current_line()
+          local highlighted = current_picker.sorter:highlighter(searched_for, selection.ordinal)
+          local column = math.min(unpack(highlighted) or 1) - 1
 
-            vim.api.nvim_win_set_cursor(0, { selection.lnum, 0 })
-          end,
-        }
+          actions.close(prompt_bufnr)
+          vim.schedule(function()
+            vim.api.nvim_win_set_cursor(0, { selection.lnum, column })
+          end)
+        end)
 
         return true
       end,
