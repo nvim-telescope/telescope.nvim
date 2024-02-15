@@ -14,6 +14,19 @@ lsp.references = function(opts)
   local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
   local params = vim.lsp.util.make_position_params(opts.winnr)
   local include_current_line = vim.F.if_nil(opts.include_current_line, false)
+  local locations = {}
+  local locations_hash = {}
+  local picker
+  local add_unique_locations = function(t1, t2)
+    for _, v in ipairs(t2) do
+      -- use hash to determinte if location is unique.
+      local hash = (v.filename .. v.col .. v.lnum .. v.text)
+      if not locations_hash[hash] then
+        table.insert(t1, v)
+        locations_hash[hash] = true
+      end
+    end
+  end
   params.context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) }
 
   vim.lsp.buf_request(opts.bufnr, "textDocument/references", params, function(err, result, ctx, _)
@@ -22,16 +35,18 @@ lsp.references = function(opts)
       return
     end
 
-    local locations = {}
     if result then
       local results = vim.lsp.util.locations_to_items(result, vim.lsp.get_client_by_id(ctx.client_id).offset_encoding)
       if not include_current_line then
-        locations = vim.tbl_filter(function(v)
-          -- Remove current line from result
-          return not (v.filename == filepath and v.lnum == lnum)
-        end, vim.F.if_nil(results, {}))
+        add_unique_locations(
+          locations,
+          vim.tbl_filter(function(v)
+            -- Remove current line from result
+            return not (v.filename == filepath and v.lnum == lnum)
+          end, vim.F.if_nil(results, {}))
+        )
       else
-        locations = vim.F.if_nil(results, {})
+        add_unique_locations(locations, vim.F.if_nil(results, {}))
       end
     end
 
@@ -67,8 +82,8 @@ lsp.references = function(opts)
       return
     end
 
-    pickers
-      .new(opts, {
+    if not picker then
+      picker = pickers.new(opts, {
         prompt_title = "LSP References",
         finder = finders.new_table {
           results = locations,
@@ -79,7 +94,10 @@ lsp.references = function(opts)
         push_cursor_on_edit = true,
         push_tagstack_on_edit = true,
       })
-      :find()
+      picker:find()
+    elseif picker then
+      picker:refresh()
+    end
   end)
 end
 
