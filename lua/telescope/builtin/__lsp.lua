@@ -333,6 +333,20 @@ lsp.workspace_symbols = function(opts)
     end
 
     local locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr) or {}
+
+    -- Filter specific folders from the results. Only works with full folder
+    -- names, and not glob patterns for performance reasons in big projects.
+    locations = vim.tbl_filter(function(l)
+      local dir = vim.fs.dirname(l.filename)
+      local parent_folders = vim.split(dir, "/")
+      for _, folder in ipairs(parent_folders) do
+        if vim.tbl_contains(opts.ignore_folders or {}, folder) then
+          return false
+        end
+      end
+      return true
+    end, locations)
+
     locations = utils.filter_symbols(locations, opts, symbols_sorter)
     if locations == nil then
       -- error message already printed in `utils.filter_symbols`

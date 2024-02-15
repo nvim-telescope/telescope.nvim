@@ -490,6 +490,7 @@ builtin.lsp_document_symbols = require_on_exported_call("telescope.builtin.__lsp
 ---@field ignore_symbols string|table: list of symbols to ignore
 ---@field symbol_highlights table: string -> string. Matches symbol with hl_group
 ---@field file_encoding string: file encoding for the previewer
+---@field ignore_folders table: list of folder names to ignore. Does not support glob patterns for performance reasons. (default: {})
 builtin.lsp_workspace_symbols = require_on_exported_call("telescope.builtin.__lsp").workspace_symbols
 
 --- Dynamically lists LSP for all workspace symbols
