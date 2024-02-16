@@ -747,8 +747,7 @@ previewers.git_branch_log = defaulter(function(opts)
   local highlight_buffer = function(bufnr, content)
     for i = 1, #content do
       local line = content[i]
-      local _, hstart = line:find "[%*%s|]*"
-      local _, hend, _ = line:find "[%*%s|]*%s(%w*)"
+      local hstart, hend = line:find "[0-9a-fA-F]+"
       if hstart then
         if hend < #line then
           pcall(
