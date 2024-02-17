@@ -312,7 +312,7 @@ do
     mt_vimgrep_entry = {
       cwd = vim.fn.expand(opts.cwd or vim.loop.cwd()),
 
-      display = function(entry)
+      display = opts.make_entry_display or function(entry)
         local display_filename = utils.transform_path(opts, entry.filename)
 
         local coordinates = ":"
