@@ -9,80 +9,6 @@ local utils = require "telescope.utils"
 
 local lsp = {}
 
-lsp.references = function(opts)
-  local filepath = vim.api.nvim_buf_get_name(opts.bufnr)
-  local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
-  local params = vim.lsp.util.make_position_params(opts.winnr)
-  local include_current_line = vim.F.if_nil(opts.include_current_line, false)
-  params.context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) }
-
-  vim.lsp.buf_request(opts.bufnr, "textDocument/references", params, function(err, result, ctx, _)
-    if err then
-      vim.api.nvim_err_writeln("Error when finding references: " .. err.message)
-      return
-    end
-
-    local locations = {}
-    if result then
-      local results = vim.lsp.util.locations_to_items(result, vim.lsp.get_client_by_id(ctx.client_id).offset_encoding)
-      if not include_current_line then
-        locations = vim.tbl_filter(function(v)
-          -- Remove current line from result
-          return not (v.filename == filepath and v.lnum == lnum)
-        end, vim.F.if_nil(results, {}))
-      else
-        locations = vim.F.if_nil(results, {})
-      end
-    end
-
-    if vim.tbl_isempty(locations) then
-      return
-    end
-
-    if #locations == 1 and opts.jump_type ~= "never" then
-      if filepath ~= locations[1].filename then
-        if opts.jump_type == "tab" then
-          vim.cmd "tabedit"
-        elseif opts.jump_type == "split" then
-          vim.cmd "new"
-        elseif opts.jump_type == "vsplit" then
-          vim.cmd "vnew"
-        elseif opts.jump_type == "tab drop" then
-          vim.cmd("tab drop " .. locations[1].filename)
-        end
-      end
-      -- jump to location
-      local location = locations[1]
-      local bufnr = opts.bufnr
-      if location.filename then
-        local uri = location.filename
-        if not utils.is_uri(uri) then
-          uri = vim.uri_from_fname(uri)
-        end
-
-        bufnr = vim.uri_to_bufnr(uri)
-      end
-      vim.api.nvim_win_set_buf(0, bufnr)
-      vim.api.nvim_win_set_cursor(0, { location.lnum, location.col - 1 })
-      return
-    end
-
-    pickers
-      .new(opts, {
-        prompt_title = "LSP References",
-        finder = finders.new_table {
-          results = locations,
-          entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
-        },
-        previewer = conf.qflist_previewer(opts),
-        sorter = conf.generic_sorter(opts),
-        push_cursor_on_edit = true,
-        push_tagstack_on_edit = true,
-      })
-      :find()
-  end)
-end
-
 local function call_hierarchy(opts, method, title, direction, item)
   vim.lsp.buf_request(opts.bufnr, method, { item = item }, function(err, result)
     if err then
@@ -171,6 +97,13 @@ end
 
 local function list_or_jump(action, title, opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
+  -- The `references` request can also conditionally includes the declaration of the referenced item.
+  -- See the LSP docs for more details:
+  -- https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#referenceParams
+  if action == "textDocument/references" then
+    params.context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) }
+  end
+
   vim.lsp.buf_request(opts.bufnr, action, params, function(err, result, ctx, _)
     if err then
       vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
@@ -184,6 +117,10 @@ local function list_or_jump(action, title, opts)
       end
 
       vim.list_extend(flattened_results, result)
+    end
+
+    if type(opts.results_filter) == "function" then
+      flattened_results = vim.tbl_filter(opts.results_filter, flattened_results)
     end
 
     local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
@@ -227,6 +164,40 @@ local function list_or_jump(action, title, opts)
         :find()
     end
   end)
+end
+
+lsp.references = function(opts)
+  local filepath = vim.api.nvim_buf_get_name(opts.bufnr)
+  local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
+  local include_current_line = vim.F.if_nil(opts.include_current_line, false)
+
+  local original_results_filter = opts.results_filter
+  local current_line_filter = nil
+
+  -- If we shouldn't include the current line, add a function to filter it out
+  -- from the LSP results.
+  if not include_current_line then
+    current_line_filter = function(v)
+      return not (v.filename == filepath and v.lnum == lnum)
+    end
+  end
+
+  local new_opts = vim.deepcopy(opts)
+
+  -- If there is already a `results_filter`, we want to honor the results of
+  -- that filter as well.
+  if type(original_results_filter) == "function" and
+    type(current_line_filter) == "function" then
+    new_opts.results_filter = function(v)
+      return original_results_filter(v) and current_line_filter(v)
+    end
+  -- Otherwise, we'll set `results_filter` only if we have a
+  -- `current_line_filter`.
+  elseif type(current_line_filter) == "function" then
+    new_opts.results_filter = current_line_filter
+  end
+
+  return list_or_jump("textDocument/references", "LSP References", new_opts)
 end
 
 lsp.definitions = function(opts)
