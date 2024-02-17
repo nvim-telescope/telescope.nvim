@@ -747,9 +747,8 @@ previewers.git_branch_log = defaulter(function(opts)
   local highlight_buffer = function(bufnr, content)
     for i = 1, #content do
       local line = content[i]
-      local _, hstart = line:find "[%*%s|]*"
+      local hstart, hend = line:find "[0-9a-fA-F]+"
       if hstart then
-        local hend = hstart + 7
         if hend < #line then
           pcall(
             vim.api.nvim_buf_add_highlight,
