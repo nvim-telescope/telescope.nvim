@@ -775,11 +775,11 @@ internal.help_tags = function(opts)
           end
 
           actions.close(prompt_bufnr)
-          if cmd == "default" or cmd == "horizontal" then
+          if cmd == "default" or cmd == "horizontal" or cmd == "drop" then
             vim.cmd("help " .. selection.value)
           elseif cmd == "vertical" then
             vim.cmd("vert help " .. selection.value)
-          elseif cmd == "tab" then
+          elseif cmd == "tab" or cmd == "tab drop" then
             vim.cmd("tab help " .. selection.value)
           end
         end)
@@ -824,11 +824,11 @@ internal.man_pages = function(opts)
 
           local args = selection.section .. " " .. selection.value
           actions.close(prompt_bufnr)
-          if cmd == "default" or cmd == "horizontal" then
+          if cmd == "default" or cmd == "horizontal" or cmd == "drop" then
             vim.cmd("Man " .. args)
           elseif cmd == "vertical" then
             vim.cmd("vert Man " .. args)
-          elseif cmd == "tab" then
+          elseif cmd == "tab" or cmd == "tab drop" then
             vim.cmd("tab Man " .. args)
           end
         end)
