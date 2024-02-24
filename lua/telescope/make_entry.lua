@@ -1121,12 +1121,12 @@ end
 function make_entry.gen_from_diagnostics(opts)
   opts = opts or {}
 
+  local type_diagnostic = vim.diagnostic.severity
   local signs = (function()
     if opts.no_sign then
       return
     end
     local signs = {}
-    local type_diagnostic = vim.diagnostic.severity
     for _, severity in ipairs(type_diagnostic) do
       local status, sign = pcall(function()
         -- only the first char is upper all others are lowercalse
@@ -1183,6 +1183,13 @@ function make_entry.gen_from_diagnostics(opts)
     }
   end
 
+  local errlist_type_map = {
+    [type_diagnostic.ERROR] = "E",
+    [type_diagnostic.WARN] = "W",
+    [type_diagnostic.INFO] = "I",
+    [type_diagnostic.HINT] = "N",
+  }
+
   return function(entry)
     return make_entry.set_default_entry_mt({
       value = entry,
@@ -1193,6 +1200,7 @@ function make_entry.gen_from_diagnostics(opts)
       lnum = entry.lnum,
       col = entry.col,
       text = entry.text,
+      qf_type = errlist_type_map[type_diagnostic[entry.type]],
     }, opts)
   end
 end
