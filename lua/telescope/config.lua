@@ -367,23 +367,40 @@ append(
 append(
   "get_status_text",
   function(self, opts)
-    local ww = #(self:get_multi_selection())
-    local xx = (self.stats.processed or 0) - (self.stats.filtered or 0)
-    local yy = self.stats.processed or 0
+    local multi_select_cnt = #(self:get_multi_selection())
+    local showing_cnt = (self.stats.processed or 0) - (self.stats.filtered or 0)
+    local total_cnt = self.stats.processed or 0
 
     local status_icon = ""
+    local status_text
     if opts and not opts.completed then
       status_icon = "*"
     end
 
-    if xx == 0 and yy == 0 then
-      return status_icon
+    if showing_cnt == 0 and total_cnt == 0 then
+      status_text = status_icon
+    elseif multi_select_cnt == 0 then
+      status_text = string.format("%s %s / %s", status_icon, showing_cnt, total_cnt)
+    else
+      status_text = string.format("%s %s / %s / %s", status_icon, multi_select_cnt, showing_cnt, total_cnt)
     end
 
-    if ww == 0 then
-      return string.format("%s %s / %s", status_icon, xx, yy)
+    -- quick workaround for extmark right_align side-scrolling limitation
+    -- https://github.com/nvim-telescope/telescope.nvim/issues/2929
+    local prompt_width = vim.api.nvim_win_get_width(self.prompt_win)
+    local cursor_col = vim.api.nvim_win_get_cursor(self.prompt_win)[2]
+    local prefix_display_width = strings.strdisplaywidth(self.prompt_prefix) --[[@as integer]]
+    local prefix_width = #self.prompt_prefix
+    local prefix_shift = 0
+    if prefix_display_width ~= prefix_width then
+      prefix_shift = prefix_display_width
+    end
+
+    local cursor_occluded = (prompt_width - cursor_col - #status_text + prefix_shift) < 0
+    if cursor_occluded then
+      return ""
     else
-      return string.format("%s %s / %s / %s", status_icon, ww, xx, yy)
+      return status_text
     end
   end,
   [[
