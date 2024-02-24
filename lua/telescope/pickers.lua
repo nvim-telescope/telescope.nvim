@@ -1582,11 +1582,16 @@ function pickers.on_close_prompt(prompt_bufnr)
           picker.manager = EntryManager:new(picker.max_results, picker.entry_adder, picker.stats)
         end
       end
-      picker.default_text = picker:_get_prompt()
+      local curr_prompt = picker:_get_prompt()
+      picker.default_text = curr_prompt
       picker.cache_picker.selection_row = picker._selection_row
-      picker.cache_picker.cached_prompt = picker:_get_prompt()
-      picker.cache_picker.is_cached = true
-      table.insert(cached_pickers, 1, picker)
+
+      -- Only cache if prompt is not empty or ignore_empty_prompt is false
+      if not picker.cache_picker.ignore_empty_prompt or (curr_prompt and curr_prompt ~= "") then
+        picker.cache_picker.cached_prompt = curr_prompt
+        table.insert(cached_pickers, 1, picker)
+        picker.cache_picker.is_cached = true
+      end
 
       -- release pickers
       if picker.cache_picker.num_pickers > 0 then
