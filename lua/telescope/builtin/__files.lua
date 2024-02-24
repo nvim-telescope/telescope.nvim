@@ -545,23 +545,26 @@ files.current_buffer_fuzzy_find = function(opts)
           end
           local current_picker = action_state.get_current_picker(prompt_bufnr)
           local searched_for = require("telescope.actions.state").get_current_line()
-          local highlighted = current_picker.sorter:highlighter(searched_for, selection.ordinal)
-          highlighted = highlighted or {}
-          local column = highlighted[1]
-          for _, v in ipairs(highlighted) do
-            if v < column then
-              column = v
+
+          ---@type number[] | {start:number, end:number?, highlight:string?}[]
+          local highlights = current_picker.sorter:highlighter(searched_for, selection.ordinal) or {}
+          highlights = vim.tbl_map(function(hl)
+            if type(hl) == "table" and hl.start then
+              return hl.start
+            elseif type(hl) == "number" then
+              return hl
             end
-          end
-          if column then
-            column = column - 1
-          else
-            column = 0
+            error "Invalid higlighter fn"
+          end, highlights)
+
+          local first_col = 0
+          if #highlights > 0 then
+            first_col = math.min(unpack(highlights)) - 1
           end
 
           actions.close(prompt_bufnr)
           vim.schedule(function()
-            vim.api.nvim_win_set_cursor(0, { selection.lnum, column })
+            vim.api.nvim_win_set_cursor(0, { selection.lnum, first_col })
           end)
         end)
 
