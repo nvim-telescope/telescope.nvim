@@ -1419,6 +1419,8 @@ builtin.buffers({opts})                          *telescope.builtin.buffers()*
                                             bufnr_a should go first. Runs
                                             after sorting by most recent (if
                                             specified)
+        {select_current}        (boolean)   select current buffer (default:
+                                            false)
 
 
 builtin.colorscheme({opts})                  *telescope.builtin.colorscheme()*
