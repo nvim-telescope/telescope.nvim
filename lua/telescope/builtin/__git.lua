@@ -41,7 +41,10 @@ git.files = function(opts)
   -- By creating the entry maker after the cwd options,
   -- we ensure the maker uses the cwd options when being created.
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_file(opts))
-  opts.git_command = vim.F.if_nil(opts.git_command, git_command({ "ls-files", "--exclude-standard", "--cached" }, opts))
+  opts.git_command = vim.F.if_nil(
+    opts.git_command,
+    git_command({ "-c", "core.quotepath=false", "ls-files", "--exclude-standard", "--cached" }, opts)
+  )
 
   pickers
     .new(opts, {
