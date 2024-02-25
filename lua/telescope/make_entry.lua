@@ -708,6 +708,7 @@ function make_entry.gen_from_treesitter(opts)
       node_text = node_text,
 
       filename = get_filename(bufnr),
+      bufnr = opts.bufnr,
       -- need to add one since the previewer substacts one
       lnum = start_row + 1,
       col = start_col,
@@ -971,6 +972,7 @@ function make_entry.gen_from_buffer_lines(opts)
       ordinal = entry.text,
       display = make_display,
       filename = entry.filename,
+      bufnr = opts.bufnr,
       lnum = entry.lnum,
       text = entry.text,
     }, opts)
