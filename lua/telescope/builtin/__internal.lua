@@ -1424,15 +1424,25 @@ end
 
 internal.jumplist = function(opts)
   opts = opts or {}
-  local jumplist = vim.fn.getjumplist()[1]
+  local jumplist = vim.fn.getjumplist()
+  local locations = jumplist[1]
+  local lastidx = jumplist[2] + 1
 
-  -- reverse the list
-  local sorted_jumplist = {}
-  for i = #jumplist, 1, -1 do
-    if vim.api.nvim_buf_is_valid(jumplist[i].bufnr) then
-      jumplist[i].text = vim.api.nvim_buf_get_lines(jumplist[i].bufnr, jumplist[i].lnum - 1, jumplist[i].lnum, false)[1]
-        or ""
-      table.insert(sorted_jumplist, jumplist[i])
+  -- reverse the list and determine the defeault selection
+  local sorted_locations = {}
+  local default_selection_idx = 1
+  for i = #locations, 1, -1 do
+    if vim.api.nvim_buf_is_valid(locations[i].bufnr) then
+      locations[i].text = vim.api.nvim_buf_get_lines(
+        locations[i].bufnr,
+        locations[i].lnum - 1,
+        locations[i].lnum,
+        false
+      )[1] or ""
+      table.insert(sorted_locations, locations[i])
+      if opts.select_last_used and i == lastidx then
+        default_selection_idx = #sorted_locations
+      end
     end
   end
 
@@ -1440,11 +1450,12 @@ internal.jumplist = function(opts)
     .new(opts, {
       prompt_title = "Jumplist",
       finder = finders.new_table {
-        results = sorted_jumplist,
+        results = sorted_locations,
         entry_maker = make_entry.gen_from_quickfix(opts),
       },
       previewer = conf.qflist_previewer(opts),
       sorter = conf.generic_sorter(opts),
+      default_selection_index = default_selection_idx,
     })
     :find()
 end
