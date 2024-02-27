@@ -988,7 +988,7 @@ internal.colorscheme = function(opts)
   colors = vim.list_extend(
     colors,
     vim.tbl_filter(function(color)
-      return color ~= before_color
+      return not vim.tbl_contains(colors, color)
     end, vim.fn.getcompletion("", "color"))
   )
 
