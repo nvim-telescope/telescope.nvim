@@ -162,6 +162,8 @@ local function list_or_jump(action, title, params, opts)
         elseif opts.jump_type == "tab drop" then
           local file_path = vim.uri_to_fname(target_uri)
           vim.cmd("tab drop " .. file_path)
+        elseif type(opts.jump_type) == "function" then
+          opts.jump_type()
         end
       end
 
