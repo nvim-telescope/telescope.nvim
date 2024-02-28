@@ -551,7 +551,7 @@ append(
       - ignore_empty_prompt:  If true, the picker will not be cached if
                               the prompt is empty (i.e., no text has been
                               typed at the time of closing the prompt).
-                              Default: false
+                              Default: true
     ]]
 )
 
