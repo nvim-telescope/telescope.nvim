@@ -553,6 +553,7 @@ function Picker:find()
   pcall(a.nvim_buf_set_option, self.prompt_bufnr, "tabstop", 1) -- #1834
   a.nvim_buf_set_option(self.prompt_bufnr, "buftype", "prompt")
   a.nvim_win_set_option(self.results_win, "wrap", self.wrap_results)
+  a.nvim_win_set_option(self.prompt_win, "wrap", true)
   if self.preview_win then
     a.nvim_win_set_option(self.preview_win, "wrap", true)
   end
@@ -606,7 +607,6 @@ function Picker:find()
     -- Do filetype last, so that users can register at the last second.
     pcall(a.nvim_buf_set_option, self.prompt_bufnr, "filetype", "TelescopePrompt")
     pcall(a.nvim_buf_set_option, self.results_bufnr, "filetype", "TelescopeResults")
-    a.nvim_win_set_option(self.prompt_win, "wrap", true)
 
     await_schedule()
 
