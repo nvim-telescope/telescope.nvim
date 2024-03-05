@@ -494,6 +494,15 @@ local function apply_checks(mod)
     mod[k] = function(opts)
       opts = vim.F.if_nil(opts, {})
 
+      local status, ret = utils.get_os_command_output({ "git", "status" })
+      if ret ~= 0 then
+        utils.notify("apply_checks", {
+          msg = (vim.fn.expand "%:p:h") .. " is not a git directory",
+          level = "WARN",
+        })
+        return {}
+      end
+
       set_opts_cwd(opts)
       v(opts)
     end
