@@ -132,8 +132,8 @@ to get an understanding of how to use Telescope and how to configure it.
 
 ## Usage
 
-Try the command `:Telescope find_files<cr>`
-  to see if `telescope.nvim` is installed correctly.
+Try the command `:Telescope find_files`
+to see if `telescope.nvim` is installed correctly.
 
 Using VimL:
 
