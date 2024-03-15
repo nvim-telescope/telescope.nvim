@@ -1458,6 +1458,8 @@ function Picker:get_result_completor(results_bufnr, find_id, prompt, status_upda
       local visible_result_rows = vim.api.nvim_win_get_height(self.results_win)
       vim.api.nvim_win_set_cursor(self.results_win, { self.max_results - visible_result_rows, 1 })
       vim.api.nvim_win_set_cursor(self.results_win, { self.max_results, 1 })
+    else
+      vim.api.nvim_win_set_cursor(self.results_win, { 1, 0 })
     end
     self:_on_complete()
   end)
