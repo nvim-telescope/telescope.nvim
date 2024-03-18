@@ -155,16 +155,24 @@ local function list_or_jump(action, title, params, opts)
       local current_uri = params.textDocument.uri
       local target_uri = flattened_results[1].uri or flattened_results[1].targetUri
       if current_uri ~= target_uri then
+        local cmd
+        local file_path = vim.uri_to_fname(target_uri)
         if opts.jump_type == "tab" then
-          vim.cmd "tabedit"
+          cmd = "tabedit"
         elseif opts.jump_type == "split" then
-          vim.cmd "new"
+          cmd = "new"
         elseif opts.jump_type == "vsplit" then
-          vim.cmd "vnew"
+          cmd = "vnew"
         elseif opts.jump_type == "tab drop" then
-          local file_path = vim.uri_to_fname(target_uri)
-          vim.cmd("tab drop " .. file_path)
+          cmd = "tab drop"
+        else
+          utils.notify(
+            "list_or_jump",
+            { msg = string.format("Invalid jump_type for %s picker", title), level = "ERROR" }
+          )
+          return
         end
+        vim.cmd(string.format("%s %s", cmd, file_path))
       end
 
       vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding, opts.reuse_win)
