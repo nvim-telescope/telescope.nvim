@@ -15,6 +15,10 @@ local get_status = require("telescope.state").get_status
 
 local utils = {}
 
+utils.is_windows = function()
+  return package.config:sub(1,1) == "\\";
+end
+
 utils.get_separator = function()
   return Path.path.sep
 end
