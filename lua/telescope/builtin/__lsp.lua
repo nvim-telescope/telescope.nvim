@@ -165,14 +165,11 @@ local function list_or_jump(action, title, params, opts)
           cmd = "vnew"
         elseif opts.jump_type == "tab drop" then
           cmd = "tab drop"
-        else
-          utils.notify(
-            "list_or_jump",
-            { msg = string.format("Invalid jump_type for %s picker", title), level = "ERROR" }
-          )
-          return
         end
-        vim.cmd(string.format("%s %s", cmd, file_path))
+
+        if cmd then
+          vim.cmd(string.format("%s %s", cmd, file_path))
+        end
       end
 
       vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding, opts.reuse_win)
