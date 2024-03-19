@@ -15,6 +15,43 @@ local get_status = require("telescope.state").get_status
 
 local utils = {}
 
+local iswin = vim.loop.os_uname().sysname == "Windows_NT"
+
+--- `vim.fs.normalize` co-opted for 0.1.x (neovim 0.7) compat
+--- TODO: get rid of this and use  `vim.fs.normalize` directly for future releases
+---@param path string
+---@return string
+local function path_normalize(path)
+  vim.validate {
+    path = { path, { "string" } },
+  }
+
+  if path:sub(1, 1) == "~" then
+    local home = vim.loop.os_homedir() or "~"
+    if home:sub(-1) == "\\" or home:sub(-1) == "/" then
+      home = home:sub(1, -2)
+    end
+    path = home .. path:sub(2)
+  end
+
+  path = path:gsub("%$([%w_]+)", vim.loop.os_getenv)
+  path = path:gsub("\\", "/"):gsub("/+", "/")
+  if iswin and path:match "^%w:/$" then
+    return path
+  end
+  return (path:gsub("(.)/$", "%1"))
+end
+
+--- Selective `expand`.
+--- `vim.fn.expand` is overly aggressive, sometimes expanding valid absolute paths into
+--- non-existent paths or straight up erroring
+---
+---@param path string
+---@return string
+utils.path_expand = function(path)
+  return path:match "^[%%#<]" and vim.fn.expand(path) or path_normalize(path)
+end
+
 utils.get_separator = function()
   return Path.path.sep
 end
@@ -244,7 +281,7 @@ utils.transform_path = function(opts, path)
         if opts.cwd then
           cwd = opts.cwd
           if not vim.in_fast_event() then
-            cwd = vim.fn.expand(opts.cwd)
+            cwd = utils.path_expand(opts.cwd)
           end
         else
           cwd = vim.loop.cwd()
