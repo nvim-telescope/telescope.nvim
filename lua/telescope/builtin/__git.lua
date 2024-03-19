@@ -366,7 +366,7 @@ end
 
 local set_opts_cwd = function(opts)
   if opts.cwd then
-    opts.cwd = vim.fn.expand(opts.cwd)
+    opts.cwd = utils.path_expand(opts.cwd)
   else
     opts.cwd = vim.loop.cwd()
   end

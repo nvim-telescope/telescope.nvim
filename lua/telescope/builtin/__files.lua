@@ -96,12 +96,12 @@ files.live_grep = function(opts)
   local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   local search_dirs = opts.search_dirs
   local grep_open_files = opts.grep_open_files
-  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
+  opts.cwd = opts.cwd and utils.path_expand(opts.cwd) or vim.loop.cwd()
 
   local filelist = get_open_filelist(grep_open_files, opts.cwd)
   if search_dirs then
     for i, path in ipairs(search_dirs) do
-      search_dirs[i] = vim.fn.expand(path)
+      search_dirs[i] = utils.path_expand(path)
     end
   end
 
@@ -167,7 +167,7 @@ end
 
 files.grep_string = function(opts)
   -- TODO: This should probably check your visual selection as well, if you've got one
-  opts.cwd = opts.cwd and vim.fn.expand(opts.cwd) or vim.loop.cwd()
+  opts.cwd = opts.cwd and utils.path_expand(opts.cwd) or vim.loop.cwd()
   local vimgrep_arguments = vim.F.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
   local word = vim.F.if_nil(opts.search, vim.fn.expand "<cword>")
   local search = opts.use_regex and word or escape_chars(word)
@@ -205,7 +205,7 @@ files.grep_string = function(opts)
     end
   elseif opts.search_dirs then
     for _, path in ipairs(opts.search_dirs) do
-      table.insert(args, vim.fn.expand(path))
+      table.insert(args, utils.path_expand(path))
     end
   end
 
@@ -258,7 +258,7 @@ files.find_files = function(opts)
 
   if search_dirs then
     for k, v in pairs(search_dirs) do
-      search_dirs[k] = vim.fn.expand(v)
+      search_dirs[k] = utils.path_expand(v)
     end
   end
 
@@ -335,7 +335,7 @@ files.find_files = function(opts)
   end
 
   if opts.cwd then
-    opts.cwd = vim.fn.expand(opts.cwd)
+    opts.cwd = utils.path_expand(opts.cwd)
   end
 
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
@@ -418,7 +418,7 @@ end
 
 files.current_buffer_fuzzy_find = function(opts)
   -- All actions are on the current buffer
-  local filename = vim.fn.expand(vim.api.nvim_buf_get_name(opts.bufnr))
+  local filename = vim.api.nvim_buf_get_name(opts.bufnr)
   local filetype = vim.api.nvim_buf_get_option(opts.bufnr, "filetype")
 
   local lines = vim.api.nvim_buf_get_lines(opts.bufnr, 0, -1, false)

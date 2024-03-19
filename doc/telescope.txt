@@ -2261,6 +2261,20 @@ UTILS                                                          *telescope.utils*
 
 Utilities for writing telescope pickers
 
+utils.path_expand({path})                      *telescope.utils.path_expand()*
+    Selective `expand`. `vim.fn.expand` is overly aggressive, sometimes
+    expanding valid absolute paths into non-existent paths or straight up
+    erroring
+
+
+
+    Parameters: ~
+        {path} (string)
+
+    Return: ~
+        string
+
+
 utils.transform_path({opts}, {path})        *telescope.utils.transform_path()*
     Transform path is a util function that formats a path based on path_display
     found in `opts` or the default value from config. It is meant to be used in

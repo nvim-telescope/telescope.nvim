@@ -13,17 +13,17 @@ local bat_options = { "--style=plain", "--color=always", "--paging=always" }
 local has_less = (vim.fn.executable "less" == 1) and conf.use_less
 
 local get_file_stat = function(filename)
-  return vim.loop.fs_stat(vim.fn.expand(filename)) or {}
+  return vim.loop.fs_stat(utils.path_expand(filename)) or {}
 end
 
 local list_dir = (function()
   if vim.fn.has "win32" == 1 then
     return function(dirname)
-      return { "cmd.exe", "/c", "dir", vim.fn.expand(dirname) }
+      return { "cmd.exe", "/c", "dir", utils.path_expand(dirname) }
     end
   else
     return function(dirname)
-      return { "ls", "-la", vim.fn.expand(dirname) }
+      return { "ls", "-la", utils.path_expand(dirname) }
     end
   end
 end)()
@@ -55,7 +55,7 @@ local bat_maker = function(filename, lnum, start, finish)
     command,
     bat_options,
     "--",
-    vim.fn.expand(filename),
+    utils.path_expand(filename),
   }
 end
 
@@ -74,15 +74,15 @@ local cat_maker = function(filename, _, start, _)
 
   if has_less then
     if start then
-      return { "less", "-RS", string.format("+%s", start), vim.fn.expand(filename) }
+      return { "less", "-RS", string.format("+%s", start), utils.path_expand(filename) }
     else
-      return { "less", "-RS", vim.fn.expand(filename) }
+      return { "less", "-RS", utils.path_expand(filename) }
     end
   else
     return {
       "cat",
       "--",
-      vim.fn.expand(filename),
+      utils.path_expand(filename),
     }
   end
 end

@@ -72,7 +72,7 @@ function histories.History:new(opts)
   if conf.history.limit then
     obj.limit = conf.history.limit
   end
-  obj.path = vim.fn.expand(conf.history.path)
+  obj.path = utils.path_expand(conf.history.path)
   obj.content = {}
   obj.index = 1
 
