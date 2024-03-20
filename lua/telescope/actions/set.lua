@@ -197,6 +197,9 @@ action_set.edit = function(prompt_bufnr, command)
     -- prevents restarting lsp server
     if vim.api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
       filename = Path:new(filename):normalize(vim.loop.cwd())
+      if utils.is_windows then
+        filename = utils.escape_windows_special_chars(filename)
+      end
       pcall(vim.cmd, string.format("%s %s", command, vim.fn.fnameescape(filename)))
     end
   end

@@ -495,6 +495,9 @@ previewers.cat = defaulter(function(opts)
     end,
 
     get_buffer_by_name = function(_, entry)
+      if utils.is_windows then
+        entry.path = utils.escape_windows_special_chars(entry.path)
+      end
       return from_entry.path(entry, false)
     end,
 
@@ -558,6 +561,9 @@ previewers.vimgrep = defaulter(function(opts)
     end,
 
     get_buffer_by_name = function(_, entry)
+      if utils.is_windows then
+        entry.path = utils.escape_windows_special_chars(entry.path)
+      end
       return from_entry.path(entry, false)
     end,
 
