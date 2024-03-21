@@ -13,7 +13,6 @@
 
 local a = vim.api
 
-local log = require "telescope.log"
 local Path = require "plenary.path"
 local state = require "telescope.state"
 local utils = require "telescope.utils"
@@ -197,7 +196,7 @@ action_set.edit = function(prompt_bufnr, command)
     -- prevents restarting lsp server
     if vim.api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
       filename = Path:new(filename):normalize(vim.loop.cwd())
-      pcall(vim.cmd, string.format("%s %s", command, vim.fn.fnameescape(filename)))
+      pcall(vim.cmd[command], vim.fn.fnameescape(filename))
     end
   end
 
@@ -208,23 +207,7 @@ action_set.edit = function(prompt_bufnr, command)
     end)
   end
 
-  local pos = vim.api.nvim_win_get_cursor(0)
-  if col == nil then
-    if row == pos[1] then
-      col = pos[2] + 1
-    elseif row == nil then
-      row, col = pos[1], pos[2] + 1
-    else
-      col = 1
-    end
-  end
-
-  if row and col then
-    local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, { row, col })
-    if not ok then
-      log.debug("Failed to move to cursor:", err_msg, row, col)
-    end
-  end
+  utils.set_window_cursor(a.nvim_get_current_win(), row, col)
 end
 
 ---@param prompt_bufnr integer
