@@ -91,11 +91,13 @@ end
 ---@class BasePipe
 ---@field super Object: Always available
 ---@field handle uv_pipe_t: A pipe handle
+---@field close_cb function: A handle closed callback
 ---@field extend function: Extend
 local BasePipe = Object:extend()
 
 function BasePipe:new()
   self.eof_tx, self.eof_rx = channel.oneshot()
+  self.close_cb = nil
 end
 
 function BasePipe:close(force)
@@ -117,7 +119,7 @@ function BasePipe:close(force)
 
   self.handle:read_stop()
   if not self.handle:is_closing() then
-    self.handle:close()
+    self.handle:close(self.close_cb)
   end
 
   self._closed = true
@@ -134,11 +136,23 @@ end
 function LinesPipe:read()
   local read_tx, read_rx = channel.oneshot()
 
+  self.close_cb = function()
+    if not read_tx then
+      return
+    end
+    read_tx()
+    read_tx = nil
+  end
+
   self.handle:read_start(function(err, data)
     assert(not err, err)
     self.handle:read_stop()
 
-    read_tx(data)
+    if read_tx then
+      read_tx(data)
+      read_tx = nil
+    end
+
     if data == nil then
       self.eof_tx()
     end
@@ -221,11 +235,23 @@ end
 function ChunkPipe:read()
   local read_tx, read_rx = channel.oneshot()
 
+  self.close_cb = function()
+    if not read_tx then
+      return
+    end
+    read_tx()
+    read_tx = nil
+  end
+
   self.handle:read_start(function(err, data)
     assert(not err, err)
     self.handle:read_stop()
 
-    read_tx(data)
+    if read_tx then
+      read_tx(data)
+      read_tx = nil
+    end
+
     if data == nil then
       self.eof_tx()
     end

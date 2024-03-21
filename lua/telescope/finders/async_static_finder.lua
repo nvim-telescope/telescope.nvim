@@ -26,6 +26,7 @@ return function(opts)
     results = results,
     entry_maker = entry_maker,
     close = function() end,
+    stop_read = function() end,
   }, {
     __call = function(_, _, process_result, process_complete)
       for i, v in ipairs(results) do
