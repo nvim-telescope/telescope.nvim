@@ -495,11 +495,11 @@ previewers.cat = defaulter(function(opts)
     end,
 
     get_buffer_by_name = function(_, entry)
-      return from_entry.path(entry, false)
+      return from_entry.path(entry, false, false)
     end,
 
     define_preview = function(self, entry)
-      local p = from_entry.path(entry, true)
+      local p = from_entry.path(entry, true, false)
       if p == nil or p == "" then
         return
       end
@@ -558,7 +558,7 @@ previewers.vimgrep = defaulter(function(opts)
     end,
 
     get_buffer_by_name = function(_, entry)
-      return from_entry.path(entry, false)
+      return from_entry.path(entry, false, false)
     end,
 
     define_preview = function(self, entry)
@@ -569,7 +569,7 @@ previewers.vimgrep = defaulter(function(opts)
         or false
       local p
       if not has_buftype then
-        p = from_entry.path(entry, true)
+        p = from_entry.path(entry, true, false)
         if p == nil or p == "" then
           return
         end
@@ -982,7 +982,7 @@ previewers.git_file_diff = defaulter(function(opts)
 
     define_preview = function(self, entry)
       if entry.status and (entry.status == "??" or entry.status == "A ") then
-        local p = from_entry.path(entry, true)
+        local p = from_entry.path(entry, true, false)
         if p == nil or p == "" then
           return
         end
