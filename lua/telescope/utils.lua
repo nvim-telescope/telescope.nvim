@@ -17,14 +17,31 @@ local utils = {}
 
 local iswin = vim.loop.os_uname().sysname == "Windows_NT"
 
---- `vim.fs.normalize` co-opted for 0.1.x (neovim 0.7) compat
---- TODO: get rid of this and use  `vim.fs.normalize` directly for future releases
+--- Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
+---
+--- Paths starting with '%', '#' or '<' are expanded with `vim.fn.expand()`.
+--- Otherwise avoids using `vim.fn.expand()` due to its overly aggressive
+--- expansion behavior which can sometimes lead to errors or the creation of
+--- non-existent paths when dealing with valid absolute paths.
+---
+--- Other paths will have '~' and environment variables expanded.
+--- Unlike `vim.fs.normalize()`, backslashes are preserved. This has better
+--- compatibility with `plenary.path` and also avoids mangling valid Unix paths
+--- with literal backslashes.
+---
+--- Trailing slashes are trimmed. With the exception of root paths.
+--- eg. `/` on Unix or `C:\` on Windows
+---
 ---@param path string
 ---@return string
-local function path_normalize(path)
+utils.path_expand = function(path)
   vim.validate {
     path = { path, { "string" } },
   }
+
+  if path:match "^[%%#<]" then
+    path = vim.fn.expand(path)
+  end
 
   if path:sub(1, 1) == "~" then
     local home = vim.loop.os_homedir() or "~"
@@ -35,21 +52,16 @@ local function path_normalize(path)
   end
 
   path = path:gsub("%$([%w_]+)", vim.loop.os_getenv)
-  path = path:gsub("\\", "/"):gsub("/+", "/")
-  if iswin and path:match "^%w:/$" then
-    return path
+  path = path:gsub("/+", "/")
+  if iswin then
+    path = path:gsub("\\+", "\\")
+    if path:match "^%w:\\$" then
+      return path
+    else
+      return (path:gsub("(.)\\$", "%1"))
+    end
   end
   return (path:gsub("(.)/$", "%1"))
-end
-
---- Selective `expand`.
---- `vim.fn.expand` is overly aggressive, sometimes expanding valid absolute paths into
---- non-existent paths or straight up erroring
----
----@param path string
----@return string
-utils.path_expand = function(path)
-  return path:match "^[%%#<]" and vim.fn.expand(path) or path_normalize(path)
 end
 
 utils.get_separator = function()
