@@ -203,21 +203,13 @@ utils.set_preview_message = function(bufnr, winid, message, fillchar)
   )
   local col = math.floor((width - strings.strdisplaywidth(lines[2])) / 2)
   if height <= 2 then -- Display message on first line in buffer preview
-    vim.api.nvim_buf_set_extmark(
-      bufnr,
-      anon_ns,
-      0,
-      0,
-      {
-        virt_text = { { formatted_message, "TelescopePreviewMessage" } },
-        virt_text_pos = "overlay",
-        virt_text_win_col =
-            col
-      }
-    )
+    vim.api.nvim_buf_set_extmark(bufnr, anon_ns, 0, 0, {
+      virt_text = { { formatted_message, "TelescopePreviewMessage" } },
+      virt_text_pos = "overlay",
+      virt_text_win_col = col,
+    })
   else
     for i, line in ipairs(lines) do
-      local line_pos = math.floor(height / 2) - 1 + i
       vim.api.nvim_buf_set_extmark(
         bufnr,
         anon_ns,
