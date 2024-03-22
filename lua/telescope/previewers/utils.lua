@@ -188,9 +188,10 @@ utils.set_preview_message = function(bufnr, winid, message, fillchar)
   )
   local anon_ns = vim.api.nvim_create_namespace ""
   local padding = table.concat(ts_utils.repeated_table(#message + 4, " "), "")
+  local formatted_message = "  " .. message .. "  "
   local lines = {
     padding,
-    "  " .. message .. "  ",
+    formatted_message,
     padding,
   }
   vim.api.nvim_buf_set_extmark(
@@ -201,14 +202,30 @@ utils.set_preview_message = function(bufnr, winid, message, fillchar)
     { end_line = height, hl_group = "TelescopePreviewMessageFillchar" }
   )
   local col = math.floor((width - strings.strdisplaywidth(lines[2])) / 2)
-  for i, line in ipairs(lines) do
+  if height <= 2 then -- Display message on first line in buffer preview
     vim.api.nvim_buf_set_extmark(
       bufnr,
       anon_ns,
-      math.floor(height / 2) - 1 + i,
       0,
-      { virt_text = { { line, "TelescopePreviewMessage" } }, virt_text_pos = "overlay", virt_text_win_col = col }
+      0,
+      {
+        virt_text = { { formatted_message, "TelescopePreviewMessage" } },
+        virt_text_pos = "overlay",
+        virt_text_win_col =
+            col
+      }
     )
+  else
+    for i, line in ipairs(lines) do
+      local line_pos = math.floor(height / 2) - 1 + i
+      vim.api.nvim_buf_set_extmark(
+        bufnr,
+        anon_ns,
+        math.floor(height / 2) - 1 + i,
+        0,
+        { virt_text = { { line, "TelescopePreviewMessage" } }, virt_text_pos = "overlay", virt_text_win_col = col }
+      )
+    end
   end
 end
 
