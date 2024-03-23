@@ -191,8 +191,7 @@ utils.set_preview_message = function(bufnr, winid, message, fillchar)
   local formatted_message = "  " .. message .. "  "
   -- Populate lines table based on height
   local lines = {}
-  if height == 1
-  then
+  if height == 1 then
     lines[1] = formatted_message
   else
     for i = 1, math.min(height, 3), 1 do
