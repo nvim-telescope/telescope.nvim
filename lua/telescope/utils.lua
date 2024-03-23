@@ -130,7 +130,7 @@ utils.filter_symbols = function(results, opts)
   end
 end
 
-utils.path_reverse = (function(filepath)
+utils.path_reverse = (function(filepath, file_sep, dir_open_sep, dir_close_sep)
   local dirs = vim.split(filepath, "/")
   local reversed_path = ""
 
@@ -138,11 +138,11 @@ utils.path_reverse = (function(filepath)
     if 1 == #dirs then
       reversed_path = dir .. reversed_path
     elseif i == 2 and i == #dirs then
-      reversed_path = dir .. " (/" .. reversed_path .. ")"
+      reversed_path = dir .. file_sep .. dir_open_sep .. "/" .. reversed_path .. dir_close_sep
     elseif i == 2 then
-      reversed_path = dir .. "/" .. reversed_path .. ")"
+      reversed_path = dir .. "/" .. reversed_path .. dir_close_sep
     elseif i == #dirs then
-      reversed_path = dir .. " (/" .. reversed_path
+      reversed_path = dir .. file_sep .. dir_open_sep .. "/" .. reversed_path
     else
       reversed_path = dir .. "/" .. reversed_path
     end
@@ -296,7 +296,15 @@ utils.transform_path = function(opts, path)
       end
 
       if vim.tbl_contains(path_display, "reverse") or path_display["reverse"] ~= nil then
-        transformed_path = utils.path_reverse(transformed_path)
+        if type(path_display["reverse"]) == "table" then
+          local reverse = path_display["reverse"]
+          transformed_path = utils.path_reverse(transformed_path, reverse.file_sep, reverse.dir_open_sep, reverse.dir_close_sep)
+        else
+          local file_sep = ""
+          local dir_open_sep = ""
+          local dir_close_sep = ""
+          transformed_path = utils.path_reverse(transformed_path, file_sep, dir_open_sep, dir_close_sep)
+        end
       end
 
       if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
