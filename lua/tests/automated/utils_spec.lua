@@ -1,5 +1,30 @@
 local utils = require "telescope.utils"
 
+describe("path_expand()", function()
+  it("removes trailing /", function()
+    assert.is.equal("/home/user", utils.path_expand "/home/user/")
+  end)
+
+  it("works with /", function()
+    assert.is.equal("/", utils.path_expand "/")
+  end)
+
+  it("works with ~", function()
+    assert.is.equal(vim.loop.os_homedir() .. "/src/foo", utils.path_expand "~/src/foo")
+  end)
+
+  it("handles duplicate /", function()
+    assert.is.equal("/home/user", utils.path_expand "/home///user")
+  end)
+
+  it("preserves fake whitespace characters and whitespace", function()
+    local path_space = "/home/user/hello world"
+    assert.is.equal(path_space, utils.path_expand(path_space))
+    local path_newline = [[/home/user/hello\nworld]]
+    assert.is.equal(path_newline, utils.path_expand(path_newline))
+  end)
+end)
+
 describe("is_uri", function()
   describe("detects valid uris", function()
     local uris = {
