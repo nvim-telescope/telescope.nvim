@@ -7,7 +7,7 @@ jobs:
   luarocks-upload:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: LuaRocks Upload
         uses: nvim-neorocks/luarocks-tag-release@v1.0.2
         env:
@@ -15,8 +15,8 @@ jobs:
         with:
           summary: "Find, Filter, Preview, Pick. All lua, all the time."
           detailed_description: |
-            A highly extendable fuzzy finder over lists. 
-            Built on the latest awesome features from neovim core. 
+            A highly extendable fuzzy finder over lists.
+            Built on the latest awesome features from neovim core.
             Telescope is centered around modularity, allowing for easy customization.
           dependencies: |
             plenary.nvim
