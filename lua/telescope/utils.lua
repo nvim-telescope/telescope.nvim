@@ -17,6 +17,7 @@ local utils = {}
 
 local iswin = vim.loop.os_uname().sysname == "Windows_NT"
 
+--- Hello
 --- Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
 ---
 --- Paths starting with '%', '#' or '<' are expanded with `vim.fn.expand()`.
