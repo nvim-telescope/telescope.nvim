@@ -1,4 +1,5 @@
 build/
 doc/tags
+deps/
 
 .luacheckcache

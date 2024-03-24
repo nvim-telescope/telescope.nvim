@@ -1,61 +1,42 @@
 name: Generate docs
 
 on:
+  workflow_dispatch:
   push:
     branches-ignore:
       - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
-  build-sources:
+  docgen:
     name: Generate docs
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-22.04
-            url: https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: date +%F > todays-date
-      - name: Restore cache for today's nightly.
-        uses: actions/cache@v3
+
+      - uses: rhysd/action-setup-vim@v1
         with:
-          path: _neovim
-          key: ${{ runner.os }}-${{ matrix.url }}-${{ hashFiles('todays-date') }}
+          neovim: true
+          version: v0.9.5 # necessary for our version of tree-sitter-lua
 
-      - name: Prepare
-        run: |
-          test -d _neovim || {
-            mkdir -p _neovim
-            curl -sL ${{ matrix.url }} | tar xzf - --strip-components=1 -C "${PWD}/_neovim"
-          }
-          mkdir -p ~/.local/share/nvim/site/pack/vendor/start
-          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
-          git clone https://github.com/tjdevries/tree-sitter-lua ~/.local/share/nvim/site/pack/vendor/start/tree-sitter-lua
-          ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
+      - uses: actions/cache@v3
+        with:
+          path: deps
+          key: ${{ runner.os }}-deps-${{ matrix.version }}-${{ hashFiles('todays-date') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-${{ matrix.version }}-
 
-      - name: Build parser
-        run: |
-          # We have to build the parser every single time to keep up with parser changes
-          cd ~/.local/share/nvim/site/pack/vendor/start/tree-sitter-lua
-          git checkout 86f74dfb69c570f0749b241f8f5489f8f50adbea
-          make dist
-          cd -
+      - name: Generating
+        run: make docgen
 
-      - name: Generating docs
-        run: |
-          export PATH="${PWD}/_neovim/bin:${PATH}"
-          export VIM="${PWD}/_neovim/share/nvim/runtime"
-          nvim --version
-          make docgen
-
-      # inspired by nvim-lspconfigs
-      - name: Update documentation
+      - name: Commit changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMIT_MSG: |
-            [docgen] Update doc/telescope.txt
+            [docgen] Update doc/telescope-file-browser.txt
             skip-checks: true
         run: |
           git config user.email "actions@github"
@@ -64,3 +45,4 @@ jobs:
           git add doc/
           # Only commit and push if we have changes
           git diff --quiet && git diff --staged --quiet || (git commit -m "${COMMIT_MSG}"; git push origin HEAD:${GITHUB_REF})
+
