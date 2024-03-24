@@ -313,7 +313,12 @@ utils.transform_path = function(opts, path)
       if vim.tbl_contains(path_display, "reverse") or path_display["reverse"] ~= nil then
         if type(path_display["reverse"]) == "table" then
           local reverse = path_display["reverse"]
-          transformed_path = utils.path_reverse(transformed_path, reverse.file_sep, reverse.dir_open_sep, reverse.dir_close_sep)
+          transformed_path = utils.path_reverse(
+            transformed_path, 
+            reverse.file_sep,
+            reverse.dir_open_sep,
+            reverse.dir_close_sep
+          )
         else
           local file_sep = ""
           local dir_open_sep = ""
