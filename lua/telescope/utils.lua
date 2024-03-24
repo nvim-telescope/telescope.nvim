@@ -147,6 +147,27 @@ utils.filter_symbols = function(results, opts, post_filter)
   end
 end
 
+utils.path_reverse = (function(filepath, file_sep, dir_open_sep, dir_close_sep)
+  local dirs = vim.split(filepath, "/")
+  local reversed_path = ""
+
+  for i, dir in ipairs(dirs) do
+    if 1 == #dirs then
+      reversed_path = dir .. reversed_path
+    elseif i == 2 and i == #dirs then
+      reversed_path = dir .. file_sep .. dir_open_sep .. "/" .. reversed_path .. dir_close_sep
+    elseif i == 2 then
+      reversed_path = dir .. "/" .. reversed_path .. dir_close_sep
+    elseif i == #dirs then
+      reversed_path = dir .. file_sep .. dir_open_sep .. "/" .. reversed_path
+    else
+      reversed_path = dir .. "/" .. reversed_path
+    end
+  end
+
+  return reversed_path
+end)
+
 utils.path_smart = (function()
   local paths = {}
   return function(filepath)
@@ -289,6 +310,18 @@ utils.transform_path = function(opts, path)
         transformed_path = Path:new(transformed_path):make_relative(cwd)
       end
 
+      if vim.tbl_contains(path_display, "reverse") or path_display["reverse"] ~= nil then
+        if type(path_display["reverse"]) == "table" then
+          local reverse = path_display["reverse"]
+          transformed_path = utils.path_reverse(transformed_path, reverse.file_sep, reverse.dir_open_sep, reverse.dir_close_sep)
+        else
+          local file_sep = ""
+          local dir_open_sep = ""
+          local dir_close_sep = ""
+          transformed_path = utils.path_reverse(transformed_path, file_sep, dir_open_sep, dir_close_sep)
+        end
+      end
+
       if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
         if type(path_display["shorten"]) == "table" then
           local shorten = path_display["shorten"]
@@ -297,6 +330,7 @@ utils.transform_path = function(opts, path)
           transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
         end
       end
+
       if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
         if opts.__length == nil then
           opts.__length = calc_result_length(path_display.truncate)
