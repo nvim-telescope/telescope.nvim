@@ -148,20 +148,20 @@ utils.filter_symbols = function(results, opts, post_filter)
 end
 
 utils.path_reverse = (function(filepath, file_sep, dir_open_sep, dir_close_sep)
-  local dirs = vim.split(filepath, Path.path.sep)
+  local dirs = vim.split(filepath, utils.get_separator())
   local reversed_path = ""
 
   for i, dir in ipairs(dirs) do
     if 1 == #dirs then
       reversed_path = dir .. reversed_path
     elseif i == 2 and i == #dirs then
-      reversed_path = dir .. file_sep .. dir_open_sep .. Path.path.sep .. reversed_path .. dir_close_sep
+      reversed_path = dir .. file_sep .. dir_open_sep .. utils.get_separator() .. reversed_path .. dir_close_sep
     elseif i == 2 then
-      reversed_path = dir .. Path.path.sep .. reversed_path .. dir_close_sep
+      reversed_path = dir .. utils.get_separator() .. reversed_path .. dir_close_sep
     elseif i == #dirs then
-      reversed_path = dir .. file_sep .. dir_open_sep .. Path.path.sep .. reversed_path
+      reversed_path = dir .. file_sep .. dir_open_sep .. utils.get_separator() .. reversed_path
     else
-      reversed_path = dir .. Path.path.sep .. reversed_path
+      reversed_path = dir .. utils.get_separator() .. reversed_path
     end
   end
 
