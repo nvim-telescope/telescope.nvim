@@ -1,27 +1,41 @@
 local utils = require "telescope.utils"
 
+local eq = assert.are.same
+
 describe("path_expand()", function()
-  it("removes trailing /", function()
-    assert.is.equal("/home/user", utils.path_expand "/home/user/")
+  it("removes trailing os_sep", function()
+    if utils.iswin then
+      eq([[C:\Users\a\b]], utils.path_expand [[C:\Users\a\b\]])
+    else
+      eq("/home/user", utils.path_expand "/home/user/")
+    end
   end)
 
-  it("works with /", function()
-    assert.is.equal("/", utils.path_expand "/")
+  it("works with root dir", function()
+    if utils.iswin then
+      eq([[C:\]], utils.path_expand [[C:\]])
+    else
+      eq("/", utils.path_expand "/")
+    end
   end)
 
   it("works with ~", function()
-    assert.is.equal(vim.loop.os_homedir() .. "/src/foo", utils.path_expand "~/src/foo")
+    eq(vim.loop.os_homedir() .. "/src/foo", utils.path_expand "~/src/foo")
   end)
 
-  it("handles duplicate /", function()
-    assert.is.equal("/home/user", utils.path_expand "/home///user")
+  it("handles duplicate os_sep", function()
+    if utils.iswin then
+      eq([[C:\Users\a]], utils.path_expand [[C:\\\Users\\a]])
+    else
+      eq("/home/user", utils.path_expand "/home///user")
+    end
   end)
 
   it("preserves fake whitespace characters and whitespace", function()
     local path_space = "/home/user/hello world"
-    assert.is.equal(path_space, utils.path_expand(path_space))
+    eq(path_space, utils.path_expand(path_space))
     local path_newline = [[/home/user/hello\nworld]]
-    assert.is.equal(path_newline, utils.path_expand(path_newline))
+    eq(path_newline, utils.path_expand(path_newline))
   end)
 end)
 
@@ -140,9 +154,9 @@ describe("__separates_file_path_location", function()
     it("separtates file path for " .. suite.input, function()
       local file, row, col = utils.__separate_file_path_location(suite.input)
 
-      assert.are.equal(file, suite.file)
-      assert.are.equal(row, suite.row)
-      assert.are.equal(col, suite.col)
+      eq(file, suite.file)
+      eq(row, suite.row)
+      eq(col, suite.col)
     end)
   end
 end)

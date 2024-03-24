@@ -1,6 +1,11 @@
 local picker = require "telescope.pickers"
+local Path = require "plenary.path"
 
 local eq = assert.are.same
+
+local function new_path(unix_path)
+  return Path:new(unpack(vim.split(unix_path, "/"))).filename
+end
 
 describe("telescope", function()
   describe("Picker", function()
@@ -84,8 +89,8 @@ describe("telescope", function()
       it("sorts matches after last os sep better", function()
         local sorter = require("telescope.sorters").get_fuzzy_file()
 
-        local better_match = sorter:score("aaa", { ordinal = "bbb/aaa" })
-        local worse_match = sorter:score("aaa", { ordinal = "aaa/bbb" })
+        local better_match = sorter:score("aaa", { ordinal = new_path "bbb/aaa" })
+        local worse_match = sorter:score("aaa", { ordinal = new_path "aaa/bbb" })
 
         assert(better_match < worse_match, "Final match should be stronger")
       end)
@@ -103,6 +108,7 @@ describe("telescope", function()
     describe("fzy", function()
       local sorter = require("telescope.sorters").get_fzy_sorter()
       local function score(prompt, line)
+        line = new_path(line)
         return sorter:score(prompt, { ordinal = line }, function(val)
           return val
         end, function()
@@ -171,7 +177,7 @@ describe("telescope", function()
       end)
 
       local function positions(prompt, line)
-        return sorter:highlighter(prompt, line)
+        return sorter:highlighter(prompt, new_path(line))
       end
 
       describe("positioning", function()
