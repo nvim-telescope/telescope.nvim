@@ -14,7 +14,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-22.04
-            url: https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz
+            url: https://github.com/neovim/neovim/releases/download/v0.9.5/nvim-linux64.tar.gz
     steps:
       - uses: actions/checkout@v3
       - run: date +%F > todays-date
