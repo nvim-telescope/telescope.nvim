@@ -160,18 +160,11 @@ do
       local hl_group, icon
       local display, path_style = utils.transform_path(opts, entry.value)
 
-      local function addOffset(offset, obj)
-        return { obj[1] + offset, obj[2] + offset }
-      end
-
       display, hl_group, icon = utils.transform_devicons(entry.value, display, disable_devicons)
 
       local style = { { { 0, #icon, }, hl_group } }
 
-      for _, item in ipairs(path_style) do
-        item[1] = addOffset(#icon + 1, item[1])
-        table.insert(style, item)
-      end
+      utils.merge_styles(style, path_style, #icon + 1)
 
       if hl_group then
         return display, style
@@ -324,7 +317,7 @@ do
       cwd = utils.path_expand(opts.cwd or vim.loop.cwd()),
 
       display = function(entry)
-        local display_filename = utils.transform_path(opts, entry.filename)
+        local display_filename, path_style = utils.transform_path(opts, entry.filename)
 
         local coordinates = ":"
         if not disable_coordinates then
@@ -343,8 +336,12 @@ do
           disable_devicons
         )
 
+        local style = { { { 0, #icon }, hl_group } }
+
+        utils.merge_styles(style, path_style, #icon + 1)
+
         if hl_group then
-          return display, { { { 0, #icon }, hl_group } }
+          return display, style
         else
           return display
         end
