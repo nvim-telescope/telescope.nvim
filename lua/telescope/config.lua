@@ -341,16 +341,7 @@ append(
     will give a path like:
       `al/beta/gamma/de`
 
-  path_display can also be set to 'reverse' string to reverse the path.
-  The following options can be set to customise the result:
-
-    path_display = {
-      reverse = {
-        file_sep = " ",
-        dir_open_sep = "(",
-        dir_close_sep = ")",
-      }
-    },
+  path_display can also be set to 'reverse' to reverse the path.
 
   path_display can also be set to 'hidden' string to hide file names
 
