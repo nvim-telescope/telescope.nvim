@@ -158,12 +158,14 @@ do
     mt_file_entry.cwd = cwd
     mt_file_entry.display = function(entry)
       local hl_group, icon
-      local display = utils.transform_path(opts, entry.value)
+      local display, path_style = utils.transform_path(opts, entry.value)
 
       display, hl_group, icon = utils.transform_devicons(entry.value, display, disable_devicons)
+       
+      local style = { { { 0, #icon, }, hl_group }, path_style }
 
       if hl_group then
-        return display, { { { 0, #icon }, hl_group } }
+        return display, style
       else
         return display
       end

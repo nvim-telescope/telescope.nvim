@@ -147,25 +147,23 @@ utils.filter_symbols = function(results, opts, post_filter)
   end
 end
 
-utils.path_reverse = (function(filepath, file_sep, dir_open_sep, dir_close_sep)
+utils.path_reverse = (function(filepath)
   local dirs = vim.split(filepath, utils.get_separator())
+  local file_sep = " "
   local reversed_path = ""
+  local path_style = nil
+  local start_index = 4
 
   for i, dir in ipairs(dirs) do
-    if 1 == #dirs then
-      reversed_path = dir .. reversed_path
-    elseif i == 2 and i == #dirs then
-      reversed_path = dir .. file_sep .. dir_open_sep .. utils.get_separator() .. reversed_path .. dir_close_sep
-    elseif i == 2 then
-      reversed_path = dir .. utils.get_separator() .. reversed_path .. dir_close_sep
-    elseif i == #dirs then
-      reversed_path = dir .. file_sep .. dir_open_sep .. utils.get_separator() .. reversed_path
-    else
+    if i < #dirs then
       reversed_path = dir .. utils.get_separator() .. reversed_path
+    else
+      reversed_path = dir .. file_sep .. reversed_path
+      path_style = { { start_index + #dir, #reversed_path + start_index }, "TelescopeResultsComment" }
     end
   end
 
-  return reversed_path
+  return reversed_path, path_style
 end)
 
 utils.path_smart = (function()
@@ -274,7 +272,7 @@ end
 --- not be addressed by us
 ---@param opts table: The opts the users passed into the picker. Might contains a path_display key
 ---@param path string: The path that should be formatted
----@return string: The transformed path ready to be displayed
+---@return string, table: The transformed path ready to be displayed with the styling (or nil)
 utils.transform_path = function(opts, path)
   if path == nil then
     return
@@ -286,6 +284,7 @@ utils.transform_path = function(opts, path)
   local path_display = vim.F.if_nil(opts.path_display, require("telescope.config").values.path_display)
 
   local transformed_path = path
+  local path_style = nil
 
   if type(path_display) == "function" then
     return path_display(opts, transformed_path)
@@ -311,20 +310,7 @@ utils.transform_path = function(opts, path)
       end
 
       if vim.tbl_contains(path_display, "reverse") or path_display["reverse"] ~= nil then
-        if type(path_display["reverse"]) == "table" then
-          local reverse = path_display["reverse"]
-          transformed_path = utils.path_reverse(
-            transformed_path, 
-            reverse.file_sep,
-            reverse.dir_open_sep,
-            reverse.dir_close_sep
-          )
-        else
-          local file_sep = ""
-          local dir_open_sep = ""
-          local dir_close_sep = ""
-          transformed_path = utils.path_reverse(transformed_path, file_sep, dir_open_sep, dir_close_sep)
-        end
+        transformed_path, path_style = utils.path_reverse(transformed_path)
       end
 
       if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
@@ -347,10 +333,10 @@ utils.transform_path = function(opts, path)
       end
     end
 
-    return transformed_path
+    return transformed_path, path_style
   else
     log.warn("`path_display` must be either a function or a table.", "See `:help telescope.defaults.path_display.")
-    return transformed_path
+    return transformed_path, path_style
   end
 end
 
