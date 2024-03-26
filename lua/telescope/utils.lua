@@ -271,7 +271,7 @@ end
 --- not be addressed by us
 ---@param opts table: The opts the users passed into the picker. Might contains a path_display key
 ---@param path string: The path that should be formatted
----@return string, table: The transformed path ready to be displayed with the styling (or nil)
+---@return string, table|nil: The transformed path ready to be displayed with the styling (or nil)
 utils.transform_path = function(opts, path)
   if path == nil then
     return
