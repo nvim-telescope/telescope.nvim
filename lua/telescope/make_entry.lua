@@ -160,9 +160,19 @@ do
       local hl_group, icon
       local display, path_style = utils.transform_path(opts, entry.value)
 
+      local function addOffset(offset, obj)
+        vim.print(vim.inspect(obj))
+        return { obj[1] + offset, obj[2] + offset }
+      end
+
       display, hl_group, icon = utils.transform_devicons(entry.value, display, disable_devicons)
        
-      local style = { { { 0, #icon, }, hl_group }, path_style }
+      local style = { { { 0, #icon, }, hl_group } }
+
+      for _, item in ipairs(path_style) do
+        item[1] = addOffset(4, item[1])
+        table.insert(style, item)
+      end
 
       if hl_group then
         return display, style

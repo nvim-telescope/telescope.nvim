@@ -152,14 +152,13 @@ utils.path_reverse = (function(filepath)
   local file_sep = " "
   local reversed_path = ""
   local path_style = nil
-  local start_index = 4
 
   for i, dir in ipairs(dirs) do
     if i < #dirs then
       reversed_path = dir .. utils.get_separator() .. reversed_path
     else
       reversed_path = dir .. file_sep .. reversed_path
-      path_style = { { start_index + #dir, #reversed_path + start_index }, "TelescopeResultsComment" }
+      path_style = { { { #dir, #reversed_path }, "TelescopeResultsComment" } }
     end
   end
 
