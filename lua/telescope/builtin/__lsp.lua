@@ -6,6 +6,7 @@ local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
 local pickers = require "telescope.pickers"
 local utils = require "telescope.utils"
+local lspconfig = require "telescope.config"
 
 local lsp = {}
 
@@ -129,7 +130,12 @@ end
 ---@param params lsp.TextDocumentPositionParams
 ---@param opts table
 local function list_or_jump(action, title, params, opts)
-  vim.lsp.buf_request(opts.bufnr, action, params, function(err, result, ctx, _)
+  vim.lsp.buf_request(opts.bufnr, action, params, function(err, result, ctx, config)
+    local client = vim.lsp.get_client_by_id(ctx.client_id)
+    if lspconfig.lspconfig[client.name] ~= nil and lspconfig.lspconfig[client.name][action] ~= nil then
+      local redirect_function = lspconfig.lspconfig[client.name][action]
+      return redirect_function(err, result, ctx, config, action, params, opts)
+    end
     if err then
       vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
       return
@@ -147,7 +153,7 @@ local function list_or_jump(action, title, params, opts)
 
     flattened_results = apply_action_handler(action, flattened_results, opts)
 
-    local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
+    local offset_encoding = client.offset_encoding
 
     if vim.tbl_isempty(flattened_results) then
       return
