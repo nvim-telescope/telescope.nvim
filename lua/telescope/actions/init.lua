@@ -927,7 +927,7 @@ local send_selected_to_qf = function(prompt_bufnr, mode, target)
   local prompt = picker:_get_prompt()
   actions.close(prompt_bufnr)
 
-  vim.api.nvim_exec_autocmds("QuickFixCmdPre", {})
+  vim.api.nvim_exec_autocmds("QuickFixCmdPre", { pattern = "Telescope" })
   if target == "loclist" then
     vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
   else
@@ -935,7 +935,7 @@ local send_selected_to_qf = function(prompt_bufnr, mode, target)
     vim.fn.setqflist(qf_entries, mode)
     vim.fn.setqflist({}, "a", { title = qf_title })
   end
-  vim.api.nvim_exec_autocmds("QuickFixCmdPost", {})
+  vim.api.nvim_exec_autocmds("QuickFixCmdPost", { pattern = "Telescope" })
 end
 
 local send_all_to_qf = function(prompt_bufnr, mode, target)
@@ -950,7 +950,7 @@ local send_all_to_qf = function(prompt_bufnr, mode, target)
   local prompt = picker:_get_prompt()
   actions.close(prompt_bufnr)
 
-  vim.api.nvim_exec_autocmds("QuickFixCmdPre", {})
+  vim.api.nvim_exec_autocmds("QuickFixCmdPre", { pattern = "Telescope" })
   local qf_title = string.format([[%s (%s)]], picker.prompt_title, prompt)
   if target == "loclist" then
     vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
@@ -959,7 +959,7 @@ local send_all_to_qf = function(prompt_bufnr, mode, target)
     vim.fn.setqflist(qf_entries, mode)
     vim.fn.setqflist({}, "a", { title = qf_title })
   end
-  vim.api.nvim_exec_autocmds("QuickFixCmdPost", {})
+  vim.api.nvim_exec_autocmds("QuickFixCmdPost", { pattern = "Telescope" })
 end
 
 --- Sends the selected entries to the quickfix list, replacing the previous entries.
