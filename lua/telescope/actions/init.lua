@@ -424,9 +424,20 @@ actions.set_command_line = function(prompt_bufnr)
     utils.__warn_no_selection "actions.set_command_line"
     return
   end
+
+  local history_string = vim.fn.execute "history cmd"
+  local history_list = vim.split(history_string, "\n")
+
+  local results = {}
+  for i = #history_list, 3, -1 do
+    local item = history_list[i]
+    local _, finish = string.find(item, "%d+ +")
+    table.insert(results, string.sub(item, finish + 1))
+  end
+
   actions.close(prompt_bufnr)
-  vim.fn.histadd("cmd", selection.value)
-  vim.cmd(selection.value)
+  vim.fn.histadd("cmd", results[selection.index])
+  vim.cmd(results[selection.index])
 end
 
 --- Set a value in the search line and don't search for it, making it editable.
