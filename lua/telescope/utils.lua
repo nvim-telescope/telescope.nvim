@@ -668,8 +668,8 @@ utils.__separate_file_path_location = function(path)
 end
 
 utils.merge_styles = function(style1, style2, offset)
-  local function addOffset(offset, obj)
-    return { obj[1] + offset, obj[2] + offset }
+  local function addOffset(i, obj)
+    return { obj[1] + i, obj[2] + i }
   end
 
   for _, item in ipairs(style2) do
