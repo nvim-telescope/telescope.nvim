@@ -162,7 +162,7 @@ do
 
       display, hl_group, icon = utils.transform_devicons(entry.value, display, disable_devicons)
 
-      local style = { { { 0, #icon, }, hl_group } }
+      local style = { { { 0, #icon }, hl_group } }
 
       utils.merge_styles(style, path_style, #icon + 1)
 

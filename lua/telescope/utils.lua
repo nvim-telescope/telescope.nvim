@@ -147,7 +147,7 @@ utils.filter_symbols = function(results, opts, post_filter)
   end
 end
 
-utils.path_reverse = (function(filepath)
+utils.path_reverse = function(filepath)
   local dirs = vim.split(filepath, utils.get_separator())
   local file_sep = " "
   local reversed_path = ""
@@ -163,7 +163,7 @@ utils.path_reverse = (function(filepath)
   end
 
   return reversed_path, path_style
-end)
+end
 
 utils.path_smart = (function()
   local paths = {}
