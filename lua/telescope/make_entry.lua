@@ -158,12 +158,16 @@ do
     mt_file_entry.cwd = cwd
     mt_file_entry.display = function(entry)
       local hl_group, icon
-      local display = utils.transform_path(opts, entry.value)
+      local display, path_style = utils.transform_path(opts, entry.value)
 
       display, hl_group, icon = utils.transform_devicons(entry.value, display, disable_devicons)
 
+      local style = { { { 0, #icon }, hl_group } }
+
+      utils.merge_styles(style, path_style, #icon + 1)
+
       if hl_group then
-        return display, { { { 0, #icon }, hl_group } }
+        return display, style
       else
         return display
       end
@@ -313,7 +317,7 @@ do
       cwd = utils.path_expand(opts.cwd or vim.loop.cwd()),
 
       display = function(entry)
-        local display_filename = utils.transform_path(opts, entry.filename)
+        local display_filename, path_style = utils.transform_path(opts, entry.filename)
 
         local coordinates = ":"
         if not disable_coordinates then
@@ -332,8 +336,12 @@ do
           disable_devicons
         )
 
+        local style = { { { 0, #icon }, hl_group } }
+
+        utils.merge_styles(style, path_style, #icon + 1)
+
         if hl_group then
-          return display, { { { 0, #icon }, hl_group } }
+          return display, style
         else
           return display
         end
@@ -454,7 +462,7 @@ function make_entry.gen_from_quickfix(opts)
   local hidden = utils.is_path_hidden(opts)
 
   local make_display = function(entry)
-    local display_filename = utils.transform_path(opts, entry.filename)
+    local display_filename, path_style = utils.transform_path(opts, entry.filename)
     local display_string = string.format("%s:%d:%d", display_filename, entry.lnum, entry.col)
     if hidden then
       display_string = string.format("%4d:%2d", entry.lnum, entry.col)
@@ -469,7 +477,7 @@ function make_entry.gen_from_quickfix(opts)
       display_string = display_string .. ":" .. text
     end
 
-    return display_string
+    return display_string, path_style
   end
 
   local get_filename = get_filename_fn()
