@@ -271,24 +271,24 @@ end
 --- not be addressed by us
 ---@param opts table: The opts the users passed into the picker. Might contains a path_display key
 ---@param path string: The path that should be formatted
----@return string, table|nil: The transformed path ready to be displayed with the styling (or nil)
+---@return string, table: The transformed path ready to be displayed with the styling (or nil)
 utils.transform_path = function(opts, path)
   if path == nil then
-    return
+    return nil, {}
   end
   if utils.is_uri(path) then
-    return path
+    return path, {}
   end
 
   local path_display = vim.F.if_nil(opts.path_display, require("telescope.config").values.path_display)
 
   local transformed_path = path
-  local path_style = nil
+  local path_style = {}
 
   if type(path_display) == "function" then
     return path_display(opts, transformed_path)
   elseif utils.is_path_hidden(nil, path_display) then
-    return ""
+    return "", path_style
   elseif type(path_display) == "table" then
     if vim.tbl_contains(path_display, "tail") or path_display.tail then
       transformed_path = utils.path_tail(transformed_path)
