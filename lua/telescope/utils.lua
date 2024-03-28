@@ -15,7 +15,7 @@ local get_status = require("telescope.state").get_status
 
 local utils = {}
 
-local iswin = vim.loop.os_uname().sysname == "Windows_NT"
+utils.iswin = vim.loop.os_uname().sysname == "Windows_NT"
 
 --- Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
 ---
@@ -53,7 +53,7 @@ utils.path_expand = function(path)
 
   path = path:gsub("%$([%w_]+)", vim.loop.os_getenv)
   path = path:gsub("/+", "/")
-  if iswin then
+  if utils.iswin then
     path = path:gsub("\\+", "\\")
     if path:match "^%w:\\$" then
       return path
@@ -181,14 +181,15 @@ end
 
 utils.path_smart = (function()
   local paths = {}
+  local os_sep = utils.get_separator()
   return function(filepath)
     local final = filepath
     if #paths ~= 0 then
-      local dirs = vim.split(filepath, "/")
+      local dirs = vim.split(filepath, os_sep)
       local max = 1
       for _, p in pairs(paths) do
         if #p > 0 and p ~= filepath then
-          local _dirs = vim.split(p, "/")
+          local _dirs = vim.split(p, os_sep)
           for i = 1, math.min(#dirs, #_dirs) do
             if (dirs[i] ~= _dirs[i]) and i > max then
               max = i
@@ -204,7 +205,7 @@ utils.path_smart = (function()
         final = ""
         for k, v in pairs(dirs) do
           if k >= max - 1 then
-            final = final .. (#final > 0 and "/" or "") .. v
+            final = final .. (#final > 0 and os_sep or "") .. v
           end
         end
       end
@@ -214,7 +215,7 @@ utils.path_smart = (function()
       table.insert(paths, filepath)
     end
     if final and final ~= filepath then
-      return "../" .. final
+      return ".." .. os_sep .. final
     else
       return filepath
     end
@@ -284,11 +285,11 @@ end
 --- this function outside of telescope might yield to undefined behavior and will
 --- not be addressed by us
 ---@param opts table: The opts the users passed into the picker. Might contains a path_display key
----@param path string: The path that should be formatted
+---@param path string?: The path that should be formatted
 ---@return string: The transformed path ready to be displayed
 utils.transform_path = function(opts, path)
   if path == nil then
-    return
+    return ""
   end
   if utils.is_uri(path) then
     return path
@@ -308,7 +309,7 @@ utils.transform_path = function(opts, path)
     elseif vim.tbl_contains(path_display, "smart") or path_display.smart then
       transformed_path = utils.path_smart(transformed_path)
     else
-      if not vim.tbl_contains(path_display, "absolute") or path_display.absolute == false then
+      if not vim.tbl_contains(path_display, "absolute") and not path_display.absolute then
         local cwd
         if opts.cwd then
           cwd = opts.cwd
@@ -326,7 +327,8 @@ utils.transform_path = function(opts, path)
           local shorten = path_display["shorten"]
           transformed_path = Path:new(transformed_path):shorten(shorten.len, shorten.exclude)
         else
-          transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
+          local length = type(path_display["shorten"]) == "number" and path_display["shorten"]
+          transformed_path = Path:new(transformed_path):shorten(length)
         end
       end
       if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
