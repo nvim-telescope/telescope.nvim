@@ -66,6 +66,11 @@ config.resolve_table_opts = resolve_table_opts
 config.values = _TelescopeConfigurationValues
 config.descriptions = {}
 config.pickers = _TelescopeConfigurationPickers
+config.lspconfig = {}
+
+function config.set_lspfallback(fallbacks)
+    config.lspconfig = fallbacks
+end
 
 function config.set_pickers(pickers)
   pickers = vim.F.if_nil(pickers, {})
