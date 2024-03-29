@@ -170,7 +170,9 @@ utils.path_reverse = function(filepath)
   local path_style = {}
 
   for i, dir in ipairs(dirs) do
-    if i < #dirs then
+    if i == 1 and #dirs == 1 then
+      reversed_path = dir
+    elseif i < #dirs then
       reversed_path = dir .. utils.get_separator() .. reversed_path
     else
       reversed_path = dir .. file_sep .. reversed_path
