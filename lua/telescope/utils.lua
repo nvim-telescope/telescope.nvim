@@ -348,8 +348,7 @@ utils.transform_path = function(opts, path)
 
         transformed_path = filename .. tail
 
-        -- 1 is for the space separator between the filename and the directories
-        path_style = { { { #filename, #filename + #tail + 1 }, "TelescopeResultsComment" } }
+        path_style = { { { #filename, #filename + #tail }, "TelescopeResultsComment" } }
       end
 
       if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then

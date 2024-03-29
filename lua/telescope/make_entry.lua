@@ -163,7 +163,7 @@ do
       display, hl_group, icon = utils.transform_devicons(entry.value, display, disable_devicons)
 
       local function get_offset()
-        local offset = 1
+        local offset = 0
 
         if hl_group then
           offset = #icon + 1
