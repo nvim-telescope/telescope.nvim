@@ -316,6 +316,7 @@ append(
   - "truncate"  truncates the start of the path when the whole path will
                 not fit. To increase the gap between the path and the edge,
                 set truncate to number `truncate = 3`
+  - "reverse"   reverses the path so that file names are in front
 
   You can also specify the number of characters of each directory name
   to keep by setting `path_display.shorten = num`.
@@ -339,6 +340,8 @@ append(
     setting `path_display.shorten = { len = 2, exclude = {2, -2} }`
     will give a path like:
       `al/beta/gamma/de`
+
+  path_display can also be set to 'reverse' to reverse the path.
 
   path_display can also be set to 'hidden' string to hide file names
 

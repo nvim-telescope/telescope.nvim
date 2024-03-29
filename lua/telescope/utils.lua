@@ -163,6 +163,24 @@ utils.filter_symbols = function(results, opts, post_filter)
   end
 end
 
+utils.path_reverse = function(filepath)
+  local dirs = vim.split(filepath, utils.get_separator())
+  local file_sep = " "
+  local reversed_path = ""
+  local path_style = nil
+
+  for i, dir in ipairs(dirs) do
+    if i < #dirs then
+      reversed_path = dir .. utils.get_separator() .. reversed_path
+    else
+      reversed_path = dir .. file_sep .. reversed_path
+      path_style = { { { #dir, #reversed_path }, "TelescopeResultsComment" } }
+    end
+  end
+
+  return reversed_path, path_style
+end
+
 utils.path_smart = (function()
   local paths = {}
   local os_sep = utils.get_separator()
@@ -270,23 +288,24 @@ end
 --- not be addressed by us
 ---@param opts table: The opts the users passed into the picker. Might contains a path_display key
 ---@param path string|nil: The path that should be formatted
----@return string: The transformed path ready to be displayed
+---@return string, table: The transformed path ready to be displayed with the styling (or nil)
 utils.transform_path = function(opts, path)
   if path == nil then
-    return ""
+    return "", {}
   end
   if utils.is_uri(path) then
-    return path
+    return path, {}
   end
 
   local path_display = vim.F.if_nil(opts.path_display, require("telescope.config").values.path_display)
 
   local transformed_path = path
+  local path_style = {}
 
   if type(path_display) == "function" then
     return path_display(opts, transformed_path)
   elseif utils.is_path_hidden(nil, path_display) then
-    return ""
+    return "", path_style
   elseif type(path_display) == "table" then
     if vim.tbl_contains(path_display, "tail") or path_display.tail then
       transformed_path = utils.path_tail(transformed_path)
@@ -306,6 +325,10 @@ utils.transform_path = function(opts, path)
         transformed_path = Path:new(transformed_path):make_relative(cwd)
       end
 
+      if vim.tbl_contains(path_display, "reverse") or path_display["reverse"] ~= nil then
+        transformed_path, path_style = utils.path_reverse(transformed_path)
+      end
+
       if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
         if type(path_display["shorten"]) == "table" then
           local shorten = path_display["shorten"]
@@ -315,6 +338,7 @@ utils.transform_path = function(opts, path)
           transformed_path = Path:new(transformed_path):shorten(length)
         end
       end
+
       if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
         if opts.__length == nil then
           opts.__length = calc_result_length(path_display.truncate)
@@ -326,10 +350,10 @@ utils.transform_path = function(opts, path)
       end
     end
 
-    return transformed_path
+    return transformed_path, path_style
   else
     log.warn("`path_display` must be either a function or a table.", "See `:help telescope.defaults.path_display.")
-    return transformed_path
+    return transformed_path, path_style
   end
 end
 
@@ -659,6 +683,19 @@ utils.__separate_file_path_location = function(path)
   end
 
   return path, nil, nil
+end
+
+utils.merge_styles = function(style1, style2, offset)
+  local function addOffset(i, obj)
+    return { obj[1] + i, obj[2] + i }
+  end
+
+  for _, item in ipairs(style2) do
+    item[1] = addOffset(offset, item[1])
+    table.insert(style1, item)
+  end
+
+  return style1
 end
 
 return utils
