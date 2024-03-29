@@ -344,14 +344,12 @@ do
           disable_devicons
         )
 
-        local style = { { { 0, #icon }, hl_group } }
-
-        utils.merge_styles(style, path_style, #icon + 1)
-
         if hl_group then
+          local style = { { { 0, #icon }, hl_group } }
+          style = utils.merge_styles(style, path_style, #icon + 1)
           return display, style
         else
-          return display
+          return display, path_style
         end
       end,
 
