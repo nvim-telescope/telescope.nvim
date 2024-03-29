@@ -304,19 +304,19 @@ append(
   Determines how file paths are displayed.
 
   path_display can be set to an array with a combination of:
-  - "hidden"    hide file names
-  - "tail"      only display the file name, and not the path
-  - "absolute"  display absolute paths
-  - "smart"     remove as much from the path as possible to only show
-                the difference between the displayed paths.
-                Warning: The nature of the algorithm might have a negative
-                performance impact!
-  - "shorten"   only display the first character of each directory in
-                the path
-  - "truncate"  truncates the start of the path when the whole path will
-                not fit. To increase the gap between the path and the edge,
-                set truncate to number `truncate = 3`
-  - "reverse"   reverses the path so that file names are in front
+  - "hidden"          hide file names
+  - "tail"            only display the file name, and not the path
+  - "absolute"        display absolute paths
+  - "smart"           remove as much from the path as possible to only show
+                      the difference between the displayed paths.
+                      Warning: The nature of the algorithm might have a negative
+                      performance impact!
+  - "shorten"         only display the first character of each directory in
+                      the path
+  - "truncate"        truncates the start of the path when the whole path will
+                      not fit. To increase the gap between the path and the edge,
+                      set truncate to number `truncate = 3`
+  - "filename_first"  shows filenames first and then the directories
 
   You can also specify the number of characters of each directory name
   to keep by setting `path_display.shorten = num`.
@@ -341,7 +341,20 @@ append(
     will give a path like:
       `al/beta/gamma/de`
 
-  path_display can also be set to 'reverse' to reverse the path.
+  path_display can also be set to 'filename_first' to put the filename
+  in front.
+
+    path_display = {
+      "filename_first"
+    },
+
+  The directory structure can be reversed as follows:
+
+    path_display = {
+      filename_first = {
+          reverse_directories = true
+      }
+    },
 
   path_display can also be set to 'hidden' string to hide file names
 

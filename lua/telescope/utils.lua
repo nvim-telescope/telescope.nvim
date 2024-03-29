@@ -163,26 +163,6 @@ utils.filter_symbols = function(results, opts, post_filter)
   end
 end
 
-utils.path_reverse = function(filepath)
-  local dirs = vim.split(filepath, utils.get_separator())
-  local file_sep = " "
-  local reversed_path = ""
-  local path_style = {}
-
-  for i, dir in ipairs(dirs) do
-    if i == 1 and #dirs == 1 then
-      reversed_path = dir
-    elseif i < #dirs then
-      reversed_path = dir .. utils.get_separator() .. reversed_path
-    else
-      reversed_path = dir .. file_sep .. reversed_path
-      path_style = { { { #dir, #reversed_path }, "TelescopeResultsComment" } }
-    end
-  end
-
-  return reversed_path, path_style
-end
-
 utils.path_smart = (function()
   local paths = {}
   local os_sep = utils.get_separator()
@@ -327,8 +307,49 @@ utils.transform_path = function(opts, path)
         transformed_path = Path:new(transformed_path):make_relative(cwd)
       end
 
-      if vim.tbl_contains(path_display, "reverse") or path_display["reverse"] ~= nil then
-        transformed_path, path_style = utils.path_reverse(transformed_path)
+      if vim.tbl_contains(path_display, "filename_first") or path_display["filename_first"] ~= nil then
+        local reverse_directories = false
+
+        if type(path_display["filename_first"]) == "table" then
+          local filename_first_opts = path_display["filename_first"]
+
+          if filename_first_opts.reverse_directories == nil or filename_first_opts.reverse_directories == false then
+            reverse_directories = false
+          else
+            reverse_directories = filename_first_opts.reverse_directories
+          end
+        end
+
+        local dirs = vim.split(transformed_path, utils.get_separator())
+
+        local function reverse_table(input_table)
+          local temp_table = {}
+          for index = 0, #input_table do
+              temp_table[#input_table - index] = input_table[index + 1] -- Reverses the order
+          end
+          return temp_table
+        end
+
+        local filename
+
+        if reverse_directories then
+          dirs = reverse_table(dirs)
+          filename = table.remove(dirs, 1)
+        else
+          filename = table.remove(dirs, #dirs)
+        end
+
+        local tail = table.concat(dirs, utils.get_separator())
+
+        -- Prevents a toplevel filename to have a trailing whitespace
+        if #tail > 0 then
+          filename = filename .. " "
+        end
+
+        transformed_path = filename .. tail
+
+        -- 1 is for the space separator between the filename and the directories
+        path_style = { { { #filename, #filename + #tail + 1 }, "TelescopeResultsComment" } }
       end
 
       if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
