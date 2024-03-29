@@ -1374,7 +1374,7 @@ internal.spell_suggest = function(opts)
 
           action_state.get_current_picker(prompt_bufnr)._original_mode = "i"
           actions.close(prompt_bufnr)
-          vim.cmd("normal! ciw" .. selection[1])
+          vim.cmd("normal! " .. selection.index .. "z=")
           vim.cmd "stopinsert"
         end)
         return true
