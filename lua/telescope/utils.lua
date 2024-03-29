@@ -167,7 +167,7 @@ utils.path_reverse = function(filepath)
   local dirs = vim.split(filepath, utils.get_separator())
   local file_sep = " "
   local reversed_path = ""
-  local path_style = nil
+  local path_style = {}
 
   for i, dir in ipairs(dirs) do
     if i < #dirs then
