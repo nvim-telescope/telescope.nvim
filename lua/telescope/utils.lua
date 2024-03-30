@@ -344,7 +344,7 @@ utils.transform_path = function(opts, path)
         -- Prevents a toplevel filename to have a trailing whitespace
         transformed_path = vim.trim(filename .. " " .. tail)
 
-        path_style = { { { #filename, #filename + #tail }, "TelescopeResultsComment" } }
+        path_style = { { { #filename, #transformed_path }, "TelescopeResultsComment" } }
       end
 
       if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
