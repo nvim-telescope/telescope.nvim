@@ -1494,6 +1494,85 @@ end
 
 actions.nop = function(_) end
 
+actions.mouse_scroll_up = function(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+
+  local mouse_win = vim.fn.getmousepos().winid
+  if picker.results_win == mouse_win then
+    vim.schedule(function()
+      actions.move_selection_next(prompt_bufnr)
+    end)
+    return ""
+  else
+    return "<ScrollWheelDown>"
+  end
+end
+
+actions.mouse_scroll_down = function(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+
+  local mouse_win = vim.fn.getmousepos().winid
+  if mouse_win == picker.results_win then
+    vim.schedule(function()
+      actions.move_selection_previous(prompt_bufnr)
+    end)
+    return ""
+  else
+    return "<ScrollWheelUp>"
+  end
+end
+
+actions.mouse_scroll_right = function(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+
+  local mouse_win = vim.fn.getmousepos().winid
+  if mouse_win == picker.results_win then
+    return ""
+  else
+    return "<ScrollWheelLeft>"
+  end
+end
+
+actions.mouse_scroll_left = function(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+
+  local mouse_win = vim.fn.getmousepos().winid
+  if mouse_win == picker.results_win then
+    return ""
+  else
+    return "<ScrollWheelRight>"
+  end
+end
+
+actions.mouse_click = function(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+
+  local pos = vim.fn.getmousepos()
+  if pos.winid == picker.results_win then
+    vim.schedule(function()
+      picker:set_selection(pos.line - 1)
+    end)
+  elseif pos.winid == picker.preview_win then
+    vim.schedule(function()
+      actions.select_default(prompt_bufnr)
+    end)
+  end
+  return ""
+end
+
+actions.double_mouse_click = function(prompt_bufnr)
+  local picker = action_state.get_current_picker(prompt_bufnr)
+
+  local pos = vim.fn.getmousepos()
+  if pos.winid == picker.results_win then
+    vim.schedule(function()
+      picker:set_selection(pos.line - 1)
+      actions.select_default(prompt_bufnr)
+    end)
+  end
+  return ""
+end
+
 -- ==================================================
 -- Transforms modules and sets the correct metatables.
 -- ==================================================
