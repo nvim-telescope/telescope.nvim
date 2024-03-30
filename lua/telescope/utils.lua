@@ -342,11 +342,7 @@ utils.transform_path = function(opts, path)
         local tail = table.concat(dirs, utils.get_separator())
 
         -- Prevents a toplevel filename to have a trailing whitespace
-        if #tail > 0 then
-          filename = filename .. " "
-        end
-
-        transformed_path = filename .. tail
+        transformed_path = vim.trim(filename .. " " .. tail)
 
         path_style = { { { #filename, #filename + #tail }, "TelescopeResultsComment" } }
       end
