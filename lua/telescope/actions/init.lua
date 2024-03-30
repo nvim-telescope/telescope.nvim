@@ -1460,9 +1460,9 @@ actions.mouse_scroll_up = function(prompt_bufnr)
 
   local mouse_win = vim.fn.getmousepos().winid
   if picker.results_win == mouse_win then
-    vim.defer_fn(function()
+    vim.schedule(function()
       actions.move_selection_next(prompt_bufnr)
-    end, 0)
+    end)
     return ""
   else
     return "<ScrollWheelDown>"
@@ -1474,9 +1474,9 @@ actions.mouse_scroll_down = function(prompt_bufnr)
 
   local mouse_win = vim.fn.getmousepos().winid
   if mouse_win == picker.results_win then
-    vim.defer_fn(function()
+    vim.schedule(function()
       actions.move_selection_previous(prompt_bufnr)
-    end, 0)
+    end)
     return ""
   else
     return "<ScrollWheelUp>"
@@ -1510,13 +1510,13 @@ actions.mouse_click = function(prompt_bufnr)
 
   local pos = vim.fn.getmousepos()
   if pos.winid == picker.results_win then
-    vim.defer_fn(function()
-      picker:set_selection(picker:get_row(picker.max_results - pos.line + 1))
-    end, 0)
+    vim.schedule(function()
+      picker:set_selection(pos.line - 1)
+    end)
   elseif pos.winid == picker.preview_win then
-    vim.defer_fn(function()
+    vim.schedule(function()
       actions.select_default(prompt_bufnr)
-    end, 0)
+    end)
   end
   return ""
 end
@@ -1526,10 +1526,10 @@ actions.double_mouse_click = function(prompt_bufnr)
 
   local pos = vim.fn.getmousepos()
   if pos.winid == picker.results_win then
-    vim.defer_fn(function()
-      picker:set_selection(picker:get_row(picker.max_results - pos.line + 1))
+    vim.schedule(function()
+      picker:set_selection(pos.line - 1)
       actions.select_default(prompt_bufnr)
-    end, 0)
+    end)
   end
   return ""
 end
