@@ -325,7 +325,7 @@ utils.transform_path = function(opts, path)
         local function reverse_table(input_table)
           local temp_table = {}
           for index = 0, #input_table do
-              temp_table[#input_table - index] = input_table[index + 1] -- Reverses the order
+            temp_table[#input_table - index] = input_table[index + 1] -- Reverses the order
           end
           return temp_table
         end

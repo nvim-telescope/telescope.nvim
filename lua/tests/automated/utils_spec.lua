@@ -285,9 +285,16 @@ describe("transform_path", function()
 
   it("handles 'filename_first' path_display with the option to reverse directories", function()
     assert_path({ filename_first = { reverse_directories = true } }, new_relpath "init.lua", new_relpath "init.lua")
-    assert_path({ filename_first = { reverse_directories = true } }, new_relpath "lua/telescope/init.lua", new_relpath "init.lua telescope/lua")
+    assert_path(
+      { filename_first = { reverse_directories = true } },
+      new_relpath "lua/telescope/init.lua",
+      new_relpath "init.lua telescope/lua"
+    )
     assert_path({ filename_first = { reverse_directories = false } }, new_relpath "init.lua", new_relpath "init.lua")
-    assert_path({ filename_first = { reverse_directories = false } }, new_relpath "lua/telescope/init.lua", new_relpath "init.lua lua/telescope")
+    assert_path(
+      { filename_first = { reverse_directories = false } },
+      new_relpath "lua/telescope/init.lua",
+      new_relpath "init.lua lua/telescope"
+    )
   end)
-  
 end)
