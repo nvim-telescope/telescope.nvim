@@ -162,19 +162,9 @@ do
 
       display, hl_group, icon = utils.transform_devicons(entry.value, display, disable_devicons)
 
-      local function get_offset()
-        local offset = 0
-
-        if hl_group then
-          offset = #icon + 1
-        end
-
-        return offset
-      end
-
       if hl_group then
-        local style = { { { 0, get_offset() }, hl_group } }
-        style = utils.merge_styles(style, path_style, get_offset())
+        local style = { { { 0, #icon + 1 }, hl_group } }
+        style = utils.merge_styles(style, path_style, #icon + 1)
         return display, style
       else
         return display, path_style
