@@ -321,19 +321,10 @@ utils.transform_path = function(opts, path)
         end
 
         local dirs = vim.split(transformed_path, utils.get_separator())
-
-        local function reverse_table(input_table)
-          local temp_table = {}
-          for index = 0, #input_table do
-            temp_table[#input_table - index] = input_table[index + 1] -- Reverses the order
-          end
-          return temp_table
-        end
-
         local filename
 
         if reverse_directories then
-          dirs = reverse_table(dirs)
+          dirs = utils.reverse_table(dirs)
           filename = table.remove(dirs, 1)
         else
           filename = table.remove(dirs, #dirs)
@@ -714,6 +705,14 @@ utils.merge_styles = function(style1, style2, offset)
   end
 
   return style1
+end
+
+utils.reverse_table = function(input_table)
+  local temp_table = {}
+  for index = 0, #input_table do
+    temp_table[#input_table - index] = input_table[index + 1] -- Reverses the order
+  end
+  return temp_table
 end
 
 return utils
