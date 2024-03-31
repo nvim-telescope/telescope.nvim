@@ -38,6 +38,26 @@ describe("path_expand()", function()
     local path_newline = [[/home/user/hello\nworld]]
     eq(path_newline, utils.path_expand(path_newline))
   end)
+  describe("early return for uri", function()
+    local uris = {
+      [[https://www.example.com/index.html]],
+      [[ftp://ftp.example.com/files/document.pdf]],
+      [[mailto:user@example.com]],
+      [[tel:+1234567890]],
+      [[file:///home/user/documents/report.docx]],
+      [[news:comp.lang.python]],
+      [[ldap://ldap.example.com:389/dc=example,dc=com]],
+      [[git://github.com/user/repo.git]],
+      [[steam://run/123456]],
+      [[magnet:?xt=urn:btih:6B4C3343E1C63A1BC36AEB8A3D1F52C4EDEEB096]],
+    }
+
+    for _, uri in ipairs(uris) do
+      it(uri, function()
+        eq(uri, utils.path_expand(uri))
+      end)
+    end
+  end)
 end)
 
 describe("is_uri", function()
