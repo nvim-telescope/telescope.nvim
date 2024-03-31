@@ -1113,11 +1113,15 @@ internal.marks = function(opts)
       local name = cnf.name_func(mark, lnum)
       -- same format to :marks command
       local line = string.format("%s %6d %4d %s", mark, lnum, col - 1, name)
+      local filename = v.file or bufname
+      if filename:sub(1, 1) == '~' then
+        filename = vim.fs.normalize(filename)
+      end
       local row = {
         line = line,
         lnum = lnum,
         col = col,
-        filename = vim.fs.normalize(v.file or bufname),
+        filename = filename,
       }
       -- non alphanumeric marks goes to last
       if mark:match "%w" then
