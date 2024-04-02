@@ -133,26 +133,6 @@ local mappings = {}
 mappings.default_mappings = config.values.default_mappings
   or {
     i = {
-      ["<ScrollWheelDown>"] = {
-        actions.mouse_scroll_up,
-        type = "action",
-        opts = { expr = true },
-      },
-      ["<ScrollWheelUp>"] = {
-        actions.mouse_scroll_down,
-        type = "action",
-        opts = { expr = true },
-      },
-      ["<ScrollWheelLeft>"] = {
-        actions.mouse_scroll_right,
-        type = "action",
-        opts = { expr = true },
-      },
-      ["<ScrollWheelRight>"] = {
-        actions.mouse_scroll_left,
-        type = "action",
-        opts = { expr = true },
-      },
       ["<LeftMouse>"] = {
         actions.mouse_click,
         type = "action",
@@ -201,26 +181,6 @@ mappings.default_mappings = config.values.default_mappings
       ["<C-j>"] = actions.nop,
     },
     n = {
-      ["<ScrollWheelDown>"] = {
-        actions.mouse_scroll_up,
-        type = "action",
-        opts = { expr = true },
-      },
-      ["<ScrollWheelUp>"] = {
-        actions.mouse_scroll_down,
-        type = "action",
-        opts = { expr = true },
-      },
-      ["<ScrollWheelLeft>"] = {
-        actions.mouse_scroll_right,
-        type = "action",
-        opts = { expr = true },
-      },
-      ["<ScrollWheelRight>"] = {
-        actions.mouse_scroll_left,
-        type = "action",
-        opts = { expr = true },
-      },
       ["<LeftMouse>"] = {
         actions.mouse_click,
         type = "action",
