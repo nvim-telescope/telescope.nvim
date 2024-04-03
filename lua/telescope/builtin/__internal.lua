@@ -1114,9 +1114,7 @@ internal.marks = function(opts)
       -- same format to :marks command
       local line = string.format("%s %6d %4d %s", mark, lnum, col - 1, name)
       local filename = v.file or bufname
-      if filename:sub(1, 1) == '~' then
-        filename = vim.fs.normalize(filename)
-      end
+      filename = utils.path_expand(filename)
       local row = {
         line = line,
         lnum = lnum,
