@@ -39,6 +39,10 @@ utils.path_expand = function(path)
     path = { path, { "string" } },
   }
 
+  if utils.is_uri(path) then
+    return path
+  end
+
   if path:match "^[%%#<]" then
     path = vim.fn.expand(path)
   end
