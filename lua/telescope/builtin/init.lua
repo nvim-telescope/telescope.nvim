@@ -45,85 +45,100 @@ end
 --
 --
 
+---@class TelescopeBuiltinLiveGrepOpts
+---@field cwd? string root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+---@field grep_open_files? boolean if true, restrict search to open files only, mutually exclusive with `search_dirs`
+---@field search_dirs? table directory/directories/files to search, mutually exclusive with `grep_open_files`
+---@field glob_pattern? string|table argument to be used with `--glob`, e.g. "*.toml", can use the opposite "!*.toml"
+---@field type_filter? string argument to be used with `--type`, e.g. "rust", see `rg --type-list`
+---@field additional_args? function|table additional arguments to be passed on. Can be fn(opts) -> tbl
+---@field max_results? number define a upper result value
+---@field disable_coordinates? boolean don't show the line & row numbers (default: false)
+---@field file_encoding? string file encoding for the entry & previewer
+
 --- Search for a string and get results live as you type, respects .gitignore
----@param opts table: options to pass to the picker
----@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
----@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
----@field search_dirs table: directory/directories/files to search, mutually exclusive with `grep_open_files`
----@field glob_pattern string|table: argument to be used with `--glob`, e.g. "*.toml", can use the opposite "!*.toml"
----@field type_filter string: argument to be used with `--type`, e.g. "rust", see `rg --type-list`
----@field additional_args function|table: additional arguments to be passed on. Can be fn(opts) -> tbl
----@field max_results number: define a upper result value
----@field disable_coordinates boolean: don't show the line & row numbers (default: false)
----@field file_encoding string: file encoding for the entry & previewer
+---@type fun(opts?: TelescopeBuiltinLiveGrepOpts): nil
 builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_grep
 
+---@class TelescopeBuiltinGrepStringOpts
+---@field cwd? string root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+---@field search? string the query to search
+---@field grep_open_files? boolean if true, restrict search to open files only, mutually exclusive with `search_dirs`
+---@field search_dirs? table directory/directories/files to search, mutually exclusive with `grep_open_files`
+---@field use_regex? boolean if true, special characters won't be escaped, allows for using regex (default: false)
+---@field word_match? string can be set to `-w` to enable exact word matches
+---@field additional_args? function|table additional arguments to be passed on. Can be fn(opts) -> tbl
+---@field disable_coordinates? boolean don't show the line and row numbers (default: false)
+---@field only_sort_text? boolean only sort the text, not the file, line or row (default: false)
+---@field file_encoding? string file encoding for the entry & previewer
+
 --- Searches for the string under your cursor or the visual selection in your current working directory
----@param opts table: options to pass to the picker
----@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
----@field search string: the query to search
----@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
----@field search_dirs table: directory/directories/files to search, mutually exclusive with `grep_open_files`
----@field use_regex boolean: if true, special characters won't be escaped, allows for using regex (default: false)
----@field word_match string: can be set to `-w` to enable exact word matches
----@field additional_args function|table: additional arguments to be passed on. Can be fn(opts) -> tbl
----@field disable_coordinates boolean: don't show the line and row numbers (default: false)
----@field only_sort_text boolean: only sort the text, not the file, line or row (default: false)
----@field file_encoding string: file encoding for the entry & previewer
+---@type fun(opts?: TelescopeBuiltinGrepStringOpts): nil
 builtin.grep_string = require_on_exported_call("telescope.builtin.__files").grep_string
 
+---@class TelescopeBuiltinFindFilesOpts
+---@field cwd? string root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+---@field find_command? function|table cmd to use for the search. Can be a fn(opts) -> tbl (default: autodetect)
+---@field file_entry_encoding? string encoding of output of `find_command`
+---@field follow? boolean if true, follows symlinks (i.e. uses `-L` flag for the `find` command)
+---@field hidden? boolean determines whether to show hidden files or not (default: false)
+---@field no_ignore? boolean show files ignored by .gitignore, .ignore, etc. (default: false)
+---@field no_ignore_parent? boolean show files ignored by .gitignore, .ignore, etc. in parent dirs. (default: false)
+---@field search_dirs? table directory/directories/files to search
+---@field search_file? string specify a filename to search for
+---@field file_encoding? string file encoding for the previewer
+
 --- Search for files (respecting .gitignore)
----@param opts table: options to pass to the picker
----@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
----@field find_command function|table: cmd to use for the search. Can be a fn(opts) -> tbl (default: autodetect)
----@field file_entry_encoding string: encoding of output of `find_command`
----@field follow boolean: if true, follows symlinks (i.e. uses `-L` flag for the `find` command)
----@field hidden boolean: determines whether to show hidden files or not (default: false)
----@field no_ignore boolean: show files ignored by .gitignore, .ignore, etc. (default: false)
----@field no_ignore_parent boolean: show files ignored by .gitignore, .ignore, etc. in parent dirs. (default: false)
----@field search_dirs table: directory/directories/files to search
----@field search_file string: specify a filename to search for
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinFindFilesOpts): nil
 builtin.find_files = require_on_exported_call("telescope.builtin.__files").find_files
 
 --- This is an alias for the `find_files` picker
 builtin.fd = builtin.find_files
 
+---@class TelescopeBuiltinTreesitterOpts
+---@field show_line? boolean if true, shows the row:column that the result is found at (default: true)
+---@field bufnr? number specify the buffer number where treesitter should run. (default: current buffer)
+---@field symbols? string|table filter results by symbol kind(s)
+---@field ignore_symbols? string|table list of symbols to ignore
+---@field symbol_highlights? table string -> string. Matches symbol with hl_group
+---@field file_encoding? string file encoding for the previewer
+
 --- Lists function names, variables, and other symbols from treesitter queries
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by kind of ts node you want to see (i.e. `:var:`)
----@field show_line boolean: if true, shows the row:column that the result is found at (default: true)
----@field bufnr number: specify the buffer number where treesitter should run. (default: current buffer)
----@field symbols string|table: filter results by symbol kind(s)
----@field ignore_symbols string|table: list of symbols to ignore
----@field symbol_highlights table: string -> string. Matches symbol with hl_group
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinTreesitterOpts): nil
 builtin.treesitter = require_on_exported_call("telescope.builtin.__files").treesitter
 
+---@class TelescopeBuiltinCurrentBufferFuzzyFindOpts
+---@field skip_empty_lines? boolean if true we don't display empty lines (default: false)
+---@field results_ts_highlight? boolean highlight result entries with treesitter (default: true)
+---@field file_encoding? string file encoding for the previewer
+
 --- Live fuzzy search inside of the currently open buffer
----@param opts table: options to pass to the picker
----@field skip_empty_lines boolean: if true we don't display empty lines (default: false)
----@field results_ts_highlight boolean: highlight result entries with treesitter (default: true)
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinCurrentBufferFuzzyFindOpts): nil
 builtin.current_buffer_fuzzy_find = require_on_exported_call("telescope.builtin.__files").current_buffer_fuzzy_find
+
+---@class TelescopeBuiltinTagsOpts
+---@field cwd? string root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+---@field ctags_file? string specify a particular ctags file to use
+---@field show_line? boolean if true, shows the content of the line the tag is found on in the picker (default: true)
+---@field only_sort_tags? boolean if true we will only sort tags (default: false)
+---@field fname_width? number defines the width of the filename section (default: 30)
 
 --- Lists tags in current directory with tag location file preview (users are required to run ctags -R to generate tags
 --- or update when introducing new changes)
----@param opts table: options to pass to the picker
----@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
----@field ctags_file string: specify a particular ctags file to use
----@field show_line boolean: if true, shows the content of the line the tag is found on in the picker (default: true)
----@field only_sort_tags boolean: if true we will only sort tags (default: false)
----@field fname_width number: defines the width of the filename section (default: 30)
+---@type fun(opts?: TelescopeBuiltinTagsOpts): nil
 builtin.tags = require_on_exported_call("telescope.builtin.__files").tags
 
+---@class TelescopeBuiltinCurrentBufferTagsOpts
+---@field cwd? string root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
+---@field ctags_file? string specify a particular ctags file to use
+---@field show_line? boolean if true, shows the content of the line the tag is found on in the picker (default: true)
+---@field only_sort_tags? boolean if true we will only sort tags (default: false)
+---@field fname_width? number defines the width of the filename section (default: 30)
+
 --- Lists all of the tags for the currently open buffer, with a preview
----@param opts table: options to pass to the picker
----@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
----@field ctags_file string: specify a particular ctags file to use
----@field show_line boolean: if true, shows the content of the line the tag is found on in the picker (default: true)
----@field only_sort_tags boolean: if true we will only sort tags (default: false)
----@field fname_width number: defines the width of the filename section (default: 30)
+---@type fun(opts?: TelescopeBuiltinCurrentBufferTagsOpts): nil
 builtin.current_buffer_tags = require_on_exported_call("telescope.builtin.__files").current_buffer_tags
 
 --
