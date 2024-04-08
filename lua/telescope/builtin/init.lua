@@ -132,19 +132,27 @@ builtin.current_buffer_tags = require_on_exported_call("telescope.builtin.__file
 --
 --
 
+---@class TelescopeBuiltinGitFilesOpts
+---@field cwd? string specify the path of the repo
+---@field use_file_path? boolean if we should use the current buffer git root (default: false)
+---@field use_git_root? boolean if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field show_untracked? boolean if true, adds `--others` flag to command and shows untracked files (default: false)
+---@field recurse_submodules? boolean: if true, adds the `--recurse-submodules` flag to command (default: false)
+---@field git_command? table command that will be executed. {"git","ls-files","--exclude-standard","--cached"}
+---@field file_encoding? string file encoding for the previewer
+
 --- Fuzzy search for files tracked by Git. This command lists the output of the `git ls-files` command,
 --- respects .gitignore
 --- - Default keymaps:
 ---   - `<cr>`: opens the currently selected file
----@param opts table: options to pass to the picker
----@field cwd string: specify the path of the repo
----@field use_file_path boolean: if we should use the current buffer git root (default: false)
----@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
----@field show_untracked boolean: if true, adds `--others` flag to command and shows untracked files (default: false)
----@field recurse_submodules boolean: if true, adds the `--recurse-submodules` flag to command (default: false)
----@field git_command table: command that will be executed. {"git","ls-files","--exclude-standard","--cached"}
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinGitFilesOpts): nil
 builtin.git_files = require_on_exported_call("telescope.builtin.__git").files
+
+---@class TelescopeBuiltinGitCommitsOpts
+---@field cwd? string: specify the path of the repo
+---@field use_file_path? boolean if we should use the current buffer git root (default: false)
+---@field use_git_root? boolean if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field git_command? table command that will be executed. {"git","log","--pretty=oneline","--abbrev-commit","--","."}
 
 --- Lists commits for current directory with diff preview
 --- - Default keymaps:
@@ -152,12 +160,15 @@ builtin.git_files = require_on_exported_call("telescope.builtin.__git").files
 ---   - `<C-r>m`: resets current branch to selected commit using mixed mode
 ---   - `<C-r>s`: resets current branch to selected commit using soft mode
 ---   - `<C-r>h`: resets current branch to selected commit using hard mode
----@param opts table: options to pass to the picker
----@field cwd string: specify the path of the repo
----@field use_file_path boolean: if we should use the current buffer git root (default: false)
----@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
----@field git_command table: command that will be executed. {"git","log","--pretty=oneline","--abbrev-commit","--","."}
+---@type fun(opts?: TelescopeBuiltinGitCommitsOpts): nil
 builtin.git_commits = require_on_exported_call("telescope.builtin.__git").commits
+
+---@class TelescopeBuiltinGitBCommitsOpts
+---@field cwd? string specify the path of the repo
+---@field use_file_path? boolean: if we should use the current buffer git root (default: false)
+---@field use_git_root? boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field current_file? string: specify the current file that should be used for bcommits (default: current buffer)
+---@field git_command? table: command that will be executed. {"git","log","--pretty=oneline","--abbrev-commit"}
 
 --- Lists commits for current buffer with diff preview
 --- - Default keymaps or your overridden `select_` keys:
@@ -165,13 +176,17 @@ builtin.git_commits = require_on_exported_call("telescope.builtin.__git").commit
 ---   - `<c-v>`: opens a diff in a vertical split
 ---   - `<c-x>`: opens a diff in a horizontal split
 ---   - `<c-t>`: opens a diff in a new tab
----@param opts table: options to pass to the picker
----@field cwd string: specify the path of the repo
----@field use_file_path boolean: if we should use the current buffer git root (default: false)
----@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
----@field current_file string: specify the current file that should be used for bcommits (default: current buffer)
----@field git_command table: command that will be executed. {"git","log","--pretty=oneline","--abbrev-commit"}
+---@type fun(opts?: TelescopeBuiltinGitBCommitsOpts): nil
 builtin.git_bcommits = require_on_exported_call("telescope.builtin.__git").bcommits
+
+---@class TelescopeBuiltinGitBcommitsRangeOpts
+---@field cwd? string specify the path of the repo
+---@field use_git_root? boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field current_file? string: specify the current file that should be used for bcommits (default: current buffer)
+---@field git_command? table: command that will be executed. the last element must be "-L". {"git","log","--pretty=oneline","--abbrev-commit","--no-patch","-L"}
+---@field from? number the first line number in the range (default: current line)
+---@field to? number the last line number in the range (default: the value of `from`)
+---@field operator? boolean: select lines in operator-pending mode (default: false)
 
 --- Lists commits for a range of lines in the current buffer with diff preview
 --- In visual mode, lists commits for the selected lines
@@ -181,15 +196,15 @@ builtin.git_bcommits = require_on_exported_call("telescope.builtin.__git").bcomm
 ---   - `<c-v>`: opens a diff in a vertical split
 ---   - `<c-x>`: opens a diff in a horizontal split
 ---   - `<c-t>`: opens a diff in a new tab
----@param opts table: options to pass to the picker
----@field cwd string: specify the path of the repo
----@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
----@field current_file string: specify the current file that should be used for bcommits (default: current buffer)
----@field git_command table: command that will be executed. the last element must be "-L". {"git","log","--pretty=oneline","--abbrev-commit","--no-patch","-L"}
----@field from number: the first line number in the range (default: current line)
----@field to number: the last line number in the range (default: the value of `from`)
----@field operator boolean: select lines in operator-pending mode (default: false)
+---@type fun(opts?: TelescopeBuiltinGitBcommitsRangeOpts): nil
 builtin.git_bcommits_range = require_on_exported_call("telescope.builtin.__git").bcommits_range
+
+---@class TelescopeBuiltinGitBranchesOpts
+---@field cwd? string specify the path of the repo
+---@field use_file_path? boolean: if we should use the current buffer git root (default: false)
+---@field use_git_root? boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field show_remote_tracking_branches? boolean: show remote tracking branches like origin/main (default: true)
+---@field pattern? string: specify the pattern to match all refs
 
 --- List branches for current directory, with output from `git log --oneline` shown in the preview window
 --- - Default keymaps:
@@ -199,34 +214,33 @@ builtin.git_bcommits_range = require_on_exported_call("telescope.builtin.__git")
 ---   - `<C-a>`: creates a new branch, with confirmation prompt before creation
 ---   - `<C-d>`: deletes the currently selected branch, with confirmation prompt before deletion
 ---   - `<C-y>`: merges the currently selected branch, with confirmation prompt before deletion
----@param opts table: options to pass to the picker
----@field cwd string: specify the path of the repo
----@field use_file_path boolean: if we should use the current buffer git root (default: false)
----@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
----@field show_remote_tracking_branches boolean: show remote tracking branches like origin/main (default: true)
----@field pattern string: specify the pattern to match all refs
+---@type fun(opts?: TelescopeBuiltinGitBranchesOpts): nil
 builtin.git_branches = require_on_exported_call("telescope.builtin.__git").branches
+
+---@class TelescopeBuiltinGitStatusOpts
+---@field cwd? string specify the path of the repo
+---@field use_file_path? boolean: if we should use the current buffer git root (default: false)
+---@field use_git_root? boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field git_icons? table: string -> string. Matches name with icon (see source code, make_entry.lua git_icon_defaults)
+---@field expand_dir? boolean: pass flag `-uall` to show files in untracked directories (default: true)
 
 --- Lists git status for current directory
 --- - Default keymaps:
 ---   - `<Tab>`: stages or unstages the currently selected file
 ---   - `<cr>`: opens the currently selected file
----@param opts table: options to pass to the picker
----@field cwd string: specify the path of the repo
----@field use_file_path boolean: if we should use the current buffer git root (default: false)
----@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
----@field git_icons table: string -> string. Matches name with icon (see source code, make_entry.lua git_icon_defaults)
----@field expand_dir boolean: pass flag `-uall` to show files in untracked directories (default: true)
+---@type fun(opts?: TelescopeBuiltinGitStatusOpts): nil
 builtin.git_status = require_on_exported_call("telescope.builtin.__git").status
+
+---@class TelescopeBuiltinGitStashOpts
+---@field cwd? string specify the path of the repo
+---@field use_file_path? boolean: if we should use the current buffer git root (default: false)
+---@field use_git_root? boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
+---@field show_branch? boolean: if we should display the branch name for git stash entries (default: true)
 
 --- Lists stash items in current repository
 --- - Default keymaps:
 ---   - `<cr>`: runs `git apply` for currently selected stash
----@param opts table: options to pass to the picker
----@field cwd string: specify the path of the repo
----@field use_file_path boolean: if we should use the current buffer git root (default: false)
----@field use_git_root boolean: if we should use git root as cwd or the cwd (important for submodule) (default: true)
----@field show_branch boolean: if we should display the branch name for git stash entries (default: true)
+---@type fun(opts?: TelescopeBuiltinGitStashOpts): nil
 builtin.git_stash = require_on_exported_call("telescope.builtin.__git").stash
 
 --
