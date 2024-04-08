@@ -413,97 +413,115 @@ builtin.jumplist = require_on_exported_call("telescope.builtin.__internal").jump
 --
 --
 
+---@class TelescopeBuiltinLspReferencesOpts
+---@field include_declaration? boolean include symbol declaration in the lsp references (default: true)
+---@field include_current_line? boolean include current line (default: false)
+---@field jump_type? "tab" | "tab drop" | "split" | "vsplit" | "never" how to goto reference if there is only one and the definition file is different from the current file, values: "tab", "tab drop", "split", "vsplit", "never"
+---@field show_line? boolean: show results text (default: true)
+---@field trim_text? boolean: trim results text (default: false)
+---@field file_encoding? string: file encoding for the previewer
+
 --- Lists LSP references for word under the cursor, jumps to reference on `<cr>`
----@param opts table: options to pass to the picker
----@field include_declaration boolean: include symbol declaration in the lsp references (default: true)
----@field include_current_line boolean: include current line (default: false)
----@field jump_type string: how to goto reference if there is only one and the definition file is different from the current file, values: "tab", "tab drop", "split", "vsplit", "never"
----@field show_line boolean: show results text (default: true)
----@field trim_text boolean: trim results text (default: false)
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinLspReferencesOpts): nil
 builtin.lsp_references = require_on_exported_call("telescope.builtin.__lsp").references
 
+---@class TelescopeBuiltinLspIncomingCallsOpts
+---@field show_line? boolean show results text (default: true)
+---@field trim_text? boolean trim results text (default: false)
+---@field file_encoding? string file encoding for the previewer
+
 --- Lists LSP incoming calls for word under the cursor, jumps to reference on `<cr>`
----@param opts table: options to pass to the picker
----@field show_line boolean: show results text (default: true)
----@field trim_text boolean: trim results text (default: false)
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinLspIncomingCallsOpts): nil
 builtin.lsp_incoming_calls = require_on_exported_call("telescope.builtin.__lsp").incoming_calls
 
+---@class TelescopeBuiltinLspOutgoingCallsOpts
+---@field show_line? boolean show results text (default: true)
+---@field trim_text? boolean trim results text (default: false)
+---@field file_encoding? string file encoding for the previewer
+
 --- Lists LSP outgoing calls for word under the cursor, jumps to reference on `<cr>`
----@param opts table: options to pass to the picker
----@field show_line boolean: show results text (default: true)
----@field trim_text boolean: trim results text (default: false)
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinLspOutgoingCallsOpts): nil
 builtin.lsp_outgoing_calls = require_on_exported_call("telescope.builtin.__lsp").outgoing_calls
 
+---@class TelescopeBuiltinLspDefinitionOpts
+---@field jump_type? "tab" | "tab drop" | "split" | "vsplit" | "never" how to goto definition if there is only one and the definition file is different from the current file
+---@field show_line? boolean show results text (default: true)
+---@field trim_text? boolean trim results text (default: false)
+---@field reuse_win? boolean jump to existing window if buffer is already opened (default: false)
+---@field file_encoding? string file encoding for the previewer
+
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
----@param opts table: options to pass to the picker
----@field jump_type string: how to goto definition if there is only one and the definition file is different from the current file, values: "tab", "tab drop", "split", "vsplit", "never"
----@field show_line boolean: show results text (default: true)
----@field trim_text boolean: trim results text (default: false)
----@field reuse_win boolean: jump to existing window if buffer is already opened (default: false)
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinLspDefinitionOpts): nil
 builtin.lsp_definitions = require_on_exported_call("telescope.builtin.__lsp").definitions
+
+---@class TelescopeBuiltinLspTypeDefinitionsOpts
+---@field jump_type? "tab" | "tab drop" | "split" | "vsplit" | "never" how to goto definition if there is only one and the definition file is different from the current file
+---@field show_line? boolean show results text (default: true)
+---@field trim_text? boolean trim results text (default: false)
+---@field reuse_win? boolean jump to existing window if buffer is already opened (default: false)
+---@field file_encoding? string file encoding for the previewer
 
 --- Goto the definition of the type of the word under the cursor, if there's only one,
 --- otherwise show all options in Telescope
----@param opts table: options to pass to the picker
----@field jump_type string: how to goto definition if there is only one and the definition file is different from the current file, values: "tab", "tab drop", "split", "vsplit", "never"
----@field show_line boolean: show results text (default: true)
----@field trim_text boolean: trim results text (default: false)
----@field reuse_win boolean: jump to existing window if buffer is already opened (default: false)
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinLspTypeDefinitionsOpts): nil
 builtin.lsp_type_definitions = require_on_exported_call("telescope.builtin.__lsp").type_definitions
 
+---@class TelescopeBuiltinLspImplementationOpts
+---@field jump_type? "tab" | "tab drop" | "split" | "vsplit" | "never" how to goto implementation if there is only one and the definition file is different from the current file
+---@field show_line? boolean show results text (default: true)
+---@field trim_text? boolean trim results text (default: false)
+---@field reuse_win? boolean jump to existing window if buffer is already opened (default: false)
+---@field file_encoding? string file encoding for the previewer
+
 --- Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope
----@param opts table: options to pass to the picker
----@field jump_type string: how to goto implementation if there is only one and the definition file is different from the current file, values: "tab", "tab drop", "split", "vsplit", "never"
----@field show_line boolean: show results text (default: true)
----@field trim_text boolean: trim results text (default: false)
----@field reuse_win boolean: jump to existing window if buffer is already opened (default: false)
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinLspImplementationOpts): nil
 builtin.lsp_implementations = require_on_exported_call("telescope.builtin.__lsp").implementations
+
+---@class TelescopeBuiltinDocumentSymbolsOpts
+---@field fname_width? number defines the width of the filename section (default: 30)
+---@field symbol_width? number defines the width of the symbol section (default: 25)
+---@field symbol_type_width? number defines the width of the symbol type section (default: 8)
+---@field show_line? boolean if true, shows the content of the line the tag is found on (default: false)
+---@field symbols? string|table filter results by symbol kind(s)
+---@field ignore_symbols? string|table list of symbols to ignore
+---@field symbol_highlights? table string -> string. Matches symbol with hl_group
+---@field file_encoding? string file encoding for the previewer
 
 --- Lists LSP document symbols in the current buffer
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
----@param opts table: options to pass to the picker
----@field fname_width number: defines the width of the filename section (default: 30)
----@field symbol_width number: defines the width of the symbol section (default: 25)
----@field symbol_type_width number: defines the width of the symbol type section (default: 8)
----@field show_line boolean: if true, shows the content of the line the tag is found on (default: false)
----@field symbols string|table: filter results by symbol kind(s)
----@field ignore_symbols string|table: list of symbols to ignore
----@field symbol_highlights table: string -> string. Matches symbol with hl_group
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinDocumentSymbolsOpts): nil
 builtin.lsp_document_symbols = require_on_exported_call("telescope.builtin.__lsp").document_symbols
+
+---@class TelescopeBuiltinLspWorkspaceSymbolsOpts
+---@field query? string for what to query the workspace (default: "")
+---@field fname_width? number defines the width of the filename section (default: 30)
+---@field symbol_width? number defines the width of the symbol section (default: 25)
+---@field symbol_type_width? number defines the width of the symbol type section (default: 8)
+---@field show_line? boolean if true, shows the content of the line the tag is found on (default: false)
+---@field symbols? string|table filter results by symbol kind(s)
+---@field ignore_symbols? string|table list of symbols to ignore
+---@field symbol_highlights? table string -> string. Matches symbol with hl_group
+---@field file_encoding? string file encoding for the previewer
 
 --- Lists LSP document symbols in the current workspace
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`)
----@param opts table: options to pass to the picker
----@field query string: for what to query the workspace (default: "")
----@field fname_width number: defines the width of the filename section (default: 30)
----@field symbol_width number: defines the width of the symbol section (default: 25)
----@field symbol_type_width number: defines the width of the symbol type section (default: 8)
----@field show_line boolean: if true, shows the content of the line the tag is found on (default: false)
----@field symbols string|table: filter results by symbol kind(s)
----@field ignore_symbols string|table: list of symbols to ignore
----@field symbol_highlights table: string -> string. Matches symbol with hl_group
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinLspWorkspaceSymbolsOpts): nil
 builtin.lsp_workspace_symbols = require_on_exported_call("telescope.builtin.__lsp").workspace_symbols
+
+---@class TelescopeBuiltinLspDynamicWorkspaceSymbolsOpts
+---@field fname_width? number defines the width of the filename section (default: 30)
+---@field show_line? boolean if true, shows the content of the line the symbol is found on (default: false)
+---@field symbols? string|table filter results by symbol kind(s)
+---@field ignore_symbols? string|table list of symbols to ignore
+---@field symbol_highlights? table string -> string. Matches symbol with hl_group
+---@field file_encoding? string file encoding for the previewer
 
 --- Dynamically lists LSP for all workspace symbols
 --- - Default keymaps:
 ---   - `<C-l>`: show autocompletion menu to prefilter your query by type of symbol you want to see (i.e. `:variable:`), only works after refining to fuzzy search using <C-space>
----@param opts table: options to pass to the picker
----@field fname_width number: defines the width of the filename section (default: 30)
----@field show_line boolean: if true, shows the content of the line the symbol is found on (default: false)
----@field symbols string|table: filter results by symbol kind(s)
----@field ignore_symbols string|table: list of symbols to ignore
----@field symbol_highlights table: string -> string. Matches symbol with hl_group
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinLspDynamicWorkspaceSymbolsOpts): nil
 builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.builtin.__lsp").dynamic_workspace_symbols
 
 --
