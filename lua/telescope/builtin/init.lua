@@ -235,17 +235,21 @@ builtin.git_stash = require_on_exported_call("telescope.builtin.__git").stash
 --
 --
 
+---@class TelescopeBuiltinBuiltinOpts
+---@field include_extensions? boolean: if true will show the pickers of the installed extensions (default: false)
+---@field use_default_opts? boolean: if the selected picker should use its default options (default: false)
+
 --- Lists all of the community maintained pickers built into Telescope
----@param opts table: options to pass to the picker
----@field include_extensions boolean: if true will show the pickers of the installed extensions (default: false)
----@field use_default_opts boolean: if the selected picker should use its default options (default: false)
+---@type fun(opts?: TelescopeBuiltinBuiltinOpts): nil
 builtin.builtin = require_on_exported_call("telescope.builtin.__internal").builtin
+
+---@class TelescopeBuiltinResumeOpts
+---@field cache_index? number: what picker to resume, where 1 denotes most recent (default: 1)
 
 --- Opens the previous picker in the identical state (incl. multi selections)
 --- - Notes:
 ---   - Requires `cache_picker` in setup or when having invoked pickers, see |telescope.defaults.cache_picker|
----@param opts table: options to pass to the picker
----@field cache_index number: what picker to resume, where 1 denotes most recent (default: 1)
+---@type fun(opts?: TelescopeBuiltinResumeOpts): nil
 builtin.resume = require_on_exported_call("telescope.builtin.__internal").resume
 
 --- Opens a picker over previously cached pickers in their preserved states (incl. multi selections)
@@ -253,158 +257,196 @@ builtin.resume = require_on_exported_call("telescope.builtin.__internal").resume
 ---   - `<C-x>`: delete the selected cached picker
 --- - Notes:
 ---   - Requires `cache_picker` in setup or when having invoked pickers, see |telescope.defaults.cache_picker|
----@param opts table: options to pass to the picker
+---@type fun(opts?: table): nil
 builtin.pickers = require_on_exported_call("telescope.builtin.__internal").pickers
 
+---@class TelescopeBuiltinPlanetsOpts
+---@field show_pluto? boolean we love Pluto (default: false, because its a hidden feature)
+---@field show_moon? boolean we love the Moon (default: false, because its a hidden feature)
+
 --- Use the telescope...
----@param opts table: options to pass to the picker
----@field show_pluto boolean: we love Pluto (default: false, because its a hidden feature)
----@field show_moon boolean: we love the Moon (default: false, because its a hidden feature)
+---@type fun(opts?: TelescopeBuiltinPlanetsOpts): nil
 builtin.planets = require_on_exported_call("telescope.builtin.__internal").planets
+
+---@class TelescopeBuiltinSymbolsOpts
+---@field symbol_path? string specify the second path. Default: `stdpath("data")/telescope/symbols/*.json`
+---@field sources? table specify a table of sources you want to load this time
 
 --- Lists symbols inside of `data/telescope-sources/*.json` found in your runtime path
 --- or found in `stdpath("data")/telescope/symbols/*.json`. The second path can be customized.
 --- We provide a couple of default symbols which can be found in
 --- https://github.com/nvim-telescope/telescope-symbols.nvim. This repos README also provides more
 --- information about the format in which the symbols have to be.
----@param opts table: options to pass to the picker
----@field symbol_path string: specify the second path. Default: `stdpath("data")/telescope/symbols/*.json`
----@field sources table: specify a table of sources you want to load this time
+---@type fun(opts?: TelescopeBuiltinSymbolsOpts): nil
 builtin.symbols = require_on_exported_call("telescope.builtin.__internal").symbols
 
+---@class TelescopeBuiltinCommandsOpts
+---@field show_buf_command? boolean show buf local command (Default: true)
+
 --- Lists available plugin/user commands and runs them on `<cr>`
----@param opts table: options to pass to the picker
----@field show_buf_command boolean: show buf local command (Default: true)
+---@type fun(opts?: TelescopeBuiltinCommandsOpts): nil
 builtin.commands = require_on_exported_call("telescope.builtin.__internal").commands
 
+---@class TelescopeBuiltinQuickfixOpts
+---@field show_line? boolean show results text (default: true)
+---@field trim_text? boolean trim results text (default: false)
+---@field nr? number specify the quickfix list number
+
 --- Lists items in the quickfix list, jumps to location on `<cr>`
----@param opts table: options to pass to the picker
----@field show_line boolean: show results text (default: true)
----@field trim_text boolean: trim results text (default: false)
----@field nr number: specify the quickfix list number
+---@type fun(opts?: TelescopeBuiltinQuickfixOpts): nil
 builtin.quickfix = require_on_exported_call("telescope.builtin.__internal").quickfix
 
 --- Lists all quickfix lists in your history and open them with `builtin.quickfix`. It seems that neovim
 --- only keeps the full history for 10 lists
----@param opts table: options to pass to the picker
+---@type fun(opts?: table): nil
 builtin.quickfixhistory = require_on_exported_call("telescope.builtin.__internal").quickfixhistory
 
+---@class TelescopeBuiltinLoclistOpts
+---@field show_line? boolean show results text (default: true)
+---@field trim_text? boolean trim results text (default: false)
+
 --- Lists items from the current window's location list, jumps to location on `<cr>`
----@param opts table: options to pass to the picker
----@field show_line boolean: show results text (default: true)
----@field trim_text boolean: trim results text (default: false)
+---@type fun(opts?: TelescopeBuiltinLoclistOpts): nil
 builtin.loclist = require_on_exported_call("telescope.builtin.__internal").loclist
 
+---@class TelescopeBuiltinOldfilesOpts
+---@field cwd? string specify a working directory to filter oldfiles by
+---@field only_cwd? boolean show only files in the cwd (default: false)
+---@field cwd_only? boolean alias for only_cwd
+---@field file_encoding? string file encoding for the previewer
+
 --- Lists previously open files, opens on `<cr>`
----@param opts table: options to pass to the picker
----@field cwd string: specify a working directory to filter oldfiles by
----@field only_cwd boolean: show only files in the cwd (default: false)
----@field cwd_only boolean: alias for only_cwd
----@field file_encoding string: file encoding for the previewer
+---@type fun(opts?: TelescopeBuiltinOldfilesOpts): nil
 builtin.oldfiles = require_on_exported_call("telescope.builtin.__internal").oldfiles
+
+---@class TelescopeBuiltinMarksOpts
+---@field filter_fn? function: filter fn(cmd:string). true if the history command should be presented.
 
 --- Lists commands that were executed recently, and reruns them on `<cr>`
 --- - Default keymaps:
 ---   - `<C-e>`: open the command line with the text of the currently selected result populated in it
----@param opts table: options to pass to the picker
----@field filter_fn function: filter fn(cmd:string). true if the history command should be presented.
+---@type fun(opts?: TelescopeBuiltinMarksOpts): nil
 builtin.command_history = require_on_exported_call("telescope.builtin.__internal").command_history
 
 --- Lists searches that were executed recently, and reruns them on `<cr>`
 --- - Default keymaps:
 ---   - `<C-e>`: open a search window with the text of the currently selected search result populated in it
----@param opts table: options to pass to the picker
+---@type fun(opts?: table): nil
 builtin.search_history = require_on_exported_call("telescope.builtin.__internal").search_history
 
 --- Lists vim options, allows you to edit the current value on `<cr>`
----@param opts table: options to pass to the picker
+---@type fun(opts?: table): nil
 builtin.vim_options = require_on_exported_call("telescope.builtin.__internal").vim_options
 
+---@class TelescopeBuiltinHelpTagsOpts
+---@field lang? string specify language (default: vim.o.helplang)
+---@field fallback? boolean fallback to en if language isn't installed (default: true)
+
 --- Lists available help tags and opens a new window with the relevant help info on `<cr>`
----@param opts table: options to pass to the picker
----@field lang string: specify language (default: vim.o.helplang)
----@field fallback boolean: fallback to en if language isn't installed (default: true)
+---@type fun(opts?: TelescopeBuiltinHelpTagsOpts): nil
 builtin.help_tags = require_on_exported_call("telescope.builtin.__internal").help_tags
 
+---@class TelescopeBuiltinManPagesOpts
+---@field sections? table a list of sections to search, use `{ "ALL" }` to search in all sections (default: { "1" })
+---@field man_cmd? function that returns the man command. (Default: `apropos ""` on linux, `apropos " "` on macos)
+
 --- Lists manpage entries, opens them in a help window on `<cr>`
----@param opts table: options to pass to the picker
----@field sections table: a list of sections to search, use `{ "ALL" }` to search in all sections (default: { "1" })
----@field man_cmd function: that returns the man command. (Default: `apropos ""` on linux, `apropos " "` on macos)
+---@type fun(opts?: TelescopeBuiltinManPagesOpts): nil
 builtin.man_pages = require_on_exported_call("telescope.builtin.__internal").man_pages
 
+---@class TelescopeBuiltinReloaderOpts
+---@field column_len? number define the max column len for the module name (default: dynamic, longest module name)
+
 --- Lists lua modules and reloads them on `<cr>`
----@param opts table: options to pass to the picker
----@field column_len number: define the max column len for the module name (default: dynamic, longest module name)
+---@type fun(opts?: TelescopeBuiltinReloaderOpts): nil
 builtin.reloader = require_on_exported_call("telescope.builtin.__internal").reloader
 
+---@class TelescopeBuiltinBuffersOpts
+---@field cwd? string specify a working directory to filter buffers list by
+---@field show_all_buffers? boolean if true, show all buffers, including unloaded buffers (default: true)
+---@field ignore_current_buffer? boolean if true, don't show the current buffer in the list (default: false)
+---@field only_cwd? boolean if true, only show buffers in the current working directory (default: false)
+---@field cwd_only? boolean alias for only_cwd
+---@field sort_lastused? boolean Sorts current and last buffer to the top and selects the lastused (default: false)
+---@field sort_mru? boolean Sorts all buffers after most recent used. Not just the current and last one (default: false)
+---@field bufnr_width? number Defines the width of the buffer numbers in front of the filenames  (default: dynamic)
+---@field file_encoding? string file encoding for the previewer
+---@field sort_buffers? function sort fn(bufnr_a, bufnr_b). true if bufnr_a should go first. Runs after sorting by most recent (if specified)
+---@field select_current? boolean select current buffer (default: false)
+
 --- Lists open buffers in current neovim instance, opens selected buffer on `<cr>`
----@param opts table: options to pass to the picker
----@field cwd string: specify a working directory to filter buffers list by
----@field show_all_buffers boolean: if true, show all buffers, including unloaded buffers (default: true)
----@field ignore_current_buffer boolean: if true, don't show the current buffer in the list (default: false)
----@field only_cwd boolean: if true, only show buffers in the current working directory (default: false)
----@field cwd_only boolean: alias for only_cwd
----@field sort_lastused boolean: Sorts current and last buffer to the top and selects the lastused (default: false)
----@field sort_mru boolean: Sorts all buffers after most recent used. Not just the current and last one (default: false)
----@field bufnr_width number: Defines the width of the buffer numbers in front of the filenames  (default: dynamic)
----@field file_encoding string: file encoding for the previewer
----@field sort_buffers function: sort fn(bufnr_a, bufnr_b). true if bufnr_a should go first. Runs after sorting by most recent (if specified)
----@field select_current boolean: select current buffer (default: false)
+---@type fun(opts?: TelescopeBuiltinBuffersOpts): nil
 builtin.buffers = require_on_exported_call("telescope.builtin.__internal").buffers
 
+---@class TelescopeBuiltinColorschemeOpts
+---@field colors? table a list of additional colorschemes to explicitly make available to telescope (default: {})
+---@field enable_preview? boolean if true, will preview the selected color
+
 --- Lists available colorschemes and applies them on `<cr>`
----@param opts table: options to pass to the picker
----@field colors table: a list of additional colorschemes to explicitly make available to telescope (default: {})
----@field enable_preview boolean: if true, will preview the selected color
+---@type fun(opts?: TelescopeBuiltinColorschemeOpts): nil
 builtin.colorscheme = require_on_exported_call("telescope.builtin.__internal").colorscheme
 
---- Lists vim marks and their value, jumps to the mark on `<cr>`
----@param opts table: options to pass to the picker
----@field file_encoding string: file encoding for the previewer
----@field mark_type string: filter marks by type (default: "all", options: "all"|"global"|"local")
+---@class TelescopeBuiltinMarksOpts
+---@field file_encoding? string file encoding for the previewer
+---@field mark_type? "all" | "global" | "local"  filter marks by type (default: "all", options: "all"|"global"|"local")
+
+--- Lists vim marks and their value, jumps to the mark on `<cr>`.
+--- The given options are passed to the picker
+---@type fun(opts?: TelescopeBuiltinMarksOpts): nil
 builtin.marks = require_on_exported_call("telescope.builtin.__internal").marks
 
---- Lists vim registers, pastes the contents of the register on `<cr>`
+--- Lists vim registers, pastes the contents of the register on `<cr>`.
+--- The given options are passed to the picker.
 --- - Default keymaps:
 ---   - `<C-e>`: edit the contents of the currently selected register
----@param opts table: options to pass to the picker
+---@type fun(opts?: table): nil
 builtin.registers = require_on_exported_call("telescope.builtin.__internal").registers
 
+---@class TelescopeBuiltinKeymapsOpts
+---@field modes? table a list of short-named keymap modes to search (default: { "n", "i", "c", "x" })
+---@field show_plug? boolean if true, the keymaps for which the lhs contains "<Plug>" are also shown (default: true)
+---@field only_buf? boolean if true, only show the buffer-local keymaps (default: false)
+---@field lhs_filter? function filter(lhs:string) -> boolean. true for keymap.lhs if the keymap should be shown (optional)
+---@field filter? function filter(km:keymap) -> boolean. true for the keymap if it should be shown (optional)
+
 --- Lists normal mode keymappings, runs the selected keymap on `<cr>`
----@param opts table: options to pass to the picker
----@field modes table: a list of short-named keymap modes to search (default: { "n", "i", "c", "x" })
----@field show_plug boolean: if true, the keymaps for which the lhs contains "<Plug>" are also shown (default: true)
----@field only_buf boolean: if true, only show the buffer-local keymaps (default: false)
----@field lhs_filter function: filter(lhs:string) -> boolean. true for keymap.lhs if the keymap should be shown (optional)
----@field filter function: filter(km:keymap) -> boolean. true for the keymap if it should be shown (optional)
+---@type fun(opts?: TelescopeBuiltinKeymapsOpts): nil
 builtin.keymaps = require_on_exported_call("telescope.builtin.__internal").keymaps
 
---- Lists all available filetypes, sets currently open buffer's filetype to selected filetype in Telescope on `<cr>`
----@param opts table: options to pass to the picker
+--- Lists all available filetypes, sets currently open buffer's filetype to selected filetype in Telescope on `<cr>`.
+--- The given options are passed to the picker
+---@type fun(opts?: table): nil
 builtin.filetypes = require_on_exported_call("telescope.builtin.__internal").filetypes
 
---- Lists all available highlights
----@param opts table: options to pass to the picker
+--- Lists all available highlights.
+--- The given options are passed to the picker
+---@type fun(opts?: table): nil
 builtin.highlights = require_on_exported_call("telescope.builtin.__internal").highlights
 
---- Lists vim autocommands and goes to their declaration on `<cr>`
----@param opts table: options to pass to the picker
+--- Lists vim autocommands and goes to their declaration on `<cr>`.
+--- The given options are passed to the picker
+---@type fun(opts?: table): nil
 builtin.autocommands = require_on_exported_call("telescope.builtin.__internal").autocommands
 
---- Lists spelling suggestions for the current word under the cursor, replaces word with selected suggestion on `<cr>`
----@param opts table: options to pass to the picker
+--- Lists spelling suggestions for the current word under the cursor, replaces word with selected suggestion on `<cr>`.
+--- The given options are passed to the picker
+---@type fun(opts?: table): nil
 builtin.spell_suggest = require_on_exported_call("telescope.builtin.__internal").spell_suggest
 
+---@class TelescopeBuiltinTagstackOpts
+---@field show_line? boolean show results text (default: true)
+---@field trim_text? boolean trim results text (default: false)
+
 --- Lists the tag stack for the current window, jumps to tag on `<cr>`
----@param opts table: options to pass to the picker
----@field show_line boolean: show results text (default: true)
----@field trim_text boolean: trim results text (default: false)
+---@type fun(opts?: TelescopeBuiltinTagstackOpts): nil
 builtin.tagstack = require_on_exported_call("telescope.builtin.__internal").tagstack
 
+---@class TelescopeBuiltinJumplistOpts
+---@field show_line boolean? show results text (default: true)
+---@field trim_text boolean? trim results text (default: false)
+
 --- Lists items from Vim's jumplist, jumps to location on `<cr>`
----@param opts table: options to pass to the picker
----@field show_line boolean: show results text (default: true)
----@field trim_text boolean: trim results text (default: false)
+---@type fun(opts?: TelescopeBuiltinJumplistOpts): nil
 builtin.jumplist = require_on_exported_call("telescope.builtin.__internal").jumplist
 
 --
