@@ -2536,6 +2536,31 @@ UTILS                                                          *telescope.utils*
 
 Utilities for writing telescope pickers
 
+utils.path_expand({path})                      *telescope.utils.path_expand()*
+    Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
+
+    Paths starting with '%', '#' or '<' are expanded with `vim.fn.expand()`.
+    Otherwise avoids using `vim.fn.expand()` due to its overly aggressive
+    expansion behavior which can sometimes lead to errors or the creation of
+    non-existent paths when dealing with valid absolute paths.
+
+    Other paths will have '~' and environment variables expanded. Unlike
+    `vim.fs.normalize()`, backslashes are preserved. This has better
+    compatibility with `plenary.path` and also avoids mangling valid Unix paths
+    with literal backslashes.
+
+    Trailing slashes are trimmed. With the exception of root paths. eg. `/` on
+    Unix or `C:\` on Windows
+
+
+
+    Parameters: ~
+        {path} (string)
+
+    Return: ~
+        string
+
+
 utils.transform_path({opts}, {path})        *telescope.utils.transform_path()*
     Transform path is a util function that formats a path based on path_display
     found in `opts` or the default value from config. It is meant to be used in
@@ -2546,9 +2571,9 @@ utils.transform_path({opts}, {path})        *telescope.utils.transform_path()*
 
 
     Parameters: ~
-        {opts} (table)   The opts the users passed into the picker. Might
-                         contains a path_display key
-        {path} (string)  The path that should be formatted
+        {opts} (table)       The opts the users passed into the picker. Might
+                             contains a path_display key
+        {path} (string|nil)  The path that should be formatted
 
     Return: ~
         string: The transformed path ready to be displayed
