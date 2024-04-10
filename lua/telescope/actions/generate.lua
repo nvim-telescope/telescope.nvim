@@ -53,9 +53,10 @@ local action_generate = {}
 ---@field border_hl string: winhl of "Normal" for keymap borders (default: "TelescopePromptBorder")
 ---@field winblend number: pseudo-transparency of keymap hints floating window
 action_generate.which_key = function(opts)
-  return function(prompt_bufnr)
+  local which_key = function(prompt_bufnr)
     actions.which_key(prompt_bufnr, opts)
   end
+  return which_key
 end
 
 action_generate.refine = function(prompt_bufnr, opts)
