@@ -269,7 +269,7 @@ end
 --- this function outside of telescope might yield to undefined behavior and will
 --- not be addressed by us
 ---@param opts table: The opts the users passed into the picker. Might contains a path_display key
----@param path string?: The path that should be formatted
+---@param path string|nil: The path that should be formatted
 ---@return string: The transformed path ready to be displayed
 utils.transform_path = function(opts, path)
   if path == nil then
