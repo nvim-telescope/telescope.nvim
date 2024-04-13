@@ -301,6 +301,33 @@ actions.select_vertical = {
   end,
 }
 
+--- Perform 'vertical' or `horizontal` action based on the number of windows opened and
+--- its width, usually something like<br>
+---`:vnew <selection>` or `:new <selection>`
+---
+--- i.e. open the selection in a new vertical split if there is only one window with width > 160,
+--- and open in a new horizontal split otherwise
+---@param prompt_bufnr number: The prompt bufnr
+actions.select_vertical_if_wide_enough = {
+  pre = append_to_history,
+  action = function(prompt_bufnr)
+    local wins = vim.api.nvim_tabpage_list_wins(0)
+
+    local winbufs = vim.tbl_map(function(win)
+      return { win, vim.api.nvim_win_get_buf(win) }
+    end, wins)
+
+    local listed_winbufs = vim.tbl_filter(function(winbuf)
+      return vim.api.nvim_buf_get_option(winbuf[2], "buflisted")
+    end, winbufs)
+
+    if #listed_winbufs == 1 and vim.api.nvim_win_get_width(listed_winbufs[1][1]) > 160 then
+      return action_set.select(prompt_bufnr, "vertical")
+    end
+    return action_set.select(prompt_bufnr, "horizontal")
+  end,
+}
+
 --- Perform 'tab' action on selection, usually something like<br>
 ---`:tabedit <selection>`
 ---
