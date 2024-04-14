@@ -1363,6 +1363,7 @@ actions.which_key = function(prompt_bufnr, opts)
     borderchars = { prompt_pos and "─" or " ", "", not prompt_pos and "─" or " ", "", "", "", "", "" },
     noautocmd = true,
     title = { { text = title_text, pos = prompt_pos and "N" or "S" } },
+    zindex = 60,
   }
   local km_win_id, km_opts = popup.create("", popup_opts)
   local km_buf = a.nvim_win_get_buf(km_win_id)
