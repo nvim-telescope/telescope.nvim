@@ -52,6 +52,7 @@ local action_generate = {}
 ---@field normal_hl string: winhl of "Normal" for keymap hints floating window (default: "TelescopePrompt")
 ---@field border_hl string: winhl of "Normal" for keymap borders (default: "TelescopePromptBorder")
 ---@field winblend number: pseudo-transparency of keymap hints floating window
+---@field zindex number: z-index of keymap hints floating window (default: 100)
 action_generate.which_key = function(opts)
   local which_key = function(prompt_bufnr)
     actions.which_key(prompt_bufnr, opts)
