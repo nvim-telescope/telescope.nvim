@@ -1102,6 +1102,7 @@ actions.which_key = function(prompt_bufnr, opts)
   opts.normal_hl = vim.F.if_nil(opts.normal_hl, "TelescopePrompt")
   opts.border_hl = vim.F.if_nil(opts.border_hl, "TelescopePromptBorder")
   opts.winblend = vim.F.if_nil(opts.winblend, conf.winblend)
+  opts.zindex = vim.F.if_nil(opts.zindex, 100)
   opts.column_padding = vim.F.if_nil(opts.column_padding, "  ")
 
   -- Assigning into 'opts.column_indent' would override a number with a string and
@@ -1220,6 +1221,7 @@ actions.which_key = function(prompt_bufnr, opts)
     borderchars = { prompt_pos and "─" or " ", "", not prompt_pos and "─" or " ", "", "", "", "", "" },
     noautocmd = true,
     title = { { text = title_text, pos = prompt_pos and "N" or "S" } },
+    zindex = opts.zindex,
   }
   local km_win_id, km_opts = popup.create("", popup_opts)
   local km_buf = a.nvim_win_get_buf(km_win_id)
