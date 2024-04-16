@@ -3678,6 +3678,8 @@ action_generate.which_key({opts})     *telescope.actions.generate.which_key()*
                                             "TelescopePromptBorder")
         {winblend}               (number)   pseudo-transparency of keymap
                                             hints floating window
+        {zindex}                 (number)   z-index of keymap hints floating
+                                            window (default: 100)
 
 
 
