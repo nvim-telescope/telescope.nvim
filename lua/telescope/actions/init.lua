@@ -1285,9 +1285,11 @@ actions.which_key = function(prompt_bufnr, opts)
       buffer = close_buffer,
       once = true,
       callback = function()
-        pcall(vim.api.nvim_win_close, km_win_id, true)
-        pcall(vim.api.nvim_win_close, km_opts.border.win_id, true)
-        require("telescope.utils").buf_delete(km_buf)
+        vim.schedule(function()
+          pcall(vim.api.nvim_win_close, km_win_id, true)
+          pcall(vim.api.nvim_win_close, km_opts.border.win_id, true)
+          utils.buf_delete(km_buf)
+        end)
       end,
     })
   end)
