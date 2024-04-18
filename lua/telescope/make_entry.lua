@@ -601,14 +601,14 @@ function make_entry.gen_from_buffer(opts)
   local make_display = function(entry)
     -- bufnr_width + modes + icon + 3 spaces + : + lnum
     opts.__prefix = opts.bufnr_width + 4 + icon_width + 3 + 1 + #tostring(entry.lnum)
-    local display_bufname = utils.transform_path(opts, entry.filename)
+    local display_bufname, path_style = utils.transform_path(opts, entry.filename)
     local icon, hl_group = utils.get_devicons(entry.filename, disable_devicons)
 
     return displayer {
       { entry.bufnr, "TelescopeResultsNumber" },
       { entry.indicator, "TelescopeResultsComment" },
       { icon, hl_group },
-      display_bufname .. ":" .. entry.lnum,
+      { display_bufname .. ":" .. entry.lnum, function() return path_style end }
     }
   end
 
