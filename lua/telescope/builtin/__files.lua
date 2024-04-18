@@ -388,6 +388,20 @@ files.find_files = function(opts)
       finder = finders.new_oneshot_job(find_command, opts),
       previewer = conf.grep_previewer(opts),
       sorter = conf.file_sorter(opts),
+      attach_mappings = function(bufnr)
+        actions.select_default:replace(function()
+          actions.close(bufnr)
+          local selection = action_state.get_selected_entry()
+          local on_selection_callback_result = true
+          if type(opts.on_selection_callback) == "function" then
+            on_selection_callback_result = opts.on_selection_callback(selection.value)
+          end
+          if on_selection_callback_result then
+            vim.cmd.edit(selection.value)
+          end
+        end)
+        return true
+      end,
     })
     :find()
 end

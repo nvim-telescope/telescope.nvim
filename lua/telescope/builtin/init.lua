@@ -84,6 +84,7 @@ builtin.grep_string = require_on_exported_call("telescope.builtin.__files").grep
 ---@field search_dirs table: directory/directories/files to search
 ---@field search_file string: specify a filename to search for
 ---@field file_encoding string: file encoding for the previewer
+---@field on_selection_callback function: run a function after selection completed
 builtin.find_files = require_on_exported_call("telescope.builtin.__files").find_files
 
 --- This is an alias for the `find_files` picker
