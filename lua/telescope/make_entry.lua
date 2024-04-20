@@ -608,7 +608,12 @@ function make_entry.gen_from_buffer(opts)
       { entry.bufnr, "TelescopeResultsNumber" },
       { entry.indicator, "TelescopeResultsComment" },
       { icon, hl_group },
-      { display_bufname .. ":" .. entry.lnum, function() return path_style end }
+      {
+        display_bufname .. ":" .. entry.lnum,
+        function()
+          return path_style
+        end,
+      },
     }
   end
 
