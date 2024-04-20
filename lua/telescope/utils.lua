@@ -327,6 +327,8 @@ utils.transform_path = function(opts, path)
         transformed_path = truncate(transformed_path, opts.__length - opts.__prefix, nil, -1)
       end
 
+      -- IMPORTANT: filename_first needs to be the last option. Otherwise the
+      -- other options will not be displayed correctly.
       if vim.tbl_contains(path_display, "filename_first") or path_display["filename_first"] ~= nil then
         local reverse_directories = false
 
