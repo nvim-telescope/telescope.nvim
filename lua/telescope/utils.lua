@@ -307,6 +307,26 @@ utils.transform_path = function(opts, path)
         transformed_path = Path:new(transformed_path):make_relative(cwd)
       end
 
+      if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
+        if type(path_display["shorten"]) == "table" then
+          local shorten = path_display["shorten"]
+          transformed_path = Path:new(transformed_path):shorten(shorten.len, shorten.exclude)
+        else
+          local length = type(path_display["shorten"]) == "number" and path_display["shorten"]
+          transformed_path = Path:new(transformed_path):shorten(length)
+        end
+      end
+
+      if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
+        if opts.__length == nil then
+          opts.__length = calc_result_length(path_display.truncate)
+        end
+        if opts.__prefix == nil then
+          opts.__prefix = 0
+        end
+        transformed_path = truncate(transformed_path, opts.__length - opts.__prefix, nil, -1)
+      end
+
       if vim.tbl_contains(path_display, "filename_first") or path_display["filename_first"] ~= nil then
         local reverse_directories = false
 
@@ -336,26 +356,6 @@ utils.transform_path = function(opts, path)
         transformed_path = vim.trim(filename .. " " .. tail)
 
         path_style = { { { #filename, #transformed_path }, "TelescopeResultsComment" } }
-      end
-
-      if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
-        if type(path_display["shorten"]) == "table" then
-          local shorten = path_display["shorten"]
-          transformed_path = Path:new(transformed_path):shorten(shorten.len, shorten.exclude)
-        else
-          local length = type(path_display["shorten"]) == "number" and path_display["shorten"]
-          transformed_path = Path:new(transformed_path):shorten(length)
-        end
-      end
-
-      if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
-        if opts.__length == nil then
-          opts.__length = calc_result_length(path_display.truncate)
-        end
-        if opts.__prefix == nil then
-          opts.__prefix = 0
-        end
-        transformed_path = truncate(transformed_path, opts.__length - opts.__prefix, nil, -1)
       end
     end
 
