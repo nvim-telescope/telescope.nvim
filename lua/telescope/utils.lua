@@ -285,7 +285,7 @@ utils.transform_path = function(opts, path)
   local path_style = {}
 
   if type(path_display) == "function" then
-    return path_display(opts, transformed_path)
+    return path_display(opts, transformed_path), path_style
   elseif utils.is_path_hidden(nil, path_display) then
     return "", path_style
   elseif type(path_display) == "table" then
