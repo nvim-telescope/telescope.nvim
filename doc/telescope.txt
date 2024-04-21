@@ -2592,7 +2592,8 @@ utils.transform_path({opts}, {path})        *telescope.utils.transform_path()*
         {path} (string|nil)  The path that should be formatted
 
     Return: ~
-        string: The transformed path ready to be displayed
+        string: path to be displayed
+        table: The transformed path ready to be displayed with the styling
 
 
 utils.has_ts_parser({lang})                  *telescope.utils.has_ts_parser()*
