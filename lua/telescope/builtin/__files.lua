@@ -536,7 +536,8 @@ files.current_buffer_fuzzy_find = function(opts)
       },
       sorter = conf.generic_sorter(opts),
       previewer = conf.grep_previewer(opts),
-      attach_mappings = function()
+      attach_mappings = function(_, map)
+        map("i", "<c-space>", actions.to_fuzzy_refine)
         actions.select_default:replace(function(prompt_bufnr)
           local selection = action_state.get_selected_entry()
           if not selection then
