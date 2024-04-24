@@ -359,7 +359,8 @@ append(
   path_display can also be set to 'hidden' string to hide file names
 
   path_display can also be set to a function for custom formatting of
-  the path display. Example:
+  the path display. You can also return the second optional value
+  to set highlight groups. Example:
 
       -- Format path as "file.txt (path\to\file\)"
       path_display = function(opts, path)
