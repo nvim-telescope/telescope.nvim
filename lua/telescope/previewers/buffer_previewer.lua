@@ -368,6 +368,7 @@ previewers.new_buffer_previewer = function(opts)
     else
       local bufnr = vim.api.nvim_create_buf(false, true)
       set_bufnr(self, bufnr)
+      vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
 
       vim.schedule(function()
         if vim.api.nvim_buf_is_valid(bufnr) then
