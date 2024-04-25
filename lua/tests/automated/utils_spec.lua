@@ -205,6 +205,9 @@ describe("transform_path", function()
     elseif type(path_display) == "table" then
       opts.path_display = path_display
       eq(expect, utils.transform_path(opts, path))
+    elseif type(path_display) == "function" then
+      opts.path_display = path_display
+      eq(expect, utils.transform_path(opts, path))
     elseif path_display == nil then
       eq(expect, utils.transform_path(opts, path))
     end
