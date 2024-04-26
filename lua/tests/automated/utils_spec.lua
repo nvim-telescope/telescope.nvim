@@ -205,6 +205,9 @@ describe("transform_path", function()
     elseif type(path_display) == "table" then
       opts.path_display = path_display
       eq(expect, utils.transform_path(opts, path))
+    elseif type(path_display) == "function" then
+      opts.path_display = path_display
+      eq(expect, utils.transform_path(opts, path))
     elseif path_display == nil then
       eq(expect, utils.transform_path(opts, path))
     end
@@ -296,5 +299,11 @@ describe("transform_path", function()
       new_relpath "lua/telescope/init.lua",
       new_relpath "init.lua lua/telescope"
     )
+  end)
+
+  it("handles function passed to path_display", function()
+    assert_path(function(_, path)
+      return string.gsub(path, "^doc", "d")
+    end, new_relpath "doc/mydoc.md", new_relpath "d/mydoc.md")
   end)
 end)

@@ -280,14 +280,15 @@ utils.transform_path = function(opts, path)
     return path, {}
   end
 
-  ---@type fun(opts:table, path: string): string
+  ---@type fun(opts:table, path: string): string, table?
   local path_display = vim.F.if_nil(opts.path_display, require("telescope.config").values.path_display)
 
   local transformed_path = path
   local path_style = {}
 
   if type(path_display) == "function" then
-    return path_display(opts, transformed_path), path_style
+    local custom_transformed_path, custom_path_style = path_display(opts, transformed_path)
+    return custom_transformed_path, custom_path_style or path_style
   elseif utils.is_path_hidden(nil, path_display) then
     return "", path_style
   elseif type(path_display) == "table" then

@@ -359,13 +359,38 @@ append(
   path_display can also be set to 'hidden' string to hide file names
 
   path_display can also be set to a function for custom formatting of
-  the path display. Example:
+  the path display with the following signature
+
+  Signature: fun(opts: table, path: string): string, table?
+
+  The optional table is an list of positions and highlight groups to
+  set the highlighting of the return path string.
+
+  Example:
 
       -- Format path as "file.txt (path\to\file\)"
       path_display = function(opts, path)
         local tail = require("telescope.utils").path_tail(path)
         return string.format("%s (%s)", tail, path)
       end,
+
+      -- Format path and add custom highlighting
+      path_display = function(opts, path)
+        local tail = require("telescope.utils").path_tail(path)
+        path = string.format("%s (%s)", tail, path)
+
+        local highlights = {
+          {
+            {
+              0, -- highlight start position
+              #path, -- highlight end position
+            },
+            "Comment", -- highlight group name
+          },
+        }
+
+        return path, highlights
+      end
 
   Default: {}]]
 )
