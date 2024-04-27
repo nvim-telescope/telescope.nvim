@@ -720,4 +720,37 @@ utils.reverse_table = function(input_table)
   return temp_table
 end
 
+---@param winid integer
+---@param row integer
+---@param col integer
+local function protected_win_set_cursor(winid, row, col)
+  vim.schedule(function()
+    local ok, err_msg = pcall(vim.api.nvim_win_set_cursor, winid, { row, col })
+    if not ok then
+      log.debug("Failed to move to cursor:", err_msg, row, col)
+    end
+  end)
+end
+
+--- set the cursor of a window to its original, or provided position
+---@param winid integer winid of original window
+---@param row? integer possible new row position
+---@param col? integer possible new col position. must pass row position for col to be used.
+utils.set_window_cursor = function(winid, row, col)
+  if row and col then
+    protected_win_set_cursor(winid, row, col - 1) -- entry.col is 1-index but nvim api uses 0-index
+    return
+  end
+
+  if row then
+    protected_win_set_cursor(winid, row, 0)
+  else
+    local cursor_valid, cursor_pos = pcall(vim.api.nvim_win_get_cursor, winid)
+    if not cursor_valid then
+      return
+    end
+    protected_win_set_cursor(winid, cursor_pos[1], cursor_pos[2])
+  end
+end
+
 return utils

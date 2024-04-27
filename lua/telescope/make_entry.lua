@@ -25,9 +25,9 @@
 --- - bufnr number (optional): will be interpreted by the default `<cr>` action as open
 ---   this buffer
 --- - lnum number (optional): lnum value which will be interpreted by the default `<cr>`
----   action as a jump to this line
+---   action as a jump to this line (1 index)
 --- - col number (optional): col value which will be interpreted by the default `<cr>`
----   action as a jump to this column
+---   action as a jump to this column (1 index)
 ---
 --- For more information on easier displaying, see |telescope.pickers.entry_display|
 ---
@@ -703,9 +703,9 @@ function make_entry.gen_from_treesitter(opts)
       node_text = node_text,
 
       filename = get_filename(bufnr),
-      -- need to add one since the previewer substacts one
+      -- convert lnum/col to 1-index (treesitter uses 0-index)
       lnum = start_row + 1,
-      col = start_col,
+      col = start_col + 1,
       text = node_text,
       start = start_row,
       finish = end_row,
