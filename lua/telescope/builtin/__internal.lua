@@ -408,6 +408,7 @@ internal.quickfix = function(opts)
   local locations = vim.fn.getqflist({ [opts.id and "id" or "nr"] = qf_identifier, items = true }).items
 
   if vim.tbl_isempty(locations) then
+    utils.notify("builtin.quickfix", { msg = "No quickfix items", level = "INFO" })
     return
   end
 
@@ -504,6 +505,7 @@ internal.loclist = function(opts)
   end
 
   if vim.tbl_isempty(locations) then
+    utils.notify("builtin.loclist", { msg = "No loclist items", level = "INFO" })
     return
   end
 
