@@ -2296,9 +2296,9 @@ utils.transform_path({opts}, {path})        *telescope.utils.transform_path()*
 
 
     Parameters: ~
-        {opts} (table)    The opts the users passed into the picker. Might
-                          contains a path_display key
-        {path} (string?)  The path that should be formatted
+        {opts} (table)       The opts the users passed into the picker. Might
+                             contains a path_display key
+        {path} (string|nil)  The path that should be formatted
 
     Return: ~
         string: The transformed path ready to be displayed

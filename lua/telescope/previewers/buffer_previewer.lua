@@ -192,9 +192,8 @@ previewers.file_maker = function(filepath, bufnr, opts)
       else
         if opts.preview.check_mime_type == true and has_file and opts.ft == "" then
           -- avoid SIGABRT in buffer previewer happening with utils.get_os_command_output
-          local output = capture(string.format([[file --mime-type -b "%s"]], filepath))
-          local mime_type = vim.split(output, "/")
-          if mime_type[1] ~= "text" and mime_type[1] ~= "inode" and mime_type[2] ~= "json" then
+          local mime_type = capture(string.format([[file --mime-type -b "%s"]], filepath))
+          if putils.binary_mime_type(mime_type) then
             if type(opts.preview.mime_hook) == "function" then
               vim.schedule_wrap(opts.preview.mime_hook)(filepath, bufnr, opts)
             else
