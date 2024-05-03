@@ -3,6 +3,7 @@ local utils = require "telescope.utils"
 local Path = require "plenary.path"
 local from_entry = require "telescope.from_entry"
 local Previewer = require "telescope.previewers.previewer"
+local putil = require "telescope.previewers.utils"
 
 local defaulter = utils.make_default_callable
 
@@ -65,9 +66,8 @@ local cat_maker = function(filename, _, start, _)
   end
 
   if 1 == vim.fn.executable "file" then
-    local output = utils.get_os_command_output { "file", "--mime-type", "-b", filename }
-    local mime_type = vim.split(output[1], "/")[1]
-    if mime_type ~= "text" then
+    local mime_type = utils.get_os_command_output({ "file", "--mime-type", "-b", filename })[1]
+    if putil.binary_mime_type(mime_type) then
       return { "echo", "Binary file found. These files cannot be displayed!" }
     end
   end

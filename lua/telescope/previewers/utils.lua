@@ -222,4 +222,21 @@ utils.set_preview_message = function(bufnr, winid, message, fillchar)
   end
 end
 
+--- Check if mime type is binary.
+--- NOT an exhaustive check, may get false negatives. Ideally should check
+--- filetype with `vim.filetype.match` or `filetype_detect` first for filetype
+--- info.
+---@param mime_type string
+---@return boolean
+utils.binary_mime_type = function(mime_type)
+  local type_, subtype = unpack(vim.split(mime_type, "/"))
+  if vim.tbl_contains({ "text", "inode" }, type_) then
+    return false
+  end
+  if vim.tbl_contains({ "json", "javascript" }, subtype) then
+    return false
+  end
+  return true
+end
+
 return utils
