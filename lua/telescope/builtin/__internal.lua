@@ -394,7 +394,7 @@ internal.commands = function(opts)
             cmd = cmd .. cr
           end
           vim.cmd [[stopinsert]]
-          vim.api.nvim_feedkeys(cmd, "t", false)
+          vim.api.nvim_feedkeys(cmd, "nt", false)
         end)
 
         return true
