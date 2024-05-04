@@ -690,7 +690,7 @@ end
 local help_tag_delimiter = "\t"
 local carriage_return_code = ("\r"):byte(1)
 
-local function help_tag_advance(text, cur_pos, next_tab, tags_map)
+local function help_tag_advance(text, cur_pos, next_tab)
   local next_line_raw = string.find(text, "\n", cur_pos, true)
   local next_line = next_line_raw or #text + 1
 
@@ -715,7 +715,7 @@ local function help_tag_advance(text, cur_pos, next_tab, tags_map)
 
   local name = text:sub(cur_pos, name_end - 1)
   -- TODO: also ignore tagComment starting with ';'
-  if tags_map[name] or name == "help-tags" or name:sub(1, 6) == "!_TAG_" then
+  if name == "help-tags" or name:sub(1, 6) == "!_TAG_" then
     return next_line_raw, next_tab
   end
 
@@ -773,7 +773,6 @@ internal.help_tags = function(opts)
   end
 
   local tags = {}
-  local tags_map = {}
   for _, lang in ipairs(langs) do
     for _, file in ipairs(tag_files[lang] or {}) do
       local text = Path:new(file):read()
@@ -782,9 +781,7 @@ internal.help_tags = function(opts)
       local next_tab = string.find(text, help_tag_delimiter, cur_pos, true)
 
       while true do
-        local next_line, new_tab, name, tag_file, cmd
-          = help_tag_advance(text, cur_pos, next_tab, tags_map)
-
+        local next_line, new_tab, name, tag_file, cmd = help_tag_advance(text, cur_pos, next_tab)
         if name then
           table.insert(tags, {
             name = name,
@@ -792,7 +789,6 @@ internal.help_tags = function(opts)
             cmd = cmd,
             lang = lang,
           })
-          tags_map[name] = true
         end
 
         if not next_line then
