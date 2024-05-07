@@ -100,11 +100,12 @@ end
 ---@type { [string]: fun(results: table, opts: table): table }
 local action_handlers = {
   ["textDocument/references"] = function(results, opts)
-    if opts.include_current_line == false then
+    if not opts.include_current_line then
       results = vim.tbl_filter(function(result)
+        local item = vim.lsp.util.locations_to_items({ result })[1]
         return not (
-          result.filename == vim.api.nvim_buf_get_name(opts.bufnr)
-          and result.lnum == vim.api.nvim_win_get_cursor(opts.winnr)
+          item.filename == vim.api.nvim_buf_get_name(opts.bufnr)
+          and item.lnum == vim.api.nvim_win_get_cursor(opts.winnr)[1]
         )
       end, results)
     end
