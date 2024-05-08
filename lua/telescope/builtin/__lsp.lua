@@ -99,10 +99,10 @@ end
 
 ---@type { [string]: fun(results: table, opts: table): table }
 local action_handlers = {
-  ["textDocument/references"] = function(results, opts)
+  ["textDocument/references"] = function(results, opts, offset_encoding)
     if not opts.include_current_line then
       results = vim.tbl_filter(function(result)
-        local item = vim.lsp.util.locations_to_items({ result })[1]
+        local item = vim.lsp.util.locations_to_items({ result }, offset_encoding)[1]
         return not (
           item.filename == vim.api.nvim_buf_get_name(opts.bufnr)
           and item.lnum == vim.api.nvim_win_get_cursor(opts.winnr)[1]
@@ -117,10 +117,10 @@ local action_handlers = {
 ---@param results table
 ---@param opts table
 ---@return table results
-local apply_action_handler = function(action, results, opts)
+local apply_action_handler = function(action, results, opts, offset_encoding)
   local handler = action_handlers[action]
   if handler then
-    return handler(results, opts)
+    return handler(results, opts, offset_encoding)
   end
   return results
 end
@@ -146,9 +146,9 @@ local function list_or_jump(action, title, params, opts)
     end
     vim.list_extend(flattened_results, result)
 
-    flattened_results = apply_action_handler(action, flattened_results, opts)
-
     local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
+
+    flattened_results = apply_action_handler(action, flattened_results, opts, offset_encoding)
 
     if vim.tbl_isempty(flattened_results) then
       return
