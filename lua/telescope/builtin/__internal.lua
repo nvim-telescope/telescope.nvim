@@ -1060,9 +1060,39 @@ internal.colorscheme = function(opts)
         need_restore = false
         vim.cmd.colorscheme(selection.value)
       end)
-
+      action_set.shift_selection:enhance {
+        post = function()
+          local selection = action_state.get_selected_entry()
+          if selection == nil then
+            utils.__warn_no_selection "builtin.colorscheme"
+            return
+          end
+          need_restore = true
+          if opts.enable_preview then
+            vim.cmd.colorscheme(selection.value)
+          end
+        end,
+      }
+      actions.close:enhance {
+        post = function()
+          if need_restore then
+            vim.cmd.colorscheme(before_color)
+          end
+        end,
+      }
       return true
     end,
+    on_complete = {
+      function()
+        local selection = action_state.get_selected_entry()
+        if selection == nil then
+          utils.__warn_no_selection "builtin.colorscheme"
+          return
+        end
+        need_restore = true
+        vim.cmd.colorscheme(selection.value)
+      end,
+    },
   })
 
   if opts.enable_preview then
