@@ -102,8 +102,9 @@ M.check = function()
           )
         end
       else
-        local eol = version:find "\n" or 1
-        ok(("%s: found %s"):format(package.name, version:sub(0, eol - 1) or "(unknown version)"))
+        local eol = version:find "\n"
+        local ver = eol and version:sub(0, eol - 1) or "(unknown version)"
+        ok(("%s: found %s"):format(package.name, ver))
       end
     end
   end
