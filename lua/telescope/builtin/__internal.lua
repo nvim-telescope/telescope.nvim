@@ -553,7 +553,6 @@ internal.oldfiles = function(opts)
   if opts.cwd_only or opts.cwd then
     local cwd = opts.cwd_only and vim.loop.cwd() or opts.cwd
     cwd = cwd .. utils.get_separator()
-    cwd = cwd:gsub([[\]], [[\\]])
     results = vim.tbl_filter(function(file)
       return buf_in_cwd(file, cwd)
     end, results)
