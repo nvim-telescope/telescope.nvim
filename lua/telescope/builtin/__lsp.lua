@@ -124,17 +124,17 @@ local action_handlers = {
 }
 
 ---@param action string
----@param results table
+---@param locations table
 ---@param items table
 ---@param opts table
 ---@return table results, table items
-local apply_action_handler = function(action, results, items, opts)
+local apply_action_handler = function(action, locations, items, opts)
   local handler = action_handlers[action]
   if handler then
-    return handler(results, items, opts)
+    return handler(locations, items, opts)
   end
 
-  return results, items
+  return locations, items
 end
 
 ---@param action string
@@ -152,22 +152,22 @@ local function list_or_jump(action, title, params, opts)
       return
     end
 
-    local flattened_results = {}
+    local locations = {}
     if not vim.tbl_islist(result) then
-      flattened_results = { result }
+      locations = { result }
     end
-    vim.list_extend(flattened_results, result)
+    vim.list_extend(locations, result)
 
     local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
-    local items = vim.lsp.util.locations_to_items(flattened_results)
+    local items = vim.lsp.util.locations_to_items(locations)
 
-    flattened_results, items = apply_action_handler(action, flattened_results, items, opts)
+    locations, items = apply_action_handler(action, locations, items, opts)
 
-    if vim.tbl_isempty(flattened_results) then
+    if vim.tbl_isempty(locations) then
       return
-    elseif #flattened_results == 1 and opts.jump_type ~= "never" then
+    elseif #locations == 1 and opts.jump_type ~= "never" then
       local current_uri = params.textDocument.uri
-      local target_uri = flattened_results[1].uri or flattened_results[1].targetUri
+      local target_uri = locations[1].uri or locations[1].targetUri
       if current_uri ~= target_uri then
         local cmd
         local file_path = vim.uri_to_fname(target_uri)
@@ -186,7 +186,7 @@ local function list_or_jump(action, title, params, opts)
         end
       end
 
-      vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding, opts.reuse_win)
+      vim.lsp.util.jump_to_location(locations[1], offset_encoding, opts.reuse_win)
     else
       pickers
         .new(opts, {
