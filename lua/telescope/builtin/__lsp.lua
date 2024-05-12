@@ -165,7 +165,9 @@ local function list_or_jump(action, title, params, opts)
 
     if vim.tbl_isempty(locations) then
       return
-    elseif #locations == 1 and opts.jump_type ~= "never" then
+    end
+
+    if #locations == 1 and opts.jump_type ~= "never" then
       local current_uri = params.textDocument.uri
       local target_uri = locations[1].uri or locations[1].targetUri
       if current_uri ~= target_uri then
