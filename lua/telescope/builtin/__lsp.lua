@@ -97,50 +97,51 @@ lsp.outgoing_calls = function(opts)
   calls(opts, "to")
 end
 
----@alias telescope.lsp.list_or_jump_action
----| "textDocument/references"
----| "textDocument/definition"
----| "textDocument/typeDefinition"
----| "textDocument/implementation"
-
--- luacheck: push ignore
----@type { [telescope.lsp.list_or_jump_action]: fun(items: vim.lsp.util.locations_to_items.ret[], opts: table): vim.lsp.util.locations_to_items.ret[] }
--- luacheck: pop
+---@type { [string]: fun(results: table, items: table, opts: table): table, table }
 local action_handlers = {
-  ["textDocument/references"] = function(items, opts)
+  ["textDocument/references"] = function(results, items, opts)
     if not opts.include_current_line then
-      local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
-      items = vim.tbl_filter(function(v)
-        return not (v.filename and v.lnum == lnum)
-      end, items)
+      local retresults = {}
+      local retitems = {}
+
+      for i, item in pairs(items) do
+        if
+          not (
+            item.filename == vim.api.nvim_buf_get_name(opts.bufnr)
+            and item.lnum == vim.api.nvim_win_get_cursor(opts.winnr)[1]
+          )
+        then
+          table.insert(retresults, results[i])
+          table.insert(retitems, items[i])
+        end
+      end
+
+      return retresults, retitems
     end
 
-    return items
+    return results, items
   end,
 }
 
----@param action telescope.lsp.list_or_jump_action
----@param items vim.lsp.util.locations_to_items.ret[]
+---@param action string
+---@param locations table
+---@param items table
 ---@param opts table
----@return vim.lsp.util.locations_to_items.ret[]
-local apply_action_handler = function(action, items, opts)
+---@return table results, table items
+local apply_action_handler = function(action, locations, items, opts)
   local handler = action_handlers[action]
   if handler then
-    return handler(items, opts)
+    return handler(locations, items, opts)
   end
 
-  return items
+  return locations, items
 end
 
----@param action telescope.lsp.list_or_jump_action
+---@param action string
 ---@param title string prompt title
 ---@param params lsp.TextDocumentPositionParams
 ---@param opts table
 local function list_or_jump(action, title, params, opts)
-  opts.reuse_win = vim.F.if_nil(opts.reuse_win, false)
-
-  local curr_filepath = vim.api.nvim_buf_get_name(opts.bufnr)
-
   vim.lsp.buf_request(opts.bufnr, action, params, function(err, result, ctx, _)
     if err then
       vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
@@ -159,16 +160,19 @@ local function list_or_jump(action, title, params, opts)
 
     local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
     local items = vim.lsp.util.locations_to_items(locations, offset_encoding)
-    items = apply_action_handler(action, items, opts)
 
-    if vim.tbl_isempty(items) then
+    locations, items = apply_action_handler(action, locations, items, opts)
+
+    if vim.tbl_isempty(locations) then
       return
     end
 
-    if #items == 1 and opts.jump_type ~= "never" then
-      local item = items[1]
-      if curr_filepath ~= item.filename then
+    if #locations == 1 and opts.jump_type ~= "never" then
+      local current_uri = params.textDocument.uri
+      local target_uri = locations[1].uri or locations[1].targetUri
+      if current_uri ~= target_uri then
         local cmd
+        local file_path = vim.uri_to_fname(target_uri)
         if opts.jump_type == "tab" then
           cmd = "tabedit"
         elseif opts.jump_type == "split" then
@@ -180,11 +184,11 @@ local function list_or_jump(action, title, params, opts)
         end
 
         if cmd then
-          vim.cmd(string.format("%s %s", cmd, item.filename))
+          vim.cmd(string.format("%s %s", cmd, file_path))
         end
       end
 
-      vim.lsp.util.jump_to_location(item.user_data, offset_encoding, opts.reuse_win)
+      vim.lsp.util.jump_to_location(locations[1], offset_encoding, opts.reuse_win)
     else
       pickers
         .new(opts, {
@@ -204,7 +208,6 @@ local function list_or_jump(action, title, params, opts)
 end
 
 lsp.references = function(opts)
-  opts.include_current_line = vim.F.if_nil(opts.include_current_line, false)
   local params = vim.lsp.util.make_position_params(opts.winnr)
   params.context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) }
   return list_or_jump("textDocument/references", "LSP References", params, opts)
