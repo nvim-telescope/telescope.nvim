@@ -45,10 +45,12 @@ local required_plugins = {
 local check_binary_installed = function(package)
   local binaries = package.binaries or { package.name }
   for _, binary in ipairs(binaries) do
-    if is_win then
+    local found = vim.fn.executable(binary) == 1
+    if not found and is_win then
       binary = binary .. ".exe"
+      found = vim.fn.executable(binary) == 1
     end
-    if vim.fn.executable(binary) == 1 then
+    if found then
       local handle = io.popen(binary .. " --version")
       local binary_version = handle:read "*a"
       handle:close()
@@ -101,7 +103,8 @@ M.check = function()
         end
       else
         local eol = version:find "\n"
-        ok(("%s: found %s"):format(package.name, version:sub(0, eol - 1) or "(unknown version)"))
+        local ver = eol and version:sub(0, eol - 1) or "(unknown version)"
+        ok(("%s: found %s"):format(package.name, ver))
       end
     end
   end
