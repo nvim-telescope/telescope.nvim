@@ -159,7 +159,7 @@ local function list_or_jump(action, title, params, opts)
     vim.list_extend(locations, result)
 
     local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
-    local items = vim.lsp.util.locations_to_items(locations)
+    local items = vim.lsp.util.locations_to_items(locations, offset_encoding)
 
     locations, items = apply_action_handler(action, locations, items, opts)
 
