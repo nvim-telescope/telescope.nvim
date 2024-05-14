@@ -97,31 +97,44 @@ lsp.outgoing_calls = function(opts)
   calls(opts, "to")
 end
 
----@type { [string]: fun(results: table, opts: table): table }
+---@type { [string]: fun(results: table, items: table, opts: table): table, table }
 local action_handlers = {
-  ["textDocument/references"] = function(results, opts)
-    if opts.include_current_line == false then
-      results = vim.tbl_filter(function(result)
-        return not (
-          result.filename == vim.api.nvim_buf_get_name(opts.bufnr)
-          and result.lnum == vim.api.nvim_win_get_cursor(opts.winnr)
-        )
-      end, results)
+  ["textDocument/references"] = function(results, items, opts)
+    if not opts.include_current_line then
+      local retresults = {}
+      local retitems = {}
+
+      for i, item in pairs(items) do
+        if
+          not (
+            item.filename == vim.api.nvim_buf_get_name(opts.bufnr)
+            and item.lnum == vim.api.nvim_win_get_cursor(opts.winnr)[1]
+          )
+        then
+          table.insert(retresults, results[i])
+          table.insert(retitems, items[i])
+        end
+      end
+
+      return retresults, retitems
     end
-    return results
+
+    return results, items
   end,
 }
 
 ---@param action string
----@param results table
+---@param locations table
+---@param items table
 ---@param opts table
----@return table results
-local apply_action_handler = function(action, results, opts)
+---@return table results, table items
+local apply_action_handler = function(action, locations, items, opts)
   local handler = action_handlers[action]
   if handler then
-    return handler(results, opts)
+    return handler(locations, items, opts)
   end
-  return results
+
+  return locations, items
 end
 
 ---@param action string
@@ -139,21 +152,24 @@ local function list_or_jump(action, title, params, opts)
       return
     end
 
-    local flattened_results = {}
+    local locations = {}
     if not vim.tbl_islist(result) then
-      flattened_results = { result }
+      locations = { result }
     end
-    vim.list_extend(flattened_results, result)
-
-    flattened_results = apply_action_handler(action, flattened_results, opts)
+    vim.list_extend(locations, result)
 
     local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
+    local items = vim.lsp.util.locations_to_items(locations)
 
-    if vim.tbl_isempty(flattened_results) then
+    locations, items = apply_action_handler(action, locations, items, opts)
+
+    if vim.tbl_isempty(locations) then
       return
-    elseif #flattened_results == 1 and opts.jump_type ~= "never" then
+    end
+
+    if #locations == 1 and opts.jump_type ~= "never" then
       local current_uri = params.textDocument.uri
-      local target_uri = flattened_results[1].uri or flattened_results[1].targetUri
+      local target_uri = locations[1].uri or locations[1].targetUri
       if current_uri ~= target_uri then
         local cmd
         local file_path = vim.uri_to_fname(target_uri)
@@ -172,14 +188,13 @@ local function list_or_jump(action, title, params, opts)
         end
       end
 
-      vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding, opts.reuse_win)
+      vim.lsp.util.jump_to_location(locations[1], offset_encoding, opts.reuse_win)
     else
-      local locations = vim.lsp.util.locations_to_items(flattened_results, offset_encoding)
       pickers
         .new(opts, {
           prompt_title = title,
           finder = finders.new_table {
-            results = locations,
+            results = items,
             entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
           },
           previewer = conf.qflist_previewer(opts),
