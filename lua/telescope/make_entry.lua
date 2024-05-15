@@ -664,7 +664,7 @@ function make_entry.gen_from_treesitter(opts)
   }
 
   if opts.show_line then
-    table.insert(display_items, 2, { width = opts.symbol_type_width or 8 })
+    table.insert(display_items, 2, { width = 6 })
   end
 
   local displayer = entry_display.create {
