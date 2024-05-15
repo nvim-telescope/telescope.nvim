@@ -250,10 +250,6 @@ Many familiar mapping patterns are set up as defaults.
 | `<C-t>`        | Go to a file in a new tab                                 |
 | `<C-u>`        | Scroll up in preview window                               |
 | `<C-d>`        | Scroll down in preview window                             |
-| `<C-f>`        | Scroll left in preview window                             |
-| `<C-k>`        | Scroll right in preview window                            |
-| `<M-f>`        | Scroll left in results window                             |
-| `<M-k>`        | Scroll right in results window                            |
 | `<C-/>`        | Show mappings for picker actions (insert mode)            |
 | `?`            | Show mappings for picker actions (normal mode)            |
 | `<C-c>`        | Close telescope (insert mode)                             |
