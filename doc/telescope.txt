@@ -970,6 +970,8 @@ builtin.treesitter()                          *telescope.builtin.treesitter()*
         {bufnr}             (number)        specify the buffer number where
                                             treesitter should run. (default:
                                             current buffer)
+        {symbol_width}      (number)        defines the width of the symbol
+                                            section (default: 25)
         {symbols}           (string|table)  filter results by symbol kind(s)
         {ignore_symbols}    (string|table)  list of symbols to ignore
         {symbol_highlights} (table)         string -> string. Matches symbol
