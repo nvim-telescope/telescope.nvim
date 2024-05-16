@@ -52,7 +52,7 @@ local bat_maker = function(filename, lnum, start, finish)
     end
   end
 
-  return vim.tbl_flatten {
+  return utils.flatten {
     command,
     bat_options,
     "--",

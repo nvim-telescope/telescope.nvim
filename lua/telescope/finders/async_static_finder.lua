@@ -4,7 +4,7 @@ local make_entry = require "telescope.make_entry"
 
 return function(opts)
   local input_results
-  if vim.tbl_islist(opts) then
+  if require("telescope.utils").islist(opts) then
     input_results = opts
   else
     input_results = opts.results

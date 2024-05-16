@@ -12,7 +12,7 @@ local log = require "telescope.log"
 
 local Path = require "plenary.path"
 
-local flatten = vim.tbl_flatten
+local flatten = utils.flatten
 local filter = vim.tbl_filter
 
 local files = {}
