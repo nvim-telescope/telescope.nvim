@@ -479,6 +479,7 @@ function Picker:find()
       local start_time = vim.loop.hrtime()
 
       local prompt = self:_get_next_filtered_prompt()
+      state.set_global_key("current_line", prompt)
 
       -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
       if self.cache_picker == false or self.cache_picker.is_cached ~= true then
@@ -1333,7 +1334,6 @@ function Picker:get_result_completor(results_bufnr, find_id, prompt, status_upda
 
     self:_do_selection(prompt)
 
-    state.set_global_key("current_line", self:_get_prompt())
     status_updater { completed = true }
 
     self:clear_extra_rows(results_bufnr)
