@@ -44,7 +44,7 @@ git.files = function(opts)
     .new(opts, {
       prompt_title = "Git Files",
       finder = finders.new_oneshot_job(
-        vim.tbl_flatten {
+        utils.flatten {
           git_command,
           show_untracked and "--others" or nil,
           recurse_submodules and "--recurse-submodules" or nil,
@@ -91,7 +91,7 @@ git.stash = function(opts)
     .new(opts, {
       prompt_title = "Git Stash",
       finder = finders.new_oneshot_job(
-        vim.tbl_flatten {
+        utils.flatten {
           "git",
           "--no-pager",
           "stash",
@@ -125,7 +125,7 @@ git.bcommits = function(opts)
     .new(opts, {
       prompt_title = "Git BCommits",
       finder = finders.new_oneshot_job(
-        vim.tbl_flatten {
+        utils.flatten {
           git_command,
           opts.current_file,
         },

@@ -153,7 +153,7 @@ local function list_or_jump(action, title, opts)
     local flattened_results = {}
     if result then
       -- textDocument/definition can return Location or Location[]
-      if not vim.tbl_islist(result) then
+      if not utils.islist(result) then
         flattened_results = { result }
       end
 
@@ -349,7 +349,8 @@ lsp.dynamic_workspace_symbols = function(opts)
 end
 
 local function check_capabilities(feature, bufnr)
-  local clients = vim.lsp.buf_get_clients(bufnr)
+  --TODO(clason): remove when dropping support for Nvim 0.9
+  local clients = vim.fn.has "nvim-0.10" and vim.lsp.get_clients { bufnr = bufnr } or vim.lsp.buf_get_clients(bufnr)
 
   local supported_client = false
   for _, client in pairs(clients) do

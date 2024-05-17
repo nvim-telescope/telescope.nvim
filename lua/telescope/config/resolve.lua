@@ -270,6 +270,7 @@ resolver.resolve_anchor_pos = function(anchor, p_width, p_height, max_columns, m
   return pos
 end
 
+-- duplicate from utils.lua to keep self-contained
 -- Win option always returns a table with preview, results, and prompt.
 -- It handles many different ways. Some examples are as follows:
 --
@@ -292,7 +293,8 @@ end
 --   prompt = {...},
 -- }
 resolver.win_option = function(val, default)
-  if type(val) ~= "table" or vim.tbl_islist(val) then
+  local islist = require("telescope.utils").islist
+  if type(val) ~= "table" or islist(val) then
     if val == nil then
       val = default
     end
@@ -303,7 +305,7 @@ resolver.win_option = function(val, default)
       prompt = val,
     }
   elseif type(val) == "table" then
-    assert(not vim.tbl_islist(val))
+    assert(not islist(val))
 
     local val_to_set = val[1]
     if val_to_set == nil then
