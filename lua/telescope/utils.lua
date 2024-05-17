@@ -22,7 +22,7 @@ utils.islist = vim.fn.has "nvim-0.10" == 1 and vim.islist or vim.tbl_islist
 local flatten = function(t)
   return vim.iter(t):flatten():totable()
 end
-utils.flatten = vim.fn.has "nvim-0.10" == 1 and flatten or vim.tbl_flatten
+utils.flatten = vim.fn.has "nvim-0.11" == 1 and flatten or vim.tbl_flatten
 
 --- Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
 ---
