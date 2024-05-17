@@ -17,6 +17,13 @@ local utils = {}
 
 utils.iswin = vim.loop.os_uname().sysname == "Windows_NT"
 
+--TODO(clason): Remove when dropping support for Nvim 0.9
+utils.islist = vim.fn.has "nvim-0.10" == 1 and vim.islist or vim.tbl_islist
+local flatten = function(t)
+  return vim.iter(t):flatten():totable()
+end
+utils.flatten = vim.fn.has "nvim-0.10" == 1 and flatten or vim.tbl_flatten
+
 --- Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
 ---
 --- Paths starting with '%', '#' or '<' are expanded with `vim.fn.expand()`.

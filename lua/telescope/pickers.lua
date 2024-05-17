@@ -602,10 +602,10 @@ function Picker:find()
     end
     a.nvim_feedkeys(a.nvim_replace_termcodes(keys, true, false, true), "ni", true)
   else
-    utils.notify(
-      "pickers.find",
-      { msg = "`initial_mode` should be one of ['normal', 'insert'] but passed " .. self.initial_mode, level = "ERROR" }
-    )
+    utils.notify("pickers.find", {
+      msg = "`initial_mode` should be one of ['normal', 'insert'] but passed " .. self.initial_mode,
+      level = "ERROR",
+    })
   end
 
   local main_loop = async.void(function()
