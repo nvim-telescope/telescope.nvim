@@ -350,7 +350,8 @@ end
 
 local function check_capabilities(feature, bufnr)
   --TODO(clason): remove when dropping support for Nvim 0.9
-  local clients = vim.fn.has "nvim-0.10" and vim.lsp.get_clients { bufnr = bufnr } or vim.lsp.buf_get_clients(bufnr)
+  local clients = vim.fn.has "nvim-0.10" == 1 and vim.lsp.get_clients { bufnr = bufnr }
+    or vim.lsp.buf_get_clients(bufnr)
 
   local supported_client = false
   for _, client in pairs(clients) do
