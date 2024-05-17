@@ -618,9 +618,8 @@ function make_entry.gen_from_buffer(opts)
   end
 
   return function(entry)
-    local bufname = entry.info.name ~= "" and entry.info.name or "[No Name]"
-    -- if bufname is inside the cwd, trim that part of the string
-    bufname = Path:new(bufname):normalize(cwd)
+    local filename = entry.info.name ~= "" and entry.info.name or nil
+    local bufname = filename and Path:new(filename):normalize(cwd) or "[No Name]"
 
     local hidden = entry.info.hidden == 1 and "h" or "a"
     local readonly = vim.api.nvim_buf_get_option(entry.bufnr, "readonly") and "=" or " "
@@ -643,8 +642,8 @@ function make_entry.gen_from_buffer(opts)
       value = bufname,
       ordinal = entry.bufnr .. " : " .. bufname,
       display = make_display,
-
       bufnr = entry.bufnr,
+      path = filename,
       filename = bufname,
       lnum = lnum,
       indicator = indicator,
