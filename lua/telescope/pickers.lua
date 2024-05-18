@@ -537,6 +537,8 @@ function Picker:find()
 
   self.original_win_id = a.nvim_get_current_win()
   _, self.original_cword = pcall(vim.fn.expand, "<cword>")
+  _, self.original_cWORD = pcall(vim.fn.expand, "<cWORD>")
+  _, self.original_cline = pcall(vim.trim, vim.api.nvim_get_current_line())
 
   -- User autocmd run it before create Telescope window
   vim.api.nvim_exec_autocmds("User", { pattern = "TelescopeFindPre" })
