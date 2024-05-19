@@ -137,6 +137,44 @@ local apply_action_handler = function(action, locations, items, opts)
   return locations, items
 end
 
+--- Reorders locations to match the order of corresponding items.
+--- `items` are expected to be the result of a previous call to `vim.lsp.util.locations_to_items(locations)`.
+---@param locations lsp.Location[]|lsp.LocationLink[]
+---@param items vim.lsp.util.locations_to_items.ret[]
+---@return lsp.Location[]|lsp.LocationLink[]
+local function reorder_locations_by_items(locations, items)
+  -- Create a map from item identifiers to their index positions
+  local item_index_map = {}
+  for index, item in ipairs(items) do
+    local identifier = item.filename .. ":" .. (item.lnum - 1) .. ":" .. (item.col - 1)
+    item_index_map[identifier] = index
+  end
+
+  -- Map locations to their corresponding item index
+  local index_to_location = {}
+  for _, location in ipairs(locations) do
+    local identifier = location.uri:gsub("^%w+://", "")
+      .. ":"
+      .. location.range.start.line
+      .. ":"
+      .. location.range.start.character
+    local item_index = item_index_map[identifier]
+    if item_index then
+      index_to_location[item_index] = location
+    else
+      error("No corresponding item found for location with identifier: " .. identifier)
+    end
+  end
+
+  -- Collect sorted locations based on the item index order
+  local sorted_locations = {}
+  for _, location in ipairs(index_to_location) do
+    table.insert(sorted_locations, location)
+  end
+
+  return sorted_locations
+end
+
 ---@param action string
 ---@param title string prompt title
 ---@param params lsp.TextDocumentPositionParams
@@ -160,6 +198,8 @@ local function list_or_jump(action, title, params, opts)
 
     local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
     local items = vim.lsp.util.locations_to_items(locations, offset_encoding)
+
+    locations = reorder_locations_by_items(locations, items)
 
     locations, items = apply_action_handler(action, locations, items, opts)
 
