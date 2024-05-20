@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-12, windows-2022]
-        rev: [nightly, v0.9.0]
+        rev: [nightly, v0.9.5, v0.10.0]
         include:
           - os: ubuntu-22.04
             install-rg: sudo apt-get update && sudo apt-get install -y ripgrep
