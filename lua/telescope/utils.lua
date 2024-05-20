@@ -18,7 +18,7 @@ local utils = {}
 utils.iswin = vim.loop.os_uname().sysname == "Windows_NT"
 
 --TODO(clason): Remove when dropping support for Nvim 0.9
-utils.islist = vim.fn.has "nvim-0.10" == 1 and vim.islist or vim.tbl_islist
+utils.islist = vim.version().minor >= 10 and vim.islist or vim.tbl_islist
 local flatten = function(t)
   return vim.iter(t):flatten():totable()
 end
