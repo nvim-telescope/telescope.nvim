@@ -150,29 +150,38 @@ local function reorder_locations_by_items(locations, items)
     item_index_map[identifier] = index
   end
 
-  -- Map locations to their corresponding item index
-  local index_to_location = {}
+  -- Map locations to their corresponding item index and sort them
+  local sorted_locations = {}
   for _, location in ipairs(locations) do
-    local identifier = location.uri:gsub("^%w+://", "")
-      .. ":"
-      .. location.range.start.line
-      .. ":"
-      .. location.range.start.character
+    local uri, line, character
+    if location.uri then -- Handle Location
+      uri = location.uri:gsub("^%w+://", "")
+      line = location.range.start.line
+      character = location.range.start.character
+    else -- Handle LocationLink
+      uri = location.targetUri:gsub("^%w+://", "")
+      line = location.targetSelectionRange.start.line
+      character = location.targetSelectionRange.start.character
+    end
+    local identifier = uri .. ":" .. line .. ":" .. character
     local item_index = item_index_map[identifier]
+
     if item_index then
-      index_to_location[item_index] = location
+      sorted_locations[item_index] = location
     else
-      error("No corresponding item found for location with identifier: " .. identifier)
+      vim.api.nvim_err_writeln("Error: No corresponding item found for location with identifier: " .. identifier)
     end
   end
 
-  -- Collect sorted locations based on the item index order
-  local sorted_locations = {}
-  for _, location in ipairs(index_to_location) do
-    table.insert(sorted_locations, location)
+  -- Ensure sorted locations are dense
+  local compacted_locations = {}
+  for i = 1, #sorted_locations do
+    if sorted_locations[i] then
+      table.insert(compacted_locations, sorted_locations[i])
+    end
   end
 
-  return sorted_locations
+  return compacted_locations
 end
 
 ---@param action string
