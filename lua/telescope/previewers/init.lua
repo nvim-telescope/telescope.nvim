@@ -301,6 +301,9 @@ previewers.git_commit_message = buffer_previewer.git_commit_message
 --- The run command is `git --no-pager diff $FILE`
 previewers.git_file_diff = buffer_previewer.git_file_diff
 
+--- A previewer that shows the current diff hunk. Used in git_diff.<br>
+previewers.git_hunk_diff = buffer_previewer.git_hunk_diff
+
 previewers.ctags = buffer_previewer.ctags
 previewers.builtin = buffer_previewer.builtin
 previewers.help = buffer_previewer.help

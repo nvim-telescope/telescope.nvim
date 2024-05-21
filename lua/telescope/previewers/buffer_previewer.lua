@@ -823,6 +823,21 @@ previewers.git_branch_log = defaulter(function(opts)
   }
 end, {})
 
+previewers.git_hunk_diff = defaulter(function()
+  return previewers.new_buffer_previewer {
+    title = "Git Diff Preview",
+    get_buffer_by_name = function(_, entry)
+      return entry.value
+    end,
+
+    define_preview = function(self, entry, _)
+      local lines = entry.raw_lines or { 'empty' }
+      vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
+      putils.regex_highlighter(self.state.bufnr, 'diff')
+    end,
+  }
+end, {})
+
 previewers.git_stash_diff = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "Git Stash Preview",

@@ -219,6 +219,8 @@ builtin.git_branches = require_on_exported_call("telescope.builtin.__git").branc
 ---@field expand_dir boolean: pass flag `-uall` to show files in untracked directories (default: true)
 builtin.git_status = require_on_exported_call("telescope.builtin.__git").status
 
+builtin.git_diff = require_on_exported_call("telescope.builtin.__git").diff
+
 --- Lists stash items in current repository
 --- - Default keymaps:
 ---   - `<cr>`: runs `git apply` for currently selected stash
