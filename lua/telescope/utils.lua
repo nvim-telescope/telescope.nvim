@@ -213,8 +213,6 @@ utils.path_smart = (function()
   end
 end)()
 
--- vim.fn.fnamemodify(path, ":p:t") may replace util.path_tail(path),
--- but the former may be slower and has dependency on neovim
 utils.path_tail = (function()
   local os_sep = utils.get_separator()
 
@@ -740,5 +738,17 @@ utils.reverse_table = function(input_table)
   end
   return temp_table
 end
+
+utils.split_lines = (function()
+  if utils.iswin then
+    return function(s, opts)
+      return vim.split(s, "\r?\n", opts)
+    end
+  else
+    return function(s, opts)
+      return vim.split(s, "\n", opts)
+    end
+  end
+end)()
 
 return utils
