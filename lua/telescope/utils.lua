@@ -213,16 +213,30 @@ utils.path_smart = (function()
   end
 end)()
 
+-- vim.fn.fnamemodify(path, ":p:t") may replace util.path_tail(path),
+-- but the former may be slower and has dependency on neovim
 utils.path_tail = (function()
   local os_sep = utils.get_separator()
 
-  return function(path)
-    for i = #path, 1, -1 do
-      if path:sub(i, i) == os_sep then
-        return path:sub(i + 1, -1)
+  if os_sep == "/" then
+    return function(path)
+      for i = #path, 1, -1 do
+        if path:sub(i, i) == os_sep then
+          return path:sub(i + 1, -1)
+        end
       end
+      return path
     end
-    return path
+  else
+    return function(path)
+      for i = #path, 1, -1 do
+        local c = path:sub(i, i)
+        if c == os_sep or c == "/" then
+          return path:sub(i + 1, -1)
+        end
+      end
+      return path
+    end
   end
 end)()
 

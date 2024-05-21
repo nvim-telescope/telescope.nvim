@@ -729,7 +729,7 @@ internal.help_tags = function(opts)
   local delimiter = string.char(9)
   for _, lang in ipairs(langs) do
     for _, file in ipairs(tag_files[lang] or {}) do
-      local lines = vim.split(Path:new(file):read(), "\n", true)
+      local lines = vim.split(Path:new(file):read(), "\r?\n", { trimempty = true })
       for _, line in ipairs(lines) do
         -- TODO: also ignore tagComment starting with ';'
         if not line:match "^!_TAG_" then
