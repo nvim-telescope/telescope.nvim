@@ -4046,6 +4046,12 @@ previewers.git_file_diff()              *telescope.previewers.git_file_diff()*
 
 
 
+previewers.git_hunk_diff()              *telescope.previewers.git_hunk_diff()*
+    A previewer that shows the current diff hunk. Used in git_diff.
+
+
+
+
 previewers.display_content()          *telescope.previewers.display_content()*
     A deprecated way of displaying content more easily. Was written at a time,
     where the buffer_previewer interface wasn't present. Nowadays it's easier
