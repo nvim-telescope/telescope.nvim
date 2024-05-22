@@ -3,6 +3,7 @@ local utils = require "telescope.utils"
 local Path = require "plenary.path"
 local from_entry = require "telescope.from_entry"
 local Previewer = require "telescope.previewers.previewer"
+local putil = require "telescope.previewers.utils"
 
 local defaulter = utils.make_default_callable
 
@@ -13,17 +14,17 @@ local bat_options = { "--style=plain", "--color=always", "--paging=always" }
 local has_less = (vim.fn.executable "less" == 1) and conf.use_less
 
 local get_file_stat = function(filename)
-  return vim.loop.fs_stat(vim.fn.expand(filename)) or {}
+  return vim.loop.fs_stat(utils.path_expand(filename)) or {}
 end
 
 local list_dir = (function()
   if vim.fn.has "win32" == 1 then
     return function(dirname)
-      return { "cmd.exe", "/c", "dir", vim.fn.expand(dirname) }
+      return { "cmd.exe", "/c", "dir", utils.path_expand(dirname) }
     end
   else
     return function(dirname)
-      return { "ls", "-la", vim.fn.expand(dirname) }
+      return { "ls", "-la", utils.path_expand(dirname) }
     end
   end
 end)()
@@ -51,11 +52,11 @@ local bat_maker = function(filename, lnum, start, finish)
     end
   end
 
-  return vim.tbl_flatten {
+  return utils.flatten {
     command,
     bat_options,
     "--",
-    vim.fn.expand(filename),
+    utils.path_expand(filename),
   }
 end
 
@@ -65,24 +66,23 @@ local cat_maker = function(filename, _, start, _)
   end
 
   if 1 == vim.fn.executable "file" then
-    local output = utils.get_os_command_output { "file", "--mime-type", "-b", filename }
-    local mime_type = vim.split(output[1], "/")[1]
-    if mime_type ~= "text" then
+    local mime_type = utils.get_os_command_output({ "file", "--mime-type", "-b", filename })[1]
+    if putil.binary_mime_type(mime_type) then
       return { "echo", "Binary file found. These files cannot be displayed!" }
     end
   end
 
   if has_less then
     if start then
-      return { "less", "-RS", string.format("+%s", start), vim.fn.expand(filename) }
+      return { "less", "-RS", string.format("+%s", start), utils.path_expand(filename) }
     else
-      return { "less", "-RS", vim.fn.expand(filename) }
+      return { "less", "-RS", utils.path_expand(filename) }
     end
   else
     return {
       "cat",
       "--",
-      vim.fn.expand(filename),
+      utils.path_expand(filename),
     }
   end
 end

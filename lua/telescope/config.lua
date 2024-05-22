@@ -304,18 +304,19 @@ append(
   Determines how file paths are displayed.
 
   path_display can be set to an array with a combination of:
-  - "hidden"    hide file names
-  - "tail"      only display the file name, and not the path
-  - "absolute"  display absolute paths
-  - "smart"     remove as much from the path as possible to only show
-                the difference between the displayed paths.
-                Warning: The nature of the algorithm might have a negative
-                performance impact!
-  - "shorten"   only display the first character of each directory in
-                the path
-  - "truncate"  truncates the start of the path when the whole path will
-                not fit. To increase the gap between the path and the edge,
-                set truncate to number `truncate = 3`
+  - "hidden"          hide file names
+  - "tail"            only display the file name, and not the path
+  - "absolute"        display absolute paths
+  - "smart"           remove as much from the path as possible to only show
+                      the difference between the displayed paths.
+                      Warning: The nature of the algorithm might have a negative
+                      performance impact!
+  - "shorten"         only display the first character of each directory in
+                      the path
+  - "truncate"        truncates the start of the path when the whole path will
+                      not fit. To increase the gap between the path and the edge,
+                      set truncate to number `truncate = 3`
+  - "filename_first"  shows filenames first and then the directories
 
   You can also specify the number of characters of each directory name
   to keep by setting `path_display.shorten = num`.
@@ -340,16 +341,56 @@ append(
     will give a path like:
       `al/beta/gamma/de`
 
+  path_display can also be set to 'filename_first' to put the filename
+  in front.
+
+    path_display = {
+      "filename_first"
+    },
+
+  The directory structure can be reversed as follows:
+
+    path_display = {
+      filename_first = {
+          reverse_directories = true
+      }
+    },
+
   path_display can also be set to 'hidden' string to hide file names
 
   path_display can also be set to a function for custom formatting of
-  the path display. Example:
+  the path display with the following signature
+
+  Signature: fun(opts: table, path: string): string, table?
+
+  The optional table is an list of positions and highlight groups to
+  set the highlighting of the return path string.
+
+  Example:
 
       -- Format path as "file.txt (path\to\file\)"
       path_display = function(opts, path)
         local tail = require("telescope.utils").path_tail(path)
         return string.format("%s (%s)", tail, path)
       end,
+
+      -- Format path and add custom highlighting
+      path_display = function(opts, path)
+        local tail = require("telescope.utils").path_tail(path)
+        path = string.format("%s (%s)", tail, path)
+
+        local highlights = {
+          {
+            {
+              0, -- highlight start position
+              #path, -- highlight end position
+            },
+            "Comment", -- highlight group name
+          },
+        }
+
+        return path, highlights
+      end
 
   Default: {}]]
 )
@@ -526,7 +567,7 @@ append(
   {
     num_pickers = 1,
     limit_entries = 1000,
-    ignore_empty_prompt = true,
+    ignore_empty_prompt = false,
   },
   [[
     This field handles the configuration for picker caching.

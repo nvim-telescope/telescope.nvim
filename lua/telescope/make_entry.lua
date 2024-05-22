@@ -149,7 +149,7 @@ do
   function make_entry.gen_from_file(opts)
     opts = opts or {}
 
-    local cwd = vim.fn.expand(opts.cwd or vim.loop.cwd())
+    local cwd = utils.path_expand(opts.cwd or vim.loop.cwd())
 
     local disable_devicons = opts.disable_devicons
 
@@ -158,14 +158,16 @@ do
     mt_file_entry.cwd = cwd
     mt_file_entry.display = function(entry)
       local hl_group, icon
-      local display = utils.transform_path(opts, entry.value)
+      local display, path_style = utils.transform_path(opts, entry.value)
 
       display, hl_group, icon = utils.transform_devicons(entry.value, display, disable_devicons)
 
       if hl_group then
-        return display, { { { 0, #icon }, hl_group } }
+        local style = { { { 0, #icon + 1 }, hl_group } }
+        style = utils.merge_styles(style, path_style, #icon + 1)
+        return display, style
       else
-        return display
+        return display, path_style
       end
     end
 
@@ -310,10 +312,10 @@ do
     local display_string = "%s%s%s"
 
     mt_vimgrep_entry = {
-      cwd = vim.fn.expand(opts.cwd or vim.loop.cwd()),
+      cwd = utils.path_expand(opts.cwd or vim.loop.cwd()),
 
       display = function(entry)
-        local display_filename = utils.transform_path(opts, entry.filename)
+        local display_filename, path_style = utils.transform_path(opts, entry.filename)
 
         local coordinates = ":"
         if not disable_coordinates then
@@ -333,9 +335,11 @@ do
         )
 
         if hl_group then
-          return display, { { { 0, #icon }, hl_group } }
+          local style = { { { 0, #icon }, hl_group } }
+          style = utils.merge_styles(style, path_style, #icon + 1)
+          return display, style
         else
-          return display
+          return display, path_style
         end
       end,
 
@@ -454,7 +458,7 @@ function make_entry.gen_from_quickfix(opts)
   local hidden = utils.is_path_hidden(opts)
 
   local make_display = function(entry)
-    local display_filename = utils.transform_path(opts, entry.filename)
+    local display_filename, path_style = utils.transform_path(opts, entry.filename)
     local display_string = string.format("%s:%d:%d", display_filename, entry.lnum, entry.col)
     if hidden then
       display_string = string.format("%4d:%2d", entry.lnum, entry.col)
@@ -469,7 +473,7 @@ function make_entry.gen_from_quickfix(opts)
       display_string = display_string .. ":" .. text
     end
 
-    return display_string
+    return display_string, path_style
   end
 
   local get_filename = get_filename_fn()
@@ -592,26 +596,30 @@ function make_entry.gen_from_buffer(opts)
     },
   }
 
-  local cwd = vim.fn.expand(opts.cwd or vim.loop.cwd())
+  local cwd = utils.path_expand(opts.cwd or vim.loop.cwd())
 
   local make_display = function(entry)
     -- bufnr_width + modes + icon + 3 spaces + : + lnum
     opts.__prefix = opts.bufnr_width + 4 + icon_width + 3 + 1 + #tostring(entry.lnum)
-    local display_bufname = utils.transform_path(opts, entry.filename)
+    local display_bufname, path_style = utils.transform_path(opts, entry.filename)
     local icon, hl_group = utils.get_devicons(entry.filename, disable_devicons)
 
     return displayer {
       { entry.bufnr, "TelescopeResultsNumber" },
       { entry.indicator, "TelescopeResultsComment" },
       { icon, hl_group },
-      display_bufname .. ":" .. entry.lnum,
+      {
+        display_bufname .. ":" .. entry.lnum,
+        function()
+          return path_style
+        end,
+      },
     }
   end
 
   return function(entry)
-    local bufname = entry.info.name ~= "" and entry.info.name or "[No Name]"
-    -- if bufname is inside the cwd, trim that part of the string
-    bufname = Path:new(bufname):normalize(cwd)
+    local filename = entry.info.name ~= "" and entry.info.name or nil
+    local bufname = filename and Path:new(filename):normalize(cwd) or "[No Name]"
 
     local hidden = entry.info.hidden == 1 and "h" or "a"
     local readonly = vim.api.nvim_buf_get_option(entry.bufnr, "readonly") and "=" or " "
@@ -634,8 +642,8 @@ function make_entry.gen_from_buffer(opts)
       value = bufname,
       ordinal = entry.bufnr .. " : " .. bufname,
       display = make_display,
-
       bufnr = entry.bufnr,
+      path = filename,
       filename = bufname,
       lnum = lnum,
       indicator = indicator,
@@ -1011,7 +1019,7 @@ end
 function make_entry.gen_from_ctags(opts)
   opts = opts or {}
 
-  local cwd = vim.fn.expand(opts.cwd or vim.loop.cwd())
+  local cwd = utils.path_expand(opts.cwd or vim.loop.cwd())
   local current_file = Path:new(vim.api.nvim_buf_get_name(opts.bufnr)):normalize(cwd)
 
   local display_items = {

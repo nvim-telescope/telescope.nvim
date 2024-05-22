@@ -188,11 +188,20 @@ utils.set_preview_message = function(bufnr, winid, message, fillchar)
   )
   local anon_ns = vim.api.nvim_create_namespace ""
   local padding = table.concat(ts_utils.repeated_table(#message + 4, " "), "")
-  local lines = {
-    padding,
-    "  " .. message .. "  ",
-    padding,
-  }
+  local formatted_message = "  " .. message .. "  "
+  -- Populate lines table based on height
+  local lines = {}
+  if height == 1 then
+    lines[1] = formatted_message
+  else
+    for i = 1, math.min(height, 3), 1 do
+      if i % 2 == 0 then
+        lines[i] = formatted_message
+      else
+        lines[i] = padding
+      end
+    end
+  end
   vim.api.nvim_buf_set_extmark(
     bufnr,
     anon_ns,
@@ -200,16 +209,34 @@ utils.set_preview_message = function(bufnr, winid, message, fillchar)
     0,
     { end_line = height, hl_group = "TelescopePreviewMessageFillchar" }
   )
-  local col = math.floor((width - strings.strdisplaywidth(lines[2])) / 2)
+  local col = math.floor((width - strings.strdisplaywidth(formatted_message)) / 2)
   for i, line in ipairs(lines) do
+    local line_pos = math.floor(height / 2) - 2 + i
     vim.api.nvim_buf_set_extmark(
       bufnr,
       anon_ns,
-      math.floor(height / 2) - 1 + i,
+      math.max(line_pos, 0),
       0,
       { virt_text = { { line, "TelescopePreviewMessage" } }, virt_text_pos = "overlay", virt_text_win_col = col }
     )
   end
+end
+
+--- Check if mime type is binary.
+--- NOT an exhaustive check, may get false negatives. Ideally should check
+--- filetype with `vim.filetype.match` or `filetype_detect` first for filetype
+--- info.
+---@param mime_type string
+---@return boolean
+utils.binary_mime_type = function(mime_type)
+  local type_, subtype = unpack(vim.split(mime_type, "/"))
+  if vim.tbl_contains({ "text", "inode" }, type_) then
+    return false
+  end
+  if vim.tbl_contains({ "json", "javascript" }, subtype) then
+    return false
+  end
+  return true
 end
 
 return utils

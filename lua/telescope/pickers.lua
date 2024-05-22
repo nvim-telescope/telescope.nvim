@@ -73,6 +73,7 @@ local function default_create_layout(picker)
       local popup_opts = picker:get_window_options(vim.o.columns, line_count)
 
       -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
+      popup_opts.results.focusable = true
       popup_opts.results.minheight = popup_opts.results.height
       popup_opts.results.highlight = "TelescopeResultsNormal"
       popup_opts.results.borderhighlight = "TelescopeResultsBorder"
@@ -81,7 +82,9 @@ local function default_create_layout(picker)
       popup_opts.prompt.highlight = "TelescopePromptNormal"
       popup_opts.prompt.borderhighlight = "TelescopePromptBorder"
       popup_opts.prompt.titlehighlight = "TelescopePromptTitle"
+
       if popup_opts.preview then
+        popup_opts.preview.focusable = true
         popup_opts.preview.minheight = popup_opts.preview.height
         popup_opts.preview.highlight = "TelescopePreviewNormal"
         popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
@@ -165,6 +168,7 @@ local function default_create_layout(picker)
           popup.move(results_win, popup_opts.results)
           popup.move(preview_win, popup_opts.preview)
         else
+          popup_opts.preview.focusable = true
           popup_opts.preview.highlight = "TelescopePreviewNormal"
           popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
           popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
@@ -528,8 +532,11 @@ function Picker:find()
   self:close_existing_pickers()
   self:reset_selection()
 
+  self.__original_mousemoveevent = vim.o.mousemoveevent
+  vim.o.mousemoveevent = true
+
   self.original_win_id = a.nvim_get_current_win()
-  self.original_cword = vim.fn.expand "<cword>"
+  _, self.original_cword = pcall(vim.fn.expand, "<cword>")
 
   -- User autocmd run it before create Telescope window
   vim.api.nvim_exec_autocmds("User", { pattern = "TelescopeFindPre" })
@@ -553,6 +560,7 @@ function Picker:find()
   pcall(a.nvim_buf_set_option, self.prompt_bufnr, "tabstop", 1) -- #1834
   a.nvim_buf_set_option(self.prompt_bufnr, "buftype", "prompt")
   a.nvim_win_set_option(self.results_win, "wrap", self.wrap_results)
+  a.nvim_win_set_option(self.prompt_win, "wrap", true)
   if self.preview_win then
     a.nvim_win_set_option(self.preview_win, "wrap", true)
   end
@@ -594,10 +602,10 @@ function Picker:find()
     end
     a.nvim_feedkeys(a.nvim_replace_termcodes(keys, true, false, true), "ni", true)
   else
-    utils.notify(
-      "pickers.find",
-      { msg = "`initial_mode` should be one of ['normal', 'insert'] but passed " .. self.initial_mode, level = "ERROR" }
-    )
+    utils.notify("pickers.find", {
+      msg = "`initial_mode` should be one of ['normal', 'insert'] but passed " .. self.initial_mode,
+      level = "ERROR",
+    })
   end
 
   local main_loop = async.void(function()
@@ -606,7 +614,6 @@ function Picker:find()
     -- Do filetype last, so that users can register at the last second.
     pcall(a.nvim_buf_set_option, self.prompt_bufnr, "filetype", "TelescopePrompt")
     pcall(a.nvim_buf_set_option, self.results_bufnr, "filetype", "TelescopeResults")
-    a.nvim_win_set_option(self.prompt_win, "wrap", true)
 
     await_schedule()
 
@@ -629,6 +636,8 @@ function Picker:find()
       local start_time = vim.loop.hrtime()
 
       local prompt = self:_get_next_filtered_prompt()
+      state.set_global_key("current_line", prompt)
+
       if self.__locations_input == true then
         local filename, line_number, column_number = utils.__separate_file_path_location(prompt)
 
@@ -1448,7 +1457,6 @@ function Picker:get_result_completor(results_bufnr, find_id, prompt, status_upda
 
     self:_do_selection(prompt)
 
-    state.set_global_key("current_line", self:_get_prompt())
     status_updater { completed = true }
 
     self:clear_extra_rows(results_bufnr)
@@ -1458,6 +1466,8 @@ function Picker:get_result_completor(results_bufnr, find_id, prompt, status_upda
       local visible_result_rows = vim.api.nvim_win_get_height(self.results_win)
       vim.api.nvim_win_set_cursor(self.results_win, { self.max_results - visible_result_rows, 1 })
       vim.api.nvim_win_set_cursor(self.results_win, { self.max_results, 1 })
+    else
+      vim.api.nvim_win_set_cursor(self.results_win, { 1, 0 })
     end
     self:_on_complete()
   end)
@@ -1624,6 +1634,8 @@ function pickers.on_close_prompt(prompt_bufnr)
     buffer = prompt_bufnr,
   }
   picker.close_windows(status)
+
+  vim.o.mousemoveevent = picker.__original_mousemoveevent
 end
 
 function pickers.on_resize_window(prompt_bufnr)

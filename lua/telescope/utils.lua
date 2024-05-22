@@ -15,6 +15,66 @@ local get_status = require("telescope.state").get_status
 
 local utils = {}
 
+utils.iswin = vim.loop.os_uname().sysname == "Windows_NT"
+
+--TODO(clason): Remove when dropping support for Nvim 0.9
+utils.islist = vim.fn.has "nvim-0.10" == 1 and vim.islist or vim.tbl_islist
+local flatten = function(t)
+  return vim.iter(t):flatten():totable()
+end
+utils.flatten = vim.fn.has "nvim-0.11" == 1 and flatten or vim.tbl_flatten
+
+--- Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
+---
+--- Paths starting with '%', '#' or '<' are expanded with `vim.fn.expand()`.
+--- Otherwise avoids using `vim.fn.expand()` due to its overly aggressive
+--- expansion behavior which can sometimes lead to errors or the creation of
+--- non-existent paths when dealing with valid absolute paths.
+---
+--- Other paths will have '~' and environment variables expanded.
+--- Unlike `vim.fs.normalize()`, backslashes are preserved. This has better
+--- compatibility with `plenary.path` and also avoids mangling valid Unix paths
+--- with literal backslashes.
+---
+--- Trailing slashes are trimmed. With the exception of root paths.
+--- eg. `/` on Unix or `C:\` on Windows
+---
+---@param path string
+---@return string
+utils.path_expand = function(path)
+  vim.validate {
+    path = { path, { "string" } },
+  }
+
+  if utils.is_uri(path) then
+    return path
+  end
+
+  if path:match "^[%%#<]" then
+    path = vim.fn.expand(path)
+  end
+
+  if path:sub(1, 1) == "~" then
+    local home = vim.loop.os_homedir() or "~"
+    if home:sub(-1) == "\\" or home:sub(-1) == "/" then
+      home = home:sub(1, -2)
+    end
+    path = home .. path:sub(2)
+  end
+
+  path = path:gsub("%$([%w_]+)", vim.loop.os_getenv)
+  path = path:gsub("/+", "/")
+  if utils.iswin then
+    path = path:gsub("\\+", "\\")
+    if path:match "^%w:\\$" then
+      return path
+    else
+      return (path:gsub("(.)\\$", "%1"))
+    end
+  end
+  return (path:gsub("(.)/$", "%1"))
+end
+
 utils.get_separator = function()
   return Path.path.sep
 end
@@ -112,14 +172,15 @@ end
 
 utils.path_smart = (function()
   local paths = {}
+  local os_sep = utils.get_separator()
   return function(filepath)
     local final = filepath
     if #paths ~= 0 then
-      local dirs = vim.split(filepath, "/")
+      local dirs = vim.split(filepath, os_sep)
       local max = 1
       for _, p in pairs(paths) do
         if #p > 0 and p ~= filepath then
-          local _dirs = vim.split(p, "/")
+          local _dirs = vim.split(p, os_sep)
           for i = 1, math.min(#dirs, #_dirs) do
             if (dirs[i] ~= _dirs[i]) and i > max then
               max = i
@@ -135,7 +196,7 @@ utils.path_smart = (function()
         final = ""
         for k, v in pairs(dirs) do
           if k >= max - 1 then
-            final = final .. (#final > 0 and "/" or "") .. v
+            final = final .. (#final > 0 and os_sep or "") .. v
           end
         end
       end
@@ -145,7 +206,7 @@ utils.path_smart = (function()
       table.insert(paths, filepath)
     end
     if final and final ~= filepath then
-      return "../" .. final
+      return ".." .. os_sep .. final
     else
       return filepath
     end
@@ -215,36 +276,40 @@ end
 --- this function outside of telescope might yield to undefined behavior and will
 --- not be addressed by us
 ---@param opts table: The opts the users passed into the picker. Might contains a path_display key
----@param path string: The path that should be formatted
----@return string: The transformed path ready to be displayed
+---@param path string|nil: The path that should be formatted
+---@return string: path to be displayed
+---@return table: The transformed path ready to be displayed with the styling
 utils.transform_path = function(opts, path)
   if path == nil then
-    return
+    return "", {}
   end
   if utils.is_uri(path) then
-    return path
+    return path, {}
   end
 
+  ---@type fun(opts:table, path: string): string, table?
   local path_display = vim.F.if_nil(opts.path_display, require("telescope.config").values.path_display)
 
   local transformed_path = path
+  local path_style = {}
 
   if type(path_display) == "function" then
-    return path_display(opts, transformed_path)
+    local custom_transformed_path, custom_path_style = path_display(opts, transformed_path)
+    return custom_transformed_path, custom_path_style or path_style
   elseif utils.is_path_hidden(nil, path_display) then
-    return ""
+    return "", path_style
   elseif type(path_display) == "table" then
     if vim.tbl_contains(path_display, "tail") or path_display.tail then
       transformed_path = utils.path_tail(transformed_path)
     elseif vim.tbl_contains(path_display, "smart") or path_display.smart then
       transformed_path = utils.path_smart(transformed_path)
     else
-      if not vim.tbl_contains(path_display, "absolute") or path_display.absolute == false then
+      if not vim.tbl_contains(path_display, "absolute") and not path_display.absolute then
         local cwd
         if opts.cwd then
           cwd = opts.cwd
           if not vim.in_fast_event() then
-            cwd = vim.fn.expand(opts.cwd)
+            cwd = utils.path_expand(opts.cwd)
           end
         else
           cwd = vim.loop.cwd()
@@ -257,9 +322,11 @@ utils.transform_path = function(opts, path)
           local shorten = path_display["shorten"]
           transformed_path = Path:new(transformed_path):shorten(shorten.len, shorten.exclude)
         else
-          transformed_path = Path:new(transformed_path):shorten(path_display["shorten"])
+          local length = type(path_display["shorten"]) == "number" and path_display["shorten"]
+          transformed_path = Path:new(transformed_path):shorten(length)
         end
       end
+
       if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
         if opts.__length == nil then
           opts.__length = calc_result_length(path_display.truncate)
@@ -269,12 +336,45 @@ utils.transform_path = function(opts, path)
         end
         transformed_path = truncate(transformed_path, opts.__length - opts.__prefix, nil, -1)
       end
+
+      -- IMPORTANT: filename_first needs to be the last option. Otherwise the
+      -- other options will not be displayed correctly.
+      if vim.tbl_contains(path_display, "filename_first") or path_display["filename_first"] ~= nil then
+        local reverse_directories = false
+
+        if type(path_display["filename_first"]) == "table" then
+          local filename_first_opts = path_display["filename_first"]
+
+          if filename_first_opts.reverse_directories == nil or filename_first_opts.reverse_directories == false then
+            reverse_directories = false
+          else
+            reverse_directories = filename_first_opts.reverse_directories
+          end
+        end
+
+        local dirs = vim.split(transformed_path, utils.get_separator())
+        local filename
+
+        if reverse_directories then
+          dirs = utils.reverse_table(dirs)
+          filename = table.remove(dirs, 1)
+        else
+          filename = table.remove(dirs, #dirs)
+        end
+
+        local tail = table.concat(dirs, utils.get_separator())
+
+        -- Prevents a toplevel filename to have a trailing whitespace
+        transformed_path = vim.trim(filename .. " " .. tail)
+
+        path_style = { { { #filename, #transformed_path }, "TelescopeResultsComment" } }
+      end
     end
 
-    return transformed_path
+    return transformed_path, path_style
   else
     log.warn("`path_display` must be either a function or a table.", "See `:help telescope.defaults.path_display.")
-    return transformed_path
+    return transformed_path, path_style
   end
 end
 
@@ -604,6 +704,27 @@ utils.__separate_file_path_location = function(path)
   end
 
   return path, nil, nil
+end
+
+utils.merge_styles = function(style1, style2, offset)
+  local function addOffset(i, obj)
+    return { obj[1] + i, obj[2] + i }
+  end
+
+  for _, item in ipairs(style2) do
+    item[1] = addOffset(offset, item[1])
+    table.insert(style1, item)
+  end
+
+  return style1
+end
+
+utils.reverse_table = function(input_table)
+  local temp_table = {}
+  for index = 0, #input_table do
+    temp_table[#input_table - index] = input_table[index + 1] -- Reverses the order
+  end
+  return temp_table
 end
 
 return utils

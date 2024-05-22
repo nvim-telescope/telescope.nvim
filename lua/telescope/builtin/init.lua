@@ -354,6 +354,7 @@ builtin.buffers = require_on_exported_call("telescope.builtin.__internal").buffe
 
 --- Lists available colorschemes and applies them on `<cr>`
 ---@param opts table: options to pass to the picker
+---@field colors table: a list of additional colorschemes to explicitly make available to telescope (default: {})
 ---@field enable_preview boolean: if true, will preview the selected color
 builtin.colorscheme = require_on_exported_call("telescope.builtin.__internal").colorscheme
 

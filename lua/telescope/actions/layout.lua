@@ -64,7 +64,10 @@ action_layout.toggle_prompt_position = function(prompt_bufnr)
   if picker.layout_strategy == "flex" then
     picker.layout_config.flex.horizontal = picker.layout_config.flex.horizontal or {}
     picker.layout_config.flex.vertical = picker.layout_config.flex.vertical or {}
-    local old_pos = picker.layout_config.flex[picker.__flex_strategy].prompt_position
+    local old_pos = vim.F.if_nil(
+      picker.layout_config.flex[picker.__flex_strategy].prompt_position,
+      picker.layout_config[picker.__flex_strategy].prompt_position
+    )
     local new_pos = old_pos == "top" and "bottom" or "top"
     picker.layout_config[picker.__flex_strategy].prompt_position = new_pos
     picker.layout_config.flex[picker.__flex_strategy].prompt_position = new_pos
