@@ -1496,11 +1496,15 @@ actions.insert_original_cword = function(prompt_bufnr)
   current_picker:set_prompt(current_picker.original_cword, false)
 end
 
+--- Insert the WORD under the cursor of the original (pre-Telescope) window
+---@param prompt_bufnr number: The prompt bufnr
 actions.insert_original_cWORD = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:set_prompt(current_picker.original_cWORD, false)
 end
 
+--- Insert the line under the cursor of the original (pre-Telescope) window
+---@param prompt_bufnr number: The prompt bufnr
 actions.insert_original_cline = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:set_prompt(current_picker.original_cline, false)
