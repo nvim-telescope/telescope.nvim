@@ -657,7 +657,7 @@ function make_entry.gen_from_treesitter(opts)
   local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
 
   local display_items = {
-    { width = 25 },
+    { width = opts.symbol_width or 25 },
     { width = 10 },
     { remaining = true },
   }
