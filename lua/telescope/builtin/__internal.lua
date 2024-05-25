@@ -685,6 +685,47 @@ internal.vim_options = function(opts)
     :find()
 end
 
+local help_tag_delimiter = "\t"
+
+local function help_tag_advance(text, cur_pos, next_tab)
+  local next_line_raw = string.find(text, "\n", cur_pos, true)
+  local next_line = next_line_raw or #text + 1
+
+  local name_end = next_tab
+  if not name_end or name_end > next_line then
+    return next_line_raw, next_tab
+  end
+
+  next_tab = string.find(text, help_tag_delimiter, next_tab + 1, true)
+  local tag_file_end = next_tab
+  if not tag_file_end or tag_file_end > next_line then
+    return next_line_raw, next_tab
+  end
+
+  next_tab = string.find(text, help_tag_delimiter, next_tab + 1, true)
+  if next_tab and next_tab < next_line then -- line must not contain more than 2 tabs
+    while next_tab and next_tab < next_line do
+      next_tab = string.find(text, help_tag_delimiter, next_tab + 1, true)
+    end
+    return next_line_raw, next_tab
+  end
+
+  local name = text:sub(cur_pos, name_end - 1)
+  -- TODO: also ignore tagComment starting with ';'
+  if name == "help-tags" or name:sub(1, 6) == "!_TAG_" then
+    return next_line_raw, next_tab
+  end
+
+  local tag_file = text:sub(name_end + 1, tag_file_end - 1)
+  if tag_file == "tags" then
+    return next_line_raw, next_tab
+  end
+
+  local cmd = text:sub(tag_file_end + 1, next_line - 1)
+
+  return next_line_raw, next_tab, name, tag_file, cmd
+end
+
 internal.help_tags = function(opts)
   opts.lang = vim.F.if_nil(opts.lang, vim.o.helplang)
   opts.fallback = vim.F.if_nil(opts.fallback, true)
@@ -725,27 +766,29 @@ internal.help_tags = function(opts)
   end
 
   local tags = {}
-  local tags_map = {}
-  local delimiter = string.char(9)
   for _, lang in ipairs(langs) do
     for _, file in ipairs(tag_files[lang] or {}) do
-      local lines = vim.split(Path:new(file):read(), "\n", true)
-      for _, line in ipairs(lines) do
-        -- TODO: also ignore tagComment starting with ';'
-        if not line:match "^!_TAG_" then
-          local fields = vim.split(line, delimiter, true)
-          if #fields == 3 and not tags_map[fields[1]] then
-            if fields[1] ~= "help-tags" or fields[2] ~= "tags" then
-              table.insert(tags, {
-                name = fields[1],
-                filename = help_files[fields[2]],
-                cmd = fields[3],
-                lang = lang,
-              })
-              tags_map[fields[1]] = true
-            end
-          end
+      local text = Path:new(file):read()
+
+      local cur_pos = 1
+      local next_tab = string.find(text, help_tag_delimiter, cur_pos, true)
+
+      while true do
+        local next_line, new_tab, name, tag_file, cmd = help_tag_advance(text, cur_pos, next_tab)
+        if name then
+          table.insert(tags, {
+            name = name,
+            filename = help_files[tag_file],
+            cmd = cmd,
+            lang = lang,
+          })
         end
+
+        if not next_line then
+          break
+        end
+        cur_pos = next_line + 1
+        next_tab = new_tab
       end
     end
   end
