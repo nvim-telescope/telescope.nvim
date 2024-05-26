@@ -184,7 +184,7 @@ do
 
       if k == "path" then
         local retpath = Path:new({ t.cwd, t.value }):absolute()
-        if not vim.loop.fs_access(retpath, "R", nil) then
+        if not vim.loop.fs_access(retpath, "R") then
           retpath = t.value
         end
         return retpath
@@ -540,8 +540,14 @@ function make_entry.gen_from_lsp_symbols(opts)
         msg,
       }
     else
+      local display_path, path_style = utils.transform_path(opts, entry.filename)
       return displayer {
-        utils.transform_path(opts, entry.filename),
+        {
+          display_path,
+          function()
+            return path_style
+          end,
+        },
         entry.symbol_name,
         { entry.symbol_type:lower(), type_highlight[entry.symbol_type] },
         msg,
@@ -1043,7 +1049,7 @@ function make_entry.gen_from_ctags(opts)
   }
 
   local make_display = function(entry)
-    local filename = utils.transform_path(opts, entry.filename)
+    local display_path, path_style = utils.transform_path(opts, entry.filename)
 
     local scode
     if opts.show_line then
@@ -1057,7 +1063,12 @@ function make_entry.gen_from_ctags(opts)
       }
     else
       return displayer {
-        filename,
+        {
+          display_path,
+          function()
+            return path_style
+          end,
+        },
         entry.tag,
         scode,
       }
@@ -1073,7 +1084,7 @@ function make_entry.gen_from_ctags(opts)
 
     if k == "path" then
       local retpath = Path:new({ t.filename }):absolute()
-      if not vim.loop.fs_access(retpath, "R", nil) then
+      if not vim.loop.fs_access(retpath, "R") then
         retpath = t.filename
       end
       return retpath
@@ -1174,7 +1185,7 @@ function make_entry.gen_from_diagnostics(opts)
   }
 
   local make_display = function(entry)
-    local filename = utils.transform_path(opts, entry.filename)
+    local display_path, path_style = utils.transform_path(opts, entry.filename)
 
     -- add styling of entries
     local pos = string.format("%4d:%2d", entry.lnum, entry.col)
@@ -1187,7 +1198,12 @@ function make_entry.gen_from_diagnostics(opts)
     return displayer {
       line_info,
       entry.text,
-      filename,
+      {
+        display_path,
+        function()
+          return path_style
+        end,
+      },
     }
   end
 
@@ -1345,11 +1361,18 @@ function make_entry.gen_from_git_status(opts)
     local status_x = git_abbrev[x] or {}
     local status_y = git_abbrev[y] or {}
 
+    local display_path, path_style = utils.transform_path(opts, entry.path)
+
     local empty_space = " "
     return displayer {
       { status_x.icon or empty_space, status_x.hl },
       { status_y.icon or empty_space, status_y.hl },
-      utils.transform_path(opts, entry.path),
+      {
+        display_path,
+        function()
+          return path_style
+        end,
+      },
     }
   end
 
