@@ -5,12 +5,14 @@ local conf = require("telescope.config").values
 local Job = require "plenary.job"
 local Path = require "plenary.path"
 
+local telescope_utils = require "telescope.utils"
+
 local utils = {}
 
 local detect_from_shebang = function(p)
   local s = p:readbyterange(0, 256)
   if s then
-    local lines = vim.split(s, "\n")
+    local lines = telescope_utils.split_lines(s)
     return vim.filetype.match { contents = lines }
   end
 end
@@ -24,7 +26,7 @@ end
 local detect_from_modeline = function(p)
   local s = p:readbyterange(-256, 256)
   if s then
-    local lines = vim.split(s, "\n")
+    local lines = telescope_utils.split_lines(s)
     local idx = lines[#lines] ~= "" and #lines or #lines - 1
     if idx >= 1 then
       return parse_modeline(lines[idx])

@@ -531,7 +531,7 @@ internal.oldfiles = function(opts)
   local results = {}
 
   if opts.include_current_session then
-    for _, buffer in ipairs(vim.split(vim.fn.execute ":buffers! t", "\n")) do
+    for _, buffer in ipairs(utils.split_lines(vim.fn.execute ":buffers! t")) do
       local match = tonumber(string.match(buffer, "%s*(%d+)"))
       local open_by_lsp = string.match(buffer, "line 0$")
       if match and not open_by_lsp then
@@ -574,7 +574,7 @@ end
 
 internal.command_history = function(opts)
   local history_string = vim.fn.execute "history cmd"
-  local history_list = vim.split(history_string, "\n")
+  local history_list = utils.split_lines(history_string)
 
   local results = {}
   local filter_fn = opts.filter_fn
@@ -614,7 +614,7 @@ end
 
 internal.search_history = function(opts)
   local search_string = vim.fn.execute "history search"
-  local search_list = vim.split(search_string, "\n")
+  local search_list = utils.split_lines(search_string)
 
   local results = {}
   for i = #search_list, 3, -1 do
@@ -690,7 +690,7 @@ internal.help_tags = function(opts)
   opts.fallback = vim.F.if_nil(opts.fallback, true)
   opts.file_ignore_patterns = {}
 
-  local langs = vim.split(opts.lang, ",", true)
+  local langs = vim.split(opts.lang, ",", { trimempty = true })
   if opts.fallback and not vim.tbl_contains(langs, "en") then
     table.insert(langs, "en")
   end
@@ -729,11 +729,11 @@ internal.help_tags = function(opts)
   local delimiter = string.char(9)
   for _, lang in ipairs(langs) do
     for _, file in ipairs(tag_files[lang] or {}) do
-      local lines = vim.split(Path:new(file):read(), "\n", true)
+      local lines = utils.split_lines(Path:new(file):read(), { trimempty = true })
       for _, line in ipairs(lines) do
         -- TODO: also ignore tagComment starting with ';'
         if not line:match "^!_TAG_" then
-          local fields = vim.split(line, delimiter, true)
+          local fields = vim.split(line, delimiter, { trimempty = true })
           if #fields == 3 and not tags_map[fields[1]] then
             if fields[1] ~= "help-tags" or fields[2] ~= "tags" then
               table.insert(tags, {
