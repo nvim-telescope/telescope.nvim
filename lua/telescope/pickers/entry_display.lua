@@ -122,6 +122,8 @@ entry_display.create = function(configuration)
       end
     end
 
+    configuration.separator_hl = vim.F.if_nil(configuration.separator_hl, "TelescopeResultsEntrySeparator")
+
     if configuration.separator_hl then
       local width = #configuration.separator or 1
 
