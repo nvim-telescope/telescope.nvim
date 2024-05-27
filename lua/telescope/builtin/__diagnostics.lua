@@ -132,11 +132,11 @@ diagnostics.get = function(opts)
   if opts.bufnr ~= 0 then
     opts.bufnr = nil
   end
-  if opts.bufnr == nil then
-    opts.path_display = vim.F.if_nil(opts.path_display, {})
-  end
   if type(opts.bufnr) == "string" then
     opts.bufnr = tonumber(opts.bufnr)
+  end
+  if opts.bufnr ~= nil then
+    opts.path_display = vim.F.if_nil(opts.path_display, "hidden")
   end
 
   local locations = diagnostics_to_tbl(opts)
@@ -157,7 +157,6 @@ diagnostics.get = function(opts)
     return
   end
 
-  opts.path_display = vim.F.if_nil(opts.path_display, "hidden")
   pickers
     .new(opts, {
       prompt_title = opts.bufnr == nil and "Workspace Diagnostics" or "Document Diagnostics",
