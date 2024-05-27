@@ -263,6 +263,9 @@ Many familiar mapping patterns are set up as defaults.
 | `<C-q>`        | Send all items not filtered to quickfixlist (qflist)      |
 | `<M-q>`        | Send all selected items to qflist                         |
 | `<C-r><C-w>`   | Insert cword in original window into prompt (insert mode) |
+| `<C-r><C-a>`   | Insert cWORD in original window into prompt (insert mode) |
+| `<C-r><C-f>`   | Insert cfile in original window into prompt (insert mode) |
+| `<C-r><C-l>`   | Insert cline in original window into prompt (insert mode) |
 
 To see the full list of mappings, check out `lua/telescope/mappings.lua` and the
 `default_mappings` table.

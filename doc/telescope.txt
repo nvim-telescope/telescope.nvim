@@ -3393,6 +3393,30 @@ actions.insert_original_cword({prompt_bufnr}) *telescope.actions.insert_original
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.insert_original_cWORD({prompt_bufnr}) *telescope.actions.insert_original_cWORD()*
+    Insert the WORD under the cursor of the original (pre-Telescope) window
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.insert_original_cfile({prompt_bufnr}) *telescope.actions.insert_original_cfile()*
+    Insert the file under the cursor of the original (pre-Telescope) window
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.insert_original_cline({prompt_bufnr}) *telescope.actions.insert_original_cline()*
+    Insert the line under the cursor of the original (pre-Telescope) window
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 
 ================================================================================
 ACTIONS_STATE                                          *telescope.actions.state*
