@@ -106,8 +106,14 @@ end
 local function item_to_location(item, offset_encoding)
   local line = item.lnum - 1
   local character = vim.lsp.util._str_utfindex_enc(item.text, item.col, offset_encoding) - 1
+  local uri
+  if utils.is_uri(item.filename) then
+    uri = item.filename
+  else
+    uri = vim.uri_from_fname(item.filename)
+  end
   return {
-    uri = vim.uri_from_fname(item.filename),
+    uri = uri,
     range = {
       start = {
         line = line,
