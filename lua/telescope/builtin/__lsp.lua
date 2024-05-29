@@ -106,24 +106,11 @@ end
 local function item_to_location(item, offset_encoding)
   local line = item.lnum - 1
   local character = vim.lsp.util._str_utfindex_enc(item.text, item.col, offset_encoding) - 1
-  -- get URI from filename with the same approach used in `vim.uri_from_bufnr`
-  local URI_SCHEME_PATTERN = '^([a-zA-Z]+[a-zA-Z0-9.+-]*):.*'
-  local WINDOWS_URI_SCHEME_PATTERN = '^([a-zA-Z]+[a-zA-Z0-9.+-]*):[a-zA-Z]:.*'
   local uri
-  local fname = item.filename
-  local volume_path = fname:match('^([a-zA-Z]:).*')
-  local is_windows = volume_path ~= nil
-  local scheme
-  if is_windows then
-    fname = fname:gsub('\\', '/')
-    scheme = fname:match(WINDOWS_URI_SCHEME_PATTERN)
+  if utils.is_uri(item.filename) then
+    uri = item.filename
   else
-    scheme = fname:match(URI_SCHEME_PATTERN)
-  end
-  if scheme then
-    uri = fname
-  else
-    uri = vim.uri_from_fname(fname)
+    uri = vim.uri_from_fname(item.filename)
   end
   return {
     uri = uri,
