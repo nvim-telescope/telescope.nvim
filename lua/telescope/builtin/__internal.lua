@@ -933,7 +933,7 @@ internal.buffers = function(opts)
 
   local buffers = {}
   local default_selection_idx = 1
-  for _, bufnr in ipairs(bufnrs) do
+  for i, bufnr in ipairs(bufnrs) do
     local flag = bufnr == vim.fn.bufnr "" and "%" or (bufnr == vim.fn.bufnr "#" and "#" or " ")
 
     if opts.sort_lastused and not opts.ignore_current_buffer and flag == "#" then
@@ -951,7 +951,7 @@ internal.buffers = function(opts)
       table.insert(buffers, idx, element)
     else
       if opts.select_current and flag == "%" then
-        default_selection_idx = bufnr
+        default_selection_idx = i
       end
       table.insert(buffers, element)
     end
