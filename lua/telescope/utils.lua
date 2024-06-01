@@ -402,7 +402,6 @@ utils.transform_path = function(opts, path)
 
     if vim.tbl_contains(path_display, "filename_first") or path_display["filename_first"] ~= nil then
       transformed_path, path_style = utils.path_filename_first(transformed_path, path_display)
-      return transformed_path, path_style
     end
 
     return transformed_path, path_style
