@@ -196,7 +196,11 @@ action_set.edit = function(prompt_bufnr, command)
     -- check if we didn't pick a different buffer
     -- prevents restarting lsp server
     if vim.api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
-      filename = Path:new(filename):normalize(vim.loop.cwd())
+      if not vim.startswith(filename, "../") then
+        -- Path:normalize() removes "../" from front which breaks jump
+        -- so, do not normalize if path starts with "../"
+        filename = Path:new(filename):normalize(vim.loop.cwd())
+      end
       pcall(vim.cmd, string.format("%s %s", command, vim.fn.fnameescape(filename)))
     end
   end
