@@ -170,6 +170,81 @@ utils.filter_symbols = function(results, opts, post_filter)
   end
 end
 
+utils.path_filename_first = (function()
+  return function(path, path_display)
+    local reverse_directories = false
+
+    if type(path_display["filename_first"]) == "table" then
+      local filename_first_opts = path_display["filename_first"]
+
+      if filename_first_opts.reverse_directories == nil or filename_first_opts.reverse_directories == false then
+        reverse_directories = false
+      else
+        reverse_directories = filename_first_opts.reverse_directories
+      end
+    end
+
+    local dirs = vim.split(path, utils.get_separator())
+    local filename
+
+    if reverse_directories then
+      dirs = utils.reverse_table(dirs)
+      filename = table.remove(dirs, 1)
+    else
+      filename = table.remove(dirs, #dirs)
+    end
+
+    local tail = table.concat(dirs, utils.get_separator())
+    local transformed_path = vim.trim(filename .. " " .. tail)
+    local path_style = { { { #filename, #transformed_path }, "TelescopeResultsComment" } }
+
+    -- Trim prevents a top-level filename to have a trailing white space
+    return transformed_path, path_style
+  end
+end)()
+
+utils.path_truncate = (function()
+  local calc_result_length = function(truncate_len)
+    local status = get_status(vim.api.nvim_get_current_buf())
+    local len = vim.api.nvim_win_get_width(status.layout.results.winid) - status.picker.selection_caret:len() - 2
+    return type(truncate_len) == "number" and len - truncate_len or len
+  end
+
+  return function(path, path_display, opts)
+    if opts.__length == nil then
+      opts.__length = calc_result_length(path_display.truncate)
+    end
+    if opts.__prefix == nil then
+      opts.__prefix = 0
+    end
+    return truncate(path, opts.__length - opts.__prefix, nil, -1)
+  end
+end)()
+
+utils.path_shorten = function(path, path_display)
+  if type(path_display["shorten"]) == "table" then
+    local shorten = path_display["shorten"]
+    return Path:new(path):shorten(shorten.len, shorten.exclude)
+  else
+    local length = type(path_display["shorten"]) == "number" and path_display["shorten"]
+    return Path:new(path):shorten(length)
+  end
+end
+
+---@param path string: The path that should be formatted
+utils.path_abs = function(path, opts)
+  local cwd
+  if opts.cwd then
+    cwd = opts.cwd
+    if not vim.in_fast_event() then
+      cwd = utils.path_expand(opts.cwd)
+    end
+  else
+    cwd = vim.loop.cwd()
+  end
+  return Path:new(path):make_relative(cwd)
+end
+
 utils.path_smart = (function()
   local paths = {}
   local os_sep = utils.get_separator()
@@ -274,12 +349,6 @@ utils.is_uri = function(filename)
   return false
 end
 
-local calc_result_length = function(truncate_len)
-  local status = get_status(vim.api.nvim_get_current_buf())
-  local len = vim.api.nvim_win_get_width(status.layout.results.winid) - status.picker.selection_caret:len() - 2
-  return type(truncate_len) == "number" and len - truncate_len or len
-end
-
 --- Transform path is a util function that formats a path based on path_display
 --- found in `opts` or the default value from config.
 --- It is meant to be used in make_entry to have a uniform interface for
@@ -313,74 +382,27 @@ utils.transform_path = function(opts, path)
   elseif type(path_display) == "table" then
     if vim.tbl_contains(path_display, "tail") or path_display.tail then
       transformed_path = utils.path_tail(transformed_path)
-    elseif vim.tbl_contains(path_display, "smart") or path_display.smart then
+    end
+
+    if not vim.tbl_contains(path_display, "absolute") and not path_display.absolute then
+      transformed_path = utils.path_abs(transformed_path, opts)
+    end
+
+    if vim.tbl_contains(path_display, "smart") or path_display.smart then
       transformed_path = utils.path_smart(transformed_path)
-    else
-      if not vim.tbl_contains(path_display, "absolute") and not path_display.absolute then
-        local cwd
-        if opts.cwd then
-          cwd = opts.cwd
-          if not vim.in_fast_event() then
-            cwd = utils.path_expand(opts.cwd)
-          end
-        else
-          cwd = vim.loop.cwd()
-        end
-        transformed_path = Path:new(transformed_path):make_relative(cwd)
-      end
+    end
 
-      if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
-        if type(path_display["shorten"]) == "table" then
-          local shorten = path_display["shorten"]
-          transformed_path = Path:new(transformed_path):shorten(shorten.len, shorten.exclude)
-        else
-          local length = type(path_display["shorten"]) == "number" and path_display["shorten"]
-          transformed_path = Path:new(transformed_path):shorten(length)
-        end
-      end
+    if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
+      transformed_path = utils.path_shorten(transformed_path, path_display)
+    end
 
-      if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
-        if opts.__length == nil then
-          opts.__length = calc_result_length(path_display.truncate)
-        end
-        if opts.__prefix == nil then
-          opts.__prefix = 0
-        end
-        transformed_path = truncate(transformed_path, opts.__length - opts.__prefix, nil, -1)
-      end
+    if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
+      transformed_path = utils.path_truncate(transformed_path, path_display, opts)
+    end
 
-      -- IMPORTANT: filename_first needs to be the last option. Otherwise the
-      -- other options will not be displayed correctly.
-      if vim.tbl_contains(path_display, "filename_first") or path_display["filename_first"] ~= nil then
-        local reverse_directories = false
-
-        if type(path_display["filename_first"]) == "table" then
-          local filename_first_opts = path_display["filename_first"]
-
-          if filename_first_opts.reverse_directories == nil or filename_first_opts.reverse_directories == false then
-            reverse_directories = false
-          else
-            reverse_directories = filename_first_opts.reverse_directories
-          end
-        end
-
-        local dirs = vim.split(transformed_path, utils.get_separator())
-        local filename
-
-        if reverse_directories then
-          dirs = utils.reverse_table(dirs)
-          filename = table.remove(dirs, 1)
-        else
-          filename = table.remove(dirs, #dirs)
-        end
-
-        local tail = table.concat(dirs, utils.get_separator())
-
-        -- Prevents a toplevel filename to have a trailing whitespace
-        transformed_path = vim.trim(filename .. " " .. tail)
-
-        path_style = { { { #filename, #transformed_path }, "TelescopeResultsComment" } }
-      end
+    if vim.tbl_contains(path_display, "filename_first") or path_display["filename_first"] ~= nil then
+      transformed_path, path_style = utils.path_filename_first(transformed_path, path_display)
+      return transformed_path, path_style
     end
 
     return transformed_path, path_style
