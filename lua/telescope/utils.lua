@@ -381,7 +381,7 @@ utils.transform_path = function(opts, path)
     return "", path_style
   elseif type(path_display) == "table" then
     if vim.tbl_contains(path_display, "tail") or path_display.tail then
-      transformed_path = utils.path_tail(transformed_path)
+      return utils.path_tail(transformed_path), path_style
     end
 
     if not vim.tbl_contains(path_display, "absolute") and not path_display.absolute then
