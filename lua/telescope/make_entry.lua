@@ -462,11 +462,16 @@ function make_entry.gen_from_quickfix(opts)
   local hidden = utils.is_path_hidden(opts)
 
   local make_display = function(entry)
-    local display_filename, path_style = utils.transform_path(opts, entry.filename)
+    local display_filename, style = utils.transform_path(opts, entry.filename)
     local display_string = string.format("%s:%d:%d", display_filename, entry.lnum, entry.col)
     if hidden then
       display_string = string.format("%4d:%2d", entry.lnum, entry.col)
     end
+
+    -- Adds styling to the coordinates
+    style = utils.merge_styles(
+      { { { #display_filename, #display_string }, "TelescopeResultsComment" } }, style, 0
+    )
 
     if show_line then
       local text = entry.text
@@ -474,10 +479,16 @@ function make_entry.gen_from_quickfix(opts)
         text = vim.trim(text)
       end
       text = text:gsub(".* | ", "")
+
+      -- Accounts for the added ":" after the display_string
+      style = utils.merge_styles(
+        { { { #display_string, #display_string + 1 }, "TelescopeResultsComment" } }, style, 0
+      )
+
       display_string = display_string .. ":" .. text
     end
 
-    return display_string, path_style
+    return display_string, style
   end
 
   local get_filename = get_filename_fn()
