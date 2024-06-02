@@ -170,56 +170,46 @@ utils.filter_symbols = function(results, opts, post_filter)
   end
 end
 
-utils.path_filename_first = (function()
-  return function(path, path_display)
-    local reverse_directories = false
+utils.path_filename_first = function(path, path_display)
+  local reverse_directories = false
 
-    if type(path_display["filename_first"]) == "table" then
-      local filename_first_opts = path_display["filename_first"]
+  if type(path_display["filename_first"]) == "table" then
+    local filename_first_opts = path_display["filename_first"]
 
-      if filename_first_opts.reverse_directories == nil or filename_first_opts.reverse_directories == false then
-        reverse_directories = false
-      else
-        reverse_directories = filename_first_opts.reverse_directories
-      end
-    end
-
-    local dirs = vim.split(path, utils.get_separator())
-    local filename
-
-    if reverse_directories then
-      dirs = utils.reverse_table(dirs)
-      filename = table.remove(dirs, 1)
+    if filename_first_opts.reverse_directories == nil or filename_first_opts.reverse_directories == false then
+      reverse_directories = false
     else
-      filename = table.remove(dirs, #dirs)
+      reverse_directories = filename_first_opts.reverse_directories
     end
-
-    local tail = table.concat(dirs, utils.get_separator())
-    local transformed_path = vim.trim(filename .. " " .. tail)
-    local path_style = { { { #filename, #transformed_path }, "TelescopeResultsComment" } }
-
-    -- Trim prevents a top-level filename to have a trailing white space
-    return transformed_path, path_style
-  end
-end)()
-
-utils.path_truncate = (function()
-  local calc_result_length = function(truncate_len)
-    local status = get_status(vim.api.nvim_get_current_buf())
-    local len = vim.api.nvim_win_get_width(status.layout.results.winid) - status.picker.selection_caret:len() - 2
-    return type(truncate_len) == "number" and len - truncate_len or len
   end
 
-  return function(path, path_display, opts)
-    if opts.__length == nil then
-      opts.__length = calc_result_length(path_display.truncate)
-    end
-    if opts.__prefix == nil then
-      opts.__prefix = 0
-    end
-    return truncate(path, opts.__length - opts.__prefix, nil, -1)
+  local dirs = vim.split(path, utils.get_separator())
+  local filename
+
+  if reverse_directories then
+    dirs = utils.reverse_table(dirs)
+    filename = table.remove(dirs, 1)
+  else
+    filename = table.remove(dirs, #dirs)
   end
-end)()
+
+  local tail = table.concat(dirs, utils.get_separator())
+  local transformed_path = vim.trim(filename .. " " .. tail)
+  local path_style = { { { #filename, #transformed_path }, "TelescopeResultsComment" } }
+
+  -- Trim prevents a top-level filename to have a trailing white space
+  return transformed_path, path_style
+end
+
+utils.path_truncate = function(path, path_display, opts)
+  if opts.__length == nil then
+    opts.__length = calc_result_length(path_display.truncate)
+  end
+  if opts.__prefix == nil then
+    opts.__prefix = 0
+  end
+  return truncate(path, opts.__length - opts.__prefix, nil, -1)
+end
 
 utils.path_shorten = function(path, path_display)
   if type(path_display["shorten"]) == "table" then
@@ -347,6 +337,12 @@ utils.is_uri = function(filename)
     end
   end
   return false
+end
+
+local calc_result_length = function(truncate_len)
+  local status = get_status(vim.api.nvim_get_current_buf())
+  local len = vim.api.nvim_win_get_width(status.layout.results.winid) - status.picker.selection_caret:len() - 2
+  return type(truncate_len) == "number" and len - truncate_len or len
 end
 
 --- Transform path is a util function that formats a path based on path_display
