@@ -330,7 +330,7 @@ do
 
         -- Adds styling to the coordinates
         style = utils.merge_styles(
-          { { { #display_filename, #display_filename + #coordinates }, "TelescopeResultsComment" } }, style, 0
+          { { { #display_filename, #display_filename + #coordinates }, "TelescopeResultsLineNr" } }, style, 0
         )
 
         local display, hl_group, icon = utils.transform_devicons(
@@ -470,7 +470,7 @@ function make_entry.gen_from_quickfix(opts)
 
     -- Adds styling to the coordinates
     style = utils.merge_styles(
-      { { { #display_filename, #display_string }, "TelescopeResultsComment" } }, style, 0
+      { { { #display_filename, #display_string }, "TelescopeResultsLineNr" } }, style, 0
     )
 
     if show_line then
@@ -482,7 +482,7 @@ function make_entry.gen_from_quickfix(opts)
 
       -- Accounts for the added ":" after the display_string
       style = utils.merge_styles(
-        { { { #display_string, #display_string + 1 }, "TelescopeResultsComment" } }, style, 0
+        { { { #display_string, #display_string + 1 }, "TelescopeResultsLineNr" } }, style, 0
       )
 
       display_string = display_string .. ":" .. text
@@ -628,7 +628,7 @@ function make_entry.gen_from_buffer(opts)
 
     -- Adds styling to the coordinates
     style = utils.merge_styles(
-      { { { #display_bufname, #display_bufname + #coordinates }, "TelescopeResultsComment" } }, style, 0
+      { { { #display_bufname, #display_bufname + #coordinates }, "TelescopeResultsLineNr" } }, style, 0
     )
 
     return displayer {
