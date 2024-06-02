@@ -632,9 +632,9 @@ function make_entry.gen_from_buffer(opts)
     )
 
     return displayer {
-      { entry.bufnr,     "TelescopeResultsNumber" },
+      { entry.bufnr, "TelescopeResultsNumber" },
       { entry.indicator, "TelescopeResultsComment" },
-      { icon,            hl_group },
+      { icon, hl_group },
       {
         display_bufname .. coordinates,
         function()
