@@ -622,17 +622,23 @@ function make_entry.gen_from_buffer(opts)
   local make_display = function(entry)
     -- bufnr_width + modes + icon + 3 spaces + : + lnum
     opts.__prefix = opts.bufnr_width + 4 + icon_width + 3 + 1 + #tostring(entry.lnum)
-    local display_bufname, path_style = utils.transform_path(opts, entry.filename)
+    local display_bufname, style = utils.transform_path(opts, entry.filename)
+    local coordinates = ":" .. entry.lnum
     local icon, hl_group = utils.get_devicons(entry.filename, disable_devicons)
 
+    -- Adds styling to the coordinates
+    style = utils.merge_styles(
+      { { { #display_bufname, #display_bufname + #coordinates }, "TelescopeResultsComment" } }, style, 0
+    )
+
     return displayer {
-      { entry.bufnr, "TelescopeResultsNumber" },
+      { entry.bufnr,     "TelescopeResultsNumber" },
       { entry.indicator, "TelescopeResultsComment" },
-      { icon, hl_group },
+      { icon,            hl_group },
       {
-        display_bufname .. ":" .. entry.lnum,
+        display_bufname .. coordinates,
         function()
-          return path_style
+          return style
         end,
       },
     }
