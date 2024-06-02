@@ -315,7 +315,7 @@ do
       cwd = utils.path_expand(opts.cwd or vim.loop.cwd()),
 
       display = function(entry)
-        local display_filename, path_style = utils.transform_path(opts, entry.filename)
+        local display_filename, style = utils.transform_path(opts, entry.filename)
 
         local coordinates = ":"
         if not disable_coordinates then
@@ -328,6 +328,11 @@ do
           end
         end
 
+        -- Adds styling to the coordinates
+        style = utils.merge_styles(
+          { { { #display_filename, #display_filename + #coordinates }, "TelescopeResultsComment" } }, style, 0
+        )
+
         local display, hl_group, icon = utils.transform_devicons(
           entry.filename,
           string.format(display_string, display_filename, coordinates, entry.text),
@@ -335,11 +340,10 @@ do
         )
 
         if hl_group then
-          local style = { { { 0, #icon }, hl_group } }
-          style = utils.merge_styles(style, path_style, #icon + 1)
+          style = utils.merge_styles({ { { 0, #icon }, hl_group } }, style, #icon + 1)
           return display, style
         else
-          return display, path_style
+          return display, style
         end
       end,
 
