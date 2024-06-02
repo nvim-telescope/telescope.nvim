@@ -170,19 +170,7 @@ utils.filter_symbols = function(results, opts, post_filter)
   end
 end
 
-utils.path_filename_first = function(path, path_display)
-  local reverse_directories = false
-
-  if type(path_display["filename_first"]) == "table" then
-    local filename_first_opts = path_display["filename_first"]
-
-    if filename_first_opts.reverse_directories == nil or filename_first_opts.reverse_directories == false then
-      reverse_directories = false
-    else
-      reverse_directories = filename_first_opts.reverse_directories
-    end
-  end
-
+utils.path_filename_first = function(path, reverse_directories)
   local dirs = vim.split(path, utils.get_separator())
   local filename
 
@@ -207,9 +195,9 @@ local calc_result_length = function(truncate_len)
   return type(truncate_len) == "number" and len - truncate_len or len
 end
 
-utils.path_truncate = function(path, path_display, opts)
+utils.path_truncate = function(path, truncate_len, opts)
   if opts.__length == nil then
-    opts.__length = calc_result_length(path_display.truncate)
+    opts.__length = calc_result_length(truncate_len)
   end
   if opts.__prefix == nil then
     opts.__prefix = 0
@@ -217,12 +205,10 @@ utils.path_truncate = function(path, path_display, opts)
   return truncate(path, opts.__length - opts.__prefix, nil, -1)
 end
 
-utils.path_shorten = function(path, path_display)
-  if type(path_display["shorten"]) == "table" then
-    local shorten = path_display["shorten"]
-    return Path:new(path):shorten(shorten.len, shorten.exclude)
+utils.path_shorten = function(path, length, exclude)
+  if exclude ~= nil then
+    return Path:new(path):shorten(length, exclude)
   else
-    local length = type(path_display["shorten"]) == "number" and path_display["shorten"]
     return Path:new(path):shorten(length)
   end
 end
@@ -389,15 +375,38 @@ utils.transform_path = function(opts, path)
     end
 
     if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
-      transformed_path = utils.path_shorten(transformed_path, path_display)
+      local length
+      local exclude = nil
+
+      if type(path_display["shorten"]) == "table" then
+        local shorten = path_display["shorten"]
+        length = shorten.len
+        exclude = shorten.exclude
+      else
+        length = type(path_display["shorten"]) == "number" and path_display["shorten"]
+      end
+
+      transformed_path = utils.path_shorten(transformed_path, length, exclude)
     end
 
     if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
-      transformed_path = utils.path_truncate(transformed_path, path_display, opts)
+      transformed_path = utils.path_truncate(transformed_path, path_display.truncate, opts)
     end
 
     if vim.tbl_contains(path_display, "filename_first") or path_display["filename_first"] ~= nil then
-      transformed_path, path_style = utils.path_filename_first(transformed_path, path_display)
+      local reverse_directories = false
+
+      if type(path_display["filename_first"]) == "table" then
+        local filename_first_opts = path_display["filename_first"]
+
+        if filename_first_opts.reverse_directories == nil or filename_first_opts.reverse_directories == false then
+          reverse_directories = false
+        else
+          reverse_directories = filename_first_opts.reverse_directories
+        end
+      end
+
+      transformed_path, path_style = utils.path_filename_first(transformed_path, reverse_directories)
     end
 
     return transformed_path, path_style
