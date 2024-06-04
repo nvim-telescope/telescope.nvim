@@ -140,8 +140,9 @@ end
 local apply_action_handler = function(action, items, opts)
   if action == "textDocument/references" and not opts.include_current_line then
     local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
+    local cur_filename = vim.api.nvim_buf_get_name(opts.bufnr)
     items = vim.tbl_filter(function(v)
-      return not (v.filename and v.lnum == lnum)
+      return not (v.filename == cur_filename and v.lnum == lnum)
     end, items)
   end
 
