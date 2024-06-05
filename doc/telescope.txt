@@ -1478,10 +1478,12 @@ builtin.colorscheme({opts})                  *telescope.builtin.colorscheme()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {colors}         (table)    a list of additional colorschemes to
-                                    explicitly make available to telescope
-                                    (default: {})
-        {enable_preview} (boolean)  if true, will preview the selected color
+        {colors}         (table)     a list of additional colorschemes to
+                                     explicitly make available to telescope
+                                     (default: {})
+        {enable_preview} (boolean)   if true, will preview the selected color
+        {ignore_builtins} (boolean)  if true, builtin colorschemes are not 
+                                     listed
 
 
 builtin.marks({opts})                              *telescope.builtin.marks()*
