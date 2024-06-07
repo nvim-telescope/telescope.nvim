@@ -140,9 +140,8 @@ end
 local apply_action_handler = function(action, items, opts)
   if action == "textDocument/references" and not opts.include_current_line then
     local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
-    local cur_filename = vim.api.nvim_buf_get_name(opts.bufnr)
     items = vim.tbl_filter(function(v)
-      return not (v.filename == cur_filename and v.lnum == lnum)
+      return not (v.filename == opts.curr_filepath and v.lnum == lnum)
     end, items)
   end
 
@@ -155,8 +154,8 @@ end
 ---@param opts table
 local function list_or_jump(action, title, params, opts)
   opts.reuse_win = vim.F.if_nil(opts.reuse_win, false)
-
-  local curr_filepath = vim.api.nvim_buf_get_name(opts.bufnr)
+  opts.curr_filepath = vim.api.nvim_buf_get_name(opts.bufnr)
+  
   vim.lsp.buf_request(opts.bufnr, action, params, function(err, result, ctx, _)
     if err then
       vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
@@ -183,7 +182,7 @@ local function list_or_jump(action, title, params, opts)
 
     if #items == 1 and opts.jump_type ~= "never" then
       local item = items[1]
-      if curr_filepath ~= item.filename then
+      if opts.curr_filepath ~= item.filename then
         local cmd
         if opts.jump_type == "tab" then
           cmd = "tabedit"
