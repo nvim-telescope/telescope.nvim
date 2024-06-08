@@ -155,7 +155,7 @@ end
 local function list_or_jump(action, title, params, opts)
   opts.reuse_win = vim.F.if_nil(opts.reuse_win, false)
   opts.curr_filepath = vim.api.nvim_buf_get_name(opts.bufnr)
-  
+
   vim.lsp.buf_request(opts.bufnr, action, params, function(err, result, ctx, _)
     if err then
       vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
