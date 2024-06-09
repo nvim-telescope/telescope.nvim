@@ -150,9 +150,10 @@ end
 
 ---@param action telescope.lsp.list_or_jump_action
 ---@param title string prompt title
+---@param funname string: name of the calling function
 ---@param params lsp.TextDocumentPositionParams
 ---@param opts table
-local function list_or_jump(action, title, params, opts)
+local function list_or_jump(action, title, funname, params, opts)
   opts.reuse_win = vim.F.if_nil(opts.reuse_win, false)
   opts.curr_filepath = vim.api.nvim_buf_get_name(opts.bufnr)
 
@@ -177,6 +178,10 @@ local function list_or_jump(action, title, params, opts)
     items = apply_action_handler(action, items, opts)
 
     if vim.tbl_isempty(items) then
+      utils.notify(funname, {
+        msg = string.format("No %s found", title),
+        level = "INFO",
+      })
       return
     end
 
@@ -223,22 +228,28 @@ lsp.references = function(opts)
   opts.include_current_line = vim.F.if_nil(opts.include_current_line, false)
   local params = vim.lsp.util.make_position_params(opts.winnr)
   params.context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) }
-  return list_or_jump("textDocument/references", "LSP References", params, opts)
+  return list_or_jump("textDocument/references", "LSP References", "builtin.lsp_references", params, opts)
 end
 
 lsp.definitions = function(opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
-  return list_or_jump("textDocument/definition", "LSP Definitions", params, opts)
+  return list_or_jump("textDocument/definition", "LSP Definitions", "builtin.lsp_definitions", params, opts)
 end
 
 lsp.type_definitions = function(opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
-  return list_or_jump("textDocument/typeDefinition", "LSP Type Definitions", params, opts)
+  return list_or_jump(
+    "textDocument/typeDefinition",
+    "LSP Type Definitions",
+    "builtin.lsp_type_definitions",
+    params,
+    opts
+  )
 end
 
 lsp.implementations = function(opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
-  return list_or_jump("textDocument/implementation", "LSP Implementations", params, opts)
+  return list_or_jump("textDocument/implementation", "LSP Implementations", "builtin.lsp_implementations", params, opts)
 end
 
 local symbols_sorter = function(symbols)
