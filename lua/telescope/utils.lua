@@ -226,7 +226,7 @@ local path_abs = function(path, opts)
   return Path:new(path):make_relative(cwd)
 end
 
-local path_smart = (function()
+utils.path_smart = (function()
   local paths = {}
   local os_sep = utils.get_separator()
   return function(filepath)
@@ -370,7 +370,7 @@ utils.transform_path = function(opts, path)
     end
 
     if vim.tbl_contains(path_display, "smart") or path_display.smart then
-      transformed_path = path_smart(transformed_path)
+      transformed_path = utils.path_smart(transformed_path)
     end
 
     if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
