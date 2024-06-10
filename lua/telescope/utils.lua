@@ -182,10 +182,10 @@ local path_filename_first = function(path, reverse_directories)
   end
 
   local tail = table.concat(dirs, utils.get_separator())
+  -- Trim prevents a top-level filename to have a trailing white space
   local transformed_path = vim.trim(filename .. " " .. tail)
   local path_style = { { { #filename, #transformed_path }, "TelescopeResultsComment" } }
 
-  -- Trim prevents a top-level filename to have a trailing white space
   return transformed_path, path_style
 end
 
