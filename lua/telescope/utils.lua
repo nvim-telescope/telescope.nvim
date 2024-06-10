@@ -170,7 +170,7 @@ utils.filter_symbols = function(results, opts, post_filter)
   end
 end
 
-utils.path_filename_first = function(path, reverse_directories)
+local path_filename_first = function(path, reverse_directories)
   local dirs = vim.split(path, utils.get_separator())
   local filename
 
@@ -195,7 +195,7 @@ local calc_result_length = function(truncate_len)
   return type(truncate_len) == "number" and len - truncate_len or len
 end
 
-utils.path_truncate = function(path, truncate_len, opts)
+local path_truncate = function(path, truncate_len, opts)
   if opts.__length == nil then
     opts.__length = calc_result_length(truncate_len)
   end
@@ -205,7 +205,7 @@ utils.path_truncate = function(path, truncate_len, opts)
   return truncate(path, opts.__length - opts.__prefix, nil, -1)
 end
 
-utils.path_shorten = function(path, length, exclude)
+local path_shorten = function(path, length, exclude)
   if exclude ~= nil then
     return Path:new(path):shorten(length, exclude)
   else
@@ -213,8 +213,7 @@ utils.path_shorten = function(path, length, exclude)
   end
 end
 
----@param path string: The path that should be formatted
-utils.path_abs = function(path, opts)
+local path_abs = function(path, opts)
   local cwd
   if opts.cwd then
     cwd = opts.cwd
@@ -227,7 +226,7 @@ utils.path_abs = function(path, opts)
   return Path:new(path):make_relative(cwd)
 end
 
-utils.path_smart = (function()
+local path_smart = (function()
   local paths = {}
   local os_sep = utils.get_separator()
   return function(filepath)
@@ -367,11 +366,11 @@ utils.transform_path = function(opts, path)
     end
 
     if not vim.tbl_contains(path_display, "absolute") and not path_display.absolute then
-      transformed_path = utils.path_abs(transformed_path, opts)
+      transformed_path = path_abs(transformed_path, opts)
     end
 
     if vim.tbl_contains(path_display, "smart") or path_display.smart then
-      transformed_path = utils.path_smart(transformed_path)
+      transformed_path = path_smart(transformed_path)
     end
 
     if vim.tbl_contains(path_display, "shorten") or path_display["shorten"] ~= nil then
@@ -386,11 +385,11 @@ utils.transform_path = function(opts, path)
         length = type(path_display["shorten"]) == "number" and path_display["shorten"]
       end
 
-      transformed_path = utils.path_shorten(transformed_path, length, exclude)
+      transformed_path = path_shorten(transformed_path, length, exclude)
     end
 
     if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
-      transformed_path = utils.path_truncate(transformed_path, path_display.truncate, opts)
+      transformed_path = path_truncate(transformed_path, path_display.truncate, opts)
     end
 
     if vim.tbl_contains(path_display, "filename_first") or path_display["filename_first"] ~= nil then
@@ -406,7 +405,7 @@ utils.transform_path = function(opts, path)
         end
       end
 
-      transformed_path, path_style = utils.path_filename_first(transformed_path, reverse_directories)
+      transformed_path, path_style = path_filename_first(transformed_path, reverse_directories)
     end
 
     return transformed_path, path_style
