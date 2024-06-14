@@ -226,6 +226,9 @@ local path_abs = function(path, opts)
   return Path:new(path):make_relative(cwd)
 end
 
+-- IMPORTANT: This function should have been a local function as it's only used
+-- in this file, but the code was already exported a long time ago. By making it
+-- local we would potential break consumers of this method.
 utils.path_smart = (function()
   local paths = {}
   local os_sep = utils.get_separator()
@@ -519,6 +522,9 @@ function utils.max_split(s, pattern, maxsplit)
   return t
 end
 
+-- IMPORTANT: This function should have been a local function as it's only used
+-- in this file, but the code was already exported a long time ago. By making it
+-- local we would potential break consumers of this method.
 function utils.data_directory()
   local sourced_file = require("plenary.debug_utils").sourced_filepath()
   local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h")
@@ -526,6 +532,9 @@ function utils.data_directory()
   return Path:new({ base_directory, "data" }):absolute() .. Path.path.sep
 end
 
+-- IMPORTANT: This function should have been a local function as it's only used
+-- in this file, but the code was already exported a long time ago. By making it
+-- local we would potential break consumers of this method.
 function utils.buffer_dir()
   return vim.fn.expand "%:p:h"
 end
@@ -573,6 +582,9 @@ local load_once = function(f)
   end
 end
 
+-- IMPORTANT: This function should have been a local function as it's only used
+-- in this file, but the code was already exported a long time ago. By making it
+-- local we would potential break consumers of this method.
 utils.file_extension = function(filename)
   local parts = vim.split(filename, "%.")
   -- this check enables us to get multi-part extensions, like *.test.js for example
@@ -756,6 +768,9 @@ utils.merge_styles = function(style1, style2, offset)
   return style1
 end
 
+-- IMPORTANT: This function should have been a local function as it's only used
+-- in this file, but the code was already exported a long time ago. By making it
+-- local we would potential break consumers of this method.
 utils.reverse_table = function(input_table)
   local temp_table = {}
   for index = 0, #input_table do
