@@ -993,6 +993,19 @@ internal.colorscheme = function(opts)
     end, vim.fn.getcompletion("", "color"))
   )
 
+  if opts.ignore_builtins then
+    -- stylua: ignore
+    local builtins = {
+      "blue", "darkblue", "default", "delek", "desert", "elflord", "evening",
+      "habamax", "industry", "koehler", "lunaperche", "morning", "murphy",
+      "pablo", "peachpuff", "quiet", "retrobox", "ron", "shine", "slate",
+      "sorbet", "torte", "vim", "wildcharm", "zaibatsu", "zellner",
+    }
+    colors = vim.tbl_filter(function(color)
+      return not vim.tbl_contains(builtins, color)
+    end, colors)
+  end
+
   local previewer
   if opts.enable_preview then
     -- define previewer
