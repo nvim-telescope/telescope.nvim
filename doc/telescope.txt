@@ -1434,6 +1434,8 @@ builtin.reloader({opts})                        *telescope.builtin.reloader()*
 builtin.buffers({opts})                          *telescope.builtin.buffers()*
     Lists open buffers in current neovim instance, opens selected buffer on
     `<cr>`
+    - Default keymaps:
+      - `<M-d>`: delete the currently selected buffer
 
 
     Parameters: ~

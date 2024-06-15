@@ -535,6 +535,7 @@ function Picker:find()
   self.__original_mousemoveevent = vim.o.mousemoveevent
   vim.o.mousemoveevent = true
 
+  self.original_bufnr = a.nvim_get_current_buf()
   self.original_win_id = a.nvim_get_current_win()
   _, self.original_cword = pcall(vim.fn.expand, "<cword>")
   _, self.original_cWORD = pcall(vim.fn.expand, "<cWORD>")

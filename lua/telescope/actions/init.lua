@@ -1176,9 +1176,22 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.delete_buffer = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
+
   current_picker:delete_selection(function(selection)
     local force = vim.api.nvim_buf_get_option(selection.bufnr, "buftype") == "terminal"
     local ok = pcall(vim.api.nvim_buf_delete, selection.bufnr, { force = force })
+
+    -- If the current buffer is deleted, switch to the previous buffer
+    -- according to bdelete behavior
+    if ok and selection.bufnr == current_picker.original_bufnr then
+      local jumplist = vim.fn.getjumplist(current_picker.original_win_id)[1]
+      for i = #jumplist, 1, -1 do
+        if jumplist[i].bufnr ~= selection.bufnr and vim.fn.bufloaded(jumplist[i].bufnr) == 1 then
+          vim.api.nvim_win_set_buf(current_picker.original_win_id, jumplist[i].bufnr)
+          break
+        end
+      end
+    end
     return ok
   end)
 end
