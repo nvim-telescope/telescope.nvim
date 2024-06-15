@@ -996,10 +996,10 @@ internal.colorscheme = function(opts)
   if opts.ignore_builtins then
     -- stylua: ignore
     local builtins = {
-      "zellner", "torte", "slate", "shine", "ron", "quiet", "peachpuff",
-      "pablo", "murphy", "lunaperche", "koehler", "industry", "evening",
-      "elflord", "desert", "delek", "darkblue", "blue", "morning", "vim",
-      "habamax", "retrobox", "sorbet", "zaibatsu", "wildcharm", "default",
+      "blue", "darkblue", "default", "delek", "desert", "elflord", "evening",
+      "habamax", "industry", "koehler", "lunaperche", "morning", "murphy",
+      "pablo", "peachpuff", "quiet", "retrobox", "ron", "shine", "slate",
+      "sorbet", "torte", "vim", "wildcharm", "zaibatsu", "zellner",
     }
     colors = vim.tbl_filter(function(color)
       return not vim.tbl_contains(builtins, color)
