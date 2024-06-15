@@ -973,7 +973,7 @@ internal.buffers = function(opts)
       sorter = conf.generic_sorter(opts),
       default_selection_index = default_selection_idx,
       attach_mappings = function(_, map)
-        map({ "i", "n" }, "<C-x>", actions.delete_buffer)
+        map({ "i", "n" }, "<M-d>", actions.delete_buffer)
       end,
     })
     :find()

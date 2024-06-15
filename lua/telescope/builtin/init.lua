@@ -339,6 +339,8 @@ builtin.man_pages = require_on_exported_call("telescope.builtin.__internal").man
 builtin.reloader = require_on_exported_call("telescope.builtin.__internal").reloader
 
 --- Lists open buffers in current neovim instance, opens selected buffer on `<cr>`
+--- - Default keymaps:
+---   - `<M-d>`: delete the currently selected buffer
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify a working directory to filter buffers list by
 ---@field show_all_buffers boolean: if true, show all buffers, including unloaded buffers (default: true)
