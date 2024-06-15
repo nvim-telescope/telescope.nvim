@@ -532,9 +532,6 @@ function utils.data_directory()
   return Path:new({ base_directory, "data" }):absolute() .. Path.path.sep
 end
 
--- IMPORTANT: This function should have been a local function as it's only used
--- in this file, but the code was already exported a long time ago. By making it
--- local we would potential break consumers of this method.
 function utils.buffer_dir()
   return vim.fn.expand "%:p:h"
 end
