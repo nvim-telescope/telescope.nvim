@@ -752,13 +752,13 @@ utils.__separate_file_path_location = function(path)
   return path, nil, nil
 end
 
-utils.merge_styles = function(style1, style2, offset)
-  local function addOffset(i, obj)
-    return { obj[1] + i, obj[2] + i }
-  end
+local function add_offset(offset, obj)
+  return { obj[1] + offset, obj[2] + offset }
+end
 
+utils.merge_styles = function(style1, style2, offset)
   for _, item in ipairs(style2) do
-    item[1] = addOffset(offset, item[1])
+    item[1] = add_offset(offset, item[1])
     table.insert(style1, item)
   end
 
