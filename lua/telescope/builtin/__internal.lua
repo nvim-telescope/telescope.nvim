@@ -974,6 +974,7 @@ internal.buffers = function(opts)
       default_selection_index = default_selection_idx,
       attach_mappings = function(_, map)
         map({ "i", "n" }, "<M-d>", actions.delete_buffer)
+        return true
       end,
     })
     :find()
