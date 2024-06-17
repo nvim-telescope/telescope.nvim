@@ -180,6 +180,7 @@ files.live_grep = function(opts)
         map("i", "<c-space>", actions.to_fuzzy_refine)
         return true
       end,
+      push_cursor_on_edit = true,
     })
     :find()
 end
@@ -460,6 +461,7 @@ files.treesitter = function(opts)
         tag = "kind",
         sorter = conf.generic_sorter(opts),
       },
+      push_cursor_on_edit = true,
     })
     :find()
 end
