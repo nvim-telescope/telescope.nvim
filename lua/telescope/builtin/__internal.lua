@@ -940,11 +940,13 @@ internal.buffers = function(opts)
       default_selection_idx = 2
     end
 
-    local element = {
-      bufnr = bufnr,
-      flag = flag,
-      info = vim.fn.getbufinfo(bufnr)[1],
-    }
+    local info = vim.fn.getbufinfo(bufnr)[1]
+		info.name = info.name:gsub("[/]", "\\")
+		local element = {
+			bufnr = bufnr,
+			flag = flag,
+			info = info,
+		}
 
     if opts.sort_lastused and (flag == "#" or flag == "%") then
       local idx = ((buffers[1] ~= nil and buffers[1].flag == "%") and 2 or 1)
