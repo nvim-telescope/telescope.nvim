@@ -974,6 +974,10 @@ internal.buffers = function(opts)
       previewer = conf.grep_previewer(opts),
       sorter = conf.generic_sorter(opts),
       default_selection_index = default_selection_idx,
+      attach_mappings = function(_, map)
+        map({ "i", "n" }, "<M-d>", actions.delete_buffer)
+        return true
+      end,
     })
     :find()
 end
@@ -994,6 +998,19 @@ internal.colorscheme = function(opts)
       return not vim.tbl_contains(colors, color)
     end, vim.fn.getcompletion("", "color"))
   )
+
+  if opts.ignore_builtins then
+    -- stylua: ignore
+    local builtins = {
+      "blue", "darkblue", "default", "delek", "desert", "elflord", "evening",
+      "habamax", "industry", "koehler", "lunaperche", "morning", "murphy",
+      "pablo", "peachpuff", "quiet", "retrobox", "ron", "shine", "slate",
+      "sorbet", "torte", "vim", "wildcharm", "zaibatsu", "zellner",
+    }
+    colors = vim.tbl_filter(function(color)
+      return not vim.tbl_contains(builtins, color)
+    end, colors)
+  end
 
   local previewer
   if opts.enable_preview then

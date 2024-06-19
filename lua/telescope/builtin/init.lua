@@ -339,6 +339,8 @@ builtin.man_pages = require_on_exported_call("telescope.builtin.__internal").man
 builtin.reloader = require_on_exported_call("telescope.builtin.__internal").reloader
 
 --- Lists open buffers in current neovim instance, opens selected buffer on `<cr>`
+--- - Default keymaps:
+---   - `<M-d>`: delete the currently selected buffer
 ---@param opts table: options to pass to the picker
 ---@field cwd string: specify a working directory to filter buffers list by
 ---@field show_all_buffers boolean: if true, show all buffers, including unloaded buffers (default: true)
@@ -357,6 +359,7 @@ builtin.buffers = require_on_exported_call("telescope.builtin.__internal").buffe
 ---@param opts table: options to pass to the picker
 ---@field colors table: a list of additional colorschemes to explicitly make available to telescope (default: {})
 ---@field enable_preview boolean: if true, will preview the selected color
+---@field ignore_builtins boolean: if true, builtin colorschemes are not listed
 builtin.colorscheme = require_on_exported_call("telescope.builtin.__internal").colorscheme
 
 --- Lists vim marks and their value, jumps to the mark on `<cr>`

@@ -771,10 +771,10 @@ layout_strategies.flex = make_documented_layout(
     horizontal = "Options to pass when switching to horizontal layout",
   }),
   function(self, max_columns, max_lines, layout_config)
-    local flip_columns = vim.F.if_nil(layout_config.flip_columns, 100)
-    local flip_lines = vim.F.if_nil(layout_config.flip_lines, 20)
+    local flip_columns = vim.F.if_nil(layout_config.flip_columns, layout_config.horizontal.preview_cutoff)
+    local flip_lines = vim.F.if_nil(layout_config.flip_lines, layout_config.vertical.preview_cutoff)
 
-    if max_columns < flip_columns and max_lines > flip_lines then
+    if max_columns < flip_columns and max_lines >= flip_lines then
       self.__flex_strategy = "vertical"
       self.layout_config.flip_columns = nil
       self.layout_config.flip_lines = nil
