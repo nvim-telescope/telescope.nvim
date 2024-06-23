@@ -258,6 +258,7 @@ files.grep_string = function(opts)
       finder = finders.new_oneshot_job(args, opts),
       previewer = conf.grep_previewer(opts),
       sorter = conf.generic_sorter(opts),
+      push_cursor_on_edit = true,
     })
     :find()
 end
