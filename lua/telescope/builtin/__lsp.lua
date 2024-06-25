@@ -152,7 +152,8 @@ end
 ---@param opts table
 ---@return vim.lsp.util.locations_to_items.ret[]
 local function filter_file_ignore_patters(items, opts)
-  local file_ignore_patterns = vim.F.if_nil(opts.file_ignore_patterns, conf.file_ignore_patterns, {})
+  local file_ignore_patterns = vim.F.if_nil(opts.file_ignore_patterns, conf.file_ignore_patterns)
+  file_ignore_patterns = file_ignore_patterns or {}
   if vim.tbl_isempty(file_ignore_patterns) then
     return items
   end
