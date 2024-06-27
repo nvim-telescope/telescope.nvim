@@ -2230,6 +2230,9 @@ layout_strategies.horizontal()                 *telescope.layout.horizontal()*
       - anchor:
         - Which edge/corner to pin the picker to
         - See |resolver.resolve_anchor_pos()|
+      - anchor_padding:
+        - Specifies an amount of additional padding around the anchor
+        - Values should be a positive integer
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
@@ -2283,6 +2286,9 @@ layout_strategies.center()                         *telescope.layout.center()*
       - anchor:
         - Which edge/corner to pin the picker to
         - See |resolver.resolve_anchor_pos()|
+      - anchor_padding:
+        - Specifies an amount of additional padding around the anchor
+        - Values should be a positive integer
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
@@ -2361,6 +2367,9 @@ layout_strategies.vertical()                     *telescope.layout.vertical()*
       - anchor:
         - Which edge/corner to pin the picker to
         - See |resolver.resolve_anchor_pos()|
+      - anchor_padding:
+        - Specifies an amount of additional padding around the anchor
+        - Values should be a positive integer
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
@@ -2391,6 +2400,9 @@ layout_strategies.flex()                             *telescope.layout.flex()*
       - anchor:
         - Which edge/corner to pin the picker to
         - See |resolver.resolve_anchor_pos()|
+      - anchor_padding:
+        - Specifies an amount of additional padding around the anchor
+        - Values should be a positive integer
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
