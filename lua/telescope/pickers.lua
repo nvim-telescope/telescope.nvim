@@ -537,6 +537,7 @@ function Picker:find()
 
   self.original_bufnr = a.nvim_get_current_buf()
   self.original_win_id = a.nvim_get_current_win()
+  self.original_tabpage = a.nvim_get_current_tabpage()
   _, self.original_cword = pcall(vim.fn.expand, "<cword>")
   _, self.original_cWORD = pcall(vim.fn.expand, "<cWORD>")
   _, self.original_cfile = pcall(vim.fn.expand, "<cfile>")
