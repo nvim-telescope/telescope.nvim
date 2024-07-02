@@ -706,24 +706,15 @@ append(
 
 append(
   "vimgrep_arguments",
-  { "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
+  { "rg", "--smart-case", "--json" },
   [[
     Defines the command that will be used for `live_grep` and `grep_string`
     pickers.
-    Hint: Make sure that color is currently set to `never` because we do
-    not yet interpret color codes
-    Hint 2: Make sure that these options are in your changes arguments:
-      "--no-heading", "--with-filename", "--line-number", "--column"
-    because we need them so the ripgrep output is in the correct format.
 
     Default: {
       "rg",
-      "--color=never",
-      "--no-heading",
-      "--with-filename",
-      "--line-number",
-      "--column",
-      "--smart-case"
+      "--smart-case",
+      "--json",
     }]]
 )
 
