@@ -525,24 +525,23 @@ end
 internal.oldfiles = function(opts)
   opts = apply_cwd_only_aliases(opts)
   opts.include_current_session = vim.F.if_nil(opts.include_current_session, true)
-  local has_win = vim.fn.has('win32') == 1
 
   local current_buffer = vim.api.nvim_get_current_buf()
   local current_file = vim.api.nvim_buf_get_name(current_buffer)
   local results = {}
 
-  -- add gsub() : if output of nvim_buf_get_name() has '/' in the string, file~=current_file cannot filter the path properly
-  if has_win then current_file = current_file:gsub('/','\\') end
-
-  -- in here, results has absolute paths in current open session
+  if utils.iswin then
+    current_file = current_file:gsub("/", "\\")
+  end
   if opts.include_current_session then
     for _, buffer in ipairs(utils.split_lines(vim.fn.execute ":buffers! t")) do
       local match = tonumber(string.match(buffer, "%s*(%d+)"))
       local open_by_lsp = string.match(buffer, "line 0$")
       if match and not open_by_lsp then
         local file = vim.api.nvim_buf_get_name(match)
-		  -- add gsub() : if output of nvim_buf_get_name() has '/' in the string, file~=current_file cannot filter the path properly
-		if has_win then file = file:gsub('/','\\') end
+        if utils.iswin then
+          file = file:gsub("/", "\\")
+        end
         if vim.loop.fs_stat(file) and match ~= current_buffer then
           table.insert(results, file)
         end
@@ -550,21 +549,19 @@ internal.oldfiles = function(opts)
     end
   end
 
-  -- in here, add path in oldfiles which is not included in current session, current file
-  -- (Problem)Previous code adds the list to the 'results' variable which includes files in current session already. 
-  -- It makes the oldfiles picker show files which are loaded current session. 
-  -- (Solution)so 'results' and 'results_other' are separated
-  --
-  -- (Problem) sometimes the list has duplicated directory. 
-  -- (Solution) so I add a condition which checks whether the file are added in 'results_other'
   local results_other = {}
   for _, file in ipairs(vim.v.oldfiles) do
-	  -- (problem) sometimes path in vim.v.oldfiles has '/' as delimiters caused by neovim. 
-	  -- (solution) the '/' replaced by '\\'
-	if has_win then file = file:gsub('/','\\') end
+    if utils.iswin then
+      file = file:gsub("/", "\\")
+    end
     local file_stat = vim.loop.fs_stat(file)
-    if file_stat and file_stat.type == "file" and not vim.tbl_contains(results, file)
-		and not vim.tbl_contains(results_other, file) and file ~= current_file then
+    if
+      file_stat
+      and file_stat.type == "file"
+      and not vim.tbl_contains(results, file)
+      and not vim.tbl_contains(results_other, file)
+      and file ~= current_file
+    then
       table.insert(results_other, file)
     end
   end
