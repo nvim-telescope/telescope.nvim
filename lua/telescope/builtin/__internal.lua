@@ -536,7 +536,7 @@ internal.oldfiles = function(opts)
 
   -- in here, results has absolute paths in current open session
   if opts.include_current_session then
-    for _, buffer in ipairs(vim.split(vim.fn.execute ":buffers! t", "\n")) do
+    for _, buffer in ipairs(utils.split_lines(vim.fn.execute ":buffers! t")) do
       local match = tonumber(string.match(buffer, "%s*(%d+)"))
       local open_by_lsp = string.match(buffer, "line 0$")
       if match and not open_by_lsp then
@@ -594,7 +594,7 @@ end
 
 internal.command_history = function(opts)
   local history_string = vim.fn.execute "history cmd"
-  local history_list = vim.split(history_string, "\n")
+  local history_list = utils.split_lines(history_string)
 
   local results = {}
   local filter_fn = opts.filter_fn
@@ -634,7 +634,7 @@ end
 
 internal.search_history = function(opts)
   local search_string = vim.fn.execute "history search"
-  local search_list = vim.split(search_string, "\n")
+  local search_list = utils.split_lines(search_string)
 
   local results = {}
   for i = #search_list, 3, -1 do
@@ -710,7 +710,7 @@ internal.help_tags = function(opts)
   opts.fallback = vim.F.if_nil(opts.fallback, true)
   opts.file_ignore_patterns = {}
 
-  local langs = vim.split(opts.lang, ",", true)
+  local langs = vim.split(opts.lang, ",", { trimempty = true })
   if opts.fallback and not vim.tbl_contains(langs, "en") then
     table.insert(langs, "en")
   end
@@ -749,11 +749,11 @@ internal.help_tags = function(opts)
   local delimiter = string.char(9)
   for _, lang in ipairs(langs) do
     for _, file in ipairs(tag_files[lang] or {}) do
-      local lines = vim.split(Path:new(file):read(), "\n", true)
+      local lines = utils.split_lines(Path:new(file):read(), { trimempty = true })
       for _, line in ipairs(lines) do
         -- TODO: also ignore tagComment starting with ';'
         if not line:match "^!_TAG_" then
-          local fields = vim.split(line, delimiter, true)
+          local fields = vim.split(line, delimiter, { trimempty = true })
           if #fields == 3 and not tags_map[fields[1]] then
             if fields[1] ~= "help-tags" or fields[2] ~= "tags" then
               table.insert(tags, {
@@ -813,7 +813,7 @@ end
 
 internal.man_pages = function(opts)
   opts.sections = vim.F.if_nil(opts.sections, { "1" })
-  assert(vim.tbl_islist(opts.sections), "sections should be a list")
+  assert(utils.islist(opts.sections), "sections should be a list")
   opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
     local uname = vim.loop.os_uname()
     local sysname = string.lower(uname.sysname)
@@ -953,7 +953,7 @@ internal.buffers = function(opts)
 
   local buffers = {}
   local default_selection_idx = 1
-  for _, bufnr in ipairs(bufnrs) do
+  for i, bufnr in ipairs(bufnrs) do
     local flag = bufnr == vim.fn.bufnr "" and "%" or (bufnr == vim.fn.bufnr "#" and "#" or " ")
 
     if opts.sort_lastused and not opts.ignore_current_buffer and flag == "#" then
@@ -971,7 +971,7 @@ internal.buffers = function(opts)
       table.insert(buffers, idx, element)
     else
       if opts.select_current and flag == "%" then
-        default_selection_idx = bufnr
+        default_selection_idx = i
       end
       table.insert(buffers, element)
     end
@@ -992,6 +992,10 @@ internal.buffers = function(opts)
       previewer = conf.grep_previewer(opts),
       sorter = conf.generic_sorter(opts),
       default_selection_index = default_selection_idx,
+      attach_mappings = function(_, map)
+        map({ "i", "n" }, "<M-d>", actions.delete_buffer)
+        return true
+      end,
     })
     :find()
 end
@@ -1013,51 +1017,39 @@ internal.colorscheme = function(opts)
     end, vim.fn.getcompletion("", "color"))
   )
 
+  if opts.ignore_builtins then
+    -- stylua: ignore
+    local builtins = {
+      "blue", "darkblue", "default", "delek", "desert", "elflord", "evening",
+      "habamax", "industry", "koehler", "lunaperche", "morning", "murphy",
+      "pablo", "peachpuff", "quiet", "retrobox", "ron", "shine", "slate",
+      "sorbet", "torte", "vim", "wildcharm", "zaibatsu", "zellner",
+    }
+    colors = vim.tbl_filter(function(color)
+      return not vim.tbl_contains(builtins, color)
+    end, colors)
+  end
+
   local previewer
   if opts.enable_preview then
     -- define previewer
     local bufnr = vim.api.nvim_get_current_buf()
     local p = vim.api.nvim_buf_get_name(bufnr)
 
-    -- don't need previewer
-    if vim.fn.buflisted(bufnr) ~= 1 then
-      local deleted = false
-      local function del_win(win_id)
-        if win_id and vim.api.nvim_win_is_valid(win_id) then
-          utils.buf_delete(vim.api.nvim_win_get_buf(win_id))
-          pcall(vim.api.nvim_win_close, win_id, true)
+    -- show current buffer content in previewer
+    previewer = previewers.new_buffer_previewer {
+      get_buffer_by_name = function()
+        return p
+      end,
+      define_preview = function(self)
+        if vim.loop.fs_stat(p) then
+          conf.buffer_previewer_maker(p, self.state.bufnr, { bufname = self.state.bufname })
+        else
+          local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+          vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
         end
-      end
-
-      previewer = previewers.new {
-        preview_fn = function(_, entry, status)
-          if not deleted then
-            deleted = true
-            if status.layout.preview then
-              del_win(status.layout.preview.winid)
-              del_win(status.layout.preview.border.winid)
-            end
-          end
-          vim.cmd.colorscheme(entry.value)
-        end,
-      }
-    else
-      -- show current buffer content in previewer
-      previewer = previewers.new_buffer_previewer {
-        get_buffer_by_name = function()
-          return p
-        end,
-        define_preview = function(self, entry)
-          if vim.loop.fs_stat(p) then
-            conf.buffer_previewer_maker(p, self.state.bufnr, { bufname = self.state.bufname })
-          else
-            local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-            vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
-          end
-          vim.cmd.colorscheme(entry.value)
-        end,
-      }
-    end
+      end,
+    }
   end
 
   local picker = pickers.new(opts, {
@@ -1079,9 +1071,39 @@ internal.colorscheme = function(opts)
         need_restore = false
         vim.cmd.colorscheme(selection.value)
       end)
-
+      action_set.shift_selection:enhance {
+        post = function()
+          local selection = action_state.get_selected_entry()
+          if selection == nil then
+            utils.__warn_no_selection "builtin.colorscheme"
+            return
+          end
+          need_restore = true
+          if opts.enable_preview then
+            vim.cmd.colorscheme(selection.value)
+          end
+        end,
+      }
+      actions.close:enhance {
+        post = function()
+          if need_restore then
+            vim.cmd.colorscheme(before_color)
+          end
+        end,
+      }
       return true
     end,
+    on_complete = {
+      function()
+        local selection = action_state.get_selected_entry()
+        if selection == nil then
+          utils.__warn_no_selection "builtin.colorscheme"
+          return
+        end
+        need_restore = true
+        vim.cmd.colorscheme(selection.value)
+      end,
+    },
   })
 
   if opts.enable_preview then
@@ -1395,7 +1417,7 @@ internal.spell_suggest = function(opts)
 
           action_state.get_current_picker(prompt_bufnr)._original_mode = "i"
           actions.close(prompt_bufnr)
-          vim.cmd("normal! ciw" .. selection[1])
+          vim.cmd('normal! "_ciw' .. selection[1])
           vim.cmd "stopinsert"
         end)
         return true
