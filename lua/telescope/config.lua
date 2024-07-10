@@ -728,6 +728,15 @@ append(
 )
 
 append(
+  "attach_mappings",
+  nil,
+  [[
+    Defines the `attach_mappings` function that will be used as default for all pickers
+    If you define `attach_mappings` on specific picker, that'll be used instead.
+    Default: nil ]]
+)
+
+append(
   "use_less",
   true,
   [[
