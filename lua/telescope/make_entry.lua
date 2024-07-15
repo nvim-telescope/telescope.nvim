@@ -457,6 +457,8 @@ function make_entry.gen_from_quickfix(opts)
 
   local hidden = utils.is_path_hidden(opts)
 
+  local disable_devicons = opts.disable_devicons
+
   local make_display = function(entry)
     local display_filename, path_style = utils.transform_path(opts, entry.filename)
     local display_string = string.format("%s:%d:%d", display_filename, entry.lnum, entry.col)
@@ -473,7 +475,16 @@ function make_entry.gen_from_quickfix(opts)
       display_string = display_string .. ":" .. text
     end
 
-    return display_string, path_style
+    local hl_group, icon
+    display_string, hl_group, icon = utils.transform_devicons(entry.filename, display_string, disable_devicons)
+
+    if hl_group then
+      local style = { { { 0, #icon + 1 }, hl_group } }
+      style = utils.merge_styles(style, path_style, #icon + 1)
+      return display_string, style
+    else
+      return display_string, path_style
+    end
   end
 
   local get_filename = get_filename_fn()
