@@ -933,7 +933,8 @@ builtin.find_files({opts})                    *telescope.builtin.find_files()*
                                                 `find_command`
         {follow}              (boolean)         if true, follows symlinks
                                                 (i.e. uses `-L` flag for the
-                                                `find` command)
+                                                `find` command) (default:
+                                                false)
         {hidden}              (boolean)         determines whether to show
                                                 hidden files or not (default:
                                                 false)
