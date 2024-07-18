@@ -173,6 +173,97 @@ end
 ---@param funname string: name of the calling function
 ---@param params lsp.TextDocumentPositionParams
 ---@param opts table
+local function list_or_jump_all(action, title, funname, params, opts)
+  opts.reuse_win = vim.F.if_nil(opts.reuse_win, false)
+  opts.curr_filepath = vim.api.nvim_buf_get_name(opts.bufnr)
+
+  vim.lsp.buf_request_all(opts.bufnr, action, params, function(results_per_client)
+    local items = {}
+    local first_encoding
+
+    for client_id, result_or_error in pairs(results_per_client) do
+      local error, result = result_or_error.error, result_or_error.result
+      if error then
+        vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
+        return
+      end
+
+      if result == nil then
+        return
+      end
+
+      local locations = {}
+
+      if not utils.islist(result) then
+        vim.list_extend(locations, { result })
+      else
+        vim.list_extend(locations, result)
+      end
+
+      local offset_encoding = vim.lsp.get_client_by_id(client_id).offset_encoding
+
+      if not vim.tbl_isempty(result) then
+        first_encoding = offset_encoding
+      end
+
+      vim.list_extend(items, vim.lsp.util.locations_to_items(locations, offset_encoding))
+    end
+
+    items = apply_action_handler(action, items, opts)
+    items = filter_file_ignore_patters(items, opts)
+
+    if vim.tbl_isempty(items) then
+      utils.notify(funname, {
+        msg = string.format("No %s found", title),
+        level = "INFO",
+      })
+      return
+    end
+
+    if #items == 1 and opts.jump_type ~= "never" then
+      local item = items[1]
+      if opts.curr_filepath ~= item.filename then
+        local cmd
+        if opts.jump_type == "tab" then
+          cmd = "tabedit"
+        elseif opts.jump_type == "split" then
+          cmd = "new"
+        elseif opts.jump_type == "vsplit" then
+          cmd = "vnew"
+        elseif opts.jump_type == "tab drop" then
+          cmd = "tab drop"
+        end
+
+        if cmd then
+          vim.cmd(string.format("%s %s", cmd, item.filename))
+        end
+      end
+
+      local location = item_to_location(item, first_encoding)
+      vim.lsp.util.jump_to_location(location, first_encoding, opts.reuse_win)
+    else
+      pickers
+          .new(opts, {
+            prompt_title = title,
+            finder = finders.new_table {
+              results = items,
+              entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
+            },
+            previewer = conf.qflist_previewer(opts),
+            sorter = conf.generic_sorter(opts),
+            push_cursor_on_edit = true,
+            push_tagstack_on_edit = true,
+          })
+          :find()
+    end
+  end)
+end
+
+---@param action telescope.lsp.list_or_jump_action
+---@param title string prompt title
+---@param funname string: name of the calling function
+---@param params lsp.TextDocumentPositionParams
+---@param opts table
 local function list_or_jump(action, title, funname, params, opts)
   opts.reuse_win = vim.F.if_nil(opts.reuse_win, false)
   opts.curr_filepath = vim.api.nvim_buf_get_name(opts.bufnr)
@@ -249,17 +340,17 @@ lsp.references = function(opts)
   opts.include_current_line = vim.F.if_nil(opts.include_current_line, false)
   local params = vim.lsp.util.make_position_params(opts.winnr)
   params.context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) }
-  return list_or_jump("textDocument/references", "LSP References", "builtin.lsp_references", params, opts)
+  return list_or_jump_all("textDocument/references", "LSP References", "builtin.lsp_references", params, opts)
 end
 
 lsp.definitions = function(opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
-  return list_or_jump("textDocument/definition", "LSP Definitions", "builtin.lsp_definitions", params, opts)
+  return list_or_jump_all("textDocument/definition", "LSP Definitions", "builtin.lsp_definitions", params, opts)
 end
 
 lsp.type_definitions = function(opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
-  return list_or_jump(
+  return list_or_jump_all(
     "textDocument/typeDefinition",
     "LSP Type Definitions",
     "builtin.lsp_type_definitions",
@@ -270,7 +361,8 @@ end
 
 lsp.implementations = function(opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
-  return list_or_jump("textDocument/implementation", "LSP Implementations", "builtin.lsp_implementations", params, opts)
+  return list_or_jump_all("textDocument/implementation", "LSP Implementations", "builtin.lsp_implementations", params,
+    opts)
 end
 
 local symbols_sorter = function(symbols)
