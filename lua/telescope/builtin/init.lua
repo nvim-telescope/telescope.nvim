@@ -77,7 +77,7 @@ builtin.grep_string = require_on_exported_call("telescope.builtin.__files").grep
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field find_command function|table: cmd to use for the search. Can be a fn(opts) -> tbl (default: autodetect)
 ---@field file_entry_encoding string: encoding of output of `find_command`
----@field follow boolean: if true, follows symlinks (i.e. uses `-L` flag for the `find` command)
+---@field follow boolean: if true, follows symlinks (i.e. uses `-L` flag for the `find` command) (default: false)
 ---@field hidden boolean: determines whether to show hidden files or not (default: false)
 ---@field no_ignore boolean: show files ignored by .gitignore, .ignore, etc. (default: false)
 ---@field no_ignore_parent boolean: show files ignored by .gitignore, .ignore, etc. in parent dirs. (default: false)
