@@ -184,7 +184,7 @@ local function list_or_jump_all(action, title, funname, params, opts)
     for client_id, result_or_error in pairs(results_per_client) do
       local error, result = result_or_error.error, result_or_error.result
       if error then
-        vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
+        vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. error.message)
         return
       end
 
