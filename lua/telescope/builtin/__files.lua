@@ -567,13 +567,13 @@ files.current_buffer_fuzzy_find = function(opts)
 
           actions.close(prompt_bufnr)
           vim.schedule(function()
+            vim.cmd "normal! m'"
             vim.api.nvim_win_set_cursor(0, { selection.lnum, first_col })
           end)
         end)
 
         return true
       end,
-      push_cursor_on_edit = true,
     })
     :find()
 end
