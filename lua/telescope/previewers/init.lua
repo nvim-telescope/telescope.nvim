@@ -90,13 +90,16 @@ end
 --- Additionally you can define:
 --- - `title` a static title for example "File Preview"
 --- - `dyn_title(self, entry)` a dynamic title function which gets called
+--- - `env` table: define environment variables to forward to the terminal
+---    process. Example:
+---   - `{ ['PAGER'] = '', ['MANWIDTH'] = 50 }`
 --- when config value `dynamic_preview_title = true`
 ---
 --- It's an easy way to get your first previewer going and it integrates well
 --- with `bat` and `less`. Providing out of the box scrolling if the command
 --- uses less.
 ---
---- Furthermore, it will forward all `config.set_env` environment variables to
+--- Furthermore, if `env` is not set, it will forward all `config.set_env` environment variables to
 --- that terminal process.
 previewers.new_termopen_previewer = term_previewer.new_termopen_previewer
 
