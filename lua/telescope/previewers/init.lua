@@ -90,10 +90,10 @@ end
 --- Additionally you can define:
 --- - `title` a static title for example "File Preview"
 --- - `dyn_title(self, entry)` a dynamic title function which gets called
+--- when config value `dynamic_preview_title = true`
 --- - `env` table: define environment variables to forward to the terminal
 ---    process. Example:
 ---   - `{ ['PAGER'] = '', ['MANWIDTH'] = 50 }`
---- when config value `dynamic_preview_title = true`
 ---
 --- It's an easy way to get your first previewer going and it integrates well
 --- with `bat` and `less`. Providing out of the box scrolling if the command
