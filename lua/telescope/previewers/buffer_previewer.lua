@@ -56,11 +56,15 @@ local function defaulter(f, default_opts)
   }
 end
 
--- modified vim.split to incorporate a timer
-local function split(s, sep, plain, opts)
+--- modified vim.gsplit to incorporate a timer
+---@param s string
+---@param sep string
+---@param opts table
+---@return string[]?
+local function split(s, sep, opts)
   opts = opts or {}
   local t = {}
-  for c in vim.gsplit(s, sep, plain) do
+  for c in vim.gsplit(s, sep) do
     local line = opts.file_encoding and vim.iconv(c, opts.file_encoding, "utf8") or c
     table.insert(t, line)
     if opts.preview.timeout then
@@ -72,7 +76,10 @@ local function split(s, sep, plain, opts)
   end
   return t
 end
-local bytes_to_megabytes = math.pow(1024, 2)
+
+local bytes_to_megabytes = function(bytes)
+  return bytes / math.pow(1024, 2)
+end
 
 local color_hash = {
   ["p"] = "TelescopePreviewPipe",
@@ -157,22 +164,43 @@ local handle_directory_preview = function(filepath, bufnr, opts)
   })
 end
 
+local function ft_known(ft)
+  return ft ~= nil and ft ~= ""
+end
+
+---@param mb_filesize number
+---@param filepath string
+---@param bufnr number preview bufnr
+---@param opts table
+---@return boolean # whether to abort preview generation
+local function filesize_ok(mb_filesize, filepath, bufnr, opts)
+  if opts.preview.filesize_limit then
+    if mb_filesize > opts.preview.filesize_limit then
+      if type(opts.preview.filesize_hook) == "function" then
+        opts.preview.filesize_hook(filepath, bufnr, opts)
+      else
+        putils.set_preview_message(bufnr, opts.winid, "File exceeds preview size limit", opts.preview.msg_bg_fillchar)
+      end
+      return false
+    end
+  end
+  return true
+end
+
 local handle_file_preview = function(filepath, bufnr, stat, opts)
   vim.schedule(function()
     opts.ft = opts.use_ft_detect and putils.filetype_detect(filepath)
-    local possible_binary = false
-    if type(opts.preview.filetype_hook) == "function" and opts.ft ~= nil and opts.ft ~= "" then
-      if not opts.preview.filetype_hook(filepath, bufnr, opts) then
-        return
-      end
+    if not opts.preview.filetype_hook(filepath, bufnr, opts) then
+      return
     end
-    if opts.preview.check_mime_type == true and has_file and (opts.ft == nil or opts.ft == "") then
+
+    local possible_binary = false
+    if opts.preview.check_mime_type == true and has_file and not ft_known(opts.ft) then
       -- avoid SIGABRT in buffer previewer happening with utils.get_os_command_output
       local mime_type = capture(string.format([[file --mime-type -b "%s"]], filepath))
       if putils.binary_mime_type(mime_type) then
         if type(opts.preview.mime_hook) == "function" then
           opts.preview.mime_hook(filepath, bufnr, opts)
-          return
         else
           possible_binary = true
         end
@@ -182,16 +210,9 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
       end
     end
 
-    local mb_filesize = stat.size / bytes_to_megabytes
-    if opts.preview.filesize_limit then
-      if mb_filesize > opts.preview.filesize_limit then
-        if type(opts.preview.filesize_hook) == "function" then
-          opts.preview.filesize_hook(filepath, bufnr, opts)
-        else
-          putils.set_preview_message(bufnr, opts.winid, "File exceeds preview size limit", opts.preview.msg_bg_fillchar)
-        end
-        return
-      end
+    local mb_filesize = bytes_to_megabytes(stat.size)
+    if not filesize_ok(mb_filesize, filepath, bufnr, opts) then
+      return
     end
 
     opts.start_time = vim.loop.hrtime()
@@ -199,7 +220,7 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
       if not vim.api.nvim_buf_is_valid(bufnr) then
         return
       end
-      local processed_data = split(data, "[\r]?\n", nil, opts)
+      local processed_data = split(data, "[\r]?\n", opts)
 
       if processed_data then
         local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, processed_data)
@@ -208,7 +229,7 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
         end
         -- last resort, if ft is still empty at this point in time,
         -- we need to determine the filetype using the buffer contents
-        if opts.ft == nil or opts.ft == "" then
+        if not ft_known(opts.ft) then
           opts.ft = vim.filetype.match { filename = filepath, buf = bufnr }
         end
         -- we need to attempt to call filetype hook at this point "again"
@@ -220,7 +241,7 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
           end
         end
         -- if we still dont have a ft we need to display the binary message
-        if (opts.ft == nil or opts.ft == "") and possible_binary then
+        if not ft_known(opts.ft) and possible_binary then
           putils.set_preview_message(bufnr, opts.winid, "Binary cannot be previewed", opts.preview.msg_bg_fillchar)
           return
         end
@@ -244,22 +265,81 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
   end)
 end
 
-local PREVIEW_TIMEOUT_MS = 250
-local PREVIEW_FILESIZE_MB = 25
-local PREVIEW_HIGHLIGHT_MB = 1
+--- create preview from buffer contents
+--- this allows previewing unwritten changes to buffers
+---@param filepath string
+---@param bufnr integer preview bufnr
+---@param opts table
+local handle_buffer_preview = function(filepath, bufnr, opts)
+  vim.schedule(function()
+    opts.ft = vim.bo[opts.entry_bufnr].ft
+    if type(opts.preview.filetype_hook) == "function" then
+      if not opts.preview.filetype_hook(filepath, bufnr, opts) then
+        return
+      end
+    end
+
+    if not vim.api.nvim_buf_is_valid(bufnr) then
+      return
+    end
+
+    local start_time = vim.loop.hrtime()
+
+    local lines = vim.api.nvim_buf_get_lines(opts.entry_bufnr, 0, -1, false)
+    local contents = table.concat(lines, "\n")
+    local mb_bufsize = bytes_to_megabytes(#contents)
+    if not filesize_ok(mb_bufsize, filepath, bufnr, opts) then
+      return
+    end
+
+    local end_time = vim.loop.hrtime()
+    if (end_time - start_time) / 1e6 > opts.preview.timeout then
+      if type(opts.preview.timeout_hook) == "function" then
+        opts.preview.timeout_hook(filepath, bufnr, opts)
+      else
+        putils.set_preview_message(bufnr, opts.winid, "Previewer timed out", opts.preview.msg_bg_fillchar)
+      end
+      return
+    end
+
+    local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, lines)
+    if not ok then
+      return
+    end
+
+    if opts.callback then
+      opts.callback(bufnr)
+    end
+
+    if not (opts.preview.highlight_limit and mb_bufsize > opts.preview.highlight_limit) then
+      putils.highlighter(bufnr, opts.ft, opts)
+    end
+  end)
+end
 
 previewers.file_maker = function(filepath, bufnr, opts)
   opts = vim.F.if_nil(opts, {})
   opts.preview = vim.F.if_nil(opts.preview, {})
-  opts.preview.timeout = vim.F.if_nil(opts.preview.timeout, PREVIEW_TIMEOUT_MS)
-  opts.preview.filesize_limit = vim.F.if_nil(opts.preview.filesize_limit, PREVIEW_FILESIZE_MB)
-  opts.preview.highlight_limit = vim.F.if_nil(opts.preview.highlight_limit, PREVIEW_HIGHLIGHT_MB)
-  opts.preview.msg_bg_fillchar = vim.F.if_nil(opts.preview.msg_bg_fillchar, "╱")
-  opts.preview.treesitter = vim.F.if_nil(opts.preview.treesitter, true)
-  if opts.use_ft_detect == nil then
-    opts.use_ft_detect = true
-  end
-  if opts.bufname ~= filepath then
+  opts.preview.timeout = vim.F.if_nil(opts.preview.timeout, conf.preview.timeout)
+  opts.preview.filesize_limit = vim.F.if_nil(opts.preview.filesize_limit, conf.preview.filesize_limit)
+  opts.preview.highlight_limit = vim.F.if_nil(opts.preview.highlight_limit, conf.preview.highlight_limit)
+  opts.preview.msg_bg_fillchar = vim.F.if_nil(opts.preview.msg_bg_fillchar, conf.preview.msg_bg_fillchar)
+  opts.preview.treesitter = vim.F.if_nil(opts.preview.treesitter, conf.preview.treesitter)
+  opts.use_ft_detect = vim.F.if_nil(opts.use_ft_detect, true)
+
+  vim.validate {
+    filetype_hook = { opts.preview.filetype_hook, "f", true },
+    mime_hook = { opts.preview.mime_hook, "f", true },
+    filesize_hook = { opts.preview.filesize_hook, "f", true },
+    timeout_hook = { opts.preview.timeout_hook, "f", true },
+  }
+  opts.preview.filetype_hook = vim.F.if_nil(opts.preview.filetype_hook, function()
+    return true
+  end)
+
+  if opts.entry_bufnr and ft_known(vim.bo[opts.entry_bufnr]) then
+    handle_buffer_preview(vim.api.nvim_buf_get_name(opts.entry_bufnr), bufnr, opts)
+  elseif opts.bufname ~= filepath then
     if not vim.in_fast_event() then
       filepath = utils.path_expand(filepath)
     end
@@ -563,20 +643,21 @@ previewers.vimgrep = defaulter(function(opts)
 
     define_preview = function(self, entry)
       -- builtin.buffers: bypass path validation for terminal buffers that don't have appropriate path
-      local has_buftype = entry.bufnr
-          and vim.api.nvim_buf_is_valid(entry.bufnr)
-          and vim.api.nvim_buf_get_option(entry.bufnr, "buftype") ~= ""
-        or false
-      local p
-      if not has_buftype then
-        p = from_entry.path(entry, true, false)
-        if p == nil or p == "" then
+      local valid_buf = entry.bufnr and vim.api.nvim_buf_is_valid(entry.bufnr)
+      local has_buftype = valid_buf and vim.api.nvim_buf_get_option(entry.bufnr, "buftype") ~= ""
+
+      local path
+      if valid_buf then
+        path = vim.api.nvim_buf_get_name(entry.bufnr)
+      else
+        path = from_entry.path(entry, true)
+        if path == nil or path == "" then
           return
         end
       end
 
-      -- Workaround for unnamed buffer when using builtin.buffer
-      if entry.bufnr and (p == "[No Name]" or has_buftype) then
+      -- Workaround for unnamed or terminal buffer when using builtin.buffer
+      if valid_buf and (path == "[No Name]" or has_buftype) then
         local lines = vim.api.nvim_buf_get_lines(entry.bufnr, 0, -1, false)
         vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
         -- schedule so that the lines are actually there and can be jumped onto when we call jump_to_line
@@ -584,7 +665,7 @@ previewers.vimgrep = defaulter(function(opts)
           jump_to_line(self, self.state.bufnr, entry)
         end)
       else
-        conf.buffer_previewer_maker(p, self.state.bufnr, {
+        conf.buffer_previewer_maker(path, self.state.bufnr, {
           bufname = self.state.bufname,
           winid = self.state.winid,
           preview = opts.preview,
@@ -592,6 +673,7 @@ previewers.vimgrep = defaulter(function(opts)
             jump_to_line(self, bufnr, entry)
           end,
           file_encoding = opts.file_encoding,
+          entry_bufnr = (valid_buf and not has_buftype) and entry.bufnr or nil,
         })
       end
     end,
