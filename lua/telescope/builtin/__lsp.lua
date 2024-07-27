@@ -108,10 +108,12 @@ local function calls(opts, direction)
   end)
 end
 
+---@param opts telescope.builtin.lsp_in_out_calls.opts: options to pass to the picker
 M.incoming_calls = function(opts)
   calls(opts, "from")
 end
 
+---@param opts telescope.builtin.lsp_in_out_calls.opts: options to pass to the picker
 M.outgoing_calls = function(opts)
   calls(opts, "to")
 end
@@ -249,6 +251,7 @@ local function list_or_jump(action, title, funname, params, opts)
   end)
 end
 
+---@param opts telescope.builtin.lsp_references.opts: options to pass to the picker (default: false)
 M.references = function(opts)
   opts.include_current_line = vim.F.if_nil(opts.include_current_line, false)
   local params = client_position_params(opts.winnr, {
@@ -257,11 +260,13 @@ M.references = function(opts)
   return list_or_jump("textDocument/references", "LSP References", "builtin.lsp_references", params, opts)
 end
 
+---@param opts telescope.builtin.list_or_jump.opts: options to pass to the picker
 M.definitions = function(opts)
   local params = client_position_params(opts.winnr)
   return list_or_jump("textDocument/definition", "LSP Definitions", "builtin.lsp_definitions", params, opts)
 end
 
+---@param opts telescope.builtin.list_or_jump.opts: options to pass to the picker
 M.type_definitions = function(opts)
   local params = client_position_params(opts.winnr)
   return list_or_jump(
@@ -273,6 +278,7 @@ M.type_definitions = function(opts)
   )
 end
 
+---@param opts telescope.builtin.list_or_jump.opts: options to pass to the picker
 M.implementations = function(opts)
   local params = client_position_params(opts.winnr)
   return list_or_jump("textDocument/implementation", "LSP Implementations", "builtin.lsp_implementations", params, opts)
@@ -310,6 +316,7 @@ local symbols_sorter = function(symbols)
   return symbols
 end
 
+---@param opts telescope.builtin.lsp_document_symbols.opts: options to pass to the picker
 M.document_symbols = function(opts)
   local params = client_position_params(opts.winnr)
   lsp.buf_request(opts.bufnr, "textDocument/documentSymbol", params, function(err, result, ctx, _)
@@ -364,6 +371,7 @@ M.document_symbols = function(opts)
   end)
 end
 
+---@param opts telescope.builtin.lsp_workspace_symbols.opts: options to pass to the picker
 M.workspace_symbols = function(opts)
   local params = { query = opts.query or "" }
   lsp.buf_request(opts.bufnr, "workspace/symbol", params, function(err, server_result, ctx, _)
@@ -437,6 +445,7 @@ local function get_workspace_symbols_requester(bufnr, opts)
   end
 end
 
+---@param opts telescope.builtin.lsp_dynamic_workspace_symbols.opts: options to pass to the picker
 M.dynamic_workspace_symbols = function(opts)
   pickers
     .new(opts, {
