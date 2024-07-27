@@ -1,12 +1,7 @@
----@tag telescope.resolve
----@config { ["module"] = "telescope.resolve" }
-
----@brief [[
+---@brief
 --- Provides "resolver functions" to allow more customisable inputs for options.
----@brief ]]
 
 --[[
-
 Ultimately boils down to getting `height` and `width` for:
 - prompt
 - preview
@@ -86,10 +81,7 @@ That's the next step to scrolling.
     height = ...
     width = ...
 }
-
-
-
---]]
+]]
 
 local resolver = {}
 local _resolve_map = {}
@@ -202,6 +194,8 @@ end
 ---
 --- The returned function will have signature:
 ---     function(self, max_columns, max_lines): number
+---@param val any see description above
+---@return fun(self, max_columns: number, max_lines: number): number
 resolver.resolve_height = function(val)
   for k, v in pairs(_resolve_map) do
     if k(val) then
@@ -231,6 +225,8 @@ end
 ---
 --- The returned function will have signature:
 ---     function(self, max_columns, max_lines): number
+---@param val any see description above
+---@return fun(self, max_columns: number, max_lines: number): number
 resolver.resolve_width = function(val)
   for k, v in pairs(_resolve_map) do
     if k(val) then
@@ -244,13 +240,20 @@ end
 --- Calculates the adjustment required to move the picker from the middle of the screen to
 --- an edge or corner. <br>
 --- The `anchor` can be any of the following strings:
----   - "", "CENTER", "NW", "N", "NE", "E", "SE", "S", "SW", "W"
+--- - "", "CENTER", "NW", "N", "NE", "E", "SE", "S", "SW", "W"
 --- The anchors have the following meanings:
----   - "" or "CENTER":<br>
----     the picker will remain in the middle of the screen.
----   - Compass directions:<br>
----     the picker will move to the corresponding edge/corner
----     e.g. "NW" -> "top left corner", "E" -> "right edge", "S" -> "bottom edge"
+--- - "" or "CENTER":<br>
+---   the picker will remain in the middle of the screen.
+--- - Compass directions:<br>
+---   the picker will move to the corresponding edge/corner
+---   e.g. "NW" -> "top left corner", "E" -> "right edge", "S" -> "bottom edge"
+---@param anchor ""|"CENTER"|"NW"|"N"|"NE"|"E"|"SE"|"S"|"SW"|"W
+---@param p_width number window width
+---@param p_height number window height
+---@param max_columns number max number of columns
+---@param max_lines number max number of lines
+---@param anchor_padding number padding to add to the anchor
+---@return number[] # row and col
 resolver.resolve_anchor_pos = function(anchor, p_width, p_height, max_columns, max_lines, anchor_padding)
   anchor = anchor:upper()
   local pos = { 0, 0 }

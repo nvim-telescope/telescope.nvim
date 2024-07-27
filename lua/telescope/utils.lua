@@ -1,9 +1,5 @@
----@tag telescope.utils
----@config { ["module"] = "telescope.utils" }
-
----@brief [[
+---@brief
 --- Utilities for writing telescope pickers
----@brief ]]
 
 local Path = require "plenary.path"
 local Job = require "plenary.job"
