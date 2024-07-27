@@ -37,6 +37,7 @@ end
 
 local internal = {}
 
+---@param opts telescope.builtin.builtin.opts
 internal.builtin = function(opts)
   opts.include_extensions = vim.F.if_nil(opts.include_extensions, false)
   opts.use_default_opts = vim.F.if_nil(opts.use_default_opts, false)
@@ -128,6 +129,7 @@ internal.builtin = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.resume.opts: options to pass to the picker
 internal.resume = function(opts)
   opts = opts or {}
   opts.cache_index = vim.F.if_nil(opts.cache_index, 1)
@@ -174,6 +176,7 @@ internal.resume = function(opts)
   pickers.new(opts, picker):find()
 end
 
+---@param opts telescope.builtin.pickers.opts: options to pass to the picker
 internal.pickers = function(opts)
   local cached_pickers = state.get_global_key "cached_pickers"
   if cached_pickers == nil or vim.tbl_isempty(cached_pickers) then
@@ -231,6 +234,7 @@ internal.pickers = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.planets.opts: options to pass to the picker
 internal.planets = function(opts)
   local show_pluto = opts.show_pluto or false
   local show_moon = opts.show_moon or false
@@ -279,6 +283,7 @@ internal.planets = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.symbol.opts: options to pass to the picker
 internal.symbols = function(opts)
   local initial_mode = vim.fn.mode()
   local files = vim.api.nvim_get_runtime_file("data/telescope-sources/*.json", true)
@@ -351,6 +356,7 @@ internal.symbols = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.commands.opts: options to pass to the picker
 internal.commands = function(opts)
   pickers
     .new(opts, {
@@ -405,6 +411,7 @@ internal.commands = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.quickfix.opts: options to pass to the picker
 internal.quickfix = function(opts)
   local qf_identifier = opts.id or vim.F.if_nil(opts.nr, "$")
   local locations = vim.fn.getqflist({ [opts.id and "id" or "nr"] = qf_identifier, items = true }).items
@@ -427,6 +434,7 @@ internal.quickfix = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.quickfixhistory.opts: options to pass to the picker
 internal.quickfixhistory = function(opts)
   local qflists = {}
   for i = 1, 10 do -- (n)vim keeps at most 10 quickfix lists in full
@@ -495,6 +503,7 @@ internal.quickfixhistory = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.loclist.opts: options to pass to the picker
 internal.loclist = function(opts)
   local locations = vim.fn.getloclist(0)
   local filenames = {}
@@ -524,6 +533,7 @@ internal.loclist = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.oldfiles.opts: options to pass to the picker
 internal.oldfiles = function(opts)
   opts = apply_cwd_only_aliases(opts)
   opts.include_current_session = vim.F.if_nil(opts.include_current_session, true)
@@ -574,6 +584,7 @@ internal.oldfiles = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.commands_history.opts: options to pass to the picker
 internal.command_history = function(opts)
   local history_string = vim.fn.execute "history cmd"
   local history_list = utils.split_lines(history_string)
@@ -614,6 +625,7 @@ internal.command_history = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.search_history.opts: options to pass to the picker
 internal.search_history = function(opts)
   local search_string = vim.fn.execute "history search"
   local search_list = utils.split_lines(search_string)
@@ -644,6 +656,7 @@ internal.search_history = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.vim_options.opts: options to pass to the picker
 internal.vim_options = function(opts)
   local res = {}
   for _, v in pairs(vim.api.nvim_get_all_options_info()) do
@@ -687,6 +700,7 @@ internal.vim_options = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.help_tags.opts: options to pass to the picker
 internal.help_tags = function(opts)
   opts.lang = vim.F.if_nil(opts.lang, vim.o.helplang)
   opts.fallback = vim.F.if_nil(opts.fallback, true)
@@ -793,6 +807,7 @@ internal.help_tags = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.man_pages.opts: options to pass to the picker
 internal.man_pages = function(opts)
   opts.sections = vim.F.if_nil(opts.sections, { "1" })
   assert(utils.islist(opts.sections), "sections should be a list")
@@ -842,6 +857,7 @@ internal.man_pages = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.reload.opts: options to pass to the picker
 internal.reloader = function(opts)
   local package_list = vim.tbl_keys(package.loaded)
 
@@ -892,6 +908,7 @@ internal.reloader = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.buffers.opts: options to pass to the picker
 internal.buffers = function(opts)
   opts = apply_cwd_only_aliases(opts)
 
@@ -982,6 +999,7 @@ internal.buffers = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.colorscheme.opts: options to pass to the picker
 internal.colorscheme = function(opts)
   local before_background = vim.o.background
   local before_color = vim.api.nvim_exec2("colorscheme", { output = true }).output
@@ -1103,6 +1121,7 @@ internal.colorscheme = function(opts)
   picker:find()
 end
 
+---@param opts telescope.builtin.marks.opts: options to pass to the picker
 internal.marks = function(opts)
   local local_marks = {
     items = vim.fn.getmarklist(opts.bufnr),
@@ -1169,6 +1188,7 @@ internal.marks = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.registers.opts: options to pass to the picker
 internal.registers = function(opts)
   local registers_table = { '"', "-", "#", "=", "/", "*", "+", ":", ".", "%" }
 
@@ -1200,6 +1220,7 @@ internal.registers = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.keymaps.opts: options to pass to the picker
 internal.keymaps = function(opts)
   opts.modes = vim.F.if_nil(opts.modes, { "n", "i", "c", "x" })
   opts.show_plug = vim.F.if_nil(opts.show_plug, true)
@@ -1262,6 +1283,7 @@ internal.keymaps = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.filetypes.opts: options to pass to the picker
 internal.filetypes = function(opts)
   local filetypes = vim.fn.getcompletion("", "filetype")
 
@@ -1289,6 +1311,7 @@ internal.filetypes = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.highlights.opts: options to pass to the picker
 internal.highlights = function(opts)
   local highlights = vim.fn.getcompletion("", "highlight")
 
@@ -1318,6 +1341,7 @@ internal.highlights = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.autocommands.opts: options to pass to the picker
 internal.autocommands = function(opts)
   local autocmds = vim.api.nvim_get_autocmds {}
   table.sort(autocmds, function(lhs, rhs)
@@ -1378,6 +1402,7 @@ internal.autocommands = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.spell_suggest.opts: options to pass to the picker
 internal.spell_suggest = function(opts)
   local cursor_word = vim.fn.expand "<cword>"
   local suggestions = vim.fn.spellsuggest(cursor_word)
@@ -1408,6 +1433,7 @@ internal.spell_suggest = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.tagstack.opts: options to pass to the picker
 internal.tagstack = function(opts)
   opts = opts or {}
   local tagstack = vim.fn.gettagstack().items
@@ -1447,6 +1473,7 @@ internal.tagstack = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.jumplist.opts: options to pass to the picker
 internal.jumplist = function(opts)
   opts = opts or {}
   local jumplist = vim.fn.getjumplist()[1]

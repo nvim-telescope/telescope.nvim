@@ -1,95 +1,85 @@
----@tag telescope.resolve
----@config { ["module"] = "telescope.resolve" }
-
----@brief [[
+---@brief
 --- Provides "resolver functions" to allow more customisable inputs for options.
----@brief ]]
 
---[[
-
-Ultimately boils down to getting `height` and `width` for:
-- prompt
-- preview
-- results
-
-No matter what you do, I will not make prompt have more than one line (atm)
-
-Result of `resolve` should be a table with:
-
-{
-  preview = {
-    get_width = function(self, max_columns, max_lines) end
-    get_height = function(self, max_columns, max_lines) end
-  },
-
-  result = {
-    get_width = function(self, max_columns, max_lines) end
-    get_height = function(self, max_columns, max_lines) end
-  },
-
-  prompt = {
-    get_width = function(self, max_columns, max_lines) end
-    get_height = function(self, max_columns, max_lines) end
-  },
-
-  total ?
-}
-
-!!NOT IMPLEMENTED YET!!
-
-height =
-    1. 0 <= number < 1
-        This means total height as a percentage
-
-    2. 1 <= number
-        This means total height as a fixed number
-
-    3. function(picker, columns, lines)
-        -> returns one of the above options
-        return math.min(110, max_rows * .5)
-
-        if columns > 120 then
-            return 110
-        else
-            return 0.6
-        end
-
-    3. {
-        previewer = x,
-        results = x,
-        prompt = x,
-    }, this means I do my best guess I can for these, given your options
-
-width =
-    exactly the same, but switch to width
-
-
-{
-    height = 0.5,
-    width = {
-        previewer = 0.25,
-        results = 30,
-    }
-}
-
-https://github.com/nvim-lua/telescope.nvim/pull/43
-
-After we get layout, we should try and make top-down sorting work.
-That's the next step to scrolling.
-
-{
-    vertical = {
-    },
-    horizontal = {
-    },
-
-    height = ...
-    width = ...
-}
-
-
-
---]]
+-- Ultimately boils down to getting `height` and `width` for:
+-- - prompt
+-- - preview
+-- - results
+--
+-- No matter what you do, I will not make prompt have more than one line (atm)
+--
+-- Result of `resolve` should be a table with:
+--
+-- {
+--   preview = {
+--     get_width = function(self, max_columns, max_lines) end
+--     get_height = function(self, max_columns, max_lines) end
+--   },
+--
+--   result = {
+--     get_width = function(self, max_columns, max_lines) end
+--     get_height = function(self, max_columns, max_lines) end
+--   },
+--
+--   prompt = {
+--     get_width = function(self, max_columns, max_lines) end
+--     get_height = function(self, max_columns, max_lines) end
+--   },
+--
+--   total ?
+-- }
+--
+-- !!NOT IMPLEMENTED YET!!
+--
+-- height =
+--     1. 0 <= number < 1
+--         This means total height as a percentage
+--
+--     2. 1 <= number
+--         This means total height as a fixed number
+--
+--     3. function(picker, columns, lines)
+--         -> returns one of the above options
+--         return math.min(110, max_rows * .5)
+--
+--         if columns > 120 then
+--             return 110
+--         else
+--             return 0.6
+--         end
+--
+--     3. {
+--         previewer = x,
+--         results = x,
+--         prompt = x,
+--     }, this means I do my best guess I can for these, given your options
+--
+-- width =
+--     exactly the same, but switch to width
+--
+--
+-- {
+--     height = 0.5,
+--     width = {
+--         previewer = 0.25,
+--         results = 30,
+--     }
+-- }
+--
+-- https://github.com/nvim-lua/telescope.nvim/pull/43
+--
+-- After we get layout, we should try and make top-down sorting work.
+-- That's the next step to scrolling.
+--
+-- {
+--     vertical = {
+--     },
+--     horizontal = {
+--     },
+--
+--     height = ...
+--     width = ...
+-- }
 
 local resolver = {}
 local _resolve_map = {}
@@ -202,6 +192,8 @@ end
 ---
 --- The returned function will have signature:
 ---     function(self, max_columns, max_lines): number
+---@param val any see description above
+---@return fun(self, max_columns: number, max_lines: number): number
 resolver.resolve_height = function(val)
   for k, v in pairs(_resolve_map) do
     if k(val) then
@@ -231,6 +223,8 @@ end
 ---
 --- The returned function will have signature:
 ---     function(self, max_columns, max_lines): number
+---@param val any see description above
+---@return fun(self, max_columns: number, max_lines: number): number
 resolver.resolve_width = function(val)
   for k, v in pairs(_resolve_map) do
     if k(val) then
@@ -244,13 +238,20 @@ end
 --- Calculates the adjustment required to move the picker from the middle of the screen to
 --- an edge or corner. <br>
 --- The `anchor` can be any of the following strings:
----   - "", "CENTER", "NW", "N", "NE", "E", "SE", "S", "SW", "W"
+--- - "", "CENTER", "NW", "N", "NE", "E", "SE", "S", "SW", "W"
 --- The anchors have the following meanings:
----   - "" or "CENTER":<br>
----     the picker will remain in the middle of the screen.
----   - Compass directions:<br>
----     the picker will move to the corresponding edge/corner
----     e.g. "NW" -> "top left corner", "E" -> "right edge", "S" -> "bottom edge"
+--- - "" or "CENTER":<br>
+---   the picker will remain in the middle of the screen.
+--- - Compass directions:<br>
+---   the picker will move to the corresponding edge/corner
+---   e.g. "NW" -> "top left corner", "E" -> "right edge", "S" -> "bottom edge"
+---@param anchor ""|"CENTER"|"NW"|"N"|"NE"|"E"|"SE"|"S"|"SW"|"W
+---@param p_width number window width
+---@param p_height number window height
+---@param max_columns number max number of columns
+---@param max_lines number max number of lines
+---@param anchor_padding number padding to add to the anchor
+---@return number[] # row and col
 resolver.resolve_anchor_pos = function(anchor, p_width, p_height, max_columns, max_lines, anchor_padding)
   anchor = anchor:upper()
   local pos = { 0, 0 }
