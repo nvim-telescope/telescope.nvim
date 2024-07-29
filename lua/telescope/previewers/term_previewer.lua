@@ -202,7 +202,7 @@ previewers.new_termopen_previewer = function(opts)
 
       local term_opts = {
         cwd = opts.cwd or vim.loop.cwd(),
-        env = conf.set_env,
+        env = opts.env or conf.set_env,
       }
 
       local cmd = opts.get_command(entry, status)

@@ -109,16 +109,18 @@ internal.builtin = function(opts)
           end
 
           actions.close(prompt_bufnr)
-          if string.match(selection.text, " : ") then
-            -- Call appropriate function from extensions
-            local split_string = vim.split(selection.text, " : ")
-            local ext = split_string[1]
-            local func = split_string[2]
-            require("telescope").extensions[ext][func](picker_opts)
-          else
-            -- Call appropriate telescope builtin
-            require("telescope.builtin")[selection.text](picker_opts)
-          end
+          vim.schedule(function()
+            if string.match(selection.text, " : ") then
+              -- Call appropriate function from extensions
+              local split_string = vim.split(selection.text, " : ")
+              local ext = split_string[1]
+              local func = split_string[2]
+              require("telescope").extensions[ext][func](picker_opts)
+            else
+              -- Call appropriate telescope builtin
+              require("telescope.builtin")[selection.text](picker_opts)
+            end
+          end)
         end)
         return true
       end,

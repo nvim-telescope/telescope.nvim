@@ -462,7 +462,6 @@ actions.edit_register = function(prompt_bufnr)
       v.content = updated_value
     end
   end
-  -- print(vim.inspect(picker.finder.results))
 end
 
 --- Paste the selected register into the buffer
@@ -489,7 +488,9 @@ end
 actions.insert_symbol = function(prompt_bufnr)
   local symbol = action_state.get_selected_entry().value[1]
   actions.close(prompt_bufnr)
-  vim.api.nvim_put({ symbol }, "", true, true)
+  vim.schedule(function()
+    vim.api.nvim_put({ symbol }, "", true, true)
+  end)
 end
 
 --- Insert a symbol into the current buffer and keeping the insert mode.
@@ -1184,13 +1185,28 @@ actions.delete_buffer = function(prompt_bufnr)
     -- If the current buffer is deleted, switch to the previous buffer
     -- according to bdelete behavior
     if ok and selection.bufnr == current_picker.original_bufnr then
-      local jumplist = vim.fn.getjumplist(current_picker.original_win_id)[1]
-      for i = #jumplist, 1, -1 do
-        if jumplist[i].bufnr ~= selection.bufnr and vim.fn.bufloaded(jumplist[i].bufnr) == 1 then
-          vim.api.nvim_win_set_buf(current_picker.original_win_id, jumplist[i].bufnr)
-          break
+      if vim.api.nvim_win_is_valid(current_picker.original_win_id) then
+        local jumplist = vim.fn.getjumplist(current_picker.original_win_id)[1]
+        for i = #jumplist, 1, -1 do
+          if jumplist[i].bufnr ~= selection.bufnr and vim.fn.bufloaded(jumplist[i].bufnr) == 1 then
+            vim.api.nvim_win_set_buf(current_picker.original_win_id, jumplist[i].bufnr)
+            current_picker.original_bufnr = jumplist[i].bufnr
+            return ok
+          end
         end
+
+        -- no more valid buffers in jumplist, create an empty buffer
+        local empty_buf = vim.api.nvim_create_buf(true, true)
+        vim.api.nvim_win_set_buf(current_picker.original_win_id, empty_buf)
+        current_picker.original_bufnr = empty_buf
+        vim.api.nvim_buf_delete(selection.bufnr, { force = true })
+        return ok
       end
+
+      -- window of the selected buffer got wiped, switch to first valid window
+      local win_id = vim.fn.win_getid(1, current_picker.original_tabpage)
+      current_picker.original_win_id = win_id
+      current_picker.original_bufnr = vim.api.nvim_win_get_buf(win_id)
     end
     return ok
   end)

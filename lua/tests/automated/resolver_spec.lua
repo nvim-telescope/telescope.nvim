@@ -127,12 +127,12 @@ describe("telescope.config.resolve", function()
 
   describe("resolve_anchor_pos", function()
     local test_sizes = {
-      { 6, 7, 8, 9 },
-      { 10, 20, 30, 40 },
-      { 15, 15, 16, 16 },
-      { 17, 19, 23, 31 },
-      { 21, 18, 26, 24 },
-      { 50, 100, 150, 200 },
+      { 6, 7, 8, 9, 1 },
+      { 10, 20, 30, 40, 1 },
+      { 15, 15, 16, 16, 1 },
+      { 17, 19, 23, 31, 1 },
+      { 21, 18, 26, 24, 1 },
+      { 50, 100, 150, 200, 1 },
     }
 
     it([[should not adjust when "CENTER" or "" is the anchor]], function()
@@ -145,7 +145,7 @@ describe("telescope.config.resolve", function()
 
     it([[should end up at top when "N" in the anchor]], function()
       local top_test = function(anchor, p_width, p_height, max_columns, max_lines)
-        local pos = resolve.resolve_anchor_pos(anchor, p_width, p_height, max_columns, max_lines)
+        local pos = resolve.resolve_anchor_pos(anchor, p_width, p_height, max_columns, max_lines, 1)
         eq(1, pos[2] + math.floor((max_lines - p_height) / 2))
       end
       for _, s in ipairs(test_sizes) do
@@ -157,7 +157,7 @@ describe("telescope.config.resolve", function()
 
     it([[should end up at left when "W" in the anchor]], function()
       local left_test = function(anchor, p_width, p_height, max_columns, max_lines)
-        local pos = resolve.resolve_anchor_pos(anchor, p_width, p_height, max_columns, max_lines)
+        local pos = resolve.resolve_anchor_pos(anchor, p_width, p_height, max_columns, max_lines, 1)
         eq(1, pos[1] + math.floor((max_columns - p_width) / 2))
       end
       for _, s in ipairs(test_sizes) do
@@ -169,7 +169,7 @@ describe("telescope.config.resolve", function()
 
     it([[should end up at bottom when "S" in the anchor]], function()
       local bot_test = function(anchor, p_width, p_height, max_columns, max_lines)
-        local pos = resolve.resolve_anchor_pos(anchor, p_width, p_height, max_columns, max_lines)
+        local pos = resolve.resolve_anchor_pos(anchor, p_width, p_height, max_columns, max_lines, 1)
         eq(max_lines - 1, pos[2] + p_height + math.floor((max_lines - p_height) / 2))
       end
       for _, s in ipairs(test_sizes) do
@@ -181,7 +181,7 @@ describe("telescope.config.resolve", function()
 
     it([[should end up at right when "E" in the anchor]], function()
       local right_test = function(anchor, p_width, p_height, max_columns, max_lines)
-        local pos = resolve.resolve_anchor_pos(anchor, p_width, p_height, max_columns, max_lines)
+        local pos = resolve.resolve_anchor_pos(anchor, p_width, p_height, max_columns, max_lines, 1)
         eq(max_columns - 1, pos[1] + p_width + math.floor((max_columns - p_width) / 2))
       end
       for _, s in ipairs(test_sizes) do
@@ -193,8 +193,8 @@ describe("telescope.config.resolve", function()
 
     it([[should ignore casing of the anchor]], function()
       local case_test = function(a1, a2, p_width, p_height, max_columns, max_lines)
-        local pos1 = resolve.resolve_anchor_pos(a1, p_width, p_height, max_columns, max_lines)
-        local pos2 = resolve.resolve_anchor_pos(a2, p_width, p_height, max_columns, max_lines)
+        local pos1 = resolve.resolve_anchor_pos(a1, p_width, p_height, max_columns, max_lines, 1)
+        local pos2 = resolve.resolve_anchor_pos(a2, p_width, p_height, max_columns, max_lines, 1)
         eq(pos1, pos2)
       end
       for _, s in ipairs(test_sizes) do

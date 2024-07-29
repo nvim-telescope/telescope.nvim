@@ -220,6 +220,9 @@ action_set.edit = function(prompt_bufnr, command)
   end
 
   if row and col then
+    if vim.api.nvim_buf_get_name(0) == filename then
+      vim.cmd [[normal! m']]
+    end
     local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, { row, col })
     if not ok then
       log.debug("Failed to move to cursor:", err_msg, row, col)

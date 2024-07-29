@@ -933,7 +933,8 @@ builtin.find_files({opts})                    *telescope.builtin.find_files()*
                                                 `find_command`
         {follow}              (boolean)         if true, follows symlinks
                                                 (i.e. uses `-L` flag for the
-                                                `find` command)
+                                                `find` command) (default:
+                                                false)
         {hidden}              (boolean)         determines whether to show
                                                 hidden files or not (default:
                                                 false)
@@ -2230,6 +2231,9 @@ layout_strategies.horizontal()                 *telescope.layout.horizontal()*
       - anchor:
         - Which edge/corner to pin the picker to
         - See |resolver.resolve_anchor_pos()|
+      - anchor_padding:
+        - Specifies an amount of additional padding around the anchor
+        - Values should be a positive integer
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
@@ -2283,6 +2287,9 @@ layout_strategies.center()                         *telescope.layout.center()*
       - anchor:
         - Which edge/corner to pin the picker to
         - See |resolver.resolve_anchor_pos()|
+      - anchor_padding:
+        - Specifies an amount of additional padding around the anchor
+        - Values should be a positive integer
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
@@ -2361,6 +2368,9 @@ layout_strategies.vertical()                     *telescope.layout.vertical()*
       - anchor:
         - Which edge/corner to pin the picker to
         - See |resolver.resolve_anchor_pos()|
+      - anchor_padding:
+        - Specifies an amount of additional padding around the anchor
+        - Values should be a positive integer
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
@@ -2391,6 +2401,9 @@ layout_strategies.flex()                             *telescope.layout.flex()*
       - anchor:
         - Which edge/corner to pin the picker to
         - See |resolver.resolve_anchor_pos()|
+      - anchor_padding:
+        - Specifies an amount of additional padding around the anchor
+        - Values should be a positive integer
       - height:
         - How tall to make Telescope's entire layout
         - See |resolver.resolve_height()|
@@ -3842,13 +3855,16 @@ previewers.new_termopen_previewer() *telescope.previewers.new_termopen_previewer
     - `title` a static title for example "File Preview"
     - `dyn_title(self, entry)` a dynamic title function which gets called when
       config value `dynamic_preview_title = true`
+    - `env` table: define environment variables to forward to the terminal 
+      process. Example:
+      - `{ ['PAGER'] = '', ['MANWIDTH'] = 50 }`
 
     It's an easy way to get your first previewer going and it integrates well
     with `bat` and `less`. Providing out of the box scrolling if the command
     uses less.
 
-    Furthermore, it will forward all `config.set_env` environment variables to
-    that terminal process.
+    Furthermore, if `env` is not set, it will forward all `config.set_env`
+    environment variables to that terminal process.
 
 
 

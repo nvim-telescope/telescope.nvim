@@ -148,6 +148,26 @@ local apply_action_handler = function(action, items, opts)
   return items
 end
 
+---@param items vim.lsp.util.locations_to_items.ret[]
+---@param opts table
+---@return vim.lsp.util.locations_to_items.ret[]
+local function filter_file_ignore_patters(items, opts)
+  local file_ignore_patterns = vim.F.if_nil(opts.file_ignore_patterns, conf.file_ignore_patterns)
+  file_ignore_patterns = file_ignore_patterns or {}
+  if vim.tbl_isempty(file_ignore_patterns) then
+    return items
+  end
+
+  return vim.tbl_filter(function(item)
+    for _, patt in ipairs(file_ignore_patterns) do
+      if string.match(item.filename, patt) then
+        return false
+      end
+    end
+    return true
+  end, items)
+end
+
 ---@param action telescope.lsp.list_or_jump_action
 ---@param title string prompt title
 ---@param funname string: name of the calling function
@@ -176,6 +196,7 @@ local function list_or_jump(action, title, funname, params, opts)
     local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
     local items = vim.lsp.util.locations_to_items(locations, offset_encoding)
     items = apply_action_handler(action, items, opts)
+    items = filter_file_ignore_patters(items, opts)
 
     if vim.tbl_isempty(items) then
       utils.notify(funname, {
