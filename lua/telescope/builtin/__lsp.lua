@@ -180,31 +180,35 @@ local function list_or_jump(action, title, funname, params, opts)
   vim.lsp.buf_request_all(opts.bufnr, action, params, function(results_per_client)
     local items = {}
     local first_encoding
+    local errors = {}
 
     for client_id, result_or_error in pairs(results_per_client) do
       local error, result = result_or_error.error, result_or_error.result
       if error then
-        vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. error.message)
-        return
-      end
+        errors[client_id] = error
+      else
+        if result ~= nil then
+          local locations = {}
 
-      if result ~= nil then
-        local locations = {}
+          if not utils.islist(result) then
+            vim.list_extend(locations, { result })
+          else
+            vim.list_extend(locations, result)
+          end
 
-        if not utils.islist(result) then
-          vim.list_extend(locations, { result })
-        else
-          vim.list_extend(locations, result)
+          local offset_encoding = vim.lsp.get_client_by_id(client_id).offset_encoding
+
+          if not vim.tbl_isempty(result) then
+            first_encoding = offset_encoding
+          end
+
+          vim.list_extend(items, vim.lsp.util.locations_to_items(locations, offset_encoding))
         end
-
-        local offset_encoding = vim.lsp.get_client_by_id(client_id).offset_encoding
-
-        if not vim.tbl_isempty(result) then
-          first_encoding = offset_encoding
-        end
-
-        vim.list_extend(items, vim.lsp.util.locations_to_items(locations, offset_encoding))
       end
+    end
+
+    for _, error in pairs(errors) do
+      vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. error.message)
     end
 
     items = apply_action_handler(action, items, opts)
