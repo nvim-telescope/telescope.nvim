@@ -942,10 +942,12 @@ internal.buffers = function(opts)
       default_selection_idx = 2
     end
 
+    local info = vim.fn.getbufinfo(bufnr)[1]
+    info.name = info.name:gsub("[/]", "\\")
     local element = {
-      bufnr = bufnr,
-      flag = flag,
-      info = vim.fn.getbufinfo(bufnr)[1],
+         bufnr = bufnr,
+         flag = flag,
+	 info = info,
     }
 
     if opts.sort_lastused and (flag == "#" or flag == "%") then
