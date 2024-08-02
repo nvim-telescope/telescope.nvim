@@ -177,24 +177,40 @@ local function list_or_jump(action, title, funname, params, opts)
   opts.reuse_win = vim.F.if_nil(opts.reuse_win, false)
   opts.curr_filepath = vim.api.nvim_buf_get_name(opts.bufnr)
 
-  vim.lsp.buf_request(opts.bufnr, action, params, function(err, result, ctx, _)
-    if err then
-      vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
-      return
+  vim.lsp.buf_request_all(opts.bufnr, action, params, function(results_per_client)
+    local items = {}
+    local first_encoding
+    local errors = {}
+
+    for client_id, result_or_error in pairs(results_per_client) do
+      local error, result = result_or_error.error, result_or_error.result
+      if error then
+        errors[client_id] = error
+      else
+        if result ~= nil then
+          local locations = {}
+
+          if not utils.islist(result) then
+            vim.list_extend(locations, { result })
+          else
+            vim.list_extend(locations, result)
+          end
+
+          local offset_encoding = vim.lsp.get_client_by_id(client_id).offset_encoding
+
+          if not vim.tbl_isempty(result) then
+            first_encoding = offset_encoding
+          end
+
+          vim.list_extend(items, vim.lsp.util.locations_to_items(locations, offset_encoding))
+        end
+      end
     end
 
-    if result == nil then
-      return
+    for _, error in pairs(errors) do
+      vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. error.message)
     end
 
-    local locations = {}
-    if not utils.islist(result) then
-      locations = { result }
-    end
-    vim.list_extend(locations, result)
-
-    local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
-    local items = vim.lsp.util.locations_to_items(locations, offset_encoding)
     items = apply_action_handler(action, items, opts)
     items = filter_file_ignore_patters(items, opts)
 
@@ -225,8 +241,8 @@ local function list_or_jump(action, title, funname, params, opts)
         end
       end
 
-      local location = item_to_location(item, offset_encoding)
-      vim.lsp.util.jump_to_location(location, offset_encoding, opts.reuse_win)
+      local location = item_to_location(item, first_encoding)
+      vim.lsp.util.jump_to_location(location, first_encoding, opts.reuse_win)
     else
       pickers
         .new(opts, {
