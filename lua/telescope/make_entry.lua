@@ -1007,7 +1007,8 @@ function make_entry.gen_from_ctags(opts)
   local current_file = Path:new(vim.api.nvim_buf_get_name(opts.bufnr)):normalize(cwd)
 
   local display_items = {
-    { remaining = true },
+    { width = 16 }, -- kind
+    { remaining = true }, -- tag
   }
 
   local idx = 1
@@ -1041,9 +1042,11 @@ function make_entry.gen_from_ctags(opts)
       }
     else
       return displayer {
+        -- vim.fs.basename(filename),
         filename,
-        entry.tag,
         scode,
+        entry.kind,
+        entry.tag,
       }
     end
   end
@@ -1070,13 +1073,14 @@ function make_entry.gen_from_ctags(opts)
       return nil
     end
 
-    local tag, file, scode, lnum
+    local tag, file, scode, lnum, extension_fields, kind
     -- ctags gives us: 'tags\tfile\tsource'
-    tag, file, scode = string.match(line, '([^\t]+)\t([^\t]+)\t/^?\t?(.*)/;"\t+.*')
+    tag, file, scode, extension_fields = string.match(line, '([^\t]+)\t([^\t]+)\t/^?\t?(.*)/;"\t+(.*)')
     if not tag then
       -- hasktags gives us: 'tags\tfile\tlnum'
       tag, file, lnum = string.match(line, "([^\t]+)\t([^\t]+)\t(%d+).*")
     end
+    kind = string.match(extension_fields or "", "kind:(%S+)") or "unknownkind"
 
     if Path.path.sep == "\\" then
       file = string.gsub(file, "/", "\\")
@@ -1105,6 +1109,7 @@ function make_entry.gen_from_ctags(opts)
     tag_entry.filename = file
     tag_entry.col = 1
     tag_entry.lnum = lnum and tonumber(lnum) or 1
+    tag_entry.kind = kind
 
     return setmetatable(tag_entry, mt)
   end
