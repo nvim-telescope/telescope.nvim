@@ -139,6 +139,12 @@ local function default_create_layout(picker)
       end
       vim.schedule(function()
         utils.buf_delete(self.prompt.bufnr)
+        vim.api.nvim_exec_autocmds("User", {
+          pattern = "TelescopePickerClose",
+          data = {
+            prompt_bufnr = self.prompt.bufnr,
+          },
+        })
       end)
     end,
     ---@param self TelescopeLayout
