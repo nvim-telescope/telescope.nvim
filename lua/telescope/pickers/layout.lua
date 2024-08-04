@@ -1,18 +1,17 @@
----@tag telescope.pickers.layout
----@config { ["module"] = "telescope.pickers.layout" }
-
----@brief [[
+---@brief
 --- The telescope pickers layout can be configured using the
 --- |telescope.defaults.create_layout| option.
 ---
+--- <pre>
 --- Parameters: ~
----   - picker : A Picker object.
+---   • picker : A Picker object.
 ---
 --- Return: ~
----   - layout : instance of `TelescopeLayout` class.
+---   • layout : instance of `TelescopeLayout` class.
 ---
 --- Example: ~
---- <code>
+--- </pre>
+--- ```lua
 --- local Layout = require "telescope.pickers.layout"
 ---
 --- require("telescope").setup {
@@ -67,8 +66,7 @@
 ---     return layout
 ---   end,
 --- }
---- </code>
----@brief ]]
+--- ```
 
 local function wrap_instance(class, instance)
   local self = instance
