@@ -532,12 +532,18 @@ internal.oldfiles = function(opts)
   local current_file = vim.api.nvim_buf_get_name(current_buffer)
   local results = {}
 
+  if utils.iswin then
+    current_file = current_file:gsub("/", "\\")
+  end
   if opts.include_current_session then
     for _, buffer in ipairs(utils.split_lines(vim.fn.execute ":buffers! t")) do
       local match = tonumber(string.match(buffer, "%s*(%d+)"))
       local open_by_lsp = string.match(buffer, "line 0$")
       if match and not open_by_lsp then
         local file = vim.api.nvim_buf_get_name(match)
+        if utils.iswin then
+          file = file:gsub("/", "\\")
+        end
         if vim.loop.fs_stat(file) and match ~= current_buffer then
           table.insert(results, file)
         end
@@ -545,12 +551,23 @@ internal.oldfiles = function(opts)
     end
   end
 
+  local results_other = {}
   for _, file in ipairs(vim.v.oldfiles) do
+    if utils.iswin then
+      file = file:gsub("/", "\\")
+    end
     local file_stat = vim.loop.fs_stat(file)
-    if file_stat and file_stat.type == "file" and not vim.tbl_contains(results, file) and file ~= current_file then
-      table.insert(results, file)
+    if
+      file_stat
+      and file_stat.type == "file"
+      and not vim.tbl_contains(results, file)
+      and not vim.tbl_contains(results_other, file)
+      and file ~= current_file
+    then
+      table.insert(results_other, file)
     end
   end
+  results = results_other
 
   if opts.cwd_only or opts.cwd then
     local cwd = opts.cwd_only and vim.loop.cwd() or opts.cwd
