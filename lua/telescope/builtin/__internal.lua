@@ -985,7 +985,7 @@ end
 internal.colorscheme = function(opts)
   local before_background = vim.o.background
   local before_color = vim.api.nvim_exec2("colorscheme", { output = true }).output
-  local need_restore = true
+  local need_restore = not not opts.enable_preview
 
   local colors = opts.colors or { before_color }
   if not vim.tbl_contains(colors, before_color) then
@@ -1049,8 +1049,8 @@ internal.colorscheme = function(opts)
           return
         end
 
-        actions.close(prompt_bufnr)
         need_restore = false
+        actions.close(prompt_bufnr)
         vim.cmd.colorscheme(selection.value)
       end)
       action_set.shift_selection:enhance {
@@ -1060,16 +1060,8 @@ internal.colorscheme = function(opts)
             utils.__warn_no_selection "builtin.colorscheme"
             return
           end
-          need_restore = true
           if opts.enable_preview then
             vim.cmd.colorscheme(selection.value)
-          end
-        end,
-      }
-      actions.close:enhance {
-        post = function()
-          if need_restore then
-            vim.cmd.colorscheme(before_color)
           end
         end,
       }
@@ -1082,8 +1074,9 @@ internal.colorscheme = function(opts)
           utils.__warn_no_selection "builtin.colorscheme"
           return
         end
-        need_restore = true
-        vim.cmd.colorscheme(selection.value)
+        if opts.enable_preview then
+          vim.cmd.colorscheme(selection.value)
+        end
       end,
     },
   })
