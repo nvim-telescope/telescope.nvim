@@ -421,13 +421,19 @@ local function get_workspace_symbols_requester(bufnr, opts)
   return function(prompt)
     local tx, rx = channel.oneshot()
     cancel()
-    _, cancel = vim.lsp.buf_request(bufnr, "workspace/symbol", { query = prompt }, tx)
+    cancel = vim.lsp.buf_request_all(bufnr, "workspace/symbol", { query = prompt }, tx)
 
-    -- Handle 0.5 / 0.5.1 handler situation
-    local err, res = rx()
-    assert(not err, err)
+    local results = rx() ---@type table<integer, {error: lsp.ResponseError?, result: lsp.WorkspaceSymbol?}>
+    local locations = {} ---@type vim.lsp.util.locations_to_items.ret[]
 
-    local locations = vim.lsp.util.symbols_to_items(res or {}, bufnr) or {}
+    for _, client_res in pairs(results) do
+      if client_res.error then
+        vim.api.nvim_err_writeln("Error when executing workspace/symbol : " .. client_res.error.message)
+      elseif client_res.result ~= nil then
+        vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr))
+      end
+    end
+
     if not vim.tbl_isempty(locations) then
       locations = utils.filter_symbols(locations, opts, symbols_sorter) or {}
     end
