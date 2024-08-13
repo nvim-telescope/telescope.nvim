@@ -845,6 +845,8 @@ options you want to use. Here's an example with the live_grep picker:
 
 builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
     Search for a string and get results live as you type, respects .gitignore
+    - Default keymaps:
+      - `<C-space>`: refine current results with a fuzzy search
 
 
     Parameters: ~
@@ -1764,9 +1766,7 @@ builtin.lsp_workspace_symbols({opts}) *telescope.builtin.lsp_workspace_symbols()
 builtin.lsp_dynamic_workspace_symbols({opts}) *telescope.builtin.lsp_dynamic_workspace_symbols()*
     Dynamically lists LSP for all workspace symbols
     - Default keymaps:
-      - `<C-l>`: show autocompletion menu to prefilter your query by type of
-        symbol you want to see (i.e. `:variable:`), only works after refining
-        to fuzzy search using <C-space>
+      - `<C-space>`: refine current results with a fuzzy search
 
 
     Parameters: ~
