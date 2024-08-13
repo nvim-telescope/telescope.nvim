@@ -11,13 +11,17 @@
 ---
 --- :lua require('telescope.builtin').$NAME_OF_PICKER()
 ---
---- To use any of Telescope's default options or any picker-specific options, call your desired picker by passing a lua
---- table to the picker with all of the options you want to use. Here's an example with the live_grep picker:
+--- To configure your desired picker, call it by passing a lua table with all
+--- of the options you want to use. Pickers have their own specific set of
+--- options, but also accept a subset of the defaults options. The default
+--- options which are valid to configure a picker are marked as
+--- "Picker-Overridable" in telescope.setup.defaults
+--- Here's an example with the live_grep picker:
 ---
 --- <code>
 ---   :lua require('telescope.builtin').live_grep({
----     prompt_title = 'find string in open buffers...',
----     grep_open_files = true
+---     prompt_title = 'find string in open buffers...',   -- Default option overriden for this specific picker
+---     grep_open_files = true                             -- Option specific to live_grep picker
 ---   })
 ---   -- or with dropdown theme
 ---   :lua require('telescope.builtin').find_files(require('telescope.themes').get_dropdown{
