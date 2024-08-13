@@ -985,7 +985,7 @@ end
 internal.colorscheme = function(opts)
   local before_background = vim.o.background
   local before_color = vim.api.nvim_exec2("colorscheme", { output = true }).output
-  local need_restore = true
+  local need_restore = not not opts.enable_preview
 
   local colors = opts.colors or { before_color }
   if not vim.tbl_contains(colors, before_color) then
@@ -1049,30 +1049,10 @@ internal.colorscheme = function(opts)
           return
         end
 
-        actions.close(prompt_bufnr)
         need_restore = false
+        actions.close(prompt_bufnr)
         vim.cmd.colorscheme(selection.value)
       end)
-      action_set.shift_selection:enhance {
-        post = function()
-          local selection = action_state.get_selected_entry()
-          if selection == nil then
-            utils.__warn_no_selection "builtin.colorscheme"
-            return
-          end
-          need_restore = true
-          if opts.enable_preview then
-            vim.cmd.colorscheme(selection.value)
-          end
-        end,
-      }
-      actions.close:enhance {
-        post = function()
-          if need_restore then
-            vim.cmd.colorscheme(before_color)
-          end
-        end,
-      }
       return true
     end,
     on_complete = {
@@ -1082,8 +1062,9 @@ internal.colorscheme = function(opts)
           utils.__warn_no_selection "builtin.colorscheme"
           return
         end
-        need_restore = true
-        vim.cmd.colorscheme(selection.value)
+        if opts.enable_preview then
+          vim.cmd.colorscheme(selection.value)
+        end
       end,
     },
   })
@@ -1096,6 +1077,21 @@ internal.colorscheme = function(opts)
       if need_restore then
         vim.o.background = before_background
         vim.cmd.colorscheme(before_color)
+      end
+    end
+
+    -- rewrite picker.set_selection so that color schemes can be previewed when the current
+    -- selection is shifted using the keyboard or if an item is clicked with the mouse
+    local set_selection = picker.set_selection
+    picker.set_selection = function(self, row)
+      set_selection(self, row)
+      local selection = action_state.get_selected_entry()
+      if selection == nil then
+        utils.__warn_no_selection "builtin.colorscheme"
+        return
+      end
+      if opts.enable_preview then
+        vim.cmd.colorscheme(selection.value)
       end
     end
   end
