@@ -37,18 +37,18 @@ local bat_maker = function(filename, lnum, start, finish)
   local command = { "bat" }
 
   if lnum then
-    table.insert(command, { "--highlight-line", lnum })
+    vim.list_extend(command, { "--highlight-line", lnum })
   end
 
   if has_less then
     if start then
-      table.insert(command, { "--pager", string.format("less -RS +%s", start) })
+      vim.list_extend(command, { "--pager", string.format("less -RS +%s", start) })
     else
-      table.insert(command, { "--pager", "less -RS" })
+      vim.list_extend(command, { "--pager", "less -RS" })
     end
   else
     if start and finish then
-      table.insert(command, { "-r", string.format("%s:%s", start, finish) })
+      vim.list_extend(command, { "-r", string.format("%s:%s", start, finish) })
     end
   end
 
