@@ -102,9 +102,6 @@ local get_maker = function(opts)
   return maker
 end
 
--- TODO: We shoudl make sure that all our terminals close all the way.
---          Otherwise it could be bad if they're just sitting around, waiting to be closed.
---          I don't think that's the problem, but it could be?
 previewers.new_termopen_previewer = function(opts)
   opts = opts or {}
 
@@ -192,7 +189,7 @@ previewers.new_termopen_previewer = function(opts)
 
     local prev_bufnr = get_bufnr_by_bufentry(self, entry)
     if prev_bufnr then
-      self.state.termopen_bufnr = prev_bufnr
+      set_bufnr(self, prev_bufnr)
       utils.win_set_buf_noautocmd(preview_winid, self.state.termopen_bufnr)
       self.state.termopen_id = term_ids[self.state.termopen_bufnr]
     else
