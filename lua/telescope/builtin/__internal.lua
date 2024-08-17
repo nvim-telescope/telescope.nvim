@@ -647,7 +647,11 @@ end
 internal.vim_options = function(opts)
   local res = {}
   for _, v in pairs(vim.api.nvim_get_all_options_info()) do
-    table.insert(res, v)
+    local ok, value = pcall(vim.api.nvim_get_option_value, v.name, {})
+    if ok then
+      v.value = value
+      table.insert(res, v)
+    end
   end
   table.sort(res, function(left, right)
     return left.name < right.name

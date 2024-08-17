@@ -1003,19 +1003,14 @@ function make_entry.gen_from_vimoptions(opts)
       display = make_display,
       value = {
         name = o.name,
-        value = o.default,
+        value = o.value,
         type = o.type,
         scope = o.scope,
       },
-      ordinal = string.format("%s %s %s", o.name, o.type, o.scope),
+      ordinal = string.format("%s %s %s %s", o.name, o.type, o.scope, utils.display_termcodes(tostring(o.value))),
     }
 
-    local ok, value = pcall(vim.api.nvim_get_option_value, o.name, {})
-    if ok then
-      entry.value.value = value
-      entry.ordinal = entry.ordinal .. " " .. utils.display_termcodes(tostring(value))
-      return make_entry.set_default_entry_mt(entry, opts)
-    end
+    return make_entry.set_default_entry_mt(entry, opts)
   end
 end
 
