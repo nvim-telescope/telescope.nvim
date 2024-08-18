@@ -56,22 +56,6 @@ local function defaulter(f, default_opts)
   }
 end
 
--- modified vim.split to incorporate a timer
-local function split(s, sep, plain, opts)
-  opts = opts or {}
-  local t = {}
-  for c in vim.gsplit(s, sep, plain) do
-    local line = opts.file_encoding and vim.iconv(c, opts.file_encoding, "utf8") or c
-    table.insert(t, line)
-    if opts.preview.timeout then
-      local diff_time = (vim.loop.hrtime() - opts.start_time) / 1e6
-      if diff_time > opts.preview.timeout then
-        return
-      end
-    end
-  end
-  return t
-end
 local bytes_to_megabytes = math.pow(1024, 2)
 
 local color_hash = {
@@ -199,7 +183,7 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
       if not vim.api.nvim_buf_is_valid(bufnr) then
         return
       end
-      local processed_data = split(data, "[\r]?\n", nil, opts)
+      local processed_data = putils.timed_split_lines(data, opts)
 
       if processed_data then
         local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, processed_data)
