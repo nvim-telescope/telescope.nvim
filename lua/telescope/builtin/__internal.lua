@@ -679,9 +679,8 @@ internal.vim_options = function(opts)
           end
 
           vim.api.nvim_feedkeys(
-            selection.value.type == "boolean"
-            and string.format("%s:set %s!", esc, selection.value.name)
-            or string.format("%s:set %s=%s", esc, selection.value.name, selection.value.value),
+            selection.value.type == "boolean" and string.format("%s:set %s!", esc, selection.value.name)
+              or string.format("%s:set %s=%s", esc, selection.value.name, selection.value.value),
             "m",
             true
           )
