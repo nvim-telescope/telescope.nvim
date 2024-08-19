@@ -37,18 +37,18 @@ local bat_maker = function(filename, lnum, start, finish)
   local command = { "bat" }
 
   if lnum then
-    table.insert(command, { "--highlight-line", lnum })
+    vim.list_extend(command, { "--highlight-line", lnum })
   end
 
   if has_less then
     if start then
-      table.insert(command, { "--pager", string.format("less -RS +%s", start) })
+      vim.list_extend(command, { "--pager", string.format("less -RS +%s", start) })
     else
-      table.insert(command, { "--pager", "less -RS" })
+      vim.list_extend(command, { "--pager", "less -RS" })
     end
   else
     if start and finish then
-      table.insert(command, { "-r", string.format("%s:%s", start, finish) })
+      vim.list_extend(command, { "-r", string.format("%s:%s", start, finish) })
     end
   end
 
@@ -102,9 +102,6 @@ local get_maker = function(opts)
   return maker
 end
 
--- TODO: We shoudl make sure that all our terminals close all the way.
---          Otherwise it could be bad if they're just sitting around, waiting to be closed.
---          I don't think that's the problem, but it could be?
 previewers.new_termopen_previewer = function(opts)
   opts = opts or {}
 
@@ -161,7 +158,7 @@ previewers.new_termopen_previewer = function(opts)
   function opts.setup(self)
     local state = {}
     if opt_setup then
-      vim.tbl_deep_extend("force", state, opt_setup(self))
+      state = vim.tbl_deep_extend("force", state, opt_setup(self))
     end
     return state
   end
@@ -192,7 +189,7 @@ previewers.new_termopen_previewer = function(opts)
 
     local prev_bufnr = get_bufnr_by_bufentry(self, entry)
     if prev_bufnr then
-      self.state.termopen_bufnr = prev_bufnr
+      set_bufnr(self, prev_bufnr)
       utils.win_set_buf_noautocmd(preview_winid, self.state.termopen_bufnr)
       self.state.termopen_id = term_ids[self.state.termopen_bufnr]
     else
