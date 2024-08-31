@@ -380,7 +380,7 @@ previewers.new_buffer_previewer = function(opts)
   function opts.setup(self)
     local state = {}
     if opt_setup then
-      vim.tbl_deep_extend("force", state, opt_setup(self))
+      state = vim.tbl_deep_extend("force", state, opt_setup(self))
     end
     return state
   end
@@ -1090,7 +1090,7 @@ previewers.highlights = defaulter(function(_)
 
     define_preview = function(self, entry)
       if not self.state.bufname then
-        local output = vim.split(vim.fn.execute "highlight", "\n")
+        local output = utils.split_lines(vim.fn.execute "highlight")
         local hl_groups = {}
         for _, v in ipairs(output) do
           if v ~= "" then

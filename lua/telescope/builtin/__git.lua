@@ -51,7 +51,7 @@ git.files = function(opts)
       prompt_title = "Git Files",
       __locations_input = true,
       finder = finders.new_oneshot_job(
-        vim.tbl_flatten {
+        utils.flatten {
           opts.git_command,
           show_untracked and "--others" or nil,
           recurse_submodules and "--recurse-submodules" or nil,
@@ -193,7 +193,7 @@ git.bcommits = function(opts)
 
   local title = "Git BCommits"
   local finder = finders.new_oneshot_job(
-    vim.tbl_flatten {
+    utils.flatten {
       opts.git_command,
       opts.current_file,
     },
@@ -234,7 +234,7 @@ git.bcommits_range = function(opts)
 
   local title = "Git BCommits in range"
   local finder = finders.new_oneshot_job(
-    vim.tbl_flatten {
+    utils.flatten {
       opts.git_command,
       line_range,
     },
@@ -432,7 +432,7 @@ end
 local try_worktrees = function(opts)
   local worktrees = conf.git_worktrees
 
-  if vim.tbl_islist(worktrees) then
+  if utils.islist(worktrees) then
     for _, wt in ipairs(worktrees) do
       if vim.startswith(opts.cwd, wt.toplevel) then
         opts.toplevel = wt.toplevel

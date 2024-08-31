@@ -12,7 +12,7 @@ local log = require "telescope.log"
 
 local Path = require "plenary.path"
 
-local flatten = vim.tbl_flatten
+local flatten = utils.flatten
 local filter = vim.tbl_filter
 
 local files = {}
@@ -180,6 +180,7 @@ files.live_grep = function(opts)
         map("i", "<c-space>", actions.to_fuzzy_refine)
         return true
       end,
+      push_cursor_on_edit = true,
     })
     :find()
 end
@@ -257,6 +258,7 @@ files.grep_string = function(opts)
       finder = finders.new_oneshot_job(args, opts),
       previewer = conf.grep_previewer(opts),
       sorter = conf.generic_sorter(opts),
+      push_cursor_on_edit = true,
     })
     :find()
 end
@@ -460,6 +462,7 @@ files.treesitter = function(opts)
         tag = "kind",
         sorter = conf.generic_sorter(opts),
       },
+      push_cursor_on_edit = true,
     })
     :find()
 end
@@ -564,13 +567,13 @@ files.current_buffer_fuzzy_find = function(opts)
 
           actions.close(prompt_bufnr)
           vim.schedule(function()
+            vim.cmd "normal! m'"
             vim.api.nvim_win_set_cursor(0, { selection.lnum, first_col })
           end)
         end)
 
         return true
       end,
-      push_cursor_on_edit = true,
     })
     :find()
 end

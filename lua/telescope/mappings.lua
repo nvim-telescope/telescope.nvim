@@ -176,6 +176,9 @@ mappings.default_mappings = config.values.default_mappings
       ["<C-_>"] = actions.which_key, -- keys from pressing <C-/>
       ["<C-w>"] = { "<c-s-w>", type = "command" },
       ["<C-r><C-w>"] = actions.insert_original_cword,
+      ["<C-r><C-a>"] = actions.insert_original_cWORD,
+      ["<C-r><C-f>"] = actions.insert_original_cfile,
+      ["<C-r><C-l>"] = actions.insert_original_cline,
 
       -- disable c-j because we dont want to allow new lines #2123
       ["<C-j>"] = actions.nop,
