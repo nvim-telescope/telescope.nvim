@@ -794,7 +794,7 @@ internal.help_tags = function(opts)
 end
 
 internal.man_pages = function(opts)
-  opts.sections = vim.F.if_nil(opts.sections, { "1" })
+  opts.sections = vim.F.if_nil(opts.sections, { "ALL" })
   assert(utils.islist(opts.sections), "sections should be a list")
 
   opts.cword = vim.F.if_nil(opts.cword, false)

@@ -1415,7 +1415,7 @@ builtin.man_pages({opts})                      *telescope.builtin.man_pages()*
 
     Options: ~
         {sections} (table)     a list of sections to search, use `{ "ALL" }`
-                               to search in all sections (default: { "1" })
+                               to search in all sections (default: { "ALL" })
         {cword}    (boolean)   list man pages for word under cursor (default: false)
         {man_cmd}  (function)  that returns the man command. (Default:
                                `apropos ""` on linux, `apropos " "` on macos)
