@@ -796,18 +796,27 @@ end
 internal.man_pages = function(opts)
   opts.sections = vim.F.if_nil(opts.sections, { "1" })
   assert(utils.islist(opts.sections), "sections should be a list")
-  opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
-    local uname = vim.loop.os_uname()
-    local sysname = string.lower(uname.sysname)
-    if sysname == "darwin" then
-      local major_version = tonumber(vim.fn.matchlist(uname.release, [[^\(\d\+\)\..*]])[2]) or 0
-      return major_version >= 22 and { "apropos", "." } or { "apropos", " " }
-    elseif sysname == "freebsd" then
-      return { "apropos", "." }
-    else
-      return { "apropos", "" }
-    end
-  end)
+
+  opts.cword = vim.F.if_nil(opts.cword, false)
+  assert(opts.cword == true or opts.cword == false, "cword should be either true or false")
+
+  if opts.cword then
+    opts.man_cmd = { "whatis", vim.fn.expand "<cword>" }
+  else
+    opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
+      local uname = vim.loop.os_uname()
+      local sysname = string.lower(uname.sysname)
+      if sysname == "darwin" then
+        local major_version = tonumber(vim.fn.matchlist(uname.release, [[^\(\d\+\)\..*]])[2]) or 0
+        return major_version >= 22 and { "apropos", "." } or { "apropos", " " }
+      elseif sysname == "freebsd" then
+        return { "apropos", "." }
+      else
+        return { "apropos", "" }
+      end
+    end)
+  end
+  -- open
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts)
   opts.env = { PATH = vim.env.PATH, MANPATH = vim.env.MANPATH }
 

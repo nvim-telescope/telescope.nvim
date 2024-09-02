@@ -330,6 +330,7 @@ builtin.help_tags = require_on_exported_call("telescope.builtin.__internal").hel
 --- Lists manpage entries, opens them in a help window on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field sections table: a list of sections to search, use `{ "ALL" }` to search in all sections (default: { "1" })
+---@field cword boolean: list man pages for word under cursor (default: false)
 ---@field man_cmd function: that returns the man command. (Default: `apropos ""` on linux, `apropos " "` on macos)
 builtin.man_pages = require_on_exported_call("telescope.builtin.__internal").man_pages
 
