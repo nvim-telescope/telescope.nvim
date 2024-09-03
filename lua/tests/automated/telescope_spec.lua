@@ -1,5 +1,5 @@
 local picker = require "telescope.pickers"
-local Path = require "plenary.path"
+local Path = require "plenary.path2"
 
 local eq = assert.are.same
 

@@ -3,7 +3,7 @@ local action_set = require "telescope.actions.set"
 local action_state = require "telescope.actions.state"
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
-local Path = require "plenary.path"
+local Path = require "plenary.path2"
 local pickers = require "telescope.pickers"
 local previewers = require "telescope.previewers"
 local p_window = require "telescope.pickers.window"
@@ -319,7 +319,7 @@ internal.symbols = function(opts)
 
   local results = {}
   for _, source in ipairs(sources) do
-    local data = vim.json.decode(Path:new(source):read())
+    local data = vim.json.decode(assert(Path:new(source):read()))
     for _, entry in ipairs(data) do
       table.insert(results, entry)
     end

@@ -1,5 +1,5 @@
 local from_entry = require "telescope.from_entry"
-local Path = require "plenary.path"
+local Path = require "plenary.path2"
 local utils = require "telescope.utils"
 local putils = require "telescope.previewers.utils"
 local Previewer = require "telescope.previewers.previewer"
@@ -98,7 +98,7 @@ color_hash[6] = function(line)
 end
 
 local colorize_ls_long = function(bufnr, data, sections)
-  local windows_add = Path.path.sep == "\\" and 2 or 0
+  local windows_add = utils.iswin and 2 or 0
   for lnum, line in ipairs(data) do
     local section = sections[lnum]
     for i = 1, section[1].end_index - 1 do -- Highlight permissions
@@ -125,7 +125,7 @@ local handle_directory_preview = function(filepath, bufnr, opts)
   local set_colorize_lines
   if opts.preview.ls_short then
     set_colorize_lines = function(data, sections)
-      local PATH_SECTION = Path.path.sep == "\\" and 4 or 6
+      local PATH_SECTION = utils.iswin and 4 or 6
       local paths = {}
       for i, line in ipairs(data) do
         local section = sections[i][PATH_SECTION]
@@ -195,7 +195,7 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
     end
 
     opts.start_time = vim.loop.hrtime()
-    Path:new(filepath):_read_async(vim.schedule_wrap(function(data)
+    Path:new(filepath):read(vim.schedule_wrap(function(data)
       if not vim.api.nvim_buf_is_valid(bufnr) then
         return
       end

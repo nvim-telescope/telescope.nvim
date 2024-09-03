@@ -14,7 +14,7 @@
 local a = vim.api
 
 local log = require "telescope.log"
-local Path = require "plenary.path"
+local Path = require "plenary.path2"
 local state = require "telescope.state"
 local utils = require "telescope.utils"
 

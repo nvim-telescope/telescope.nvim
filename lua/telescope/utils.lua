@@ -5,7 +5,7 @@
 --- Utilities for writing telescope pickers
 ---@brief ]]
 
-local Path = require "plenary.path"
+local Path = require "plenary.path2"
 local Job = require "plenary.job"
 
 local log = require "telescope.log"
@@ -223,7 +223,11 @@ local path_abs = function(path, opts)
   else
     cwd = vim.loop.cwd()
   end
-  return Path:new(path):make_relative(cwd)
+  local p = Path:new(path)
+  if p:is_absolute() then
+    return Path:new(path):make_relative(cwd)
+  end
+  return p.filename
 end
 
 -- IMPORTANT: This function should have been a local function as it's only used
