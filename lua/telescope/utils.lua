@@ -389,7 +389,7 @@ utils.transform_path = function(opts, path)
         length = shorten.len
         exclude = shorten.exclude
       else
-        length = type(path_display["shorten"]) == "number" and path_display["shorten"]
+        length = type(path_display["shorten"]) == "number" and path_display["shorten"] or nil
       end
 
       transformed_path = path_shorten(transformed_path, length, exclude)
