@@ -68,7 +68,7 @@ wiki.
 ### Optional dependencies
 
 - [sharkdp/fd](https://github.com/sharkdp/fd) (finder)
-- [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) (finder/preview)
+- [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) (finder)
 - [neovim LSP](https://neovim.io/doc/user/lsp.html) (picker)
 - [devicons](https://github.com/nvim-tree/nvim-web-devicons) (icons)
 
