@@ -1831,6 +1831,8 @@ builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
         {sort_by}             (string)          sort order of the diagnostics
                                                 results; see above notes
                                                 (default: "buffer")
+        {text}                (function|nil)    allow to expand text displayed
+                                                (default: diagnostic.message)
 
 
 
