@@ -107,12 +107,18 @@ local diagnostics_to_tbl = function(opts)
   end
 
   local preprocess_diag = function(diagnostic)
+    local text = vim.trim(diagnostic.message:gsub("[\n]", ""))
+
+    if type(opts.text) == "function" then
+      text = opts.text(diagnostic)
+    end
+
     return {
       bufnr = diagnostic.bufnr,
       filename = bufnr_name_map[diagnostic.bufnr],
       lnum = diagnostic.lnum + 1,
       col = diagnostic.col + 1,
-      text = vim.trim(diagnostic.message:gsub("[\n]", "")),
+      text = text,
       type = severities[diagnostic.severity] or severities[1],
     }
   end
