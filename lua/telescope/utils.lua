@@ -225,7 +225,7 @@ local path_abs = function(path, opts)
   end
   local p = Path:new(path)
   if p:is_absolute() then
-    return Path:new(path):make_relative(cwd)
+    return Path:new(path):make_relative(cwd, { walk_up = true })
   end
   return p.filename
 end
