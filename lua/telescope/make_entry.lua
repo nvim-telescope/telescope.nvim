@@ -1381,11 +1381,15 @@ function make_entry.gen_from_git_status(opts)
       return nil
     end
 
-    local mod, file = entry:match "^(..) (.+)$"
+    -- PATH is quoted when containing special characters (including space)
+    local mod, file = entry:match "^(..) \"(.+)\"$"
     -- Ignore entries that are the PATH in XY ORIG_PATH PATH
     -- (renamed or copied files)
     if not mod then
-      return nil
+      mod, file = entry:match "^(..) (.+)$"
+      if not mod then
+        return nil
+      end
     end
 
     return setmetatable({
