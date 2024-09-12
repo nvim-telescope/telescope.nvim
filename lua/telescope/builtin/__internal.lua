@@ -938,10 +938,6 @@ internal.buffers = function(opts)
   for i, bufnr in ipairs(bufnrs) do
     local flag = bufnr == vim.fn.bufnr "" and "%" or (bufnr == vim.fn.bufnr "#" and "#" or " ")
 
-    if opts.sort_lastused and not opts.ignore_current_buffer and flag == "#" then
-      default_selection_idx = 2
-    end
-
     local element = {
       bufnr = bufnr,
       flag = flag,
