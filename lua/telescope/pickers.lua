@@ -833,7 +833,7 @@ function Picker:delete_selection(delete_cb)
   end
 
   local selection_index = {}
-  for result_index, result_entry in ipairs(self.finder.results) do
+  for result_index, result_entry in pairs(self.finder.results) do
     if vim.tbl_contains(delete_selections, result_entry) then
       table.insert(selection_index, result_index)
     end
