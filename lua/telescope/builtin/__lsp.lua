@@ -50,7 +50,7 @@ local function call_hierarchy(opts, method, title, direction, item)
 end
 
 local function pick_call_hierarchy_item(call_hierarchy_items)
-  if not call_hierarchy_items then
+  if not call_hierarchy_items or vim.tbl_isempty(call_hierarchy_items) then
     return
   end
   if #call_hierarchy_items == 1 then
@@ -65,7 +65,7 @@ local function pick_call_hierarchy_item(call_hierarchy_items)
   if choice < 1 or choice > #items then
     return
   end
-  return choice
+  return call_hierarchy_items[choice]
 end
 
 local function calls(opts, direction)
