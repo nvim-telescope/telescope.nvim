@@ -712,7 +712,17 @@ internal.help_tags = function(opts)
   end
 
   local help_files = {}
-  local all_files = vim.api.nvim_get_runtime_file("doc/*", true)
+
+  local rtp = vim.o.runtimepath
+  -- extend the runtime path with all plugins not loaded by lazy.nvim
+  local lazy = package.loaded["lazy.core.util"]
+  if lazy and lazy.get_unloaded_rtp then
+    local paths = lazy.get_unloaded_rtp ""
+    if #paths > 0 then
+      rtp = rtp .. "," .. table.concat(paths, ",")
+    end
+  end
+  local all_files = vim.fn.globpath(rtp, "doc/*", 1, 1)
   for _, fullpath in ipairs(all_files) do
     local file = utils.path_tail(fullpath)
     if file == "tags" then
@@ -997,6 +1007,19 @@ internal.colorscheme = function(opts)
       return not vim.tbl_contains(colors, color)
     end, vim.fn.getcompletion("", "color"))
   )
+
+  -- if lazy is available, extend the colors list with unloaded colorschemes
+  local lazy = package.loaded["lazy.core.util"]
+  if lazy and lazy.get_unloaded_rtp then
+    local paths = lazy.get_unloaded_rtp ""
+    local all_files = vim.fn.globpath(table.concat(paths, ","), "colors/*", 1, 1)
+    for _, f in ipairs(all_files) do
+      local color = vim.fn.fnamemodify(f, ":t:r")
+      if not vim.tbl_contains(colors, color) then
+        table.insert(colors, color)
+      end
+    end
+  end
 
   if opts.ignore_builtins then
     -- stylua: ignore
