@@ -712,7 +712,17 @@ internal.help_tags = function(opts)
   end
 
   local help_files = {}
-  local all_files = vim.api.nvim_get_runtime_file("doc/*", true)
+
+  local rtp = vim.o.runtimepath
+  -- extend the runtime path with all plugins not loaded by lazy.nvim
+  local lazy = package.loaded["lazy.core.util"]
+  if lazy and lazy.get_unloaded_rtp then
+    local paths = lazy.get_unloaded_rtp ""
+    if #paths > 0 then
+      rtp = rtp .. "," .. table.concat(paths, ",")
+    end
+  end
+  local all_files = vim.fn.globpath(rtp, "doc/*", 1, 1)
   for _, fullpath in ipairs(all_files) do
     local file = utils.path_tail(fullpath)
     if file == "tags" then
