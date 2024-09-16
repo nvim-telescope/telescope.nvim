@@ -1008,6 +1008,19 @@ internal.colorscheme = function(opts)
     end, vim.fn.getcompletion("", "color"))
   )
 
+  -- if lazy is available, extend the colors list with unloaded colorschemes
+  local lazy = package.loaded["lazy.core.util"]
+  if lazy and lazy.get_unloaded_rtp then
+    local paths = lazy.get_unloaded_rtp ""
+    local all_files = vim.fn.globpath(table.concat(paths, ","), "colors/*", 1, 1)
+    for _, f in ipairs(all_files) do
+      local color = vim.fn.fnamemodify(f, ":t:r")
+      if not vim.tbl_contains(colors, color) then
+        table.insert(colors, color)
+      end
+    end
+  end
+
   if opts.ignore_builtins then
     -- stylua: ignore
     local builtins = {
