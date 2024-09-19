@@ -78,10 +78,23 @@ local get_filename_fn = function()
 end
 
 local handle_entry_index = function(opts, t, k)
+  local overrides = rawget(t, "_overrides")
+
+  if overrides and overrides[k] then
+    return
+  end
+
   local override = ((opts or {}).entry_index or {})[k]
   if not override then
     return
   end
+
+  if overrides == nil then
+    overrides = {}
+    rawset(t, "_overrides", overrides)
+  end
+
+  overrides[k] = true
 
   local val, save = override(t, opts)
   if save then
