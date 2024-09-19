@@ -431,13 +431,8 @@ function Picker:clear_extra_rows(results_bufnr)
   local worst_line, ok, msg
   if self.sorting_strategy == "ascending" then
     local num_results = self.manager:num_results()
-    worst_line = self.max_results - num_results
-
-    if worst_line <= 0 then
-      return
-    end
-
-    ok, msg = pcall(vim.api.nvim_buf_set_lines, results_bufnr, num_results, -1, false, {})
+    worst_line = math.min(num_results, self.max_results)
+    ok, msg = pcall(vim.api.nvim_buf_set_lines, results_bufnr, worst_line, -1, false, {})
   else
     worst_line = self:get_row(self.manager:num_results())
     if worst_line <= 0 then
@@ -1452,10 +1447,10 @@ end
 
 --- Handles updating the picker after all the entries are scored/processed.
 ---@param results_bufnr number
----@param find_id number
+---@param _ number
 ---@param prompt string
 ---@param status_updater function
-function Picker:get_result_completor(results_bufnr, find_id, prompt, status_updater)
+function Picker:get_result_completor(results_bufnr, _, prompt, status_updater)
   return vim.schedule_wrap(function()
     if self.closed == true or self:is_done() then
       return
