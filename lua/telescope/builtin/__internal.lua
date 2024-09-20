@@ -542,7 +542,7 @@ internal.oldfiles = function(opts)
       local open_by_lsp = string.match(buffer, "line 0$")
       if match and not open_by_lsp then
         local file = vim.api.nvim_buf_get_name(match)
-        if utils.iswin then -- for slash problem in windows
+        if utils.iswin then
           file = file:gsub("/", "\\")
         end
         if vim.loop.fs_stat(file) and match ~= current_buffer then
@@ -553,7 +553,7 @@ internal.oldfiles = function(opts)
   end
 
   for _, file in ipairs(vim.v.oldfiles) do
-    if utils.iswin then -- for slash problem in windows
+    if utils.iswin then
       file = file:gsub("/", "\\")
     end
     local file_stat = vim.loop.fs_stat(file)
