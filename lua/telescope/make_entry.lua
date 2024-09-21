@@ -1106,7 +1106,7 @@ function make_entry.gen_from_ctags(opts)
       -- hasktags gives us: 'tags\tfile\tlnum'
       tag, file, lnum = string.match(line, "([^\t]+)\t([^\t]+)\t(%d+).*")
     end
-    local kind = string.match(extension_fields or "", "kind:(%S+)") or "unknownkind"
+    local kind = string.match(extension_fields or "", "kind:(%S+)")
 
     if Path.path.sep == "\\" then
       file = string.gsub(file, "/", "\\")
@@ -1135,7 +1135,9 @@ function make_entry.gen_from_ctags(opts)
     tag_entry.filename = file
     tag_entry.col = 1
     tag_entry.lnum = lnum and tonumber(lnum) or 1
-    tag_entry.kind = kind
+    if opts.show_kind then
+       tag_entry.kind = kind
+    end
 
     return setmetatable(tag_entry, mt)
   end
