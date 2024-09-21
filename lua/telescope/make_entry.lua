@@ -1137,7 +1137,7 @@ function make_entry.gen_from_ctags(opts)
     tag_entry.col = 1
     tag_entry.lnum = lnum and tonumber(lnum) or 1
     if show_kind then
-       tag_entry.kind = kind
+      tag_entry.kind = kind
     end
 
     return setmetatable(tag_entry, mt)
