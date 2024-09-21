@@ -31,6 +31,7 @@ return function(opts)
     end,
     results = results,
     entry_maker = entry_maker,
+    stop_read = function() end,
   }, {
     __call = function(_, prompt, process_result, process_complete)
       if not job_started then
