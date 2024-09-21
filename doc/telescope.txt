@@ -1016,8 +1016,6 @@ builtin.tags({opts})                                *telescope.builtin.tags()*
                                     false)
         {fname_width}    (number)   defines the width of the filename section
                                     (default: 30)
-        {show_kind}      (boolean)  if true, show the tag kind on the picker
-                                    (default: true)
 
 
 builtin.current_buffer_tags({opts})  *telescope.builtin.current_buffer_tags()*
@@ -1039,8 +1037,6 @@ builtin.current_buffer_tags({opts})  *telescope.builtin.current_buffer_tags()*
                                     false)
         {fname_width}    (number)   defines the width of the filename section
                                     (default: 30)
-        {show_kind}      (boolean)  if true, show the tag kind on the picker
-                                    (default: true)
 
 
 builtin.git_files({opts})                      *telescope.builtin.git_files()*
