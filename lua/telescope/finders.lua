@@ -199,6 +199,7 @@ finders.new_oneshot_job = function(command_list, opts)
 
     cwd = opts.cwd,
     maximum_results = opts.maximum_results,
+    split_char = opts.split_char,
 
     fn_command = function()
       return {
