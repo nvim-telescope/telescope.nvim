@@ -967,7 +967,11 @@ internal.buffers = function(opts)
     end
 
     local info = vim.fn.getbufinfo(bufnr)[1]
-    info.name = info.name:gsub("[/]", "\\")
+
+	  if utils.iswin then -- for slash problem in windows
+		 info.name = info.name:gsub("/", "\\")
+	  end
+
     local element = {
          bufnr = bufnr,
          flag = flag,
