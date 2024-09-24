@@ -431,13 +431,8 @@ function Picker:clear_extra_rows(results_bufnr)
   local worst_line, ok, msg
   if self.sorting_strategy == "ascending" then
     local num_results = self.manager:num_results()
-    worst_line = self.max_results - num_results
-
-    if worst_line <= 0 then
-      return
-    end
-
-    ok, msg = pcall(vim.api.nvim_buf_set_lines, results_bufnr, num_results, -1, false, {})
+    worst_line = math.min(num_results, self.max_results)
+    ok, msg = pcall(vim.api.nvim_buf_set_lines, results_bufnr, worst_line, -1, false, {})
   else
     worst_line = self:get_row(self.manager:num_results())
     if worst_line <= 0 then
@@ -833,7 +828,7 @@ function Picker:delete_selection(delete_cb)
   end
 
   local selection_index = {}
-  for result_index, result_entry in ipairs(self.finder.results) do
+  for result_index, result_entry in pairs(self.finder.results) do
     if vim.tbl_contains(delete_selections, result_entry) then
       table.insert(selection_index, result_index)
     end
@@ -957,7 +952,7 @@ end
 --- Also updates the highlighting for the given entry
 ---@param row number: the number of the chosen row
 function Picker:toggle_selection(row)
-  local entry = self.manager:get_entry(self:get_index(row))
+  local entry = self.manager and self.manager:get_entry(self:get_index(row))
   if entry == nil then
     return
   end
@@ -1452,10 +1447,10 @@ end
 
 --- Handles updating the picker after all the entries are scored/processed.
 ---@param results_bufnr number
----@param find_id number
+---@param _ number
 ---@param prompt string
 ---@param status_updater function
-function Picker:get_result_completor(results_bufnr, find_id, prompt, status_updater)
+function Picker:get_result_completor(results_bufnr, _, prompt, status_updater)
   return vim.schedule_wrap(function()
     if self.closed == true or self:is_done() then
       return

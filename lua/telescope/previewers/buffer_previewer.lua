@@ -802,6 +802,7 @@ previewers.git_branch_log = defaulter(function(opts)
         "--no-pager",
         "log",
         "--graph",
+        "--max-count=1000", -- prevent fork bombing with large repos
         "--pretty=format:%h -%d %s (%cr)",
         "--abbrev-commit",
         "--date=relative",
