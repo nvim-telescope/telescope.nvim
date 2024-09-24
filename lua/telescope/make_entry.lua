@@ -1353,8 +1353,12 @@ function make_entry.gen_from_git_status(opts)
     local status_x = git_abbrev[x] or {}
     local status_y = git_abbrev[y] or {}
 
-    local display_path, path_style = utils.transform_path(opts, entry.path)
-
+    local display_path = entry.path
+	 local path_style= nil
+	 if utils.iswin then --for plenary problem
+       display_path = display_path:gsub("/", "\\")
+    end
+	 display_path ,path_style = utils.transform_path(opts, display_path)
     local empty_space = " "
     return displayer {
       { status_x.icon or empty_space, status_x.hl },
