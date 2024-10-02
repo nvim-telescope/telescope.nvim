@@ -662,11 +662,7 @@ end)
 --- Checks if treesitter parser for language is installed
 ---@param lang string
 utils.has_ts_parser = function(lang)
-  if vim.fn.has "nvim-0.11" == 1 then
-    return vim.treesitter.language.add(lang)
-  else
-    return pcall(vim.treesitter.language.add, lang)
-  end
+  return pcall(vim.treesitter.language.add, lang)
 end
 
 --- Telescope Wrapper around vim.notify
