@@ -114,6 +114,7 @@ builtin.current_buffer_fuzzy_find = require_on_exported_call("telescope.builtin.
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field ctags_file string: specify a particular ctags file to use
 ---@field show_line boolean: if true, shows the content of the line the tag is found on in the picker (default: true)
+---@field show_kind boolean: if true and kind info is available, show the kind of the tag (default: true)
 ---@field only_sort_tags boolean: if true we will only sort tags (default: false)
 ---@field fname_width number: defines the width of the filename section (default: 30)
 builtin.tags = require_on_exported_call("telescope.builtin.__files").tags
@@ -123,6 +124,7 @@ builtin.tags = require_on_exported_call("telescope.builtin.__files").tags
 ---@field cwd string: root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field ctags_file string: specify a particular ctags file to use
 ---@field show_line boolean: if true, shows the content of the line the tag is found on in the picker (default: true)
+---@field show_kind boolean: if true and kind info is available, show the kind of the tag (default: true)
 ---@field only_sort_tags boolean: if true we will only sort tags (default: false)
 ---@field fname_width number: defines the width of the filename section (default: 30)
 builtin.current_buffer_tags = require_on_exported_call("telescope.builtin.__files").current_buffer_tags
