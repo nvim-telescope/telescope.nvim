@@ -1187,6 +1187,13 @@ internal.marks = function(opts)
   end
   marks_table = vim.fn.extend(marks_table, marks_others)
 
+  if opts.cwd_only or opts.cwd then
+    local cwd = opts.cwd_only and vim.loop.cwd() or opts.cwd
+    marks_table = vim.tbl_filter(function(row)
+      return buf_in_cwd(row.filename, cwd)
+    end, marks_table)
+  end
+
   pickers
     .new(opts, {
       prompt_title = "Marks",
