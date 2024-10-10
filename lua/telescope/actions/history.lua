@@ -4,10 +4,7 @@ local utils = require "telescope.utils"
 
 local uv = vim.loop
 
----@tag telescope.actions.history
----@config { ["module"] = "telescope.actions.history" }
-
----@brief [[
+---@brief
 --- A base implementation of a prompt history that provides a simple history
 --- and can be replaced with a custom implementation.
 ---
@@ -24,7 +21,6 @@ local uv = vim.loop
 --- - etc
 ---
 --- See https://github.com/nvim-telescope/telescope-smart-history.nvim
----@brief ]]
 
 -- TODO(conni2461): currently not present in plenary path only sync.
 -- But sync is just unnecessary here
@@ -57,12 +53,15 @@ local histories = {}
 histories.History = {}
 histories.History.__index = histories.History
 
---- Create a new History
----@param opts table: Defines the behavior of History
+---@inlinedoc
+---@class telescope.actions.history.opts
 ---@field init function: Will be called after handling configuration (required)
 ---@field append function: How to append a new prompt item (required)
 ---@field reset function: What happens on reset. Will be called when telescope closes (required)
 ---@field pre_get function: Will be called before a next or previous item will be returned (optional)
+
+--- Create a new History
+---@param opts table: Defines the behavior of History
 function histories.History:new(opts)
   local obj = {}
   if conf.history == false or type(conf.history) ~= "table" then

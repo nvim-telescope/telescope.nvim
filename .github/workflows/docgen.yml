@@ -17,7 +17,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-22.04
-            url: https://github.com/neovim/neovim/releases/download/v0.9.5/nvim-linux64.tar.gz
+            url: https://github.com/neovim/neovim/releases/download/v0.10.1/nvim-linux64.tar.gz
     steps:
       - uses: actions/checkout@v4
       - run: date +%F > todays-date
@@ -35,16 +35,7 @@ jobs:
           }
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
-          git clone https://github.com/tjdevries/tree-sitter-lua ~/.local/share/nvim/site/pack/vendor/start/tree-sitter-lua
           ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
-
-      - name: Build parser
-        run: |
-          # We have to build the parser every single time to keep up with parser changes
-          cd ~/.local/share/nvim/site/pack/vendor/start/tree-sitter-lua
-          git checkout 86f74dfb69c570f0749b241f8f5489f8f50adbea
-          make dist
-          cd -
 
       - name: Generating docs
         run: |

@@ -1,11 +1,7 @@
----@tag telescope.actions.state
----@config { ["module"] = "telescope.actions.state", ["name"] = "ACTIONS_STATE" }
-
----@brief [[
+---@brief
 --- Functions to be used to determine the current state of telescope.
 ---
 --- Generally used from within other |telescope.actions|
----@brief ]]
 
 local global_state = require "telescope.state"
 local conf = require("telescope.config").values
@@ -13,17 +9,20 @@ local conf = require("telescope.config").values
 local action_state = {}
 
 --- Get the current entry
+---@return table # the selected entry
 function action_state.get_selected_entry()
   return global_state.get_global_key "selected_entry"
 end
 
 --- Gets the current line in the search prompt
+---@return string # the current line in the search prompt
 function action_state.get_current_line()
   return global_state.get_global_key "current_line" or ""
 end
 
 --- Gets the current picker
 ---@param prompt_bufnr number: The prompt bufnr
+---@return table # the current picker
 function action_state.get_current_picker(prompt_bufnr)
   return global_state.get_status(prompt_bufnr).picker
 end
