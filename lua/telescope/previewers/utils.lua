@@ -3,7 +3,7 @@ local strings = require "plenary.strings"
 local conf = require("telescope.config").values
 
 local Job = require "plenary.job"
-local Path = require "plenary.path"
+local Path = require "plenary.path2"
 
 local telescope_utils = require "telescope.utils"
 
