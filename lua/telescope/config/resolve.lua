@@ -251,21 +251,21 @@ end
 ---   - Compass directions:<br>
 ---     the picker will move to the corresponding edge/corner
 ---     e.g. "NW" -> "top left corner", "E" -> "right edge", "S" -> "bottom edge"
-resolver.resolve_anchor_pos = function(anchor, p_width, p_height, max_columns, max_lines)
+resolver.resolve_anchor_pos = function(anchor, p_width, p_height, max_columns, max_lines, anchor_padding)
   anchor = anchor:upper()
   local pos = { 0, 0 }
   if anchor == "CENTER" then
     return pos
   end
   if anchor:find "W" then
-    pos[1] = math.ceil((p_width - max_columns) / 2) + 1
+    pos[1] = math.ceil((p_width - max_columns) / 2) + anchor_padding
   elseif anchor:find "E" then
-    pos[1] = math.ceil((max_columns - p_width) / 2) - 1
+    pos[1] = math.ceil((max_columns - p_width) / 2) - anchor_padding
   end
   if anchor:find "N" then
-    pos[2] = math.ceil((p_height - max_lines) / 2) + 1
+    pos[2] = math.ceil((p_height - max_lines) / 2) + anchor_padding
   elseif anchor:find "S" then
-    pos[2] = math.ceil((max_lines - p_height) / 2) - 1
+    pos[2] = math.ceil((max_lines - p_height) / 2) - anchor_padding
   end
   return pos
 end

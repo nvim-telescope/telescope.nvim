@@ -75,45 +75,46 @@ body:
       required: true
   - type: textarea
     attributes:
-       label: "Minimal config"
-       description: "Minimal(!) configuration necessary to reproduce the issue. Save this as `minimal.lua`. If _absolutely_ necessary, add plugins and config options from your `init.lua` at the indicated lines."
-       render: Lua
-       value: |
-         vim.cmd [[set runtimepath=$VIMRUNTIME]]
-         vim.cmd [[set packpath=/tmp/nvim/site]]
-         local package_root = '/tmp/nvim/site/pack'
-         local install_path = package_root .. '/packer/start/packer.nvim'
-         local function load_plugins()
-           require('packer').startup {
-             {
-               'wbthomason/packer.nvim',
-               {
-                 'nvim-telescope/telescope.nvim',
-                 requires = {
-                   'nvim-lua/plenary.nvim',
-                   { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
-                 },
-               },
-               -- ADD PLUGINS THAT ARE _NECESSARY_ FOR REPRODUCING THE ISSUE
-             },
-             config = {
-               package_root = package_root,
-               compile_path = install_path .. '/plugin/packer_compiled.lua',
-               display = { non_interactive = true },
-             },
-           }
-         end
-         _G.load_config = function()
-           require('telescope').setup()
-           require('telescope').load_extension('fzf')
-           -- ADD INIT.LUA SETTINGS THAT ARE _NECESSARY_ FOR REPRODUCING THE ISSUE
-         end
-         if vim.fn.isdirectory(install_path) == 0 then
-           print("Installing Telescope and dependencies.")
-           vim.fn.system { 'git', 'clone', '--depth=1', 'https://github.com/wbthomason/packer.nvim', install_path }
-         end
-         load_plugins()
-         require('packer').sync()
-         vim.cmd [[autocmd User PackerComplete ++once echo "Ready!" | lua load_config()]]
+      label: "Minimal config"
+      description: "Minimal(!) configuration necessary to reproduce the issue. Save this as `minimal.lua` and run with `nvim -nu minimal.lua`. If _absolutely_ necessary, add plugins and config options from your `init.lua` at the indicated lines."
+      render: Lua
+      value: |
+        local root = vim.fn.fnamemodify("./.repro", ":p")
+
+        -- set stdpaths to use .repro
+        for _, name in ipairs { "config", "data", "state", "cache" } do
+          vim.env[("XDG_%s_HOME"):format(name:upper())] = root .. "/" .. name
+        end
+
+        -- bootstrap lazy
+        local lazypath = root .. "/plugins/lazy.nvim"
+        if not vim.uv.fs_stat(lazypath) then
+          vim.fn.system {
+            "git",
+            "clone",
+            "--filter=blob:none",
+            "https://github.com/folke/lazy.nvim.git",
+            lazypath,
+          }
+        end
+        vim.opt.runtimepath:prepend(lazypath)
+
+        -- install plugins
+        local plugins = {
+          {
+            "nvim-telescope/telescope.nvim",
+            dependencies = {
+              "nvim-lua/plenary.nvim",
+            },
+            config = function()
+              -- ADD INIT.LUA SETTINGS THAT ARE _NECESSARY_ FOR REPRODUCING THE ISSUE
+              require("telescope").setup {}
+            end,
+          },
+        }
+
+        require("lazy").setup(plugins, {
+          root = root .. "/plugins",
+        })
     validations:
       required: true

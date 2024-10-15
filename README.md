@@ -85,7 +85,7 @@ Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```viml
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.6' }
+Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.8' }
 " or                                , { 'branch': '0.1.x' }
 ```
 
@@ -93,7 +93,7 @@ Using [dein](https://github.com/Shougo/dein.vim)
 
 ```viml
 call dein#add('nvim-lua/plenary.nvim')
-call dein#add('nvim-telescope/telescope.nvim', { 'rev': '0.1.6' })
+call dein#add('nvim-telescope/telescope.nvim', { 'rev': '0.1.8' })
 " or                                         , { 'rev': '0.1.x' })
 ```
 
@@ -101,7 +101,7 @@ Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
 use {
-  'nvim-telescope/telescope.nvim', tag = '0.1.6',
+  'nvim-telescope/telescope.nvim', tag = '0.1.8',
 -- or                            , branch = '0.1.x',
   requires = { {'nvim-lua/plenary.nvim'} }
 }
@@ -112,14 +112,14 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim)
 ```lua
 -- init.lua:
     {
-    'nvim-telescope/telescope.nvim', tag = '0.1.6',
+    'nvim-telescope/telescope.nvim', tag = '0.1.8',
 -- or                              , branch = '0.1.x',
       dependencies = { 'nvim-lua/plenary.nvim' }
     }
 
 -- plugins/telescope.lua:
 return {
-    'nvim-telescope/telescope.nvim', tag = '0.1.6',
+    'nvim-telescope/telescope.nvim', tag = '0.1.8',
 -- or                              , branch = '0.1.x',
       dependencies = { 'nvim-lua/plenary.nvim' }
     }
@@ -158,10 +158,10 @@ Using Lua:
 
 ```lua
 local builtin = require('telescope.builtin')
-vim.keymap.set('n', '<leader>ff', builtin.find_files, {})
-vim.keymap.set('n', '<leader>fg', builtin.live_grep, {})
-vim.keymap.set('n', '<leader>fb', builtin.buffers, {})
-vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
+vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Telescope find files' })
+vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = 'Telescope live grep' })
+vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = 'Telescope buffers' })
+vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = 'Telescope help tags' })
 ```
 
 See [builtin pickers](#pickers) for a list of all builtin functions.
@@ -263,6 +263,9 @@ Many familiar mapping patterns are set up as defaults.
 | `<C-q>`        | Send all items not filtered to quickfixlist (qflist)      |
 | `<M-q>`        | Send all selected items to qflist                         |
 | `<C-r><C-w>`   | Insert cword in original window into prompt (insert mode) |
+| `<C-r><C-a>`   | Insert cWORD in original window into prompt (insert mode) |
+| `<C-r><C-f>`   | Insert cfile in original window into prompt (insert mode) |
+| `<C-r><C-l>`   | Insert cline in original window into prompt (insert mode) |
 
 To see the full list of mappings, check out `lua/telescope/mappings.lua` and the
 `default_mappings` table.

@@ -50,7 +50,7 @@ local function call_hierarchy(opts, method, title, direction, item)
 end
 
 local function pick_call_hierarchy_item(call_hierarchy_items)
-  if not call_hierarchy_items then
+  if not call_hierarchy_items or vim.tbl_isempty(call_hierarchy_items) then
     return
   end
   if #call_hierarchy_items == 1 then
@@ -65,7 +65,7 @@ local function pick_call_hierarchy_item(call_hierarchy_items)
   if choice < 1 or choice > #items then
     return
   end
-  return choice
+  return call_hierarchy_items[choice]
 end
 
 local function calls(opts, direction)
@@ -97,82 +97,135 @@ lsp.outgoing_calls = function(opts)
   calls(opts, "to")
 end
 
----@type { [string]: fun(results: table, items: table, opts: table): table, table }
-local action_handlers = {
-  ["textDocument/references"] = function(results, items, opts)
-    if not opts.include_current_line then
-      local retresults = {}
-      local retitems = {}
-
-      for i, item in pairs(items) do
-        if
-          not (
-            item.filename == vim.api.nvim_buf_get_name(opts.bufnr)
-            and item.lnum == vim.api.nvim_win_get_cursor(opts.winnr)[1]
-          )
-        then
-          table.insert(retresults, results[i])
-          table.insert(retitems, items[i])
-        end
-      end
-
-      return retresults, retitems
-    end
-
-    return results, items
-  end,
-}
-
----@param action string
----@param locations table
----@param items table
----@param opts table
----@return table results, table items
-local apply_action_handler = function(action, locations, items, opts)
-  local handler = action_handlers[action]
-  if handler then
-    return handler(locations, items, opts)
+--- convert `item` type back to something we can pass to `vim.lsp.util.jump_to_location`
+--- stopgap for pre-nvim 0.10 - after which we can simply use the `user_data`
+--- field on the items in `vim.lsp.util.locations_to_items`
+---@param item vim.lsp.util.locations_to_items.ret
+---@param offset_encoding string|nil utf-8|utf-16|utf-32
+---@return lsp.Location
+local function item_to_location(item, offset_encoding)
+  local line = item.lnum - 1
+  local character = vim.lsp.util._str_utfindex_enc(item.text, item.col, offset_encoding) - 1
+  local uri
+  if utils.is_uri(item.filename) then
+    uri = item.filename
+  else
+    uri = vim.uri_from_fname(item.filename)
   end
-
-  return locations, items
+  return {
+    uri = uri,
+    range = {
+      start = {
+        line = line,
+        character = character,
+      },
+      ["end"] = {
+        line = line,
+        character = character,
+      },
+    },
+  }
 end
 
----@param action string
+---@alias telescope.lsp.list_or_jump_action
+---| "textDocument/references"
+---| "textDocument/definition"
+---| "textDocument/typeDefinition"
+---| "textDocument/implementation"
+
+---@param action telescope.lsp.list_or_jump_action
+---@param items vim.lsp.util.locations_to_items.ret[]
+---@param opts table
+---@return vim.lsp.util.locations_to_items.ret[]
+local apply_action_handler = function(action, items, opts)
+  if action == "textDocument/references" and not opts.include_current_line then
+    local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
+    items = vim.tbl_filter(function(v)
+      return not (v.filename == opts.curr_filepath and v.lnum == lnum)
+    end, items)
+  end
+
+  return items
+end
+
+---@param items vim.lsp.util.locations_to_items.ret[]
+---@param opts table
+---@return vim.lsp.util.locations_to_items.ret[]
+local function filter_file_ignore_patters(items, opts)
+  local file_ignore_patterns = vim.F.if_nil(opts.file_ignore_patterns, conf.file_ignore_patterns)
+  file_ignore_patterns = file_ignore_patterns or {}
+  if vim.tbl_isempty(file_ignore_patterns) then
+    return items
+  end
+
+  return vim.tbl_filter(function(item)
+    for _, patt in ipairs(file_ignore_patterns) do
+      if string.match(item.filename, patt) then
+        return false
+      end
+    end
+    return true
+  end, items)
+end
+
+---@param action telescope.lsp.list_or_jump_action
 ---@param title string prompt title
+---@param funname string: name of the calling function
 ---@param params lsp.TextDocumentPositionParams
 ---@param opts table
-local function list_or_jump(action, title, params, opts)
-  vim.lsp.buf_request(opts.bufnr, action, params, function(err, result, ctx, _)
-    if err then
-      vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
+local function list_or_jump(action, title, funname, params, opts)
+  opts.reuse_win = vim.F.if_nil(opts.reuse_win, false)
+  opts.curr_filepath = vim.api.nvim_buf_get_name(opts.bufnr)
+
+  vim.lsp.buf_request_all(opts.bufnr, action, params, function(results_per_client)
+    local items = {}
+    local first_encoding
+    local errors = {}
+
+    for client_id, result_or_error in pairs(results_per_client) do
+      local error, result = result_or_error.error, result_or_error.result
+      if error then
+        errors[client_id] = error
+      else
+        if result ~= nil then
+          local locations = {}
+
+          if not utils.islist(result) then
+            vim.list_extend(locations, { result })
+          else
+            vim.list_extend(locations, result)
+          end
+
+          local offset_encoding = vim.lsp.get_client_by_id(client_id).offset_encoding
+
+          if not vim.tbl_isempty(result) then
+            first_encoding = offset_encoding
+          end
+
+          vim.list_extend(items, vim.lsp.util.locations_to_items(locations, offset_encoding))
+        end
+      end
+    end
+
+    for _, error in pairs(errors) do
+      vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. error.message)
+    end
+
+    items = apply_action_handler(action, items, opts)
+    items = filter_file_ignore_patters(items, opts)
+
+    if vim.tbl_isempty(items) then
+      utils.notify(funname, {
+        msg = string.format("No %s found", title),
+        level = "INFO",
+      })
       return
     end
 
-    if result == nil then
-      return
-    end
-
-    local locations = {}
-    if not utils.islist(result) then
-      locations = { result }
-    end
-    vim.list_extend(locations, result)
-
-    local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
-    local items = vim.lsp.util.locations_to_items(locations, offset_encoding)
-
-    locations, items = apply_action_handler(action, locations, items, opts)
-
-    if vim.tbl_isempty(locations) then
-      return
-    end
-
-    if #locations == 1 and opts.jump_type ~= "never" then
-      local current_uri = params.textDocument.uri
-      local target_uri = locations[1].uri or locations[1].targetUri
-      if current_uri ~= target_uri then
+    if #items == 1 and opts.jump_type ~= "never" then
+      local item = items[1]
+      if opts.curr_filepath ~= item.filename then
         local cmd
-        local file_path = vim.uri_to_fname(target_uri)
         if opts.jump_type == "tab" then
           cmd = "tabedit"
         elseif opts.jump_type == "split" then
@@ -186,11 +239,12 @@ local function list_or_jump(action, title, params, opts)
         end
 
         if cmd then
-          vim.cmd(string.format("%s %s", cmd, file_path))
+          vim.cmd(string.format("%s %s", cmd, item.filename))
         end
       end
 
-      vim.lsp.util.jump_to_location(locations[1], offset_encoding, opts.reuse_win)
+      local location = item_to_location(item, first_encoding)
+      vim.lsp.util.jump_to_location(location, first_encoding, opts.reuse_win)
     else
       pickers
         .new(opts, {
@@ -210,24 +264,31 @@ local function list_or_jump(action, title, params, opts)
 end
 
 lsp.references = function(opts)
+  opts.include_current_line = vim.F.if_nil(opts.include_current_line, false)
   local params = vim.lsp.util.make_position_params(opts.winnr)
   params.context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) }
-  return list_or_jump("textDocument/references", "LSP References", params, opts)
+  return list_or_jump("textDocument/references", "LSP References", "builtin.lsp_references", params, opts)
 end
 
 lsp.definitions = function(opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
-  return list_or_jump("textDocument/definition", "LSP Definitions", params, opts)
+  return list_or_jump("textDocument/definition", "LSP Definitions", "builtin.lsp_definitions", params, opts)
 end
 
 lsp.type_definitions = function(opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
-  return list_or_jump("textDocument/typeDefinition", "LSP Type Definitions", params, opts)
+  return list_or_jump(
+    "textDocument/typeDefinition",
+    "LSP Type Definitions",
+    "builtin.lsp_type_definitions",
+    params,
+    opts
+  )
 end
 
 lsp.implementations = function(opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
-  return list_or_jump("textDocument/implementation", "LSP Implementations", params, opts)
+  return list_or_jump("textDocument/implementation", "LSP Implementations", "builtin.lsp_implementations", params, opts)
 end
 
 local symbols_sorter = function(symbols)
@@ -362,13 +423,19 @@ local function get_workspace_symbols_requester(bufnr, opts)
   return function(prompt)
     local tx, rx = channel.oneshot()
     cancel()
-    _, cancel = vim.lsp.buf_request(bufnr, "workspace/symbol", { query = prompt }, tx)
+    cancel = vim.lsp.buf_request_all(bufnr, "workspace/symbol", { query = prompt }, tx)
 
-    -- Handle 0.5 / 0.5.1 handler situation
-    local err, res = rx()
-    assert(not err, err)
+    local results = rx() ---@type table<integer, {error: lsp.ResponseError?, result: lsp.WorkspaceSymbol?}>
+    local locations = {} ---@type vim.lsp.util.locations_to_items.ret[]
 
-    local locations = vim.lsp.util.symbols_to_items(res or {}, bufnr) or {}
+    for _, client_res in pairs(results) do
+      if client_res.error then
+        vim.api.nvim_err_writeln("Error when executing workspace/symbol : " .. client_res.error.message)
+      elseif client_res.result ~= nil then
+        vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr))
+      end
+    end
+
     if not vim.tbl_isempty(locations) then
       locations = utils.filter_symbols(locations, opts, symbols_sorter) or {}
     end

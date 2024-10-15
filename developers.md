@@ -217,7 +217,7 @@ more interesting. We will end up with the following new code for `finders.new_ta
 ```
 
 With the new snippet, we no longer have an array of strings but an array of
-tables. Each table has a color, name, and the color's hex value.
+tables. Each table has a color name and the color's hex value.
 
 `entry_maker` is a function that will receive each table and then we can set the
 values we need. It's best practice to have a `value` reference to the
