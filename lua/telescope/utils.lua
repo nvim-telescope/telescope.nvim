@@ -17,6 +17,18 @@ local utils = {}
 
 utils.iswin = vim.loop.os_uname().sysname == "Windows_NT"
 
+---@param s string
+---@param i number
+---@param encoding "utf-8" | "utf-16" | "utf-32"
+---@return integer
+utils.str_byteindex = function(s, i, encoding)
+  if vim.fn.has "nvim-0.11" == 1 then
+    return vim.str_byteindex(s, encoding, i, false)
+  else
+    return vim.lsp.util._str_byteindex_enc(s, i, encoding)
+  end
+end
+
 --TODO(clason): Remove when dropping support for Nvim 0.9
 utils.islist = vim.fn.has "nvim-0.10" == 1 and vim.islist or vim.tbl_islist
 local flatten = function(t)
