@@ -261,19 +261,107 @@ local function list_or_jump(action, title, funname, params, opts)
   end)
 end
 
-lsp.references = function(opts)
+---@param item table
+---@param opts table
+local function jump(item, opts)
+  if opts.curr_filepath ~= item.filename then
+    local cmd
+    if opts.jump_type == "tab" then
+      cmd = "tabedit"
+    elseif opts.jump_type == "split" then
+      cmd = "new"
+    elseif opts.jump_type == "vsplit" then
+      cmd = "vnew"
+    elseif opts.jump_type == "tab drop" then
+      cmd = "tab drop"
+    end
+
+    if cmd then
+      vim.cmd(string.format("%s %s", cmd, item.filename))
+    end
+  end
+
+  local b = item.bufnr or vim.fn.bufadd(item.filename)
+  vim.bo[b].buflisted = true
+  local w = opts.reuse_win and vim.fn.win_findbuf(b)[1] or opts.winnr
+  vim.api.nvim_win_set_buf(w, b)
+  vim.api.nvim_win_set_cursor(w, { item.lnum, item.col - 1 })
+  vim._with({ win = w }, function()
+    -- Open folds under the cursor
+    vim.cmd "normal! zv"
+  end)
+end
+
+local function on_list_pick_or_jump(opts)
+  opts.reuse_win = vim.F.if_nil(opts.reuse_win, false)
+  opts.curr_filepath = vim.api.nvim_buf_get_name(opts.bufnr)
+
+  ---@param res vim.lsp.LocationOpts.OnList
+  return function(res)
+    if opts.action_handler then
+      res.items = opts.action_handler(res.items, opts)
+    end
+
+    if #res.items == 1 and opts.jump_type ~= "never" then
+      jump(res.items[1], opts)
+      return
+    end
+
+    pickers
+      .new(opts, {
+        finder = finders.new_table {
+          results = res.items,
+          entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
+        },
+        previewer = conf.qflist_previewer(opts),
+        sorter = conf.generic_sorter(opts),
+        push_cursor_on_edit = true,
+        push_tagstack_on_edit = true,
+      })
+      :find()
+  end
+end
+
+local function references(opts)
+  opts.prompt_title = vim.F.if_nil(opts.prompt_title, "LSP References")
+
+  if not opts.include_current_line then
+    opts.action_handler = function(items, ctx)
+      local lnum = vim.api.nvim_win_get_cursor(ctx.winnr)[1]
+      items = vim.tbl_filter(function(v)
+        return not (v.filename == ctx.curr_filepath and v.lnum == lnum)
+      end, items)
+      return items
+    end
+  end
+
+  local ctx = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) }
+  vim.lsp.buf.references(ctx, { on_list = on_list_pick_or_jump(opts) })
+end
+
+local function references_legacy(opts)
   opts.include_current_line = vim.F.if_nil(opts.include_current_line, false)
   local params = vim.lsp.util.make_position_params(opts.winnr)
   params.context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) }
   return list_or_jump("textDocument/references", "LSP References", "builtin.lsp_references", params, opts)
 end
 
-lsp.definitions = function(opts)
+local function definitions(opts)
+  opts.prompt_title = vim.F.if_nil(opts.prompt_title, "LSP Definitions")
+  vim.lsp.buf.definition { on_list = on_list_pick_or_jump(opts) }
+end
+
+local function definitions_legacy(opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
   return list_or_jump("textDocument/definition", "LSP Definitions", "builtin.lsp_definitions", params, opts)
 end
 
-lsp.type_definitions = function(opts)
+local function type_definitions(opts)
+  opts.prompt_title = vim.F.if_nil(opts.prompt_title, "LSP Type Definitions")
+  vim.lsp.buf.type_definition { on_list = on_list_pick_or_jump(opts) }
+end
+
+local function type_definitions_legacy(opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
   return list_or_jump(
     "textDocument/typeDefinition",
@@ -284,9 +372,26 @@ lsp.type_definitions = function(opts)
   )
 end
 
-lsp.implementations = function(opts)
+local function implementations(opts)
+  opts.prompt_title = vim.F.if_nil(opts.prompt_title, "LSP Implementations")
+  vim.lsp.buf.implementation { on_list = on_list_pick_or_jump(opts) }
+end
+
+local function implementations_legacy(opts)
   local params = vim.lsp.util.make_position_params(opts.winnr)
   return list_or_jump("textDocument/implementation", "LSP Implementations", "builtin.lsp_implementations", params, opts)
+end
+
+if vim.fn.has "0.11" then
+  lsp.references = references
+  lsp.definitions = definitions
+  lsp.type_definitions = type_definitions
+  lsp.implementations = implementations
+else
+  lsp.references = references_legacy
+  lsp.definitions = definitions_legacy
+  lsp.type_definitions = type_definitions_legacy
+  lsp.implementations = implementations_legacy
 end
 
 local symbols_sorter = function(symbols)
