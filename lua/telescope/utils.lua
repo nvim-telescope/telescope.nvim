@@ -121,7 +121,7 @@ utils.filter_symbols = function(results, opts, post_filter)
       msg = "Either opts.symbols or opts.ignore_symbols, can't process opposing options at the same time!",
       level = "ERROR",
     })
-    return
+    return {}
   elseif not (has_ignore or has_symbols) then
     return results
   elseif has_ignore then
@@ -133,7 +133,7 @@ utils.filter_symbols = function(results, opts, post_filter)
         msg = "Please pass ignore_symbols as either a string or a list of strings",
         level = "ERROR",
       })
-      return
+      return {}
     end
 
     opts.ignore_symbols = vim.tbl_map(string.lower, opts.ignore_symbols)
@@ -149,7 +149,7 @@ utils.filter_symbols = function(results, opts, post_filter)
         msg = "Please pass filtering symbols as either a string or a list of strings",
         level = "ERROR",
       })
-      return
+      return {}
     end
 
     opts.symbols = vim.tbl_map(string.lower, opts.symbols)
