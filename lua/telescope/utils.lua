@@ -23,7 +23,7 @@ utils.iswin = vim.loop.os_uname().sysname == "Windows_NT"
 ---@return integer
 utils.str_byteindex = function(s, i, encoding)
   if vim.fn.has "nvim-0.11" == 1 then
-    return vim.str_byteindex(s, encoding, i, false)
+    return vim.str_byteindex(s, i, encoding, false)
   else
     return vim.lsp.util._str_byteindex_enc(s, i, encoding)
   end
