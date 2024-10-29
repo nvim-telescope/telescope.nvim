@@ -2602,6 +2602,13 @@ UTILS                                                          *telescope.utils*
 
 Utilities for writing telescope pickers
 
+utils.str_byteindex()                        *telescope.utils.str_byteindex()*
+
+
+    Return: ~
+        integer
+
+
 utils.path_expand({path})                      *telescope.utils.path_expand()*
     Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
 
