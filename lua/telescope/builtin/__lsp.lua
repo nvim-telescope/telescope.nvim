@@ -9,7 +9,20 @@ local utils = require "telescope.utils"
 
 local lsp = {}
 
-local function call_hierarchy(opts, method, title, direction, item)
+local function no_hierarchy_warning(funname, title)
+  utils.notify(funname, {
+    msg = string.format("No %s found", title),
+    level = "INFO",
+  })
+end
+
+---@param method string
+---@param title string
+---@param direction "from"|"to
+---@param funname string
+---@param item table
+---@param opts table
+local function call_hierarchy(method, title, direction, funname, item, opts)
   vim.lsp.buf_request(opts.bufnr, method, { item = item }, function(err, result)
     if err then
       vim.api.nvim_err_writeln("Error handling " .. title .. ": " .. err.message)
@@ -17,6 +30,7 @@ local function call_hierarchy(opts, method, title, direction, item)
     end
 
     if not result or vim.tbl_isempty(result) then
+      no_hierarchy_warning(funname, title)
       return
     end
 
@@ -50,9 +64,6 @@ local function call_hierarchy(opts, method, title, direction, item)
 end
 
 local function pick_call_hierarchy_item(call_hierarchy_items)
-  if not call_hierarchy_items or vim.tbl_isempty(call_hierarchy_items) then
-    return
-  end
   if #call_hierarchy_items == 1 then
     return call_hierarchy_items[1]
   end
@@ -68,11 +79,21 @@ local function pick_call_hierarchy_item(call_hierarchy_items)
   return call_hierarchy_items[choice]
 end
 
-local function calls(opts, direction)
+---@param method string
+---@param title string
+---@param direction "from"|"to
+---@param funname string
+---@param opts table
+local function calls(method, title, direction, funname, opts)
   local params = vim.lsp.util.make_position_params()
   vim.lsp.buf_request(opts.bufnr, "textDocument/prepareCallHierarchy", params, function(err, result)
     if err then
       vim.api.nvim_err_writeln("Error when preparing call hierarchy: " .. err)
+      return
+    end
+
+    if not result or vim.tbl_isempty(result) then
+      no_hierarchy_warning(funname, title)
       return
     end
 
@@ -81,20 +102,16 @@ local function calls(opts, direction)
       return
     end
 
-    if direction == "from" then
-      call_hierarchy(opts, "callHierarchy/incomingCalls", "LSP Incoming Calls", direction, call_hierarchy_item)
-    else
-      call_hierarchy(opts, "callHierarchy/outgoingCalls", "LSP Outgoing Calls", direction, call_hierarchy_item)
-    end
+    call_hierarchy(method, title, direction, funname, call_hierarchy_item, opts)
   end)
 end
 
 lsp.incoming_calls = function(opts)
-  calls(opts, "from")
+  calls("callHierarchy/incomingCalls", "LSP Incoming Calls", "from", "builtin.lsp_incoming_calls", opts)
 end
 
 lsp.outgoing_calls = function(opts)
-  calls(opts, "to")
+  calls("callHierarchy/outgoingCalls", "LSP Outgoing Calls", "to", "builtin.lsp_outgoing_calls", opts)
 end
 
 --- convert `item` type back to something we can pass to `vim.lsp.util.jump_to_location`
