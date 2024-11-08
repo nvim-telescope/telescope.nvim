@@ -111,18 +111,18 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
 -- init.lua:
-    {
-    'nvim-telescope/telescope.nvim', tag = '0.1.8',
--- or                              , branch = '0.1.x',
-      dependencies = { 'nvim-lua/plenary.nvim' }
-    }
+{
+'nvim-telescope/telescope.nvim', tag = '0.1.8',
+-- or                          , branch = '0.1.x',
+dependencies = { 'nvim-lua/plenary.nvim' }
+}
 
 -- plugins/telescope.lua:
 return {
-    'nvim-telescope/telescope.nvim', tag = '0.1.8',
--- or                              , branch = '0.1.x',
-      dependencies = { 'nvim-lua/plenary.nvim' }
-    }
+  'nvim-telescope/telescope.nvim', tag = '0.1.8',
+-- or                            , branch = '0.1.x',
+  dependencies = { 'nvim-lua/plenary.nvim' }
+}
 ```
 
 ### checkhealth
