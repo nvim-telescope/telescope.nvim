@@ -68,8 +68,29 @@ local function pick_call_hierarchy_item(call_hierarchy_items)
   return call_hierarchy_items[choice]
 end
 
+---@param win number? Window handler
+---@param extra table? Extra fields in params
+---@return table|(fun(client: vim.lsp.Client): table) parmas to send to the server
+local function client_position_params(win, extra)
+  win = win or vim.api.nvim_get_current_win()
+  if vim.fn.has "nvim-0.11" == 0 then
+    local params = vim.lsp.util.make_position_params(win)
+    if extra then
+      params = vim.tbl_extend("force", params, extra)
+    end
+    return params
+  end
+  return function(client)
+    local params = vim.lsp.util.make_position_params(win, client.offset_encoding)
+    if extra then
+      params = vim.tbl_extend("force", params, extra)
+    end
+    return params
+  end
+end
+
 local function calls(opts, direction)
-  local params = vim.lsp.util.make_position_params()
+  local params = client_position_params()
   vim.lsp.buf_request(opts.bufnr, "textDocument/prepareCallHierarchy", params, function(err, result)
     if err then
       vim.api.nvim_err_writeln("Error when preparing call hierarchy: " .. err)
@@ -171,7 +192,7 @@ end
 ---@param action telescope.lsp.list_or_jump_action
 ---@param title string prompt title
 ---@param funname string: name of the calling function
----@param params lsp.TextDocumentPositionParams
+---@param params lsp.TextDocumentPositionParams|(fun(client: vim.lsp.Client, bufnr: integer): table?)
 ---@param opts table
 local function list_or_jump(action, title, funname, params, opts)
   opts.reuse_win = vim.F.if_nil(opts.reuse_win, false)
@@ -263,19 +284,19 @@ end
 
 lsp.references = function(opts)
   opts.include_current_line = vim.F.if_nil(opts.include_current_line, false)
-  ---@class lsp.TextDocumentPositionParams
-  local params = vim.lsp.util.make_position_params(opts.winnr)
-  params.context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) }
+  local params = client_position_params(opts.winnr, {
+    context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) },
+  })
   return list_or_jump("textDocument/references", "LSP References", "builtin.lsp_references", params, opts)
 end
 
 lsp.definitions = function(opts)
-  local params = vim.lsp.util.make_position_params(opts.winnr)
+  local params = client_position_params(opts.winnr)
   return list_or_jump("textDocument/definition", "LSP Definitions", "builtin.lsp_definitions", params, opts)
 end
 
 lsp.type_definitions = function(opts)
-  local params = vim.lsp.util.make_position_params(opts.winnr)
+  local params = client_position_params(opts.winnr)
   return list_or_jump(
     "textDocument/typeDefinition",
     "LSP Type Definitions",
@@ -286,7 +307,7 @@ lsp.type_definitions = function(opts)
 end
 
 lsp.implementations = function(opts)
-  local params = vim.lsp.util.make_position_params(opts.winnr)
+  local params = client_position_params(opts.winnr)
   return list_or_jump("textDocument/implementation", "LSP Implementations", "builtin.lsp_implementations", params, opts)
 end
 
@@ -323,7 +344,7 @@ local symbols_sorter = function(symbols)
 end
 
 lsp.document_symbols = function(opts)
-  local params = vim.lsp.util.make_position_params(opts.winnr)
+  local params = client_position_params(opts.winnr)
   vim.lsp.buf_request(opts.bufnr, "textDocument/documentSymbol", params, function(err, result, _, _)
     if err then
       vim.api.nvim_err_writeln("Error when finding document symbols: " .. err.message)
