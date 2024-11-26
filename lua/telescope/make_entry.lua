@@ -328,9 +328,14 @@ do
           end
         end
 
+        local entry_text = entry.text
+        if opts.ltrim_text then
+          entry_text = entry_text:gsub("^%s+", "")
+        end
+
         local display, hl_group, icon = utils.transform_devicons(
           entry.filename,
-          string.format(display_string, display_filename, coordinates, entry.text),
+          string.format(display_string, display_filename, coordinates, entry_text),
           disable_devicons
         )
 
