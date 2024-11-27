@@ -1467,7 +1467,7 @@ actions.which_key = function(prompt_bufnr, opts)
   end)
 end
 
---- Move from a none fuzzy search to a fuzzy one<br>
+--- Move from a non-fuzzy search to a fuzzy one<br>
 --- This action is meant to be used in live_grep and lsp_dynamic_workspace_symbols
 ---@param prompt_bufnr number: The prompt bufnr
 actions.to_fuzzy_refine = function(prompt_bufnr)
