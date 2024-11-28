@@ -393,9 +393,18 @@ git.status = function(opts)
       sorter = conf.file_sorter(opts),
       on_complete = {
         function(self)
-          local lines = self.manager:num_results()
           local prompt = action_state.get_current_line()
-          if lines == 0 and prompt == "" then
+
+          -- HACK: self.manager:num_results() can return 0 despite having results
+          -- due to some async/event loop shenanigans (#3316)
+          local count = 0
+          for _, entry in pairs(self.finder.results) do
+            if entry and entry.valid ~= false then
+              count = count + 1
+            end
+          end
+
+          if count == 0 and prompt == "" then
             utils.notify("builtin.git_status", {
               msg = "No changes found",
               level = "ERROR",

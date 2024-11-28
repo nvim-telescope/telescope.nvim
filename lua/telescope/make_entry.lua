@@ -1391,7 +1391,7 @@ function make_entry.gen_from_git_status(opts)
       return nil
     end
 
-    return setmetatable({
+    return make_entry.set_default_entry_mt({
       value = file,
       status = mod,
       ordinal = entry,
