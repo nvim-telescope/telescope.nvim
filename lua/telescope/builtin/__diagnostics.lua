@@ -107,12 +107,13 @@ local diagnostics_to_tbl = function(opts)
   end
 
   local preprocess_diag = function(diagnostic)
+    local source = opts.show_source and " (" .. diagnostic.source .. ")" or ""
     return {
       bufnr = diagnostic.bufnr,
       filename = bufnr_name_map[diagnostic.bufnr],
       lnum = diagnostic.lnum + 1,
       col = diagnostic.col + 1,
-      text = vim.trim(diagnostic.message:gsub("[\n]", "")),
+      text = vim.trim(diagnostic.message:gsub("[\n]", "")) .. source,
       type = severities[diagnostic.severity] or severities[1],
     }
   end
