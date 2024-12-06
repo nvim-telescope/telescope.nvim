@@ -56,6 +56,28 @@ local has_rg_program = function(picker_name, program)
   return false
 end
 
+local get_qf_filelist = function(grep_qf, cwd)
+  if not grep_qf then
+    return nil
+  end
+
+  local qflist = vim.fn.getqflist()
+
+  local filelist = {}
+  local unique_files = {}
+  for _, item in ipairs(qflist) do
+    local file = vim.api.nvim_buf_get_name(item.bufnr)
+    if file and vim.fn.filereadable(file) == 1 then
+      local relpath = Path:new(file):make_relative(cwd)
+      if not unique_files[relpath] then
+        unique_files[relpath] = true
+        table.insert(filelist, relpath)
+      end
+    end
+  end
+  return filelist
+end
+
 local get_open_filelist = function(grep_open_files, cwd)
   if not grep_open_files then
     return nil
@@ -119,9 +141,11 @@ files.live_grep = function(opts)
   end
   local search_dirs = opts.search_dirs
   local grep_open_files = opts.grep_open_files
+  local qf_files = opts.quickfix_files
   opts.cwd = opts.cwd and utils.path_expand(opts.cwd) or vim.loop.cwd()
 
   local filelist = get_open_filelist(grep_open_files, opts.cwd)
+  local qf_file_list = get_qf_filelist(qf_files, opts.cwd)
   if search_dirs then
     for i, path in ipairs(search_dirs) do
       search_dirs[i] = utils.path_expand(path)
@@ -165,6 +189,8 @@ files.live_grep = function(opts)
 
     if grep_open_files then
       search_list = filelist
+    elseif qf_files then
+      search_list = qf_file_list
     elseif search_dirs then
       search_list = search_dirs
     end
