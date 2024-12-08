@@ -243,6 +243,9 @@ previewers.new_buffer_previewer = buffer_previewer.new_buffer_previewer
 ---@param opts table: keys: `use_ft_detect`, `bufname` and `callback`
 previewers.buffer_previewer_maker = buffer_previewer.file_maker
 
+--- A function to scroll the buffer of buffer previewers
+previewers.buffer_scroll_fn = buffer_previewer.scroll_fn
+
 --- A previewer that is used to display a file. It uses the `buffer_previewer`
 --- interface and won't jump to the line. To integrate this one into your
 --- own picker make sure that the field `path` or `filename` is set for
