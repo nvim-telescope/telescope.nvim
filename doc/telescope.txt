@@ -1314,7 +1314,7 @@ builtin.commands({opts})                        *telescope.builtin.commands()*
 
 
 builtin.quickfix({opts})                        *telescope.builtin.quickfix()*
-    Lists items in the quickfix list, jumps to location on `<cr>`
+    Lists items in the current quickfix list, jumps to location on `<cr>`
 
 
     Parameters: ~
