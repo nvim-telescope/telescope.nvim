@@ -148,6 +148,18 @@ internal.resume = function(opts)
     })
     return
   end
+  if opts.select_pos then
+    if picker.manager:num_results() <= math.abs(opts.select_pos) then
+      utils.notify("builtin.resume", {
+        msg = string.format("The picker has less entries than supplied pos: %d", opts.select_pos),
+        level = "ERROR",
+      })
+      return
+    end
+    opts._select_pos = opts.select_pos
+    opts.select_pos = nil
+  end
+
   -- reset layout strategy and get_window_options if default as only one is valid
   -- and otherwise unclear which was actually set
   if picker.layout_strategy == conf.layout_strategy then

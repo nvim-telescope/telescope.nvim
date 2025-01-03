@@ -249,6 +249,7 @@ builtin.builtin = require_on_exported_call("telescope.builtin.__internal").built
 ---   - Requires `cache_picker` in setup or when having invoked pickers, see |telescope.defaults.cache_picker|
 ---@param opts table: options to pass to the picker
 ---@field cache_index number: what picker to resume, where 1 denotes most recent (default: 1)
+---@field select_pos number: select the entry that position is specified by this value and do `actions.select_default` (default: nil)
 builtin.resume = require_on_exported_call("telescope.builtin.__internal").resume
 
 --- Opens a picker over previously cached pickers in their preserved states (incl. multi selections)

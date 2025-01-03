@@ -324,6 +324,8 @@ function Picker:new(opts)
 
     cache_picker = config.resolve_table_opts(opts.cache_picker, vim.deepcopy(config.values.cache_picker)),
 
+    _select_pos = opts._select_pos,
+
     __scrolling_limit = tonumber(vim.F.if_nil(opts.temp__scrolling_limit, 250)),
 
     __locations_input = vim.F.if_nil(opts.__locations_input, false),
@@ -1707,6 +1709,10 @@ function Picker:_resume_picker()
       vim.api.nvim_buf_call(self.prompt_bufnr, function()
         vim.cmd "do User TelescopeResumePost"
       end)
+    end
+    if self._select_pos then
+      self:move_selection(self._select_pos)
+      vim.schedule_wrap(actions.select_default)(self.prompt_bufnr)
     end
   end
   -- if text changed, required to set anew to restart finder; otherwise hl and selection
