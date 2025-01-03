@@ -1251,6 +1251,9 @@ builtin.resume({opts})                            *telescope.builtin.resume()*
     Options: ~
         {cache_index} (number)  what picker to resume, where 1 denotes most
                                 recent (default: 1)
+        {select_pos}  (number)  select the entry that position is specified by
+                                this value and do `actions.select_default`
+                                (default: nil)
 
 
 builtin.pickers({opts})                          *telescope.builtin.pickers()*
