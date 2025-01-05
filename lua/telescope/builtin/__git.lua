@@ -430,8 +430,24 @@ git.status = function(opts)
             picker:refresh(gen_new_finder(), { reset_prompt = false })
           end,
         }
+        actions.git_restore_to_index:enhance {
+          post = function()
+            local picker = action_state.get_current_picker(prompt_bufnr)
+
+            -- temporarily register a callback which keeps selection on refresh
+            local selection = picker:get_selection_row()
+            local callbacks = { unpack(picker._completion_callbacks) } -- shallow copy
+            picker:register_completion_callback(function(self)
+              self:set_selection(selection)
+              self._completion_callbacks = callbacks
+            end)
+
+            picker:refresh(gen_new_finder(), { reset_prompt = false })
+          end
+        }
 
         map({ "i", "n" }, "<tab>", actions.git_staging_toggle)
+        map({ "i", "n" }, "<c-r>", actions.git_restore_to_index)
         return true
       end,
     })
