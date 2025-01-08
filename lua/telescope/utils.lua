@@ -44,9 +44,8 @@ utils.flatten = vim.fn.has "nvim-0.11" == 1 and flatten or vim.tbl_flatten
 --- non-existent paths when dealing with valid absolute paths.
 ---
 --- Other paths will have '~' and environment variables expanded.
---- Unlike `vim.fs.normalize()`, backslashes are preserved. This has better
---- compatibility with `plenary.path` and also avoids mangling valid Unix paths
---- with literal backslashes.
+--- Unlike `vim.fs.normalize()`, Windows paths are converted to use backslashes
+--- for compatibility with `plenary.path`.
 ---
 --- Trailing slashes are trimmed. With the exception of root paths.
 --- eg. `/` on Unix or `C:\` on Windows
@@ -58,26 +57,31 @@ utils.path_expand = function(path)
     path = { path, { "string" } },
   }
 
-  if utils.is_uri(path) then
-    return path
-  end
-
   if path:match "^[%%#<]" then
     path = vim.fn.expand(path)
   end
 
+  local os_sep = utils.get_separator()
+  if utils.iswin then
+    path = path:gsub("/", os_sep)
+  end
+
+  if utils.is_uri(path) then
+    return path
+  end
+
+  path = path:gsub(os_sep .. "+", os_sep)
+
   if path:sub(1, 1) == "~" then
     local home = vim.loop.os_homedir() or "~"
-    if home:sub(-1) == "\\" or home:sub(-1) == "/" then
+    if home:sub(-1) == os_sep then
       home = home:sub(1, -2)
     end
     path = home .. path:sub(2)
   end
 
   path = path:gsub("%$([%w_]+)", vim.loop.os_getenv)
-  path = path:gsub("/+", "/")
   if utils.iswin then
-    path = path:gsub("\\+", "\\")
     if path:match "^%w:\\$" then
       return path
     else
