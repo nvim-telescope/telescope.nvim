@@ -123,6 +123,7 @@ local layout_config_description = string.format(
     the screen width for all strategies except 'center', which has width
     of 50%% of the screen width.
 
+    Picker-Overridable
     Default: %s
 ]],
   vim.inspect(layout_config_defaults, { newline = "\n    ", indent = "  " })
@@ -149,7 +150,9 @@ append(
 
   Available options are:
   - "descending" (default)
-  - "ascending"]]
+  - "ascending"
+
+  Picker-Overridable ]]
 )
 
 append(
@@ -163,7 +166,9 @@ append(
   - "follow"
   - "row"
   - "closest"
-  - "none"]]
+  - "none"
+
+  Picker-Overridable]]
 )
 
 append(
@@ -175,7 +180,9 @@ append(
 
   Available options are:
   - "cycle" (default)
-  - "limit"]]
+  - "limit"
+
+  Picker-Overridable]]
 )
 
 append(
@@ -185,6 +192,7 @@ append(
   Determines the default layout of Telescope pickers.
   See |telescope.layout| for details of the available strategies.
 
+  Picker-Overridable
   Default: 'horizontal']]
 )
 
@@ -195,6 +203,7 @@ append(
   Configure the layout of Telescope pickers.
   See |telescope.pickers.layout| for details.
 
+  Picker-Overridable
   Default: 'nil']]
 )
 
@@ -213,6 +222,7 @@ append(
   2. table
       A table with possible keys `layout_strategy`, `layout_config` and `previewer`
 
+  Picker-Overridable
   Default: { "horizontal", "vertical" }
   ]]
 )
@@ -227,6 +237,7 @@ append(
   more information. Type can be a number or a function returning a
   number
 
+  Picker-Overridable
   Default: function() return vim.o.winblend end]]
 )
 
@@ -236,6 +247,7 @@ append(
   [[
   Word wrap the search results
 
+  Picker-Overridable
   Default: false]]
 )
 
@@ -245,6 +257,7 @@ append(
   [[
   The character(s) that will be shown in front of Telescope's prompt.
 
+  Picker-Overridable
   Default: '> ']]
 )
 
@@ -254,6 +267,7 @@ append(
   [[
   The character(s) that will be shown in front of the current selection.
 
+  Picker-Overridable
   Default: '> ']]
 )
 
@@ -263,6 +277,7 @@ append(
   [[
   Prefix in front of each result entry. Current selection not included.
 
+  Picker-Overridable
   Default: '  ']]
 )
 
@@ -275,6 +290,7 @@ append(
   |telescope.defaults.entry_prefix| as appropriate.
   To have no icon, set to the empty string.
 
+  Picker-Overridable
   Default: '+']]
 )
 
@@ -285,6 +301,7 @@ append(
   Determines in which mode telescope starts. Valid Keys:
   `insert` and `normal`.
 
+  Picker-Overridable
   Default: "insert"]]
 )
 
@@ -294,6 +311,7 @@ append(
   [[
   Boolean defining if borders are added to Telescope windows.
 
+  Picker-Overridable
   Default: true]]
 )
 
@@ -402,6 +420,7 @@ append(
   Set the borderchars of telescope floating windows. It has to be a
   table of 8 string values.
 
+  Picker-Overridable
   Default: { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }]]
 )
 
@@ -448,6 +467,7 @@ append(
   A function that determines what the virtual text looks like.
   Signature: function(picker) -> str
 
+  Picker-Overridable
   Default: function that shows current count / all]]
 )
 
@@ -479,6 +499,7 @@ append(
   Defines the default title of the results window. A false value
   can be used to hide the title altogether.
 
+  Picker-Overridable
   Default: "Results"]]
 )
 
@@ -490,6 +511,7 @@ append(
   can be used to hide the title altogether. Most of the times builtins
   define a prompt_title which will be preferred over this default.
 
+  Picker-Overridable
   Default: "Prompt"]]
 )
 
@@ -593,6 +615,7 @@ append(
                               the prompt is empty (i.e., no text has been
                               typed at the time of closing the prompt).
                               Default: false
+    Picker-Overridable
     ]]
 )
 
@@ -808,6 +831,8 @@ append(
   Vice versa always returning true would place the current_entry
   before the existing_entry.
 
+  Picker-Overridable
+
   Signature: function(current_entry, existing_entry, prompt) -> boolean
 
   Default: function that breaks the tie based on the length of the
@@ -835,6 +860,7 @@ append(
   and have fd and or ripgrep installed because both tools will not show
   `gitignore`d files on default.
 
+  Picker-Overridable
   Default: nil]]
 )
 
@@ -848,6 +874,7 @@ append(
     The window ID will be used to decide what window the chosen file will
     be opened in and the cursor placed in upon leaving the picker.
 
+    Picker-Overridable
     Default: `function() return 0 end`
   ]]
 )
