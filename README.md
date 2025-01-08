@@ -125,6 +125,16 @@ return {
     }
 ```
 
+Using [mini.deps](https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-deps.md)
+
+```lua
+add({
+  source = 'nvim- telescope/telescope.nvim', checkout = '0.1.8',
+-- or                                      , checkout = '0.1.x'
+  depends = { 'nvim-lua/plenary.nvim' },
+})
+```
+
 ### checkhealth
 
 Make sure you call `:checkhealth telescope` after installing telescope to ensure
