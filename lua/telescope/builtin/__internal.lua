@@ -821,16 +821,24 @@ internal.man_pages = function(opts)
   opts.sections = vim.F.if_nil(opts.sections, { "1" })
   assert(utils.islist(opts.sections), "sections should be a list")
   opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
+    local cache = Path:new(vim.fn.stdpath "cache", "telescope-man-pages")
+    if cache:exists() and cache:_stat().size > 0 and os.time() - cache:_stat().mtime.sec < 24 * 60 * 60 then
+      return { "cat", cache.filename }
+    end
+
     local uname = vim.loop.os_uname()
     local sysname = string.lower(uname.sysname)
+    local cmd
     if sysname == "darwin" then
       local major_version = tonumber(vim.fn.matchlist(uname.release, [[^\(\d\+\)\..*]])[2]) or 0
-      return major_version >= 22 and { "apropos", "." } or { "apropos", " " }
+      cmd = major_version >= 22 and "apropos ." or "apropos ' '"
     elseif sysname == "freebsd" then
-      return { "apropos", "." }
+      cmd = "apropos ."
     else
-      return { "apropos", "" }
+      cmd = "apropos ''"
     end
+
+    return { "sh", "-c", string.format("%s | tee %s", cmd, cache.filename) }
   end)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts)
   opts.env = { PATH = vim.env.PATH, MANPATH = vim.env.MANPATH }
