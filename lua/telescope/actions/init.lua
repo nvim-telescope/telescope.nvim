@@ -1546,6 +1546,34 @@ actions.insert_original_cline = function(prompt_bufnr)
   current_picker:set_prompt(current_picker.original_cline, false)
 end
 
+--- Insert the file path of buffer in the original (pre-Telescope) window
+---@param prompt_bufnr number: The prompt bufnr
+actions.insert_original_file_path = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  current_picker:set_prompt(current_picker.original_file_path, false)
+end
+
+--- Insert the file name of buffer in the original (pre-Telescope) window
+---@param prompt_bufnr number: The prompt bufnr
+actions.insert_original_file_name = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  current_picker:set_prompt(current_picker.original_file_name, false)
+end
+
+--- Insert the bare file name of buffer in the original (pre-Telescope) window
+---@param prompt_bufnr number: The prompt bufnr
+actions.insert_original_file_bare_name = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  current_picker:set_prompt(current_picker.original_file_bare_name, false)
+end
+
+--- Insert the directory of file in the original (pre-Telescope) window
+---@param prompt_bufnr number: The prompt bufnr
+actions.insert_original_file_dir = function(prompt_bufnr)
+  local current_picker = action_state.get_current_picker(prompt_bufnr)
+  current_picker:set_prompt(current_picker.original_file_dir, false)
+end
+
 actions.nop = function(_) end
 
 actions.mouse_click = function(prompt_bufnr)
