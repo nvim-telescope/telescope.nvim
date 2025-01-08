@@ -108,7 +108,7 @@ end
 
 -- Best effort to infer function names for actions.which_key
 function utils._get_anon_function_name(info)
-  local Path = require "plenary.path"
+  local Path = require "plenary.path2"
   local fname
   -- if fn defined in string (ie loadstring) source is string
   -- if fn defined in file, source is file name prefixed with a `@´
