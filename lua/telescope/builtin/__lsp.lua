@@ -222,7 +222,7 @@ local function list_or_jump(action, title, funname, params, opts)
 
     if #items == 1 and opts.jump_type ~= "never" then
       local item = items[1]
-      if opts.curr_filepath ~= item.filename then
+      if opts.curr_filepath ~= item.filename or not opts.reuse_win then
         local cmd
         if opts.jump_type == "tab" then
           cmd = "tabedit"
