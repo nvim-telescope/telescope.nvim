@@ -545,9 +545,11 @@ previewers.vimgrep = defaulter(function(opts)
 
       local middle_ln = math.floor(lnum + (lnend - lnum) / 2)
       pcall(vim.api.nvim_win_set_cursor, self.state.winid, { middle_ln + 1, 0 })
-      vim.api.nvim_buf_call(bufnr, function()
-        vim.cmd "norm! zz"
-      end)
+      if bufnr ~= nil then
+        vim.api.nvim_buf_call(bufnr, function()
+          vim.cmd "norm! zz"
+        end)
+      end
     end
   end
 
@@ -566,7 +568,7 @@ previewers.vimgrep = defaulter(function(opts)
       local has_buftype = entry.bufnr
           and vim.api.nvim_buf_is_valid(entry.bufnr)
           and vim.api.nvim_buf_get_option(entry.bufnr, "buftype") ~= ""
-        or false
+          or false
       local p
       if not has_buftype then
         p = from_entry.path(entry, true, false)
