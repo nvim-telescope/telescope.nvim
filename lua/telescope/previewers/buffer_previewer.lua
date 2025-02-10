@@ -568,7 +568,7 @@ previewers.vimgrep = defaulter(function(opts)
       local has_buftype = entry.bufnr
           and vim.api.nvim_buf_is_valid(entry.bufnr)
           and vim.api.nvim_buf_get_option(entry.bufnr, "buftype") ~= ""
-          or false
+        or false
       local p
       if not has_buftype then
         p = from_entry.path(entry, true, false)
