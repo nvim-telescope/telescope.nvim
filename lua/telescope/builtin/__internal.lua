@@ -532,12 +532,19 @@ internal.oldfiles = function(opts)
   local current_file = vim.api.nvim_buf_get_name(current_buffer)
   local results = {}
 
+  if utils.iswin then -- for slash problem in windows
+    current_file = current_file:gsub("/", "\\")
+  end
+
   if opts.include_current_session then
     for _, buffer in ipairs(utils.split_lines(vim.fn.execute ":buffers! t")) do
       local match = tonumber(string.match(buffer, "%s*(%d+)"))
       local open_by_lsp = string.match(buffer, "line 0$")
       if match and not open_by_lsp then
         local file = vim.api.nvim_buf_get_name(match)
+        if utils.iswin then
+          file = file:gsub("/", "\\")
+        end
         if vim.loop.fs_stat(file) and match ~= current_buffer then
           table.insert(results, file)
         end
@@ -546,6 +553,9 @@ internal.oldfiles = function(opts)
   end
 
   for _, file in ipairs(vim.v.oldfiles) do
+    if utils.iswin then
+      file = file:gsub("/", "\\")
+    end
     local file_stat = vim.loop.fs_stat(file)
     if file_stat and file_stat.type == "file" and not vim.tbl_contains(results, file) and file ~= current_file then
       table.insert(results, file)
@@ -554,7 +564,6 @@ internal.oldfiles = function(opts)
 
   if opts.cwd_only or opts.cwd then
     local cwd = opts.cwd_only and vim.loop.cwd() or opts.cwd
-    cwd = cwd .. utils.get_separator()
     results = vim.tbl_filter(function(file)
       return buf_in_cwd(file, cwd)
     end, results)
@@ -647,7 +656,11 @@ end
 internal.vim_options = function(opts)
   local res = {}
   for _, v in pairs(vim.api.nvim_get_all_options_info()) do
-    table.insert(res, v)
+    local ok, value = pcall(vim.api.nvim_get_option_value, v.name, {})
+    if ok then
+      v.value = value
+      table.insert(res, v)
+    end
   end
   table.sort(res, function(left, right)
     return left.name < right.name
@@ -675,7 +688,8 @@ internal.vim_options = function(opts)
           end
 
           vim.api.nvim_feedkeys(
-            string.format("%s:set %s=%s", esc, selection.value.name, selection.value.value),
+            selection.value.type == "boolean" and string.format("%s:set %s!", esc, selection.value.name)
+              or string.format("%s:set %s=%s", esc, selection.value.name, selection.value.value),
             "m",
             true
           )
@@ -713,7 +727,17 @@ internal.help_tags = function(opts)
   end
 
   local help_files = {}
-  local all_files = vim.api.nvim_get_runtime_file("doc/*", true)
+
+  local rtp = vim.o.runtimepath
+  -- extend the runtime path with all plugins not loaded by lazy.nvim
+  local lazy = package.loaded["lazy.core.util"]
+  if lazy and lazy.get_unloaded_rtp then
+    local paths = lazy.get_unloaded_rtp ""
+    if #paths > 0 then
+      rtp = rtp .. "," .. table.concat(paths, ",")
+    end
+  end
+  local all_files = vim.fn.globpath(rtp, "doc/*", 1, 1)
   for _, fullpath in ipairs(all_files) do
     local file = utils.path_tail(fullpath)
     if file == "tags" then
@@ -998,6 +1022,19 @@ internal.colorscheme = function(opts)
       return not vim.tbl_contains(colors, color)
     end, vim.fn.getcompletion("", "color"))
   )
+
+  -- if lazy is available, extend the colors list with unloaded colorschemes
+  local lazy = package.loaded["lazy.core.util"]
+  if lazy and lazy.get_unloaded_rtp then
+    local paths = lazy.get_unloaded_rtp ""
+    local all_files = vim.fn.globpath(table.concat(paths, ","), "colors/*", 1, 1)
+    for _, f in ipairs(all_files) do
+      local color = vim.fn.fnamemodify(f, ":t:r")
+      if not vim.tbl_contains(colors, color) then
+        table.insert(colors, color)
+      end
+    end
+  end
 
   if opts.ignore_builtins then
     -- stylua: ignore

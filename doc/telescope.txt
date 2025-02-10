@@ -1012,6 +1012,8 @@ builtin.tags({opts})                                *telescope.builtin.tags()*
         {show_line}      (boolean)  if true, shows the content of the line the
                                     tag is found on in the picker (default:
                                     true)
+        {show_kind}      (boolean)  if true and kind info is available, show
+                                    the kind of the tag (default: true)
         {only_sort_tags} (boolean)  if true we will only sort tags (default:
                                     false)
         {fname_width}    (number)   defines the width of the filename section
@@ -1033,6 +1035,8 @@ builtin.current_buffer_tags({opts})  *telescope.builtin.current_buffer_tags()*
         {show_line}      (boolean)  if true, shows the content of the line the
                                     tag is found on in the picker (default:
                                     true)
+        {show_kind}      (boolean)  if true and kind info is available, show
+                                    the kind of the tag (default: true)
         {only_sort_tags} (boolean)  if true we will only sort tags (default:
                                     false)
         {fname_width}    (number)   defines the width of the filename section
@@ -2597,6 +2601,13 @@ look at the code in make_entry.lua.
 UTILS                                                          *telescope.utils*
 
 Utilities for writing telescope pickers
+
+utils.str_byteindex()                        *telescope.utils.str_byteindex()*
+
+
+    Return: ~
+        integer
+
 
 utils.path_expand({path})                      *telescope.utils.path_expand()*
     Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`

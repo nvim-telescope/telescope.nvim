@@ -17,23 +17,27 @@ local filter = vim.tbl_filter
 
 local files = {}
 
-local escape_chars = function(string)
-  return string.gsub(string, "[%(|%)|\\|%[|%]|%-|%{%}|%?|%+|%*|%^|%$|%.]", {
-    ["\\"] = "\\\\",
-    ["-"] = "\\-",
-    ["("] = "\\(",
-    [")"] = "\\)",
-    ["["] = "\\[",
-    ["]"] = "\\]",
-    ["{"] = "\\{",
-    ["}"] = "\\}",
-    ["?"] = "\\?",
-    ["+"] = "\\+",
-    ["*"] = "\\*",
-    ["^"] = "\\^",
-    ["$"] = "\\$",
-    ["."] = "\\.",
-  })
+---@param s string
+---@return string
+local escape_chars = function(s)
+  return (
+    s:gsub("[%(|%)|\\|%[|%]|%-|%{%}|%?|%+|%*|%^|%$|%.]", {
+      ["\\"] = "\\\\",
+      ["-"] = "\\-",
+      ["("] = "\\(",
+      [")"] = "\\)",
+      ["["] = "\\[",
+      ["]"] = "\\]",
+      ["{"] = "\\{",
+      ["}"] = "\\}",
+      ["?"] = "\\?",
+      ["+"] = "\\+",
+      ["*"] = "\\*",
+      ["^"] = "\\^",
+      ["$"] = "\\$",
+      ["."] = "\\.",
+    })
+  )
 end
 
 local has_rg_program = function(picker_name, program)
@@ -202,7 +206,10 @@ files.grep_string = function(opts)
   else
     word = vim.F.if_nil(opts.search, vim.fn.expand "<cword>")
   end
+
+  word = tostring(word)
   local search = opts.use_regex and word or escape_chars(word)
+  local search_args = search == "" and { "-v", "--", "^[[:space:]]*$" } or { "--", search }
 
   local additional_args = {}
   if opts.additional_args ~= nil then
@@ -217,32 +224,26 @@ files.grep_string = function(opts)
     additional_args[#additional_args + 1] = "--encoding=" .. opts.file_encoding
   end
 
-  if search == "" then
-    search = { "-v", "--", "^[[:space:]]*$" }
-  else
-    search = { "--", search }
-  end
-
   local args
   if visual == true then
     args = flatten {
       vimgrep_arguments,
       additional_args,
-      search,
+      search_args,
     }
   else
     args = flatten {
       vimgrep_arguments,
       additional_args,
       opts.word_match,
-      search,
+      search_args,
     }
   end
 
   opts.__inverted, opts.__matches = opts_contain_invert(args)
 
   if opts.grep_open_files then
-    for _, file in ipairs(get_open_filelist(opts.grep_open_files, opts.cwd)) do
+    for _, file in ipairs(get_open_filelist(opts.grep_open_files, opts.cwd) or {}) do
       table.insert(args, file)
     end
   elseif opts.search_dirs then
@@ -441,7 +442,7 @@ files.treesitter = function(opts)
   end
 
   results = utils.filter_symbols(results, opts)
-  if results == nil then
+  if vim.tbl_isempty(results) then
     -- error message already printed in `utils.filter_symbols`
     return
   end

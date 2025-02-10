@@ -805,6 +805,7 @@ previewers.git_branch_log = defaulter(function(opts)
         "--no-pager",
         "log",
         "--graph",
+        "--max-count=1000", -- prevent fork bombing with large repos
         "--pretty=format:%h -%d %s (%cr)",
         "--abbrev-commit",
         "--date=relative",
@@ -1118,7 +1119,7 @@ previewers.highlights = defaulter(function(_)
       vim.schedule(function()
         vim.api.nvim_buf_call(self.state.bufnr, function()
           vim.cmd "keepjumps norm! gg"
-          vim.fn.search(entry.value .. " ")
+          vim.fn.search("^" .. entry.value .. " ")
           local lnum = vim.api.nvim_win_get_cursor(self.state.winid)[1]
           -- That one is actually a match but its better to use it like that then matchadd
           pcall(vim.api.nvim_buf_clear_namespace, self.state.bufnr, ns_previewer, 0, -1)

@@ -17,6 +17,18 @@ local utils = {}
 
 utils.iswin = vim.loop.os_uname().sysname == "Windows_NT"
 
+---@param s string
+---@param i number
+---@param encoding "utf-8" | "utf-16" | "utf-32"
+---@return integer
+utils.str_byteindex = function(s, i, encoding)
+  if vim.fn.has "nvim-0.11" == 1 then
+    return vim.str_byteindex(s, encoding, i, false)
+  else
+    return vim.lsp.util._str_byteindex_enc(s, i, encoding)
+  end
+end
+
 --TODO(clason): Remove when dropping support for Nvim 0.9
 utils.islist = vim.fn.has "nvim-0.10" == 1 and vim.islist or vim.tbl_islist
 local flatten = function(t)
@@ -109,7 +121,7 @@ utils.filter_symbols = function(results, opts, post_filter)
       msg = "Either opts.symbols or opts.ignore_symbols, can't process opposing options at the same time!",
       level = "ERROR",
     })
-    return
+    return {}
   elseif not (has_ignore or has_symbols) then
     return results
   elseif has_ignore then
@@ -121,7 +133,7 @@ utils.filter_symbols = function(results, opts, post_filter)
         msg = "Please pass ignore_symbols as either a string or a list of strings",
         level = "ERROR",
       })
-      return
+      return {}
     end
 
     opts.ignore_symbols = vim.tbl_map(string.lower, opts.ignore_symbols)
@@ -137,7 +149,7 @@ utils.filter_symbols = function(results, opts, post_filter)
         msg = "Please pass filtering symbols as either a string or a list of strings",
         level = "ERROR",
       })
-      return
+      return {}
     end
 
     opts.symbols = vim.tbl_map(string.lower, opts.symbols)
@@ -662,7 +674,11 @@ end)
 --- Checks if treesitter parser for language is installed
 ---@param lang string
 utils.has_ts_parser = function(lang)
-  return pcall(vim.treesitter.language.add, lang)
+  if vim.fn.has "nvim-0.11" == 1 then
+    return vim.treesitter.language.add(lang)
+  else
+    return pcall(vim.treesitter.language.add, lang)
+  end
 end
 
 --- Telescope Wrapper around vim.notify
