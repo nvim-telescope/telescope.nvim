@@ -458,11 +458,13 @@ local try_worktrees = function(opts)
 end
 
 local current_path_toplevel = function()
-  local gitdir = vim.fn.finddir(".git", vim.fn.expand "%:p" .. ";")
-  if gitdir == "" then
+  local gitdir, ret, _ = utils.get_os_command_output(
+    {"git", "rev-parse", "--show-toplevel"},
+    vim.fn.expand("%:p:h"))
+  if ret ~= 0 or gitdir == nil then
     return nil
   end
-  return Path:new(gitdir):parent():absolute()
+  return Path:new(gitdir[1]):absolute()
 end
 
 local set_opts_cwd = function(opts)
