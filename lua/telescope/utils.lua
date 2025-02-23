@@ -180,6 +180,7 @@ utils.filter_symbols = function(results, opts, post_filter)
       level = "WARN",
     })
   end
+  return {}
 end
 
 local path_filename_first = function(path, reverse_directories)
