@@ -1,24 +1,32 @@
--- Setup telescope with defaults
-if RELOAD then
-  RELOAD "telescope"
-end
-require("telescope").setup()
+vim.opt.rtp:append "."
 
-local docgen = require "docgen"
+vim.env.DOCGEN_PATH = vim.env.DOCGEN_PATH or "build/docgen.nvim"
 
-local docs = {}
+load(vim.fn.system "curl -s https://raw.githubusercontent.com/jamestrew/docgen.nvim/master/scripts/bootstrap.lua")()
 
-docs.test = function()
-  -- TODO: Fix the other files so that we can add them here.
-  local input_files = {
-    "./lua/telescope/init.lua",
+require("docgen").run {
+  name = "telescope",
+  files = {
+    {
+      "./lua/telescope/init.lua",
+      title = "INTRODUCTION",
+      tag = "telescope.nvim",
+      fn_prefix = "telescope",
+      fn_tag_prefix = "telescope",
+    },
+    -- "./lua/telescope/pickers.lua"
     "./lua/telescope/command.lua",
     "./lua/telescope/builtin/init.lua",
     "./lua/telescope/themes.lua",
     "./lua/telescope/mappings.lua",
-    "./lua/telescope/pickers/layout.lua",
-    "./lua/telescope/pickers/layout_strategies.lua",
-    "./lua/telescope/config/resolve.lua",
+    { "./lua/telescope/pickers/layout.lua", title = "LAYOUT", tag = "telescope.layout", fn_prefix = "layout" },
+    {
+      "./lua/telescope/pickers/layout_strategies.lua",
+      title = "LAYOUT_STRATEGIES",
+      tag = "telescope.layout_strategies",
+      fn_prefix = "layout_strategies",
+    },
+    { "./lua/telescope/config/resolve.lua", title = "RESOLVE", tag = "telescope.resolve", fn_prefix = "resolver" },
     "./lua/telescope/make_entry.lua",
     "./lua/telescope/pickers/entry_display.lua",
     "./lua/telescope/utils.lua",
@@ -28,22 +36,7 @@ docs.test = function()
     "./lua/telescope/actions/layout.lua",
     "./lua/telescope/actions/utils.lua",
     "./lua/telescope/actions/generate.lua",
+    { "./lua/telescope/actions/history.lua", fn_prefix = "histories" },
     "./lua/telescope/previewers/init.lua",
-    "./lua/telescope/actions/history.lua",
-  }
-
-  local output_file = "./doc/telescope.txt"
-  local output_file_handle = io.open(output_file, "w")
-
-  for _, input_file in ipairs(input_files) do
-    docgen.write(input_file, output_file_handle)
-  end
-
-  output_file_handle:write " vim:tw=78:ts=8:ft=help:norl:\n"
-  output_file_handle:close()
-  vim.cmd [[checktime]]
-end
-
-docs.test()
-
-return docs
+  },
+}
