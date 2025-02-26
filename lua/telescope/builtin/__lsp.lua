@@ -359,7 +359,11 @@ lsp.document_symbols = function(opts)
       return
     end
 
-    local locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr) or {}
+    if vim.fn.has "nvim-0.11" == 1 then
+      local locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr, "utf-8") or {}
+    else
+      local locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr) or {}
+    end
     locations = utils.filter_symbols(locations, opts, symbols_sorter)
     if vim.tbl_isempty(locations) then
       -- error message already printed in `utils.filter_symbols`
@@ -402,7 +406,11 @@ lsp.workspace_symbols = function(opts)
       return
     end
 
-    local locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr) or {}
+    if vim.fn.has "nvim-0.11" == 1 then
+      local locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr, "utf-8") or {}
+    else
+      local locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr) or {}
+    end
     locations = utils.filter_symbols(locations, opts, symbols_sorter)
     if vim.tbl_isempty(locations) then
       -- error message already printed in `utils.filter_symbols`
@@ -452,7 +460,11 @@ local function get_workspace_symbols_requester(bufnr, opts)
       if client_res.error then
         vim.api.nvim_err_writeln("Error when executing workspace/symbol : " .. client_res.error.message)
       elseif client_res.result ~= nil then
-        vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr))
+        if vim.fn.has "nvim-0.11" == 1 then
+          vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr, "utf-8"))
+        else
+          vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr))
+        end
       end
     end
 
