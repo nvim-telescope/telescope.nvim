@@ -1,6 +1,6 @@
 local conf = require("telescope.config").values
 local utils = require "telescope.utils"
-local Path = require "plenary.path"
+local Path = require "plenary.path2"
 local from_entry = require "telescope.from_entry"
 local Previewer = require "telescope.previewers.previewer"
 local putil = require "telescope.previewers.utils"
