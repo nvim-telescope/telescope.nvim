@@ -539,6 +539,7 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 ---@field namespace number: limit your diagnostics to a specific namespace
 ---@field disable_coordinates boolean: don't show the line & row numbers (default: false)
 ---@field sort_by string: sort order of the diagnostics results; see above notes (default: "buffer")
+---@field text function|nil: allow to expand text displayed (default: diagnostic.message)
 builtin.diagnostics = require_on_exported_call("telescope.builtin.__diagnostics").get
 
 local apply_config = function(mod)
