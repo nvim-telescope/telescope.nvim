@@ -359,7 +359,14 @@ lsp.document_symbols = function(opts)
       return
     end
 
-    local locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr) or {}
+    local locations = {}
+    if vim.fn.has "nvim-0.11" == 1 then
+      local offset_encoding = vim.lsp.get_clients({ bufnr = opts.bufnr })[1].offset_encoding
+      locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr, offset_encoding) or {}
+    else
+      locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr) or {}
+    end
+
     locations = utils.filter_symbols(locations, opts, symbols_sorter)
     if vim.tbl_isempty(locations) then
       -- error message already printed in `utils.filter_symbols`
@@ -402,7 +409,14 @@ lsp.workspace_symbols = function(opts)
       return
     end
 
-    local locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr) or {}
+    local locations = {}
+    if vim.fn.has "nvim-0.11" == 1 then
+      local offset_encoding = vim.lsp.get_clients({ bufnr = opts.bufnr })[1].offset_encoding
+      locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr, offset_encoding) or {}
+    else
+      locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr) or {}
+    end
+
     locations = utils.filter_symbols(locations, opts, symbols_sorter)
     if vim.tbl_isempty(locations) then
       -- error message already printed in `utils.filter_symbols`
@@ -448,11 +462,16 @@ local function get_workspace_symbols_requester(bufnr, opts)
     local results = rx() ---@type table<integer, {error: lsp.ResponseError?, result: lsp.WorkspaceSymbol?}>
     local locations = {} ---@type vim.quickfix.entry[]
 
-    for _, client_res in pairs(results) do
+    for client_id, client_res in pairs(results) do
       if client_res.error then
         vim.api.nvim_err_writeln("Error when executing workspace/symbol : " .. client_res.error.message)
       elseif client_res.result ~= nil then
-        vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr))
+        if vim.fn.has "nvim-0.11" == 1 then
+          local offset_encoding = vim.lsp.get_client_by_id(client_id).offset_encoding
+          vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr, offset_encoding))
+        else
+          vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr))
+        end
       end
     end
 
