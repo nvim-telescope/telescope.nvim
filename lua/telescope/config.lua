@@ -1,7 +1,7 @@
 local strings = require "plenary.strings"
 local deprecated = require "telescope.deprecated"
 local sorters = require "telescope.sorters"
-local os_sep = require("plenary.path").path.sep
+local os_sep = require("plenary.path2").path.sep
 local has_win = vim.fn.has "win32" == 1
 
 -- Keep the values around between reloads

@@ -8,7 +8,7 @@ local previewers = require "telescope.previewers"
 local utils = require "telescope.utils"
 local entry_display = require "telescope.pickers.entry_display"
 local strings = require "plenary.strings"
-local Path = require "plenary.path"
+local Path = require "plenary.path2"
 
 local conf = require("telescope.config").values
 local git_command = utils.__git_command
