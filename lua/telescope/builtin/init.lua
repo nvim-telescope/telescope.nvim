@@ -242,6 +242,8 @@ builtin.git_stash = require_on_exported_call("telescope.builtin.__git").stash
 ---@param opts table: options to pass to the picker
 ---@field include_extensions boolean: if true will show the pickers of the installed extensions (default: false)
 ---@field use_default_opts boolean: if the selected picker should use its default options (default: false)
+---@field filter_match string: if the filter_match is provided, it will be used to filter the picker (default: nil)
+---@field title string: the title of the picker (default: "Telescope Builtin")
 builtin.builtin = require_on_exported_call("telescope.builtin.__internal").builtin
 
 --- Opens the previous picker in the identical state (incl. multi selections)
