@@ -1139,6 +1139,12 @@ end
 function make_entry.gen_from_diagnostics(opts)
   opts = opts or {}
 
+  local diagnostic_config = vim.diagnostic.config()
+  local diagnostic_signs = {}
+  if type(diagnostic_config.signs) == "table" then
+    diagnostic_signs = diagnostic_config.signs.text or {}
+  end
+
   local type_diagnostic = vim.diagnostic.severity
   local signs = (function()
     if opts.no_sign then
@@ -1146,12 +1152,18 @@ function make_entry.gen_from_diagnostics(opts)
     end
     local signs = {}
     for _, severity in ipairs(type_diagnostic) do
-      local status, sign = pcall(function()
-        -- only the first char is upper all others are lowercalse
-        return vim.trim(vim.fn.sign_getdefined("DiagnosticSign" .. severity:lower():gsub("^%l", string.upper))[1].text)
-      end)
-      if not status then
-        sign = severity:sub(1, 1)
+      local sign = diagnostic_signs[severity]
+      if not sign then
+        local status
+        status, sign = pcall(function()
+          -- only the first char is upper all others are lowercalse
+          return vim.trim(
+            vim.fn.sign_getdefined("DiagnosticSign" .. severity:lower():gsub("^%l", string.upper))[1].text
+          )
+        end)
+        if not status then
+          sign = severity:sub(1, 1)
+        end
       end
       signs[severity] = sign
     end
