@@ -930,6 +930,17 @@ append(
     Default: require("telescope.previewers").buffer_previewer_maker]]
 )
 
+append(
+  "buffer_scroll_fn",
+  function(...)
+    return require("telescope.previewers").buffer_scroll_fn(...)
+  end,
+  [[
+    Function pointer to the default scroll function in buffer previewers.
+
+    Default: require("telescope.previewers").buffer_scroll_fn]]
+)
+
 -- @param user_defaults table: a table where keys are the names of options,
 --    and values are the ones the user wants
 -- @param tele_defaults table: (optional) a table containing all of the defaults
