@@ -197,6 +197,9 @@ end
 local function list_or_jump(action, title, funname, params, opts)
   opts.reuse_win = vim.F.if_nil(opts.reuse_win, false)
   opts.curr_filepath = vim.api.nvim_buf_get_name(opts.bufnr)
+  opts.filter_items = opts.filter_items or function(items)
+    return items
+  end
 
   vim.lsp.buf_request_all(opts.bufnr, action, params, function(results_per_client)
     local items = {}
@@ -234,6 +237,7 @@ local function list_or_jump(action, title, funname, params, opts)
 
     items = apply_action_handler(action, items, opts)
     items = filter_file_ignore_patters(items, opts)
+    items = opts.filter_items(items)
 
     if vim.tbl_isempty(items) then
       utils.notify(funname, {
