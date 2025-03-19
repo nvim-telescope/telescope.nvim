@@ -34,9 +34,18 @@
 --- TODO: Document something we call `entry_index`
 ---@brief ]]
 
+-- this breaks tree-sitter-lua docgen
+-- ---@class telescope.entry
+-- ---@field value any
+-- ---@field ordinal string
+-- ---@field display string|function(entry: telescope.entry): string
+-- ---@field filename string|nil
+-- ---@field bufnr number|nil
+-- ---@field lnum number|nil
+-- ---@field col number|nil
+
 local entry_display = require "telescope.pickers.entry_display"
 local utils = require "telescope.utils"
-local strings = require "plenary.strings"
 local Path = require "plenary.path"
 
 local treesitter_type_highlight = {
@@ -151,24 +160,11 @@ do
 
     local cwd = utils.path_expand(opts.cwd or vim.loop.cwd())
 
-    local disable_devicons = opts.disable_devicons
-
     local mt_file_entry = {}
 
     mt_file_entry.cwd = cwd
     mt_file_entry.display = function(entry)
-      local hl_group, icon
-      local display, path_style = utils.transform_path(opts, entry.value)
-
-      display, hl_group, icon = utils.transform_devicons(entry.value, display, disable_devicons)
-
-      if hl_group then
-        local style = { { { 0, #icon + 1 }, hl_group } }
-        style = utils.merge_styles(style, path_style, #icon + 1)
-        return display, style
-      else
-        return display, path_style
-      end
+      return utils.create_path_display(entry, opts)
     end
 
     mt_file_entry.__index = function(t, k)
@@ -272,8 +268,6 @@ do
       parse = parse_without_col
     end
 
-    local disable_devicons = opts.disable_devicons
-    local disable_coordinates = opts.disable_coordinates
     local only_sort_text = opts.only_sort_text
 
     local execute_keys = {
@@ -309,38 +303,13 @@ do
       end
     end
 
-    local display_string = "%s%s%s"
-
     mt_vimgrep_entry = {
       cwd = utils.path_expand(opts.cwd or vim.loop.cwd()),
 
       display = function(entry)
-        local display_filename, path_style = utils.transform_path(opts, entry.filename)
-
-        local coordinates = ":"
-        if not disable_coordinates then
-          if entry.lnum then
-            if entry.col then
-              coordinates = string.format(":%s:%s:", entry.lnum, entry.col)
-            else
-              coordinates = string.format(":%s:", entry.lnum)
-            end
-          end
-        end
-
-        local display, hl_group, icon = utils.transform_devicons(
-          entry.filename,
-          string.format(display_string, display_filename, coordinates, entry.text),
-          disable_devicons
-        )
-
-        if hl_group then
-          local style = { { { 0, #icon }, hl_group } }
-          style = utils.merge_styles(style, path_style, #icon + 1)
-          return display, style
-        else
-          return display, path_style
-        end
+        local display, path_style = utils.create_path_display(entry, opts)
+        display = string.format("%s:%s", display, entry.text)
+        return display, path_style
       end,
 
       __index = function(t, k)
@@ -458,8 +427,7 @@ function make_entry.gen_from_quickfix(opts)
   local hidden = utils.is_path_hidden(opts)
 
   local make_display = function(entry)
-    local display_filename, path_style = utils.transform_path(opts, entry.filename)
-    local display_string = string.format("%s:%d:%d", display_filename, entry.lnum, entry.col)
+    local display_string, path_style = utils.create_path_display(entry, opts)
     if hidden then
       display_string = string.format("%4d:%2d", entry.lnum, entry.col)
     end
@@ -540,7 +508,7 @@ function make_entry.gen_from_lsp_symbols(opts)
         msg,
       }
     else
-      local display_path, path_style = utils.transform_path(opts, entry.filename)
+      local display_path, path_style = utils.create_path_display(entry, opts)
       return displayer {
         {
           display_path,
@@ -584,20 +552,11 @@ end
 function make_entry.gen_from_buffer(opts)
   opts = opts or {}
 
-  local disable_devicons = opts.disable_devicons
-
-  local icon_width = 0
-  if not disable_devicons then
-    local icon, _ = utils.get_devicons("fname", disable_devicons)
-    icon_width = strings.strdisplaywidth(icon)
-  end
-
   local displayer = entry_display.create {
     separator = " ",
     items = {
       { width = opts.bufnr_width },
       { width = 4 },
-      { width = icon_width },
       { remaining = true },
     },
   }
@@ -605,19 +564,15 @@ function make_entry.gen_from_buffer(opts)
   local cwd = utils.path_expand(opts.cwd or vim.loop.cwd())
 
   local make_display = function(entry)
-    -- bufnr_width + modes + icon + 3 spaces + : + lnum
-    opts.__prefix = opts.bufnr_width + 4 + icon_width + 3 + 1 + #tostring(entry.lnum)
-    local display_bufname, path_style = utils.transform_path(opts, entry.filename)
-    local icon, hl_group = utils.get_devicons(entry.filename, disable_devicons)
+    local display, style = utils.create_path_display(entry, opts)
 
     return displayer {
       { entry.bufnr, "TelescopeResultsNumber" },
       { entry.indicator, "TelescopeResultsComment" },
-      { icon, hl_group },
       {
-        display_bufname .. ":" .. entry.lnum,
+        display,
         function()
-          return path_style
+          return style
         end,
       },
     }
@@ -1043,7 +998,7 @@ function make_entry.gen_from_ctags(opts)
   }
 
   local make_display = function(entry)
-    local display_path, path_style = utils.transform_path(opts, entry.filename)
+    local display_path, path_style = utils.create_path_display(entry, opts)
 
     local scode
     if opts.show_line then
@@ -1184,7 +1139,8 @@ function make_entry.gen_from_diagnostics(opts)
   }
 
   local make_display = function(entry)
-    local display_path, path_style = utils.transform_path(opts, entry.filename)
+    local display_path, path_style =
+      utils.create_path_display(entry, vim.tbl_extend("force", opts, { disable_coordinates = true }))
 
     -- add styling of entries
     local pos = string.format("%4d:%2d", entry.lnum, entry.col)
@@ -1360,7 +1316,7 @@ function make_entry.gen_from_git_status(opts)
     local status_x = git_abbrev[x] or {}
     local status_y = git_abbrev[y] or {}
 
-    local display_path, path_style = utils.transform_path(opts, entry.path)
+    local display_path, path_style = utils.create_path_display(entry, opts)
 
     local empty_space = " "
     return displayer {
