@@ -125,8 +125,8 @@ end
 ---@param offset_encoding string|nil utf-8|utf-16|utf-32
 ---@return lsp.Location
 local function item_to_location(item, offset_encoding)
-  local line = item.lnum - 1
-  local character = utils.str_byteindex(item.text, item.col, offset_encoding or "utf-16") - 1
+  local line = math.max(0, item.lnum - 1)
+  local character = math.max(0, utils.str_byteindex(item.text, item.col, offset_encoding or "utf-16") - 1)
   local uri
   if utils.is_uri(item.filename) then
     uri = item.filename
