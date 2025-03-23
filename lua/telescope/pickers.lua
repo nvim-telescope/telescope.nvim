@@ -538,6 +538,10 @@ function Picker:find()
   _, self.original_cfile = pcall(vim.fn.expand, "<cfile>")
   _, self.original_cline = pcall(vim.api.nvim_get_current_line)
   _, self.original_cline = pcall(vim.trim, self.original_cline)
+  _, self.original_file_path = pcall(vim.fn.expand, "%")
+  _, self.original_file_name = pcall(vim.fn.expand, "%:t")
+  _, self.original_file_bare_name = pcall(vim.fn.expand, "%:t:r")
+  _, self.original_file_dir = pcall(vim.fn.expand, "%:h")
 
   -- User autocmd run it before create Telescope window
   vim.api.nvim_exec_autocmds("User", { pattern = "TelescopeFindPre" })
