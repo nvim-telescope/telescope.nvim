@@ -1,6 +1,5 @@
 local channel = require("plenary.async.control").channel
 local actions = require "telescope.actions"
-local sorters = require "telescope.sorters"
 local conf = require("telescope.config").values
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
@@ -491,7 +490,7 @@ lsp.dynamic_workspace_symbols = function(opts)
         fn = get_workspace_symbols_requester(opts.bufnr, opts),
       },
       previewer = conf.qflist_previewer(opts),
-      sorter = sorters.highlighter_only(opts),
+      sorter = conf.generic_sorter(opts),
       attach_mappings = function(_, map)
         map("i", "<c-space>", actions.to_fuzzy_refine)
         return true
