@@ -423,13 +423,19 @@ files.treesitter = function(opts)
   end
 
   local parsers = require "nvim-treesitter.parsers"
-  if not parsers.has_parser(parsers.get_buf_lang(opts.bufnr)) then
+  local lang = parsers.get_buf_lang(opts.bufnr)
+  if not parsers.has_parser(lang) then
     utils.notify("builtin.treesitter", {
       msg = "No parser for the current buffer",
       level = "ERROR",
     })
     return
   end
+
+  -- force evaluation, don't wait for it to lazily load
+  local parser = vim.treesitter.get_parser(opts.bufnr, lang)
+  ---@diagnostic disable-next-line: need-check-nil
+  parser:parse()
 
   local ts_locals = require "nvim-treesitter.locals"
   local results = {}
@@ -441,16 +447,23 @@ files.treesitter = function(opts)
     end
   end
 
+  if vim.tbl_isempty(results) then
+    utils.notify("builtin.treesitter", {
+      msg = "Parser provided no results",
+      level = "ERROR",
+    })
+    return
+  end
+
   results = utils.filter_symbols(results, opts)
-  if vim.tbl_isempty(results) then
-    -- error message already printed in `utils.filter_symbols`
-    return
-  end
 
   if vim.tbl_isempty(results) then
+    utils.notify("builtin.treesitter", {
+      msg = "Parser gave results, but we filtered them all away",
+      level = "ERROR",
+    })
     return
   end
-
   pickers
     .new(opts, {
       prompt_title = "Treesitter Symbols",
