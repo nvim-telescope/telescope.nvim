@@ -226,6 +226,10 @@ files.grep_string = function(opts)
     additional_args[#additional_args + 1] = "--encoding=" .. opts.file_encoding
   end
 
+  if opts.hidden then
+    additional_args[#additional_args + 1] = "--hidden"
+  end
+
   local args
   if visual == true then
     args = flatten {
