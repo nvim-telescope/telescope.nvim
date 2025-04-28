@@ -224,6 +224,9 @@ values we need. It's best practice to have a `value` reference to the
 original entry, that way we will always have access to the complete table in our
 action.
 
+:bulb: Make sure that the table you are providing as `results`
+is indexed by integers. :bulb:
+
 The `display` key is required and is either a string or a `function(tbl)`,
 where `tbl` is the table returned by `entry_maker`. So in this example `tbl` would
 give our `display` function access to `value` and `ordinal`.
