@@ -447,21 +447,26 @@ actions.edit_register = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()
   local picker = action_state.get_current_picker(prompt_bufnr)
 
+  if string.find("%:.", selection.value, 1, true) then
+    -- %, : and . are read-only registers
+    return false
+  end
+
   vim.fn.inputsave()
   local updated_value = vim.fn.input("Edit [" .. selection.value .. "] ❯ ", selection.content)
   vim.fn.inputrestore()
   if updated_value ~= selection.content then
-    vim.fn.setreg(selection.value, updated_value)
+    vim.fn.setreg(string.lower(selection.value), updated_value)
     selection.content = updated_value
   end
 
   -- update entry in results table
-  -- TODO: find way to redraw finder content
   for _, v in pairs(picker.finder.results) do
     if v == selection then
       v.content = updated_value
     end
   end
+  picker:refresh()
 end
 
 --- Paste the selected register into the buffer
