@@ -7,19 +7,19 @@ local telescope = {}
 -- ---@pre [[
 -- ---@pre ]]
 
----@brief [[
+---@brief
 --- Telescope.nvim is a plugin for fuzzy finding and neovim. It helps you search,
 --- filter, find and pick things in Lua.
 ---
 --- Getting started with telescope:
----   1. Run `:checkhealth telescope` to make sure everything is installed.
----   2. Evaluate it is working with
----      `:Telescope find_files` or
----      `:lua require("telescope.builtin").find_files()`
----   3. Put a `require("telescope").setup()` call somewhere in your neovim config.
----   4. Read |telescope.setup| to check what config keys are available and what you can put inside the setup call
----   5. Read |telescope.builtin| to check which builtin pickers are offered and what options these implement
----   6. Profit
+--- 1. Run `:checkhealth telescope` to make sure everything is installed.
+--- 2. Evaluate it is working with
+---    `:Telescope find_files` or
+---    `:lua require("telescope.builtin").find_files()`
+--- 3. Put a `require("telescope").setup()` call somewhere in your neovim config.
+--- 4. Read |telescope.setup| to check what config keys are available and what you can put inside the setup call
+--- 5. Read |telescope.builtin| to check which builtin pickers are offered and what options these implement
+--- 6. Profit
 ---
 ---  The below flow chart illustrates a simplified telescope architecture:
 --- <pre>
@@ -87,16 +87,12 @@ local telescope = {}
 ---   :h telescope.actions.history
 ---   :h telescope.previewers
 --- </pre>
----@brief ]]
-
----@tag telescope.nvim
----@config { ["name"] = "INTRODUCTION" }
 
 --- Setup function to be run by user. Configures the defaults, pickers and
 --- extensions of telescope.
 ---
 --- Usage:
---- <code>
+--- ```lua
 --- require('telescope').setup{
 ---   defaults = {
 ---     -- Default configuration for telescope goes here:
@@ -120,9 +116,10 @@ local telescope = {}
 ---     -- please take a look at the readme of the extension you want to configure
 ---   }
 --- }
---- </code>
+--- ```
+---
+---@eval return require('telescope').__format_setup_keys()
 ---@param opts table: Configuration opts. Keys: defaults, pickers, extensions
----@eval { ["description"] = require('telescope').__format_setup_keys() }
 function telescope.setup(opts)
   opts = opts or {}
 
@@ -136,8 +133,7 @@ function telescope.setup(opts)
 end
 
 --- Load an extension.
---- - Notes:
----   - Loading triggers ext setup via the config passed in |telescope.setup|
+---@note Loading triggers ext setup via the config passed in |telescope.setup|
 ---@param name string: Name of the extension
 function telescope.load_extension(name)
   return _extensions.load(name)
@@ -170,7 +166,7 @@ telescope.__format_setup_keys = function()
   end
 
   table.insert(result, "</pre>")
-  return result
+  return table.concat(result, "\n")
 end
 
 return telescope
