@@ -506,8 +506,14 @@ local function check_capabilities(method, bufnr)
   local clients = get_clients { bufnr = bufnr }
 
   for _, client in pairs(clients) do
-    if client.supports_method(method, { bufnr = bufnr }) then
-      return true
+    if vim.fn.has "nvim-0.11" == 1 then
+      if client:supports_method(method, bufnr) then
+        return true
+      end
+    else
+      if client.supports_method(method, { bufnr = bufnr }) then
+        return true
+      end
     end
   end
 
