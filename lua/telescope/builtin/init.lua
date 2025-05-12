@@ -355,6 +355,7 @@ builtin.reloader = require_on_exported_call("telescope.builtin.__internal").relo
 ---@field file_encoding string: file encoding for the previewer
 ---@field sort_buffers function: sort fn(bufnr_a, bufnr_b). true if bufnr_a should go first. Runs after sorting by most recent (if specified)
 ---@field select_current boolean: select current buffer (default: false)
+---@field disable_coordinates boolean: don't show line number (default: false)
 builtin.buffers = require_on_exported_call("telescope.builtin.__internal").buffers
 
 --- Lists available colorschemes and applies them on `<cr>`
