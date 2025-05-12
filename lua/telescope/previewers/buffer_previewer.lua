@@ -36,6 +36,9 @@ local function defaulter(f, default_opts)
   default_opts = default_opts or {}
   return {
     new = function(opts)
+      if opts.preview == false then
+        return false
+      end
       if conf.preview == false and not opts.preview then
         return false
       end
