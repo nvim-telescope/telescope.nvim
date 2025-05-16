@@ -1,4 +1,4 @@
-local Path = require "plenary.path"
+local Path = require "plenary.path2"
 local utils = require "telescope.utils"
 
 local eq = assert.are.equal

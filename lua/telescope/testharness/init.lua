@@ -1,6 +1,6 @@
 local assert = require "luassert"
 
-local Path = require "plenary.path"
+local Path = require "plenary.path2"
 
 local tester = {}
 tester.debug = false

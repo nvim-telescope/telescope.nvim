@@ -1,5 +1,5 @@
 local conf = require("telescope.config").values
-local Path = require "plenary.path"
+local Path = require "plenary.path2"
 local utils = require "telescope.utils"
 
 local uv = vim.loop
