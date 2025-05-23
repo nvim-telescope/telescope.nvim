@@ -1592,8 +1592,10 @@ builtin.jumplist({opts})                        *telescope.builtin.jumplist()*
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {show_line} (boolean)  show results text (default: true)
-        {trim_text} (boolean)  trim results text (default: false)
+        {show_line}        (boolean)  show results text (default: true)
+        {trim_text}        (boolean)  trim results text (default: false)
+        {select_last_used} (boolean)  select last used jump position
+                                      (default: false)
 
 
 builtin.lsp_references({opts})            *telescope.builtin.lsp_references()*
