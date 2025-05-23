@@ -5,16 +5,10 @@ local M = {}
 
 ---Validates args for `throttle()` and  `debounce()`.
 local function td_validate(fn, ms)
-  vim.validate {
-    fn = { fn, "f" },
-    ms = {
-      ms,
-      function(v)
-        return type(v) == "number" and v > 0
-      end,
-      "number > 0",
-    },
-  }
+  vim.validate("fn", fn, "function")
+  vim.validate("ms", ms, function(v)
+    return type(v) == "number" and v > 0
+  end, false, "number > 0")
 end
 
 --- Throttles a function on the leading edge. Automatically `schedule_wrap()`s.
