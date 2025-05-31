@@ -793,16 +793,8 @@ utils.reverse_table = function(input_table)
   return temp_table
 end
 
-utils.split_lines = (function()
-  if utils.iswin then
-    return function(s, opts)
-      return vim.split(s, "\r?\n", opts)
-    end
-  else
-    return function(s, opts)
-      return vim.split(s, "\n", opts)
-    end
-  end
-end)()
+utils.split_lines = function(s, opts)
+  return vim.split(s, "\r?\n", opts)
+end
 
 return utils
