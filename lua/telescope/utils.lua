@@ -54,9 +54,7 @@ utils.flatten = vim.fn.has "nvim-0.11" == 1 and flatten or vim.tbl_flatten
 ---@param path string
 ---@return string
 utils.path_expand = function(path)
-  vim.validate {
-    path = { path, { "string" } },
-  }
+  vim.validate("path", path, "string")
 
   if utils.is_uri(path) then
     return path
