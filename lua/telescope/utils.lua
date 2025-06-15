@@ -615,7 +615,9 @@ utils.transform_devicons = load_once(function()
       devicons.setup()
     end
 
-    return function(filename, display, disable_devicons)
+    return function(filename, display, disable_devicons, icon_separator)
+      icon_separator = icon_separator or " "
+
       local conf = require("telescope.config").values
       if disable_devicons or not filename then
         return display
@@ -627,7 +629,7 @@ utils.transform_devicons = load_once(function()
         icon, icon_highlight = devicons.get_icon(basename, nil, { default = true })
         icon = icon or " "
       end
-      local icon_display = icon .. " " .. (display or "")
+      local icon_display = icon .. icon_separator .. (display or "")
 
       if conf.color_devicons then
         return icon_display, icon_highlight, icon
