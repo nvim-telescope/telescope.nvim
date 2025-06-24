@@ -212,9 +212,17 @@ local function list_or_jump(action, title, funname, params, opts)
           local locations = {}
 
           if not utils.islist(result) then
-            vim.list_extend(locations, { result })
-          else
-            vim.list_extend(locations, result)
+            result = { result }
+          end
+
+          for _, value in pairs(result) do
+            if
+              not vim.tbl_contains(items, function(item)
+                return vim.deep_equal(item.user_data, value)
+              end, { predicate = true })
+            then
+              vim.list_extend(locations, { value })
+            end
           end
 
           local offset_encoding = vim.lsp.get_client_by_id(client_id).offset_encoding
