@@ -36,7 +36,7 @@ function themes.get_dropdown(opts)
     layout_strategy = "center",
     layout_config = {
       preview_cutoff = 1, -- Preview should always show (unless previewer = false)
-      results_width = 15,
+      results_height = 15,
 
       width = function(_, max_columns, _)
         return math.min(max_columns, 80)
