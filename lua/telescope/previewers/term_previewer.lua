@@ -204,9 +204,12 @@ previewers.new_termopen_previewer = function(opts)
 
       local cmd = opts.get_command(entry, status)
       if cmd then
+        local save_ei = vim.o.eventignore
+        vim.o.eventignore = "TermOpen"
         vim.api.nvim_buf_call(bufnr, function()
           set_term_id(self, vim.fn.termopen(cmd, term_opts))
         end)
+        vim.o.eventignore = save_ei
       end
       set_bufentry(self, entry)
     end
