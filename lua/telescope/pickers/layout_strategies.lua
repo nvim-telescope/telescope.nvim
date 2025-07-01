@@ -438,6 +438,7 @@ layout_strategies.center = make_documented_layout(
   "center",
   vim.tbl_extend("error", shared_options, {
     preview_cutoff = "When lines are less than this value, the preview will be disabled",
+    results_height = "Sets the height of the results window in number of lines."
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
