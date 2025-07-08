@@ -69,6 +69,10 @@ local from_entry = require "telescope.from_entry"
 local transform_mod = require("telescope.actions.mt").transform_mod
 local resolver = require "telescope.config.resolve"
 
+--qqq
+local U = require "plenary.utils"
+--!qqq
+
 local actions = setmetatable({}, {
   __index = function(_, k)
     error("Key does not exist for 'telescope.actions': " .. tostring(k))
@@ -591,6 +595,24 @@ actions.git_apply_stash = function(prompt_bufnr)
     return
   end
   actions.close(prompt_bufnr)
+  --qqq
+  --vim.notify("git_apply_stash: " .. vim.inspect(selection.value), vim.log.levels.ERROR)
+  if U.is_msys2 then
+    -- Either because I use zsh.exe or bash.exe (nvim's shell) handles "{}" specially
+    -- we need to escape it here. And in other places that use "{}" un-escaped.
+    -- Idk exactly why "{}" disappears from the final command
+    -- even when I add "{}" to escape chars in "plenary/job.lua:expand()"
+    -- (which is not called anyway).
+    -- utils.get_os_command_output { "echo", "$SHELL" } outputs { "$SHELL" }.
+    -- how can I test it exactly?
+    --
+    -- Changing "selection.value" itself due to bad experience with stash previewer.
+    if not selection.escaped then
+      selection.value = vim.fn.escape(selection.value, "{}")
+      selection.escaped = true
+    end
+  end
+  --!qqq
   local _, ret, stderr = utils.get_os_command_output { "git", "stash", "apply", "--index", selection.value }
   if ret == 0 then
     utils.notify("actions.git_apply_stash", {

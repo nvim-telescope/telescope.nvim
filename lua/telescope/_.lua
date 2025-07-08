@@ -9,6 +9,10 @@ local utils = require "telescope.utils"
 
 local M = {}
 
+--qqq
+local U = require "plenary.utils"
+--!qqq
+
 local AsyncJob = {}
 AsyncJob.__index = AsyncJob
 
@@ -30,6 +34,15 @@ function AsyncJob.new(opts)
       self.uv_opts.cwd = opts.cwd
     end
   end
+
+  --qqq
+  -- Due to explicit uv.spawn calls w/o plenary's Path/Job
+  -- we must adjust our path here as well
+  if U.is_msys2 then
+    opts.cwd = U.posix_to_windows(opts.cwd)
+    self.uv_opts.cwd = opts.cwd
+  end
+  --!qqq
 
   self.uv_opts.stdio = {
     self.stdin.handle,

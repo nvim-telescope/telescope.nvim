@@ -8,6 +8,10 @@ local global_state = require "telescope.state"
 
 local pscan = require "plenary.scandir"
 
+--qqq
+local U = require "plenary.utils"
+--!qqq
+
 local buf_delete = utils.buf_delete
 local git_command = utils.__git_command
 
@@ -830,10 +834,37 @@ previewers.git_stash_diff = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "Git Stash Preview",
     get_buffer_by_name = function(_, entry)
+      --qqq
+      if not entry.escaped then
+        entry.value = vim.fn.escape(entry.value, "{}")
+        entry.escaped = true
+      end
+      --!qqq
       return entry.value
     end,
 
     define_preview = function(self, entry, _)
+      --qqq
+      if U.is_msys2 then
+        -- Either because I use zsh.exe or bash.exe (nvim's shell) handles "{}" specially
+        -- we need to escape it here. And in other places that use "{}" un-escaped.
+        -- Idk exactly why "{}" disappears from the final command
+        -- even when I add "{}" to escape chars in "plenary/job.lua:expand()"
+        -- (which is not called anyway).
+        -- utils.get_os_command_output { "echo", "$SHELL" } outputs { "$SHELL" },
+        -- how can I test it exactly?
+        --
+        -- Could be done just in case cause it is in posix-style.
+        --opts.cwd = U.posix_to_windows(opts.cwd)
+        -- If we do not change "entry.value" itself for each unique entry it ends up with an error
+        -- when passed directly escaped like "vim.fn.escape(entry.value)".
+        if not entry.escaped then
+          entry.value = vim.fn.escape(entry.value, "{}")
+          entry.escaped = true
+        end
+      --vim.notify("git_stash_diff: opts = " .. vim.inspect(opts) .. ", entry = " .. vim.inspect(entry) .. ", self = " .. vim.inspect(self), vim.log.levels.WARN)
+      end
+      --!qqq
       local cmd = git_command({ "--no-pager", "stash", "show", "-p", entry.value }, opts)
       putils.job_maker(cmd, self.state.bufnr, {
         value = entry.value,

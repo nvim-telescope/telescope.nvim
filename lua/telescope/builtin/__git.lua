@@ -10,6 +10,10 @@ local entry_display = require "telescope.pickers.entry_display"
 local strings = require "plenary.strings"
 local Path = require "plenary.path"
 
+--qqq
+local U = require "plenary.utils"
+--!qqq
+
 local conf = require("telescope.config").values
 local git_command = utils.__git_command
 
@@ -45,6 +49,10 @@ git.files = function(opts)
     opts.git_command,
     git_command({ "-c", "core.quotepath=false", "ls-files", "--exclude-standard", "--cached" }, opts)
   )
+
+  --qqq
+  --vim.notify("git.files: " .. vim.inspect(opts), vim.log.levels.ERROR)
+  --!qqq
 
   pickers
     .new(opts, {
@@ -190,6 +198,13 @@ git.bcommits = function(opts)
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
   opts.git_command =
     vim.F.if_nil(opts.git_command, git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--follow" }, opts))
+
+  --qqq
+  --vim.notify("git.bcommits: " .. vim.inspect(git_command) .. ", " .. vim.inspect(opts), vim.log.levels.ERROR)
+  --if U.is_msys2 then
+  --  opts.current_file = U.posix_to_windows(opts.current_file)
+  --end
+  --!qqq
 
   local title = "Git BCommits"
   local finder = finders.new_oneshot_job(
@@ -371,6 +386,18 @@ git.status = function(opts)
 
   local args = { "status", "--porcelain=v1", "--", "." }
 
+  --qqq
+  -- Running "nvim ."->":Telescope git_status" ends up with posix-style path.
+  -- UPD. It gets fixed in later invocations.
+  --if opts.cwd:find("^/") then
+  --  if U.is_msys2 then
+  --    opts.cwd = U.posix_to_windows(opts.cwd)
+  --  end
+  --  --vim.notify("git.status: opts.cwd = " .. vim.inspect(opts.cwd), vim.log.levels.ERROR)
+  --  --error(debug.traceback())
+  --end
+  --!qqq
+
   local gen_new_finder = function()
     if vim.F.if_nil(opts.expand_dir, true) then
       table.insert(args, #args - 1, "-uall")
@@ -403,6 +430,14 @@ git.status = function(opts)
               count = count + 1
             end
           end
+
+          --qqq
+          -- If we have no changes and status is empty why git_status does not exit
+          -- with notification? Is it supposed to be like that, right?
+          -- On "v0.1.8" version I get notification and Telescope just exits as it should be.
+          -- NVM. 814f102 commit leaves the status opened even w/o detected changes.
+          --vim.notify("git.status: self.finder =  " .. vim.inspect(self.finder) .. ", count = " .. vim.inspect(count) .. ", prompt = " .. vim.inspect(prompt) , vim.log.levels.WARN)
+          --!qqq
 
           if count == 0 and prompt == "" then
             utils.notify("builtin.git_status", {
@@ -478,6 +513,15 @@ local set_opts_cwd = function(opts)
   else
     opts.cwd = vim.loop.cwd()
   end
+
+  --qqq
+  -- Running "nvim ."->":Telescope git_status" ends up with posix-style path
+  --vim.notify("set_opts_cwd: opts = " .. vim.inspect(opts), vim.log.levels.ERROR)
+  --error(debug.traceback())
+  if U.is_msys2 then
+     opts.cwd = U.posix_to_windows(opts.cwd)
+  end
+  --!qqq
 
   local toplevel, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
 

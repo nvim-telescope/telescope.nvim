@@ -8,6 +8,10 @@
 local Path = require "plenary.path"
 local Job = require "plenary.job"
 
+--qqq
+local U = require "plenary.utils"
+--!qqq
+
 local log = require "telescope.log"
 
 local truncate = require("plenary.strings").truncate
@@ -67,7 +71,15 @@ utils.path_expand = function(path)
   end
 
   if path:sub(1, 1) == "~" then
-    local home = vim.loop.os_homedir() or "~"
+    --qqq
+    -- vim.loop.os_homedir() ignores HOME env variable in msys2
+    if U.is_msys2 then
+      local home = vim.fn.expand("~") or "~"
+    else
+      local home = vim.loop.os_homedir() or "~"
+    end
+    --!qqq
+    --local home = vim.loop.os_homedir() or "~"
     if home:sub(-1) == "\\" or home:sub(-1) == "/" then
       home = home:sub(1, -2)
     end
@@ -561,6 +573,15 @@ function utils.get_os_command_output(cmd, cwd)
     })
     return {}
   end
+  --qqq
+  -- Running "nvim ."->":Telescope git_status" ends up with posix-style path
+  -- UPD. Changing set_opts_cwd solves it.
+  --if cwd:find("^/") then
+  --  vim.notify("get_os_command_output: cmd = " .. vim.inspect(cmd) .. ", cwd = " .. vim.inspect(cwd), vim.log.levels.ERROR)
+  --  error(debug.traceback())
+  --end
+  --vim.notify("get_os_command_output: " .. vim.inspect(cmd) .. ", " .. vim.inspect(cwd), vim.log.levels.ERROR)
+  --!qqq
   local command = table.remove(cmd, 1)
   local stderr = {}
   local stdout, ret = Job:new({

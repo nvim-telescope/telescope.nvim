@@ -5,6 +5,10 @@ local conf = require("telescope.config").values
 local Job = require "plenary.job"
 local Path = require "plenary.path"
 
+--qqq
+local U = require "plenary.utils"
+--!qqq
+
 local telescope_utils = require "telescope.utils"
 
 local utils = {}
@@ -67,6 +71,15 @@ utils.job_maker = function(cmd, bufnr, opts)
   -- if passed, they will be use as the cache key
   -- if any of them are missing, cache will be skipped
   if opts.bufname ~= opts.value or not opts.bufname or not opts.value then
+
+    --qqq
+    -- Will it be better to change self._raw_cwd in plenary's Job:_execute method?
+    -- UPD. Making the path transformation in Job:new() solves "nvim ."->":Telescope git_commits"
+    --if U.is_msys2 then
+    --  opts.cwd = U.posix_to_windows(opts.cwd)
+    --end
+    --!qqq
+
     local command = table.remove(cmd, 1)
     local writer = (function()
       if opts.writer ~= nil then
