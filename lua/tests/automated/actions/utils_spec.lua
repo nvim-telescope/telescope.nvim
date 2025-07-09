@@ -357,3 +357,130 @@ describe("telescope.actions.utils", function()
       action_state.get_current_picker = original_get_current_picker
     end)
 
+    -- =================================================================
+    -- TDD TESTS FOR vim.validate SYNTAX MIGRATION (line 75)
+    -- These should FAIL with old syntax and PASS with new syntax
+    -- =================================================================
+
+    -- Test that demonstrates the new vim.validate argument-based syntax for map_selections
+    it("should use new vim.validate argument syntax for map_selections (not table syntax)", function()
+      -- Mock vim.validate to track how it's called
+      local original_vim_validate = vim.validate
+      local validate_call_args = {}
+
+      vim.validate = function(...)
+        validate_call_args = {...}
+        return original_vim_validate(...)
+      end
+
+      -- Set up minimal mock
+      action_state.get_current_picker = function(bufnr)
+        return {
+          get_multi_selection = function()
+            return {} -- empty selection
+          end
+        }
+      end
+
+      -- Call the function
+      local success = pcall(function()
+        utils.map_selections(1, function() end)
+      end)
+
+      -- Restore original vim.validate
+      vim.validate = original_vim_validate
+      action_state.get_current_picker = original_get_current_picker
+
+      -- This test expects the NEW argument-based syntax: vim.validate("f", f, "function")
+      -- With old syntax: validate_call_args[1] would be a table like { f = { f, "function" } }
+      -- With new syntax: validate_call_args would be {"f", function_value, "function"}
+
+      if success then
+        assert.is_true(#validate_call_args == 3,
+          "Expected 3 arguments to vim.validate (name, value, type), got " .. #validate_call_args)
+        assert.are.equal("f", validate_call_args[1],
+          "First argument should be parameter name 'f'")
+        assert.are.equal("function", validate_call_args[3],
+          "Third argument should be type 'function'")
+        assert.is_function(validate_call_args[2],
+          "Second argument should be the actual function value")
+      end
+    end)
+
+    -- Additional test to ensure we're not accidentally calling the old table syntax
+    it("should not use old table-based vim.validate syntax in map_selections", function()
+      -- Mock vim.validate to detect table-based calls
+      local original_vim_validate = vim.validate
+      local used_table_syntax = false
+
+      vim.validate = function(arg1, ...)
+        if type(arg1) == "table" and arg1.f then
+          used_table_syntax = true
+        end
+        return original_vim_validate(arg1, ...)
+      end
+
+      -- Set up minimal mock
+      action_state.get_current_picker = function(bufnr)
+        return {
+          get_multi_selection = function()
+            return {} -- empty selection
+          end
+        }
+      end
+
+      -- Call the function
+      pcall(function()
+        utils.map_selections(1, function() end)
+      end)
+
+      -- Restore original vim.validate
+      vim.validate = original_vim_validate
+      action_state.get_current_picker = original_get_current_picker
+
+      -- This should FAIL with old syntax, PASS with new syntax
+      assert.is_false(used_table_syntax,
+        "Should not use old table-based vim.validate syntax in map_selections")
+    end)
+
+    -- Test that map_selections properly iterates through selections
+    it("should properly iterate through multi-selections", function()
+      local action_state = require("telescope.actions.state")
+      local original_get_current_picker = action_state.get_current_picker
+
+      local test_selections = {
+        { value = "first_selection" },
+        { value = "second_selection" },
+        { value = "third_selection" },
+      }
+
+      -- Set up mock picker with test selections
+      action_state.get_current_picker = function(bufnr)
+        return {
+          get_multi_selection = function()
+            return test_selections
+          end
+        }
+      end
+
+      local processed_selections = {}
+      local success = pcall(function()
+        utils.map_selections(1, function(selection)
+          table.insert(processed_selections, selection.value)
+        end)
+      end)
+
+      -- Clean up: restore the original function
+      action_state.get_current_picker = original_get_current_picker
+
+      -- Verify the function worked correctly
+      assert.is_true(success, "map_selections should execute without errors")
+      assert.are.equal(3, #processed_selections, "Should have processed 3 selections")
+      assert.are.equal("first_selection", processed_selections[1])
+      assert.are.equal("second_selection", processed_selections[2])
+      assert.are.equal("third_selection", processed_selections[3])
+    end)
+
+  end) -- Close map_selections function validation describe block
+
+end) -- Close the main describe block
