@@ -136,28 +136,97 @@ describe("telescope.actions.utils", function()
       action_state.get_current_picker = original_get_current_picker
     end)
 
-  -- You can add a similar describe block for the function on line 75
-  describe("function with vim.validate on line 75", function()
-    -- Similar structure as above, but for the second function
-  end)
+    -- =================================================================
+    -- TDD TESTS FOR vim.validate SYNTAX MIGRATION (line 38)
+    -- These should FAIL with old syntax and PASS with new syntax
+    -- =================================================================
 
-  -- Restore original function after test
-  action_state.get_current_picker = original_get_current_picker
+    -- Test that demonstrates the new vim.validate argument-based syntax
+    it("should use new vim.validate argument syntax (not table syntax)", function()
+      -- Mock vim.validate to track how it's called
+      local original_vim_validate = vim.validate
+      local validate_call_args = {}
 
+      vim.validate = function(...)
+        validate_call_args = {...}
+        return original_vim_validate(...)
+      end
 
-end) -- Close the main describe block
+      -- Set up minimal mock
+      action_state.get_current_picker = function(bufnr)
+        return {
+          manager = {
+            iter = function()
+              return function() return nil end
+            end,
+          },
+          get_row = function(index) return index end
+        }
+      end
 
--- NEXT STEPS TO GET THIS WORKING:
--- 1. Look at your utils.lua file and find the function names that contain the vim.validate calls
--- 2. Replace "your_function_name" with the actual function names
--- 3. Run this test to see what happens
--- 4. Based on the errors you get, you'll learn what parameters the functions expect
--- 5. Gradually build up your test cases based on what you learn
+      -- Call the function
+      local success = pcall(function()
+        utils.map_entries(1, function() end)
+      end)
 
--- DEBUGGING TIP:
--- If you're not sure what functions are available, you can add this temporary test:
--- it("should show available functions", function()
---   for k, v in pairs(utils) do
---     print(k, type(v))
---   end
--- end)
+      -- Restore original vim.validate
+      vim.validate = original_vim_validate
+      action_state.get_current_picker = original_get_current_picker
+
+      -- This test expects the NEW argument-based syntax: vim.validate("f", f, "function")
+      -- With old syntax: validate_call_args[1] would be a table like { f = { f, "function" } }
+      -- With new syntax: validate_call_args would be {"f", function_value, "function"}
+
+      if success then
+        assert.is_true(#validate_call_args == 3,
+          "Expected 3 arguments to vim.validate (name, value, type), got " .. #validate_call_args)
+        assert.are.equal("f", validate_call_args[1],
+          "First argument should be parameter name 'f'")
+        assert.are.equal("function", validate_call_args[3],
+          "Third argument should be type 'function'")
+        assert.is_function(validate_call_args[2],
+          "Second argument should be the actual function value")
+      end
+    end)
+
+    -- Additional test to ensure we're not accidentally calling the old table syntax
+    it("should not use old table-based vim.validate syntax", function()
+      -- Mock vim.validate to detect table-based calls
+      local original_vim_validate = vim.validate
+      local used_table_syntax = false
+
+      vim.validate = function(arg1, ...)
+        if type(arg1) == "table" and arg1.f then
+          used_table_syntax = true
+        end
+        return original_vim_validate(arg1, ...)
+      end
+
+      -- Set up minimal mock
+      action_state.get_current_picker = function(bufnr)
+        return {
+          manager = {
+            iter = function()
+              return function() return nil end
+            end,
+          },
+          get_row = function(index) return index end
+        }
+      end
+
+      -- Call the function
+      pcall(function()
+        utils.map_entries(1, function() end)
+      end)
+
+      -- Restore original vim.validate
+      vim.validate = original_vim_validate
+      action_state.get_current_picker = original_get_current_picker
+
+      -- This should FAIL with old syntax, PASS with new syntax
+      assert.is_false(used_table_syntax,
+        "Should not use old table-based vim.validate syntax like vim.validate({ f = { f, 'function' } })")
+    end)
+
+  end) -- Close map_entries function validation describe block
+ end) -- Close the main describe block
