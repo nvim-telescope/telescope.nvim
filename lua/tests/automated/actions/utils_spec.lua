@@ -1,6 +1,22 @@
 -- File: /lua/tests/automated/actions/utils_spec.lua
 
 describe("telescope.actions.utils", function()
+  local utils
+  local action_state
+
+  -- Set up the module before each test
+  before_each(function()
+    -- Load the utils module
+    utils = require("telescope.actions.utils")
+    action_state = require("telescope.actions.state")
+  end)
+
+  -- Clean up after each test
+  after_each(function()
+    -- Reset any global state if needed
+    package.loaded["telescope.actions.utils"] = nil
+    package.loaded["telescope.actions.state"] = nil
+  end)
 
   -- Verify module loads correctly
   it("should load the utils module without errors", function()
@@ -17,7 +33,6 @@ describe("telescope.actions.utils", function()
 
     -- Test valid parameter types
     it("should accept valid parameter types without vim.validate errors", function()
-      local action_state = require("telescope.actions.state")
       local original_get_current_picker = action_state.get_current_picker
 
       -- Set up mock picker with minimal structure
@@ -95,7 +110,6 @@ describe("telescope.actions.utils", function()
 
     -- Test handling of different buffer number types
     it("should handle different buffer number types", function()
-      local action_state = require("telescope.actions.state")
       local original_get_current_picker = action_state.get_current_picker
 
       -- Set up mock that works for all buffer numbers
@@ -152,6 +166,8 @@ describe("telescope.actions.utils", function()
         return original_vim_validate(...)
       end
 
+      local original_get_current_picker = action_state.get_current_picker
+
       -- Set up minimal mock
       action_state.get_current_picker = function(bufnr)
         return {
@@ -169,7 +185,7 @@ describe("telescope.actions.utils", function()
         utils.map_entries(1, function() end)
       end)
 
-      -- Restore original vim.validate
+      -- Restore original functions
       vim.validate = original_vim_validate
       action_state.get_current_picker = original_get_current_picker
 
@@ -202,6 +218,8 @@ describe("telescope.actions.utils", function()
         return original_vim_validate(arg1, ...)
       end
 
+      local original_get_current_picker = action_state.get_current_picker
+
       -- Set up minimal mock
       action_state.get_current_picker = function(bufnr)
         return {
@@ -219,7 +237,7 @@ describe("telescope.actions.utils", function()
         utils.map_entries(1, function() end)
       end)
 
-      -- Restore original vim.validate
+      -- Restore original functions
       vim.validate = original_vim_validate
       action_state.get_current_picker = original_get_current_picker
 
