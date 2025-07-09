@@ -247,4 +247,113 @@ describe("telescope.actions.utils", function()
     end)
 
   end) -- Close map_entries function validation describe block
- end) -- Close the main describe block
+
+  -- Test the map_selections function parameter validation (LINE 75)
+  describe("map_selections function validation", function()
+    it("should exist as a function", function()
+      assert.is_function(utils.map_selections)
+    end)
+
+    -- Test valid parameter types for map_selections
+    it("should accept valid parameter types without vim.validate errors", function()
+      local action_state = require("telescope.actions.state")
+      local original_get_current_picker = action_state.get_current_picker
+
+      -- Set up mock picker with minimal structure for map_selections
+      action_state.get_current_picker = function(bufnr)
+        return {
+          get_multi_selection = function()
+            return {
+              { value = "selected_first" },
+              { value = "selected_second" },
+            }
+          end
+        }
+      end
+
+      local valid_bufnr = 1
+      local valid_function = function(selection)
+        -- Just a no-op, could also print or assert if needed
+      end
+
+      local success, error_msg = pcall(function()
+        utils.map_selections(valid_bufnr, valid_function)
+      end)
+
+      -- Clean up: restore the original function
+      action_state.get_current_picker = original_get_current_picker
+
+      -- Test should pass without vim.validate errors
+      assert.is_true(success, "map_selections should accept valid parameters: " .. (error_msg or ""))
+    end)
+
+    -- Test vim.validate rejects non-function for second parameter
+    it("should reject non-function for second parameter", function()
+      local valid_bufnr = 1
+
+      assert.has_error(function()
+        utils.map_selections(valid_bufnr, "not a function")
+      end, "f: expected function, got string")
+    end)
+
+    -- Test vim.validate rejects table for second parameter
+    it("should reject table for second parameter", function()
+      local valid_bufnr = 1
+      assert.has_error(function()
+        utils.map_selections(valid_bufnr, {})
+      end, "f: expected function, got table")
+    end)
+
+    -- Test vim.validate rejects number for second parameter
+    it("should reject number for second parameter", function()
+      local valid_bufnr = 1
+
+      assert.has_error(function()
+        utils.map_selections(valid_bufnr, 123)
+      end, "f: expected function, got number")
+    end)
+
+    -- Test vim.validate rejects nil for second parameter
+    it("should reject nil for second parameter", function()
+      local valid_bufnr = 1
+
+      assert.has_error(function()
+        utils.map_selections(valid_bufnr, nil)
+      end, "f: expected function, got nil")
+    end)
+
+    -- Test different buffer number types
+    it("should handle different buffer number types", function()
+      local action_state = require("telescope.actions.state")
+      local original_get_current_picker = action_state.get_current_picker
+
+      -- Set up mock that works for all buffer numbers
+      action_state.get_current_picker = function(bufnr)
+        return {
+          get_multi_selection = function()
+            return {} -- empty selection
+          end
+        }
+      end
+
+      local valid_function = function(selection) end
+
+      -- Test with different number types that could be valid buffer numbers
+      local test_cases = {0, 1, 999}  -- Common buffer number patterns
+
+      for _, bufnr in ipairs(test_cases) do
+        local success, error_msg = pcall(function()
+          utils.map_selections(bufnr, valid_function)
+        end)
+
+        -- We expect these might fail due to telescope setup, but NOT due to vim.validate
+        if not success then
+          assert.is_false(string.match(error_msg or "", "expected function") ~= nil,
+            "Buffer number " .. bufnr .. " should not cause function validation error")
+        end
+      end
+
+      -- Clean up: restore the original function
+      action_state.get_current_picker = original_get_current_picker
+    end)
+
