@@ -7,8 +7,8 @@ describe("telescope.actions.utils", function()
   -- Set up the module before each test
   before_each(function()
     -- Load the utils module
-    utils = require("telescope.actions.utils")
-    action_state = require("telescope.actions.state")
+    utils = require "telescope.actions.utils"
+    action_state = require "telescope.actions.state"
   end)
 
   -- Clean up after each test
@@ -26,7 +26,6 @@ describe("telescope.actions.utils", function()
 
   -- Test the map_entries function parameter validation
   describe("map_entries function validation", function()
-
     it("should exist as a function", function()
       assert.is_function(utils.map_entries)
     end)
@@ -62,7 +61,7 @@ describe("telescope.actions.utils", function()
           },
           get_row = function(index)
             return index
-          end
+          end,
         }
       end
 
@@ -125,14 +124,14 @@ describe("telescope.actions.utils", function()
           },
           get_row = function(index)
             return index
-          end
+          end,
         }
       end
 
       local valid_function = function(entry, index, row) end
 
       -- Test with different number types that could be valid buffer numbers
-      local test_cases = {0, 1, 999}  -- Common buffer number patterns
+      local test_cases = { 0, 1, 999 } -- Common buffer number patterns
 
       for _, bufnr in ipairs(test_cases) do
         local success, error_msg = pcall(function()
@@ -141,8 +140,10 @@ describe("telescope.actions.utils", function()
 
         -- Should not fail due to vim.validate function parameter errors
         if not success then
-          assert.is_false(string.match(error_msg or "", "expected function") ~= nil,
-            "Buffer number " .. bufnr .. " should not cause function validation error")
+          assert.is_false(
+            string.match(error_msg or "", "expected function") ~= nil,
+            "Buffer number " .. bufnr .. " should not cause function validation error"
+          )
         end
       end
 
@@ -162,7 +163,7 @@ describe("telescope.actions.utils", function()
       local validate_call_args = {}
 
       vim.validate = function(...)
-        validate_call_args = {...}
+        validate_call_args = { ... }
         return original_vim_validate(...)
       end
 
@@ -173,10 +174,14 @@ describe("telescope.actions.utils", function()
         return {
           manager = {
             iter = function()
-              return function() return nil end
+              return function()
+                return nil
+              end
             end,
           },
-          get_row = function(index) return index end
+          get_row = function(index)
+            return index
+          end,
         }
       end
 
@@ -194,14 +199,13 @@ describe("telescope.actions.utils", function()
       -- With new syntax: validate_call_args would be {"f", function_value, "function"}
 
       if success then
-        assert.is_true(#validate_call_args == 3,
-          "Expected 3 arguments to vim.validate (name, value, type), got " .. #validate_call_args)
-        assert.are.equal("f", validate_call_args[1],
-          "First argument should be parameter name 'f'")
-        assert.are.equal("function", validate_call_args[3],
-          "Third argument should be type 'function'")
-        assert.is_function(validate_call_args[2],
-          "Second argument should be the actual function value")
+        assert.is_true(
+          #validate_call_args == 3,
+          "Expected 3 arguments to vim.validate (name, value, type), got " .. #validate_call_args
+        )
+        assert.are.equal("f", validate_call_args[1], "First argument should be parameter name 'f'")
+        assert.are.equal("function", validate_call_args[3], "Third argument should be type 'function'")
+        assert.is_function(validate_call_args[2], "Second argument should be the actual function value")
       end
     end)
 
@@ -225,10 +229,14 @@ describe("telescope.actions.utils", function()
         return {
           manager = {
             iter = function()
-              return function() return nil end
+              return function()
+                return nil
+              end
             end,
           },
-          get_row = function(index) return index end
+          get_row = function(index)
+            return index
+          end,
         }
       end
 
@@ -242,10 +250,11 @@ describe("telescope.actions.utils", function()
       action_state.get_current_picker = original_get_current_picker
 
       -- This should FAIL with old syntax, PASS with new syntax
-      assert.is_false(used_table_syntax,
-        "Should not use old table-based vim.validate syntax like vim.validate({ f = { f, 'function' } })")
+      assert.is_false(
+        used_table_syntax,
+        "Should not use old table-based vim.validate syntax like vim.validate({ f = { f, 'function' } })"
+      )
     end)
-
   end) -- Close map_entries function validation describe block
 
   -- Test the map_selections function parameter validation (LINE 75)
@@ -256,7 +265,7 @@ describe("telescope.actions.utils", function()
 
     -- Test valid parameter types for map_selections
     it("should accept valid parameter types without vim.validate errors", function()
-      local action_state = require("telescope.actions.state")
+      local action_state = require "telescope.actions.state"
       local original_get_current_picker = action_state.get_current_picker
 
       -- Set up mock picker with minimal structure for map_selections
@@ -267,7 +276,7 @@ describe("telescope.actions.utils", function()
               { value = "selected_first" },
               { value = "selected_second" },
             }
-          end
+          end,
         }
       end
 
@@ -324,7 +333,7 @@ describe("telescope.actions.utils", function()
 
     -- Test different buffer number types
     it("should handle different buffer number types", function()
-      local action_state = require("telescope.actions.state")
+      local action_state = require "telescope.actions.state"
       local original_get_current_picker = action_state.get_current_picker
 
       -- Set up mock that works for all buffer numbers
@@ -332,14 +341,14 @@ describe("telescope.actions.utils", function()
         return {
           get_multi_selection = function()
             return {} -- empty selection
-          end
+          end,
         }
       end
 
       local valid_function = function(selection) end
 
       -- Test with different number types that could be valid buffer numbers
-      local test_cases = {0, 1, 999}  -- Common buffer number patterns
+      local test_cases = { 0, 1, 999 } -- Common buffer number patterns
 
       for _, bufnr in ipairs(test_cases) do
         local success, error_msg = pcall(function()
@@ -348,8 +357,10 @@ describe("telescope.actions.utils", function()
 
         -- We expect these might fail due to telescope setup, but NOT due to vim.validate
         if not success then
-          assert.is_false(string.match(error_msg or "", "expected function") ~= nil,
-            "Buffer number " .. bufnr .. " should not cause function validation error")
+          assert.is_false(
+            string.match(error_msg or "", "expected function") ~= nil,
+            "Buffer number " .. bufnr .. " should not cause function validation error"
+          )
         end
       end
 
@@ -369,7 +380,7 @@ describe("telescope.actions.utils", function()
       local validate_call_args = {}
 
       vim.validate = function(...)
-        validate_call_args = {...}
+        validate_call_args = { ... }
         return original_vim_validate(...)
       end
 
@@ -378,7 +389,7 @@ describe("telescope.actions.utils", function()
         return {
           get_multi_selection = function()
             return {} -- empty selection
-          end
+          end,
         }
       end
 
@@ -396,14 +407,13 @@ describe("telescope.actions.utils", function()
       -- With new syntax: validate_call_args would be {"f", function_value, "function"}
 
       if success then
-        assert.is_true(#validate_call_args == 3,
-          "Expected 3 arguments to vim.validate (name, value, type), got " .. #validate_call_args)
-        assert.are.equal("f", validate_call_args[1],
-          "First argument should be parameter name 'f'")
-        assert.are.equal("function", validate_call_args[3],
-          "Third argument should be type 'function'")
-        assert.is_function(validate_call_args[2],
-          "Second argument should be the actual function value")
+        assert.is_true(
+          #validate_call_args == 3,
+          "Expected 3 arguments to vim.validate (name, value, type), got " .. #validate_call_args
+        )
+        assert.are.equal("f", validate_call_args[1], "First argument should be parameter name 'f'")
+        assert.are.equal("function", validate_call_args[3], "Third argument should be type 'function'")
+        assert.is_function(validate_call_args[2], "Second argument should be the actual function value")
       end
     end)
 
@@ -425,7 +435,7 @@ describe("telescope.actions.utils", function()
         return {
           get_multi_selection = function()
             return {} -- empty selection
-          end
+          end,
         }
       end
 
@@ -439,13 +449,12 @@ describe("telescope.actions.utils", function()
       action_state.get_current_picker = original_get_current_picker
 
       -- This should FAIL with old syntax, PASS with new syntax
-      assert.is_false(used_table_syntax,
-        "Should not use old table-based vim.validate syntax in map_selections")
+      assert.is_false(used_table_syntax, "Should not use old table-based vim.validate syntax in map_selections")
     end)
 
     -- Test that map_selections properly iterates through selections
     it("should properly iterate through multi-selections", function()
-      local action_state = require("telescope.actions.state")
+      local action_state = require "telescope.actions.state"
       local original_get_current_picker = action_state.get_current_picker
 
       local test_selections = {
@@ -459,7 +468,7 @@ describe("telescope.actions.utils", function()
         return {
           get_multi_selection = function()
             return test_selections
-          end
+          end,
         }
       end
 
@@ -480,7 +489,5 @@ describe("telescope.actions.utils", function()
       assert.are.equal("second_selection", processed_selections[2])
       assert.are.equal("third_selection", processed_selections[3])
     end)
-
   end) -- Close map_selections function validation describe block
-
 end) -- Close the main describe block
