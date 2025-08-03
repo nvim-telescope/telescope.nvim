@@ -930,6 +930,19 @@ append(
     Default: require("telescope.previewers").buffer_previewer_maker]]
 )
 
+append(
+  "strip_path_prefix",
+  nil,
+  [[
+    String that will be stripped from the beginning of file paths.
+    This is useful when running in containers where file paths start
+    with a specific prefix that you want to remove for better display.
+
+    Example: "/app/"
+
+    Default: nil]]
+)
+
 -- @param user_defaults table: a table where keys are the names of options,
 --    and values are the ones the user wants
 -- @param tele_defaults table: (optional) a table containing all of the defaults
