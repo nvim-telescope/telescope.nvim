@@ -896,6 +896,85 @@ actions.git_staging_toggle = function(prompt_bufnr)
   end
 end
 
+--- Restore selected file
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_restore = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    utils.__warn_no_selection "actions.git_restore"
+    return
+  end
+
+  local canceled_message = function()
+    utils.notify("actions.git_restore", {
+      msg = string.format "action canceled",
+      level = "INFO",
+    })
+  end
+
+  -- check if the file is currently open in a buffer
+  local file_bufnr = vim.fn.bufnr("^" .. selection.path .. "$")
+
+  if file_bufnr ~= -1 then
+    if vim.bo[file_bufnr].mod then -- buffer to restore has unsaved changes!
+      local user_choice =
+        vim.fn.input(string.format("File '%s' has unsaved changes! [s]ave [d]iscard [C]ANCEL: ", selection.value))
+      if user_choice:len() == 0 then -- cancel on empty input
+        canceled_message()
+        return
+      end
+
+      local get_buf_action = function()
+        local choice = user_choice:lower():sub(0, 1)
+        if choice == "s" then
+          return vim.cmd.write
+        end
+        if choice == "d" then
+          return function()
+            vim.cmd.edit { bang = true }
+          end -- :edit! discards changes
+        end
+        return nil
+      end
+
+      local buf_action = get_buf_action()
+      if buf_action == nil then
+        canceled_message()
+        return
+      end
+      vim.api.nvim_buf_call(file_bufnr, buf_action)
+    end
+  end
+
+  if not ask_to_confirm(string.format("Restore file '%s'? [y/N]: ", selection.value), "") then
+    canceled_message()
+    return
+  end
+
+  local _, ret, stderr = utils.get_os_command_output({ "git", "restore", selection.value }, cwd)
+  if ret == 0 then
+    utils.notify("actions.git_restore", {
+      msg = string.format("Restored file: %s", selection.value),
+      level = "INFO",
+    })
+  else
+    utils.notify("actions.git_restore", {
+      msg = string.format(
+        "Error when restoring file: '%s' | Git returned '%s'",
+        selection.value,
+        table.concat(stderr, " ")
+      ),
+      level = "ERROR",
+    })
+  end
+
+  -- since git changes the file externally, use checktime to update buffer
+  vim.cmd.checktime()
+
+  -- TODO: find way to redraw finder content
+end
+
 local entry_to_qf = function(entry)
   local text = entry.text
 
