@@ -1,7 +1,4 @@
----@tag telescope.actions
----@config { ["module"] = "telescope.actions" }
-
----@brief [[
+---@brief
 --- These functions are useful for people creating their own mappings.
 ---
 --- Actions can be either normal functions that expect the `prompt_bufnr` as
@@ -10,47 +7,46 @@
 --- (1) The `prompt_bufnr` of a normal function denotes the identifier of your
 --- picker which can be used to access the picker state. In practice, users
 --- most commonly access from both picker and global state via the following:
---- <code>
----   -- for utility functions
----   local action_state = require "telescope.actions.state"
+--- ```lua
+--- -- for utility functions
+--- local action_state = require "telescope.actions.state"
 ---
----   local actions = {}
----   actions.do_stuff = function(prompt_bufnr)
----     local current_picker = action_state.get_current_picker(prompt_bufnr) -- picker state
----     local entry = action_state.get_selected_entry()
----   end
---- </code>
+--- local actions = {}
+--- actions.do_stuff = function(prompt_bufnr)
+---   local current_picker = action_state.get_current_picker(prompt_bufnr) -- picker state
+---   local entry = action_state.get_selected_entry()
+--- end
+--- ```
 ---
 --- See |telescope.actions.state| for more information.
 ---
 --- (2) To transform a module of functions into a module of "action"s, you need
 --- to do the following:
---- <code>
----   local transform_mod = require("telescope.actions.mt").transform_mod
+--- ```lua
+--- local transform_mod = require("telescope.actions.mt").transform_mod
 ---
----   local mod = {}
----   mod.a1 = function(prompt_bufnr)
----     -- your code goes here
----     -- You can access the picker/global state as described above in (1).
----   end
+--- local mod = {}
+--- mod.a1 = function(prompt_bufnr)
+---   -- your code goes here
+---   -- You can access the picker/global state as described above in (1).
+--- end
 ---
----   mod.a2 = function(prompt_bufnr)
----     -- your code goes here
----   end
----   mod = transform_mod(mod)
+--- mod.a2 = function(prompt_bufnr)
+---   -- your code goes here
+--- end
+--- mod = transform_mod(mod)
 ---
----   -- Now the following is possible. This means that actions a2 will be executed
----   -- after action a1. You can chain as many actions as you want.
----   local action = mod.a1 + mod.a2
----   action(bufnr)
---- </code>
+--- -- Now the following is possible. This means that actions a2 will be executed
+--- -- after action a1. You can chain as many actions as you want.
+--- local action = mod.a1 + mod.a2
+--- action(bufnr)
+--- ```
 ---
 --- Another interesting thing to do is that these actions now have functions you
 --- can call. These functions include `:replace(f)`, `:replace_if(f, c)`,
 --- `replace_map(tbl)` and `enhance(tbl)`. More information on these functions
 --- can be found in the `developers.md` and `lua/tests/automated/action_spec.lua`
 --- file.
----@brief ]]
 
 local a = vim.api
 
@@ -156,7 +152,7 @@ actions.toggle_selection = function(prompt_bufnr)
 end
 
 --- Multi select all entries.
---- - Note: selected entries may include results not visible in the results pop up.
+---@note selected entries may include results not visible in the results pop up.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_all = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -193,7 +189,7 @@ actions.drop_all = function(prompt_bufnr)
 end
 
 --- Toggle multi selection for all entries.
---- - Note: toggled entries may include results not visible in the results pop up.
+---@note toggled entries may include results not visible in the results pop up.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.toggle_all = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -1255,8 +1251,7 @@ actions.remove_selected_picker = function(prompt_bufnr)
 end
 
 --- Display the keymaps of registered actions similar to which-key.nvim.<br>
---- - Notes:
----   - The defaults can be overridden via |action_generate.which_key|.
+---@note The defaults can be overridden via |action_generate.which_key|.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.which_key = function(prompt_bufnr, opts)
   opts = opts or {}

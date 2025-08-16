@@ -803,14 +803,14 @@ end
 --- such as deleting buffers or files.
 ---
 --- Example usage:
---- <code>
+--- ```lua
 --- actions.delete_something = function(prompt_bufnr)
 ---    local current_picker = action_state.get_current_picker(prompt_bufnr)
 ---    current_picker:delete_selection(function(selection)
 ---      -- delete the selection outside of telescope
 ---    end)
 --- end
---- </code>
+--- ```
 ---
 --- Example usage in telescope:
 ---   - `actions.delete_buffer()`

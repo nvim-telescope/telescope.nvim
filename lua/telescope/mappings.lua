@@ -1,6 +1,4 @@
----@tag telescope.mappings
-
----@brief [[
+---@brief
 --- |telescope.mappings| is used to configure the keybindings within
 --- a telescope picker. These key binds are only local to the picker window
 --- and will be cleared once you exit the picker.
@@ -12,116 +10,115 @@
 --- table, see |telescope.actions|
 ---
 --- Format is:
---- <code>
----   {
----     mode = { ..keys }
----   }
---- </code>
+--- ```lua
+--- {
+---   mode = { ..keys }
+--- }
+--- ```
 ---
 ---  where {mode} is the one character letter for a mode ('i' for insert, 'n' for normal).
 ---
 ---  For example:
---- <code>
----   mappings = {
----     i = {
----       ["<esc>"] = require('telescope.actions').close,
----     },
----   }
---- </code>
+--- ```lua
+--- mappings = {
+---   i = {
+---     ["<esc>"] = require('telescope.actions').close,
+---   },
+--- }
+--- ```
 ---
 --- To disable a keymap, put `[map] = false`<br>
 --- For example:
---- <code>
----   {
----     ...,
----     ["<C-n>"] = false,
----     ...,
----   }
---- </code>
+--- ```lua
+--- {
+---   ...,
+---   ["<C-n>"] = false,
+---   ...,
+--- }
+--- ```
 ---
 --- To override behavior of a key, simply set the value
 --- to be a function (either by requiring an action or by writing
 --- your own function)
---- <code>
----   {
----     ...,
----     ["<C-i>"] = require('telescope.actions').select_default,
----     ...,
----   }
---- </code>
+--- ```lua
+--- {
+---   ...,
+---   ["<C-i>"] = require('telescope.actions').select_default,
+---   ...,
+--- }
+--- ```
 ---
----  If the function you want is part of `telescope.actions`, then you can
----  simply supply the function name as a string.
----    For example, the previous option is equivalent to:
---- <code>
----   {
----     ...,
----     ["<C-i>"] = "select_default",
----     ...,
----   }
---- </code>
+--- If the function you want is part of `telescope.actions`, then you can
+--- simply supply the function name as a string.
+--- For example, the previous option is equivalent to:
+--- ```lua
+--- {
+---   ...,
+---   ["<C-i>"] = "select_default",
+---   ...,
+--- }
+--- ```
 ---
----  You can also add other mappings using tables with `type = "command"`.
----    For example:
---- <code>
----   {
----     ...,
----     ["jj"] = { "<esc>", type = "command" },
----     ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },)
----     ...,
----   }
---- </code>
+--- You can also add other mappings using tables with `type = "command"`.
+--- For example:
+--- ```lua
+--- {
+---   ...,
+---   ["jj"] = { "<esc>", type = "command" },
+---   ["kk"] = { "<cmd>echo \"Hello, World!\"<cr>", type = "command" },
+---   ...,
+--- }
+--- ```
 ---
 --- You can also add additional options for mappings of any type ("action" and "command").
----   For example:
---- <code>
----   {
----     ...,
----     ["<C-j>"] = {
----       actions.move_selection_next, type = "action",
----       opts = { nowait = true, silent = true }
----     },
----     ...,
----   }
---- </code>
+--- For example:
+--- ```lua
+--- {
+---   ...,
+---   ["<C-j>"] = {
+---     actions.move_selection_next, type = "action",
+---     opts = { nowait = true, silent = true }
+---   },
+---   ...,
+--- }
+--- ```
 ---
 --- There are three main places you can configure |telescope.mappings|. These are
 --- ordered from the lowest priority to the highest priority.
 ---
 --- 1. |telescope.defaults.mappings|
 --- 2. In the |telescope.setup()| table, inside a picker with a given name, use the `mappings` key
---- <code>
----   require("telescope").setup {
----     pickers = {
----       find_files = {
----         mappings = {
----           n = {
----             ["kj"] = "close",
+---     ```lua
+---     require("telescope").setup {
+---       pickers = {
+---         find_files = {
+---           mappings = {
+---             n = {
+---               ["kj"] = "close",
+---             },
 ---           },
 ---         },
 ---       },
----     },
----   }
---- </code>
+---     }
+---     ```
 --- 3. `attach_mappings` function for a particular picker.
---- <code>
----   require("telescope.builtin").find_files {
----     attach_mappings = function(_, map)
----       map("i", "asdf", function(_prompt_bufnr)
----         print "You typed asdf"
----       end)
+---     ```lua
+---     require("telescope.builtin").find_files {
+---       attach_mappings = function(_, map)
+---         map("i", "asdf", function(_prompt_bufnr)
+---           print "You typed asdf"
+---         end)
 ---
----       map({"i", "n"}, "<C-r>", function(_prompt_bufnr)
----         print "You typed <C-r>"
----       end, { desc = "desc for which key"})
+---         map({"i", "n"}, "<C-r>", function(_prompt_bufnr)
+---           print "You typed <C-r>"
+---         end, { desc = "desc for which key"})
 ---
----       -- needs to return true if you want to map default_mappings and
----       -- false if not
----       return true
----     end,
----   }
---- </code>
----@brief ]]
+---         -- needs to return true if you want to map default_mappings and
+---         -- false if not
+---         return true
+---       end,
+---     }
+---     ```
 
 local a = vim.api
 

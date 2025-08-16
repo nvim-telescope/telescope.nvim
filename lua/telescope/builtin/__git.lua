@@ -19,8 +19,9 @@ local get_git_command_output = function(args, opts)
   return utils.get_os_command_output(git_command(args, opts), opts.cwd)
 end
 
+---@param opts telescope.builtin.git_files.opts
 git.files = function(opts)
-  if opts.is_bare then
+  if opts._is_bare then
     utils.notify("builtin.git_files", {
       msg = "This operation must be run in a work tree",
       level = "ERROR",
@@ -64,6 +65,7 @@ git.files = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.git_commits.opts
 git.commits = function(opts)
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
   opts.git_command =
@@ -184,6 +186,7 @@ local bcommits_picker = function(opts, title, finder)
   })
 end
 
+---@param opts telescope.builtin.git_bcommits.opts
 git.bcommits = function(opts)
   opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
   opts.current_file = vim.F.if_nil(opts.current_file, vim.api.nvim_buf_get_name(opts.bufnr))
@@ -202,6 +205,7 @@ git.bcommits = function(opts)
   bcommits_picker(opts, title, finder):find()
 end
 
+---@param opts telescope.builtin.git_bcommits_range.opts
 git.bcommits_range = function(opts)
   opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
   opts.current_file = vim.F.if_nil(opts.current_file, vim.api.nvim_buf_get_name(opts.bufnr))
@@ -243,6 +247,7 @@ git.bcommits_range = function(opts)
   bcommits_picker(opts, title, finder):find()
 end
 
+---@param opts telescope.builtin.git_branches.opts
 git.branches = function(opts)
   local format = "%(HEAD)"
     .. "%(refname)"
@@ -360,8 +365,9 @@ git.branches = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.git_status.opts
 git.status = function(opts)
-  if opts.is_bare then
+  if opts._is_bare then
     utils.notify("builtin.git_status", {
       msg = "This operation must be run in a work tree",
       level = "ERROR",
@@ -488,7 +494,7 @@ local set_opts_cwd = function(opts)
     if in_worktree[1] ~= "true" and in_bare[1] ~= "true" then
       try_worktrees(opts)
     elseif in_worktree[1] ~= "true" and in_bare[1] == "true" then
-      opts.is_bare = true
+      opts._is_bare = true
     end
   else
     if opts.use_git_root then

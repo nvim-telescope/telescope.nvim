@@ -1,6 +1,4 @@
----@tag telescope.pickers.entry_display
-
----@brief [[
+---@brief
 --- Entry Display is used to format each entry shown in the result panel.
 ---
 --- Entry Display create() will give us a function based on the configuration
@@ -17,7 +15,7 @@
 --- width, this will be shown in the configuration as 'remaining = true'.
 ---
 --- An example of this configuration is shown for the buffers picker:
---- <code>
+--- ```lua
 --- local displayer = entry_display.create {
 ---   separator = " ",
 ---   items = {
@@ -27,7 +25,7 @@
 ---     { remaining = true },
 ---   },
 --- }
---- </code>
+--- ```
 ---
 --- This shows 4 columns, the first is defined in the opts as the width we'll
 --- use when display_string is the number of the buffer. The second has a fixed
@@ -37,14 +35,14 @@
 ---
 --- An example of how the display reference will be used is shown, again for
 --- the buffers picker:
---- <code>
+--- ```lua
 --- return displayer {
 ---   { entry.bufnr, "TelescopeResultsNumber" },
 ---   { entry.indicator, "TelescopeResultsComment" },
 ---   { icon, hl_group },
 ---   display_bufname .. ":" .. entry.lnum,
 --- }
---- </code>
+--- ```
 ---
 --- There are two types of values each column can have. Either a simple String
 --- or a table containing the String as well as the hl_group.
@@ -56,7 +54,6 @@
 ---
 --- For a better understanding of how create() and displayer are used it's best to look
 --- at the code in make_entry.lua.
----@brief ]]
 
 local strings = require "plenary.strings"
 local state = require "telescope.state"

@@ -3,27 +3,23 @@
 --
 -- local opts = themes.get_dropdown { winblend = 3 }
 
----@tag telescope.themes
----@config { ["module"] = "telescope.themes" }
-
----@brief [[
+---@brief
 --- Themes are ways to combine several elements of styling together.
 ---
 --- They are helpful for managing the several different UI aspects for telescope and provide
 --- a simple interface for users to get a particular "style" of picker.
----@brief ]]
 
 local themes = {}
 
 --- Dropdown style theme.
 ---
 --- Usage:
---- <code>
----     local opts = {...} -- picker options
----     local builtin = require('telescope.builtin')
----     local themes = require('telescope.themes')
----     builtin.find_files(themes.get_dropdown(opts))
---- </code>
+--- ```lua
+--- local opts = {...} -- picker options
+--- local builtin = require('telescope.builtin')
+--- local themes = require('telescope.themes')
+--- builtin.find_files(themes.get_dropdown(opts))
+--- ```
 function themes.get_dropdown(opts)
   opts = opts or {}
 
@@ -67,12 +63,12 @@ end
 --- Cursor style theme.
 ---
 --- Usage:
---- <code>
----     local opts = {...} -- picker options
----     local builtin = require('telescope.builtin')
----     local themes = require('telescope.themes')
----     builtin.find_files(themes.get_cursor(opts))
---- </code>
+--- ```lua
+--- local opts = {...} -- picker options
+--- local builtin = require('telescope.builtin')
+--- local themes = require('telescope.themes')
+--- builtin.find_files(themes.get_cursor(opts))
+--- ```
 function themes.get_cursor(opts)
   opts = opts or {}
 
@@ -99,12 +95,12 @@ end
 --- Ivy style theme.
 ---
 --- Usage:
---- <code>
----     local opts = {...} -- picker options
----     local builtin = require('telescope.builtin')
----     local themes = require('telescope.themes')
----     builtin.find_files(themes.get_ivy(opts))
---- </code>
+--- ```lua
+--- local opts = {...} -- picker options
+--- local builtin = require('telescope.builtin')
+--- local themes = require('telescope.themes')
+--- builtin.find_files(themes.get_ivy(opts))
+--- ```
 function themes.get_ivy(opts)
   opts = opts or {}
 

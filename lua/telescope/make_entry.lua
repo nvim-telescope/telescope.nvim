@@ -1,6 +1,4 @@
----@tag telescope.make_entry
-
----@brief [[
+---@brief
 ---
 --- Each picker has a finder made up of two parts, the results which are the
 --- data to be displayed, and the entry_maker. These entry_makers are functions
@@ -32,7 +30,6 @@
 --- For more information on easier displaying, see |telescope.pickers.entry_display|
 ---
 --- TODO: Document something we call `entry_index`
----@brief ]]
 
 local entry_display = require "telescope.pickers.entry_display"
 local utils = require "telescope.utils"

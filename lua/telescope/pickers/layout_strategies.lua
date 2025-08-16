@@ -1,19 +1,16 @@
----@tag telescope.layout
----@config { ["module"] = "telescope.layout" }
-
----@brief [[
+---@brief
 --- The layout of telescope pickers can be adjusted using the
 --- |telescope.defaults.layout_strategy| and |telescope.defaults.layout_config| options.
 --- For example, the following configuration changes the default layout strategy and the
 --- default size of the picker:
---- <code>
----   require('telescope').setup{
----     defaults = {
----       layout_strategy = 'vertical',
----       layout_config = { height = 0.95 },
----     },
----   }
---- </code>
+--- ```lua
+--- require('telescope').setup{
+---   defaults = {
+---     layout_strategy = 'vertical',
+---     layout_config = { height = 0.95 },
+---   },
+--- }
+--- ```
 ---
 --- ────────────────────────────────────────────────────────────────────────────────
 ---
@@ -21,23 +18,23 @@
 ---
 --- All layout strategies are functions with the following signature:
 ---
---- <code>
----   function(picker, columns, lines, layout_config)
----     -- Do some calculations here...
----     return {
----       preview = preview_configuration
----       results = results_configuration,
----       prompt = prompt_configuration,
----     }
----   end
---- </code>
+--- ```lua
+--- function(picker, columns, lines, layout_config)
+---   -- Do some calculations here...
+---   return {
+---     preview = preview_configuration
+---     results = results_configuration,
+---     prompt = prompt_configuration,
+---   }
+--- end
+--- ```
 ---
 --- <pre>
 ---   Parameters: ~
----     - picker        : A Picker object. (docs coming soon)
----     - columns       : (number) Columns in the vim window
----     - lines         : (number) Lines in the vim window
----     - layout_config : (table) The configuration values specific to the picker.
+---     • picker        : A Picker object. (docs coming soon)
+---     • columns       : (number) Columns in the vim window
+---     • lines         : (number) Lines in the vim window
+---     • layout_config : (table) The configuration values specific to the picker.
 --- </pre>
 ---
 --- This means you can create your own layout strategy if you want! Just be aware
@@ -48,7 +45,6 @@
 --- resembles what you want from "./lua/telescope/pickers/layout_strategies.lua" in the
 --- telescope repo.
 ---
----@brief ]]
 
 local resolve = require "telescope.config.resolve"
 local p_window = require "telescope.pickers.window"
@@ -70,12 +66,12 @@ local calc_tabline = function(max_lines)
 end
 
 -- Helper function for capping over/undersized width/height, and calculating spacing
---@param cur_size number: size to be capped
---@param max_size any: the maximum size, e.g. max_lines or max_columns
---@param bs number: the size of the border
---@param w_num number: the maximum number of windows of the picker in the given direction
---@param b_num number: the number of border rows/column in the given direction (when border enabled)
---@param s_num number: the number of gaps in the given direction (when border disabled)
+---@param cur_size number: size to be capped
+---@param max_size any: the maximum size, e.g. max_lines or max_columns
+---@param bs number: the size of the border
+---@param w_num number: the maximum number of windows of the picker in the given direction
+---@param b_num number: the number of border rows/column in the given direction (when border enabled)
+---@param s_num number: the number of gaps in the given direction (when border disabled)
 local calc_size_and_spacing = function(cur_size, max_size, bs, w_num, b_num, s_num)
   local spacing = s_num * (1 - bs) + b_num * bs
   cur_size = math.min(cur_size, max_size)
@@ -113,11 +109,11 @@ local adjust_pos = function(pos, ...)
   end
 end
 
---@param strategy_name string: the name of the layout_strategy we are validating for
---@param configuration table: table with keys for each option available
---@param values table: table containing all of the non-default options we want to set
---@param default_layout_config table: table with the default values to configure layouts
---@return table: table containing the combined options (defaults and non-defaults)
+---@param strategy_name string: the name of the layout_strategy we are validating for
+---@param configuration table: table with keys for each option available
+---@param values table: table containing all of the non-default options we want to set
+---@param default_layout_config table?: table with the default values to configure layouts
+---@return table: table containing the combined options (defaults and non-defaults)
 local function validate_layout_config(strategy_name, configuration, values, default_layout_config)
   assert(strategy_name, "It is required to have a strategy name for validation.")
   local valid_configuration_keys = get_valid_configuration_keys(configuration)
@@ -216,11 +212,11 @@ layout_strategies._format = function(name)
 
   local add_value = function(k, val)
     if type(val) == "string" then
-      table.insert(results, string.format("  - %s: %s", k, val))
+      table.insert(results, string.format("  • %s: %s", k, val))
     elseif type(val) == "table" then
-      table.insert(results, string.format("  - %s:", k))
+      table.insert(results, string.format("  • %s:", k))
       for _, line in ipairs(val) do
-        table.insert(results, string.format("    - %s", line))
+        table.insert(results, string.format("    • %s", line))
       end
     else
       error(string.format("expected string or table but found '%s'", type(val)))
@@ -243,15 +239,15 @@ layout_strategies._format = function(name)
   end
 
   table.insert(results, "</pre>")
-  return results
+  return table.concat(results, "\n")
 end
 
---@param name string: the name to be assigned to the layout
---@param layout_config table: table where keys are the available options for the layout
---@param layout function: function with signature
---          function(self, max_columns, max_lines, layout_config): table
---        the returned table is the sizing and location information for the parts of the picker
---@retun function: wrapped function that inputs a validated layout_config into the `layout` function
+---@param name string: the name to be assigned to the layout
+---@param layout_config table: table where keys are the available options for the layout
+---@param layout function: function with signature
+---          function(self, max_columns, max_lines, layout_config): table
+---        the returned table is the sizing and location information for the parts of the picker
+---@retun function: wrapped function that inputs a validated layout_config into the `layout` function
 local function make_documented_layout(name, layout_config, layout)
   -- Save configuration data to be used by documentation
   layout_strategies._configurations[name] = layout_config
@@ -292,7 +288,7 @@ end
 --- │                                                  │
 --- └──────────────────────────────────────────────────┘
 --- </pre>
----@eval { ["description"] = require('telescope.pickers.layout_strategies')._format("horizontal") }
+---@eval return require('telescope.pickers.layout_strategies')._format("horizontal")
 ---
 layout_strategies.horizontal = make_documented_layout(
   "horizontal",
@@ -432,7 +428,7 @@ layout_strategies.horizontal = make_documented_layout(
 --- │                                                  │
 --- └──────────────────────────────────────────────────┘
 --- </pre>
----@eval { ["description"] = require("telescope.pickers.layout_strategies")._format("center") }
+---@eval return require("telescope.pickers.layout_strategies")._format("center")
 ---
 layout_strategies.center = make_documented_layout(
   "center",
@@ -558,7 +554,7 @@ layout_strategies.center = make_documented_layout(
 --- │                                                  │
 --- └──────────────────────────────────────────────────┘
 --- </pre>
----@eval { ["description"] = require("telescope.pickers.layout_strategies")._format("cursor") }
+---@eval return require("telescope.pickers.layout_strategies")._format("cursor")
 layout_strategies.cursor = make_documented_layout(
   "cursor",
   vim.tbl_extend("error", {
@@ -671,7 +667,7 @@ layout_strategies.cursor = make_documented_layout(
 --- │                                                  │
 --- └──────────────────────────────────────────────────┘
 --- </pre>
----@eval { ["description"] = require("telescope.pickers.layout_strategies")._format("vertical") }
+---@eval return require("telescope.pickers.layout_strategies")._format("vertical")
 ---
 layout_strategies.vertical = make_documented_layout(
   "vertical",
@@ -772,7 +768,7 @@ layout_strategies.vertical = make_documented_layout(
 --- Flex layout swaps between `horizontal` and `vertical` strategies based on the window width
 ---  -  Supports |layout_strategies.vertical| or |layout_strategies.horizontal| features
 ---
----@eval { ["description"] = require("telescope.pickers.layout_strategies")._format("flex") }
+---@eval return require("telescope.pickers.layout_strategies")._format("flex")
 ---
 layout_strategies.flex = make_documented_layout(
   "flex",

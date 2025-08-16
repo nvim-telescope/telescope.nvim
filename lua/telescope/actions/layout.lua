@@ -1,9 +1,5 @@
----@tag telescope.actions.layout
----@config { ["module"] = "telescope.actions.layout", ["name"] = "ACTIONS_LAYOUT" }
-
----@brief [[
+---@brief
 --- The layout actions are actions to be used to change the layout of a picker.
----@brief ]]
 
 local action_state = require "telescope.actions.state"
 local state = require "telescope.state"
@@ -18,9 +14,8 @@ local action_layout = setmetatable({}, {
 })
 
 --- Toggle preview window.
---- - Note: preview window can be toggled even if preview is set to false.
----
---- This action is not mapped by default.
+---@note preview window can be toggled even if preview is set to false.
+---@note this action is not mapped by default.
 ---@param prompt_bufnr number: The prompt bufnr
 action_layout.toggle_preview = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
@@ -54,7 +49,7 @@ end
 --- Toggles the `prompt_position` option between "top" and "bottom".
 --- Checks if `prompt_position` is an option for the current layout.
 ---
---- This action is not mapped by default.
+---@note this action is not mapped by default.
 ---@param prompt_bufnr number: The prompt bufnr
 action_layout.toggle_prompt_position = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
@@ -87,7 +82,7 @@ end
 --- Toggles the `mirror` option between `true` and `false`.
 --- Checks if `mirror` is an option for the current layout.
 ---
---- This action is not mapped by default.
+---@note this action is not mapped by default.
 ---@param prompt_bufnr number: The prompt bufnr
 action_layout.toggle_mirror = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
@@ -138,13 +133,13 @@ end
 
 --- Cycles to the next layout in `cycle_layout_list`.
 ---
---- This action is not mapped by default.
+---@note this action is not mapped by default.
 ---@param prompt_bufnr number: The prompt bufnr
 action_layout.cycle_layout_next = get_cycle_layout(1)
 
 --- Cycles to the previous layout in `cycle_layout_list`.
 ---
---- This action is not mapped by default.
+---@note this action is not mapped by default.
 ---@param prompt_bufnr number: The prompt bufnr
 action_layout.cycle_layout_prev = get_cycle_layout(-1)
 
