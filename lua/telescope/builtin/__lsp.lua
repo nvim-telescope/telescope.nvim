@@ -100,7 +100,7 @@ local function calls(opts, direction)
   local params = client_position_params()
   lsp.buf_request(opts.bufnr, "textDocument/prepareCallHierarchy", params, function(err, result)
     if err then
-      utils.notify("lsp.calls", { msg = err, level = "ERROR" })
+      utils.notify("lsp.calls", { msg = err.message, level = "ERROR" })
       return
     end
 
