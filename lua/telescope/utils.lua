@@ -30,7 +30,7 @@ utils.str_byteindex = function(s, i, encoding)
 end
 
 --TODO(clason): Remove when dropping support for Nvim 0.9
-utils.islist = vim.fn.has "nvim-0.9" == 1 and vim.islist or vim.tbl_islist
+utils.islist = vim.fn.has "nvim-0.10" == 0 and vim.tbl_islist or vim.islist
 local flatten = function(t)
   return vim.iter(t):flatten():totable()
 end
