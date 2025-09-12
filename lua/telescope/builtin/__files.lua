@@ -442,7 +442,7 @@ files.treesitter = function(opts)
   end
 
   results = utils.filter_symbols(results, opts)
-  if results == nil then
+  if vim.tbl_isempty(results) then
     -- error message already printed in `utils.filter_symbols`
     return
   end
