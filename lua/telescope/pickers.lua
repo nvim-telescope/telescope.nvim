@@ -816,7 +816,11 @@ end
 ---   - `actions.delete_buffer()`
 ---@param delete_cb function: called for each selection fn(s) -> bool|nil (true|nil removes the entry from the results)
 function Picker:delete_selection(delete_cb)
-  vim.validate { delete_cb = { delete_cb, "f" } }
+  if vim.fn.has("nvim-0.11") then
+    vim.validate("delete_cb", delete_cb, "function")
+  else
+    vim.validate { delete_cb = { delete_cb, "function" } }
+  end
   local original_selection_strategy = self.selection_strategy
   self.selection_strategy = "row"
 
