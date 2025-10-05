@@ -35,7 +35,7 @@ local utils = {}
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param f function: Function to map onto entries of picker that takes (entry, index, row) as viable arguments
 function utils.map_entries(prompt_bufnr, f)
-  if vim.fn.has("nvim-0.11") then
+  if vim.fn.has "nvim-0.11" then
     vim.validate("f", f, "function")
   else
     vim.validate {
@@ -76,7 +76,7 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param f function: Function to map onto selection of picker that takes (selection) as a viable argument
 function utils.map_selections(prompt_bufnr, f)
-  if vim.fn.has("nvim-0.11") then
+  if vim.fn.has "nvim-0.11" then
     vim.validate("f", f, "function")
   else
     vim.validate {

@@ -54,7 +54,7 @@ utils.flatten = vim.fn.has "nvim-0.11" == 1 and flatten or vim.tbl_flatten
 ---@param path string
 ---@return string
 utils.path_expand = function(path)
-  if vim.fn.has("nvim-0.11") then
+  if vim.fn.has "nvim-0.11" then
     vim.validate("path", path, "string")
   else
     vim.validate {

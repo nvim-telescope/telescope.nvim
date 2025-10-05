@@ -624,14 +624,7 @@ previewers.ctags = defaulter(function(opts)
         if self.state.last_set_bufnr then
           pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
         end
-        pcall(
-            vim.hl.range,
-            bufnr,
-            ns_previewer,
-            "TelescopePreviewMatch",
-            { entry.lnum - 1, 0 },
-            { entry.lnum, -1 }
-        )
+        pcall(vim.hl.range, bufnr, ns_previewer, "TelescopePreviewMatch", { entry.lnum - 1, 0 }, { entry.lnum, -1 })
         pcall(vim.api.nvim_win_set_cursor, self.state.winid, { entry.lnum, 0 })
         self.state.last_set_bufnr = bufnr
       end
@@ -758,40 +751,19 @@ previewers.git_branch_log = defaulter(function(opts)
       local hstart, hend = line:find "[0-9a-fA-F]+"
       if hstart then
         if hend < #line then
-          pcall(
-            vim.hl.range,
-            bufnr,
-            ns_previewer,
-            "TelescopeResultsIdentifier",
-            { i - 1, hstart - 1 },
-            { i - 1, hend }
-          )
+          pcall(vim.hl.range, bufnr, ns_previewer, "TelescopeResultsIdentifier", { i - 1, hstart - 1 }, { i - 1, hend })
         end
       end
       local _, cstart = line:find "- %("
       if cstart then
         local cend = string.find(line, "%) ")
         if cend then
-          pcall(
-            vim.hl.range,
-            bufnr,
-            ns_previewer,
-            "TelescopeResultsConstant",
-            { i - 1, cstart - 1 },
-            { i - 1, cend }
-          )
+          pcall(vim.hl.range, bufnr, ns_previewer, "TelescopeResultsConstant", { i - 1, cstart - 1 }, { i - 1, cend })
         end
       end
       local dstart, _ = line:find " %(%d"
       if dstart then
-        pcall(
-          vim.hl.range,
-          bufnr,
-          ns_previewer,
-          "TelescopeResultsSpecialComment",
-          { i - 1, dstart },
-          { i - 1, #line }
-        )
+        pcall(vim.hl.range, bufnr, ns_previewer, "TelescopeResultsSpecialComment", { i - 1, dstart }, { i - 1, #line })
       end
     end
   end
@@ -1070,11 +1042,11 @@ previewers.autocommands = defaulter(function(_)
       end
 
       vim.hl.range(
-          self.state.bufnr,
-          ns_previewer,
-          "TelescopePreviewLine",
-          { selected_row + 1, 0 },
-          { selected_row + 1, -1 }
+        self.state.bufnr,
+        ns_previewer,
+        "TelescopePreviewLine",
+        { selected_row + 1, 0 },
+        { selected_row + 1, -1 }
       )
       -- set the cursor position after self.state.bufnr is connected to the
       -- preview window (which is scheduled in new_buffer_previewer)
@@ -1120,14 +1092,7 @@ previewers.highlights = defaulter(function(_)
           local startPos = string.find(v, "xxx", 1, true) - 1
           local endPos = startPos + 3
           local hlgroup = string.match(v, "([^ ]*)%s+.*")
-          pcall(
-              vim.hl.range,
-              self.state.bufnr,
-              0,
-              hlgroup,
-              { k - 1, startPos },
-              { k - 1, endPos }
-          )
+          pcall(vim.hl.range, self.state.bufnr, 0, hlgroup, { k - 1, startPos }, { k - 1, endPos })
         end
       end
 
