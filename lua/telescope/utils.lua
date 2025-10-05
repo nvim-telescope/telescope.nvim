@@ -15,7 +15,7 @@ local get_status = require("telescope.state").get_status
 
 local utils = {}
 
-utils.iswin = vim.loop.os_uname().sysname == "Windows_NT"
+utils.iswin = (vim.uv or vim.loop).os_uname().sysname == "Windows_NT"
 
 ---@param s string
 ---@param i number
@@ -71,14 +71,14 @@ utils.path_expand = function(path)
   end
 
   if path:sub(1, 1) == "~" then
-    local home = vim.loop.os_homedir() or "~"
+    local home = (vim.uv or vim.loop).os_homedir() or "~"
     if home:sub(-1) == "\\" or home:sub(-1) == "/" then
       home = home:sub(1, -2)
     end
     path = home .. path:sub(2)
   end
 
-  path = path:gsub("%$([%w_]+)", vim.loop.os_getenv)
+  path = path:gsub("%$([%w_]+)", (vim.uv or vim.loop).os_getenv)
   path = path:gsub("/+", "/")
   if utils.iswin then
     path = path:gsub("\\+", "\\")
@@ -238,7 +238,7 @@ local path_abs = function(path, opts)
       cwd = utils.path_expand(opts.cwd)
     end
   else
-    cwd = vim.loop.cwd()
+    cwd = (vim.uv or vim.loop).cwd()
   end
   return Path:new(path):make_relative(cwd)
 end
@@ -358,7 +358,7 @@ end
 --- this function outside of telescope might yield to undefined behavior and will
 --- not be addressed by us
 ---@param opts table: The opts the users passed into the picker. Might contains a path_display key
----@param path string|nil: The path that should be formatted
+---@param path? string: The path that should be formatted
 ---@return string: path to be displayed
 ---@return table: The transformed path ready to be displayed with the styling
 utils.transform_path = function(opts, path)

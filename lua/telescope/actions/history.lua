@@ -2,7 +2,7 @@ local conf = require("telescope.config").values
 local Path = require "plenary.path"
 local utils = require "telescope.utils"
 
-local uv = vim.loop
+local uv = vim.uv or vim.loop
 
 ---@tag telescope.actions.history
 ---@config { ["module"] = "telescope.actions.history" }
@@ -54,6 +54,9 @@ local histories = {}
 ---@field content table: History table. Needs to be filled by your own History implementation
 ---@field index number: Used to keep track of the next or previous index. Default is #content + 1
 ---@field cycle_wrap boolean: Controls if history will wrap on reaching beginning or end
+---@field _reset function: What happens on reset. Will be called when telescope closes
+---@field _append function: How to append a new prompt item
+---@field _pre_get function: Will be called before a next or previous item will be returned
 histories.History = {}
 histories.History.__index = histories.History
 
@@ -113,7 +116,7 @@ end
 --- Will return the next history item. Can be nil if there are no next items
 ---@param line string: the current line
 ---@param picker table: the current picker object
----@return string: the next history item
+---@return nil|boolean|string: the next history item
 function histories.History:get_next(line, picker)
   if not self.enabled then
     utils.notify("History:get_next", {
@@ -142,7 +145,7 @@ end
 --- Will return the previous history item. Can be nil if there are no previous items
 ---@param line string: the current line
 ---@param picker table: the current picker object
----@return string: the previous history item
+---@return nil|boolean|string: the previous history item
 function histories.History:get_prev(line, picker)
   if not self.enabled then
     utils.notify("History:get_prev", {

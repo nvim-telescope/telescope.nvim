@@ -1,4 +1,4 @@
-local uv = vim.loop
+local uv = vim.uv or vim.loop
 
 local Object = require "plenary.class"
 local log = require "plenary.log"
@@ -88,7 +88,7 @@ end
 ---@field is_closing function: Whether handle is currently closing
 ---@field is_active function: Whether the handle is currently reading
 
----@class BasePipe
+---@class BasePipe: Object
 ---@field super Object: Always available
 ---@field handle uv_pipe_t: A pipe handle
 ---@field extend function: Extend

@@ -188,15 +188,15 @@ action_set.edit = function(prompt_bufnr, command)
   end
 
   if entry_bufnr then
-    if not vim.api.nvim_buf_get_option(entry_bufnr, "buflisted") then
-      vim.api.nvim_buf_set_option(entry_bufnr, "buflisted", true)
+    if not vim.api.nvim_get_option_value("buflisted", { buf = entry_bufnr }) then
+      vim.api.nvim_set_option_value("buflisted", true, { buf = entry_bufnr })
     end
     edit_buffer(command, entry_bufnr)
   else
     -- check if we didn't pick a different buffer
     -- prevents restarting lsp server
     if vim.api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
-      filename = Path:new(filename):normalize(vim.loop.cwd())
+      filename = Path:new(filename):normalize((vim.uv or vim.loop).cwd())
       pcall(vim.cmd, string.format("%s %s", command, vim.fn.fnameescape(filename)))
     end
   end
@@ -251,7 +251,7 @@ end
 --- Scrolls the previewer up or down.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
 --- option in `layout_config`. See |telescope.layout| for more details.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_previewer = function(prompt_bufnr, direction)
@@ -264,7 +264,7 @@ end
 --- Scrolls the previewer to the left or right.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
 --- option in `layout_config`. See |telescope.layout| for more details.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 ---@param direction number: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_horizontal_previewer = function(prompt_bufnr, direction)

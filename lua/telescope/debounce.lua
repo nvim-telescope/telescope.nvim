@@ -4,6 +4,8 @@
 local M = {}
 
 ---Validates args for `throttle()` and  `debounce()`.
+---@param fn function
+---@param ms integer
 local function td_validate(fn, ms)
   if vim.fn.has("nvim-0.11") then
     vim.validate("fn", fn, "function")
@@ -26,12 +28,12 @@ end
 
 --- Throttles a function on the leading edge. Automatically `schedule_wrap()`s.
 ---@param fn fun(...) Function to throttle
----@param ms number Timeout in ms
+---@param ms integer Timeout in ms
 ---@return fun(...) wrapped_fn Throttled function
----@return uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
+---@return uv.uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
 function M.throttle_leading(fn, ms)
   td_validate(fn, ms)
-  local timer = vim.loop.new_timer()
+  local timer = (vim.uv or vim.loop).new_timer()
   local running = false
 
   local function wrapped_fn(...)
@@ -48,14 +50,14 @@ end
 
 --- Throttles a function on the trailing edge. Automatically `schedule_wrap()`s.
 ---@param fn fun(...) Function to throttle
----@param ms number Timeout in ms
+---@param ms integer Timeout in ms
 ---@param last? boolean Whether to use the arguments of the last call to `fn` within the timeframe.
 --- Default: Use arguments of the first call.
 ---@return fun(...) wrapped_fn Throttled function
----@return uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
+---@return uv.uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
 function M.throttle_trailing(fn, ms, last)
   td_validate(fn, ms)
-  local timer = vim.loop.new_timer()
+  local timer = (vim.uv or vim.loop).new_timer()
   local running = false
 
   local wrapped_fn
@@ -92,12 +94,12 @@ end
 
 --- Debounces a function on the leading edge. Automatically `schedule_wrap()`s.
 ---@param fn fun(...) Function to debounce
----@param ms number Timeout in ms
+---@param ms integer Timeout in ms
 ---@return fun(...) wrapped_fn Debounced function
----@return uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
+---@return uv.uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
 function M.debounce_leading(fn, ms)
   td_validate(fn, ms)
-  local timer = vim.loop.new_timer()
+  local timer = (vim.uv or vim.loop).new_timer()
   local running = false
 
   local function wrapped_fn(...)
@@ -115,14 +117,14 @@ end
 
 --- Debounces a function on the trailing edge. Automatically `schedule_wrap()`s.
 ---@param fn fun(...) Function to debounce
----@param ms number Timeout in ms
+---@param ms integer Timeout in ms
 ---@param first? boolean Whether to use the arguments of the first call to `fn` within the timeframe.
 --- Default: Use arguments of the last call.
 ---@return fun(...) wrapped_fn Debounced function
----@return uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
+---@return uv.uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
 function M.debounce_trailing(fn, ms, first)
   td_validate(fn, ms)
-  local timer = vim.loop.new_timer()
+  local timer = (vim.uv or vim.loop).new_timer()
   local wrapped_fn
 
   if not first then

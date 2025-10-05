@@ -91,7 +91,7 @@ local diagnostics_to_tbl = function(opts)
     end
   end
 
-  opts.root_dir = opts.root_dir == true and vim.loop.cwd() or opts.root_dir
+  opts.root_dir = opts.root_dir == true and (vim.uv or vim.loop).cwd() or opts.root_dir
 
   local bufnr_name_map = {}
   local filter_diag = function(diagnostic)
