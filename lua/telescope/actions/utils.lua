@@ -35,9 +35,13 @@ local utils = {}
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param f function: Function to map onto entries of picker that takes (entry, index, row) as viable arguments
 function utils.map_entries(prompt_bufnr, f)
-  vim.validate {
-    f = { f, "function" },
-  }
+  if vim.fn.has "nvim-0.11" == 1 then
+    vim.validate("f", f, "function")
+  else
+    vim.validate {
+      f = { f, "function" },
+    }
+  end
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local index = 1
   -- indices are 1-indexed, rows are 0-indexed
@@ -72,9 +76,13 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param f function: Function to map onto selection of picker that takes (selection) as a viable argument
 function utils.map_selections(prompt_bufnr, f)
-  vim.validate {
-    f = { f, "function" },
-  }
+  if vim.fn.has "nvim-0.11" == 1 then
+    vim.validate("f", f, "function")
+  else
+    vim.validate {
+      f = { f, "function" },
+    }
+  end
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   for _, selection in ipairs(current_picker:get_multi_selection()) do
     f(selection)
