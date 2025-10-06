@@ -7,7 +7,7 @@ local M = {}
 ---@param fn function
 ---@param ms integer
 local function td_validate(fn, ms)
-  if vim.fn.has "nvim-0.11" then
+  if 1 == vim.fn.has "nvim-0.11" then
     vim.validate("fn", fn, "function")
     vim.validate("ms", ms, function(v)
       return type(v) == "number" and v > 0

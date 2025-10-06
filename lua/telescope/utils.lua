@@ -22,7 +22,7 @@ utils.iswin = (vim.uv or vim.loop).os_uname().sysname == "Windows_NT"
 ---@param encoding "utf-8" | "utf-16" | "utf-32"
 ---@return integer
 utils.str_byteindex = function(s, i, encoding)
-  if vim.fn.has "nvim-0.11" == 1 then
+  if 1 == vim.fn.has "nvim-0.11" then
     return vim.str_byteindex(s, encoding, i, false)
   else
     return vim.lsp.util._str_byteindex_enc(s, i, encoding)
@@ -54,7 +54,7 @@ utils.flatten = vim.fn.has "nvim-0.11" == 1 and flatten or vim.tbl_flatten
 ---@param path string
 ---@return string
 utils.path_expand = function(path)
-  if vim.fn.has "nvim-0.11" then
+  if 1 == vim.fn.has "nvim-0.11" then
     vim.validate("path", path, "string")
   else
     vim.validate {
@@ -679,7 +679,7 @@ end)
 --- Checks if treesitter parser for language is installed
 ---@param lang string
 utils.has_ts_parser = function(lang)
-  if vim.fn.has "nvim-0.11" == 1 then
+  if 1 == vim.fn.has "nvim-0.11" then
     return vim.treesitter.language.add(lang)
   else
     return pcall(vim.treesitter.language.add, lang)

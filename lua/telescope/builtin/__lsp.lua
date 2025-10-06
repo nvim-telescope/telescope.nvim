@@ -73,8 +73,8 @@ end
 ---@return table|(fun(client: vim.lsp.Client): table) parmas to send to the server
 local function client_position_params(win, extra)
   win = win or vim.api.nvim_get_current_win()
-  if vim.fn.has "nvim-0.11" == 0 then
-    local params = vim.lsp.util.make_position_params(win)
+  local params = vim.lsp.util.make_position_params(win)
+  if 1 ~= vim.fn.has "nvim-0.11" then
     if extra then
       params = vim.tbl_extend("force", params, extra)
     end
@@ -360,7 +360,7 @@ lsp.document_symbols = function(opts)
     end
 
     local locations
-    if vim.fn.has "nvim-0.11" == 1 then
+    if 1 == vim.fn.has "nvim-0.11" then
       local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
       locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr, client.offset_encoding) or {}
     else
@@ -410,7 +410,7 @@ lsp.workspace_symbols = function(opts)
     end
 
     local locations
-    if vim.fn.has "nvim-0.11" == 1 then
+    if 1 == vim.fn.has "nvim-0.11" then
       local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
       locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr, client.offset_encoding) or {}
     else
@@ -466,7 +466,7 @@ local function get_workspace_symbols_requester(bufnr, opts)
       if client_res.error then
         vim.api.nvim_err_writeln("Error when executing workspace/symbol : " .. client_res.error.message)
       elseif client_res.result ~= nil then
-        if vim.fn.has "nvim-0.11" == 1 then
+        if 1 == vim.fn.has "nvim-0.11" then
           local client = assert(vim.lsp.get_client_by_id(client_id))
           vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr, client.offset_encoding))
         else
@@ -502,11 +502,15 @@ end
 
 local function check_capabilities(method, bufnr)
   --TODO(clason): remove when dropping support for Nvim 0.9
-  local get_clients = vim.fn.has "nvim-0.10" == 1 and vim.lsp.get_clients or vim.lsp.get_active_clients
-  local clients = get_clients { bufnr = bufnr }
+  local clients
+  if 1 == vim.fn.has "nvim-0.10" then
+    clients = vim.lsp.get_clients { bufnr = bufnr }
+  else
+    clients = vim.lsp.get_active_clients { bufnr = bufnr }
+  end
 
-  for _, client in pairs(clients) do
-    if vim.fn.has "nvim-0.11" == 1 then
+  for _, client in ipairs(clients) do
+    if 1 == vim.fn.has "nvim-0.11" then
       if client:supports_method(method, bufnr) then
         return true
       end
