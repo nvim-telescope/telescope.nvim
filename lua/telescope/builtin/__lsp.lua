@@ -204,7 +204,7 @@ local function list_or_jump(action, title, funname, params, opts)
     local errors = {}
 
     for client_id, result_or_error in pairs(results_per_client) do
-      local error, result = result_or_error.error, result_or_error.result
+      local error, result = result_or_error.err, result_or_error.result
       if error then
         errors[client_id] = error
       else
