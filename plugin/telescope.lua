@@ -1,5 +1,8 @@
 if 1 ~= vim.fn.has "nvim-0.9.0" then
-  vim.api.nvim_err_writeln "Telescope.nvim requires at least nvim-0.9.0. See `:h telescope.changelog-2499`"
+  vim.api.nvim_echo({
+    { "Telescope.nvim requires at least nvim-0.9.0. See `:h telescope.changelog-2499`" },
+    { "hl-ErrorMsg" },
+  }, true, { err = true })
   return
 end
 
