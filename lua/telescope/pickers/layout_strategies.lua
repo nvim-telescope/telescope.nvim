@@ -165,14 +165,9 @@ local function validate_layout_config(strategy_name, configuration, values, defa
       --    but it's a bit annoying to just straight up crash everyone's stuff.
       vim.api.nvim_echo({
         {
-          string.format(
-            "Unsupported layout_config key for the %s strategy: %s\n%s",
-            strategy_name,
-            k,
-            vim.inspect(values)
-          ),
+          ("Unsupported layout_config key for the %s strategy: %s\n%s"):format(strategy_name, k, vim.inspect(values)),
+          "hl-ErrorMsg",
         },
-        { "hl-ErrorMsg" },
       }, true, { err = true })
     end
 

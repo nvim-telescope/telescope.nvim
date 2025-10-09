@@ -84,7 +84,7 @@ function Previewer:send_input(input)
   if self._send_input then
     self:_send_input(input)
   else
-    vim.api.nvim_echo({ { "send_input is not defined for this previewer" }, { "hl-ErrorMsg" } }, true, { err = true })
+    vim.api.nvim_echo({ { "send_input is not defined for this previewer", "hl-ErrorMsg" } }, true, { err = true })
   end
 end
 
@@ -93,8 +93,7 @@ function Previewer:scroll_fn(direction)
     self:_scroll_fn(direction)
   else
     vim.api.nvim_echo({
-      { "scroll_fn is not defined for this previewer" },
-      { "hl-ErrorMsg" },
+      { "scroll_fn is not defined for this previewer", "hl-ErrorMsg" },
     }, true, { err = true })
   end
 end
@@ -104,7 +103,7 @@ function Previewer:scroll_horizontal_fn(direction)
     self:_scroll_horizontal_fn(direction)
   else
     vim.api.nvim_echo(
-      { { "scroll_horizontal_fn is not defined for this previewer" }, { "hl-ErrorMsg" } },
+      { { "scroll_horizontal_fn is not defined for this previewer", "hl-ErrorMsg" } },
       true,
       { err = true }
     )

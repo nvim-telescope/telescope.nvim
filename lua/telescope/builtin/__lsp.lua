@@ -12,11 +12,7 @@ local lsp = {}
 local function call_hierarchy(opts, method, title, direction, item)
   vim.lsp.buf_request(opts.bufnr, method, { item = item }, function(err, result)
     if err then
-      vim.api.nvim_echo(
-        { { "Error handling " .. title .. ": " .. err.message }, { "hl-ErrorMsg" } },
-        true,
-        { err = true }
-      )
+      vim.api.nvim_echo({ { "Error handling " .. title .. ": " .. err.message, "hl-ErrorMsg" } }, true, { err = true })
       return
     end
 
@@ -97,7 +93,7 @@ local function calls(opts, direction)
   local params = client_position_params()
   vim.lsp.buf_request(opts.bufnr, "textDocument/prepareCallHierarchy", params, function(err, result)
     if err then
-      vim.api.nvim_echo({ { "Error when preparing call hierarchy: " .. err }, { "hl-ErrorMsg" } }, true, { err = true })
+      vim.api.nvim_echo({ { "Error when preparing call hierarchy: " .. err, "hl-ErrorMsg" } }, true, { err = true })
       return
     end
 
@@ -234,7 +230,7 @@ local function list_or_jump(action, title, funname, params, opts)
 
     for _, error in pairs(errors) do
       vim.api.nvim_echo(
-        { { "Error when executing " .. action .. " : " .. error.message }, { "hl-ErrorMsg" } },
+        { { "Error when executing " .. action .. " : " .. error.message, "hl-ErrorMsg" } },
         true,
         { err = true }
       )
@@ -418,7 +414,7 @@ lsp.workspace_symbols = function(opts)
   vim.lsp.buf_request(opts.bufnr, "workspace/symbol", params, function(err, server_result, ctx, _)
     if err then
       vim.api.nvim_echo(
-        { { "Error when finding workspace symbols: " .. err.message }, { "hl-ErrorMsg" } },
+        { { "Error when finding workspace symbols: " .. err.message, "hl-ErrorMsg" } },
         true,
         { err = true }
       )
@@ -481,7 +477,7 @@ local function get_workspace_symbols_requester(bufnr, opts)
     for client_id, client_res in pairs(results) do
       if client_res.error then
         vim.api.nvim_echo(
-          { { "Error when executing workspace/symbol : " .. client_res.error.message }, { "hl-ErrorMsg" } },
+          { { "Error when executing workspace/symbol : " .. client_res.error.message, "hl-ErrorMsg" } },
           true,
           { err = true }
         )
