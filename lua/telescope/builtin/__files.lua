@@ -422,8 +422,13 @@ files.treesitter = function(opts)
     return
   end
 
-  local parsers = require "nvim-treesitter.parsers"
-  if not parsers.has_parser(parsers.get_buf_lang(opts.bufnr)) then
+  -- Get buffer's filetype and convert to language
+  local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
+  local filetype = vim.api.nvim_buf_get_option(bufnr, "filetype")
+  local lang = vim.treesitter.language.get_lang(filetype) or filetype
+
+  -- Check if parser exists
+  if not utils.has_ts_parser(lang) then
     utils.notify("builtin.treesitter", {
       msg = "No parser for the current buffer",
       level = "ERROR",
@@ -431,14 +436,48 @@ files.treesitter = function(opts)
     return
   end
 
-  local ts_locals = require "nvim-treesitter.locals"
+  -- Get tree and query for symbols
+  local parser = vim.treesitter.get_parser(bufnr, lang)
+  local tree = parser:parse()[1]
+  local root = tree:root()
+
+  -- Try to get locals query, fallback to basic symbol extraction if not available
+  local query = vim.treesitter.query.get(lang, "locals")
   local results = {}
-  for _, definition in ipairs(ts_locals.get_definitions(opts.bufnr)) do
-    local entries = prepare_match(ts_locals.get_local_nodes(definition))
-    for _, entry in ipairs(entries) do
-      entry.kind = vim.F.if_nil(entry.kind, "")
-      table.insert(results, entry)
+
+  if query then
+    -- Use locals query to find definitions
+    for id, node, metadata in query:iter_captures(root, bufnr) do
+      local capture_name = query.captures[id]
+      -- Match both "definition.X" and "local.definition.X" patterns
+      if capture_name:match("definition%.function")
+         or capture_name:match("definition%.method")
+         or capture_name:match("definition%.var")
+         or capture_name:match("definition%.type")
+         or capture_name:match("definition%.class")
+         or capture_name:match("definition%.field")
+         or capture_name:match("definition%.parameter")
+         or capture_name:match("definition%.constant") then
+        -- Extract the kind (function, method, etc.)
+        local kind = capture_name:match("definition%.(%w+)") or ""
+        table.insert(results, { node = node, kind = kind })
+      end
     end
+  else
+    -- Fallback: use basic node types as symbols
+    local function traverse(n)
+      local node_type = n:type()
+      -- Common node types that represent definitions
+      if node_type:match("function") or node_type:match("method")
+         or node_type:match("class") or node_type:match("interface")
+         or node_type:match("declaration") then
+        table.insert(results, { node = n, kind = node_type })
+      end
+      for child in n:iter_children() do
+        traverse(child)
+      end
+    end
+    traverse(root)
   end
 
   results = utils.filter_symbols(results, opts)
