@@ -395,20 +395,6 @@ files.find_files = function(opts)
     :find()
 end
 
-local function prepare_match(entry, kind)
-  local entries = {}
-
-  if entry.node then
-    table.insert(entries, entry)
-  else
-    for name, item in pairs(entry) do
-      vim.list_extend(entries, prepare_match(item, name))
-    end
-  end
-
-  return entries
-end
-
 --  TODO: finish docs for opts.show_line
 files.treesitter = function(opts)
   opts.show_line = vim.F.if_nil(opts.show_line, true)
@@ -447,19 +433,21 @@ files.treesitter = function(opts)
 
   if query then
     -- Use locals query to find definitions
-    for id, node, metadata in query:iter_captures(root, bufnr) do
+    for id, node in query:iter_captures(root, bufnr) do
       local capture_name = query.captures[id]
       -- Match both "definition.X" and "local.definition.X" patterns
-      if capture_name:match("definition%.function")
-         or capture_name:match("definition%.method")
-         or capture_name:match("definition%.var")
-         or capture_name:match("definition%.type")
-         or capture_name:match("definition%.class")
-         or capture_name:match("definition%.field")
-         or capture_name:match("definition%.parameter")
-         or capture_name:match("definition%.constant") then
+      if
+        capture_name:match "definition%.function"
+        or capture_name:match "definition%.method"
+        or capture_name:match "definition%.var"
+        or capture_name:match "definition%.type"
+        or capture_name:match "definition%.class"
+        or capture_name:match "definition%.field"
+        or capture_name:match "definition%.parameter"
+        or capture_name:match "definition%.constant"
+      then
         -- Extract the kind (function, method, etc.)
-        local kind = capture_name:match("definition%.(%w+)") or ""
+        local kind = capture_name:match "definition%.(%w+)" or ""
         table.insert(results, { node = node, kind = kind })
       end
     end
@@ -468,9 +456,13 @@ files.treesitter = function(opts)
     local function traverse(n)
       local node_type = n:type()
       -- Common node types that represent definitions
-      if node_type:match("function") or node_type:match("method")
-         or node_type:match("class") or node_type:match("interface")
-         or node_type:match("declaration") then
+      if
+        node_type:match "function"
+        or node_type:match "method"
+        or node_type:match "class"
+        or node_type:match "interface"
+        or node_type:match "declaration"
+      then
         table.insert(results, { node = n, kind = node_type })
       end
       for child in n:iter_children() do
