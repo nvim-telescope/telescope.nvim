@@ -422,7 +422,7 @@ lsp.workspace_symbols = function(opts)
     end
 
     local locations
-    if 1 == vim.fn.has "nvim-0.11" then
+    if vim.fn.has "nvim-0.11" == 1 then
       local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
       locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr, client.offset_encoding) or {}
     else
@@ -482,7 +482,7 @@ local function get_workspace_symbols_requester(bufnr, opts)
           { err = true }
         )
       elseif client_res.result ~= nil then
-        if 1 == vim.fn.has "nvim-0.11" then
+        if vim.fn.has "nvim-0.11" == 1 then
           local client = assert(vim.lsp.get_client_by_id(client_id))
           vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr, client.offset_encoding))
         else
@@ -521,14 +521,14 @@ end
 local function check_capabilities(method, bufnr)
   --TODO(clason): remove when dropping support for Nvim 0.9
   local clients
-  if 1 == vim.fn.has "nvim-0.10" then
+  if vim.fn.has "nvim-0.10" == 1 then
     clients = vim.lsp.get_clients { bufnr = bufnr }
   else
     clients = vim.lsp.get_active_clients { bufnr = bufnr }
   end
 
   for _, client in ipairs(clients) do
-    if 1 == vim.fn.has "nvim-0.11" then
+    if vim.fn.has "nvim-0.11" == 1 then
       if client:supports_method(method, bufnr) then
         return true
       end
