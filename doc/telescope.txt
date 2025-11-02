@@ -2716,7 +2716,7 @@ actions.move_selection_next({prompt_bufnr}) *telescope.actions.move_selection_ne
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.move_selection_previous({prompt_bufnr}) *telescope.actions.move_selection_previous()*
@@ -2724,7 +2724,7 @@ actions.move_selection_previous({prompt_bufnr}) *telescope.actions.move_selectio
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.move_selection_worse({prompt_bufnr}) *telescope.actions.move_selection_worse()*
@@ -2732,7 +2732,7 @@ actions.move_selection_worse({prompt_bufnr}) *telescope.actions.move_selection_w
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.move_selection_better({prompt_bufnr}) *telescope.actions.move_selection_better()*
@@ -2740,7 +2740,7 @@ actions.move_selection_better({prompt_bufnr}) *telescope.actions.move_selection_
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.move_to_top({prompt_bufnr})          *telescope.actions.move_to_top()*
@@ -2748,7 +2748,7 @@ actions.move_to_top({prompt_bufnr})          *telescope.actions.move_to_top()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.move_to_middle({prompt_bufnr})    *telescope.actions.move_to_middle()*
@@ -2756,7 +2756,7 @@ actions.move_to_middle({prompt_bufnr})    *telescope.actions.move_to_middle()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.move_to_bottom({prompt_bufnr})    *telescope.actions.move_to_bottom()*
@@ -2764,7 +2764,7 @@ actions.move_to_bottom({prompt_bufnr})    *telescope.actions.move_to_bottom()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.add_selection({prompt_bufnr})      *telescope.actions.add_selection()*
@@ -2772,7 +2772,7 @@ actions.add_selection({prompt_bufnr})      *telescope.actions.add_selection()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.remove_selection({prompt_bufnr}) *telescope.actions.remove_selection()*
@@ -2780,7 +2780,7 @@ actions.remove_selection({prompt_bufnr}) *telescope.actions.remove_selection()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.toggle_selection({prompt_bufnr}) *telescope.actions.toggle_selection()*
@@ -2788,7 +2788,7 @@ actions.toggle_selection({prompt_bufnr}) *telescope.actions.toggle_selection()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.select_all({prompt_bufnr})            *telescope.actions.select_all()*
@@ -2798,7 +2798,7 @@ actions.select_all({prompt_bufnr})            *telescope.actions.select_all()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.drop_all({prompt_bufnr})                *telescope.actions.drop_all()*
@@ -2806,7 +2806,7 @@ actions.drop_all({prompt_bufnr})                *telescope.actions.drop_all()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.toggle_all({prompt_bufnr})            *telescope.actions.toggle_all()*
@@ -2816,7 +2816,7 @@ actions.toggle_all({prompt_bufnr})            *telescope.actions.toggle_all()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.preview_scrolling_up({prompt_bufnr}) *telescope.actions.preview_scrolling_up()*
@@ -2824,7 +2824,7 @@ actions.preview_scrolling_up({prompt_bufnr}) *telescope.actions.preview_scrollin
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.preview_scrolling_down({prompt_bufnr}) *telescope.actions.preview_scrolling_down()*
@@ -2832,7 +2832,7 @@ actions.preview_scrolling_down({prompt_bufnr}) *telescope.actions.preview_scroll
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.preview_scrolling_left({prompt_bufnr}) *telescope.actions.preview_scrolling_left()*
@@ -2840,7 +2840,7 @@ actions.preview_scrolling_left({prompt_bufnr}) *telescope.actions.preview_scroll
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.preview_scrolling_right({prompt_bufnr}) *telescope.actions.preview_scrolling_right()*
@@ -2848,7 +2848,7 @@ actions.preview_scrolling_right({prompt_bufnr}) *telescope.actions.preview_scrol
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.results_scrolling_up({prompt_bufnr}) *telescope.actions.results_scrolling_up()*
@@ -2856,7 +2856,7 @@ actions.results_scrolling_up({prompt_bufnr}) *telescope.actions.results_scrollin
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.results_scrolling_down({prompt_bufnr}) *telescope.actions.results_scrolling_down()*
@@ -2864,7 +2864,7 @@ actions.results_scrolling_down({prompt_bufnr}) *telescope.actions.results_scroll
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.results_scrolling_left({prompt_bufnr}) *telescope.actions.results_scrolling_left()*
@@ -2872,7 +2872,7 @@ actions.results_scrolling_left({prompt_bufnr}) *telescope.actions.results_scroll
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.results_scrolling_right({prompt_bufnr}) *telescope.actions.results_scrolling_right()*
@@ -2880,7 +2880,7 @@ actions.results_scrolling_right({prompt_bufnr}) *telescope.actions.results_scrol
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.center({prompt_bufnr})                    *telescope.actions.center()*
@@ -2889,7 +2889,7 @@ actions.center({prompt_bufnr})                    *telescope.actions.center()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.select_default({prompt_bufnr})    *telescope.actions.select_default()*
@@ -2900,7 +2900,7 @@ actions.select_default({prompt_bufnr})    *telescope.actions.select_default()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.select_horizontal({prompt_bufnr}) *telescope.actions.select_horizontal()*
@@ -2911,7 +2911,7 @@ actions.select_horizontal({prompt_bufnr}) *telescope.actions.select_horizontal()
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.select_vertical({prompt_bufnr})  *telescope.actions.select_vertical()*
@@ -2922,7 +2922,7 @@ actions.select_vertical({prompt_bufnr})  *telescope.actions.select_vertical()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.select_tab({prompt_bufnr})            *telescope.actions.select_tab()*
@@ -2933,7 +2933,7 @@ actions.select_tab({prompt_bufnr})            *telescope.actions.select_tab()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.select_drop({prompt_bufnr})          *telescope.actions.select_drop()*
@@ -2944,7 +2944,7 @@ actions.select_drop({prompt_bufnr})          *telescope.actions.select_drop()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.select_tab_drop({prompt_bufnr})  *telescope.actions.select_tab_drop()*
@@ -2955,7 +2955,7 @@ actions.select_tab_drop({prompt_bufnr})  *telescope.actions.select_tab_drop()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.file_edit({prompt_bufnr})              *telescope.actions.file_edit()*
@@ -2964,7 +2964,7 @@ actions.file_edit({prompt_bufnr})              *telescope.actions.file_edit()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.file_split({prompt_bufnr})            *telescope.actions.file_split()*
@@ -2973,7 +2973,7 @@ actions.file_split({prompt_bufnr})            *telescope.actions.file_split()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.file_vsplit({prompt_bufnr})          *telescope.actions.file_vsplit()*
@@ -2982,7 +2982,7 @@ actions.file_vsplit({prompt_bufnr})          *telescope.actions.file_vsplit()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.file_tab({prompt_bufnr})                *telescope.actions.file_tab()*
@@ -2991,7 +2991,7 @@ actions.file_tab({prompt_bufnr})                *telescope.actions.file_tab()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.delete_buffer({prompt_bufnr})      *telescope.actions.delete_buffer()*
@@ -3000,7 +3000,7 @@ actions.delete_buffer({prompt_bufnr})      *telescope.actions.delete_buffer()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.cycle_previewers_next({prompt_bufnr}) *telescope.actions.cycle_previewers_next()*
@@ -3009,7 +3009,7 @@ actions.cycle_previewers_next({prompt_bufnr}) *telescope.actions.cycle_previewer
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.cycle_previewers_prev({prompt_bufnr}) *telescope.actions.cycle_previewers_prev()*
@@ -3018,7 +3018,7 @@ actions.cycle_previewers_prev({prompt_bufnr}) *telescope.actions.cycle_previewer
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.remove_selected_picker({prompt_bufnr}) *telescope.actions.remove_selected_picker()*
@@ -3028,7 +3028,7 @@ actions.remove_selected_picker({prompt_bufnr}) *telescope.actions.remove_selecte
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.which_key({prompt_bufnr})              *telescope.actions.which_key()*
@@ -3039,7 +3039,7 @@ actions.which_key({prompt_bufnr})              *telescope.actions.which_key()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.to_fuzzy_refine({prompt_bufnr})  *telescope.actions.to_fuzzy_refine()*
@@ -3049,7 +3049,7 @@ actions.to_fuzzy_refine({prompt_bufnr})  *telescope.actions.to_fuzzy_refine()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.delete_mark({prompt_bufnr})          *telescope.actions.delete_mark()*
@@ -3057,7 +3057,7 @@ actions.delete_mark({prompt_bufnr})          *telescope.actions.delete_mark()*
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.insert_original_cword({prompt_bufnr}) *telescope.actions.insert_original_cword()*
@@ -3065,7 +3065,7 @@ actions.insert_original_cword({prompt_bufnr}) *telescope.actions.insert_original
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.insert_original_cWORD({prompt_bufnr}) *telescope.actions.insert_original_cWORD()*
@@ -3073,7 +3073,7 @@ actions.insert_original_cWORD({prompt_bufnr}) *telescope.actions.insert_original
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.insert_original_cfile({prompt_bufnr}) *telescope.actions.insert_original_cfile()*
@@ -3081,7 +3081,7 @@ actions.insert_original_cfile({prompt_bufnr}) *telescope.actions.insert_original
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 actions.insert_original_cline({prompt_bufnr}) *telescope.actions.insert_original_cline()*
@@ -3089,7 +3089,7 @@ actions.insert_original_cline({prompt_bufnr}) *telescope.actions.insert_original
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
+        {prompt_bufnr} (number)  The prompt bufnr
 
 
 
