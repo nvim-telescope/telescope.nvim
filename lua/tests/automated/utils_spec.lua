@@ -1,3 +1,5 @@
+local uv = vim.uv or vim.loop
+
 local Path = require "plenary.path"
 local utils = require "telescope.utils"
 
@@ -21,7 +23,7 @@ describe("path_expand()", function()
   end)
 
   it("works with ~", function()
-    eq((vim.uv or vim.loop).os_homedir() .. "/src/foo", utils.path_expand "~/src/foo")
+    eq(uv.os_homedir() .. "/src/foo", utils.path_expand "~/src/foo")
   end)
 
   it("handles duplicate os_sep", function()

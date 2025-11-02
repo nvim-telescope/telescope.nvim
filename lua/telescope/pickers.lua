@@ -1,6 +1,7 @@
 require "telescope"
 
 local a = vim.api
+local uv = vim.uv or vim.loop
 
 local async = require "plenary.async"
 local await_schedule = async.util.scheduler
@@ -634,7 +635,7 @@ function Picker:find()
       -- which also delete the prefix and after prefix deletion we need to reapply highlighting
       self:_reset_prefix_color()
 
-      local start_time = (vim.uv or vim.loop).hrtime()
+      local start_time = uv.hrtime()
 
       local prompt = self:_get_next_filtered_prompt()
       state.set_global_key("current_line", prompt)
@@ -672,7 +673,7 @@ function Picker:find()
           log.warn("Finder failed with msg: ", msg)
         end
 
-        local diff_time = ((vim.uv or vim.loop).hrtime() - start_time) / 1e6
+        local diff_time = (uv.hrtime() - start_time) / 1e6
         if self.debounce and diff_time < self.debounce then
           async.util.sleep(self.debounce - diff_time)
         end

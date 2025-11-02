@@ -1,3 +1,5 @@
+local uv = vim.uv or vim.loop
+
 local action_state = require "telescope.actions.state"
 local action_set = require "telescope.actions.set"
 local actions = require "telescope.actions"
@@ -119,7 +121,7 @@ files.live_grep = function(opts)
   end
   local search_dirs = opts.search_dirs
   local grep_open_files = opts.grep_open_files
-  opts.cwd = opts.cwd and utils.path_expand(opts.cwd) or (vim.uv or vim.loop).cwd()
+  opts.cwd = opts.cwd and utils.path_expand(opts.cwd) or uv.cwd()
 
   local filelist = get_open_filelist(grep_open_files, opts.cwd)
   if search_dirs then

@@ -34,6 +34,8 @@
 --- TODO: Document something we call `entry_index`
 ---@brief ]]
 
+local uv = vim.uv or vim.loop
+
 local entry_display = require "telescope.pickers.entry_display"
 local utils = require "telescope.utils"
 local strings = require "plenary.strings"
@@ -149,7 +151,7 @@ do
   function make_entry.gen_from_file(opts)
     opts = opts or {}
 
-    local cwd = utils.path_expand(opts.cwd or (vim.uv or vim.loop).cwd())
+    local cwd = utils.path_expand(opts.cwd or uv.cwd())
 
     local disable_devicons = opts.disable_devicons
 
@@ -184,7 +186,7 @@ do
 
       if k == "path" then
         local retpath = Path:new({ t.cwd, t.value }):absolute()
-        if not (vim.uv or vim.loop).fs_access(retpath, "R") then
+        if not uv.fs_access(retpath, "R") then
           retpath = t.value
         end
         return retpath
@@ -312,7 +314,7 @@ do
     local display_string = "%s%s%s"
 
     mt_vimgrep_entry = {
-      cwd = utils.path_expand(opts.cwd or (vim.uv or vim.loop).cwd()),
+      cwd = utils.path_expand(opts.cwd or uv.cwd()),
 
       display = function(entry)
         local display_filename, path_style = utils.transform_path(opts, entry.filename)
@@ -602,7 +604,7 @@ function make_entry.gen_from_buffer(opts)
     },
   }
 
-  local cwd = utils.path_expand(opts.cwd or (vim.uv or vim.loop).cwd())
+  local cwd = utils.path_expand(opts.cwd or uv.cwd())
 
   local make_display = function(entry)
     -- bufnr_width + modes + icon + 3 spaces + : + lnum
@@ -1018,7 +1020,7 @@ function make_entry.gen_from_ctags(opts)
   opts = opts or {}
 
   local show_kind = vim.F.if_nil(opts.show_kind, true)
-  local cwd = utils.path_expand(opts.cwd or (vim.uv or vim.loop).cwd())
+  local cwd = utils.path_expand(opts.cwd or uv.cwd())
   local current_file = Path:new(vim.api.nvim_buf_get_name(opts.bufnr)):normalize(cwd)
 
   local display_items = {
@@ -1079,7 +1081,7 @@ function make_entry.gen_from_ctags(opts)
 
     if k == "path" then
       local retpath = Path:new({ t.filename }):absolute()
-      if not (vim.uv or vim.loop).fs_access(retpath, "R") then
+      if not uv.fs_access(retpath, "R") then
         retpath = t.filename
       end
       return retpath

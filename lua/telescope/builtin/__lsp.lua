@@ -368,7 +368,7 @@ lsp.document_symbols = function(opts)
     end
 
     local locations
-    if 1 == vim.fn.has "nvim-0.11" then
+    if vim.fn.has "nvim-0.11" == 1 then
       local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
       locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr, client.offset_encoding) or {}
     else

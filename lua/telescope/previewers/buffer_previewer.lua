@@ -1,3 +1,5 @@
+local uv = vim.uv or vim.loop
+
 local from_entry = require "telescope.from_entry"
 local Path = require "plenary.path"
 local utils = require "telescope.utils"
@@ -64,7 +66,7 @@ local function split(s, sep, plain, opts)
     local line = opts.file_encoding and vim.iconv(c, opts.file_encoding, "utf8") or c
     table.insert(t, line)
     if opts.preview.timeout then
-      local diff_time = ((vim.uv or vim.loop).hrtime() - opts.start_time) / 1e6
+      local diff_time = (uv.hrtime() - opts.start_time) / 1e6
       if diff_time > opts.preview.timeout then
         return
       end
@@ -194,7 +196,7 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
       end
     end
 
-    opts.start_time = (vim.uv or vim.loop).hrtime()
+    opts.start_time = uv.hrtime()
     Path:new(filepath):_read_async(vim.schedule_wrap(function(data)
       if not vim.api.nvim_buf_is_valid(bufnr) then
         return
@@ -263,7 +265,7 @@ previewers.file_maker = function(filepath, bufnr, opts)
     if not vim.in_fast_event() then
       filepath = utils.path_expand(filepath)
     end
-    (vim.uv or vim.loop).fs_stat(filepath, function(_, stat)
+    uv.fs_stat(filepath, function(_, stat)
       if not stat then
         return
       end
@@ -487,7 +489,7 @@ end
 
 previewers.cat = defaulter(function(opts)
   opts = opts or {}
-  local cwd = opts.cwd or (vim.uv or vim.loop).cwd()
+  local cwd = opts.cwd or uv.cwd()
   return previewers.new_buffer_previewer {
     title = "File Preview",
     dyn_title = function(_, entry)
@@ -515,7 +517,7 @@ end, {})
 
 previewers.vimgrep = defaulter(function(opts)
   opts = opts or {}
-  local cwd = opts.cwd or (vim.uv or vim.loop).cwd()
+  local cwd = opts.cwd or uv.cwd()
 
   local jump_to_line = function(self, bufnr, entry)
     pcall(vim.api.nvim_buf_clear_namespace, bufnr, ns_previewer, 0, -1)

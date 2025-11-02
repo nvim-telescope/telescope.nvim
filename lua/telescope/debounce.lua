@@ -1,6 +1,8 @@
 -- Credit: https://gist.github.com/runiq/31aa5c4bf00f8e0843cd267880117201
 --
 
+local uv = vim.uv or vim.loop
+
 local M = {}
 
 ---Validates args for `throttle()` and  `debounce()`.
@@ -33,7 +35,7 @@ end
 ---@return uv.uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
 function M.throttle_leading(fn, ms)
   td_validate(fn, ms)
-  local timer = (vim.uv or vim.loop).new_timer()
+  local timer = uv.new_timer()
   local running = false
 
   local function wrapped_fn(...)
@@ -57,7 +59,7 @@ end
 ---@return uv.uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
 function M.throttle_trailing(fn, ms, last)
   td_validate(fn, ms)
-  local timer = (vim.uv or vim.loop).new_timer()
+  local timer = uv.new_timer()
   local running = false
 
   local wrapped_fn
@@ -99,7 +101,7 @@ end
 ---@return uv.uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
 function M.debounce_leading(fn, ms)
   td_validate(fn, ms)
-  local timer = (vim.uv or vim.loop).new_timer()
+  local timer = uv.new_timer()
   local running = false
 
   local function wrapped_fn(...)
@@ -124,7 +126,7 @@ end
 ---@return uv.uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
 function M.debounce_trailing(fn, ms, first)
   td_validate(fn, ms)
-  local timer = (vim.uv or vim.loop).new_timer()
+  local timer = uv.new_timer()
   local wrapped_fn
 
   if not first then

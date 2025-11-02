@@ -1,3 +1,5 @@
+local uv = vim.uv or vim.loop
+
 local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 local finders = require "telescope.finders"
@@ -476,7 +478,7 @@ local set_opts_cwd = function(opts)
       return
     end
   else
-    opts.cwd = (vim.uv or vim.loop).cwd()
+    opts.cwd = uv.cwd()
   end
 
   local toplevel, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
