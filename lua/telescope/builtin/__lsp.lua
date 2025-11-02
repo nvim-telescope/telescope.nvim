@@ -516,8 +516,6 @@ lsp.dynamic_workspace_symbols = function(opts)
     :find()
 end
 
----@param method vim.lsp.protocol.Method.ClientToServer
----@param bufnr integer
 local function check_capabilities(method, bufnr)
   --TODO(clason): remove when dropping support for Nvim 0.9
   local clients
