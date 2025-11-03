@@ -16,13 +16,14 @@ local get_status = require("telescope.state").get_status
 local utils = {}
 
 utils.iswin = vim.uv.os_uname().sysname == "Windows_NT"
+utils.nvim011 = vim.fn.has "nvim-0.11" == 1
 
 ---@param s string
 ---@param i number
 ---@param encoding "utf-8" | "utf-16" | "utf-32"
 ---@return integer
 utils.str_byteindex = function(s, i, encoding)
-  if vim.fn.has "nvim-0.11" == 1 then
+  if utils.nvim011 then
     return vim.str_byteindex(s, encoding, i, false)
   else
     return vim.lsp.util._str_byteindex_enc(s, i, encoding)
@@ -672,7 +673,7 @@ end)
 --- Checks if treesitter parser for language is installed
 ---@param lang string
 utils.has_ts_parser = function(lang)
-  if vim.fn.has "nvim-0.11" == 1 then
+  if utils.nvim011 then
     return vim.treesitter.language.add(lang)
   else
     return pcall(vim.treesitter.language.add, lang)

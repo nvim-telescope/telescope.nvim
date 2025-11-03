@@ -11,6 +11,8 @@ local utils = require "telescope.utils"
 
 local lsp = {}
 
+local nvim011 = utils.nvim011
+
 local function call_hierarchy(opts, method, title, direction, item)
   vim.lsp.buf_request(opts.bufnr, method, { item = item }, function(err, result)
     if err then
@@ -75,7 +77,7 @@ end
 ---@return lsp.TextDocumentPositionParams|TextDocumentFunction: Params to send to the server
 local function client_position_params(win, extra)
   win = win or vim.api.nvim_get_current_win()
-  if 1 ~= vim.fn.has "nvim-0.11" then
+  if not nvim011 then
     local params = vim.lsp.util.make_position_params(win)
     if extra then
       params = vim.tbl_extend("force", params, extra)
@@ -331,7 +333,7 @@ lsp.document_symbols = function(opts)
     end
 
     local locations
-    if vim.fn.has "nvim-0.11" == 1 then
+    if nvim011 then
       local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
       locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr, client.offset_encoding) or {}
     else
@@ -381,7 +383,7 @@ lsp.workspace_symbols = function(opts)
     end
 
     local locations
-    if vim.fn.has "nvim-0.11" == 1 then
+    if nvim011 then
       local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
       locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr, client.offset_encoding) or {}
     else
@@ -437,7 +439,7 @@ local function get_workspace_symbols_requester(bufnr, opts)
       if client_res.error then
         vim.api.nvim_err_writeln("Error when executing workspace/symbol : " .. client_res.error.message)
       elseif client_res.result ~= nil then
-        if vim.fn.has "nvim-0.11" == 1 then
+        if nvim011 then
           local client = assert(vim.lsp.get_client_by_id(client_id))
           vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr, client.offset_encoding))
         else
@@ -475,7 +477,7 @@ local function check_capabilities(method, bufnr)
   local clients = vim.lsp.get_clients { bufnr = bufnr }
 
   for _, client in pairs(clients) do
-    if vim.fn.has "nvim-0.11" == 1 then
+    if nvim011 then
       if client:supports_method(method, bufnr) then
         return true
       end
