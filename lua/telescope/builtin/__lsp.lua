@@ -213,7 +213,7 @@ local function list_or_jump(action, title, funname, params, opts)
         if result ~= nil then
           local locations = {}
 
-          if not utils.islist(result) then
+          if not vim.islist(result) then
             vim.list_extend(locations, { result })
           else
             vim.list_extend(locations, result)
@@ -503,9 +503,7 @@ lsp.dynamic_workspace_symbols = function(opts)
 end
 
 local function check_capabilities(method, bufnr)
-  --TODO(clason): remove when dropping support for Nvim 0.9
-  local get_clients = vim.fn.has "nvim-0.10" == 1 and vim.lsp.get_clients or vim.lsp.get_active_clients
-  local clients = get_clients { bufnr = bufnr }
+  local clients = vim.lsp.get_clients { bufnr = bufnr }
 
   for _, client in pairs(clients) do
     if vim.fn.has "nvim-0.11" == 1 then

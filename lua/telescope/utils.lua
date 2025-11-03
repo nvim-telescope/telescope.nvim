@@ -29,12 +29,9 @@ utils.str_byteindex = function(s, i, encoding)
   end
 end
 
---TODO(clason): Remove when dropping support for Nvim 0.9
-utils.islist = vim.fn.has "nvim-0.10" == 1 and vim.islist or vim.tbl_islist
-local flatten = function(t)
+utils.flatten = function(t)
   return vim.iter(t):flatten():totable()
 end
-utils.flatten = vim.fn.has "nvim-0.11" == 1 and flatten or vim.tbl_flatten
 
 --- Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
 ---

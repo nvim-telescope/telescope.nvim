@@ -440,7 +440,7 @@ end
 local try_worktrees = function(opts)
   local worktrees = conf.git_worktrees
 
-  if utils.islist(worktrees) then
+  if vim.islist(worktrees) then
     for _, wt in ipairs(worktrees) do
       if vim.startswith(opts.cwd, wt.toplevel) then
         opts.toplevel = wt.toplevel

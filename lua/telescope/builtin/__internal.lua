@@ -819,7 +819,7 @@ end
 
 internal.man_pages = function(opts)
   opts.sections = vim.F.if_nil(opts.sections, { "1" })
-  assert(utils.islist(opts.sections), "sections should be a list")
+  assert(vim.islist(opts.sections), "sections should be a list")
   opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
     local uname = vim.loop.os_uname()
     local sysname = string.lower(uname.sysname)
