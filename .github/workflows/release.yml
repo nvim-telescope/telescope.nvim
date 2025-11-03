@@ -3,13 +3,15 @@ on:
   push:
     tags:
       - '*'
+  workflow_dispatch:
+
 jobs:
   luarocks-upload:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: LuaRocks Upload
-        uses: nvim-neorocks/luarocks-tag-release@v1.0.2
+        uses: lumen-oss/luarocks-tag-release@v7
         env:
           LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}
         with:

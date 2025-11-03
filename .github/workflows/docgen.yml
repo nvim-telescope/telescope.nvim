@@ -1,12 +1,10 @@
 name: Generate docs
 
 on:
-  push:
-    branches-ignore:
-      - master
-  pull_request_target:
+  pull_request:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   build-sources:
@@ -16,10 +14,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             url: https://github.com/neovim/neovim/releases/download/v0.9.5/nvim-linux64.tar.gz
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: date +%F > todays-date
       - name: Restore cache for today's nightly.
         uses: actions/cache@v4
