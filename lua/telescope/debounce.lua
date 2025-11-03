@@ -3,18 +3,23 @@
 
 local M = {}
 
+---TODO(clason): duplicate for performance reason
+---remove when dropping support for Nvim 0.10
+local nvim011 = vim.fn.has "nvim-0.11" == 1
+local validate = function(k, v, ty, errmsg)
+  if nvim011 then
+    vim.validate(k, v, ty, errmsg)
+  else
+    vim.validate { [k] = { v, ty, errmsg } }
+  end
+end
+
 ---Validates args for `throttle()` and  `debounce()`.
 local function td_validate(fn, ms)
-  vim.validate {
-    fn = { fn, "f" },
-    ms = {
-      ms,
-      function(v)
-        return type(v) == "number" and v > 0
-      end,
-      "number > 0",
-    },
-  }
+  validate("fn", fn, "function")
+  validate("ms", ms, function(v)
+    return type(v) == "number" and v > 0
+  end, "number > 0")
 end
 
 --- Throttles a function on the leading edge. Automatically `schedule_wrap()`s.

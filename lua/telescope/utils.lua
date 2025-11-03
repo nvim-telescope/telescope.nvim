@@ -30,8 +30,21 @@ utils.str_byteindex = function(s, i, encoding)
   end
 end
 
+---@param t table
 utils.flatten = function(t)
   return vim.iter(t):flatten():totable()
+end
+
+---TODO(clason): remove when dropping support for Nvim 0.10
+---@param k string
+---@param v any
+---@param ty type
+utils.validate = function(k, v, ty)
+  if utils.nvim011 then
+    vim.validate(k, v, ty)
+  else
+    vim.validate { [k] = { v, ty } }
+  end
 end
 
 --- Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
@@ -52,9 +65,7 @@ end
 ---@param path string
 ---@return string
 utils.path_expand = function(path)
-  vim.validate {
-    path = { path, { "string" } },
-  }
+  utils.validate("path", path, "string")
 
   if utils.is_uri(path) then
     return path
