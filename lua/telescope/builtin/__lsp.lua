@@ -1,3 +1,5 @@
+---@alias TextDocumentFunction fun(client: vim.lsp.Client): lsp.TextDocumentPositionParams
+
 local channel = require("plenary.async.control").channel
 local actions = require "telescope.actions"
 local sorters = require "telescope.sorters"
@@ -70,7 +72,7 @@ end
 
 ---@param win number|nil: Window handler
 ---@param extra lsp.TextDocumentPositionParams|nil: Extra fields in params
----@return lsp.TextDocumentPositionParams|(fun(client: vim.lsp.Client): lsp.TextDocumentPositionParams): Params to send to the server
+---@return lsp.TextDocumentPositionParams|TextDocumentFunction: Params to send to the server
 local function client_position_params(win, extra)
   win = win or vim.api.nvim_get_current_win()
   if 1 ~= vim.fn.has "nvim-0.11" then
