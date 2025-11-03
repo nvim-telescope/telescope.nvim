@@ -120,36 +120,6 @@ lsp.outgoing_calls = function(opts)
   calls(opts, "to")
 end
 
---- convert `item` type back to something we can pass to `vim.lsp.util.jump_to_location`
---- stopgap for pre-nvim 0.10 - after which we can simply use the `user_data`
---- field on the items in `vim.lsp.util.locations_to_items`
----@param item vim.quickfix.entry
----@param offset_encoding string|nil utf-8|utf-16|utf-32
----@return lsp.Location
-local function item_to_location(item, offset_encoding)
-  local line = math.max(0, item.lnum - 1)
-  local character = math.max(0, utils.str_byteindex(item.text, item.col, offset_encoding or "utf-16") - 1)
-  local uri
-  if utils.is_uri(item.filename) then
-    uri = item.filename
-  else
-    uri = vim.uri_from_fname(item.filename)
-  end
-  return {
-    uri = uri,
-    range = {
-      start = {
-        line = line,
-        character = character,
-      },
-      ["end"] = {
-        line = line,
-        character = character,
-      },
-    },
-  }
-end
-
 ---@alias telescope.lsp.list_or_jump_action
 ---| "textDocument/references"
 ---| "textDocument/definition"
@@ -264,8 +234,7 @@ local function list_or_jump(action, title, funname, params, opts)
         end
       end
 
-      local location = item_to_location(item, first_encoding)
-      vim.lsp.util.show_document(location, first_encoding, { reuse_win = opts.reuse_win })
+      vim.lsp.util.show_document(item.user_data, first_encoding, { reuse_win = opts.reuse_win })
     else
       pickers
         .new(opts, {
