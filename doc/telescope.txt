@@ -2634,8 +2634,19 @@ utils.path_expand({path})                      *telescope.utils.path_expand()*
         string
 
 
-utils.transform_path()                      *telescope.utils.transform_path()*
+utils.transform_path({opts}, {path})        *telescope.utils.transform_path()*
+    Transform path is a util function that formats a path based on path_display
+    found in `opts` or the default value from config. It is meant to be used in
+    make_entry to have a uniform interface for builtins as well as extensions
+    utilizing the same user configuration Note: It is only supported inside
+    `make_entry`/`make_display` the use of this function outside of telescope
+    might yield to undefined behavior and will not be addressed by us
 
+
+    Parameters: ~
+        {opts} (table)       The opts the users passed into the picker. Might
+                             contains a path_display key
+        {path} (string|nil)  The path that should be formatted
 
     Return: ~
         string: path to be displayed
@@ -2994,6 +3005,350 @@ actions.file_tab({prompt_bufnr})                *telescope.actions.file_tab()*
         {prompt_bufnr} (number)  The prompt bufnr
 
 
+actions.close({prompt_bufnr})                      *telescope.actions.close()*
+    Close the Telescope window, usually used within an action
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions._close({prompt_bufnr})                    *telescope.actions._close()*
+    Close the Telescope window, usually used within an action
+    Deprecated and no longer needed, does the same as
+    |telescope.actions.close|. Might be removed in the future
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.edit_command_line({prompt_bufnr}) *telescope.actions.edit_command_line()*
+    Set a value in the command line and don't run it, making it editable.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.set_command_line({prompt_bufnr}) *telescope.actions.set_command_line()*
+    Set a value in the command line and run it
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.edit_search_line({prompt_bufnr}) *telescope.actions.edit_search_line()*
+    Set a value in the search line and don't search for it, making it editable.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.set_search_line({prompt_bufnr})  *telescope.actions.set_search_line()*
+    Set a value in the search line and search for it
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.edit_register({prompt_bufnr})      *telescope.actions.edit_register()*
+    Edit a register
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.paste_register({prompt_bufnr})    *telescope.actions.paste_register()*
+    Paste the selected register into the buffer
+
+    Note: only meant to be used inside builtin.registers
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.insert_symbol({prompt_bufnr})      *telescope.actions.insert_symbol()*
+    Insert a symbol into the current buffer (while switching to normal mode)
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.insert_symbol_i({prompt_bufnr})  *telescope.actions.insert_symbol_i()*
+    Insert a symbol into the current buffer and keeping the insert mode.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_create_branch({prompt_bufnr}) *telescope.actions.git_create_branch()*
+    Create and checkout a new git branch if it doesn't already exist
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_apply_stash({prompt_bufnr})  *telescope.actions.git_apply_stash()*
+    Applies an existing git stash
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_checkout({prompt_bufnr})        *telescope.actions.git_checkout()*
+    Checkout an existing git branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_switch_branch({prompt_bufnr}) *telescope.actions.git_switch_branch()*
+    Switch to git branch.
+    If the branch already exists in local, switch to that. If the branch is
+    only in remote, create new branch tracking remote and switch to new one.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_rename_branch()            *telescope.actions.git_rename_branch()*
+    Action to rename selected git branch
+
+
+
+actions.git_track_branch({prompt_bufnr}) *telescope.actions.git_track_branch()*
+    Tell git to track the currently selected remote branch in Telescope
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_delete_branch({prompt_bufnr}) *telescope.actions.git_delete_branch()*
+    Delete all currently selected branches
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_merge_branch({prompt_bufnr}) *telescope.actions.git_merge_branch()*
+    Merge the currently selected branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_rebase_branch({prompt_bufnr}) *telescope.actions.git_rebase_branch()*
+    Rebase to selected git branch
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_reset_mixed({prompt_bufnr})  *telescope.actions.git_reset_mixed()*
+    Reset to selected git commit using mixed mode
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_reset_soft({prompt_bufnr})    *telescope.actions.git_reset_soft()*
+    Reset to selected git commit using soft mode
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_reset_hard({prompt_bufnr})    *telescope.actions.git_reset_hard()*
+    Reset to selected git commit using hard mode
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_checkout_current_buffer({prompt_bufnr}) *telescope.actions.git_checkout_current_buffer()*
+    Checkout a specific file for a given sha
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.git_staging_toggle({prompt_bufnr}) *telescope.actions.git_staging_toggle()*
+    Stage/unstage selected file
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.send_selected_to_qflist({prompt_bufnr}) *telescope.actions.send_selected_to_qflist()*
+    Sends the selected entries to the quickfix list, replacing the previous
+    entries.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.add_selected_to_qflist({prompt_bufnr}) *telescope.actions.add_selected_to_qflist()*
+    Adds the selected entries to the quickfix list, keeping the previous
+    entries.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.send_to_qflist({prompt_bufnr})    *telescope.actions.send_to_qflist()*
+    Sends all entries to the quickfix list, replacing the previous entries.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.add_to_qflist({prompt_bufnr})      *telescope.actions.add_to_qflist()*
+    Adds all entries to the quickfix list, keeping the previous entries.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.send_selected_to_loclist({prompt_bufnr}) *telescope.actions.send_selected_to_loclist()*
+    Sends the selected entries to the location list, replacing the previous
+    entries.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.add_selected_to_loclist({prompt_bufnr}) *telescope.actions.add_selected_to_loclist()*
+    Adds the selected entries to the location list, keeping the previous
+    entries.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.send_to_loclist({prompt_bufnr})  *telescope.actions.send_to_loclist()*
+    Sends all entries to the location list, replacing the previous entries.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.add_to_loclist({prompt_bufnr})    *telescope.actions.add_to_loclist()*
+    Adds all entries to the location list, keeping the previous entries.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.smart_send_to_qflist({prompt_bufnr}) *telescope.actions.smart_send_to_qflist()*
+    Sends the selected entries to the quickfix list, replacing the previous
+    entries. If no entry was selected, sends all entries.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.smart_add_to_qflist({prompt_bufnr}) *telescope.actions.smart_add_to_qflist()*
+    Adds the selected entries to the quickfix list, keeping the previous
+    entries. If no entry was selected, adds all entries.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.smart_send_to_loclist({prompt_bufnr}) *telescope.actions.smart_send_to_loclist()*
+    Sends the selected entries to the location list, replacing the previous
+    entries. If no entry was selected, sends all entries.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.smart_add_to_loclist({prompt_bufnr}) *telescope.actions.smart_add_to_loclist()*
+    Adds the selected entries to the location list, keeping the previous
+    entries. If no entry was selected, adds all entries.
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.complete_tag({prompt_bufnr})        *telescope.actions.complete_tag()*
+    Open completion menu containing the tags which can be used to filter the
+    results in a faster way
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.cycle_history_next({prompt_bufnr}) *telescope.actions.cycle_history_next()*
+    Cycle to the next search prompt in the history
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.cycle_history_prev({prompt_bufnr}) *telescope.actions.cycle_history_prev()*
+    Cycle to the previous search prompt in the history
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.open_qflist({prompt_bufnr})          *telescope.actions.open_qflist()*
+    Open the quickfix list. It makes sense to use this in combination with one
+    of the send_to_qflist actions `actions.smart_send_to_qflist +
+    actions.open_qflist`
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
+actions.open_loclist({prompt_bufnr})        *telescope.actions.open_loclist()*
+    Open the location list. It makes sense to use this in combination with one
+    of the send_to_loclist actions `actions.smart_send_to_qflist +
+    actions.open_qflist`
+
+
+    Parameters: ~
+        {prompt_bufnr} (number)  The prompt bufnr
+
+
 actions.delete_buffer({prompt_bufnr})      *telescope.actions.delete_buffer()*
     Delete the selected buffer or all the buffers selected using multi
     selection.
@@ -3168,8 +3523,8 @@ action_set.scroll_previewer({prompt_bufnr}, {direction}) *telescope.actions.set.
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
-        {direction}    (number)   The direction of the scrolling
+        {prompt_bufnr} (number)  The prompt bufnr
+        {direction}    (number)  The direction of the scrolling
 
 
 action_set.scroll_horizontal_previewer({prompt_bufnr}, {direction}) *telescope.actions.set.scroll_horizontal_previewer()*
@@ -3179,8 +3534,8 @@ action_set.scroll_horizontal_previewer({prompt_bufnr}, {direction}) *telescope.a
 
 
     Parameters: ~
-        {prompt_bufnr} (integer)  The prompt bufnr
-        {direction}    (number)   The direction of the scrolling
+        {prompt_bufnr} (number)  The prompt bufnr
+        {direction}    (number)  The direction of the scrolling
 
 
 action_set.scroll_results({prompt_bufnr}, {direction}) *telescope.actions.set.scroll_results()*
@@ -3785,23 +4140,17 @@ histories.History()                      *telescope.actions.history.History()*
 
 
     Fields: ~
-        {enabled}    (boolean)   Will indicate if History is enabled or
-                                 disabled
-        {path}       (string)    Will point to the location of the history
-                                 file
-        {limit}      (string)    Will have the limit of the history. Can be
-                                 nil, if limit is disabled.
-        {content}    (table)     History table. Needs to be filled by your own
-                                 History implementation
-        {index}      (number)    Used to keep track of the next or previous
-                                 index. Default is #content + 1
-        {cycle_wrap} (boolean)   Controls if history will wrap on reaching
-                                 beginning or end
-        {_reset}     (function)  What happens on reset. Will be called when
-                                 telescope closes
-        {_append}    (function)  How to append a new prompt item
-        {_pre_get}   (function)  Will be called before a next or previous item
-                                 will be returned
+        {enabled}    (boolean)  Will indicate if History is enabled or
+                                disabled
+        {path}       (string)   Will point to the location of the history file
+        {limit}      (string)   Will have the limit of the history. Can be
+                                nil, if limit is disabled.
+        {content}    (table)    History table. Needs to be filled by your own
+                                History implementation
+        {index}      (number)   Used to keep track of the next or previous
+                                index. Default is #content + 1
+        {cycle_wrap} (boolean)  Controls if history will wrap on reaching
+                                beginning or end
 
 
 histories.History:new({opts})        *telescope.actions.history.History:new()*
@@ -3852,7 +4201,7 @@ histories.History:get_next({line}, {picker}) *telescope.actions.history.History:
         {picker} (table)   the current picker object
 
     Return: ~
-        nil|boolean|string: the next history item
+        string: the next history item
 
 
 histories.History:get_prev({line}, {picker}) *telescope.actions.history.History:get_prev()*
@@ -3865,7 +4214,7 @@ histories.History:get_prev({line}, {picker}) *telescope.actions.history.History:
         {picker} (table)   the current picker object
 
     Return: ~
-        nil|boolean|string: the previous history item
+        string: the previous history item
 
 
 histories.get_simple_history() *telescope.actions.history.get_simple_history()*
