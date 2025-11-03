@@ -406,7 +406,7 @@ filetype detection you should read `:help vim.filetype`.
 
 We need to do it manually because we can't determine the filetype in the
 traditional way: We don't do `bufload` and instead read the file asynchronously
-with `vim.loop.fs_` and attach only a highlighter; otherwise the speed of the
+with `vim.uv.fs_` and attach only a highlighter; otherwise the speed of the
 previewer would slow down considerably.
 
 If you want to configure the `vim_buffer_` previewer (e.g. you want the line to wrap), do this:

@@ -15,7 +15,7 @@ local get_status = require("telescope.state").get_status
 
 local utils = {}
 
-utils.iswin = vim.loop.os_uname().sysname == "Windows_NT"
+utils.iswin = vim.uv.os_uname().sysname == "Windows_NT"
 
 ---@param s string
 ---@param i number
@@ -64,14 +64,14 @@ utils.path_expand = function(path)
   end
 
   if path:sub(1, 1) == "~" then
-    local home = vim.loop.os_homedir() or "~"
+    local home = vim.uv.os_homedir() or "~"
     if home:sub(-1) == "\\" or home:sub(-1) == "/" then
       home = home:sub(1, -2)
     end
     path = home .. path:sub(2)
   end
 
-  path = path:gsub("%$([%w_]+)", vim.loop.os_getenv)
+  path = path:gsub("%$([%w_]+)", vim.uv.os_getenv)
   path = path:gsub("/+", "/")
   if utils.iswin then
     path = path:gsub("\\+", "\\")
@@ -231,7 +231,7 @@ local path_abs = function(path, opts)
       cwd = utils.path_expand(opts.cwd)
     end
   else
-    cwd = vim.loop.cwd()
+    cwd = vim.uv.cwd()
   end
   return Path:new(path):make_relative(cwd)
 end

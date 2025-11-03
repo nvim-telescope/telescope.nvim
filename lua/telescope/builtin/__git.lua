@@ -476,7 +476,7 @@ local set_opts_cwd = function(opts)
       return
     end
   else
-    opts.cwd = vim.loop.cwd()
+    opts.cwd = vim.uv.cwd()
   end
 
   local toplevel, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)
