@@ -6,8 +6,6 @@ local Previewer = require "telescope.previewers.previewer"
 local conf = require("telescope.config").values
 local global_state = require "telescope.state"
 
-local pscan = require "plenary.scandir"
-
 local buf_delete = utils.buf_delete
 local git_command = utils.__git_command
 
@@ -145,7 +143,7 @@ local handle_directory_preview = function(filepath, bufnr, opts)
     end
   end
 
-  pscan.ls_async(filepath, {
+  require("plenary.scandir").ls_async(filepath, {
     hidden = true,
     group_directories_first = true,
     on_exit = vim.schedule_wrap(function(data, sections)

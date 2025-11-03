@@ -100,7 +100,7 @@ vim.keymap.set(
   "c",
   "<Plug>(TelescopeFuzzyCommandSearch)",
   "<C-\\>e \"lua require('telescope.builtin').command_history "
-  .. '{ default_text = [=[" . escape(getcmdline(), \'"\') . "]=] }"<CR><CR>',
+    .. '{ default_text = [=[" . escape(getcmdline(), \'"\') . "]=] }"<CR><CR>',
   { silent = true, noremap = true }
 )
 

@@ -290,7 +290,11 @@ internal.symbols = function(opts)
     end
   end)()
   if data_path:exists() then
-    for _, v in ipairs(require("plenary.scandir").scan_dir(data_path:absolute(), { search_pattern = "%.json$" })) do
+    for _, v in
+      ipairs(vim.fs.find(function(name, _)
+        return name:match "%.json$"
+      end, { path = data_path:absolute(), limit = math.huge, type = "file" }))
+    do
       table.insert(files, v)
     end
   end
