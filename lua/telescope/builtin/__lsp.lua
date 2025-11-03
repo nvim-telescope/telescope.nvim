@@ -1,3 +1,5 @@
+---@alias TextDocumentFunction fun(client: vim.lsp.Client): lsp.TextDocumentPositionParams
+
 local channel = require("plenary.async.control").channel
 local actions = require "telescope.actions"
 local sorters = require "telescope.sorters"
@@ -68,12 +70,12 @@ local function pick_call_hierarchy_item(call_hierarchy_items)
   return call_hierarchy_items[choice]
 end
 
----@param win number? Window handler
----@param extra table? Extra fields in params
----@return table|(fun(client: vim.lsp.Client): table) parmas to send to the server
+---@param win number|nil: Window handler
+---@param extra lsp.TextDocumentPositionParams|nil: Extra fields in params
+---@return lsp.TextDocumentPositionParams|TextDocumentFunction: Params to send to the server
 local function client_position_params(win, extra)
   win = win or vim.api.nvim_get_current_win()
-  if vim.fn.has "nvim-0.11" == 0 then
+  if 1 ~= vim.fn.has "nvim-0.11" then
     local params = vim.lsp.util.make_position_params(win)
     if extra then
       params = vim.tbl_extend("force", params, extra)
@@ -204,7 +206,7 @@ local function list_or_jump(action, title, funname, params, opts)
     local errors = {}
 
     for client_id, result_or_error in pairs(results_per_client) do
-      local error, result = result_or_error.error, result_or_error.result
+      local error, result = result_or_error.err, result_or_error.result
       if error then
         errors[client_id] = error
       else
