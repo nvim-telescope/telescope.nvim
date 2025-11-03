@@ -191,6 +191,47 @@ local function filter_file_ignore_patters(items, opts)
   end, items)
 end
 
+---@param items vim.quickfix.entry[]
+---@param opts table
+---@return vim.quickfix.entry[]
+local function remove_duplicates(items)
+  local seen = {}
+  local result = {}
+  for _, value in ipairs(items) do
+    key = string.format("%s:%d:%d:%s", value.filename, value.lnum, value.col, value.text)
+    if not seen[key] then
+      table.insert(result, value)
+      seen[key] = true
+    end
+  end
+  return result
+end
+
+---@param items vim.quickfix.entry[]
+---@return vim.quickfix.entry[]
+local function apply_post_process_handler(items, opts)
+  local post_process = vim.F.if_nil(opts.post_process, conf.post_process)
+  if type(post_process) == "function" then
+    items = post_process(items)
+    if items == nil then
+      utils.notify("buildin.post_process", {
+        msg = "'post_process' value is nil",
+        level = "ERROR",
+      })
+      items = {}
+    end
+  elseif post_process == "deduplicate" then
+    return remove_duplicates(items)
+  elseif post_process == nil then
+  else
+    utils.notify("buildin.post_process", {
+      msg = "Unexpected 'post_process' value: " .. post_process,
+      level = "WARN",
+    })
+  end
+  return items
+end
+
 ---@param action telescope.lsp.list_or_jump_action
 ---@param title string prompt title
 ---@param funname string: name of the calling function
@@ -236,6 +277,7 @@ local function list_or_jump(action, title, funname, params, opts)
 
     items = apply_action_handler(action, items, opts)
     items = filter_file_ignore_patters(items, opts)
+    items = apply_post_process_handler(items, opts)
 
     if vim.tbl_isempty(items) then
       utils.notify(funname, {

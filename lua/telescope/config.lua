@@ -930,6 +930,19 @@ append(
     Default: require("telescope.previewers").buffer_previewer_maker]]
 )
 
+append(
+  "post_process",
+  nil,
+  [[
+    LSP response items post processing.
+    Can be:
+    * nil - do nothing
+    * "deduplicate": Remove duplicates from the list. Duplicates are items
+      that have the same `filename`, `lnum` and `col`.
+    * function with signature: function(items) -> items
+    Default: nil]]
+)
+
 -- @param user_defaults table: a table where keys are the names of options,
 --    and values are the ones the user wants
 -- @param tele_defaults table: (optional) a table containing all of the defaults
