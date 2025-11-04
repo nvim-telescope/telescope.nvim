@@ -18,33 +18,21 @@ local utils = {}
 utils.iswin = vim.uv.os_uname().sysname == "Windows_NT"
 utils.nvim011 = vim.fn.has "nvim-0.11" == 1
 
----@param s string
----@param i number
----@param encoding "utf-8" | "utf-16" | "utf-32"
----@return integer
-utils.str_byteindex = function(s, i, encoding)
-  if utils.nvim011 then
-    return vim.str_byteindex(s, encoding, i, false)
-  else
-    return vim.lsp.util._str_byteindex_enc(s, i, encoding)
-  end
-end
-
----@param t table
-utils.flatten = function(t)
-  return vim.iter(t):flatten():totable()
-end
+---TODO(clason): remove when dropping support for Nvim 0.10
+utils.str_byteindex = utils.nvim011 and vim.str_byteindex or vim.lsp.util._str_byteindex_enc
 
 ---TODO(clason): remove when dropping support for Nvim 0.10
 ---@param k string
 ---@param v any
 ---@param ty type
-utils.validate = function(k, v, ty)
-  if utils.nvim011 then
-    vim.validate(k, v, ty)
-  else
-    vim.validate { [k] = { v, ty } }
-  end
+utils.validate = utils.nvim011 and vim.validate or function(k, v, ty)
+  vim.validate { [k] = { v, ty } }
+end
+
+---@param t table
+---@return table
+utils.flatten = function(t)
+  return vim.iter(t):flatten():totable()
 end
 
 --- Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
@@ -681,15 +669,12 @@ utils.get_devicons = load_once(function()
   end
 end)
 
+--- TODO(clason): remove when dropping support for Nvim 0.10
 --- Checks if treesitter parser for language is installed
----@param lang string
-utils.has_ts_parser = function(lang)
-  if utils.nvim011 then
-    return vim.treesitter.language.add(lang)
-  else
+utils.has_ts_parser = utils.nvim011 and vim.treesitter.language.add
+  or function(lang)
     return pcall(vim.treesitter.language.add, lang)
   end
-end
 
 --- Telescope Wrapper around vim.notify
 ---@param funname string: name of the function that will be
