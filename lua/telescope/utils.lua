@@ -15,26 +15,24 @@ local get_status = require("telescope.state").get_status
 
 local utils = {}
 
-utils.iswin = vim.loop.os_uname().sysname == "Windows_NT"
+utils.iswin = vim.uv.os_uname().sysname == "Windows_NT"
+utils.nvim011 = vim.fn.has "nvim-0.11" == 1
 
 ---@param s string
 ---@param i number
 ---@param encoding "utf-8" | "utf-16" | "utf-32"
 ---@return integer
 utils.str_byteindex = function(s, i, encoding)
-  if vim.fn.has "nvim-0.11" == 1 then
+  if utils.nvim011 then
     return vim.str_byteindex(s, encoding, i, false)
   else
     return vim.lsp.util._str_byteindex_enc(s, i, encoding)
   end
 end
 
---TODO(clason): Remove when dropping support for Nvim 0.9
-utils.islist = vim.fn.has "nvim-0.10" == 1 and vim.islist or vim.tbl_islist
-local flatten = function(t)
+utils.flatten = function(t)
   return vim.iter(t):flatten():totable()
 end
-utils.flatten = vim.fn.has "nvim-0.11" == 1 and flatten or vim.tbl_flatten
 
 --- Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
 ---
@@ -67,14 +65,14 @@ utils.path_expand = function(path)
   end
 
   if path:sub(1, 1) == "~" then
-    local home = vim.loop.os_homedir() or "~"
+    local home = vim.uv.os_homedir() or "~"
     if home:sub(-1) == "\\" or home:sub(-1) == "/" then
       home = home:sub(1, -2)
     end
     path = home .. path:sub(2)
   end
 
-  path = path:gsub("%$([%w_]+)", vim.loop.os_getenv)
+  path = path:gsub("%$([%w_]+)", vim.uv.os_getenv)
   path = path:gsub("/+", "/")
   if utils.iswin then
     path = path:gsub("\\+", "\\")
@@ -234,7 +232,7 @@ local path_abs = function(path, opts)
       cwd = utils.path_expand(opts.cwd)
     end
   else
-    cwd = vim.loop.cwd()
+    cwd = vim.uv.cwd()
   end
   return Path:new(path):make_relative(cwd)
 end
@@ -675,7 +673,7 @@ end)
 --- Checks if treesitter parser for language is installed
 ---@param lang string
 utils.has_ts_parser = function(lang)
-  if vim.fn.has "nvim-0.11" == 1 then
+  if utils.nvim011 then
     return vim.treesitter.language.add(lang)
   else
     return pcall(vim.treesitter.language.add, lang)

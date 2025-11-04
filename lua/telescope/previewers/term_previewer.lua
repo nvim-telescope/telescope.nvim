@@ -14,7 +14,7 @@ local bat_options = { "--style=plain", "--color=always", "--paging=always" }
 local has_less = (vim.fn.executable "less" == 1) and conf.use_less
 
 local get_file_stat = function(filename)
-  return vim.loop.fs_stat(utils.path_expand(filename)) or {}
+  return vim.uv.fs_stat(utils.path_expand(filename)) or {}
 end
 
 local list_dir = (function()
@@ -198,7 +198,7 @@ previewers.new_termopen_previewer = function(opts)
       utils.win_set_buf_noautocmd(preview_winid, bufnr)
 
       local term_opts = {
-        cwd = opts.cwd or vim.loop.cwd(),
+        cwd = opts.cwd or vim.uv.cwd(),
         env = opts.env or conf.set_env,
       }
 
@@ -247,7 +247,7 @@ previewers.cat = defaulter(function(opts)
   opts = opts or {}
 
   local maker = get_maker(opts)
-  local cwd = opts.cwd or vim.loop.cwd()
+  local cwd = opts.cwd or vim.uv.cwd()
 
   return previewers.new_termopen_previewer {
     title = "File Preview",
@@ -270,7 +270,7 @@ previewers.vimgrep = defaulter(function(opts)
   opts = opts or {}
 
   local maker = get_maker(opts)
-  local cwd = opts.cwd or vim.loop.cwd()
+  local cwd = opts.cwd or vim.uv.cwd()
 
   return previewers.new_termopen_previewer {
     title = "Grep Preview",
@@ -305,7 +305,7 @@ previewers.qflist = defaulter(function(opts)
   opts = opts or {}
 
   local maker = get_maker(opts)
-  local cwd = opts.cwd or vim.loop.cwd()
+  local cwd = opts.cwd or vim.uv.cwd()
 
   return previewers.new_termopen_previewer {
     title = "Grep Preview",

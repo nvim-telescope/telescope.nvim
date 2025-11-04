@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        rev: [nightly, stable, v0.9.5, v0.10.4]
+        rev: [nightly, stable, v0.10.4]
         include:
           - os: ubuntu-latest
             install-rg: sudo apt-get update && sudo apt-get install -y ripgrep

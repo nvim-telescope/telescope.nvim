@@ -1,4 +1,4 @@
-local uv = vim.loop
+local uv = vim.uv
 
 local Object = require "plenary.class"
 local log = require "plenary.log"

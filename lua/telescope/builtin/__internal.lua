@@ -290,7 +290,11 @@ internal.symbols = function(opts)
     end
   end)()
   if data_path:exists() then
-    for _, v in ipairs(require("plenary.scandir").scan_dir(data_path:absolute(), { search_pattern = "%.json$" })) do
+    for _, v in
+      ipairs(vim.fs.find(function(name, _)
+        return name:match "%.json$"
+      end, { path = data_path:absolute(), limit = math.huge, type = "file" }))
+    do
       table.insert(files, v)
     end
   end
@@ -545,7 +549,7 @@ internal.oldfiles = function(opts)
         if utils.iswin then
           file = file:gsub("/", "\\")
         end
-        if vim.loop.fs_stat(file) and match ~= current_buffer then
+        if vim.uv.fs_stat(file) and match ~= current_buffer then
           table.insert(results, file)
         end
       end
@@ -556,14 +560,14 @@ internal.oldfiles = function(opts)
     if utils.iswin then
       file = file:gsub("/", "\\")
     end
-    local file_stat = vim.loop.fs_stat(file)
+    local file_stat = vim.uv.fs_stat(file)
     if file_stat and file_stat.type == "file" and not vim.tbl_contains(results, file) and file ~= current_file then
       table.insert(results, file)
     end
   end
 
   if opts.cwd_only or opts.cwd then
-    local cwd = opts.cwd_only and vim.loop.cwd() or opts.cwd
+    local cwd = opts.cwd_only and vim.uv.cwd() or opts.cwd
     results = vim.tbl_filter(function(file)
       return buf_in_cwd(file, cwd)
     end, results)
@@ -819,9 +823,9 @@ end
 
 internal.man_pages = function(opts)
   opts.sections = vim.F.if_nil(opts.sections, { "1" })
-  assert(utils.islist(opts.sections), "sections should be a list")
+  assert(vim.islist(opts.sections), "sections should be a list")
   opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
-    local uname = vim.loop.os_uname()
+    local uname = vim.uv.os_uname()
     local sysname = string.lower(uname.sysname)
     if sysname == "darwin" then
       local major_version = tonumber(vim.fn.matchlist(uname.release, [[^\(\d\+\)\..*]])[2]) or 0
@@ -933,7 +937,7 @@ internal.buffers = function(opts)
 
     local bufname = vim.api.nvim_buf_get_name(bufnr)
 
-    if opts.cwd_only and not buf_in_cwd(bufname, vim.loop.cwd()) then
+    if opts.cwd_only and not buf_in_cwd(bufname, vim.uv.cwd()) then
       return false
     end
     if not opts.cwd_only and opts.cwd and not buf_in_cwd(bufname, opts.cwd) then
@@ -1061,7 +1065,7 @@ internal.colorscheme = function(opts)
         return p
       end,
       define_preview = function(self)
-        if vim.loop.fs_stat(p) then
+        if vim.uv.fs_stat(p) then
           conf.buffer_previewer_maker(p, self.state.bufnr, { bufname = self.state.bufname })
         else
           local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)

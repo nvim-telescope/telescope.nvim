@@ -793,7 +793,7 @@ end
 actions.git_merge_branch = make_git_branch_action {
   should_confirm = true,
   action_name = "actions.git_merge_branch",
-  confirmation_question = "Do you really wanna merge branch %s? [Y/n] ",
+  confirmation_question = "Do you really want to merge branch %s? [Y/n] ",
   success_message = "Merged branch: %s",
   error_message = "Error when merging branch: %s. Git returned: '%s'",
   command = function(branch_name)
@@ -806,7 +806,7 @@ actions.git_merge_branch = make_git_branch_action {
 actions.git_rebase_branch = make_git_branch_action {
   should_confirm = true,
   action_name = "actions.git_rebase_branch",
-  confirmation_question = "Do you really wanna rebase branch %s? [Y/n] ",
+  confirmation_question = "Do you really want to rebase branch %s? [Y/n] ",
   success_message = "Rebased branch: %s",
   error_message = "Error when rebasing branch: %s. Git returned: '%s'",
   command = function(branch_name)
@@ -823,7 +823,7 @@ local git_reset_branch = function(prompt_bufnr, mode)
   end
 
   local confirmation =
-    ask_to_confirm("Do you really wanna " .. mode .. " reset to " .. selection.value .. "? [Y/n] ", "y")
+    ask_to_confirm("Do you really want to " .. mode .. " reset to " .. selection.value .. "? [Y/n] ", "y")
   if not confirmation then
     utils.notify("actions.git_reset_branch", {
       msg = "action canceled",

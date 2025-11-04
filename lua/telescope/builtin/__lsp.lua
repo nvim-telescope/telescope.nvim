@@ -11,6 +11,8 @@ local utils = require "telescope.utils"
 
 local lsp = {}
 
+local nvim011 = utils.nvim011
+
 local function call_hierarchy(opts, method, title, direction, item)
   vim.lsp.buf_request(opts.bufnr, method, { item = item }, function(err, result)
     if err then
@@ -75,7 +77,7 @@ end
 ---@return lsp.TextDocumentPositionParams|TextDocumentFunction: Params to send to the server
 local function client_position_params(win, extra)
   win = win or vim.api.nvim_get_current_win()
-  if 1 ~= vim.fn.has "nvim-0.11" then
+  if not nvim011 then
     local params = vim.lsp.util.make_position_params(win)
     if extra then
       params = vim.tbl_extend("force", params, extra)
@@ -118,36 +120,6 @@ end
 
 lsp.outgoing_calls = function(opts)
   calls(opts, "to")
-end
-
---- convert `item` type back to something we can pass to `vim.lsp.util.jump_to_location`
---- stopgap for pre-nvim 0.10 - after which we can simply use the `user_data`
---- field on the items in `vim.lsp.util.locations_to_items`
----@param item vim.quickfix.entry
----@param offset_encoding string|nil utf-8|utf-16|utf-32
----@return lsp.Location
-local function item_to_location(item, offset_encoding)
-  local line = math.max(0, item.lnum - 1)
-  local character = math.max(0, utils.str_byteindex(item.text, item.col, offset_encoding or "utf-16") - 1)
-  local uri
-  if utils.is_uri(item.filename) then
-    uri = item.filename
-  else
-    uri = vim.uri_from_fname(item.filename)
-  end
-  return {
-    uri = uri,
-    range = {
-      start = {
-        line = line,
-        character = character,
-      },
-      ["end"] = {
-        line = line,
-        character = character,
-      },
-    },
-  }
 end
 
 ---@alias telescope.lsp.list_or_jump_action
@@ -213,7 +185,7 @@ local function list_or_jump(action, title, funname, params, opts)
         if result ~= nil then
           local locations = {}
 
-          if not utils.islist(result) then
+          if not vim.islist(result) then
             vim.list_extend(locations, { result })
           else
             vim.list_extend(locations, result)
@@ -264,8 +236,7 @@ local function list_or_jump(action, title, funname, params, opts)
         end
       end
 
-      local location = item_to_location(item, first_encoding)
-      vim.lsp.util.show_document(location, first_encoding, { reuse_win = opts.reuse_win })
+      vim.lsp.util.show_document(item.user_data, first_encoding, { reuse_win = opts.reuse_win })
     else
       pickers
         .new(opts, {
@@ -362,7 +333,7 @@ lsp.document_symbols = function(opts)
     end
 
     local locations
-    if vim.fn.has "nvim-0.11" == 1 then
+    if nvim011 then
       local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
       locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr, client.offset_encoding) or {}
     else
@@ -412,7 +383,7 @@ lsp.workspace_symbols = function(opts)
     end
 
     local locations
-    if vim.fn.has "nvim-0.11" == 1 then
+    if nvim011 then
       local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
       locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr, client.offset_encoding) or {}
     else
@@ -468,7 +439,7 @@ local function get_workspace_symbols_requester(bufnr, opts)
       if client_res.error then
         vim.api.nvim_err_writeln("Error when executing workspace/symbol : " .. client_res.error.message)
       elseif client_res.result ~= nil then
-        if vim.fn.has "nvim-0.11" == 1 then
+        if nvim011 then
           local client = assert(vim.lsp.get_client_by_id(client_id))
           vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr, client.offset_encoding))
         else
@@ -503,12 +474,10 @@ lsp.dynamic_workspace_symbols = function(opts)
 end
 
 local function check_capabilities(method, bufnr)
-  --TODO(clason): remove when dropping support for Nvim 0.9
-  local get_clients = vim.fn.has "nvim-0.10" == 1 and vim.lsp.get_clients or vim.lsp.get_active_clients
-  local clients = get_clients { bufnr = bufnr }
+  local clients = vim.lsp.get_clients { bufnr = bufnr }
 
   for _, client in pairs(clients) do
-    if vim.fn.has "nvim-0.11" == 1 then
+    if nvim011 then
       if client:supports_method(method, bufnr) then
         return true
       end
