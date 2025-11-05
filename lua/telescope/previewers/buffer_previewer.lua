@@ -305,7 +305,7 @@ local search_teardown = function(self)
   end
 end
 
-local scroll_fn = function(self, direction)
+previewers.scroll_fn = function(self, direction)
   if not self.state then
     return
   end
@@ -473,7 +473,7 @@ previewers.new_buffer_previewer = function(opts)
   end
 
   if not opts.scroll_fn then
-    opts.scroll_fn = scroll_fn
+    opts.scroll_fn = conf.buffer_scroll_fn
   end
 
   if not opts.scroll_horizontal_fn then
