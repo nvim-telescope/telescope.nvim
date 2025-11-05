@@ -479,7 +479,7 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
 
       self:_increment "highlights"
 
-      vim.api.nvim_buf_add_highlight(results_bufnr, ns_telescope_matching, highlight, row, start - 1, finish)
+      utils.hl_range(results_bufnr, ns_telescope_matching, highlight, { row, start - 1 }, { row, finish })
     end
   end
 
@@ -975,13 +975,12 @@ function Picker:_reset_prefix_color(hl_group)
   self._current_prefix_hl_group = hl_group or nil
 
   if self.prompt_prefix ~= "" and a.nvim_buf_is_valid(self.prompt_bufnr) then
-    vim.api.nvim_buf_add_highlight(
+    utils.hl_range(
       self.prompt_bufnr,
       ns_telescope_prompt_prefix,
       self._current_prefix_hl_group or "TelescopePromptPrefix",
-      0,
-      0,
-      #self.prompt_prefix
+      { 0, 0 },
+      { 0, #self.prompt_prefix }
     )
   end
 end
