@@ -101,17 +101,16 @@ local colorize_ls_long = function(bufnr, data, sections)
     local section = sections[lnum]
     for i = 1, section[1].end_index - 1 do -- Highlight permissions
       local c = line:sub(i, i)
-      vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, color_hash[c], lnum - 1, i - 1, i)
+      utils.hl_range(bufnr, ns_previewer, color_hash[c], { lnum - 1, i - 1 }, { lnum - 1, i })
     end
     for i = 2, #section do -- highlights size, (user, group), date and name
       local hl_group = color_hash[i + (i ~= 2 and windows_add or 0)]
-      vim.api.nvim_buf_add_highlight(
+      utils.hl_range(
         bufnr,
         ns_previewer,
         type(hl_group) == "function" and hl_group(line) or hl_group,
-        lnum - 1,
-        section[i].start_index - 1,
-        section[i].end_index - 1
+        { lnum - 1, section[i].start_index - 1 },
+        { lnum - 1, section[i].end_index - 1 }
       )
     end
   end
@@ -133,7 +132,7 @@ local handle_directory_preview = function(filepath, bufnr, opts)
       vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, paths)
       for i, path in ipairs(paths) do
         local hl = color_hash[6](data[i])
-        vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, hl, i - 1, 0, #path)
+        utils.hl_range(bufnr, ns_previewer, hl, { i - 1, 0 }, { i - 1, #path })
       end
     end
   else
@@ -531,13 +530,12 @@ previewers.vimgrep = defaulter(function(opts)
 
       for i = lnum, lnend do
         pcall(
-          vim.api.nvim_buf_add_highlight,
+          utils.hl_range,
           bufnr,
           ns_previewer,
           "TelescopePreviewLine",
-          i,
-          i == lnum and col or 0,
-          i == lnend and colend or -1
+          { i, i == lnum and col or 0 },
+          { i, i == lnend and colend or -1 }
         )
       end
 
@@ -623,7 +621,14 @@ previewers.ctags = defaulter(function(opts)
         if self.state.last_set_bufnr then
           pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
         end
-        pcall(vim.api.nvim_buf_add_highlight, bufnr, ns_previewer, "TelescopePreviewMatch", entry.lnum - 1, 0, -1)
+        pcall(
+          utils.hl_range,
+          bufnr,
+          ns_previewer,
+          "TelescopePreviewMatch",
+          { entry.lnum - 1, 0 },
+          { entry.lnum - 1, -1 }
+        )
         pcall(vim.api.nvim_win_set_cursor, self.state.winid, { entry.lnum, 0 })
         self.state.last_set_bufnr = bufnr
       end
@@ -751,13 +756,12 @@ previewers.git_branch_log = defaulter(function(opts)
       if hstart then
         if hend < #line then
           pcall(
-            vim.api.nvim_buf_add_highlight,
+            utils.hl_range,
             bufnr,
             ns_previewer,
             "TelescopeResultsIdentifier",
-            i - 1,
-            hstart - 1,
-            hend
+            { i - 1, hstart - 1 },
+            { i - 1, hend }
           )
         end
       end
@@ -765,28 +769,12 @@ previewers.git_branch_log = defaulter(function(opts)
       if cstart then
         local cend = string.find(line, "%) ")
         if cend then
-          pcall(
-            vim.api.nvim_buf_add_highlight,
-            bufnr,
-            ns_previewer,
-            "TelescopeResultsConstant",
-            i - 1,
-            cstart - 1,
-            cend
-          )
+          pcall(utils.hl_range, bufnr, ns_previewer, "TelescopeResultsConstant", { i - 1, cstart - 1 }, { i - 1, cend })
         end
       end
       local dstart, _ = line:find " %(%d"
       if dstart then
-        pcall(
-          vim.api.nvim_buf_add_highlight,
-          bufnr,
-          ns_previewer,
-          "TelescopeResultsSpecialComment",
-          i - 1,
-          dstart,
-          #line
-        )
+        pcall(utils.hl_range, bufnr, ns_previewer, "TelescopeResultsSpecialComment", { i - 1, dstart }, { #line })
       end
     end
   end
@@ -965,7 +953,7 @@ previewers.git_commit_message = defaulter(function(opts)
           for k, v in ipairs(hl_map) do
             local _, s = content[k]:find "%s"
             if s then
-              vim.api.nvim_buf_add_highlight(bufnr, ns_previewer, v, k - 1, s, #content[k])
+              utils.hl_range(bufnr, ns_previewer, v, { k - 1, s }, { k - 1, #content[k] })
             end
           end
         end,
@@ -1054,7 +1042,7 @@ previewers.autocommands = defaulter(function(_)
 
         vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "vim")
         vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, display)
-        vim.api.nvim_buf_add_highlight(self.state.bufnr, 0, "TelescopeBorder", 1, 0, -1)
+        utils.hl_range(self.state.bufnr, 0, "TelescopeBorder", { 1, 0 }, { 1, -1 })
       else
         for idx, item in ipairs(results) do
           if item == entry then
@@ -1064,7 +1052,13 @@ previewers.autocommands = defaulter(function(_)
         end
       end
 
-      vim.api.nvim_buf_add_highlight(self.state.bufnr, ns_previewer, "TelescopePreviewLine", selected_row + 1, 0, -1)
+      utils.hl_range(
+        self.state.bufnr,
+        ns_previewer,
+        "TelescopePreviewLine",
+        { selected_row + 1, 0 },
+        { selected_row + 1, -1 }
+      )
       -- set the cursor position after self.state.bufnr is connected to the
       -- preview window (which is scheduled in new_buffer_previewer)
       vim.schedule(function()
@@ -1109,7 +1103,7 @@ previewers.highlights = defaulter(function(_)
           local startPos = string.find(v, "xxx", 1, true) - 1
           local endPos = startPos + 3
           local hlgroup = string.match(v, "([^ ]*)%s+.*")
-          pcall(vim.api.nvim_buf_add_highlight, self.state.bufnr, 0, hlgroup, k - 1, startPos, endPos)
+          pcall(utils.hl_range, self.state.bufnr, 0, hlgroup, { k - 1, startPos }, { k - 1, endPos })
         end
       end
 
@@ -1120,13 +1114,12 @@ previewers.highlights = defaulter(function(_)
           local lnum = vim.api.nvim_win_get_cursor(self.state.winid)[1]
           -- That one is actually a match but its better to use it like that then matchadd
           pcall(vim.api.nvim_buf_clear_namespace, self.state.bufnr, ns_previewer, 0, -1)
-          vim.api.nvim_buf_add_highlight(
+          utils.hl_range(
             self.state.bufnr,
             ns_previewer,
             "TelescopePreviewMatch",
-            lnum - 1,
-            0,
-            #entry.value
+            { lnum - 1, 0 },
+            { lnum - 1, #entry.value }
           )
           -- we need to zz after the highlighting otherwise highlighting doesnt work
           vim.cmd "norm! zz"
@@ -1194,24 +1187,22 @@ previewers.pickers = defaulter(function(_)
 
           if display_highlight ~= nil then
             for _, hl_block in ipairs(display_highlight) do
-              vim.api.nvim_buf_add_highlight(
+              utils.hl_range(
                 self.state.bufnr,
                 ns_telescope_entry,
                 hl_block[2],
-                row,
-                hl_block[1][1],
-                hl_block[1][2]
+                { row, hl_block[1][1] },
+                { row, hl_block[1][2] }
               )
             end
           end
           if picker._multi:is_selected(e) then
-            vim.api.nvim_buf_add_highlight(
+            utils.hl_range(
               self.state.bufnr,
               ns_telescope_multiselection,
               "TelescopeMultiSelection",
-              row,
-              0,
-              -1
+              { row, 0 },
+              { row, -1 }
             )
           end
         end

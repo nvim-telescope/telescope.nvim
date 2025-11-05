@@ -1438,7 +1438,13 @@ actions.which_key = function(prompt_bufnr, opts)
     local row_ = highlight_tbl.row
     local col = highlight_tbl.col
     for _, hl_block in ipairs(highlight) do
-      a.nvim_buf_add_highlight(km_buf, keymap_highlights, hl_block[2], row_, col + hl_block[1][1], col + hl_block[1][2])
+      utils.hl_range(
+        km_buf,
+        keymap_highlights,
+        hl_block[2],
+        { row_, col + hl_block[1][1] },
+        { row_, col + hl_block[1][2] }
+      )
     end
   end
 

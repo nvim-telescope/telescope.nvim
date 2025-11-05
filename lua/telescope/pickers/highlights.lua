@@ -8,6 +8,9 @@ local ns_telescope_selection = a.nvim_create_namespace "telescope_selection"
 local ns_telescope_multiselection = a.nvim_create_namespace "telescope_multiselection"
 local ns_telescope_entry = a.nvim_create_namespace "telescope_entry"
 
+---TODO(clason): remove when dropping support for Nvim 0.10
+local hl = vim.hl or vim.highlight
+
 local Highlighter = {}
 Highlighter.__index = Highlighter
 
@@ -30,13 +33,12 @@ function Highlighter:hi_display(row, prefix, display_highlights)
   local len_prefix = #prefix
 
   for _, hl_block in ipairs(display_highlights) do
-    a.nvim_buf_add_highlight(
+    hl.range(
       results_bufnr,
       ns_telescope_entry,
       hl_block[2],
-      row,
-      len_prefix + hl_block[1][1],
-      len_prefix + hl_block[1][2]
+      { row, len_prefix + hl_block[1][1] },
+      { row, len_prefix + hl_block[1][2] }
     )
   end
 end
@@ -69,7 +71,7 @@ function Highlighter:hi_selection(row, caret)
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
 
   a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
-  a.nvim_buf_add_highlight(results_bufnr, ns_telescope_selection, "TelescopeSelectionCaret", row, 0, #caret)
+  hl.range(results_bufnr, ns_telescope_selection, "TelescopeSelectionCaret", { row, 0 }, { row, #caret })
 
   a.nvim_buf_set_extmark(
     results_bufnr,
@@ -84,18 +86,17 @@ function Highlighter:hi_multiselect(row, is_selected)
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
 
   if is_selected then
-    vim.api.nvim_buf_add_highlight(results_bufnr, ns_telescope_multiselection, "TelescopeMultiSelection", row, 0, -1)
+    hl.range(results_bufnr, ns_telescope_multiselection, "TelescopeMultiSelection", { row, 0 }, { row, -1 })
     if self.picker.multi_icon then
       local line = vim.api.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1]
       local pos = line:find(self.picker.multi_icon)
       if pos and pos <= math.max(#self.picker.selection_caret, #self.picker.entry_prefix) then
-        vim.api.nvim_buf_add_highlight(
+        hl.range(
           results_bufnr,
           ns_telescope_multiselection,
           "TelescopeMultiIcon",
-          row,
-          pos - 1,
-          pos - 1 + #self.picker.multi_icon
+          { row, pos - 1 },
+          { row, pos - 1 + #self.picker.multi_icon }
         )
       end
     end

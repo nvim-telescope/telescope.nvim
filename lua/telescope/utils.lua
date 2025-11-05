@@ -19,6 +19,9 @@ utils.iswin = vim.uv.os_uname().sysname == "Windows_NT"
 utils.nvim011 = vim.fn.has "nvim-0.11" == 1
 
 ---TODO(clason): remove when dropping support for Nvim 0.10
+utils.hl_range = utils.nvim011 and vim.hl.range or vim.highlight.range
+
+---TODO(clason): remove when dropping support for Nvim 0.10
 utils.str_byteindex = utils.nvim011 and vim.str_byteindex or vim.lsp.util._str_byteindex_enc
 
 ---TODO(clason): remove when dropping support for Nvim 0.10
