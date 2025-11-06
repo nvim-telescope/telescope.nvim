@@ -513,10 +513,10 @@ function Picker:_create_window(bufnr, popup_opts)
   local what = bufnr or ""
   local win, opts = popup.create(what, popup_opts)
 
-  a.nvim_win_set_option(win, "winblend", self.window.winblend)
+  vim.wo[win].winblend = self.window.winblend
   local border_win = opts and opts.border and opts.border.win_id
   if border_win then
-    a.nvim_win_set_option(border_win, "winblend", self.window.winblend)
+    vim.wo[border_win].winblend = self.window.winblend
   end
   return win, opts, border_win
 end
@@ -557,13 +557,13 @@ function Picker:find()
     self.preview_win, self.preview_bufnr, self.preview_border = nil, nil, nil
   end
 
-  pcall(a.nvim_buf_set_option, self.results_bufnr, "tabstop", 1) -- #1834
-  pcall(a.nvim_buf_set_option, self.prompt_bufnr, "tabstop", 1) -- #1834
-  a.nvim_buf_set_option(self.prompt_bufnr, "buftype", "prompt")
-  a.nvim_win_set_option(self.results_win, "wrap", self.wrap_results)
-  a.nvim_win_set_option(self.prompt_win, "wrap", true)
+  pcall(a.nvim_set_option_value, "tabstop", 1, { buf = self.results_bufnr }) -- #1834
+  pcall(a.nvim_set_option_value, "tabstop", 1, { buf = self.prompt_bufnr }) -- #1834
+  vim.bo[self.prompt_bufnr].buftype = "prompt"
+  vim.wo[self.results_win].wrap = self.wrap_results
+  vim.wo[self.prompt_win].wrap = true
   if self.preview_win then
-    a.nvim_win_set_option(self.preview_win, "wrap", true)
+    vim.wo[self.preview_win].wrap = true
   end
 
   -- Prompt prefix
@@ -613,8 +613,8 @@ function Picker:find()
     self.sorter:_init()
 
     -- Do filetype last, so that users can register at the last second.
-    pcall(a.nvim_buf_set_option, self.prompt_bufnr, "filetype", "TelescopePrompt")
-    pcall(a.nvim_buf_set_option, self.results_bufnr, "filetype", "TelescopeResults")
+    pcall(a.nvim_set_option_value, "filetype", "TelescopePrompt", { buf = self.prompt_bufnr })
+    pcall(a.nvim_set_option_value, "filetype", "TelescopeResults", { buf = self.results_bufnr })
 
     await_schedule()
 
@@ -1000,7 +1000,7 @@ function Picker:change_prompt_prefix(new_prefix, hl_group)
     vim.fn.prompt_setprompt(self.prompt_bufnr, new_prefix)
   else
     vim.api.nvim_buf_set_text(self.prompt_bufnr, 0, 0, 0, #self.prompt_prefix, {})
-    vim.api.nvim_buf_set_option(self.prompt_bufnr, "buftype", "")
+    vim.bo[self.prompt_bufnr].buftype = ""
   end
   self.prompt_prefix = new_prefix
   self:_reset_prefix_color(hl_group)

@@ -205,6 +205,7 @@ previewers.new_termopen_previewer = function(opts)
       local cmd = opts.get_command(entry, status)
       if cmd then
         vim.api.nvim_buf_call(bufnr, function()
+          --TODO(clason): replace with jobstart when dropping support for Nvim 0.10
           set_term_id(self, vim.fn.termopen(cmd, term_opts))
         end)
       end
@@ -286,7 +287,7 @@ previewers.vimgrep = defaulter(function(opts)
       if p == nil or p == "" then
         return
       end
-      if entry.bufnr and (p == "[No Name]" or vim.api.nvim_buf_get_option(entry.bufnr, "buftype") ~= "") then
+      if entry.bufnr and (p == "[No Name]" or vim.bo[entry.bufnr].buftype ~= "") then
         return
       end
 
