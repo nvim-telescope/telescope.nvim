@@ -34,6 +34,8 @@
 --- TODO: Document something we call `entry_index`
 ---@brief ]]
 
+local api = vim.api
+
 local entry_display = require "telescope.pickers.entry_display"
 local utils = require "telescope.utils"
 local strings = require "plenary.strings"
@@ -71,7 +73,7 @@ local get_filename_fn = function()
       return c
     end
 
-    local n = vim.api.nvim_buf_get_name(bufnr)
+    local n = api.nvim_buf_get_name(bufnr)
     bufnr_name_cache[bufnr] = n
     return n
   end
@@ -499,7 +501,7 @@ end
 function make_entry.gen_from_lsp_symbols(opts)
   opts = opts or {}
 
-  local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
+  local bufnr = opts.bufnr or api.nvim_get_current_buf()
 
   -- Default we have two columns, symbol and type(unbound)
   -- If path is not hidden then its, filepath, symbol and type(still unbound)
@@ -530,7 +532,7 @@ function make_entry.gen_from_lsp_symbols(opts)
     local msg
 
     if opts.show_line then
-      msg = vim.trim(vim.F.if_nil(vim.api.nvim_buf_get_lines(bufnr, entry.lnum - 1, entry.lnum, false)[1], ""))
+      msg = vim.trim(vim.F.if_nil(api.nvim_buf_get_lines(bufnr, entry.lnum - 1, entry.lnum, false)[1], ""))
     end
 
     if hidden then
@@ -636,8 +638,8 @@ function make_entry.gen_from_buffer(opts)
     -- account for potentially stale lnum as getbufinfo might not be updated or from resuming buffers picker
     if entry.info.lnum ~= 0 then
       -- but make sure the buffer is loaded, otherwise line_count is 0
-      if vim.api.nvim_buf_is_loaded(entry.bufnr) then
-        local line_count = vim.api.nvim_buf_line_count(entry.bufnr)
+      if api.nvim_buf_is_loaded(entry.bufnr) then
+        local line_count = api.nvim_buf_line_count(entry.bufnr)
         lnum = math.max(math.min(entry.info.lnum, line_count), 1)
       else
         lnum = entry.info.lnum
@@ -660,7 +662,7 @@ end
 function make_entry.gen_from_treesitter(opts)
   opts = opts or {}
 
-  local bufnr = opts.bufnr or vim.api.nvim_get_current_buf()
+  local bufnr = opts.bufnr or api.nvim_get_current_buf()
 
   local display_items = {
     { width = opts.symbol_width or 25 },
@@ -680,7 +682,7 @@ function make_entry.gen_from_treesitter(opts)
   local type_highlight = opts.symbol_highlights or treesitter_type_highlight
 
   local make_display = function(entry)
-    local msg = vim.api.nvim_buf_get_lines(bufnr, entry.lnum, entry.lnum, false)[1] or ""
+    local msg = api.nvim_buf_get_lines(bufnr, entry.lnum, entry.lnum, false)[1] or ""
     msg = vim.trim(msg)
 
     local display_columns = {
@@ -1019,7 +1021,7 @@ function make_entry.gen_from_ctags(opts)
 
   local show_kind = vim.F.if_nil(opts.show_kind, true)
   local cwd = utils.path_expand(opts.cwd or vim.uv.cwd())
-  local current_file = Path:new(vim.api.nvim_buf_get_name(opts.bufnr)):normalize(cwd)
+  local current_file = Path:new(api.nvim_buf_get_name(opts.bufnr)):normalize(cwd)
 
   local display_items = {
     { width = 16 },

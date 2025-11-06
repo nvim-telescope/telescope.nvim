@@ -1,3 +1,5 @@
+local api = vim.api
+
 local conf = require("telescope.config").values
 local utils = require "telescope.utils"
 local Path = require "plenary.path"
@@ -184,7 +186,7 @@ previewers.new_termopen_previewer = function(opts)
   function opts.preview_fn(self, entry, status)
     local preview_winid = status.layout.preview and status.layout.preview.winid
     if get_bufnr(self) == nil then
-      set_bufnr(self, vim.api.nvim_win_get_buf(preview_winid))
+      set_bufnr(self, api.nvim_win_get_buf(preview_winid))
     end
 
     local prev_bufnr = get_bufnr_by_bufentry(self, entry)
@@ -193,7 +195,7 @@ previewers.new_termopen_previewer = function(opts)
       utils.win_set_buf_noautocmd(preview_winid, self.state.termopen_bufnr)
       self.state.termopen_id = term_ids[self.state.termopen_bufnr]
     else
-      local bufnr = vim.api.nvim_create_buf(false, true)
+      local bufnr = api.nvim_create_buf(false, true)
       set_bufnr(self, bufnr)
       utils.win_set_buf_noautocmd(preview_winid, bufnr)
 
@@ -204,7 +206,7 @@ previewers.new_termopen_previewer = function(opts)
 
       local cmd = opts.get_command(entry, status)
       if cmd then
-        vim.api.nvim_buf_call(bufnr, function()
+        api.nvim_buf_call(bufnr, function()
           --TODO(clason): replace with jobstart when dropping support for Nvim 0.10
           set_term_id(self, vim.fn.termopen(cmd, term_opts))
         end)
@@ -215,7 +217,7 @@ previewers.new_termopen_previewer = function(opts)
 
   if not opts.send_input then
     function opts.send_input(self, input)
-      local termcode = vim.api.nvim_replace_termcodes(input, true, false, true)
+      local termcode = api.nvim_replace_termcodes(input, true, false, true)
 
       local term_id = get_term_id(self)
       if term_id then
@@ -281,7 +283,7 @@ previewers.vimgrep = defaulter(function(opts)
 
     get_command = function(entry, status)
       local win_id = status.layout.preview and status.layout.preview.winid
-      local height = vim.api.nvim_win_get_height(win_id)
+      local height = api.nvim_win_get_height(win_id)
 
       local p = from_entry.path(entry, true, false)
       if p == nil or p == "" then
@@ -316,7 +318,7 @@ previewers.qflist = defaulter(function(opts)
 
     get_command = function(entry, status)
       local win_id = status.layout.preview and status.layout.preview.winid
-      local height = vim.api.nvim_win_get_height(win_id)
+      local height = api.nvim_win_get_height(win_id)
 
       local p = from_entry.path(entry, true, false)
       if p == nil or p == "" then

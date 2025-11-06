@@ -5,6 +5,8 @@
 --- Utilities for writing telescope pickers
 ---@brief ]]
 
+local api = vim.api
+
 local Path = require "plenary.path"
 local Job = require "plenary.job"
 
@@ -203,8 +205,8 @@ local path_filename_first = function(path, reverse_directories)
 end
 
 local calc_result_length = function(truncate_len)
-  local status = get_status(vim.api.nvim_get_current_buf())
-  local len = vim.api.nvim_win_get_width(status.layout.results.winid) - status.picker.selection_caret:len() - 2
+  local status = get_status(api.nvim_get_current_buf())
+  local len = api.nvim_win_get_width(status.layout.results.winid) - status.picker.selection_caret:len() - 2
   return type(truncate_len) == "number" and len - truncate_len or len
 end
 
@@ -475,8 +477,8 @@ function utils.buf_delete(bufnr)
     vim.o.report = 2
   end
 
-  if vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_is_loaded(bufnr) then
-    vim.api.nvim_buf_delete(bufnr, { force = true })
+  if api.nvim_buf_is_valid(bufnr) and api.nvim_buf_is_loaded(bufnr) then
+    api.nvim_buf_delete(bufnr, { force = true })
   end
 
   if start_report < 2 then
@@ -485,20 +487,20 @@ function utils.buf_delete(bufnr)
 end
 
 function utils.win_delete(name, win_id, force, bdelete)
-  if win_id == nil or not vim.api.nvim_win_is_valid(win_id) then
+  if win_id == nil or not api.nvim_win_is_valid(win_id) then
     return
   end
 
-  local bufnr = vim.api.nvim_win_get_buf(win_id)
+  local bufnr = api.nvim_win_get_buf(win_id)
   if bdelete then
     utils.buf_delete(bufnr)
   end
 
-  if not vim.api.nvim_win_is_valid(win_id) then
+  if not api.nvim_win_is_valid(win_id) then
     return
   end
 
-  if not pcall(vim.api.nvim_win_close, win_id, force) then
+  if not pcall(api.nvim_win_close, win_id, force) then
     log.trace("Unable to close window: ", name, "/", win_id)
   end
 end
@@ -577,7 +579,7 @@ end
 function utils.win_set_buf_noautocmd(win, buf)
   local save_ei = vim.o.eventignore
   vim.o.eventignore = "all"
-  vim.api.nvim_win_set_buf(win, buf)
+  api.nvim_win_set_buf(win, buf)
   vim.o.eventignore = save_ei
 end
 

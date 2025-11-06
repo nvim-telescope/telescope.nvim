@@ -1,3 +1,5 @@
+local api = vim.api
+
 local from_entry = require "telescope.from_entry"
 local Path = require "plenary.path"
 local utils = require "telescope.utils"
@@ -11,7 +13,7 @@ local git_command = utils.__git_command
 
 local previewers = {}
 
-local ns_previewer = vim.api.nvim_create_namespace "telescope.previewers"
+local ns_previewer = api.nvim_create_namespace "telescope.previewers"
 
 local has_file = 1 == vim.fn.executable "file"
 
@@ -129,7 +131,7 @@ local handle_directory_preview = function(filepath, bufnr, opts)
         local path = line:sub(section.start_index, section.end_index)
         table.insert(paths, path)
       end
-      vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, paths)
+      api.nvim_buf_set_lines(bufnr, 0, -1, false, paths)
       for i, path in ipairs(paths) do
         local hl = color_hash[6](data[i])
         utils.hl_range(bufnr, ns_previewer, hl, { i - 1, 0 }, { i - 1, #path })
@@ -137,7 +139,7 @@ local handle_directory_preview = function(filepath, bufnr, opts)
     end
   else
     set_colorize_lines = function(data, sections)
-      vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
+      api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
       colorize_ls_long(bufnr, data, sections)
     end
   end
@@ -193,13 +195,13 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
 
     opts.start_time = vim.uv.hrtime()
     Path:new(filepath):_read_async(vim.schedule_wrap(function(data)
-      if not vim.api.nvim_buf_is_valid(bufnr) then
+      if not api.nvim_buf_is_valid(bufnr) then
         return
       end
       local processed_data = split(data, "[\r]?\n", nil, opts)
 
       if processed_data then
-        local ok = pcall(vim.api.nvim_buf_set_lines, bufnr, 0, -1, false, processed_data)
+        local ok = pcall(api.nvim_buf_set_lines, bufnr, 0, -1, false, processed_data)
         if not ok then
           return
         end
@@ -287,7 +289,7 @@ local search_cb_jump = function(self, bufnr, query)
   if not query then
     return
   end
-  vim.api.nvim_buf_call(bufnr, function()
+  api.nvim_buf_call(bufnr, function()
     pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
     vim.cmd "keepjumps norm! gg"
     vim.fn.search(query, "W")
@@ -312,7 +314,7 @@ local scroll_fn = function(self, direction)
   local input = direction > 0 and [[]] or [[]]
   local count = math.abs(direction)
 
-  vim.api.nvim_win_call(self.state.winid, function()
+  api.nvim_win_call(self.state.winid, function()
     vim.cmd([[normal! ]] .. count .. input)
   end)
 end
@@ -325,7 +327,7 @@ local scroll_horizontal_fn = function(self, direction)
   local input = direction > 0 and [[zl]] or [[zh]]
   local count = math.abs(direction)
 
-  vim.api.nvim_win_call(self.state.winid, function()
+  api.nvim_win_call(self.state.winid, function()
     vim.wo[self.state.winid].virtualedit = "all"
     vim.cmd([[normal! ]] .. count .. input)
   end)
@@ -392,7 +394,7 @@ previewers.new_buffer_previewer = function(opts)
       last_nr = global_state.get_global_key "last_preview_bufnr"
       -- Push in another buffer so the last one will not be cleaned up
       if preview_window_id then
-        local bufnr = vim.api.nvim_create_buf(false, true)
+        local bufnr = api.nvim_create_buf(false, true)
         utils.win_set_buf_noautocmd(preview_window_id, bufnr)
       end
     end
@@ -412,7 +414,7 @@ previewers.new_buffer_previewer = function(opts)
   function opts.preview_fn(self, entry, status)
     local preview_winid = status.layout.preview and status.layout.preview.winid
     if get_bufnr(self) == nil then
-      set_bufnr(self, vim.api.nvim_win_get_buf(preview_winid))
+      set_bufnr(self, api.nvim_win_get_buf(preview_winid))
       preview_window_id = preview_winid
     end
 
@@ -421,12 +423,12 @@ previewers.new_buffer_previewer = function(opts)
       self.state.bufnr = get_bufnr_by_bufname(self, self.state.bufname)
       utils.win_set_buf_noautocmd(preview_winid, self.state.bufnr)
     else
-      local bufnr = vim.api.nvim_create_buf(false, true)
+      local bufnr = api.nvim_create_buf(false, true)
       set_bufnr(self, bufnr)
       vim.bo[bufnr].modifiable = true
 
       vim.schedule(function()
-        if vim.api.nvim_buf_is_valid(bufnr) then
+        if api.nvim_buf_is_valid(bufnr) then
           utils.win_set_buf_noautocmd(preview_winid, bufnr)
         end
       end)
@@ -452,9 +454,9 @@ previewers.new_buffer_previewer = function(opts)
         return
       end
 
-      if vim.api.nvim_buf_is_valid(self.state.bufnr) then
-        vim.api.nvim_buf_call(self.state.bufnr, function()
-          vim.api.nvim_exec_autocmds("User", {
+      if api.nvim_buf_is_valid(self.state.bufnr) then
+        api.nvim_buf_call(self.state.bufnr, function()
+          api.nvim_exec_autocmds("User", {
             pattern = "TelescopePreviewerLoaded",
             data = {
               title = entry.preview_title,
@@ -515,7 +517,7 @@ previewers.vimgrep = defaulter(function(opts)
   local cwd = opts.cwd or vim.uv.cwd()
 
   local jump_to_line = function(self, bufnr, entry)
-    pcall(vim.api.nvim_buf_clear_namespace, bufnr, ns_previewer, 0, -1)
+    pcall(api.nvim_buf_clear_namespace, bufnr, ns_previewer, 0, -1)
 
     if entry.lnum and entry.lnum > 0 then
       local lnum, lnend = entry.lnum - 1, (entry.lnend or entry.lnum) - 1
@@ -540,9 +542,9 @@ previewers.vimgrep = defaulter(function(opts)
       end
 
       local middle_ln = math.floor(lnum + (lnend - lnum) / 2)
-      pcall(vim.api.nvim_win_set_cursor, self.state.winid, { middle_ln + 1, 0 })
+      pcall(api.nvim_win_set_cursor, self.state.winid, { middle_ln + 1, 0 })
       if bufnr ~= nil then
-        vim.api.nvim_buf_call(bufnr, function()
+        api.nvim_buf_call(bufnr, function()
           vim.cmd "norm! zz"
         end)
       end
@@ -561,7 +563,7 @@ previewers.vimgrep = defaulter(function(opts)
 
     define_preview = function(self, entry)
       -- builtin.buffers: bypass path validation for terminal buffers that don't have appropriate path
-      local has_buftype = entry.bufnr and vim.api.nvim_buf_is_valid(entry.bufnr) and vim.bo[entry.bufnr].buftype ~= ""
+      local has_buftype = entry.bufnr and api.nvim_buf_is_valid(entry.bufnr) and vim.bo[entry.bufnr].buftype ~= ""
         or false
       local p
       if not has_buftype then
@@ -573,8 +575,8 @@ previewers.vimgrep = defaulter(function(opts)
 
       -- Workaround for unnamed buffer when using builtin.buffer
       if entry.bufnr and (p == "[No Name]" or has_buftype) then
-        local lines = vim.api.nvim_buf_get_lines(entry.bufnr, 0, -1, false)
-        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
+        local lines = api.nvim_buf_get_lines(entry.bufnr, 0, -1, false)
+        api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
         -- schedule so that the lines are actually there and can be jumped onto when we call jump_to_line
         vim.schedule(function()
           jump_to_line(self, self.state.bufnr, entry)
@@ -617,7 +619,7 @@ previewers.ctags = defaulter(function(opts)
     else
       return function(self, bufnr)
         if self.state.last_set_bufnr then
-          pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
+          pcall(api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
         end
         pcall(
           utils.hl_range,
@@ -627,7 +629,7 @@ previewers.ctags = defaulter(function(opts)
           { entry.lnum - 1, 0 },
           { entry.lnum - 1, -1 }
         )
-        pcall(vim.api.nvim_win_set_cursor, self.state.winid, { entry.lnum, 0 })
+        pcall(api.nvim_win_set_cursor, self.state.winid, { entry.lnum, 0 })
         self.state.last_set_bufnr = bufnr
       end
     end
@@ -639,8 +641,8 @@ previewers.ctags = defaulter(function(opts)
       if self.state and self.state.hl_id then
         pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
         self.state.hl_id = nil
-      elseif self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
-        vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_previewer, 0, -1)
+      elseif self.state and self.state.last_set_bufnr and api.nvim_buf_is_valid(self.state.last_set_bufnr) then
+        api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_previewer, 0, -1)
       end
     end,
 
@@ -654,7 +656,7 @@ previewers.ctags = defaulter(function(opts)
         winid = self.state.winid,
         preview = opts.preview,
         callback = function(bufnr)
-          pcall(vim.api.nvim_buf_call, bufnr, function()
+          pcall(api.nvim_buf_call, bufnr, function()
             determine_jump(entry)(self, bufnr)
           end)
         end,
@@ -734,7 +736,7 @@ previewers.man = defaulter(function(opts)
     end,
 
     define_preview = function(self, entry)
-      local win_width = vim.api.nvim_win_get_width(self.state.winid)
+      local win_width = api.nvim_win_get_width(self.state.winid)
       putils.job_maker(vim.deepcopy(pager), self.state.bufnr, {
         writer = { "man", entry.section, entry.value },
         env = { ["MANWIDTH"] = win_width, PATH = vim.env.PATH, MANPATH = vim.env.MANPATH },
@@ -824,7 +826,7 @@ previewers.git_stash_diff = defaulter(function(opts)
         bufname = self.state.bufname,
         cwd = opts.cwd,
         callback = function(bufnr)
-          if vim.api.nvim_buf_is_valid(bufnr) then
+          if api.nvim_buf_is_valid(bufnr) then
             putils.highlighter(bufnr, "diff", opts)
           end
         end,
@@ -853,7 +855,7 @@ previewers.git_commit_diff_to_parent = defaulter(function(opts)
         bufname = self.state.bufname,
         cwd = opts.cwd,
         callback = function(bufnr)
-          if vim.api.nvim_buf_is_valid(bufnr) then
+          if api.nvim_buf_is_valid(bufnr) then
             search_cb_jump(self, bufnr, opts.current_line)
             putils.highlighter(bufnr, "diff", opts)
           end
@@ -884,7 +886,7 @@ previewers.git_commit_diff_to_head = defaulter(function(opts)
         bufname = self.state.bufname,
         cwd = opts.cwd,
         callback = function(bufnr)
-          if vim.api.nvim_buf_is_valid(bufnr) then
+          if api.nvim_buf_is_valid(bufnr) then
             search_cb_jump(self, bufnr, opts.current_line)
             putils.highlighter(bufnr, "diff", opts)
           end
@@ -915,7 +917,7 @@ previewers.git_commit_diff_as_was = defaulter(function(opts)
         bufname = self.state.bufname,
         cwd = opts.cwd,
         callback = function(bufnr)
-          if vim.api.nvim_buf_is_valid(bufnr) then
+          if api.nvim_buf_is_valid(bufnr) then
             search_cb_jump(self, bufnr, opts.current_line)
             putils.highlighter(bufnr, ft, opts)
           end
@@ -986,7 +988,7 @@ previewers.git_file_diff = defaulter(function(opts)
           bufname = self.state.bufname,
           cwd = opts.cwd,
           callback = function(bufnr)
-            if vim.api.nvim_buf_is_valid(bufnr) then
+            if api.nvim_buf_is_valid(bufnr) then
               putils.highlighter(bufnr, "diff", opts)
             end
           end,
@@ -1000,8 +1002,8 @@ previewers.autocommands = defaulter(function(_)
   return previewers.new_buffer_previewer {
     title = "Autocommands Preview",
     teardown = function(self)
-      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
-        pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
+      if self.state and self.state.last_set_bufnr and api.nvim_buf_is_valid(self.state.last_set_bufnr) then
+        pcall(api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
       end
     end,
 
@@ -1015,7 +1017,7 @@ previewers.autocommands = defaulter(function(_)
       end, status.picker.finder.results)
 
       if self.state.last_set_bufnr then
-        pcall(vim.api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
+        pcall(api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
       end
 
       local preview_winid = status.layout.preview and status.layout.preview.winid
@@ -1039,7 +1041,7 @@ previewers.autocommands = defaulter(function(_)
         end
 
         vim.bo[self.state.bufnr].filetype = "vim"
-        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, display)
+        api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, display)
         utils.hl_range(self.state.bufnr, 0, "TelescopeBorder", { 1, 0 }, { 1, -1 })
       else
         for idx, item in ipairs(results) do
@@ -1060,7 +1062,7 @@ previewers.autocommands = defaulter(function(_)
       -- set the cursor position after self.state.bufnr is connected to the
       -- preview window (which is scheduled in new_buffer_previewer)
       vim.schedule(function()
-        pcall(vim.api.nvim_win_set_cursor, preview_winid, { selected_row, 0 })
+        pcall(api.nvim_win_set_cursor, preview_winid, { selected_row, 0 })
       end)
 
       self.state.last_set_bufnr = self.state.bufnr
@@ -1072,8 +1074,8 @@ previewers.highlights = defaulter(function(_)
   return previewers.new_buffer_previewer {
     title = "Highlights Preview",
     teardown = function(self)
-      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
-        vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_previewer, 0, -1)
+      if self.state and self.state.last_set_bufnr and api.nvim_buf_is_valid(self.state.last_set_bufnr) then
+        api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_previewer, 0, -1)
       end
     end,
 
@@ -1096,7 +1098,7 @@ previewers.highlights = defaulter(function(_)
           end
         end
 
-        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, hl_groups)
+        api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, hl_groups)
         for k, v in ipairs(hl_groups) do
           local startPos = string.find(v, "xxx", 1, true) - 1
           local endPos = startPos + 3
@@ -1106,12 +1108,12 @@ previewers.highlights = defaulter(function(_)
       end
 
       vim.schedule(function()
-        vim.api.nvim_buf_call(self.state.bufnr, function()
+        api.nvim_buf_call(self.state.bufnr, function()
           vim.cmd "keepjumps norm! gg"
           vim.fn.search("^" .. entry.value .. " ")
-          local lnum = vim.api.nvim_win_get_cursor(self.state.winid)[1]
+          local lnum = api.nvim_win_get_cursor(self.state.winid)[1]
           -- That one is actually a match but its better to use it like that then matchadd
-          pcall(vim.api.nvim_buf_clear_namespace, self.state.bufnr, ns_previewer, 0, -1)
+          pcall(api.nvim_buf_clear_namespace, self.state.bufnr, ns_previewer, 0, -1)
           utils.hl_range(
             self.state.bufnr,
             ns_previewer,
@@ -1128,7 +1130,7 @@ previewers.highlights = defaulter(function(_)
 end, {})
 
 previewers.pickers = defaulter(function(_)
-  local ns_telescope_multiselection = vim.api.nvim_create_namespace "telescope_mulitselection"
+  local ns_telescope_multiselection = api.nvim_create_namespace "telescope_mulitselection"
   local get_row = function(picker, preview_height, index)
     if picker.sorting_strategy == "ascending" then
       return index - 1
@@ -1150,15 +1152,15 @@ previewers.pickers = defaulter(function(_)
     end,
 
     teardown = function(self)
-      if self.state and self.state.last_set_bufnr and vim.api.nvim_buf_is_valid(self.state.last_set_bufnr) then
-        vim.api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_telescope_multiselection, 0, -1)
+      if self.state and self.state.last_set_bufnr and api.nvim_buf_is_valid(self.state.last_set_bufnr) then
+        api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_telescope_multiselection, 0, -1)
       end
     end,
 
     define_preview = function(self, entry)
-      vim.api.nvim_buf_call(self.state.bufnr, function()
-        local ns_telescope_entry = vim.api.nvim_create_namespace "telescope_entry"
-        local preview_height = vim.api.nvim_win_get_height(self.state.winid)
+      api.nvim_buf_call(self.state.bufnr, function()
+        local ns_telescope_entry = api.nvim_create_namespace "telescope_entry"
+        local preview_height = api.nvim_win_get_height(self.state.winid)
 
         if self.state.bufname then
           return
@@ -1167,7 +1169,7 @@ previewers.pickers = defaulter(function(_)
         local picker = entry.value
         -- prefill buffer to be able to set lines individually
         local placeholder = utils.repeated_table(preview_height, "")
-        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, placeholder)
+        api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, placeholder)
 
         for index = 1, math.min(preview_height, picker.manager:num_results()) do
           local row = get_row(picker, preview_height, index)
@@ -1181,7 +1183,7 @@ previewers.pickers = defaulter(function(_)
             display = e.display
           end
 
-          vim.api.nvim_buf_set_lines(self.state.bufnr, row, row + 1, false, { display })
+          api.nvim_buf_set_lines(self.state.bufnr, row, row + 1, false, { display })
 
           if display_highlight ~= nil then
             for _, hl_block in ipairs(display_highlight) do
@@ -1216,7 +1218,7 @@ previewers.display_content = defaulter(function(_)
         type(entry.preview_command) == "function",
         "entry must provide a preview_command function which will put the content into the buffer"
       )
-      vim.api.nvim_buf_call(self.state.bufnr, function()
+      api.nvim_buf_call(self.state.bufnr, function()
         entry.preview_command(entry, self.state.bufnr)
       end)
     end,
