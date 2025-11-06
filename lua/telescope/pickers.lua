@@ -10,7 +10,6 @@ local popup = require "plenary.popup"
 local actions = require "telescope.actions"
 local config = require "telescope.config"
 local debounce = require "telescope.debounce"
-local deprecated = require "telescope.deprecated"
 local log = require "telescope.log"
 local mappings = require "telescope.mappings"
 local state = require "telescope.state"
@@ -236,8 +235,6 @@ function Picker:new(opts)
   if vim.fn.win_gettype() == "command" then
     error "Can't open telescope from command-line window. See E11"
   end
-
-  deprecated.options(opts)
 
   -- We need to clear at the beginning not on close because after close we can still have select:post
   -- etc ...
