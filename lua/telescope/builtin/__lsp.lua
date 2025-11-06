@@ -16,7 +16,7 @@ local nvim011 = utils.nvim011
 local function call_hierarchy(opts, method, title, direction, item)
   vim.lsp.buf_request(opts.bufnr, method, { item = item }, function(err, result)
     if err then
-      vim.api.nvim_err_writeln("Error handling " .. title .. ": " .. err.message)
+      utils.notify("lsp.call_hierarchy", { msg = title .. ": " .. err.message, level = "ERROR" })
       return
     end
 
@@ -97,7 +97,7 @@ local function calls(opts, direction)
   local params = client_position_params()
   vim.lsp.buf_request(opts.bufnr, "textDocument/prepareCallHierarchy", params, function(err, result)
     if err then
-      vim.api.nvim_err_writeln("Error when preparing call hierarchy: " .. err)
+      utils.notify("lsp.calls", { msg = err, level = "ERROR" })
       return
     end
 
@@ -203,7 +203,7 @@ local function list_or_jump(action, title, funname, params, opts)
     end
 
     for _, error in pairs(errors) do
-      vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. error.message)
+      utils.notify(funname, { msg = action .. " : " .. error.message, level = "ERROR" })
     end
 
     items = apply_action_handler(action, items, opts)
@@ -320,7 +320,7 @@ lsp.document_symbols = function(opts)
   local params = client_position_params(opts.winnr)
   vim.lsp.buf_request(opts.bufnr, "textDocument/documentSymbol", params, function(err, result, ctx, _)
     if err then
-      vim.api.nvim_err_writeln("Error when finding document symbols: " .. err.message)
+      utils.notify("lsp.document_symbols", { msg = err.message, level = "ERROR" })
       return
     end
 
@@ -378,7 +378,7 @@ lsp.workspace_symbols = function(opts)
   local params = { query = opts.query or "" }
   vim.lsp.buf_request(opts.bufnr, "workspace/symbol", params, function(err, server_result, ctx, _)
     if err then
-      vim.api.nvim_err_writeln("Error when finding workspace symbols: " .. err.message)
+      utils.notify("lsp.workspace_symbols", { msg = err.message, level = "ERROR" })
       return
     end
 
@@ -437,7 +437,7 @@ local function get_workspace_symbols_requester(bufnr, opts)
 
     for client_id, client_res in pairs(results) do
       if client_res.error then
-        vim.api.nvim_err_writeln("Error when executing workspace/symbol : " .. client_res.error.message)
+        utils.notify("lsp.workspace_symbols", { msg = client_res.error.message, level = "ERROR" })
       elseif client_res.result ~= nil then
         if nvim011 then
           local client = assert(vim.lsp.get_client_by_id(client_id))
