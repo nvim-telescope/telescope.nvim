@@ -6,8 +6,8 @@ version = MODREV .. SPECREV
 description = {
   summary = 'Find, Filter, Preview, Pick. All lua, all the time.',
   detailed = [[
-  A highly extendable fuzzy finder over lists. 
-  Built on the latest awesome features from neovim core. 
+  A highly extendable fuzzy finder over lists.
+  Built on the latest awesome features from neovim core.
   Telescope is centered around modularity, allowing for easy customization.
   ]],
   labels = { 'neovim', 'plugin', },
@@ -31,7 +31,6 @@ build = {
     'ftplugin',
     'plugin',
     'scripts',
-    'autoload',
     'data',
   }
 }
