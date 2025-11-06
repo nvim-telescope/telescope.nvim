@@ -11,7 +11,7 @@
 --- replace the `set` itself and then it will work great and they're done.
 ---@brief ]]
 
-local a = vim.api
+local api = vim.api
 
 local log = require "telescope.log"
 local Path = require "plenary.path"
@@ -35,7 +35,7 @@ local action_set = setmetatable({}, {
 action_set.shift_selection = function(prompt_bufnr, change)
   local count = vim.v.count
   count = count == 0 and 1 or count
-  count = a.nvim_get_mode().mode == "n" and count or 1
+  count = api.nvim_get_mode().mode == "n" and count or 1
   action_state.get_current_picker(prompt_bufnr):move_selection(change * count)
 end
 
@@ -101,7 +101,7 @@ do
     if buf_command ~= "drop" and buf_command ~= "tab drop" then
       vim.cmd(string.format("%s %d", buf_command, bufnr))
     else
-      vim.cmd(string.format("%s %s", buf_command, vim.fn.fnameescape(vim.api.nvim_buf_get_name(bufnr))))
+      vim.cmd(string.format("%s %s", buf_command, vim.fn.fnameescape(api.nvim_buf_get_name(bufnr))))
     end
   end
 end
@@ -170,7 +170,7 @@ action_set.edit = function(prompt_bufnr, command)
 
   local picker = action_state.get_current_picker(prompt_bufnr)
   require("telescope.pickers").on_close_prompt(prompt_bufnr)
-  pcall(vim.api.nvim_set_current_win, picker.original_win_id)
+  pcall(api.nvim_set_current_win, picker.original_win_id)
   local win_id = picker.get_selection_window(picker, entry)
 
   if picker.push_cursor_on_edit then
@@ -183,8 +183,8 @@ action_set.edit = function(prompt_bufnr, command)
     vim.fn.settagstack(vim.fn.win_getid(), { items = items }, "t")
   end
 
-  if win_id ~= 0 and a.nvim_get_current_win() ~= win_id then
-    vim.api.nvim_set_current_win(win_id)
+  if win_id ~= 0 and api.nvim_get_current_win() ~= win_id then
+    api.nvim_set_current_win(win_id)
   end
 
   if entry_bufnr then
@@ -195,7 +195,7 @@ action_set.edit = function(prompt_bufnr, command)
   else
     -- check if we didn't pick a different buffer
     -- prevents restarting lsp server
-    if vim.api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
+    if api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
       filename = Path:new(filename):normalize(vim.uv.cwd())
       pcall(vim.cmd, string.format("%s %s", command, vim.fn.fnameescape(filename)))
     end
@@ -208,7 +208,7 @@ action_set.edit = function(prompt_bufnr, command)
     end)
   end
 
-  local pos = vim.api.nvim_win_get_cursor(0)
+  local pos = api.nvim_win_get_cursor(0)
   if col == nil then
     if row == pos[1] then
       col = pos[2] + 1
@@ -220,10 +220,10 @@ action_set.edit = function(prompt_bufnr, command)
   end
 
   if row and col then
-    if vim.api.nvim_buf_get_name(0) == filename then
+    if api.nvim_buf_get_name(0) == filename then
       vim.cmd [[normal! m']]
     end
-    local ok, err_msg = pcall(a.nvim_win_set_cursor, 0, { row, col })
+    local ok, err_msg = pcall(api.nvim_win_set_cursor, 0, { row, col })
     if not ok then
       log.debug("Failed to move to cursor:", err_msg, row, col)
     end
@@ -243,7 +243,7 @@ local __scroll_previewer = function(prompt_bufnr)
     return
   end
 
-  local default_speed = vim.api.nvim_win_get_height(preview_winid) / 2
+  local default_speed = api.nvim_win_get_height(preview_winid) / 2
   local speed = status.picker.layout_config.scroll_speed or default_speed
   return previewer, speed
 end
@@ -282,12 +282,12 @@ end
 --      Valid directions include: "1", "-1"
 action_set.scroll_results = function(prompt_bufnr, direction)
   local status = state.get_status(prompt_bufnr)
-  local default_speed = vim.api.nvim_win_get_height(status.layout.results.winid) / 2
+  local default_speed = api.nvim_win_get_height(status.layout.results.winid) / 2
   local speed = status.picker.layout_config.scroll_speed or default_speed
 
   local input = direction > 0 and [[]] or [[]]
 
-  vim.api.nvim_win_call(status.layout.results.winid, function()
+  api.nvim_win_call(status.layout.results.winid, function()
     vim.cmd([[normal! ]] .. math.floor(speed) .. input)
   end)
 
@@ -302,12 +302,12 @@ end
 --      Valid directions include: "1", "-1"
 action_set.scroll_horizontal_results = function(prompt_bufnr, direction)
   local status = state.get_status(prompt_bufnr)
-  local default_speed = vim.api.nvim_win_get_height(status.results_win) / 2
+  local default_speed = api.nvim_win_get_height(status.results_win) / 2
   local speed = status.picker.layout_config.scroll_speed or default_speed
 
   local input = direction > 0 and [[zl]] or [[zh]]
 
-  vim.api.nvim_win_call(status.results_win, function()
+  api.nvim_win_call(status.results_win, function()
     vim.cmd([[normal! ]] .. math.floor(speed) .. input)
   end)
 end

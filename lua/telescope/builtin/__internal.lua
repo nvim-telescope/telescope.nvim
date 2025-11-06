@@ -1,3 +1,5 @@
+local api = vim.api
+
 local actions = require "telescope.actions"
 local action_set = require "telescope.actions.set"
 local action_state = require "telescope.actions.state"
@@ -73,8 +75,8 @@ internal.builtin = function(opts)
     return a.text < b.text
   end)
 
-  opts.bufnr = vim.api.nvim_get_current_buf()
-  opts.winnr = vim.api.nvim_get_current_win()
+  opts.bufnr = api.nvim_get_current_buf()
+  opts.winnr = api.nvim_get_current_win()
   pickers
     .new(opts, {
       prompt_title = title,
@@ -281,7 +283,7 @@ end
 
 internal.symbols = function(opts)
   local initial_mode = vim.fn.mode()
-  local files = vim.api.nvim_get_runtime_file("data/telescope-sources/*.json", true)
+  local files = api.nvim_get_runtime_file("data/telescope-sources/*.json", true)
   local data_path = (function()
     if not opts.symbol_path then
       return Path:new { vim.fn.stdpath "data", "telescope", "symbols" }
@@ -361,7 +363,7 @@ internal.commands = function(opts)
       prompt_title = "Commands",
       finder = finders.new_table {
         results = (function()
-          local command_iter = vim.api.nvim_get_commands {}
+          local command_iter = api.nvim_get_commands {}
           local commands = {}
 
           for _, cmd in pairs(command_iter) do
@@ -371,7 +373,7 @@ internal.commands = function(opts)
           local need_buf_command = vim.F.if_nil(opts.show_buf_command, true)
 
           if need_buf_command then
-            local buf_command_iter = vim.api.nvim_buf_get_commands(0, {})
+            local buf_command_iter = api.nvim_buf_get_commands(0, {})
             buf_command_iter[true] = nil -- remove the redundant entry
             for _, cmd in pairs(buf_command_iter) do
               table.insert(commands, cmd)
@@ -396,11 +398,11 @@ internal.commands = function(opts)
           local cmd = string.format([[:%s ]], val.name)
 
           if val.nargs == "0" then
-            local cr = vim.api.nvim_replace_termcodes("<cr>", true, false, true)
+            local cr = api.nvim_replace_termcodes("<cr>", true, false, true)
             cmd = cmd .. cr
           end
           vim.cmd [[stopinsert]]
-          vim.api.nvim_feedkeys(cmd, "nt", false)
+          api.nvim_feedkeys(cmd, "nt", false)
         end)
 
         return true
@@ -476,7 +478,7 @@ internal.quickfixhistory = function(opts)
           local entries = vim.tbl_map(function(i)
             return qf_entry_maker(i):display()
           end, entry.items)
-          vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, entries)
+          api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, entries)
         end,
       },
       sorter = conf.generic_sorter(opts),
@@ -505,7 +507,7 @@ internal.loclist = function(opts)
   for _, value in pairs(locations) do
     local bufnr = value.bufnr
     if filenames[bufnr] == nil then
-      filenames[bufnr] = vim.api.nvim_buf_get_name(bufnr)
+      filenames[bufnr] = api.nvim_buf_get_name(bufnr)
     end
     value.filename = filenames[bufnr]
   end
@@ -532,8 +534,8 @@ internal.oldfiles = function(opts)
   opts = apply_cwd_only_aliases(opts)
   opts.include_current_session = vim.F.if_nil(opts.include_current_session, true)
 
-  local current_buffer = vim.api.nvim_get_current_buf()
-  local current_file = vim.api.nvim_buf_get_name(current_buffer)
+  local current_buffer = api.nvim_get_current_buf()
+  local current_file = api.nvim_buf_get_name(current_buffer)
   local results = {}
 
   if utils.iswin then -- for slash problem in windows
@@ -545,7 +547,7 @@ internal.oldfiles = function(opts)
       local match = tonumber(string.match(buffer, "%s*(%d+)"))
       local open_by_lsp = string.match(buffer, "line 0$")
       if match and not open_by_lsp then
-        local file = vim.api.nvim_buf_get_name(match)
+        local file = api.nvim_buf_get_name(match)
         if utils.iswin then
           file = file:gsub("/", "\\")
         end
@@ -659,8 +661,8 @@ end
 
 internal.vim_options = function(opts)
   local res = {}
-  for _, v in pairs(vim.api.nvim_get_all_options_info()) do
-    local ok, value = pcall(vim.api.nvim_get_option_value, v.name, {})
+  for _, v in pairs(api.nvim_get_all_options_info()) do
+    local ok, value = pcall(api.nvim_get_option_value, v.name, {})
     if ok then
       v.value = value
       table.insert(res, v)
@@ -688,10 +690,10 @@ internal.vim_options = function(opts)
 
           local esc = ""
           if vim.fn.mode() == "i" then
-            esc = vim.api.nvim_replace_termcodes("<esc>", true, false, true)
+            esc = api.nvim_replace_termcodes("<esc>", true, false, true)
           end
 
-          vim.api.nvim_feedkeys(
+          api.nvim_feedkeys(
             selection.value.type == "boolean" and string.format("%s:set %s!", esc, selection.value.name)
               or string.format("%s:set %s=%s", esc, selection.value.name, selection.value.value),
             "m",
@@ -928,14 +930,14 @@ internal.buffers = function(opts)
       return false
     end
     -- only hide unloaded buffers if opts.show_all_buffers is false, keep them listed if true or nil
-    if opts.show_all_buffers == false and not vim.api.nvim_buf_is_loaded(bufnr) then
+    if opts.show_all_buffers == false and not api.nvim_buf_is_loaded(bufnr) then
       return false
     end
-    if opts.ignore_current_buffer and bufnr == vim.api.nvim_get_current_buf() then
+    if opts.ignore_current_buffer and bufnr == api.nvim_get_current_buf() then
       return false
     end
 
-    local bufname = vim.api.nvim_buf_get_name(bufnr)
+    local bufname = api.nvim_buf_get_name(bufnr)
 
     if opts.cwd_only and not buf_in_cwd(bufname, vim.uv.cwd()) then
       return false
@@ -944,7 +946,7 @@ internal.buffers = function(opts)
       return false
     end
     return true
-  end, vim.api.nvim_list_bufs())
+  end, api.nvim_list_bufs())
 
   if not next(bufnrs) then
     utils.notify("builtin.buffers", { msg = "No buffers found with the provided options", level = "INFO" })
@@ -1012,7 +1014,7 @@ end
 
 internal.colorscheme = function(opts)
   local before_background = vim.o.background
-  local before_color = vim.api.nvim_exec2("colorscheme", { output = true }).output
+  local before_color = api.nvim_exec2("colorscheme", { output = true }).output
   local need_restore = not not opts.enable_preview
 
   local colors = opts.colors or { before_color }
@@ -1056,8 +1058,8 @@ internal.colorscheme = function(opts)
   local previewer
   if opts.enable_preview then
     -- define previewer
-    local bufnr = vim.api.nvim_get_current_buf()
-    local p = vim.api.nvim_buf_get_name(bufnr)
+    local bufnr = api.nvim_get_current_buf()
+    local p = api.nvim_buf_get_name(bufnr)
 
     -- show current buffer content in previewer
     previewer = previewers.new_buffer_previewer {
@@ -1068,8 +1070,8 @@ internal.colorscheme = function(opts)
         if vim.uv.fs_stat(p) then
           conf.buffer_previewer_maker(p, self.state.bufnr, { bufname = self.state.bufname })
         else
-          local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-          vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
+          local lines = api.nvim_buf_get_lines(bufnr, 0, -1, false)
+          api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
         end
       end,
     }
@@ -1144,19 +1146,19 @@ internal.marks = function(opts)
   local local_marks = {
     items = vim.fn.getmarklist(opts.bufnr),
     name_func = function(_, line)
-      return vim.api.nvim_buf_get_lines(opts.bufnr, line - 1, line, false)[1]
+      return api.nvim_buf_get_lines(opts.bufnr, line - 1, line, false)[1]
     end,
   }
   local global_marks = {
     items = vim.fn.getmarklist(),
     name_func = function(mark, _)
       -- get buffer name if it is opened, otherwise get file name
-      return vim.api.nvim_get_mark(mark, {})[4]
+      return api.nvim_get_mark(mark, {})[4]
     end,
   }
   local marks_table = {}
   local marks_others = {}
-  local bufname = vim.api.nvim_buf_get_name(opts.bufnr)
+  local bufname = api.nvim_buf_get_name(opts.bufnr)
   local all_marks = {}
   opts.mark_type = vim.F.if_nil(opts.mark_type, "all")
   if opts.mark_type == "all" then
@@ -1265,8 +1267,8 @@ internal.keymaps = function(opts)
   end
 
   for _, mode in pairs(opts.modes) do
-    local global = vim.api.nvim_get_keymap(mode)
-    local buf_local = vim.api.nvim_buf_get_keymap(0, mode)
+    local global = api.nvim_get_keymap(mode)
+    local buf_local = api.nvim_buf_get_keymap(0, mode)
     if not opts.only_buf then
       extract_keymaps(global)
     end
@@ -1290,7 +1292,7 @@ internal.keymaps = function(opts)
             return
           end
 
-          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(selection.value.lhs, true, false, true), "t", true)
+          api.nvim_feedkeys(api.nvim_replace_termcodes(selection.value.lhs, true, false, true), "t", true)
           return actions.close(prompt_bufnr)
         end)
         return true
@@ -1356,7 +1358,7 @@ internal.highlights = function(opts)
 end
 
 internal.autocommands = function(opts)
-  local autocmds = vim.api.nvim_get_autocmds {}
+  local autocmds = api.nvim_get_autocmds {}
   table.sort(autocmds, function(lhs, rhs)
     return lhs.event < rhs.event
   end)
@@ -1453,13 +1455,13 @@ internal.tagstack = function(opts)
   for i = #tagstack, 1, -1 do
     local tag = tagstack[i]
     tag.bufnr = tag.from[1]
-    if vim.api.nvim_buf_is_valid(tag.bufnr) then
+    if api.nvim_buf_is_valid(tag.bufnr) then
       tags[#tags + 1] = tag
       tag.filename = vim.fn.bufname(tag.bufnr)
       tag.lnum = tag.from[2]
       tag.col = tag.from[3]
 
-      tag.text = vim.api.nvim_buf_get_lines(tag.bufnr, tag.lnum - 1, tag.lnum, false)[1] or ""
+      tag.text = api.nvim_buf_get_lines(tag.bufnr, tag.lnum - 1, tag.lnum, false)[1] or ""
     end
   end
 
@@ -1491,8 +1493,8 @@ internal.jumplist = function(opts)
   -- reverse the list
   local sorted_jumplist = {}
   for i = #jumplist, 1, -1 do
-    if vim.api.nvim_buf_is_valid(jumplist[i].bufnr) then
-      jumplist[i].text = vim.api.nvim_buf_get_lines(jumplist[i].bufnr, jumplist[i].lnum - 1, jumplist[i].lnum, false)[1]
+    if api.nvim_buf_is_valid(jumplist[i].bufnr) then
+      jumplist[i].text = api.nvim_buf_get_lines(jumplist[i].bufnr, jumplist[i].lnum - 1, jumplist[i].lnum, false)[1]
         or ""
       table.insert(sorted_jumplist, jumplist[i])
     end

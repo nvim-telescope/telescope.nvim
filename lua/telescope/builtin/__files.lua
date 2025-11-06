@@ -1,3 +1,5 @@
+local api = vim.api
+
 local action_state = require "telescope.actions.state"
 local action_set = require "telescope.actions.set"
 local actions = require "telescope.actions"
@@ -66,14 +68,14 @@ local get_open_filelist = function(grep_open_files, cwd)
       return false
     end
     return true
-  end, vim.api.nvim_list_bufs())
+  end, api.nvim_list_bufs())
   if not next(bufnrs) then
     return
   end
 
   local filelist = {}
   for _, bufnr in ipairs(bufnrs) do
-    local file = vim.api.nvim_buf_get_name(bufnr)
+    local file = api.nvim_buf_get_name(bufnr)
     table.insert(filelist, Path:new(file):make_relative(cwd))
   end
   return filelist
@@ -470,10 +472,10 @@ end
 
 files.current_buffer_fuzzy_find = function(opts)
   -- All actions are on the current buffer
-  local filename = vim.api.nvim_buf_get_name(opts.bufnr)
+  local filename = api.nvim_buf_get_name(opts.bufnr)
   local filetype = vim.bo[opts.bufnr].filetype
 
-  local lines = vim.api.nvim_buf_get_lines(opts.bufnr, 0, -1, false)
+  local lines = api.nvim_buf_get_lines(opts.bufnr, 0, -1, false)
   local lines_with_numbers = {}
 
   for lnum, line in ipairs(lines) do
@@ -569,7 +571,7 @@ files.current_buffer_fuzzy_find = function(opts)
           actions.close(prompt_bufnr)
           vim.schedule(function()
             vim.cmd "normal! m'"
-            vim.api.nvim_win_set_cursor(0, { selection.lnum, first_col })
+            api.nvim_win_set_cursor(0, { selection.lnum, first_col })
           end)
         end)
 
@@ -619,7 +621,7 @@ files.tags = function(opts)
               vim.fn.search(scode)
               vim.cmd "norm! zz"
             else
-              vim.api.nvim_win_set_cursor(0, { selection.lnum, 0 })
+              api.nvim_win_set_cursor(0, { selection.lnum, 0 })
             end
           end,
         }
