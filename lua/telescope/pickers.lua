@@ -1463,10 +1463,10 @@ function Picker:get_result_completor(results_bufnr, _, prompt, status_updater)
     if self.sorting_strategy == "descending" then
       local visible_result_rows = vim.api.nvim_win_get_height(self.results_win)
       vim.api.nvim_win_set_cursor(self.results_win, { self.max_results - visible_result_rows, 1 })
-      vim.api.nvim_win_set_cursor(self.results_win, { self.max_results, 1 })
-    else
-      vim.api.nvim_win_set_cursor(self.results_win, { 1, 0 })
     end
+    -- Move the cursor back to the row selected in _do_selection()
+    local target_pos = { (self._selection_row or 0) + 1, 0 }
+    vim.api.nvim_win_set_cursor(self.results_win, target_pos)
     self:_on_complete()
   end)
 end
