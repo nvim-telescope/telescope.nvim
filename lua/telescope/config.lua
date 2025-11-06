@@ -1,5 +1,4 @@
 local strings = require "plenary.strings"
-local deprecated = require "telescope.deprecated"
 local sorters = require "telescope.sorters"
 local os_sep = require("plenary.path").path.sep
 local has_win = vim.fn.has "win32" == 1
@@ -937,9 +936,6 @@ append(
 function config.set_defaults(user_defaults, tele_defaults)
   user_defaults = vim.F.if_nil(user_defaults, {})
   tele_defaults = vim.F.if_nil(tele_defaults, telescope_defaults)
-
-  -- Check if using layout keywords outside of `layout_config`
-  deprecated.options(user_defaults)
 
   local function get(name, default_val)
     if name == "layout_config" then
