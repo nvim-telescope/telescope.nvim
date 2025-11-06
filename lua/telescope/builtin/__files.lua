@@ -471,7 +471,7 @@ end
 files.current_buffer_fuzzy_find = function(opts)
   -- All actions are on the current buffer
   local filename = vim.api.nvim_buf_get_name(opts.bufnr)
-  local filetype = vim.api.nvim_buf_get_option(opts.bufnr, "filetype")
+  local filetype = vim.bo[opts.bufnr].filetype
 
   local lines = vim.api.nvim_buf_get_lines(opts.bufnr, 0, -1, false)
   local lines_with_numbers = {}

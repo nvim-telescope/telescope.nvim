@@ -161,7 +161,7 @@ end
 --- Attach regex highlighter
 utils.regex_highlighter = function(bufnr, ft)
   if has_filetype(ft) then
-    return pcall(vim.api.nvim_buf_set_option, bufnr, "syntax", ft)
+    return pcall(vim.api.nvim_set_option_value, "syntax", ft, { buf = bufnr })
   end
   return false
 end

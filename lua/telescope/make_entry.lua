@@ -628,7 +628,7 @@ function make_entry.gen_from_buffer(opts)
     local bufname = filename and Path:new(filename):normalize(cwd) or "[No Name]"
 
     local hidden = entry.info.hidden == 1 and "h" or "a"
-    local readonly = vim.api.nvim_buf_get_option(entry.bufnr, "readonly") and "=" or " "
+    local readonly = vim.bo[entry.bufnr].readonly and "=" or " "
     local changed = entry.info.changed == 1 and "+" or " "
     local indicator = entry.flag .. hidden .. readonly .. changed
     local lnum = 1

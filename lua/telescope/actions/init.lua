@@ -478,7 +478,7 @@ actions.paste_register = function(prompt_bufnr)
   actions.close(prompt_bufnr)
 
   -- ensure that the buffer can be written to
-  if vim.api.nvim_buf_get_option(vim.api.nvim_get_current_buf(), "modifiable") then
+  if vim.bo[0].modifiable then
     vim.api.nvim_paste(selection.content, true, -1)
   end
 end
@@ -1179,7 +1179,7 @@ actions.delete_buffer = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
 
   current_picker:delete_selection(function(selection)
-    local force = vim.api.nvim_buf_get_option(selection.bufnr, "buftype") == "terminal"
+    local force = vim.bo[selection.bufnr].buftype == "terminal"
     local ok = pcall(vim.api.nvim_buf_delete, selection.bufnr, { force = force })
 
     -- If the current buffer is deleted, switch to the previous buffer
@@ -1399,10 +1399,10 @@ actions.which_key = function(prompt_bufnr, opts)
   local km_buf = a.nvim_win_get_buf(km_win_id)
   a.nvim_buf_set_name(km_buf, "_TelescopeWhichKey")
   a.nvim_buf_set_name(km_opts.border.bufnr, "_TelescopeTelescopeWhichKeyBorder")
-  a.nvim_win_set_option(km_win_id, "winhl", "Normal:" .. opts.normal_hl)
-  a.nvim_win_set_option(km_opts.border.win_id, "winhl", "Normal:" .. opts.border_hl)
-  a.nvim_win_set_option(km_win_id, "winblend", opts.winblend)
-  a.nvim_win_set_option(km_win_id, "foldenable", false)
+  vim.wo[km_win_id].winhl = "Normal:" .. opts.normal_hl
+  vim.wo[km_opts.border.win_id].winhl = "Normal:" .. opts.border_hl
+  vim.wo[km_win_id].winblend = opts.winblend
+  vim.wo[km_win_id].foldenable = false
 
   vim.api.nvim_create_autocmd("BufLeave", {
     buffer = km_buf,

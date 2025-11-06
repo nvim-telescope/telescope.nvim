@@ -188,8 +188,8 @@ action_set.edit = function(prompt_bufnr, command)
   end
 
   if entry_bufnr then
-    if not vim.api.nvim_buf_get_option(entry_bufnr, "buflisted") then
-      vim.api.nvim_buf_set_option(entry_bufnr, "buflisted", true)
+    if not vim.bo[entry_bufnr].buflisted then
+      vim.bo[entry_bufnr].buflisted = true
     end
     edit_buffer(command, entry_bufnr)
   else
