@@ -68,7 +68,6 @@ wiki.
 ### Optional dependencies
 
 - [sharkdp/fd](https://github.com/sharkdp/fd) (finder)
-- [nvim-treesitter/nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) (finder/preview)
 - [neovim LSP](https://neovim.io/doc/user/lsp.html) (picker)
 - [devicons](https://github.com/nvim-tree/nvim-web-devicons) (icons)
 
@@ -374,7 +373,7 @@ Built-in functions. Ready to be bound to any key you like.
 
 | Functions            | Description                                       |
 | -------------------- | ------------------------------------------------- |
-| `builtin.treesitter` | Lists Function names, variables, from Treesitter! |
+| `builtin.treesitter` | Lists Function names, variables, ... using treesitter [`locals` queries](https://github.com/nvim-treesitter/nvim-treesitter/blob/main/CONTRIBUTING.md#locals) |
 
 ### Lists Picker
 

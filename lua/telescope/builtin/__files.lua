@@ -397,49 +397,39 @@ files.find_files = function(opts)
     :find()
 end
 
-local function prepare_match(entry, kind)
-  local entries = {}
-
-  if entry.node then
-    table.insert(entries, entry)
-  else
-    for name, item in pairs(entry) do
-      vim.list_extend(entries, prepare_match(item, name))
-    end
-  end
-
-  return entries
-end
-
 --  TODO: finish docs for opts.show_line
 files.treesitter = function(opts)
   opts.show_line = vim.F.if_nil(opts.show_line, true)
+  local ts = vim.treesitter
+  local ft = vim.bo[opts.bufnr].filetype
+  local lang = ts.language.get_lang(ft)
 
-  local has_nvim_treesitter, _ = pcall(require, "nvim-treesitter")
-  if not has_nvim_treesitter then
-    utils.notify("builtin.treesitter", {
-      msg = "This picker requires nvim-treesitter",
-      level = "ERROR",
-    })
-    return
-  end
-
-  local parsers = require "nvim-treesitter.parsers"
-  if not parsers.has_parser(parsers.get_buf_lang(opts.bufnr)) then
+  if not (lang and ts.language.add(lang)) then
     utils.notify("builtin.treesitter", {
       msg = "No parser for the current buffer",
       level = "ERROR",
     })
     return
   end
+  local query = ts.query.get(lang, "locals")
+  if not query then
+    utils.notify("builtin.treesitter", {
+      msg = "No locals query for the current buffer",
+      level = "ERROR",
+    })
+    return
+  end
 
-  local ts_locals = require "nvim-treesitter.locals"
+  local parser = assert(ts.get_parser(opts.bufnr))
+  parser:parse()
+  local root = parser:trees()[1]:root()
+
   local results = {}
-  for _, definition in ipairs(ts_locals.get_definitions(opts.bufnr)) do
-    local entries = prepare_match(ts_locals.get_local_nodes(definition))
-    for _, entry in ipairs(entries) do
-      entry.kind = vim.F.if_nil(entry.kind, "")
-      table.insert(results, entry)
+  for id, node, _ in query:iter_captures(root, opts.bufnr) do
+    local kind = query.captures[id]
+
+    if node and vim.startswith(kind, "local.definition") then
+      table.insert(results, { kind = kind:gsub("^local%.definition", ""):gsub("^%.", ""), node = node })
     end
   end
 

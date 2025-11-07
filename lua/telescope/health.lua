@@ -30,11 +30,6 @@ local optional_dependencies = {
 
 local required_plugins = {
   { lib = "plenary", optional = false },
-  {
-    lib = "nvim-treesitter",
-    optional = true,
-    info = "(Required for `:Telescope treesitter`.)",
-  },
 }
 
 local check_binary_installed = function(package)
