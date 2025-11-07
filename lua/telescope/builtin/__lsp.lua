@@ -100,7 +100,7 @@ local function calls(opts, direction)
   local params = client_position_params()
   lsp.buf_request(opts.bufnr, "textDocument/prepareCallHierarchy", params, function(err, result)
     if err then
-      utils.notify("lsp.calls", { msg = err, level = "ERROR" })
+      utils.notify("lsp.calls", { msg = err.message, level = "ERROR" })
       return
     end
 
@@ -149,7 +149,7 @@ end
 ---@param items vim.quickfix.entry[]
 ---@param opts table
 ---@return vim.quickfix.entry[]
-local function filter_file_ignore_patters(items, opts)
+local function filter_file_ignore_patterns(items, opts)
   local file_ignore_patterns = vim.F.if_nil(opts.file_ignore_patterns, conf.file_ignore_patterns)
   file_ignore_patterns = file_ignore_patterns or {}
   if vim.tbl_isempty(file_ignore_patterns) then
@@ -210,7 +210,7 @@ local function list_or_jump(action, title, funname, params, opts)
     end
 
     items = apply_action_handler(action, items, opts)
-    items = filter_file_ignore_patters(items, opts)
+    items = filter_file_ignore_patterns(items, opts)
 
     if vim.tbl_isempty(items) then
       utils.notify(funname, {
