@@ -633,7 +633,7 @@ function make_entry.gen_from_buffer(opts)
     local readonly = vim.bo[entry.bufnr].readonly and "=" or " "
     local changed = entry.info.changed == 1 and "+" or " "
     local indicator = entry.flag .. hidden .. readonly .. changed
-    local lnum = 1
+    local lnum = 0
 
     -- account for potentially stale lnum as getbufinfo might not be updated or from resuming buffers picker
     if entry.info.lnum ~= 0 then
