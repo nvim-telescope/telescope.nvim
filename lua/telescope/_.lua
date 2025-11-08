@@ -147,10 +147,9 @@ function LinesPipe:read()
   return read_rx()
 end
 
-function LinesPipe:iter(schedule)
-  if schedule == nil then
-    schedule = true
-  end
+function LinesPipe:iter(schedule, opts)
+  schedule = vim.F.if_nil(schedule, true)
+  local split_char = vim.F.if_nil(opts.split_char, "\n")
 
   local text = nil
   local index = nil
@@ -167,8 +166,7 @@ function LinesPipe:iter(schedule)
     return (previous or "") .. read
   end
 
-  local next_value = nil
-  next_value = function()
+  local function next_value()
     if schedule then
       async.util.scheduler()
     end
@@ -178,7 +176,7 @@ function LinesPipe:iter(schedule)
     end
 
     local start = index
-    index = string.find(text, "\n", index, true)
+    index = string.find(text, split_char, index, true)
 
     if index == nil then
       text = get_next_text(string.sub(text, start or 1))
