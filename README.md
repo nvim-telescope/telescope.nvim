@@ -84,26 +84,14 @@ Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```viml
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.8' }
-" or                                , { 'branch': '0.1.x' }
+Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.9' }
 ```
 
 Using [dein](https://github.com/Shougo/dein.vim)
 
 ```viml
 call dein#add('nvim-lua/plenary.nvim')
-call dein#add('nvim-telescope/telescope.nvim', { 'rev': '0.1.8' })
-" or                                         , { 'rev': '0.1.x' })
-```
-
-Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
-
-```lua
-use {
-  'nvim-telescope/telescope.nvim', tag = '0.1.8',
--- or                            , branch = '0.1.x',
-  requires = { {'nvim-lua/plenary.nvim'} }
-}
+call dein#add('nvim-telescope/telescope.nvim', { 'rev': '0.1.9' })
 ```
 
 Using [lazy.nvim](https://github.com/folke/lazy.nvim)
@@ -111,15 +99,13 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim)
 ```lua
 -- init.lua:
     {
-    'nvim-telescope/telescope.nvim', tag = '0.1.8',
--- or                              , branch = '0.1.x',
-      dependencies = { 'nvim-lua/plenary.nvim' }
+    'nvim-telescope/telescope.nvim', tag = '0.1.9',
+     dependencies = { 'nvim-lua/plenary.nvim' }
     }
 
 -- plugins/telescope.lua:
 return {
-    'nvim-telescope/telescope.nvim', tag = '0.1.8',
--- or                              , branch = '0.1.x',
+    'nvim-telescope/telescope.nvim', tag = '0.1.9',
       dependencies = { 'nvim-lua/plenary.nvim' }
     }
 ```
