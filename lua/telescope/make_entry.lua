@@ -527,6 +527,9 @@ function make_entry.gen_from_lsp_symbols(opts)
     items = display_items,
   }
   local type_highlight = vim.F.if_nil(opts.symbol_highlights or lsp_type_highlight)
+  local type_transform = opts.type_transform or function(type_str)
+    return type_str:lower()
+  end
 
   local make_display = function(entry)
     local msg
@@ -538,7 +541,7 @@ function make_entry.gen_from_lsp_symbols(opts)
     if hidden then
       return displayer {
         entry.symbol_name,
-        { entry.symbol_type:lower(), type_highlight[entry.symbol_type] },
+        { type_transform(entry.symbol_type), type_highlight[entry.symbol_type] },
         msg,
       }
     else
@@ -551,7 +554,7 @@ function make_entry.gen_from_lsp_symbols(opts)
           end,
         },
         entry.symbol_name,
-        { entry.symbol_type:lower(), type_highlight[entry.symbol_type] },
+        { type_transform(entry.symbol_type), type_highlight[entry.symbol_type] },
         msg,
       }
     end
