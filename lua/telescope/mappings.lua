@@ -179,6 +179,10 @@ mappings.default_mappings = config.values.default_mappings
       ["<C-r><C-a>"] = actions.insert_original_cWORD,
       ["<C-r><C-f>"] = actions.insert_original_cfile,
       ["<C-r><C-l>"] = actions.insert_original_cline,
+      ["<C-r><C-p>"] = actions.insert_original_file_path,
+      ["<C-r><C-n>"] = actions.insert_original_file_name,
+      ["<C-r><C-b>"] = actions.insert_original_file_bare_name,
+      ["<C-r><C-d>"] = actions.insert_original_file_dir,
 
       -- disable c-j because we dont want to allow new lines #2123
       ["<C-j>"] = actions.nop,
