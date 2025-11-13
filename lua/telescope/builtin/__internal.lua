@@ -1048,7 +1048,7 @@ internal.colorscheme = function(opts)
       "blue", "darkblue", "default", "delek", "desert", "elflord", "evening",
       "habamax", "industry", "koehler", "lunaperche", "morning", "murphy",
       "pablo", "peachpuff", "quiet", "retrobox", "ron", "shine", "slate",
-      "sorbet", "torte", "vim", "wildcharm", "zaibatsu", "zellner",
+      "sorbet", "torte", "unokai", "vim", "wildcharm", "zaibatsu", "zellner",
     }
     colors = vim.tbl_filter(function(color)
       return not vim.tbl_contains(builtins, color)
