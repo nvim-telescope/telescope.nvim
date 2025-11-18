@@ -468,7 +468,7 @@ M.dynamic_workspace_symbols = function(opts)
       },
       previewer = conf.qflist_previewer(opts),
       sorter = sorters.highlighter_only(opts),
-      attach_mappings = function(_, map)
+      attach_mappings = opts.attach_mappings or function(_, map)
         map("i", "<c-space>", actions.to_fuzzy_refine)
         return true
       end,
