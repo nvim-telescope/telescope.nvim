@@ -17,7 +17,7 @@ jobs:
           - os: ubuntu-latest
             url: https://github.com/neovim/neovim/releases/download/v0.9.5/nvim-linux64.tar.gz
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - run: date +%F > todays-date
       - name: Restore cache for today's nightly.
         uses: actions/cache@v4

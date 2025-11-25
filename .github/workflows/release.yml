@@ -9,7 +9,7 @@ jobs:
   luarocks-upload:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: LuaRocks Upload
         uses: lumen-oss/luarocks-tag-release@v7
         env:
