@@ -3,17 +3,12 @@ LinkedList.__index = LinkedList
 
 function LinkedList:new(opts)
   opts = opts or {}
-  local track_at = opts.track_at
-
   return setmetatable({
     size = 0,
-    head = false,
-    tail = false,
+    head = nil,
+    tail = nil,
 
-    -- track_at: Track at can track a particular node
-    --              Use to keep a node tracked at a particular index
-    --              This greatly decreases looping for checking values at this location.
-    track_at = track_at,
+    track_at = opts.track_at,
     _tracked_node = nil,
     tracked = nil,
   }, self)
@@ -24,15 +19,12 @@ function LinkedList:_increment()
   return self.size
 end
 
-local create_node = function(item)
-  return {
-    item = item,
-  }
+local function create_node(item)
+  return { item = item }
 end
 
 function LinkedList:append(item)
   local final_size = self:_increment()
-
   local node = create_node(item)
 
   if not self.head then
@@ -46,11 +38,9 @@ function LinkedList:append(item)
 
   self.tail = node
 
-  if self.track_at then
-    if final_size == self.track_at then
-      self.tracked = item
-      self._tracked_node = node
-    end
+  if self.track_at and final_size == self.track_at then
+    self._tracked_node = node
+    self.tracked = item
   end
 end
 
@@ -77,33 +67,16 @@ function LinkedList:prepend(item)
     else
       return
     end
-
     self.tracked = self._tracked_node.item
   end
 end
 
--- [a, b, c]
---  b.prev = a
---  b.next = c
---
---  a.next = b
---  c.prev = c
---
--- insert d after b
--- [a, b, d, c]
---
---  b.next = d
---  b.prev = a
---
--- Place "item" after "node" (which is at index `index`)
 function LinkedList:place_after(index, node, item)
-  local new_node = create_node(item)
+  assert(node, "place_after: node is nil")
 
-  assert(node.prev ~= node)
-  assert(node.next ~= node)
+  local new_node = create_node(item)
   local final_size = self:_increment()
 
-  -- Update tail to be the next node.
   if self.tail == node then
     self.tail = new_node
   end
@@ -111,15 +84,10 @@ function LinkedList:place_after(index, node, item)
   new_node.prev = node
   new_node.next = node.next
 
+  if node.next then
+    node.next.prev = new_node
+  end
   node.next = new_node
-
-  if new_node.prev then
-    new_node.prev.next = new_node
-  end
-
-  if new_node.next then
-    new_node.next.prev = new_node
-  end
 
   if self.track_at then
     if index == self.track_at then
@@ -133,36 +101,27 @@ function LinkedList:place_after(index, node, item)
         return
       end
     end
-
     self.tracked = self._tracked_node.item
   end
 end
 
 function LinkedList:place_before(index, node, item)
-  local new_node = create_node(item)
+  assert(node, "place_before: node is nil")
 
-  assert(node.prev ~= node)
-  assert(node.next ~= node)
+  local new_node = create_node(item)
   local final_size = self:_increment()
 
-  -- Update head to be the node we are inserting.
   if self.head == node then
     self.head = new_node
   end
 
-  new_node.prev = node.prev
   new_node.next = node
+  new_node.prev = node.prev
 
+  if node.prev then
+    node.prev.next = new_node
+  end
   node.prev = new_node
-  -- node.next = node.next
-
-  if new_node.prev then
-    new_node.prev.next = new_node
-  end
-
-  if new_node.next then
-    new_node.next.prev = new_node
-  end
 
   if self.track_at then
     if index == self.track_at - 1 then
@@ -176,79 +135,58 @@ function LinkedList:place_before(index, node, item)
         return
       end
     end
-
     self.tracked = self._tracked_node.item
   end
 end
 
--- Do you even do this in linked lists...?
--- function LinkedList:remove(item)
--- end
-
 function LinkedList:iter()
-  local current_node = self.head
-
+  local current = self.head
   return function()
-    local node = current_node
-    if not node then
-      return nil
-    end
-
-    current_node = current_node.next
+    local node = current
+    if not node then return nil end
+    current = current.next
     return node.item
   end
 end
 
 function LinkedList:ipairs()
   local index = 0
-  local current_node = self.head
-
+  local current = self.head
   return function()
-    local node = current_node
-    if not node then
-      return nil
-    end
-
-    current_node = current_node.next
+    local node = current
+    if not node then return nil end
     index = index + 1
+    current = current.next
     return index, node.item, node
   end
 end
 
 function LinkedList:truncate(max_results)
-  if max_results >= self.size then
-    return
-  end
+  if max_results >= self.size then return end
 
-  local current_node
+  local current
+
   if max_results < self.size - max_results then
-    local index = 1
-    current_node = self.head
-    while index < max_results do
-      local node = current_node
-      if not node.next then
-        break
-      end
-      current_node = current_node.next
-      index = index + 1
+    current = self.head
+    for i = 1, max_results - 1 do
+      current = current.next
     end
     self.size = max_results
   else
-    current_node = self.tail
+    current = self.tail
     while self.size > max_results do
-      if current_node.prev == nil then
-        break
-      end
-      current_node = current_node.prev
+      current = current.prev
       self.size = self.size - 1
     end
   end
-  self.tail = current_node
+
+  self.tail = current
   self.tail.next = nil
-  if max_results < self.track_at then
+
+  if self.track_at and max_results < self.track_at then
     self.track_at = max_results
-    self.tracked = current_node.item
-    self._tracked_node = current_node
+    self._tracked_node = current
+    self.tracked = current.item
   end
 end
 
