@@ -511,9 +511,11 @@ function Picker:_create_window(bufnr, popup_opts)
   local win, opts = popup.create(what, popup_opts)
 
   vim.wo[win].winblend = self.window.winblend
+  vim.wo[win].statusline = ""
   local border_win = opts and opts.border and opts.border.win_id
   if border_win then
     vim.wo[border_win].winblend = self.window.winblend
+    vim.wo[border_win].statusline = ""
   end
   return win, opts, border_win
 end
