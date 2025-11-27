@@ -477,50 +477,53 @@ files.current_buffer_fuzzy_find = function(opts)
     })
   end
 
+  -- TODO(clason): refactor when dropping support for Nvim 0.10 (no option, no filetype fallback)
   opts.results_ts_highlight = vim.F.if_nil(opts.results_ts_highlight, true)
   local lang = vim.treesitter.language.get_lang(filetype) or filetype
   if opts.results_ts_highlight and lang and utils.has_ts_parser(lang) then
     local parser = vim.treesitter.get_parser(opts.bufnr, lang)
     local query = vim.treesitter.query.get(lang, "highlights")
-    local root = parser:parse()[1]:root()
+    if query then
+      local root = parser:parse()[1]:root()
 
-    local line_highlights = setmetatable({}, {
-      __index = function(t, k)
-        local obj = {}
-        rawset(t, k, obj)
-        return obj
-      end,
-    })
+      local line_highlights = setmetatable({}, {
+        __index = function(t, k)
+          local obj = {}
+          rawset(t, k, obj)
+          return obj
+        end,
+      })
 
-    for id, node in query:iter_captures(root, opts.bufnr, 0, -1) do
-      local hl = "@" .. query.captures[id]
-      if hl and type(hl) ~= "number" then
-        local row1, col1, row2, col2 = node:range()
+      for id, node in query:iter_captures(root, opts.bufnr, 0, -1) do
+        local hl = "@" .. query.captures[id]
+        if hl and type(hl) ~= "number" then
+          local row1, col1, row2, col2 = node:range()
 
-        if row1 == row2 then
-          local row = row1 + 1
+          if row1 == row2 then
+            local row = row1 + 1
 
-          for index = col1, col2 do
-            line_highlights[row][index] = hl
-          end
-        else
-          local row = row1 + 1
-          for index = col1, #lines[row] do
-            line_highlights[row][index] = hl
-          end
-
-          while row < row2 + 1 do
-            row = row + 1
-
-            for index = 0, #(lines[row] or {}) do
+            for index = col1, col2 do
               line_highlights[row][index] = hl
+            end
+          else
+            local row = row1 + 1
+            for index = col1, #lines[row] do
+              line_highlights[row][index] = hl
+            end
+
+            while row < row2 + 1 do
+              row = row + 1
+
+              for index = 0, #(lines[row] or {}) do
+                line_highlights[row][index] = hl
+              end
             end
           end
         end
       end
-    end
 
-    opts.line_highlights = line_highlights
+      opts.line_highlights = line_highlights
+    end
   end
 
   pickers
