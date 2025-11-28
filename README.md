@@ -79,14 +79,14 @@ Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim', { 'tag': 'v0.1.9' }
+Plug 'nvim-telescope/telescope.nvim', { 'tag': 'v0.2.0' }
 ```
 
 Using [dein](https://github.com/Shougo/dein.vim)
 
 ```vim
 call dein#add('nvim-lua/plenary.nvim')
-call dein#add('nvim-telescope/telescope.nvim', { 'rev': 'v0.1.9' })
+call dein#add('nvim-telescope/telescope.nvim', { 'rev': 'v0.2.0' })
 ```
 
 Using [lazy.nvim](https://github.com/folke/lazy.nvim)
@@ -94,13 +94,13 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim)
 ```lua
 -- init.lua:
     {
-    'nvim-telescope/telescope.nvim', tag = 'v0.1.9',
+    'nvim-telescope/telescope.nvim', tag = 'v0.2.0',
      dependencies = { 'nvim-lua/plenary.nvim' }
     }
 
 -- plugins/telescope.lua:
 return {
-    'nvim-telescope/telescope.nvim', tag = 'v0.1.9',
+    'nvim-telescope/telescope.nvim', tag = 'v0.2.0',
       dependencies = { 'nvim-lua/plenary.nvim' }
     }
 ```
