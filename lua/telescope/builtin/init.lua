@@ -70,6 +70,7 @@ builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_g
 ---@field disable_coordinates boolean: don't show the line and row numbers (default: false)
 ---@field only_sort_text boolean: only sort the text, not the file, line or row (default: false)
 ---@field file_encoding string: file encoding for the entry & previewer
+---@field hidden boolean: if true, hidden directories and files will be searched (default: false)
 builtin.grep_string = require_on_exported_call("telescope.builtin.__files").grep_string
 
 --- Search for files (respecting .gitignore)
