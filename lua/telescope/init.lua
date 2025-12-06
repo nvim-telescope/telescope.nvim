@@ -106,18 +106,26 @@ local telescope = {}
 ---   pickers = {
 ---     -- Default configuration for builtin pickers goes here:
 ---     -- picker_name = {
----     --   picker_config_key = value,
+---     --   default_config_key = value_one
+---     --   picker_config_key = value_two,
 ---     --   ...
 ---     -- }
----     -- Now the picker_config_key will be applied every time you call this
----     -- builtin picker
+---     -- Options set here will be applied everytime you call this builtin
+---     -- picker. Each entry accepts a subset of the "defaults" configuration
+---     -- options, as well as the picker's own specific configuration options.
+---     -- Defaults options that are also valid for pickers are marked as
+---     -- "Picker-Overridable" in telescope.setup.defaults. Learn about one
+---     -- picker's specific set of options at telescope.builtin.$PICKER_NAME
 ---   },
 ---   extensions = {
 ---     -- Your extension configuration goes here:
 ---     -- extension_name = {
 ---     --   extension_config_key = value,
 ---     -- }
----     -- please take a look at the readme of the extension you want to configure
+---     -- Extensions should generally accept the same subset of defaults config
+---     -- options as builtin pickers, although that may differ depending on the
+---     -- extension. Make sure to read the extension's README or builtin
+---     -- documentation to know its specific configuration options.
 ---   }
 --- }
 --- </code>
