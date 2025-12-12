@@ -225,6 +225,8 @@ local Picker = {}
 Picker.__index = Picker
 
 --- Create new picker
+--- @param opts table: options used to create the picker
+--- @field scrolling_limit integer: maximum number of results to display.
 function Picker:new(opts)
   opts = opts or {}
 
