@@ -1527,8 +1527,10 @@ end
 ---@return Picker
 pickers.new = function(opts, defaults)
   opts = opts or {}
+  opts.attach_mappings = opts.attach_mappings or config.values.attach_mappings
   defaults = defaults or {}
   local result = {}
+  -- Inspect(opts)
 
   for k, v in pairs(opts) do
     assert(type(k) == "string" or type(k) == "number", "Should be string or number, found: " .. type(k))
