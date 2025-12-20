@@ -1045,7 +1045,6 @@ previewers.autocommands = defaulter(function(_)
 
         vim.bo[self.state.bufnr].filetype = "vim"
         api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, display)
-        utils.hl_range(self.state.bufnr, 0, "TelescopeBorder", { 1, 0 }, { 1, -1 })
       else
         for idx, item in ipairs(results) do
           if item == entry then
