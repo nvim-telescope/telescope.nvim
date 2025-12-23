@@ -438,6 +438,7 @@ layout_strategies.center = make_documented_layout(
   "center",
   vim.tbl_extend("error", shared_options, {
     preview_cutoff = "When lines are less than this value, the preview will be disabled",
+    results_height = "Optional height specifically for results window",
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -527,6 +528,17 @@ layout_strategies.center = make_documented_layout(
       prompt.line = prompt.line + 1
       results.line = results.line + 1
       preview.line = preview.line + 1
+    end
+
+    -- set the height of the results window if specified
+    if layout_config.results_height then
+      local diff = results.height - resolve.resolve_height(layout_config.results_height)(self, max_columns, max_lines)
+      results.height = results.height - diff
+      results.line = results.line + diff
+      preview.height = preview.height + diff
+      if layout_config.prompt_position == "top" then
+        prompt.line = prompt.line + diff
+      end
     end
 
     return {

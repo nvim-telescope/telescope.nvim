@@ -2312,6 +2312,7 @@ layout_strategies.center()                         *telescope.layout.center()*
 
     `picker.layout_config` unique options:
       - preview_cutoff: When lines are less than this value, the preview will be disabled
+      - results_height: Optional height specifically for results window
 
 
 layout_strategies.cursor()                         *telescope.layout.cursor()*
