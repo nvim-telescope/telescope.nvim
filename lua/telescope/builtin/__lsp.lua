@@ -232,6 +232,8 @@ local function list_or_jump(action, title, funname, params, opts)
           cmd = "vnew"
         elseif opts.jump_type == "tab drop" then
           cmd = "tab drop"
+        elseif type(opts.jump_type) == "function" then
+          opts.jump_type()
         end
 
         if cmd then
