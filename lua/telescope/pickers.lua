@@ -355,8 +355,7 @@ function Picker:new(opts)
     obj.hidden_previewer = nil
   end
 
-  -- TODO: It's annoying that this is create and everything else is "new"
-  obj.scroller = p_scroller.create(obj.scroll_strategy, obj.sorting_strategy)
+  obj.scroller = p_scroller.new(obj.scroll_strategy, obj.sorting_strategy)
 
   obj.highlighter = p_highlighter.new(obj)
 

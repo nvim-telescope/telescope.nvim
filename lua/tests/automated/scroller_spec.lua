@@ -9,7 +9,7 @@ describe("scroller", function()
   local max_results = 10
 
   describe("ascending cycle", function()
-    local cycle_scroller = p_scroller.create("cycle", "ascending")
+    local cycle_scroller = p_scroller.new("cycle", "ascending")
 
     it("should return values within the max results", function()
       eq(5, cycle_scroller(max_results, max_results, 5))
@@ -33,7 +33,7 @@ describe("scroller", function()
   end)
 
   describe("ascending limit", function()
-    local limit_scroller = p_scroller.create("limit", "ascending")
+    local limit_scroller = p_scroller.new("limit", "ascending")
 
     it("should return values within the max results", function()
       eq(5, limit_scroller(max_results, max_results, 5))
@@ -58,7 +58,7 @@ describe("scroller", function()
   end)
 
   describe("descending cycle", function()
-    local cycle_scroller = p_scroller.create("cycle", "descending")
+    local cycle_scroller = p_scroller.new("cycle", "descending")
 
     it("should return values within the max results", function()
       eq(5, cycle_scroller(max_results, max_results, 5))
@@ -82,7 +82,7 @@ describe("scroller", function()
   end)
 
   describe("descending limit", function()
-    local limit_scroller = p_scroller.create("limit", "descending")
+    local limit_scroller = p_scroller.new("limit", "descending")
 
     it("should return values within the max results", function()
       eq(5, limit_scroller(max_results, max_results, 5))
@@ -108,7 +108,7 @@ describe("scroller", function()
 
   describe("https://github.com/nvim-telescope/telescope.nvim/pull/293#issuecomment-751463224", function()
     it("should handle having many more results than necessary", function()
-      local scroller = p_scroller.create("cycle", "descending")
+      local scroller = p_scroller.new("cycle", "descending")
 
       -- 23 112 23
       eq(0, scroller(23, 112, 23))

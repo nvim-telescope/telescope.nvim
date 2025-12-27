@@ -1,46 +1,49 @@
 local scroller = {}
 
-local range_calculators = {
-  ascending = function(max_results, num_results)
-    return 0, math.min(max_results, num_results)
-  end,
+local Scroller = {}
+Scroller.__index = Scroller
 
-  descending = function(max_results, num_results)
-    return math.max(max_results - num_results, 0), max_results
-  end,
-}
+function Scroller:new(scroll_strategy, sorting_strategy)
+  local range_calculators = {
+    ascending = function(max_results, num_results)
+      return 0, math.min(max_results, num_results)
+    end,
 
-local scroll_calculators = {
-  cycle = function(range_fn)
-    return function(max_results, num_results, row)
-      local start, finish = range_fn(max_results, num_results)
+    descending = function(max_results, num_results)
+      return math.max(max_results - num_results, 0), max_results
+    end,
+  }
 
-      if row >= finish then
-        return start
-      elseif row < start then
-        return (finish - 1 < 0) and finish or finish - 1
+  local scroll_calculators = {
+    cycle = function(range_fn)
+      return function(max_results, num_results, row)
+        local start, finish = range_fn(max_results, num_results)
+
+        if row >= finish then
+          return start
+        elseif row < start then
+          return (finish - 1 < 0) and finish or finish - 1
+        end
+
+        return row
       end
+    end,
 
-      return row
-    end
-  end,
+    limit = function(range_fn)
+      return function(max_results, num_results, row)
+        local start, finish = range_fn(max_results, num_results)
 
-  limit = function(range_fn)
-    return function(max_results, num_results, row)
-      local start, finish = range_fn(max_results, num_results)
+        if row >= finish and finish > 0 then
+          return finish - 1
+        elseif row < start then
+          return start
+        end
 
-      if row >= finish and finish > 0 then
-        return finish - 1
-      elseif row < start then
-        return start
+        return row
       end
+    end,
+  }
 
-      return row
-    end
-  end,
-}
-
-scroller.create = function(scroll_strategy, sorting_strategy)
   local range_fn = range_calculators[sorting_strategy]
   if not range_fn then
     error(debug.traceback("Unknown sorting strategy: " .. sorting_strategy))
@@ -52,35 +55,42 @@ scroller.create = function(scroll_strategy, sorting_strategy)
   end
 
   local calculator = scroll_fn(range_fn)
-  return function(max_results, num_results, row)
-    local result = calculator(max_results, num_results, row)
 
-    if result < 0 then
-      error(
-        string.format(
-          "Must never return a negative row: { result = %s, args = { %s %s %s } }",
-          result,
-          max_results,
-          num_results,
-          row
-        )
+  local obj = setmetatable({
+    calculator = calculator,
+  }, self)
+
+  return obj
+end
+
+Scroller.__call = function(self, max_results, num_results, row)
+  local result = self.calculator(max_results, num_results, row)
+
+  if result < 0 then
+    error(
+      string.format(
+        "Must never return a negative row: { result = %s, args = { %s %s %s } }",
+        result,
+        max_results,
+        num_results,
+        row
       )
-    end
-
-    if result > max_results then
-      error(
-        string.format(
-          "Must never exceed max results: { result = %s, args = { %s %s %s } }",
-          result,
-          max_results,
-          num_results,
-          row
-        )
-      )
-    end
-
-    return result
+    )
   end
+
+  if result > max_results then
+    error(
+      string.format(
+        "Must never exceed max results: { result = %s, args = { %s %s %s } }",
+        result,
+        max_results,
+        num_results,
+        row
+      )
+    )
+  end
+
+  return result
 end
 
 scroller.top = function(sorting_strategy, max_results, num_results)
@@ -119,6 +129,10 @@ end
 
 scroller.worse = function(sorting_strategy)
   return -(scroller.better(sorting_strategy))
+end
+
+scroller.new = function(...)
+  return Scroller:new(...)
 end
 
 return scroller
