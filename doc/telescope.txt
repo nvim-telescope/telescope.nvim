@@ -1,3 +1,4 @@
+*telescope.txt*                                           Plugin for fuzzy finding
 ================================================================================
 INTRODUCTION                                                    *telescope.nvim*
 
