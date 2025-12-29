@@ -202,9 +202,9 @@ action_set.edit = function(prompt_bufnr, command)
   end
 
   -- HACK: fixes folding: https://github.com/nvim-telescope/telescope.nvim/issues/699
-  if vim.wo.foldmethod == "expr" then
+  if vim.wo[0][0].foldmethod == "expr" then
     vim.schedule(function()
-      vim.cmd "normal! zX"
+      vim.wo[0][0].foldmethod = "expr"
     end)
   end
 
