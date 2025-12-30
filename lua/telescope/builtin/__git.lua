@@ -371,7 +371,7 @@ git.status = function(opts)
     return
   end
 
-  local args = { "status", "--porcelain=v1", "--", "." }
+  local args = { "status", "-z", "--", "." }
 
   local gen_new_finder = function()
     if vim.F.if_nil(opts.expand_dir, true) then
@@ -379,6 +379,7 @@ git.status = function(opts)
     end
     local git_cmd = git_command(args, opts)
     opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_status(opts))
+    opts.split_char = "\0"
     return finders.new_oneshot_job(git_cmd, opts)
   end
 
