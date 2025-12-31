@@ -72,37 +72,19 @@ wiki.
 
 ### Installation
 
-It is suggested to either use the latest release
-[tag](https://github.com/nvim-telescope/telescope.nvim/tags).
-
-Using [vim-plug](https://github.com/junegunn/vim-plug)
-
-```vim
-Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim', { 'tag': 'v0.2.0' }
-```
-
-Using [dein](https://github.com/Shougo/dein.vim)
-
-```vim
-call dein#add('nvim-lua/plenary.nvim')
-call dein#add('nvim-telescope/telescope.nvim', { 'rev': 'v0.2.0' })
-```
-
-Using [lazy.nvim](https://github.com/folke/lazy.nvim)
+We recommend pinning to the latest release
+[tag](https://github.com/nvim-telescope/telescope.nvim/tags),
+e.g. using [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
--- init.lua:
-    {
-    'nvim-telescope/telescope.nvim', tag = 'v0.2.0',
-     dependencies = { 'nvim-lua/plenary.nvim' }
+{
+    'nvim-telescope/telescope.nvim', tag = '*',
+    dependencies = {
+        'nvim-lua/plenary.nvim',
+        -- optional but recommended
+        { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
     }
-
--- plugins/telescope.lua:
-return {
-    'nvim-telescope/telescope.nvim', tag = 'v0.2.0',
-      dependencies = { 'nvim-lua/plenary.nvim' }
-    }
+}
 ```
 
 ### Checkhealth
