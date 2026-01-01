@@ -23,10 +23,10 @@ jobs:
           sudo luarocks install luacheck
 
       - name: Lint
-        run: sudo make lint
+        run: make lint
 
   stylua:
-    name: stylua
+    name: Stylua
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -35,4 +35,12 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
           # CLI arguments
-          args: --color always --check lua/
+          args: --color always --check .
+
+  luals:
+    name: Luals
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: make checklua
+
