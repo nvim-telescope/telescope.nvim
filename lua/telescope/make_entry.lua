@@ -154,6 +154,7 @@ do
     local cwd = utils.path_expand(opts.cwd or vim.uv.cwd())
 
     local disable_devicons = opts.disable_devicons
+    local icon_separator = opts.icon_separator
 
     local mt_file_entry = {}
 
@@ -162,7 +163,7 @@ do
       local hl_group, icon
       local display, path_style = utils.transform_path(opts, entry.value)
 
-      display, hl_group, icon = utils.transform_devicons(entry.value, display, disable_devicons)
+      display, hl_group, icon = utils.transform_devicons(entry.value, display, disable_devicons, icon_separator)
 
       if hl_group then
         local style = { { { 0, #icon + 1 }, hl_group } }
@@ -275,6 +276,7 @@ do
     end
 
     local disable_devicons = opts.disable_devicons
+    local icon_separator = opts.icon_separator
     local disable_coordinates = opts.disable_coordinates
     local only_sort_text = opts.only_sort_text
 
@@ -333,7 +335,8 @@ do
         local display, hl_group, icon = utils.transform_devicons(
           entry.filename,
           string.format(display_string, display_filename, coordinates, entry.text),
-          disable_devicons
+          disable_devicons,
+          icon_separator
         )
 
         if hl_group then
@@ -587,6 +590,7 @@ function make_entry.gen_from_buffer(opts)
   opts = opts or {}
 
   local disable_devicons = opts.disable_devicons
+  local icon_separator = opts.icon_separator or ""
 
   local icon_width = 0
   if not disable_devicons then
@@ -600,6 +604,7 @@ function make_entry.gen_from_buffer(opts)
       { width = opts.bufnr_width },
       { width = 4 },
       { width = icon_width },
+      { width = #icon_separator },
       { remaining = true },
     },
   }
@@ -616,6 +621,7 @@ function make_entry.gen_from_buffer(opts)
       { entry.bufnr, "TelescopeResultsNumber" },
       { entry.indicator, "TelescopeResultsComment" },
       { icon, hl_group },
+      { icon_separator },
       {
         display_bufname .. ":" .. entry.lnum,
         function()
