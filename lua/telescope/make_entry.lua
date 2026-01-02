@@ -1065,8 +1065,8 @@ function make_entry.gen_from_ctags(opts)
             return path_style
           end,
         },
-        entry.tag,
         entry.kind,
+        entry.tag,
         scode,
       }
     end
