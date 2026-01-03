@@ -1191,6 +1191,7 @@ builtin.git_status({opts})                    *telescope.builtin.git_status()*
     - Default keymaps:
       - `<Tab>`: stages or unstages the currently selected file
       - `<cr>`: opens the currently selected file
+      - <C-r>: restores the currently selected file to index
 
 
     Parameters: ~
@@ -1470,7 +1471,7 @@ builtin.buffers({opts})                          *telescope.builtin.buffers()*
                                             recent used. Not just the current
                                             and last one (default: false)
         {bufnr_width}           (number)    Defines the width of the buffer
-                                            numbers in front of the filenames 
+                                            numbers in front of the filenames
                                             (default: dynamic)
         {file_encoding}         (string)    file encoding for the previewer
         {sort_buffers}          (function)  sort fn(bufnr_a, bufnr_b). true if
@@ -2454,12 +2455,12 @@ resolver.resolve_height()                 *telescope.resolve.resolve_height()*
     3. function
        Must have signature: function(self, max_columns, max_lines): number
     4. table of the form: { val, max = ..., min = ... }
-       val has to be in the first form 0 <= val < 1 and only one is given, 
+       val has to be in the first form 0 <= val < 1 and only one is given,
        `min` or `max` as fixed number
     5. table of the form: {padding = `foo`}
        where `foo` has one of the previous three forms.
        The height is then set to be the remaining space after padding. For
-       example, if the window has height 50, and the input is {padding = 5}, 
+       example, if the window has height 50, and the input is {padding = 5},
        the height returned will be `40 = 50 - 2*5`
 
     The returned function will have signature: function(self, max_columns,
@@ -2477,12 +2478,12 @@ resolver.resolve_width()                   *telescope.resolve.resolve_width()*
     3. function
        Must have signature: function(self, max_columns, max_lines): number
     4. table of the form: { val, max = ..., min = ... }
-       val has to be in the first form 0 <= val < 1 and only one is given, 
+       val has to be in the first form 0 <= val < 1 and only one is given,
        `min` or `max` as fixed number
     5. table of the form: {padding = `foo`}
        where `foo` has one of the previous three forms.
        The width is then set to be the remaining space after padding. For
-       example, if the window has width 100, and the input is {padding = 5}, 
+       example, if the window has width 100, and the input is {padding = 5},
        the width returned will be `90 = 100 - 2*5`
 
     The returned function will have signature: function(self, max_columns,
@@ -2520,9 +2521,9 @@ entry) which contains the following important keys:
 - valid bool (optional): is an optional key because it defaults to true but if
   the key is set to false it will not be displayed by the picker
 - ordinal string: is the text that is used for filtering
-- display string|function: is either a string of the text that is being 
-  displayed or a function receiving the entry at a later stage, when the entry 
-  is actually being displayed. A function can be useful here if a complex 
+- display string|function: is either a string of the text that is being
+  displayed or a function receiving the entry at a later stage, when the entry
+  is actually being displayed. A function can be useful here if a complex
   calculation has to be done. `make_entry` can also return a second value - a
   highlight array which will then apply to the line. Highlight entry in this
   array has the following signature `{ { start_col, end_col }, hl_group }`
@@ -3829,7 +3830,7 @@ previewers.Previewer()                      *telescope.previewers.Previewer()*
     - `:scroll_horizontal_fn(direction)`
 
     `Previewer:new()` expects a table as input with following keys:
-      - `setup` function(self): Will be called the first time preview will be 
+      - `setup` function(self): Will be called the first time preview will be
         called.
       - `teardown` function(self): Will be called on clean up.
       - `preview_fn` function(self, entry, status): Will be called each time a
@@ -3838,11 +3839,11 @@ previewers.Previewer()                      *telescope.previewers.Previewer()*
       - `dynamic_title` function(self, entry): Will return the dynamic title of
         the previewer. Will only be called when config value
         dynamic_preview_title is true.
-      - `send_input` function(self, input): This is meant for 
-        `termopen_previewer` and it can be used to send input to the terminal 
+      - `send_input` function(self, input): This is meant for
+        `termopen_previewer` and it can be used to send input to the terminal
         application, like less.
       - `scroll_fn` function(self, direction): Used to make scrolling work.
-      - `scroll_horizontal_fn` function(self, direction): Used to make 
+      - `scroll_horizontal_fn` function(self, direction): Used to make
         horizontal scrolling work.
 
 
@@ -3870,7 +3871,7 @@ previewers.new_termopen_previewer() *telescope.previewers.new_termopen_previewer
     - `title` a static title for example "File Preview"
     - `dyn_title(self, entry)` a dynamic title function which gets called when
       config value `dynamic_preview_title = true`
-    - `env` table: define environment variables to forward to the terminal 
+    - `env` table: define environment variables to forward to the terminal
       process. Example:
       - `{ ['PAGER'] = '', ['MANWIDTH'] = 50 }`
 
@@ -3953,7 +3954,7 @@ previewers.new_buffer_previewer() *telescope.previewers.new_buffer_previewer()*
       - `keep_last_buf = true` (optional) Will not delete the last selected
         buffer. This would allow you to reuse that buffer in the select action.
         For example, that buffer can be opened in a new split, rather than
-        recreating that buffer in an action. To access the last buffer number: 
+        recreating that buffer in an action. To access the last buffer number:
         `require('telescope.state').get_global_key("last_preview_bufnr")`
       - `get_buffer_by_name = function(self, entry)` Allows you to set a unique
         name for each buffer. This is used for caching purposes.
@@ -3963,7 +3964,7 @@ previewers.new_buffer_previewer() *telescope.previewers.new_buffer_previewer()*
         So to make the cache work only load content if `self.state.bufname ~=
         entry.your_unique_key`
       - `title` a static title for example "File Preview"
-      - `dyn_title(self, entry)` a dynamic title function which gets called 
+      - `dyn_title(self, entry)` a dynamic title function which gets called
         when config value `dynamic_preview_title = true`
 
     `self.state` table:
@@ -3978,7 +3979,7 @@ previewers.new_buffer_previewer() *telescope.previewers.new_buffer_previewer()*
         never loaded or when `get_buffer_by_name` is not set.
 
     Tips:
-      - If you want to display content of a terminal job, use: 
+      - If you want to display content of a terminal job, use:
         `require('telescope.previewers.utils').job_maker(cmd, bufnr, opts)`
           - `cmd` table: for example { 'git', 'diff', entry.value }
           - `bufnr` number: in which the content will be written
@@ -3997,11 +3998,11 @@ previewers.new_buffer_previewer() *telescope.previewers.new_buffer_previewer()*
               in time.
       - If you want to attach a highlighter use:
         - `require('telescope.previewers.utils').highlighter(bufnr, ft)`
-          - This will prioritize tree sitter highlighting if available for 
+          - This will prioritize tree sitter highlighting if available for
             environment and language.
         - `require('telescope.previewers.utils').regex_highlighter(bufnr, ft)`
         - `require('telescope.previewers.utils').ts_highlighter(bufnr, ft)`
-      - If you want to use `vim.fn.search` or similar you need to run it in 
+      - If you want to use `vim.fn.search` or similar you need to run it in
         that specific buffer context. Do
     >
           vim.api.nvim_buf_call(bufnr, function()
@@ -4009,8 +4010,8 @@ previewers.new_buffer_previewer() *telescope.previewers.new_buffer_previewer()*
           end)
 <
     to achieve that.
-      - If you want to read a file into the buffer it's best to use 
-        `buffer_previewer_maker`. But access this function with 
+      - If you want to read a file into the buffer it's best to use
+        `buffer_previewer_maker`. But access this function with
         `require('telescope.config').values.buffer_previewer_maker` because it
         can be redefined by users.
 
