@@ -341,6 +341,7 @@ Picker:new{
   border                  = {},
   borderchars             = {"─", "│", "─", "│", "┌", "┐", "┘", "└"},
   default_selection_index = 1, -- Change the index of the initial selection row
+  scrolling_limit         = 250,  -- Limit the number of results to display
 }
 ```
 

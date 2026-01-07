@@ -225,6 +225,8 @@ local Picker = {}
 Picker.__index = Picker
 
 --- Create new picker
+--- @param opts table: options used to create the picker
+--- @field scrolling_limit integer: maximum number of results to display.
 function Picker:new(opts)
   opts = opts or {}
 
@@ -321,7 +323,7 @@ function Picker:new(opts)
 
     cache_picker = config.resolve_table_opts(opts.cache_picker, vim.deepcopy(config.values.cache_picker)),
 
-    __scrolling_limit = tonumber(vim.F.if_nil(opts.temp__scrolling_limit, 250)),
+    scrolling_limit = tonumber(vim.F.if_nil(opts.scrolling_limit, 250)),
 
     __locations_input = vim.F.if_nil(opts.__locations_input, false),
   }, self)
@@ -568,11 +570,8 @@ function Picker:find()
   vim.fn.prompt_setprompt(self.prompt_bufnr, prompt_prefix)
   self:_reset_prefix_color()
 
-  -- TODO: This could be configurable in the future, but I don't know why you would
-  -- want to scroll through more than 10,000 items.
-  --
   -- This just lets us stop doing stuff after tons of  things.
-  self.max_results = self.__scrolling_limit
+  self.max_results = self.scrolling_limit
 
   api.nvim_buf_set_lines(self.results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
 
