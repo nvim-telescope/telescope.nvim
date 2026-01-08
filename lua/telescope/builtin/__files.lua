@@ -140,7 +140,13 @@ files.live_grep = function(opts)
   end
 
   if opts.type_filter then
-    additional_args[#additional_args + 1] = "--type=" .. opts.type_filter
+    local file_types = opts.type_filter
+    if type(opts.type_filter) == "string" then
+      file_types = vim.split(opts.type_filter, ",", { trimempty = true })
+    end
+    for _, file_type in ipairs(file_types) do
+      additional_args[#additional_args + 1] = "--type=" .. file_type
+    end
   end
 
   if type(opts.glob_pattern) == "string" then

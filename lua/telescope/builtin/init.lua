@@ -51,7 +51,7 @@ end
 ---@field grep_open_files boolean: if true, restrict search to open files only, mutually exclusive with `search_dirs`
 ---@field search_dirs table: directory/directories/files to search, mutually exclusive with `grep_open_files`
 ---@field glob_pattern string|table: argument to be used with `--glob`, e.g. "*.toml", can use the opposite "!*.toml"
----@field type_filter string: argument to be used with `--type`, e.g. "rust", see `rg --type-list`
+---@field type_filter string|table: comma-separated string or string list argument to be used with `--type`, e.g. "rust", see `rg --type-list`
 ---@field additional_args function|table: additional arguments to be passed on. Can be fn(opts) -> tbl
 ---@field max_results number: define a upper result value
 ---@field disable_coordinates boolean: don't show the line & row numbers (default: false)
