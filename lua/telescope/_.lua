@@ -155,16 +155,15 @@ function LinesPipe:iter(schedule)
   local text = nil
   local index = nil
 
-  local get_next_text = function(previous)
+  local get_next_text = function()
     index = nil
 
     local read = self:read()
-    if previous == nil and read == nil then
+    if read == nil then
       return
     end
 
-    read = string.gsub(read or "", "\r", "")
-    return (previous or "") .. read
+    return string.gsub(read or "", "\r", "")
   end
 
   local next_value = nil
@@ -177,17 +176,24 @@ function LinesPipe:iter(schedule)
       return nil
     end
 
-    local start = index
+    local start = index or 1
     index = string.find(text, "\n", index, true)
 
     if index == nil then
-      text = get_next_text(string.sub(text, start or 1))
-      return next_value()
+      local previous = string.sub(text, start)
+      local next_text = get_next_text()
+      if next_text then
+        text = previous .. next_text
+        return next_value()
+      else
+        text = ""
+        return (#previous > 0) and previous or nil
+      end
     end
 
     index = index + 1
 
-    return string.sub(text, start or 1, index - 2)
+    return string.sub(text, start, index - 2)
   end
 
   text = get_next_text()
