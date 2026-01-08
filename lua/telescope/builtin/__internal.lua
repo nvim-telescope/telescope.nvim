@@ -412,7 +412,7 @@ internal.commands = function(opts)
 end
 
 internal.quickfix = function(opts)
-  local qf_identifier = opts.id or vim.F.if_nil(opts.nr, "$")
+  local qf_identifier = opts.id or vim.F.if_nil(opts.nr, 0)
   local locations = vim.fn.getqflist({ [opts.id and "id" or "nr"] = qf_identifier, items = true }).items
 
   if vim.tbl_isempty(locations) then
