@@ -444,6 +444,14 @@ builtin.lsp_incoming_calls = require_on_exported_call("telescope.builtin.__lsp")
 ---@field file_encoding string: file encoding for the previewer
 builtin.lsp_outgoing_calls = require_on_exported_call("telescope.builtin.__lsp").outgoing_calls
 
+--- Lists LSP Supertypes for symbol under the cursor, jumps to reference on `<cr>`
+---@param opts table: options to pass to the picker
+builtin.lsp_super_types = require_on_exported_call("telescope.builtin.__lsp").super_types
+
+--- Lists LSP Subtypes for symbol under the cursor, jumps to reference on `<cr>`
+---@param opts table: options to pass to the picker
+builtin.lsp_sub_types = require_on_exported_call("telescope.builtin.__lsp").sub_types
+
 --- Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope
 ---@param opts table: options to pass to the picker
 ---@field jump_type string: how to goto definition if there is only one and the definition file is different from the current file, values: "tab", "tab drop", "split", "vsplit", "never"

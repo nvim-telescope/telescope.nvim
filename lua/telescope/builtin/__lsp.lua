@@ -117,12 +117,99 @@ local function calls(opts, direction)
   end)
 end
 
+local function type_hierarchy(opts, method, title, item)
+  lsp.buf_request(opts.bufnr, method, { item = item }, function(err, result)
+    if err then
+      utils.notify("lsp.type_hierarchy", { msg = title .. ": " .. err.message, level = "ERROR" })
+      return
+    end
+
+    if not result or vim.tbl_isempty(result) then
+      return
+    end
+
+    local locations = {}
+    for _, unit in pairs(result) do
+      local rng = unit.range
+      table.insert(locations, {
+        filename = vim.uri_to_fname(unit.uri),
+        text = unit.name,
+        lnum = rng.start.line + 1,
+        col = rng.start.character + 1,
+      })
+    end
+
+    pickers
+      .new(opts, {
+        prompt_title = title,
+        finder = finders.new_table {
+          results = locations,
+          entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
+        },
+        previewer = conf.qflist_previewer(opts),
+        sorter = conf.generic_sorter(opts),
+        push_cursor_on_edit = true,
+        push_tagstack_on_edit = true,
+      })
+      :find()
+  end)
+end
+
+local function pick_type_hierarchy_item(type_hierarchy_items)
+  if not type_hierarchy_items or vim.tbl_isempty(type_hierarchy_items) then
+    return
+  end
+  if #type_hierarchy_items == 1 then
+    return type_hierarchy_items[1]
+  end
+  local items = {}
+  for i, item in pairs(type_hierarchy_items) do
+    local entry = item.detail or item.name
+    table.insert(items, string.format("%d. %s", i, entry))
+  end
+  local choice = vim.fn.inputlist(items)
+  if choice < 1 or choice > #items then
+    return
+  end
+  return type_hierarchy_items[choice]
+end
+
+---@param direction 'super'|'sub'
+local function types(opts, direction)
+  local params = client_position_params()
+  lsp.buf_request(opts.bufnr, "textDocument/prepareTypeHierarchy", params, function(err, result)
+    if err then
+      utils.notify("lsp.types", { msg = err.message, level = "ERROR" })
+      return
+    end
+
+    local type_hierarchy_item = pick_type_hierarchy_item(result)
+    if not type_hierarchy_item then
+      return
+    end
+
+    if direction == "super" then
+      type_hierarchy(opts, "typeHierarchy/supertypes", "LSP Super Types", type_hierarchy_item)
+    else
+      type_hierarchy(opts, "typeHierarchy/subtypes", "LSP Sub Types", type_hierarchy_item)
+    end
+  end)
+end
+
 M.incoming_calls = function(opts)
   calls(opts, "from")
 end
 
 M.outgoing_calls = function(opts)
   calls(opts, "to")
+end
+
+M.super_types = function(opts)
+  types(opts, "super")
+end
+
+M.sub_types = function(opts)
+  types(opts, "sub")
 end
 
 ---@alias telescope.lsp.list_or_jump_action
