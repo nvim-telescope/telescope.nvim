@@ -438,6 +438,7 @@ layout_strategies.center = make_documented_layout(
   "center",
   vim.tbl_extend("error", shared_options, {
     preview_cutoff = "When lines are less than this value, the preview will be disabled",
+    results_height = "Sets the height of the results window in number of lines."
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -466,36 +467,37 @@ layout_strategies.center = make_documented_layout(
     results.width = width - w_space
     preview.width = width - w_space
 
-    local h_space
-    -- Cap over/undersized height
-    height, h_space = calc_size_and_spacing(height, max_lines, bs, 2, 3, 0)
+    -- if the previewer is enabled, we need to subtract the size of 5 borders
+    -- or 3 borders if not
+    local border_count = self.previewer and 5 or 3
+    height = height - border_count * bs
 
     prompt.height = 1
-    results.height = height - prompt.height - h_space
 
-    local topline = math.floor((max_lines / 2) - ((results.height + (2 * bs)) / 2) + 1)
-    -- Align the prompt and results so halfway up the screen is
-    -- in the middle of this combined block
-    if layout_config.prompt_position == "top" then
-      prompt.line = topline
-      results.line = prompt.line + 1 + bs
-    elseif layout_config.prompt_position == "bottom" then
-      results.line = topline
-      prompt.line = results.line + results.height + bs
-      if type(prompt.title) == "string" then
-        prompt.title = { { pos = "S", text = prompt.title } }
-      end
+    local results_height = layout_config.results_height
+    if self.previewer and results_height and results_height < height then
+      results.height = results_height
     else
-      error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+      results.height = height - prompt.height
     end
 
-    local width_padding = math.floor((max_columns - width) / 2) + bs + 1
-    results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
+    preview.height = height - results.height - prompt.height
+
+    -- if border size is 0, we decrease the preview height by 1 to account for the
+    -- the gap between the results and preview windows
+    if bs <= 0 then
+      preview.height = preview.height - 1
+    end
+
+    -- if the preview height is less than the cutoff, we set it to 0
+    -- and increase the results height by 2 borders that the preview would have taken
+    if preview.height <= layout_config.preview_cutoff then
+      results.height = results.height + (2 * bs)
+      preview.height = 0
+    end
 
     local anchor = layout_config.anchor or ""
-    local anchor_padding = layout_config.anchor_padding or 1
-
-    local anchor_pos = resolve.resolve_anchor_pos(anchor, width, height, max_columns, max_lines, anchor_padding)
+    local anchor_pos = resolve.resolve_anchor_pos(anchor, width, height, max_columns, max_lines)
     adjust_pos(anchor_pos, prompt, results, preview)
 
     -- Vertical anchoring (S or N variations) ignores layout_config.mirror
@@ -509,19 +511,47 @@ layout_strategies.center = make_documented_layout(
       mirror = layout_config.mirror
     end
 
+    local borderd_height = height + (border_count * bs)
+    local topline = math.floor((max_lines / 2) - (borderd_height / 2) + 1)
+
     -- Set preview position
-    local block_line = math.min(results.line, prompt.line)
     if not mirror then -- Preview at top
-      preview.line = 1 + bs
-      preview.height = block_line - (2 + 2 * bs)
+      preview.line = topline
+      if preview.height > 0 then
+        preview.line = topline + bs + 1
+      end
+
+      if layout_config.prompt_position == "top" then
+        prompt.line = preview.line + preview.height + bs + 1
+        results.line = prompt.line + bs + 1
+      elseif layout_config.prompt_position == "bottom" then
+        results.line = preview.line + preview.height + bs + 1
+        prompt.line = results.line + results.height + bs
+        if type(prompt.title) == "string" then
+          prompt.title = { { pos = "S", text = prompt.title } }
+        end
+      else
+        error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+      end
     else -- Preview at bottom
-      preview.line = block_line + results.height + 2 + 2 * bs
-      preview.height = max_lines - preview.line - bs + 1
+      if layout_config.prompt_position == "top" then
+        prompt.line = topline
+        results.line = prompt.line + bs + 1
+        preview.line = results.line + results.height + bs + 1
+      elseif layout_config.prompt_position == "bottom" then
+        results.line = topline
+        prompt.line = results.line + results.height + bs
+        preview.line = prompt.line + prompt.height + bs + 1
+        if type(prompt.title) == "string" then
+          prompt.title = { { pos = "S", text = prompt.title } }
+        end
+      else
+        error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+      end
     end
 
-    if not (self.previewer and max_lines >= layout_config.preview_cutoff) then
-      preview.height = 0
-    end
+    local width_padding = math.floor((max_columns - width) / 2) + bs + 1
+    results.col, preview.col, prompt.col = width_padding, width_padding, width_padding
 
     if tbln then
       prompt.line = prompt.line + 1
