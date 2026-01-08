@@ -687,6 +687,7 @@ function Picker:find()
         find_id = self:_next_find_id()
 
         status_updater { completed = false }
+        self.finder:stop_read()
         self._on_lines(...)
       end
     end,

@@ -78,6 +78,11 @@ return function(opts)
         job:close(true)
       end
     end,
+    stop_read = function()
+      if job then
+        job:close(true)
+      end
+    end,
   }, {
     __call = callable,
   })
