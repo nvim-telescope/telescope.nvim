@@ -1479,6 +1479,8 @@ builtin.buffers({opts})                          *telescope.builtin.buffers()*
                                             specified)
         {select_current}        (boolean)   select current buffer (default:
                                             false)
+        {disable_coordinates}   (boolean)   don't show line number (default:
+                                            false)
 
 
 builtin.colorscheme({opts})                  *telescope.builtin.colorscheme()*
