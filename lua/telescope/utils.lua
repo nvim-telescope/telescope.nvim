@@ -210,7 +210,7 @@ local calc_result_length = function(truncate_len)
   return type(truncate_len) == "number" and len - truncate_len or len
 end
 
-local path_truncate = function(path, truncate_len, opts)
+utils.path_truncate = function(path, truncate_len, opts)
   if opts.__length == nil then
     opts.__length = calc_result_length(truncate_len)
   end
@@ -407,7 +407,7 @@ utils.transform_path = function(opts, path)
     end
 
     if vim.tbl_contains(path_display, "truncate") or path_display.truncate then
-      transformed_path = path_truncate(transformed_path, path_display.truncate, opts)
+      transformed_path = utils.path_truncate(transformed_path, path_display.truncate, opts)
     end
 
     if vim.tbl_contains(path_display, "filename_first") or path_display["filename_first"] ~= nil then
