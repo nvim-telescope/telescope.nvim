@@ -1,3 +1,5 @@
+local api = vim.api
+
 local ts_utils = require "telescope.utils"
 local strings = require "plenary.strings"
 local conf = require("telescope.config").values
@@ -5,14 +7,12 @@ local conf = require("telescope.config").values
 local Job = require "plenary.job"
 local Path = require "plenary.path"
 
-local telescope_utils = require "telescope.utils"
-
 local utils = {}
 
 local detect_from_shebang = function(p)
   local s = p:readbyterange(0, 256)
   if s then
-    local lines = telescope_utils.split_lines(s)
+    local lines = ts_utils.split_lines(s)
     return vim.filetype.match { contents = lines }
   end
 end
@@ -26,7 +26,7 @@ end
 local detect_from_modeline = function(p)
   local s = p:readbyterange(-256, 256)
   if s then
-    local lines = telescope_utils.split_lines(s)
+    local lines = ts_utils.split_lines(s)
     local idx = lines[#lines] ~= "" and #lines or #lines - 1
     if idx >= 1 then
       return parse_modeline(lines[idx])
@@ -87,13 +87,13 @@ utils.job_maker = function(cmd, bufnr, opts)
       cwd = opts.cwd,
       writer = writer,
       on_exit = vim.schedule_wrap(function(j)
-        if not vim.api.nvim_buf_is_valid(bufnr) then
+        if not api.nvim_buf_is_valid(bufnr) then
           return
         end
         if opts.mode == "append" then
-          vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, j:result())
+          api.nvim_buf_set_lines(bufnr, -1, -1, false, j:result())
         elseif opts.mode == "insert" then
-          vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, j:result())
+          api.nvim_buf_set_lines(bufnr, 0, -1, false, j:result())
         end
         if opts.callback then
           opts.callback(bufnr, j:result())
@@ -161,7 +161,7 @@ end
 --- Attach regex highlighter
 utils.regex_highlighter = function(bufnr, ft)
   if has_filetype(ft) then
-    return pcall(vim.api.nvim_buf_set_option, bufnr, "syntax", ft)
+    return pcall(api.nvim_set_option_value, "syntax", ft, { buf = bufnr })
   end
   return false
 end
@@ -179,16 +179,16 @@ end
 
 utils.set_preview_message = function(bufnr, winid, message, fillchar)
   fillchar = vim.F.if_nil(fillchar, "╱")
-  local height = vim.api.nvim_win_get_height(winid)
-  local width = vim.api.nvim_win_get_width(winid)
-  vim.api.nvim_buf_set_lines(
+  local height = api.nvim_win_get_height(winid)
+  local width = api.nvim_win_get_width(winid)
+  api.nvim_buf_set_lines(
     bufnr,
     0,
     -1,
     false,
     ts_utils.repeated_table(height, table.concat(ts_utils.repeated_table(width, fillchar), ""))
   )
-  local anon_ns = vim.api.nvim_create_namespace ""
+  local anon_ns = api.nvim_create_namespace ""
   local padding = table.concat(ts_utils.repeated_table(#message + 4, " "), "")
   local formatted_message = "  " .. message .. "  "
   -- Populate lines table based on height
@@ -204,17 +204,11 @@ utils.set_preview_message = function(bufnr, winid, message, fillchar)
       end
     end
   end
-  vim.api.nvim_buf_set_extmark(
-    bufnr,
-    anon_ns,
-    0,
-    0,
-    { end_line = height, hl_group = "TelescopePreviewMessageFillchar" }
-  )
+  api.nvim_buf_set_extmark(bufnr, anon_ns, 0, 0, { end_line = height, hl_group = "TelescopePreviewMessageFillchar" })
   local col = math.floor((width - strings.strdisplaywidth(formatted_message)) / 2)
   for i, line in ipairs(lines) do
     local line_pos = math.floor(height / 2) - 2 + i
-    vim.api.nvim_buf_set_extmark(
+    api.nvim_buf_set_extmark(
       bufnr,
       anon_ns,
       math.max(line_pos, 0),

@@ -5,6 +5,8 @@
 --- Utilities for writing telescope pickers
 ---@brief ]]
 
+local api = vim.api
+
 local Path = require "plenary.path"
 local Job = require "plenary.job"
 
@@ -15,26 +17,28 @@ local get_status = require("telescope.state").get_status
 
 local utils = {}
 
-utils.iswin = vim.loop.os_uname().sysname == "Windows_NT"
+utils.iswin = vim.uv.os_uname().sysname == "Windows_NT"
+utils.nvim011 = vim.fn.has "nvim-0.11" == 1
 
----@param s string
----@param i number
----@param encoding "utf-8" | "utf-16" | "utf-32"
----@return integer
-utils.str_byteindex = function(s, i, encoding)
-  if vim.fn.has "nvim-0.11" == 1 then
-    return vim.str_byteindex(s, encoding, i, false)
-  else
-    return vim.lsp.util._str_byteindex_enc(s, i, encoding)
-  end
+---TODO(clason): remove when dropping support for Nvim 0.10
+utils.hl_range = utils.nvim011 and vim.hl.range or vim.highlight.range
+
+---TODO(clason): remove when dropping support for Nvim 0.10
+utils.str_byteindex = utils.nvim011 and vim.str_byteindex or vim.lsp.util._str_byteindex_enc
+
+---TODO(clason): remove when dropping support for Nvim 0.10
+---@param k string
+---@param v any
+---@param ty type
+utils.validate = utils.nvim011 and vim.validate or function(k, v, ty)
+  vim.validate { [k] = { v, ty } }
 end
 
---TODO(clason): Remove when dropping support for Nvim 0.9
-utils.islist = vim.fn.has "nvim-0.10" == 1 and vim.islist or vim.tbl_islist
-local flatten = function(t)
+---@param t table
+---@return table
+utils.flatten = function(t)
   return vim.iter(t):flatten():totable()
 end
-utils.flatten = vim.fn.has "nvim-0.11" == 1 and flatten or vim.tbl_flatten
 
 --- Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
 ---
@@ -54,9 +58,7 @@ utils.flatten = vim.fn.has "nvim-0.11" == 1 and flatten or vim.tbl_flatten
 ---@param path string
 ---@return string
 utils.path_expand = function(path)
-  vim.validate {
-    path = { path, { "string" } },
-  }
+  utils.validate("path", path, "string")
 
   if utils.is_uri(path) then
     return path
@@ -67,14 +69,14 @@ utils.path_expand = function(path)
   end
 
   if path:sub(1, 1) == "~" then
-    local home = vim.loop.os_homedir() or "~"
+    local home = vim.uv.os_homedir() or "~"
     if home:sub(-1) == "\\" or home:sub(-1) == "/" then
       home = home:sub(1, -2)
     end
     path = home .. path:sub(2)
   end
 
-  path = path:gsub("%$([%w_]+)", vim.loop.os_getenv)
+  path = path:gsub("%$([%w_]+)", vim.uv.os_getenv)
   path = path:gsub("/+", "/")
   if utils.iswin then
     path = path:gsub("\\+", "\\")
@@ -203,8 +205,8 @@ local path_filename_first = function(path, reverse_directories)
 end
 
 local calc_result_length = function(truncate_len)
-  local status = get_status(vim.api.nvim_get_current_buf())
-  local len = vim.api.nvim_win_get_width(status.layout.results.winid) - status.picker.selection_caret:len() - 2
+  local status = get_status(api.nvim_get_current_buf())
+  local len = api.nvim_win_get_width(status.layout.results.winid) - status.picker.selection_caret:len() - 2
   return type(truncate_len) == "number" and len - truncate_len or len
 end
 
@@ -234,7 +236,7 @@ local path_abs = function(path, opts)
       cwd = utils.path_expand(opts.cwd)
     end
   else
-    cwd = vim.loop.cwd()
+    cwd = vim.uv.cwd()
   end
   return Path:new(path):make_relative(cwd)
 end
@@ -475,8 +477,8 @@ function utils.buf_delete(bufnr)
     vim.o.report = 2
   end
 
-  if vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_is_loaded(bufnr) then
-    vim.api.nvim_buf_delete(bufnr, { force = true })
+  if api.nvim_buf_is_valid(bufnr) and api.nvim_buf_is_loaded(bufnr) then
+    api.nvim_buf_delete(bufnr, { force = true })
   end
 
   if start_report < 2 then
@@ -485,20 +487,20 @@ function utils.buf_delete(bufnr)
 end
 
 function utils.win_delete(name, win_id, force, bdelete)
-  if win_id == nil or not vim.api.nvim_win_is_valid(win_id) then
+  if win_id == nil or not api.nvim_win_is_valid(win_id) then
     return
   end
 
-  local bufnr = vim.api.nvim_win_get_buf(win_id)
+  local bufnr = api.nvim_win_get_buf(win_id)
   if bdelete then
     utils.buf_delete(bufnr)
   end
 
-  if not vim.api.nvim_win_is_valid(win_id) then
+  if not api.nvim_win_is_valid(win_id) then
     return
   end
 
-  if not pcall(vim.api.nvim_win_close, win_id, force) then
+  if not pcall(api.nvim_win_close, win_id, force) then
     log.trace("Unable to close window: ", name, "/", win_id)
   end
 end
@@ -577,7 +579,7 @@ end
 function utils.win_set_buf_noautocmd(win, buf)
   local save_ei = vim.o.eventignore
   vim.o.eventignore = "all"
-  vim.api.nvim_win_set_buf(win, buf)
+  api.nvim_win_set_buf(win, buf)
   vim.o.eventignore = save_ei
 end
 
@@ -672,15 +674,12 @@ utils.get_devicons = load_once(function()
   end
 end)
 
+--- TODO(clason): remove when dropping support for Nvim 0.10
 --- Checks if treesitter parser for language is installed
----@param lang string
-utils.has_ts_parser = function(lang)
-  if vim.fn.has "nvim-0.11" == 1 then
-    return vim.treesitter.language.add(lang)
-  else
+utils.has_ts_parser = utils.nvim011 and vim.treesitter.language.add
+  or function(lang)
     return pcall(vim.treesitter.language.add, lang)
   end
-end
 
 --- Telescope Wrapper around vim.notify
 ---@param funname string: name of the function that will be

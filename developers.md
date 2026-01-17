@@ -274,10 +274,8 @@ directory which contains all of the builtin pickers. Another way to find more ex
 is to take a look at the [extension wiki page](https://github.com/nvim-telescope/telescope.nvim/wiki/Extensions)
 as this provides many extensions people have already written which use these concepts.
 
-If you still have any questions after reading this guide please feel free to ask us for
-more information on [gitter](https://gitter.im/nvim-telescope/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-and we will happily answer your questions and hopefully allow us to improve this guide. You can also
-help us to improve this guide by sending a PR.
+If you still have any questions after reading this guide please open a
+[Discussion](https://github.com/nvim-telescope/telescope.nvim/discussions).
 
 ### Bundling as extension
 

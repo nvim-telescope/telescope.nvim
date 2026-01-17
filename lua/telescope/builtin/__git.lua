@@ -1,3 +1,5 @@
+local api = vim.api
+
 local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 local finders = require "telescope.finders"
@@ -111,8 +113,8 @@ git.stash = function(opts)
 end
 
 local get_current_buf_line = function(winnr)
-  local lnum = vim.api.nvim_win_get_cursor(winnr)[1]
-  return vim.trim(vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(winnr), lnum - 1, lnum, false)[1])
+  local lnum = api.nvim_win_get_cursor(winnr)[1]
+  return vim.trim(api.nvim_buf_get_lines(api.nvim_win_get_buf(winnr), lnum - 1, lnum, false)[1])
 end
 
 local bcommits_picker = function(opts, title, finder)
@@ -136,9 +138,9 @@ local bcommits_picker = function(opts, title, finder)
         local value = selection.value .. ":" .. transfrom_file()
         local content = utils.get_os_command_output({ "git", "--no-pager", "show", value }, opts.cwd)
 
-        local bufnr = vim.api.nvim_create_buf(false, true)
-        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
-        vim.api.nvim_buf_set_name(bufnr, "Original")
+        local bufnr = api.nvim_create_buf(false, true)
+        api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
+        api.nvim_buf_set_name(bufnr, "Original")
         return bufnr
       end
 
@@ -151,12 +153,12 @@ local bcommits_picker = function(opts, title, finder)
         vim.bo.filetype = ft
         vim.cmd "diffthis"
 
-        vim.api.nvim_create_autocmd("WinClosed", {
+        api.nvim_create_autocmd("WinClosed", {
           buffer = bufnr,
           nested = true,
           once = true,
           callback = function()
-            vim.api.nvim_buf_delete(bufnr, { force = true })
+            api.nvim_buf_delete(bufnr, { force = true })
           end,
         })
       end
@@ -186,7 +188,7 @@ end
 
 git.bcommits = function(opts)
   opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
-  opts.current_file = vim.F.if_nil(opts.current_file, vim.api.nvim_buf_get_name(opts.bufnr))
+  opts.current_file = vim.F.if_nil(opts.current_file, api.nvim_buf_get_name(opts.bufnr))
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
   opts.git_command =
     vim.F.if_nil(opts.git_command, git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--follow" }, opts))
@@ -204,7 +206,7 @@ end
 
 git.bcommits_range = function(opts)
   opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
-  opts.current_file = vim.F.if_nil(opts.current_file, vim.api.nvim_buf_get_name(opts.bufnr))
+  opts.current_file = vim.F.if_nil(opts.current_file, api.nvim_buf_get_name(opts.bufnr))
   opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
   opts.git_command = vim.F.if_nil(
     opts.git_command,
@@ -440,7 +442,7 @@ end
 local try_worktrees = function(opts)
   local worktrees = conf.git_worktrees
 
-  if utils.islist(worktrees) then
+  if vim.islist(worktrees) then
     for _, wt in ipairs(worktrees) do
       if vim.startswith(opts.cwd, wt.toplevel) then
         opts.toplevel = wt.toplevel
@@ -476,7 +478,7 @@ local set_opts_cwd = function(opts)
       return
     end
   else
-    opts.cwd = vim.loop.cwd()
+    opts.cwd = vim.uv.cwd()
   end
 
   local toplevel, ret = utils.get_os_command_output({ "git", "rev-parse", "--show-toplevel" }, opts.cwd)

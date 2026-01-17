@@ -293,8 +293,7 @@ end
 --   prompt = {...},
 -- }
 resolver.win_option = function(val, default)
-  local islist = require("telescope.utils").islist
-  if type(val) ~= "table" or islist(val) then
+  if type(val) ~= "table" or vim.islist(val) then
     if val == nil then
       val = default
     end
@@ -305,7 +304,7 @@ resolver.win_option = function(val, default)
       prompt = val,
     }
   elseif type(val) == "table" then
-    assert(not islist(val))
+    assert(not vim.islist(val))
 
     local val_to_set = val[1]
     if val_to_set == nil then

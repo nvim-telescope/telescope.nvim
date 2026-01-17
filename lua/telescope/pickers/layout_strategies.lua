@@ -50,6 +50,8 @@
 ---
 ---@brief ]]
 
+local api = vim.api
+
 local resolve = require "telescope.config.resolve"
 local p_window = require "telescope.pickers.window"
 
@@ -62,7 +64,7 @@ local get_border_size = function(opts)
 end
 
 local calc_tabline = function(max_lines)
-  local tbln = (vim.o.showtabline == 2) or (vim.o.showtabline == 1 and #vim.api.nvim_list_tabpages() > 1)
+  local tbln = (vim.o.showtabline == 2) or (vim.o.showtabline == 1 and #api.nvim_list_tabpages() > 1)
   if tbln then
     max_lines = max_lines - 1
   end
@@ -161,9 +163,7 @@ local function validate_layout_config(strategy_name, configuration, values, defa
   -- Always set the values passed first.
   for k in pairs(values) do
     if not valid_configuration_keys[k] then
-      -- TODO: At some point we'll move to error here,
-      --    but it's a bit annoying to just straight up crash everyone's stuff.
-      vim.api.nvim_err_writeln(
+      error(
         string.format(
           "Unsupported layout_config key for the %s strategy: %s\n%s",
           strategy_name,
@@ -609,7 +609,7 @@ layout_strategies.cursor = make_documented_layout(
       results.width = prompt.width
     end
 
-    local position = vim.api.nvim_win_get_position(winid)
+    local position = api.nvim_win_get_position(winid)
     local winbar = (function()
       if vim.fn.exists "&winbar" == 1 then
         return vim.wo[winid].winbar == "" and 0 or 1
@@ -617,8 +617,8 @@ layout_strategies.cursor = make_documented_layout(
       return 0
     end)()
     local top_left = {
-      line = vim.api.nvim_win_call(winid, vim.fn.winline) + position[1] + bs + winbar,
-      col = vim.api.nvim_win_call(winid, vim.fn.wincol) + position[2],
+      line = api.nvim_win_call(winid, vim.fn.winline) + position[1] + bs + winbar,
+      col = api.nvim_win_call(winid, vim.fn.wincol) + position[2],
     }
     local bot_right = {
       line = top_left.line + height - 1,
@@ -806,8 +806,8 @@ layout_strategies.current_buffer = make_documented_layout("current_buffer", {
 }, function(self, _, _, _)
   local initial_options = p_window.get_initial_window_options(self)
 
-  local window_width = vim.api.nvim_win_get_width(0)
-  local window_height = vim.api.nvim_win_get_height(0)
+  local window_width = api.nvim_win_get_width(0)
+  local window_height = api.nvim_win_get_height(0)
 
   local preview = initial_options.preview
   local results = initial_options.results
@@ -834,7 +834,7 @@ layout_strategies.current_buffer = make_documented_layout("current_buffer", {
     preview.height = 0
   end
 
-  local win_position = vim.api.nvim_win_get_position(0)
+  local win_position = api.nvim_win_get_position(0)
 
   local line = win_position[1]
   if self.previewer then

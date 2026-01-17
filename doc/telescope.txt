@@ -959,6 +959,10 @@ builtin.fd()                                          *telescope.builtin.fd()*
 
 builtin.treesitter()                          *telescope.builtin.treesitter()*
     Lists function names, variables, and other symbols from treesitter queries
+    Requires parser and `locals` queries for the current buffer in
+    `runtimepath`, see |vim.treesitter-parsers|, |vim.treesitter.query|, and
+    https://github.com/nvim-treesitter/nvim-treesitter/blob/main/CONTRIBUTING.md#locals
+
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query by kind of ts
         node you want to see (i.e. `:var:`)
@@ -2188,7 +2192,7 @@ All layout strategies are functions with the following signature:
   function(picker, columns, lines, layout_config)
     -- Do some calculations here...
     return {
-      preview = preview_configuration
+      preview = preview_configuration,
       results = results_configuration,
       prompt = prompt_configuration,
     }

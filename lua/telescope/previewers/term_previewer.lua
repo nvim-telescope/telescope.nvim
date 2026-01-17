@@ -1,3 +1,5 @@
+local api = vim.api
+
 local conf = require("telescope.config").values
 local utils = require "telescope.utils"
 local Path = require "plenary.path"
@@ -14,7 +16,7 @@ local bat_options = { "--style=plain", "--color=always", "--paging=always" }
 local has_less = (vim.fn.executable "less" == 1) and conf.use_less
 
 local get_file_stat = function(filename)
-  return vim.loop.fs_stat(utils.path_expand(filename)) or {}
+  return vim.uv.fs_stat(utils.path_expand(filename)) or {}
 end
 
 local list_dir = (function()
@@ -184,7 +186,7 @@ previewers.new_termopen_previewer = function(opts)
   function opts.preview_fn(self, entry, status)
     local preview_winid = status.layout.preview and status.layout.preview.winid
     if get_bufnr(self) == nil then
-      set_bufnr(self, vim.api.nvim_win_get_buf(preview_winid))
+      set_bufnr(self, api.nvim_win_get_buf(preview_winid))
     end
 
     local prev_bufnr = get_bufnr_by_bufentry(self, entry)
@@ -193,18 +195,19 @@ previewers.new_termopen_previewer = function(opts)
       utils.win_set_buf_noautocmd(preview_winid, self.state.termopen_bufnr)
       self.state.termopen_id = term_ids[self.state.termopen_bufnr]
     else
-      local bufnr = vim.api.nvim_create_buf(false, true)
+      local bufnr = api.nvim_create_buf(false, true)
       set_bufnr(self, bufnr)
       utils.win_set_buf_noautocmd(preview_winid, bufnr)
 
       local term_opts = {
-        cwd = opts.cwd or vim.loop.cwd(),
+        cwd = opts.cwd or vim.uv.cwd(),
         env = opts.env or conf.set_env,
       }
 
       local cmd = opts.get_command(entry, status)
       if cmd then
-        vim.api.nvim_buf_call(bufnr, function()
+        api.nvim_buf_call(bufnr, function()
+          --TODO(clason): replace with jobstart when dropping support for Nvim 0.10
           set_term_id(self, vim.fn.termopen(cmd, term_opts))
         end)
       end
@@ -214,7 +217,7 @@ previewers.new_termopen_previewer = function(opts)
 
   if not opts.send_input then
     function opts.send_input(self, input)
-      local termcode = vim.api.nvim_replace_termcodes(input, true, false, true)
+      local termcode = api.nvim_replace_termcodes(input, true, false, true)
 
       local term_id = get_term_id(self)
       if term_id then
@@ -247,7 +250,7 @@ previewers.cat = defaulter(function(opts)
   opts = opts or {}
 
   local maker = get_maker(opts)
-  local cwd = opts.cwd or vim.loop.cwd()
+  local cwd = opts.cwd or vim.uv.cwd()
 
   return previewers.new_termopen_previewer {
     title = "File Preview",
@@ -270,7 +273,7 @@ previewers.vimgrep = defaulter(function(opts)
   opts = opts or {}
 
   local maker = get_maker(opts)
-  local cwd = opts.cwd or vim.loop.cwd()
+  local cwd = opts.cwd or vim.uv.cwd()
 
   return previewers.new_termopen_previewer {
     title = "Grep Preview",
@@ -280,13 +283,13 @@ previewers.vimgrep = defaulter(function(opts)
 
     get_command = function(entry, status)
       local win_id = status.layout.preview and status.layout.preview.winid
-      local height = vim.api.nvim_win_get_height(win_id)
+      local height = api.nvim_win_get_height(win_id)
 
       local p = from_entry.path(entry, true, false)
       if p == nil or p == "" then
         return
       end
-      if entry.bufnr and (p == "[No Name]" or vim.api.nvim_buf_get_option(entry.bufnr, "buftype") ~= "") then
+      if entry.bufnr and (p == "[No Name]" or vim.bo[entry.bufnr].buftype ~= "") then
         return
       end
 
@@ -305,7 +308,7 @@ previewers.qflist = defaulter(function(opts)
   opts = opts or {}
 
   local maker = get_maker(opts)
-  local cwd = opts.cwd or vim.loop.cwd()
+  local cwd = opts.cwd or vim.uv.cwd()
 
   return previewers.new_termopen_previewer {
     title = "Grep Preview",
@@ -315,7 +318,7 @@ previewers.qflist = defaulter(function(opts)
 
     get_command = function(entry, status)
       local win_id = status.layout.preview and status.layout.preview.winid
-      local height = vim.api.nvim_win_get_height(win_id)
+      local height = api.nvim_win_get_height(win_id)
 
       local p = from_entry.path(entry, true, false)
       if p == nil or p == "" then

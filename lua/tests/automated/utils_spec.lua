@@ -21,7 +21,7 @@ describe("path_expand()", function()
   end)
 
   it("works with ~", function()
-    eq(vim.loop.os_homedir() .. "/src/foo", utils.path_expand "~/src/foo")
+    eq(vim.uv.os_homedir() .. "/src/foo", utils.path_expand "~/src/foo")
   end)
 
   it("handles duplicate os_sep", function()

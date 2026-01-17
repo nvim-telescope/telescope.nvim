@@ -112,6 +112,9 @@ command.convert_user_opts = function(user_opts)
             user_opts[key] = eval
           else
             -- otherwise return nil (allows split check later)
+            -- BUG: this doesn't allow things like `preview=false`, where an
+            -- option supports other types other than the default type
+            -- (`preview` has a default type of table)
             user_opts[key] = nil
           end
         end

@@ -1,12 +1,15 @@
-local a = vim.api
+local api = vim.api
 local log = require "telescope.log"
 local conf = require("telescope.config").values
 
 local highlights = {}
 
-local ns_telescope_selection = a.nvim_create_namespace "telescope_selection"
-local ns_telescope_multiselection = a.nvim_create_namespace "telescope_multiselection"
-local ns_telescope_entry = a.nvim_create_namespace "telescope_entry"
+local ns_telescope_selection = api.nvim_create_namespace "telescope_selection"
+local ns_telescope_multiselection = api.nvim_create_namespace "telescope_multiselection"
+local ns_telescope_entry = api.nvim_create_namespace "telescope_entry"
+
+---TODO(clason): remove when dropping support for Nvim 0.10
+local hl = vim.hl or vim.highlight
 
 local Highlighter = {}
 Highlighter.__index = Highlighter
@@ -26,17 +29,16 @@ function Highlighter:hi_display(row, prefix, display_highlights)
 
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
 
-  a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_entry, row, row + 1)
+  api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_entry, row, row + 1)
   local len_prefix = #prefix
 
   for _, hl_block in ipairs(display_highlights) do
-    a.nvim_buf_add_highlight(
+    hl.range(
       results_bufnr,
       ns_telescope_entry,
       hl_block[2],
-      row,
-      len_prefix + hl_block[1][1],
-      len_prefix + hl_block[1][2]
+      { row, len_prefix + hl_block[1][1] },
+      { row, len_prefix + hl_block[1][2] }
     )
   end
 end
@@ -46,12 +48,12 @@ function Highlighter:clear_display()
     not self
     or not self.picker
     or not self.picker.results_bufnr
-    or not vim.api.nvim_buf_is_valid(self.picker.results_bufnr)
+    or not api.nvim_buf_is_valid(self.picker.results_bufnr)
   then
     return
   end
 
-  a.nvim_buf_clear_namespace(self.picker.results_bufnr, ns_telescope_entry, 0, -1)
+  api.nvim_buf_clear_namespace(self.picker.results_bufnr, ns_telescope_entry, 0, -1)
 end
 
 function Highlighter:hi_sorter(row, prompt, display)
@@ -68,10 +70,10 @@ function Highlighter:hi_selection(row, caret)
   caret = vim.F.if_nil(caret, "")
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
 
-  a.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
-  a.nvim_buf_add_highlight(results_bufnr, ns_telescope_selection, "TelescopeSelectionCaret", row, 0, #caret)
+  api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
+  hl.range(results_bufnr, ns_telescope_selection, "TelescopeSelectionCaret", { row, 0 }, { row, #caret })
 
-  a.nvim_buf_set_extmark(
+  api.nvim_buf_set_extmark(
     results_bufnr,
     ns_telescope_selection,
     row,
@@ -84,23 +86,22 @@ function Highlighter:hi_multiselect(row, is_selected)
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
 
   if is_selected then
-    vim.api.nvim_buf_add_highlight(results_bufnr, ns_telescope_multiselection, "TelescopeMultiSelection", row, 0, -1)
+    hl.range(results_bufnr, ns_telescope_multiselection, "TelescopeMultiSelection", { row, 0 }, { row, -1 })
     if self.picker.multi_icon then
-      local line = vim.api.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1]
+      local line = api.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1]
       local pos = line:find(self.picker.multi_icon)
       if pos and pos <= math.max(#self.picker.selection_caret, #self.picker.entry_prefix) then
-        vim.api.nvim_buf_add_highlight(
+        hl.range(
           results_bufnr,
           ns_telescope_multiselection,
           "TelescopeMultiIcon",
-          row,
-          pos - 1,
-          pos - 1 + #self.picker.multi_icon
+          { row, pos - 1 },
+          { row, pos - 1 + #self.picker.multi_icon }
         )
       end
     end
   else
-    local existing_marks = vim.api.nvim_buf_get_extmarks(
+    local existing_marks = api.nvim_buf_get_extmarks(
       results_bufnr,
       ns_telescope_multiselection,
       { row, 0 },
@@ -113,7 +114,7 @@ function Highlighter:hi_multiselect(row, is_selected)
     if #existing_marks > 0 then
       log.trace("Clearing highlight multi select row: ", row)
 
-      vim.api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_multiselection, row, row + 1)
+      api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_multiselection, row, row + 1)
     end
   end
 end

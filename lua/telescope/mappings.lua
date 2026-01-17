@@ -123,7 +123,7 @@
 --- </code>
 ---@brief ]]
 
-local a = vim.api
+local api = vim.api
 
 local actions = require "telescope.actions"
 local config = require "telescope.config"
@@ -291,7 +291,7 @@ local telescope_map = function(prompt_bufnr, mode, key_bind, key_func, opts)
 
   vim.keymap.set(mode, key_bind, function()
     local ret = key_func(prompt_bufnr)
-    vim.api.nvim_exec_autocmds("User", { pattern = "TelescopeKeymap" })
+    api.nvim_exec_autocmds("User", { pattern = "TelescopeKeymap" })
     return ret
   end, vim.tbl_extend("force", opts, { buffer = prompt_bufnr, desc = get_desc_for_keyfunc(key_func, opts) }))
 end
@@ -316,7 +316,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
 
     for _, mode in pairs(modes) do
       mode = string.lower(mode)
-      local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
+      local key_bind_internal = api.nvim_replace_termcodes(key_bind, true, true, true)
       applied_mappings[mode][key_bind_internal] = true
 
       telescope_map(prompt_bufnr, mode, key_bind, key_func, opts)
@@ -342,7 +342,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     mode = string.lower(mode)
 
     for key_bind, key_func in pairs(mode_map) do
-      local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
+      local key_bind_internal = api.nvim_replace_termcodes(key_bind, true, true, true)
       if not applied_mappings[mode][key_bind_internal] then
         applied_mappings[mode][key_bind_internal] = true
         telescope_map(prompt_bufnr, mode, key_bind, key_func, extract_keymap_opts(key_func))
@@ -355,7 +355,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     mode = string.lower(mode)
 
     for key_bind, key_func in pairs(mode_map) do
-      local key_bind_internal = a.nvim_replace_termcodes(key_bind, true, true, true)
+      local key_bind_internal = api.nvim_replace_termcodes(key_bind, true, true, true)
       if not applied_mappings[mode][key_bind_internal] then
         applied_mappings[mode][key_bind_internal] = true
         telescope_map(prompt_bufnr, mode, key_bind, key_func, extract_keymap_opts(key_func))

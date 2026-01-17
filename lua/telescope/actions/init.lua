@@ -52,7 +52,7 @@
 --- file.
 ---@brief ]]
 
-local a = vim.api
+local api = vim.api
 
 local conf = require("telescope.config").values
 local state = require "telescope.state"
@@ -370,7 +370,7 @@ end
 
 actions.close_pum = function(_)
   if 0 ~= vim.fn.pumvisible() then
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<c-y>", true, true, true), "n", true)
+    api.nvim_feedkeys(api.nvim_replace_termcodes("<c-y>", true, true, true), "n", true)
   end
 end
 
@@ -379,14 +379,14 @@ end
 actions.close = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local original_win_id = picker.original_win_id
-  local cursor_valid, original_cursor = pcall(a.nvim_win_get_cursor, original_win_id)
+  local cursor_valid, original_cursor = pcall(api.nvim_win_get_cursor, original_win_id)
 
   actions.close_pum(prompt_bufnr)
 
   require("telescope.pickers").on_close_prompt(prompt_bufnr)
-  pcall(a.nvim_set_current_win, original_win_id)
-  if cursor_valid and a.nvim_get_mode().mode == "i" and picker._original_mode ~= "i" then
-    pcall(a.nvim_win_set_cursor, original_win_id, { original_cursor[1], original_cursor[2] + 1 })
+  pcall(api.nvim_set_current_win, original_win_id)
+  if cursor_valid and api.nvim_get_mode().mode == "i" and picker._original_mode ~= "i" then
+    pcall(api.nvim_win_set_cursor, original_win_id, { original_cursor[1], original_cursor[2] + 1 })
   end
 end
 
@@ -400,14 +400,14 @@ end
 
 local set_edit_line = function(prompt_bufnr, fname, prefix, postfix)
   postfix = vim.F.if_nil(postfix, "")
-  postfix = a.nvim_replace_termcodes(postfix, true, false, true)
+  postfix = api.nvim_replace_termcodes(postfix, true, false, true)
   local selection = action_state.get_selected_entry()
   if selection == nil then
     utils.__warn_no_selection(fname)
     return
   end
   actions.close(prompt_bufnr)
-  a.nvim_feedkeys(prefix .. selection.value .. postfix, "n", true)
+  api.nvim_feedkeys(prefix .. selection.value .. postfix, "n", true)
 end
 
 --- Set a value in the command line and don't run it, making it editable.
@@ -478,8 +478,8 @@ actions.paste_register = function(prompt_bufnr)
   actions.close(prompt_bufnr)
 
   -- ensure that the buffer can be written to
-  if vim.api.nvim_buf_get_option(vim.api.nvim_get_current_buf(), "modifiable") then
-    vim.api.nvim_paste(selection.content, true, -1)
+  if vim.bo[0].modifiable then
+    api.nvim_paste(selection.content, true, -1)
   end
 end
 
@@ -489,7 +489,7 @@ actions.insert_symbol = function(prompt_bufnr)
   local symbol = action_state.get_selected_entry().value[1]
   actions.close(prompt_bufnr)
   vim.schedule(function()
-    vim.api.nvim_put({ symbol }, "", true, true)
+    api.nvim_put({ symbol }, "", true, true)
   end)
 end
 
@@ -500,7 +500,7 @@ actions.insert_symbol_i = function(prompt_bufnr)
   actions.close(prompt_bufnr)
   vim.schedule(function()
     vim.cmd [[startinsert]]
-    vim.api.nvim_put({ symbol }, "", true, true)
+    api.nvim_put({ symbol }, "", true, true)
   end)
 end
 
@@ -793,7 +793,7 @@ end
 actions.git_merge_branch = make_git_branch_action {
   should_confirm = true,
   action_name = "actions.git_merge_branch",
-  confirmation_question = "Do you really wanna merge branch %s? [Y/n] ",
+  confirmation_question = "Do you really want to merge branch %s? [Y/n] ",
   success_message = "Merged branch: %s",
   error_message = "Error when merging branch: %s. Git returned: '%s'",
   command = function(branch_name)
@@ -806,7 +806,7 @@ actions.git_merge_branch = make_git_branch_action {
 actions.git_rebase_branch = make_git_branch_action {
   should_confirm = true,
   action_name = "actions.git_rebase_branch",
-  confirmation_question = "Do you really wanna rebase branch %s? [Y/n] ",
+  confirmation_question = "Do you really want to rebase branch %s? [Y/n] ",
   success_message = "Rebased branch: %s",
   error_message = "Error when rebasing branch: %s. Git returned: '%s'",
   command = function(branch_name)
@@ -823,7 +823,7 @@ local git_reset_branch = function(prompt_bufnr, mode)
   end
 
   local confirmation =
-    ask_to_confirm("Do you really wanna " .. mode .. " reset to " .. selection.value .. "? [Y/n] ", "y")
+    ask_to_confirm("Do you really want to " .. mode .. " reset to " .. selection.value .. "? [Y/n] ", "y")
   if not confirmation then
     utils.notify("actions.git_reset_branch", {
       msg = "action canceled",
@@ -928,7 +928,7 @@ local send_selected_to_qf = function(prompt_bufnr, mode, target)
   local prompt = picker:_get_prompt()
   actions.close(prompt_bufnr)
 
-  vim.api.nvim_exec_autocmds("QuickFixCmdPre", {})
+  api.nvim_exec_autocmds("QuickFixCmdPre", {})
   if target == "loclist" then
     vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
   else
@@ -936,7 +936,7 @@ local send_selected_to_qf = function(prompt_bufnr, mode, target)
     vim.fn.setqflist(qf_entries, mode)
     vim.fn.setqflist({}, "a", { title = qf_title })
   end
-  vim.api.nvim_exec_autocmds("QuickFixCmdPost", {})
+  api.nvim_exec_autocmds("QuickFixCmdPost", {})
 end
 
 local send_all_to_qf = function(prompt_bufnr, mode, target)
@@ -951,7 +951,7 @@ local send_all_to_qf = function(prompt_bufnr, mode, target)
   local prompt = picker:_get_prompt()
   actions.close(prompt_bufnr)
 
-  vim.api.nvim_exec_autocmds("QuickFixCmdPre", {})
+  api.nvim_exec_autocmds("QuickFixCmdPre", {})
   local qf_title = string.format([[%s (%s)]], picker.prompt_title, prompt)
   if target == "loclist" then
     vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
@@ -960,7 +960,7 @@ local send_all_to_qf = function(prompt_bufnr, mode, target)
     vim.fn.setqflist(qf_entries, mode)
     vim.fn.setqflist({}, "a", { title = qf_title })
   end
-  vim.api.nvim_exec_autocmds("QuickFixCmdPost", {})
+  api.nvim_exec_autocmds("QuickFixCmdPost", {})
 end
 
 --- Sends the selected entries to the quickfix list, replacing the previous entries.
@@ -1120,7 +1120,7 @@ actions.complete_tag = function(prompt_bufnr)
   end
 
   -- incremental completion by substituting string starting from col - #line byte offset
-  local col = vim.api.nvim_win_get_cursor(0)[2] + 1
+  local col = api.nvim_win_get_cursor(0)[2] + 1
   vim.fn.complete(col - #line, filtered_tags)
 end
 
@@ -1179,34 +1179,34 @@ actions.delete_buffer = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
 
   current_picker:delete_selection(function(selection)
-    local force = vim.api.nvim_buf_get_option(selection.bufnr, "buftype") == "terminal"
-    local ok = pcall(vim.api.nvim_buf_delete, selection.bufnr, { force = force })
+    local force = vim.bo[selection.bufnr].buftype == "terminal"
+    local ok = pcall(api.nvim_buf_delete, selection.bufnr, { force = force })
 
     -- If the current buffer is deleted, switch to the previous buffer
     -- according to bdelete behavior
     if ok and selection.bufnr == current_picker.original_bufnr then
-      if vim.api.nvim_win_is_valid(current_picker.original_win_id) then
+      if api.nvim_win_is_valid(current_picker.original_win_id) then
         local jumplist = vim.fn.getjumplist(current_picker.original_win_id)[1]
         for i = #jumplist, 1, -1 do
           if jumplist[i].bufnr ~= selection.bufnr and vim.fn.bufloaded(jumplist[i].bufnr) == 1 then
-            vim.api.nvim_win_set_buf(current_picker.original_win_id, jumplist[i].bufnr)
+            api.nvim_win_set_buf(current_picker.original_win_id, jumplist[i].bufnr)
             current_picker.original_bufnr = jumplist[i].bufnr
             return ok
           end
         end
 
         -- no more valid buffers in jumplist, create an empty buffer
-        local empty_buf = vim.api.nvim_create_buf(true, true)
-        vim.api.nvim_win_set_buf(current_picker.original_win_id, empty_buf)
+        local empty_buf = api.nvim_create_buf(true, true)
+        api.nvim_win_set_buf(current_picker.original_win_id, empty_buf)
         current_picker.original_bufnr = empty_buf
-        vim.api.nvim_buf_delete(selection.bufnr, { force = true })
+        api.nvim_buf_delete(selection.bufnr, { force = true })
         return ok
       end
 
       -- window of the selected buffer got wiped, switch to first valid window
       local win_id = vim.fn.win_getid(1, current_picker.original_tabpage)
       current_picker.original_win_id = win_id
-      current_picker.original_bufnr = vim.api.nvim_win_get_buf(win_id)
+      current_picker.original_bufnr = api.nvim_win_get_buf(win_id)
     end
     return ok
   end)
@@ -1284,10 +1284,10 @@ actions.which_key = function(prompt_bufnr, opts)
   -- close on repeated keypress
   local km_bufs = (function()
     local ret = {}
-    local bufs = a.nvim_list_bufs()
+    local bufs = api.nvim_list_bufs()
     for _, buf in ipairs(bufs) do
       for _, bufname in ipairs { "_TelescopeWhichKey", "_TelescopeWhichKeyBorder" } do
-        if string.find(a.nvim_buf_get_name(buf), bufname) then
+        if string.find(api.nvim_buf_get_name(buf), bufname) then
           table.insert(ret, buf)
         end
       end
@@ -1299,7 +1299,7 @@ actions.which_key = function(prompt_bufnr, opts)
       utils.buf_delete(buf)
       local win_ids = vim.fn.win_findbuf(buf)
       for _, win_id in ipairs(win_ids) do
-        pcall(a.nvim_win_close, win_id, true)
+        pcall(api.nvim_win_close, win_id, true)
       end
     end
     return
@@ -1323,7 +1323,7 @@ actions.which_key = function(prompt_bufnr, opts)
   end
 
   local mappings = {}
-  local mode = a.nvim_get_mode().mode
+  local mode = api.nvim_get_mode().mode
   for _, v in pairs(action_utils.get_registered_mappings(prompt_bufnr)) do
     if v.desc and v.desc ~= "which_key" and v.desc ~= "nop" then
       if not opts.only_show_current_mode or mode == v.mode then
@@ -1367,7 +1367,7 @@ actions.which_key = function(prompt_bufnr, opts)
 
   -- place hints at top or bottom relative to prompt
   local win_central_row = function(win_nr)
-    return a.nvim_win_get_position(win_nr)[1] + 0.5 * a.nvim_win_get_height(win_nr)
+    return api.nvim_win_get_position(win_nr)[1] + 0.5 * api.nvim_win_get_height(win_nr)
   end
   -- TODO(fdschmidt93|l-kershaw): better generalization of where to put which key float
   local picker = action_state.get_current_picker(prompt_bufnr)
@@ -1396,49 +1396,61 @@ actions.which_key = function(prompt_bufnr, opts)
     zindex = opts.zindex,
   }
   local km_win_id, km_opts = popup.create("", popup_opts)
-  local km_buf = a.nvim_win_get_buf(km_win_id)
-  a.nvim_buf_set_name(km_buf, "_TelescopeWhichKey")
-  a.nvim_buf_set_name(km_opts.border.bufnr, "_TelescopeTelescopeWhichKeyBorder")
-  a.nvim_win_set_option(km_win_id, "winhl", "Normal:" .. opts.normal_hl)
-  a.nvim_win_set_option(km_opts.border.win_id, "winhl", "Normal:" .. opts.border_hl)
-  a.nvim_win_set_option(km_win_id, "winblend", opts.winblend)
-  a.nvim_win_set_option(km_win_id, "foldenable", false)
+  local km_buf = api.nvim_win_get_buf(km_win_id)
+  api.nvim_buf_set_name(km_buf, "_TelescopeWhichKey")
+  api.nvim_buf_set_name(km_opts.border.bufnr, "_TelescopeTelescopeWhichKeyBorder")
+  vim.wo[km_win_id].winhl = "Normal:" .. opts.normal_hl
+  vim.wo[km_opts.border.win_id].winhl = "Normal:" .. opts.border_hl
+  vim.wo[km_win_id].winblend = opts.winblend
+  vim.wo[km_win_id].foldenable = false
 
-  vim.api.nvim_create_autocmd("BufLeave", {
+  api.nvim_create_autocmd("BufLeave", {
     buffer = km_buf,
     once = true,
     callback = function()
-      pcall(vim.api.nvim_win_close, km_win_id, true)
-      pcall(vim.api.nvim_win_close, km_opts.border.win_id, true)
+      pcall(api.nvim_win_close, km_win_id, true)
+      pcall(api.nvim_win_close, km_opts.border.win_id, true)
       require("telescope.utils").buf_delete(km_buf)
     end,
   })
 
-  a.nvim_buf_set_lines(km_buf, 0, -1, false, utils.repeated_table(opts.num_rows + 2 * opts.line_padding, column_indent))
+  api.nvim_buf_set_lines(
+    km_buf,
+    0,
+    -1,
+    false,
+    utils.repeated_table(opts.num_rows + 2 * opts.line_padding, column_indent)
+  )
 
-  local keymap_highlights = a.nvim_create_namespace "telescope_whichkey"
+  local keymap_highlights = api.nvim_create_namespace "telescope_whichkey"
   local highlights = {}
   for index, mapping in ipairs(mappings) do
     local row = utils.cycle(index, opts.num_rows) - 1 + opts.line_padding
-    local prev_line = a.nvim_buf_get_lines(km_buf, row, row + 1, false)[1]
+    local prev_line = api.nvim_buf_get_lines(km_buf, row, row + 1, false)[1]
     if index == total_available_entries and total_available_entries > #mappings then
       local new_line = prev_line .. "..."
-      a.nvim_buf_set_lines(km_buf, row, row + 1, false, { new_line })
+      api.nvim_buf_set_lines(km_buf, row, row + 1, false, { new_line })
       break
     end
     local display, display_hl = make_display(mapping)
     local new_line = prev_line .. display .. opts.column_padding -- incl. padding
-    a.nvim_buf_set_lines(km_buf, row, row + 1, false, { new_line })
+    api.nvim_buf_set_lines(km_buf, row, row + 1, false, { new_line })
     table.insert(highlights, { hl = display_hl, row = row, col = #prev_line })
   end
 
-  -- highlighting only after line setting as vim.api.nvim_buf_set_lines removes hl otherwise
+  -- highlighting only after line setting as a.nvim_buf_set_lines removes hl otherwise
   for _, highlight_tbl in pairs(highlights) do
     local highlight = highlight_tbl.hl
     local row_ = highlight_tbl.row
     local col = highlight_tbl.col
     for _, hl_block in ipairs(highlight) do
-      a.nvim_buf_add_highlight(km_buf, keymap_highlights, hl_block[2], row_, col + hl_block[1][1], col + hl_block[1][2])
+      utils.hl_range(
+        km_buf,
+        keymap_highlights,
+        hl_block[2],
+        { row_, col + hl_block[1][1] },
+        { row_, col + hl_block[1][2] }
+      )
     end
   end
 
@@ -1452,14 +1464,14 @@ actions.which_key = function(prompt_bufnr, opts)
   end
   -- only set up autocommand after showing preview completed
   vim.schedule(function()
-    vim.api.nvim_create_autocmd(close_event, {
+    api.nvim_create_autocmd(close_event, {
       pattern = close_pattern,
       buffer = close_buffer,
       once = true,
       callback = function()
         vim.schedule(function()
-          pcall(vim.api.nvim_win_close, km_win_id, true)
-          pcall(vim.api.nvim_win_close, km_opts.border.win_id, true)
+          pcall(api.nvim_win_close, km_win_id, true)
+          pcall(api.nvim_win_close, km_opts.border.win_id, true)
           utils.buf_delete(km_buf)
         end)
       end,
@@ -1510,9 +1522,9 @@ actions.delete_mark = function(prompt_bufnr)
 
     local success
     if mark:match "%u" then
-      success = pcall(vim.api.nvim_del_mark, mark)
+      success = pcall(api.nvim_del_mark, mark)
     else
-      success = pcall(vim.api.nvim_buf_del_mark, bufnr, mark)
+      success = pcall(api.nvim_buf_del_mark, bufnr, mark)
     end
     return success
   end)

@@ -4,18 +4,26 @@
 local M = {}
 
 ---Validates args for `throttle()` and  `debounce()`.
-local function td_validate(fn, ms)
-  vim.validate {
-    fn = { fn, "f" },
-    ms = {
-      ms,
-      function(v)
+---TODO(clason): remove shim when dropping support for Nvim 0.10
+local td_validate = vim.fn.has "nvim-0.11" == 1
+    and function(fn, ms)
+      vim.validate("fn", fn, "function")
+      vim.validate("ms", ms, function(v)
         return type(v) == "number" and v > 0
-      end,
-      "number > 0",
-    },
-  }
-end
+      end, "number > 0")
+    end
+  or function(fn, ms)
+    vim.validate {
+      fn = { fn, "f" },
+      ms = {
+        ms,
+        function(v)
+          return type(v) == "number" and v > 0
+        end,
+        "number > 0",
+      },
+    }
+  end
 
 --- Throttles a function on the leading edge. Automatically `schedule_wrap()`s.
 ---@param fn fun(...) Function to throttle
@@ -24,7 +32,7 @@ end
 ---@return uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
 function M.throttle_leading(fn, ms)
   td_validate(fn, ms)
-  local timer = vim.loop.new_timer()
+  local timer = vim.uv.new_timer()
   local running = false
 
   local function wrapped_fn(...)
@@ -48,7 +56,7 @@ end
 ---@return uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
 function M.throttle_trailing(fn, ms, last)
   td_validate(fn, ms)
-  local timer = vim.loop.new_timer()
+  local timer = vim.uv.new_timer()
   local running = false
 
   local wrapped_fn
@@ -90,7 +98,7 @@ end
 ---@return uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
 function M.debounce_leading(fn, ms)
   td_validate(fn, ms)
-  local timer = vim.loop.new_timer()
+  local timer = vim.uv.new_timer()
   local running = false
 
   local function wrapped_fn(...)
@@ -115,7 +123,7 @@ end
 ---@return uv_timer_t timer Remember to call `timer.close()` at the end or you will leak memory!
 function M.debounce_trailing(fn, ms, first)
   td_validate(fn, ms)
-  local timer = vim.loop.new_timer()
+  local timer = vim.uv.new_timer()
   local wrapped_fn
 
   if not first then
