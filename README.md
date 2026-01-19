@@ -77,7 +77,7 @@ e.g. using [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
 {
-    'nvim-telescope/telescope.nvim', tag = '*',
+    'nvim-telescope/telescope.nvim', version = '*',
     dependencies = {
         'nvim-lua/plenary.nvim',
         -- optional but recommended
