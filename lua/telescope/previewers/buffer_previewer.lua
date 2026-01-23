@@ -436,11 +436,11 @@ previewers.new_buffer_previewer = function(opts)
         end
       end)
 
-      vim.wo[preview_window_id].winhl = "Normal:TelescopePreviewNormal"
-      vim.wo[preview_window_id].signcolumn = "no"
-      vim.wo[preview_window_id].foldlevel = 100
-      vim.wo[preview_window_id].wrap = false
-      vim.wo[preview_window_id].scrollbind = false
+      vim.wo[preview_winid].winhl = "Normal:TelescopePreviewNormal"
+      vim.wo[preview_winid].signcolumn = "no"
+      vim.wo[preview_winid].foldlevel = 100
+      vim.wo[preview_winid].wrap = false
+      vim.wo[preview_winid].scrollbind = false
 
       self.state.winid = preview_winid
       self.state.bufname = nil
