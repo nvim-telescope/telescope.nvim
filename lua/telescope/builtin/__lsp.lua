@@ -448,6 +448,16 @@ local function get_workspace_symbols_requester(bufnr, opts)
         else
           vim.list_extend(locations, lsp.util.symbols_to_items(client_res.result, bufnr))
         end
+
+        local result = {}
+        for i = 1, #locations do
+          table.insert(
+            result,
+            vim.tbl_extend("force", locations[i], { container_name = client_res.result[i].containerName })
+          )
+        end
+
+        locations = result
       end
     end
 
