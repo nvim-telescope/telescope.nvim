@@ -1,7 +1,6 @@
 local Path = require "neoplen.path"
 local Job = require "neoplen.job"
 
-local f = require "neoplen.functional"
 local log = require "neoplen.log"
 local win_float = require "neoplen.window.float"
 
@@ -163,9 +162,9 @@ local function test_paths(paths, opts)
     Job.join(unpack(jobs))
     log.debug "... Completed jobs"
     table.remove(jobs, #jobs)
-    failure = f.any(function(_, v)
+    failure = vim.iter(jobs):any(function(v)
       return v.code ~= 0
-    end, jobs)
+    end)
   end
   vim.wait(100)
 
