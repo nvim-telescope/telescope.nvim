@@ -55,7 +55,7 @@
 --- For a better understanding of how create() and displayer are used it's best to look
 --- at the code in make_entry.lua.
 
-local strings = require "plenary.strings"
+local strings = require "neoplen.strings"
 local state = require "telescope.state"
 local resolve = require "telescope.config.resolve"
 local utils = require "telescope.utils"

@@ -28,9 +28,7 @@ local optional_dependencies = {
   },
 }
 
-local required_plugins = {
-  { lib = "plenary", optional = false },
-}
+local required_plugins = {}
 
 local check_binary_installed = function(package)
   local binaries = package.binaries or { package.name }

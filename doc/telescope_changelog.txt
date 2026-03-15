@@ -98,26 +98,26 @@ telescope.path  module soon.
 Guide to switch over to plenary.path
     - separator
         before: require("telescope.path").separator
-        now:    require("plenary.path").path.sep
+        now:    require("neoplen.path").path.sep
     - home
         before: require("telescope.path").home
-        now:    require("plenary.path").path.home
+        now:    require("neoplen.path").path.home
     - make_relative
         before: require("telescope.path").make_relative(filepath, cwd)
-        now:    require("plenary.path"):new(filepath):make_relative(cwd)
+        now:    require("neoplen.path"):new(filepath):make_relative(cwd)
     - shorten
         before: require("telescope.path").shorten(filepath)
-        now:    require("plenary.path"):new(filepath):shorten()
+        now:    require("neoplen.path"):new(filepath):shorten()
                 with optional len, default is 1
     - normalize
         before: require("telescope.path").normalize(filepath, cwd)
-        now:    require("plenary.path"):new(filepath):normalize(cwd)
+        now:    require("neoplen.path"):new(filepath):normalize(cwd)
     - read_file
         before: require("telescope.path").read_file(filepath)
-        now:    require("plenary.path"):new(filepath):read()
+        now:    require("neoplen.path"):new(filepath):read()
     - read_file_async
         before: require("telescope.path").read_file_async(filepath, callback)
-        now:    require("plenary.path"):new(filepath):read(callback)
+        now:    require("neoplen.path"):new(filepath):read(callback)
 
                                                     *telescope.changelog-1406*
 
