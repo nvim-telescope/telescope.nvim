@@ -310,9 +310,9 @@ local on_output = function(self, result_key, cb)
             -- results[result_index] = results[result_index] .. line
             result_line = result_line .. line
 
-            -- Only put in a new line when we actually have new data to split.
-            --    This is generally only false when we do end with a new line.
-            --    It prevents putting in a "" to the end of the results.
+          -- Only put in a new line when we actually have new data to split.
+          --    This is generally only false when we do end with a new line.
+          --    It prevents putting in a "" to the end of the results.
           elseif start ~= processed_index or found_newline then
             -- results[result_index] = line
             result_line = line
