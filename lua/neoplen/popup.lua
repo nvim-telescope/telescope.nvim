@@ -6,25 +6,34 @@
 --- Please make sure to update "POPUP.md" with any changes and/or notes.
 
 local Border = require "neoplen.window.border"
-local Window = require "neoplen.window"
-local utils = require "neoplen.popup.utils"
 
 local if_nil = vim.F.if_nil
 
-local popup = {}
+local clamp = function(value, min, max)
+  min = min or 0
+  max = max or math.huge
 
-popup._pos_map = {
+  if min then
+    value = math.max(value, min)
+  end
+  if max then
+    value = math.min(value, max)
+  end
+
+  return value
+end
+
+local M = {}
+
+local pos_map = {
   topleft = "NW",
   topright = "NE",
   botleft = "SW",
   botright = "SE",
 }
 
--- Keep track of hidden popups, so we can load them with popup.show()
-popup._hidden = {}
-
 -- Keep track of popup borders, so we don't have to pass them between functions
-popup._borders = {}
+local borders = {}
 
 local function dict_default(options, key, default)
   if options[key] == nil then
@@ -34,53 +43,24 @@ local function dict_default(options, key, default)
   end
 end
 
--- Callbacks to be called later by popup.execute_callback
-popup._callbacks = {}
-
 -- Convert the positional {vim_options} to compatible neovim options and add them to {win_opts}
 -- If an option is not given in {vim_options}, fall back to {default_opts}
 local function add_position_config(win_opts, vim_options, default_opts)
   default_opts = default_opts or {}
 
-  local cursor_relative_pos = function(pos_str, dim)
-    assert(string.find(pos_str, "^cursor"), "Invalid value for " .. dim)
-    win_opts.relative = "cursor"
-    local line = 0
-    if (pos_str):match "cursor%+(%d+)" then
-      line = line + tonumber((pos_str):match "cursor%+(%d+)")
-    elseif (pos_str):match "cursor%-(%d+)" then
-      line = line - tonumber((pos_str):match "cursor%-(%d+)")
-    end
-    return line
-  end
-
-  -- Feels like maxheight, minheight, maxwidth, minwidth will all be related
-  --
-  -- maxheight  Maximum height of the contents, excluding border and padding.
-  -- minheight  Minimum height of the contents, excluding border and padding.
-  -- maxwidth  Maximum width of the contents, excluding border, padding and scrollbar.
-  -- minwidth  Minimum width of the contents, excluding border, padding and scrollbar.
   local width = if_nil(vim_options.width, default_opts.width)
   local height = if_nil(vim_options.height, default_opts.height)
-  win_opts.width = utils.bounded(width, vim_options.minwidth, vim_options.maxwidth)
-  win_opts.height = utils.bounded(height, vim_options.minheight, vim_options.maxheight)
+  win_opts.width = clamp(width, vim_options.minwidth, vim_options.maxwidth)
+  win_opts.height = clamp(height, vim_options.minheight, vim_options.maxheight)
 
   if vim_options.line and vim_options.line ~= 0 then
-    if type(vim_options.line) == "string" then
-      win_opts.row = cursor_relative_pos(vim_options.line, "row")
-    else
-      win_opts.row = vim_options.line - 1
-    end
+    win_opts.row = vim_options.line - 1
   else
     win_opts.row = math.floor((vim.o.lines - win_opts.height) / 2)
   end
 
   if vim_options.col and vim_options.col ~= 0 then
-    if type(vim_options.col) == "string" then
-      win_opts.col = cursor_relative_pos(vim_options.col, "col")
-    else
-      win_opts.col = vim_options.col - 1
-    end
+    win_opts.col = vim_options.col - 1
   else
     win_opts.col = math.floor((vim.o.columns - win_opts.width) / 2)
   end
@@ -97,22 +77,14 @@ local function add_position_config(win_opts, vim_options, default_opts)
       vim_options.col = 0
       win_opts.anchor = "NW"
     else
-      win_opts.anchor = popup._pos_map[vim_options.pos]
+      win_opts.anchor = pos_map[vim_options.pos]
     end
   else
     win_opts.anchor = "NW" -- This is the default, but makes `posinvert` easier to implement
   end
-
-  -- , fixed    When FALSE (the default), and:
-  -- ,      - "pos" is "botleft" or "topleft", and
-  -- ,      - "wrap" is off, and
-  -- ,      - the popup would be truncated at the right edge of
-  -- ,        the screen, then
-  -- ,     the popup is moved to the left so as to fit the
-  -- ,     contents on the screen.  Set to TRUE to disable this.
 end
 
-function popup.create(what, vim_options)
+function M.create(what, vim_options)
   vim_options = vim.deepcopy(vim_options)
 
   local bufnr
@@ -226,7 +198,7 @@ function popup.create(what, vim_options)
   -- zindex, Priority for the popup, default 50.  Minimum value is
   -- ,   1, maximum value is 32000.
   local zindex = dict_default(vim_options, "zindex", option_defaults)
-  win_opts.zindex = utils.bounded(zindex, 1, 32000)
+  win_opts.zindex = clamp(zindex, 1, 32000)
 
   -- noautocmd, undocumented vim default per https://github.com/vim/vim/issues/5737
   win_opts.noautocmd = if_nil(vim_options.noautocmd, true)
@@ -235,12 +207,7 @@ function popup.create(what, vim_options)
   -- vim popups are not focusable windows
   win_opts.focusable = if_nil(vim_options.focusable, false)
 
-  local win_id
-  if vim_options.hidden then
-    assert(false, "I have not implemented this yet and don't know how")
-  else
-    win_id = vim.api.nvim_open_win(bufnr, false, win_opts)
-  end
+  local win_id = vim.api.nvim_open_win(bufnr, false, win_opts)
 
   -- Moved, handled after since we need the window ID
   if vim_options.moved then
@@ -258,17 +225,6 @@ function popup.create(what, vim_options)
         bufnr,
         win_id
       )
-    )
-  end
-
-  if vim_options.time then
-    local timer = vim.uv.new_timer()
-    timer:start(
-      vim_options.time,
-      0,
-      vim.schedule_wrap(function()
-        Window.try_close(win_id, false)
-      end)
     )
   end
 
@@ -316,10 +272,10 @@ function popup.create(what, vim_options)
       border_options.border_thickness = Border._default_thickness
     elseif #vim_options.border == 4 then
       border_options.border_thickness = {
-        top = utils.bounded(vim_options.border[1], 0, 1),
-        right = utils.bounded(vim_options.border[2], 0, 1),
-        bot = utils.bounded(vim_options.border[3], 0, 1),
-        left = utils.bounded(vim_options.border[4], 0, 1),
+        top = clamp(vim_options.border[1], 0, 1),
+        right = clamp(vim_options.border[2], 0, 1),
+        bot = clamp(vim_options.border[3], 0, 1),
+        left = clamp(vim_options.border[4], 0, 1),
       }
     else
       error(string.format("Invalid configuration for border: %s", vim.inspect(vim_options.border)))
@@ -384,7 +340,7 @@ function popup.create(what, vim_options)
     border_options.highlight = vim_options.borderhighlight and string.format("Normal:%s", vim_options.borderhighlight)
     border_options.titlehighlight = vim_options.titlehighlight
     border = Border:new(bufnr, win_id, win_opts, border_options)
-    popup._borders[win_id] = border
+    borders[win_id] = border
   end
 
   if vim_options.highlight then
@@ -411,28 +367,6 @@ function popup.create(what, vim_options)
     end
   end
 
-  -- callback
-  if vim_options.callback then
-    popup._callbacks[bufnr] = function()
-      -- (jbyuki): Giving win_id is pointless here because it's closed right afterwards
-      -- but it might make more sense once hidden is implemented
-      local row, _ = unpack(vim.api.nvim_win_get_cursor(win_id))
-      vim_options.callback(win_id, what[row])
-      vim.api.nvim_win_close(win_id, true)
-    end
-    vim.api.nvim_buf_set_keymap(
-      bufnr,
-      "n",
-      "<CR>",
-      '<cmd>lua require"neoplen.popup".execute_callback(' .. bufnr .. ")<CR>",
-      { noremap = true }
-    )
-  end
-
-  if vim_options.finalize_callback then
-    vim_options.finalize_callback(win_id, bufnr)
-  end
-
   -- TODO: Perhaps there's a way to return an object that looks like a window id,
   --    but actually has some extra metadata about it.
   --
@@ -453,7 +387,7 @@ end
 -- - maxwidth/minwidth
 -- - pos
 -- Unimplemented vim options here include: fixed
-function popup.move(win_id, vim_options)
+function M.move(win_id, vim_options)
   -- Create win_options
   local win_opts = {}
   win_opts.relative = "editor"
@@ -473,18 +407,10 @@ function popup.move(win_id, vim_options)
   vim.api.nvim_win_set_config(win_id, win_opts)
 
   -- Update border window (if present)
-  local border = popup._borders[win_id]
+  local border = borders[win_id]
   if border ~= nil then
     border:move(win_opts, border._border_win_options)
   end
 end
 
-function popup.execute_callback(bufnr)
-  if popup._callbacks[bufnr] then
-    local wrapper = popup._callbacks[bufnr]
-    wrapper()
-    popup._callbacks[bufnr] = nil
-  end
-end
-
-return popup
+return M
