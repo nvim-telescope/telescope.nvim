@@ -174,7 +174,7 @@ M.dedent = function(str, leave_indent)
         if not indent or width < indent then
           indent = width
         end
-        -- Ignore empty lines
+      -- Ignore empty lines
       elseif line ~= "\n" then
         indent = 0
       end
