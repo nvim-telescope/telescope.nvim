@@ -1,4 +1,4 @@
-local vim = vim
+local api = vim.api
 local uv = vim.uv
 local F = vim.F
 
@@ -171,11 +171,7 @@ function Job:_reset()
   self.is_shutdown = nil
 
   if self._shutdown_check and uv.is_active(self._shutdown_check) and not uv.is_closing(self._shutdown_check) then
-    vim.api.nvim_echo(
-      { { debug.traceback "We may be memory leaking here. Please report to TJ." } },
-      true,
-      { err = true }
-    )
+    api.nvim_echo({ { debug.traceback "We may be memory leaking here. Please report to TJ." } }, true, { err = true })
   end
   self._shutdown_check = uv.new_check()
 
@@ -322,7 +318,7 @@ local on_output = function(self, result_key, cb)
 
           if found_newline then
             if not result_line then
-              return vim.api.nvim_echo(
+              return api.nvim_echo(
                 { { "Broken data thing due to: " .. tostring(result_line) .. " " .. tostring(data) } },
                 true,
                 { err = true }
@@ -481,7 +477,7 @@ function Job:wait(timeout, wait_interval, should_redraw)
   if self.handle == nil then
     local msg = vim.inspect(self)
     vim.schedule(function()
-      vim.api.nvim_echo({ { msg } }, true, { err = true })
+      api.nvim_echo({ { msg } }, true, { err = true })
     end)
 
     return
@@ -518,7 +514,7 @@ function Job:co_wait(wait_time)
   wait_time = wait_time or 5
 
   if self.handle == nil then
-    vim.api.nvim_echo({ { vim.inspect(self) } }, true, { err = true })
+    api.nvim_echo({ { vim.inspect(self) } }, true, { err = true })
     return
   end
 
