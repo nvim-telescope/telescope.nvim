@@ -122,8 +122,8 @@ function popup.create(what, vim_options)
     bufnr = vim.api.nvim_create_buf(false, true)
     assert(bufnr, "Failed to create buffer")
 
-    vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
-    vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+    vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = bufnr })
+    vim.api.nvim_set_option_value("modifiable", true, { buf = bufnr })
 
     -- TODO: Handle list of lines
     if type(what) == "string" then
@@ -262,7 +262,7 @@ function popup.create(what, vim_options)
   end
 
   if vim_options.time then
-    local timer = vim.loop.new_timer()
+    local timer = vim.uv.new_timer()
     timer:start(
       vim_options.time,
       0,
@@ -274,7 +274,7 @@ function popup.create(what, vim_options)
 
   -- Buffer Options
   if vim_options.cursorline then
-    vim.api.nvim_win_set_option(win_id, "cursorline", true)
+    vim.api.nvim_set_option_value("cursorline", true, { win = win_id })
   end
 
   if vim_options.wrap ~= nil then
@@ -282,7 +282,7 @@ function popup.create(what, vim_options)
     if vim_options.noautocmd then
       vim.cmd(string.format("noautocmd lua vim.api.nvim_set_option(%s, wrap, %s)", win_id, vim_options.wrap))
     else
-      vim.api.nvim_win_set_option(win_id, "wrap", vim_options.wrap)
+      vim.api.nvim_set_option_value("wrap", vim_options.wrap, { win = win_id })
     end
   end
 
@@ -388,10 +388,10 @@ function popup.create(what, vim_options)
   end
 
   if vim_options.highlight then
-    vim.api.nvim_win_set_option(
-      win_id,
+    vim.api.nvim_set_option_value(
       "winhl",
-      string.format("Normal:%s,EndOfBuffer:%s", vim_options.highlight, vim_options.highlight)
+      string.format("Normal:%s,EndOfBuffer:%s", vim_options.highlight, vim_options.highlight),
+      { win = win_id }
     )
   end
 
