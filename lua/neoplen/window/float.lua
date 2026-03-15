@@ -50,7 +50,7 @@ function win_float.centered(options)
   local win_id = vim.api.nvim_open_win(bufnr, true, win_opts)
 
   vim.cmd "setlocal nocursorcolumn"
-  vim.api.nvim_win_set_option(win_id, "winblend", options.winblend)
+  vim.api.nvim_set_option_value("winblend", options.winblend, { win = win_id })
 
   vim.cmd(string.format("autocmd WinLeave <buffer> silent! execute 'bdelete! %s'", bufnr))
 
@@ -78,7 +78,7 @@ function win_float.centered_with_top_win(top_text, options)
   local minor_win_id = vim.api.nvim_open_win(minor_bufnr, true, minor_win_opts)
 
   vim.cmd "setlocal nocursorcolumn"
-  vim.api.nvim_win_set_option(minor_win_id, "winblend", options.winblend)
+  vim.api.nvim_set_option_value("winblend", options.winblend, { win = minor_win_id })
 
   vim.api.nvim_buf_set_lines(minor_bufnr, 0, -1, false, top_text)
 
@@ -86,7 +86,7 @@ function win_float.centered_with_top_win(top_text, options)
   local primary_win_id = vim.api.nvim_open_win(primary_bufnr, true, primary_win_opts)
 
   vim.cmd "setlocal nocursorcolumn"
-  vim.api.nvim_win_set_option(primary_win_id, "winblend", options.winblend)
+  vim.api.nvim_set_option_value("winblend", options.winblend, { win = primary_win_id })
 
   -- vim.cmd(
   --   string.format(
@@ -178,7 +178,7 @@ function win_float.percentage_range_window(col_range, row_range, win_opts, borde
   vim.api.nvim_win_set_buf(win_id, bufnr)
 
   vim.cmd "setlocal nocursorcolumn"
-  vim.api.nvim_win_set_option(win_id, "winblend", win_opts.winblend)
+  vim.api.nvim_set_option_value("winblend", win_opts.winblend, { win = win_id })
 
   local border = Border:new(bufnr, win_id, default_win_opts, border_opts or {})
 
