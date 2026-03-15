@@ -5,7 +5,7 @@
 
 local uv = vim.uv
 
-local F = require "neoplen.functional"
+local F = vim.F
 
 local S_IF = {
   -- S_IFDIR  = 0o040000  # directory
