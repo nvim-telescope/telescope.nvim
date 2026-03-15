@@ -1,3 +1,4 @@
+local api = vim.api
 local strings = require "neoplen.strings"
 
 local Border = {}
@@ -56,9 +57,9 @@ local create_horizontal_line = function(title, pos, width, left_char, mid_char, 
 end
 
 function Border._create_lines(content_win_id, content_win_options, border_win_options)
-  local content_pos = vim.api.nvim_win_get_position(content_win_id)
-  local content_height = vim.api.nvim_win_get_height(content_win_id)
-  local content_width = vim.api.nvim_win_get_width(content_win_id)
+  local content_pos = api.nvim_win_get_position(content_win_id)
+  local content_height = api.nvim_win_get_height(content_win_id)
+  local content_width = api.nvim_win_get_width(content_win_id)
 
   -- TODO: Handle border width, which I haven't right here.
   local thickness = border_win_options.border_thickness
@@ -167,7 +168,7 @@ end
 local set_title_highlights = function(bufnr, ranges, hl)
   -- Check if both `hl` and `ranges` are provided, and `ranges` is not the empty table.
   if hl and ranges and next(ranges) then
-    local ns = vim.api.nvim_create_namespace "neoplen_border"
+    local ns = api.nvim_create_namespace "neoplen_border"
     for _, r in pairs(ranges) do
       vim.hl.range(bufnr, ns, hl, { r[1], r[2] }, { r[1], r[3] })
     end
@@ -189,7 +190,7 @@ function Border:change_title(new_title, pos)
 
   self.contents, self.title_ranges =
     Border._create_lines(self.content_win_id, self.content_win_options, self._border_win_options)
-  vim.api.nvim_buf_set_lines(self.bufnr, 0, -1, false, self.contents)
+  api.nvim_buf_set_lines(self.bufnr, 0, -1, false, self.contents)
 
   set_title_highlights(self.bufnr, self.title_ranges, self._border_win_options.titlehighlight)
 end
@@ -217,8 +218,8 @@ function Border:__align_calc_config(content_win_options, border_win_options)
   -- Update border characters and title_ranges
   self.contents, self.title_ranges = Border._create_lines(self.content_win_id, content_win_options, border_win_options)
 
-  vim.api.nvim_set_option_value("modifiable", true, { buf = self.bufnr })
-  vim.api.nvim_buf_set_lines(self.bufnr, 0, -1, false, self.contents)
+  api.nvim_set_option_value("modifiable", true, { buf = self.bufnr })
+  api.nvim_buf_set_lines(self.bufnr, 0, -1, false, self.contents)
 
   local thickness = border_win_options.border_thickness
   local nvim_win_config = {
@@ -246,7 +247,7 @@ function Border:move(content_win_options, border_win_options)
   local nvim_win_config = self:__align_calc_config(content_win_options, border_win_options)
 
   -- Set config for border window
-  vim.api.nvim_win_set_config(self.win_id, nvim_win_config)
+  api.nvim_win_set_config(self.win_id, nvim_win_config)
 
   set_title_highlights(self.bufnr, self.title_ranges, self._border_win_options.titlehighlight)
 end
@@ -258,16 +259,16 @@ function Border:new(content_bufnr, content_win_id, content_win_options, border_w
 
   obj.content_win_id = content_win_id
 
-  obj.bufnr = vim.api.nvim_create_buf(false, true)
+  obj.bufnr = api.nvim_create_buf(false, true)
   assert(obj.bufnr, "Failed to create border buffer")
-  vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = obj.bufnr })
+  api.nvim_set_option_value("bufhidden", "wipe", { buf = obj.bufnr })
 
   -- Create a border window and buffer, with border characters around the edge
   local nvim_win_config = Border.__align_calc_config(obj, content_win_options, border_win_options)
-  obj.win_id = vim.api.nvim_open_win(obj.bufnr, false, nvim_win_config)
+  obj.win_id = api.nvim_open_win(obj.bufnr, false, nvim_win_config)
 
   if border_win_options.highlight then
-    vim.api.nvim_set_option_value("winhl", border_win_options.highlight, { win = obj.win_id })
+    api.nvim_set_option_value("winhl", border_win_options.highlight, { win = obj.win_id })
   end
 
   set_title_highlights(obj.bufnr, obj.title_ranges, obj._border_win_options.titlehighlight)
