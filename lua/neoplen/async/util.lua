@@ -1,6 +1,4 @@
 local a = require "neoplen.async.async"
-local vararg = require "neoplen.vararg"
--- local control = a.control
 local control = require "neoplen.async.control"
 local channel = control.channel
 
@@ -122,7 +120,7 @@ function M.apcall(async_fn, ...)
   local nargs = a.get_leaf_function_argc(async_fn)
   if nargs then
     local tx, rx = channel.oneshot()
-    local stat, ret = pcall(async_fn, vararg.rotate(nargs, tx, ...))
+    local stat, ret = pcall(async_fn, require("neoplen.vararg").rotate(nargs, tx, ...))
     if not stat then
       return stat, ret
     else

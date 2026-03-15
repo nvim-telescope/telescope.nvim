@@ -3,6 +3,8 @@
 ---Provides a function to rotate a lua vararg
 ---@brief ]]
 
+local M = {}
+
 local rotate_lookup = {}
 
 rotate_lookup[1] = function(A0)
@@ -72,11 +74,11 @@ local function rotate_n(first, ...)
   return vim.F.unpack_len(args)
 end
 
-local function rotate(nargs, ...)
+M.rotate = function(nargs, ...)
   if nargs == nil or nargs < 1 then
     return
   end
   return (rotate_lookup[nargs] or rotate_n)(...)
 end
 
-return rotate
+return M
