@@ -4,10 +4,7 @@
 ---@brief ]]
 
 local lookups = {
-  uv = "neoplen.async.uv_async",
   util = "neoplen.async.util",
-  lsp = "neoplen.async.lsp",
-  api = "neoplen.async.api",
   tests = "neoplen.async.tests",
   control = "neoplen.async.control",
 }
