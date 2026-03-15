@@ -1,5 +1,5 @@
 local a = require "neoplen.async.async"
-local uv = vim.loop
+local uv = vim.uv
 
 local M = {}
 

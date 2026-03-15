@@ -3,7 +3,7 @@
 --- Goal: Create objects that are extremely similar to Python's `Path` Objects.
 --- Reference: https://docs.python.org/3/library/pathlib.html
 
-local uv = vim.loop
+local uv = vim.uv
 
 local F = require "neoplen.functional"
 
@@ -15,7 +15,7 @@ local S_IF = {
 }
 
 local path = {}
-path.home = vim.loop.os_homedir()
+path.home = uv.os_homedir()
 
 path.sep = (function()
   if jit then
@@ -37,7 +37,7 @@ path.root = (function()
     end
   else
     return function(base)
-      base = base or vim.loop.cwd()
+      base = base or uv.cwd()
       return base:sub(1, 1) .. ":\\"
     end
   end
@@ -318,9 +318,9 @@ function Path:expand()
   -- TODO support windows
   local expanded
   if string.find(self.filename, "~") then
-    expanded = string.gsub(self.filename, "^~", vim.loop.os_homedir())
+    expanded = string.gsub(self.filename, "^~", uv.os_homedir())
   elseif string.find(self.filename, "^%.") then
-    expanded = vim.loop.fs_realpath(self.filename)
+    expanded = uv.fs_realpath(self.filename)
     if expanded == nil then
       expanded = vim.fn.fnamemodify(self.filename, ":p")
     end
@@ -752,19 +752,19 @@ function Path:_read()
 end
 
 function Path:_read_async(callback)
-  vim.loop.fs_open(self.filename, "r", 438, function(err_open, fd)
+  uv.fs_open(self.filename, "r", 438, function(err_open, fd)
     if err_open then
       print("We tried to open this file but couldn't. We failed with following error message: " .. err_open)
       return
     end
-    vim.loop.fs_fstat(fd, function(err_fstat, stat)
+    uv.fs_fstat(fd, function(err_fstat, stat)
       assert(not err_fstat, err_fstat)
       if stat.type ~= "file" then
         return callback ""
       end
-      vim.loop.fs_read(fd, stat.size, 0, function(err_read, data)
+      uv.fs_read(fd, stat.size, 0, function(err_read, data)
         assert(not err_read, err_read)
-        vim.loop.fs_close(fd, function(err_close)
+        uv.fs_close(fd, function(err_close)
           assert(not err_close, err_close)
           return callback(data)
         end)
