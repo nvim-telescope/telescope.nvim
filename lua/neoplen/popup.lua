@@ -219,15 +219,15 @@ function M.create(what, vim_options)
       --   TODO: Handle word, WORD, expr, and the range functions... which seem hard?
     end
   else
-    local silent = false
-    vim.cmd(
-      string.format(
-        "autocmd BufDelete %s <buffer=%s> ++once ++nested :lua require('neoplen.window').try_close(%s, true)",
-        (silent and "<silent>") or "",
-        bufnr,
-        win_id
-      )
-    )
+    api.nvim_create_autocmd("BufDelete", {
+      group = api.nvim_create_augroup("neoplen.window", {}),
+      buffer = bufnr,
+      once = true,
+      nested = true,
+      callback = function()
+        pcall(api.nvim_win_close, win_id, true)
+      end,
+    })
   end
 
   -- Buffer Options

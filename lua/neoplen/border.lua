@@ -273,22 +273,26 @@ function Border:new(content_bufnr, content_win_id, content_win_options, border_w
 
   set_title_highlights(obj.bufnr, obj.title_ranges, obj._border_win_options.titlehighlight)
 
-  vim.cmd(
-    string.format(
-      "autocmd BufDelete <buffer=%s> ++nested ++once :lua require('neoplen.window').close_related_win(%s, %s)",
-      content_bufnr,
-      content_win_id,
-      obj.win_id
-    )
-  )
-
-  vim.cmd(
-    string.format(
-      "autocmd WinClosed <buffer=%s> ++nested ++once :lua require('neoplen.window').try_close(%s, true)",
-      content_bufnr,
-      obj.win_id
-    )
-  )
+  local augroup = api.nvim_create_augroup("neoplen.border", {})
+  api.nvim_create_autocmd("BufDelete", {
+    group = augroup,
+    buffer = content_bufnr,
+    once = true,
+    nested = true,
+    callback = function()
+      pcall(api.nvim_win_close, content_win_id, true)
+      pcall(api.nvim_win_close, obj.win_id, true)
+    end,
+  })
+  api.nvim_create_autocmd("WinClosed", {
+    group = augroup,
+    buffer = content_bufnr,
+    once = true,
+    nested = true,
+    callback = function()
+      pcall(api.nvim_win_close, obj.win_id, true)
+    end,
+  })
 
   setmetatable(obj, Border)
 
