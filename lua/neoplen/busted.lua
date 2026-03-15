@@ -2,7 +2,7 @@ local dirname = function(p)
   return vim.fn.fnamemodify(p, ":h")
 end
 
-local function get_trace(element, level, msg)
+local function get_trace(level, msg)
   local function trimTrace(info)
     local index = info.traceback:find "\n%s*%[C]"
     info.traceback = info.traceback:sub(1, index)
@@ -10,7 +10,7 @@ local function get_trace(element, level, msg)
   end
   level = level or 3
 
-  local thisdir = dirname(debug.getinfo(1, "Sl").source, ":h")
+  local thisdir = dirname(debug.getinfo(1, "Sl").source)
   local info = debug.getinfo(level, "Sl")
   while
     info.what == "C"
@@ -74,7 +74,7 @@ local call_inner = function(desc, func)
   local ok, msg = xpcall(func, function(msg)
     -- debug.traceback
     -- return vim.inspect(get_trace(nil, 3, msg))
-    local trace = get_trace(nil, 3, msg)
+    local trace = get_trace(3, msg)
     return trace.message .. "\n" .. trace.traceback
   end)
   clear_last_each()
@@ -198,7 +198,7 @@ mod.it = function(desc, func)
   table.insert(to_insert, test_result)
 end
 
-mod.pending = function(desc, func)
+mod.pending = function(desc)
   local curr_stack = vim.deepcopy(current_description)
   table.insert(curr_stack, desc)
   print(PENDING, "||", table.concat(curr_stack, " "))

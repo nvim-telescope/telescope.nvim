@@ -2,9 +2,6 @@ local Path = require "neoplen.path"
 local Job = require "neoplen.job"
 
 local log = require "neoplen.log"
-local win_float = require "neoplen.window.float"
-
-local headless = (#vim.api.nvim_list_uis() == 0)
 
 local plenary_dir = vim.fn.fnamemodify(debug.getinfo(1).source:match "@?(.*[/\\])", ":p:h:h:h")
 
@@ -18,26 +15,6 @@ local print_output = vim.schedule_wrap(function(_, ...)
 
   vim.cmd [[mode]]
 end)
-
-local get_nvim_output = function(job_id)
-  return vim.schedule_wrap(function(bufnr, ...)
-    if not vim.api.nvim_buf_is_valid(bufnr) then
-      return
-    end
-    for _, v in ipairs { ... } do
-      vim.api.nvim_chan_send(job_id, v .. "\r\n")
-    end
-  end)
-end
-
-function harness.test_directory_command(command)
-  local split_string = vim.split(command, " ")
-  local directory = vim.fn.expand(table.remove(split_string, 1))
-
-  local opts = assert(loadstring("return " .. table.concat(split_string, " ")))()
-
-  return harness.test_directory(directory, opts)
-end
 
 local function test_paths(paths, opts)
   local minimal = not opts or not opts.init or opts.minimal or opts.minimal_init
@@ -53,27 +30,8 @@ local function test_paths(paths, opts)
   vim.env.PLENARY_TEST_TIMEOUT = opts.timeout
 
   local res = {}
-  if not headless then
-    res = win_float.percentage_range_window(0.95, 0.70, opts.winopts)
 
-    res.job_id = vim.api.nvim_open_term(res.bufnr, {})
-    vim.api.nvim_buf_set_keymap(res.bufnr, "n", "q", ":q<CR>", {})
-
-    vim.api.nvim_set_option_value("winhl", "Normal:Normal", { win = res.win_id })
-    vim.api.nvim_set_option_value("conceallevel", 3, { win = res.win_id })
-    vim.api.nvim_set_option_value("concealcursor", "n", { win = res.win_id })
-
-    if res.border_win_id then
-      vim.api.nvim_set_option_value("winhl", "Normal:Normal", { win = res.border.win_id })
-    end
-
-    if res.bufnr then
-      vim.api.nvim_set_option_value("filetype", "neoplenTestPopup", { buf = res.bufnr })
-    end
-    vim.cmd "mode"
-  end
-
-  local outputter = headless and print_output or get_nvim_output(res.job_id)
+  local outputter = print_output
 
   local path_len = #paths
   local failure = false
@@ -82,7 +40,7 @@ local function test_paths(paths, opts)
     local args = {
       "--headless",
       "-c",
-      "set rtp+=.," .. vim.fn.escape(plenary_dir, " ") .. " | runtime plugin/plenary.vim",
+      "set rtp+=.," .. vim.fn.escape(plenary_dir, " "),
     }
 
     if minimal then
@@ -151,11 +109,6 @@ local function test_paths(paths, opts)
     end
   end
 
-  -- TODO: Probably want to let people know when we've completed everything.
-  if not headless then
-    return
-  end
-
   if not opts.sequential then
     table.insert(jobs, opts.timeout)
     log.debug "... Parallel wait"
@@ -168,13 +121,11 @@ local function test_paths(paths, opts)
   end
   vim.wait(100)
 
-  if headless then
-    if failure then
-      return vim.cmd "1cq"
-    end
-
-    return vim.cmd "0cq"
+  if failure then
+    return vim.cmd "1cq"
   end
+
+  return vim.cmd "0cq"
 end
 
 function harness.test_directory(directory, opts)
