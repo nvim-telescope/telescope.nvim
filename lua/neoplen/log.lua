@@ -147,7 +147,7 @@ log.new = function(config, standalone)
 
           local ok = pcall(vim.cmd, string.format([[echom "%s"]], formatted_msg))
           if not ok then
-            vim.api.nvim_out_write(msg .. "\n")
+            vim.api.nvim_echo({ { msg } }, true, {})
           end
         end
 
