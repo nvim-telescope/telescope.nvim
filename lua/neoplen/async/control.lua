@@ -1,6 +1,5 @@
 local a = require "neoplen.async.async"
 local Deque = require("neoplen.async.structs").Deque
-local tbl = require "neoplen.tbl"
 
 local M = {}
 
@@ -133,7 +132,7 @@ M.channel.oneshot = function()
       val = ...
       is_single = true
     else
-      val = tbl.pack(...)
+      val = vim.F.pack_len(...)
     end
   end
 
@@ -147,7 +146,7 @@ M.channel.oneshot = function()
       if is_single then
         return callback(val)
       else
-        return callback(tbl.unpack(val))
+        return callback(vim.F.unpack_len(val))
       end
     else
       saved_callback = callback

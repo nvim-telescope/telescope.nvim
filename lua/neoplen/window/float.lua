@@ -1,7 +1,22 @@
 local Border = require "neoplen.window.border"
-local tbl = require "neoplen.tbl"
 
 _AssociatedBufs = {}
+
+local apply_defaults = function(original, defaults)
+  if original == nil then
+    original = {}
+  end
+
+  original = vim.deepcopy(original)
+
+  for k, v in pairs(defaults) do
+    if original[k] == nil then
+      original[k] = v
+    end
+  end
+
+  return original
+end
 
 local clear_buf_on_leave = function(bufnr)
   vim.cmd(
@@ -21,7 +36,7 @@ win_float.default_options = {
 }
 
 function win_float.default_opts(options)
-  options = tbl.apply_defaults(options, win_float.default_options)
+  options = apply_defaults(options, win_float.default_options)
 
   local width = math.floor(vim.o.columns * options.percentage)
   local height = math.floor(vim.o.lines * options.percentage)
@@ -42,7 +57,7 @@ function win_float.default_opts(options)
 end
 
 function win_float.centered(options)
-  options = tbl.apply_defaults(options, win_float.default_options)
+  options = apply_defaults(options, win_float.default_options)
 
   local win_opts = win_float.default_opts(options)
 
@@ -61,7 +76,7 @@ function win_float.centered(options)
 end
 
 function win_float.centered_with_top_win(top_text, options)
-  options = tbl.apply_defaults(options, win_float.default_options)
+  options = apply_defaults(options, win_float.default_options)
 
   table.insert(top_text, 1, string.rep("=", 80))
   table.insert(top_text, string.rep("=", 80))
@@ -136,7 +151,7 @@ end
 --@param win_opts Table
 --@param border_opts Table
 function win_float.percentage_range_window(col_range, row_range, win_opts, border_opts)
-  win_opts = tbl.apply_defaults(win_opts, win_float.default_options)
+  win_opts = apply_defaults(win_opts, win_float.default_options)
 
   local default_win_opts = win_float.default_opts(win_opts)
   default_win_opts.relative = "editor"
