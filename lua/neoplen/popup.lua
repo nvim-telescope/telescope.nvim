@@ -7,7 +7,7 @@
 
 local api = vim.api
 
-local Border = require "neoplen.window.border"
+local Border = require "neoplen.border"
 
 local if_nil = vim.F.if_nil
 
@@ -222,7 +222,7 @@ function M.create(what, vim_options)
     local silent = false
     vim.cmd(
       string.format(
-        "autocmd BufDelete %s <buffer=%s> ++once ++nested :lua require('plenary.window').try_close(%s, true)",
+        "autocmd BufDelete %s <buffer=%s> ++once ++nested :lua require('neoplen.window').try_close(%s, true)",
         (silent and "<silent>") or "",
         bufnr,
         win_id
