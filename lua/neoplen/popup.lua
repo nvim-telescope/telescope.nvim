@@ -5,6 +5,8 @@
 ---
 --- Please make sure to update "POPUP.md" with any changes and/or notes.
 
+local api = vim.api
+
 local Border = require "neoplen.window.border"
 
 local if_nil = vim.F.if_nil
@@ -91,11 +93,11 @@ function M.create(what, vim_options)
   if type(what) == "number" then
     bufnr = what
   else
-    bufnr = vim.api.nvim_create_buf(false, true)
+    bufnr = api.nvim_create_buf(false, true)
     assert(bufnr, "Failed to create buffer")
 
-    vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = bufnr })
-    vim.api.nvim_set_option_value("modifiable", true, { buf = bufnr })
+    api.nvim_set_option_value("bufhidden", "wipe", { buf = bufnr })
+    api.nvim_set_option_value("modifiable", true, { buf = bufnr })
 
     -- TODO: Handle list of lines
     if type(what) == "string" then
@@ -142,7 +144,7 @@ function M.create(what, vim_options)
       end
     end
 
-    vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, what)
+    api.nvim_buf_set_lines(bufnr, 0, -1, true, what)
   end
 
   local option_defaults = {
@@ -152,7 +154,7 @@ function M.create(what, vim_options)
 
   vim_options.width = if_nil(vim_options.width, 1)
   if type(what) == "number" then
-    vim_options.height = vim.api.nvim_buf_line_count(what)
+    vim_options.height = api.nvim_buf_line_count(what)
   else
     for _, v in ipairs(what) do
       vim_options.width = math.max(vim_options.width, #v)
@@ -207,7 +209,7 @@ function M.create(what, vim_options)
   -- vim popups are not focusable windows
   win_opts.focusable = if_nil(vim_options.focusable, false)
 
-  local win_id = vim.api.nvim_open_win(bufnr, false, win_opts)
+  local win_id = api.nvim_open_win(bufnr, false, win_opts)
 
   -- Moved, handled after since we need the window ID
   if vim_options.moved then
@@ -230,15 +232,15 @@ function M.create(what, vim_options)
 
   -- Buffer Options
   if vim_options.cursorline then
-    vim.api.nvim_set_option_value("cursorline", true, { win = win_id })
+    api.nvim_set_option_value("cursorline", true, { win = win_id })
   end
 
   if vim_options.wrap ~= nil then
     -- set_option wrap should/will trigger autocmd, see https://github.com/neovim/neovim/pull/13247
     if vim_options.noautocmd then
-      vim.cmd(string.format("noautocmd lua vim.api.nvim_set_option(%s, wrap, %s)", win_id, vim_options.wrap))
+      vim.cmd(string.format("noautocmd lua api.nvim_set_option(%s, wrap, %s)", win_id, vim_options.wrap))
     else
-      vim.api.nvim_set_option_value("wrap", vim_options.wrap, { win = win_id })
+      api.nvim_set_option_value("wrap", vim_options.wrap, { win = win_id })
     end
   end
 
@@ -344,7 +346,7 @@ function M.create(what, vim_options)
   end
 
   if vim_options.highlight then
-    vim.api.nvim_set_option_value(
+    api.nvim_set_option_value(
       "winhl",
       string.format("Normal:%s,EndOfBuffer:%s", vim_options.highlight, vim_options.highlight),
       { win = win_id }
@@ -361,9 +363,9 @@ function M.create(what, vim_options)
     -- set focus after border creation so that it's properly placed (especially
     -- in relative cursor layout)
     if vim_options.noautocmd then
-      vim.cmd("noautocmd lua vim.api.nvim_set_current_win(" .. win_id .. ")")
+      vim.cmd("noautocmd lua api.nvim_set_current_win(" .. win_id .. ")")
     else
-      vim.api.nvim_set_current_win(win_id)
+      api.nvim_set_current_win(win_id)
     end
   end
 
@@ -392,10 +394,10 @@ function M.move(win_id, vim_options)
   local win_opts = {}
   win_opts.relative = "editor"
 
-  local current_pos = vim.api.nvim_win_get_position(win_id)
+  local current_pos = api.nvim_win_get_position(win_id)
   local default_opts = {
-    width = vim.api.nvim_win_get_width(win_id),
-    height = vim.api.nvim_win_get_height(win_id),
+    width = api.nvim_win_get_width(win_id),
+    height = api.nvim_win_get_height(win_id),
     row = current_pos[1],
     col = current_pos[2],
   }
@@ -404,7 +406,7 @@ function M.move(win_id, vim_options)
   add_position_config(win_opts, vim_options, default_opts)
 
   -- Update content window
-  vim.api.nvim_win_set_config(win_id, win_opts)
+  api.nvim_win_set_config(win_id, win_opts)
 
   -- Update border window (if present)
   local border = borders[win_id]
