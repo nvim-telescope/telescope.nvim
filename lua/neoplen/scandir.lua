@@ -1,7 +1,7 @@
 local Path = require "plenary.path"
 local os_sep = Path.path.sep
 
-local uv = vim.loop
+local uv = vim.uv
 
 local M = {}
 

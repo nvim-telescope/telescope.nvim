@@ -60,16 +60,16 @@ local function test_paths(paths, opts)
     res.job_id = vim.api.nvim_open_term(res.bufnr, {})
     vim.api.nvim_buf_set_keymap(res.bufnr, "n", "q", ":q<CR>", {})
 
-    vim.api.nvim_win_set_option(res.win_id, "winhl", "Normal:Normal")
-    vim.api.nvim_win_set_option(res.win_id, "conceallevel", 3)
-    vim.api.nvim_win_set_option(res.win_id, "concealcursor", "n")
+    vim.api.nvim_set_option_value("winhl", "Normal:Normal", { win = res.win_id })
+    vim.api.nvim_set_option_value("conceallevel", 3, { win = res.win_id })
+    vim.api.nvim_set_option_value("concealcursor", "n", { win = res.win_id })
 
     if res.border_win_id then
-      vim.api.nvim_win_set_option(res.border_win_id, "winhl", "Normal:Normal")
+      vim.api.nvim_set_option_value("winhl", "Normal:Normal", { win = res.border.win_id })
     end
 
     if res.bufnr then
-      vim.api.nvim_buf_set_option(res.bufnr, "filetype", "neoplenTestPopup")
+      vim.api.nvim_set_option_value("filetype", "neoplenTestPopup", { buf = res.bufnr })
     end
     vim.cmd "mode"
   end
@@ -162,7 +162,7 @@ local function test_paths(paths, opts)
     log.debug "... Parallel wait"
     Job.join(unpack(jobs))
     log.debug "... Completed jobs"
-    table.remove(jobs, table.getn(jobs))
+    table.remove(jobs, #jobs)
     failure = f.any(function(_, v)
       return v.code ~= 0
     end, jobs)
