@@ -7,13 +7,6 @@
 -- This library is free software; you can redistribute it and/or modify it
 -- under the terms of the MIT license. See LICENSE for details.
 
-local Path = require "neoplen.path"
-
-local p_debug = vim.fn.getenv "DEBUG_PLENARY"
-if p_debug == vim.NIL then
-  p_debug = false
-end
-
 -- User configuration section
 local default_config = {
   -- Name of the plugin. Prepended to log messages.
@@ -30,15 +23,11 @@ local default_config = {
   -- Default output for logging file is `stdpath("log")/plugin.log`.
   use_file = true,
 
-  -- Output file has precedence over plugin, if not nil.
-  -- Used for the logging file, if not nil and use_file == true.
-  outfile = nil,
-
   -- Should write to the quickfix list.
   use_quickfix = false,
 
   -- Any messages above this level will be logged.
-  level = p_debug and "debug" or "info",
+  level = "info",
 
   -- Level configuration.
   modes = {
@@ -81,7 +70,7 @@ log.new = function(config, standalone)
 
   local outfile = vim.F.if_nil(
     config.outfile,
-    Path:new(vim.api.nvim_call_function("stdpath", { "log" }), config.plugin .. ".log").filename
+    vim.fs.joinpath(vim.fn.stdpath("log"), config.plugin .. ".log")
   )
 
   local obj
@@ -164,10 +153,6 @@ log.new = function(config, standalone)
 
     -- Output to log file
     if config.use_file then
-      local outfile_parent_path = Path:new(outfile):parent()
-      if not outfile_parent_path:exists() then
-        outfile_parent_path:mkdir { parents = true }
-      end
       local fp = assert(io.open(outfile, "a"))
       local str = config.fmt_msg(false, level_config.name, src_path, src_line, msg)
       fp:write(str)
