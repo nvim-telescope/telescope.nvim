@@ -5,7 +5,7 @@ local f = require "neoplen.functional"
 local log = require "neoplen.log"
 local win_float = require "neoplen.window.float"
 
-local headless = require("neoplen.nvim_meta").is_headless
+local headless = (#vim.api.nvim_list_uis() == 0)
 
 local plenary_dir = vim.fn.fnamemodify(debug.getinfo(1).source:match "@?(.*[/\\])", ":p:h:h:h")
 
