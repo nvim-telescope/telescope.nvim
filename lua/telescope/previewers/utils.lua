@@ -1,11 +1,11 @@
 local api = vim.api
 
 local ts_utils = require "telescope.utils"
-local strings = require "plenary.strings"
+local strings = require "neoplen.strings"
 local conf = require("telescope.config").values
 
-local Job = require "plenary.job"
-local Path = require "plenary.path"
+local Job = require "neoplen.job"
+local Path = require "neoplen.path"
 
 local utils = {}
 

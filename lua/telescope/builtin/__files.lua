@@ -12,7 +12,7 @@ local utils = require "telescope.utils"
 local conf = require("telescope.config").values
 local log = require "telescope.log"
 
-local Path = require "plenary.path"
+local Path = require "neoplen.path"
 
 local flatten = utils.flatten
 local filter = vim.tbl_filter

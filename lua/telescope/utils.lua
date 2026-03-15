@@ -3,12 +3,12 @@
 
 local api = vim.api
 
-local Path = require "plenary.path"
-local Job = require "plenary.job"
+local Path = require "neoplen.path"
+local Job = require "neoplen.job"
 
 local log = require "telescope.log"
 
-local truncate = require("plenary.strings").truncate
+local truncate = require("neoplen.strings").truncate
 local get_status = require("telescope.state").get_status
 
 local utils = {}
@@ -524,7 +524,7 @@ end
 -- in this file, but the code was already exported a long time ago. By making it
 -- local we would potential break consumers of this method.
 function utils.data_directory()
-  local sourced_file = require("plenary.debug_utils").sourced_filepath()
+  local sourced_file = debug.getinfo(2, "S").source:sub(2)
   local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h")
 
   return Path:new({ base_directory, "data" }):absolute() .. Path.path.sep

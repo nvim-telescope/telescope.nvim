@@ -2,7 +2,7 @@ local api = vim.api
 local hl = vim.hl
 
 local from_entry = require "telescope.from_entry"
-local Path = require "plenary.path"
+local Path = require "neoplen.path"
 local utils = require "telescope.utils"
 local putils = require "telescope.previewers.utils"
 local Previewer = require "telescope.previewers.previewer"
@@ -132,7 +132,7 @@ local handle_directory_preview = function(filepath, bufnr, opts)
     end
   end
 
-  require("plenary.scandir").ls_async(filepath, {
+  require("neoplen.scandir").ls_async(filepath, {
     hidden = true,
     group_directories_first = true,
     on_exit = vim.schedule_wrap(function(data, sections)
