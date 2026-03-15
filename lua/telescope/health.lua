@@ -29,7 +29,7 @@ local optional_dependencies = {
 }
 
 local required_plugins = {
-  { lib = "plenary", optional = false },
+  { lib = "neoplen", optional = false },
 }
 
 local check_binary_installed = function(package)

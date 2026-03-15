@@ -1,6 +1,6 @@
-local strings = require "plenary.strings"
+local strings = require "neoplen.strings"
 local sorters = require "telescope.sorters"
-local os_sep = require("plenary.path").path.sep
+local os_sep = require("neoplen.path").path.sep
 local has_win = vim.fn.has "win32" == 1
 
 -- Keep the values around between reloads
@@ -665,7 +665,7 @@ append(
                               end,
                               -- 2) Truncate lines to preview window for too large files
                               filesize_hook = function(filepath, bufnr, opts)
-                                local path = require("plenary.path"):new(filepath)
+                                local path = require("neoplen.path"):new(filepath)
                                 -- opts exposes winid
                                 local height = vim.api.nvim_win_get_height(opts.winid)
                                 local lines = vim.split(path:head(height), "[\r]?\n")

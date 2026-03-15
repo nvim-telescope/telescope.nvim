@@ -7,7 +7,7 @@
 -- > matches on consecutive letters and starts of words. This allows matching
 -- > using acronyms or different parts of the path." - J Hawthorn
 
-local has_path, Path = pcall(require, "plenary.path")
+local has_path, Path = pcall(require, "neoplen.path")
 if not has_path then
   Path = {
     path = {

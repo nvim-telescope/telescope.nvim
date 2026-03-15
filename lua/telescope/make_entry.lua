@@ -35,8 +35,8 @@ local api = vim.api
 
 local entry_display = require "telescope.pickers.entry_display"
 local utils = require "telescope.utils"
-local strings = require "plenary.strings"
-local Path = require "plenary.path"
+local strings = require "neoplen.strings"
+local Path = require "neoplen.path"
 
 local treesitter_type_highlight = {
   ["associated"] = "TSConstant",
