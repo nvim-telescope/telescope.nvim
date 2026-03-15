@@ -30,35 +30,6 @@ function Object:extend()
   return cls
 end
 
----Implement a mixin onto this Object.
----@param self Object
----@param nil ...
-function Object:implement(...)
-  for _, cls in pairs { ... } do
-    for k, v in pairs(cls) do
-      if self[k] == nil and type(v) == "function" then
-        self[k] = v
-      end
-    end
-  end
-end
-
----Checks if the object is an instance
----This will start with the lowest class and loop over all the superclasses.
----@param self Object
----@param T Object
----@return boolean
-function Object:is(T)
-  local mt = getmetatable(self)
-  while mt do
-    if mt == T then
-      return true
-    end
-    mt = getmetatable(mt)
-  end
-  return false
-end
-
 ---The default tostring implementation for an object.
 ---You can override this to provide a different tostring.
 ---@param self Object
