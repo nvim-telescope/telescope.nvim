@@ -1,5 +1,4 @@
 local co = coroutine
-local vararg = require "neoplen.vararg"
 
 local traceback_error = function(s, level)
   local traceback = debug.traceback()
@@ -42,7 +41,7 @@ local function callback_or_next(step, thread, callback, ...)
     local nargs = third(...)
 
     assert(is_callable(returned_function), "type error :: expected func")
-    returned_function(vararg.rotate(nargs, step, select(4, ...)))
+    returned_function(require("neoplen.vararg").rotate(nargs, step, select(4, ...)))
   end
 end
 
