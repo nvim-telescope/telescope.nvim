@@ -1,8 +1,12 @@
 local co = coroutine
 local vararg = require "neoplen.vararg"
-local errors = require "neoplen.errors"
-local traceback_error = errors.traceback_error
 local f = require "neoplen.functional"
+
+local traceback_error = function(s, level)
+  local traceback = debug.traceback()
+  traceback = traceback .. "\n" .. s
+  error(traceback, (level or 1) + 1)
+end
 
 local M = {}
 
