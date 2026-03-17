@@ -1,13 +1,32 @@
-.PHONY: test lint docgen
+DEPDIR ?= .deps
+PLENTEST := $(DEPDIR)/plentest.nvim
+DOCGEN := $(DEPDIR)/docgen.nvim
+DOCGEN_TAG := v1.0.1
 
-test:
-	nvim --headless --noplugin -u scripts/minimal_init.vim -c "lua require('neoplen.test_harness').test_directory('lua/tests/automated/', { minimal_init = './scripts/minimal_init.vim' })"
+.PHONY: plentest
+plentest: $(PLENTEST)
+
+$(PLENTEST):
+	git clone --filter=blob:none https://github.com/nvim-treesitter/plentest.nvim $(PLENTEST)
+
+.PHONY: test lint docgen
+test: $(PLENTEST)
+	PLENTEST=$(PLENTEST) nvim --headless --clean -u scripts/minimal_init.lua \
+		-c "lua require('plentest').test_directory('lua/tests/automated', { minimal_init = './scripts/minimal_init.lua' })"
 
 lint:
 	luacheck lua/telescope
 
-.deps/docgen.nvim:
-	git clone --depth 1 --branch v1.0.1 https://github.com/jamestrew/docgen.nvim $@
+.PHONY: docgen
+docgen: $(DOCGEN)
 
-docgen: .deps/docgen.nvim
+$(DOCGEN):
+	git clone --filter=blob:none --branch $(DOCGEN_TAG) https://github.com/jamestrew/docgen.nvim $(DOCGEN)
+
+.PHONY: docs
+docs: $(DOCGEN)
 	nvim -l scripts/gendocs.lua
+
+.PHONY: clean
+clean:
+	rm -rf $(DEPDIR)
