@@ -1,5 +1,4 @@
--- Just skip on mac, it has flaky CI for some reason
-if vim.fn.has "mac" == 1 or require("telescope.utils").iswin then
+if require("telescope.utils").iswin then
   return
 end
 

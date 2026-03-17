@@ -7,7 +7,7 @@ tester.debug = false
 
 local get_results_from_contents = function(content)
   local nvim = vim.fn.jobstart(
-    { "nvim", "--noplugin", "-u", "scripts/minimal_init.vim", "--headless", "--embed" },
+    { "nvim", "--headless", "--embed", "--clean", "-u", "scripts/minimal_init.lua" },
     { rpc = true }
   )
 
