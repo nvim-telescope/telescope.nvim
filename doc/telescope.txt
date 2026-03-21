@@ -1454,7 +1454,8 @@ builtin.buffers({opts})                          *telescope.builtin.buffers()*
         {cwd}                   (string)    specify a working directory to
                                             filter buffers list by
         {show_all_buffers}      (boolean)   if true, show all buffers,
-                                            including unloaded buffers
+                                            including unloaded buffers and
+                                            unlisted buffers
                                             (default: true)
         {ignore_current_buffer} (boolean)   if true, don't show the current
                                             buffer in the list (default:
