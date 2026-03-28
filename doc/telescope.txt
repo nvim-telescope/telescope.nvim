@@ -2604,15 +2604,6 @@ look at the code in make_entry.lua.
 ================================================================================
 UTILS                                                          *telescope.utils*
 
-Utilities for writing telescope pickers
-
-utils.str_byteindex()                        *telescope.utils.str_byteindex()*
-
-
-    Return: ~
-        integer
-
-
 utils.path_expand({path})                      *telescope.utils.path_expand()*
     Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
 
@@ -2655,14 +2646,6 @@ utils.transform_path({opts}, {path})        *telescope.utils.transform_path()*
     Return: ~
         string: path to be displayed
         table: The transformed path ready to be displayed with the styling
-
-
-utils.has_ts_parser({lang})                  *telescope.utils.has_ts_parser()*
-    Checks if treesitter parser for language is installed
-
-
-    Parameters: ~
-        {lang} (string)
 
 
 utils.notify({funname}, {opts})                     *telescope.utils.notify()*

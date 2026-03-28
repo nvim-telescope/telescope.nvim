@@ -4,26 +4,12 @@
 local M = {}
 
 ---Validates args for `throttle()` and  `debounce()`.
----TODO(clason): remove shim when dropping support for Nvim 0.10
-local td_validate = vim.fn.has "nvim-0.11" == 1
-    and function(fn, ms)
-      vim.validate("fn", fn, "function")
-      vim.validate("ms", ms, function(v)
-        return type(v) == "number" and v > 0
-      end, "number > 0")
-    end
-  or function(fn, ms)
-    vim.validate {
-      fn = { fn, "f" },
-      ms = {
-        ms,
-        function(v)
-          return type(v) == "number" and v > 0
-        end,
-        "number > 0",
-      },
-    }
-  end
+local td_validate = function(fn, ms)
+  vim.validate("fn", fn, "function")
+  vim.validate("ms", ms, function(v)
+    return type(v) == "number" and v > 0
+  end, "number > 0")
+end
 
 --- Throttles a function on the leading edge. Automatically `schedule_wrap()`s.
 ---@param fn fun(...) Function to throttle

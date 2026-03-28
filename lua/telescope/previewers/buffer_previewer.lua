@@ -1,4 +1,5 @@
 local api = vim.api
+local hl = vim.hl
 
 local from_entry = require "telescope.from_entry"
 local Path = require "plenary.path"
@@ -106,11 +107,11 @@ local colorize_ls_long = function(bufnr, data, sections)
     local section = sections[lnum]
     for i = 1, section[1].end_index - 1 do -- Highlight permissions
       local c = line:sub(i, i)
-      utils.hl_range(bufnr, ns_previewer, color_hash[c], { lnum - 1, i - 1 }, { lnum - 1, i })
+      hl.range(bufnr, ns_previewer, color_hash[c], { lnum - 1, i - 1 }, { lnum - 1, i })
     end
     for i = 2, #section do -- highlights size, (user, group), date and name
       local hl_group = color_hash[i + (i ~= 2 and windows_add or 0)]
-      utils.hl_range(
+      hl.range(
         bufnr,
         ns_previewer,
         type(hl_group) == "function" and hl_group(line) or hl_group,
@@ -136,8 +137,8 @@ local handle_directory_preview = function(filepath, bufnr, opts)
       end
       api.nvim_buf_set_lines(bufnr, 0, -1, false, paths)
       for i, path in ipairs(paths) do
-        local hl = color_hash[6](data[i])
-        utils.hl_range(bufnr, ns_previewer, hl, { i - 1, 0 }, { i - 1, #path })
+        local hlgroup = color_hash[6](data[i])
+        hl.range(bufnr, ns_previewer, hlgroup, { i - 1, 0 }, { i - 1, #path })
       end
     end
   else
@@ -535,7 +536,7 @@ previewers.vimgrep = defaulter(function(opts)
 
       for i = lnum, lnend do
         pcall(
-          utils.hl_range,
+          hl.range,
           bufnr,
           ns_previewer,
           "TelescopePreviewLine",
@@ -624,14 +625,7 @@ previewers.ctags = defaulter(function(opts)
         if self.state.last_set_bufnr then
           pcall(api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
         end
-        pcall(
-          utils.hl_range,
-          bufnr,
-          ns_previewer,
-          "TelescopePreviewMatch",
-          { entry.lnum - 1, 0 },
-          { entry.lnum - 1, -1 }
-        )
+        pcall(hl.range, bufnr, ns_previewer, "TelescopePreviewMatch", { entry.lnum - 1, 0 }, { entry.lnum - 1, -1 })
         pcall(api.nvim_win_set_cursor, self.state.winid, { entry.lnum, 0 })
         self.state.last_set_bufnr = bufnr
       end
@@ -758,26 +752,19 @@ previewers.git_branch_log = defaulter(function(opts)
       local hstart, hend = line:find "[0-9a-fA-F]+"
       if hstart then
         if hend < #line then
-          pcall(
-            utils.hl_range,
-            bufnr,
-            ns_previewer,
-            "TelescopeResultsIdentifier",
-            { i - 1, hstart - 1 },
-            { i - 1, hend }
-          )
+          pcall(hl.range, bufnr, ns_previewer, "TelescopeResultsIdentifier", { i - 1, hstart - 1 }, { i - 1, hend })
         end
       end
       local _, cstart = line:find "- %("
       if cstart then
         local cend = string.find(line, "%) ")
         if cend then
-          pcall(utils.hl_range, bufnr, ns_previewer, "TelescopeResultsConstant", { i - 1, cstart - 1 }, { i - 1, cend })
+          pcall(hl.range, bufnr, ns_previewer, "TelescopeResultsConstant", { i - 1, cstart - 1 }, { i - 1, cend })
         end
       end
       local dstart, _ = line:find " %(%d"
       if dstart then
-        pcall(utils.hl_range, bufnr, ns_previewer, "TelescopeResultsSpecialComment", { i - 1, dstart }, { #line })
+        pcall(hl.range, bufnr, ns_previewer, "TelescopeResultsSpecialComment", { i - 1, dstart }, { #line })
       end
     end
   end
@@ -956,7 +943,7 @@ previewers.git_commit_message = defaulter(function(opts)
           for k, v in ipairs(hl_map) do
             local _, s = content[k]:find "%s"
             if s then
-              utils.hl_range(bufnr, ns_previewer, v, { k - 1, s }, { k - 1, #content[k] })
+              hl.range(bufnr, ns_previewer, v, { k - 1, s }, { k - 1, #content[k] })
             end
           end
         end,
@@ -1054,7 +1041,7 @@ previewers.autocommands = defaulter(function(_)
         end
       end
 
-      utils.hl_range(
+      hl.range(
         self.state.bufnr,
         ns_previewer,
         "TelescopePreviewLine",
@@ -1105,7 +1092,7 @@ previewers.highlights = defaulter(function(_)
           local startPos = string.find(v, "xxx", 1, true) - 1
           local endPos = startPos + 3
           local hlgroup = string.match(v, "([^ ]*)%s+.*")
-          pcall(utils.hl_range, self.state.bufnr, 0, hlgroup, { k - 1, startPos }, { k - 1, endPos })
+          pcall(hl.range, self.state.bufnr, 0, hlgroup, { k - 1, startPos }, { k - 1, endPos })
         end
       end
 
@@ -1116,13 +1103,7 @@ previewers.highlights = defaulter(function(_)
           local lnum = api.nvim_win_get_cursor(self.state.winid)[1]
           -- That one is actually a match but its better to use it like that then matchadd
           pcall(api.nvim_buf_clear_namespace, self.state.bufnr, ns_previewer, 0, -1)
-          utils.hl_range(
-            self.state.bufnr,
-            ns_previewer,
-            "TelescopePreviewMatch",
-            { lnum - 1, 0 },
-            { lnum - 1, #entry.value }
-          )
+          hl.range(self.state.bufnr, ns_previewer, "TelescopePreviewMatch", { lnum - 1, 0 }, { lnum - 1, #entry.value })
           -- we need to zz after the highlighting otherwise highlighting doesnt work
           vim.cmd "norm! zz"
         end)
@@ -1189,7 +1170,7 @@ previewers.pickers = defaulter(function(_)
 
           if display_highlight ~= nil then
             for _, hl_block in ipairs(display_highlight) do
-              utils.hl_range(
+              hl.range(
                 self.state.bufnr,
                 ns_telescope_entry,
                 hl_block[2],
@@ -1199,13 +1180,7 @@ previewers.pickers = defaulter(function(_)
             end
           end
           if picker._multi:is_selected(e) then
-            utils.hl_range(
-              self.state.bufnr,
-              ns_telescope_multiselection,
-              "TelescopeMultiSelection",
-              { row, 0 },
-              { row, -1 }
-            )
+            hl.range(self.state.bufnr, ns_telescope_multiselection, "TelescopeMultiSelection", { row, 0 }, { row, -1 })
           end
         end
       end)
