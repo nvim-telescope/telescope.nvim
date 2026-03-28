@@ -994,8 +994,6 @@ builtin.current_buffer_fuzzy_find({opts}) *telescope.builtin.current_buffer_fuzz
     Options: ~
         {skip_empty_lines}     (boolean)  if true we don't display empty lines
                                           (default: false)
-        {results_ts_highlight} (boolean)  highlight result entries with
-                                          treesitter (default: true)
         {file_encoding}        (string)   file encoding for the previewer
 
 
