@@ -41,19 +41,20 @@ Telescope Wiki</sub>
 
 This section should guide you to run your first builtin pickers.
 
-[Neovim (>v0.10.4)](https://github.com/neovim/neovim/releases/tag/v0.10.4) or the
-latest neovim nightly commit is required for `telescope.nvim` to work.
-The neovim version also needs to be compiled with LuaJIT; PUC Lua is not fully supported,
-both for performance reasons and because extensions may rely on FFI.
+### Requirements
 
-### Required dependencies
+* [Neovim >=v0.11.7](https://github.com/neovim/neovim/releases/tag/v0.11.6) built **with LuaJIT** (check `:version`).
+* [nvim-lua/plenary.nvim](https://github.com/nvim-lua/plenary.nvim).
 
-- [nvim-lua/plenary.nvim](https://github.com/nvim-lua/plenary.nvim) is required.
+>[!IMPORTANT]
+> Only the **latest version** ([`stable`](https://github.com/neovim/neovim/releases/tag/stable)) and the **latest commit of `HEAD`** ([`nightly`](https://github.com/neovim/neovim/releases/tag/nightly)) are tested and supported; before opening an issue, download the latest available release and confirm that the problem persists.
 
-### Suggested dependencies
+### Recommended dependencies
 
-- [BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) is required for
+* [BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep) is required for
   `live_grep` and `grep_string` and is the first priority for `find_files`.
+* [sharkdp/fd](https://github.com/sharkdp/fd) (finder)
+* [devicons](https://github.com/nvim-tree/nvim-web-devicons) (icons)
 
 We also strongly suggest installing a native telescope sorter to significantly improve
 sorting performance:
@@ -63,11 +64,6 @@ or
 For more information and a performance benchmark take a look at the
 [Extensions](https://github.com/nvim-telescope/telescope.nvim/wiki/Extensions)
 wiki.
-
-### Optional dependencies
-
-- [sharkdp/fd](https://github.com/sharkdp/fd) (finder)
-- [devicons](https://github.com/nvim-tree/nvim-web-devicons) (icons)
 
 ### Installation
 
