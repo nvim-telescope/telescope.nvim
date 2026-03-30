@@ -1,3 +1,8 @@
+---@alias TextDocumentFunction fun(client: lsp.Client): lsp.TextDocumentPositionParams
+
+local api = vim.api
+local lsp = vim.lsp
+
 local channel = require("plenary.async.control").channel
 local actions = require "telescope.actions"
 local sorters = require "telescope.sorters"
@@ -7,12 +12,12 @@ local make_entry = require "telescope.make_entry"
 local pickers = require "telescope.pickers"
 local utils = require "telescope.utils"
 
-local lsp = {}
+local M = {}
 
 local function call_hierarchy(opts, method, title, direction, item)
-  vim.lsp.buf_request(opts.bufnr, method, { item = item }, function(err, result)
+  lsp.buf_request(opts.bufnr, method, { item = item }, function(err, result)
     if err then
-      vim.api.nvim_err_writeln("Error handling " .. title .. ": " .. err.message)
+      utils.notify("lsp.call_hierarchy", { msg = title .. ": " .. err.message, level = "ERROR" })
       return
     end
 
@@ -68,20 +73,13 @@ local function pick_call_hierarchy_item(call_hierarchy_items)
   return call_hierarchy_items[choice]
 end
 
----@param win number? Window handler
----@param extra table? Extra fields in params
----@return table|(fun(client: vim.lsp.Client): table) parmas to send to the server
+---@param win number|nil: Window handler
+---@param extra lsp.TextDocumentPositionParams|nil: Extra fields in params
+---@return lsp.TextDocumentPositionParams|TextDocumentFunction: Params to send to the server
 local function client_position_params(win, extra)
-  win = win or vim.api.nvim_get_current_win()
-  if vim.fn.has "nvim-0.11" == 0 then
-    local params = vim.lsp.util.make_position_params(win)
-    if extra then
-      params = vim.tbl_extend("force", params, extra)
-    end
-    return params
-  end
+  win = win or api.nvim_get_current_win()
   return function(client)
-    local params = vim.lsp.util.make_position_params(win, client.offset_encoding)
+    local params = lsp.util.make_position_params(win, client.offset_encoding)
     if extra then
       params = vim.tbl_extend("force", params, extra)
     end
@@ -91,9 +89,9 @@ end
 
 local function calls(opts, direction)
   local params = client_position_params()
-  vim.lsp.buf_request(opts.bufnr, "textDocument/prepareCallHierarchy", params, function(err, result)
+  lsp.buf_request(opts.bufnr, "textDocument/prepareCallHierarchy", params, function(err, result)
     if err then
-      vim.api.nvim_err_writeln("Error when preparing call hierarchy: " .. err)
+      utils.notify("lsp.calls", { msg = err.message, level = "ERROR" })
       return
     end
 
@@ -110,42 +108,12 @@ local function calls(opts, direction)
   end)
 end
 
-lsp.incoming_calls = function(opts)
+M.incoming_calls = function(opts)
   calls(opts, "from")
 end
 
-lsp.outgoing_calls = function(opts)
+M.outgoing_calls = function(opts)
   calls(opts, "to")
-end
-
---- convert `item` type back to something we can pass to `vim.lsp.util.jump_to_location`
---- stopgap for pre-nvim 0.10 - after which we can simply use the `user_data`
---- field on the items in `vim.lsp.util.locations_to_items`
----@param item vim.quickfix.entry
----@param offset_encoding string|nil utf-8|utf-16|utf-32
----@return lsp.Location
-local function item_to_location(item, offset_encoding)
-  local line = math.max(0, item.lnum - 1)
-  local character = math.max(0, utils.str_byteindex(item.text, item.col, offset_encoding or "utf-16") - 1)
-  local uri
-  if utils.is_uri(item.filename) then
-    uri = item.filename
-  else
-    uri = vim.uri_from_fname(item.filename)
-  end
-  return {
-    uri = uri,
-    range = {
-      start = {
-        line = line,
-        character = character,
-      },
-      ["end"] = {
-        line = line,
-        character = character,
-      },
-    },
-  }
 end
 
 ---@alias telescope.lsp.list_or_jump_action
@@ -160,7 +128,7 @@ end
 ---@return vim.quickfix.entry[]
 local apply_action_handler = function(action, items, opts)
   if action == "textDocument/references" and not opts.include_current_line then
-    local lnum = vim.api.nvim_win_get_cursor(opts.winnr)[1]
+    local lnum = api.nvim_win_get_cursor(opts.winnr)[1]
     items = vim.tbl_filter(function(v)
       return not (v.filename == opts.curr_filepath and v.lnum == lnum)
     end, items)
@@ -172,7 +140,7 @@ end
 ---@param items vim.quickfix.entry[]
 ---@param opts table
 ---@return vim.quickfix.entry[]
-local function filter_file_ignore_patters(items, opts)
+local function filter_file_ignore_patterns(items, opts)
   local file_ignore_patterns = vim.F.if_nil(opts.file_ignore_patterns, conf.file_ignore_patterns)
   file_ignore_patterns = file_ignore_patterns or {}
   if vim.tbl_isempty(file_ignore_patterns) then
@@ -192,48 +160,48 @@ end
 ---@param action telescope.lsp.list_or_jump_action
 ---@param title string prompt title
 ---@param funname string: name of the calling function
----@param params lsp.TextDocumentPositionParams|(fun(client: vim.lsp.Client, bufnr: integer): table?)
+---@param params lsp.TextDocumentPositionParams|(fun(client: lsp.Client, bufnr: integer): table?)
 ---@param opts table
 local function list_or_jump(action, title, funname, params, opts)
   opts.reuse_win = vim.F.if_nil(opts.reuse_win, false)
-  opts.curr_filepath = vim.api.nvim_buf_get_name(opts.bufnr)
+  opts.curr_filepath = api.nvim_buf_get_name(opts.bufnr)
 
-  vim.lsp.buf_request_all(opts.bufnr, action, params, function(results_per_client)
+  lsp.buf_request_all(opts.bufnr, action, params, function(results_per_client)
     local items = {}
     local first_encoding
     local errors = {}
 
     for client_id, result_or_error in pairs(results_per_client) do
-      local error, result = result_or_error.error, result_or_error.result
+      local error, result = result_or_error.err, result_or_error.result
       if error then
         errors[client_id] = error
       else
         if result ~= nil then
           local locations = {}
 
-          if not utils.islist(result) then
+          if not vim.islist(result) then
             vim.list_extend(locations, { result })
           else
             vim.list_extend(locations, result)
           end
 
-          local offset_encoding = vim.lsp.get_client_by_id(client_id).offset_encoding
+          local offset_encoding = lsp.get_client_by_id(client_id).offset_encoding
 
           if not vim.tbl_isempty(result) then
             first_encoding = offset_encoding
           end
 
-          vim.list_extend(items, vim.lsp.util.locations_to_items(locations, offset_encoding))
+          vim.list_extend(items, lsp.util.locations_to_items(locations, offset_encoding))
         end
       end
     end
 
     for _, error in pairs(errors) do
-      vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. error.message)
+      utils.notify(funname, { msg = action .. " : " .. error.message, level = "ERROR" })
     end
 
     items = apply_action_handler(action, items, opts)
-    items = filter_file_ignore_patters(items, opts)
+    items = filter_file_ignore_patterns(items, opts)
 
     if vim.tbl_isempty(items) then
       utils.notify(funname, {
@@ -245,7 +213,7 @@ local function list_or_jump(action, title, funname, params, opts)
 
     if #items == 1 and opts.jump_type ~= "never" then
       local item = items[1]
-      if opts.curr_filepath ~= item.filename then
+      if opts.curr_filepath ~= item.filename or not opts.reuse_win then
         local cmd
         if opts.jump_type == "tab" then
           cmd = "tabedit"
@@ -262,8 +230,7 @@ local function list_or_jump(action, title, funname, params, opts)
         end
       end
 
-      local location = item_to_location(item, first_encoding)
-      vim.lsp.util.show_document(location, first_encoding, { reuse_win = opts.reuse_win })
+      lsp.util.show_document(item.user_data, first_encoding, { reuse_win = opts.reuse_win })
     else
       pickers
         .new(opts, {
@@ -282,7 +249,7 @@ local function list_or_jump(action, title, funname, params, opts)
   end)
 end
 
-lsp.references = function(opts)
+M.references = function(opts)
   opts.include_current_line = vim.F.if_nil(opts.include_current_line, false)
   local params = client_position_params(opts.winnr, {
     context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) },
@@ -290,12 +257,12 @@ lsp.references = function(opts)
   return list_or_jump("textDocument/references", "LSP References", "builtin.lsp_references", params, opts)
 end
 
-lsp.definitions = function(opts)
+M.definitions = function(opts)
   local params = client_position_params(opts.winnr)
   return list_or_jump("textDocument/definition", "LSP Definitions", "builtin.lsp_definitions", params, opts)
 end
 
-lsp.type_definitions = function(opts)
+M.type_definitions = function(opts)
   local params = client_position_params(opts.winnr)
   return list_or_jump(
     "textDocument/typeDefinition",
@@ -306,7 +273,7 @@ lsp.type_definitions = function(opts)
   )
 end
 
-lsp.implementations = function(opts)
+M.implementations = function(opts)
   local params = client_position_params(opts.winnr)
   return list_or_jump("textDocument/implementation", "LSP Implementations", "builtin.lsp_implementations", params, opts)
 end
@@ -316,7 +283,7 @@ local symbols_sorter = function(symbols)
     return symbols
   end
 
-  local current_buf = vim.api.nvim_get_current_buf()
+  local current_buf = api.nvim_get_current_buf()
 
   -- sort adequately for workspace symbols
   local filename_to_bufnr = {}
@@ -343,11 +310,11 @@ local symbols_sorter = function(symbols)
   return symbols
 end
 
-lsp.document_symbols = function(opts)
+M.document_symbols = function(opts)
   local params = client_position_params(opts.winnr)
-  vim.lsp.buf_request(opts.bufnr, "textDocument/documentSymbol", params, function(err, result, ctx, _)
+  lsp.buf_request(opts.bufnr, "textDocument/documentSymbol", params, function(err, result, ctx, _)
     if err then
-      vim.api.nvim_err_writeln("Error when finding document symbols: " .. err.message)
+      utils.notify("lsp.document_symbols", { msg = err.message, level = "ERROR" })
       return
     end
 
@@ -360,12 +327,8 @@ lsp.document_symbols = function(opts)
     end
 
     local locations
-    if vim.fn.has "nvim-0.11" == 1 then
-      local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
-      locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr, client.offset_encoding) or {}
-    else
-      locations = vim.lsp.util.symbols_to_items(result or {}, opts.bufnr) or {}
-    end
+    local client = assert(lsp.get_client_by_id(ctx.client_id))
+    locations = lsp.util.symbols_to_items(result or {}, opts.bufnr, client.offset_encoding) or {}
 
     locations = utils.filter_symbols(locations, opts, symbols_sorter)
     if vim.tbl_isempty(locations) then
@@ -401,21 +364,17 @@ lsp.document_symbols = function(opts)
   end)
 end
 
-lsp.workspace_symbols = function(opts)
+M.workspace_symbols = function(opts)
   local params = { query = opts.query or "" }
-  vim.lsp.buf_request(opts.bufnr, "workspace/symbol", params, function(err, server_result, ctx, _)
+  lsp.buf_request(opts.bufnr, "workspace/symbol", params, function(err, server_result, ctx, _)
     if err then
-      vim.api.nvim_err_writeln("Error when finding workspace symbols: " .. err.message)
+      utils.notify("lsp.workspace_symbols", { msg = err.message, level = "ERROR" })
       return
     end
 
     local locations
-    if vim.fn.has "nvim-0.11" == 1 then
-      local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
-      locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr, client.offset_encoding) or {}
-    else
-      locations = vim.lsp.util.symbols_to_items(server_result or {}, opts.bufnr) or {}
-    end
+    local client = assert(lsp.get_client_by_id(ctx.client_id))
+    locations = lsp.util.symbols_to_items(server_result or {}, opts.bufnr, client.offset_encoding) or {}
 
     locations = utils.filter_symbols(locations, opts, symbols_sorter)
     if vim.tbl_isempty(locations) then
@@ -457,21 +416,17 @@ local function get_workspace_symbols_requester(bufnr, opts)
   return function(prompt)
     local tx, rx = channel.oneshot()
     cancel()
-    cancel = vim.lsp.buf_request_all(bufnr, "workspace/symbol", { query = prompt }, tx)
+    cancel = lsp.buf_request_all(bufnr, "workspace/symbol", { query = prompt }, tx)
 
     local results = rx() ---@type table<integer, {error: lsp.ResponseError?, result: lsp.WorkspaceSymbol?}>
     local locations = {} ---@type vim.quickfix.entry[]
 
     for client_id, client_res in pairs(results) do
       if client_res.error then
-        vim.api.nvim_err_writeln("Error when executing workspace/symbol : " .. client_res.error.message)
+        utils.notify("lsp.workspace_symbols", { msg = client_res.error.message, level = "ERROR" })
       elseif client_res.result ~= nil then
-        if vim.fn.has "nvim-0.11" == 1 then
-          local client = assert(vim.lsp.get_client_by_id(client_id))
-          vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr, client.offset_encoding))
-        else
-          vim.list_extend(locations, vim.lsp.util.symbols_to_items(client_res.result, bufnr))
-        end
+        local client = assert(lsp.get_client_by_id(client_id))
+        vim.list_extend(locations, lsp.util.symbols_to_items(client_res.result, bufnr, client.offset_encoding))
       end
     end
 
@@ -482,7 +437,7 @@ local function get_workspace_symbols_requester(bufnr, opts)
   end
 end
 
-lsp.dynamic_workspace_symbols = function(opts)
+M.dynamic_workspace_symbols = function(opts)
   pickers
     .new(opts, {
       prompt_title = "LSP Dynamic Workspace Symbols",
@@ -501,19 +456,11 @@ lsp.dynamic_workspace_symbols = function(opts)
 end
 
 local function check_capabilities(method, bufnr)
-  --TODO(clason): remove when dropping support for Nvim 0.9
-  local get_clients = vim.fn.has "nvim-0.10" == 1 and vim.lsp.get_clients or vim.lsp.get_active_clients
-  local clients = get_clients { bufnr = bufnr }
+  local clients = lsp.get_clients { bufnr = bufnr }
 
   for _, client in pairs(clients) do
-    if vim.fn.has "nvim-0.11" == 1 then
-      if client:supports_method(method, bufnr) then
-        return true
-      end
-    else
-      if client.supports_method(method, { bufnr = bufnr }) then
-        return true
-      end
+    if client:supports_method(method, bufnr) then
+      return true
     end
   end
 
@@ -558,4 +505,4 @@ local function apply_checks(mod)
   return mod
 end
 
-return apply_checks(lsp)
+return apply_checks(M)

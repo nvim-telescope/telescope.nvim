@@ -2,7 +2,7 @@ local conf = require("telescope.config").values
 local Path = require "plenary.path"
 local utils = require "telescope.utils"
 
-local uv = vim.loop
+local uv = vim.uv
 
 ---@tag telescope.actions.history
 ---@config { ["module"] = "telescope.actions.history" }
