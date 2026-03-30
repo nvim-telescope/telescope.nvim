@@ -477,14 +477,12 @@ files.current_buffer_fuzzy_find = function(opts)
     })
   end
 
-  -- TODO(clason): refactor when dropping support for Nvim 0.10 (no option, no filetype fallback)
-  opts.results_ts_highlight = vim.F.if_nil(opts.results_ts_highlight, true)
-  local lang = vim.treesitter.language.get_lang(filetype) or filetype
-  if opts.results_ts_highlight and lang and utils.has_ts_parser(lang) then
+  local lang = vim.treesitter.language.get_lang(filetype)
+  if lang and vim.treesitter.language.add(lang) then
     local parser = vim.treesitter.get_parser(opts.bufnr, lang)
     local query = vim.treesitter.query.get(lang, "highlights")
     if query then
-      local root = parser:parse()[1]:root()
+      local root = assert(parser):parse()[1]:root()
 
       local line_highlights = setmetatable({}, {
         __index = function(t, k)

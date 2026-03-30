@@ -1444,7 +1444,7 @@ actions.which_key = function(prompt_bufnr, opts)
     local row_ = highlight_tbl.row
     local col = highlight_tbl.col
     for _, hl_block in ipairs(highlight) do
-      utils.hl_range(
+      vim.hl.range(
         km_buf,
         keymap_highlights,
         hl_block[2],

@@ -14,8 +14,6 @@ local utils = require "telescope.utils"
 
 local M = {}
 
-local nvim011 = utils.nvim011
-
 local function call_hierarchy(opts, method, title, direction, item)
   lsp.buf_request(opts.bufnr, method, { item = item }, function(err, result)
     if err then
@@ -80,13 +78,6 @@ end
 ---@return lsp.TextDocumentPositionParams|TextDocumentFunction: Params to send to the server
 local function client_position_params(win, extra)
   win = win or api.nvim_get_current_win()
-  if not nvim011 then
-    local params = lsp.util.make_position_params(win)
-    if extra then
-      params = vim.tbl_extend("force", params, extra)
-    end
-    return params
-  end
   return function(client)
     local params = lsp.util.make_position_params(win, client.offset_encoding)
     if extra then
@@ -336,12 +327,8 @@ M.document_symbols = function(opts)
     end
 
     local locations
-    if nvim011 then
-      local client = assert(lsp.get_client_by_id(ctx.client_id))
-      locations = lsp.util.symbols_to_items(result or {}, opts.bufnr, client.offset_encoding) or {}
-    else
-      locations = lsp.util.symbols_to_items(result or {}, opts.bufnr) or {}
-    end
+    local client = assert(lsp.get_client_by_id(ctx.client_id))
+    locations = lsp.util.symbols_to_items(result or {}, opts.bufnr, client.offset_encoding) or {}
 
     locations = utils.filter_symbols(locations, opts, symbols_sorter)
     if vim.tbl_isempty(locations) then
@@ -386,12 +373,8 @@ M.workspace_symbols = function(opts)
     end
 
     local locations
-    if nvim011 then
-      local client = assert(lsp.get_client_by_id(ctx.client_id))
-      locations = lsp.util.symbols_to_items(server_result or {}, opts.bufnr, client.offset_encoding) or {}
-    else
-      locations = lsp.util.symbols_to_items(server_result or {}, opts.bufnr) or {}
-    end
+    local client = assert(lsp.get_client_by_id(ctx.client_id))
+    locations = lsp.util.symbols_to_items(server_result or {}, opts.bufnr, client.offset_encoding) or {}
 
     locations = utils.filter_symbols(locations, opts, symbols_sorter)
     if vim.tbl_isempty(locations) then
@@ -442,12 +425,8 @@ local function get_workspace_symbols_requester(bufnr, opts)
       if client_res.error then
         utils.notify("lsp.workspace_symbols", { msg = client_res.error.message, level = "ERROR" })
       elseif client_res.result ~= nil then
-        if nvim011 then
-          local client = assert(lsp.get_client_by_id(client_id))
-          vim.list_extend(locations, lsp.util.symbols_to_items(client_res.result, bufnr, client.offset_encoding))
-        else
-          vim.list_extend(locations, lsp.util.symbols_to_items(client_res.result, bufnr))
-        end
+        local client = assert(lsp.get_client_by_id(client_id))
+        vim.list_extend(locations, lsp.util.symbols_to_items(client_res.result, bufnr, client.offset_encoding))
       end
     end
 
@@ -480,14 +459,8 @@ local function check_capabilities(method, bufnr)
   local clients = lsp.get_clients { bufnr = bufnr }
 
   for _, client in pairs(clients) do
-    if nvim011 then
-      if client:supports_method(method, bufnr) then
-        return true
-      end
-    else
-      if client.supports_method(method, { bufnr = bufnr }) then
-        return true
-      end
+    if client:supports_method(method, bufnr) then
+      return true
     end
   end
 

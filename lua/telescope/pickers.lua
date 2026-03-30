@@ -476,7 +476,7 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
 
       self:_increment "highlights"
 
-      utils.hl_range(results_bufnr, ns_telescope_matching, highlight, { row, start - 1 }, { row, finish })
+      vim.hl.range(results_bufnr, ns_telescope_matching, highlight, { row, start - 1 }, { row, finish })
     end
   end
 
@@ -813,7 +813,7 @@ end
 ---   - `actions.delete_buffer()`
 ---@param delete_cb function: called for each selection fn(s) -> bool|nil (true|nil removes the entry from the results)
 function Picker:delete_selection(delete_cb)
-  utils.validate("delete_cb", delete_cb, "function")
+  vim.validate("delete_cb", delete_cb, "function")
 
   local original_selection_strategy = self.selection_strategy
   self.selection_strategy = "row"
@@ -972,7 +972,7 @@ function Picker:_reset_prefix_color(hl_group)
   self._current_prefix_hl_group = hl_group or nil
 
   if self.prompt_prefix ~= "" and api.nvim_buf_is_valid(self.prompt_bufnr) then
-    utils.hl_range(
+    vim.hl.range(
       self.prompt_bufnr,
       ns_telescope_prompt_prefix,
       self._current_prefix_hl_group or "TelescopePromptPrefix",

@@ -18,21 +18,6 @@ local get_status = require("telescope.state").get_status
 local utils = {}
 
 utils.iswin = vim.uv.os_uname().sysname == "Windows_NT"
-utils.nvim011 = vim.fn.has "nvim-0.11" == 1
-
----TODO(clason): remove when dropping support for Nvim 0.10
-utils.hl_range = utils.nvim011 and vim.hl.range or vim.highlight.range
-
----TODO(clason): remove when dropping support for Nvim 0.10
-utils.str_byteindex = utils.nvim011 and vim.str_byteindex or vim.lsp.util._str_byteindex_enc
-
----TODO(clason): remove when dropping support for Nvim 0.10
----@param k string
----@param v any
----@param ty type
-utils.validate = utils.nvim011 and vim.validate or function(k, v, ty)
-  vim.validate { [k] = { v, ty } }
-end
 
 ---@param t table
 ---@return table
@@ -58,7 +43,7 @@ end
 ---@param path string
 ---@return string
 utils.path_expand = function(path)
-  utils.validate("path", path, "string")
+  vim.validate("path", path, "string")
 
   if utils.is_uri(path) then
     return path
@@ -673,13 +658,6 @@ utils.get_devicons = load_once(function()
     end
   end
 end)
-
---- TODO(clason): remove when dropping support for Nvim 0.10
---- Checks if treesitter parser for language is installed
-utils.has_ts_parser = utils.nvim011 and vim.treesitter.language.add
-  or function(lang)
-    return pcall(vim.treesitter.language.add, lang)
-  end
 
 --- Telescope Wrapper around vim.notify
 ---@param funname string: name of the function that will be

@@ -169,8 +169,8 @@ end
 -- Attach ts highlighter
 utils.ts_highlighter = function(bufnr, ft)
   if has_filetype(ft) then
-    local lang = vim.treesitter.language.get_lang(ft) or ft
-    if lang and ts_utils.has_ts_parser(lang) then
+    local lang = vim.treesitter.language.get_lang(ft)
+    if lang and vim.treesitter.language.add(lang) then
       return vim.treesitter.start(bufnr, lang)
     end
   end
