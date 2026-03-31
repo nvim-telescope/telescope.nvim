@@ -8,7 +8,6 @@
 ---@brief ]]
 
 local action_state = require "telescope.actions.state"
-local validate = require("telescope.utils").validate
 
 local utils = {}
 
@@ -36,7 +35,7 @@ local utils = {}
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param f function: Function to map onto entries of picker that takes (entry, index, row) as viable arguments
 function utils.map_entries(prompt_bufnr, f)
-  validate("f", f, "function")
+  vim.validate("f", f, "function")
 
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local index = 1
@@ -72,7 +71,7 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 ---@param f function: Function to map onto selection of picker that takes (selection) as a viable argument
 function utils.map_selections(prompt_bufnr, f)
-  validate("f", f, "function")
+  vim.validate("f", f, "function")
 
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   for _, selection in ipairs(current_picker:get_multi_selection()) do
