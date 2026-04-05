@@ -69,7 +69,8 @@ wiki.
 
 We recommend pinning to the latest release
 [tag](https://github.com/nvim-telescope/telescope.nvim/tags),
-e.g. using [lazy.nvim](https://github.com/folke/lazy.nvim)
+e.g. using [lazy.nvim](https://github.com/folke/lazy.nvim).
+Installation with different plugin managers can be found in [Installation Guide](https://github.com/nvim-telescope/telescope.nvim/wiki/Installation)
 
 ```lua
 {
