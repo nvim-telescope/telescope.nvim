@@ -155,6 +155,10 @@ files.live_grep = function(opts)
     additional_args[#additional_args + 1] = "--encoding=" .. opts.file_encoding
   end
 
+  if opts.hidden then
+    additional_args[#additional_args + 1] = "--hidden"
+  end
+
   local args = flatten { vimgrep_arguments, additional_args }
   opts.__inverted, opts.__matches = opts_contain_invert(args)
 
@@ -224,6 +228,10 @@ files.grep_string = function(opts)
 
   if opts.file_encoding then
     additional_args[#additional_args + 1] = "--encoding=" .. opts.file_encoding
+  end
+
+  if opts.hidden then
+    additional_args[#additional_args + 1] = "--hidden"
   end
 
   local args
