@@ -279,7 +279,7 @@ builtin.symbols = require_on_exported_call("telescope.builtin.__internal").symbo
 ---@field show_buf_command boolean: show buf local command (Default: true)
 builtin.commands = require_on_exported_call("telescope.builtin.__internal").commands
 
---- Lists items in the quickfix list, jumps to location on `<cr>`
+--- Lists items in the current quickfix list, jumps to location on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
