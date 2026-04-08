@@ -25,7 +25,7 @@
 ---   function(picker, columns, lines, layout_config)
 ---     -- Do some calculations here...
 ---     return {
----       preview = preview_configuration
+---       preview = preview_configuration,
 ---       results = results_configuration,
 ---       prompt = prompt_configuration,
 ---     }
