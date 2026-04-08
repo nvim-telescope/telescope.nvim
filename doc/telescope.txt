@@ -965,10 +965,6 @@ builtin.fd()                                          *telescope.builtin.fd()*
 
 builtin.treesitter()                          *telescope.builtin.treesitter()*
     Lists function names, variables, and other symbols from treesitter queries
-    Requires parser and `locals` queries for the current buffer in
-    `runtimepath`, see |vim.treesitter-parsers|, |vim.treesitter.query|, and
-    https://github.com/nvim-treesitter/nvim-treesitter/blob/main/CONTRIBUTING.md#locals
-
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query by kind of ts
         node you want to see (i.e. `:var:`)
@@ -998,9 +994,9 @@ builtin.current_buffer_fuzzy_find({opts}) *telescope.builtin.current_buffer_fuzz
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {skip_empty_lines}     (boolean)  if true we don't display empty lines
-                                          (default: false)
-        {file_encoding}        (string)   file encoding for the previewer
+        {skip_empty_lines} (boolean)  if true we don't display empty lines
+                                      (default: false)
+        {file_encoding}    (string)   file encoding for the previewer
 
 
 builtin.tags({opts})                                *telescope.builtin.tags()*
@@ -2609,6 +2605,15 @@ look at the code in make_entry.lua.
 
 ================================================================================
 UTILS                                                          *telescope.utils*
+
+Utilities for writing telescope pickers
+
+utils.flatten()                                    *telescope.utils.flatten()*
+
+
+    Return: ~
+        table
+
 
 utils.path_expand({path})                      *telescope.utils.path_expand()*
     Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
