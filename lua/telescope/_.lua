@@ -158,12 +158,17 @@ function LinesPipe:iter(schedule, opts)
     index = nil
 
     local read = self:read()
-    if previous == nil and read == nil then
-      return
+    if read == nil then
+      if previous == nil then
+        return nil, true
+      elseif #previous > 0 then
+        -- the file doesn't end in a newline. flush the line contents we had and finish.
+        return previous .. "\n", true
+      end
     end
 
     read = string.gsub(read or "", "\r", "")
-    return (previous or "") .. read
+    return (previous or "") .. read, false
   end
 
   local function next_value()
@@ -179,8 +184,19 @@ function LinesPipe:iter(schedule, opts)
     index = string.find(text, split_char, index, true)
 
     if index == nil then
-      text = get_next_text(string.sub(text, start or 1))
-      return next_value()
+      local is_done
+      text, is_done = get_next_text(string.sub(text, start or 1))
+      if is_done and text ~= nil then
+        local res = text
+        text = nil
+        index = nil
+        if schedule then
+          async.util.scheduler()
+        end
+        return res
+      else
+        return next_value()
+      end
     end
 
     index = index + 1
