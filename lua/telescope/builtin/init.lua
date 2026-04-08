@@ -55,6 +55,7 @@ end
 ---@field additional_args function|table: additional arguments to be passed on. Can be fn(opts) -> tbl
 ---@field max_results number: define a upper result value
 ---@field disable_coordinates boolean: don't show the line & row numbers (default: false)
+---@field show_line boolean: if true, shows the content of the line in the picker (default: true)
 ---@field file_encoding string: file encoding for the entry & previewer
 ---@field hidden boolean: if true, hidden directories and files will be searched (default: false)
 builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_grep
@@ -69,6 +70,7 @@ builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_g
 ---@field word_match string: can be set to `-w` to enable exact word matches
 ---@field additional_args function|table: additional arguments to be passed on. Can be fn(opts) -> tbl
 ---@field disable_coordinates boolean: don't show the line and row numbers (default: false)
+---@field show_line boolean: if true, shows the content of the line in the picker (default: true)
 ---@field only_sort_text boolean: only sort the text, not the file, line or row (default: false)
 ---@field file_encoding string: file encoding for the entry & previewer
 ---@field hidden boolean: if true, hidden directories and files will be searched (default: false)
