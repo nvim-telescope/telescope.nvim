@@ -1,6 +1,6 @@
 local async = require "plenary.async"
-local async_job = require "telescope._"
-local LinesPipe = require("telescope._").LinesPipe
+local async_job = require "telescope.async_job"
+local LinesPipe = async_job.LinesPipe
 
 local make_entry = require "telescope.make_entry"
 
