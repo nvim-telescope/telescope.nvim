@@ -41,7 +41,7 @@ local function callback_or_next(step, thread, callback, ...)
     local nargs = third(...)
 
     assert(is_callable(returned_function), "type error :: expected func")
-    returned_function(require("neoplen.vararg").rotate(nargs, step, select(4, ...)))
+    returned_function(require("neoplen.async.vararg").rotate(nargs, step, select(4, ...)))
   end
 end
 

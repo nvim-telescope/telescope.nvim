@@ -120,7 +120,7 @@ function M.apcall(async_fn, ...)
   local nargs = a.get_leaf_function_argc(async_fn)
   if nargs then
     local tx, rx = channel.oneshot()
-    local stat, ret = pcall(async_fn, require("neoplen.vararg").rotate(nargs, tx, ...))
+    local stat, ret = pcall(async_fn, require("neoplen.async.vararg").rotate(nargs, tx, ...))
     if not stat then
       return stat, ret
     else
