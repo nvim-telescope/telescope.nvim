@@ -926,13 +926,17 @@ internal.buffers = function(opts)
   opts = apply_cwd_only_aliases(opts)
 
   local bufnrs = vim.tbl_filter(function(bufnr)
-    if 1 ~= vim.fn.buflisted(bufnr) then
-      return false
+    -- only hide unlisted and unloaded buffers if opts.show_all_buffers is
+    -- false, keep them listed if true or nil
+    if opts.show_all_buffers == false then
+      if 1 ~= vim.fn.buflisted(bufnr) then
+        return false
+      end
+      if not api.nvim_buf_is_loaded(bufnr) then
+        return false
+      end
     end
-    -- only hide unloaded buffers if opts.show_all_buffers is false, keep them listed if true or nil
-    if opts.show_all_buffers == false and not api.nvim_buf_is_loaded(bufnr) then
-      return false
-    end
+
     if opts.ignore_current_buffer and bufnr == api.nvim_get_current_buf() then
       return false
     end
