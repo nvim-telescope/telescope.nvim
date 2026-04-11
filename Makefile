@@ -12,7 +12,7 @@ $(PLENTEST):
 .PHONY: test lint docgen
 test: $(PLENTEST)
 	PLENTEST=$(PLENTEST) nvim --headless --clean -u scripts/minimal_init.lua \
-		-c "lua require('plentest').test_directory('lua/tests/automated', { minimal_init = './scripts/minimal_init.lua' })"
+		-c "lua require('plentest').test_directory('tests/automated', { minimal_init = './scripts/minimal_init.lua' })"
 
 lint:
 	luacheck lua/telescope

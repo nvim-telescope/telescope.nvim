@@ -45,7 +45,7 @@
 --- Another interesting thing to do is that these actions now have functions you
 --- can call. These functions include `:replace(f)`, `:replace_if(f, c)`,
 --- `replace_map(tbl)` and `enhance(tbl)`. More information on these functions
---- can be found in the `developers.md` and `lua/tests/automated/action_spec.lua`
+--- can be found in the `developers.md` and `tests/automated/action_spec.lua`
 --- file.
 
 local api = vim.api
