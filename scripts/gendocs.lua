@@ -1,9 +1,20 @@
+vim.opt.rtp:prepend "../plenary.nvim"
 vim.opt.rtp:prepend "."
-vim.opt.rtp:prepend "../plenary.nvim/"
 
-vim.env.DOCGEN_PATH = vim.env.DOCGEN_PATH or "build/docgen.nvim"
-
-load(vim.fn.system "curl -s https://raw.githubusercontent.com/jamestrew/docgen.nvim/master/scripts/bootstrap.lua")()
+local docgenpath = ".test-deps/docgen.nvim"
+if not vim.uv.fs_stat(docgenpath) then
+  vim
+    .system({
+      "git",
+      "clone",
+      "--filter=blob:none",
+      "--single-branch",
+      "https://github.com/jamestrew/docgen.nvim",
+      docgenpath,
+    })
+    :wait()
+end
+vim.opt.rtp:prepend(docgenpath)
 
 require("docgen").run {
   name = "telescope",
