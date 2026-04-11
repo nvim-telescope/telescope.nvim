@@ -76,7 +76,7 @@ tester.run_string = function(contents)
 end
 
 tester.run_file = function(filename)
-  local file = "./lua/tests/pickers/" .. filename .. ".lua"
+  local file = "./tests/pickers/" .. filename .. ".lua"
 
   if not vim.uv.fs_stat(file) then
     assert.are.same("<An existing file>", file)
