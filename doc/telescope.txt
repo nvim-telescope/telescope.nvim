@@ -748,7 +748,6 @@ telescope.setup({opts})                                    *telescope.setup()*
         Default: require("telescope.previewers").buffer_previewer_maker
 
     Parameters: ~
-      • {opts}  (`table`) Configuration opts. Keys: defaults, pickers,
                 extensions
 
 telescope.load_extension({name})                  *telescope.load_extension()*
