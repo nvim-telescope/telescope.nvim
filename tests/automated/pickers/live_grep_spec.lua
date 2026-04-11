@@ -34,7 +34,7 @@ describe("builtin.live_grep", function()
           vim.tbl_extend("force", {
             sorter = require("telescope.sorters").get_fzy_sorter(),
             layout_strategy = "center",
-            cwd = "./lua/tests/fixtures/live_grep",
+            cwd = "./tests/fixtures/live_grep",
             temp__scrolling_limit = 5,
           }, vim.json.decode [==[%s]==])
         )
