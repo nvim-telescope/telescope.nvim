@@ -896,6 +896,34 @@ actions.git_staging_toggle = function(prompt_bufnr)
   end
 end
 
+--- Restore a file from the git index
+---@param prompt_bufnr number: The prompt bufnr
+actions.git_restore_to_index = function(prompt_bufnr)
+  local cwd = action_state.get_current_picker(prompt_bufnr).cwd
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    utils.__warn_no_selection "actions.git_restore_to_index"
+    return
+  end
+  if selection.status:sub(2) == " " then
+    utils.notify("actions.git_restore_to_index", {
+      msg = "Nothing to restore",
+      level = "WARN",
+    })
+    return
+  elseif selection.status:sub(2) == "?" then
+    utils.notify("action.git_restore_to_index", {
+      msg = "File not present at HEAD or index",
+      level = "ERROR",
+    })
+    return
+  end
+  if not ask_to_confirm("All worktree changes to the file will be lost. Proceed? [y/n] ", "y") then
+    return
+  end
+  utils.get_os_command_output({ "git", "restore", selection.value }, cwd)
+end
+
 local entry_to_qf = function(entry)
   local text = entry.text
 
