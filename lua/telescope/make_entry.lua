@@ -276,6 +276,7 @@ do
 
     local disable_devicons = opts.disable_devicons
     local disable_coordinates = opts.disable_coordinates
+    local show_line = vim.F.if_nil(opts.show_line, true)
     local only_sort_text = opts.only_sort_text
 
     local execute_keys = {
@@ -311,30 +312,30 @@ do
       end
     end
 
-    local display_string = "%s%s%s"
-
     mt_vimgrep_entry = {
       cwd = utils.path_expand(opts.cwd or vim.uv.cwd()),
 
       display = function(entry)
         local display_filename, path_style = utils.transform_path(opts, entry.filename)
 
-        local coordinates = ":"
+        local coordinates = ""
         if not disable_coordinates then
           if entry.lnum then
             if entry.col then
-              coordinates = string.format(":%s:%s:", entry.lnum, entry.col)
+              coordinates = string.format(":%s:%s", entry.lnum, entry.col)
             else
-              coordinates = string.format(":%s:", entry.lnum)
+              coordinates = string.format(":%s", entry.lnum)
             end
           end
         end
 
-        local display, hl_group, icon = utils.transform_devicons(
-          entry.filename,
-          string.format(display_string, display_filename, coordinates, entry.text),
-          disable_devicons
-        )
+        local formatted
+        if show_line then
+          formatted = string.format("%s%s:%s", display_filename, coordinates, entry.text)
+        else
+          formatted = string.format("%s%s", display_filename, coordinates)
+        end
+        local display, hl_group, icon = utils.transform_devicons(entry.filename, formatted, disable_devicons)
 
         if hl_group then
           local style = { { { 0, #icon }, hl_group } }
@@ -610,6 +611,9 @@ function make_entry.gen_from_buffer(opts)
     -- bufnr_width + modes + icon + 3 spaces + : + lnum
     opts.__prefix = opts.bufnr_width + 4 + icon_width + 3 + 1 + #tostring(entry.lnum)
     local display_bufname, path_style = utils.transform_path(opts, entry.filename)
+    if not opts.disable_coordinates then
+      display_bufname = display_bufname .. ":" .. entry.lnum
+    end
     local icon, hl_group = utils.get_devicons(entry.filename, disable_devicons)
 
     return displayer {
@@ -617,7 +621,7 @@ function make_entry.gen_from_buffer(opts)
       { entry.indicator, "TelescopeResultsComment" },
       { icon, hl_group },
       {
-        display_bufname .. ":" .. entry.lnum,
+        display_bufname,
         function()
           return path_style
         end,
@@ -1065,8 +1069,8 @@ function make_entry.gen_from_ctags(opts)
             return path_style
           end,
         },
-        entry.tag,
         entry.kind,
+        entry.tag,
         scode,
       }
     end

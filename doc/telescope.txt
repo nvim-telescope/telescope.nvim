@@ -873,8 +873,14 @@ builtin.live_grep({opts})                      *telescope.builtin.live_grep()*
         {max_results}         (number)          define a upper result value
         {disable_coordinates} (boolean)         don't show the line & row
                                                 numbers (default: false)
+        {show_line}           (boolean)         if true, shows the content of
+                                                the line in the picker
+                                                (default: true)
         {file_encoding}       (string)          file encoding for the entry &
                                                 previewer
+        {hidden}              (boolean)         if true, hidden directories
+                                                and files will be searched
+                                                (default: false)
 
 
 builtin.grep_string({opts})                  *telescope.builtin.grep_string()*
@@ -907,11 +913,17 @@ builtin.grep_string({opts})                  *telescope.builtin.grep_string()*
                                                 tbl
         {disable_coordinates} (boolean)         don't show the line and row
                                                 numbers (default: false)
+        {show_line}           (boolean)         if true, shows the content of
+                                                the line in the picker
+                                                (default: true)
         {only_sort_text}      (boolean)         only sort the text, not the
                                                 file, line or row (default:
                                                 false)
         {file_encoding}       (string)          file encoding for the entry &
                                                 previewer
+        {hidden}              (boolean)         if true, hidden directories
+                                                and files will be searched
+                                                (default: false)
 
 
 builtin.find_files({opts})                    *telescope.builtin.find_files()*
@@ -959,10 +971,6 @@ builtin.fd()                                          *telescope.builtin.fd()*
 
 builtin.treesitter()                          *telescope.builtin.treesitter()*
     Lists function names, variables, and other symbols from treesitter queries
-    Requires parser and `locals` queries for the current buffer in
-    `runtimepath`, see |vim.treesitter-parsers|, |vim.treesitter.query|, and
-    https://github.com/nvim-treesitter/nvim-treesitter/blob/main/CONTRIBUTING.md#locals
-
     - Default keymaps:
       - `<C-l>`: show autocompletion menu to prefilter your query by kind of ts
         node you want to see (i.e. `:var:`)
@@ -992,9 +1000,9 @@ builtin.current_buffer_fuzzy_find({opts}) *telescope.builtin.current_buffer_fuzz
         {opts} (table)  options to pass to the picker
 
     Options: ~
-        {skip_empty_lines}     (boolean)  if true we don't display empty lines
-                                          (default: false)
-        {file_encoding}        (string)   file encoding for the previewer
+        {skip_empty_lines} (boolean)  if true we don't display empty lines
+                                      (default: false)
+        {file_encoding}    (string)   file encoding for the previewer
 
 
 builtin.tags({opts})                                *telescope.builtin.tags()*
@@ -1314,7 +1322,7 @@ builtin.commands({opts})                        *telescope.builtin.commands()*
 
 
 builtin.quickfix({opts})                        *telescope.builtin.quickfix()*
-    Lists items in the quickfix list, jumps to location on `<cr>`
+    Lists items in the current quickfix list, jumps to location on `<cr>`
 
 
     Parameters: ~
@@ -1476,6 +1484,8 @@ builtin.buffers({opts})                          *telescope.builtin.buffers()*
                                             after sorting by most recent (if
                                             specified)
         {select_current}        (boolean)   select current buffer (default:
+                                            false)
+        {disable_coordinates}   (boolean)   don't show line number (default:
                                             false)
 
 
@@ -2602,6 +2612,15 @@ look at the code in make_entry.lua.
 ================================================================================
 UTILS                                                          *telescope.utils*
 
+Utilities for writing telescope pickers
+
+utils.flatten()                                    *telescope.utils.flatten()*
+
+
+    Return: ~
+        table
+
+
 utils.path_expand({path})                      *telescope.utils.path_expand()*
     Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
 
@@ -3383,7 +3402,7 @@ actions.which_key({prompt_bufnr})              *telescope.actions.which_key()*
 
 
 actions.to_fuzzy_refine({prompt_bufnr})  *telescope.actions.to_fuzzy_refine()*
-    Move from a none fuzzy search to a fuzzy one
+    Move from a non-fuzzy search to a fuzzy one.
     This action is meant to be used in live_grep and
     lsp_dynamic_workspace_symbols
 

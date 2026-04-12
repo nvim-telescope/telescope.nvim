@@ -55,7 +55,9 @@ end
 ---@field additional_args function|table: additional arguments to be passed on. Can be fn(opts) -> tbl
 ---@field max_results number: define a upper result value
 ---@field disable_coordinates boolean: don't show the line & row numbers (default: false)
+---@field show_line boolean: if true, shows the content of the line in the picker (default: true)
 ---@field file_encoding string: file encoding for the entry & previewer
+---@field hidden boolean: if true, hidden directories and files will be searched (default: false)
 builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_grep
 
 --- Searches for the string under your cursor or the visual selection in your current working directory
@@ -68,8 +70,10 @@ builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_g
 ---@field word_match string: can be set to `-w` to enable exact word matches
 ---@field additional_args function|table: additional arguments to be passed on. Can be fn(opts) -> tbl
 ---@field disable_coordinates boolean: don't show the line and row numbers (default: false)
+---@field show_line boolean: if true, shows the content of the line in the picker (default: true)
 ---@field only_sort_text boolean: only sort the text, not the file, line or row (default: false)
 ---@field file_encoding string: file encoding for the entry & previewer
+---@field hidden boolean: if true, hidden directories and files will be searched (default: false)
 builtin.grep_string = require_on_exported_call("telescope.builtin.__files").grep_string
 
 --- Search for files (respecting .gitignore)
@@ -279,7 +283,7 @@ builtin.symbols = require_on_exported_call("telescope.builtin.__internal").symbo
 ---@field show_buf_command boolean: show buf local command (Default: true)
 builtin.commands = require_on_exported_call("telescope.builtin.__internal").commands
 
---- Lists items in the quickfix list, jumps to location on `<cr>`
+--- Lists items in the current quickfix list, jumps to location on `<cr>`
 ---@param opts table: options to pass to the picker
 ---@field show_line boolean: show results text (default: true)
 ---@field trim_text boolean: trim results text (default: false)
@@ -354,6 +358,7 @@ builtin.reloader = require_on_exported_call("telescope.builtin.__internal").relo
 ---@field file_encoding string: file encoding for the previewer
 ---@field sort_buffers function: sort fn(bufnr_a, bufnr_b). true if bufnr_a should go first. Runs after sorting by most recent (if specified)
 ---@field select_current boolean: select current buffer (default: false)
+---@field disable_coordinates boolean: don't show line number (default: false)
 builtin.buffers = require_on_exported_call("telescope.builtin.__internal").buffers
 
 --- Lists available colorschemes and applies them on `<cr>`
