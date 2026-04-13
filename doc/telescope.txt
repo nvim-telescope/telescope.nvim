@@ -1,3 +1,5 @@
+*telescope.txt*            Find, Filter, Preview, Pick. All lua, all the time.
+
 ==============================================================================
 INTRODUCTION                                                  *telescope.nvim*
 
@@ -1882,7 +1884,7 @@ Example: ~
     Fields: ~
       • {bufnr}         (`integer?`)
       • {winid}         (`integer?`)
-      • {change_title}  (`fun(self: TelescopeWindowBordertitle: stringpos: "NW"|"N"|"NE"|"SW"|"S"|"SE"?)`)
+      • {change_title}  (`fun(self: TelescopeWindowBorder, title: string, pos: "NW"|"N"|"NE"|"SW"|"S"|"SE"?)`)
 
 
 *TelescopeWindowBorder.config*
