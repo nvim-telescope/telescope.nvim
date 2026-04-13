@@ -6,5 +6,8 @@ test:
 lint:
 	luacheck lua/telescope
 
-docgen:
+.deps/docgen.nvim:
+	git clone --depth 1 --branch v1.0.1 https://github.com/jamestrew/docgen.nvim $@
+
+docgen: .deps/docgen.nvim
 	nvim -l scripts/gendocs.lua

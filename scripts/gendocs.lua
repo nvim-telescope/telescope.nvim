@@ -1,23 +1,10 @@
 vim.opt.rtp:prepend "../plenary.nvim"
 vim.opt.rtp:prepend "."
-
-local docgenpath = ".test-deps/docgen.nvim"
-if not vim.uv.fs_stat(docgenpath) then
-  vim
-    .system({
-      "git",
-      "clone",
-      "--filter=blob:none",
-      "--single-branch",
-      "https://github.com/jamestrew/docgen.nvim",
-      docgenpath,
-    })
-    :wait()
-end
-vim.opt.rtp:prepend(docgenpath)
+vim.opt.rtp:prepend ".deps/docgen.nvim"
 
 require("docgen").run {
   name = "telescope",
+  description = "Find, Filter, Preview, Pick. All lua, all the time.",
   files = {
     {
       "./lua/telescope/init.lua",
@@ -31,7 +18,7 @@ require("docgen").run {
     "./lua/telescope/builtin/init.lua",
     "./lua/telescope/themes.lua",
     "./lua/telescope/mappings.lua",
-    { "./lua/telescope/pickers/layout.lua", title = "LAYOUT", tag = "telescope.layout", fn_prefix = "layout" },
+    { "./lua/telescope/pickers/layout.lua", title = "LAYOUT",  tag = "telescope.layout",  fn_prefix = "layout" },
     {
       "./lua/telescope/pickers/layout_strategies.lua",
       title = "LAYOUT_STRATEGIES",
