@@ -1,4 +1,4 @@
-local scheduler = require("plenary.async").util.scheduler
+local scheduler = require("neoplen.async").util.scheduler
 
 local make_entry = require "telescope.make_entry"
 
