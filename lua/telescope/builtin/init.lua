@@ -645,9 +645,10 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 ---@field severity_bound? (string|number) keep diagnostics equal or less severe wrt severity name (string) or id (number)
 ---@field root_dir? (string|boolean) if set to string, get diagnostics only for buffers under this dir otherwise cwd
 ---@field no_unlisted? boolean if true, get diagnostics only for listed buffers
+---@field workspace? boolean if true, call workspace/diagnostic before collecting diagnostics
+---@field namespace? number limit your diagnostics to a specific namespace
 ---@field no_sign? boolean hide DiagnosticSigns from Results (default: `false`)
 ---@field line_width? (string|number) set length of diagnostic entry text in Results. Use 'full' for full untruncated text
----@field namespace? number limit your diagnostics to a specific namespace
 ---@field disable_coordinates? boolean don't show the line & row numbers (default: `false`)
 --- sort order of the diagnostics results (default: `"buffer"`)
 ---   - "buffer": order by bufnr (prioritizing current bufnr), severity, lnum
