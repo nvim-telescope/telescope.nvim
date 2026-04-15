@@ -23,7 +23,7 @@ jobs:
           sudo luarocks install luacheck
 
       - name: Lint
-        run: sudo make lint
+        run: make lint
 
   stylua:
     name: stylua
@@ -34,5 +34,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
-          # CLI arguments
-          args: --color always --check lua/
+          args: --color always --check .
