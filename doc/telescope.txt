@@ -1602,12 +1602,14 @@ builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
                   diagnostics only for buffers under this dir otherwise cwd
                 • {no_unlisted}? (`boolean`) if true, get diagnostics only for
                   listed buffers
+                • {workspace}? (`boolean`) if true, call workspace/diagnostic
+                  before collecting diagnostics
+                • {namespace}? (`number`) limit your diagnostics to a specific
+                  namespace
                 • {no_sign}? (`boolean`, default: `false`) hide
                   DiagnosticSigns from Results
                 • {line_width}? (`string|number`) set length of diagnostic
                   entry text in Results. Use 'full' for full untruncated text
-                • {namespace}? (`number`) limit your diagnostics to a specific
-                  namespace
                 • {disable_coordinates}? (`boolean`, default: `false`) don't
                   show the line & row numbers
                 • {sort_by}? (`"buffer"|"severity"`, default: `"buffer"`) sort

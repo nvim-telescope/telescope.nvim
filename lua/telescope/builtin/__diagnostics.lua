@@ -139,6 +139,24 @@ diagnostics.get = function(opts)
     opts.path_display = vim.F.if_nil(opts.path_display, "hidden")
   end
 
+  -- call `workspace/diagnostic` request and wait for response before proceeding
+  if opts.workspace and next(vim.lsp.get_clients { method = "workspace/diagnostic" }) then
+    local got_response = false
+    vim.api.nvim_create_autocmd("LspRequest", {
+      callback = function(ev)
+        local request = ev.data.request
+        if request.method == "workspace/diagnostic" and request.type == "complete" then
+          got_response = true
+          return got_response
+        end
+      end,
+    })
+    vim.lsp.buf.workspace_diagnostics()
+    vim.wait(1000, function()
+      return got_response
+    end)
+  end
+
   local locations = diagnostics_to_tbl(opts)
 
   if vim.tbl_isempty(locations) then
