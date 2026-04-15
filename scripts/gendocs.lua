@@ -18,7 +18,7 @@ require("docgen").run {
     "./lua/telescope/builtin/init.lua",
     "./lua/telescope/themes.lua",
     "./lua/telescope/mappings.lua",
-    { "./lua/telescope/pickers/layout.lua", title = "LAYOUT",  tag = "telescope.layout",  fn_prefix = "layout" },
+    { "./lua/telescope/pickers/layout.lua", title = "LAYOUT", tag = "telescope.layout", fn_prefix = "layout" },
     {
       "./lua/telescope/pickers/layout_strategies.lua",
       title = "LAYOUT_STRATEGIES",
