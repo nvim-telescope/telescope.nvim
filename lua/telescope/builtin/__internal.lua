@@ -1,11 +1,12 @@
 local api = vim.api
 
+local Path = require "neoplen.path"
+
 local actions = require "telescope.actions"
 local action_set = require "telescope.actions.set"
 local action_state = require "telescope.actions.state"
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
-local Path = require "neoplen.path"
 local pickers = require "telescope.pickers"
 local previewers = require "telescope.previewers"
 local p_window = require "telescope.pickers.window"

@@ -50,10 +50,11 @@
 
 local api = vim.api
 
+local popup = require "neoplen.popup"
+
 local conf = require("telescope.config").values
 local state = require "telescope.state"
 local utils = require "telescope.utils"
-local popup = require "neoplen.popup"
 local p_scroller = require "telescope.pickers.scroller"
 
 local action_state = require "telescope.actions.state"
