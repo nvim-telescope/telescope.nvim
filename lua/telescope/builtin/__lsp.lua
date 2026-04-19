@@ -4,6 +4,7 @@ local api = vim.api
 local lsp = vim.lsp
 
 local channel = require("neoplen.async.control").channel
+
 local actions = require "telescope.actions"
 local sorters = require "telescope.sorters"
 local conf = require("telescope.config").values

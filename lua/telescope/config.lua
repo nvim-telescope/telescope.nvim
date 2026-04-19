@@ -1,6 +1,7 @@
 local strings = require "neoplen.strings"
+
 local sorters = require "telescope.sorters"
-local has_win = vim.fn.has "win32" == 1
+local iswin = vim.fn.has "win32" == 1
 
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
@@ -597,7 +598,7 @@ append(
 append(
   "preview",
   {
-    check_mime_type = not has_win,
+    check_mime_type = not iswin,
     filesize_limit = 25,
     highlight_limit = 1,
     timeout = 250,

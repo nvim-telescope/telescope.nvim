@@ -1,8 +1,8 @@
 local resolve = require "telescope.config.resolve"
 
-local p_window = {}
+local M = {}
 
-function p_window.get_window_options(picker, max_columns, max_lines)
+function M.get_window_options(picker, max_columns, max_lines)
   local layout_strategy = picker.layout_strategy
   local getter = require("telescope.pickers.layout_strategies")[layout_strategy]
 
@@ -13,7 +13,7 @@ function p_window.get_window_options(picker, max_columns, max_lines)
   return getter(picker, max_columns, max_lines)
 end
 
-function p_window.get_initial_window_options(picker)
+function M.get_initial_window_options(picker)
   local popup_border = resolve.win_option(picker.window.border)
   local popup_borderchars = resolve.win_option(picker.window.borderchars)
 
@@ -46,4 +46,4 @@ function p_window.get_initial_window_options(picker)
   }
 end
 
-return p_window
+return M

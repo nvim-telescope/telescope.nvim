@@ -4,10 +4,9 @@
 local api = vim.api
 
 local Job = require "neoplen.job"
-
 local log = require "telescope.log"
-
 local truncate = require("neoplen.strings").truncate
+
 local get_status = require("telescope.state").get_status
 
 local utils = {}
@@ -70,7 +69,7 @@ utils.path_expand = function(path)
 end
 
 utils.get_separator = function()
-  return utils.is_win and "\\" or "/"
+  return utils.iswin and "\\" or "/"
 end
 
 utils.cycle = function(i, n)
