@@ -98,7 +98,7 @@ telescope.path  module soon.
 Guide to switch over to plenary.path
     - separator
         before: require("telescope.path").separator
-        now:    require("neoplen.path").path.sep
+        now:    require("neoplen.path").pathsep
     - home
         before: require("telescope.path").home
         now:    require("neoplen.path").path.home

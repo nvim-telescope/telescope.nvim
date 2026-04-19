@@ -77,7 +77,7 @@ local get_open_filelist = function(grep_open_files, cwd)
   local filelist = {}
   for _, bufnr in ipairs(bufnrs) do
     local file = api.nvim_buf_get_name(bufnr)
-    table.insert(filelist, Path:new(file):make_relative(cwd))
+    table.insert(filelist, vim.fs.relpath(cwd, file))
   end
   return filelist
 end
