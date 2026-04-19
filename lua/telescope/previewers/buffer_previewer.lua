@@ -74,6 +74,9 @@ local function split(s, sep, plain, opts)
       end
     end
   end
+  if t[#t] == "" then
+    t[#t] = nil
+  end
   return t
 end
 local bytes_to_megabytes = math.pow(1024, 2)
