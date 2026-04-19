@@ -56,6 +56,7 @@
 --- at the code in make_entry.lua.
 
 local strings = require "neoplen.strings"
+
 local state = require "telescope.state"
 local resolve = require "telescope.config.resolve"
 local utils = require "telescope.utils"

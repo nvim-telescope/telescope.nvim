@@ -1,8 +1,9 @@
 local api = vim.api
 local hl = vim.hl
 
-local from_entry = require "telescope.from_entry"
 local Path = require "neoplen.path"
+
+local from_entry = require "telescope.from_entry"
 local utils = require "telescope.utils"
 local putils = require "telescope.previewers.utils"
 local Previewer = require "telescope.previewers.previewer"
