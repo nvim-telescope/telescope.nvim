@@ -78,88 +78,6 @@ local function split(s, sep, plain, opts)
 end
 local bytes_to_megabytes = math.pow(1024, 2)
 
-local color_hash = {
-  ["p"] = "TelescopePreviewPipe",
-  ["c"] = "TelescopePreviewCharDev",
-  ["d"] = "TelescopePreviewDirectory",
-  ["b"] = "TelescopePreviewBlock",
-  ["l"] = "TelescopePreviewLink",
-  ["s"] = "TelescopePreviewSocket",
-  ["."] = "TelescopePreviewNormal",
-  ["r"] = "TelescopePreviewRead",
-  ["w"] = "TelescopePreviewWrite",
-  ["x"] = "TelescopePreviewExecute",
-  ["-"] = "TelescopePreviewHyphen",
-  ["T"] = "TelescopePreviewSticky",
-  ["S"] = "TelescopePreviewSticky",
-  [2] = "TelescopePreviewSize",
-  [3] = "TelescopePreviewUser",
-  [4] = "TelescopePreviewGroup",
-  [5] = "TelescopePreviewDate",
-}
-color_hash[6] = function(line)
-  return color_hash[line:sub(1, 1)]
-end
-
-local colorize_ls_long = function(bufnr, data, sections)
-  local windows_add = Path.path.sep == "\\" and 2 or 0
-  for lnum, line in ipairs(data) do
-    local section = sections[lnum]
-    for i = 1, section[1].end_index - 1 do -- Highlight permissions
-      local c = line:sub(i, i)
-      hl.range(bufnr, ns_previewer, color_hash[c], { lnum - 1, i - 1 }, { lnum - 1, i })
-    end
-    for i = 2, #section do -- highlights size, (user, group), date and name
-      local hl_group = color_hash[i + (i ~= 2 and windows_add or 0)]
-      hl.range(
-        bufnr,
-        ns_previewer,
-        type(hl_group) == "function" and hl_group(line) or hl_group,
-        { lnum - 1, section[i].start_index - 1 },
-        { lnum - 1, section[i].end_index - 1 }
-      )
-    end
-  end
-end
-
-local handle_directory_preview = function(filepath, bufnr, opts)
-  opts.preview.ls_short = vim.F.if_nil(opts.preview.ls_short, false)
-
-  local set_colorize_lines
-  if opts.preview.ls_short then
-    set_colorize_lines = function(data, sections)
-      local PATH_SECTION = Path.path.sep == "\\" and 4 or 6
-      local paths = {}
-      for i, line in ipairs(data) do
-        local section = sections[i][PATH_SECTION]
-        local path = line:sub(section.start_index, section.end_index)
-        table.insert(paths, path)
-      end
-      api.nvim_buf_set_lines(bufnr, 0, -1, false, paths)
-      for i, path in ipairs(paths) do
-        local hlgroup = color_hash[6](data[i])
-        hl.range(bufnr, ns_previewer, hlgroup, { i - 1, 0 }, { i - 1, #path })
-      end
-    end
-  else
-    set_colorize_lines = function(data, sections)
-      api.nvim_buf_set_lines(bufnr, 0, -1, false, data)
-      colorize_ls_long(bufnr, data, sections)
-    end
-  end
-
-  require("neoplen.scandir").ls_async(filepath, {
-    hidden = true,
-    group_directories_first = true,
-    on_exit = vim.schedule_wrap(function(data, sections)
-      set_colorize_lines(data, sections)
-      if opts.callback then
-        opts.callback(bufnr)
-      end
-    end),
-  })
-end
-
 local handle_file_preview = function(filepath, bufnr, stat, opts)
   vim.schedule(function()
     opts.ft = opts.use_ft_detect and putils.filetype_detect(filepath)
@@ -270,9 +188,7 @@ previewers.file_maker = function(filepath, bufnr, opts)
       if not stat then
         return
       end
-      if stat.type == "directory" then
-        handle_directory_preview(filepath, bufnr, opts)
-      else
+      if stat.type ~= "directory" then
         handle_file_preview(filepath, bufnr, stat, opts)
       end
     end)
