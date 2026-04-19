@@ -278,7 +278,7 @@ do
 
     local execute_keys = {
       path = function(t)
-        if Path:new(t.filename):is_absolute() then
+        if vim.fn.isabsolutepath(t.filename) then
           return t.filename, false
         else
           return Path:new({ t.cwd, t.filename }):absolute(), false
@@ -1104,7 +1104,7 @@ function make_entry.gen_from_ctags(opts)
     end
     local kind = string.match(extension_fields or "", "kind:(%S+)")
 
-    if Path.path.sep == "\\" then
+    if utils.get_separator() == "\\" then
       file = string.gsub(file, "/", "\\")
     end
 

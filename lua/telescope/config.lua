@@ -1,6 +1,5 @@
 local strings = require "neoplen.strings"
 local sorters = require "telescope.sorters"
-local os_sep = require("neoplen.path").path.sep
 local has_win = vim.fn.has "win32" == 1
 
 -- Keep the values around between reloads
@@ -519,7 +518,7 @@ append(
 append(
   "history",
   {
-    path = vim.fn.stdpath "data" .. os_sep .. "telescope_history",
+    path = vim.fs.joinpath(vim.fn.stdpath "data", "telescope_history"),
     limit = 100,
     handler = function(...)
       return require("telescope.actions.history").get_simple_history(...)

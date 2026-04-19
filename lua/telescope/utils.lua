@@ -3,7 +3,6 @@
 
 local api = vim.api
 
-local Path = require "neoplen.path"
 local Job = require "neoplen.job"
 
 local log = require "telescope.log"
@@ -13,7 +12,7 @@ local get_status = require("telescope.state").get_status
 
 local utils = {}
 
-utils.iswin = vim.uv.os_uname().sysname == "Windows_NT"
+utils.iswin = vim.fn.has "win32" == 1
 
 ---@param t table
 ---@return table
@@ -71,7 +70,7 @@ utils.path_expand = function(path)
 end
 
 utils.get_separator = function()
-  return Path.path.sep
+  return utils.is_win and "\\" or "/"
 end
 
 utils.cycle = function(i, n)
@@ -201,15 +200,55 @@ local path_truncate = function(path, truncate_len, opts)
   return truncate(path, opts.__length - opts.__prefix, nil, -1)
 end
 
-local path_shorten = function(path, length, exclude)
-  if exclude ~= nil then
-    return Path:new(path):shorten(length, exclude)
-  else
-    return Path:new(path):shorten(length)
+local path_shorten = function(filename, len, exclude)
+  len = len or 1
+  exclude = exclude or { -1 }
+  local exc = {}
+  local pathsep = utils.get_separator()
+
+  -- get parts in a table
+  local parts = {}
+  local empty_pos = {}
+  for m in (filename .. pathsep):gmatch("(.-)" .. pathsep) do
+    if m ~= "" then
+      parts[#parts + 1] = m
+    else
+      table.insert(empty_pos, #parts + 1)
+    end
   end
+
+  for _, v in pairs(exclude) do
+    if v < 0 then
+      exc[v + #parts + 1] = true
+    else
+      exc[v] = true
+    end
+  end
+
+  local final_path_components = {}
+  local count = 1
+  for _, match in ipairs(parts) do
+    if not exc[count] and #match > len then
+      table.insert(final_path_components, string.sub(match, 1, len))
+    else
+      table.insert(final_path_components, match)
+    end
+    table.insert(final_path_components, pathsep)
+    count = count + 1
+  end
+
+  local l = #final_path_components -- so that we don't need to keep calculating length
+  table.remove(final_path_components, l) -- remove final slash
+
+  -- add back empty positions
+  for i = #empty_pos, 1, -1 do
+    table.insert(final_path_components, empty_pos[i], pathsep)
+  end
+
+  return table.concat(final_path_components)
 end
 
-local path_abs = function(path, opts)
+local path_rel = function(path, opts)
   local cwd
   if opts.cwd then
     cwd = opts.cwd
@@ -219,7 +258,7 @@ local path_abs = function(path, opts)
   else
     cwd = vim.uv.cwd()
   end
-  return Path:new(path):make_relative(cwd)
+  return vim.fs.relpath(cwd, path) or path
 end
 
 -- IMPORTANT: This function should have been a local function as it's only used
@@ -365,7 +404,7 @@ utils.transform_path = function(opts, path)
     end
 
     if not vim.tbl_contains(path_display, "absolute") and not path_display.absolute then
-      transformed_path = path_abs(transformed_path, opts)
+      transformed_path = path_rel(transformed_path, opts)
     end
 
     if vim.tbl_contains(path_display, "smart") or path_display.smart then
@@ -516,16 +555,6 @@ function utils.max_split(s, pattern, maxsplit)
   end
 
   return t
-end
-
--- IMPORTANT: This function should have been a local function as it's only used
--- in this file, but the code was already exported a long time ago. By making it
--- local we would potential break consumers of this method.
-function utils.data_directory()
-  local sourced_file = debug.getinfo(2, "S").source:sub(2)
-  local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h")
-
-  return Path:new({ base_directory, "data" }):absolute() .. Path.path.sep
 end
 
 function utils.buffer_dir()
