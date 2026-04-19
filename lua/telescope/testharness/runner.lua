@@ -1,17 +1,17 @@
 local builtin = require "telescope.builtin"
 
 local DELAY = vim.g.telescope_test_delay or 50
-local runner = {}
+local M = {}
 
 -- State is test variable
-runner.state = {
+M.state = {
   done = false,
   results = {},
   msgs = {},
 }
 
 local writer = function(val)
-  table.insert(runner.state.results, val)
+  table.insert(M.state.results, val)
 end
 
 local invalid_test_case = function(k)
@@ -27,14 +27,14 @@ local replace_terms = function(input)
   return vim.api.nvim_replace_termcodes(input, true, false, true)
 end
 
-runner.nvim_feed = function(text, feed_opts)
+M.nvim_feed = function(text, feed_opts)
   feed_opts = feed_opts or "m"
 
   vim.api.nvim_feedkeys(text, feed_opts, true)
 end
 
 local end_test_cases = function()
-  runner.state.done = true
+  M.state.done = true
 end
 
 local execute_test_case = function(location, key, spec)
@@ -65,11 +65,11 @@ local execute_test_case = function(location, key, spec)
   return ok
 end
 
-runner.log = function(msg)
-  table.insert(runner.state.msgs, msg)
+M.log = function(msg)
+  table.insert(M.state.msgs, msg)
 end
 
-runner.picker = function(picker_name, input, test_cases, opts)
+M.picker = function(picker_name, input, test_cases, opts)
   opts = opts or {}
 
   for k, _ in pairs(test_cases) do
@@ -79,11 +79,11 @@ runner.picker = function(picker_name, input, test_cases, opts)
   end
 
   opts.on_complete = {
-    runner.create_on_complete(input, test_cases),
+    M.create_on_complete(input, test_cases),
   }
 
   opts._on_error = function(self, msg)
-    runner.state.done = true
+    M.state.done = true
     writer {
       location = "Error while running on complete",
       expected = "To Work",
@@ -91,12 +91,12 @@ runner.picker = function(picker_name, input, test_cases, opts)
     }
   end
 
-  runner.log "Starting picker"
+  M.log "Starting picker"
   builtin[picker_name](opts)
-  runner.log "Called picker"
+  M.log "Called picker"
 end
 
-runner.create_on_complete = function(input, test_cases)
+M.create_on_complete = function(input, test_cases)
   input = replace_terms(input)
 
   local actions = {}
@@ -104,8 +104,8 @@ runner.create_on_complete = function(input, test_cases)
     local char = input:sub(i, i)
     table.insert(actions, {
       cb = function()
-        runner.log("Inserting char: " .. char)
-        runner.nvim_feed(char, "")
+        M.log("Inserting char: " .. char)
+        M.nvim_feed(char, "")
       end,
       char = char,
     })
@@ -135,7 +135,7 @@ runner.create_on_complete = function(input, test_cases)
       end
 
       vim.defer_fn(function()
-        runner.nvim_feed(replace_terms "<CR>", "")
+        M.nvim_feed(replace_terms "<CR>", "")
 
         vim.defer_fn(function()
           if test_cases.post_close then
@@ -153,4 +153,4 @@ runner.create_on_complete = function(input, test_cases)
   end
 end
 
-return runner
+return M
