@@ -30,8 +30,9 @@ end
 
 ---@return boolean
 local function buf_in_cwd(bufname, cwd)
-  if cwd:sub(-1) ~= Path.path.sep then
-    cwd = cwd .. Path.path.sep
+  local os_sep = utils.get_separator()
+  if cwd:sub(-1) ~= os_sep then
+    cwd = cwd .. os_sep
   end
   local bufname_prefix = bufname:sub(1, #cwd)
   return bufname_prefix == cwd

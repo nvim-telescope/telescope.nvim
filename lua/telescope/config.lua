@@ -1,7 +1,6 @@
 local strings = require "neoplen.strings"
 local sorters = require "telescope.sorters"
 local utils = require "telescope.utils"
-local os_sep = require("plenary.path").path.sep
 
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
@@ -519,7 +518,7 @@ append(
 append(
   "history",
   {
-    path = vim.fn.stdpath "data" .. os_sep .. "telescope_history",
+    path = vim.fs.joinpath(vim.fn.stdpath "data", "telescope_history"),
     limit = 100,
     handler = function(...)
       return require("telescope.actions.history").get_simple_history(...)

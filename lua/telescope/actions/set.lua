@@ -192,7 +192,7 @@ action_set.edit = function(prompt_bufnr, command)
     -- check if we didn't pick a different buffer
     -- prevents restarting lsp server
     if api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
-      filename = Path:new(filename):normalize(vim.uv.cwd())
+      filename = vim.fs.normalize(filename)
       pcall(vim.cmd, string.format("%s %s", command, vim.fn.fnameescape(filename)))
     end
   end
