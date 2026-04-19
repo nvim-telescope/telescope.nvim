@@ -126,7 +126,7 @@ end
 
 -- TODO: Asyncify this and use vim.wait in the meantime.
 --  This will allow other events to happen while we're waiting!
-function Path:_read()
+function Path:read()
   self = check_self(self)
 
   local fd = assert(uv.fs_open(self:_fs_filename(), "r", 438)) -- for some reason test won't pass with absolute
@@ -184,13 +184,6 @@ function Path:_read_async(callback)
   end)
 end
 
-function Path:read(callback)
-  if callback then
-    return self:_read_async(callback)
-  end
-  return self:_read()
-end
-
 function Path:readlines()
   self = check_self(self)
 
@@ -198,43 +191,6 @@ function Path:readlines()
 
   data = data:gsub("\r", "")
   return vim.split(data, "\n")
-end
-
-function Path:readbyterange(offset, length)
-  self = check_self(self)
-
-  local fd = uv.fs_open(self:_fs_filename(), "r", 438)
-  if not fd then
-    return
-  end
-  local stat = assert(uv.fs_fstat(fd))
-  if stat.type ~= "file" then
-    uv.fs_close(fd)
-    return nil
-  end
-
-  if offset < 0 then
-    offset = stat.size + offset
-    -- Windows fails if offset is < 0 even though offset is defined as signed
-    -- http://docs.libuv.org/en/v1.x/fs.html#c.uv_fs_read
-    if offset < 0 then
-      offset = 0
-    end
-  end
-
-  local data = ""
-  while #data < length do
-    local read_chunk = assert(uv.fs_read(fd, length - #data, offset))
-    if #read_chunk == 0 then
-      break
-    end
-    data = data .. read_chunk
-    offset = offset + #read_chunk
-  end
-
-  assert(uv.fs_close(fd))
-
-  return data
 end
 
 return Path
