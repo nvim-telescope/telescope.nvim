@@ -5,57 +5,11 @@ local strings = require "neoplen.strings"
 local conf = require("telescope.config").values
 
 local Job = require "neoplen.job"
-local Path = require "neoplen.path"
 
 local utils = {}
 
-local detect_from_shebang = function(p)
-  local s = p:readbyterange(0, 256)
-  if s then
-    local lines = ts_utils.split_lines(s)
-    return vim.filetype.match { contents = lines }
-  end
-end
-
-local parse_modeline = function(tail)
-  if tail:find "vim:" then
-    return tail:match ".*:ft=([^: ]*):.*$" or ""
-  end
-end
-
-local detect_from_modeline = function(p)
-  local s = p:readbyterange(-256, 256)
-  if s then
-    local lines = ts_utils.split_lines(s)
-    local idx = lines[#lines] ~= "" and #lines or #lines - 1
-    if idx >= 1 then
-      return parse_modeline(lines[idx])
-    end
-  end
-end
-
 utils.filetype_detect = function(filepath)
-  if type(filepath) ~= string then
-    filepath = tostring(filepath)
-  end
-
-  local match = vim.filetype.match { filename = filepath }
-  if match and match ~= "" then
-    return match
-  end
-
-  local p = Path:new(filepath)
-  if p and p:is_file() then
-    match = detect_from_shebang(p)
-    if match and match ~= "" then
-      return match
-    end
-
-    match = detect_from_modeline(p)
-    if match and match ~= "" then
-      return match
-    end
-  end
+  return vim.filetype.match { filename = filepath }
 end
 
 -- API helper functions for buffer previewer
