@@ -1,21 +1,19 @@
-local M = {}
-
-local Deque = {}
-Deque.__index = Deque
+local Dequeue = {}
+Dequeue.__index = Dequeue
 
 ---@class Deque
 ---A double ended queue
 ---
 ---@return Deque
-function Deque.new()
+function Dequeue.new()
   -- the indexes are created with an offset so that the indices are consequtive
   -- otherwise, when both pushleft and pushright are used, the indices will have a 1 length hole in the middle
-  return setmetatable({ first = 0, last = -1 }, Deque)
+  return setmetatable({ first = 0, last = -1 }, Dequeue)
 end
 
 ---push to the left of the deque
 ---@param value any
-function Deque:pushleft(value)
+function Dequeue:pushleft(value)
   local first = self.first - 1
   self.first = first
   self[first] = value
@@ -23,7 +21,7 @@ end
 
 ---push to the right of the deque
 ---@param value any
-function Deque:pushright(value)
+function Dequeue:pushright(value)
   local last = self.last + 1
   self.last = last
   self[last] = value
@@ -31,7 +29,7 @@ end
 
 ---pop from the left of the deque
 ---@return any
-function Deque:popleft()
+function Dequeue:popleft()
   local first = self.first
   if first > self.last then
     return nil
@@ -44,7 +42,7 @@ end
 
 ---pops from the right of the deque
 ---@return any
-function Deque:popright()
+function Dequeue:popright()
   local last = self.last
   if self.first > last then
     return nil
@@ -57,19 +55,19 @@ end
 
 ---checks if the deque is empty
 ---@return boolean
-function Deque:is_empty()
+function Dequeue:is_empty()
   return self:len() == 0
 end
 
 ---returns the number of elements of the deque
 ---@return number
-function Deque:len()
+function Dequeue:len()
   return self.last - self.first + 1
 end
 
 ---returns and iterator of the indices and values starting from the left
 ---@return function
-function Deque:ipairs_left()
+function Dequeue:ipairs_left()
   local i = self.first
 
   return function()
@@ -86,7 +84,7 @@ end
 
 ---returns and iterator of the indices and values starting from the right
 ---@return function
-function Deque:ipairs_right()
+function Dequeue:ipairs_right()
   local i = self.last
 
   return function()
@@ -103,7 +101,7 @@ end
 
 ---removes all values from the deque
 ---@return nil
-function Deque:clear()
+function Dequeue:clear()
   for i, _ in self:ipairs_left() do
     self[i] = nil
   end
@@ -111,6 +109,4 @@ function Deque:clear()
   self.last = -1
 end
 
-M.Deque = Deque
-
-return M
+return Dequeue

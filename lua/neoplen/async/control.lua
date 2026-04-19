@@ -1,5 +1,5 @@
 local a = require "neoplen.async.async"
-local Deque = require("neoplen.async.structs").Deque
+local Dequeue = require "neoplen.async.dequeue"
 
 local M = {}
 
@@ -194,7 +194,7 @@ end
 ---@return table
 ---@return table
 M.channel.mpsc = function()
-  local deque = Deque.new()
+  local deque = Dequeue.new()
   local condvar = Condvar.new()
 
   local Sender = {}
