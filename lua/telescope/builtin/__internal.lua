@@ -1,11 +1,12 @@
 local api = vim.api
 
+local Path = require "neoplen.path"
+
 local actions = require "telescope.actions"
 local action_set = require "telescope.actions.set"
 local action_state = require "telescope.actions.state"
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
-local Path = require "plenary.path"
 local pickers = require "telescope.pickers"
 local previewers = require "telescope.previewers"
 local p_window = require "telescope.pickers.window"
@@ -30,8 +31,9 @@ end
 
 ---@return boolean
 local function buf_in_cwd(bufname, cwd)
-  if cwd:sub(-1) ~= Path.path.sep then
-    cwd = cwd .. Path.path.sep
+  local os_sep = utils.get_separator()
+  if cwd:sub(-1) ~= os_sep then
+    cwd = cwd .. os_sep
   end
   local bufname_prefix = bufname:sub(1, #cwd)
   return bufname_prefix == cwd
@@ -241,7 +243,7 @@ internal.planets = function(opts)
   local show_pluto = opts.show_pluto or false
   local show_moon = opts.show_moon or false
 
-  local sourced_file = require("plenary.debug_utils").sourced_filepath()
+  local sourced_file = debug.getinfo(2, "S").source:sub(2)
   local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h:h")
 
   local globbed_files = vim.fn.globpath(base_directory .. "/data/memes/planets/", "*", true, true)
@@ -925,7 +927,7 @@ internal.reloader = function(opts)
           end
 
           actions.close(prompt_bufnr)
-          require("plenary.reload").reload_module(selection.value)
+          require("neoplen.reload").reload_module(selection.value)
           utils.notify("builtin.reloader", {
             msg = string.format("[%s] - module reloaded", selection.value),
             level = "INFO",

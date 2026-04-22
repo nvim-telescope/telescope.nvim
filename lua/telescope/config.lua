@@ -1,7 +1,7 @@
-local strings = require "plenary.strings"
+local strings = require "neoplen.strings"
+
 local sorters = require "telescope.sorters"
-local os_sep = require("plenary.path").path.sep
-local has_win = vim.fn.has "win32" == 1
+local iswin = vim.fn.has "win32" == 1
 
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
@@ -519,7 +519,7 @@ append(
 append(
   "history",
   {
-    path = vim.fn.stdpath "data" .. os_sep .. "telescope_history",
+    path = vim.fs.joinpath(vim.fn.stdpath "data", "telescope_history"),
     limit = 100,
     handler = function(...)
       return require("telescope.actions.history").get_simple_history(...)
@@ -598,7 +598,7 @@ append(
 append(
   "preview",
   {
-    check_mime_type = not has_win,
+    check_mime_type = not iswin,
     filesize_limit = 25,
     highlight_limit = 1,
     timeout = 250,
@@ -665,7 +665,7 @@ append(
                               end,
                               -- 2) Truncate lines to preview window for too large files
                               filesize_hook = function(filepath, bufnr, opts)
-                                local path = require("plenary.path"):new(filepath)
+                                local path = require("neoplen.path"):new(filepath)
                                 -- opts exposes winid
                                 local height = vim.api.nvim_win_get_height(opts.winid)
                                 local lines = vim.split(path:head(height), "[\r]?\n")

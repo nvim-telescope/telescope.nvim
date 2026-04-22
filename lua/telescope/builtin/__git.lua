@@ -1,5 +1,8 @@
 local api = vim.api
 
+local strings = require "neoplen.strings"
+local Path = require "neoplen.path"
+
 local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 local finders = require "telescope.finders"
@@ -9,8 +12,6 @@ local pickers = require "telescope.pickers"
 local previewers = require "telescope.previewers"
 local utils = require "telescope.utils"
 local entry_display = require "telescope.pickers.entry_display"
-local strings = require "plenary.strings"
-local Path = require "plenary.path"
 
 local conf = require("telescope.config").values
 local git_command = utils.__git_command
@@ -466,11 +467,11 @@ local try_worktrees = function(opts)
 end
 
 local current_path_toplevel = function()
-  local gitdir = vim.fn.finddir(".git", vim.fn.expand "%:p" .. ";")
+  local gitdir = vim.fn.finddir(".git", vim.fn.expand "%:p" .. ";") --[[@as string]]
   if gitdir == "" then
     return nil
   end
-  return Path:new(gitdir):parent():absolute()
+  return Path:new(vim.fs.dirname(gitdir)):absolute()
 end
 
 local set_opts_cwd = function(opts)
