@@ -12,10 +12,7 @@ local utils = require "telescope.utils"
 local conf = require("telescope.config").values
 local log = require "telescope.log"
 
-local Path = require "plenary.path"
-
 local flatten = utils.flatten
-local filter = vim.tbl_filter
 
 local files = {}
 
@@ -63,7 +60,7 @@ local get_open_filelist = function(grep_open_files, cwd)
     return nil
   end
 
-  local bufnrs = filter(function(b)
+  local bufnrs = vim.tbl_filter(function(b)
     if 1 ~= vim.fn.buflisted(b) then
       return false
     end
@@ -76,7 +73,7 @@ local get_open_filelist = function(grep_open_files, cwd)
   local filelist = {}
   for _, bufnr in ipairs(bufnrs) do
     local file = api.nvim_buf_get_name(bufnr)
-    table.insert(filelist, Path:new(file):make_relative(cwd))
+    table.insert(filelist, vim.fs.relpath(cwd, file))
   end
   return filelist
 end

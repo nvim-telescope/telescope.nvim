@@ -1,8 +1,9 @@
-local conf = require("telescope.config").values
-local Path = require "plenary.path"
-local utils = require "telescope.utils"
-
 local uv = vim.uv
+
+local Path = require "neoplen.path"
+
+local conf = require("telescope.config").values
+local utils = require "telescope.utils"
 
 ---@brief
 --- A base implementation of a prompt history that provides a simple history
@@ -40,7 +41,7 @@ local append_async = function(path, txt)
   write_async(path, txt, "a")
 end
 
-local histories = {}
+local M = {}
 
 --- Manages prompt history
 ---@class History @Manages prompt history
@@ -50,8 +51,8 @@ local histories = {}
 ---@field content table: History table. Needs to be filled by your own History implementation
 ---@field index number: Used to keep track of the next or previous index. Default is #content + 1
 ---@field cycle_wrap boolean: Controls if history will wrap on reaching beginning or end
-histories.History = {}
-histories.History.__index = histories.History
+M.History = {}
+M.History.__index = M.History
 
 ---@inlinedoc
 ---@class telescope.actions.history.opts
@@ -62,7 +63,7 @@ histories.History.__index = histories.History
 
 --- Create a new History
 ---@param opts table: Defines the behavior of History
-function histories.History:new(opts)
+function M.History:new(opts)
   local obj = {}
   if conf.history == false or type(conf.history) ~= "table" then
     obj.enabled = false
@@ -86,12 +87,12 @@ function histories.History:new(opts)
 end
 
 --- Shorthand to create a new history
-function histories.new(...)
-  return histories.History:new(...)
+function M.new(...)
+  return M.History:new(...)
 end
 
 --- Will reset the history index to the default initial state. Will happen after the picker closed
-function histories.History:reset()
+function M.History:reset()
   if not self.enabled then
     return
   end
@@ -102,7 +103,7 @@ end
 ---@param line string: current line that will be appended
 ---@param picker table: the current picker object
 ---@param no_reset boolean: On default it will reset the state at the end. If you don't want to do this set to true
-function histories.History:append(line, picker, no_reset)
+function M.History:append(line, picker, no_reset)
   if not self.enabled then
     return
   end
@@ -113,7 +114,7 @@ end
 ---@param line string: the current line
 ---@param picker table: the current picker object
 ---@return string: the next history item
-function histories.History:get_next(line, picker)
+function M.History:get_next(line, picker)
   if not self.enabled then
     utils.notify("History:get_next", {
       msg = "You are cycling to next the history item but history is disabled. Read ':help telescope.defaults.history'",
@@ -142,7 +143,7 @@ end
 ---@param line string: the current line
 ---@param picker table: the current picker object
 ---@return string: the previous history item
-function histories.History:get_prev(line, picker)
+function M.History:get_prev(line, picker)
   if not self.enabled then
     utils.notify("History:get_prev", {
       msg = "You are cycling to next the history item but history is disabled. Read ':help telescope.defaults.history'",
@@ -174,8 +175,8 @@ end
 --- A simple implementation of history.
 ---
 --- It will keep one unified history across all pickers.
-histories.get_simple_history = function()
-  return histories.new {
+M.get_simple_history = function()
+  return M.new {
     init = function(obj)
       local p = Path:new(obj.path)
       if not p:exists() then
@@ -213,4 +214,4 @@ histories.get_simple_history = function()
   }
 end
 
-return histories
+return M

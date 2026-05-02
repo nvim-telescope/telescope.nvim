@@ -2,10 +2,12 @@ require "telescope"
 
 local api = vim.api
 
-local async = require "plenary.async"
+local async = require "neoplen.async"
 local await_schedule = async.util.scheduler
-local channel = require("plenary.async.control").channel
-local popup = require "plenary.popup"
+local channel = require("neoplen.async.control").channel
+local popup = require "neoplen.popup"
+local truncate = require("neoplen.strings").truncate
+local strdisplaywidth = require("neoplen.strings").strdisplaywidth
 
 local actions = require "telescope.actions"
 local config = require "telescope.config"
@@ -23,9 +25,6 @@ local Layout = require "telescope.pickers.layout"
 
 local EntryManager = require "telescope.entry_manager"
 local MultiSelect = require "telescope.pickers.multi"
-
-local truncate = require("plenary.strings").truncate
-local strdisplaywidth = require("plenary.strings").strdisplaywidth
 
 local ns_telescope_matching = api.nvim_create_namespace "telescope_matching"
 local ns_telescope_prompt = api.nvim_create_namespace "telescope_prompt"

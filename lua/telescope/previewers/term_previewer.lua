@@ -1,15 +1,16 @@
 local api = vim.api
 
+local Path = require "neoplen.path"
+
 local conf = require("telescope.config").values
 local utils = require "telescope.utils"
-local Path = require "plenary.path"
 local from_entry = require "telescope.from_entry"
 local Previewer = require "telescope.previewers.previewer"
 local putil = require "telescope.previewers.utils"
 
 local defaulter = utils.make_default_callable
 
-local previewers = {}
+local M = {}
 
 -- TODO: Should play with these some more, ty @clason
 local bat_options = { "--style=plain", "--color=always", "--paging=always" }
@@ -104,7 +105,7 @@ local get_maker = function(opts)
   return maker
 end
 
-previewers.new_termopen_previewer = function(opts)
+M.new_termopen_previewer = function(opts)
   opts = opts or {}
 
   assert(opts.get_command, "get_command is a required function")
@@ -246,13 +247,13 @@ previewers.new_termopen_previewer = function(opts)
   return Previewer:new(opts)
 end
 
-previewers.cat = defaulter(function(opts)
+M.cat = defaulter(function(opts)
   opts = opts or {}
 
   local maker = get_maker(opts)
   local cwd = opts.cwd or vim.uv.cwd()
 
-  return previewers.new_termopen_previewer {
+  return M.new_termopen_previewer {
     title = "File Preview",
     dyn_title = function(_, entry)
       return Path:new(from_entry.path(entry, false, false)):normalize(cwd)
@@ -269,13 +270,13 @@ previewers.cat = defaulter(function(opts)
   }
 end, {})
 
-previewers.vimgrep = defaulter(function(opts)
+M.vimgrep = defaulter(function(opts)
   opts = opts or {}
 
   local maker = get_maker(opts)
   local cwd = opts.cwd or vim.uv.cwd()
 
-  return previewers.new_termopen_previewer {
+  return M.new_termopen_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
       return Path:new(from_entry.path(entry, false, false)):normalize(cwd)
@@ -304,13 +305,13 @@ previewers.vimgrep = defaulter(function(opts)
   }
 end, {})
 
-previewers.qflist = defaulter(function(opts)
+M.qflist = defaulter(function(opts)
   opts = opts or {}
 
   local maker = get_maker(opts)
   local cwd = opts.cwd or vim.uv.cwd()
 
-  return previewers.new_termopen_previewer {
+  return M.new_termopen_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
       return Path:new(from_entry.path(entry, false, false)):normalize(cwd)
@@ -341,4 +342,4 @@ previewers.qflist = defaulter(function(opts)
   }
 end, {})
 
-return previewers
+return M

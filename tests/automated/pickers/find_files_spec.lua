@@ -1,5 +1,4 @@
--- Just skip on mac, it has flaky CI for some reason
-if vim.fn.has "mac" == 1 or require("telescope.utils").iswin then
+if require("telescope.utils").iswin then
   return
 end
 
@@ -115,8 +114,8 @@ describe("builtin.find_files", function()
         post_typed = {
           {
             {
-              "  lua/tests/fixtures/find_files/file_a.txt",
-              "> lua/tests/fixtures/find_files/file_abc.txt",
+              "  tests/fixtures/find_files/file_a.txt",
+              "> tests/fixtures/find_files/file_abc.txt",
             }, GetResults
           },
         },
@@ -135,7 +134,7 @@ describe("builtin.find_files", function()
     tester.run_string [[
       runner.picker('find_files', 'fixtures/find_files/file_abc', {
         post_typed = {
-          { 'lua/tests/fixtures/find_files/file_abc.txt', GetSelectionValue },
+          { 'tests/fixtures/find_files/file_abc.txt', GetSelectionValue },
         }
       })
     ]]
