@@ -432,7 +432,7 @@ layout_strategies.horizontal = make_documented_layout(
 ---
 layout_strategies.center = make_documented_layout(
   "center",
-  vim.tbl_extend("error", shared_options, {
+  vim.tbl_extend("force", shared_options, {
     preview_cutoff = "When lines are less than this value, the preview will be disabled",
     height = {
       "Controls the height of the results window in the center layout.",
