@@ -434,6 +434,11 @@ layout_strategies.center = make_documented_layout(
   "center",
   vim.tbl_extend("error", shared_options, {
     preview_cutoff = "When lines are less than this value, the preview will be disabled",
+    height = {
+      "Controls the height of the results window in the center layout.",
+      "Does not control the entire layout height — setting this too high can shrink or obscure the preview window.",
+      "See |resolver.resolve_height()|",
+    },
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -449,6 +454,7 @@ layout_strategies.center = make_documented_layout(
     local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
 
     -- This sets the height for the whole layout
+    -- Setting this too high can shrink or obscure the preview window.
     local height_opt = layout_config.height
     local height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
 
