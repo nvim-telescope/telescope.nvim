@@ -1988,7 +1988,7 @@ layout_strategies.horizontal          *telescope.layout_strategies.horizontal*
         • Specifies an amount of additional padding around the anchor
         • Values should be a positive integer
       • height:
-        •How tall to make Telescope's entire layout
+        • How tall to make Telescope's entire layout
         • See |resolver.resolve_height()|
       • mirror: Flip the location of the results/prompt and preview windows
       • prompt_position:
@@ -2043,7 +2043,8 @@ layout_strategies.center                  *telescope.layout_strategies.center*
         • Specifies an amount of additional padding around the anchor
         • Values should be a positive integer
       • height:
-        • How tall to make Telescope's entire layout 
+        • Controls the height of the results window in the center layout.
+        • Does not control the entire layout height — setting this too high can shrink or obscure the preview window.
         • See |resolver.resolve_height()|
       • mirror: Flip the location of the results/prompt and preview windows
       • prompt_position:
