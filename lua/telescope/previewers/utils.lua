@@ -235,4 +235,49 @@ utils.binary_mime_type = function(mime_type)
   return true
 end
 
+local CHECK_TIME_INTERVAL = 200
+
+--- Split a string into lines, checking every `CHECK_TIME_INTERVAL` characters
+--- whether to timeout.
+---
+--- Roughly 4-5x faster than using `vim.gsplit` and checking timeout between each line.
+--- The latter approach is also more prone to exceeding timeout if a file has huge lines.
+---@param s string file content to split into lines
+---@param opts {start_time: number, preview: { timeout: number }, file_encoding: string?}
+---@return string[]?
+function utils.timed_split_lines(s, opts)
+  local lines = {}
+  local line_start = 1
+
+  for i = 1, #s do
+    local ch = s:byte(i)
+    if ch == 10 then
+      local line
+      if s:byte(i - 1) ~= 13 then
+        line = s:sub(line_start, i - 1)
+      else
+        line = s:sub(line_start, i - 2)
+      end
+      line_start = i + 1
+      table.insert(lines, opts.file_encoding and vim.iconv(line, opts.file_encoding, "utf8") or line)
+    end
+
+    if i % CHECK_TIME_INTERVAL == 0 then
+      local diff_time = (vim.uv.hrtime() - opts.start_time) / 1e6
+      if diff_time > opts.preview.timeout then
+        return
+      end
+    end
+  end
+
+  -- Only append the tail when it is non-empty.
+  -- neovim treats \n and \r\n as "line terminators" instead of "line separator"
+  local tail = s:sub(line_start)
+  if tail ~= "" then
+    table.insert(lines, opts.file_encoding and vim.iconv(tail, opts.file_encoding, "utf8") or tail)
+  end
+
+  return lines
+end
+
 return utils
