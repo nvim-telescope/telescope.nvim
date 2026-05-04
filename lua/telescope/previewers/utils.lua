@@ -248,6 +248,7 @@ local CHECK_TIME_INTERVAL = 200
 function utils.timed_split_lines(s, opts)
   local lines = {}
   local line_start = 1
+  local timeout = opts.preview.timeout or math.huge
 
   for i = 1, #s do
     local ch = s:byte(i)
@@ -264,7 +265,7 @@ function utils.timed_split_lines(s, opts)
 
     if i % CHECK_TIME_INTERVAL == 0 then
       local diff_time = (vim.uv.hrtime() - opts.start_time) / 1e6
-      if diff_time > opts.preview.timeout then
+      if diff_time > timeout then
         return
       end
     end
