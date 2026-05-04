@@ -54,6 +54,9 @@ end
 ---@field file_encoding? string file encoding for the entry & previewer
 
 --- Search for a string and get results live as you type, respects .gitignore
+---
+--- Default keymaps:
+---   - `<C-space>`: refine current results with a fuzzy search
 ---@param opts? telescope.builtin.live_grep.opts table: options to pass to the picker
 builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_grep
 
@@ -625,9 +628,7 @@ builtin.lsp_workspace_symbols = require_on_exported_call("telescope.builtin.__ls
 --- Dynamically lists LSP for all workspace symbols
 ---
 --- Default keymaps:
----   - `<C-l>`: show autocompletion menu to prefilter your query by type of
----   symbol you want to see (i.e. `:variable:`), only works after refining to
----   fuzzy search using `<C-space>`
+---   - `<C-space>`: refine current results with a fuzzy search
 ---@param opts? telescope.builtin.lsp_dynamic_workspace_symbols.opts: options to pass to the picker
 builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.builtin.__lsp").dynamic_workspace_symbols
 
