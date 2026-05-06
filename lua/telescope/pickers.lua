@@ -244,32 +244,32 @@ function Picker:new(opts)
   --   pcall(v.clear)
   -- end
 
-  local layout_strategy = vim.F.if_nil(opts.layout_strategy, config.values.layout_strategy)
+  local layout_strategy = utils.if_nil(opts.layout_strategy, config.values.layout_strategy)
   local winblend =
-    vim.F.if_nil(opts.winblend, type(opts.window) == "table" and opts.window.winblend or config.values.winblend)
+    utils.if_nil(opts.winblend, type(opts.window) == "table" and opts.window.winblend or config.values.winblend)
   if type(winblend) == "function" then
     winblend = winblend()
   end
 
   local obj = setmetatable({
-    prompt_title = vim.F.if_nil(opts.prompt_title, config.values.prompt_title),
-    results_title = vim.F.if_nil(opts.results_title, config.values.results_title),
+    prompt_title = utils.if_nil(opts.prompt_title, config.values.prompt_title),
+    results_title = utils.if_nil(opts.results_title, config.values.results_title),
     -- either whats passed in by the user or whats defined by the previewer
     preview_title = opts.preview_title,
 
-    prompt_prefix = vim.F.if_nil(opts.prompt_prefix, config.values.prompt_prefix),
-    wrap_results = vim.F.if_nil(opts.wrap_results, config.values.wrap_results),
-    selection_caret = vim.F.if_nil(opts.selection_caret, config.values.selection_caret),
-    entry_prefix = vim.F.if_nil(opts.entry_prefix, config.values.entry_prefix),
-    multi_icon = vim.F.if_nil(opts.multi_icon, config.values.multi_icon),
+    prompt_prefix = utils.if_nil(opts.prompt_prefix, config.values.prompt_prefix),
+    wrap_results = utils.if_nil(opts.wrap_results, config.values.wrap_results),
+    selection_caret = utils.if_nil(opts.selection_caret, config.values.selection_caret),
+    entry_prefix = utils.if_nil(opts.entry_prefix, config.values.entry_prefix),
+    multi_icon = utils.if_nil(opts.multi_icon, config.values.multi_icon),
 
-    initial_mode = vim.F.if_nil(opts.initial_mode, config.values.initial_mode),
+    initial_mode = utils.if_nil(opts.initial_mode, config.values.initial_mode),
     _original_mode = api.nvim_get_mode().mode,
-    debounce = vim.F.if_nil(tonumber(opts.debounce), nil),
+    debounce = utils.if_nil(tonumber(opts.debounce), nil),
 
     _finder_attached = true,
     default_text = opts.default_text,
-    get_status_text = vim.F.if_nil(opts.get_status_text, config.values.get_status_text),
+    get_status_text = utils.if_nil(opts.get_status_text, config.values.get_status_text),
     _on_input_filter_cb = opts.on_input_filter_cb or function() end,
 
     finder = assert(opts.finder, "Finder is required."),
@@ -280,7 +280,7 @@ function Picker:new(opts)
 
     default_selection_index = opts.default_selection_index,
 
-    get_selection_window = vim.F.if_nil(opts.get_selection_window, config.values.get_selection_window),
+    get_selection_window = utils.if_nil(opts.get_selection_window, config.values.get_selection_window),
 
     cwd = opts.cwd,
 
@@ -291,29 +291,29 @@ function Picker:new(opts)
         and opts._multi
       or MultiSelect:new(),
 
-    track = vim.F.if_nil(opts.track, false),
+    track = utils.if_nil(opts.track, false),
     stats = {},
 
     attach_mappings = opts.attach_mappings,
-    file_ignore_patterns = vim.F.if_nil(opts.file_ignore_patterns, config.values.file_ignore_patterns),
+    file_ignore_patterns = utils.if_nil(opts.file_ignore_patterns, config.values.file_ignore_patterns),
 
-    scroll_strategy = vim.F.if_nil(opts.scroll_strategy, config.values.scroll_strategy),
-    sorting_strategy = vim.F.if_nil(opts.sorting_strategy, config.values.sorting_strategy),
-    tiebreak = vim.F.if_nil(opts.tiebreak, config.values.tiebreak),
-    selection_strategy = vim.F.if_nil(opts.selection_strategy, config.values.selection_strategy),
+    scroll_strategy = utils.if_nil(opts.scroll_strategy, config.values.scroll_strategy),
+    sorting_strategy = utils.if_nil(opts.sorting_strategy, config.values.sorting_strategy),
+    tiebreak = utils.if_nil(opts.tiebreak, config.values.tiebreak),
+    selection_strategy = utils.if_nil(opts.selection_strategy, config.values.selection_strategy),
 
-    push_cursor_on_edit = vim.F.if_nil(opts.push_cursor_on_edit, false),
-    push_tagstack_on_edit = vim.F.if_nil(opts.push_tagstack_on_edit, false),
+    push_cursor_on_edit = utils.if_nil(opts.push_cursor_on_edit, false),
+    push_tagstack_on_edit = utils.if_nil(opts.push_tagstack_on_edit, false),
 
     layout_strategy = layout_strategy,
     layout_config = config.smarter_depth_2_extend(opts.layout_config or {}, config.values.layout_config or {}),
 
-    __cycle_layout_list = vim.F.if_nil(opts.cycle_layout_list, config.values.cycle_layout_list),
+    __cycle_layout_list = utils.if_nil(opts.cycle_layout_list, config.values.cycle_layout_list),
 
     window = {
       winblend = winblend,
-      border = vim.F.if_nil(opts.border, type(opts.window) == "table" and opts.window.border or config.values.border),
-      borderchars = vim.F.if_nil(
+      border = utils.if_nil(opts.border, type(opts.window) == "table" and opts.window.border or config.values.border),
+      borderchars = utils.if_nil(
         opts.borderchars,
         type(opts.window) == "table" and opts.window.borderchars or config.values.borderchars
       ),
@@ -321,9 +321,9 @@ function Picker:new(opts)
 
     cache_picker = config.resolve_table_opts(opts.cache_picker, vim.deepcopy(config.values.cache_picker)),
 
-    __scrolling_limit = tonumber(vim.F.if_nil(opts.temp__scrolling_limit, 250)),
+    __scrolling_limit = tonumber(utils.if_nil(opts.temp__scrolling_limit, 250)),
 
-    __locations_input = vim.F.if_nil(opts.__locations_input, false),
+    __locations_input = utils.if_nil(opts.__locations_input, false),
   }, self)
 
   obj.create_layout = opts.create_layout or config.values.create_layout or default_create_layout
@@ -857,7 +857,7 @@ end
 ---@param text string text to set as prompt
 ---@param reset boolean? whether to replace prompt with text entirely or just append
 function Picker:set_prompt(text, reset)
-  reset = vim.F.if_nil(reset, true)
+  reset = utils.if_nil(reset, true)
   if not reset then
     text = self:_get_prompt() .. text
   end
@@ -1032,7 +1032,7 @@ function Picker:refresh(finder, opts)
   if finder then
     self.finder:close()
     self.finder = finder
-    self._multi = vim.F.if_nil(opts.multi, MultiSelect:new())
+    self._multi = utils.if_nil(opts.multi, MultiSelect:new())
   end
 
   -- reset already triggers finder loop
@@ -1428,7 +1428,7 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
     -- a ton of time on large results.
     log.trace("Processing result... ", entry)
     for _, v in ipairs(self.file_ignore_patterns or {}) do
-      local file = vim.F.if_nil(entry.filename, type(entry.value) == "string" and entry.value) -- false if none is true
+      local file = utils.if_nil(entry.filename, type(entry.value) == "string" and entry.value) -- false if none is true
       if file then
         if string.find(file, v) then
           log.trace("SKIPPING", entry.value, "because", v)

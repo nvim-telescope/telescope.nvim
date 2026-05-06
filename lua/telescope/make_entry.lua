@@ -64,7 +64,7 @@ local lsp_type_highlight = {
 local get_filename_fn = function()
   local bufnr_name_cache = {}
   return function(bufnr)
-    bufnr = vim.F.if_nil(bufnr, 0)
+    bufnr = utils.if_nil(bufnr, 0)
     local c = bufnr_name_cache[bufnr]
     if c then
       return c
@@ -273,7 +273,7 @@ do
 
     local disable_devicons = opts.disable_devicons
     local disable_coordinates = opts.disable_coordinates
-    local show_line = vim.F.if_nil(opts.show_line, true)
+    local show_line = utils.if_nil(opts.show_line, true)
     local only_sort_text = opts.only_sort_text
 
     local execute_keys = {
@@ -453,7 +453,7 @@ end
 
 function make_entry.gen_from_quickfix(opts)
   opts = opts or {}
-  local show_line = vim.F.if_nil(opts.show_line, true)
+  local show_line = utils.if_nil(opts.show_line, true)
 
   local hidden = utils.is_path_hidden(opts)
 
@@ -478,7 +478,7 @@ function make_entry.gen_from_quickfix(opts)
 
   local get_filename = get_filename_fn()
   return function(entry)
-    local filename = vim.F.if_nil(entry.filename, get_filename(entry.bufnr))
+    local filename = utils.if_nil(entry.filename, get_filename(entry.bufnr))
 
     return make_entry.set_default_entry_mt({
       value = entry,
@@ -511,7 +511,7 @@ function make_entry.gen_from_lsp_symbols(opts)
 
   local hidden = utils.is_path_hidden(opts)
   if not hidden then
-    table.insert(display_items, 1, { width = vim.F.if_nil(opts.fname_width, 30) })
+    table.insert(display_items, 1, { width = utils.if_nil(opts.fname_width, 30) })
   end
 
   if opts.show_line then
@@ -524,13 +524,13 @@ function make_entry.gen_from_lsp_symbols(opts)
     hl_chars = { ["["] = "TelescopeBorder", ["]"] = "TelescopeBorder" },
     items = display_items,
   }
-  local type_highlight = vim.F.if_nil(opts.symbol_highlights or lsp_type_highlight)
+  local type_highlight = utils.if_nil(opts.symbol_highlights or lsp_type_highlight)
 
   local make_display = function(entry)
     local msg
 
     if opts.show_line then
-      msg = vim.trim(vim.F.if_nil(api.nvim_buf_get_lines(bufnr, entry.lnum - 1, entry.lnum, false)[1], ""))
+      msg = vim.trim(utils.if_nil(api.nvim_buf_get_lines(bufnr, entry.lnum - 1, entry.lnum, false)[1], ""))
     end
 
     if hidden then
@@ -557,7 +557,7 @@ function make_entry.gen_from_lsp_symbols(opts)
 
   local get_filename = get_filename_fn()
   return function(entry)
-    local filename = vim.F.if_nil(entry.filename, get_filename(entry.bufnr))
+    local filename = utils.if_nil(entry.filename, get_filename(entry.bufnr))
     local symbol_msg = entry.text
     local symbol_type, symbol_name = symbol_msg:match "%[(.+)%]%s+(.*)"
     local ordinal = ""
@@ -839,7 +839,7 @@ function make_entry.gen_from_keymaps(opts)
     if entry.callback and not entry.desc then
       return require("telescope.actions.utils")._get_anon_function_name(debug.getinfo(entry.callback))
     end
-    return vim.F.if_nil(entry.desc, entry.rhs):gsub("\n", "\\n")
+    return utils.if_nil(entry.desc, entry.rhs):gsub("\n", "\\n")
   end
 
   local function get_lhs(entry)
@@ -925,7 +925,7 @@ function make_entry.gen_from_picker(opts)
     return make_entry.set_default_entry_mt({
       value = entry,
       text = entry.prompt_title,
-      ordinal = string.format("%s %s", entry.prompt_title, vim.F.if_nil(entry.default_text, "")),
+      ordinal = string.format("%s %s", entry.prompt_title, utils.if_nil(entry.default_text, "")),
       display = make_display,
     }, opts)
   end
@@ -1020,7 +1020,7 @@ end
 function make_entry.gen_from_ctags(opts)
   opts = opts or {}
 
-  local show_kind = vim.F.if_nil(opts.show_kind, true)
+  local show_kind = utils.if_nil(opts.show_kind, true)
   local cwd = utils.path_expand(opts.cwd or vim.uv.cwd())
   local current_file = Path:new(api.nvim_buf_get_name(opts.bufnr)):normalize(cwd)
 
@@ -1032,7 +1032,7 @@ function make_entry.gen_from_ctags(opts)
   local idx = 1
   local hidden = utils.is_path_hidden(opts)
   if not hidden then
-    table.insert(display_items, idx, { width = vim.F.if_nil(opts.fname_width, 30) })
+    table.insert(display_items, idx, { width = utils.if_nil(opts.fname_width, 30) })
     idx = idx + 1
   end
 
@@ -1185,7 +1185,7 @@ function make_entry.gen_from_diagnostics(opts)
     { width = sign_width },
     { remaining = true },
   }
-  local line_width = vim.F.if_nil(opts.line_width, 0.5)
+  local line_width = utils.if_nil(opts.line_width, 0.5)
   local line_width_opts = { width = line_width }
   if type(line_width) == "string" and line_width == "full" then
     line_width_opts = {}
@@ -1265,7 +1265,7 @@ function make_entry.gen_from_autocommands(opts)
   end
 
   return function(entry)
-    local group_name = vim.F.if_nil(entry.group_name, "<anonymous>")
+    local group_name = utils.if_nil(entry.group_name, "<anonymous>")
     local command = entry.command
     if entry.desc and (entry.callback or vim.startswith(command, "<lua: ")) then
       command = entry.desc

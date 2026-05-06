@@ -12,7 +12,7 @@ local utils = require "telescope.utils"
 local from_entry = {}
 
 function from_entry.path(entry, validate, escape)
-  escape = vim.F.if_nil(escape, true)
+  escape = utils.if_nil(escape, true)
   local path = entry.path
   if path == nil then
     path = entry.filename

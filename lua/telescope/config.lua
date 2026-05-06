@@ -1,7 +1,7 @@
 local strings = require "plenary.strings"
 local sorters = require "telescope.sorters"
 local os_sep = require("plenary.path").path.sep
-local has_win = vim.fn.has "win32" == 1
+local utils = require "telescope.utils"
 
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
@@ -67,7 +67,7 @@ config.descriptions = {}
 config.pickers = _TelescopeConfigurationPickers
 
 function config.set_pickers(pickers)
-  pickers = vim.F.if_nil(pickers, {})
+  pickers = utils.if_nil(pickers, {})
 
   for k, v in pairs(pickers) do
     config.pickers[k] = v
@@ -598,7 +598,7 @@ append(
 append(
   "preview",
   {
-    check_mime_type = not has_win,
+    check_mime_type = not utils.iswin,
     filesize_limit = 25,
     highlight_limit = 1,
     timeout = 250,
@@ -934,14 +934,14 @@ append(
 -- @param tele_defaults table: (optional) a table containing all of the defaults
 --    for telescope [defaults to `telescope_defaults`]
 function config.set_defaults(user_defaults, tele_defaults)
-  user_defaults = vim.F.if_nil(user_defaults, {})
-  tele_defaults = vim.F.if_nil(tele_defaults, telescope_defaults)
+  user_defaults = utils.if_nil(user_defaults, {})
+  tele_defaults = utils.if_nil(tele_defaults, telescope_defaults)
 
   local function get(name, default_val)
     if name == "layout_config" then
       return smarter_depth_2_extend(
-        vim.F.if_nil(user_defaults[name], {}),
-        vim.tbl_deep_extend("keep", vim.F.if_nil(config.values[name], {}), vim.F.if_nil(default_val, {}))
+        utils.if_nil(user_defaults[name], {}),
+        vim.tbl_deep_extend("keep", utils.if_nil(config.values[name], {}), utils.if_nil(default_val, {}))
       )
     end
     if name == "history" or name == "cache_picker" or name == "preview" then
@@ -949,12 +949,12 @@ function config.set_defaults(user_defaults, tele_defaults)
         return false
       end
       if user_defaults[name] == true then
-        return vim.F.if_nil(config.values[name], {})
+        return utils.if_nil(config.values[name], {})
       end
 
       return smarter_depth_2_extend(
-        vim.F.if_nil(user_defaults[name], {}),
-        vim.tbl_deep_extend("keep", vim.F.if_nil(config.values[name], {}), vim.F.if_nil(default_val, {}))
+        utils.if_nil(user_defaults[name], {}),
+        vim.tbl_deep_extend("keep", utils.if_nil(config.values[name], {}), utils.if_nil(default_val, {}))
       )
     end
     return first_non_null(user_defaults[name], config.values[name], default_val)

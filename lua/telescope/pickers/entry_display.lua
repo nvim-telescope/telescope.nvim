@@ -58,6 +58,7 @@
 local strings = require "plenary.strings"
 local state = require "telescope.state"
 local resolve = require "telescope.config.resolve"
+local utils = require "telescope.utils"
 
 local entry_display = {}
 entry_display.truncate = strings.truncate
@@ -70,7 +71,7 @@ entry_display.create = function(configuration)
       local width
       table.insert(generator, function(item)
         if width == nil then
-          local status = state.get_status(vim.F.if_nil(configuration.prompt_bufnr, vim.api.nvim_get_current_buf()))
+          local status = state.get_status(utils.if_nil(configuration.prompt_bufnr, vim.api.nvim_get_current_buf()))
           local s = {}
           s[1] = vim.api.nvim_win_get_width(status.layout.results.winid) - #status.picker.selection_caret
           s[2] = vim.api.nvim_win_get_height(status.layout.results.winid)

@@ -15,6 +15,8 @@ local utils = {}
 
 utils.iswin = vim.uv.os_uname().sysname == "Windows_NT"
 
+utils.if_nil = vim.nonnil or vim.F.if_nil -- TODO: remove with nvim 0.12 drop
+
 ---@param t table
 ---@return table
 utils.flatten = function(t)
@@ -294,7 +296,7 @@ utils.path_tail = (function()
 end)()
 
 utils.is_path_hidden = function(opts, path_display)
-  path_display = path_display or vim.F.if_nil(opts.path_display, require("telescope.config").values.path_display)
+  path_display = path_display or utils.if_nil(opts.path_display, require("telescope.config").values.path_display)
 
   return path_display == nil
     or path_display == "hidden"
@@ -349,7 +351,7 @@ utils.transform_path = function(opts, path)
   end
 
   ---@type fun(opts:table, path: string): string, table?
-  local path_display = vim.F.if_nil(opts.path_display, require("telescope.config").values.path_display)
+  local path_display = utils.if_nil(opts.path_display, require("telescope.config").values.path_display)
 
   local transformed_path = path
   local path_style = {}
@@ -659,7 +661,7 @@ end)
 ---@param funname string: name of the function that will be
 ---@param opts table: opts.level string, opts.msg string, opts.once bool
 utils.notify = function(funname, opts)
-  opts.once = vim.F.if_nil(opts.once, false)
+  opts.once = utils.if_nil(opts.once, false)
   local level = vim.log.levels[opts.level]
   if not level then
     error("Invalid error level", 2)

@@ -113,8 +113,8 @@ end
 
 --- Attach default highlighter which will choose between regex and ts
 utils.highlighter = function(bufnr, ft, opts)
-  opts = vim.F.if_nil(opts, {})
-  opts.preview = vim.F.if_nil(opts.preview, {})
+  opts = ts_utils.if_nil(opts, {})
+  opts.preview = ts_utils.if_nil(opts.preview, {})
   opts.preview.treesitter = (function()
     if type(opts.preview) == "table" and opts.preview.treesitter then
       return opts.preview.treesitter
@@ -142,7 +142,7 @@ utils.highlighter = function(bufnr, ft, opts)
       return false
     end
 
-    if vim.tbl_contains(vim.F.if_nil(opts.preview.treesitter.disable, {}), ft) then
+    if vim.tbl_contains(ts_utils.if_nil(opts.preview.treesitter.disable, {}), ft) then
       return false
     end
 
@@ -178,7 +178,7 @@ utils.ts_highlighter = function(bufnr, ft)
 end
 
 utils.set_preview_message = function(bufnr, winid, message, fillchar)
-  fillchar = vim.F.if_nil(fillchar, "╱")
+  fillchar = ts_utils.if_nil(fillchar, "╱")
   local height = api.nvim_win_get_height(winid)
   local width = api.nvim_win_get_width(winid)
   api.nvim_buf_set_lines(

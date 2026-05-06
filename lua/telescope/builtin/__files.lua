@@ -198,7 +198,7 @@ end
 
 ---@param opts telescope.builtin.grep_string.opts
 files.grep_string = function(opts)
-  local vimgrep_arguments = vim.F.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
+  local vimgrep_arguments = utils.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
   if not has_rg_program("grep_string", vimgrep_arguments[1]) then
     return
   end
@@ -210,9 +210,9 @@ files.grep_string = function(opts)
     vim.cmd [[noautocmd sil norm! "vy]]
     local sele = vim.fn.getreg "v"
     vim.fn.setreg("v", saved_reg)
-    word = vim.F.if_nil(opts.search, sele)
+    word = utils.if_nil(opts.search, sele)
   else
-    word = vim.F.if_nil(opts.search, vim.fn.expand "<cword>")
+    word = utils.if_nil(opts.search, vim.fn.expand "<cword>")
   end
 
   word = tostring(word)
@@ -410,7 +410,7 @@ end
 
 ---@param opts telescope.builtin.treesitter.opts
 files.treesitter = function(opts)
-  opts.show_line = vim.F.if_nil(opts.show_line, true)
+  opts.show_line = utils.if_nil(opts.show_line, true)
   local ts = vim.treesitter
   local ft = vim.bo[opts.bufnr].filetype
   local lang = ts.language.get_lang(ft)
@@ -597,7 +597,7 @@ files.tags = function(opts)
     })
     return
   end
-  opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_ctags(opts))
+  opts.entry_maker = utils.if_nil(opts.entry_maker, make_entry.gen_from_ctags(opts))
 
   pickers
     .new(opts, {
