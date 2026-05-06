@@ -46,7 +46,7 @@ local sorting_comparator = function(opts)
     end,
   }
 
-  local sort_by = vim.F.if_nil(opts.sort_by, "buffer")
+  local sort_by = utils.if_nil(opts.sort_by, "buffer")
   return comparators[sort_by]
 end
 
@@ -61,7 +61,7 @@ local convert_diagnostic_type = function(severities, severity)
 end
 
 local diagnostics_to_tbl = function(opts)
-  opts = vim.F.if_nil(opts, {})
+  opts = utils.if_nil(opts, {})
   local items = {}
   local severities = vim.diagnostic.severity
 
@@ -136,7 +136,7 @@ diagnostics.get = function(opts)
     opts.bufnr = tonumber(opts.bufnr)
   end
   if opts.bufnr ~= nil then
-    opts.path_display = vim.F.if_nil(opts.path_display, "hidden")
+    opts.path_display = utils.if_nil(opts.path_display, "hidden")
   end
 
   -- call `workspace/diagnostic` request and wait for response before proceeding

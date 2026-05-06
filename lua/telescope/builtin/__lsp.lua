@@ -142,7 +142,7 @@ end
 ---@param opts table
 ---@return vim.quickfix.entry[]
 local function filter_file_ignore_patterns(items, opts)
-  local file_ignore_patterns = vim.F.if_nil(opts.file_ignore_patterns, conf.file_ignore_patterns)
+  local file_ignore_patterns = utils.if_nil(opts.file_ignore_patterns, conf.file_ignore_patterns)
   file_ignore_patterns = file_ignore_patterns or {}
   if vim.tbl_isempty(file_ignore_patterns) then
     return items
@@ -164,7 +164,7 @@ end
 ---@param params lsp.TextDocumentPositionParams|(fun(client: lsp.Client, bufnr: integer): table?)
 ---@param opts table
 local function list_or_jump(action, title, funname, params, opts)
-  opts.reuse_win = vim.F.if_nil(opts.reuse_win, false)
+  opts.reuse_win = utils.if_nil(opts.reuse_win, false)
   opts.curr_filepath = api.nvim_buf_get_name(opts.bufnr)
 
   lsp.buf_request_all(opts.bufnr, action, params, function(results_per_client)
@@ -252,9 +252,9 @@ end
 
 ---@param opts telescope.builtin.lsp_references.opts: options to pass to the picker (default: false)
 M.references = function(opts)
-  opts.include_current_line = vim.F.if_nil(opts.include_current_line, false)
+  opts.include_current_line = utils.if_nil(opts.include_current_line, false)
   local params = client_position_params(opts.winnr, {
-    context = { includeDeclaration = vim.F.if_nil(opts.include_declaration, true) },
+    context = { includeDeclaration = utils.if_nil(opts.include_declaration, true) },
   })
   return list_or_jump("textDocument/references", "LSP References", "builtin.lsp_references", params, opts)
 end
@@ -398,7 +398,7 @@ M.workspace_symbols = function(opts)
       return
     end
 
-    opts.ignore_filename = vim.F.if_nil(opts.ignore_filename, false)
+    opts.ignore_filename = utils.if_nil(opts.ignore_filename, false)
 
     pickers
       .new(opts, {

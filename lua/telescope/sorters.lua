@@ -1,5 +1,5 @@
 local log = require "telescope.log"
-local util = require "telescope.utils"
+local utils = require "telescope.utils"
 
 local sorters = {}
 
@@ -177,7 +177,7 @@ end
 sorters.Sorter = Sorter
 
 local make_cached_tail = function()
-  local os_sep = util.get_separator()
+  local os_sep = utils.get_separator()
   local match_string = "[^" .. os_sep .. "]*$"
   return setmetatable({}, {
     __index = function(t, k)
@@ -516,7 +516,7 @@ local substr_highlighter = function(make_display)
     local highlights = {}
     display = make_display(prompt, display)
 
-    local search_terms = util.max_split(prompt, "%s")
+    local search_terms = utils.max_split(prompt, "%s")
     local hl_start, hl_end
 
     for _, word in pairs(search_terms) do
@@ -549,7 +549,7 @@ sorters.get_substr_matcher = function()
 
       local display = make_display(prompt, entry.ordinal)
 
-      local search_terms = util.max_split(prompt, "%s")
+      local search_terms = utils.max_split(prompt, "%s")
       for _, word in pairs(search_terms) do
         if not display:find(word, 1, true) then
           return -1
@@ -563,7 +563,7 @@ end
 
 local substr_matcher = function(_, prompt, line, _)
   local display = line:lower()
-  local search_terms = util.max_split(prompt:lower(), "%s")
+  local search_terms = utils.max_split(prompt:lower(), "%s")
   local matched = 0
   local total_search_terms = 0
   for _, word in pairs(search_terms) do
@@ -577,8 +577,8 @@ local substr_matcher = function(_, prompt, line, _)
 end
 
 local filter_function = function(opts)
-  local scoring_function = vim.F.if_nil(opts.filter_function, substr_matcher)
-  local tag = vim.F.if_nil(opts.tag, "ordinal")
+  local scoring_function = utils.if_nil(opts.filter_function, substr_matcher)
+  local tag = utils.if_nil(opts.tag, "ordinal")
 
   return function(_, prompt, entry)
     local filter = "^(" .. opts.delimiter .. "(%S+)" .. "[" .. opts.delimiter .. "%s]" .. ")"
@@ -595,7 +595,7 @@ local filter_function = function(opts)
 end
 
 local function create_tag_set(tag)
-  tag = vim.F.if_nil(tag, "ordinal")
+  tag = utils.if_nil(tag, "ordinal")
   local set = {}
   return setmetatable(set, {
     __index = {
@@ -611,7 +611,7 @@ end
 
 sorters.prefilter = function(opts)
   local sorter = opts.sorter
-  opts.delimiter = vim.F.if_nil(opts.delimiter, ":")
+  opts.delimiter = utils.if_nil(opts.delimiter, ":")
   sorter._delimiter = opts.delimiter
   sorter.tags = create_tag_set(opts.tag)
   sorter.filter_function = filter_function(opts)

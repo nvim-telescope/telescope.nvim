@@ -46,7 +46,7 @@ local function defaulter(f, default_opts)
       opts.preview = type(opts.preview) ~= "table" and {} or opts.preview
       if type(conf.preview) == "table" then
         for k, v in pairs(conf.preview) do
-          opts.preview[k] = vim.F.if_nil(opts.preview[k], v)
+          opts.preview[k] = utils.if_nil(opts.preview[k], v)
         end
       end
       return f(opts)
@@ -107,7 +107,7 @@ local colorize_ls_long = function(bufnr, data, sections)
 end
 
 local handle_directory_preview = function(filepath, bufnr, opts)
-  opts.preview.ls_short = vim.F.if_nil(opts.preview.ls_short, false)
+  opts.preview.ls_short = utils.if_nil(opts.preview.ls_short, false)
 
   local set_colorize_lines
   if opts.preview.ls_short then
@@ -236,13 +236,13 @@ local PREVIEW_FILESIZE_MB = 25
 local PREVIEW_HIGHLIGHT_MB = 1
 
 previewers.file_maker = function(filepath, bufnr, opts)
-  opts = vim.F.if_nil(opts, {})
-  opts.preview = vim.F.if_nil(opts.preview, {})
-  opts.preview.timeout = vim.F.if_nil(opts.preview.timeout, PREVIEW_TIMEOUT_MS)
-  opts.preview.filesize_limit = vim.F.if_nil(opts.preview.filesize_limit, PREVIEW_FILESIZE_MB)
-  opts.preview.highlight_limit = vim.F.if_nil(opts.preview.highlight_limit, PREVIEW_HIGHLIGHT_MB)
-  opts.preview.msg_bg_fillchar = vim.F.if_nil(opts.preview.msg_bg_fillchar, "╱")
-  opts.preview.treesitter = vim.F.if_nil(opts.preview.treesitter, true)
+  opts = utils.if_nil(opts, {})
+  opts.preview = utils.if_nil(opts.preview, {})
+  opts.preview.timeout = utils.if_nil(opts.preview.timeout, PREVIEW_TIMEOUT_MS)
+  opts.preview.filesize_limit = utils.if_nil(opts.preview.filesize_limit, PREVIEW_FILESIZE_MB)
+  opts.preview.highlight_limit = utils.if_nil(opts.preview.highlight_limit, PREVIEW_HIGHLIGHT_MB)
+  opts.preview.msg_bg_fillchar = utils.if_nil(opts.preview.msg_bg_fillchar, "╱")
+  opts.preview.treesitter = utils.if_nil(opts.preview.treesitter, true)
   if opts.use_ft_detect == nil then
     opts.use_ft_detect = true
   end

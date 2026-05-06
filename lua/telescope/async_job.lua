@@ -148,8 +148,8 @@ function LinesPipe:read()
 end
 
 function LinesPipe:iter(schedule, opts)
-  schedule = vim.F.if_nil(schedule, true)
-  local split_char = vim.F.if_nil(opts and opts.split_char, "\n")
+  schedule = utils.if_nil(schedule, true)
+  local split_char = utils.if_nil(opts and opts.split_char, "\n")
 
   local text = nil
   local index = nil

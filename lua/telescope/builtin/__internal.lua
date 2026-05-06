@@ -41,8 +41,8 @@ local internal = {}
 
 ---@param opts telescope.builtin.builtin.opts
 internal.builtin = function(opts)
-  opts.include_extensions = vim.F.if_nil(opts.include_extensions, false)
-  opts.use_default_opts = vim.F.if_nil(opts.use_default_opts, false)
+  opts.include_extensions = utils.if_nil(opts.include_extensions, false)
+  opts.use_default_opts = utils.if_nil(opts.use_default_opts, false)
 
   local objs = {}
 
@@ -134,7 +134,7 @@ end
 ---@param opts telescope.builtin.resume.opts: options to pass to the picker
 internal.resume = function(opts)
   opts = opts or {}
-  opts.cache_index = vim.F.if_nil(opts.cache_index, 1)
+  opts.cache_index = utils.if_nil(opts.cache_index, 1)
 
   local cached_pickers = state.get_global_key "cached_pickers"
   if cached_pickers == nil or vim.tbl_isempty(cached_pickers) then
@@ -172,7 +172,7 @@ internal.resume = function(opts)
   picker.previewer = picker.all_previewers
   if picker.hidden_previewer then
     picker.hidden_previewer = nil
-    opts.previewer = vim.F.if_nil(opts.previewer, false)
+    opts.previewer = utils.if_nil(opts.previewer, false)
   end
   opts.resumed_picker = true
   pickers.new(opts, picker):find()
@@ -376,7 +376,7 @@ internal.commands = function(opts)
             table.insert(commands, cmd)
           end
 
-          local need_buf_command = vim.F.if_nil(opts.show_buf_command, true)
+          local need_buf_command = utils.if_nil(opts.show_buf_command, true)
 
           if need_buf_command then
             local buf_command_iter = api.nvim_buf_get_commands(0, {})
@@ -419,7 +419,7 @@ end
 
 ---@param opts telescope.builtin.quickfix.opts: options to pass to the picker
 internal.quickfix = function(opts)
-  local qf_identifier = opts.id or vim.F.if_nil(opts.nr, 0)
+  local qf_identifier = opts.id or utils.if_nil(opts.nr, 0)
   local locations = vim.fn.getqflist({ [opts.id and "id" or "nr"] = qf_identifier, items = true }).items
 
   if vim.tbl_isempty(locations) then
@@ -542,7 +542,7 @@ end
 ---@param opts telescope.builtin.oldfiles.opts: options to pass to the picker
 internal.oldfiles = function(opts)
   opts = apply_cwd_only_aliases(opts)
-  opts.include_current_session = vim.F.if_nil(opts.include_current_session, true)
+  opts.include_current_session = utils.if_nil(opts.include_current_session, true)
 
   local current_buffer = api.nvim_get_current_buf()
   local current_file = api.nvim_buf_get_name(current_buffer)
@@ -722,8 +722,8 @@ end
 
 ---@param opts telescope.builtin.help_tags.opts: options to pass to the picker
 internal.help_tags = function(opts)
-  opts.lang = vim.F.if_nil(opts.lang, vim.o.helplang)
-  opts.fallback = vim.F.if_nil(opts.fallback, true)
+  opts.lang = utils.if_nil(opts.lang, vim.o.helplang)
+  opts.fallback = utils.if_nil(opts.fallback, true)
   opts.file_ignore_patterns = {}
 
   local langs = vim.split(opts.lang, ",", { trimempty = true })
@@ -839,7 +839,7 @@ end
 
 ---@param opts telescope.builtin.man_pages.opts: options to pass to the picker
 internal.man_pages = function(opts)
-  opts.sections = vim.F.if_nil(opts.sections, { "1" })
+  opts.sections = utils.if_nil(opts.sections, { "1" })
   assert(vim.islist(opts.sections), "sections should be a list")
   opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
     local uname = vim.uv.os_uname()
@@ -904,7 +904,7 @@ internal.reloader = function(opts)
       column_len = #module_name
     end
   end
-  opts.column_len = vim.F.if_nil(opts.column_len, column_len)
+  opts.column_len = utils.if_nil(opts.column_len, column_len)
 
   pickers
     .new(opts, {
@@ -1179,7 +1179,7 @@ internal.marks = function(opts)
   local marks_others = {}
   local bufname = api.nvim_buf_get_name(opts.bufnr)
   local all_marks = {}
-  opts.mark_type = vim.F.if_nil(opts.mark_type, "all")
+  opts.mark_type = utils.if_nil(opts.mark_type, "all")
   if opts.mark_type == "all" then
     all_marks = { local_marks, global_marks }
   elseif opts.mark_type == "local" then
@@ -1261,9 +1261,9 @@ end
 
 ---@param opts telescope.builtin.keymaps.opts: options to pass to the picker
 internal.keymaps = function(opts)
-  opts.modes = vim.F.if_nil(opts.modes, { "n", "i", "c", "x" })
-  opts.show_plug = vim.F.if_nil(opts.show_plug, true)
-  opts.only_buf = vim.F.if_nil(opts.only_buf, false)
+  opts.modes = utils.if_nil(opts.modes, { "n", "i", "c", "x" })
+  opts.show_plug = utils.if_nil(opts.show_plug, true)
+  opts.only_buf = utils.if_nil(opts.only_buf, false)
 
   local keymap_encountered = {} -- used to make sure no duplicates are inserted into keymaps_table
   local keymaps_table = {}

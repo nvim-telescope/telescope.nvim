@@ -4,6 +4,7 @@
 local action_state = require "telescope.actions.state"
 local state = require "telescope.state"
 local layout_strats = require "telescope.pickers.layout_strategies"
+local utils = require "telescope.utils"
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 
@@ -59,7 +60,7 @@ action_layout.toggle_prompt_position = function(prompt_bufnr)
   if picker.layout_strategy == "flex" then
     picker.layout_config.flex.horizontal = picker.layout_config.flex.horizontal or {}
     picker.layout_config.flex.vertical = picker.layout_config.flex.vertical or {}
-    local old_pos = vim.F.if_nil(
+    local old_pos = utils.if_nil(
       picker.layout_config.flex[picker.__flex_strategy].prompt_position,
       picker.layout_config[picker.__flex_strategy].prompt_position
     )
