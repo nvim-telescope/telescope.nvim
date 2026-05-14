@@ -9,7 +9,7 @@ local api = vim.api
 
 local Border = require "neoplen.border"
 
-local if_nil = vim.F.if_nil
+local if_nil = vim.nonnil or vim.F.if_nil
 
 local clamp = function(value, min, max)
   min = min or 0
