@@ -141,7 +141,8 @@ function Path:touch(opts)
   opts = opts or {}
 
   local mode = opts.mode or 420
-  local parents = vim.F.if_nil(opts.parents, false, opts.parents)
+  local if_nil = vim.nonnil or vim.F.if_nil
+  local parents = if_nil(opts.parents, false, opts.parents)
 
   if self:exists() then
     local new_time = os.time()

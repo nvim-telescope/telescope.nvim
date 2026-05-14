@@ -1,6 +1,6 @@
 local api = vim.api
 local uv = vim.uv
-local F = vim.F
+local if_nil = vim.nonnil or vim.F.if_nil
 
 ---@class Job
 ---@field command string Command to run
@@ -137,13 +137,13 @@ function Job:new(o)
   end
 
   -- enable_handlers: Do you want to do ANYTHING with the stdout/stderr of the proc
-  obj.enable_handlers = F.if_nil(o.enable_handlers, true, o.enable_handlers)
+  obj.enable_handlers = if_nil(o.enable_handlers, true, o.enable_handlers)
 
   -- enable_recording: Do you want to record stdout/stderr into a table.
   --                    Since it cannot be enabled when enable_handlers is false,
   --                    we try and make sure they are associated correctly.
   obj.enable_recording =
-    F.if_nil(F.if_nil(o.enable_recording, o.enable_handlers, o.enable_recording), true, o.enable_recording)
+    if_nil(if_nil(o.enable_recording, o.enable_handlers, o.enable_recording), true, o.enable_recording)
 
   if not obj.enable_handlers and obj.enable_recording then
     error "[plenary.job] Cannot record items but disable handlers"

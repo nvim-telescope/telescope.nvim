@@ -1,6 +1,8 @@
 local api = vim.api
 local strings = require "neoplen.strings"
 
+local if_nil = vim.nonnil or vim.F.if_nil
+
 local Border = {}
 
 Border.__index = Border
@@ -232,7 +234,7 @@ function Border:__align_calc_config(content_win_options, border_win_options)
     height = content_win_options.height + thickness.top + thickness.bot,
     zindex = content_win_options.zindex or 50,
     noautocmd = content_win_options.noautocmd,
-    focusable = vim.F.if_nil(border_win_options.focusable, false),
+    focusable = if_nil(border_win_options.focusable, false),
     border = "none",
   }
 
