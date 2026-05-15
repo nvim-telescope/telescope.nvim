@@ -1847,25 +1847,9 @@ Example: ~
       • {prompt}   (`TelescopeWindow`) See |TelescopeWindow|
       • {results}  (`TelescopeWindow`) See |TelescopeWindow|
       • {preview}  (`TelescopeWindow?`) See |TelescopeWindow|
-      • {mount}    (`fun(self: TelescopeLayout)`) Create the layout. This
-                   needs to ensure the required properties are populated.
-      • {unmount}  (`fun(self: TelescopeLayout)`) Destroy the layout. This is
-                   responsible for performing clean-up, for example:
-                   • deleting buffers
-                   • closing windows
-                   • clearing autocmds
-      • {update}   (`fun(self: TelescopeLayout)`) Refresh the layout. This is
-                   called when, for example, vim is resized.
-
-*TelescopeLayout.config*
-
-    Fields: ~
-      • {mount}    (`function`) (self: TelescopeLayout):nil
-      • {unmount}  (`function`) (self: TelescopeLayout):nil
-      • {update}   (`function`) (self: TelescopeLayout):nil
-      • {prompt}   (`TelescopeWindow?`) See |TelescopeWindow|
-      • {results}  (`TelescopeWindow?`) See |TelescopeWindow|
-      • {preview}  (`TelescopeWindow?`) See |TelescopeWindow|
+      • {mount}    (`fun(self: TelescopeLayout)`) See |Layout:mount()|.
+      • {unmount}  (`fun(self: TelescopeLayout)`) See |Layout:unmount()|.
+      • {update}   (`fun(self: TelescopeLayout)`) See |Layout:update()|.
 
 *TelescopeWindow*
 
@@ -1874,29 +1858,13 @@ Example: ~
       • {bufnr}   (`integer`)
       • {winid}   (`integer`)
 
-*TelescopeWindow.config*
-
-    Fields: ~
-      • {bufnr}   (`integer`)
-      • {winid}   (`integer?`)
-      • {border}  (`TelescopeWindowBorder.config?`) See
-                  |TelescopeWindowBorder.config|
-
 *TelescopeWindowBorder*
 
     Fields: ~
       • {bufnr}         (`integer?`)
       • {winid}         (`integer?`)
       • {change_title}  (`fun(self: TelescopeWindowBorder, title: string, pos: "NW"|"N"|"NE"|"SW"|"S"|"SE"?)`)
-
-
-*TelescopeWindowBorder.config*
-
-    Fields: ~
-      • {bufnr}         (`integer`)
-      • {winid}         (`integer?`)
-      • {change_title}  (`function?`) (self: TelescopeWindowBorder, title:
-                        string, pos?: "NW"|"N"|"NE"|"SW"|"S"|"SE"):nil
+                        See |Border:change_title()|.
 
 
 Border:change_title({title}, {pos})                    *Border:change_title()*
