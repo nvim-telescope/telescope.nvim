@@ -3,7 +3,8 @@
 local api = vim.api
 local lsp = vim.lsp
 
-local channel = require("plenary.async.control").channel
+local channel = require("neoplen.async.control").channel
+
 local actions = require "telescope.actions"
 local conf = require("telescope.config").values
 local finders = require "telescope.finders"

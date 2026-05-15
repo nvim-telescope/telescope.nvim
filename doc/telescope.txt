@@ -544,7 +544,7 @@ telescope.setup({opts})                                    *telescope.setup()*
                                   end,
                                   -- 2) Truncate lines to preview window for too large files
                                   filesize_hook = function(filepath, bufnr, opts)
-                                    local path = require("plenary.path"):new(filepath)
+                                    local path = require("neoplen.path"):new(filepath)
                                     -- opts exposes winid
                                     local height = vim.api.nvim_win_get_height(opts.winid)
                                     local lines = vim.split(path:head(height), "[\r]?\n")
@@ -2424,8 +2424,7 @@ do the following: >lua
 Another interesting thing to do is that these actions now have functions you
 can call. These functions include `:replace(f)`, `:replace_if(f, c)`,
 `replace_map(tbl)` and `enhance(tbl)`. More information on these functions can
-be found in the `developers.md` and `lua/tests/automated/action_spec.lua`
-file.
+be found in the `developers.md` and `tests/automated/action_spec.lua` file.
 
                                      *telescope.actions.move_selection_next()*
 actions.move_selection_next({prompt_bufnr})

@@ -2,7 +2,8 @@ local health = vim.health
 
 local extension_module = require "telescope._extensions"
 local extension_info = require("telescope").extensions
-local is_win = vim.api.nvim_call_function("has", { "win32" }) == 1
+
+local iswin = vim.fn.has "win32" == 1
 
 local optional_dependencies = {
   {
@@ -29,14 +30,14 @@ local optional_dependencies = {
 }
 
 local required_plugins = {
-  { lib = "plenary", optional = false },
+  { lib = "neoplen", optional = false },
 }
 
 local check_binary_installed = function(package)
   local binaries = package.binaries or { package.name }
   for _, binary in ipairs(binaries) do
     local found = vim.fn.executable(binary) == 1
-    if not found and is_win then
+    if not found and iswin then
       binary = binary .. ".exe"
       found = vim.fn.executable(binary) == 1
     end

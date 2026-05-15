@@ -1,5 +1,5 @@
+local Path = require "neoplen.path"
 local picker = require "telescope.pickers"
-local Path = require "plenary.path"
 
 local eq = assert.are.same
 

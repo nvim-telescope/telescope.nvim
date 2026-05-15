@@ -33,10 +33,11 @@
 
 local api = vim.api
 
+local strings = require "neoplen.strings"
+local Path = require "neoplen.path"
+
 local entry_display = require "telescope.pickers.entry_display"
 local utils = require "telescope.utils"
-local strings = require "plenary.strings"
-local Path = require "plenary.path"
 
 local treesitter_type_highlight = {
   ["associated"] = "TSConstant",
@@ -278,7 +279,7 @@ do
 
     local execute_keys = {
       path = function(t)
-        if Path:new(t.filename):is_absolute() then
+        if vim.fn.isabsolutepath(t.filename) then
           return t.filename, false
         else
           return Path:new({ t.cwd, t.filename }):absolute(), false
@@ -1104,7 +1105,7 @@ function make_entry.gen_from_ctags(opts)
     end
     local kind = string.match(extension_fields or "", "kind:(%S+)")
 
-    if Path.path.sep == "\\" then
+    if utils.get_separator() == "\\" then
       file = string.gsub(file, "/", "\\")
     end
 

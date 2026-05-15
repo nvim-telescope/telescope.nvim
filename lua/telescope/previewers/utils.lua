@@ -1,66 +1,20 @@
 local api = vim.api
 
-local ts_utils = require "telescope.utils"
-local strings = require "plenary.strings"
+local Job = require "neoplen.job"
+local strings = require "neoplen.strings"
+
+local utils = require "telescope.utils"
 local conf = require("telescope.config").values
 
-local Job = require "plenary.job"
-local Path = require "plenary.path"
+local M = {}
 
-local utils = {}
-
-local detect_from_shebang = function(p)
-  local s = p:readbyterange(0, 256)
-  if s then
-    local lines = ts_utils.split_lines(s)
-    return vim.filetype.match { contents = lines }
-  end
-end
-
-local parse_modeline = function(tail)
-  if tail:find "vim:" then
-    return tail:match ".*:ft=([^: ]*):.*$" or ""
-  end
-end
-
-local detect_from_modeline = function(p)
-  local s = p:readbyterange(-256, 256)
-  if s then
-    local lines = ts_utils.split_lines(s)
-    local idx = lines[#lines] ~= "" and #lines or #lines - 1
-    if idx >= 1 then
-      return parse_modeline(lines[idx])
-    end
-  end
-end
-
-utils.filetype_detect = function(filepath)
-  if type(filepath) ~= string then
-    filepath = tostring(filepath)
-  end
-
-  local match = vim.filetype.match { filename = filepath }
-  if match and match ~= "" then
-    return match
-  end
-
-  local p = Path:new(filepath)
-  if p and p:is_file() then
-    match = detect_from_shebang(p)
-    if match and match ~= "" then
-      return match
-    end
-
-    match = detect_from_modeline(p)
-    if match and match ~= "" then
-      return match
-    end
-  end
+M.filetype_detect = function(filepath)
+  return vim.filetype.match { filename = filepath }
 end
 
 -- API helper functions for buffer previewer
 --- Job maker for buffer previewer
-utils.job_maker = function(cmd, bufnr, opts)
+M.job_maker = function(cmd, bufnr, opts)
   opts = opts or {}
   opts.mode = opts.mode or "insert"
   -- bufname and value are optional
@@ -112,9 +66,9 @@ local function has_filetype(ft)
 end
 
 --- Attach default highlighter which will choose between regex and ts
-utils.highlighter = function(bufnr, ft, opts)
-  opts = ts_utils.if_nil(opts, {})
-  opts.preview = ts_utils.if_nil(opts.preview, {})
+M.highlighter = function(bufnr, ft, opts)
+  opts = utils.if_nil(opts, {})
+  opts.preview = utils.if_nil(opts.preview, {})
   opts.preview.treesitter = (function()
     if type(opts.preview) == "table" and opts.preview.treesitter then
       return opts.preview.treesitter
@@ -142,7 +96,7 @@ utils.highlighter = function(bufnr, ft, opts)
       return false
     end
 
-    if vim.tbl_contains(ts_utils.if_nil(opts.preview.treesitter.disable, {}), ft) then
+    if vim.tbl_contains(utils.if_nil(opts.preview.treesitter.disable, {}), ft) then
       return false
     end
 
@@ -151,15 +105,15 @@ utils.highlighter = function(bufnr, ft, opts)
 
   local ts_success
   if ts_highlighting then
-    ts_success = utils.ts_highlighter(bufnr, ft)
+    ts_success = M.ts_highlighter(bufnr, ft)
   end
   if not ts_highlighting or ts_success == false then
-    utils.regex_highlighter(bufnr, ft)
+    M.regex_highlighter(bufnr, ft)
   end
 end
 
 --- Attach regex highlighter
-utils.regex_highlighter = function(bufnr, ft)
+M.regex_highlighter = function(bufnr, ft)
   if has_filetype(ft) then
     return pcall(api.nvim_set_option_value, "syntax", ft, { buf = bufnr })
   end
@@ -167,7 +121,7 @@ utils.regex_highlighter = function(bufnr, ft)
 end
 
 -- Attach ts highlighter
-utils.ts_highlighter = function(bufnr, ft)
+M.ts_highlighter = function(bufnr, ft)
   if has_filetype(ft) then
     local lang = vim.treesitter.language.get_lang(ft)
     if lang and vim.treesitter.language.add(lang) then
@@ -177,8 +131,8 @@ utils.ts_highlighter = function(bufnr, ft)
   return false
 end
 
-utils.set_preview_message = function(bufnr, winid, message, fillchar)
-  fillchar = ts_utils.if_nil(fillchar, "╱")
+M.set_preview_message = function(bufnr, winid, message, fillchar)
+  fillchar = utils.if_nil(fillchar, "╱")
   local height = api.nvim_win_get_height(winid)
   local width = api.nvim_win_get_width(winid)
   api.nvim_buf_set_lines(
@@ -186,10 +140,10 @@ utils.set_preview_message = function(bufnr, winid, message, fillchar)
     0,
     -1,
     false,
-    ts_utils.repeated_table(height, table.concat(ts_utils.repeated_table(width, fillchar), ""))
+    utils.repeated_table(height, table.concat(utils.repeated_table(width, fillchar), ""))
   )
   local anon_ns = api.nvim_create_namespace ""
-  local padding = table.concat(ts_utils.repeated_table(#message + 4, " "), "")
+  local padding = table.concat(utils.repeated_table(#message + 4, " "), "")
   local formatted_message = "  " .. message .. "  "
   -- Populate lines table based on height
   local lines = {}
@@ -224,7 +178,7 @@ end
 --- info.
 ---@param mime_type string
 ---@return boolean
-utils.binary_mime_type = function(mime_type)
+M.binary_mime_type = function(mime_type)
   local type_, subtype = unpack(vim.split(mime_type, "/"))
   if vim.tbl_contains({ "text", "inode" }, type_) then
     return false
@@ -245,7 +199,7 @@ local CHECK_TIME_INTERVAL = 200
 ---@param s string file content to split into lines
 ---@param opts {start_time: number, preview: { timeout: number }, file_encoding: string?}
 ---@return string[]?
-function utils.timed_split_lines(s, opts)
+function M.timed_split_lines(s, opts)
   local lines = {}
   local line_start = 1
   local timeout = opts.preview.timeout or math.huge
@@ -281,4 +235,4 @@ function utils.timed_split_lines(s, opts)
   return lines
 end
 
-return utils
+return M

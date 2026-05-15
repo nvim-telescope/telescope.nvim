@@ -1,4 +1,5 @@
-local async = require "plenary.async"
+local async = require "neoplen.async"
+
 local async_job = require "telescope.async_job"
 local utils = require "telescope.utils"
 local make_entry = require "telescope.make_entry"

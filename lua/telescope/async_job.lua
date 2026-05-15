@@ -1,10 +1,10 @@
 local uv = vim.uv
 
-local Object = require "plenary.class"
-local log = require "plenary.log"
+local Object = require "neoplen.class"
+local log = require "neoplen.log"
 
-local async = require "plenary.async"
-local channel = require("plenary.async").control.channel
+local async = require "neoplen.async"
+local channel = require("neoplen.async").control.channel
 local utils = require "telescope.utils"
 
 local M = {}
