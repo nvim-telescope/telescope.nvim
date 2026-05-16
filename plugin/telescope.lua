@@ -78,6 +78,7 @@ local highlights = {
   TelescopeResultsVariable = { default = true, link = "SpecialChar" },
 
   TelescopeResultsLineNr = { default = true, link = "LineNr" },
+  TelescopeResultsLineCol = { default = true, link = "LineNr" },
   TelescopeResultsIdentifier = { default = true, link = "Identifier" },
   TelescopeResultsNumber = { default = true, link = "Number" },
   TelescopeResultsComment = { default = true, link = "Comment" },
