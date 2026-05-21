@@ -6,6 +6,7 @@
 local lookups = {
   util = "neoplen.async.util",
   control = "neoplen.async.control",
+  uv = "neoplen.async.uv_async",
 }
 
 local M = setmetatable(require "neoplen.async.async", {
