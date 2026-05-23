@@ -2370,6 +2370,13 @@ utils.notify({funname}, {opts})                     *telescope.utils.notify()*
       • {opts}     (`table`) opts.level string, opts.msg string, opts.once
                    bool
 
+utils.read_file({filename})                      *telescope.utils.read_file()*
+    Parameters: ~
+      • {filename}  (`string`)
+
+    Return: ~
+        (`string`)
+
 
 ==============================================================================
 ACTIONS                                                    *telescope.actions*

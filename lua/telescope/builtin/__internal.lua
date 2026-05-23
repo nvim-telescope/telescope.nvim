@@ -1,7 +1,5 @@
 local api = vim.api
 
-local Path = require "neoplen.path"
-
 local actions = require "telescope.actions"
 local action_set = require "telescope.actions.set"
 local action_state = require "telescope.actions.state"
@@ -293,16 +291,16 @@ internal.symbols = function(opts)
   local files = api.nvim_get_runtime_file("data/telescope-sources/*.json", true)
   local data_path = (function()
     if not opts.symbol_path then
-      return Path:new { vim.fn.stdpath "data", "telescope", "symbols" }
+      return vim.fs.joinpath(vim.fn.stdpath "data", "telescope", "symbols")
     else
-      return Path:new { opts.symbol_path }
+      return vim.fs.abspath(opts.symbol_path)
     end
   end)()
-  if data_path:exists() then
+  if vim.uv.fs_stat(data_path) then
     for _, v in
       ipairs(vim.fs.find(function(name, _)
         return name:match "%.json$"
-      end, { path = data_path:absolute(), limit = math.huge, type = "file" }))
+      end, { path = data_path, limit = math.huge, type = "file" }))
     do
       table.insert(files, v)
     end
@@ -332,7 +330,7 @@ internal.symbols = function(opts)
 
   local results = {}
   for _, source in ipairs(sources) do
-    local data = vim.json.decode(Path:new(source):read())
+    local data = vim.json.decode(utils.read_file(source))
     for _, entry in ipairs(data) do
       table.insert(results, entry)
     end
@@ -777,7 +775,7 @@ internal.help_tags = function(opts)
   local delimiter = string.char(9)
   for _, lang in ipairs(langs) do
     for _, file in ipairs(tag_files[lang] or {}) do
-      local lines = utils.split_lines(Path:new(file):read(), { trimempty = true })
+      local lines = utils.split_lines(utils.read_file(file), { trimempty = true })
       for _, line in ipairs(lines) do
         -- TODO: also ignore tagComment starting with ';'
         if not line:match "^!_TAG_" then

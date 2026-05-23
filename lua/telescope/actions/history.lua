@@ -183,7 +183,8 @@ M.get_simple_history = function()
         p:touch { parents = true }
       end
 
-      obj.content = Path:new(obj.path):readlines()
+      local tutils = require "telescope.utils"
+      obj.content = tutils.split_lines(tutils.read_file(obj.path))
       obj.index = #obj.content
       table.remove(obj.content, obj.index)
     end,
