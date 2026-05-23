@@ -391,11 +391,10 @@ end
 
 previewers.cat = defaulter(function(opts)
   opts = opts or {}
-  local cwd = opts.cwd or vim.uv.cwd()
   return previewers.new_buffer_previewer {
     title = "File Preview",
     dyn_title = function(_, entry)
-      return Path:new(from_entry.path(entry, false, false)):normalize(cwd)
+      return vim.fs.normalize(from_entry.path(entry, false, false))
     end,
 
     get_buffer_by_name = function(_, entry)
@@ -419,7 +418,6 @@ end, {})
 
 previewers.vimgrep = defaulter(function(opts)
   opts = opts or {}
-  local cwd = opts.cwd or vim.uv.cwd()
 
   local jump_to_line = function(self, bufnr, entry)
     pcall(api.nvim_buf_clear_namespace, bufnr, ns_previewer, 0, -1)
@@ -459,7 +457,7 @@ previewers.vimgrep = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
-      return Path:new(from_entry.path(entry, false, false)):normalize(cwd)
+      return vim.fs.normalize(from_entry.path(entry, false, false))
     end,
 
     get_buffer_by_name = function(_, entry)
@@ -798,7 +796,7 @@ previewers.git_commit_diff_as_was = defaulter(function(opts)
 
     define_preview = function(self, entry)
       local cmd = git_command({ "--no-pager", "show" }, opts)
-      local cf = opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd)
+      local cf = opts.current_file and vim.fs.relpath(opts.cwd, opts.current_file)
       local value = cf and (entry.value .. ":" .. cf) or entry.value
       local ft = cf and putils.filetype_detect(value) or "diff"
       table.insert(cmd, value)
