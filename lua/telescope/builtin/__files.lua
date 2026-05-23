@@ -1,3 +1,4 @@
+local fn = vim.fn
 local api = vim.api
 
 local action_state = require "telescope.actions.state"
@@ -41,7 +42,7 @@ local escape_chars = function(s)
 end
 
 local has_rg_program = function(picker_name, program)
-  if vim.fn.executable(program) == 1 then
+  if fn.executable(program) == 1 then
     return true
   end
 
@@ -62,7 +63,7 @@ local get_open_filelist = function(grep_open_files, cwd)
   end
 
   local bufnrs = vim.tbl_filter(function(b)
-    if 1 ~= vim.fn.buflisted(b) then
+    if 1 ~= fn.buflisted(b) then
       return false
     end
     return true
@@ -201,16 +202,16 @@ files.grep_string = function(opts)
     return
   end
   local word
-  local visual = vim.fn.mode() == "v"
+  local visual = fn.mode() == "v"
 
   if visual == true then
-    local saved_reg = vim.fn.getreg "v"
+    local saved_reg = fn.getreg "v"
     vim.cmd [[noautocmd sil norm! "vy]]
-    local sele = vim.fn.getreg "v"
-    vim.fn.setreg("v", saved_reg)
+    local sele = fn.getreg "v"
+    fn.setreg("v", saved_reg)
     word = utils.if_nil(opts.search, sele)
   else
-    word = utils.if_nil(opts.search, vim.fn.expand "<cword>")
+    word = utils.if_nil(opts.search, fn.expand "<cword>")
   end
 
   word = tostring(word)
@@ -282,15 +283,15 @@ files.find_files = function(opts)
         return opts.find_command(opts)
       end
       return opts.find_command
-    elseif 1 == vim.fn.executable "rg" then
+    elseif 1 == fn.executable "rg" then
       return { "rg", "--files", "--color", "never" }
-    elseif 1 == vim.fn.executable "fd" then
+    elseif 1 == fn.executable "fd" then
       return { "fd", "--type", "f", "--color", "never" }
-    elseif 1 == vim.fn.executable "fdfind" then
+    elseif 1 == fn.executable "fdfind" then
       return { "fdfind", "--type", "f", "--color", "never" }
-    elseif 1 == vim.fn.executable "find" and vim.fn.has "win32" == 0 then
+    elseif 1 == fn.executable "find" and fn.has "win32" == 0 then
       return { "find", ".", "-type", "f" }
-    elseif 1 == vim.fn.executable "where" then
+    elseif 1 == fn.executable "where" then
       return { "where", "/r", ".", "*" }
     end
   end)()
@@ -584,9 +585,9 @@ end
 
 ---@param opts telescope.builtin.tags.opts
 files.tags = function(opts)
-  local tagfiles = opts.ctags_file and { opts.ctags_file } or vim.fn.tagfiles()
+  local tagfiles = opts.ctags_file and { opts.ctags_file } or fn.tagfiles()
   for i, ctags_file in ipairs(tagfiles) do
-    tagfiles[i] = vim.fn.expand(ctags_file, true)
+    tagfiles[i] = fn.expand(ctags_file, true)
   end
   if vim.tbl_isempty(tagfiles) then
     utils.notify("builtin.tags", {
@@ -613,14 +614,14 @@ files.tags = function(opts)
 
             if selection.scode then
               -- un-escape / then escape required
-              -- special chars for vim.fn.search()
+              -- special chars for fn.search()
               -- ] ~ *
               local scode = selection.scode:gsub([[\/]], "/"):gsub("[%]~*]", function(x)
                 return "\\" .. x
               end)
 
               vim.cmd "keepjumps norm! gg"
-              vim.fn.search(scode)
+              fn.search(scode)
               vim.cmd "norm! zz"
             else
               api.nvim_win_set_cursor(0, { selection.lnum, 0 })

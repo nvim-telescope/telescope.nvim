@@ -1,3 +1,4 @@
+local fn = vim.fn
 local api = vim.api
 local hl = vim.hl
 
@@ -17,7 +18,7 @@ local previewers = {}
 
 local ns_previewer = api.nvim_create_namespace "telescope.previewers"
 
-local has_file = 1 == vim.fn.executable "file"
+local has_file = 1 == fn.executable "file"
 
 -- TODO(fdschmidt93) switch to Job once file_maker callbacks get cleaned up with plenary async
 -- avoids SIGABRT from utils.get_os_command_output due to vim.time in fs_stat cb
@@ -195,18 +196,18 @@ local search_cb_jump = function(self, bufnr, query)
     return
   end
   api.nvim_buf_call(bufnr, function()
-    pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
+    pcall(fn.matchdelete, self.state.hl_id, self.state.winid)
     vim.cmd "keepjumps norm! gg"
-    vim.fn.search(query, "W")
+    fn.search(query, "W")
     vim.cmd "norm! zz"
 
-    self.state.hl_id = vim.fn.matchadd("TelescopePreviewMatch", query)
+    self.state.hl_id = fn.matchadd("TelescopePreviewMatch", query)
   end)
 end
 
 local search_teardown = function(self)
   if self.state and self.state.hl_id then
-    pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+    pcall(fn.matchdelete, self.state.hl_id, self.state.hl_win)
     self.state.hl_id = nil
   end
 end
@@ -506,18 +507,18 @@ previewers.ctags = defaulter(function(opts)
     if entry.scode then
       return function(self)
         -- un-escape / then escape required
-        -- special chars for vim.fn.search()
+        -- special chars for fn.search()
         -- ] ~ *
         local scode = entry.scode:gsub([[\/]], "/"):gsub("[%]~*]", function(x)
           return "\\" .. x
         end)
 
-        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.winid)
+        pcall(fn.matchdelete, self.state.hl_id, self.state.winid)
         vim.cmd "keepjumps norm! gg"
-        vim.fn.search(scode, "W")
+        fn.search(scode, "W")
         vim.cmd "norm! zz"
 
-        self.state.hl_id = vim.fn.matchadd("TelescopePreviewMatch", scode)
+        self.state.hl_id = fn.matchadd("TelescopePreviewMatch", scode)
       end
     else
       return function(self, bufnr)
@@ -535,7 +536,7 @@ previewers.ctags = defaulter(function(opts)
     title = "Tags Preview",
     teardown = function(self)
       if self.state and self.state.hl_id then
-        pcall(vim.fn.matchdelete, self.state.hl_id, self.state.hl_win)
+        pcall(fn.matchdelete, self.state.hl_id, self.state.hl_win)
         self.state.hl_id = nil
       elseif self.state and self.state.last_set_bufnr and api.nvim_buf_is_valid(self.state.last_set_bufnr) then
         api.nvim_buf_clear_namespace(self.state.last_set_bufnr, ns_previewer, 0, -1)
@@ -572,7 +573,7 @@ previewers.builtin = defaulter(function(opts)
     end,
 
     define_preview = function(self, entry)
-      local module_name = vim.fn.fnamemodify(vim.fn.fnamemodify(entry.filename, ":h"), ":t")
+      local module_name = fn.fnamemodify(fn.fnamemodify(entry.filename, ":h"), ":t")
       local text
       if entry.text:sub(1, #module_name) ~= module_name then
         text = module_name .. "." .. entry.text
@@ -623,7 +624,7 @@ end, {})
 
 previewers.man = defaulter(function(opts)
   local pager = utils.get_lazy_default(opts.PAGER, function()
-    return vim.fn.executable "col" == 1 and { "col", "-bx" } or { "cat" }
+    return fn.executable "col" == 1 and { "col", "-bx" } or { "cat" }
   end)
   return previewers.new_buffer_previewer {
     title = "Man Preview",
@@ -917,7 +918,7 @@ previewers.autocommands = defaulter(function(_)
         table.insert(display, string.format(" augroup: %s - [ %d entries ]", entry.value.group_name, #results))
         -- TODO: calculate banner width/string in setup()
         -- TODO: get column characters to be the same HL group as border
-        table.insert(display, string.rep("─", vim.fn.getwininfo(preview_winid)[1].width))
+        table.insert(display, string.rep("─", fn.getwininfo(preview_winid)[1].width))
 
         for idx, item in ipairs(results) do
           if item == entry then
@@ -973,7 +974,7 @@ previewers.highlights = defaulter(function(_)
 
     define_preview = function(self, entry)
       if not self.state.bufname then
-        local output = utils.split_lines(vim.fn.execute "highlight")
+        local output = utils.split_lines(fn.execute "highlight")
         local hl_groups = {}
         for _, v in ipairs(output) do
           if v ~= "" then
@@ -998,7 +999,7 @@ previewers.highlights = defaulter(function(_)
       vim.schedule(function()
         api.nvim_buf_call(self.state.bufnr, function()
           vim.cmd "keepjumps norm! gg"
-          vim.fn.search("^" .. entry.value .. " ")
+          fn.search("^" .. entry.value .. " ")
           local lnum = api.nvim_win_get_cursor(self.state.winid)[1]
           -- That one is actually a match but its better to use it like that then matchadd
           pcall(api.nvim_buf_clear_namespace, self.state.bufnr, ns_previewer, 0, -1)
