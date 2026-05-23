@@ -124,19 +124,6 @@ function Path:is_file()
   return self:_stat().type == "file" and true or nil
 end
 
--- TODO: Asyncify this and use vim.wait in the meantime.
---  This will allow other events to happen while we're waiting!
-function Path:read()
-  self = check_self(self)
-
-  local fd = assert(uv.fs_open(self:_fs_filename(), "r", 438)) -- for some reason test won't pass with absolute
-  local stat = assert(uv.fs_fstat(fd))
-  local data = assert(uv.fs_read(fd, stat.size, 0))
-  assert(uv.fs_close(fd))
-
-  return data
-end
-
 function Path:touch(opts)
   opts = opts or {}
 
@@ -183,15 +170,6 @@ function Path:_read_async(callback)
       end)
     end)
   end)
-end
-
-function Path:readlines()
-  self = check_self(self)
-
-  local data = self:read()
-
-  data = data:gsub("\r", "")
-  return vim.split(data, "\n")
 end
 
 return Path

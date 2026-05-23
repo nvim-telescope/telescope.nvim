@@ -102,15 +102,15 @@ end
 
 -- Best effort to infer function names for actions.which_key
 function utils._get_anon_function_name(info)
-  local Path = require "neoplen.path"
   local fname
   -- if fn defined in string (ie loadstring) source is string
   -- if fn defined in file, source is file name prefixed with a `@´
-  local path = Path:new((info.source:gsub("@", "")))
-  if not path:exists() then
+  local path = info.source:gsub("@", "")
+  if not vim.uv.fs_stat(path) then
     return "<anonymous>"
   end
-  for i, line in ipairs(path:readlines()) do
+  local tutils = require "telescope.utils"
+  for i, line in ipairs(tutils.split_lines(tutils.read_file(path))) do
     if i == info.linedefined then
       fname = line
       break
