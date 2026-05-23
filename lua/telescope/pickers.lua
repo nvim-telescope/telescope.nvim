@@ -1,13 +1,13 @@
 require "telescope"
 
+local fn = vim.fn
 local api = vim.api
 
 local async = require "neoplen.async"
 local await_schedule = async.util.scheduler
 local channel = require("neoplen.async.control").channel
 local popup = require "neoplen.popup"
-local truncate = require("neoplen.strings").truncate
-local strdisplaywidth = require("neoplen.strings").strdisplaywidth
+local strings = require "neoplen.strings"
 
 local actions = require "telescope.actions"
 local config = require "telescope.config"
@@ -231,7 +231,7 @@ function Picker:new(opts)
     error "layout_strategy and get_window_options are not compatible keys"
   end
 
-  if vim.fn.win_gettype() == "command" then
+  if fn.win_gettype() == "command" then
     error "Can't open telescope from command-line window. See E11"
   end
 
@@ -529,9 +529,9 @@ function Picker:find()
   self.original_bufnr = api.nvim_get_current_buf()
   self.original_win_id = api.nvim_get_current_win()
   self.original_tabpage = api.nvim_get_current_tabpage()
-  _, self.original_cword = pcall(vim.fn.expand, "<cword>")
-  _, self.original_cWORD = pcall(vim.fn.expand, "<cWORD>")
-  _, self.original_cfile = pcall(vim.fn.expand, "<cfile>")
+  _, self.original_cword = pcall(fn.expand, "<cword>")
+  _, self.original_cWORD = pcall(fn.expand, "<cWORD>")
+  _, self.original_cfile = pcall(fn.expand, "<cfile>")
   _, self.original_cline = pcall(api.nvim_get_current_line)
   _, self.original_cline = pcall(vim.trim, self.original_cline)
 
@@ -564,7 +564,7 @@ function Picker:find()
 
   -- Prompt prefix
   local prompt_prefix = self.prompt_prefix
-  vim.fn.prompt_setprompt(self.prompt_bufnr, prompt_prefix)
+  fn.prompt_setprompt(self.prompt_bufnr, prompt_prefix)
   self:_reset_prefix_color()
 
   -- TODO: This could be configurable in the future, but I don't know why you would
@@ -588,7 +588,7 @@ function Picker:find()
   end
 
   if vim.tbl_contains({ "insert", "normal" }, self.initial_mode) then
-    local mode = vim.fn.mode()
+    local mode = fn.mode()
     local keys
     if self.initial_mode == "normal" then
       -- n: A<ESC> makes sure cursor is at always at end of prompt w/o default_text
@@ -782,7 +782,7 @@ end
 
 --- A wrapper for `Picker:recalculate_layout()` that also handles maintaining cursor position
 function Picker:full_layout_update()
-  local oldinfo = vim.fn.getwininfo(self.results_win)[1]
+  local oldinfo = fn.getwininfo(self.results_win)[1]
   local oldcursor = api.nvim_win_get_cursor(self.results_win)
   self:recalculate_layout()
   self:refresh_previewer()
@@ -993,7 +993,7 @@ function Picker:change_prompt_prefix(new_prefix, hl_group)
   end
 
   if new_prefix ~= "" then
-    vim.fn.prompt_setprompt(self.prompt_bufnr, new_prefix)
+    fn.prompt_setprompt(self.prompt_bufnr, new_prefix)
   else
     api.nvim_buf_set_text(self.prompt_bufnr, 0, 0, 0, #self.prompt_prefix, {})
     vim.bo[self.prompt_bufnr].buftype = ""
@@ -1168,7 +1168,7 @@ function Picker:update_prefix(entry, row)
       t = self.entry_prefix
     end
     if multi and type(self.multi_icon) == "string" then
-      t = truncate(t, strdisplaywidth(t) - strdisplaywidth(self.multi_icon), "") .. self.multi_icon
+      t = strings.truncate(t, fn.strdisplaywidth(t) - fn.strdisplaywidth(self.multi_icon), "") .. self.multi_icon
     end
     return t
   end

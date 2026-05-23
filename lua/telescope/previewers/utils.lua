@@ -1,7 +1,6 @@
 local api = vim.api
 
 local Job = require "neoplen.job"
-local strings = require "neoplen.strings"
 
 local utils = require "telescope.utils"
 local conf = require("telescope.config").values
@@ -159,7 +158,7 @@ M.set_preview_message = function(bufnr, winid, message, fillchar)
     end
   end
   api.nvim_buf_set_extmark(bufnr, anon_ns, 0, 0, { end_line = height, hl_group = "TelescopePreviewMessageFillchar" })
-  local col = math.floor((width - strings.strdisplaywidth(formatted_message)) / 2)
+  local col = math.floor((width - vim.fn.strdisplaywidth(formatted_message)) / 2)
   for i, line in ipairs(lines) do
     local line_pos = math.floor(height / 2) - 2 + i
     api.nvim_buf_set_extmark(

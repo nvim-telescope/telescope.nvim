@@ -31,9 +31,9 @@
 ---
 --- TODO: Document something we call `entry_index`
 
+local fn = vim.fn
 local api = vim.api
 
-local strings = require "neoplen.strings"
 local Path = require "neoplen.path"
 
 local entry_display = require "telescope.pickers.entry_display"
@@ -279,7 +279,7 @@ do
 
     local execute_keys = {
       path = function(t)
-        if vim.fn.isabsolutepath(t.filename) then
+        if fn.isabsolutepath(t.filename) == 1 then
           return t.filename, false
         else
           return Path:new({ t.cwd, t.filename }):absolute(), false
@@ -590,7 +590,7 @@ function make_entry.gen_from_buffer(opts)
   local icon_width = 0
   if not disable_devicons then
     local icon, _ = utils.get_devicons("fname", disable_devicons)
-    icon_width = strings.strdisplaywidth(icon)
+    icon_width = fn.strdisplaywidth(icon)
   end
 
   local displayer = entry_display.create {
@@ -727,7 +727,7 @@ function make_entry.gen_from_packages(opts)
 
   local make_display = function(module_name)
     local p_path = package.searchpath(module_name, package.path) or ""
-    local display = string.format("%-" .. opts.column_len .. "s : %s", module_name, vim.fn.fnamemodify(p_path, ":~:."))
+    local display = string.format("%-" .. opts.column_len .. "s : %s", module_name, fn.fnamemodify(p_path, ":~:."))
 
     return display
   end
@@ -825,7 +825,7 @@ function make_entry.gen_from_registers(opts)
   end
 
   return function(entry)
-    local contents = vim.fn.getreg(entry, 1)
+    local contents = fn.getreg(entry, 1)
     return make_entry.set_default_entry_mt({
       value = entry,
       ordinal = string.format("%s %s", entry, contents),
@@ -1161,9 +1161,7 @@ function make_entry.gen_from_diagnostics(opts)
         local status
         status, sign = pcall(function()
           -- only the first char is upper all others are lowercase
-          return vim.trim(
-            vim.fn.sign_getdefined("DiagnosticSign" .. severity:lower():gsub("^%l", string.upper))[1].text
-          )
+          return vim.trim(fn.sign_getdefined("DiagnosticSign" .. severity:lower():gsub("^%l", string.upper))[1].text)
         end)
 
         if not status then

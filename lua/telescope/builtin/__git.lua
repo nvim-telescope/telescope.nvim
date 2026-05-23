@@ -1,6 +1,6 @@
+local fn = vim.fn
 local api = vim.api
 
-local strings = require "neoplen.strings"
 local Path = require "neoplen.path"
 
 local actions = require "telescope.actions"
@@ -217,24 +217,24 @@ git.bcommits_range = function(opts)
     opts.git_command,
     git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--no-patch", "-L" }, opts)
   )
-  local visual = string.find(vim.fn.mode(), "[vV]") ~= nil
+  local visual = string.find(fn.mode(), "[vV]") ~= nil
 
   local line_number_first = opts.from
   local line_number_last = utils.if_nil(opts.to, line_number_first)
   if visual then
-    line_number_first = utils.if_nil(line_number_first, vim.fn.line "v")
-    line_number_last = utils.if_nil(line_number_last, vim.fn.line ".")
+    line_number_first = utils.if_nil(line_number_first, fn.line "v")
+    line_number_last = utils.if_nil(line_number_last, fn.line ".")
   elseif opts.operator then
     opts.operator = false
     opts.operator_callback = true
     operators.run_operator(git.bcommits_range, opts)
     return
   elseif opts.operator_callback then
-    line_number_first = vim.fn.line "'["
-    line_number_last = vim.fn.line "']"
+    line_number_first = fn.line "'["
+    line_number_last = fn.line "']"
   elseif line_number_first == nil then
-    line_number_first = utils.if_nil(line_number_first, vim.fn.line ".")
-    line_number_last = utils.if_nil(line_number_last, vim.fn.line ".")
+    line_number_first = utils.if_nil(line_number_first, fn.line ".")
+    line_number_last = utils.if_nil(line_number_last, fn.line ".")
   end
   local line_range =
     string.format("%d,%d:%s", line_number_first, line_number_last, Path:new(opts.current_file):make_relative(opts.cwd))
@@ -303,7 +303,7 @@ git.branches = function(opts)
 
     entry.name = string.sub(entry.refname, string.len(prefix) + 1)
     for key, value in pairs(widths) do
-      widths[key] = math.max(value, strings.strdisplaywidth(entry[key] or ""))
+      widths[key] = math.max(value, fn.strdisplaywidth(entry[key] or ""))
     end
     if string.len(entry.upstream) > 0 then
       widths.upstream_indicator = 2
@@ -467,7 +467,7 @@ local try_worktrees = function(opts)
 end
 
 local current_path_toplevel = function()
-  local gitdir = vim.fn.finddir(".git", vim.fn.expand "%:p" .. ";") --[[@as string]]
+  local gitdir = fn.finddir(".git", fn.expand "%:p" .. ";") --[[@as string]]
   if gitdir == "" then
     return nil
   end
@@ -481,7 +481,7 @@ local set_opts_cwd = function(opts)
   elseif opts.use_file_path then
     opts.cwd = current_path_toplevel()
     if not opts.cwd then
-      opts.cwd = vim.fn.expand "%:p:h"
+      opts.cwd = fn.expand "%:p:h"
       try_worktrees(opts)
       return
     end
