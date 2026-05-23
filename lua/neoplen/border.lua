@@ -29,11 +29,11 @@ local create_horizontal_line = function(title, pos, width, left_char, mid_char, 
   if title == "" then
     title_len = 0
   else
-    local len = strings.strdisplaywidth(title)
+    local len = vim.fn.strdisplaywidth(title)
     local max_title_width = width - 2
     if len > max_title_width then
       title = strings.truncate(title, max_title_width)
-      len = strings.strdisplaywidth(title)
+      len = vim.fn.strdisplaywidth(title)
     end
     title = string.format(" %s ", title)
     title_len = len + 2

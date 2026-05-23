@@ -429,7 +429,7 @@ append(
     -- https://github.com/nvim-telescope/telescope.nvim/issues/2929
     local prompt_width = vim.api.nvim_win_get_width(self.prompt_win)
     local cursor_col = vim.api.nvim_win_get_cursor(self.prompt_win)[2]
-    local prefix_display_width = strings.strdisplaywidth(self.prompt_prefix) --[[@as integer]]
+    local prefix_display_width = vim.fn.strdisplaywidth(self.prompt_prefix) --[[@as integer]]
     local prefix_width = #self.prompt_prefix
     local prefix_shift = 0
     if prefix_display_width ~= prefix_width then

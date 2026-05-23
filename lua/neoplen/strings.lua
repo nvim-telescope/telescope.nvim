@@ -1,15 +1,15 @@
+local fn = vim.fn
+
 local M = {}
 
-M.strdisplaywidth = vim.fn.strdisplaywidth
-
 local truncate = function(str, len, dots, direction)
-  if M.strdisplaywidth(str) <= len then
+  if fn.strdisplaywidth(str) <= len then
     return str
   end
   local start = direction > 0 and 0 or str:len()
   local current = 0
   local result = ""
-  local len_of_dots = M.strdisplaywidth(dots)
+  local len_of_dots = fn.strdisplaywidth(dots)
   local concat = function(a, b, dir)
     if dir > 0 then
       return a .. b
@@ -18,8 +18,8 @@ local truncate = function(str, len, dots, direction)
     end
   end
   while true do
-    local part = vim.fn.strcharpart(str, start, 1)
-    current = current + M.strdisplaywidth(part)
+    local part = fn.strcharpart(str, start, 1)
+    current = current + fn.strdisplaywidth(part)
     if (current + len_of_dots) > len then
       result = concat(result, dots, direction)
       break
@@ -37,19 +37,19 @@ M.truncate = function(str, len, dots, direction)
   if direction ~= 0 then
     return truncate(str, len, dots, direction)
   else
-    if M.strdisplaywidth(str) <= len then
+    if fn.strdisplaywidth(str) <= len then
       return str
     end
-    local len1 = math.floor((len + M.strdisplaywidth(dots)) / 2)
+    local len1 = math.floor((len + fn.strdisplaywidth(dots)) / 2)
     local s1 = truncate(str, len1, dots, 1)
-    local len2 = len - M.strdisplaywidth(s1) + M.strdisplaywidth(dots)
+    local len2 = len - fn.strdisplaywidth(s1) + fn.strdisplaywidth(dots)
     local s2 = truncate(str, len2, dots, -1)
     return s1 .. s2:sub(dots:len() + 1)
   end
 end
 
 M.align_str = function(string, width, right_justify)
-  local str_len = M.strdisplaywidth(string)
+  local str_len = fn.strdisplaywidth(string)
   return right_justify and string.rep(" ", width - str_len) .. string or string .. string.rep(" ", width - str_len)
 end
 
@@ -64,7 +64,7 @@ M.dedent = function(str, leave_indent)
       local line_indent = line:match "^[ \t]+"
       if line_indent then
         chars = #line_indent
-        width = M.strdisplaywidth(line_indent)
+        width = fn.strdisplaywidth(line_indent)
         if not indent or width < indent then
           indent = width
         end
