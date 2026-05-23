@@ -12,6 +12,7 @@ local get_status = require("telescope.state").get_status
 local utils = {}
 
 utils.iswin = vim.fn.has "win32" == 1
+utils.pathsep = utils.iswin and "\\" or "/"
 
 utils.if_nil = vim.nonnil or vim.F.if_nil -- TODO: remove with nvim 0.12 drop
 
@@ -68,10 +69,6 @@ utils.path_expand = function(path)
     end
   end
   return (path:gsub("(.)/$", "%1"))
-end
-
-utils.get_separator = function()
-  return utils.iswin and "\\" or "/"
 end
 
 utils.cycle = function(i, n)
@@ -167,7 +164,8 @@ utils.filter_symbols = function(results, opts, post_filter)
 end
 
 local path_filename_first = function(path, reverse_directories)
-  local dirs = vim.split(path, utils.get_separator())
+  local pathsep = utils.pathsep
+  local dirs = vim.split(path, pathsep)
   local filename
 
   if reverse_directories then
@@ -177,7 +175,7 @@ local path_filename_first = function(path, reverse_directories)
     filename = table.remove(dirs, #dirs)
   end
 
-  local tail = table.concat(dirs, utils.get_separator())
+  local tail = table.concat(dirs, pathsep)
   -- Trim prevents a top-level filename to have a trailing white space
   local transformed_path = vim.trim(filename .. " " .. tail)
   local path_style = { { { #filename, #transformed_path }, "TelescopeResultsComment" } }
@@ -205,7 +203,7 @@ local path_shorten = function(filename, len, exclude)
   len = len or 1
   exclude = exclude or { -1 }
   local exc = {}
-  local pathsep = utils.get_separator()
+  local pathsep = utils.pathsep
 
   -- get parts in a table
   local parts = {}
@@ -267,15 +265,15 @@ end
 -- local we would potential break consumers of this method.
 utils.path_smart = (function()
   local paths = {}
-  local os_sep = utils.get_separator()
+  local pathsep = utils.pathsep
   return function(filepath)
     local final = filepath
     if #paths ~= 0 then
-      local dirs = vim.split(filepath, os_sep)
+      local dirs = vim.split(filepath, pathsep)
       local max = 1
       for _, p in pairs(paths) do
         if #p > 0 and p ~= filepath then
-          local _dirs = vim.split(p, os_sep)
+          local _dirs = vim.split(p, pathsep)
           for i = 1, math.min(#dirs, #_dirs) do
             if (dirs[i] ~= _dirs[i]) and i > max then
               max = i
@@ -291,7 +289,7 @@ utils.path_smart = (function()
         final = ""
         for k, v in pairs(dirs) do
           if k >= max - 1 then
-            final = final .. (#final > 0 and os_sep or "") .. v
+            final = final .. (#final > 0 and pathsep or "") .. v
           end
         end
       end
@@ -301,7 +299,7 @@ utils.path_smart = (function()
       table.insert(paths, filepath)
     end
     if final and final ~= filepath then
-      return ".." .. os_sep .. final
+      return ".." .. pathsep .. final
     else
       return filepath
     end
@@ -309,12 +307,12 @@ utils.path_smart = (function()
 end)()
 
 utils.path_tail = (function()
-  local os_sep = utils.get_separator()
+  local pathsep = utils.pathsep
 
-  if os_sep == "/" then
+  if pathsep == "/" then
     return function(path)
       for i = #path, 1, -1 do
-        if path:sub(i, i) == os_sep then
+        if path:sub(i, i) == pathsep then
           return path:sub(i + 1, -1)
         end
       end
@@ -324,7 +322,7 @@ utils.path_tail = (function()
     return function(path)
       for i = #path, 1, -1 do
         local c = path:sub(i, i)
-        if c == os_sep or c == "/" then
+        if c == pathsep or c == "/" then
           return path:sub(i + 1, -1)
         end
       end
