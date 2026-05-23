@@ -1,4 +1,3 @@
-local Path = require "neoplen.path"
 local utils = require "telescope.utils"
 
 local eq = assert.are.equal
@@ -191,10 +190,6 @@ describe("transform_path", function()
     end
   end)()
 
-  local function new_relpath(unix_path)
-    return Path:new(unpack(vim.split(unix_path, "/"))).filename
-  end
-
   local function assert_path(path_display, path, expect)
     local opts = { cwd = cwd, __length = 15 }
     if type(path_display) == "string" then
@@ -228,83 +223,79 @@ describe("transform_path", function()
   end)
 
   it("returns relative path for default opts", function()
-    local relative = Path:new { "lua", "telescope", "init.lua" }
-    local absolute = Path:new { cwd, relative }
-    assert_path(nil, absolute.filename, relative.filename)
-    assert_path(nil, relative.filename, relative.filename)
+    local relative = "lua/telescope/init.lua"
+    local absolute = vim.fs.joinpath(cwd, relative)
+    assert_path(nil, absolute, relative)
+    assert_path(nil, relative, relative)
   end)
 
   it("handles 'tail' path_display", function()
-    local path = new_relpath "lua/telescope/init.lua"
+    local path = "lua/telescope/init.lua"
     assert_path("tail", path, "init.lua")
   end)
 
   it("handles 'smart' path_display", function()
-    local path1 = new_relpath "lua/telescope/init.lua"
-    local path2 = new_relpath "lua/telescope/finders.lua"
-    local path3 = new_relpath "lua/telescope/finders/async_job_finder.lua"
-    local path4 = new_relpath "plugin/telescope.lua"
+    local path1 = "lua/telescope/init.lua"
+    local path2 = "lua/telescope/finders.lua"
+    local path3 = "lua/telescope/finders/async_job_finder.lua"
+    local path4 = "plugin/telescope.lua"
 
     assert_path("smart", path1, path1)
-    assert_path("smart", path2, new_relpath "../telescope/finders.lua")
-    assert_path("smart", path3, new_relpath "../telescope/finders/async_job_finder.lua")
+    assert_path("smart", path2, "../telescope/finders.lua")
+    assert_path("smart", path3, "../telescope/finders/async_job_finder.lua")
     assert_path("smart", path4, path4)
   end)
 
   it("handles 'absolute' path_display", function()
-    local relative = Path:new { "lua", "telescope", "init.lua" }
-    local absolute = Path:new { cwd, relative }
+    local relative = "lua/telescope/init.lua"
+    local absolute = vim.fs.joinpath(cwd, relative)
 
     -- TODO: feels like 'absolute' should turn relative paths to absolute
     -- assert_path("absolute", relative.filename, absolute.filename)
-    assert_path("absolute", absolute.filename, absolute.filename)
+    assert_path("absolute", absolute, absolute)
   end)
 
   it("handles default 'shorten' path_display", function()
-    assert_path("shorten", new_relpath "lua/telescope/init.lua", new_relpath "l/t/init.lua")
+    assert_path("shorten", "lua/telescope/init.lua", "l/t/init.lua")
   end)
 
   it("handles 'shorten' with number", function()
-    assert_path({ shorten = 2 }, new_relpath "lua/telescope/init.lua", new_relpath "lu/te/init.lua")
+    assert_path({ shorten = 2 }, "lua/telescope/init.lua", "lu/te/init.lua")
   end)
 
   it("handles 'shorten' with option table", function()
-    assert_path({ shorten = { len = 2 } }, new_relpath "lua/telescope/init.lua", new_relpath "lu/te/init.lua")
+    assert_path({ shorten = { len = 2 } }, "lua/telescope/init.lua", "lu/te/init.lua")
     assert_path(
       { shorten = { len = 2, exclude = { 1, 3, -1 } } },
-      new_relpath "lua/telescope/builtin/init.lua",
-      new_relpath "lua/te/builtin/init.lua"
+      "lua/telescope/builtin/init.lua",
+      "lua/te/builtin/init.lua"
     )
   end)
 
   it("handles default 'truncate' path_display", function()
-    assert_path({ "truncate" }, new_relpath "lua/telescope/init.lua", new_relpath "…scope/init.lua")
+    assert_path({ "truncate" }, "lua/telescope/init.lua", "…scope/init.lua")
   end)
 
   it("handles 'filename_first' path_display", function()
-    assert_path("filename_first", new_relpath "init.lua", new_relpath "init.lua")
-    assert_path("filename_first", new_relpath "lua/telescope/init.lua", new_relpath "init.lua lua/telescope")
+    assert_path("filename_first", "init.lua", "init.lua")
+    assert_path("filename_first", "lua/telescope/init.lua", "init.lua lua/telescope")
   end)
 
   it("handles 'filename_first' path_display with the option to reverse directories", function()
-    assert_path({ filename_first = { reverse_directories = true } }, new_relpath "init.lua", new_relpath "init.lua")
-    assert_path(
-      { filename_first = { reverse_directories = true } },
-      new_relpath "lua/telescope/init.lua",
-      new_relpath "init.lua telescope/lua"
-    )
-    assert_path({ filename_first = { reverse_directories = false } }, new_relpath "init.lua", new_relpath "init.lua")
+    assert_path({ filename_first = { reverse_directories = true } }, "init.lua", "init.lua")
+    assert_path({ filename_first = { reverse_directories = true } }, "lua/telescope/init.lua", "init.lua telescope/lua")
+    assert_path({ filename_first = { reverse_directories = false } }, "init.lua", "init.lua")
     assert_path(
       { filename_first = { reverse_directories = false } },
-      new_relpath "lua/telescope/init.lua",
-      new_relpath "init.lua lua/telescope"
+      "lua/telescope/init.lua",
+      "init.lua lua/telescope"
     )
   end)
 
   it("handles function passed to path_display", function()
     assert_path(function(_, path)
       return string.gsub(path, "^doc", "d")
-    end, new_relpath "doc/mydoc.md", new_relpath "d/mydoc.md")
+    end, "doc/mydoc.md", "d/mydoc.md")
   end)
 end)
 
