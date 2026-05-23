@@ -1101,7 +1101,7 @@ function make_entry.gen_from_ctags(opts)
     end
     local kind = string.match(extension_fields or "", "kind:(%S+)")
 
-    if utils.get_separator() == "\\" then
+    if utils.pathsep == "\\" then
       file = string.gsub(file, "/", "\\")
     end
 
