@@ -1,3 +1,5 @@
+local uv = vim.uv
+local fn = vim.fn
 local api = vim.api
 
 local actions = require "telescope.actions"
@@ -242,13 +244,13 @@ internal.planets = function(opts)
   local show_moon = opts.show_moon or false
 
   local sourced_file = debug.getinfo(2, "S").source:sub(2)
-  local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h:h")
+  local base_directory = fn.fnamemodify(sourced_file, ":h:h:h:h")
 
-  local globbed_files = vim.fn.globpath(base_directory .. "/data/memes/planets/", "*", true, true)
+  local globbed_files = fn.globpath(base_directory .. "/data/memes/planets/", "*", true, true)
   local acceptable_files = {}
   for _, v in ipairs(globbed_files) do
     if (show_pluto or not v:find "pluto") and (show_moon or not v:find "moon") then
-      table.insert(acceptable_files, vim.fn.fnamemodify(v, ":t"))
+      table.insert(acceptable_files, fn.fnamemodify(v, ":t"))
     end
   end
 
@@ -287,16 +289,16 @@ end
 
 ---@param opts telescope.builtin.symbol.opts: options to pass to the picker
 internal.symbols = function(opts)
-  local initial_mode = vim.fn.mode()
+  local initial_mode = fn.mode()
   local files = api.nvim_get_runtime_file("data/telescope-sources/*.json", true)
   local data_path = (function()
     if not opts.symbol_path then
-      return vim.fs.joinpath(vim.fn.stdpath "data", "telescope", "symbols")
+      return vim.fs.joinpath(fn.stdpath "data", "telescope", "symbols")
     else
       return vim.fs.abspath(opts.symbol_path)
     end
   end)()
-  if vim.uv.fs_stat(data_path) then
+  if uv.fs_stat(data_path) then
     for _, v in
       ipairs(vim.fs.find(function(name, _)
         return name:match "%.json$"
@@ -420,7 +422,7 @@ end
 ---@param opts telescope.builtin.quickfix.opts: options to pass to the picker
 internal.quickfix = function(opts)
   local qf_identifier = opts.id or utils.if_nil(opts.nr, 0)
-  local locations = vim.fn.getqflist({ [opts.id and "id" or "nr"] = qf_identifier, items = true }).items
+  local locations = fn.getqflist({ [opts.id and "id" or "nr"] = qf_identifier, items = true }).items
 
   if vim.tbl_isempty(locations) then
     utils.notify("builtin.quickfix", { msg = "No quickfix items", level = "INFO" })
@@ -445,7 +447,7 @@ internal.quickfixhistory = function(opts)
   local qflists = {}
   for i = 1, 10 do -- (n)vim keeps at most 10 quickfix lists in full
     -- qf weirdness: id = 0 gets id of quickfix list nr
-    local qflist = vim.fn.getqflist { nr = i, id = 0, title = true, items = true }
+    local qflist = fn.getqflist { nr = i, id = 0, title = true, items = true }
     if not vim.tbl_isempty(qflist.items) then
       table.insert(qflists, qflist)
     end
@@ -511,7 +513,7 @@ end
 
 ---@param opts telescope.builtin.loclist.opts: options to pass to the picker
 internal.loclist = function(opts)
-  local locations = vim.fn.getloclist(0)
+  local locations = fn.getloclist(0)
   local filenames = {}
   for _, value in pairs(locations) do
     local bufnr = value.bufnr
@@ -553,7 +555,7 @@ internal.oldfiles = function(opts)
   end
 
   if opts.include_current_session then
-    for _, buffer in ipairs(utils.split_lines(vim.fn.execute ":buffers! t")) do
+    for _, buffer in ipairs(utils.split_lines(fn.execute ":buffers! t")) do
       local match = tonumber(string.match(buffer, "%s*(%d+)"))
       local open_by_lsp = string.match(buffer, "line 0$")
       if match and not open_by_lsp then
@@ -561,7 +563,7 @@ internal.oldfiles = function(opts)
         if utils.iswin then
           file = file:gsub("/", "\\")
         end
-        if vim.uv.fs_stat(file) and match ~= current_buffer then
+        if uv.fs_stat(file) and match ~= current_buffer then
           table.insert(results, file)
         end
       end
@@ -572,14 +574,14 @@ internal.oldfiles = function(opts)
     if utils.iswin then
       file = file:gsub("/", "\\")
     end
-    local file_stat = vim.uv.fs_stat(file)
+    local file_stat = uv.fs_stat(file)
     if file_stat and file_stat.type == "file" and not vim.tbl_contains(results, file) and file ~= current_file then
       table.insert(results, file)
     end
   end
 
   if opts.cwd_only or opts.cwd then
-    local cwd = opts.cwd_only and vim.uv.cwd() or opts.cwd
+    local cwd = opts.cwd_only and uv.cwd() or opts.cwd
     results = vim.tbl_filter(function(file)
       return buf_in_cwd(file, cwd)
     end, results)
@@ -601,7 +603,7 @@ end
 
 ---@param opts telescope.builtin.commands_history.opts: options to pass to the picker
 internal.command_history = function(opts)
-  local history_string = vim.fn.execute "history cmd"
+  local history_string = fn.execute "history cmd"
   local history_list = utils.split_lines(history_string)
 
   local results = {}
@@ -642,7 +644,7 @@ end
 
 ---@param opts telescope.builtin.search_history.opts: options to pass to the picker
 internal.search_history = function(opts)
-  local search_string = vim.fn.execute "history search"
+  local search_string = fn.execute "history search"
   local search_list = utils.split_lines(search_string)
 
   local results = {}
@@ -702,7 +704,7 @@ internal.vim_options = function(opts)
           end
 
           local esc = ""
-          if vim.fn.mode() == "i" then
+          if fn.mode() == "i" then
             esc = api.nvim_replace_termcodes("<esc>", true, false, true)
           end
 
@@ -757,7 +759,7 @@ internal.help_tags = function(opts)
       rtp = rtp .. "," .. table.concat(paths, ",")
     end
   end
-  local all_files = vim.fn.globpath(rtp, "doc/*", 1, 1)
+  local all_files = fn.globpath(rtp, "doc/*", 1, 1)
   for _, fullpath in ipairs(all_files) do
     local file = utils.path_tail(fullpath)
     if file == "tags" then
@@ -842,10 +844,10 @@ internal.man_pages = function(opts)
   opts.sections = utils.if_nil(opts.sections, { "1" })
   assert(vim.islist(opts.sections), "sections should be a list")
   opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
-    local uname = vim.uv.os_uname()
+    local uname = uv.os_uname()
     local sysname = string.lower(uname.sysname)
     if sysname == "darwin" then
-      local major_version = tonumber(vim.fn.matchlist(uname.release, [[^\(\d\+\)\..*]])[2]) or 0
+      local major_version = tonumber(fn.matchlist(uname.release, [[^\(\d\+\)\..*]])[2]) or 0
       return major_version >= 22 and { "apropos", "." } or { "apropos", " " }
     elseif sysname == "freebsd" then
       return { "apropos", "." }
@@ -943,7 +945,7 @@ internal.buffers = function(opts)
   opts = apply_cwd_only_aliases(opts)
 
   local bufnrs = vim.tbl_filter(function(bufnr)
-    if 1 ~= vim.fn.buflisted(bufnr) then
+    if 1 ~= fn.buflisted(bufnr) then
       return false
     end
     -- only hide unloaded buffers if opts.show_all_buffers is false, keep them listed if true or nil
@@ -956,7 +958,7 @@ internal.buffers = function(opts)
 
     local bufname = api.nvim_buf_get_name(bufnr)
 
-    if opts.cwd_only and not buf_in_cwd(bufname, vim.uv.cwd()) then
+    if opts.cwd_only and not buf_in_cwd(bufname, uv.cwd()) then
       return false
     end
     if not opts.cwd_only and opts.cwd and not buf_in_cwd(bufname, opts.cwd) then
@@ -972,7 +974,7 @@ internal.buffers = function(opts)
 
   if opts.sort_mru then
     table.sort(bufnrs, function(a, b)
-      return vim.fn.getbufinfo(a)[1].lastused > vim.fn.getbufinfo(b)[1].lastused
+      return fn.getbufinfo(a)[1].lastused > fn.getbufinfo(b)[1].lastused
     end)
   end
 
@@ -983,7 +985,7 @@ internal.buffers = function(opts)
   local buffers = {}
   local default_selection_idx = 1
   for i, bufnr in ipairs(bufnrs) do
-    local flag = bufnr == vim.fn.bufnr "" and "%" or (bufnr == vim.fn.bufnr "#" and "#" or " ")
+    local flag = bufnr == fn.bufnr "" and "%" or (bufnr == fn.bufnr "#" and "#" or " ")
 
     if opts.sort_lastused and not opts.ignore_current_buffer and flag == "#" then
       default_selection_idx = 2
@@ -992,7 +994,7 @@ internal.buffers = function(opts)
     local element = {
       bufnr = bufnr,
       flag = flag,
-      info = vim.fn.getbufinfo(bufnr)[1],
+      info = fn.getbufinfo(bufnr)[1],
     }
 
     if opts.sort_lastused and (flag == "#" or flag == "%") then
@@ -1044,16 +1046,16 @@ internal.colorscheme = function(opts)
     colors,
     vim.tbl_filter(function(color)
       return not vim.tbl_contains(colors, color)
-    end, vim.fn.getcompletion("", "color"))
+    end, fn.getcompletion("", "color"))
   )
 
   -- if lazy is available, extend the colors list with unloaded colorschemes
   local lazy = package.loaded["lazy.core.util"]
   if lazy and lazy.get_unloaded_rtp then
     local paths = lazy.get_unloaded_rtp ""
-    local all_files = vim.fn.globpath(table.concat(paths, ","), "colors/*", 1, 1)
+    local all_files = fn.globpath(table.concat(paths, ","), "colors/*", 1, 1)
     for _, f in ipairs(all_files) do
-      local color = vim.fn.fnamemodify(f, ":t:r")
+      local color = fn.fnamemodify(f, ":t:r")
       if not vim.tbl_contains(colors, color) then
         table.insert(colors, color)
       end
@@ -1085,7 +1087,7 @@ internal.colorscheme = function(opts)
         return p
       end,
       define_preview = function(self)
-        if vim.uv.fs_stat(p) then
+        if uv.fs_stat(p) then
           conf.buffer_previewer_maker(p, self.state.bufnr, { bufname = self.state.bufname })
         else
           local lines = api.nvim_buf_get_lines(bufnr, 0, -1, false)
@@ -1163,13 +1165,13 @@ end
 ---@param opts telescope.builtin.marks.opts: options to pass to the picker
 internal.marks = function(opts)
   local local_marks = {
-    items = vim.fn.getmarklist(opts.bufnr),
+    items = fn.getmarklist(opts.bufnr),
     name_func = function(_, line)
       return api.nvim_buf_get_lines(opts.bufnr, line - 1, line, false)[1]
     end,
   }
   local global_marks = {
-    items = vim.fn.getmarklist(),
+    items = fn.getmarklist(),
     name_func = function(mark, _)
       -- get buffer name if it is opened, otherwise get file name
       return api.nvim_get_mark(mark, {})[4]
@@ -1210,7 +1212,7 @@ internal.marks = function(opts)
       end
     end
   end
-  marks_table = vim.fn.extend(marks_table, marks_others)
+  marks_table = fn.extend(marks_table, marks_others)
 
   pickers
     .new(opts, {
@@ -1324,7 +1326,7 @@ end
 
 ---@param opts telescope.builtin.filetypes.opts: options to pass to the picker
 internal.filetypes = function(opts)
-  local filetypes = vim.fn.getcompletion("", "filetype")
+  local filetypes = fn.getcompletion("", "filetype")
 
   pickers
     .new(opts, {
@@ -1352,7 +1354,7 @@ end
 
 ---@param opts telescope.builtin.highlights.opts: options to pass to the picker
 internal.highlights = function(opts)
-  local highlights = vim.fn.getcompletion("", "highlight")
+  local highlights = fn.getcompletion("", "highlight")
 
   pickers
     .new(opts, {
@@ -1416,8 +1418,7 @@ internal.autocommands = function(opts)
             end
           end
           local group_name = val.group_name ~= "<anonymous>" and val.group_name or ""
-          local output =
-            vim.fn.execute("verb autocmd " .. group_name .. " " .. val.event .. " " .. val.pattern, "silent")
+          local output = fn.execute("verb autocmd " .. group_name .. " " .. val.event .. " " .. val.pattern, "silent")
           for line in output:gmatch "[^\r\n]+" do
             local source_file = line:match "Last set from (.*) line %d*$" or line:match "Last set from (.*)$"
             if source_file and source_file ~= "Lua" then
@@ -1443,8 +1444,8 @@ end
 
 ---@param opts telescope.builtin.spell_suggest.opts: options to pass to the picker
 internal.spell_suggest = function(opts)
-  local cursor_word = vim.fn.expand "<cword>"
-  local suggestions = vim.fn.spellsuggest(cursor_word)
+  local cursor_word = fn.expand "<cword>"
+  local suggestions = fn.spellsuggest(cursor_word)
 
   pickers
     .new(opts, {
@@ -1475,7 +1476,7 @@ end
 ---@param opts telescope.builtin.tagstack.opts: options to pass to the picker
 internal.tagstack = function(opts)
   opts = opts or {}
-  local tagstack = vim.fn.gettagstack().items
+  local tagstack = fn.gettagstack().items
 
   local tags = {}
   for i = #tagstack, 1, -1 do
@@ -1483,7 +1484,7 @@ internal.tagstack = function(opts)
     tag.bufnr = tag.from[1]
     if api.nvim_buf_is_valid(tag.bufnr) then
       tags[#tags + 1] = tag
-      tag.filename = vim.fn.bufname(tag.bufnr)
+      tag.filename = fn.bufname(tag.bufnr)
       tag.lnum = tag.from[2]
       tag.col = tag.from[3]
 
@@ -1515,7 +1516,7 @@ end
 ---@param opts telescope.builtin.jumplist.opts: options to pass to the picker
 internal.jumplist = function(opts)
   opts = opts or {}
-  local jumplist = vim.fn.getjumplist()[1]
+  local jumplist = fn.getjumplist()[1]
 
   -- reverse the list
   local sorted_jumplist = {}

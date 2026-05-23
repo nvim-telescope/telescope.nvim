@@ -48,6 +48,7 @@
 --- can be found in the `developers.md` and `tests/automated/action_spec.lua`
 --- file.
 
+local fn = vim.fn
 local api = vim.api
 
 local popup = require "neoplen.popup"
@@ -366,7 +367,7 @@ actions.file_tab = function(prompt_bufnr)
 end
 
 actions.close_pum = function(_)
-  if 0 ~= vim.fn.pumvisible() then
+  if 0 ~= fn.pumvisible() then
     api.nvim_feedkeys(api.nvim_replace_termcodes("<c-y>", true, true, true), "n", true)
   end
 end
@@ -422,7 +423,7 @@ actions.set_command_line = function(prompt_bufnr)
     return
   end
   actions.close(prompt_bufnr)
-  vim.fn.histadd("cmd", selection.value)
+  fn.histadd("cmd", selection.value)
   vim.cmd(selection.value)
 end
 
@@ -444,11 +445,11 @@ actions.edit_register = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()
   local picker = action_state.get_current_picker(prompt_bufnr)
 
-  vim.fn.inputsave()
-  local updated_value = vim.fn.input("Edit [" .. selection.value .. "] ❯ ", selection.content)
-  vim.fn.inputrestore()
+  fn.inputsave()
+  local updated_value = fn.input("Edit [" .. selection.value .. "] ❯ ", selection.content)
+  fn.inputrestore()
   if updated_value ~= selection.content then
-    vim.fn.setreg(selection.value, updated_value)
+    fn.setreg(selection.value, updated_value)
     selection.content = updated_value
   end
 
@@ -524,7 +525,7 @@ end
 local function ask_to_confirm(prompt, default_value, yes_values)
   yes_values = yes_values or { "y", "yes" }
   default_value = default_value or ""
-  local confirmation = vim.fn.input(prompt, default_value)
+  local confirmation = fn.input(prompt, default_value)
   confirmation = string.lower(confirmation)
   if string.len(confirmation) == 0 then
     return false
@@ -676,7 +677,7 @@ actions.git_rename_branch = function(prompt_bufnr)
     return
   end
   -- Keeps the selected branch name for the input that asks for the new branch name
-  local new_branch = vim.fn.input("New branch name: ", selection.value)
+  local new_branch = fn.input("New branch name: ", selection.value)
   if new_branch == "" then
     utils.notify("actions.git_rename_branch", {
       msg = "Missing the new branch name",
@@ -927,11 +928,11 @@ local send_selected_to_qf = function(prompt_bufnr, mode, target)
 
   api.nvim_exec_autocmds("QuickFixCmdPre", {})
   if target == "loclist" then
-    vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
+    fn.setloclist(picker.original_win_id, qf_entries, mode)
   else
     local qf_title = string.format([[%s (%s)]], picker.prompt_title, prompt)
-    vim.fn.setqflist(qf_entries, mode)
-    vim.fn.setqflist({}, "a", { title = qf_title })
+    fn.setqflist(qf_entries, mode)
+    fn.setqflist({}, "a", { title = qf_title })
   end
   api.nvim_exec_autocmds("QuickFixCmdPost", {})
 end
@@ -951,11 +952,11 @@ local send_all_to_qf = function(prompt_bufnr, mode, target)
   api.nvim_exec_autocmds("QuickFixCmdPre", {})
   local qf_title = string.format([[%s (%s)]], picker.prompt_title, prompt)
   if target == "loclist" then
-    vim.fn.setloclist(picker.original_win_id, qf_entries, mode)
-    vim.fn.setloclist(picker.original_win_id, {}, "a", { title = qf_title })
+    fn.setloclist(picker.original_win_id, qf_entries, mode)
+    fn.setloclist(picker.original_win_id, {}, "a", { title = qf_title })
   else
-    vim.fn.setqflist(qf_entries, mode)
-    vim.fn.setqflist({}, "a", { title = qf_title })
+    fn.setqflist(qf_entries, mode)
+    fn.setqflist({}, "a", { title = qf_title })
   end
   api.nvim_exec_autocmds("QuickFixCmdPost", {})
 end
@@ -1118,7 +1119,7 @@ actions.complete_tag = function(prompt_bufnr)
 
   -- incremental completion by substituting string starting from col - #line byte offset
   local col = api.nvim_win_get_cursor(0)[2] + 1
-  vim.fn.complete(col - #line, filtered_tags)
+  fn.complete(col - #line, filtered_tags)
 end
 
 --- Cycle to the next search prompt in the history
@@ -1183,9 +1184,9 @@ actions.delete_buffer = function(prompt_bufnr)
     -- according to bdelete behavior
     if ok and selection.bufnr == current_picker.original_bufnr then
       if api.nvim_win_is_valid(current_picker.original_win_id) then
-        local jumplist = vim.fn.getjumplist(current_picker.original_win_id)[1]
+        local jumplist = fn.getjumplist(current_picker.original_win_id)[1]
         for i = #jumplist, 1, -1 do
-          if jumplist[i].bufnr ~= selection.bufnr and vim.fn.bufloaded(jumplist[i].bufnr) == 1 then
+          if jumplist[i].bufnr ~= selection.bufnr and fn.bufloaded(jumplist[i].bufnr) == 1 then
             api.nvim_win_set_buf(current_picker.original_win_id, jumplist[i].bufnr)
             current_picker.original_bufnr = jumplist[i].bufnr
             return ok
@@ -1201,7 +1202,7 @@ actions.delete_buffer = function(prompt_bufnr)
       end
 
       -- window of the selected buffer got wiped, switch to first valid window
-      local win_id = vim.fn.win_getid(1, current_picker.original_tabpage)
+      local win_id = fn.win_getid(1, current_picker.original_tabpage)
       current_picker.original_win_id = win_id
       current_picker.original_bufnr = api.nvim_win_get_buf(win_id)
     end
@@ -1293,7 +1294,7 @@ actions.which_key = function(prompt_bufnr, opts)
   if not vim.tbl_isempty(km_bufs) then
     for _, buf in ipairs(km_bufs) do
       utils.buf_delete(buf)
-      local win_ids = vim.fn.win_findbuf(buf)
+      local win_ids = fn.win_findbuf(buf)
       for _, win_id in ipairs(win_ids) do
         pcall(api.nvim_win_close, win_id, true)
       end
@@ -1513,7 +1514,7 @@ actions.delete_mark = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   current_picker:delete_selection(function(selection)
     local bufname = selection.filename
-    local bufnr = vim.fn.bufnr(bufname)
+    local bufnr = fn.bufnr(bufname)
     local mark = selection.ordinal:sub(1, 1)
 
     local success
@@ -1559,7 +1560,7 @@ actions.nop = function(_) end
 actions.mouse_click = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
 
-  local pos = vim.fn.getmousepos()
+  local pos = fn.getmousepos()
   if pos.winid == picker.results_win then
     vim.schedule(function()
       picker:set_selection(pos.line - 1)
@@ -1575,7 +1576,7 @@ end
 actions.double_mouse_click = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
 
-  local pos = vim.fn.getmousepos()
+  local pos = fn.getmousepos()
   if pos.winid == picker.results_win then
     vim.schedule(function()
       picker:set_selection(pos.line - 1)
