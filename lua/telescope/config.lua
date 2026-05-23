@@ -639,7 +639,7 @@ append(
                           Important: the filetype_hook must return true or false
                           to indicate whether to continue (true) previewing or not (false),
                           respectively.
-                          Two examples:
+                          Example:
                           local putils = require("telescope.previewers.utils")
                           ... -- preview is called in telescope.setup { ... }
                             preview = {
@@ -662,14 +662,6 @@ append(
                                   return false
                                 end
                                 return true
-                              end,
-                              -- 2) Truncate lines to preview window for too large files
-                              filesize_hook = function(filepath, bufnr, opts)
-                                local path = require("neoplen.path"):new(filepath)
-                                -- opts exposes winid
-                                local height = vim.api.nvim_win_get_height(opts.winid)
-                                local lines = vim.split(path:head(height), "[\r]?\n")
-                                vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
                               end,
                             }
                           The configuration recipes for relevant examples.
