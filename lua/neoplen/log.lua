@@ -69,7 +69,12 @@ local if_nil = vim.nonnil or vim.F.if_nil
 log.new = function(config, standalone)
   config = vim.tbl_deep_extend("force", default_config, config)
 
-  local outfile = if_nil(config.outfile, vim.fs.joinpath(vim.fn.stdpath "log", config.plugin .. ".log"))
+  -- ensure that stdpath('log') exists
+  local log_dir = vim.fn.stdpath "log" --[[@as string]]
+  if vim.fn.isdirectory(log_dir) == 0 then
+    vim.fn.mkdir(log_dir, "p")
+  end
+  local outfile = if_nil(config.outfile, vim.fs.joinpath(log_dir, config.plugin .. ".log"))
 
   local obj
   if standalone then
