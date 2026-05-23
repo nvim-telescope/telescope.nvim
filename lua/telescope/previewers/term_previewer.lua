@@ -1,7 +1,5 @@
 local api = vim.api
 
-local Path = require "neoplen.path"
-
 local conf = require("telescope.config").values
 local utils = require "telescope.utils"
 local from_entry = require "telescope.from_entry"
@@ -251,12 +249,11 @@ M.cat = defaulter(function(opts)
   opts = opts or {}
 
   local maker = get_maker(opts)
-  local cwd = opts.cwd or vim.uv.cwd()
 
   return M.new_termopen_previewer {
     title = "File Preview",
     dyn_title = function(_, entry)
-      return Path:new(from_entry.path(entry, false, false)):normalize(cwd)
+      return vim.fs.normalize(from_entry.path(entry, false, false))
     end,
 
     get_command = function(entry)
@@ -274,12 +271,11 @@ M.vimgrep = defaulter(function(opts)
   opts = opts or {}
 
   local maker = get_maker(opts)
-  local cwd = opts.cwd or vim.uv.cwd()
 
   return M.new_termopen_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
-      return Path:new(from_entry.path(entry, false, false)):normalize(cwd)
+      return vim.fs.normalize(from_entry.path(entry, false, false))
     end,
 
     get_command = function(entry, status)
@@ -309,12 +305,11 @@ M.qflist = defaulter(function(opts)
   opts = opts or {}
 
   local maker = get_maker(opts)
-  local cwd = opts.cwd or vim.uv.cwd()
 
   return M.new_termopen_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
-      return Path:new(from_entry.path(entry, false, false)):normalize(cwd)
+      return vim.fs.normalize(from_entry.path(entry, false, false))
     end,
 
     get_command = function(entry, status)

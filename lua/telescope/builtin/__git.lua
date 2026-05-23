@@ -1,8 +1,6 @@
 local fn = vim.fn
 local api = vim.api
 
-local Path = require "neoplen.path"
-
 local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 local finders = require "telescope.finders"
@@ -134,7 +132,7 @@ local bcommits_picker = function(opts, title, finder)
     attach_mappings = function()
       actions.select_default:replace(actions.git_checkout_current_buffer)
       local transfrom_file = function()
-        return opts.current_file and Path:new(opts.current_file):make_relative(opts.cwd) or ""
+        return opts.current_file and vim.fs.relpath(opts.cwd, opts.current_file) or ""
       end
 
       local get_buffer_of_orig = function(selection)
@@ -237,7 +235,7 @@ git.bcommits_range = function(opts)
     line_number_last = utils.if_nil(line_number_last, fn.line ".")
   end
   local line_range =
-    string.format("%d,%d:%s", line_number_first, line_number_last, Path:new(opts.current_file):make_relative(opts.cwd))
+    string.format("%d,%d:%s", line_number_first, line_number_last, vim.fs.relpath(opts.cwd, opts.current_file))
 
   local title = "Git BCommits in range"
   local finder = finders.new_oneshot_job(
@@ -471,7 +469,7 @@ local current_path_toplevel = function()
   if gitdir == "" then
     return nil
   end
-  return Path:new(vim.fs.dirname(gitdir)):absolute()
+  return vim.fs.abspath(vim.fs.dirname(gitdir))
 end
 
 local set_opts_cwd = function(opts)
