@@ -113,6 +113,7 @@ local diagnostics_to_tbl = function(opts)
       lnum = diagnostic.lnum + 1,
       col = diagnostic.col + 1,
       text = vim.trim(diagnostic.message:gsub("[\n]", "")),
+      code = diagnostic.code,
       type = severities[diagnostic.severity] or severities[1],
     }
   end
