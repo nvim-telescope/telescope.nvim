@@ -10,7 +10,6 @@
 local api = vim.api
 
 local log = require "telescope.log"
-local Path = require "plenary.path"
 local state = require "telescope.state"
 local utils = require "telescope.utils"
 
@@ -97,7 +96,7 @@ do
     if buf_command ~= "drop" and buf_command ~= "tab drop" then
       vim.cmd(string.format("%s %d", buf_command, bufnr))
     else
-      vim.cmd(string.format("%s %s", buf_command, vim.fn.fnameescape(api.nvim_buf_get_name(bufnr))))
+      vim.cmd { cmd = buf_command, args = { api.nvim_buf_get_name(bufnr) } }
     end
   end
 end
@@ -192,8 +191,11 @@ action_set.edit = function(prompt_bufnr, command)
     -- check if we didn't pick a different buffer
     -- prevents restarting lsp server
     if api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
-      filename = Path:new(filename):normalize(vim.uv.cwd())
-      pcall(vim.cmd, string.format("%s %s", command, vim.fn.fnameescape(filename)))
+      filename = vim.fs.normalize(filename)
+      local bufnr = vim.fn.bufadd(filename)
+      vim.fn.bufload(bufnr)
+      vim.bo[bufnr].buflisted = true
+      edit_buffer(command, bufnr)
     end
   end
 
