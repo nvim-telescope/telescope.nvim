@@ -37,7 +37,7 @@ function from_entry.path(entry, validate, escape)
     end
   end
   if escape then
-    -- WARNING: relies on `isfname` and does not escape `(` and `)`
+    -- WARNING: relies on `isfname`, thus does not escape `(` and `)` on Windows
     return vim.fn.fnameescape(path)
   end
   return path
