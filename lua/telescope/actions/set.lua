@@ -94,9 +94,13 @@ do
       )
     end
     if buf_command ~= "drop" and buf_command ~= "tab drop" then
-      vim.cmd(string.format("%s %d", buf_command, bufnr))
+      pcall(function()
+        vim.cmd(string.format("%s %d", buf_command, bufnr))
+      end)
     else
-      vim.cmd { cmd = buf_command, args = { api.nvim_buf_get_name(bufnr) } }
+      pcall(function()
+        vim.cmd { cmd = buf_command, args = { api.nvim_buf_get_name(bufnr) } }
+      end)
     end
   end
 end
