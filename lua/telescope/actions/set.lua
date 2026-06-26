@@ -193,7 +193,6 @@ action_set.edit = function(prompt_bufnr, command)
     if api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
       filename = vim.fs.normalize(filename)
       local bufnr = vim.fn.bufadd(filename)
-      vim.fn.bufload(bufnr)
       vim.bo[bufnr].buflisted = true
       edit_buffer(command, bufnr)
     end
