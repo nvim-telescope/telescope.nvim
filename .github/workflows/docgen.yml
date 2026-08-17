@@ -31,5 +31,5 @@ jobs:
           export PATH="${PWD}/_neovim/bin:${PATH}"
           export VIM="${PWD}/_neovim/share/nvim/runtime"
           nvim --version
-          make docgen
+          make docs
           git diff --exit-code

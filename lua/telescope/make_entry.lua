@@ -31,12 +31,12 @@
 ---
 --- TODO: Document something we call `entry_index`
 
+local fs = vim.fs
+local fn = vim.fn
 local api = vim.api
 
 local entry_display = require "telescope.pickers.entry_display"
 local utils = require "telescope.utils"
-local strings = require "plenary.strings"
-local Path = require "plenary.path"
 
 local treesitter_type_highlight = {
   ["associated"] = "TSConstant",
@@ -182,7 +182,7 @@ do
       end
 
       if k == "path" then
-        local retpath = Path:new({ t.cwd, t.value }):absolute()
+        local retpath = fs.abspath(fs.joinpath(t.cwd, t.value))
         if not vim.uv.fs_access(retpath, "R") then
           retpath = t.value
         end
@@ -278,10 +278,10 @@ do
 
     local execute_keys = {
       path = function(t)
-        if Path:new(t.filename):is_absolute() then
+        if fn.isabsolutepath(t.filename) == 1 then
           return t.filename, false
         else
-          return Path:new({ t.cwd, t.filename }):absolute(), false
+          return fs.abspath(fs.joinpath(t.cwd, t.filename)), false
         end
       end,
 
@@ -589,7 +589,7 @@ function make_entry.gen_from_buffer(opts)
   local icon_width = 0
   if not disable_devicons then
     local icon, _ = utils.get_devicons("fname", disable_devicons)
-    icon_width = strings.strdisplaywidth(icon)
+    icon_width = fn.strdisplaywidth(icon)
   end
 
   local displayer = entry_display.create {
@@ -601,8 +601,6 @@ function make_entry.gen_from_buffer(opts)
       { remaining = true },
     },
   }
-
-  local cwd = utils.path_expand(opts.cwd or vim.uv.cwd())
 
   local make_display = function(entry)
     -- bufnr_width + modes + icon + 3 spaces + : + lnum
@@ -628,7 +626,7 @@ function make_entry.gen_from_buffer(opts)
 
   return function(entry)
     local filename = entry.info.name ~= "" and entry.info.name or nil
-    local bufname = filename and Path:new(filename):normalize(cwd) or "[No Name]"
+    local bufname = filename and fs.normalize(filename) or "[No Name]"
 
     local hidden = entry.info.hidden == 1 and "h" or "a"
     local readonly = vim.bo[entry.bufnr].readonly and "=" or " "
@@ -726,7 +724,7 @@ function make_entry.gen_from_packages(opts)
 
   local make_display = function(module_name)
     local p_path = package.searchpath(module_name, package.path) or ""
-    local display = string.format("%-" .. opts.column_len .. "s : %s", module_name, vim.fn.fnamemodify(p_path, ":~:."))
+    local display = string.format("%-" .. opts.column_len .. "s : %s", module_name, fn.fnamemodify(p_path, ":~:."))
 
     return display
   end
@@ -824,7 +822,7 @@ function make_entry.gen_from_registers(opts)
   end
 
   return function(entry)
-    local contents = vim.fn.getreg(entry, 1)
+    local contents = fn.getreg(entry, 1)
     return make_entry.set_default_entry_mt({
       value = entry,
       ordinal = string.format("%s %s", entry, contents),
@@ -1021,8 +1019,7 @@ function make_entry.gen_from_ctags(opts)
   opts = opts or {}
 
   local show_kind = utils.if_nil(opts.show_kind, true)
-  local cwd = utils.path_expand(opts.cwd or vim.uv.cwd())
-  local current_file = Path:new(api.nvim_buf_get_name(opts.bufnr)):normalize(cwd)
+  local current_file = fs.normalize(api.nvim_buf_get_name(opts.bufnr))
 
   local display_items = {
     { width = 16 },
@@ -1081,7 +1078,7 @@ function make_entry.gen_from_ctags(opts)
     end
 
     if k == "path" then
-      local retpath = Path:new({ t.filename }):absolute()
+      local retpath = fs.abspath(t.filename)
       if not vim.uv.fs_access(retpath, "R") then
         retpath = t.filename
       end
@@ -1104,13 +1101,13 @@ function make_entry.gen_from_ctags(opts)
     end
     local kind = string.match(extension_fields or "", "kind:(%S+)")
 
-    if Path.path.sep == "\\" then
+    if utils.pathsep == "\\" then
       file = string.gsub(file, "/", "\\")
     end
 
     if opts.only_current_file then
       if current_file_cache[file] == nil then
-        current_file_cache[file] = Path:new(file):normalize(cwd) == current_file
+        current_file_cache[file] = fs.normalize(file) == current_file
       end
 
       if current_file_cache[file] == false then
@@ -1160,9 +1157,7 @@ function make_entry.gen_from_diagnostics(opts)
         local status
         status, sign = pcall(function()
           -- only the first char is upper all others are lowercase
-          return vim.trim(
-            vim.fn.sign_getdefined("DiagnosticSign" .. severity:lower():gsub("^%l", string.upper))[1].text
-          )
+          return vim.trim(fn.sign_getdefined("DiagnosticSign" .. severity:lower():gsub("^%l", string.upper))[1].text)
         end)
 
         if not status then
@@ -1408,7 +1403,7 @@ function make_entry.gen_from_git_status(opts)
       status = mod,
       ordinal = entry,
       display = make_display,
-      path = Path:new({ opts.cwd, file }):absolute(),
+      path = fs.abspath(fs.joinpath(opts.cwd, file)),
     }, opts)
   end
 end

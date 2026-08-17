@@ -3,17 +3,16 @@
 
 local api = vim.api
 
-local Path = require "plenary.path"
-local Job = require "plenary.job"
-
+local Job = require "neoplen.job"
 local log = require "telescope.log"
+local truncate = require("neoplen.strings").truncate
 
-local truncate = require("plenary.strings").truncate
 local get_status = require("telescope.state").get_status
 
 local utils = {}
 
-utils.iswin = vim.uv.os_uname().sysname == "Windows_NT"
+utils.iswin = vim.fn.has "win32" == 1
+utils.pathsep = utils.iswin and "\\" or "/"
 
 utils.if_nil = vim.nonnil or vim.F.if_nil -- TODO: remove with nvim 0.12 drop
 
@@ -70,10 +69,6 @@ utils.path_expand = function(path)
     end
   end
   return (path:gsub("(.)/$", "%1"))
-end
-
-utils.get_separator = function()
-  return Path.path.sep
 end
 
 utils.cycle = function(i, n)
@@ -169,7 +164,8 @@ utils.filter_symbols = function(results, opts, post_filter)
 end
 
 local path_filename_first = function(path, reverse_directories)
-  local dirs = vim.split(path, utils.get_separator())
+  local pathsep = utils.pathsep
+  local dirs = vim.split(path, pathsep)
   local filename
 
   if reverse_directories then
@@ -179,7 +175,7 @@ local path_filename_first = function(path, reverse_directories)
     filename = table.remove(dirs, #dirs)
   end
 
-  local tail = table.concat(dirs, utils.get_separator())
+  local tail = table.concat(dirs, pathsep)
   -- Trim prevents a top-level filename to have a trailing white space
   local transformed_path = vim.trim(filename .. " " .. tail)
   local path_style = { { { #filename, #transformed_path }, "TelescopeResultsComment" } }
@@ -203,15 +199,55 @@ local path_truncate = function(path, truncate_len, opts)
   return truncate(path, opts.__length - opts.__prefix, nil, -1)
 end
 
-local path_shorten = function(path, length, exclude)
-  if exclude ~= nil then
-    return Path:new(path):shorten(length, exclude)
-  else
-    return Path:new(path):shorten(length)
+local path_shorten = function(filename, len, exclude)
+  len = len or 1
+  exclude = exclude or { -1 }
+  local exc = {}
+  local pathsep = utils.pathsep
+
+  -- get parts in a table
+  local parts = {}
+  local empty_pos = {}
+  for m in (filename .. pathsep):gmatch("(.-)" .. pathsep) do
+    if m ~= "" then
+      parts[#parts + 1] = m
+    else
+      table.insert(empty_pos, #parts + 1)
+    end
   end
+
+  for _, v in pairs(exclude) do
+    if v < 0 then
+      exc[v + #parts + 1] = true
+    else
+      exc[v] = true
+    end
+  end
+
+  local final_path_components = {}
+  local count = 1
+  for _, match in ipairs(parts) do
+    if not exc[count] and #match > len then
+      table.insert(final_path_components, string.sub(match, 1, len))
+    else
+      table.insert(final_path_components, match)
+    end
+    table.insert(final_path_components, pathsep)
+    count = count + 1
+  end
+
+  local l = #final_path_components -- so that we don't need to keep calculating length
+  table.remove(final_path_components, l) -- remove final slash
+
+  -- add back empty positions
+  for i = #empty_pos, 1, -1 do
+    table.insert(final_path_components, empty_pos[i], pathsep)
+  end
+
+  return table.concat(final_path_components)
 end
 
-local path_abs = function(path, opts)
+local path_rel = function(path, opts)
   local cwd
   if opts.cwd then
     cwd = opts.cwd
@@ -221,7 +257,7 @@ local path_abs = function(path, opts)
   else
     cwd = vim.uv.cwd()
   end
-  return Path:new(path):make_relative(cwd)
+  return vim.fs.relpath(cwd, path) or path
 end
 
 -- IMPORTANT: This function should have been a local function as it's only used
@@ -229,15 +265,15 @@ end
 -- local we would potential break consumers of this method.
 utils.path_smart = (function()
   local paths = {}
-  local os_sep = utils.get_separator()
+  local pathsep = utils.pathsep
   return function(filepath)
     local final = filepath
     if #paths ~= 0 then
-      local dirs = vim.split(filepath, os_sep)
+      local dirs = vim.split(filepath, pathsep)
       local max = 1
       for _, p in pairs(paths) do
         if #p > 0 and p ~= filepath then
-          local _dirs = vim.split(p, os_sep)
+          local _dirs = vim.split(p, pathsep)
           for i = 1, math.min(#dirs, #_dirs) do
             if (dirs[i] ~= _dirs[i]) and i > max then
               max = i
@@ -253,7 +289,7 @@ utils.path_smart = (function()
         final = ""
         for k, v in pairs(dirs) do
           if k >= max - 1 then
-            final = final .. (#final > 0 and os_sep or "") .. v
+            final = final .. (#final > 0 and pathsep or "") .. v
           end
         end
       end
@@ -263,7 +299,7 @@ utils.path_smart = (function()
       table.insert(paths, filepath)
     end
     if final and final ~= filepath then
-      return ".." .. os_sep .. final
+      return ".." .. pathsep .. final
     else
       return filepath
     end
@@ -271,12 +307,12 @@ utils.path_smart = (function()
 end)()
 
 utils.path_tail = (function()
-  local os_sep = utils.get_separator()
+  local pathsep = utils.pathsep
 
-  if os_sep == "/" then
+  if pathsep == "/" then
     return function(path)
       for i = #path, 1, -1 do
-        if path:sub(i, i) == os_sep then
+        if path:sub(i, i) == pathsep then
           return path:sub(i + 1, -1)
         end
       end
@@ -286,7 +322,7 @@ utils.path_tail = (function()
     return function(path)
       for i = #path, 1, -1 do
         local c = path:sub(i, i)
-        if c == os_sep or c == "/" then
+        if c == pathsep or c == "/" then
           return path:sub(i + 1, -1)
         end
       end
@@ -367,7 +403,7 @@ utils.transform_path = function(opts, path)
     end
 
     if not vim.tbl_contains(path_display, "absolute") and not path_display.absolute then
-      transformed_path = path_abs(transformed_path, opts)
+      transformed_path = path_rel(transformed_path, opts)
     end
 
     if vim.tbl_contains(path_display, "smart") or path_display.smart then
@@ -518,16 +554,6 @@ function utils.max_split(s, pattern, maxsplit)
   end
 
   return t
-end
-
--- IMPORTANT: This function should have been a local function as it's only used
--- in this file, but the code was already exported a long time ago. By making it
--- local we would potential break consumers of this method.
-function utils.data_directory()
-  local sourced_file = require("plenary.debug_utils").sourced_filepath()
-  local base_directory = vim.fn.fnamemodify(sourced_file, ":h:h:h")
-
-  return Path:new({ base_directory, "data" }):absolute() .. Path.path.sep
 end
 
 function utils.buffer_dir()
@@ -770,6 +796,15 @@ end
 
 utils.split_lines = function(s, opts)
   return vim.split(s, "\r?\n", opts)
+end
+
+--- @param filename string
+--- @return string
+function utils.read_file(filename)
+  local file = assert(io.open(filename, "r"))
+  local data = file:read "*a"
+  file:close()
+  return data
 end
 
 return utils

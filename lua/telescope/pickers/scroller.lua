@@ -1,4 +1,4 @@
-local scroller = {}
+local M = {}
 
 local range_calculators = {
   ascending = function(max_results, num_results)
@@ -40,7 +40,7 @@ local scroll_calculators = {
   end,
 }
 
-scroller.create = function(scroll_strategy, sorting_strategy)
+M.create = function(scroll_strategy, sorting_strategy)
   local range_fn = range_calculators[sorting_strategy]
   if not range_fn then
     error(debug.traceback("Unknown sorting strategy: " .. sorting_strategy))
@@ -83,14 +83,14 @@ scroller.create = function(scroll_strategy, sorting_strategy)
   end
 end
 
-scroller.top = function(sorting_strategy, max_results, num_results)
+M.top = function(sorting_strategy, max_results, num_results)
   if sorting_strategy == "ascending" then
     return 0
   end
   return (num_results > max_results) and 0 or (max_results - num_results)
 end
 
-scroller.middle = function(sorting_strategy, max_results, num_results)
+M.middle = function(sorting_strategy, max_results, num_results)
   local mid_pos
 
   if sorting_strategy == "ascending" then
@@ -102,14 +102,14 @@ scroller.middle = function(sorting_strategy, max_results, num_results)
   return (num_results < max_results) and mid_pos or math.floor(max_results / 2)
 end
 
-scroller.bottom = function(sorting_strategy, max_results, num_results)
+M.bottom = function(sorting_strategy, max_results, num_results)
   if sorting_strategy == "ascending" then
     return math.min(max_results, num_results) - 1
   end
   return max_results - 1
 end
 
-scroller.better = function(sorting_strategy)
+M.better = function(sorting_strategy)
   if sorting_strategy == "ascending" then
     return -1
   else
@@ -117,8 +117,8 @@ scroller.better = function(sorting_strategy)
   end
 end
 
-scroller.worse = function(sorting_strategy)
-  return -(scroller.better(sorting_strategy))
+M.worse = function(sorting_strategy)
+  return -(M.better(sorting_strategy))
 end
 
-return scroller
+return M

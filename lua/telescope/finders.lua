@@ -1,4 +1,4 @@
-local Job = require "plenary.job"
+local Job = require "neoplen.job"
 
 local make_entry = require "telescope.make_entry"
 local log = require "telescope.log"

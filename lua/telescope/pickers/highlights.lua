@@ -4,7 +4,7 @@ local log = require "telescope.log"
 local conf = require("telescope.config").values
 local utils = require "telescope.utils"
 
-local highlights = {}
+local M = {}
 
 local ns_telescope_selection = api.nvim_create_namespace "telescope_selection"
 local ns_telescope_multiselection = api.nvim_create_namespace "telescope_multiselection"
@@ -118,8 +118,8 @@ function Highlighter:hi_multiselect(row, is_selected)
   end
 end
 
-highlights.new = function(...)
+M.new = function(...)
   return Highlighter:new(...)
 end
 
-return highlights
+return M

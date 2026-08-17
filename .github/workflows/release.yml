@@ -20,8 +20,6 @@ jobs:
             A highly extendable fuzzy finder over lists.
             Built on the latest awesome features from neovim core.
             Telescope is centered around modularity, allowing for easy customization.
-          dependencies: |
-            plenary.nvim
           copy_directories: |
             doc
             ftplugin

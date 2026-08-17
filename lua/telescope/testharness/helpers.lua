@@ -1,30 +1,30 @@
-local test_helpers = {}
+local M = {}
 
-test_helpers.get_picker = function()
+M.get_picker = function()
   local state = require "telescope.state"
   return state.get_status(vim.api.nvim_get_current_buf()).picker
 end
 
-test_helpers.get_results_bufnr = function()
+M.get_results_bufnr = function()
   local state = require "telescope.state"
   return state.get_status(vim.api.nvim_get_current_buf()).layout.results.bufnr
 end
 
-test_helpers.get_file = function()
+M.get_file = function()
   return vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":t")
 end
 
-test_helpers.get_prompt = function()
+M.get_prompt = function()
   return vim.api.nvim_buf_get_lines(0, 0, -1, false)[1]
 end
 
-test_helpers.get_results = function()
-  return vim.api.nvim_buf_get_lines(test_helpers.get_results_bufnr(), 0, -1, false)
+M.get_results = function()
+  return vim.api.nvim_buf_get_lines(M.get_results_bufnr(), 0, -1, false)
 end
 
-test_helpers.get_best_result = function()
-  local results = test_helpers.get_results()
-  local picker = test_helpers.get_picker()
+M.get_best_result = function()
+  local results = M.get_results()
+  local picker = M.get_picker()
 
   if picker.sorting_strategy == "ascending" then
     return results[1]
@@ -33,24 +33,24 @@ test_helpers.get_best_result = function()
   end
 end
 
-test_helpers.get_selection = function()
+M.get_selection = function()
   local state = require "telescope.state"
   return state.get_global_key "selected_entry"
 end
 
-test_helpers.get_selection_value = function()
-  return test_helpers.get_selection().value
+M.get_selection_value = function()
+  return M.get_selection().value
 end
 
-test_helpers.make_globals = function()
-  GetFile = test_helpers.get_file -- luacheck: globals GetFile
-  GetPrompt = test_helpers.get_prompt -- luacheck: globals GetPrompt
+M.make_globals = function()
+  GetFile = M.get_file -- luacheck: globals GetFile
+  GetPrompt = M.get_prompt -- luacheck: globals GetPrompt
 
-  GetResults = test_helpers.get_results -- luacheck: globals GetResults
-  GetBestResult = test_helpers.get_best_result -- luacheck: globals GetBestResult
+  GetResults = M.get_results -- luacheck: globals GetResults
+  GetBestResult = M.get_best_result -- luacheck: globals GetBestResult
 
-  GetSelection = test_helpers.get_selection -- luacheck: globals GetSelection
-  GetSelectionValue = test_helpers.get_selection_value -- luacheck: globals GetSelectionValue
+  GetSelection = M.get_selection -- luacheck: globals GetSelection
+  GetSelectionValue = M.get_selection_value -- luacheck: globals GetSelectionValue
 end
 
-return test_helpers
+return M

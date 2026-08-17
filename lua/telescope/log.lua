@@ -1,4 +1,4 @@
-return require("plenary.log").new {
+return require("neoplen.log").new {
   plugin = "telescope",
   level = "info",
 }
