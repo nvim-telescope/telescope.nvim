@@ -56,11 +56,12 @@ This section should guide you to run your first builtin pickers.
 * [sharkdp/fd](https://github.com/sharkdp/fd) (finder)
 * [devicons](https://github.com/nvim-tree/nvim-web-devicons) (icons)
 
-We also strongly suggest installing a native telescope sorter to significantly improve
+We also strongly suggest installing a native telescope sorter extension to significantly improve
 sorting performance:
 * [telescope-fzf-native.nvim](https://github.com/nvim-telescope/telescope-fzf-native.nvim)
 or
 * [telescope-fzy-native.nvim](https://github.com/nvim-telescope/telescope-fzy-native.nvim).
+
 For more information and a performance benchmark take a look at the
 [Extensions](https://github.com/nvim-telescope/telescope.nvim/wiki/Extensions)
 wiki.
@@ -81,6 +82,10 @@ e.g. using [lazy.nvim](https://github.com/folke/lazy.nvim)
     }
 }
 ```
+
+> [!NOTE]
+> To get `fzf-native` loaded and working with Telescope, you need to call `load_extension`, somewhere after the `setup` function: `require('telescope').load_extension('fzf')`.
+> For more details, see the [fzf-native documentation](https://github.com/nvim-telescope/telescope-fzf-native.nvim#telescope-setup-and-configuration).
 
 ### Checkhealth
 
