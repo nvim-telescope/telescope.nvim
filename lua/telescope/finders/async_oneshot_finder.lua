@@ -87,7 +87,7 @@ return function(opts)
       local current_count = num_results
       for index = 1, current_count do
         -- TODO: Figure out scheduling...
-        if index % await_count then
+        if index % await_count == 0 then
           async.util.scheduler()
         end
 
