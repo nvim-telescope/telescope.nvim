@@ -457,6 +457,12 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
     return
   end
 
+  -- Highlight against the line as it exists in the buffer, not the caller's
+  -- `display`: update_prefix may have written a caret whose byte width differs
+  -- from the entry_prefix `display` was built with, which would shift the
+  -- sorter's byte offsets onto the wrong columns. Fall back to `display` only
+  -- if the row can't be read (e.g. an invalid/empty buffer).
+  display = api.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1] or display
   local highlights = self.sorter:highlighter(prompt, display)
 
   if highlights then
