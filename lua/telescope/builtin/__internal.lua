@@ -843,16 +843,70 @@ internal.man_pages = function(opts)
   assert(vim.islist(opts.sections), "sections should be a list")
   opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
     local uname = vim.uv.os_uname()
-    local sysname = string.lower(uname.sysname)
-    if sysname == "darwin" then
-      local major_version = tonumber(vim.fn.matchlist(uname.release, [[^\(\d\+\)\..*]])[2]) or 0
-      return major_version >= 22 and { "apropos", "." } or { "apropos", " " }
-    elseif sysname == "freebsd" then
+    local sysname = uname.sysname:lower()
+    if sysname == "freebsd" then
       return { "apropos", "." }
-    else
+    elseif sysname ~= "darwin" then
       return { "apropos", "" }
     end
+
+    -- Cache apropos result on macOS speed up. macOS with SIP (System Integrity
+    -- Protection) cannot update the whatis database, so makes apropos much
+    -- slower. We cache results and invalidate it when the mtime's of man
+    -- directories are changed.
+    local mansects, cache_filename
+    if vim.env.MANSECT then
+      mansects = vim.split(vim.env.MANSECT, ":")
+      cache_filename = ("telescope-man-pages-%s"):format(vim.env.MANSECT:gsub(":", "-"))
+    else
+      -- This MANSECT default value is derived from apropos' man page
+      mansects = vim.split("1:8:2:3:3lua:n:4:5:6:7:9:l", ":")
+      cache_filename = "telescope-man-pages"
+    end
+    local cache_path = vim.fs.joinpath(vim.fn.stdpath "cache", cache_filename)
+    local cache_stat = vim.uv.fs_stat(cache_path)
+
+    if cache_stat and cache_stat.size > 0 then
+      local manpath = vim.env.MANPATH or vim.trim(vim.system({ "manpath" }):wait().stdout)
+      local man_dirs = vim.split(manpath, ":", { trimempty = true })
+
+      local mansects_map = vim.iter(mansects):fold({}, function(a, b)
+        a[b] = true
+        return a
+      end)
+      local function is_man_dir(path)
+        local s = vim.fs.basename(path):match "^man(.*)$"
+        return s and mansects_map[s] or false
+      end
+
+      -- Detect mtime of man directories that is newer than cache file
+      local cache_invalid = vim.iter(man_dirs):any(function(man_dir)
+        local search = vim.fs.dir(man_dir, {
+          depth = 2,
+          skip = function(dir_name)
+            return not is_man_dir(dir_name)
+          end,
+        })
+        return vim.iter(search):any(function(ent, typ)
+          if typ ~= "directory" or not is_man_dir(ent) then
+            return false
+          end
+          local dir = vim.fs.joinpath(man_dir, ent)
+          local stat = vim.uv.fs_stat(dir)
+          return stat and stat.mtime.sec > cache_stat.mtime.sec or false
+        end)
+      end)
+
+      if not cache_invalid then
+        return { "cat", cache_path }
+      end
+    end
+
+    local major_version = tonumber(vim.fn.matchlist(uname.release, [[^\(\d\+\)\..*]])[2]) or 0
+    local cmd = major_version >= 22 and "apropos ." or "apropos ' '"
+    return { "sh", "-c", ("%s | tee %s"):format(cmd, cache_path) }
   end)
+
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts)
   opts.env = { PATH = vim.env.PATH, MANPATH = vim.env.MANPATH }
 
