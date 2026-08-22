@@ -543,7 +543,7 @@ sorters.get_substr_matcher = function()
   return Sorter:new {
     highlighter = substr_highlighter(make_display),
     scoring_function = function(_, prompt, _, entry)
-      if #prompt == 0 then
+      if #prompt == 0 or entry == nil then
         return 1
       end
 
