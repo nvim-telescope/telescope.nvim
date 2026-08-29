@@ -20,6 +20,7 @@ local highlights = {
   TelescopePreviewNormal = { default = true, link = "TelescopeNormal" },
   TelescopePromptNormal = { default = true, link = "TelescopeNormal" },
   TelescopeResultsNormal = { default = true, link = "TelescopeNormal" },
+  TelescopeResultsEntrySeparator = { default = true, link = "TelescopeNormal" },
 
   -- Border highlight groups.
   --   Use TelescopeBorder to override the default.
