@@ -324,6 +324,7 @@ function Picker:new(opts)
     __scrolling_limit = tonumber(utils.if_nil(opts.temp__scrolling_limit, 250)),
 
     __locations_input = utils.if_nil(opts.__locations_input, false),
+    _counter = 0,
   }, self)
 
   obj.create_layout = opts.create_layout or config.values.create_layout or default_create_layout
@@ -369,6 +370,27 @@ function Picker:new(opts)
   return obj
 end
 
+function Picker:add_ref()
+  self._counter = self._counter + 1
+  if (self._counter > 1) then
+    utils.notify("Picker:add_ref", {'_counter > 1', level = "WARN"})
+  end
+end
+
+function Picker:dec_ref()
+  self._counter = self._counter - 1
+  if (self._counter < 0) then
+    self._counter = 0
+    utils.notify("Picker:dec_ref", {'_counter < 0', level = "WARN"})
+  end
+end
+
+function Picker:get_ref()
+  self._counter = self._counter + 1
+  if (self._counter ~= 1) and (self._counter ~= 0) then
+    utils.notify("Picker:get_ref", {'_counter = ' .. self._counter, level = "WARN"})
+  end
+end
 --- Take an index and get a row.
 ---@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
 ---@param index number: the index in line_manager
@@ -1569,6 +1591,11 @@ end
 function pickers.on_close_prompt(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
+
+  if picker._counter ~= 0 then
+    return
+  end
+
   require("telescope.actions.state").get_current_history():reset()
 
   if type(picker.cache_picker) == "table" then
