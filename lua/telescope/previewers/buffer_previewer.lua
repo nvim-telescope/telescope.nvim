@@ -231,6 +231,34 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
   end)
 end
 
+---Attempt to load a buffer for a URI-like entry (e.g. `fugitive://...`) that
+---may be populated via `BufReadCmd`. This buffer can then be used as a content
+---source for the previewer.
+---@param entry table: the entry to load
+---@return integer|nil bufnr: the loaded bufnr, or nil if a buffer couldn't be loaded.
+local get_src_buf_for_uri = function(entry)
+  local name = from_entry.path(entry, false, false)
+  -- Require two or more scheme characters to avoid matching windows drive letters.
+  if type(name) ~= "string" or not name:match "^%a[%w+.-]+://" then
+    return nil
+  end
+  local bufnr = vim.uri_to_bufnr(name)
+  if not api.nvim_buf_is_loaded(bufnr) then
+    -- runs the plugin's BufReadCmd
+    pcall(vim.fn.bufload, bufnr)
+    local ok = api.nvim_buf_is_loaded(bufnr)
+      and (api.nvim_buf_line_count(bufnr) > 1 or api.nvim_buf_get_lines(bufnr, 0, 1, false)[1] ~= "")
+    if not ok then
+      -- Buffer still empty probably means no BufReadCmd present, don't leave a
+      -- useless buffer around.
+      pcall(api.nvim_buf_delete, bufnr, { force = true })
+      return nil
+    end
+  end
+
+  return bufnr
+end
+
 local PREVIEW_TIMEOUT_MS = 250
 local PREVIEW_FILESIZE_MB = 25
 local PREVIEW_HIGHLIGHT_MB = 1
@@ -553,18 +581,34 @@ previewers.vimgrep = defaulter(function(opts)
       -- builtin.buffers: bypass path validation for terminal buffers that don't have appropriate path
       local has_buftype = entry.bufnr and api.nvim_buf_is_valid(entry.bufnr) and vim.bo[entry.bufnr].buftype ~= ""
         or false
+      -- The buffer to copy from when there is no readable path.
+      local src_bufnr = has_buftype and entry.bufnr or nil
       local p
-      if not has_buftype then
+      if not src_bufnr then
         p = from_entry.path(entry, true, false)
         if p == nil or p == "" then
-          return
+          -- It's not a path on disk. It may be a URI populated via a BufReadCmd autocmd.
+          src_bufnr = get_src_buf_for_uri(entry)
+          if not src_bufnr then
+            return
+          end
+        elseif p == "[No Name]" and entry.bufnr then
+          -- Workaround for unnamed buffer when using builtin.buffers
+          src_bufnr = entry.bufnr
         end
       end
 
-      -- Workaround for unnamed buffer when using builtin.buffer
-      if entry.bufnr and (p == "[No Name]" or has_buftype) then
-        local lines = api.nvim_buf_get_lines(entry.bufnr, 0, -1, false)
+      if src_bufnr then
+        local lines = api.nvim_buf_get_lines(src_bufnr, 0, -1, false)
         api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
+        ---@type string|nil
+        local ft = vim.bo[src_bufnr].filetype
+        if not ft or ft == "" then
+          ft = vim.filetype.match { buf = src_bufnr }
+        end
+        if ft then
+          putils.highlighter(self.state.bufnr, ft, { preview = opts.preview })
+        end
         -- schedule so that the lines are actually there and can be jumped onto when we call jump_to_line
         vim.schedule(function()
           jump_to_line(self, self.state.bufnr, entry)
