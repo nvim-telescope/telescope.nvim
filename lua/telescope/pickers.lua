@@ -372,23 +372,23 @@ end
 
 function Picker:add_ref()
   self._counter = self._counter + 1
-  if (self._counter > 1) then
-    utils.notify("Picker:add_ref", {'_counter > 1', level = "WARN"})
+  if self._counter > 1 then
+    utils.notify("Picker:add_ref", { "_counter > 1", level = "WARN" })
   end
 end
 
 function Picker:dec_ref()
   self._counter = self._counter - 1
-  if (self._counter < 0) then
+  if self._counter < 0 then
     self._counter = 0
-    utils.notify("Picker:dec_ref", {'_counter < 0', level = "WARN"})
+    utils.notify("Picker:dec_ref", { "_counter < 0", level = "WARN" })
   end
 end
 
 function Picker:get_ref()
   self._counter = self._counter + 1
   if (self._counter ~= 1) and (self._counter ~= 0) then
-    utils.notify("Picker:get_ref", {'_counter = ' .. self._counter, level = "WARN"})
+    utils.notify("Picker:get_ref", { "_counter = " .. self._counter, level = "WARN" })
   end
 end
 --- Take an index and get a row.
