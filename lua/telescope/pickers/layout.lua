@@ -1,18 +1,17 @@
----@tag telescope.pickers.layout
----@config { ["module"] = "telescope.pickers.layout" }
-
----@brief [[
+---@brief
 --- The telescope pickers layout can be configured using the
 --- |telescope.defaults.create_layout| option.
 ---
+--- <pre>
 --- Parameters: ~
----   - picker : A Picker object.
+---   • picker : A Picker object.
 ---
 --- Return: ~
----   - layout : instance of `TelescopeLayout` class.
+---   • layout : instance of `TelescopeLayout` class.
 ---
 --- Example: ~
---- <code>
+--- </pre>
+--- ```lua
 --- local Layout = require "telescope.pickers.layout"
 ---
 --- require("telescope").setup {
@@ -67,8 +66,7 @@
 ---     return layout
 ---   end,
 --- }
---- </code>
----@brief ]]
+--- ```
 
 local function wrap_instance(class, instance)
   local self = instance
@@ -78,6 +76,7 @@ local function wrap_instance(class, instance)
   return self
 end
 
+---@nodoc
 ---@class TelescopeWindowBorder.config
 ---@field bufnr integer
 ---@field winid integer|nil
@@ -110,6 +109,7 @@ local Border = setmetatable({}, {
 ---@param pos "NW"|"N"|"NE"|"SW"|"S"|"SE"|nil
 function Border:change_title(title, pos) end
 
+---@nodoc
 ---@class TelescopeWindow.config
 ---@field bufnr integer
 ---@field winid integer|nil
@@ -137,6 +137,7 @@ local Window = setmetatable({}, {
   __name = "TelescopeWindow",
 })
 
+---@nodoc
 ---@class TelescopeLayout.config
 ---@field mount function: (self: TelescopeLayout):nil
 ---@field unmount function: (self: TelescopeLayout):nil

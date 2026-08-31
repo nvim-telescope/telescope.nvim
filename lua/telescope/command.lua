@@ -1,7 +1,4 @@
----@tag telescope.command
----@config { ["module"] = "telescope.command" }
-
----@brief [[
+---@brief
 ---
 --- Telescope commands can be called through two apis,
 --- the lua api and the viml api.
@@ -9,25 +6,25 @@
 --- The lua api is the more direct way to interact with Telescope, as you directly call the
 --- lua functions that Telescope defines.
 --- It can be called in a lua file using commands like:
---- <pre>
---- `require("telescope.builtin").find_files({hidden=true, layout_config={prompt_position="top"}})`
---- </pre>
+--- ```lua
+--- require("telescope.builtin").find_files { hidden = true, layout_config = { prompt_position = "top" } }
+--- ```
 --- If you want to use this api from a vim file you should prepend `lua` to the command, as below:
---- <pre>
---- `lua require("telescope.builtin").find_files({hidden=true, layout_config={prompt_position="top"}})`
---- </pre>
+--- ```vim
+--- lua require("telescope.builtin").find_files { hidden = true, layout_config = { prompt_position = "top" } }
+--- ```
 --- If you want to use this api from a neovim command line you should prepend `:lua` to
 --- the command, as below:
---- <pre>
---- `:lua require("telescope.builtin").find_files({hidden=true, layout_config={prompt_position="top"}})`
---- </pre>
+--- ```vim
+--- :lua require("telescope.builtin").find_files { hidden = true, layout_config = { prompt_position = "top" } }
+--- ```
 ---
 --- The viml api is more indirect, as first the command must be parsed to the relevant lua
 --- equivalent, which brings some limitations.
 --- The viml api can be called using commands like:
---- <pre>
---- `:Telescope find_files hidden=true layout_config={"prompt_position":"top"}`
---- </pre>
+--- ```vim
+--- :Telescope find_files hidden=true layout_config={"prompt_position":"top"}
+--- ```
 --- This involves setting options using an `=` and using viml syntax for lists and
 --- dictionaries when the corresponding lua function requires a table.
 ---
@@ -36,12 +33,11 @@
 --- only want to search within the folder `/foo bar/subfolder/` you could not do that using the
 --- viml api, as the path name contains a space.
 --- Similarly, you could NOT set the `prompt_position` to `"top"` using the following command:
---- <pre>
---- `:Telescope find_files layout_config={ "prompt_position" : "top" }`
---- </pre>
+--- ```vim
+--- :Telescope find_files layout_config={ "prompt_position" : "top" }
+--- ```
 --- as there are spaces in the option.
----
----@brief ]]
+
 local themes = require "telescope.themes"
 local builtin = require "telescope.builtin"
 local extensions = require("telescope._extensions").manager

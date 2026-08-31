@@ -202,13 +202,13 @@ previewers.new_termopen_previewer = function(opts)
       local term_opts = {
         cwd = opts.cwd or vim.uv.cwd(),
         env = opts.env or conf.set_env,
+        term = true,
       }
 
       local cmd = opts.get_command(entry, status)
       if cmd then
         api.nvim_buf_call(bufnr, function()
-          --TODO(clason): replace with jobstart when dropping support for Nvim 0.10
-          set_term_id(self, vim.fn.termopen(cmd, term_opts))
+          set_term_id(self, vim.fn.jobstart(cmd, term_opts))
         end)
       end
       set_bufentry(self, entry)

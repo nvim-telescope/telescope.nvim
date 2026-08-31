@@ -1,19 +1,16 @@
----@tag telescope.layout
----@config { ["module"] = "telescope.layout" }
-
----@brief [[
+---@brief
 --- The layout of telescope pickers can be adjusted using the
 --- |telescope.defaults.layout_strategy| and |telescope.defaults.layout_config| options.
 --- For example, the following configuration changes the default layout strategy and the
 --- default size of the picker:
---- <code>
----   require('telescope').setup{
----     defaults = {
----       layout_strategy = 'vertical',
----       layout_config = { height = 0.95 },
----     },
----   }
---- </code>
+--- ```lua
+--- require('telescope').setup{
+---   defaults = {
+---     layout_strategy = 'vertical',
+---     layout_config = { height = 0.95 },
+---   },
+--- }
+--- ```
 ---
 --- ────────────────────────────────────────────────────────────────────────────────
 ---
@@ -21,23 +18,23 @@
 ---
 --- All layout strategies are functions with the following signature:
 ---
---- <code>
----   function(picker, columns, lines, layout_config)
----     -- Do some calculations here...
----     return {
----       preview = preview_configuration
----       results = results_configuration,
----       prompt = prompt_configuration,
----     }
----   end
---- </code>
+--- ```lua
+--- function(picker, columns, lines, layout_config)
+---   -- Do some calculations here...
+---   return {
+---     preview = preview_configuration
+---     results = results_configuration,
+---     prompt = prompt_configuration,
+---   }
+--- end
+--- ```
 ---
 --- <pre>
 ---   Parameters: ~
----     - picker        : A Picker object. (docs coming soon)
----     - columns       : (number) Columns in the vim window
----     - lines         : (number) Lines in the vim window
----     - layout_config : (table) The configuration values specific to the picker.
+---     • picker        : A Picker object. (docs coming soon)
+---     • columns       : (number) Columns in the vim window
+---     • lines         : (number) Lines in the vim window
+---     • layout_config : (table) The configuration values specific to the picker.
 --- </pre>
 ---
 --- This means you can create your own layout strategy if you want! Just be aware
@@ -48,12 +45,12 @@
 --- resembles what you want from "./lua/telescope/pickers/layout_strategies.lua" in the
 --- telescope repo.
 ---
----@brief ]]
 
 local api = vim.api
 
 local resolve = require "telescope.config.resolve"
 local p_window = require "telescope.pickers.window"
+local utils = require "telescope.utils"
 
 local get_border_size = function(opts)
   if opts.window.border == false then
@@ -72,12 +69,12 @@ local calc_tabline = function(max_lines)
 end
 
 -- Helper function for capping over/undersized width/height, and calculating spacing
---@param cur_size number: size to be capped
---@param max_size any: the maximum size, e.g. max_lines or max_columns
---@param bs number: the size of the border
---@param w_num number: the maximum number of windows of the picker in the given direction
---@param b_num number: the number of border rows/column in the given direction (when border enabled)
---@param s_num number: the number of gaps in the given direction (when border disabled)
+---@param cur_size number: size to be capped
+---@param max_size any: the maximum size, e.g. max_lines or max_columns
+---@param bs number: the size of the border
+---@param w_num number: the maximum number of windows of the picker in the given direction
+---@param b_num number: the number of border rows/column in the given direction (when border enabled)
+---@param s_num number: the number of gaps in the given direction (when border disabled)
 local calc_size_and_spacing = function(cur_size, max_size, bs, w_num, b_num, s_num)
   local spacing = s_num * (1 - bs) + b_num * bs
   cur_size = math.min(cur_size, max_size)
@@ -115,17 +112,17 @@ local adjust_pos = function(pos, ...)
   end
 end
 
---@param strategy_name string: the name of the layout_strategy we are validating for
---@param configuration table: table with keys for each option available
---@param values table: table containing all of the non-default options we want to set
---@param default_layout_config table: table with the default values to configure layouts
---@return table: table containing the combined options (defaults and non-defaults)
+---@param strategy_name string: the name of the layout_strategy we are validating for
+---@param configuration table: table with keys for each option available
+---@param values table: table containing all of the non-default options we want to set
+---@param default_layout_config table?: table with the default values to configure layouts
+---@return table: table containing the combined options (defaults and non-defaults)
 local function validate_layout_config(strategy_name, configuration, values, default_layout_config)
   assert(strategy_name, "It is required to have a strategy name for validation.")
   local valid_configuration_keys = get_valid_configuration_keys(configuration)
 
   -- If no default_layout_config provided, check Telescope's config values
-  default_layout_config = vim.F.if_nil(default_layout_config, require("telescope.config").values.layout_config)
+  default_layout_config = utils.if_nil(default_layout_config, require("telescope.config").values.layout_config)
 
   local result = {}
   local get_value = function(k)
@@ -216,11 +213,11 @@ layout_strategies._format = function(name)
 
   local add_value = function(k, val)
     if type(val) == "string" then
-      table.insert(results, string.format("  - %s: %s", k, val))
+      table.insert(results, string.format("  • %s: %s", k, val))
     elseif type(val) == "table" then
-      table.insert(results, string.format("  - %s:", k))
+      table.insert(results, string.format("  • %s:", k))
       for _, line in ipairs(val) do
-        table.insert(results, string.format("    - %s", line))
+        table.insert(results, string.format("    • %s", line))
       end
     else
       error(string.format("expected string or table but found '%s'", type(val)))
@@ -243,15 +240,15 @@ layout_strategies._format = function(name)
   end
 
   table.insert(results, "</pre>")
-  return results
+  return table.concat(results, "\n")
 end
 
---@param name string: the name to be assigned to the layout
---@param layout_config table: table where keys are the available options for the layout
---@param layout function: function with signature
---          function(self, max_columns, max_lines, layout_config): table
---        the returned table is the sizing and location information for the parts of the picker
---@retun function: wrapped function that inputs a validated layout_config into the `layout` function
+---@param name string: the name to be assigned to the layout
+---@param layout_config table: table where keys are the available options for the layout
+---@param layout function: function with signature
+---          function(self, max_columns, max_lines, layout_config): table
+---        the returned table is the sizing and location information for the parts of the picker
+---@retun function: wrapped function that inputs a validated layout_config into the `layout` function
 local function make_documented_layout(name, layout_config, layout)
   -- Save configuration data to be used by documentation
   layout_strategies._configurations[name] = layout_config
@@ -265,7 +262,7 @@ local function make_documented_layout(name, layout_config, layout)
       validate_layout_config(
         name,
         layout_config,
-        vim.tbl_deep_extend("keep", vim.F.if_nil(override_layout, {}), vim.F.if_nil(self.layout_config, {}))
+        vim.tbl_deep_extend("keep", utils.if_nil(override_layout, {}), utils.if_nil(self.layout_config, {}))
       )
     )
   end
@@ -292,7 +289,7 @@ end
 --- │                                                  │
 --- └──────────────────────────────────────────────────┘
 --- </pre>
----@eval { ["description"] = require('telescope.pickers.layout_strategies')._format("horizontal") }
+---@eval return require('telescope.pickers.layout_strategies')._format("horizontal")
 ---
 layout_strategies.horizontal = make_documented_layout(
   "horizontal",
@@ -322,7 +319,7 @@ layout_strategies.horizontal = make_documented_layout(
       -- Cap over/undersized width (with previewer)
       width, w_space = calc_size_and_spacing(width, max_columns, bs, 2, 4, 1)
 
-      preview.width = resolve.resolve_width(vim.F.if_nil(layout_config.preview_width, function(_, cols)
+      preview.width = resolve.resolve_width(utils.if_nil(layout_config.preview_width, function(_, cols)
         if cols < 150 then
           return math.floor(cols * 0.4)
         elseif cols < 200 then
@@ -432,12 +429,17 @@ layout_strategies.horizontal = make_documented_layout(
 --- │                                                  │
 --- └──────────────────────────────────────────────────┘
 --- </pre>
----@eval { ["description"] = require("telescope.pickers.layout_strategies")._format("center") }
+---@eval return require("telescope.pickers.layout_strategies")._format("center")
 ---
 layout_strategies.center = make_documented_layout(
   "center",
-  vim.tbl_extend("error", shared_options, {
+  vim.tbl_extend("force", shared_options, {
     preview_cutoff = "When lines are less than this value, the preview will be disabled",
+    height = {
+      "Controls the height of the results window in the center layout.",
+      "Does not control the entire layout height — setting this too high can shrink or obscure the preview window.",
+      "See |resolver.resolve_height()|",
+    },
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -453,6 +455,7 @@ layout_strategies.center = make_documented_layout(
     local width = resolve.resolve_width(width_opt)(self, max_columns, max_lines)
 
     -- This sets the height for the whole layout
+    -- Setting this too high can shrink or obscure the preview window.
     local height_opt = layout_config.height
     local height = resolve.resolve_height(height_opt)(self, max_columns, max_lines)
 
@@ -558,7 +561,7 @@ layout_strategies.center = make_documented_layout(
 --- │                                                  │
 --- └──────────────────────────────────────────────────┘
 --- </pre>
----@eval { ["description"] = require("telescope.pickers.layout_strategies")._format("cursor") }
+---@eval return require("telescope.pickers.layout_strategies")._format("cursor")
 layout_strategies.cursor = make_documented_layout(
   "cursor",
   vim.tbl_extend("error", {
@@ -597,7 +600,7 @@ layout_strategies.cursor = make_documented_layout(
       -- Cap over/undersized width (with preview)
       width, w_space = calc_size_and_spacing(width, max_columns, bs, 2, 4, 0)
 
-      preview.width = resolve.resolve_width(vim.F.if_nil(layout_config.preview_width, 2 / 3))(self, width, max_lines)
+      preview.width = resolve.resolve_width(utils.if_nil(layout_config.preview_width, 2 / 3))(self, width, max_lines)
       prompt.width = width - preview.width - w_space
       results.width = prompt.width
     else
@@ -671,7 +674,7 @@ layout_strategies.cursor = make_documented_layout(
 --- │                                                  │
 --- └──────────────────────────────────────────────────┘
 --- </pre>
----@eval { ["description"] = require("telescope.pickers.layout_strategies")._format("vertical") }
+---@eval return require("telescope.pickers.layout_strategies")._format("vertical")
 ---
 layout_strategies.vertical = make_documented_layout(
   "vertical",
@@ -710,7 +713,7 @@ layout_strategies.vertical = make_documented_layout(
       height, h_space = calc_size_and_spacing(height, max_lines, bs, 3, 6, 2)
 
       preview.height =
-        resolve.resolve_height(vim.F.if_nil(layout_config.preview_height, 0.5))(self, max_columns, height)
+        resolve.resolve_height(utils.if_nil(layout_config.preview_height, 0.5))(self, max_columns, height)
     else
       -- Cap over/undersized height (without previewer)
       height, h_space = calc_size_and_spacing(height, max_lines, bs, 2, 4, 1)
@@ -772,7 +775,7 @@ layout_strategies.vertical = make_documented_layout(
 --- Flex layout swaps between `horizontal` and `vertical` strategies based on the window width
 ---  -  Supports |layout_strategies.vertical| or |layout_strategies.horizontal| features
 ---
----@eval { ["description"] = require("telescope.pickers.layout_strategies")._format("flex") }
+---@eval return require("telescope.pickers.layout_strategies")._format("flex")
 ---
 layout_strategies.flex = make_documented_layout(
   "flex",
@@ -783,8 +786,8 @@ layout_strategies.flex = make_documented_layout(
     horizontal = "Options to pass when switching to horizontal layout",
   }),
   function(self, max_columns, max_lines, layout_config)
-    local flip_columns = vim.F.if_nil(layout_config.flip_columns, layout_config.horizontal.preview_cutoff)
-    local flip_lines = vim.F.if_nil(layout_config.flip_lines, layout_config.vertical.preview_cutoff)
+    local flip_columns = utils.if_nil(layout_config.flip_columns, layout_config.horizontal.preview_cutoff)
+    local flip_lines = utils.if_nil(layout_config.flip_lines, layout_config.vertical.preview_cutoff)
 
     if max_columns < flip_columns and max_lines >= flip_lines then
       self.__flex_strategy = "vertical"
@@ -874,7 +877,7 @@ layout_strategies.bottom_pane = make_documented_layout(
     local tbln
     max_lines, tbln = calc_tabline(max_lines)
 
-    local height = vim.F.if_nil(resolve.resolve_height(layout_config.height)(self, max_columns, max_lines), 25)
+    local height = utils.if_nil(resolve.resolve_height(layout_config.height)(self, max_columns, max_lines), 25)
     if type(layout_config.height) == "table" and type(layout_config.height.padding) == "number" then
       -- Since bottom_pane only has padding at the top, we only need half as much padding in total
       -- This doesn't match the vim help for `resolve.resolve_height`, but it matches expectations
@@ -897,7 +900,7 @@ layout_strategies.bottom_pane = make_documented_layout(
       -- Cap over/undersized width (with preview)
       local width, w_space = calc_size_and_spacing(max_columns, max_columns, bs, 2, 4, 0)
 
-      preview.width = resolve.resolve_width(vim.F.if_nil(layout_config.preview_width, 0.5))(self, width, max_lines)
+      preview.width = resolve.resolve_width(utils.if_nil(layout_config.preview_width, 0.5))(self, width, max_lines)
       results.width = width - preview.width - w_space
     else
       results.width = prompt.width

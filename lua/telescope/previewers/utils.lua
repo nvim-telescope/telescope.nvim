@@ -113,8 +113,8 @@ end
 
 --- Attach default highlighter which will choose between regex and ts
 utils.highlighter = function(bufnr, ft, opts)
-  opts = vim.F.if_nil(opts, {})
-  opts.preview = vim.F.if_nil(opts.preview, {})
+  opts = ts_utils.if_nil(opts, {})
+  opts.preview = ts_utils.if_nil(opts.preview, {})
   opts.preview.treesitter = (function()
     if type(opts.preview) == "table" and opts.preview.treesitter then
       return opts.preview.treesitter
@@ -142,7 +142,7 @@ utils.highlighter = function(bufnr, ft, opts)
       return false
     end
 
-    if vim.tbl_contains(vim.F.if_nil(opts.preview.treesitter.disable, {}), ft) then
+    if vim.tbl_contains(ts_utils.if_nil(opts.preview.treesitter.disable, {}), ft) then
       return false
     end
 
@@ -169,8 +169,8 @@ end
 -- Attach ts highlighter
 utils.ts_highlighter = function(bufnr, ft)
   if has_filetype(ft) then
-    local lang = vim.treesitter.language.get_lang(ft) or ft
-    if lang and ts_utils.has_ts_parser(lang) then
+    local lang = vim.treesitter.language.get_lang(ft)
+    if lang and vim.treesitter.language.add(lang) then
       return vim.treesitter.start(bufnr, lang)
     end
   end
@@ -178,7 +178,7 @@ utils.ts_highlighter = function(bufnr, ft)
 end
 
 utils.set_preview_message = function(bufnr, winid, message, fillchar)
-  fillchar = vim.F.if_nil(fillchar, "╱")
+  fillchar = ts_utils.if_nil(fillchar, "╱")
   local height = api.nvim_win_get_height(winid)
   local width = api.nvim_win_get_width(winid)
   api.nvim_buf_set_lines(
@@ -233,6 +233,52 @@ utils.binary_mime_type = function(mime_type)
     return false
   end
   return true
+end
+
+local CHECK_TIME_INTERVAL = 200
+
+--- Split a string into lines, checking every `CHECK_TIME_INTERVAL` characters
+--- whether to timeout.
+---
+--- Roughly 4-5x faster than using `vim.gsplit` and checking timeout between each line.
+--- The latter approach is also more prone to exceeding timeout if a file has huge lines.
+---@param s string file content to split into lines
+---@param opts {start_time: number, preview: { timeout: number }, file_encoding: string?}
+---@return string[]?
+function utils.timed_split_lines(s, opts)
+  local lines = {}
+  local line_start = 1
+  local timeout = opts.preview.timeout or math.huge
+
+  for i = 1, #s do
+    local ch = s:byte(i)
+    if ch == 10 then
+      local line
+      if s:byte(i - 1) ~= 13 then
+        line = s:sub(line_start, i - 1)
+      else
+        line = s:sub(line_start, i - 2)
+      end
+      line_start = i + 1
+      table.insert(lines, opts.file_encoding and vim.iconv(line, opts.file_encoding, "utf8") or line)
+    end
+
+    if i % CHECK_TIME_INTERVAL == 0 then
+      local diff_time = (vim.uv.hrtime() - opts.start_time) / 1e6
+      if diff_time > timeout then
+        return
+      end
+    end
+  end
+
+  -- Only append the tail when it is non-empty.
+  -- neovim treats \n and \r\n as "line terminators" instead of "line separator"
+  local tail = s:sub(line_start)
+  if tail ~= "" then
+    table.insert(lines, opts.file_encoding and vim.iconv(tail, opts.file_encoding, "utf8") or tail)
+  end
+
+  return lines
 end
 
 return utils

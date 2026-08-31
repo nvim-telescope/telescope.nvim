@@ -21,8 +21,9 @@ local get_git_command_output = function(args, opts)
   return utils.get_os_command_output(git_command(args, opts), opts.cwd)
 end
 
+---@param opts telescope.builtin.git_files.opts
 git.files = function(opts)
-  if opts.is_bare then
+  if opts._is_bare then
     utils.notify("builtin.git_files", {
       msg = "This operation must be run in a work tree",
       level = "ERROR",
@@ -30,8 +31,8 @@ git.files = function(opts)
     return
   end
 
-  local show_untracked = vim.F.if_nil(opts.show_untracked, false)
-  local recurse_submodules = vim.F.if_nil(opts.recurse_submodules, false)
+  local show_untracked = utils.if_nil(opts.show_untracked, false)
+  local recurse_submodules = utils.if_nil(opts.recurse_submodules, false)
   if show_untracked and recurse_submodules then
     utils.notify("builtin.git_files", {
       msg = "Git does not support both --others and --recurse-submodules",
@@ -42,8 +43,8 @@ git.files = function(opts)
 
   -- By creating the entry maker after the cwd options,
   -- we ensure the maker uses the cwd options when being created.
-  opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_file(opts))
-  opts.git_command = vim.F.if_nil(
+  opts.entry_maker = utils.if_nil(opts.entry_maker, make_entry.gen_from_file(opts))
+  opts.git_command = utils.if_nil(
     opts.git_command,
     git_command({ "-c", "core.quotepath=false", "ls-files", "--exclude-standard", "--cached" }, opts)
   )
@@ -66,10 +67,11 @@ git.files = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.git_commits.opts
 git.commits = function(opts)
-  opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
+  opts.entry_maker = utils.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
   opts.git_command =
-    vim.F.if_nil(opts.git_command, git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--", "." }, opts))
+    utils.if_nil(opts.git_command, git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--", "." }, opts))
 
   pickers
     .new(opts, {
@@ -94,9 +96,9 @@ git.commits = function(opts)
 end
 
 git.stash = function(opts)
-  opts.show_branch = vim.F.if_nil(opts.show_branch, true)
-  opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_stash(opts))
-  opts.git_command = vim.F.if_nil(opts.git_command, git_command({ "--no-pager", "stash", "list" }, opts))
+  opts.show_branch = utils.if_nil(opts.show_branch, true)
+  opts.entry_maker = utils.if_nil(opts.entry_maker, make_entry.gen_from_git_stash(opts))
+  opts.git_command = utils.if_nil(opts.git_command, git_command({ "--no-pager", "stash", "list" }, opts))
 
   pickers
     .new(opts, {
@@ -186,12 +188,13 @@ local bcommits_picker = function(opts, title, finder)
   })
 end
 
+---@param opts telescope.builtin.git_bcommits.opts
 git.bcommits = function(opts)
   opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
-  opts.current_file = vim.F.if_nil(opts.current_file, api.nvim_buf_get_name(opts.bufnr))
-  opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
+  opts.current_file = utils.if_nil(opts.current_file, api.nvim_buf_get_name(opts.bufnr))
+  opts.entry_maker = utils.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
   opts.git_command =
-    vim.F.if_nil(opts.git_command, git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--follow" }, opts))
+    utils.if_nil(opts.git_command, git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--follow" }, opts))
 
   local title = "Git BCommits"
   local finder = finders.new_oneshot_job(
@@ -204,21 +207,22 @@ git.bcommits = function(opts)
   bcommits_picker(opts, title, finder):find()
 end
 
+---@param opts telescope.builtin.git_bcommits_range.opts
 git.bcommits_range = function(opts)
   opts.current_line = (opts.current_file == nil) and get_current_buf_line(opts.winnr) or nil
-  opts.current_file = vim.F.if_nil(opts.current_file, api.nvim_buf_get_name(opts.bufnr))
-  opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
-  opts.git_command = vim.F.if_nil(
+  opts.current_file = utils.if_nil(opts.current_file, api.nvim_buf_get_name(opts.bufnr))
+  opts.entry_maker = utils.if_nil(opts.entry_maker, make_entry.gen_from_git_commits(opts))
+  opts.git_command = utils.if_nil(
     opts.git_command,
     git_command({ "log", "--pretty=oneline", "--abbrev-commit", "--no-patch", "-L" }, opts)
   )
   local visual = string.find(vim.fn.mode(), "[vV]") ~= nil
 
   local line_number_first = opts.from
-  local line_number_last = vim.F.if_nil(opts.to, line_number_first)
+  local line_number_last = utils.if_nil(opts.to, line_number_first)
   if visual then
-    line_number_first = vim.F.if_nil(line_number_first, vim.fn.line "v")
-    line_number_last = vim.F.if_nil(line_number_last, vim.fn.line ".")
+    line_number_first = utils.if_nil(line_number_first, vim.fn.line "v")
+    line_number_last = utils.if_nil(line_number_last, vim.fn.line ".")
   elseif opts.operator then
     opts.operator = false
     opts.operator_callback = true
@@ -228,8 +232,8 @@ git.bcommits_range = function(opts)
     line_number_first = vim.fn.line "'["
     line_number_last = vim.fn.line "']"
   elseif line_number_first == nil then
-    line_number_first = vim.F.if_nil(line_number_first, vim.fn.line ".")
-    line_number_last = vim.F.if_nil(line_number_last, vim.fn.line ".")
+    line_number_first = utils.if_nil(line_number_first, vim.fn.line ".")
+    line_number_last = utils.if_nil(line_number_last, vim.fn.line ".")
   end
   local line_range =
     string.format("%d,%d:%s", line_number_first, line_number_last, Path:new(opts.current_file):make_relative(opts.cwd))
@@ -245,6 +249,7 @@ git.bcommits_range = function(opts)
   bcommits_picker(opts, title, finder):find()
 end
 
+---@param opts telescope.builtin.git_branches.opts
 git.branches = function(opts)
   local format = "%(HEAD)"
     .. "%(refname)"
@@ -257,7 +262,7 @@ git.branches = function(opts)
     opts
   )
 
-  local show_remote_tracking_branches = vim.F.if_nil(opts.show_remote_tracking_branches, true)
+  local show_remote_tracking_branches = utils.if_nil(opts.show_remote_tracking_branches, true)
 
   local results = {}
   local widths = {
@@ -362,8 +367,9 @@ git.branches = function(opts)
     :find()
 end
 
+---@param opts telescope.builtin.git_status.opts
 git.status = function(opts)
-  if opts.is_bare then
+  if opts._is_bare then
     utils.notify("builtin.git_status", {
       msg = "This operation must be run in a work tree",
       level = "ERROR",
@@ -371,14 +377,15 @@ git.status = function(opts)
     return
   end
 
-  local args = { "status", "--porcelain=v1", "--", "." }
+  local args = { "status", "-z", "--", "." }
 
   local gen_new_finder = function()
-    if vim.F.if_nil(opts.expand_dir, true) then
+    if utils.if_nil(opts.expand_dir, true) then
       table.insert(args, #args - 1, "-uall")
     end
     local git_cmd = git_command(args, opts)
-    opts.entry_maker = vim.F.if_nil(opts.entry_maker, make_entry.gen_from_git_status(opts))
+    opts.entry_maker = utils.if_nil(opts.entry_maker, make_entry.gen_from_git_status(opts))
+    opts.split_char = "\0"
     return finders.new_oneshot_job(git_cmd, opts)
   end
 
@@ -467,7 +474,7 @@ local current_path_toplevel = function()
 end
 
 local set_opts_cwd = function(opts)
-  opts.use_git_root = vim.F.if_nil(opts.use_git_root, true)
+  opts.use_git_root = utils.if_nil(opts.use_git_root, true)
   if opts.cwd then
     opts.cwd = utils.path_expand(opts.cwd)
   elseif opts.use_file_path then
@@ -490,7 +497,7 @@ local set_opts_cwd = function(opts)
     if in_worktree[1] ~= "true" and in_bare[1] ~= "true" then
       try_worktrees(opts)
     elseif in_worktree[1] ~= "true" and in_bare[1] == "true" then
-      opts.is_bare = true
+      opts._is_bare = true
     end
   else
     if opts.use_git_root then
@@ -502,7 +509,7 @@ end
 local function apply_checks(mod)
   for k, v in pairs(mod) do
     mod[k] = function(opts)
-      opts = vim.F.if_nil(opts, {})
+      opts = utils.if_nil(opts, {})
 
       set_opts_cwd(opts)
       v(opts)

@@ -1,6 +1,6 @@
 blank_issues_enabled: false
 contact_links:
    - name: Question
-     url: https://https://github.com/nvim-telescope/telescope.nvim/discussions
+     url: https://github.com/nvim-telescope/telescope.nvim/discussions
      about: Usage questions, support requests, and general discussions
 

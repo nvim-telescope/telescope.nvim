@@ -1,41 +1,34 @@
----@tag telescope.actions.generate
----@config { ["module"] = "telescope.actions.generate", ["name"] = "ACTIONS_GENERATE" }
-
----@brief [[
+---@brief
 --- Module for convenience to override defaults of corresponding |telescope.actions| at |telescope.setup()|.
 ---
 --- General usage:
---- <code>
----   require("telescope").setup {
----     defaults = {
----       mappings = {
----         n = {
----           ["?"] = action_generate.which_key {
----             name_width = 20, -- typically leads to smaller floats
----             max_height = 0.5, -- increase potential maximum height
----             separator = " > ", -- change sep between mode, keybind, and name
----             close_with_action = false, -- do not close float on action
----           },
+--- ```lua
+--- require("telescope").setup {
+---   defaults = {
+---     mappings = {
+---       n = {
+---         ["?"] = action_generate.which_key {
+---           name_width = 20, -- typically leads to smaller floats
+---           max_height = 0.5, -- increase potential maximum height
+---           separator = " > ", -- change sep between mode, keybind, and name
+---           close_with_action = false, -- do not close float on action
 ---         },
 ---       },
 ---     },
----   }
---- </code>
----@brief ]]
+---   },
+--- }
+--- ```
 
 local actions = require "telescope.actions"
 local config = require "telescope.config"
 local action_state = require "telescope.actions.state"
 local finders = require "telescope.finders"
+local utils = require "telescope.utils"
 
 local action_generate = {}
 
---- Display the keymaps of registered actions similar to which-key.nvim.<br>
---- - Floating window:
----   - Appears on the opposite side of the prompt.
----   - Resolves to minimum required number of lines to show hints with `opts` or truncates entries at `max_height`.
----   - Closes automatically on action call and can be disabled with by setting `close_with_action` to false.
----@param opts table: options to pass to toggling registered actions
+---@inlinedoc
+---@class telescope.actions.generate.which_key.opts
 ---@field max_height number: % of max. height or no. of rows for hints (default: 0.4), see |resolver.resolve_height()|
 ---@field only_show_current_mode boolean: only show keymaps for the current mode (default: true)
 ---@field mode_width number: fixed width of mode to be shown (default: 1)
@@ -53,6 +46,13 @@ local action_generate = {}
 ---@field border_hl string: winhl of "Normal" for keymap borders (default: "TelescopePromptBorder")
 ---@field winblend number: pseudo-transparency of keymap hints floating window
 ---@field zindex number: z-index of keymap hints floating window (default: 100)
+
+--- Display the keymaps of registered actions similar to which-key.nvim.
+--- - Floating window:
+---   - Appears on the opposite side of the prompt.
+---   - Resolves to minimum required number of lines to show hints with `opts` or truncates entries at `max_height`.
+---   - Closes automatically on action call and can be disabled with by setting `close_with_action` to false.
+---@param opts table: options to pass to toggling registered actions
 action_generate.which_key = function(opts)
   local which_key = function(prompt_bufnr)
     actions.which_key(prompt_bufnr, opts)
@@ -62,13 +62,13 @@ end
 
 action_generate.refine = function(prompt_bufnr, opts)
   opts = opts or {}
-  opts.prompt_to_prefix = vim.F.if_nil(opts.prompt_to_prefix, false)
-  opts.prefix_hl_group = vim.F.if_nil(opts.prompt_hl_group, "TelescopePromptPrefix")
-  opts.prompt_prefix = vim.F.if_nil(opts.prompt_prefix, config.values.prompt_prefix)
-  opts.reset_multi_selection = vim.F.if_nil(opts.reset_multi_selection, false)
-  opts.reset_prompt = vim.F.if_nil(opts.reset_prompt, true)
-  opts.sorter = vim.F.if_nil(opts.sorter, config.values.generic_sorter {})
-  local push_history = vim.F.if_nil(opts.push_history, true)
+  opts.prompt_to_prefix = utils.if_nil(opts.prompt_to_prefix, false)
+  opts.prefix_hl_group = utils.if_nil(opts.prompt_hl_group, "TelescopePromptPrefix")
+  opts.prompt_prefix = utils.if_nil(opts.prompt_prefix, config.values.prompt_prefix)
+  opts.reset_multi_selection = utils.if_nil(opts.reset_multi_selection, false)
+  opts.reset_prompt = utils.if_nil(opts.reset_prompt, true)
+  opts.sorter = utils.if_nil(opts.sorter, config.values.generic_sorter {})
+  local push_history = utils.if_nil(opts.push_history, true)
 
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local current_line = action_state.get_current_line()

@@ -1,9 +1,5 @@
----@tag telescope.utils
----@config { ["module"] = "telescope.utils" }
-
----@brief [[
+---@brief
 --- Utilities for writing telescope pickers
----@brief ]]
 
 local api = vim.api
 
@@ -18,21 +14,8 @@ local get_status = require("telescope.state").get_status
 local utils = {}
 
 utils.iswin = vim.uv.os_uname().sysname == "Windows_NT"
-utils.nvim011 = vim.fn.has "nvim-0.11" == 1
 
----TODO(clason): remove when dropping support for Nvim 0.10
-utils.hl_range = utils.nvim011 and vim.hl.range or vim.highlight.range
-
----TODO(clason): remove when dropping support for Nvim 0.10
-utils.str_byteindex = utils.nvim011 and vim.str_byteindex or vim.lsp.util._str_byteindex_enc
-
----TODO(clason): remove when dropping support for Nvim 0.10
----@param k string
----@param v any
----@param ty type
-utils.validate = utils.nvim011 and vim.validate or function(k, v, ty)
-  vim.validate { [k] = { v, ty } }
-end
+utils.if_nil = vim.nonnil or vim.F.if_nil -- TODO: remove with nvim 0.12 drop
 
 ---@param t table
 ---@return table
@@ -58,7 +41,7 @@ end
 ---@param path string
 ---@return string
 utils.path_expand = function(path)
-  utils.validate("path", path, "string")
+  vim.validate("path", path, "string")
 
   if utils.is_uri(path) then
     return path
@@ -313,7 +296,7 @@ utils.path_tail = (function()
 end)()
 
 utils.is_path_hidden = function(opts, path_display)
-  path_display = path_display or vim.F.if_nil(opts.path_display, require("telescope.config").values.path_display)
+  path_display = path_display or utils.if_nil(opts.path_display, require("telescope.config").values.path_display)
 
   return path_display == nil
     or path_display == "hidden"
@@ -368,7 +351,7 @@ utils.transform_path = function(opts, path)
   end
 
   ---@type fun(opts:table, path: string): string, table?
-  local path_display = vim.F.if_nil(opts.path_display, require("telescope.config").values.path_display)
+  local path_display = utils.if_nil(opts.path_display, require("telescope.config").values.path_display)
 
   local transformed_path = path
   local path_style = {}
@@ -674,18 +657,11 @@ utils.get_devicons = load_once(function()
   end
 end)
 
---- TODO(clason): remove when dropping support for Nvim 0.10
---- Checks if treesitter parser for language is installed
-utils.has_ts_parser = utils.nvim011 and vim.treesitter.language.add
-  or function(lang)
-    return pcall(vim.treesitter.language.add, lang)
-  end
-
 --- Telescope Wrapper around vim.notify
 ---@param funname string: name of the function that will be
 ---@param opts table: opts.level string, opts.msg string, opts.once bool
 utils.notify = function(funname, opts)
-  opts.once = vim.F.if_nil(opts.once, false)
+  opts.once = utils.if_nil(opts.once, false)
   local level = vim.log.levels[opts.level]
   if not level then
     error("Invalid error level", 2)
@@ -792,16 +768,8 @@ utils.reverse_table = function(input_table)
   return temp_table
 end
 
-utils.split_lines = (function()
-  if utils.iswin then
-    return function(s, opts)
-      return vim.split(s, "\r?\n", opts)
-    end
-  else
-    return function(s, opts)
-      return vim.split(s, "\n", opts)
-    end
-  end
-end)()
+utils.split_lines = function(s, opts)
+  return vim.split(s, "\r?\n", opts)
+end
 
 return utils

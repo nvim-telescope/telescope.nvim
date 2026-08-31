@@ -46,7 +46,7 @@ local sorting_comparator = function(opts)
     end,
   }
 
-  local sort_by = vim.F.if_nil(opts.sort_by, "buffer")
+  local sort_by = utils.if_nil(opts.sort_by, "buffer")
   return comparators[sort_by]
 end
 
@@ -61,7 +61,7 @@ local convert_diagnostic_type = function(severities, severity)
 end
 
 local diagnostics_to_tbl = function(opts)
-  opts = vim.F.if_nil(opts, {})
+  opts = utils.if_nil(opts, {})
   local items = {}
   local severities = vim.diagnostic.severity
 
@@ -113,6 +113,7 @@ local diagnostics_to_tbl = function(opts)
       lnum = diagnostic.lnum + 1,
       col = diagnostic.col + 1,
       text = vim.trim(diagnostic.message:gsub("[\n]", "")),
+      code = diagnostic.code,
       type = severities[diagnostic.severity] or severities[1],
     }
   end
@@ -136,7 +137,25 @@ diagnostics.get = function(opts)
     opts.bufnr = tonumber(opts.bufnr)
   end
   if opts.bufnr ~= nil then
-    opts.path_display = vim.F.if_nil(opts.path_display, "hidden")
+    opts.path_display = utils.if_nil(opts.path_display, "hidden")
+  end
+
+  -- call `workspace/diagnostic` request and wait for response before proceeding
+  if opts.workspace and next(vim.lsp.get_clients { method = "workspace/diagnostic" }) then
+    local got_response = false
+    vim.api.nvim_create_autocmd("LspRequest", {
+      callback = function(ev)
+        local request = ev.data.request
+        if request.method == "workspace/diagnostic" and request.type == "complete" then
+          got_response = true
+          return got_response
+        end
+      end,
+    })
+    vim.lsp.buf.workspace_diagnostics()
+    vim.wait(1000, function()
+      return got_response
+    end)
   end
 
   local locations = diagnostics_to_tbl(opts)

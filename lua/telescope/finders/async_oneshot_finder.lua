@@ -1,9 +1,9 @@
 local async = require "plenary.async"
-local async_job = require "telescope._"
-local LinesPipe = require("telescope._").LinesPipe
-
+local async_job = require "telescope.async_job"
+local utils = require "telescope.utils"
 local make_entry = require "telescope.make_entry"
 
+local LinesPipe = async_job.LinesPipe
 local await_count = 1000
 
 return function(opts)
@@ -14,7 +14,7 @@ return function(opts)
   local env = opts.env
   local fn_command = assert(opts.fn_command, "Must pass `fn_command`")
 
-  local results = vim.F.if_nil(opts.results, {})
+  local results = utils.if_nil(opts.results, {})
   local num_results = #results
 
   local job_started = false
@@ -63,7 +63,7 @@ return function(opts)
             process_result(v)
           end
         end
-        for line in stdout:iter(false) do
+        for line in stdout:iter(false, { split_char = opts.split_char }) do
           num_results = num_results + 1
 
           if num_results % await_count then
@@ -87,7 +87,7 @@ return function(opts)
       local current_count = num_results
       for index = 1, current_count do
         -- TODO: Figure out scheduling...
-        if index % await_count then
+        if index % await_count == 0 then
           async.util.scheduler()
         end
 

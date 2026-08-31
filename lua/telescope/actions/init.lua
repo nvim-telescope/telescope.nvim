@@ -1,7 +1,4 @@
----@tag telescope.actions
----@config { ["module"] = "telescope.actions" }
-
----@brief [[
+---@brief
 --- These functions are useful for people creating their own mappings.
 ---
 --- Actions can be either normal functions that expect the `prompt_bufnr` as
@@ -10,47 +7,46 @@
 --- (1) The `prompt_bufnr` of a normal function denotes the identifier of your
 --- picker which can be used to access the picker state. In practice, users
 --- most commonly access from both picker and global state via the following:
---- <code>
----   -- for utility functions
----   local action_state = require "telescope.actions.state"
+--- ```lua
+--- -- for utility functions
+--- local action_state = require "telescope.actions.state"
 ---
----   local actions = {}
----   actions.do_stuff = function(prompt_bufnr)
----     local current_picker = action_state.get_current_picker(prompt_bufnr) -- picker state
----     local entry = action_state.get_selected_entry()
----   end
---- </code>
+--- local actions = {}
+--- actions.do_stuff = function(prompt_bufnr)
+---   local current_picker = action_state.get_current_picker(prompt_bufnr) -- picker state
+---   local entry = action_state.get_selected_entry()
+--- end
+--- ```
 ---
 --- See |telescope.actions.state| for more information.
 ---
 --- (2) To transform a module of functions into a module of "action"s, you need
 --- to do the following:
---- <code>
----   local transform_mod = require("telescope.actions.mt").transform_mod
+--- ```lua
+--- local transform_mod = require("telescope.actions.mt").transform_mod
 ---
----   local mod = {}
----   mod.a1 = function(prompt_bufnr)
----     -- your code goes here
----     -- You can access the picker/global state as described above in (1).
----   end
+--- local mod = {}
+--- mod.a1 = function(prompt_bufnr)
+---   -- your code goes here
+---   -- You can access the picker/global state as described above in (1).
+--- end
 ---
----   mod.a2 = function(prompt_bufnr)
----     -- your code goes here
----   end
----   mod = transform_mod(mod)
+--- mod.a2 = function(prompt_bufnr)
+---   -- your code goes here
+--- end
+--- mod = transform_mod(mod)
 ---
----   -- Now the following is possible. This means that actions a2 will be executed
----   -- after action a1. You can chain as many actions as you want.
----   local action = mod.a1 + mod.a2
----   action(bufnr)
---- </code>
+--- -- Now the following is possible. This means that actions a2 will be executed
+--- -- after action a1. You can chain as many actions as you want.
+--- local action = mod.a1 + mod.a2
+--- action(bufnr)
+--- ```
 ---
 --- Another interesting thing to do is that these actions now have functions you
 --- can call. These functions include `:replace(f)`, `:replace_if(f, c)`,
 --- `replace_map(tbl)` and `enhance(tbl)`. More information on these functions
 --- can be found in the `developers.md` and `lua/tests/automated/action_spec.lua`
 --- file.
----@brief ]]
 
 local api = vim.api
 
@@ -156,7 +152,7 @@ actions.toggle_selection = function(prompt_bufnr)
 end
 
 --- Multi select all entries.
---- - Note: selected entries may include results not visible in the results pop up.
+---@note selected entries may include results not visible in the results pop up.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.select_all = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -193,7 +189,7 @@ actions.drop_all = function(prompt_bufnr)
 end
 
 --- Toggle multi selection for all entries.
---- - Note: toggled entries may include results not visible in the results pop up.
+---@note toggled entries may include results not visible in the results pop up.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.toggle_all = function(prompt_bufnr)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -399,7 +395,7 @@ actions._close = function(prompt_bufnr)
 end
 
 local set_edit_line = function(prompt_bufnr, fname, prefix, postfix)
-  postfix = vim.F.if_nil(postfix, "")
+  postfix = utils.if_nil(postfix, "")
   postfix = api.nvim_replace_termcodes(postfix, true, false, true)
   local selection = action_state.get_selected_entry()
   if selection == nil then
@@ -910,8 +906,8 @@ local entry_to_qf = function(entry)
   return {
     bufnr = entry.bufnr,
     filename = from_entry.path(entry, false, false),
-    lnum = vim.F.if_nil(entry.lnum, 1),
-    col = vim.F.if_nil(entry.col, 1),
+    lnum = utils.if_nil(entry.lnum, 1),
+    col = utils.if_nil(entry.col, 1),
     text = text,
     type = entry.qf_type,
   }
@@ -1255,31 +1251,30 @@ actions.remove_selected_picker = function(prompt_bufnr)
 end
 
 --- Display the keymaps of registered actions similar to which-key.nvim.<br>
---- - Notes:
----   - The defaults can be overridden via |action_generate.which_key|.
+---@note The defaults can be overridden via |action_generate.which_key|.
 ---@param prompt_bufnr number: The prompt bufnr
 actions.which_key = function(prompt_bufnr, opts)
   opts = opts or {}
-  opts.max_height = vim.F.if_nil(opts.max_height, 0.4)
-  opts.only_show_current_mode = vim.F.if_nil(opts.only_show_current_mode, true)
-  opts.mode_width = vim.F.if_nil(opts.mode_width, 1)
-  opts.keybind_width = vim.F.if_nil(opts.keybind_width, 7)
-  opts.name_width = vim.F.if_nil(opts.name_width, 30)
-  opts.line_padding = vim.F.if_nil(opts.line_padding, 1)
-  opts.separator = vim.F.if_nil(opts.separator, " -> ")
-  opts.close_with_action = vim.F.if_nil(opts.close_with_action, true)
-  opts.normal_hl = vim.F.if_nil(opts.normal_hl, "TelescopePrompt")
-  opts.border_hl = vim.F.if_nil(opts.border_hl, "TelescopePromptBorder")
-  opts.winblend = vim.F.if_nil(opts.winblend, conf.winblend)
+  opts.max_height = utils.if_nil(opts.max_height, 0.4)
+  opts.only_show_current_mode = utils.if_nil(opts.only_show_current_mode, true)
+  opts.mode_width = utils.if_nil(opts.mode_width, 1)
+  opts.keybind_width = utils.if_nil(opts.keybind_width, 7)
+  opts.name_width = utils.if_nil(opts.name_width, 30)
+  opts.line_padding = utils.if_nil(opts.line_padding, 1)
+  opts.separator = utils.if_nil(opts.separator, " -> ")
+  opts.close_with_action = utils.if_nil(opts.close_with_action, true)
+  opts.normal_hl = utils.if_nil(opts.normal_hl, "TelescopePrompt")
+  opts.border_hl = utils.if_nil(opts.border_hl, "TelescopePromptBorder")
+  opts.winblend = utils.if_nil(opts.winblend, conf.winblend)
   if type(opts.winblend) == "function" then
     opts.winblend = opts.winblend()
   end
-  opts.zindex = vim.F.if_nil(opts.zindex, 100)
-  opts.column_padding = vim.F.if_nil(opts.column_padding, "  ")
+  opts.zindex = utils.if_nil(opts.zindex, 100)
+  opts.column_padding = utils.if_nil(opts.column_padding, "  ")
 
   -- Assigning into 'opts.column_indent' would override a number with a string and
   -- cause issues with subsequent calls, keep a local copy of the string instead
-  local column_indent = table.concat(utils.repeated_table(vim.F.if_nil(opts.column_indent, 4), " "))
+  local column_indent = table.concat(utils.repeated_table(utils.if_nil(opts.column_indent, 4), " "))
 
   -- close on repeated keypress
   local km_bufs = (function()
@@ -1316,9 +1311,9 @@ actions.which_key = function(prompt_bufnr, opts)
 
   local make_display = function(mapping)
     return displayer {
-      { mapping.mode, vim.F.if_nil(opts.mode_hl, "TelescopeResultsConstant") },
-      { mapping.keybind, vim.F.if_nil(opts.keybind_hl, "TelescopeResultsVariable") },
-      { mapping.name, vim.F.if_nil(opts.name_hl, "TelescopeResultsFunction") },
+      { mapping.mode, utils.if_nil(opts.mode_hl, "TelescopeResultsConstant") },
+      { mapping.keybind, utils.if_nil(opts.keybind_hl, "TelescopeResultsVariable") },
+      { mapping.name, utils.if_nil(opts.name_hl, "TelescopeResultsFunction") },
     }
   end
 
@@ -1444,7 +1439,7 @@ actions.which_key = function(prompt_bufnr, opts)
     local row_ = highlight_tbl.row
     local col = highlight_tbl.col
     for _, hl_block in ipairs(highlight) do
-      utils.hl_range(
+      vim.hl.range(
         km_buf,
         keymap_highlights,
         hl_block[2],
@@ -1479,7 +1474,7 @@ actions.which_key = function(prompt_bufnr, opts)
   end)
 end
 
---- Move from a none fuzzy search to a fuzzy one<br>
+--- Move from a non-fuzzy search to a fuzzy one.<br>
 --- This action is meant to be used in live_grep and lsp_dynamic_workspace_symbols
 ---@param prompt_bufnr number: The prompt bufnr
 actions.to_fuzzy_refine = function(prompt_bufnr)

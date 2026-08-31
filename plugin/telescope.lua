@@ -1,5 +1,5 @@
-if 1 ~= vim.fn.has "nvim-0.10.4" then
-  error "Telescope.nvim requires at least nvim-0.10.4."
+if 1 ~= vim.fn.has "nvim-0.11" then
+  error "Telescope.nvim requires at least nvim-0.11."
   return
 end
 
