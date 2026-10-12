@@ -39,7 +39,6 @@ jobs:
           ${{ matrix.install-rg }}
           rg --version
 
-          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ../plenary.nvim
           git clone --depth 1 https://github.com/nvim-tree/nvim-web-devicons ../nvim-web-devicons
 
       - name: Run tests
