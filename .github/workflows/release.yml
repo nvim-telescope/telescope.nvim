@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: LuaRocks Upload
-        uses: lumen-oss/luarocks-tag-release@v7
+        uses: lumen-oss/luarocks-tag-release@v9
         env:
           LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}
         with:
