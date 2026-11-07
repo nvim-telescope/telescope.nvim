@@ -63,22 +63,22 @@ end
 
 local add_leaf_function
 do
-  ---A table to store all leaf async functions
-  _PlenaryLeafTable = setmetatable({}, {
+  ---A table to store all leaf async functions (local: plenary uses the global `_PlenaryLeafTable`)
+  local leaf_functions = setmetatable({}, {
     __mode = "k",
   })
 
   add_leaf_function = function(async_func, argc)
-    assert(_PlenaryLeafTable[async_func] == nil, "Async function should not already be in the table")
-    _PlenaryLeafTable[async_func] = argc
+    assert(leaf_functions[async_func] == nil, "Async function should not already be in the table")
+    leaf_functions[async_func] = argc
   end
 
   function M.is_leaf_function(async_func)
-    return _PlenaryLeafTable[async_func] ~= nil
+    return leaf_functions[async_func] ~= nil
   end
 
   function M.get_leaf_function_argc(async_func)
-    return _PlenaryLeafTable[async_func]
+    return leaf_functions[async_func]
   end
 end
 
