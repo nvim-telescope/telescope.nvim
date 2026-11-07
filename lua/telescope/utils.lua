@@ -85,20 +85,18 @@ utils.truncate = function(str, len, dots, direction)
   end
 end
 
---- Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
+--- Hybrid of `vim.fn.expand()` and `vim.fs.normalize()`
 ---
 --- Paths starting with '%', '#' or '<' are expanded with `vim.fn.expand()`.
 --- Otherwise avoids using `vim.fn.expand()` due to its overly aggressive
 --- expansion behavior which can sometimes lead to errors or the creation of
 --- non-existent paths when dealing with valid absolute paths.
 ---
---- Other paths will have '~' and environment variables expanded.
---- On Windows, backslashes are converted to forward slashes. Unlike `vim.fs.normalize()`,
---- backslashes are preserved on other platforms (where they are valid in file names),
---- and `.` and `..` are not resolved.
----
---- Trailing slashes are trimmed. With the exception of root paths.
---- eg. `/` on Unix or `C:/` on Windows
+--- The result is normalized with `vim.fs.normalize()`: '~' and environment
+--- variables are expanded, `.` and `..` are resolved, redundant and trailing
+--- slashes are removed (except for root paths, e.g. `/` or `C:/`), and on
+--- Windows backslashes are converted to forward slashes. URIs are returned
+--- unchanged.
 ---
 ---@param path string
 ---@return string
@@ -113,26 +111,7 @@ utils.path_expand = function(path)
     path = vim.fn.expand(path)
   end
 
-  if path:sub(1, 1) == "~" then
-    local home = vim.uv.os_homedir() or "~"
-    if home:sub(-1) == "\\" or home:sub(-1) == "/" then
-      home = home:sub(1, -2)
-    end
-    path = home .. path:sub(2)
-  end
-
-  path = path:gsub("%$([%w_]+)", vim.uv.os_getenv)
-  path = utils.normalize_sep(path)
-  -- keep the leading `//` of Windows UNC paths
-  local unc = utils.iswin and path:sub(1, 2) == "//"
-  path = path:gsub("/+", "/")
-  if unc then
-    path = "/" .. path
-  end
-  if path:match "^%a:/$" then
-    return path
-  end
-  return (path:gsub("(.)/$", "%1"))
+  return vim.fs.normalize(path, { win = utils.iswin })
 end
 
 utils.cycle = function(i, n)
