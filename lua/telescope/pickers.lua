@@ -1428,14 +1428,10 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
 
     count = count + 1
 
-    -- TODO: Probably should asyncify this / cache this / do something because this probably takes
-    -- a ton of time on large results.
-    log.trace("Processing result... ", entry)
     for _, v in ipairs(self.file_ignore_patterns or {}) do
       local file = utils.if_nil(entry.filename, type(entry.value) == "string" and entry.value) -- false if none is true
       if file then
         if string.find(file, v) then
-          log.trace("SKIPPING", entry.value, "because", v)
           self:_decrement "processed"
           return
         end
