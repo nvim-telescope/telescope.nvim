@@ -537,6 +537,18 @@ describe("action_set.edit", function()
     eq(uri, select(uri))
   end)
 
+  it("opens file names starting with ~ relative to cwd", function()
+    local cwd = vim.uv.cwd()
+    local dir = vim.fn.tempname()
+    vim.fn.mkdir(dir, "p")
+    vim.fn.writefile({ "lock" }, vim.fs.joinpath(dir, "~$doc.docx"))
+    vim.uv.chdir(dir)
+    local name = select "~$doc.docx"
+    vim.uv.chdir(cwd)
+    eq("~$doc.docx", vim.fs.basename(name))
+    eq(vim.uv.fs_realpath(dir), vim.uv.fs_realpath(vim.fs.dirname(name)))
+  end)
+
   it("does not expand environment variables in file names", function()
     vim.env.TELESCOPE_TEST_VAR = "expanded"
     eq("$TELESCOPE_TEST_VAR.lua", vim.fs.basename(select "lua/$TELESCOPE_TEST_VAR.lua"))
