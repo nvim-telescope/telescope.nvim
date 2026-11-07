@@ -247,6 +247,24 @@ local path_shorten = function(filename, len, exclude)
   return table.concat(final_path_components)
 end
 
+-- Pure Lua (safe in fast events): absolute Unix paths, Windows drive and UNC paths
+local is_absolute = function(path)
+  if path:sub(1, 1) == "/" then
+    return true
+  end
+  return utils.iswin and (path:match "^%a:[/\\]" ~= nil or path:sub(1, 2) == "\\\\") or false
+end
+
+-- Make an absolute `path` relative to `cwd` (default: current working directory).
+-- URIs, relative paths, and paths outside of `cwd` are returned unchanged.
+-- Note: `vim.fs.relpath()` resolves relative paths against the process cwd, not `cwd`.
+utils.make_relative = function(path, cwd)
+  if utils.is_uri(path) or not is_absolute(path) then
+    return path
+  end
+  return vim.fs.relpath(cwd or vim.uv.cwd(), path) or path
+end
+
 local path_rel = function(path, opts)
   local cwd
   if opts.cwd then
@@ -254,10 +272,8 @@ local path_rel = function(path, opts)
     if not vim.in_fast_event() then
       cwd = utils.path_expand(opts.cwd)
     end
-  else
-    cwd = vim.uv.cwd()
   end
-  return vim.fs.relpath(cwd, path) or path
+  return utils.make_relative(path, cwd)
 end
 
 -- IMPORTANT: This function should have been a local function as it's only used

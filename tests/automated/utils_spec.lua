@@ -181,6 +181,21 @@ describe("__separates_file_path_location", function()
   end
 end)
 
+describe("make_relative", function()
+  local cwd = utils.iswin and [[C:\Users\user\project]] or "/home/user/project"
+
+  it("makes absolute paths under cwd relative", function()
+    eq("lua/init.lua", utils.make_relative(vim.fs.joinpath(cwd, "lua/init.lua"), cwd))
+  end)
+
+  it("keeps relative paths, paths outside cwd, and URIs", function()
+    local outside = utils.iswin and [[D:\elsewhere\init.lua]] or "/elsewhere/init.lua"
+    eq("lua/init.lua", utils.make_relative("lua/init.lua", cwd))
+    eq(outside, utils.make_relative(outside, cwd))
+    eq("term://~/foo//1:sh", utils.make_relative("term://~/foo//1:sh", cwd))
+  end)
+end)
+
 describe("transform_path", function()
   local cwd = (function()
     if utils.iswin then
@@ -227,6 +242,25 @@ describe("transform_path", function()
     local absolute = vim.fs.joinpath(cwd, relative)
     assert_path(nil, absolute, relative)
     assert_path(nil, relative, relative)
+  end)
+
+  it("keeps paths outside of cwd", function()
+    local outside = utils.iswin and [[D:\elsewhere\init.lua]] or "/elsewhere/init.lua"
+    assert_path(nil, outside, outside)
+  end)
+
+  describe("with process cwd inside opts.cwd", function()
+    local root = vim.uv.cwd()
+
+    after_each(function()
+      vim.uv.chdir(root)
+    end)
+
+    it("keeps relative paths", function()
+      vim.uv.chdir(vim.fs.joinpath(root, "lua"))
+      local relative = "lua/telescope/init.lua"
+      eq(relative, utils.transform_path({ cwd = root, path_display = {} }, relative))
+    end)
   end)
 
   it("handles 'tail' path_display", function()
