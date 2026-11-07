@@ -1,7 +1,5 @@
 local uv = vim.uv
 
-local Path = require "neoplen.path"
-
 local conf = require("telescope.config").values
 local utils = require "telescope.utils"
 
@@ -176,13 +174,13 @@ end
 M.get_simple_history = function()
   return M.new {
     init = function(obj)
-      local p = Path:new(obj.path)
-      if not p:exists() then
-        p:touch { parents = true }
+      if not uv.fs_stat(obj.path) then
+        vim.fn.mkdir(vim.fs.dirname(obj.path), "p")
+        local file = assert(io.open(obj.path, "a"))
+        file:close()
       end
 
-      local tutils = require "telescope.utils"
-      obj.content = tutils.split_lines(tutils.read_file(obj.path))
+      obj.content = utils.split_lines(utils.read_file(obj.path))
       obj.index = #obj.content
       table.remove(obj.content, obj.index)
     end,
