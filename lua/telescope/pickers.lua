@@ -7,7 +7,6 @@ local async = require "neoplen.async"
 local await_schedule = async.util.scheduler
 local channel = require("neoplen.async.control").channel
 local popup = require "neoplen.popup"
-local strings = require "neoplen.strings"
 
 local actions = require "telescope.actions"
 local config = require "telescope.config"
@@ -1168,7 +1167,7 @@ function Picker:update_prefix(entry, row)
       t = self.entry_prefix
     end
     if multi and type(self.multi_icon) == "string" then
-      t = strings.truncate(t, fn.strdisplaywidth(t) - fn.strdisplaywidth(self.multi_icon), "") .. self.multi_icon
+      t = utils.truncate(t, fn.strdisplaywidth(t) - fn.strdisplaywidth(self.multi_icon), "") .. self.multi_icon
     end
     return t
   end
