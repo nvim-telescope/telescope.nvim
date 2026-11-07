@@ -58,4 +58,21 @@ describe("builtin.grep_string", function()
 
     eq({ vim.fs.basename(file) }, results)
   end)
+
+  it("does not need a word under the cursor when search is given", function()
+    -- the test runner suppresses E348 ("No string under cursor"), so simulate it
+    local expand = vim.fn.expand
+    vim.fn.expand = function(expr, ...)
+      if expr == "<cword>" then
+        error "Vim:E348: No string under cursor"
+      end
+      return expand(expr, ...)
+    end
+    local ok = pcall(builtin.grep_string, { search = "zzqtelescopeword" })
+    vim.fn.expand = expand
+    eq(true, ok)
+    local prompt_bufnr = vim.api.nvim_get_current_buf()
+    eq("TelescopePrompt", vim.bo[prompt_bufnr].filetype)
+    require("telescope.actions").close(prompt_bufnr)
+  end)
 end)
