@@ -42,14 +42,14 @@ describe("path_expand()", function()
     local uris = {
       [[https://www.example.com/index.html]],
       [[ftp://ftp.example.com/files/document.pdf]],
-      [[mailto:user@example.com]],
-      [[tel:+1234567890]],
       [[file:///home/user/documents/report.docx]],
-      [[news:comp.lang.python]],
       [[ldap://ldap.example.com:389/dc=example,dc=com]],
       [[git://github.com/user/repo.git]],
       [[steam://run/123456]],
-      [[magnet:?xt=urn:btih:6B4C3343E1C63A1BC36AEB8A3D1F52C4EDEEB096]],
+      -- `vim.fs.normalize()` would mangle these
+      [[term://~/foo//123:zsh]],
+      [[oil:///tmp/]],
+      [[fugitive:///home/user/repo/.git//0/file.lua]],
     }
 
     for _, uri in ipairs(uris) do
@@ -65,14 +65,14 @@ describe("is_uri", function()
     local uris = {
       [[https://www.example.com/index.html]],
       [[ftp://ftp.example.com/files/document.pdf]],
-      [[mailto:user@example.com]],
-      [[tel:+1234567890]],
       [[file:///home/user/documents/report.docx]],
-      [[news:comp.lang.python]],
       [[ldap://ldap.example.com:389/dc=example,dc=com]],
       [[git://github.com/user/repo.git]],
       [[steam://run/123456]],
-      [[magnet:?xt=urn:btih:6B4C3343E1C63A1BC36AEB8A3D1F52C4EDEEB096]],
+      [[fugitive:///home/user/repo/.git//0/file.lua]],
+      [[term://~/foo//123:zsh]],
+      [[deno:/a/b.ts]],
+      [[jdt://contents/foo.jar/bar//Baz.class]],
     }
 
     for _, uri in ipairs(uris) do
@@ -82,12 +82,19 @@ describe("is_uri", function()
     end
   end)
 
+  -- as in Neovim's `path_with_url()`, a scheme must be followed by `:/`
   describe("detects invalid uris/paths", function()
     local inputs = {
       "hello",
       "hello:",
       "123",
       "",
+      [[mailto:user@example.com]],
+      [[tel:+1234567890]],
+      [[news:comp.lang.python]],
+      [[magnet:?xt=urn:btih:6B4C3343E1C63A1BC36AEB8A3D1F52C4EDEEB096]],
+      [[file:\\server\share]],
+      [[foo-://bar]],
     }
     for _, input in ipairs(inputs) do
       it(input, function()

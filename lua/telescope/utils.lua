@@ -396,33 +396,11 @@ utils.is_path_hidden = function(opts, path_display)
     or type(path_display) == "table" and (vim.tbl_contains(path_display, "hidden") or path_display.hidden)
 end
 
+-- Whether `filename` is a URI, as in Neovim's `path_with_url()`: an RFC 3986 scheme followed by `:/`
+-- ("fugitive:///a", "deno:/a", "term://…"), but not a drive letter ("C:/a") and not "mailto:a".
 utils.is_uri = function(filename)
-  local char = string.byte(filename, 1) or 0
-
-  -- is alpha?
-  if char < 65 or (char > 90 and char < 97) or char > 122 then
-    return false
-  end
-
-  for i = 2, #filename do
-    char = string.byte(filename, i)
-    if char == 58 then -- `:`
-      -- a single letter before `:` is a drive letter (as in Neovim's `path_with_url()`)
-      return i > 2 and i < #filename and string.byte(filename, i + 1) ~= 92 -- `\`
-    elseif
-      not (
-        (char >= 48 and char <= 57) -- 0-9
-        or (char >= 65 and char <= 90) -- A-Z
-        or (char >= 97 and char <= 122) -- a-z
-        or char == 43 -- `+`
-        or char == 46 -- `.`
-        or char == 45 -- `-`
-      )
-    then
-      return false
-    end
-  end
-  return false
+  local scheme = filename:match "^(%a[%w+.-]*):/"
+  return scheme ~= nil and #scheme > 1 and not scheme:match "[+.-]$"
 end
 
 --- Transform path is a util function that formats a path based on path_display
