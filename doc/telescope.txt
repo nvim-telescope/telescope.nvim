@@ -2330,13 +2330,13 @@ utils.path_expand({path})                      *telescope.utils.path_expand()*
     expansion behavior which can sometimes lead to errors or the creation of
     non-existent paths when dealing with valid absolute paths.
 
-    Other paths will have '~' and environment variables expanded. Unlike
-    `vim.fs.normalize()`, backslashes are preserved. This has better
-    compatibility with `plenary.path` and also avoids mangling valid Unix
-    paths with literal backslashes.
+    Other paths will have '~' and environment variables expanded. On Windows,
+    backslashes are converted to forward slashes. Unlike `vim.fs.normalize()`,
+    backslashes are preserved on other platforms (where they are valid in file
+    names), and `.` and `..` are not resolved.
 
     Trailing slashes are trimmed. With the exception of root paths. eg. `/` on
-    Unix or `C:\` on Windows
+    Unix or `C:/` on Windows
 
     Parameters: ~
       • {path}  (`string`)

@@ -5,7 +5,7 @@ local eq = assert.are.equal
 describe("path_expand()", function()
   it("removes trailing os_sep", function()
     if utils.iswin then
-      eq([[C:\Users\a\b]], utils.path_expand [[C:\Users\a\b\]])
+      eq("C:/Users/a/b", utils.path_expand [[C:\Users\a\b\]])
     else
       eq("/home/user", utils.path_expand "/home/user/")
     end
@@ -13,19 +13,19 @@ describe("path_expand()", function()
 
   it("works with root dir", function()
     if utils.iswin then
-      eq([[C:\]], utils.path_expand [[C:\]])
+      eq("C:/", utils.path_expand [[C:\]])
     else
       eq("/", utils.path_expand "/")
     end
   end)
 
   it("works with ~", function()
-    eq(vim.uv.os_homedir() .. "/src/foo", utils.path_expand "~/src/foo")
+    eq(utils.normalize_sep(vim.uv.os_homedir()) .. "/src/foo", utils.path_expand "~/src/foo")
   end)
 
   it("handles duplicate os_sep", function()
     if utils.iswin then
-      eq([[C:\Users\a]], utils.path_expand [[C:\\\Users\\a]])
+      eq("C:/Users/a", utils.path_expand [[C:\\\Users\\a]])
     else
       eq("/home/user", utils.path_expand "/home///user")
     end
@@ -181,6 +181,43 @@ describe("__separates_file_path_location", function()
   end
 end)
 
+describe("normalize_sep", function()
+  it("converts backslashes only on Windows", function()
+    eq("C:/Users/a/b.lua", utils.normalize_sep([[C:\Users\a\b.lua]], true))
+    eq("C:/Users/a/b.lua", utils.normalize_sep([[c:\Users\a\b.lua]], true))
+    eq(vim.fs.normalize([[c:\Users\a\b.lua]], { win = true }), utils.normalize_sep([[c:\Users\a\b.lua]], true))
+    eq([[a\b.lua]], utils.normalize_sep([[a\b.lua]], false))
+  end)
+end)
+
+describe("Windows paths (simulated)", function()
+  local iswin = utils.iswin
+  before_each(function()
+    utils.iswin = true
+  end)
+  after_each(function()
+    utils.iswin = iswin
+  end)
+
+  it("path_expand uses forward slashes", function()
+    eq("C:/Users/a/b", utils.path_expand [[C:\Users\a\b\]])
+    eq("C:/", utils.path_expand [[C:\]])
+    eq("//server/share/dir", utils.path_expand [[\\server\share\dir]])
+  end)
+
+  it("path_tail accepts backslashes", function()
+    eq("init.lua", utils.path_tail [[lua\telescope\init.lua]])
+    eq("init.lua", utils.path_tail "lua/telescope/init.lua")
+  end)
+
+  it("transform_path normalizes native paths", function()
+    local path = [[lua\telescope\init.lua]]
+    eq("lua/telescope/init.lua", (utils.transform_path({ path_display = {} }, path)))
+    eq("l/t/init.lua", (utils.transform_path({ path_display = { "shorten" } }, path)))
+    eq("init.lua lua/telescope", (utils.transform_path({ path_display = { "filename_first" } }, path)))
+  end)
+end)
+
 describe("make_relative", function()
   local cwd = utils.iswin and [[C:\Users\user\project]] or "/home/user/project"
 
@@ -191,7 +228,7 @@ describe("make_relative", function()
   it("keeps relative paths, paths outside cwd, and URIs", function()
     local outside = utils.iswin and [[D:\elsewhere\init.lua]] or "/elsewhere/init.lua"
     eq("lua/init.lua", utils.make_relative("lua/init.lua", cwd))
-    eq(outside, utils.make_relative(outside, cwd))
+    eq(utils.normalize_sep(outside), utils.make_relative(outside, cwd))
     eq("term://~/foo//1:sh", utils.make_relative("term://~/foo//1:sh", cwd))
   end)
 end)
@@ -256,7 +293,7 @@ describe("transform_path", function()
 
   it("keeps paths outside of cwd", function()
     local outside = utils.iswin and [[D:\elsewhere\init.lua]] or "/elsewhere/init.lua"
-    assert_path(nil, outside, outside)
+    assert_path(nil, outside, utils.normalize_sep(outside))
   end)
 
   describe("with process cwd inside opts.cwd", function()
@@ -296,7 +333,7 @@ describe("transform_path", function()
 
     -- TODO: feels like 'absolute' should turn relative paths to absolute
     -- assert_path("absolute", relative.filename, absolute.filename)
-    assert_path("absolute", absolute, absolute)
+    assert_path("absolute", absolute, utils.normalize_sep(absolute))
   end)
 
   it("handles default 'shorten' path_display", function()

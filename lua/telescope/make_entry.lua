@@ -196,11 +196,11 @@ do
     if opts.file_entry_encoding then
       return function(line)
         line = vim.iconv(line, opts.file_entry_encoding, "utf8")
-        return setmetatable({ line }, mt_file_entry)
+        return setmetatable({ utils.normalize_sep(line) }, mt_file_entry)
       end
     else
       return function(line)
-        return setmetatable({ line }, mt_file_entry)
+        return setmetatable({ utils.normalize_sep(line) }, mt_file_entry)
       end
     end
   end
@@ -227,6 +227,7 @@ do
       col = nil
     end
 
+    filename = filename and utils.normalize_sep(filename)
     t.filename = filename
     t.lnum = lnum
     t.col = col
@@ -244,6 +245,7 @@ do
       lnum = nil
     end
 
+    filename = filename and utils.normalize_sep(filename)
     t.filename = filename
     t.lnum = lnum
     t.col = nil
@@ -253,7 +255,7 @@ do
   end
 
   local parse_only_filename = function(t)
-    t.filename = t.value
+    t.filename = utils.normalize_sep(t.value)
     t.lnum = nil
     t.col = nil
     t.text = ""
@@ -1106,9 +1108,7 @@ function make_entry.gen_from_ctags(opts)
     end
     local kind = string.match(extension_fields or "", "kind:(%S+)")
 
-    if utils.pathsep == "\\" then
-      file = string.gsub(file, "/", "\\")
-    end
+    file = utils.normalize_sep(file)
 
     if opts.only_current_file then
       if current_file_cache[file] == nil then

@@ -11,7 +11,22 @@ local get_status = require("telescope.state").get_status
 local utils = {}
 
 utils.iswin = vim.fn.has "win32" == 1
-utils.pathsep = utils.iswin and "\\" or "/"
+-- Paths are normalized to forward slashes where they enter telescope (see `utils.normalize_sep`), so
+-- this is "/" on every platform. Kept for extensions.
+utils.pathsep = "/"
+
+-- Convert backslashes to forward slashes and capitalize the drive letter on Windows, like
+-- `vim.fs.normalize()` but cheap enough for every entry (`win` overrides the platform check, for
+-- tests). On other platforms, backslashes are valid in file names and are kept.
+utils.normalize_sep = function(path, win)
+  if win == nil then
+    win = utils.iswin
+  end
+  if not win then
+    return path
+  end
+  return (path:gsub("\\", "/"):gsub("^%a:", string.upper))
+end
 
 utils.if_nil = vim.nonnil or vim.F.if_nil -- TODO: remove with nvim 0.12 drop
 
@@ -78,12 +93,12 @@ end
 --- non-existent paths when dealing with valid absolute paths.
 ---
 --- Other paths will have '~' and environment variables expanded.
---- Unlike `vim.fs.normalize()`, backslashes are preserved. This has better
---- compatibility with `plenary.path` and also avoids mangling valid Unix paths
---- with literal backslashes.
+--- On Windows, backslashes are converted to forward slashes. Unlike `vim.fs.normalize()`,
+--- backslashes are preserved on other platforms (where they are valid in file names),
+--- and `.` and `..` are not resolved.
 ---
 --- Trailing slashes are trimmed. With the exception of root paths.
---- eg. `/` on Unix or `C:\` on Windows
+--- eg. `/` on Unix or `C:/` on Windows
 ---
 ---@param path string
 ---@return string
@@ -107,14 +122,15 @@ utils.path_expand = function(path)
   end
 
   path = path:gsub("%$([%w_]+)", vim.uv.os_getenv)
+  path = utils.normalize_sep(path)
+  -- keep the leading `//` of Windows UNC paths
+  local unc = utils.iswin and path:sub(1, 2) == "//"
   path = path:gsub("/+", "/")
-  if utils.iswin then
-    path = path:gsub("\\+", "\\")
-    if path:match "^%w:\\$" then
-      return path
-    else
-      return (path:gsub("(.)\\$", "%1"))
-    end
+  if unc then
+    path = "/" .. path
+  end
+  if path:match "^%a:/$" then
+    return path
   end
   return (path:gsub("(.)/$", "%1"))
 end
@@ -212,7 +228,7 @@ utils.filter_symbols = function(results, opts, post_filter)
 end
 
 local path_filename_first = function(path, reverse_directories)
-  local pathsep = utils.pathsep
+  local pathsep = "/"
   local dirs = vim.split(path, pathsep)
   local filename
 
@@ -251,7 +267,7 @@ local path_shorten = function(filename, len, exclude)
   len = len or 1
   exclude = exclude or { -1 }
   local exc = {}
-  local pathsep = utils.pathsep
+  local pathsep = "/"
 
   -- get parts in a table
   local parts = {}
@@ -307,6 +323,7 @@ end
 -- URIs, relative paths, and paths outside of `cwd` are returned unchanged.
 -- Note: `vim.fs.relpath()` resolves relative paths against the process cwd, not `cwd`.
 utils.make_relative = function(path, cwd)
+  path = utils.normalize_sep(path)
   if utils.is_uri(path) or not utils.is_absolute(path) then
     return path
   end
@@ -316,10 +333,11 @@ end
 -- Display form of a file name (as plenary's `Path:normalize(cwd)`): relative to `cwd` if inside,
 -- `~/...` if inside the home directory, otherwise (and for URIs) unchanged.
 utils.display_path = function(path, cwd)
+  path = utils.normalize_sep(path)
   local name = utils.make_relative(path, cwd)
-  local home = vim.uv.os_homedir() .. utils.pathsep
+  local home = utils.normalize_sep(vim.uv.os_homedir()) .. "/"
   if name == path and vim.startswith(name, home) then
-    name = "~" .. utils.pathsep .. name:sub(#home + 1)
+    name = "~/" .. name:sub(#home + 1)
   end
   return name
 end
@@ -340,8 +358,9 @@ end
 -- local we would potential break consumers of this method.
 utils.path_smart = (function()
   local paths = {}
-  local pathsep = utils.pathsep
+  local pathsep = "/"
   return function(filepath)
+    filepath = utils.normalize_sep(filepath)
     local final = filepath
     if #paths ~= 0 then
       local dirs = vim.split(filepath, pathsep)
@@ -381,30 +400,16 @@ utils.path_smart = (function()
   end
 end)()
 
-utils.path_tail = (function()
-  local pathsep = utils.pathsep
-
-  if pathsep == "/" then
-    return function(path)
-      for i = #path, 1, -1 do
-        if path:sub(i, i) == pathsep then
-          return path:sub(i + 1, -1)
-        end
-      end
-      return path
-    end
-  else
-    return function(path)
-      for i = #path, 1, -1 do
-        local c = path:sub(i, i)
-        if c == pathsep or c == "/" then
-          return path:sub(i + 1, -1)
-        end
-      end
-      return path
+-- Also accepts backslashes on Windows (extensions may pass native paths)
+utils.path_tail = function(path)
+  for i = #path, 1, -1 do
+    local c = path:byte(i)
+    if c == 47 or (c == 92 and utils.iswin) then -- `/` or `\`
+      return path:sub(i + 1, -1)
     end
   end
-end)()
+  return path
+end
 
 utils.is_path_hidden = function(opts, path_display)
   path_display = path_display or utils.if_nil(opts.path_display, require("telescope.config").values.path_display)
@@ -460,6 +465,7 @@ utils.transform_path = function(opts, path)
   if utils.is_uri(path) then
     return path, {}
   end
+  path = utils.normalize_sep(path)
 
   ---@type fun(opts:table, path: string): string, table?
   local path_display = utils.if_nil(opts.path_display, require("telescope.config").values.path_display)
