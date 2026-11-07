@@ -248,7 +248,7 @@ local path_shorten = function(filename, len, exclude)
 end
 
 -- Pure Lua (safe in fast events): absolute Unix paths, Windows drive and UNC paths
-local is_absolute = function(path)
+utils.is_absolute = function(path)
   if path:sub(1, 1) == "/" then
     return true
   end
@@ -259,7 +259,7 @@ end
 -- URIs, relative paths, and paths outside of `cwd` are returned unchanged.
 -- Note: `vim.fs.relpath()` resolves relative paths against the process cwd, not `cwd`.
 utils.make_relative = function(path, cwd)
-  if utils.is_uri(path) or not is_absolute(path) then
+  if utils.is_uri(path) or not utils.is_absolute(path) then
     return path
   end
   return vim.fs.relpath(cwd or vim.uv.cwd(), path) or path

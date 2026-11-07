@@ -59,3 +59,26 @@ describe("gen_from_buffer", function()
     eq("oil:///tmp/", entry("oil:///tmp/").filename)
   end)
 end)
+
+describe("entry paths", function()
+  local root = vim.uv.cwd()
+  local readme = vim.fs.joinpath(root, "README.md")
+
+  it("gen_from_file resolves relative values and keeps absolute ones", function()
+    local maker = make_entry.gen_from_file { cwd = vim.fs.joinpath(root, "lua") }
+    eq(readme, maker("../README.md").path)
+    eq(readme, maker(readme).path)
+  end)
+
+  it("gen_from_vimgrep resolves relative values and keeps absolute ones", function()
+    local maker = make_entry.gen_from_vimgrep { cwd = vim.fs.joinpath(root, "lua") }
+    eq(readme, maker("../README.md:1:1:text").path)
+    eq(readme, maker(readme .. ":1:1:text").path)
+  end)
+
+  it("does not expand environment variables in file names", function()
+    vim.env.TELESCOPE_TEST_VAR = "expanded"
+    local maker = make_entry.gen_from_vimgrep { cwd = root }
+    eq(vim.fs.joinpath(root, "$TELESCOPE_TEST_VAR.lua"), maker("$TELESCOPE_TEST_VAR.lua:1:1:text").path)
+  end)
+end)

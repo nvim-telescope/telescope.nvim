@@ -182,7 +182,8 @@ do
       end
 
       if k == "path" then
-        local retpath = fs.abspath(fs.joinpath(t.cwd, t.value))
+        local retpath = utils.is_absolute(t.value) and t.value
+          or fs.normalize(fs.joinpath(t.cwd, t.value), { expand_env = false })
         if not vim.uv.fs_access(retpath, "R") then
           retpath = t.value
         end
@@ -278,10 +279,10 @@ do
 
     local execute_keys = {
       path = function(t)
-        if fn.isabsolutepath(t.filename) == 1 then
+        if utils.is_absolute(t.filename) then
           return t.filename, false
         else
-          return fs.abspath(fs.joinpath(t.cwd, t.filename)), false
+          return fs.normalize(fs.joinpath(t.cwd, t.filename), { expand_env = false }), false
         end
       end,
 
