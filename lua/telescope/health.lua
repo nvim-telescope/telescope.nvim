@@ -29,8 +29,6 @@ local optional_dependencies = {
   },
 }
 
-local required_plugins = {}
-
 local check_binary_installed = function(package)
   local binaries = package.binaries or { package.name }
   for _, binary in ipairs(binaries) do
@@ -48,29 +46,9 @@ local check_binary_installed = function(package)
   end
 end
 
-local function lualib_installed(lib_name)
-  local res, _ = pcall(require, lib_name)
-  return res
-end
-
 local M = {}
 
 M.check = function()
-  -- Required lua libs
-  health.start "Checking for required plugins"
-  for _, plugin in ipairs(required_plugins) do
-    if lualib_installed(plugin.lib) then
-      health.ok(plugin.lib .. " installed.")
-    else
-      local lib_not_installed = plugin.lib .. " not found."
-      if plugin.optional then
-        health.warn(("%s %s"):format(lib_not_installed, plugin.info))
-      else
-        health.error(lib_not_installed)
-      end
-    end
-  end
-
   -- external dependencies
   -- TODO: only perform checks if user has enabled dependency in their config
   health.start "Checking external dependencies"

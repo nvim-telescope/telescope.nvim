@@ -23,8 +23,6 @@ local utils = require "telescope.utils"
 ---
 --- See https://github.com/nvim-telescope/telescope-smart-history.nvim
 
--- TODO(conni2461): currently not present in plenary path only sync.
--- But sync is just unnecessary here
 local write_async = function(path, txt, flag)
   uv.fs_open(path, flag, 438, function(open_err, fd)
     assert(not open_err, open_err)
