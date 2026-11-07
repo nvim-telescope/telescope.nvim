@@ -1,10 +1,10 @@
 local fn = vim.fn
+local uv = vim.uv
 local api = vim.api
 local hl = vim.hl
 
-local Path = require "neoplen.path"
-
 local from_entry = require "telescope.from_entry"
+local log = require "telescope.log"
 local utils = require "telescope.utils"
 local putils = require "telescope.previewers.utils"
 local Previewer = require "telescope.previewers.previewer"
@@ -49,6 +49,30 @@ end
 
 local bytes_to_megabytes = math.pow(1024, 2)
 
+--- Read the file at `filepath` asynchronously and call `callback` with its content (scheduled, so it
+--- can use the API). `stat` is the file's `fs_stat` result; anything but a regular file (e.g. a FIFO)
+--- reads as "".
+local read_file_async = function(filepath, stat, callback)
+  callback = vim.schedule_wrap(callback)
+  if stat.type ~= "file" then
+    return callback ""
+  end
+  uv.fs_open(filepath, "r", 438, function(err_open, fd)
+    if err_open then
+      log.debug("Could not open file for preview:", err_open)
+      return
+    end
+    uv.fs_read(fd, stat.size, 0, function(err_read, data)
+      uv.fs_close(fd)
+      if err_read then
+        log.debug("Could not read file for preview:", err_read)
+        return
+      end
+      callback(data)
+    end)
+  end)
+end
+
 local handle_file_preview = function(filepath, bufnr, stat, opts)
   vim.schedule(function()
     opts.ft = opts.use_ft_detect and putils.filetype_detect(filepath)
@@ -85,8 +109,8 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
       end
     end
 
-    opts.start_time = vim.uv.hrtime()
-    Path:new(filepath):_read_async(vim.schedule_wrap(function(data)
+    opts.start_time = uv.hrtime()
+    read_file_async(filepath, stat, function(data)
       if not api.nvim_buf_is_valid(bufnr) then
         return
       end
@@ -131,7 +155,7 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
         end
         return
       end
-    end))
+    end)
   end)
 end
 
@@ -154,7 +178,7 @@ previewers.file_maker = function(filepath, bufnr, opts)
     if not vim.in_fast_event() then
       filepath = utils.path_expand(filepath)
     end
-    vim.uv.fs_stat(filepath, function(_, stat)
+    uv.fs_stat(filepath, function(_, stat)
       if not stat then
         return
       end
