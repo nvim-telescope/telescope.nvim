@@ -525,22 +525,8 @@ function utils.job_is_running(job_id)
 end
 
 function utils.buf_delete(bufnr)
-  if bufnr == nil then
-    return
-  end
-
-  -- Suppress the buffer deleted message for those with &report<2
-  local start_report = vim.o.report
-  if start_report < 2 then
-    vim.o.report = 2
-  end
-
-  if api.nvim_buf_is_valid(bufnr) and api.nvim_buf_is_loaded(bufnr) then
+  if bufnr and api.nvim_buf_is_valid(bufnr) and api.nvim_buf_is_loaded(bufnr) then
     api.nvim_buf_delete(bufnr, { force = true })
-  end
-
-  if start_report < 2 then
-    vim.o.report = start_report
   end
 end
 
