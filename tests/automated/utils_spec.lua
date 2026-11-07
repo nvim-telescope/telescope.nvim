@@ -34,8 +34,9 @@ describe("path_expand()", function()
   it("preserves fake whitespace characters and whitespace", function()
     local path_space = "/home/user/hello world"
     eq(path_space, utils.path_expand(path_space))
+    -- a literal backslash is part of the name, except on Windows where it is a separator
     local path_newline = [[/home/user/hello\nworld]]
-    eq(path_newline, utils.path_expand(path_newline))
+    eq(utils.iswin and "/home/user/hello/nworld" or path_newline, utils.path_expand(path_newline))
   end)
   describe("early return for uri", function()
     local uris = {
