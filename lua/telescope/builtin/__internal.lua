@@ -917,7 +917,11 @@ internal.reloader = function(opts)
           end
 
           actions.close(prompt_bufnr)
-          require("neoplen.reload").reload_module(selection.value)
+          for name, _ in pairs(package.loaded) do
+            if vim.startswith(name, selection.value) then
+              package.loaded[name] = nil
+            end
+          end
           utils.notify("builtin.reloader", {
             msg = string.format("[%s] - module reloaded", selection.value),
             level = "INFO",
