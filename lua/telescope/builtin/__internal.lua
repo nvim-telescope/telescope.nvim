@@ -29,16 +29,6 @@ local function apply_cwd_only_aliases(opts)
   return opts
 end
 
----@return boolean
-local function buf_in_cwd(bufname, cwd)
-  local os_sep = utils.get_separator()
-  if cwd:sub(-1) ~= os_sep then
-    cwd = cwd .. os_sep
-  end
-  local bufname_prefix = bufname:sub(1, #cwd)
-  return bufname_prefix == cwd
-end
-
 local internal = {}
 
 ---@param opts telescope.builtin.builtin.opts
@@ -583,7 +573,7 @@ internal.oldfiles = function(opts)
   if opts.cwd_only or opts.cwd then
     local cwd = opts.cwd_only and uv.cwd() or opts.cwd
     results = vim.tbl_filter(function(file)
-      return buf_in_cwd(file, cwd)
+      return utils.make_relative(file, cwd) ~= file
     end, results)
   end
 
@@ -958,10 +948,10 @@ internal.buffers = function(opts)
 
     local bufname = api.nvim_buf_get_name(bufnr)
 
-    if opts.cwd_only and not buf_in_cwd(bufname, uv.cwd()) then
+    if opts.cwd_only and utils.make_relative(bufname, uv.cwd()) == bufname then
       return false
     end
-    if not opts.cwd_only and opts.cwd and not buf_in_cwd(bufname, opts.cwd) then
+    if not opts.cwd_only and opts.cwd and utils.make_relative(bufname, opts.cwd) == bufname then
       return false
     end
     return true
