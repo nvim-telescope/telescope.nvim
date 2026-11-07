@@ -474,7 +474,13 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
 
       self:_increment "highlights"
 
-      vim.hl.range(results_bufnr, ns_telescope_matching, highlight, { row, start - 1 }, { row, finish })
+      -- extmark instead of `vim.hl.range()`, which is much slower (runs for every displayed row)
+      api.nvim_buf_set_extmark(results_bufnr, ns_telescope_matching, row, start - 1, {
+        end_col = finish,
+        hl_group = highlight,
+        priority = vim.hl.priorities.user,
+        strict = false,
+      })
     end
   end
 
