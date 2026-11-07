@@ -265,6 +265,17 @@ utils.make_relative = function(path, cwd)
   return vim.fs.relpath(cwd or vim.uv.cwd(), path) or path
 end
 
+-- Display form of a file name (as plenary's `Path:normalize(cwd)`): relative to `cwd` if inside,
+-- `~/...` if inside the home directory, otherwise (and for URIs) unchanged.
+utils.display_path = function(path, cwd)
+  local name = utils.make_relative(path, cwd)
+  local home = vim.uv.os_homedir() .. utils.pathsep
+  if name == path and vim.startswith(name, home) then
+    name = "~" .. utils.pathsep .. name:sub(#home + 1)
+  end
+  return name
+end
+
 local path_rel = function(path, opts)
   local cwd
   if opts.cwd then

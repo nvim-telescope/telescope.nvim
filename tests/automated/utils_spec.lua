@@ -196,6 +196,16 @@ describe("make_relative", function()
   end)
 end)
 
+describe("display_path", function()
+  it("is relative to cwd, abbreviates home, and keeps URIs", function()
+    local root = vim.uv.cwd()
+    local home = vim.uv.os_homedir()
+    eq("README.md", utils.display_path(vim.fs.joinpath(root, "README.md"), root))
+    eq("~" .. utils.pathsep .. "x.txt", utils.display_path(home .. utils.pathsep .. "x.txt", root))
+    eq("term://~/foo//1:sh", utils.display_path("term://~/foo//1:sh", root))
+  end)
+end)
+
 describe("transform_path", function()
   local cwd = (function()
     if utils.iswin then

@@ -379,7 +379,7 @@ previewers.cat = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "File Preview",
     dyn_title = function(_, entry)
-      return vim.fs.normalize(from_entry.path(entry, false, false))
+      return utils.display_path(from_entry.path(entry, false, false), opts.cwd)
     end,
 
     get_buffer_by_name = function(_, entry)
@@ -442,7 +442,7 @@ previewers.vimgrep = defaulter(function(opts)
   return previewers.new_buffer_previewer {
     title = "Grep Preview",
     dyn_title = function(_, entry)
-      return vim.fs.normalize(from_entry.path(entry, false, false))
+      return utils.display_path(from_entry.path(entry, false, false), opts.cwd)
     end,
 
     get_buffer_by_name = function(_, entry)
