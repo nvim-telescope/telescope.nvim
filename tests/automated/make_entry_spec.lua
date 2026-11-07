@@ -32,3 +32,30 @@ describe("gen_from_ctags", function()
     eq(nil, maker(tag "lua/telescope/init.lua"))
   end)
 end)
+
+describe("gen_from_buffer", function()
+  local root = vim.uv.cwd()
+  local maker = make_entry.gen_from_buffer { bufnr_width = 1 }
+  local bufnr = vim.api.nvim_get_current_buf()
+
+  local function entry(name)
+    return maker { bufnr = bufnr, flag = " ", info = { name = name, hidden = 0, changed = 0, lnum = 0 } }
+  end
+
+  it("uses names relative to cwd", function()
+    local e = entry(vim.fs.joinpath(root, "README.md"))
+    eq("README.md", e.filename)
+    eq(bufnr .. " : README.md", e.ordinal)
+    eq(vim.fs.joinpath(root, "README.md"), e.path)
+  end)
+
+  it("abbreviates the home directory outside of cwd", function()
+    local sep = require("telescope.utils").pathsep
+    eq("~" .. sep .. "outside.txt", entry(vim.uv.os_homedir() .. sep .. "outside.txt").filename)
+  end)
+
+  it("keeps URIs", function()
+    eq("term://~/foo//1:sh", entry("term://~/foo//1:sh").filename)
+    eq("oil:///tmp/", entry("oil:///tmp/").filename)
+  end)
+end)

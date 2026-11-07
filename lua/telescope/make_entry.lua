@@ -602,6 +602,18 @@ function make_entry.gen_from_buffer(opts)
     },
   }
 
+  local cwd = utils.path_expand(opts.cwd or vim.uv.cwd())
+  local home = vim.uv.os_homedir() .. utils.pathsep
+
+  -- relative to `cwd` if inside, `~/...` if inside home; URIs unchanged
+  local display_name = function(filename)
+    local name = utils.make_relative(filename, cwd)
+    if name == filename and vim.startswith(name, home) then
+      name = "~" .. utils.pathsep .. name:sub(#home + 1)
+    end
+    return name
+  end
+
   local make_display = function(entry)
     -- bufnr_width + modes + icon + 3 spaces + : + lnum
     opts.__prefix = opts.bufnr_width + 4 + icon_width + 3 + 1 + #tostring(entry.lnum)
@@ -626,7 +638,7 @@ function make_entry.gen_from_buffer(opts)
 
   return function(entry)
     local filename = entry.info.name ~= "" and entry.info.name or nil
-    local bufname = filename and fs.normalize(filename) or "[No Name]"
+    local bufname = filename and display_name(filename) or "[No Name]"
 
     local hidden = entry.info.hidden == 1 and "h" or "a"
     local readonly = vim.bo[entry.bufnr].readonly and "=" or " "
