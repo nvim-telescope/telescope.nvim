@@ -211,7 +211,11 @@ files.grep_string = function(opts)
     fn.setreg("v", saved_reg)
     word = utils.if_nil(opts.search, sele)
   else
-    word = utils.if_nil(opts.search, fn.expand "<cword>")
+    -- only expand when needed: errors if the cursor is not on a word
+    word = opts.search
+    if word == nil then
+      word = fn.expand "<cword>"
+    end
   end
 
   word = tostring(word)
