@@ -1019,7 +1019,9 @@ function make_entry.gen_from_ctags(opts)
   opts = opts or {}
 
   local show_kind = utils.if_nil(opts.show_kind, true)
-  local current_file = fs.normalize(api.nvim_buf_get_name(opts.bufnr))
+  local cwd = utils.path_expand(opts.cwd or vim.uv.cwd())
+  -- compare tag files and the current buffer relative to `cwd` (tag files are usually relative)
+  local current_file = fs.normalize(utils.make_relative(api.nvim_buf_get_name(opts.bufnr), cwd))
 
   local display_items = {
     { width = 16 },
@@ -1107,7 +1109,7 @@ function make_entry.gen_from_ctags(opts)
 
     if opts.only_current_file then
       if current_file_cache[file] == nil then
-        current_file_cache[file] = fs.normalize(file) == current_file
+        current_file_cache[file] = fs.normalize(utils.make_relative(file, cwd)) == current_file
       end
 
       if current_file_cache[file] == false then
