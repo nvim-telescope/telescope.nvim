@@ -59,6 +59,20 @@ end
 --   end
 -- }
 
+--- Run `command` (e.g. "edit", "tab drop", "leftabove vnew") on `filename`, without expanding special
+--- characters (`%`, `#`, `$VAR`, `~`, wildcards): `fnameescape()` does not escape all of them on
+--- Windows. `:drop` takes a file list and expands it regardless, so it still needs `fnameescape()`.
+local function edit_file(command, filename)
+  local cmd = api.nvim_parse_cmd(command, {})
+  if cmd.cmd == "drop" then
+    vim.cmd(string.format("%s %s", command, vim.fn.fnameescape(filename)))
+    return
+  end
+  cmd.args = { filename }
+  cmd.magic = { file = false, bar = false }
+  api.nvim_cmd(cmd, {})
+end
+
 local edit_buffer
 do
   local map = {
@@ -96,7 +110,7 @@ do
     if buf_command ~= "drop" and buf_command ~= "tab drop" then
       vim.cmd(string.format("%s %d", buf_command, bufnr))
     else
-      vim.cmd(string.format("%s %s", buf_command, vim.fn.fnameescape(api.nvim_buf_get_name(bufnr))))
+      edit_file(buf_command, api.nvim_buf_get_name(bufnr))
     end
   end
 end
@@ -193,7 +207,7 @@ action_set.edit = function(prompt_bufnr, command)
     if api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
       -- no normalization: `:edit` resolves the name itself, and `vim.fs.normalize()` would mangle URIs
       -- and expand a leading `~` (e.g. in Office lock files `~$doc.docx`)
-      pcall(vim.cmd, string.format("%s %s", command, vim.fn.fnameescape(filename)))
+      pcall(edit_file, command, filename)
     end
   end
 
