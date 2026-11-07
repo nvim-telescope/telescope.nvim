@@ -6,6 +6,7 @@ local log = require "telescope.log"
 
 return function(opts)
   log.trace("Creating async_job:", opts)
+  assert(not opts.writer, "async_job_finder: `writer` is not implemented")
   local entry_maker = opts.entry_maker or make_entry.gen_from_string(opts)
 
   local fn_command = function(prompt)
@@ -37,14 +38,6 @@ return function(opts)
       return
     end
 
-    local writer = nil
-    -- if job_opts.writer and Job.is_job(job_opts.writer) then
-    --   writer = job_opts.writer
-    if opts.writer then
-      error "async_job_finder.writer is not yet implemented"
-      writer = async_job.writer(opts.writer)
-    end
-
     local stdout = LinesPipe()
 
     job = async_job.spawn {
@@ -52,7 +45,6 @@ return function(opts)
       args = job_opts.args,
       cwd = job_opts.cwd or opts.cwd,
       env = job_opts.env or opts.env,
-      writer = writer,
 
       stdout = stdout,
     }
