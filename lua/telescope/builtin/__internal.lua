@@ -233,7 +233,7 @@ internal.planets = function(opts)
   local show_pluto = opts.show_pluto or false
   local show_moon = opts.show_moon or false
 
-  local sourced_file = debug.getinfo(2, "S").source:sub(2)
+  local sourced_file = debug.getinfo(1, "S").source:sub(2)
   local base_directory = fn.fnamemodify(sourced_file, ":h:h:h:h")
 
   local globbed_files = fn.globpath(base_directory .. "/data/memes/planets/", "*", true, true)
