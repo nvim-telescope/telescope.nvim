@@ -32,13 +32,13 @@ function Highlighter:hi_display(row, prefix, display_highlights)
   local len_prefix = #prefix
 
   for _, hl_block in ipairs(display_highlights) do
-    hl.range(
-      results_bufnr,
-      ns_telescope_entry,
-      hl_block[2],
-      { row, len_prefix + hl_block[1][1] },
-      { row, len_prefix + hl_block[1][2] }
-    )
+    -- extmark instead of `vim.hl.range()`, which is much slower (runs for every displayed row)
+    api.nvim_buf_set_extmark(results_bufnr, ns_telescope_entry, row, len_prefix + hl_block[1][1], {
+      end_col = len_prefix + hl_block[1][2],
+      hl_group = hl_block[2],
+      priority = vim.hl.priorities.user,
+      strict = false,
+    })
   end
 end
 
