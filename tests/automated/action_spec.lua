@@ -508,3 +508,37 @@ describe("actions", function()
     end)
   end)
 end)
+
+describe("action_set.edit", function()
+  local function select(filename)
+    local pickers, finders = require "telescope.pickers", require "telescope.finders"
+    pickers
+      .new({}, {
+        finder = finders.new_table {
+          results = { filename },
+          entry_maker = function(v)
+            return { value = v, display = v, ordinal = v, filename = v }
+          end,
+        },
+        sorter = require("telescope.config").values.generic_sorter {},
+      })
+      :find()
+    local prompt_bufnr = vim.api.nvim_get_current_buf()
+    local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
+    vim.wait(1000, function()
+      return picker.manager and picker.manager:num_results() > 0
+    end)
+    actions.select_default(prompt_bufnr)
+    return vim.api.nvim_buf_get_name(0)
+  end
+
+  it("opens URIs unchanged", function()
+    local uri = "jdt://contents/foo.jar/bar//Baz.class"
+    eq(uri, select(uri))
+  end)
+
+  it("does not expand environment variables in file names", function()
+    vim.env.TELESCOPE_TEST_VAR = "expanded"
+    eq("$TELESCOPE_TEST_VAR.lua", vim.fs.basename(select "lua/$TELESCOPE_TEST_VAR.lua"))
+  end)
+end)
