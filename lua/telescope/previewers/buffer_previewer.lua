@@ -781,7 +781,7 @@ previewers.git_commit_diff_as_was = defaulter(function(opts)
 
     define_preview = function(self, entry)
       local cmd = git_command({ "--no-pager", "show" }, opts)
-      local cf = opts.current_file and vim.fs.relpath(opts.cwd, opts.current_file)
+      local cf = opts.current_file and utils.make_relative(opts.current_file, opts.cwd)
       local value = cf and (entry.value .. ":" .. cf) or entry.value
       local ft = cf and putils.filetype_detect(value) or "diff"
       table.insert(cmd, value)

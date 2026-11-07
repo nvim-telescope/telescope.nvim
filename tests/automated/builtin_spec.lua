@@ -35,3 +35,27 @@ describe("builtin.buffers", function()
     eq(win, vim.api.nvim_get_current_win())
   end)
 end)
+
+describe("builtin.grep_string", function()
+  it("searches open buffers outside of cwd with grep_open_files", function()
+    local file = vim.fn.tempname()
+    vim.fn.writefile({ "zzqtelescopeword" }, file)
+    local bufnr = vim.fn.bufadd(file)
+    vim.bo[bufnr].buflisted = true
+
+    eq(true, (pcall(builtin.grep_string, { search = "zzqtelescopeword", grep_open_files = true })))
+    local prompt_bufnr = vim.api.nvim_get_current_buf()
+    local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
+    vim.wait(2000, function()
+      return picker.manager and picker.manager:num_results() > 0
+    end)
+    local results = {}
+    for entry in picker.manager:iter() do
+      table.insert(results, vim.fs.basename(entry.filename))
+    end
+    require("telescope.actions").close(prompt_bufnr)
+    vim.api.nvim_buf_delete(bufnr, { force = true })
+
+    eq({ vim.fs.basename(file) }, results)
+  end)
+end)

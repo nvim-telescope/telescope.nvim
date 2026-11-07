@@ -132,7 +132,7 @@ local bcommits_picker = function(opts, title, finder)
     attach_mappings = function()
       actions.select_default:replace(actions.git_checkout_current_buffer)
       local transfrom_file = function()
-        return opts.current_file and vim.fs.relpath(opts.cwd, opts.current_file) or ""
+        return opts.current_file and utils.make_relative(opts.current_file, opts.cwd) or ""
       end
 
       local get_buffer_of_orig = function(selection)
@@ -235,7 +235,7 @@ git.bcommits_range = function(opts)
     line_number_last = utils.if_nil(line_number_last, fn.line ".")
   end
   local line_range =
-    string.format("%d,%d:%s", line_number_first, line_number_last, vim.fs.relpath(opts.cwd, opts.current_file))
+    string.format("%d,%d:%s", line_number_first, line_number_last, utils.make_relative(opts.current_file, opts.cwd))
 
   local title = "Git BCommits in range"
   local finder = finders.new_oneshot_job(
