@@ -100,6 +100,9 @@ describe("is_uri", function()
       [[C:\Users\Usuario\Documents\archivo.txt]],
       [[D:\Projects\project_folder\source_code.py]],
       [[E:\Music\song.mp3]],
+      "C:/Users/Usuario/Documents/archivo.txt",
+      "c:/Projects/source_code.py",
+      "D:",
     }
 
     for _, uri in ipairs(paths) do

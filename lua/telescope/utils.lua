@@ -409,7 +409,8 @@ utils.is_uri = function(filename)
   for i = 2, #filename do
     char = string.byte(filename, i)
     if char == 58 then -- `:`
-      return i < #filename and string.byte(filename, i + 1) ~= 92 -- `\`
+      -- a single letter before `:` is a drive letter (as in Neovim's `path_with_url()`)
+      return i > 2 and i < #filename and string.byte(filename, i + 1) ~= 92 -- `\`
     elseif
       not (
         (char >= 48 and char <= 57) -- 0-9
