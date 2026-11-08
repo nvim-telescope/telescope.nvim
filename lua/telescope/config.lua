@@ -1,4 +1,5 @@
 local strings = require "neoplen.strings"
+
 local sorters = require "telescope.sorters"
 local utils = require "telescope.utils"
 local os_sep = require("neoplen.path").path.sep
