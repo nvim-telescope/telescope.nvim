@@ -336,18 +336,17 @@ M.document_symbols = function(opts)
     local locations
     local client = assert(lsp.get_client_by_id(ctx.client_id))
     locations = lsp.util.symbols_to_items(result or {}, opts.bufnr, client.offset_encoding) or {}
-
-    locations = utils.filter_symbols(locations, opts, symbols_sorter)
-    if vim.tbl_isempty(locations) then
-      -- error message already printed in `utils.filter_symbols`
-      return
-    end
-
     if vim.tbl_isempty(locations) then
       utils.notify("builtin.lsp_document_symbols", {
         msg = "No document_symbol locations found",
         level = "INFO",
       })
+      return
+    end
+
+    locations = utils.filter_symbols(locations, opts, symbols_sorter)
+    if vim.tbl_isempty(locations) then
+      -- error message already printed in `utils.filter_symbols`
       return
     end
 
@@ -383,19 +382,18 @@ M.workspace_symbols = function(opts)
     local locations
     local client = assert(lsp.get_client_by_id(ctx.client_id))
     locations = lsp.util.symbols_to_items(server_result or {}, opts.bufnr, client.offset_encoding) or {}
-
-    locations = utils.filter_symbols(locations, opts, symbols_sorter)
-    if vim.tbl_isempty(locations) then
-      -- error message already printed in `utils.filter_symbols`
-      return
-    end
-
     if vim.tbl_isempty(locations) then
       utils.notify("builtin.lsp_workspace_symbols", {
         msg = "No results from workspace/symbol. Maybe try a different query: "
           .. "'Telescope lsp_workspace_symbols query=example'",
         level = "INFO",
       })
+      return
+    end
+
+    locations = utils.filter_symbols(locations, opts, symbols_sorter)
+    if vim.tbl_isempty(locations) then
+      -- error message already printed in `utils.filter_symbols`
       return
     end
 
