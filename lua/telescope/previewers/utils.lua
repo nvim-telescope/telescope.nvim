@@ -18,57 +18,30 @@ M.job_maker = function(cmd, bufnr, opts)
   -- if passed, they will be use as the cache key
   -- if any of them are missing, cache will be skipped
   if opts.bufname ~= opts.value or not opts.bufname or not opts.value then
-    -- `env` defines the environment exactly (as with plenary's `Job`), as a map or `{ "VAR=VALUE" }` list
-    local env
-    if opts.env then
-      env = {}
-      for k, v in pairs(opts.env) do
-        if type(k) == "number" then
-          local name, value = v:match "^([^=]+)=(.*)$"
-          if name then
-            env[name] = value
-          end
-        else
-          env[k] = v
+    -- `env` is added to the environment (`vim.system` default)
+    vim.system(
+      cmd,
+      { cwd = opts.cwd, env = opts.env },
+      vim.schedule_wrap(function(result)
+        if not api.nvim_buf_is_valid(bufnr) then
+          return
         end
-      end
-    end
-
-    local function run(stdin)
-      local sys_opts = { cwd = opts.cwd, env = env, clear_env = env ~= nil, stdin = stdin }
-      vim.system(
-        cmd,
-        sys_opts,
-        vim.schedule_wrap(function(result)
-          if not api.nvim_buf_is_valid(bufnr) then
-            return
-          end
-          local lines = utils.output_lines(result.stdout)
-          if opts.mode == "append" then
-            api.nvim_buf_set_lines(bufnr, -1, -1, false, lines)
-          elseif opts.mode == "insert" then
-            api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-          end
-          if opts.callback then
-            opts.callback(bufnr, lines)
-          end
-        end)
-      )
-    end
-
-    if opts.writer then
-      -- the writer's output is the command's input; start the command from the main loop (`vim.system`
-      -- can't be called from the writer's exit callback, which is a fast event)
-      vim.system(
-        opts.writer,
-        { cwd = opts.cwd, env = env, clear_env = env ~= nil },
-        vim.schedule_wrap(function(result)
-          run(result.stdout)
-        end)
-      )
-    else
-      run()
-    end
+        local stdout = result.stdout
+        -- remove overstrike (`X\bX` bold, `_\bX` underline), e.g. from `man`
+        if stdout:find("\b", 1, true) then
+          stdout = stdout:gsub("[^\128-\191][\128-\191]*\b", "")
+        end
+        local lines = utils.output_lines(stdout)
+        if opts.mode == "append" then
+          api.nvim_buf_set_lines(bufnr, -1, -1, false, lines)
+        elseif opts.mode == "insert" then
+          api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+        end
+        if opts.callback then
+          opts.callback(bufnr, lines)
+        end
+      end)
+    )
   else
     if opts.callback then
       opts.callback(bufnr)
