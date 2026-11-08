@@ -31,10 +31,7 @@ local check_binary_installed = function(package)
   local binaries = package.binaries or { package.name }
   for _, binary in ipairs(binaries) do
     if vim.fn.executable(binary) == 1 then
-      local handle = io.popen(binary .. " --version")
-      local binary_version = handle:read "*a"
-      handle:close()
-      return true, binary_version
+      return true, vim.system({ binary, "--version" }):wait().stdout
     end
   end
 end
