@@ -872,20 +872,16 @@ end
 
 ---@param opts telescope.builtin.reload.opts: options to pass to the picker
 internal.reloader = function(opts)
-  local package_list = vim.tbl_keys(package.loaded)
+  -- only reloadable modules: Lua tables found on `package.path`, without a leading `_`
+  local package_list = vim.tbl_filter(function(module_name)
+    return type(require(module_name)) == "table"
+      and module_name:sub(1, 1) ~= "_"
+      and package.searchpath(module_name, package.path) ~= nil
+  end, vim.tbl_keys(package.loaded))
 
-  -- filter out packages we don't want and track the longest package name
   local column_len = 0
-  for index, module_name in pairs(package_list) do
-    if
-      type(require(module_name)) ~= "table"
-      or module_name:sub(1, 1) == "_"
-      or package.searchpath(module_name, package.path) == nil
-    then
-      table.remove(package_list, index)
-    elseif #module_name > column_len then
-      column_len = #module_name
-    end
+  for _, module_name in ipairs(package_list) do
+    column_len = math.max(column_len, #module_name)
   end
   opts.column_len = utils.if_nil(opts.column_len, column_len)
 
