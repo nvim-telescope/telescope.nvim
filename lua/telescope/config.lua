@@ -5,16 +5,7 @@ local utils = require "telescope.utils"
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
 _TelescopeConfigurationPickers = _TelescopeConfigurationPickers or {}
 
-local function first_non_null(...)
-  local n = select("#", ...)
-  for i = 1, n do
-    local value = select(i, ...)
-
-    if value ~= nil then
-      return value
-    end
-  end
-end
+local first_non_null = utils.if_nil
 
 -- A function that creates an amended copy of the `base` table,
 -- by replacing keys at "level 2" that match keys in "level 1" in `priority`,
