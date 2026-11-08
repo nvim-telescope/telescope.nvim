@@ -18,21 +18,6 @@ local ns_previewer = api.nvim_create_namespace "telescope.previewers"
 
 local has_file = 1 == vim.fn.executable "file"
 
--- TODO(fdschmidt93) switch to Job once file_maker callbacks get cleaned up with plenary async
--- avoids SIGABRT from utils.get_os_command_output due to vim.time in fs_stat cb
-local function capture(cmd, raw)
-  local f = assert(io.popen(cmd, "r"))
-  local s = assert(f:read "*a")
-  f:close()
-  if raw then
-    return s
-  end
-  s = string.gsub(s, "^%s+", "")
-  s = string.gsub(s, "%s+$", "")
-  s = string.gsub(s, "[\n\r]+", " ")
-  return s
-end
-
 local function defaulter(f, default_opts)
   default_opts = default_opts or {}
   return {
@@ -154,8 +139,7 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
       end
     end
     if opts.preview.check_mime_type == true and has_file and (opts.ft == nil or opts.ft == "") then
-      -- avoid SIGABRT in buffer previewer happening with utils.get_os_command_output
-      local mime_type = capture(string.format([[file --mime-type -b "%s"]], filepath))
+      local mime_type = vim.trim(vim.system({ "file", "--mime-type", "-b", filepath }):wait().stdout or "")
       if putils.binary_mime_type(mime_type) then
         if type(opts.preview.mime_hook) == "function" then
           opts.preview.mime_hook(filepath, bufnr, opts)
