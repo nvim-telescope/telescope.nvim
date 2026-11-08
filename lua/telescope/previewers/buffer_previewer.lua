@@ -92,7 +92,7 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
           possible_binary = true
         end
       end
-      if mime_type[2] == "json" then
+      if vim.endswith(mime_type, "/json") then
         opts.ft = "json"
       end
     end
