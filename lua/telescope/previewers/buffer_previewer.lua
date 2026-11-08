@@ -20,8 +20,7 @@ local ns_previewer = api.nvim_create_namespace "telescope.previewers"
 
 local has_file = 1 == fn.executable "file"
 
-local function defaulter(f, default_opts)
-  default_opts = default_opts or {}
+local function defaulter(f)
   return {
     new = function(opts)
       if opts.preview == false then
@@ -37,12 +36,6 @@ local function defaulter(f, default_opts)
         end
       end
       return f(opts)
-    end,
-    __call = function()
-      local ok, err = pcall(f(default_opts))
-      if not ok then
-        error(debug.traceback(err))
-      end
     end,
   }
 end
@@ -427,7 +420,7 @@ previewers.cat = defaulter(function(opts)
       })
     end,
   }
-end, {})
+end)
 
 previewers.vimgrep = defaulter(function(opts)
   opts = opts or {}
@@ -510,7 +503,7 @@ previewers.vimgrep = defaulter(function(opts)
       end
     end,
   }
-end, {})
+end)
 
 previewers.qflist = previewers.vimgrep
 
@@ -573,7 +566,7 @@ previewers.ctags = defaulter(function(opts)
       })
     end,
   }
-end, {})
+end)
 
 previewers.builtin = defaulter(function(opts)
   return previewers.new_buffer_previewer {
@@ -604,7 +597,7 @@ previewers.builtin = defaulter(function(opts)
       })
     end,
   }
-end, {})
+end)
 
 previewers.help = defaulter(function(opts)
   return previewers.new_buffer_previewer {
@@ -632,7 +625,7 @@ previewers.help = defaulter(function(opts)
       })
     end,
   }
-end, {})
+end)
 
 previewers.man = defaulter(function(opts)
   return previewers.new_buffer_previewer {
@@ -708,7 +701,7 @@ previewers.git_branch_log = defaulter(function(opts)
       })
     end,
   }
-end, {})
+end)
 
 previewers.git_stash_diff = defaulter(function(opts)
   return previewers.new_buffer_previewer {
@@ -731,7 +724,7 @@ previewers.git_stash_diff = defaulter(function(opts)
       })
     end,
   }
-end, {})
+end)
 
 previewers.git_commit_diff_to_parent = defaulter(function(opts)
   return previewers.new_buffer_previewer {
@@ -761,7 +754,7 @@ previewers.git_commit_diff_to_parent = defaulter(function(opts)
       })
     end,
   }
-end, {})
+end)
 
 previewers.git_commit_diff_to_head = defaulter(function(opts)
   return previewers.new_buffer_previewer {
@@ -792,7 +785,7 @@ previewers.git_commit_diff_to_head = defaulter(function(opts)
       })
     end,
   }
-end, {})
+end)
 
 previewers.git_commit_diff_as_was = defaulter(function(opts)
   return previewers.new_buffer_previewer {
@@ -823,7 +816,7 @@ previewers.git_commit_diff_as_was = defaulter(function(opts)
       })
     end,
   }
-end, {})
+end)
 
 previewers.git_commit_message = defaulter(function(opts)
   local hl_map = {
@@ -858,7 +851,7 @@ previewers.git_commit_message = defaulter(function(opts)
       })
     end,
   }
-end, {})
+end)
 
 previewers.git_file_diff = defaulter(function(opts)
   return previewers.new_buffer_previewer {
@@ -894,7 +887,7 @@ previewers.git_file_diff = defaulter(function(opts)
       end
     end,
   }
-end, {})
+end)
 
 previewers.autocommands = defaulter(function(_)
   return previewers.new_buffer_previewer {
@@ -965,7 +958,7 @@ previewers.autocommands = defaulter(function(_)
       self.state.last_set_bufnr = self.state.bufnr
     end,
   }
-end, {})
+end)
 
 previewers.highlights = defaulter(function(_)
   return previewers.new_buffer_previewer {
@@ -1018,7 +1011,7 @@ previewers.highlights = defaulter(function(_)
       end)
     end,
   }
-end, {})
+end)
 
 previewers.pickers = defaulter(function(_)
   local ns_telescope_multiselection = api.nvim_create_namespace "telescope_mulitselection"
@@ -1094,7 +1087,7 @@ previewers.pickers = defaulter(function(_)
       end)
     end,
   }
-end, {})
+end)
 
 previewers.display_content = defaulter(function(_)
   return previewers.new_buffer_previewer {
@@ -1108,6 +1101,6 @@ previewers.display_content = defaulter(function(_)
       end)
     end,
   }
-end, {})
+end)
 
 return previewers

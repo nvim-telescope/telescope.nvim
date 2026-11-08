@@ -3,8 +3,6 @@ local health = vim.health
 local extension_module = require "telescope._extensions"
 local extension_info = require("telescope").extensions
 
-local iswin = vim.fn.has "win32" == 1
-
 local optional_dependencies = {
   {
     finder_name = "live-grep",
@@ -32,12 +30,7 @@ local optional_dependencies = {
 local check_binary_installed = function(package)
   local binaries = package.binaries or { package.name }
   for _, binary in ipairs(binaries) do
-    local found = vim.fn.executable(binary) == 1
-    if not found and iswin then
-      binary = binary .. ".exe"
-      found = vim.fn.executable(binary) == 1
-    end
-    if found then
+    if vim.fn.executable(binary) == 1 then
       local handle = io.popen(binary .. " --version")
       local binary_version = handle:read "*a"
       handle:close()

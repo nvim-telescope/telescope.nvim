@@ -135,31 +135,4 @@ function M.debounce_trailing(fn, ms, first)
   return wrapped_fn, timer
 end
 
---- Test deferment methods (`{throttle,debounce}_{leading,trailing}()`).
----@param bouncer string Bouncer function to test
----@param ms? number Timeout in ms, default 2000.
----@param firstlast? boolean Whether to use the 'other' fn call strategy.
-function M.test_defer(bouncer, ms, firstlast)
-  local bouncers = {
-    tl = M.throttle_leading,
-    tt = M.throttle_trailing,
-    dl = M.debounce_leading,
-    dt = M.debounce_trailing,
-  }
-
-  local timeout = ms or 2000
-
-  local bounced = bouncers[bouncer](function(i)
-    vim.cmd('echom "' .. bouncer .. ": " .. i .. '"')
-  end, timeout, firstlast)
-
-  for i, _ in ipairs { 1, 2, 3, 4, 5 } do
-    bounced(i)
-    vim.schedule(function()
-      vim.cmd("echom " .. i)
-    end)
-    vim.fn.call("wait", { 1000, "v:false" })
-  end
-end
-
 return M

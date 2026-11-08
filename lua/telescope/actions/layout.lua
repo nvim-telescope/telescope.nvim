@@ -35,18 +35,6 @@ action_layout.toggle_preview = function(prompt_bufnr)
   picker:full_layout_update()
 end
 
--- TODO IMPLEMENT (mentored project available, contact @l-kershaw)
-action_layout.toggle_padding = function(prompt_bufnr)
-  local picker = action_state.get_current_picker(prompt_bufnr)
-  -- if padding ~= 0
-  --    1. Save `height` and `width` of picker
-  --    2. Set both to `{padding = 0}`
-  -- else
-  --    1. Lookup previous `height` and `width` of picker
-  --    2. Set both to previous values
-  picker:full_layout_update()
-end
-
 --- Toggles the `prompt_position` option between "top" and "bottom".
 --- Checks if `prompt_position` is an option for the current layout.
 ---

@@ -1,6 +1,5 @@
 local extensions = {}
 
-extensions._loaded = {}
 extensions._config = {}
 extensions._health = {}
 
