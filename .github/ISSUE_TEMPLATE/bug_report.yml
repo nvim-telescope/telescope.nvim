@@ -43,10 +43,6 @@ body:
       placeholder: |
         health#telescope#check
         ========================================================================
-        ## Checking for required plugins
-          - OK: plenary installed.
-          - OK: nvim-treesitter installed.
-
         ## Checking external dependencies
           - OK: rg: found ripgrep 13.0.0
           - OK: fd: found fd 8.2.1
@@ -103,9 +99,6 @@ body:
         local plugins = {
           {
             "nvim-telescope/telescope.nvim",
-            dependencies = {
-              "nvim-lua/plenary.nvim",
-            },
             config = function()
               -- ADD INIT.LUA SETTINGS THAT ARE _NECESSARY_ FOR REPRODUCING THE ISSUE
               require("telescope").setup {}

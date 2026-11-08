@@ -1,4 +1,4 @@
-local Job = require "plenary.job"
+local Job = require "neoplen.job"
 
 local make_entry = require "telescope.make_entry"
 local log = require "telescope.log"
@@ -27,8 +27,6 @@ end
     JobFinder
 
 Uses an external Job to get results. Processes results as they arrive.
-
-For more information about how Jobs are implemented, checkout 'plenary.job'
 
 -- ============================================================= ]]
 local JobFinder = _callable_obj()
