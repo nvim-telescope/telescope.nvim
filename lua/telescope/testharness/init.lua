@@ -9,12 +9,12 @@ local get_results_from_contents = function(content)
     { rpc = true }
   )
 
-  local result = vim.fn.rpcrequest(nvim, "nvim_exec_lua", content, {})
+  local result = vim.rpcrequest(nvim, "nvim_exec_lua", content, {})
   assert.are.same(true, result[1], vim.inspect(result))
 
   local count = 0
   while
-    vim.fn.rpcrequest(nvim, "nvim_exec_lua", "return require('telescope.testharness.runner').state.done", {}) ~= true
+    vim.rpcrequest(nvim, "nvim_exec_lua", "return require('telescope.testharness.runner').state.done", {}) ~= true
   do
     count = count + 1
     vim.wait(100)
@@ -25,7 +25,7 @@ local get_results_from_contents = function(content)
     end
   end
 
-  local state = vim.fn.rpcrequest(nvim, "nvim_exec_lua", "return require('telescope.testharness.runner').state", {})
+  local state = vim.rpcrequest(nvim, "nvim_exec_lua", "return require('telescope.testharness.runner').state", {})
   vim.fn.jobstop(nvim)
 
   assert.are.same(true, state.done, vim.inspect(state))
