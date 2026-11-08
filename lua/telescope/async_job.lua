@@ -160,6 +160,9 @@ function Pipe:iter(schedule, opts)
     index = nil
 
     local read = self:read()
+    -- `read()` resumes us from the libuv read callback (a fast event): get back to the main loop
+    -- once per chunk, so that the consumer can use the API
+    async.util.scheduler()
     if previous == nil and read == nil then
       return
     end

@@ -67,7 +67,7 @@ return function(opts)
         for line in stdout:iter(false, { split_char = opts.split_char }) do
           num_results = num_results + 1
 
-          if num_results % await_count then
+          if num_results % await_count == 0 then
             async.util.scheduler()
           end
 
