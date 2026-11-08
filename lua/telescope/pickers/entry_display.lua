@@ -55,14 +55,17 @@
 --- For a better understanding of how create() and displayer are used it's best to look
 --- at the code in make_entry.lua.
 
-local strings = require "neoplen.strings"
-
 local state = require "telescope.state"
 local resolve = require "telescope.config.resolve"
 local utils = require "telescope.utils"
 
 local entry_display = {}
-entry_display.truncate = strings.truncate
+entry_display.truncate = utils.truncate
+
+local align = function(str, width, right_justify)
+  local padding = string.rep(" ", width - vim.fn.strdisplaywidth(str))
+  return right_justify and padding .. str or str .. padding
+end
 
 entry_display.create = function(configuration)
   local generator = {}
@@ -79,9 +82,9 @@ entry_display.create = function(configuration)
           width = resolve.resolve_width(v.width)(nil, s[1], s[2])
         end
         if type(item) == "table" then
-          return strings.align_str(entry_display.truncate(item[1], width), width, justify), item[2]
+          return align(entry_display.truncate(item[1], width), width, justify), item[2]
         else
-          return strings.align_str(entry_display.truncate(item, width), width, justify)
+          return align(entry_display.truncate(item, width), width, justify)
         end
       end)
     else

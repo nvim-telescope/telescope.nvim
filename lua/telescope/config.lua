@@ -1,5 +1,3 @@
-local strings = require "neoplen.strings"
-
 local sorters = require "telescope.sorters"
 local utils = require "telescope.utils"
 local os_sep = require("neoplen.path").path.sep
@@ -430,7 +428,7 @@ append(
     -- https://github.com/nvim-telescope/telescope.nvim/issues/2929
     local prompt_width = vim.api.nvim_win_get_width(self.prompt_win)
     local cursor_col = vim.api.nvim_win_get_cursor(self.prompt_win)[2]
-    local prefix_display_width = strings.strdisplaywidth(self.prompt_prefix) --[[@as integer]]
+    local prefix_display_width = vim.fn.strdisplaywidth(self.prompt_prefix) --[[@as integer]]
     local prefix_width = #self.prompt_prefix
     local prefix_shift = 0
     if prefix_display_width ~= prefix_width then
@@ -965,7 +963,7 @@ function config.set_defaults(user_defaults, tele_defaults)
     assert(description, "Config values must always have a description")
 
     config.values[name] = get(name, default_val)
-    config.descriptions[name] = strings.dedent(description)
+    config.descriptions[name] = description
   end
 
   for key, info in pairs(tele_defaults) do
