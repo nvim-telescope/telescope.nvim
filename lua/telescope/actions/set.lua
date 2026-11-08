@@ -10,7 +10,6 @@
 local api = vim.api
 
 local log = require "telescope.log"
-local Path = require "neoplen.path"
 local state = require "telescope.state"
 local utils = require "telescope.utils"
 

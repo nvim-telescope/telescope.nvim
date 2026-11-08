@@ -3,12 +3,11 @@
 
 local api = vim.api
 
-local Path = require "neoplen.path"
 local Job = require "neoplen.job"
-
+local Path = require "neoplen.path"
 local log = require "telescope.log"
-
 local truncate = require("neoplen.strings").truncate
+
 local get_status = require("telescope.state").get_status
 
 local utils = {}

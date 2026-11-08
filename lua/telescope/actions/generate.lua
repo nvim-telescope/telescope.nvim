@@ -25,7 +25,7 @@ local action_state = require "telescope.actions.state"
 local finders = require "telescope.finders"
 local utils = require "telescope.utils"
 
-local action_generate = {}
+local M = {}
 
 ---@inlinedoc
 ---@class telescope.actions.generate.which_key.opts
@@ -53,14 +53,14 @@ local action_generate = {}
 ---   - Resolves to minimum required number of lines to show hints with `opts` or truncates entries at `max_height`.
 ---   - Closes automatically on action call and can be disabled with by setting `close_with_action` to false.
 ---@param opts table: options to pass to toggling registered actions
-action_generate.which_key = function(opts)
+M.which_key = function(opts)
   local which_key = function(prompt_bufnr)
     actions.which_key(prompt_bufnr, opts)
   end
   return which_key
 end
 
-action_generate.refine = function(prompt_bufnr, opts)
+M.refine = function(prompt_bufnr, opts)
   opts = opts or {}
   opts.prompt_to_prefix = utils.if_nil(opts.prompt_to_prefix, false)
   opts.prefix_hl_group = utils.if_nil(opts.prompt_hl_group, "TelescopePromptPrefix")
@@ -116,4 +116,4 @@ action_generate.refine = function(prompt_bufnr, opts)
   current_picker:refresh(new_finder, opts)
 end
 
-return action_generate
+return M
