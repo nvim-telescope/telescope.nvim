@@ -1,7 +1,5 @@
 local api = vim.api
 
-local Job = require "neoplen.job"
-
 local utils = require "telescope.utils"
 local conf = require("telescope.config").values
 
@@ -20,39 +18,57 @@ M.job_maker = function(cmd, bufnr, opts)
   -- if passed, they will be use as the cache key
   -- if any of them are missing, cache will be skipped
   if opts.bufname ~= opts.value or not opts.bufname or not opts.value then
-    local command = table.remove(cmd, 1)
-    local writer = (function()
-      if opts.writer ~= nil then
-        local wcommand = table.remove(opts.writer, 1)
-        return Job:new {
-          command = wcommand,
-          args = opts.writer,
-          env = opts.env,
-          cwd = opts.cwd,
-        }
+    -- `env` defines the environment exactly (as with plenary's `Job`), as a map or `{ "VAR=VALUE" }` list
+    local env
+    if opts.env then
+      env = {}
+      for k, v in pairs(opts.env) do
+        if type(k) == "number" then
+          local name, value = v:match "^([^=]+)=(.*)$"
+          if name then
+            env[name] = value
+          end
+        else
+          env[k] = v
+        end
       end
-    end)()
+    end
 
-    Job:new({
-      command = command,
-      args = cmd,
-      env = opts.env,
-      cwd = opts.cwd,
-      writer = writer,
-      on_exit = vim.schedule_wrap(function(j)
-        if not api.nvim_buf_is_valid(bufnr) then
-          return
-        end
-        if opts.mode == "append" then
-          api.nvim_buf_set_lines(bufnr, -1, -1, false, j:result())
-        elseif opts.mode == "insert" then
-          api.nvim_buf_set_lines(bufnr, 0, -1, false, j:result())
-        end
-        if opts.callback then
-          opts.callback(bufnr, j:result())
-        end
-      end),
-    }):start()
+    local function run(stdin)
+      local sys_opts = { cwd = opts.cwd, env = env, clear_env = env ~= nil, stdin = stdin }
+      vim.system(
+        cmd,
+        sys_opts,
+        vim.schedule_wrap(function(result)
+          if not api.nvim_buf_is_valid(bufnr) then
+            return
+          end
+          local lines = utils.output_lines(result.stdout)
+          if opts.mode == "append" then
+            api.nvim_buf_set_lines(bufnr, -1, -1, false, lines)
+          elseif opts.mode == "insert" then
+            api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+          end
+          if opts.callback then
+            opts.callback(bufnr, lines)
+          end
+        end)
+      )
+    end
+
+    if opts.writer then
+      -- the writer's output is the command's input; start the command from the main loop (`vim.system`
+      -- can't be called from the writer's exit callback, which is a fast event)
+      vim.system(
+        opts.writer,
+        { cwd = opts.cwd, env = env, clear_env = env ~= nil },
+        vim.schedule_wrap(function(result)
+          run(result.stdout)
+        end)
+      )
+    else
+      run()
+    end
   else
     if opts.callback then
       opts.callback(bufnr)

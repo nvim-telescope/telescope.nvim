@@ -571,6 +571,15 @@ function utils.display_termcodes(str)
   return str:gsub(string.char(9), "<TAB>"):gsub("", "<C-F>"):gsub(" ", "<Space>")
 end
 
+-- Split command output into lines (without `\r`), without a trailing empty line; `{}` for no output.
+utils.output_lines = function(s)
+  s = (s or ""):gsub("\r", "")
+  if s == "" then
+    return {}
+  end
+  return vim.split((s:gsub("\n$", "")), "\n", { plain = true })
+end
+
 function utils.get_os_command_output(cmd, cwd)
   if type(cmd) ~= "table" then
     utils.notify("get_os_command_output", {
@@ -579,17 +588,9 @@ function utils.get_os_command_output(cmd, cwd)
     })
     return {}
   end
-  -- output as lines (without `\r`), no trailing empty line; `{}` for no output
-  local function lines(s)
-    s = s:gsub("\r", "")
-    if s == "" then
-      return {}
-    end
-    return vim.split((s:gsub("\n$", "")), "\n", { plain = true })
-  end
   -- on timeout (5 s), the process is stopped and the exit code is 124
   local result = vim.system(cmd, { cwd = cwd }):wait(5000)
-  return lines(result.stdout), result.code, lines(result.stderr)
+  return utils.output_lines(result.stdout), result.code, utils.output_lines(result.stderr)
 end
 
 function utils.win_set_buf_noautocmd(win, buf)
