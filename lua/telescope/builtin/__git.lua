@@ -464,20 +464,12 @@ local try_worktrees = function(opts)
   error(opts.cwd .. " is not a git directory")
 end
 
-local current_path_toplevel = function()
-  local gitdir = fn.finddir(".git", fn.expand "%:p" .. ";") --[[@as string]]
-  if gitdir == "" then
-    return nil
-  end
-  return vim.fs.abspath(vim.fs.dirname(gitdir))
-end
-
 local set_opts_cwd = function(opts)
   opts.use_git_root = utils.if_nil(opts.use_git_root, true)
   if opts.cwd then
     opts.cwd = utils.path_expand(opts.cwd)
   elseif opts.use_file_path then
-    opts.cwd = current_path_toplevel()
+    opts.cwd = vim.fs.root(0, ".git")
     if not opts.cwd then
       opts.cwd = fn.expand "%:p:h"
       try_worktrees(opts)
