@@ -6,7 +6,7 @@ local api = vim.api
 local async = require "neoplen.async"
 local await_schedule = async.util.scheduler
 local channel = require("neoplen.async.control").channel
-local popup = require "neoplen.popup"
+local ui = require "telescope.pickers.ui"
 
 local actions = require "telescope.actions"
 local config = require "telescope.config"
@@ -29,19 +29,22 @@ local ns_telescope_matching = api.nvim_create_namespace "telescope_matching"
 local ns_telescope_prompt = api.nvim_create_namespace "telescope_prompt"
 local ns_telescope_prompt_prefix = api.nvim_create_namespace "telescope_prompt_prefix"
 
+-- Window options produced by layout strategies and passed to `telescope.pickers.ui`.
 ---@class telescope_popup_options
----@field border table<1|2|3|4, integer>
----@field borderchars table<1|2|3|4|5|6|7|8, string>
----@field borderhighlight string
----@field col integer
----@field enter boolean
----@field height integer
----@field highlight string
----@field line integer
----@field minheight integer
----@field title integer
----@field titlehighlight integer
+---@field line integer: 1-based screen row of the content (0 or nil: centered)
+---@field col integer: 1-based screen column of the content (0 or nil: centered)
 ---@field width integer
+---@field height integer
+---@field minheight integer|nil
+---@field border boolean|table<1|2|3|4, integer>|nil: thickness above, right, below, left
+---@field borderchars table<integer, string>|nil: top, right, bottom, left, topleft, topright, botright, botleft
+---@field title string|{ pos: "NW"|"N"|"NE"|"SW"|"S"|"SE", text: string }[]|nil
+---@field highlight string|nil
+---@field borderhighlight string|nil
+---@field titlehighlight string|nil
+---@field enter boolean|nil: enter the window (default true)
+---@field focusable boolean|nil
+---@field zindex integer|nil
 
 -- Create three windows:
 -- 1. Prompt window
@@ -50,13 +53,10 @@ local ns_telescope_prompt_prefix = api.nvim_create_namespace "telescope_prompt_p
 --
 ---@param picker Picker
 local function default_create_layout(picker)
-  local function make_border(border)
-    if not border then
-      return nil
-    end
-    border.winid = border.win_id
-    return border
-  end
+  -- Joined layouts let the prompt's border overlap those of the results and preview windows, whose
+  -- border characters (e.g. `├`, `┤`) must stay visible, also after the prompt (on top once entered)
+  -- gets focus again.
+  local zindex = { prompt = 50, preview = 51, results = 52 }
 
   local layout = Layout {
     picker = picker,
@@ -69,52 +69,51 @@ local function default_create_layout(picker)
 
       local popup_opts = picker:get_window_options(vim.o.columns, line_count)
 
-      -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
       popup_opts.results.focusable = true
-      popup_opts.results.minheight = popup_opts.results.height
+      popup_opts.results.zindex = zindex.results
       popup_opts.results.highlight = "TelescopeResultsNormal"
       popup_opts.results.borderhighlight = "TelescopeResultsBorder"
       popup_opts.results.titlehighlight = "TelescopeResultsTitle"
-      popup_opts.prompt.minheight = popup_opts.prompt.height
+      popup_opts.prompt.zindex = zindex.prompt
       popup_opts.prompt.highlight = "TelescopePromptNormal"
       popup_opts.prompt.borderhighlight = "TelescopePromptBorder"
       popup_opts.prompt.titlehighlight = "TelescopePromptTitle"
 
       if popup_opts.preview then
         popup_opts.preview.focusable = true
-        popup_opts.preview.minheight = popup_opts.preview.height
+        popup_opts.preview.zindex = zindex.preview
         popup_opts.preview.highlight = "TelescopePreviewNormal"
         popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
         popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
       end
 
-      local results_win, results_opts = picker:_create_window("", popup_opts.results)
+      local results_win, results_opts = picker:_create_window(nil, popup_opts.results)
       local results_bufnr = api.nvim_win_get_buf(results_win)
 
       self.results = Layout.Window {
         winid = results_win,
         bufnr = results_bufnr,
-        border = make_border(results_opts.border),
+        border = results_opts.border,
       }
 
       if popup_opts.preview then
-        local preview_win, preview_opts = picker:_create_window("", popup_opts.preview)
+        local preview_win, preview_opts = picker:_create_window(nil, popup_opts.preview)
         local preview_bufnr = api.nvim_win_get_buf(preview_win)
 
         self.preview = Layout.Window {
           winid = preview_win,
           bufnr = preview_bufnr,
-          border = make_border(preview_opts.border),
+          border = preview_opts.border,
         }
       end
 
-      local prompt_win, prompt_opts = picker:_create_window("", popup_opts.prompt)
+      local prompt_win, prompt_opts = picker:_create_window(nil, popup_opts.prompt)
       local prompt_bufnr = api.nvim_win_get_buf(prompt_win)
 
       self.prompt = Layout.Window {
         winid = prompt_win,
         bufnr = prompt_bufnr,
-        border = make_border(prompt_opts.border),
+        border = prompt_opts.border,
       }
     end,
     ---@param self TelescopeLayout
@@ -122,12 +121,6 @@ local function default_create_layout(picker)
       utils.win_delete("results_win", self.results.winid, true, true)
       if self.preview then
         utils.win_delete("preview_win", self.preview.winid, true, true)
-      end
-
-      utils.win_delete("prompt_border_win", self.prompt.border.winid, true, true)
-      utils.win_delete("results_border_win", self.results.border.winid, true, true)
-      if self.preview then
-        utils.win_delete("preview_border_win", self.preview.border.winid, true, true)
       end
 
       -- we cant use win_delete. We first need to close and then delete the buffer
@@ -146,12 +139,6 @@ local function default_create_layout(picker)
       end
 
       local popup_opts = picker:get_window_options(vim.o.columns, line_count)
-      -- `popup.nvim` massaging so people don't have to remember minheight shenanigans
-      popup_opts.results.minheight = popup_opts.results.height
-      popup_opts.prompt.minheight = popup_opts.prompt.height
-      if popup_opts.preview then
-        popup_opts.preview.minheight = popup_opts.preview.height
-      end
 
       local prompt_win = self.prompt.winid
       local results_win = self.results.winid
@@ -160,27 +147,28 @@ local function default_create_layout(picker)
       local preview_opts
       if popup_opts.preview then
         if preview_win ~= nil then
-          -- Move all popups at the same time
-          popup.move(prompt_win, popup_opts.prompt)
-          popup.move(results_win, popup_opts.results)
-          popup.move(preview_win, popup_opts.preview)
+          -- Move all windows at the same time
+          ui.move(prompt_win, popup_opts.prompt)
+          ui.move(results_win, popup_opts.results)
+          ui.move(preview_win, popup_opts.preview)
         else
           popup_opts.preview.focusable = true
+          popup_opts.preview.zindex = zindex.preview
           popup_opts.preview.highlight = "TelescopePreviewNormal"
           popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
           popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
           local preview_bufnr = (self.preview and self.preview.bufnr ~= nil)
               and api.nvim_buf_is_valid(self.preview.bufnr)
               and self.preview.bufnr
-            or ""
+            or nil
           preview_win, preview_opts = picker:_create_window(preview_bufnr, popup_opts.preview)
-          if preview_bufnr == "" then
+          if not preview_bufnr then
             preview_bufnr = api.nvim_win_get_buf(preview_win)
           end
           self.preview = Layout.Window {
             winid = preview_win,
             bufnr = preview_bufnr,
-            border = make_border(preview_opts.border),
+            border = preview_opts.border,
           }
           if picker.previewer and picker.previewer.state and picker.previewer.state.winid then
             picker.previewer.state.winid = preview_win
@@ -188,23 +176,22 @@ local function default_create_layout(picker)
 
           -- Move prompt and results after preview created
           vim.defer_fn(function()
-            popup.move(prompt_win, popup_opts.prompt)
-            popup.move(results_win, popup_opts.results)
+            ui.move(prompt_win, popup_opts.prompt)
+            ui.move(results_win, popup_opts.results)
           end, 0)
         end
       elseif preview_win ~= nil then
-        popup.move(prompt_win, popup_opts.prompt)
-        popup.move(results_win, popup_opts.results)
+        ui.move(prompt_win, popup_opts.prompt)
+        ui.move(results_win, popup_opts.results)
 
         -- Remove preview after the prompt and results are moved
         vim.defer_fn(function()
           utils.win_delete("preview_win", preview_win, true)
-          utils.win_delete("preview_win", self.preview.border.winid, true)
           self.preview = nil
         end, 0)
       else
-        popup.move(prompt_win, popup_opts.prompt)
-        popup.move(results_win, popup_opts.results)
+        ui.move(prompt_win, popup_opts.prompt)
+        ui.move(results_win, popup_opts.results)
       end
     end,
   }
@@ -508,18 +495,12 @@ function Picker:_next_find_id()
 end
 
 --- A helper function for creating each of the windows in a picker
----@param bufnr number: the buffer number to be used in the window
----@param popup_opts table: options to pass to `popup.create`
+---@param bufnr integer?: the buffer to show in the window (nil: a new scratch buffer)
+---@param popup_opts table: options to pass to `ui.create`
 function Picker:_create_window(bufnr, popup_opts)
-  local what = bufnr or ""
-  local win, opts = popup.create(what, popup_opts)
-
+  local win, opts = ui.create(bufnr, popup_opts)
   vim.wo[win].winblend = self.window.winblend
-  local border_win = opts and opts.border and opts.border.win_id
-  if border_win then
-    vim.wo[border_win].winblend = self.window.winblend
-  end
-  return win, opts, border_win
+  return win, opts
 end
 
 --- Opens the given picker for the user to interact with
@@ -729,13 +710,10 @@ function Picker:find()
       -- compatibility
       prompt_bufnr = self.prompt_bufnr,
       prompt_win = self.prompt_win,
-      prompt_border_win = self.prompt_border.winid,
       results_bufnr = self.results_bufnr,
       results_win = self.results_win,
-      results_border_win = self.results_border.winid,
       preview_bufnr = self.preview_bufnr,
       preview_win = self.preview_win,
-      preview_border_win = self.preview_border and self.preview_border.winid,
     }, {
       __mode = "kv",
     })
