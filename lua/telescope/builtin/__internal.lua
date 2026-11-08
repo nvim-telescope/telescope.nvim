@@ -548,7 +548,11 @@ internal.oldfiles = function(opts)
   local current_file = api.nvim_buf_get_name(current_buffer)
   local results = {}
 
-  if utils.iswin then -- for slash problem in windows
+  local function has_protocol(path)
+    return string.match(path, "^[A-z0-9]+://")
+  end
+
+  if utils.iswin and not has_protocol(current_file) then -- for slash problem in windows
     current_file = current_file:gsub("/", "\\")
   end
 
@@ -558,10 +562,11 @@ internal.oldfiles = function(opts)
       local open_by_lsp = string.match(buffer, "line 0$")
       if match and not open_by_lsp then
         local file = api.nvim_buf_get_name(match)
+        local protocol = has_protocol(file)
         if utils.iswin then
           file = file:gsub("/", "\\")
         end
-        if vim.uv.fs_stat(file) and match ~= current_buffer then
+        if match ~= current_buffer and (protocol or vim.uv.fs_stat(file)) then
           table.insert(results, file)
         end
       end
@@ -569,11 +574,16 @@ internal.oldfiles = function(opts)
   end
 
   for _, file in ipairs(vim.v.oldfiles) do
+    local protocol = has_protocol(file)
     if utils.iswin then
       file = file:gsub("/", "\\")
     end
-    local file_stat = vim.uv.fs_stat(file)
-    if file_stat and file_stat.type == "file" and not vim.tbl_contains(results, file) and file ~= current_file then
+    local file_stat = vim.loop.fs_stat(file)
+    if
+      ((file_stat and file_stat.type == "file") or (protocol and protocol ~= "file://" and protocol ~= "term://"))
+      and not vim.tbl_contains(results, file)
+      and file ~= current_file
+    then
       table.insert(results, file)
     end
   end
