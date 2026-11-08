@@ -3,7 +3,6 @@
 
 local api = vim.api
 
-local Job = require "neoplen.job"
 local log = require "telescope.log"
 
 local get_status = require("telescope.state").get_status
@@ -580,17 +579,17 @@ function utils.get_os_command_output(cmd, cwd)
     })
     return {}
   end
-  local command = table.remove(cmd, 1)
-  local stderr = {}
-  local stdout, ret = Job:new({
-    command = command,
-    args = cmd,
-    cwd = cwd,
-    on_stderr = function(_, data)
-      table.insert(stderr, data)
-    end,
-  }):sync()
-  return stdout, ret, stderr
+  -- output as lines (without `\r`), no trailing empty line; `{}` for no output
+  local function lines(s)
+    s = s:gsub("\r", "")
+    if s == "" then
+      return {}
+    end
+    return vim.split((s:gsub("\n$", "")), "\n", { plain = true })
+  end
+  -- on timeout (5 s), the process is stopped and the exit code is 124
+  local result = vim.system(cmd, { cwd = cwd }):wait(5000)
+  return lines(result.stdout), result.code, lines(result.stderr)
 end
 
 function utils.win_set_buf_noautocmd(win, buf)

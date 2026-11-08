@@ -83,7 +83,7 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
       end
     end
     if opts.preview.check_mime_type == true and has_file and (opts.ft == nil or opts.ft == "") then
-      local mime_type = vim.trim(vim.system({ "file", "--mime-type", "-b", filepath }):wait().stdout or "")
+      local mime_type = utils.get_os_command_output({ "file", "--mime-type", "-b", filepath })[1] or ""
       if putils.binary_mime_type(mime_type) then
         if type(opts.preview.mime_hook) == "function" then
           opts.preview.mime_hook(filepath, bufnr, opts)
