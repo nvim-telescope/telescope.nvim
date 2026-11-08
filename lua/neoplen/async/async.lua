@@ -2,7 +2,17 @@ local co = coroutine
 local vararg = require "neoplen.vararg"
 local errors = require "neoplen.errors"
 local traceback_error = errors.traceback_error
-local f = require "neoplen.functional"
+
+local function select_only(n)
+  return function(...)
+    local x = select(n, ...)
+    return x
+  end
+end
+
+local first = select_only(1)
+local second = select_only(2)
+local third = select_only(3)
 
 local M = {}
 
@@ -12,10 +22,10 @@ end
 
 ---because we can't store varargs
 local function callback_or_next(step, thread, callback, ...)
-  local stat = f.first(...)
+  local stat = first(...)
 
   if not stat then
-    error(string.format("The coroutine failed with this message: %s", f.second(...)))
+    error(string.format("The coroutine failed with this message: %s", second(...)))
   end
 
   if co.status(thread) == "dead" then
@@ -24,8 +34,8 @@ local function callback_or_next(step, thread, callback, ...)
     end
     callback(select(2, ...))
   else
-    local returned_function = f.second(...)
-    local nargs = f.third(...)
+    local returned_function = second(...)
+    local nargs = third(...)
 
     assert(is_callable(returned_function), "type error :: expected func")
     returned_function(vararg.rotate(nargs, step, select(4, ...)))
