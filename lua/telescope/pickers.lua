@@ -208,6 +208,7 @@ function Picker:new(opts)
     stats = {},
 
     attach_mappings = opts.attach_mappings,
+    on_close = opts.on_close,
     file_ignore_patterns = utils.if_nil(opts.file_ignore_patterns, config.values.file_ignore_patterns),
 
     scroll_strategy = utils.if_nil(opts.scroll_strategy, config.values.scroll_strategy),
@@ -1429,7 +1430,8 @@ function Picker:_do_selection(prompt)
 end
 
 --- Wrapper function for `Picker:new` that incorporates user provided `opts`
---- with the telescope `defaults`
+--- with the telescope `defaults`. If both define `attach_mappings` or `on_close`, both are called
+--- (the defaults first).
 ---@param opts table
 ---@param defaults table
 ---@return Picker
@@ -1455,6 +1457,12 @@ pickers.new = function(opts, defaults)
         result[k] = function(...)
           v(...)
           return opt_value(...)
+        end
+      elseif k == "on_close" then
+        local opt_value = result[k]
+        result[k] = function()
+          v()
+          opt_value()
         end
       end
     end
@@ -1542,6 +1550,10 @@ function pickers.on_close_prompt(prompt_bufnr)
   picker.close_windows(status)
 
   vim.o.mousemoveevent = picker.__original_mousemoveevent
+
+  if picker.on_close then
+    picker.on_close()
+  end
 end
 
 function pickers.on_resize_window(prompt_bufnr)

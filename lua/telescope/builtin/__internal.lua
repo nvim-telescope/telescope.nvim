@@ -990,17 +990,12 @@ internal.ui_select = function(opts)
         end,
       },
       sorter = conf.generic_sorter(opts),
+      on_close = function()
+        vim.schedule(function()
+          on_choice(choice and choice.value, choice and choice.index)
+        end)
+      end,
       attach_mappings = function(prompt_bufnr)
-        -- however the picker is closed (also by leaving it), its prompt buffer is wiped
-        api.nvim_create_autocmd("BufWipeout", {
-          buffer = prompt_bufnr,
-          once = true,
-          callback = function()
-            vim.schedule(function()
-              on_choice(choice and choice.value, choice and choice.index)
-            end)
-          end,
-        })
         actions.select_default:replace(function()
           choice = action_state.get_selected_entry()
           if not choice then
@@ -1112,19 +1107,16 @@ internal.colorscheme = function(opts)
         end
       end,
     },
-  })
-
-  if opts.enable_preview then
-    -- rewrite picker.close_windows. restore color if needed
-    local close_windows = picker.close_windows
-    picker.close_windows = function(status)
-      close_windows(status)
+    -- restore the previous colorscheme if the picker was closed without selecting one
+    on_close = function()
       if need_restore then
         vim.o.background = before_background
         vim.cmd.colorscheme(before_color)
       end
-    end
+    end,
+  })
 
+  if opts.enable_preview then
     -- rewrite picker.set_selection so that color schemes can be previewed when the current
     -- selection is shifted using the keyboard or if an item is clicked with the mouse
     local set_selection = picker.set_selection
