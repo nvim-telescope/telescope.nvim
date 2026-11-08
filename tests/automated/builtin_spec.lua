@@ -76,3 +76,66 @@ describe("builtin.grep_string", function()
     require("telescope.actions").close(prompt_bufnr)
   end)
 end)
+
+describe("telescope.ui_select", function()
+  local actions = require "telescope.actions"
+  local action_state = require "telescope.actions.state"
+
+  local function select(steps)
+    local got
+    require("telescope").ui_select({ { name = "apple" }, { name = "banana" } }, {
+      format_item = function(item)
+        return item.name
+      end,
+    }, function(item, idx)
+      got = { item = item, idx = idx }
+    end)
+    local prompt_bufnr = vim.api.nvim_get_current_buf()
+    local picker = action_state.get_current_picker(prompt_bufnr)
+    vim.wait(1000, function()
+      return picker.manager and picker.manager:num_results() == 2
+    end)
+    steps(prompt_bufnr, picker)
+    vim.wait(1000, function()
+      return got ~= nil
+    end)
+    return got
+  end
+
+  it("passes the chosen item and its index", function()
+    local got = select(function(prompt_bufnr, picker)
+      picker:set_prompt "banana"
+      vim.wait(1000, function()
+        local entry = action_state.get_selected_entry()
+        return entry ~= nil and entry.value.name == "banana"
+      end)
+      actions.select_default(prompt_bufnr)
+    end)
+    eq({ item = { name = "banana" }, idx = 2 }, got)
+  end)
+
+  it("passes nil when closed", function()
+    eq({}, select(actions.close))
+  end)
+
+  it("passes nil when the picker is left", function()
+    local win = vim.api.nvim_get_current_win()
+    eq(
+      {},
+      select(function()
+        vim.api.nvim_set_current_win(win)
+      end)
+    )
+  end)
+
+  it("passes nil without opening a picker if there are no items", function()
+    local win, got = vim.api.nvim_get_current_win(), nil
+    require("telescope").ui_select({}, {}, function(item, idx)
+      got = { item = item, idx = idx }
+    end)
+    vim.wait(1000, function()
+      return got ~= nil
+    end)
+    eq({ {}, win }, { got, vim.api.nvim_get_current_win() })
+  end)
+end)
