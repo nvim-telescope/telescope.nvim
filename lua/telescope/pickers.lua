@@ -157,38 +157,23 @@ local function default_create_layout(picker)
           popup_opts.preview.highlight = "TelescopePreviewNormal"
           popup_opts.preview.borderhighlight = "TelescopePreviewBorder"
           popup_opts.preview.titlehighlight = "TelescopePreviewTitle"
-          local preview_bufnr = (self.preview and self.preview.bufnr ~= nil)
-              and api.nvim_buf_is_valid(self.preview.bufnr)
-              and self.preview.bufnr
-            or nil
-          preview_win, preview_opts = picker:_create_window(preview_bufnr, popup_opts.preview)
-          if not preview_bufnr then
-            preview_bufnr = api.nvim_win_get_buf(preview_win)
-          end
+          preview_win, preview_opts = picker:_create_window(nil, popup_opts.preview)
           self.preview = Layout.Window {
             winid = preview_win,
-            bufnr = preview_bufnr,
+            bufnr = api.nvim_win_get_buf(preview_win),
             border = preview_opts.border,
           }
           if picker.previewer and picker.previewer.state and picker.previewer.state.winid then
             picker.previewer.state.winid = preview_win
           end
-
-          -- Move prompt and results after preview created
-          vim.defer_fn(function()
-            ui.move(prompt_win, popup_opts.prompt)
-            ui.move(results_win, popup_opts.results)
-          end, 0)
+          ui.move(prompt_win, popup_opts.prompt)
+          ui.move(results_win, popup_opts.results)
         end
       elseif preview_win ~= nil then
         ui.move(prompt_win, popup_opts.prompt)
         ui.move(results_win, popup_opts.results)
-
-        -- Remove preview after the prompt and results are moved
-        vim.defer_fn(function()
-          utils.win_delete("preview_win", preview_win, true)
-          self.preview = nil
-        end, 0)
+        utils.win_delete("preview_win", preview_win, true)
+        self.preview = nil
       else
         ui.move(prompt_win, popup_opts.prompt)
         ui.move(results_win, popup_opts.results)
