@@ -7,14 +7,7 @@
 -- > matches on consecutive letters and starts of words. This allows matching
 -- > using acronyms or different parts of the path." - J Hawthorn
 
-local has_path, Path = pcall(require, "neoplen.path")
-if not has_path then
-  Path = {
-    path = {
-      separator = "/",
-    },
-  }
-end
+local pathsep = vim.fn.has "win32" == 1 and "\\" or "/"
 
 local SCORE_GAP_LEADING = -0.005
 local SCORE_GAP_TRAILING = -0.005
@@ -58,10 +51,10 @@ end
 local function precompute_bonus(haystack)
   local match_bonus = {}
 
-  local last_char = Path.path.sep
+  local last_char = pathsep
   for i = 1, string.len(haystack) do
     local this_char = haystack:sub(i, i)
-    if last_char == Path.path.sep then
+    if last_char == pathsep then
       match_bonus[i] = SCORE_MATCH_SLASH
     elseif last_char == "-" or last_char == "_" or last_char == " " then
       match_bonus[i] = SCORE_MATCH_WORD
