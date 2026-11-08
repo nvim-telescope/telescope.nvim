@@ -1,6 +1,5 @@
 local uv = vim.uv
 
-local Object = require "neoplen.class"
 local log = require "neoplen.log"
 
 local async = require "neoplen.async"
@@ -80,32 +79,44 @@ M.spawn = function(opts)
   return self
 end
 
----@class uv_pipe_t
---- A pipe handle from libuv
----@field read_start function: Start reading
----@field read_stop function: Stop reading
----@field close function: Close the handle
----@field is_closing function: Whether handle is currently closing
----@field is_active function: Whether the handle is currently reading
+---@class telescope.async_job.Pipe
+---@field handle uv.uv_pipe_t? libuv pipe (nil for `NullPipe`)
+---@field eof_tx fun() signals end of file
+---@field eof_rx async fun() waits for end of file
+local Pipe = {}
+Pipe.__index = Pipe
 
----@class BasePipe
----@field super Object: Always available
----@field handle uv_pipe_t: A pipe handle
----@field extend function: Extend
-local BasePipe = Object:extend()
-
-function BasePipe:new()
+---@param handle uv.uv_pipe_t?
+---@return telescope.async_job.Pipe
+local function new_pipe(handle)
+  local self = setmetatable({ handle = handle }, Pipe)
+  -- must be per instance: a oneshot channel can only be used once
   self.eof_tx, self.eof_rx = channel.oneshot()
+  return self
 end
 
-function BasePipe:close(force)
+--- Pipe for reading process output line by line (see `Pipe:iter()`)
+---@return telescope.async_job.Pipe
+function M.LinesPipe()
+  return new_pipe(uv.new_pipe(false))
+end
+
+--- Placeholder for an unused stdio stream: no handle, already at end of file
+---@return telescope.async_job.Pipe
+function M.NullPipe()
+  local self = new_pipe(nil)
+  self.eof_tx()
+  return self
+end
+
+---@param force boolean? if false, wait for end of file first (default: true)
+function Pipe:close(force)
   if force == nil then
     force = true
   end
 
-  assert(self.handle, "Must have a pipe to close. Otherwise it's weird!")
-
-  if self.handle:is_closing() then
+  -- `NullPipe` has nothing to close
+  if not self.handle or self.handle:is_closing() then
     return
   end
 
@@ -123,15 +134,7 @@ function BasePipe:close(force)
   self._closed = true
 end
 
----@class LinesPipe : BasePipe
-local LinesPipe = BasePipe:extend()
-
-function LinesPipe:new()
-  LinesPipe.super.new(self)
-  self.handle = uv.new_pipe(false)
-end
-
-function LinesPipe:read()
+function Pipe:read()
   local read_tx, read_rx = channel.oneshot()
 
   self.handle:read_start(function(err, data)
@@ -147,7 +150,7 @@ function LinesPipe:read()
   return read_rx()
 end
 
-function LinesPipe:iter(schedule, opts)
+function Pipe:iter(schedule, opts)
   schedule = utils.if_nil(schedule, true)
   local split_char = utils.if_nil(opts and opts.split_char, "\n")
 
@@ -194,79 +197,6 @@ function LinesPipe:iter(schedule, opts)
     return next_value()
   end
 end
-
----@class NullPipe : BasePipe
-local NullPipe = BasePipe:extend()
-
-function NullPipe:new()
-  NullPipe.super.new(self)
-  self.start = function() end
-  self.read_start = function() end
-  self.close = function() end
-
-  -- This always has eof tx done, so can just call it now
-  self.eof_tx()
-end
-
----@class ChunkPipe : BasePipe
-local ChunkPipe = BasePipe:extend()
-
-function ChunkPipe:new()
-  ChunkPipe.super.new(self)
-  self.handle = uv.new_pipe(false)
-end
-
-function ChunkPipe:read()
-  local read_tx, read_rx = channel.oneshot()
-
-  self.handle:read_start(function(err, data)
-    assert(not err, err)
-    self.handle:read_stop()
-
-    read_tx(data)
-    if data == nil then
-      self.eof_tx()
-    end
-  end)
-
-  return read_rx()
-end
-
-function ChunkPipe:iter()
-  return function()
-    if self._closed then
-      return nil
-    end
-
-    return self:read()
-  end
-end
-
----@class ErrorPipe : BasePipe
-local ErrorPipe = BasePipe:extend()
-
-function ErrorPipe:new()
-  ErrorPipe.super.new(self)
-  self.handle = uv.new_pipe(false)
-end
-
-function ErrorPipe:start()
-  self.handle:read_start(function(err, data)
-    if not err and not data then
-      return
-    end
-
-    self.handle:read_stop()
-    self.handle:close()
-
-    error(string.format("Err: %s, Data: '%s'", err, data))
-  end)
-end
-
-M.NullPipe = NullPipe
-M.LinesPipe = LinesPipe
-M.ChunkPipe = ChunkPipe
-M.ErrorPipe = ErrorPipe
 
 M.convert_opts = function(o)
   if not o then
