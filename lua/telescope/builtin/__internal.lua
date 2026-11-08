@@ -965,8 +965,10 @@ internal.buffers = function(opts)
 
   local buffers = {}
   local default_selection_idx = 1
+  -- once: without an alternate buffer, `bufnr("#")` matches "#" against every buffer name
+  local current, alternate = api.nvim_get_current_buf(), fn.bufnr "#"
   for i, bufnr in ipairs(bufnrs) do
-    local flag = bufnr == fn.bufnr "" and "%" or (bufnr == fn.bufnr "#" and "#" or " ")
+    local flag = bufnr == current and "%" or (bufnr == alternate and "#" or " ")
 
     if opts.sort_lastused and not opts.ignore_current_buffer and flag == "#" then
       default_selection_idx = 2
