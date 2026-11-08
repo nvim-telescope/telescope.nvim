@@ -216,16 +216,7 @@ do
   local parse_with_col = function(t)
     local _, _, filename, lnum, col, text = string.find(t.value, [[(..-):(%d+):(%d+):(.*)]])
 
-    local ok
-    ok, lnum = pcall(tonumber, lnum)
-    if not ok then
-      lnum = nil
-    end
-
-    ok, col = pcall(tonumber, col)
-    if not ok then
-      col = nil
-    end
+    lnum, col = tonumber(lnum), tonumber(col)
 
     filename = filename and utils.normalize_sep(filename)
     t.filename = filename
@@ -239,11 +230,7 @@ do
   local parse_without_col = function(t)
     local _, _, filename, lnum, text = string.find(t.value, [[(..-):(%d+):(.*)]])
 
-    local ok
-    ok, lnum = pcall(tonumber, lnum)
-    if not ok then
-      lnum = nil
-    end
+    lnum = tonumber(lnum)
 
     filename = filename and utils.normalize_sep(filename)
     t.filename = filename
@@ -1157,19 +1144,7 @@ function make_entry.gen_from_diagnostics(opts)
     end
     local signs = {}
     for num, severity in ipairs(type_diagnostic) do
-      local sign = diagnostic_signs[num]
-      if not sign then
-        local status
-        status, sign = pcall(function()
-          -- only the first char is upper all others are lowercase
-          return vim.trim(fn.sign_getdefined("DiagnosticSign" .. severity:lower():gsub("^%l", string.upper))[1].text)
-        end)
-
-        if not status then
-          sign = severity:sub(1, 1)
-        end
-      end
-      signs[severity] = sign
+      signs[severity] = diagnostic_signs[num] or severity:sub(1, 1)
     end
     return signs
   end)()
