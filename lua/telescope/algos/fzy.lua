@@ -7,7 +7,8 @@
 -- > matches on consecutive letters and starts of words. This allows matching
 -- > using acronyms or different parts of the path." - J Hawthorn
 
-local pathsep = vim.fn.has "win32" == 1 and "\\" or "/"
+-- paths are normalized to forward slashes (see `utils.normalize_sep`)
+local pathsep = "/"
 
 local SCORE_GAP_LEADING = -0.005
 local SCORE_GAP_TRAILING = -0.005
