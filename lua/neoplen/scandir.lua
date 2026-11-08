@@ -1,4 +1,4 @@
-local Path = require "plenary.path"
+local Path = require "neoplen.path"
 local os_sep = Path.path.sep
 local if_nil = vim.nonnil or vim.F.if_nil
 
