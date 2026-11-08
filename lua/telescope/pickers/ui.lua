@@ -61,11 +61,23 @@ local function find_title(titles, side, width)
   return "", nil
 end
 
+-- Set the title (top border) and footer (bottom border) of `config`; "" removes them.
+local function set_titles(config, titles, top, bot, width)
+  config.title, config.title_pos = "", nil
+  config.footer, config.footer_pos = "", nil
+  if top then
+    config.title, config.title_pos = find_title(titles, "N", width)
+  end
+  if bot then
+    config.footer, config.footer_pos = find_title(titles, "S", width)
+  end
+  return config
+end
+
 -- Window config for content at `row`, `col` (0-based) of size `width` x `height`.
 local function win_config(state, row, col, width, height)
-  local config = { relative = "editor", width = width, height = height }
+  local config = { relative = "editor", row = row, col = col, width = width, height = height }
   if not state then
-    config.row, config.col, config.border = row, col, "none"
     return config
   end
 
@@ -93,16 +105,7 @@ local function win_config(state, row, col, width, height)
   -- the native position is the outer corner of the border
   config.row = row - (top and 1 or 0)
   config.col = col - (left and 1 or 0)
-
-  config.title, config.title_pos = "", nil
-  config.footer, config.footer_pos = "", nil
-  if top then
-    config.title, config.title_pos = find_title(state.titles, "N", width)
-  end
-  if bot then
-    config.footer, config.footer_pos = find_title(state.titles, "S", width)
-  end
-  return config
+  return set_titles(config, state.titles, top, bot, width)
 end
 
 -- Content position and size from the options; `line` and `col` are 1-based, 0 or nil centers.
@@ -128,26 +131,16 @@ function Border:change_title(title, pos)
   state.titles = { { pos = pos, text = title } }
   vim.w[win].telescope_border = state
 
-  local cfg = api.nvim_win_get_config(win)
-  local top, bot = cfg.border[2] ~= "", cfg.border[6] ~= ""
-  local width = api.nvim_win_get_width(win)
-  local new = {}
-  new.title, new.title_pos = "", nil
-  new.footer, new.footer_pos = "", nil
-  if top then
-    new.title, new.title_pos = find_title(state.titles, "N", width)
-  end
-  if bot then
-    new.footer, new.footer_pos = find_title(state.titles, "S", width)
-  end
-  api.nvim_win_set_config(win, new)
+  local border = api.nvim_win_get_config(win).border
+  local config = set_titles({}, state.titles, border[2] ~= "", border[6] ~= "", api.nvim_win_get_width(win))
+  api.nvim_win_set_config(win, config)
 end
 
 --- Open a picker window.
 ---@param bufnr integer?: buffer to show (nil: a new scratch buffer)
 ---@param opts telescope_popup_options
 ---@return integer win
----@return table: `{ border = { change_title = … } }` (`border` is nil without a border)
+---@return table|nil border: with `change_title()`; nil without a border
 function M.create(bufnr, opts)
   if not bufnr then
     bufnr = api.nvim_create_buf(false, true)
@@ -156,6 +149,7 @@ function M.create(bufnr, opts)
 
   local state = border_state(opts)
   local config = win_config(state, geometry(opts))
+  config.border = config.border or "none" -- not 'winborder'
   config.style = "minimal"
   config.focusable = opts.focusable or false
   config.zindex = opts.zindex or 50
@@ -178,21 +172,17 @@ function M.create(bufnr, opts)
   end
 
   if not state then
-    return win, {}
+    return win, nil
   end
   vim.w[win].telescope_border = state
-  return win, { border = setmetatable({ _win = win }, Border) }
+  return win, setmetatable({ _win = win }, Border)
 end
 
 --- Move or resize a picker window; its border and titles are kept.
 ---@param win integer
 ---@param opts telescope_popup_options: only `line`, `col`, `width`, `height` and `minheight` are used
 function M.move(win, opts)
-  local config = win_config(vim.w[win].telescope_border, geometry(opts))
-  if not vim.w[win].telescope_border then
-    config.border = nil
-  end
-  api.nvim_win_set_config(win, config)
+  api.nvim_win_set_config(win, win_config(vim.w[win].telescope_border, geometry(opts)))
 end
 
 return M

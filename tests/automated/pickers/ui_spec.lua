@@ -7,9 +7,9 @@ local chars = { "t", "r", "b", "l", "1", "2", "3", "4" } -- top, right, bottom, 
 describe("telescope.pickers.ui", function()
   local wins = {}
   local function create(opts)
-    local win, o = ui.create(nil, vim.tbl_extend("keep", opts, { enter = false, width = 20, height = 5 }))
+    local win, border = ui.create(nil, vim.tbl_extend("keep", opts, { enter = false, width = 20, height = 5 }))
     table.insert(wins, win)
-    return win, o.border, vim.api.nvim_win_get_config(win)
+    return win, border, vim.api.nvim_win_get_config(win)
   end
 
   before_each(function()
