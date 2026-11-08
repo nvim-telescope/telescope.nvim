@@ -6,7 +6,6 @@ local api = vim.api
 local Job = require "neoplen.job"
 local Path = require "neoplen.path"
 local log = require "telescope.log"
-local truncate = require("neoplen.strings").truncate
 
 local get_status = require("telescope.state").get_status
 
@@ -20,6 +19,54 @@ utils.if_nil = vim.nonnil or vim.F.if_nil -- TODO: remove with nvim 0.12 drop
 ---@return table
 utils.flatten = function(t)
   return vim.iter(t):flatten():totable()
+end
+
+local truncate = function(str, len, dots, direction)
+  if vim.fn.strdisplaywidth(str) <= len then
+    return str
+  end
+  local start = direction > 0 and 0 or str:len()
+  local current = 0
+  local result = ""
+  local len_of_dots = vim.fn.strdisplaywidth(dots)
+  local concat = function(a, b, dir)
+    if dir > 0 then
+      return a .. b
+    else
+      return b .. a
+    end
+  end
+  while true do
+    local part = vim.fn.strcharpart(str, start, 1)
+    current = current + vim.fn.strdisplaywidth(part)
+    if (current + len_of_dots) > len then
+      result = concat(result, dots, direction)
+      break
+    end
+    result = concat(result, part, direction)
+    start = start + direction
+  end
+  return result
+end
+
+-- Truncate `str` to display width `len`, marking the cut with `dots` (default "…").
+-- `direction`: 1 cuts at the end (default), -1 at the start, 0 in the middle.
+-- (Re-exported as the public `entry_display.truncate`.)
+utils.truncate = function(str, len, dots, direction)
+  dots = dots or "…"
+  direction = direction or 1
+  if direction ~= 0 then
+    return truncate(str, len, dots, direction)
+  else
+    if vim.fn.strdisplaywidth(str) <= len then
+      return str
+    end
+    local len1 = math.floor((len + vim.fn.strdisplaywidth(dots)) / 2)
+    local s1 = truncate(str, len1, dots, 1)
+    local len2 = len - vim.fn.strdisplaywidth(s1) + vim.fn.strdisplaywidth(dots)
+    local s2 = truncate(str, len2, dots, -1)
+    return s1 .. s2:sub(dots:len() + 1)
+  end
 end
 
 --- Hybrid of `vim.fn.expand()` and custom `vim.fs.normalize()`
@@ -199,7 +246,7 @@ local path_truncate = function(path, truncate_len, opts)
   if opts.__prefix == nil then
     opts.__prefix = 0
   end
-  return truncate(path, opts.__length - opts.__prefix, nil, -1)
+  return utils.truncate(path, opts.__length - opts.__prefix, nil, -1)
 end
 
 local path_shorten = function(path, length, exclude)
