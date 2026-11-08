@@ -1163,16 +1163,6 @@ builtin.pickers({opts})                          *telescope.builtin.pickers()*
     Parameters: ~
       • {opts}  (`table?`)
 
-builtin.planets({opts})                          *telescope.builtin.planets()*
-    Use the telescope...
-
-    Parameters: ~
-      • {opts}  (`table?`)
-                • {show_pluto}? (`boolean`, default: `false`, because its a
-                  hidden feature) we love Pluto
-                • {show_moon}? (`boolean`, default: `false`, because its a
-                  hidden feature) we love the Moon
-
 builtin.symbols({opts})                          *telescope.builtin.symbols()*
     Lists symbols inside of `data/telescope-sources/*.json` found in your
     runtime path or found in `stdpath("data")/telescope/symbols/*.json`. The

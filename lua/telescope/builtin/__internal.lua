@@ -228,55 +228,6 @@ internal.pickers = function(opts)
     :find()
 end
 
----@param opts telescope.builtin.planets.opts: options to pass to the picker
-internal.planets = function(opts)
-  local show_pluto = opts.show_pluto or false
-  local show_moon = opts.show_moon or false
-
-  local sourced_file = debug.getinfo(1, "S").source:sub(2)
-  local base_directory = fn.fnamemodify(sourced_file, ":h:h:h:h")
-
-  local globbed_files = fn.globpath(base_directory .. "/data/memes/planets/", "*", true, true)
-  local acceptable_files = {}
-  for _, v in ipairs(globbed_files) do
-    if (show_pluto or not v:find "pluto") and (show_moon or not v:find "moon") then
-      table.insert(acceptable_files, fn.fnamemodify(v, ":t"))
-    end
-  end
-
-  pickers
-    .new(opts, {
-      prompt_title = "Planets",
-      finder = finders.new_table {
-        results = acceptable_files,
-        entry_maker = function(line)
-          return make_entry.set_default_entry_mt({
-            ordinal = line,
-            display = line,
-            filename = base_directory .. "/data/memes/planets/" .. line,
-          }, opts)
-        end,
-      },
-      previewer = previewers.cat.new(opts),
-      sorter = conf.generic_sorter(opts),
-      attach_mappings = function(prompt_bufnr)
-        actions.select_default:replace(function()
-          local selection = action_state.get_selected_entry()
-          if selection == nil then
-            utils.__warn_no_selection "builtin.planets"
-            return
-          end
-
-          actions.close(prompt_bufnr)
-          print("Enjoy astronomy! You viewed:", selection.display)
-        end)
-
-        return true
-      end,
-    })
-    :find()
-end
-
 ---@param opts telescope.builtin.symbol.opts: options to pass to the picker
 internal.symbols = function(opts)
   local initial_mode = fn.mode()
