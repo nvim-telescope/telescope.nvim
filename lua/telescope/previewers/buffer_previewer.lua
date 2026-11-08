@@ -347,7 +347,11 @@ previewers.new_buffer_previewer = function(opts)
         end
       end)
 
-      vim.wo[preview_winid].winhl = "Normal:TelescopePreviewNormal"
+      -- keep the border and title highlights of the window
+      local winhl = vim.wo[preview_winid].winhl
+      if not winhl:find "%f[%w]Normal:" then
+        vim.wo[preview_winid].winhl = "Normal:TelescopePreviewNormal" .. (winhl ~= "" and "," .. winhl or "")
+      end
       vim.wo[preview_winid].signcolumn = "no"
       vim.wo[preview_winid].foldlevel = 100
       vim.wo[preview_winid].wrap = false

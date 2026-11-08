@@ -1851,10 +1851,9 @@ Example: ~
       • {winid}   (`integer`)
 
 *TelescopeWindowBorder*
+    The border of a picker window
 
     Fields: ~
-      • {bufnr}         (`integer?`)
-      • {winid}         (`integer?`)
       • {change_title}  (`fun(self: TelescopeWindowBorder, title: string, pos: "NW"|"N"|"NE"|"SW"|"S"|"SE"?)`)
                         See |Border:change_title()|.
 
