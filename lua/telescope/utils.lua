@@ -243,49 +243,32 @@ end
 local path_shorten = function(filename, len, exclude)
   len = len or 1
   exclude = exclude or { -1 }
+
+  -- keep empty parts (leading `/`, `//`, trailing `/`) so they are joined back unchanged
+  local parts = vim.split(filename, "/")
+  local count = 0
+  for _, part in ipairs(parts) do
+    if part ~= "" then
+      count = count + 1
+    end
+  end
+
   local exc = {}
-  local pathsep = "/"
-
-  -- get parts in a table
-  local parts = {}
-  local empty_pos = {}
-  for m in (filename .. pathsep):gmatch("(.-)" .. pathsep) do
-    if m ~= "" then
-      parts[#parts + 1] = m
-    else
-      table.insert(empty_pos, #parts + 1)
-    end
-  end
-
   for _, v in pairs(exclude) do
-    if v < 0 then
-      exc[v + #parts + 1] = true
-    else
-      exc[v] = true
+    exc[v < 0 and v + count + 1 or v] = true
+  end
+
+  local i = 0
+  for k, part in ipairs(parts) do
+    if part ~= "" then
+      i = i + 1
+      if not exc[i] then
+        parts[k] = part:sub(1, len)
+      end
     end
   end
 
-  local final_path_components = {}
-  local count = 1
-  for _, match in ipairs(parts) do
-    if not exc[count] and #match > len then
-      table.insert(final_path_components, string.sub(match, 1, len))
-    else
-      table.insert(final_path_components, match)
-    end
-    table.insert(final_path_components, pathsep)
-    count = count + 1
-  end
-
-  local l = #final_path_components -- so that we don't need to keep calculating length
-  table.remove(final_path_components, l) -- remove final slash
-
-  -- add back empty positions
-  for i = #empty_pos, 1, -1 do
-    table.insert(final_path_components, empty_pos[i], pathsep)
-  end
-
-  return table.concat(final_path_components)
+  return table.concat(parts, "/")
 end
 
 -- Pure Lua (safe in fast events): absolute Unix paths, Windows drive and UNC paths

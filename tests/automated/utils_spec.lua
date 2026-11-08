@@ -355,6 +355,11 @@ describe("transform_path", function()
     assert_path({ shorten = 2 }, "lua/telescope/init.lua", "lu/te/init.lua")
   end)
 
+  it("keeps empty path components with 'shorten'", function()
+    assert_path("shorten", "lua/telescope//init.lua", "l/t//init.lua")
+    assert_path("shorten", "lua/telescope/", "l/telescope/")
+  end)
+
   it("handles 'shorten' with option table", function()
     assert_path({ shorten = { len = 2 } }, "lua/telescope/init.lua", "lu/te/init.lua")
     assert_path(
