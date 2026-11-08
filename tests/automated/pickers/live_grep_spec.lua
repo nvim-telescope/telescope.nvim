@@ -13,7 +13,7 @@ describe("builtin.live_grep", function()
     { sorting_strategy = "descending" },
     { sorting_strategy = "ascending" },
   } do
-    pending("clears results correctly when " .. disp(configuration), function()
+    it("clears results correctly when " .. disp(configuration), function()
       tester.run_string(string.format(
         [[
         runner.picker(

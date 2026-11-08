@@ -191,7 +191,8 @@ action_set.edit = function(prompt_bufnr, command)
     -- check if we didn't pick a different buffer
     -- prevents restarting lsp server
     if api.nvim_buf_get_name(0) ~= filename or command ~= "edit" then
-      filename = Path:new(filename):normalize(vim.uv.cwd())
+      -- no normalization: `:edit` resolves the name itself, and `vim.fs.normalize()` would mangle URIs
+      -- and expand a leading `~` (e.g. in Office lock files `~$doc.docx`)
       pcall(vim.cmd, string.format("%s %s", command, vim.fn.fnameescape(filename)))
     end
   end

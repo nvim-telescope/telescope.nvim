@@ -31,10 +31,9 @@
 ---
 --- TODO: Document something we call `entry_index`
 
+local fs = vim.fs
 local fn = vim.fn
 local api = vim.api
-
-local Path = require "neoplen.path"
 
 local entry_display = require "telescope.pickers.entry_display"
 local utils = require "telescope.utils"
@@ -183,7 +182,8 @@ do
       end
 
       if k == "path" then
-        local retpath = Path:new({ t.cwd, t.value }):absolute()
+        local retpath = utils.is_absolute(t.value) and t.value
+          or fs.normalize(fs.joinpath(t.cwd, t.value), { expand_env = false })
         if not vim.uv.fs_access(retpath, "R") then
           retpath = t.value
         end
@@ -279,10 +279,10 @@ do
 
     local execute_keys = {
       path = function(t)
-        if Path:new(t.filename):is_absolute() then
+        if utils.is_absolute(t.filename) then
           return t.filename, false
         else
-          return Path:new({ t.cwd, t.filename }):absolute(), false
+          return fs.normalize(fs.joinpath(t.cwd, t.filename), { expand_env = false }), false
         end
       end,
 
@@ -629,7 +629,7 @@ function make_entry.gen_from_buffer(opts)
 
   return function(entry)
     local filename = entry.info.name ~= "" and entry.info.name or nil
-    local bufname = filename and Path:new(filename):normalize(cwd) or "[No Name]"
+    local bufname = filename and utils.display_path(filename, cwd) or "[No Name]"
 
     local hidden = entry.info.hidden == 1 and "h" or "a"
     local readonly = vim.bo[entry.bufnr].readonly and "=" or " "
@@ -1023,7 +1023,8 @@ function make_entry.gen_from_ctags(opts)
 
   local show_kind = utils.if_nil(opts.show_kind, true)
   local cwd = utils.path_expand(opts.cwd or vim.uv.cwd())
-  local current_file = Path:new(api.nvim_buf_get_name(opts.bufnr)):normalize(cwd)
+  -- compare tag files and the current buffer relative to `cwd` (tag files are usually relative)
+  local current_file = fs.normalize(utils.make_relative(api.nvim_buf_get_name(opts.bufnr), cwd))
 
   local display_items = {
     { width = 16 },
@@ -1082,7 +1083,7 @@ function make_entry.gen_from_ctags(opts)
     end
 
     if k == "path" then
-      local retpath = Path:new({ t.filename }):absolute()
+      local retpath = fs.abspath(t.filename)
       if not vim.uv.fs_access(retpath, "R") then
         retpath = t.filename
       end
@@ -1105,13 +1106,13 @@ function make_entry.gen_from_ctags(opts)
     end
     local kind = string.match(extension_fields or "", "kind:(%S+)")
 
-    if Path.path.sep == "\\" then
+    if utils.pathsep == "\\" then
       file = string.gsub(file, "/", "\\")
     end
 
     if opts.only_current_file then
       if current_file_cache[file] == nil then
-        current_file_cache[file] = Path:new(file):normalize(cwd) == current_file
+        current_file_cache[file] = fs.normalize(utils.make_relative(file, cwd)) == current_file
       end
 
       if current_file_cache[file] == false then
@@ -1407,7 +1408,7 @@ function make_entry.gen_from_git_status(opts)
       status = mod,
       ordinal = entry,
       display = make_display,
-      path = Path:new({ opts.cwd, file }):absolute(),
+      path = fs.abspath(fs.joinpath(opts.cwd, file)),
     }, opts)
   end
 end

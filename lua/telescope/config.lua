@@ -1,6 +1,5 @@
 local sorters = require "telescope.sorters"
 local utils = require "telescope.utils"
-local os_sep = require("neoplen.path").path.sep
 
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
@@ -518,7 +517,7 @@ append(
 append(
   "history",
   {
-    path = vim.fn.stdpath "data" .. os_sep .. "telescope_history",
+    path = vim.fs.joinpath(vim.fn.stdpath "data", "telescope_history"),
     limit = 100,
     handler = function(...)
       return require("telescope.actions.history").get_simple_history(...)
@@ -638,7 +637,7 @@ append(
                           Important: the filetype_hook must return true or false
                           to indicate whether to continue (true) previewing or not (false),
                           respectively.
-                          Two examples:
+                          Example:
                           local putils = require("telescope.previewers.utils")
                           ... -- preview is called in telescope.setup { ... }
                             preview = {
@@ -661,14 +660,6 @@ append(
                                   return false
                                 end
                                 return true
-                              end,
-                              -- 2) Truncate lines to preview window for too large files
-                              filesize_hook = function(filepath, bufnr, opts)
-                                local path = require("neoplen.path"):new(filepath)
-                                -- opts exposes winid
-                                local height = vim.api.nvim_win_get_height(opts.winid)
-                                local lines = vim.split(path:head(height), "[\r]?\n")
-                                vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
                               end,
                             }
                           The configuration recipes for relevant examples.

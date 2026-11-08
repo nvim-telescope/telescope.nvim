@@ -9,11 +9,11 @@ local disp = function(val)
 end
 
 describe("builtin.find_files", function()
-  pending("should find the readme", function()
+  it("should find the readme", function()
     tester.run_file "find_files__readme"
   end)
 
-  pending("should handle cycling for full list", function()
+  it("should handle cycling for full list", function()
     tester.run_file "find_files__scrolling_descending_cycle"
   end)
 
@@ -21,7 +21,7 @@ describe("builtin.find_files", function()
     { sorting_strategy = "descending" },
     { sorting_strategy = "ascending" },
   } do
-    pending("should not display devicons when disabled: " .. disp(configuration), function()
+    it("should not display devicons when disabled: " .. disp(configuration), function()
       tester.run_string(string.format(
         [[
         local max_results = 5
@@ -77,7 +77,7 @@ describe("builtin.find_files", function()
     end)
   end
 
-  pending("should find the readme, using lowercase", function()
+  it("should find the readme, using lowercase", function()
     tester.run_string [[
       runner.picker('find_files', 'readme.md', {
         post_close = {
@@ -87,7 +87,7 @@ describe("builtin.find_files", function()
     ]]
   end)
 
-  pending("should find the pickers.lua, using lowercase", function()
+  it("should find the pickers.lua, using lowercase", function()
     tester.run_string [[
       runner.picker('find_files', 'pickers.lua', {
         post_close = {
@@ -97,7 +97,7 @@ describe("builtin.find_files", function()
     ]]
   end)
 
-  pending("should find the pickers.lua", function()
+  it("should find the pickers.lua", function()
     tester.run_string [[
       runner.picker('find_files', 'pickers.lua', {
         post_close = {
@@ -108,7 +108,7 @@ describe("builtin.find_files", function()
     ]]
   end)
 
-  pending("should be able to c-n the items", function()
+  it("should be able to c-n the items", function()
     tester.run_string [[
       runner.picker('find_files', 'fixtures/find_files/file<c-n>', {
         post_typed = {
@@ -130,7 +130,7 @@ describe("builtin.find_files", function()
     ]]
   end)
 
-  pending("should be able to get the current selection", function()
+  it("should be able to get the current selection", function()
     tester.run_string [[
       runner.picker('find_files', 'fixtures/find_files/file_abc', {
         post_typed = {
