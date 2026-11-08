@@ -1,22 +1,20 @@
 local assert = require "luassert"
 
-local Path = require "plenary.path"
-
 local tester = {}
 tester.debug = false
 
 local get_results_from_contents = function(content)
   local nvim = vim.fn.jobstart(
-    { "nvim", "--noplugin", "-u", "scripts/minimal_init.vim", "--headless", "--embed" },
+    { "nvim", "--headless", "--embed", "--clean", "-u", "scripts/minimal_init.lua" },
     { rpc = true }
   )
 
-  local result = vim.fn.rpcrequest(nvim, "nvim_exec_lua", content, {})
+  local result = vim.rpcrequest(nvim, "nvim_exec_lua", content, {})
   assert.are.same(true, result[1], vim.inspect(result))
 
   local count = 0
   while
-    vim.fn.rpcrequest(nvim, "nvim_exec_lua", "return require('telescope.testharness.runner').state.done", {}) ~= true
+    vim.rpcrequest(nvim, "nvim_exec_lua", "return require('telescope.testharness.runner').state.done", {}) ~= true
   do
     count = count + 1
     vim.wait(100)
@@ -27,7 +25,7 @@ local get_results_from_contents = function(content)
     end
   end
 
-  local state = vim.fn.rpcrequest(nvim, "nvim_exec_lua", "return require('telescope.testharness.runner').state", {})
+  local state = vim.rpcrequest(nvim, "nvim_exec_lua", "return require('telescope.testharness.runner').state", {})
   vim.fn.jobstop(nvim)
 
   assert.are.same(true, state.done, vim.inspect(state))
@@ -78,10 +76,9 @@ tester.run_string = function(contents)
 end
 
 tester.run_file = function(filename)
-  local file = "./lua/tests/pickers/" .. filename .. ".lua"
-  local path = Path:new(file)
+  local file = "./tests/pickers/" .. filename .. ".lua"
 
-  if not path:exists() then
+  if not vim.uv.fs_stat(file) then
     assert.are.same("<An existing file>", file)
   end
 
@@ -98,7 +95,7 @@ tester.run_file = function(filename)
       return {ok, msg or runner.state}
     end)()
   ]],
-    path:absolute()
+    vim.fs.abspath(file)
   )
 
   check_results(get_results_from_contents(contents))
