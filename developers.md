@@ -339,6 +339,8 @@ Picker:new{
   border                  = {},
   borderchars             = {"─", "│", "─", "│", "┌", "┐", "┘", "└"},
   default_selection_index = 1, -- Change the index of the initial selection row
+  on_close                = FUNCTION, -- called without arguments after the picker is closed,
+                                      -- however it is closed (also when leaving it)
 }
 ```
 

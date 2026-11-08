@@ -139,3 +139,26 @@ describe("telescope.ui_select", function()
     eq({ {}, win }, { got, vim.api.nvim_get_current_win() })
   end)
 end)
+
+describe("pickers.new on_close", function()
+  it("calls the picker's and the caller's on_close when the picker is closed", function()
+    local calls = {}
+    require("telescope.pickers")
+      .new({
+        on_close = function()
+          table.insert(calls, "caller")
+        end,
+      }, {
+        finder = require("telescope.finders").new_table { results = { "a" } },
+        on_close = function()
+          table.insert(calls, "picker")
+        end,
+      })
+      :find()
+    require("telescope.actions").close(vim.api.nvim_get_current_buf())
+    vim.wait(1000, function()
+      return #calls == 2
+    end)
+    eq({ "picker", "caller" }, calls)
+  end)
+end)
