@@ -806,8 +806,7 @@ utils.split_lines = function(s, opts)
   return vim.split(s, "\r?\n", opts)
 end
 
---- @param filename string
---- @return string
+-- Contents of the file `filename` (errors if it can't be read).
 function utils.read_file(filename)
   local file = assert(io.open(filename, "r"))
   local data = file:read "*a"
