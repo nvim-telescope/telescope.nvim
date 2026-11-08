@@ -1,7 +1,5 @@
 local api = vim.api
 
-local Job = require "neoplen.job"
-
 local utils = require "telescope.utils"
 local conf = require("telescope.config").values
 
@@ -20,39 +18,30 @@ M.job_maker = function(cmd, bufnr, opts)
   -- if passed, they will be use as the cache key
   -- if any of them are missing, cache will be skipped
   if opts.bufname ~= opts.value or not opts.bufname or not opts.value then
-    local command = table.remove(cmd, 1)
-    local writer = (function()
-      if opts.writer ~= nil then
-        local wcommand = table.remove(opts.writer, 1)
-        return Job:new {
-          command = wcommand,
-          args = opts.writer,
-          env = opts.env,
-          cwd = opts.cwd,
-        }
-      end
-    end)()
-
-    Job:new({
-      command = command,
-      args = cmd,
-      env = opts.env,
-      cwd = opts.cwd,
-      writer = writer,
-      on_exit = vim.schedule_wrap(function(j)
+    -- `env` is added to the environment (`vim.system` default)
+    vim.system(
+      cmd,
+      { cwd = opts.cwd, env = opts.env },
+      vim.schedule_wrap(function(result)
         if not api.nvim_buf_is_valid(bufnr) then
           return
         end
+        local stdout = result.stdout
+        -- remove overstrike (`X\bX` bold, `_\bX` underline), e.g. from `man`
+        if stdout:find("\b", 1, true) then
+          stdout = stdout:gsub("[^\128-\191][\128-\191]*\b", "")
+        end
+        local lines = utils.output_lines(stdout)
         if opts.mode == "append" then
-          api.nvim_buf_set_lines(bufnr, -1, -1, false, j:result())
+          api.nvim_buf_set_lines(bufnr, -1, -1, false, lines)
         elseif opts.mode == "insert" then
-          api.nvim_buf_set_lines(bufnr, 0, -1, false, j:result())
+          api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
         end
         if opts.callback then
-          opts.callback(bufnr, j:result())
+          opts.callback(bufnr, lines)
         end
-      end),
-    }):start()
+      end)
+    )
   else
     if opts.callback then
       opts.callback(bufnr)

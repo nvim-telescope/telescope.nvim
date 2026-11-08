@@ -206,7 +206,7 @@ previewers.qflist = term_previewer.qflist
 ---     - `bufname` string: used for cache
 ---     - `value` string: used for cache
 ---     - `mode` string: either "insert" or "append". "insert" is default
----     - `env` table: define environment variables. Example:
+---     - `env` table: environment variables to add for the job. Example:
 ---       - `{ ['PAGER'] = '', ['MANWIDTH'] = 50 }`
 ---     - `cwd` string: define current working directory for job
 ---     - `callback` function(bufnr, content): will be called when job

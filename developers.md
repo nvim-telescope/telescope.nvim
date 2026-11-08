@@ -346,12 +346,10 @@ Picker:new{
 <!-- TODO what are finders -->
 ```lua
 -- lua/telescope/finders.lua
-Finder:new{
-  entry_maker     = function(line) end,
-  fn_command      = function() { command = "", args  = { "ls-files" } } end,
-  static          = false,
-  maximum_results = false
-}
+finders.new_table { results = { "a", "b" }, entry_maker = function(item) end }
+finders.new_oneshot_job({ "git", "ls-files" }, { entry_maker = function(line) end, cwd = "..." })
+finders.new_job(function(prompt) return { "rg", "--vimgrep", prompt } end, entry_maker, nil, cwd)
+finders.new_dynamic { fn = function(prompt) return { "a", "b" } end, entry_maker = function(item) end }
 ```
 
 ### Actions

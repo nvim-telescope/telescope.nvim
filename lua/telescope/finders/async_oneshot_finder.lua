@@ -37,14 +37,6 @@ return function(opts)
       if not job_started then
         local job_opts = fn_command()
 
-        -- TODO: Handle writers.
-        -- local writer
-        -- if job_opts.writer and Job.is_job(job_opts.writer) then
-        --   writer = job_opts.writer
-        -- elseif job_opts.writer then
-        --   writer = Job:new(job_opts.writer)
-        -- end
-
         stdout = LinesPipe()
         job = async_job.spawn {
           command = job_opts.command,
