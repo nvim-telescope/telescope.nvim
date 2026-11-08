@@ -760,6 +760,21 @@ telescope.register_extension({mod})           *telescope.register_extension()*
     Parameters: ~
       • {mod}  (`table`) Module
 
+                                                       *telescope.ui_select()*
+telescope.ui_select({items}, {opts}, {on_choice})
+    Drop-in replacement for |vim.ui.select()| using
+    |telescope.builtin.ui_select()|, configured like the other pickers
+    (`pickers.ui_select` in |telescope.setup()|): >lua
+    vim.ui.select = require("telescope").ui_select
+<
+
+    Parameters: ~
+      • {items}      (`any[]`) items to choose from
+      • {opts}       (`table`) options of |vim.ui.select()| (`prompt`,
+                     `format_item`, `kind`)
+      • {on_choice}  (`fun(item: any?, idx: integer?)`) called with the
+                     chosen item and its index, or `nil`
+
 telescope.extensions                                    *telescope.extensions*
     Use telescope.extensions to reference any extensions within your
     configuration.
@@ -1292,6 +1307,20 @@ builtin.reloader({opts})                        *telescope.builtin.reloader()*
       • {opts}  (`table?`)
                 • {column_len}? (`number`, default: dynamic, longest module
                   name) define the max column len for the module name
+
+builtin.ui_select({opts})                      *telescope.builtin.ui_select()*
+    Lets the user choose one of `opts.items`, like |vim.ui.select()|. Use
+    |telescope.ui_select()| to replace `vim.ui.select`.
+
+    Parameters: ~
+      • {opts}  (`table`)
+                • {items} (`any[]`) items to choose from
+                • {on_choice} (`fun(item: any?, idx: integer?)`) called with
+                  the chosen item and its index, or with `nil` if the picker
+                  was closed
+                • {prompt}? (`string`, default: "Select one of") prompt title
+                • {format_item}? (`fun(item: any): string`, default:
+                  `tostring`) text shown and filtered for an item
 
 builtin.buffers({opts})                          *telescope.builtin.buffers()*
     Lists open buffers in current neovim instance, opens selected buffer on

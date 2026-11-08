@@ -1015,6 +1015,54 @@ internal.buffers = function(opts)
 end
 
 ---@param opts telescope.builtin.colorscheme.opts: options to pass to the picker
+internal.ui_select = function(opts)
+  local items = opts.items or {}
+  local format_item = opts.format_item or tostring
+  local on_choice = opts.on_choice or function() end
+  if #items == 0 then
+    utils.notify("builtin.ui_select", { msg = "No items to select", level = "INFO" })
+    vim.schedule(function()
+      on_choice(nil, nil)
+    end)
+    return
+  end
+
+  local choice -- the selected entry
+  pickers
+    .new(opts, {
+      prompt_title = (opts.prompt or "Select one of"):gsub("\n", " "):gsub(":%s*$", ""),
+      finder = finders.new_table {
+        results = items,
+        entry_maker = function(item)
+          local text = format_item(item)
+          return { value = item, display = text, ordinal = text }
+        end,
+      },
+      sorter = conf.generic_sorter(opts),
+      attach_mappings = function(prompt_bufnr)
+        -- however the picker is closed (also by leaving it), its prompt buffer is wiped
+        api.nvim_create_autocmd("BufWipeout", {
+          buffer = prompt_bufnr,
+          once = true,
+          callback = function()
+            vim.schedule(function()
+              on_choice(choice and choice.value, choice and choice.index)
+            end)
+          end,
+        })
+        actions.select_default:replace(function()
+          choice = action_state.get_selected_entry()
+          if not choice then
+            utils.__warn_no_selection "builtin.ui_select"
+          end
+          actions.close(prompt_bufnr)
+        end)
+        return true
+      end,
+    })
+    :find()
+end
+
 internal.colorscheme = function(opts)
   local before_background = vim.o.background
   local before_color = api.nvim_exec2("colorscheme", { output = true }).output

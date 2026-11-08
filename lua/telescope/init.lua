@@ -144,6 +144,18 @@ function telescope.register_extension(mod)
   return _extensions.register(mod)
 end
 
+--- Drop-in replacement for |vim.ui.select()| using |telescope.builtin.ui_select()|, configured like the
+--- other pickers (`pickers.ui_select` in |telescope.setup()|):
+--- ```lua
+--- vim.ui.select = require("telescope").ui_select
+--- ```
+---@param items any[]: items to choose from
+---@param opts table: options of |vim.ui.select()| (`prompt`, `format_item`, `kind`)
+---@param on_choice fun(item: any?, idx: integer?) called with the chosen item and its index, or `nil`
+function telescope.ui_select(items, opts, on_choice)
+  require("telescope.builtin").ui_select(vim.tbl_extend("force", opts or {}, { items = items, on_choice = on_choice }))
+end
+
 --- Use telescope.extensions to reference any extensions within your configuration. <br>
 --- While the docs currently generate this as a function, it's actually a table. Sorry.
 telescope.extensions = require("telescope._extensions").manager
