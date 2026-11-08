@@ -78,8 +78,6 @@ end
 
 ---@nodoc
 ---@class TelescopeWindowBorder.config
----@field bufnr integer
----@field winid integer|nil
 ---@field change_title nil|function: (self: TelescopeWindowBorder, title: string, pos?: "NW"|"N"|"NE"|"SW"|"S"|"SE"):nil
 
 ---@param class TelescopeWindowBorder
@@ -97,9 +95,8 @@ local function init_border(class, config)
   return self
 end
 
+--- The border of a picker window
 ---@class TelescopeWindowBorder
----@field bufnr integer|nil
----@field winid integer|nil
 local Border = setmetatable({}, {
   __call = init_border,
   __name = "TelescopeWindowBorder",

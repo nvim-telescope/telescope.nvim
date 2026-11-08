@@ -51,8 +51,6 @@
 local fn = vim.fn
 local api = vim.api
 
-local popup = require "neoplen.popup"
-
 local conf = require("telescope.config").values
 local state = require "telescope.state"
 local utils = require "telescope.utils"
@@ -1283,10 +1281,8 @@ actions.which_key = function(prompt_bufnr, opts)
     local ret = {}
     local bufs = api.nvim_list_bufs()
     for _, buf in ipairs(bufs) do
-      for _, bufname in ipairs { "_TelescopeWhichKey", "_TelescopeWhichKeyBorder" } do
-        if string.find(api.nvim_buf_get_name(buf), bufname) then
-          table.insert(ret, buf)
-        end
+      if string.find(api.nvim_buf_get_name(buf), "_TelescopeWhichKey") then
+        table.insert(ret, buf)
       end
     end
     return ret
@@ -1376,28 +1372,33 @@ actions.which_key = function(prompt_bufnr, opts)
 
   local modes = { n = "Normal", i = "Insert" }
   local title_mode = opts.only_show_current_mode and modes[mode] .. " Mode " or ""
-  local title_text = title_mode .. "Keymaps"
-  local popup_opts = {
+  local title_text = " " .. title_mode .. "Keymaps "
+  -- full-width window at the bottom (border line and title above) or at the top (below)
+  local km_buf = api.nvim_create_buf(false, true)
+  vim.bo[km_buf].bufhidden = "wipe"
+  local km_win_id = api.nvim_open_win(km_buf, false, {
     relative = "editor",
-    enter = false,
-    minwidth = vim.o.columns,
-    maxwidth = vim.o.columns,
-    minheight = winheight,
-    maxheight = winheight,
-    line = prompt_pos == true and vim.o.lines - winheight + 1 or 1,
+    style = "minimal",
+    width = vim.o.columns,
+    height = winheight,
+    row = prompt_pos and vim.o.lines - winheight - 1 or 0,
     col = 0,
-    border = { prompt_pos and 1 or 0, 0, not prompt_pos and 1 or 0, 0 },
-    borderchars = { prompt_pos and "─" or " ", "", not prompt_pos and "─" or " ", "", "", "", "", "" },
+    border = prompt_pos and { "", "─", "", "", "", "", "", "" } or { "", "", "", "", "", "─", "", "" },
+    title = prompt_pos and title_text or nil,
+    title_pos = prompt_pos and "center" or nil,
+    footer = not prompt_pos and title_text or nil,
+    footer_pos = not prompt_pos and "center" or nil,
+    focusable = false,
     noautocmd = true,
-    title = { { text = title_text, pos = prompt_pos and "N" or "S" } },
     zindex = opts.zindex,
-  }
-  local km_win_id, km_opts = popup.create("", popup_opts)
-  local km_buf = api.nvim_win_get_buf(km_win_id)
+  })
   api.nvim_buf_set_name(km_buf, "_TelescopeWhichKey")
-  api.nvim_buf_set_name(km_opts.border.bufnr, "_TelescopeTelescopeWhichKeyBorder")
-  vim.wo[km_win_id].winhl = "Normal:" .. opts.normal_hl
-  vim.wo[km_opts.border.win_id].winhl = "Normal:" .. opts.border_hl
+  vim.wo[km_win_id].winhl = ("Normal:%s,FloatBorder:%s,FloatTitle:%s,FloatFooter:%s"):format(
+    opts.normal_hl,
+    opts.border_hl,
+    opts.border_hl,
+    opts.border_hl
+  )
   vim.wo[km_win_id].winblend = opts.winblend
   vim.wo[km_win_id].foldenable = false
 
@@ -1406,7 +1407,6 @@ actions.which_key = function(prompt_bufnr, opts)
     once = true,
     callback = function()
       pcall(api.nvim_win_close, km_win_id, true)
-      pcall(api.nvim_win_close, km_opts.border.win_id, true)
       require("telescope.utils").buf_delete(km_buf)
     end,
   })
@@ -1468,7 +1468,6 @@ actions.which_key = function(prompt_bufnr, opts)
       callback = function()
         vim.schedule(function()
           pcall(api.nvim_win_close, km_win_id, true)
-          pcall(api.nvim_win_close, km_opts.border.win_id, true)
           utils.buf_delete(km_buf)
         end)
       end,
