@@ -148,7 +148,8 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
           possible_binary = true
         end
       end
-      if mime_type[2] == "json" then
+      local mime_type_parts = vim.split(mime_type, "/")
+      if mime_type_parts[2] == "json" then
         opts.ft = "json"
       end
     end
