@@ -890,43 +890,6 @@ function Path:iter()
   end
 end
 
-function Path:readbyterange(offset, length)
-  self = check_self(self)
-
-  local fd = uv.fs_open(self:_fs_filename(), "r", 438)
-  if not fd then
-    return
-  end
-  local stat = assert(uv.fs_fstat(fd))
-  if stat.type ~= "file" then
-    uv.fs_close(fd)
-    return nil
-  end
-
-  if offset < 0 then
-    offset = stat.size + offset
-    -- Windows fails if offset is < 0 even though offset is defined as signed
-    -- http://docs.libuv.org/en/v1.x/fs.html#c.uv_fs_read
-    if offset < 0 then
-      offset = 0
-    end
-  end
-
-  local data = ""
-  while #data < length do
-    local read_chunk = assert(uv.fs_read(fd, length - #data, offset))
-    if #read_chunk == 0 then
-      break
-    end
-    data = data .. read_chunk
-    offset = offset + #read_chunk
-  end
-
-  assert(uv.fs_close(fd))
-
-  return data
-end
-
 function Path:find_upwards(filename)
   local folder = Path:new(self)
   local root = path.root(folder:absolute())
