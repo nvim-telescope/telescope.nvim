@@ -83,7 +83,7 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
       end
     end
     if opts.preview.check_mime_type == true and has_file and (opts.ft == nil or opts.ft == "") then
-      local mime_type = vim.trim(vim.system({ "file", "--mime-type", "-b", filepath }):wait().stdout or "")
+      local mime_type = utils.get_os_command_output({ "file", "--mime-type", "-b", filepath })[1] or ""
       if putils.binary_mime_type(mime_type) then
         if type(opts.preview.mime_hook) == "function" then
           opts.preview.mime_hook(filepath, bufnr, opts)
@@ -631,9 +631,6 @@ previewers.help = defaulter(function(opts)
 end, {})
 
 previewers.man = defaulter(function(opts)
-  local pager = utils.get_lazy_default(opts.PAGER, function()
-    return fn.executable "col" == 1 and { "col", "-bx" } or { "cat" }
-  end)
   return previewers.new_buffer_previewer {
     title = "Man Preview",
     get_buffer_by_name = function(_, entry)
@@ -641,10 +638,9 @@ previewers.man = defaulter(function(opts)
     end,
 
     define_preview = function(self, entry)
-      local win_width = api.nvim_win_get_width(self.state.winid)
-      putils.job_maker(vim.deepcopy(pager), self.state.bufnr, {
-        writer = { "man", entry.section, entry.value },
-        env = { ["MANWIDTH"] = win_width, PATH = vim.env.PATH, MANPATH = vim.env.MANPATH },
+      putils.job_maker({ "man", entry.section, entry.value }, self.state.bufnr, {
+        -- `man` may run the pager even when piped (e.g. `MANPAGER='nvim +Man!'`)
+        env = { MANPAGER = "cat", MANWIDTH = api.nvim_win_get_width(self.state.winid) },
         value = entry.value .. "/" .. entry.section,
         bufname = self.state.bufname,
       })
