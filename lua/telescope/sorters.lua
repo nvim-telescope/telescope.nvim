@@ -438,61 +438,81 @@ end
 
 local fzy_case_modes = { ignore_case = true, respect_case = true, smart_case = true }
 
--- Sorter using the fzy algorithm.
+-- Sorter using the fzy algorithm (`telescope.algos.matcher`) with fzf's query syntax
+-- (`telescope.algos.query`): space-separated terms that must all match, `'exact`, `^prefix`,
+-- `suffix$`, `!inverse`, `a | b` alternatives.
 -- `opts.case_mode` (as for telescope-fzf-native): "ignore_case" (default), "respect_case", or
--- "smart_case" (respect case if the prompt contains an uppercase letter); only for ASCII letters.
+-- "smart_case" (per term: respect case if it contains an uppercase letter); only for ASCII letters.
 sorters.get_fzy_sorter = function(opts)
   opts = opts or {}
   local fzy = opts.fzy_mod or require "telescope.algos.matcher"
+  local query = require "telescope.algos.query"
   local OFFSET = -fzy.get_score_floor()
+  local SCORE_MIN = fzy.get_score_min()
   local case_mode = opts.case_mode or "ignore_case"
   assert(fzy_case_modes[case_mode], "invalid case_mode: " .. tostring(case_mode))
 
-  local last_prompt, last_case_sensitive
-  local function case_sensitive(prompt)
-    if case_mode == "ignore_case" then
-      return false
-    elseif case_mode == "respect_case" then
-      return true
-    elseif prompt ~= last_prompt then
-      last_prompt, last_case_sensitive = prompt, prompt:find "[A-Z]" ~= nil
+  local last_prompt, last_query
+  local function parse(prompt)
+    if prompt ~= last_prompt then
+      last_prompt, last_query = prompt, query.parse(prompt, case_mode)
     end
-    return last_case_sensitive
+    return last_query
   end
 
   return sorters.Sorter:new {
     discard = true,
 
+    -- Discarding (and narrowing to the previous matches) needs a query that can only match fewer
+    -- lines than the previous one; for others (e.g. a longer inverse term, a new alternative),
+    -- forget the discards.
+    start = function(self, prompt)
+      local q = parse(prompt)
+      if self.state.query and not query.restricts(q, self.state.query) then
+        self._discard_state.filtered = {}
+      end
+      self.state.query = q
+    end,
+
     scoring_function = function(_, prompt, line)
-      -- Check for actual matches before running the scoring alogrithm.
-      local cs = case_sensitive(prompt)
-      if not fzy.has_match(prompt, line, cs) then
-        return -1
+      local q = parse(prompt)
+      local score
+      if q.single then
+        -- a single fuzzy term: check for a match before running the scoring algorithm
+        local term = q[1][1]
+        if not fzy.has_match(term.text, line, term.cs) then
+          return -1
+        end
+        score = fzy.score(term.text, line, term.cs)
+      elseif #q == 0 then
+        return 1
+      else
+        score = query.score(fzy, q, line)
+        if not score then
+          return -1
+        end
       end
 
-      local fzy_score = fzy.score(prompt, line, cs)
-
-      -- The fzy score is -inf for empty queries and overlong strings.  Since
-      -- this function converts all scores into the range (0, 1), we can
-      -- convert these to 1 as a suitable "worst score" value.
-      if fzy_score == fzy.get_score_min() then
+      -- The score is -inf for empty queries and overlong strings. Since this function converts
+      -- all scores into the range (0, 1), convert these to 1 as a suitable "worst score" value.
+      if score == SCORE_MIN then
         return 1
       end
 
-      -- Poor non-empty matches can also have negative values. Offset the score
-      -- so that all values are positive, then invert to match the
-      -- telescope.Sorter "smaller is better" convention. Note that for exact
-      -- matches, fzy returns +inf, which when inverted becomes 0.
-      return 1 / (fzy_score + OFFSET)
+      -- Poor non-empty matches can also have negative values. Offset the score (per set of terms,
+      -- whose scores add up) so that all values are positive, then invert to match the
+      -- telescope.Sorter "smaller is better" convention. Note that for exact matches, the score is
+      -- +inf, which when inverted becomes 0.
+      return 1 / (score + OFFSET * #q)
     end,
 
-    -- The fzy.positions function, which returns an array of string indices, is
-    -- compatible with telescope's conventions. It's moderately wasteful to
-    -- call call fzy.score(x,y) followed by fzy.positions(x,y): both call the
-    -- fzy.compute function, which does all the work. But, this doesn't affect
-    -- perceived performance.
     highlighter = function(_, prompt, display)
-      return fzy.positions(prompt, display, case_sensitive(prompt))
+      local q = parse(prompt)
+      if q.single then
+        local term = q[1][1]
+        return fzy.positions(term.text, display, term.cs)
+      end
+      return query.positions(fzy, q, display)
     end,
   }
 end
