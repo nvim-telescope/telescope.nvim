@@ -129,7 +129,7 @@ function Sorter:score(prompt, entry, cb_add, cb_filter)
   end
 
   local ordinal = entry.ordinal
-  if self:_was_discarded(prompt, ordinal) then
+  if self:_was_discarded(prompt, entry) then
     return cb_filter(entry)
   end
 
@@ -147,7 +147,7 @@ function Sorter:score(prompt, entry, cb_add, cb_filter)
 
   local score = self:scoring_function(prompt or "", ordinal, entry, cb_add, cb_filter)
   if score == FILTERED then
-    self:_mark_discarded(prompt, ordinal)
+    self:_mark_discarded(prompt, entry)
     return cb_filter(entry)
   end
 
@@ -158,16 +158,19 @@ function Sorter:score(prompt, entry, cb_add, cb_filter)
   end
 end
 
-function Sorter:_was_discarded(prompt, ordinal)
-  return self.discard and self._discard_state.filtered[ordinal]
+-- A discarded entry is stamped with the current `_discard_state.filtered` table, so that replacing
+-- that table (on a prompt that doesn't extend the previous one, or by a sorter's `start`) forgets all
+-- discards at once, and marking needs no hash insert per entry.
+function Sorter:_was_discarded(_, entry)
+  return self.discard and rawget(entry, "_discarded") == self._discard_state.filtered
 end
 
-function Sorter:_mark_discarded(prompt, ordinal)
+function Sorter:_mark_discarded(_, entry)
   if not self.discard then
     return
   end
 
-  self._discard_state.filtered[ordinal] = true
+  rawset(entry, "_discarded", self._discard_state.filtered)
 end
 
 function sorters.new(...)
