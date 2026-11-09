@@ -2,141 +2,73 @@ if require("telescope.utils").iswin then
   return
 end
 
-local tester = require "telescope.testharness"
-
-local disp = function(val)
-  return vim.inspect(val, { newline = " ", indent = "" })
-end
+local actions = require "telescope.actions"
+local h = require "tests.helpers"
+local eq = assert.eq
 
 describe("builtin.find_files", function()
-  it("should find the readme", function()
-    tester.run_file "find_files__readme"
-  end)
+  after_each(h.cleanup)
 
-  it("should handle cycling for full list", function()
-    tester.run_file "find_files__scrolling_descending_cycle"
-  end)
-
-  for _, configuration in ipairs {
-    { sorting_strategy = "descending" },
-    { sorting_strategy = "ascending" },
-  } do
-    it("should not display devicons when disabled: " .. disp(configuration), function()
-      tester.run_string(string.format(
-        [[
-        local max_results = 5
-
-        runner.picker('find_files', 'README.md', {
-          post_typed = {
-            { "> README.md", GetPrompt },
-            { "> README.md", GetBestResult },
-          },
-          post_close = {
-            { 'README.md', GetFile },
-            { 'README.md', GetFile },
-          }
-        }, vim.tbl_extend("force", {
-          disable_devicons = true,
-          sorter = require('telescope.sorters').get_fzy_sorter(),
-          layout_strategy = 'center',
-          layout_config = {
-            height = max_results + 1,
-            width = 0.9,
-          },
-        }, vim.json.decode([==[%s]==])))
-      ]],
-        vim.json.encode(configuration)
-      ))
-    end)
-
-    pending("use devicons, if it has it when enabled", function()
-      if not pcall(require, "nvim-web-devicons") then
-        return
-      end
-
-      local md = require("nvim-web-devicons").get_icon "md"
-      tester.run_string(string.format(
-        [[
-        runner.picker('find_files', 'README.md', {
-          post_typed = {
-            { "> README.md", GetPrompt },
-            { "> %s README.md", GetBestResult }
-          },
-          post_close = {
-            { 'README.md', GetFile },
-            { 'README.md', GetFile },
-          }
-        }, vim.tbl_extend("force", {
-          disable_devicons = false,
-          sorter = require('telescope.sorters').get_fzy_sorter(),
-        }, vim.json.decode([==[%s]==])))
-      ]],
-        md,
-        vim.json.encode(configuration)
-      ))
+  for _, sorting_strategy in ipairs { "descending", "ascending" } do
+    it("finds the readme without devicons, sorting " .. sorting_strategy, function()
+      local picker = h.picker("find_files", {
+        disable_devicons = true,
+        sorter = require("telescope.sorters").get_fzy_sorter(),
+        sorting_strategy = sorting_strategy,
+        layout_strategy = "center",
+        layout_config = { height = 6, width = 0.9 },
+      })
+      h.type(picker, "README.md")
+      eq("> README.md", h.prompt(picker))
+      eq("> README.md", h.best_result(picker))
+      eq("README.md", h.select(picker))
     end)
   end
 
-  it("should find the readme, using lowercase", function()
-    tester.run_string [[
-      runner.picker('find_files', 'readme.md', {
-        post_close = {
-          { 'README.md', GetFile },
-        }
-      })
-    ]]
+  it("finds the readme, using lowercase", function()
+    local picker = h.picker "find_files"
+    h.type(picker, "readme.md")
+    eq("README.md", h.select(picker))
   end)
 
-  it("should find the pickers.lua, using lowercase", function()
-    tester.run_string [[
-      runner.picker('find_files', 'pickers.lua', {
-        post_close = {
-          { 'pickers.lua', GetFile },
-        }
-      })
-    ]]
+  it("finds pickers.lua", function()
+    local picker = h.picker "find_files"
+    h.type(picker, "pickers.lua")
+    eq("pickers.lua", h.select(picker))
   end)
 
-  it("should find the pickers.lua", function()
-    tester.run_string [[
-      runner.picker('find_files', 'pickers.lua', {
-        post_close = {
-          { 'pickers.lua', GetFile },
-          { 'pickers.lua', GetFile },
-        }
-      })
-    ]]
+  it("moves the selection with <C-n>", function()
+    local picker = h.picker("find_files", {
+      sorter = require("telescope.sorters").get_fzy_sorter(),
+      sorting_strategy = "ascending",
+      disable_devicons = true,
+    })
+    h.type(picker, "fixtures/find_files/file")
+    actions.move_selection_next(picker.prompt_bufnr)
+    eq({
+      "  tests/fixtures/find_files/file_a.txt",
+      "> tests/fixtures/find_files/file_abc.txt",
+    }, h.results(picker))
+    eq("file_abc.txt", h.select(picker))
   end)
 
-  it("should be able to c-n the items", function()
-    tester.run_string [[
-      runner.picker('find_files', 'fixtures/find_files/file<c-n>', {
-        post_typed = {
-          {
-            {
-              "  tests/fixtures/find_files/file_a.txt",
-              "> tests/fixtures/find_files/file_abc.txt",
-            }, GetResults
-          },
-        },
-        post_close = {
-          { 'file_abc.txt', GetFile },
-        },
-      }, {
-        sorter = require('telescope.sorters').get_fzy_sorter(),
-        sorting_strategy = "ascending",
-        disable_devicons = true,
-      })
-    ]]
+  it("cycles the selection with scroll_strategy = cycle", function()
+    local picker = h.picker("find_files", {
+      sorter = require("telescope.sorters").get_fzy_sorter(),
+      sorting_strategy = "descending",
+      scroll_strategy = "cycle",
+      disable_devicons = true,
+    })
+    h.type(picker, "fixtures/find_files/file")
+    local best = h.best_result(picker)
+    actions.move_selection_previous(picker.prompt_bufnr)
+    actions.move_selection_previous(picker.prompt_bufnr)
+    eq(best, h.best_result(picker))
   end)
 
-  it("should be able to get the current selection", function()
-    tester.run_string [[
-      runner.picker('find_files', 'fixtures/find_files/file_abc', {
-        post_typed = {
-          { 'tests/fixtures/find_files/file_abc.txt', GetSelectionValue },
-        }
-      })
-    ]]
+  it("gets the current selection", function()
+    local picker = h.picker "find_files"
+    h.type(picker, "fixtures/find_files/file_abc")
+    eq("tests/fixtures/find_files/file_abc.txt", require("telescope.actions.state").get_selected_entry().value)
   end)
 end)

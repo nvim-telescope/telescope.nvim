@@ -1,7 +1,7 @@
 local diagnostics = require "telescope.builtin.__diagnostics"
 local pickers = require "telescope.pickers"
 
-local eq = assert.are.same
+local eq = assert.eq
 
 describe("builtin diagnostics", function()
   local bufnr
@@ -60,7 +60,7 @@ describe("builtin diagnostics", function()
       end,
     }
 
-    assert.is_not_nil(captured_entry)
+    assert.neq(nil, captured_entry)
     eq("PLR0913", captured_entry.code)
   end)
 end)

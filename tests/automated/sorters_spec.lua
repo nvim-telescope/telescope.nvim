@@ -2,13 +2,19 @@ local sorters = require "telescope.sorters"
 
 describe("get_substr_matcher", function()
   local function with_smartcase(smartcase, case)
-    local original = vim.o.smartcase
-    vim.o.smartcase = smartcase
+    local original
+    before_each(function()
+      original = vim.o.smartcase
+      vim.o.smartcase = smartcase
+    end)
+    after_each(function()
+      vim.o.smartcase = original
+    end)
 
     describe("scoring_function", function()
       it(case.msg, function()
         local matcher = sorters.get_substr_matcher()
-        assert.are.same(case.expected_score, matcher.scoring_function(_, case.prompt, _, case.entry))
+        assert.eq(case.expected_score, matcher.scoring_function(_, case.prompt, _, case.entry))
       end)
     end)
 
@@ -19,11 +25,9 @@ describe("get_substr_matcher", function()
         table.sort(highlights, function(a, b)
           return a.start < b.start
         end)
-        assert.are.same(case.expected_highlights, highlights)
+        assert.eq(case.expected_highlights, highlights)
       end)
     end)
-
-    vim.o.smartcase = original
   end
 
   describe("when smartcase=OFF", function()
@@ -54,7 +58,7 @@ describe("get_substr_matcher", function()
     end
   end)
 
-  describe("when smartcase=OFF", function()
+  describe("when smartcase=ON", function()
     for _, case in ipairs {
       {
         msg = "doesn't match",

@@ -4,7 +4,7 @@ local layout_strats = require "telescope.pickers.layout_strategies"
 
 local validate_layout_config = layout_strats._validate_layout_config
 
-local eq = assert.are.same
+local eq = assert.eq
 
 describe("layout_strategies", function()
   it("should have validator", function()

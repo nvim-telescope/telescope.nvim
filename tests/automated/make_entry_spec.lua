@@ -1,6 +1,6 @@
 local make_entry = require "telescope.make_entry"
 
-local eq = assert.are.same
+local eq = assert.eq
 
 describe("gen_from_ctags", function()
   local root = vim.uv.cwd()

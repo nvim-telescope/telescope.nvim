@@ -26,7 +26,7 @@ describe("truncate", function()
       it(msg, function()
         local original = vim.o.ambiwidth
         vim.o.ambiwidth = ambiwidth
-        assert.are.same(case.expected[ambiwidth], entry_display.truncate(case.args[1], case.args[2]))
+        assert.eq(case.expected[ambiwidth], entry_display.truncate(case.args[1], case.args[2]))
         vim.o.ambiwidth = original
       end)
     end

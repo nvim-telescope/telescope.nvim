@@ -3,7 +3,7 @@ local p_scroller = require "telescope.pickers.scroller"
 local log = require "telescope.log"
 log.use_console = false
 
-local eq = assert.are.same
+local eq = assert.eq
 
 describe("scroller", function()
   local max_results = 10

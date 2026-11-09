@@ -1,87 +1,61 @@
-local finders = require "telescope.finders"
-local make_entry = require "telescope.make_entry"
-local previewers = require "telescope.previewers"
-local pickers = require "telescope.pickers"
-local sorters = require "telescope.sorters"
-local utils = require "telescope.utils"
+local action_state = require "telescope.actions.state"
 
-local helpers = {}
+local M = {}
 
--- TODO: We should do something with builtins to get those easily.
-helpers.auto_find_files = function(opts)
-  opts = opts or {}
-  opts.prompt_prefix = ""
-
-  local find_command = opts.find_command
-
-  if not find_command then
-    if 1 == vim.fn.executable "fd" then
-      find_command = { "fd", "--type", "f" }
-    elseif 1 == vim.fn.executable "fdfind" then
-      find_command = { "fdfind", "--type", "f" }
-    elseif 1 == vim.fn.executable "rg" then
-      find_command = { "rg", "--files" }
-    end
-  end
-
-  if opts.cwd then
-    opts.cwd = utils.path_expand(opts.cwd)
-  end
-
-  opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
-
-  local p = pickers.new(opts, {
-    prompt = "Find Files",
-    finder = finders.new_oneshot_job(find_command, opts),
-    previewer = previewers.cat.new(opts),
-    sorter = sorters.get_fuzzy_file(),
-
-    track = true,
-  })
-
-  local count = 0
-  p:register_completion_callback(function(s)
-    print(
-      count,
-      vim.inspect(s.stats, {
-        process = function(item)
-          if type(item) == "string" and item:sub(1, 1) == "_" then
-            return nil
-          end
-
-          return item
-        end,
-      })
-    )
-
-    count = count + 1
+--- Open the builtin picker `name` with `opts` and return it.
+function M.picker(name, opts)
+  require("telescope.builtin")[name](opts)
+  local picker = action_state.get_current_picker(vim.api.nvim_get_current_buf())
+  picker.__completed = 0
+  picker:register_completion_callback(function(p)
+    p.__completed = p.__completed + 1
   end)
-
-  local feed = function(text, feed_opts)
-    feed_opts = feed_opts or "n"
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(text, true, false, true), feed_opts, true)
-  end
-
-  p:register_completion_callback(coroutine.wrap(function()
-    local input = opts.input
-
-    for i = 1, #input do
-      feed(input:sub(i, i))
-      coroutine.yield()
-    end
-
-    vim.wait(300, function() end)
-    feed("<CR>", "")
-
-    vim.defer_fn(function()
-      PASSED = opts.condition()
-      COMPLETED = true
-    end, 500)
-
-    coroutine.yield()
-  end))
-
-  p:find()
+  return picker
 end
 
-return helpers
+--- Type `text` into the prompt, one character at a time, waiting for the results after each one.
+function M.type(picker, text)
+  for char in text:gmatch "." do
+    local completed = picker.__completed
+    picker:set_prompt(char, false)
+    vim.wait(5000, function()
+      return picker.__completed > completed
+    end, 10)
+  end
+end
+
+--- The prompt line.
+function M.prompt(picker)
+  return vim.api.nvim_buf_get_lines(picker.prompt_bufnr, 0, 1, false)[1]
+end
+
+--- The non-empty lines of the results window.
+function M.results(picker)
+  return vim.tbl_filter(function(line)
+    return line ~= ""
+  end, vim.api.nvim_buf_get_lines(picker.results_bufnr, 0, -1, false))
+end
+
+--- The highest ranked result line.
+function M.best_result(picker)
+  local results = M.results(picker)
+  return picker.sorting_strategy == "ascending" and results[1] or results[#results]
+end
+
+--- Select the current entry (`<CR>`) and return the tail of the name of the opened buffer.
+function M.select(picker)
+  require("telescope.actions").select_default(picker.prompt_bufnr)
+  return vim.fs.basename(vim.api.nvim_buf_get_name(0))
+end
+
+--- Close all pickers and wipe all buffers.
+function M.cleanup()
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.bo[bufnr].filetype == "TelescopePrompt" then
+      pcall(require("telescope.actions").close, bufnr)
+    end
+  end
+  vim.cmd "silent! %bwipeout!"
+end
+
+return M

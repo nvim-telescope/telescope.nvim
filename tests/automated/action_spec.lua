@@ -3,7 +3,7 @@ local action_set = require "telescope.actions.set"
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 
-local eq = assert.are.same
+local eq = assert.eq
 
 describe("actions", function()
   it("should allow creating custom actions", function()
@@ -488,7 +488,7 @@ describe("actions", function()
       eq("replaced:vnew", actions.file_vsplit())
     end)
 
-    pending("handles backwards compat with select and edit files", function()
+    it("handles backwards compat with select and edit files", function()
       -- Reproduce steps:
       --  In config, we have { ["<CR>"] = actions.select, ... }
       --  In caller, we have actions._goto:replace(...)

@@ -1,6 +1,6 @@
 local EntryManager = require "telescope.entry_manager"
 
-local eq = assert.are.same
+local eq = assert.eq
 
 describe("process_result", function()
   it("works with one entry", function()
