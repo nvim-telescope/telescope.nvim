@@ -1,6 +1,6 @@
 local ui = require "telescope.pickers.ui"
 
-local eq = assert.are.same
+local eq = assert.eq
 
 local chars = { "t", "r", "b", "l", "1", "2", "3", "4" } -- top, right, bottom, left, corners (Vim order)
 

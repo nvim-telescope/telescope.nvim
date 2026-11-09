@@ -1,18 +1,23 @@
 DEPDIR ?= .deps
-PLENTEST := $(DEPDIR)/plentest.nvim
 DOCGEN := $(DEPDIR)/docgen.nvim
 DOCGEN_TAG := v1.1.0
 
-.PHONY: plentest
-plentest: $(PLENTEST)
+NVIM ?= nvim
+TEST_FILE ?= tests/automated
+NVIM_TEST_VERSION := v0.12.6
+TEST_DEPS := $(DEPDIR)/neovim/$(NVIM_TEST_VERSION)
+TEST_MODULES := $(addprefix $(TEST_DEPS)/test/,harness.lua assert.lua reporter.lua)
 
-$(PLENTEST):
-	git clone --filter=blob:none https://github.com/nvim-treesitter/plentest.nvim $(PLENTEST)
+$(TEST_MODULES):
+	mkdir -p "$(@D)"
+	curl --fail --location --silent --show-error --output "$@.tmp" \
+		https://raw.githubusercontent.com/neovim/neovim/$(NVIM_TEST_VERSION)/test/$(notdir $@)
+	mv "$@.tmp" "$@"
 
 .PHONY: test lint docgen
-test: $(PLENTEST)
-	PLENTEST=$(PLENTEST) nvim --headless --clean -u scripts/minimal_init.lua \
-		-c "lua require('plentest').test_directory('tests/automated', { minimal_init = './scripts/minimal_init.lua' })"
+test: $(TEST_MODULES)
+	NVIM_LOG_FILE="$(abspath $(DEPDIR)/nvim.log)" "$(NVIM)" --clean \
+		-l tests/runner.lua "$(TEST_DEPS)" "$(TEST_FILE)"
 
 lint:
 	luacheck lua/telescope

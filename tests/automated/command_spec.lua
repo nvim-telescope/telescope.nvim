@@ -1,6 +1,6 @@
 local command = require "telescope.command"
 
-local eq = assert.are.same
+local eq = assert.eq
 
 describe("command_parser", function()
   local test_parse = function(should, input, output)

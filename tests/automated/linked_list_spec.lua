@@ -4,14 +4,14 @@ describe("LinkedList", function()
   it("can create a list", function()
     local l = LinkedList:new()
 
-    assert.are.same(0, l.size)
+    assert.eq(0, l.size)
   end)
 
   it("can add a single entry to the list", function()
     local l = LinkedList:new()
     l:append "hello"
 
-    assert.are.same(1, l.size)
+    assert.eq(1, l.size)
   end)
 
   it("can iterate over one item", function()
@@ -19,7 +19,7 @@ describe("LinkedList", function()
     l:append "hello"
 
     for val in l:iter() do
-      assert.are.same("hello", val)
+      assert.eq("hello", val)
     end
   end)
 
@@ -33,7 +33,7 @@ describe("LinkedList", function()
       table.insert(x, val)
     end
 
-    assert.are.same({ "hello", "world" }, x)
+    assert.eq({ "hello", "world" }, x)
   end)
 
   it("iterates in order, for prepend", function()
@@ -46,7 +46,7 @@ describe("LinkedList", function()
       table.insert(x, val)
     end
 
-    assert.are.same({ "hello", "world" }, x)
+    assert.eq({ "hello", "world" }, x)
   end)
 
   it("iterates in order, for combo", function()
@@ -61,8 +61,8 @@ describe("LinkedList", function()
       table.insert(x, val)
     end
 
-    assert.are.same({ "first", "hello", "world", "last" }, x)
-    assert.are.same(#x, l.size)
+    assert.eq({ "first", "hello", "world", "last" }, x)
+    assert.eq(#x, l.size)
   end)
 
   it("has ipairs", function()
@@ -76,7 +76,7 @@ describe("LinkedList", function()
     for v in l:iter() do
       table.insert(x, v)
     end
-    assert.are.same({ "first", "hello", "world", "last" }, x)
+    assert.eq({ "first", "hello", "world", "last" }, x)
 
     local expected = {}
     for i, v in ipairs(x) do
@@ -88,7 +88,7 @@ describe("LinkedList", function()
       table.insert(actual, { i, v })
     end
 
-    assert.are.same(expected, actual)
+    assert.eq(expected, actual)
   end)
 
   describe("track_at", function()
@@ -98,7 +98,7 @@ describe("LinkedList", function()
       l:append "second"
       l:append "third"
 
-      assert.are.same("second", l.tracked)
+      assert.eq("second", l.tracked)
     end)
 
     it("should update tracked when first some prepend and then append", function()
@@ -107,7 +107,7 @@ describe("LinkedList", function()
       l:append "second"
       l:append "third"
 
-      assert.are.same("second", l.tracked)
+      assert.eq("second", l.tracked)
     end)
 
     it("should update when only prepending", function()
@@ -116,7 +116,7 @@ describe("LinkedList", function()
       l:prepend "second"
       l:prepend "first"
 
-      assert.are.same("second", l.tracked)
+      assert.eq("second", l.tracked)
     end)
 
     it("should update when lots of prepend and append", function()
@@ -127,7 +127,7 @@ describe("LinkedList", function()
       l:append "fourth"
       l:prepend "zeroth"
 
-      assert.are.same("first", l.tracked)
+      assert.eq("first", l.tracked)
     end)
   end)
 end)
