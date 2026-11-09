@@ -1,15 +1,20 @@
--- The fzy matching algorithm
+-- Fuzzy matching, based on the fzy algorithm
 --
 -- Based on Seth Warn's <https://github.com/swarn> Lua port of John Hawthorn's fzy
 -- <https://github.com/jhawthorn/fzy>, with these adaptations:
 -- - Speed: works on bytes (`string.byte`) instead of one-character strings and patterns, keeps
 --   only two rows of the score matrices for `score`, and reuses all buffers across calls (no
 --   allocation per entry); the lowered needle is cached, and an ASCII-only fast path skips the
---   UTF-8 handling. Scores and positions for ASCII text are those of the port.
+--   UTF-8 handling. Apart from the word boundaries below, scores and positions for ASCII text are
+--   those of the port.
 -- - UTF-8: a character of the needle only matches a whole character of the haystack (the port
 --   could match its bytes across different characters), and scores count characters, not bytes.
 -- - Case: matching ignores case unless `case_sensitive` (the optional third argument of
 --   `has_match`, `score` and `positions`) is true.
+-- - Word boundaries: a character after any ASCII character that is not a letter or digit gets the
+--   start-of-word bonus (as suggested by Seth Warn, and similar to fzf), not only after `-`, `_`
+--   and space; `/` and `.` keep their own bonuses. So `abc` prefers `ant!bat!cat` to
+--   `azzzbzzzczz`, and `al` prefers `\alpha` to `\bfAlpha`.
 --
 -- > fzy tries to find the result the user intended. It does this by favouring
 -- > matches on consecutive letters and starts of words. This allows matching
@@ -33,14 +38,15 @@ local SCORE_MAX = math.huge
 local SCORE_MIN = -math.huge
 local MATCH_MAX_LENGTH = 1024
 
--- bonus for a match, indexed by the previous byte (paths are normalized to `/`, see
--- `utils.normalize_sep`); the camelCase bonus is handled in `prepare`
+-- bonus for a match, indexed by the previous byte: start of a word after any ASCII character that
+-- is not a letter or digit, with own values after `/` (paths are normalized to `/`, see
+-- `utils.normalize_sep`) and `.`; the camelCase bonus is handled in `prepare`
 local BONUS = {}
 for b = 0, 255 do
-  BONUS[b] = 0
+  local alnum = (b >= 48 and b <= 57) or (b >= 65 and b <= 90) or (b >= 97 and b <= 122)
+  BONUS[b] = (b < 128 and not alnum) and SCORE_MATCH_WORD or 0
 end
 BONUS[47] = SCORE_MATCH_SLASH -- /
-BONUS[45], BONUS[95], BONUS[32] = SCORE_MATCH_WORD, SCORE_MATCH_WORD, SCORE_MATCH_WORD -- - _ space
 BONUS[46] = SCORE_MATCH_DOT -- .
 
 -- Byte maps for case folding: `FOLD` lowers A-Z, `SAME` is the identity (case sensitive). The mode

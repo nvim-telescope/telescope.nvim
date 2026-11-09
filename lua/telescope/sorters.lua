@@ -443,7 +443,7 @@ local fzy_case_modes = { ignore_case = true, respect_case = true, smart_case = t
 -- "smart_case" (respect case if the prompt contains an uppercase letter); only for ASCII letters.
 sorters.get_fzy_sorter = function(opts)
   opts = opts or {}
-  local fzy = opts.fzy_mod or require "telescope.algos.fzy"
+  local fzy = opts.fzy_mod or require "telescope.algos.matcher"
   local OFFSET = -fzy.get_score_floor()
   local case_mode = opts.case_mode or "ignore_case"
   assert(fzy_case_modes[case_mode], "invalid case_mode: " .. tostring(case_mode))
@@ -502,7 +502,7 @@ end
 --          But I think `fzy` is good default for now.
 sorters.highlighter_only = function(opts)
   opts = opts or {}
-  local fzy = opts.fzy_mod or require "telescope.algos.fzy"
+  local fzy = opts.fzy_mod or require "telescope.algos.matcher"
 
   return Sorter:new {
     scoring_function = function()
