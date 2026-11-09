@@ -168,6 +168,37 @@ describe("telescope", function()
         end)
       end)
 
+      describe("case_mode", function()
+        local function score_with(case_mode, prompt, line)
+          return require("telescope.sorters")
+            .get_fzy_sorter({ case_mode = case_mode })
+            :score(prompt, { ordinal = line }, function(val)
+              return val
+            end, function()
+              return -1
+            end)
+        end
+        it("ignores case by default", function()
+          assert.is_true(score_with(nil, "al", "\\bfAlpha") >= 0)
+          assert.is_true(score_with("ignore_case", "Al", "\\alpha") >= 0)
+        end)
+        it("respects case with respect_case", function()
+          assert.is_true(score_with("respect_case", "al", "\\bfAlpha") < 0)
+          assert.is_true(score_with("respect_case", "al", "\\alpha") >= 0)
+          assert.is_true(score_with("respect_case", "Al", "\\bfAlpha") >= 0)
+        end)
+        it("respects case with smart_case only for prompts with uppercase", function()
+          assert.is_true(score_with("smart_case", "al", "\\bfAlpha") >= 0)
+          assert.is_true(score_with("smart_case", "Al", "\\alpha") < 0)
+          assert.is_true(score_with("smart_case", "Al", "\\bfAlpha") >= 0)
+        end)
+        it("highlights with the same case_mode", function()
+          local sorters = require "telescope.sorters"
+          assert.eq({ 1, 2 }, sorters.get_fzy_sorter():highlighter("ab", "aBab"))
+          assert.eq({ 3, 4 }, sorters.get_fzy_sorter({ case_mode = "respect_case" }):highlighter("ab", "aBab"))
+        end)
+      end)
+
       local function positions(prompt, line)
         return sorter:highlighter(prompt, line)
       end

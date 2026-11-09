@@ -8,6 +8,8 @@
 --   UTF-8 handling. Scores and positions for ASCII text are those of the port.
 -- - UTF-8: a character of the needle only matches a whole character of the haystack (the port
 --   could match its bytes across different characters), and scores count characters, not bytes.
+-- - Case: matching ignores case unless `case_sensitive` (the optional third argument of
+--   `has_match`, `score` and `positions`) is true.
 --
 -- > fzy tries to find the result the user intended. It does this by favouring
 -- > matches on consecutive letters and starts of words. This allows matching
@@ -41,21 +43,33 @@ BONUS[47] = SCORE_MATCH_SLASH -- /
 BONUS[45], BONUS[95], BONUS[32] = SCORE_MATCH_WORD, SCORE_MATCH_WORD, SCORE_MATCH_WORD -- - _ space
 BONUS[46] = SCORE_MATCH_DOT -- .
 
+-- Byte maps for case folding: `FOLD` lowers A-Z, `SAME` is the identity (case sensitive). The mode
+-- only picks the table, so the hot loops have no branch on it (which LuaJIT would compile for
+-- whichever mode came first, slowing down the other one).
+local FOLD, SAME = {}, {}
+for b = 0, 255 do
+  FOLD[b] = (b >= 65 and b <= 90) and b + 32 or b
+  SAME[b] = b
+end
+
 local function is_cont(b)
   return b >= 0x80 and b < 0xC0 -- UTF-8 continuation byte
 end
 
--- The needle, cached by string identity: lowered bytes, continuation flags, and its characters
--- (for `has_match`: a lowered byte for ASCII, else the character's bytes).
-local last_needle, n, needle_ascii = nil, 0, true
+-- The needle, cached by string identity and case sensitivity: bytes (lowered unless case
+-- sensitive), continuation flags, and its characters (for `has_match`: a byte for ASCII, else the
+-- character's bytes). `lower`: the byte map for the haystack (`FOLD` or `SAME`).
+local last_needle, last_case_sensitive, n, needle_ascii, lower = nil, false, 0, true, FOLD
 local nb, ncont = {}, {}
 local chars, nchars = {}, 0
 
-local function set_needle(needle)
-  if needle == last_needle then
+local function set_needle(needle, case_sensitive)
+  case_sensitive = case_sensitive == true
+  if needle == last_needle and case_sensitive == last_case_sensitive then
     return
   end
-  last_needle, n, nchars = needle, #needle, 0
+  last_needle, last_case_sensitive, n, nchars = needle, case_sensitive, #needle, 0
+  lower = case_sensitive and SAME or FOLD
   needle_ascii = true
   local i = 1
   while i <= n do
@@ -65,10 +79,10 @@ local function set_needle(needle)
     end
     local len = c < 0x80 and 1 or c >= 0xF0 and 4 or c >= 0xE0 and 3 or c >= 0xC0 and 2 or 1
     nchars = nchars + 1
-    chars[nchars] = len == 1 and ((c >= 65 and c <= 90) and c + 32 or c) or needle:sub(i, i + len - 1)
+    chars[nchars] = len == 1 and lower[c] or needle:sub(i, i + len - 1)
     for k = i, i + len - 1 do
       local b = byte(needle, k) or 0
-      nb[k] = (b >= 65 and b <= 90) and b + 32 or b
+      nb[k] = lower[b]
       ncont[k] = k > i
     end
     i = i + len
@@ -77,8 +91,8 @@ end
 
 local fzy = {}
 
-function fzy.has_match(needle, haystack)
-  set_needle(needle)
+function fzy.has_match(needle, haystack, case_sensitive)
+  set_needle(needle, case_sensitive)
   local j, m = 1, #haystack
   for k = 1, nchars do
     local c = chars[k]
@@ -89,7 +103,7 @@ function fzy.has_match(needle, haystack)
         end
         local h = byte(haystack, j)
         j = j + 1
-        if h == c or (h >= 65 and h <= 90 and h + 32 == c) then
+        if lower[h] == c then
           break
         end
       end
@@ -104,8 +118,8 @@ function fzy.has_match(needle, haystack)
   return true
 end
 
--- The haystack: lowered bytes, match bonuses, continuation flags and the number of characters up
--- to each byte (for the leading gap). Reused across calls.
+-- The haystack: bytes (lowered unless case sensitive), match bonuses, continuation flags and the
+-- number of characters up to each byte (for the leading gap). Reused across calls.
 local hay, bonus, hcont, hidx = {}, {}, {}, {}
 
 -- Only bytes `first` to `last` are prepared (the window in which the needle can match, see `score`).
@@ -131,7 +145,7 @@ local function prepare(haystack, first, last, m)
     else
       bonus[j] = BONUS[prev]
     end
-    hay[j] = upper and c + 32 or c
+    hay[j] = lower[c]
     ascii = ascii and c < 0x80
     prev = c
   end
@@ -213,8 +227,8 @@ end
 
 local D1, M1, D2, M2 = {}, {}, {}, {}
 
-function fzy.score(needle, haystack)
-  set_needle(needle)
+function fzy.score(needle, haystack, case_sensitive)
+  set_needle(needle, case_sensitive)
   local m = #haystack
   if n == 0 or m == 0 or m > MATCH_MAX_LENGTH or n > MATCH_MAX_LENGTH then
     return SCORE_MIN
@@ -225,18 +239,10 @@ function fzy.score(needle, haystack)
   -- of its last byte: compute only that window, then add the trailing gaps as the full DP would.
   local c1, cn = nb[1], nb[n]
   local first, last = 1, m
-  while first <= m do
-    local b = byte(haystack, first)
-    if ((b >= 65 and b <= 90) and b + 32 or b) == c1 then
-      break
-    end
+  while first <= m and lower[byte(haystack, first)] ~= c1 do
     first = first + 1
   end
-  while last >= first do
-    local b = byte(haystack, last)
-    if ((b >= 65 and b <= 90) and b + 32 or b) == cn then
-      break
-    end
+  while last >= first and lower[byte(haystack, last)] ~= cn do
     last = last - 1
   end
   if first > last then
@@ -264,8 +270,8 @@ end
 -- full matrices for `positions` (rows reused across calls)
 local D, M = {}, {}
 
-function fzy.positions(needle, haystack)
-  set_needle(needle)
+function fzy.positions(needle, haystack, case_sensitive)
+  set_needle(needle, case_sensitive)
   local m = #haystack
   if n == 0 or m == 0 or m > MATCH_MAX_LENGTH or n > MATCH_MAX_LENGTH then
     return {}

@@ -436,22 +436,41 @@ sorters.fuzzy_with_index_bias = function(opts)
   }
 end
 
--- Sorter using the fzy algorithm
+local fzy_case_modes = { ignore_case = true, respect_case = true, smart_case = true }
+
+-- Sorter using the fzy algorithm.
+-- `opts.case_mode` (as for telescope-fzf-native): "ignore_case" (default), "respect_case", or
+-- "smart_case" (respect case if the prompt contains an uppercase letter); only for ASCII letters.
 sorters.get_fzy_sorter = function(opts)
   opts = opts or {}
   local fzy = opts.fzy_mod or require "telescope.algos.fzy"
   local OFFSET = -fzy.get_score_floor()
+  local case_mode = opts.case_mode or "ignore_case"
+  assert(fzy_case_modes[case_mode], "invalid case_mode: " .. tostring(case_mode))
+
+  local last_prompt, last_case_sensitive
+  local function case_sensitive(prompt)
+    if case_mode == "ignore_case" then
+      return false
+    elseif case_mode == "respect_case" then
+      return true
+    elseif prompt ~= last_prompt then
+      last_prompt, last_case_sensitive = prompt, prompt:find "[A-Z]" ~= nil
+    end
+    return last_case_sensitive
+  end
 
   return sorters.Sorter:new {
     discard = true,
 
     scoring_function = function(_, prompt, line)
       -- Check for actual matches before running the scoring alogrithm.
-      if not fzy.has_match(prompt, line) then
+      local cs = case_sensitive(prompt)
+      if not fzy.has_match(prompt, line, cs) then
         return -1
       end
 
-      local fzy_score = fzy.score(prompt, line)
+      local fzy_score = fzy.score(prompt, line, cs)
 
       -- The fzy score is -inf for empty queries and overlong strings.  Since
       -- this function converts all scores into the range (0, 1), we can
@@ -473,7 +492,7 @@ sorters.get_fzy_sorter = function(opts)
     -- fzy.compute function, which does all the work. But, this doesn't affect
     -- perceived performance.
     highlighter = function(_, prompt, display)
-      return fzy.positions(prompt, display)
+      return fzy.positions(prompt, display, case_sensitive(prompt))
     end,
   }
 end
