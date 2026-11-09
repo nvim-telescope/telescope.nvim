@@ -747,6 +747,8 @@ append(
   be used for find_files, git_files and similar.
   Hint: If you load a native sorter, you don't need to change this value,
   the native sorter will override it anyway.
+  The default sorter takes the picker option `case_mode`, see
+  |telescope.defaults.generic_sorter|.
 
   Default: require("telescope.sorters").get_fzy_sorter]]
 )
@@ -759,6 +761,11 @@ append(
   used for everything that is not a file.
   Hint: If you load a native sorter, you don't need to change this value,
   the native sorter will override it anyway.
+  The default sorter (fzy) takes the picker option `case_mode`, like
+  telescope-fzf-native: "ignore_case" (default), "respect_case", or
+  "smart_case" (respect case if the prompt contains an uppercase letter);
+  only ASCII letters are case-insensitive. Example:
+    pickers = { symbols = { case_mode = "respect_case" } }
 
   Default: require("telescope.sorters").get_fzy_sorter]]
 )
