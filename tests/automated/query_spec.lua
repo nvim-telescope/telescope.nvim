@@ -78,6 +78,10 @@ describe("fzy sorter with query syntax", function()
     end
     assert.is_true(score("pick lua", "lua/telescope/pickers.lua") >= 0)
     assert.is_true(score("pick lua", "lua/telescope/init.lua") < 0)
+    -- a contiguous term and a file extension beat a scattered term and a match at the start
+    assert.is_true(
+      score("log txt", "docs/LoggingGuide/intro.txt") < score("log txt", "txt/tools/loader/g_tests/notes.txt")
+    )
     eq({ 1, 2, 3, 15, 16, 17, 18 }, sorter:highlighter("lua pick", "lua/telescope/pickers.lua"))
   end)
 end)
