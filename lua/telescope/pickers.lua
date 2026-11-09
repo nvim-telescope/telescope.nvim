@@ -1401,11 +1401,13 @@ end
 ---@return function
 function Picker:get_result_processor(find_id, prompt, status_updater)
   local count = 0
+  local running = { completed = false } -- no table per result
+  local ignore_patterns = self.file_ignore_patterns or {}
 
   local cb_add = function(score, entry)
     -- may need the prompt for tiebreak
     self.manager:add_entry(self, score, entry, prompt)
-    status_updater { completed = false }
+    status_updater(running)
   end
 
   local cb_filter = function(_)
@@ -1425,7 +1427,7 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
 
     count = count + 1
 
-    for _, v in ipairs(self.file_ignore_patterns or {}) do
+    for _, v in ipairs(ignore_patterns) do
       local file = utils.if_nil(entry.filename, type(entry.value) == "string" and entry.value) -- false if none is true
       if file then
         if string.find(file, v) then
