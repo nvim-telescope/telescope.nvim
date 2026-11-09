@@ -311,7 +311,6 @@ Built-in functions. Ready to be bound to any key you like.
 
 | Functions          | Description                                                                                                                                                                               |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `builtin.planets`  | Use the telescope...                                                                                                                                                                      |
 | `builtin.builtin`  | Lists Built-in pickers and run them on `<cr>`.                                                                                                                                            |
 | `builtin.reloader` | Lists Lua modules and reload them on `<cr>`.                                                                                                                                              |
 | `builtin.symbols`  | Lists symbols inside a file `data/telescope-sources/*.json` found in your rtp. More info and symbol sources can be found [here](https://github.com/nvim-telescope/telescope-symbols.nvim) |

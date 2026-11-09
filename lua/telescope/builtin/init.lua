@@ -303,15 +303,6 @@ builtin.resume = require_on_exported_call("telescope.builtin.__internal").resume
 builtin.pickers = require_on_exported_call("telescope.builtin.__internal").pickers
 
 ---@inlinedoc
----@class telescope.builtin.planets.opts : telescope.builtin.base_opts
----@field show_pluto? boolean we love Pluto (default: `false`, because its a hidden feature)
----@field show_moon? boolean we love the Moon (default: `false`, because its a hidden feature)
-
---- Use the telescope...
----@param opts? telescope.builtin.planets.opts: options to pass to the picker
-builtin.planets = require_on_exported_call("telescope.builtin.__internal").planets
-
----@inlinedoc
 ---@class telescope.builtin.symbol.opts : telescope.builtin.base_opts
 ---@field symbol_path? string specify the second path. Default: `stdpath("data")/telescope/symbols/*.json`
 ---@field sources? table specify a table of sources you want to load this time

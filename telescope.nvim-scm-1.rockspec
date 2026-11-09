@@ -30,6 +30,5 @@ build = {
     'ftplugin',
     'plugin',
     'scripts',
-    'data',
   }
 }
