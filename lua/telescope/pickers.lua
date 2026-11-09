@@ -32,6 +32,14 @@ local ns_telescope_prompt_prefix = api.nvim_create_namespace "telescope_prompt_p
 -- while results come in, draw them at most this often (ms)
 local DRAW_INTERVAL = 50
 
+-- preallocating table constructor (LuaJIT), for the narrowing match lists
+local ok_new_tab, new_tab = pcall(require, "table.new")
+if not ok_new_tab then
+  new_tab = function()
+    return {}
+  end
+end
+
 -- Window options produced by layout strategies and passed to `telescope.pickers.ui`.
 ---@class telescope_popup_options
 ---@field line integer: 1-based screen row of the content (0 or nil: centered)
@@ -572,15 +580,41 @@ function Picker:find()
       end
 
       if self.cache_picker == false or self.cache_picker.is_cached ~= true then
+        local discarded = self.sorter._discard_state and self.sorter._discard_state.filtered
         self.sorter:_start(prompt)
+        local narrowable = self:_narrowable()
+        local candidates = narrowable and self:_narrowed_candidates(discarded)
         self.manager = EntryManager:new(self.max_results, self._results_changed, self.stats)
 
+        -- the matches of this prompt, in finder order (see `_narrowed_candidates`), recorded in the
+        -- one of two reused arrays that the previous matches don't use (no new array per prompt)
+        local matches = { finder = self.finder, n = 0 }
+        if narrowable then
+          local prev, lists = self._matches, self._match_lists or {}
+          self._match_lists = lists
+          local k = (prev and prev.list == lists[1]) and 2 or 1
+          if not lists[k] then
+            lists[k] = new_tab(candidates and candidates.n or 0, 0)
+          end
+          matches.list = lists[k]
+        end
+        self._matches = matches
         self:_reset_highlights()
         local process_result = self:get_result_processor(find_id, prompt, debounced_status)
-        local process_complete = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
+        local completor = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
+        local process_complete = function()
+          if not matches.interrupted then
+            matches.complete, matches.processed = true, self.stats.processed
+          end
+          completor()
+        end
 
         local ok, msg = pcall(function()
-          self.finder(prompt, process_result, process_complete)
+          if candidates then
+            self:_process_candidates(candidates, process_result, process_complete)
+          else
+            self.finder(prompt, process_result, process_complete)
+          end
         end)
 
         if not ok then
@@ -949,6 +983,8 @@ function Picker:refresh(finder, opts)
     self.finder = finder
     self._multi = utils.if_nil(opts.multi, MultiSelect:new())
   end
+  -- the finder's results may have changed (e.g. `delete_selection`): don't narrow
+  self._matches = nil
 
   -- reset already triggers finder loop
   if opts.reset_prompt then
@@ -1331,10 +1367,16 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
   local count = 0
   local running = { completed = false } -- no table per result
   local ignore_patterns = self.file_ignore_patterns or {}
+  local matches = self._matches or { n = 0 }
+  local list = matches.list
 
   local cb_add = function(score, entry)
     -- may need the prompt for tiebreak
     self.manager:add_entry(self, score, entry, prompt)
+    if list then
+      local n = matches.n + 1
+      matches.n, list[n] = n, entry
+    end
     status_updater(running)
   end
 
@@ -1344,6 +1386,7 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
 
   return function(entry)
     if find_id ~= self._find_id then
+      matches.interrupted = true
       return true
     end
 
@@ -1367,6 +1410,50 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
 
     self.sorter:score(prompt, entry, cb_add, cb_filter)
   end
+end
+
+--- Narrowing: when the prompt extends the previous one, only the previous matches can match, so
+--- score just those (in finder order, so results are identical) instead of the finder's results.
+--- Only for a `prompt_independent` finder and a discarding sorter (`prefilter` opts out of
+--- discarding).
+function Picker:_narrowable()
+  local sorter = self.sorter
+  return self.finder.prompt_independent and sorter.discard and rawget(sorter, "_was_discarded") == nil
+end
+
+--- The previous matches, if the sorter kept its discards (the prompt extends the previous one, and
+--- its `start` didn't reset them) and the previous prompt was processed completely.
+---@param discarded table: `sorter._discard_state.filtered` before `sorter:_start(prompt)`
+---@return table|nil: the previous matches
+function Picker:_narrowed_candidates(discarded)
+  local prev = self._matches
+  if
+    prev
+    and prev.complete
+    and prev.list
+    and prev.finder == self.finder
+    and discarded ~= nil
+    and self.sorter._discard_state.filtered == discarded
+  then
+    return prev
+  end
+end
+
+--- Process the narrowed `candidates` like a static finder would process its results.
+function Picker:_process_candidates(candidates, process_result, process_complete)
+  -- count the skipped entries as processed and filtered, as the finder would have
+  local skipped = candidates.processed - candidates.n
+  self.stats.processed, self.stats.filtered = skipped, skipped
+  local list = candidates.list
+  for i = 1, candidates.n do
+    if process_result(list[i]) then
+      break
+    end
+    if i % 1000 == 0 then
+      await_schedule()
+    end
+  end
+  process_complete()
 end
 
 --- Handles updating the picker after all the entries are scored/processed.
