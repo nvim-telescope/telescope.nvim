@@ -761,10 +761,22 @@ append(
   used for everything that is not a file.
   Hint: If you load a native sorter, you don't need to change this value,
   the native sorter will override it anyway.
-  The default sorter (fzy) takes the picker option `case_mode`, like
-  telescope-fzf-native: "ignore_case" (default), "respect_case", or
-  "smart_case" (respect case if the prompt contains an uppercase letter);
-  only ASCII letters are case-insensitive. Example:
+  The default sorter (fzy) understands fzf's query syntax:
+    `sbtrkt`   fuzzy match           `'wild`    exact match
+    `'wild'`   exact match at word boundaries
+    `^music`   prefix (exact)        `.mp3$`    suffix (exact)
+    `^foo$`    equal (exact)         `!fire`    inverse exact match
+    `!^music`  inverse prefix        `!.mp3$`   inverse suffix
+    `!'fire`   inverse fuzzy match
+  Terms separated by spaces must all match (`\ ` is a literal space); `|`
+  between terms makes them alternatives: `^core go$ | rb$ | py$`.
+  So a prompt starting with `!` excludes lines: `!ls` in
+  |telescope.builtin.command_history()| lists commands without `ls`. Start a
+  term with `'` to match a leading `!` or `^` literally: `'!ls`, `'^foo`.
+  It also takes the picker option `case_mode`, like telescope-fzf-native:
+  "ignore_case" (default), "respect_case", or "smart_case" (respect case for
+  a term that contains an uppercase letter); only ASCII letters are
+  case-insensitive. Example:
     pickers = { symbols = { case_mode = "respect_case" } }
 
   Default: require("telescope.sorters").get_fzy_sorter]]

@@ -313,6 +313,36 @@ function fzy.positions(needle, haystack, case_sensitive)
   return positions
 end
 
+--- Whether `needle` occurs in `haystack` at byte `at`, ignoring case unless `case_sensitive`.
+function fzy.match_at(needle, haystack, at, case_sensitive)
+  local len = #needle
+  if at < 1 or at + len - 1 > #haystack then
+    return false
+  end
+  local map = case_sensitive and SAME or FOLD
+  for k = 1, len do
+    if map[byte(haystack, at + k - 1)] ~= map[byte(needle, k)] then
+      return false
+    end
+  end
+  return true
+end
+
+--- Byte position of the first occurrence of `needle` in `haystack` from byte `init` (default 1),
+--- ignoring case unless `case_sensitive` (pass true for needles without letters: faster), or nil.
+function fzy.find(needle, haystack, case_sensitive, init)
+  init = init or 1
+  if case_sensitive then
+    return (find(haystack, needle, init, true))
+  end
+  local first = FOLD[byte(needle, 1)]
+  for at = init, #haystack - #needle + 1 do
+    if FOLD[byte(haystack, at)] == first and fzy.match_at(needle, haystack, at, false) then
+      return at
+    end
+  end
+end
+
 -- If strings a or b are empty or too long, `fzy.score(a, b) == fzy.get_score_min()`.
 function fzy.get_score_min()
   return SCORE_MIN
