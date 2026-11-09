@@ -42,7 +42,8 @@ function Highlighter:hi_display(row, prefix, display_highlights)
   end
 end
 
-function Highlighter:clear_display()
+--- Clear the entry highlights (of rows `first` to `last` - 1, default: all).
+function Highlighter:clear_display(first, last)
   if
     not self
     or not self.picker
@@ -52,7 +53,7 @@ function Highlighter:clear_display()
     return
   end
 
-  api.nvim_buf_clear_namespace(self.picker.results_bufnr, ns_telescope_entry, 0, -1)
+  api.nvim_buf_clear_namespace(self.picker.results_bufnr, ns_telescope_entry, first or 0, last or -1)
 end
 
 function Highlighter:hi_sorter(row, prompt, display)

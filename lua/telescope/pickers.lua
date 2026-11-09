@@ -29,6 +29,9 @@ local ns_telescope_matching = api.nvim_create_namespace "telescope_matching"
 local ns_telescope_prompt = api.nvim_create_namespace "telescope_prompt"
 local ns_telescope_prompt_prefix = api.nvim_create_namespace "telescope_prompt_prefix"
 
+-- while results come in, draw them at most this often (ms)
+local DRAW_INTERVAL = 50
+
 -- Window options produced by layout strategies and passed to `telescope.pickers.ui`.
 ---@class telescope_popup_options
 ---@field line integer: 1-based screen row of the content (0 or nil: centered)
@@ -571,7 +574,7 @@ function Picker:find()
       -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
       if self.cache_picker == false or self.cache_picker.is_cached ~= true then
         self.sorter:_start(prompt)
-        self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats)
+        self.manager = EntryManager:new(self.max_results, self._results_changed, self.stats)
 
         self:_reset_highlights()
         local process_result = self:get_result_processor(find_id, prompt, debounced_status)
@@ -1226,6 +1229,91 @@ function Picker:entry_adder(index, entry, _, insert)
   end
 end
 
+--- Called by the entry manager when the results from `index` on changed (an insertion shifts all
+--- results after it). They are drawn by `_draw_results`: right away if the last draw is at least
+--- `DRAW_INTERVAL` ago, else after that delay. So results still fill in while a finder streams them,
+--- but each row is drawn once per batch instead of on every insertion; the completor draws the rest.
+---@param index number
+function Picker:_results_changed(index)
+  if not self._dirty_from or index < self._dirty_from then
+    self._dirty_from = index
+  end
+  if not self._last_draw or vim.uv.hrtime() - self._last_draw >= DRAW_INTERVAL * 1e6 then
+    self:_draw_results()
+  elseif not self._draw_scheduled then
+    self._draw_scheduled = true
+    vim.defer_fn(function()
+      self._draw_scheduled = false
+      self:_draw_results()
+    end, DRAW_INTERVAL)
+  end
+end
+
+--- Draw the shown results that changed since the last draw (see `_results_changed`), replacing
+--- their rows in one go.
+function Picker:_draw_results()
+  local from = self._dirty_from
+  self._dirty_from = nil
+  self._last_draw = vim.uv.hrtime()
+  if not from or self.closed or self:is_done() or not api.nvim_buf_is_valid(self.results_bufnr) then
+    return
+  end
+  local last = math.min(self.manager:num_results(), self.max_results)
+  if from > last then
+    return
+  end
+
+  local bufnr, prefix = self.results_bufnr, self.entry_prefix
+  local entries, displays, display_hls = {}, {}, {}
+  for index = from, last do
+    local entry = self.manager:get_entry(index)
+    local display, display_highlights = entry_display.resolve(self, entry)
+    if not display then
+      log.info("Weird entry", entry)
+      display = ""
+    end
+    display = prefix .. display
+    -- this only fails when people leave newlines in their results, so clean it up for them
+    if display:find("\n", 1, true) then
+      display = display:gsub("\n", " | ")
+    end
+    local k = index - from + 1
+    entries[k], displays[k], display_hls[k] = entry, display, display_highlights or false
+  end
+
+  -- rows of the first and last changed result, and the lines in buffer order
+  local first_row, last_row, lines
+  if self.sorting_strategy == "ascending" then
+    first_row, last_row, lines = from - 1, last - 1, displays
+  else
+    first_row, last_row, lines = self.max_results - last, self.max_results - from, {}
+    for k = #displays, 1, -1 do
+      lines[#lines + 1] = displays[k]
+    end
+  end
+  local ok, msg = pcall(api.nvim_buf_set_lines, bufnr, first_row, last_row + 1, false, lines)
+  if not ok then
+    log.debug("Failed to set lines...", msg)
+    return
+  end
+
+  -- replaced lines keep their extmarks: clear the old highlights
+  api.nvim_buf_clear_namespace(bufnr, ns_telescope_matching, first_row, last_row + 1)
+  self.highlighter:clear_display(first_row, last_row + 1)
+  local prompt = self:_get_prompt()
+  for k, entry in ipairs(entries) do
+    local row = self:get_row(from + k - 1)
+    self:_increment "displayed"
+    if display_hls[k] then
+      self.highlighter:hi_display(row, prefix, display_hls[k])
+    end
+    if entry == self._selection_entry or self:is_multi_selected(entry) then
+      self:update_prefix(entry, row)
+    end
+    self:highlight_one_row(bufnr, prompt, displays[k], row)
+  end
+end
+
 --- Reset tracked information for this picker
 function Picker:_reset_track()
   self.stats.processed = 0
@@ -1362,6 +1450,7 @@ function Picker:get_result_completor(results_bufnr, _, prompt, status_updater)
       return
     end
 
+    self:_draw_results()
     self:_do_selection(prompt)
 
     status_updater { completed = true }
@@ -1503,7 +1592,7 @@ function pickers.on_close_prompt(prompt_bufnr)
         if picker.manager then
           picker.manager:truncate(picker.cache_picker.limit_entries)
         else
-          picker.manager = EntryManager:new(picker.max_results, picker.entry_adder, picker.stats)
+          picker.manager = EntryManager:new(picker.max_results, picker._results_changed, picker.stats)
         end
       end
       local curr_prompt = picker:_get_prompt()
