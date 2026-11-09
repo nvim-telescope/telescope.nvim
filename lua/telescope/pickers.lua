@@ -571,7 +571,6 @@ function Picker:find()
         state.set_global_key("prompt_location", nil)
       end
 
-      -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
       if self.cache_picker == false or self.cache_picker.is_cached ~= true then
         self.sorter:_start(prompt)
         self.manager = EntryManager:new(self.max_results, self._results_changed, self.stats)
@@ -1158,77 +1157,6 @@ function Picker:cycle_previewers(next)
   end
 end
 
---- Handler for when entries are added by `self.manager`
----@param index number: the index to add the entry at
----@param entry table: the entry that has been added to the manager
----@param insert boolean: whether the entry has been "inserted" or not
-function Picker:entry_adder(index, entry, _, insert)
-  if not entry then
-    return
-  end
-
-  local row = self:get_row(index)
-
-  -- If it's less than 0, then we don't need to show it at all.
-  if row < 0 then
-    log.debug("ON_ENTRY: Weird row", row)
-    return
-  end
-
-  local display, display_highlights = entry_display.resolve(self, entry)
-  if not display then
-    log.info("Weird entry", entry)
-    return
-  end
-
-  -- This is the two spaces to manage the '> ' stuff.
-  -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
-  -- until then, insert two spaces
-  local prefix = self.entry_prefix
-  display = prefix .. display
-
-  self:_increment "displayed"
-
-  local offset = insert and 0 or 1
-  if not api.nvim_buf_is_valid(self.results_bufnr) then
-    log.debug "ON_ENTRY: Invalid buffer"
-    return
-  end
-
-  -- TODO: Does this every get called?
-  -- local line_count = a.nvim_win_get_height(self.results_win)
-  local line_count = api.nvim_buf_line_count(self.results_bufnr)
-  if row > line_count then
-    return
-  end
-
-  if insert then
-    if self.sorting_strategy == "descending" then
-      api.nvim_buf_set_lines(self.results_bufnr, 0, 1, false, {})
-    end
-  end
-
-  local set_ok, msg = pcall(api.nvim_buf_set_lines, self.results_bufnr, row, row + offset, false, { display })
-  if set_ok then
-    if display_highlights then
-      self.highlighter:hi_display(row, prefix, display_highlights)
-    end
-    self:update_prefix(entry, row)
-    self:highlight_one_row(self.results_bufnr, self:_get_prompt(), display, row)
-  end
-
-  if not set_ok then
-    log.debug("Failed to set lines...", msg)
-  end
-
-  -- This pretty much only fails when people leave newlines in their results.
-  --  So we'll clean it up for them if it fails.
-  if not set_ok and display:find "\n" then
-    display = display:gsub("\n", " | ")
-    api.nvim_buf_set_lines(self.results_bufnr, row, row + 1, false, { display })
-  end
-end
-
 --- Called by the entry manager when the results from `index` on changed (an insertion shifts all
 --- results after it). They are drawn by `_draw_results`: right away if the last draw is at least
 --- `DRAW_INTERVAL` ago, else after that delay. So results still fill in while a finder streams them,
@@ -1701,12 +1629,9 @@ function Picker:_get_next_filtered_prompt()
 end
 
 function Picker:_resume_picker()
-  -- resume previous picker
-  local index = 1
-  for entry in self.manager:iter() do
-    self:entry_adder(index, entry, _, true)
-    index = index + 1
-  end
+  -- resume previous picker: draw its results
+  self._dirty_from = 1
+  self:_draw_results()
   self.cache_picker.is_cached = false
   local on_resume_complete = function()
     if api.nvim_buf_is_valid(self.prompt_bufnr) then
