@@ -966,6 +966,49 @@ internal.buffers = function(opts)
 end
 
 ---@param opts telescope.builtin.colorscheme.opts: options to pass to the picker
+internal.ui_select = function(opts)
+  local items = opts.items or {}
+  local format_item = opts.format_item or tostring
+  local on_choice = opts.on_choice or function() end
+  if #items == 0 then
+    utils.notify("builtin.ui_select", { msg = "No items to select", level = "INFO" })
+    vim.schedule(function()
+      on_choice(nil, nil)
+    end)
+    return
+  end
+
+  local choice -- the selected entry
+  pickers
+    .new(opts, {
+      prompt_title = (opts.prompt or "Select one of"):gsub("\n", " "):gsub(":%s*$", ""),
+      finder = finders.new_table {
+        results = items,
+        entry_maker = function(item)
+          local text = format_item(item)
+          return { value = item, display = text, ordinal = text }
+        end,
+      },
+      sorter = conf.generic_sorter(opts),
+      on_close = function()
+        vim.schedule(function()
+          on_choice(choice and choice.value, choice and choice.index)
+        end)
+      end,
+      attach_mappings = function(prompt_bufnr)
+        actions.select_default:replace(function()
+          choice = action_state.get_selected_entry()
+          if not choice then
+            utils.__warn_no_selection "builtin.ui_select"
+          end
+          actions.close(prompt_bufnr)
+        end)
+        return true
+      end,
+    })
+    :find()
+end
+
 internal.colorscheme = function(opts)
   local before_background = vim.o.background
   local before_color = api.nvim_exec2("colorscheme", { output = true }).output
@@ -1064,19 +1107,16 @@ internal.colorscheme = function(opts)
         end
       end,
     },
-  })
-
-  if opts.enable_preview then
-    -- rewrite picker.close_windows. restore color if needed
-    local close_windows = picker.close_windows
-    picker.close_windows = function(status)
-      close_windows(status)
+    -- restore the previous colorscheme if the picker was closed without selecting one
+    on_close = function()
       if need_restore then
         vim.o.background = before_background
         vim.cmd.colorscheme(before_color)
       end
-    end
+    end,
+  })
 
+  if opts.enable_preview then
     -- rewrite picker.set_selection so that color schemes can be previewed when the current
     -- selection is shifted using the keyboard or if an item is clicked with the mouse
     local set_selection = picker.set_selection
