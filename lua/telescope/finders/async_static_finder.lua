@@ -25,6 +25,8 @@ return function(opts)
   return setmetatable({
     results = results,
     entry_maker = entry_maker,
+    -- results don't depend on the prompt (allows narrowing, see `Picker:_narrowed_candidates`)
+    prompt_independent = true,
     close = function() end,
   }, {
     __call = function(_, _, process_result, process_complete)
