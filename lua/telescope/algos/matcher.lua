@@ -13,7 +13,8 @@
 --   `has_match`, `score` and `positions`) is true.
 -- - Word boundaries: a character after any ASCII character that is not a letter or digit gets the
 --   start-of-word bonus (as suggested by Seth Warn, and similar to fzf), not only after `-`, `_`
---   and space; `/` and `.` keep their own bonuses. So `abc` prefers `ant!bat!cat` to
+--   and space; `/` and `.` get a higher one (fzy gave `.` a lower one: here a file extension
+--   counts as much as a path component, as in fzf). So `abc` prefers `ant!bat!cat` to
 --   `azzzbzzzczz`, and `al` prefers `\alpha` to `\bfAlpha`.
 --
 -- > fzy tries to find the result the user intended. It does this by favouring
@@ -33,21 +34,21 @@ local SCORE_MATCH_CONSECUTIVE = 1.0
 local SCORE_MATCH_SLASH = 0.9
 local SCORE_MATCH_WORD = 0.8
 local SCORE_MATCH_CAPITAL = 0.7
-local SCORE_MATCH_DOT = 0.6
+local SCORE_MATCH_DOT = 0.9
 local SCORE_MAX = math.huge
 local SCORE_MIN = -math.huge
 local MATCH_MAX_LENGTH = 1024
 
 -- bonus for a match, indexed by the previous byte: start of a word after any ASCII character that
--- is not a letter or digit, with own values after `/` (paths are normalized to `/`, see
--- `utils.normalize_sep`) and `.`; the camelCase bonus is handled in `prepare`
+-- is not a letter or digit, higher after `/` (paths are normalized to `/`, see `utils.normalize_sep`)
+-- and `.` (file extensions); the camelCase bonus is handled in `prepare`
 local BONUS = {}
 for b = 0, 255 do
   local alnum = (b >= 48 and b <= 57) or (b >= 65 and b <= 90) or (b >= 97 and b <= 122)
   BONUS[b] = (b < 128 and not alnum) and SCORE_MATCH_WORD or 0
 end
-BONUS[47] = SCORE_MATCH_SLASH -- /
-BONUS[46] = SCORE_MATCH_DOT -- .
+BONUS[47] = SCORE_MATCH_SLASH
+BONUS[46] = SCORE_MATCH_DOT
 
 -- Byte maps for case folding: `FOLD` lowers A-Z, `SAME` is the identity (case sensitive). The mode
 -- only picks the table, so the hot loops have no branch on it (which LuaJIT would compile for
