@@ -50,6 +50,7 @@ end
 ---@field glob_pattern? (string|string[]) argument to be used with `--glob`, e.g. `*.toml`, can use the opposite `!*.toml`
 ---@field type_filter? string argument to be used with `--type`, e.g. "rust", see `rg --type-list`
 ---@field additional_args? (fun(opts: table): string[])|table: additional arguments to be passed on.
+---@field vimgrep_arguments? string[] command arguments used for live grep
 ---@field disable_coordinates? boolean don't show the line & row numbers (default: `false`)
 ---@field file_encoding? string file encoding for the entry & previewer
 
@@ -69,6 +70,7 @@ builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_g
 ---@field use_regex? boolean if true, special characters won't be escaped, allows for using regex (default: `false`)
 ---@field word_match? string can be set to `-w` to enable exact word matches
 ---@field additional_args? (fun(opts: table): string[])|table: additional arguments to be passed on.
+---@field vimgrep_arguments? string[] command arguments used for grep
 ---@field disable_coordinates? boolean don't show the line and row numbers (default: `false`)
 ---@field only_sort_text? boolean only sort the text, not the file, line or row (default: `false`)
 ---@field file_encoding? string file encoding for the entry & previewer
@@ -163,6 +165,7 @@ builtin.current_buffer_tags = require_on_exported_call("telescope.builtin.__file
 ---@field cwd? string the path of the repo
 ---@field use_file_path? boolean if we should use the current buffer git root (default: `false`)
 ---@field use_git_root? boolean if we should use git root as cwd or the cwd (important for submodule) (default: `true`)
+---@field git_worktrees? table[] detached working trees with `gitdir` and `toplevel` keys
 
 ---@inlinedoc
 ---@class telescope.builtin.git_files.opts : telescope.builtin.git_opts
@@ -264,7 +267,7 @@ builtin.git_status = require_on_exported_call("telescope.builtin.__git").status
 ---
 --- Default keymaps:
 ---   - `<cr>`: runs `git apply` for currently selected stash
----@param opts? table: options to pass to the picker
+---@param opts? telescope.builtin.git_stash.opts: options to pass to the picker
 builtin.git_stash = require_on_exported_call("telescope.builtin.__git").stash
 
 --
@@ -638,7 +641,7 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 --
 --
 
----@inlinedoc
+---@nodoc
 ---@class telescope.builtin.diagnostics.opts : telescope.builtin.base_opts
 ---@field bufnr? number Buffer number to get diagnostics from. Use 0 for current buffer or nil for all buffers
 ---@field severity? (string|number) filter diagnostics by severity name (string) or id (number)
@@ -666,9 +669,234 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 builtin.diagnostics = require_on_exported_call("telescope.builtin.__diagnostics").get
 
 ---@nodoc
----@class telescope.builtin.base_opts
----@field bufnr number: buffer number to use for the picker (default: current buffer)
----@field winnr number: window number to use for the picker (default: current window)
+---@class telescope.builtin.base_opts : telescope.picker.common_opts
+---@field bufnr? number buffer number to use for the picker (default: current buffer)
+---@field winnr? number window number to use for the picker (default: current window)
+---@field default_text? string initial prompt input
+---@field sorter? table sorter instance overriding the builtin sorter
+---@field previewer? table|table[]|boolean previewer override; `false` starts without a visible previewer
+---@field entry_maker? function result-to-entry conversion override
+---@field attach_mappings? fun(prompt_bufnr: number, map: function): boolean function adding picker mappings
+--- Direction better results are sorted towards. (default: `"descending"`)
+---@field sorting_strategy? "descending"|"ascending"
+--- Cursor behavior after each sort iteration. (default: `"reset"`)
+---@field selection_strategy? "reset"|"follow"|"row"|"closest"|"none"
+---@field scroll_strategy? "cycle"|"limit" Behavior when scrolling past the result bounds. (default: `"cycle"`)
+---@field layout_strategy? string Layout strategy name. See |telescope.layout|. (default: `"horizontal"`)
+---@field create_layout? function Custom picker layout creator.
+---@field layout_config? telescope.picker.layout_config Default layout strategy configuration.
+--- Layouts cycled by layout actions. (default: `{ "horizontal", "vertical" }`)
+---@field cycle_layout_list? table[]|string[]
+---@field winblend? number|fun(): number Floating-window transparency value.
+---@field wrap_results? boolean Wrap search result text. (default: `false`)
+---@field prompt_prefix? string Prefix shown before the prompt. (default: `"> "`)
+---@field selection_caret? string Prefix shown before the current selection. (default: `"> "`)
+---@field entry_prefix? string Prefix shown before non-selected entries. (default: `"  "`)
+---@field multi_icon? string Icon used for multi-selected entries. (default: `"+"`)
+---@field initial_mode? "insert"|"normal" Initial picker mode. (default: `"insert"`)
+---@field border? boolean Display borders around Telescope windows. (default: `true`)
+---@field borderchars? table Border characters for Telescope windows.
+---@field get_status_text? fun(picker: Picker): string Function producing prompt status virtual text.
+---@field results_title? string|false Results window title; `false` hides it. (default: `"Results"`)
+---@field prompt_title? string|false Prompt window title; `false` hides it. (default: `"Prompt"`)
+---@field cache_picker? false|telescope.picker.cache_opts Picker caching configuration; `false` disables caching.
+---@field preview? false|telescope.setup.preview Previewer configuration; `false` disables previewing.
+---@field tiebreak? fun(current_entry: table, existing_entry: table, prompt: string): boolean Tie-breaking comparator.
+---@field file_ignore_patterns? string[] Lua patterns for files excluded from results.
+---@field get_selection_window? fun(picker: Picker, entry: table): number Window used when opening the selected entry.
+
+---@nodoc
+---@class telescope.setup.pickers.live_grep : telescope.builtin.live_grep.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.grep_string : telescope.builtin.grep_string.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.find_files : telescope.builtin.find_files.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.treesitter : telescope.builtin.treesitter.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.current_buffer_fuzzy_find : telescope.builtin.current_buffer_fuzzy_find.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.tags : telescope.builtin.tags.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.current_buffer_tags : telescope.builtin.current_buffer_tags.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.git_files : telescope.builtin.git_files.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.git_commits : telescope.builtin.git_commits.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.git_bcommits : telescope.builtin.git_bcommits.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.git_bcommits_range : telescope.builtin.git_bcommits_range.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.git_branches : telescope.builtin.git_branches.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.git_status : telescope.builtin.git_status.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.git_stash : telescope.builtin.git_stash.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.builtin : telescope.builtin.builtin.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.resume : telescope.builtin.resume.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.pickers : telescope.builtin.pickers.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.planets : telescope.builtin.planets.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.symbols : telescope.builtin.symbol.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.commands : telescope.builtin.commands.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.quickfix : telescope.builtin.quickfix.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.quickfixhistory : telescope.builtin.quickfixhistory.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.loclist : telescope.builtin.loclist.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.oldfiles : telescope.builtin.oldfiles.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.command_history : telescope.builtin.commands_history.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.search_history : telescope.builtin.search_history.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.vim_options : telescope.builtin.vim_options.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.help_tags : telescope.builtin.help_tags.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.man_pages : telescope.builtin.man_pages.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.reloader : telescope.builtin.reload.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.buffers : telescope.builtin.buffers.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.colorscheme : telescope.builtin.colorscheme.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.marks : telescope.builtin.marks.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.registers : telescope.builtin.registers.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.keymaps : telescope.builtin.keymaps.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.filetypes : telescope.builtin.filetypes.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.highlights : telescope.builtin.highlights.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.autocommands : telescope.builtin.autocommands.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.spell_suggest : telescope.builtin.spell_suggest.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.tagstack : telescope.builtin.tagstack.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.jumplist : telescope.builtin.jumplist.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.lsp_references : telescope.builtin.lsp_references.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.lsp_in_out_calls : telescope.builtin.lsp_in_out_calls.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.list_or_jump : telescope.builtin.list_or_jump.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.lsp_document_symbols : telescope.builtin.lsp_document_symbols.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.lsp_workspace_symbols : telescope.builtin.lsp_workspace_symbols.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.lsp_dynamic_workspace_symbols : telescope.builtin.lsp_dynamic_workspace_symbols.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
+---@nodoc
+---@class telescope.setup.pickers.diagnostics : telescope.builtin.diagnostics.opts
+---@field theme? "dropdown"|"cursor"|"ivy"
+---@field mappings? table
 
 local apply_config = function(mod)
   for k, v in pairs(mod) do
