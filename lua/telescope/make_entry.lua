@@ -459,10 +459,17 @@ function make_entry.gen_from_quickfix(opts)
 
   local make_display = function(entry)
     local display_filename, path_style = utils.transform_path(opts, entry.filename)
-    local display_string = string.format("%s:%d:%d", display_filename, entry.lnum, entry.col)
+    local coordinates = string.format(":%d:%d", entry.lnum, entry.col)
+    local display_string = display_filename .. coordinates
     if hidden then
-      display_string = string.format("%4d:%2d", entry.lnum, entry.col)
+      coordinates = string.format("%4d:%2d", entry.lnum, entry.col)
+      display_string = coordinates
     end
+
+    local display_highlights = path_style or {}
+    local coord_start = hidden and 0 or #display_filename
+    local coord_end = coord_start + #coordinates
+    table.insert(display_highlights, { { coord_start, coord_end }, "TelescopeResultsLineCol" })
 
     if show_line then
       local text = entry.text
@@ -473,7 +480,7 @@ function make_entry.gen_from_quickfix(opts)
       display_string = display_string .. ":" .. text
     end
 
-    return display_string, path_style
+    return display_string, display_highlights
   end
 
   local get_filename = get_filename_fn()
