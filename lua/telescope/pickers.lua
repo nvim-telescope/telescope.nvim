@@ -579,6 +579,16 @@ function Picker:find()
   local status_updater = self:get_status_updater(self.prompt_win, self.prompt_bufnr)
   local debounced_status = debounce.throttle_leading(status_updater, 50)
 
+  -- Keep a selection (and its caret) live while results are still streaming in,
+  -- so <CR> selects the current best result before the finder finishes. See #3257.
+  -- Throttled so we don't redraw the caret and previewer on every incoming entry.
+  local debounced_selection = debounce.throttle_leading(function()
+    if self.closed or self:is_done() then
+      return
+    end
+    self:_do_selection(self:_get_prompt() or "")
+  end, 50)
+
   local tx, rx = channel.mpsc()
   self._on_lines = tx.send
 
@@ -658,7 +668,7 @@ function Picker:find()
         self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats)
 
         self:_reset_highlights()
-        local process_result = self:get_result_processor(find_id, prompt, debounced_status)
+        local process_result = self:get_result_processor(find_id, prompt, debounced_status, debounced_selection)
         local process_complete = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
 
         local ok, msg = pcall(function()
@@ -1397,14 +1407,17 @@ end
 ---@param find_id number
 ---@param prompt string
 ---@param status_updater function
+---@param update_selection function throttled callback that (re)draws the selection while results stream in
 ---@return function
-function Picker:get_result_processor(find_id, prompt, status_updater)
+function Picker:get_result_processor(find_id, prompt, status_updater, update_selection)
   local count = 0
 
   local cb_add = function(score, entry)
     -- may need the prompt for tiebreak
     self.manager:add_entry(self, score, entry, prompt)
     status_updater { completed = false }
+    -- draw/refresh the caret so a selection exists mid-search (#3257)
+    update_selection()
   end
 
   local cb_filter = function(_)
