@@ -580,16 +580,22 @@ local filter_function = function(opts)
   local scoring_function = utils.if_nil(opts.filter_function, substr_matcher)
   local tag = utils.if_nil(opts.tag, "ordinal")
 
+  local d = opts.delimiter
+  -- tags may contain whitespace, e.g. when a plugin prepends icons to the LSP
+  -- symbol kinds, so a fully enclosed tag takes precedence over the lenient
+  -- pattern that allows omitting the closing delimiter
+  local enclosed_filter = "^(" .. d .. "[^" .. d .. "]+" .. d .. ")"
+  local filter = "^(" .. d .. "%S+" .. "[" .. d .. "%s]" .. ")"
+
   return function(_, prompt, entry)
-    local filter = "^(" .. opts.delimiter .. "(%S+)" .. "[" .. opts.delimiter .. "%s]" .. ")"
-    local matched = prompt:match(filter)
+    local matched = prompt:match(enclosed_filter) or prompt:match(filter)
 
     if matched == nil then
       return 0, prompt
     end
     -- clear prompt of tag
     prompt = prompt:sub(#matched + 1, -1)
-    local query = vim.trim(matched:gsub(opts.delimiter, ""))
+    local query = vim.trim(matched:gsub(d, ""))
     return scoring_function(_, query, entry[tag], _), prompt
   end
 end
