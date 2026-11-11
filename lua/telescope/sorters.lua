@@ -248,8 +248,6 @@ local match_ngrams = function(ngrams, line)
   return match_count, consecutive_matches
 end
 
--- TODO: Match on upper case words
--- TODO: Match on last match
 sorters.get_fuzzy_file = function(opts)
   opts = opts or {}
 
@@ -265,8 +263,6 @@ sorters.get_fuzzy_file = function(opts)
       local N = #prompt
 
       if N == 0 or N < ngram_len then
-        -- TODO: If the character is in the line,
-        -- then it should get a point or somethin.
         return 1
       end
 
@@ -288,9 +284,8 @@ sorters.get_fuzzy_file = function(opts)
         end
       end
 
-      -- TODO: Consider case senstivity
       local tail = cached_tails[line_lower]
-      local contains_tail = tail:find(prompt, 1, true)
+      local contains_tail = tail:find(prompt_lower, 1, true)
 
       local match_count, consecutive_matches = match_ngrams(prompt_lower_ngrams, line_lower)
 
@@ -306,9 +301,6 @@ sorters.get_fuzzy_file = function(opts)
         + consecutive_matches
         + N / (contains_string or (2 * #line))
         -- + 30/(c1 or 2*N)
-        -- TODO: It might be possible that this too strongly correlates,
-        --          but it's unlikely for people to type capital letters without actually
-        --          wanting to do something with a capital letter in it.
         + uppers_matching
       ) * tail_modifier
 
@@ -357,12 +349,11 @@ sorters.get_generic_fuzzy_sorter = function(opts)
 
       local match_count, consecutive_matches = match_ngrams(prompt_ngrams, line_lower)
 
-      -- TODO: Copied from ashkan.
+      -- formula by ashkan
       local denominator = (
         (10 * match_count / #prompt_ngrams)
-        -- biases for shorter strings
-        -- TODO(ashkan): this can bias towards repeated finds of the same
-        -- subpattern with overlapping n-grams
+        -- biases for shorter strings (note: this can bias towards repeated finds of the same
+        -- subpattern with overlapping n-grams)
         + 3 * match_count * ngram_len / #line
         + consecutive_matches
         + N / (contains_string or (2 * #line)) -- + 30/(c1 or 2*N)
@@ -390,22 +381,17 @@ sorters.fuzzy_with_index_bias = function(opts)
   opts = opts or {}
   opts.ngram_len = 2
 
-  -- TODO: Probably could use a better sorter here.
   local fuzzy_sorter = sorters.get_generic_fuzzy_sorter(opts)
 
   return Sorter:new {
     scoring_function = function(_, prompt, line, entry, cb_add, cb_filter)
-      local base_score = fuzzy_sorter:scoring_function(prompt, line, cb_add, cb_filter)
+      local base_score = fuzzy_sorter:scoring_function(prompt, line, entry, cb_add, cb_filter)
 
       if base_score == FILTERED then
         return FILTERED
       end
 
-      if not base_score or base_score == 0 then
-        return entry.index
-      else
-        return math.min(math.pow(entry.index, 0.25), 2) * base_score
-      end
+      return math.min(entry.index ^ 0.25, 2) * base_score
     end,
     highlighter = fuzzy_sorter.highlighter,
   }
