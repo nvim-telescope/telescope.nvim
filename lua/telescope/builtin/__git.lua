@@ -377,11 +377,11 @@ git.status = function(opts)
   end
 
   local args = { "status", "-z", "--", "." }
+  if utils.if_nil(opts.expand_dir, true) then
+    table.insert(args, #args - 1, "-uall")
+  end
 
   local gen_new_finder = function()
-    if utils.if_nil(opts.expand_dir, true) then
-      table.insert(args, #args - 1, "-uall")
-    end
     local git_cmd = git_command(args, opts)
     opts.entry_maker = utils.if_nil(opts.entry_maker, make_entry.gen_from_git_status(opts))
     opts.split_char = "\0"
