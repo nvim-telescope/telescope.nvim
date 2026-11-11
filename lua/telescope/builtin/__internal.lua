@@ -692,25 +692,19 @@ internal.help_tags = function(opts)
 
   local tags = {}
   local tags_map = {}
-  local delimiter = string.char(9)
   for _, lang in ipairs(langs) do
     for _, file in ipairs(tag_files[lang] or {}) do
-      local lines = utils.split_lines(utils.read_file(file), { trimempty = true })
-      for _, line in ipairs(lines) do
-        -- TODO: also ignore tagComment starting with ';'
-        if not line:match "^!_TAG_" then
-          local fields = vim.split(line, delimiter, { trimempty = true })
-          if #fields == 3 and not tags_map[fields[1]] then
-            if fields[1] ~= "help-tags" or fields[2] ~= "tags" then
-              table.insert(tags, {
-                name = fields[1],
-                filename = help_files[fields[2]],
-                cmd = fields[3],
-                lang = lang,
-              })
-              tags_map[fields[1]] = true
-            end
-          end
+      for line in utils.read_file(file):gmatch "[^\r\n]+" do
+        -- name, file and search command; skips the `!_TAG_` header lines
+        local name, file_name, cmd = line:match "^([^\t]+)\t([^\t]+)\t([^\t]+)$"
+        if
+          name
+          and not tags_map[name]
+          and name:sub(1, 6) ~= "!_TAG_"
+          and (name ~= "help-tags" or file_name ~= "tags")
+        then
+          tags[#tags + 1] = { name = name, filename = help_files[file_name], cmd = cmd, lang = lang }
+          tags_map[name] = true
         end
       end
     end
