@@ -445,10 +445,10 @@ local fzy_case_modes = { ignore_case = true, respect_case = true, smart_case = t
 -- "smart_case" (per term: respect case if it contains an uppercase letter); only for ASCII letters.
 sorters.get_fzy_sorter = function(opts)
   opts = opts or {}
-  local fzy = opts.fzy_mod or require "telescope.algos.matcher"
+  local matcher = require "telescope.algos.matcher"
   local query = require "telescope.algos.query"
-  local OFFSET = -fzy.get_score_floor()
-  local SCORE_MIN = fzy.get_score_min()
+  local OFFSET = -matcher.get_score_floor()
+  local SCORE_MIN = matcher.get_score_min()
   local case_mode = opts.case_mode or "ignore_case"
   assert(fzy_case_modes[case_mode], "invalid case_mode: " .. tostring(case_mode))
 
@@ -480,14 +480,14 @@ sorters.get_fzy_sorter = function(opts)
       if q.single then
         -- a single fuzzy term: check for a match before running the scoring algorithm
         local term = q[1][1]
-        if not fzy.has_match(term.text, line, term.cs) then
+        if not matcher.has_match(term.text, line, term.cs) then
           return -1
         end
-        score = fzy.score(term.text, line, term.cs)
+        score = matcher.score(term.text, line, term.cs)
       elseif #q == 0 then
         return 1
       else
-        score = query.score(fzy, q, line)
+        score = query.score(q, line)
         if not score then
           return -1
         end
@@ -510,27 +510,22 @@ sorters.get_fzy_sorter = function(opts)
       local q = parse(prompt)
       if q.single then
         local term = q[1][1]
-        return fzy.positions(term.text, display, term.cs)
+        return matcher.positions(term.text, display, term.cs)
       end
-      return query.positions(fzy, q, display)
+      return query.positions(q, display)
     end,
   }
 end
 
--- TODO: Could probably do something nice where we check their conf
---          and choose their default for this.
---          But I think `fzy` is good default for now.
-sorters.highlighter_only = function(opts)
-  opts = opts or {}
-  local fzy = opts.fzy_mod or require "telescope.algos.matcher"
-
+sorters.highlighter_only = function()
+  local matcher = require "telescope.algos.matcher"
   return Sorter:new {
     scoring_function = function()
       return 1
     end,
 
     highlighter = function(_, prompt, display)
-      return fzy.positions(prompt, display)
+      return matcher.positions(prompt, display)
     end,
   }
 end

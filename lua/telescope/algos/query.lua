@@ -16,6 +16,8 @@
 -- counts). The score is the sum of the matcher's scores of the matched terms; inverse terms add no
 -- score and no highlights.
 
+local matcher = require "telescope.algos.matcher"
+
 local byte = string.byte
 
 local M = {}
@@ -75,15 +77,15 @@ local function is_alnum(b)
 end
 
 --- Find `term` in `line`: the byte range of the match (true for fuzzy terms), or nil.
-local function find_term(m, term, line)
+local function find_term(term, line)
   local typ, text = term.type, term.text
   if typ == FUZZY then
-    return m.has_match(text, line, term.cs) or nil
+    return matcher.has_match(text, line, term.cs) or nil
   end
   local cs = term.plain
   local n, len = #text, #line
   if typ == EXACT or typ == BOUNDARY then
-    local at = m.find(text, line, cs)
+    local at = matcher.find(text, line, cs)
     while at do
       local finish = at + n - 1
       if
@@ -92,7 +94,7 @@ local function find_term(m, term, line)
       then
         return at, finish
       end
-      at = m.find(text, line, cs, at + 1)
+      at = matcher.find(text, line, cs, at + 1)
     end
     return nil
   end
@@ -109,7 +111,7 @@ local function find_term(m, term, line)
     end
   end
   local at = typ == SUFFIX and last - n + 1 or first
-  if (typ == EQUAL and last - first + 1 ~= n) or not m.match_at(text, line, at, cs) then
+  if (typ == EQUAL and last - first + 1 ~= n) or not matcher.match_at(text, line, at, cs) then
     return nil
   end
   return at, at + n - 1
@@ -117,10 +119,10 @@ end
 
 -- The first term of `set` that matches `line` (an inverse term matches if it isn't found), with the
 -- byte range of the match.
-local function match_set(m, set, line)
+local function match_set(set, line)
   for k = 1, #set do
     local term = set[k]
-    local at, finish = find_term(m, term, line)
+    local at, finish = find_term(term, line)
     if (not at) == term.inv then
       return term, at, finish
     end
@@ -132,10 +134,9 @@ end
 local matched = {}
 
 --- The score of `line` for `query` (sum over the sets, see above), or nil if it doesn't match.
----@param m table: the matcher
-function M.score(m, query, line)
+function M.score(query, line)
   for i = 1, #query do
-    matched[i] = match_set(m, query[i], line)
+    matched[i] = match_set(query[i], line)
     if not matched[i] then
       return nil
     end
@@ -144,7 +145,7 @@ function M.score(m, query, line)
   for i = 1, #query do
     local term = matched[i]
     if not term.inv then
-      total = total + m.score(term.text, line, term.cs)
+      total = total + matcher.score(term.text, line, term.cs)
     end
   end
   return total
@@ -152,14 +153,13 @@ end
 
 --- Byte positions in `line` to highlight for `query`: those of the matched terms of each set that
 --- matches (sets are independent here: the display can differ from the ordinal that was scored).
----@param m table: the matcher
-function M.positions(m, query, line)
+function M.positions(query, line)
   local seen = {}
   for _, set in ipairs(query) do
-    local term, at, finish = match_set(m, set, line)
+    local term, at, finish = match_set(set, line)
     if term and not term.inv then
       if term.type == FUZZY then
-        for _, p in ipairs(m.positions(term.text, line, term.cs)) do
+        for _, p in ipairs(matcher.positions(term.text, line, term.cs)) do
           seen[p] = true
         end
       else

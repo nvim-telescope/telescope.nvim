@@ -55,15 +55,6 @@ This section should guide you to run your first builtin pickers.
 * [sharkdp/fd](https://github.com/sharkdp/fd) (finder)
 * [devicons](https://github.com/nvim-tree/nvim-web-devicons) (icons)
 
-We also strongly suggest installing a native telescope sorter to significantly improve
-sorting performance:
-* [telescope-fzf-native.nvim](https://github.com/nvim-telescope/telescope-fzf-native.nvim)
-or
-* [telescope-fzy-native.nvim](https://github.com/nvim-telescope/telescope-fzy-native.nvim).
-For more information and a performance benchmark take a look at the
-[Extensions](https://github.com/nvim-telescope/telescope.nvim/wiki/Extensions)
-wiki.
-
 ### Installation
 
 We recommend pinning to the latest release
@@ -71,13 +62,7 @@ We recommend pinning to the latest release
 e.g. using [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
-{
-    'nvim-telescope/telescope.nvim', version = '*',
-    -- optional but recommended
-    dependencies = {
-        { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
-    }
-}
+{ 'nvim-telescope/telescope.nvim', version = '*' }
 ```
 
 ### Checkhealth
@@ -507,8 +492,7 @@ Telescope provides the capabilities to create & register extensions, which
 improves telescope in a variety of ways.
 
 Some extensions provide integration with external tools, outside of the scope of
-`builtins`. Others provide performance enhancements by using compiled C and
-interfacing directly with Lua over LuaJIT's FFI library.
+`builtins`. Others add new pickers or change how results are sorted.
 
 A list of community extensions can be found in the
 [Extensions](https://github.com/nvim-telescope/telescope.nvim/wiki/Extensions)
@@ -521,8 +505,8 @@ To load an extension, use the `load_extension` function as shown in the example
 below:
 
 ```lua
--- This will load fzy_native and have it override the default file sorter
-require('telescope').load_extension('fzy_native')
+-- This will load telescope-frecency and add its picker (`:Telescope frecency`)
+require('telescope').load_extension('frecency')
 ```
 
 You may skip explicitly loading extensions (they will then be lazy-loaded), but
