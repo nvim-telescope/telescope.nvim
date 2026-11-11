@@ -441,7 +441,6 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.edit_register = function(prompt_bufnr)
   local selection = action_state.get_selected_entry()
-  local picker = action_state.get_current_picker(prompt_bufnr)
 
   fn.inputsave()
   local updated_value = fn.input("Edit [" .. selection.value .. "] ❯ ", selection.content)
@@ -449,14 +448,6 @@ actions.edit_register = function(prompt_bufnr)
   if updated_value ~= selection.content then
     fn.setreg(selection.value, updated_value)
     selection.content = updated_value
-  end
-
-  -- update entry in results table
-  -- TODO: find way to redraw finder content
-  for _, v in pairs(picker.finder.results) do
-    if v == selection then
-      v.content = updated_value
-    end
   end
 end
 
@@ -523,17 +514,8 @@ end
 local function ask_to_confirm(prompt, default_value, yes_values)
   yes_values = yes_values or { "y", "yes" }
   default_value = default_value or ""
-  local confirmation = fn.input(prompt, default_value)
-  confirmation = string.lower(confirmation)
-  if string.len(confirmation) == 0 then
-    return false
-  end
-  for _, v in pairs(yes_values) do
-    if v == confirmation then
-      return true
-    end
-  end
-  return false
+  local confirmation = string.lower(fn.input(prompt, default_value))
+  return vim.tbl_contains(yes_values, confirmation)
 end
 
 --- Create and checkout a new git branch if it doesn't already exist
@@ -1274,7 +1256,7 @@ actions.which_key = function(prompt_bufnr, opts)
 
   -- Assigning into 'opts.column_indent' would override a number with a string and
   -- cause issues with subsequent calls, keep a local copy of the string instead
-  local column_indent = table.concat(utils.repeated_table(utils.if_nil(opts.column_indent, 4), " "))
+  local column_indent = string.rep(" ", utils.if_nil(opts.column_indent, 4))
 
   -- close on repeated keypress
   local km_bufs = (function()
@@ -1333,18 +1315,8 @@ actions.which_key = function(prompt_bufnr, opts)
   end
 
   table.sort(mappings, function(x, y)
-    if x.name < y.name then
-      return true
-    elseif x.name == y.name then
-      -- show normal mode as the standard mode first
-      if x.mode > y.mode then
-        return true
-      else
-        return false
-      end
-    else
-      return false
-    end
+    -- show normal mode as the standard mode first
+    return x.name < y.name or (x.name == y.name and x.mode > y.mode)
   end)
 
   local entry_width = #opts.column_padding
