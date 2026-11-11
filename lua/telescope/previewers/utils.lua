@@ -55,47 +55,24 @@ end
 
 --- Attach default highlighter which will choose between regex and ts
 M.highlighter = function(bufnr, ft, opts)
-  opts = utils.if_nil(opts, {})
-  opts.preview = utils.if_nil(opts.preview, {})
-  opts.preview.treesitter = (function()
-    if type(opts.preview) == "table" and opts.preview.treesitter then
-      return opts.preview.treesitter
-    end
-    if type(conf.preview) == "table" and conf.preview.treesitter then
-      return conf.preview.treesitter
-    end
-    if type(conf.preview) == "boolean" then
-      return conf.preview
-    end
-    -- We should never get here
-    return false
-  end)()
-
-  if type(opts.preview.treesitter) == "boolean" then
-    local temp = { enable = opts.preview.treesitter }
-    opts.preview.treesitter = temp
+  local preview = opts and opts.preview
+  local treesitter = type(preview) == "table" and preview.treesitter
+    or type(conf.preview) == "table" and conf.preview.treesitter
+    or type(conf.preview) == "boolean" and conf.preview
+    or false
+  if type(treesitter) == "boolean" then
+    treesitter = { enable = treesitter }
   end
 
-  local ts_highlighting = (function()
-    if type(opts.preview.treesitter.enable) == "table" then
-      if vim.tbl_contains(opts.preview.treesitter.enable, ft) then
-        return true
-      end
-      return false
-    end
-
-    if vim.tbl_contains(utils.if_nil(opts.preview.treesitter.disable, {}), ft) then
-      return false
-    end
-
-    return opts.preview.treesitter.enable == nil or opts.preview.treesitter.enable == true
-  end)()
-
-  local ts_success
-  if ts_highlighting then
-    ts_success = M.ts_highlighter(bufnr, ft)
+  local ts_highlighting
+  if type(treesitter.enable) == "table" then
+    ts_highlighting = vim.tbl_contains(treesitter.enable, ft)
+  else
+    ts_highlighting = not vim.tbl_contains(treesitter.disable or {}, ft)
+      and (treesitter.enable == nil or treesitter.enable == true)
   end
-  if not ts_highlighting or ts_success == false then
+
+  if not ts_highlighting or M.ts_highlighter(bufnr, ft) == false then
     M.regex_highlighter(bufnr, ft)
   end
 end
@@ -123,16 +100,10 @@ M.set_preview_message = function(bufnr, winid, message, fillchar)
   fillchar = utils.if_nil(fillchar, "╱")
   local height = api.nvim_win_get_height(winid)
   local width = api.nvim_win_get_width(winid)
-  api.nvim_buf_set_lines(
-    bufnr,
-    0,
-    -1,
-    false,
-    utils.repeated_table(height, table.concat(utils.repeated_table(width, fillchar), ""))
-  )
+  api.nvim_buf_set_lines(bufnr, 0, -1, false, utils.repeated_table(height, string.rep(fillchar, width)))
   local ns = api.nvim_create_namespace "telescope_preview_message"
   api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
-  local padding = table.concat(utils.repeated_table(#message + 4, " "), "")
+  local padding = string.rep(" ", #message + 4)
   local formatted_message = "  " .. message .. "  "
   -- Populate lines table based on height
   local lines = {}
