@@ -584,7 +584,7 @@ function Picker:find()
         self.sorter:_start(prompt)
         local narrowable = self:_narrowable()
         local candidates = narrowable and self:_narrowed_candidates(discarded)
-        self.manager = EntryManager:new(self.max_results, self._results_changed, self.stats)
+        self.manager = EntryManager:new(self.max_results, self._results_changed)
 
         -- the matches of this prompt, in finder order (see `_narrowed_candidates`), recorded in the
         -- one of two reused arrays that the previous matches don't use (no new array per prompt)
@@ -1364,7 +1364,6 @@ end
 ---@param status_updater function
 ---@return function
 function Picker:get_result_processor(find_id, prompt, status_updater)
-  local count = 0
   local running = { completed = false } -- no table per result
   local ignore_patterns = self.file_ignore_patterns or {}
   local matches = self._matches or { n = 0 }
@@ -1395,8 +1394,6 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
     end
 
     self:_increment "processed"
-
-    count = count + 1
 
     for _, v in ipairs(ignore_patterns) do
       local file = utils.if_nil(entry.filename, type(entry.value) == "string" and entry.value) -- false if none is true
@@ -1609,7 +1606,7 @@ function pickers.on_close_prompt(prompt_bufnr)
         if picker.manager then
           picker.manager:truncate(picker.cache_picker.limit_entries)
         else
-          picker.manager = EntryManager:new(picker.max_results, picker._results_changed, picker.stats)
+          picker.manager = EntryManager:new(picker.max_results, picker._results_changed)
         end
       end
       local curr_prompt = picker:_get_prompt()

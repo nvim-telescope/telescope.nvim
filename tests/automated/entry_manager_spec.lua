@@ -96,9 +96,9 @@ describe("process_result", function()
       ""
     )
 
-    eq("wow", manager:get_ordinal(1))
-    eq("wow", manager:get_ordinal(1))
-    eq("wow", manager:get_ordinal(1))
+    eq("wow", manager:get_entry(1).ordinal)
+    eq("wow", manager:get_entry(1).ordinal)
+    eq("wow", manager:get_entry(1).ordinal)
 
     eq(1, counts_executed)
   end)

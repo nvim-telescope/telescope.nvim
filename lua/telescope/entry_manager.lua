@@ -10,16 +10,10 @@ local log = require "telescope.log"
 local EntryManager = {}
 EntryManager.__index = EntryManager
 
-function EntryManager:new(max_results, set_entry, info)
+function EntryManager:new(max_results, set_entry)
   log.trace "Creating entry_manager..."
 
-  info = info or {}
-  info.looped = 0
-  info.inserted = 0
-  info.find_loop = 0
-
   return setmetatable({
-    info = info,
     max_results = max_results,
     set_entry = set_entry or function() end,
     worst_acceptable_score = math.huge,
@@ -59,14 +53,6 @@ function EntryManager:_get(index)
   return self.back_entries[index], self.back_scores[index]
 end
 
-function EntryManager:get_container(index)
-  local entry, score = self:_get(index)
-  if entry == nil then
-    return {}
-  end
-  return { entry, score }
-end
-
 function EntryManager:get_entry(index)
   return (self:_get(index))
 end
@@ -76,12 +62,7 @@ function EntryManager:get_score(index)
   return score
 end
 
-function EntryManager:get_ordinal(index)
-  return self:get_entry(index).ordinal
-end
-
 function EntryManager:find_entry(entry)
-  local info = self.info
   local found
   local ntop, nfront, nback = self.ntop, self.nfront, self.nback
   local top_entries, front_entries, back_entries = self.top_entries, self.front_entries, self.back_entries
@@ -107,7 +88,6 @@ function EntryManager:find_entry(entry)
       end
     end
   end
-  info.find_loop = info.find_loop + (found or self:num_results())
   return found
 end
 
@@ -186,10 +166,8 @@ function EntryManager:add_entry(picker, score, entry, prompt)
   end
 
   -- first index with a score >= `score` (`first_equal`) and > `score` (`first_worse`)
-  local info = self.info
   local lo, hi = 1, ntop + 1
   while lo < hi do
-    info.looped = info.looped + 1
     local mid = math.floor((lo + hi) / 2)
     if top_scores[mid] >= score then
       hi = mid
@@ -200,7 +178,6 @@ function EntryManager:add_entry(picker, score, entry, prompt)
   local first_equal = lo
   hi = ntop + 1
   while lo < hi do
-    info.looped = info.looped + 1
     local mid = math.floor((lo + hi) / 2)
     if top_scores[mid] > score then
       hi = mid
@@ -226,7 +203,6 @@ function EntryManager:add_entry(picker, score, entry, prompt)
   local max_res = self.max_results
   if index > max_res then
     -- don't add results that are too bad
-    info.maxed = (info.maxed or 0) + 1
     self:_append(entry, score)
     self.worst_acceptable_score = math.min(self.worst_acceptable_score, score)
     return
