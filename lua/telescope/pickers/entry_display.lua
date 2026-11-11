@@ -153,7 +153,6 @@ end
 entry_display.resolve = function(self, entry)
   local display, display_highlights
   if type(entry.display) == "function" then
-    self:_increment "display_fn"
     display, display_highlights = entry:display(self)
 
     if type(display) == "string" then
