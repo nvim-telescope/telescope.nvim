@@ -534,26 +534,20 @@ internal.oldfiles = function(opts)
 end
 
 ---@param opts telescope.builtin.commands_history.opts: options to pass to the picker
-internal.command_history = function(opts)
-  local history_string = fn.execute "history cmd"
-  local history_list = utils.split_lines(history_string)
-
-  local results = {}
-  local filter_fn = opts.filter_fn
-
-  for i = #history_list, 3, -1 do
-    local item = history_list[i]
-    local _, finish = string.find(item, "%d+ +")
-    local cmd = string.sub(item, finish + 1)
-
-    if filter_fn then
-      if filter_fn(cmd) then
-        table.insert(results, cmd)
-      end
-    else
-      table.insert(results, cmd)
+-- The entries of history `name` ("cmd", "search"), newest first (`:history` would truncate long ones).
+local function history_entries(name, filter_fn)
+  local entries = {}
+  for i = fn.histnr(name), 1, -1 do
+    local entry = fn.histget(name, i)
+    if entry ~= "" and (not filter_fn or filter_fn(entry)) then
+      entries[#entries + 1] = entry
     end
   end
+  return entries
+end
+
+internal.command_history = function(opts)
+  local results = history_entries("cmd", opts.filter_fn)
 
   pickers
     .new(opts, {
@@ -576,15 +570,7 @@ end
 
 ---@param opts telescope.builtin.search_history.opts: options to pass to the picker
 internal.search_history = function(opts)
-  local search_string = fn.execute "history search"
-  local search_list = utils.split_lines(search_string)
-
-  local results = {}
-  for i = #search_list, 3, -1 do
-    local item = search_list[i]
-    local _, finish = string.find(item, "%d+ +")
-    table.insert(results, string.sub(item, finish + 1))
-  end
+  local results = history_entries "search"
 
   pickers
     .new(opts, {
