@@ -10,16 +10,10 @@ local log = require "telescope.log"
 local EntryManager = {}
 EntryManager.__index = EntryManager
 
-function EntryManager:new(max_results, set_entry, info)
+function EntryManager:new(max_results, set_entry)
   log.trace "Creating entry_manager..."
 
-  info = info or {}
-  info.looped = 0
-  info.inserted = 0
-  info.find_loop = 0
-
   return setmetatable({
-    info = info,
     max_results = max_results,
     set_entry = set_entry or function() end,
     worst_acceptable_score = math.huge,
@@ -34,8 +28,6 @@ function EntryManager:new(max_results, set_entry, info)
     back_entries = {},
     back_scores = {},
     nback = 0,
-    -- position of the entry whose score updates `worst_acceptable_score` (see `_insert`)
-    tracked = nil,
   }, self)
 end
 
@@ -59,14 +51,6 @@ function EntryManager:_get(index)
   return self.back_entries[index], self.back_scores[index]
 end
 
-function EntryManager:get_container(index)
-  local entry, score = self:_get(index)
-  if entry == nil then
-    return {}
-  end
-  return { entry, score }
-end
-
 function EntryManager:get_entry(index)
   return (self:_get(index))
 end
@@ -76,12 +60,7 @@ function EntryManager:get_score(index)
   return score
 end
 
-function EntryManager:get_ordinal(index)
-  return self:get_entry(index).ordinal
-end
-
 function EntryManager:find_entry(entry)
-  local info = self.info
   local found
   local ntop, nfront, nback = self.ntop, self.nfront, self.nback
   local top_entries, front_entries, back_entries = self.top_entries, self.front_entries, self.back_entries
@@ -107,7 +86,6 @@ function EntryManager:find_entry(entry)
       end
     end
   end
-  info.find_loop = info.find_loop + (found or self:num_results())
   return found
 end
 
@@ -117,22 +95,14 @@ function EntryManager:_append(entry, score)
   self.nback = n
   self.back_entries[n] = entry
   self.back_scores[n] = score
-  if self.ntop + self.nfront + n == self.max_results then
-    self.tracked = self.max_results
-  end
 end
 
---- Insert into the top at `index` and draw it. The last entry of a full top moves to the rest.
----
---- `worst_acceptable_score` follows the entry at position `tracked`, which mirrors the linked list
---- this replaced, including its quirk: inserting at exactly `max_results` doesn't move the tracked
---- position to the new entry. Keeping this makes the shown results identical to before (it
---- decides which entries tying the worst shown score are skipped).
+--- Insert into the top at `index` and draw it. The last entry of a full top moves to the rest. Once
+--- the top is full, its last score is the worst acceptable one.
 function EntryManager:_insert(picker, index, entry, score)
   local max_res = self.max_results
   local top_entries, top_scores = self.top_entries, self.top_scores
   local ntop = self.ntop
-  local at_end = index == self:num_results() + 1 -- the linked list's `place_after`, else `place_before`
   if ntop == max_res then
     local f = self.nfront + 1
     self.nfront = f
@@ -145,22 +115,10 @@ function EntryManager:_insert(picker, index, entry, score)
   end
   top_entries[index], top_scores[index] = entry, score
   self.ntop = ntop + 1
-
-  local size = self:num_results()
-  if at_end then
-    if index == max_res then
-      self.tracked = max_res
-    end
-  elseif index == max_res - 1 or (index < max_res and size == max_res) then
-    self.tracked = max_res
-  elseif index >= max_res and self.tracked and index <= self.tracked then
-    self.tracked = self.tracked + 1
+  if ntop + 1 == max_res then
+    self.worst_acceptable_score = top_scores[max_res]
   end
-
   self.set_entry(picker, index, entry, score, true)
-  if self.tracked then
-    self.worst_acceptable_score = math.min(self.worst_acceptable_score, self:get_score(self.tracked))
-  end
 end
 
 function EntryManager:add_entry(picker, score, entry, prompt)
@@ -179,17 +137,15 @@ function EntryManager:add_entry(picker, score, entry, prompt)
     self.top_entries[1], top_scores[1] = entry, score
     self.ntop = 1
     if self.max_results == 1 then
-      self.tracked = 1
+      self.worst_acceptable_score = score
     end
     self.set_entry(picker, 1, entry, score)
     return
   end
 
   -- first index with a score >= `score` (`first_equal`) and > `score` (`first_worse`)
-  local info = self.info
   local lo, hi = 1, ntop + 1
   while lo < hi do
-    info.looped = info.looped + 1
     local mid = math.floor((lo + hi) / 2)
     if top_scores[mid] >= score then
       hi = mid
@@ -200,7 +156,6 @@ function EntryManager:add_entry(picker, score, entry, prompt)
   local first_equal = lo
   hi = ntop + 1
   while lo < hi do
-    info.looped = info.looped + 1
     local mid = math.floor((lo + hi) / 2)
     if top_scores[mid] > score then
       hi = mid
@@ -226,7 +181,6 @@ function EntryManager:add_entry(picker, score, entry, prompt)
   local max_res = self.max_results
   if index > max_res then
     -- don't add results that are too bad
-    info.maxed = (info.maxed or 0) + 1
     self:_append(entry, score)
     self.worst_acceptable_score = math.min(self.worst_acceptable_score, score)
     return

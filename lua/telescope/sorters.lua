@@ -81,11 +81,9 @@ function Sorter:_destroy()
   end
 end
 
--- TODO: We could make this a bit smarter and cache results "as we go" and where they got filtered.
---          Then when we hit backspace, we don't have to re-caculate everything.
---          Prime did a lot of the hard work already, but I don't want to copy as much memory around
---              as he did in his example.
---              Example can be found in ./scratch/prime_prompt_cache.lua
+-- Discards (entries the previous prompt filtered out) are kept while the prompt is extended, and
+-- reset otherwise. The picker then also scores only the previous matches (`Picker:_narrowable`);
+-- after deleting characters, everything is scored again.
 function Sorter:_start(prompt)
   self._status = "start"
   if self.start then
@@ -117,8 +115,10 @@ function Sorter:_finish(prompt)
   end
 end
 
--- TODO: Consider doing something that makes it so we can skip the filter checks
---          if we're not discarding. Also, that means we don't have to check otherwise as well :)
+--- Score `entry` for `prompt` and pass the result to `cb_add(score, entry)`, or to `cb_filter(entry)`
+--- if it is filtered out. Without callbacks, return the score (`FILTERED`, i.e. -1, if filtered out).
+--- Discards (see `_start`) are only used and recorded when called with `cb_filter`, as the picker
+--- does; a call without it scores the entry on its own.
 function Sorter:score(prompt, entry, cb_add, cb_filter)
   if not entry or not entry.ordinal then
     return
@@ -129,7 +129,8 @@ function Sorter:score(prompt, entry, cb_add, cb_filter)
   end
 
   local ordinal = entry.ordinal
-  if self:_was_discarded(prompt, entry) then
+  local discard = self.discard and cb_filter ~= nil
+  if discard and self:_was_discarded(prompt, entry) then
     return cb_filter(entry)
   end
 
@@ -142,12 +143,20 @@ function Sorter:score(prompt, entry, cb_add, cb_filter)
   end
 
   if filter_score == FILTERED then
-    return cb_filter(entry)
+    if cb_filter then
+      return cb_filter(entry)
+    end
+    return FILTERED
   end
 
   local score = self:scoring_function(prompt or "", ordinal, entry, cb_add, cb_filter)
   if score == FILTERED then
-    self:_mark_discarded(prompt, entry)
+    if not cb_filter then
+      return FILTERED
+    end
+    if discard then
+      self:_mark_discarded(prompt, entry)
+    end
     return cb_filter(entry)
   end
 
@@ -208,33 +217,43 @@ local make_cached_uppers = function()
   })
 end
 
--- TODO: Match on upper case words
--- TODO: Match on last match
+-- the overlapping n-grams of a string
+local make_cached_ngrams = function(n)
+  return setmetatable({}, {
+    __index = function(t, k)
+      local ngrams = {}
+      for i = 1, #k - n + 1 do
+        ngrams[i] = k:sub(i, i + n - 1)
+      end
+
+      rawset(t, k, ngrams)
+      return ngrams
+    end,
+  })
+end
+
+-- how many of `ngrams` occur in `line`, and how many of those occur after the previous match
+local match_ngrams = function(ngrams, line)
+  local match_count, consecutive_matches, previous_match_index = 0, 0, 0
+  for i = 1, #ngrams do
+    local match_start = line:find(ngrams[i], 1, true)
+    if match_start then
+      match_count = match_count + 1
+      if match_start > previous_match_index then
+        consecutive_matches = consecutive_matches + 1
+      end
+      previous_match_index = match_start
+    end
+  end
+  return match_count, consecutive_matches
+end
+
 sorters.get_fuzzy_file = function(opts)
   opts = opts or {}
 
   local ngram_len = opts.ngram_len or 2
 
-  local cached_ngrams = {}
-
-  local function overlapping_ngrams(s, n)
-    if cached_ngrams[s] and cached_ngrams[s][n] then
-      return cached_ngrams[s][n]
-    end
-
-    local R = {}
-    for i = 1, s:len() - n + 1 do
-      R[#R + 1] = s:sub(i, i + n - 1)
-    end
-
-    if not cached_ngrams[s] then
-      cached_ngrams[s] = {}
-    end
-
-    cached_ngrams[s][n] = R
-
-    return R
-  end
+  local cached_ngrams = make_cached_ngrams(ngram_len)
 
   local cached_tails = make_cached_tail()
   local cached_uppers = make_cached_uppers()
@@ -244,15 +263,13 @@ sorters.get_fuzzy_file = function(opts)
       local N = #prompt
 
       if N == 0 or N < ngram_len then
-        -- TODO: If the character is in the line,
-        -- then it should get a point or somethin.
         return 1
       end
 
       local prompt_lower = prompt:lower()
       local line_lower = line:lower()
 
-      local prompt_lower_ngrams = overlapping_ngrams(prompt_lower, ngram_len)
+      local prompt_lower_ngrams = cached_ngrams[prompt_lower]
 
       -- Contains the original string
       local contains_string = line_lower:find(prompt_lower, 1, true)
@@ -267,25 +284,10 @@ sorters.get_fuzzy_file = function(opts)
         end
       end
 
-      -- TODO: Consider case senstivity
       local tail = cached_tails[line_lower]
-      local contains_tail = tail:find(prompt, 1, true)
+      local contains_tail = tail:find(prompt_lower, 1, true)
 
-      local consecutive_matches = 0
-      local previous_match_index = 0
-      local match_count = 0
-
-      for i = 1, #prompt_lower_ngrams do
-        local match_start = line_lower:find(prompt_lower_ngrams[i], 1, true)
-        if match_start then
-          match_count = match_count + 1
-          if match_start > previous_match_index then
-            consecutive_matches = consecutive_matches + 1
-          end
-
-          previous_match_index = match_start
-        end
-      end
+      local match_count, consecutive_matches = match_ngrams(prompt_lower_ngrams, line_lower)
 
       local tail_modifier = 1
       if contains_tail then
@@ -299,9 +301,6 @@ sorters.get_fuzzy_file = function(opts)
         + consecutive_matches
         + N / (contains_string or (2 * #line))
         -- + 30/(c1 or 2*N)
-        -- TODO: It might be possible that this too strongly correlates,
-        --          but it's unlikely for people to type capital letters without actually
-        --          wanting to do something with a capital letter in it.
         + uppers_matching
       ) * tail_modifier
 
@@ -327,25 +326,7 @@ sorters.get_generic_fuzzy_sorter = function(opts)
 
   local ngram_len = opts.ngram_len or 2
 
-  local cached_ngrams = {}
-  local function overlapping_ngrams(s, n)
-    if cached_ngrams[s] and cached_ngrams[s][n] then
-      return cached_ngrams[s][n]
-    end
-
-    local R = {}
-    for i = 1, s:len() - n + 1 do
-      R[#R + 1] = s:sub(i, i + n - 1)
-    end
-
-    if not cached_ngrams[s] then
-      cached_ngrams[s] = {}
-    end
-
-    cached_ngrams[s][n] = R
-
-    return R
-  end
+  local cached_ngrams = make_cached_ngrams(ngram_len)
 
   return Sorter:new {
     -- self
@@ -353,41 +334,26 @@ sorters.get_generic_fuzzy_sorter = function(opts)
     -- line (entry.ordinal)
     -- entry (the whole entry)
     scoring_function = function(_, prompt, line, _)
-      if prompt == 0 or #prompt < ngram_len then
+      if #prompt < ngram_len then
         return 1
       end
 
       local prompt_lower = prompt:lower()
       local line_lower = line:lower()
 
-      local prompt_ngrams = overlapping_ngrams(prompt_lower, ngram_len)
+      local prompt_ngrams = cached_ngrams[prompt_lower]
 
       local N = #prompt
 
       local contains_string = line_lower:find(prompt_lower, 1, true)
 
-      local consecutive_matches = 0
-      local previous_match_index = 0
-      local match_count = 0
+      local match_count, consecutive_matches = match_ngrams(prompt_ngrams, line_lower)
 
-      for i = 1, #prompt_ngrams do
-        local match_start = line_lower:find(prompt_ngrams[i], 1, true)
-        if match_start then
-          match_count = match_count + 1
-          if match_start > previous_match_index then
-            consecutive_matches = consecutive_matches + 1
-          end
-
-          previous_match_index = match_start
-        end
-      end
-
-      -- TODO: Copied from ashkan.
+      -- formula by ashkan
       local denominator = (
         (10 * match_count / #prompt_ngrams)
-        -- biases for shorter strings
-        -- TODO(ashkan): this can bias towards repeated finds of the same
-        -- subpattern with overlapping_ngrams
+        -- biases for shorter strings (note: this can bias towards repeated finds of the same
+        -- subpattern with overlapping n-grams)
         + 3 * match_count * ngram_len / #line
         + consecutive_matches
         + N / (contains_string or (2 * #line)) -- + 30/(c1 or 2*N)
@@ -415,83 +381,112 @@ sorters.fuzzy_with_index_bias = function(opts)
   opts = opts or {}
   opts.ngram_len = 2
 
-  -- TODO: Probably could use a better sorter here.
   local fuzzy_sorter = sorters.get_generic_fuzzy_sorter(opts)
 
   return Sorter:new {
     scoring_function = function(_, prompt, line, entry, cb_add, cb_filter)
-      local base_score = fuzzy_sorter:scoring_function(prompt, line, cb_add, cb_filter)
+      local base_score = fuzzy_sorter:scoring_function(prompt, line, entry, cb_add, cb_filter)
 
       if base_score == FILTERED then
         return FILTERED
       end
 
-      if not base_score or base_score == 0 then
-        return entry.index
-      else
-        return math.min(math.pow(entry.index, 0.25), 2) * base_score
-      end
+      return math.min(entry.index ^ 0.25, 2) * base_score
     end,
     highlighter = fuzzy_sorter.highlighter,
   }
 end
 
--- Sorter using the fzy algorithm
+local fzy_case_modes = { ignore_case = true, respect_case = true, smart_case = true }
+
+-- Sorter using the fzy algorithm (`telescope.algos.matcher`) with fzf's query syntax
+-- (`telescope.algos.query`): space-separated terms that must all match, `'exact`, `^prefix`,
+-- `suffix$`, `!inverse`, `a | b` alternatives.
+-- `opts.case_mode` (as for telescope-fzf-native): "ignore_case" (default), "respect_case", or
+-- "smart_case" (per term: respect case if it contains an uppercase letter); only for ASCII letters.
 sorters.get_fzy_sorter = function(opts)
   opts = opts or {}
-  local fzy = opts.fzy_mod or require "telescope.algos.fzy"
-  local OFFSET = -fzy.get_score_floor()
+  local matcher = require "telescope.algos.matcher"
+  local query = require "telescope.algos.query"
+  local OFFSET = -matcher.get_score_floor()
+  local SCORE_MIN = matcher.get_score_min()
+  local case_mode = opts.case_mode or "ignore_case"
+  assert(fzy_case_modes[case_mode], "invalid case_mode: " .. tostring(case_mode))
+
+  local last_prompt, last_query
+  local function parse(prompt)
+    if prompt ~= last_prompt then
+      last_prompt, last_query = prompt, query.parse(prompt, case_mode)
+    end
+    return last_query
+  end
 
   return sorters.Sorter:new {
     discard = true,
 
+    -- Discarding (and narrowing to the previous matches) needs a query that can only match fewer
+    -- lines than the previous one; for others (e.g. a longer inverse term, a new alternative),
+    -- forget the discards.
+    start = function(self, prompt)
+      local q = parse(prompt)
+      if self.state.query and not query.restricts(q, self.state.query) then
+        self._discard_state.filtered = {}
+      end
+      self.state.query = q
+    end,
+
     scoring_function = function(_, prompt, line)
-      -- Check for actual matches before running the scoring alogrithm.
-      if not fzy.has_match(prompt, line) then
-        return -1
+      local q = parse(prompt)
+      local score
+      if q.single then
+        -- a single fuzzy term: check for a match before running the scoring algorithm
+        local term = q[1][1]
+        if not matcher.has_match(term.text, line, term.cs) then
+          return -1
+        end
+        score = matcher.score(term.text, line, term.cs)
+      elseif #q == 0 then
+        return 1
+      else
+        score = query.score(q, line)
+        if not score then
+          return -1
+        end
       end
 
-      local fzy_score = fzy.score(prompt, line)
-
-      -- The fzy score is -inf for empty queries and overlong strings.  Since
-      -- this function converts all scores into the range (0, 1), we can
-      -- convert these to 1 as a suitable "worst score" value.
-      if fzy_score == fzy.get_score_min() then
+      -- The score is -inf for empty queries and overlong strings. Since this function converts
+      -- all scores into the range (0, 1), convert these to 1 as a suitable "worst score" value.
+      if score == SCORE_MIN then
         return 1
       end
 
-      -- Poor non-empty matches can also have negative values. Offset the score
-      -- so that all values are positive, then invert to match the
-      -- telescope.Sorter "smaller is better" convention. Note that for exact
-      -- matches, fzy returns +inf, which when inverted becomes 0.
-      return 1 / (fzy_score + OFFSET)
+      -- Poor non-empty matches can also have negative values. Offset the score (per set of terms,
+      -- whose scores add up) so that all values are positive, then invert to match the
+      -- telescope.Sorter "smaller is better" convention. Note that for exact matches, the score is
+      -- +inf, which when inverted becomes 0.
+      return 1 / (score + OFFSET * #q)
     end,
 
-    -- The fzy.positions function, which returns an array of string indices, is
-    -- compatible with telescope's conventions. It's moderately wasteful to
-    -- call call fzy.score(x,y) followed by fzy.positions(x,y): both call the
-    -- fzy.compute function, which does all the work. But, this doesn't affect
-    -- perceived performance.
     highlighter = function(_, prompt, display)
-      return fzy.positions(prompt, display)
+      local q = parse(prompt)
+      if q.single then
+        local term = q[1][1]
+        return matcher.positions(term.text, display, term.cs)
+      end
+      return query.positions(q, display)
     end,
   }
 end
 
--- TODO: Could probably do something nice where we check their conf
---          and choose their default for this.
---          But I think `fzy` is good default for now.
-sorters.highlighter_only = function(opts)
-  opts = opts or {}
-  local fzy = opts.fzy_mod or require "telescope.algos.fzy"
-
+sorters.highlighter_only = function()
+  local matcher = require "telescope.algos.matcher"
   return Sorter:new {
     scoring_function = function()
       return 1
     end,
 
     highlighter = function(_, prompt, display)
-      return fzy.positions(prompt, display)
+      return matcher.positions(prompt, display)
     end,
   }
 end
@@ -578,12 +573,17 @@ local substr_matcher = function(_, prompt, line, _)
   return matched == total_search_terms and 0 or FILTERED
 end
 
+-- the tag at the start of a prompt (e.g. `:function: `)
+local function tag_pattern(delimiter)
+  return "^(" .. delimiter .. "(%S+)" .. "[" .. delimiter .. "%s]" .. ")"
+end
+
 local filter_function = function(opts)
   local scoring_function = utils.if_nil(opts.filter_function, substr_matcher)
   local tag = utils.if_nil(opts.tag, "ordinal")
+  local filter = tag_pattern(opts.delimiter)
 
   return function(_, prompt, entry)
-    local filter = "^(" .. opts.delimiter .. "(%S+)" .. "[" .. opts.delimiter .. "%s]" .. ")"
     local matched = prompt:match(filter)
 
     if matched == nil then
@@ -619,6 +619,15 @@ sorters.prefilter = function(opts)
   sorter.filter_function = filter_function(opts)
   sorter._was_discarded = function()
     return false
+  end
+  -- highlight for the prompt without the tag, as it is scored
+  local highlighter = sorter.highlighter
+  if highlighter then
+    local filter = tag_pattern(opts.delimiter)
+    sorter.highlighter = function(self, prompt, display)
+      local matched = prompt:match(filter)
+      return highlighter(self, matched and prompt:sub(#matched + 1) or prompt, display)
+    end
   end
   return sorter
 end

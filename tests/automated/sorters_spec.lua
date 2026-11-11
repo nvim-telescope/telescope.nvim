@@ -86,3 +86,19 @@ describe("get_substr_matcher", function()
     end
   end)
 end)
+
+describe("prefilter", function()
+  it("highlights the prompt without the tag", function()
+    local sorter = sorters.prefilter { sorter = sorters.get_fzy_sorter(), tag = "symbol_type" }
+    assert.eq({ 14, 15, 16 }, sorter:highlighter(":function: par", "a:fun ction: parse"))
+  end)
+end)
+
+describe("Sorter:score", function()
+  it("scores an entry on its own without callbacks", function()
+    local sorter = sorters.get_fzy_sorter()
+    local entry = { ordinal = "telescope/init.lua" }
+    assert.eq(-1, sorter:score("xyz", entry))
+    assert.is_true(sorter:score("init", entry) > 0)
+  end)
+end)
