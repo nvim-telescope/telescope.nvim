@@ -130,7 +130,8 @@ M.set_preview_message = function(bufnr, winid, message, fillchar)
     false,
     utils.repeated_table(height, table.concat(utils.repeated_table(width, fillchar), ""))
   )
-  local anon_ns = api.nvim_create_namespace ""
+  local ns = api.nvim_create_namespace "telescope_preview_message"
+  api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
   local padding = table.concat(utils.repeated_table(#message + 4, " "), "")
   local formatted_message = "  " .. message .. "  "
   -- Populate lines table based on height
@@ -146,13 +147,13 @@ M.set_preview_message = function(bufnr, winid, message, fillchar)
       end
     end
   end
-  api.nvim_buf_set_extmark(bufnr, anon_ns, 0, 0, { end_line = height, hl_group = "TelescopePreviewMessageFillchar" })
+  api.nvim_buf_set_extmark(bufnr, ns, 0, 0, { end_line = height, hl_group = "TelescopePreviewMessageFillchar" })
   local col = math.floor((width - vim.fn.strdisplaywidth(formatted_message)) / 2)
   for i, line in ipairs(lines) do
     local line_pos = math.floor(height / 2) - 2 + i
     api.nvim_buf_set_extmark(
       bufnr,
-      anon_ns,
+      ns,
       math.max(line_pos, 0),
       0,
       { virt_text = { { line, "TelescopePreviewMessage" } }, virt_text_pos = "overlay", virt_text_win_col = col }
