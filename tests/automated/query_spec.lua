@@ -1,9 +1,8 @@
 local query = require "telescope.algos.query"
-local matcher = require "telescope.algos.matcher"
 local eq = assert.eq
 
 local function matches(prompt, line, case_mode)
-  return query.score(matcher, query.parse(prompt, case_mode), line) ~= nil
+  return query.score(query.parse(prompt, case_mode), line) ~= nil
 end
 
 describe("query syntax", function()
