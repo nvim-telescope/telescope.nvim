@@ -140,8 +140,6 @@ end
 
 local pickers = {}
 
--- TODO: Add overscroll option for results buffer
-
 ---@class Picker
 --- Picker is the main UI that shows up to interact w/ your results.
 -- Takes a filter & a previewer
@@ -163,10 +161,6 @@ function Picker:new(opts)
   -- We need to clear at the beginning not on close because after close we can still have select:post
   -- etc ...
   require("telescope.actions.mt").clear_all()
-  -- TODO(conni2461): This seems like the better solution but it won't clear actions that were never mapped
-  -- for _, v in ipairs(keymap_store[prompt_bufnr]) do
-  --   pcall(v.clear)
-  -- end
 
   local layout_strategy = utils.if_nil(opts.layout_strategy, config.values.layout_strategy)
   local winblend =
@@ -280,7 +274,6 @@ function Picker:new(opts)
     obj.hidden_previewer = nil
   end
 
-  -- TODO: It's annoying that this is create and everything else is "new"
   obj.scroller = p_scroller.create(obj.scroll_strategy, obj.sorting_strategy)
 
   obj.highlighter = p_highlighter.new(obj)
@@ -426,7 +419,8 @@ function Picker:can_select_row(row)
   end
 end
 
---TODO: document what `find_id` is for
+-- Every prompt change starts a new find; the result processor of an older find sees that its
+-- `find_id` is stale and stops.
 function Picker:_next_find_id()
   local find_id = self._find_id + 1
   self._find_id = find_id
@@ -495,10 +489,7 @@ function Picker:find()
   fn.prompt_setprompt(self.prompt_bufnr, prompt_prefix)
   self:_reset_prefix_color()
 
-  -- TODO: This could be configurable in the future, but I don't know why you would
-  -- want to scroll through more than 10,000 items.
-  --
-  -- This just lets us stop doing stuff after tons of  things.
+  -- at most this many results are shown (undocumented option `temp__scrolling_limit`, default 250)
   self.max_results = self.__scrolling_limit
 
   api.nvim_buf_set_lines(self.results_bufnr, 0, self.max_results, false, utils.repeated_table(self.max_results, ""))
@@ -626,7 +617,6 @@ function Picker:find()
           async.util.sleep(self.debounce - diff_time)
         end
       else
-        -- TODO(scroll): This can only happen once, I don't like where it is.
         self:_resume_picker()
       end
     end
@@ -649,7 +639,8 @@ function Picker:find()
   })
 
   api.nvim_create_augroup("PickerInsert", {})
-  -- TODO: Use WinLeave as well?
+  -- also fires when the prompt window is left or closed (the prompt buffer is shown in no other
+  -- window), so no WinLeave needed
   api.nvim_create_autocmd("BufLeave", {
     buffer = self.prompt_bufnr,
     group = "PickerInsert",
@@ -742,7 +733,6 @@ function Picker:full_layout_update()
   update_scroll(self.results_win, oldinfo, oldcursor, self.sorting_strategy, buf_maxline)
 end
 
--- TODO: update multi-select with the correct tag name when available
 --- A simple interface to remove an entry from the results window without
 --- closing telescope. This either deletes the current selection or all the
 --- selections made using multi-select. It can be used to define actions
@@ -834,7 +824,6 @@ function Picker:get_selection_row()
   if self._selection_row then
     -- If the current row is no longer selectable than reduce it to num_results - 1, so the next selectable row.
     -- This makes selection_strategy `row` work much better if the selected row is no longer part of the output.
-    --TODO(conni2461): Maybe this can be moved to scroller. (currently in a hotfix so not viable)
     if self.selection_strategy == "row" then
       local num_results = self.manager:num_results()
       if self.sorting_strategy == "ascending" then
@@ -931,9 +920,6 @@ function Picker:_reset_prefix_color(hl_group)
   end
 end
 
--- TODO(conni2461): Maybe _ prefix these next two functions
--- TODO(conni2461): Next two functions only work together otherwise color doesn't work
---                  Probably a issue with prompt buffers
 --- Change the prefix in the prompt to be `new_prefix` and apply `hl_group`
 ---@param new_prefix string: the string to be used as the new prefix
 ---@param hl_group string: the name of the chosen highlight
@@ -1052,9 +1038,7 @@ function Picker:set_selection(row)
 
   local old_entry
 
-  -- TODO: Probably should figure out what the rows are that made this happen...
-  --        Probably something with setting a row that's too high for this?
-  --        Not sure.
+  -- entry displays and sorter highlighters are user code: don't let their errors break selection
   local set_ok, set_errmsg = pcall(function()
     local prompt = self:_get_prompt()
 
@@ -1079,8 +1063,6 @@ function Picker:set_selection(row)
     local display, _ = entry_display.resolve(self, entry)
     display = caret .. display
 
-    -- TODO: You should go back and redraw the highlights for this line from the sorter.
-    -- That's the only smart thing to do.
     if not api.nvim_buf_is_valid(results_bufnr) then
       log.debug "Invalid buf somehow..."
       return
@@ -1103,7 +1085,6 @@ function Picker:set_selection(row)
     return
   end
 
-  -- TODO: Get row & text in the same obj
   self._selection_entry = entry
   self._selection_row = row
 
@@ -1302,8 +1283,6 @@ function Picker:_decrement(key)
   self.stats[key] = (self.stats[key] or 0) - 1
 end
 
--- TODO: Decide how much we want to use this.
---  Would allow for better debugging of items.
 function Picker:register_completion_callback(cb)
   table.insert(self._completion_callbacks, cb)
 end
@@ -1485,7 +1464,6 @@ end
 
 function Picker:_do_selection(prompt)
   local selection_strategy = self.selection_strategy or "reset"
-  -- TODO: Either: always leave one result or make sure we actually clean up the results when nothing matches
   if selection_strategy == "row" then
     if self._selection_row == nil and self.default_selection_index ~= nil then
       self:set_selection(self:get_row(self.default_selection_index))
@@ -1684,12 +1662,6 @@ end
 
 function Picker:_detach()
   self.finder:close()
-
-  -- TODO: Can we add a "cleanup" / "teardown" function that completely removes these.
-  -- self.finder = nil
-  -- self.previewer = nil
-  -- self.sorter = nil
-  -- self.manager = nil
 
   self.closed = true
 end
