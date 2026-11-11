@@ -86,3 +86,10 @@ describe("get_substr_matcher", function()
     end
   end)
 end)
+
+describe("prefilter", function()
+  it("highlights the prompt without the tag", function()
+    local sorter = sorters.prefilter { sorter = sorters.get_fzy_sorter(), tag = "symbol_type" }
+    assert.eq({ 14, 15, 16 }, sorter:highlighter(":function: par", "a:fun ction: parse"))
+  end)
+end)

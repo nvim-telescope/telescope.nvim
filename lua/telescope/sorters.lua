@@ -578,12 +578,17 @@ local substr_matcher = function(_, prompt, line, _)
   return matched == total_search_terms and 0 or FILTERED
 end
 
+-- the tag at the start of a prompt (e.g. `:function: `)
+local function tag_pattern(delimiter)
+  return "^(" .. delimiter .. "(%S+)" .. "[" .. delimiter .. "%s]" .. ")"
+end
+
 local filter_function = function(opts)
   local scoring_function = utils.if_nil(opts.filter_function, substr_matcher)
   local tag = utils.if_nil(opts.tag, "ordinal")
+  local filter = tag_pattern(opts.delimiter)
 
   return function(_, prompt, entry)
-    local filter = "^(" .. opts.delimiter .. "(%S+)" .. "[" .. opts.delimiter .. "%s]" .. ")"
     local matched = prompt:match(filter)
 
     if matched == nil then
@@ -619,6 +624,15 @@ sorters.prefilter = function(opts)
   sorter.filter_function = filter_function(opts)
   sorter._was_discarded = function()
     return false
+  end
+  -- highlight for the prompt without the tag, as it is scored
+  local highlighter = sorter.highlighter
+  if highlighter then
+    local filter = tag_pattern(opts.delimiter)
+    sorter.highlighter = function(self, prompt, display)
+      local matched = prompt:match(filter)
+      return highlighter(self, matched and prompt:sub(#matched + 1) or prompt, display)
+    end
   end
   return sorter
 end
