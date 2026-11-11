@@ -51,15 +51,6 @@ describe("telescope", function()
         assert(exact_match < ok_match, "exact match better than ok match")
         assert(ok_match < no_match, "ok match better than no match")
       end)
-
-      it("sorts multiple finds better", function()
-        local sorter = require("telescope.sorters").get_generic_fuzzy_sorter()
-
-        local multi_match = sorter:score("generics", "exercises/generics/generics2.rs")
-        local one_match = sorter:score("abcdef", "exercises/generics/README.md")
-
-        -- assert(multi_match < one_match)
-      end)
     end)
 
     describe("fuzzy_file", function()
@@ -84,11 +75,11 @@ describe("telescope", function()
         assert(better_match < worse_match, "Final match should be stronger")
       end)
 
-      pending("sorts multiple finds better", function()
+      it("sorts multiple finds better", function()
         local sorter = require("telescope.sorters").get_fuzzy_file()
 
         local multi_match = sorter:score("generics", { ordinal = "exercises/generics/generics2.rs" })
-        local one_match = sorter:score("abcdef", { ordinal = "exercises/generics/README.md" })
+        local one_match = sorter:score("generics", { ordinal = "exercises/generics/README.md" })
 
         assert(multi_match < one_match)
       end)
@@ -190,15 +181,6 @@ describe("telescope", function()
           assert.eq({}, positions("", ""))
           assert.eq({}, positions("", "foo"))
           assert.eq({}, positions("foo", ""))
-        end)
-      end)
-    end)
-
-    describe("layout_strategies", function()
-      describe("center", function()
-        it("should handle large terminals", function()
-          -- TODO: This could call layout_strategies.center w/ some weird edge case.
-          -- and then assert stuff about the dimensions.
         end)
       end)
     end)
