@@ -59,19 +59,7 @@ end
 --   end
 -- }
 
---- Run `command` (e.g. "edit", "tab drop", "leftabove vnew") on `filename`, without expanding special
---- characters (`%`, `#`, `$VAR`, `~`, wildcards): `fnameescape()` does not escape all of them on
---- Windows. `:drop` takes a file list and expands it regardless, so it still needs `fnameescape()`.
-local function edit_file(command, filename)
-  local cmd = api.nvim_parse_cmd(command, {})
-  if cmd.cmd == "drop" then
-    vim.cmd(string.format("%s %s", command, vim.fn.fnameescape(filename)))
-    return
-  end
-  cmd.args = { filename }
-  cmd.magic = { file = false, bar = false }
-  api.nvim_cmd(cmd, {})
-end
+local edit_file = utils.edit_file
 
 local edit_buffer
 do
