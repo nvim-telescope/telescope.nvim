@@ -80,6 +80,15 @@ local get_open_filelist = function(grep_open_files, cwd)
   return filelist
 end
 
+-- A copy of `opts.additional_args` (a list or a function returning one): the pickers append to it.
+local get_additional_args = function(opts)
+  local args = opts.additional_args
+  if type(args) == "function" then
+    args = args(opts)
+  end
+  return type(args) == "table" and vim.list_extend({}, args) or {}
+end
+
 local opts_contain_invert = function(args)
   local invert = false
   local files_with_matches = false
@@ -130,14 +139,7 @@ files.live_grep = function(opts)
     end
   end
 
-  local additional_args = {}
-  if opts.additional_args ~= nil then
-    if type(opts.additional_args) == "function" then
-      additional_args = opts.additional_args(opts)
-    elseif type(opts.additional_args) == "table" then
-      additional_args = opts.additional_args
-    end
-  end
+  local additional_args = get_additional_args(opts)
 
   if opts.type_filter then
     additional_args[#additional_args + 1] = "--type=" .. opts.type_filter
@@ -222,14 +224,7 @@ files.grep_string = function(opts)
   local search = opts.use_regex and word or escape_chars(word)
   local search_args = search == "" and { "-v", "--", "^[[:space:]]*$" } or { "--", search }
 
-  local additional_args = {}
-  if opts.additional_args ~= nil then
-    if type(opts.additional_args) == "function" then
-      additional_args = opts.additional_args(opts)
-    elseif type(opts.additional_args) == "table" then
-      additional_args = opts.additional_args
-    end
-  end
+  local additional_args = get_additional_args(opts)
 
   if opts.file_encoding then
     additional_args[#additional_args + 1] = "--encoding=" .. opts.file_encoding
