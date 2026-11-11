@@ -167,7 +167,11 @@ function Pipe:iter(schedule, opts)
       return
     end
 
-    read = string.gsub(read or "", "\r", "")
+    read = read or ""
+    -- `gsub` tries the pattern at every byte; most tools print no `\r` at all
+    if string.find(read, "\r", 1, true) then
+      read = string.gsub(read, "\r", "")
+    end
     return (previous or "") .. read
   end
 
