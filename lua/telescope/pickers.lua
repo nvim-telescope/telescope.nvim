@@ -487,7 +487,7 @@ function Picker:find()
   -- Prompt prefix
   local prompt_prefix = self.prompt_prefix
   fn.prompt_setprompt(self.prompt_bufnr, prompt_prefix)
-  self:_reset_prefix_color()
+  self:_reset_prefix_color(self._current_prefix_hl_group)
 
   -- at most this many results are shown (undocumented option `temp__scrolling_limit`, default 250)
   self.max_results = self.__scrolling_limit
@@ -547,7 +547,7 @@ function Picker:find()
 
       -- we kinda always wanna reset the color, because of `cc` and `dd` commands,
       -- which also delete the prefix and after prefix deletion we need to reapply highlighting
-      self:_reset_prefix_color()
+      self:_reset_prefix_color(self._current_prefix_hl_group)
 
       local start_time = vim.uv.hrtime()
 
@@ -909,7 +909,11 @@ end
 function Picker:_reset_prefix_color(hl_group)
   self._current_prefix_hl_group = hl_group or nil
 
-  if self.prompt_prefix ~= "" and api.nvim_buf_is_valid(self.prompt_bufnr) then
+  if not api.nvim_buf_is_valid(self.prompt_bufnr) then
+    return
+  end
+  api.nvim_buf_clear_namespace(self.prompt_bufnr, ns_telescope_prompt_prefix, 0, -1)
+  if self.prompt_prefix ~= "" then
     vim.hl.range(
       self.prompt_bufnr,
       ns_telescope_prompt_prefix,
@@ -958,10 +962,11 @@ end
 function Picker:refresh(finder, opts)
   opts = opts or {}
   if opts.new_prefix then
-    local handle = type(opts.new_prefix) == "table" and unpack or function(x)
-      return x
+    local new_prefix, hl_group = opts.new_prefix, opts.prefix_hl_group
+    if type(new_prefix) == "table" then
+      new_prefix, hl_group = new_prefix[1], new_prefix[2]
     end
-    self:change_prompt_prefix(handle(opts.new_prefix), opts.prefix_hl_group)
+    self:change_prompt_prefix(new_prefix, hl_group)
   end
 
   if finder then
