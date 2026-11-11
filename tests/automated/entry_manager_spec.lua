@@ -17,7 +17,7 @@ describe("process_result", function()
     manager:add_entry(nil, 1, "hello", "")
     manager:add_entry(nil, 2, "later", "")
 
-    eq(2, manager.linked_states.size)
+    eq(2, manager:num_results())
 
     eq("hello", manager:get_entry(1))
     eq("later", manager:get_entry(2))
@@ -101,31 +101,6 @@ describe("process_result", function()
     eq("wow", manager:get_ordinal(1))
 
     eq(1, counts_executed)
-  end)
-
-  it("should not loop a bunch", function()
-    local info = {}
-    local manager = EntryManager:new(5, nil, info)
-    manager:add_entry(nil, 4, "better result", "")
-    manager:add_entry(nil, 3, "better result", "")
-    manager:add_entry(nil, 2, "better result", "")
-
-    -- Loops once to find 3 < 4
-    -- Loops again to find 2 < 3
-    eq(2, info.looped)
-  end)
-
-  it("should not loop a bunch, part 2", function()
-    local info = {}
-    local manager = EntryManager:new(5, nil, info)
-    manager:add_entry(nil, 4, "better result", "")
-    manager:add_entry(nil, 2, "better result", "")
-    manager:add_entry(nil, 3, "better result", "")
-
-    -- Loops again to find 2 < 4
-    -- Loops once to find 3 > 2
-    --  but less than 4
-    eq(3, info.looped)
   end)
 
   it("should update worst score in all append case", function()

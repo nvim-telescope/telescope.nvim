@@ -29,6 +29,17 @@ local ns_telescope_matching = api.nvim_create_namespace "telescope_matching"
 local ns_telescope_prompt = api.nvim_create_namespace "telescope_prompt"
 local ns_telescope_prompt_prefix = api.nvim_create_namespace "telescope_prompt_prefix"
 
+-- while results come in, draw them at most this often (ms)
+local DRAW_INTERVAL = 50
+
+-- preallocating table constructor (LuaJIT), for the narrowing match lists
+local ok_new_tab, new_tab = pcall(require, "table.new")
+if not ok_new_tab then
+  new_tab = function()
+    return {}
+  end
+end
+
 -- Window options produced by layout strategies and passed to `telescope.pickers.ui`.
 ---@class telescope_popup_options
 ---@field line integer: 1-based screen row of the content (0 or nil: centered)
@@ -568,17 +579,42 @@ function Picker:find()
         state.set_global_key("prompt_location", nil)
       end
 
-      -- TODO: Entry manager should have a "bulk" setter. This can prevent a lot of redraws from display
       if self.cache_picker == false or self.cache_picker.is_cached ~= true then
+        local discarded = self.sorter._discard_state and self.sorter._discard_state.filtered
         self.sorter:_start(prompt)
-        self.manager = EntryManager:new(self.max_results, self.entry_adder, self.stats)
+        local narrowable = self:_narrowable()
+        local candidates = narrowable and self:_narrowed_candidates(discarded)
+        self.manager = EntryManager:new(self.max_results, self._results_changed, self.stats)
 
+        -- the matches of this prompt, in finder order (see `_narrowed_candidates`), recorded in the
+        -- one of two reused arrays that the previous matches don't use (no new array per prompt)
+        local matches = { finder = self.finder, n = 0 }
+        if narrowable then
+          local prev, lists = self._matches, self._match_lists or {}
+          self._match_lists = lists
+          local k = (prev and prev.list == lists[1]) and 2 or 1
+          if not lists[k] then
+            lists[k] = new_tab(candidates and candidates.n or 0, 0)
+          end
+          matches.list = lists[k]
+        end
+        self._matches = matches
         self:_reset_highlights()
         local process_result = self:get_result_processor(find_id, prompt, debounced_status)
-        local process_complete = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
+        local completor = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
+        local process_complete = function()
+          if not matches.interrupted then
+            matches.complete, matches.processed = true, self.stats.processed
+          end
+          completor()
+        end
 
         local ok, msg = pcall(function()
-          self.finder(prompt, process_result, process_complete)
+          if candidates then
+            self:_process_candidates(candidates, process_result, process_complete)
+          else
+            self.finder(prompt, process_result, process_complete)
+          end
         end)
 
         if not ok then
@@ -947,6 +983,8 @@ function Picker:refresh(finder, opts)
     self.finder = finder
     self._multi = utils.if_nil(opts.multi, MultiSelect:new())
   end
+  -- the finder's results may have changed (e.g. `delete_selection`): don't narrow
+  self._matches = nil
 
   -- reset already triggers finder loop
   if opts.reset_prompt then
@@ -1155,74 +1193,88 @@ function Picker:cycle_previewers(next)
   end
 end
 
---- Handler for when entries are added by `self.manager`
----@param index number: the index to add the entry at
----@param entry table: the entry that has been added to the manager
----@param insert boolean: whether the entry has been "inserted" or not
-function Picker:entry_adder(index, entry, _, insert)
-  if not entry then
+--- Called by the entry manager when the results from `index` on changed (an insertion shifts all
+--- results after it). They are drawn by `_draw_results`: right away if the last draw is at least
+--- `DRAW_INTERVAL` ago, else after that delay. So results still fill in while a finder streams them,
+--- but each row is drawn once per batch instead of on every insertion; the completor draws the rest.
+---@param index number
+function Picker:_results_changed(index)
+  if not self._dirty_from or index < self._dirty_from then
+    self._dirty_from = index
+  end
+  if not self._last_draw or vim.uv.hrtime() - self._last_draw >= DRAW_INTERVAL * 1e6 then
+    self:_draw_results()
+  elseif not self._draw_scheduled then
+    self._draw_scheduled = true
+    vim.defer_fn(function()
+      self._draw_scheduled = false
+      self:_draw_results()
+    end, DRAW_INTERVAL)
+  end
+end
+
+--- Draw the shown results that changed since the last draw (see `_results_changed`), replacing
+--- their rows in one go.
+function Picker:_draw_results()
+  local from = self._dirty_from
+  self._dirty_from = nil
+  self._last_draw = vim.uv.hrtime()
+  if not from or self.closed or self:is_done() or not api.nvim_buf_is_valid(self.results_bufnr) then
+    return
+  end
+  local last = math.min(self.manager:num_results(), self.max_results)
+  if from > last then
     return
   end
 
-  local row = self:get_row(index)
-
-  -- If it's less than 0, then we don't need to show it at all.
-  if row < 0 then
-    log.debug("ON_ENTRY: Weird row", row)
-    return
+  local bufnr, prefix = self.results_bufnr, self.entry_prefix
+  local entries, displays, display_hls = {}, {}, {}
+  for index = from, last do
+    local entry = self.manager:get_entry(index)
+    local display, display_highlights = entry_display.resolve(self, entry)
+    if not display then
+      log.info("Weird entry", entry)
+      display = ""
+    end
+    display = prefix .. display
+    -- this only fails when people leave newlines in their results, so clean it up for them
+    if display:find("\n", 1, true) then
+      display = display:gsub("\n", " | ")
+    end
+    local k = index - from + 1
+    entries[k], displays[k], display_hls[k] = entry, display, display_highlights or false
   end
 
-  local display, display_highlights = entry_display.resolve(self, entry)
-  if not display then
-    log.info("Weird entry", entry)
-    return
-  end
-
-  -- This is the two spaces to manage the '> ' stuff.
-  -- Maybe someday we can use extmarks or floaty text or something to draw this and not insert here.
-  -- until then, insert two spaces
-  local prefix = self.entry_prefix
-  display = prefix .. display
-
-  self:_increment "displayed"
-
-  local offset = insert and 0 or 1
-  if not api.nvim_buf_is_valid(self.results_bufnr) then
-    log.debug "ON_ENTRY: Invalid buffer"
-    return
-  end
-
-  -- TODO: Does this every get called?
-  -- local line_count = a.nvim_win_get_height(self.results_win)
-  local line_count = api.nvim_buf_line_count(self.results_bufnr)
-  if row > line_count then
-    return
-  end
-
-  if insert then
-    if self.sorting_strategy == "descending" then
-      api.nvim_buf_set_lines(self.results_bufnr, 0, 1, false, {})
+  -- rows of the first and last changed result, and the lines in buffer order
+  local first_row, last_row, lines
+  if self.sorting_strategy == "ascending" then
+    first_row, last_row, lines = from - 1, last - 1, displays
+  else
+    first_row, last_row, lines = self.max_results - last, self.max_results - from, {}
+    for k = #displays, 1, -1 do
+      lines[#lines + 1] = displays[k]
     end
   end
-
-  local set_ok, msg = pcall(api.nvim_buf_set_lines, self.results_bufnr, row, row + offset, false, { display })
-  if set_ok then
-    if display_highlights then
-      self.highlighter:hi_display(row, prefix, display_highlights)
-    end
-    self:update_prefix(entry, row)
-    self:highlight_one_row(self.results_bufnr, self:_get_prompt(), display, row)
-  end
-
-  if not set_ok then
+  local ok, msg = pcall(api.nvim_buf_set_lines, bufnr, first_row, last_row + 1, false, lines)
+  if not ok then
     log.debug("Failed to set lines...", msg)
+    return
   end
 
-  -- This pretty much only fails when people leave newlines in their results.
-  --  So we'll clean it up for them if it fails.
-  if not set_ok and display:find "\n" then
-    display = display:gsub("\n", " | ")
-    api.nvim_buf_set_lines(self.results_bufnr, row, row + 1, false, { display })
+  -- replaced lines keep their extmarks: clear the old highlights
+  api.nvim_buf_clear_namespace(bufnr, ns_telescope_matching, first_row, last_row + 1)
+  self.highlighter:clear_display(first_row, last_row + 1)
+  local prompt = self:_get_prompt()
+  for k, entry in ipairs(entries) do
+    local row = self:get_row(from + k - 1)
+    self:_increment "displayed"
+    if display_hls[k] then
+      self.highlighter:hi_display(row, prefix, display_hls[k])
+    end
+    if entry == self._selection_entry or self:is_multi_selected(entry) then
+      self:update_prefix(entry, row)
+    end
+    self:highlight_one_row(bufnr, prompt, displays[k], row)
   end
 end
 
@@ -1313,11 +1365,19 @@ end
 ---@return function
 function Picker:get_result_processor(find_id, prompt, status_updater)
   local count = 0
+  local running = { completed = false } -- no table per result
+  local ignore_patterns = self.file_ignore_patterns or {}
+  local matches = self._matches or { n = 0 }
+  local list = matches.list
 
   local cb_add = function(score, entry)
     -- may need the prompt for tiebreak
     self.manager:add_entry(self, score, entry, prompt)
-    status_updater { completed = false }
+    if list then
+      local n = matches.n + 1
+      matches.n, list[n] = n, entry
+    end
+    status_updater(running)
   end
 
   local cb_filter = function(_)
@@ -1326,6 +1386,7 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
 
   return function(entry)
     if find_id ~= self._find_id then
+      matches.interrupted = true
       return true
     end
 
@@ -1337,7 +1398,7 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
 
     count = count + 1
 
-    for _, v in ipairs(self.file_ignore_patterns or {}) do
+    for _, v in ipairs(ignore_patterns) do
       local file = utils.if_nil(entry.filename, type(entry.value) == "string" and entry.value) -- false if none is true
       if file then
         if string.find(file, v) then
@@ -1351,6 +1412,50 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
   end
 end
 
+--- Narrowing: when the prompt extends the previous one, only the previous matches can match, so
+--- score just those (in finder order, so results are identical) instead of the finder's results.
+--- Only for a `prompt_independent` finder and a discarding sorter (`prefilter` opts out of
+--- discarding).
+function Picker:_narrowable()
+  local sorter = self.sorter
+  return self.finder.prompt_independent and sorter.discard and rawget(sorter, "_was_discarded") == nil
+end
+
+--- The previous matches, if the sorter kept its discards (the prompt extends the previous one, and
+--- its `start` didn't reset them) and the previous prompt was processed completely.
+---@param discarded table: `sorter._discard_state.filtered` before `sorter:_start(prompt)`
+---@return table|nil: the previous matches
+function Picker:_narrowed_candidates(discarded)
+  local prev = self._matches
+  if
+    prev
+    and prev.complete
+    and prev.list
+    and prev.finder == self.finder
+    and discarded ~= nil
+    and self.sorter._discard_state.filtered == discarded
+  then
+    return prev
+  end
+end
+
+--- Process the narrowed `candidates` like a static finder would process its results.
+function Picker:_process_candidates(candidates, process_result, process_complete)
+  -- count the skipped entries as processed and filtered, as the finder would have
+  local skipped = candidates.processed - candidates.n
+  self.stats.processed, self.stats.filtered = skipped, skipped
+  local list = candidates.list
+  for i = 1, candidates.n do
+    if process_result(list[i]) then
+      break
+    end
+    if i % 1000 == 0 then
+      await_schedule()
+    end
+  end
+  process_complete()
+end
+
 --- Handles updating the picker after all the entries are scored/processed.
 ---@param results_bufnr number
 ---@param _ number
@@ -1362,6 +1467,7 @@ function Picker:get_result_completor(results_bufnr, _, prompt, status_updater)
       return
     end
 
+    self:_draw_results()
     self:_do_selection(prompt)
 
     status_updater { completed = true }
@@ -1501,9 +1607,9 @@ function pickers.on_close_prompt(prompt_bufnr)
       if picker.cache_picker.limit_entries > 0 then
         -- edge case: starting in normal mode and not having run a search means having no manager instantiated
         if picker.manager then
-          picker.manager.linked_states:truncate(picker.cache_picker.limit_entries)
+          picker.manager:truncate(picker.cache_picker.limit_entries)
         else
-          picker.manager = EntryManager:new(picker.max_results, picker.entry_adder, picker.stats)
+          picker.manager = EntryManager:new(picker.max_results, picker._results_changed, picker.stats)
         end
       end
       local curr_prompt = picker:_get_prompt()
@@ -1610,12 +1716,9 @@ function Picker:_get_next_filtered_prompt()
 end
 
 function Picker:_resume_picker()
-  -- resume previous picker
-  local index = 1
-  for entry in self.manager:iter() do
-    self:entry_adder(index, entry, _, true)
-    index = index + 1
-  end
+  -- resume previous picker: draw its results
+  self._dirty_from = 1
+  self:_draw_results()
   self.cache_picker.is_cached = false
   local on_resume_complete = function()
     if api.nvim_buf_is_valid(self.prompt_bufnr) then
