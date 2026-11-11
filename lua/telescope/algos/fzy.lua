@@ -56,10 +56,13 @@ local function set_needle(needle)
     return
   end
   last_needle, n, nchars = needle, #needle, 0
-  needle_ascii = not find(needle, "[\128-\255]")
+  needle_ascii = true
   local i = 1
   while i <= n do
     local c = byte(needle, i)
+    if c >= 0x80 then
+      needle_ascii = false
+    end
     local len = c < 0x80 and 1 or c >= 0xF0 and 4 or c >= 0xE0 and 3 or c >= 0xC0 and 2 or 1
     nchars = nchars + 1
     chars[nchars] = len == 1 and ((c >= 65 and c <= 90) and c + 32 or c) or needle:sub(i, i + len - 1)
@@ -105,40 +108,58 @@ end
 -- to each byte (for the leading gap). Reused across calls.
 local hay, bonus, hcont, hidx = {}, {}, {}, {}
 
-local function prepare(haystack, m)
-  local last, chars_seen = 47, 0 -- the start counts as after `/`
-  local ascii = true
-  for j = 1, m do
+-- Only bytes `first` to `last` are prepared (the window in which the needle can match, see `score`).
+local function prepare(haystack, first, last, m)
+  -- the whole haystack decides the ASCII fast path (it counts the leading gap in bytes)
+  local ascii = needle_ascii
+  for j = 1, first - 1 do
+    if byte(haystack, j) >= 0x80 then
+      ascii = false
+    end
+  end
+  for j = last + 1, m do
+    if byte(haystack, j) >= 0x80 then
+      ascii = false
+    end
+  end
+  local prev = first > 1 and byte(haystack, first - 1) or 47 -- the start counts as after `/`
+  for j = first, last do
     local c = byte(haystack, j)
     local upper = c >= 65 and c <= 90
-    if upper and last >= 97 and last <= 122 then
+    if upper and prev >= 97 and prev <= 122 then
       bonus[j] = SCORE_MATCH_CAPITAL
     else
-      bonus[j] = BONUS[last]
+      bonus[j] = BONUS[prev]
     end
     hay[j] = upper and c + 32 or c
-    local cont = is_cont(c)
-    hcont[j] = cont
-    if not cont then
-      chars_seen = chars_seen + 1
-    end
-    hidx[j] = chars_seen
     ascii = ascii and c < 0x80
-    last = c
+    prev = c
   end
-  return ascii and needle_ascii
+  if not ascii then
+    -- only needed (and read) without the ASCII fast path
+    local chars_seen = 0
+    for j = 1, m do
+      local cont = is_cont(byte(haystack, j))
+      hcont[j] = cont
+      if not cont then
+        chars_seen = chars_seen + 1
+      end
+      hidx[j] = chars_seen
+    end
+  end
+  return ascii
 end
 
 -- One row of the matrices: `pD`/`pM` are the previous row (needle byte i - 1), `cD`/`cM` are filled.
 -- `D[j]` is the best score with needle byte i matched at haystack byte j, `M[j]` the best score up
 -- to j. A continuation byte only continues the previous byte's match at j - 1, without a bonus;
 -- gaps over continuation bytes are free, so that scores count characters.
-local function row(i, m, pD, pM, cD, cM, ascii)
+local function row(i, first, last, pD, pM, cD, cM, ascii)
   local prev_score = SCORE_MIN
   local gap_score = i == n and SCORE_GAP_TRAILING or SCORE_GAP_INNER
   local c = nb[i]
   if ncont[i] then
-    for j = 1, m do
+    for j = first, last do
       local score = SCORE_MIN
       if c == hay[j] and j > 1 then
         score = pD[j - 1]
@@ -150,7 +171,7 @@ local function row(i, m, pD, pM, cD, cM, ascii)
     return
   elseif ascii then
     -- same as below without the UTF-8 lookups (`hidx[j] == j`, no continuation bytes)
-    for j = 1, m do
+    for j = first, last do
       if c == hay[j] then
         local score
         if i == 1 then
@@ -170,7 +191,7 @@ local function row(i, m, pD, pM, cD, cM, ascii)
     end
     return
   end
-  for j = 1, m do
+  for j = first, last do
     if c == hay[j] then
       local score
       if i == 1 then
@@ -200,14 +221,44 @@ function fzy.score(needle, haystack)
   elseif n == m then
     return SCORE_MAX
   end
-  local ascii = prepare(haystack, m)
+  -- Nothing matches before the first occurrence of the needle's first byte or after the last occurrence
+  -- of its last byte: compute only that window, then add the trailing gaps as the full DP would.
+  local c1, cn = nb[1], nb[n]
+  local first, last = 1, m
+  while first <= m do
+    local b = byte(haystack, first)
+    if ((b >= 65 and b <= 90) and b + 32 or b) == c1 then
+      break
+    end
+    first = first + 1
+  end
+  while last >= first do
+    local b = byte(haystack, last)
+    if ((b >= 65 and b <= 90) and b + 32 or b) == cn then
+      break
+    end
+    last = last - 1
+  end
+  if first > last then
+    return SCORE_MIN
+  end
+  local ascii = prepare(haystack, first, last, m)
   -- only two rows are needed for the score
   local pD, pM, cD, cM = D1, M1, D2, M2
+  if first > 1 then
+    D1[first - 1], M1[first - 1], D2[first - 1], M2[first - 1] = SCORE_MIN, SCORE_MIN, SCORE_MIN, SCORE_MIN
+  end
   for i = 1, n do
-    row(i, m, pD, pM, cD, cM, ascii)
+    row(i, first, last, pD, pM, cD, cM, ascii)
     pD, pM, cD, cM = cD, cM, pD, pM
   end
-  return pM[m]
+  local score = pM[last]
+  for j = last + 1, m do
+    if ascii or not hcont[j] then
+      score = score + SCORE_GAP_TRAILING
+    end
+  end
+  return score
 end
 
 -- full matrices for `positions` (rows reused across calls)
@@ -225,10 +276,10 @@ function fzy.positions(needle, haystack)
     end
     return consecutive
   end
-  local ascii = prepare(haystack, m)
+  local ascii = prepare(haystack, 1, m, m)
   for i = 1, n do
     D[i], M[i] = D[i] or {}, M[i] or {}
-    row(i, m, D[i - 1], M[i - 1], D[i], M[i], ascii)
+    row(i, 1, m, D[i - 1], M[i - 1], D[i], M[i], ascii)
   end
 
   local positions = {}
