@@ -392,8 +392,6 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
         error "Invalid higlighter fn"
       end
 
-      self:_increment "highlights"
-
       -- extmark instead of `vim.hl.range()`, which is much slower (runs for every displayed row)
       api.nvim_buf_set_extmark(results_bufnr, ns_telescope_matching, row, start - 1, {
         end_col = finish,
@@ -1141,8 +1139,6 @@ function Picker:refresh_previewer()
     and status.layout.preview.winid
     and api.nvim_win_is_valid(status.layout.preview.winid)
   then
-    self:_increment "previewed"
-
     self.previewer:preview(self._selection_entry, status)
     if self.preview_border then
       if self.fix_preview_title then
@@ -1253,7 +1249,6 @@ function Picker:_draw_results()
   local prompt = self:_get_prompt()
   for k, entry in ipairs(entries) do
     local row = self:get_row(from + k - 1)
-    self:_increment "displayed"
     if display_hls[k] then
       self.highlighter:hi_display(row, prefix, display_hls[k])
     end
@@ -1267,13 +1262,7 @@ end
 --- Reset tracked information for this picker
 function Picker:_reset_track()
   self.stats.processed = 0
-  self.stats.displayed = 0
-  self.stats.display_fn = 0
-  self.stats.previewed = 0
-  self.stats.status = 0
-
   self.stats.filtered = 0
-  self.stats.highlights = 0
 end
 
 --- Increment the count of the tracked info at `self.stats[key]`
@@ -1335,8 +1324,6 @@ function Picker:get_status_updater(prompt_win, prompt_bufnr)
       virt_text = { { text, "TelescopePromptCounter" } },
       virt_text_pos = "right_align",
     })
-
-    self:_increment "status"
   end
 end
 
