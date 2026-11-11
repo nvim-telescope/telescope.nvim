@@ -335,30 +335,23 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     end
   end
 
-  for mode, mode_map in pairs(buffer_keymap or {}) do
-    mode = string.lower(mode)
-
-    for key_bind, key_func in pairs(mode_map) do
-      local key_bind_internal = api.nvim_replace_termcodes(key_bind, true, true, true)
-      if not applied_mappings[mode][key_bind_internal] then
-        applied_mappings[mode][key_bind_internal] = true
-        telescope_map(prompt_bufnr, mode, key_bind, key_func, extract_keymap_opts(key_func))
+  -- map the keys of `keymap` that aren't mapped yet
+  local function map_unmapped(keymap)
+    for mode, mode_map in pairs(keymap or {}) do
+      mode = string.lower(mode)
+      for key_bind, key_func in pairs(mode_map) do
+        local key_bind_internal = api.nvim_replace_termcodes(key_bind, true, true, true)
+        if not applied_mappings[mode][key_bind_internal] then
+          applied_mappings[mode][key_bind_internal] = true
+          telescope_map(prompt_bufnr, mode, key_bind, key_func, extract_keymap_opts(key_func))
+        end
       end
     end
   end
 
+  map_unmapped(buffer_keymap)
   -- TODO: Probably should not overwrite any keymaps
-  for mode, mode_map in pairs(mappings.default_mappings) do
-    mode = string.lower(mode)
-
-    for key_bind, key_func in pairs(mode_map) do
-      local key_bind_internal = api.nvim_replace_termcodes(key_bind, true, true, true)
-      if not applied_mappings[mode][key_bind_internal] then
-        applied_mappings[mode][key_bind_internal] = true
-        telescope_map(prompt_bufnr, mode, key_bind, key_func, extract_keymap_opts(key_func))
-      end
-    end
-  end
+  map_unmapped(mappings.default_mappings)
 end
 
 return mappings

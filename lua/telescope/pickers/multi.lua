@@ -8,20 +8,12 @@ function MultiSelect:new()
 end
 
 function MultiSelect:get()
-  local marked_entries = {}
-  for entry, count in pairs(self._entries) do
-    table.insert(marked_entries, { count, entry })
-  end
-
-  table.sort(marked_entries, function(left, right)
-    return left[1] < right[1]
+  local entries = self._entries
+  local selections = vim.tbl_keys(entries)
+  -- in the order they were selected
+  table.sort(selections, function(left, right)
+    return entries[left] < entries[right]
   end)
-
-  local selections = {}
-  for _, entry in ipairs(marked_entries) do
-    table.insert(selections, entry[2])
-  end
-
   return selections
 end
 
