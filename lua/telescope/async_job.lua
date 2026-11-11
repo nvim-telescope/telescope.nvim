@@ -21,12 +21,6 @@ function AsyncJob.new(opts)
 
   if opts.cwd and opts.cwd ~= "" then
     self.uv_opts.cwd = utils.path_expand(opts.cwd)
-    -- this is a "illegal" hack for windows. E.g. If the git command returns `/` rather than `\` as delimiter,
-    -- vim.fn.expand might just end up returning an empty string. Weird
-    -- Because empty string is not allowed in libuv the job will not spawn. Solution is we just set it to opts.cwd
-    if self.uv_opts.cwd == "" then
-      self.uv_opts.cwd = opts.cwd
-    end
   end
 
   self.uv_opts.stdio = {
@@ -38,20 +32,14 @@ function AsyncJob.new(opts)
   return self
 end
 
-function AsyncJob:_for_each_pipe(f, ...)
-  for _, pipe in ipairs { self.stdin, self.stdout, self.stderr } do
-    f(pipe, ...)
-  end
-end
-
 function AsyncJob:close(force)
   if force == nil then
     force = true
   end
 
-  self:_for_each_pipe(function(p)
-    p:close(force)
-  end)
+  for _, pipe in ipairs { self.stdin, self.stdout, self.stderr } do
+    pipe:close(force)
+  end
 
   uv.process_kill(self.handle, "sigterm")
 
@@ -129,8 +117,6 @@ function Pipe:close(force)
   if not self.handle:is_closing() then
     self.handle:close()
   end
-
-  self._closed = true
 end
 
 function Pipe:read()
