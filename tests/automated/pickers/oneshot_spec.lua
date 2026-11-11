@@ -1,0 +1,29 @@
+if require("telescope.utils").iswin then
+  return
+end
+
+local h = require "tests.helpers"
+local eq = assert.eq
+
+describe("finders.new_oneshot_job", function()
+  after_each(h.cleanup)
+
+  it("returns a last line without trailing newline", function()
+    require("telescope.pickers")
+      .new({}, {
+        finder = require("telescope.finders").new_oneshot_job { "printf", "a\\nb\\nlast" },
+        sorter = require("telescope.sorters").get_fzy_sorter(),
+      })
+      :find()
+    local picker = require("telescope.actions.state").get_current_picker(vim.api.nvim_get_current_buf())
+    vim.wait(5000, function()
+      return picker.finder.results and #picker.finder.results >= 3
+    end, 10)
+    eq(
+      { "a", "b", "last" },
+      vim.tbl_map(function(e)
+        return e.value
+      end, picker.finder.results)
+    )
+  end)
+end)

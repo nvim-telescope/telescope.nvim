@@ -50,7 +50,7 @@ return function(opts)
     }
 
     local line_num = 0
-    for line in stdout:iter(false) do
+    for line in stdout:iter() do
       line_num = line_num + 1
       local entry = entry_maker(line)
       if entry then
