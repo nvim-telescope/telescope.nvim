@@ -81,11 +81,9 @@ function Sorter:_destroy()
   end
 end
 
--- TODO: We could make this a bit smarter and cache results "as we go" and where they got filtered.
---          Then when we hit backspace, we don't have to re-caculate everything.
---          Prime did a lot of the hard work already, but I don't want to copy as much memory around
---              as he did in his example.
---              Example can be found in ./scratch/prime_prompt_cache.lua
+-- Discards (entries the previous prompt filtered out) are kept while the prompt is extended, and
+-- reset otherwise. The picker then also scores only the previous matches (`Picker:_narrowable`);
+-- after deleting characters, everything is scored again.
 function Sorter:_start(prompt)
   self._status = "start"
   if self.start then
@@ -117,8 +115,10 @@ function Sorter:_finish(prompt)
   end
 end
 
--- TODO: Consider doing something that makes it so we can skip the filter checks
---          if we're not discarding. Also, that means we don't have to check otherwise as well :)
+--- Score `entry` for `prompt` and pass the result to `cb_add(score, entry)`, or to `cb_filter(entry)`
+--- if it is filtered out. Without callbacks, return the score (`FILTERED`, i.e. -1, if filtered out).
+--- Discards (see `_start`) are only used and recorded when called with `cb_filter`, as the picker
+--- does; a call without it scores the entry on its own.
 function Sorter:score(prompt, entry, cb_add, cb_filter)
   if not entry or not entry.ordinal then
     return
@@ -129,7 +129,8 @@ function Sorter:score(prompt, entry, cb_add, cb_filter)
   end
 
   local ordinal = entry.ordinal
-  if self:_was_discarded(prompt, entry) then
+  local discard = self.discard and cb_filter ~= nil
+  if discard and self:_was_discarded(prompt, entry) then
     return cb_filter(entry)
   end
 
@@ -142,12 +143,20 @@ function Sorter:score(prompt, entry, cb_add, cb_filter)
   end
 
   if filter_score == FILTERED then
-    return cb_filter(entry)
+    if cb_filter then
+      return cb_filter(entry)
+    end
+    return FILTERED
   end
 
   local score = self:scoring_function(prompt or "", ordinal, entry, cb_add, cb_filter)
   if score == FILTERED then
-    self:_mark_discarded(prompt, entry)
+    if not cb_filter then
+      return FILTERED
+    end
+    if discard then
+      self:_mark_discarded(prompt, entry)
+    end
     return cb_filter(entry)
   end
 
