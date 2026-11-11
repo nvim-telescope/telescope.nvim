@@ -28,8 +28,6 @@ function EntryManager:new(max_results, set_entry)
     back_entries = {},
     back_scores = {},
     nback = 0,
-    -- position of the entry whose score updates `worst_acceptable_score` (see `_insert`)
-    tracked = nil,
   }, self)
 end
 
@@ -97,22 +95,14 @@ function EntryManager:_append(entry, score)
   self.nback = n
   self.back_entries[n] = entry
   self.back_scores[n] = score
-  if self.ntop + self.nfront + n == self.max_results then
-    self.tracked = self.max_results
-  end
 end
 
---- Insert into the top at `index` and draw it. The last entry of a full top moves to the rest.
----
---- `worst_acceptable_score` follows the entry at position `tracked`, which mirrors the linked list
---- this replaced, including its quirk: inserting at exactly `max_results` doesn't move the tracked
---- position to the new entry. Keeping this makes the shown results identical to before (it
---- decides which entries tying the worst shown score are skipped).
+--- Insert into the top at `index` and draw it. The last entry of a full top moves to the rest. Once
+--- the top is full, its last score is the worst acceptable one.
 function EntryManager:_insert(picker, index, entry, score)
   local max_res = self.max_results
   local top_entries, top_scores = self.top_entries, self.top_scores
   local ntop = self.ntop
-  local at_end = index == self:num_results() + 1 -- the linked list's `place_after`, else `place_before`
   if ntop == max_res then
     local f = self.nfront + 1
     self.nfront = f
@@ -125,22 +115,10 @@ function EntryManager:_insert(picker, index, entry, score)
   end
   top_entries[index], top_scores[index] = entry, score
   self.ntop = ntop + 1
-
-  local size = self:num_results()
-  if at_end then
-    if index == max_res then
-      self.tracked = max_res
-    end
-  elseif index == max_res - 1 or (index < max_res and size == max_res) then
-    self.tracked = max_res
-  elseif index >= max_res and self.tracked and index <= self.tracked then
-    self.tracked = self.tracked + 1
+  if ntop + 1 == max_res then
+    self.worst_acceptable_score = top_scores[max_res]
   end
-
   self.set_entry(picker, index, entry, score, true)
-  if self.tracked then
-    self.worst_acceptable_score = math.min(self.worst_acceptable_score, self:get_score(self.tracked))
-  end
 end
 
 function EntryManager:add_entry(picker, score, entry, prompt)
@@ -159,7 +137,7 @@ function EntryManager:add_entry(picker, score, entry, prompt)
     self.top_entries[1], top_scores[1] = entry, score
     self.ntop = 1
     if self.max_results == 1 then
-      self.tracked = 1
+      self.worst_acceptable_score = score
     end
     self.set_entry(picker, 1, entry, score)
     return
