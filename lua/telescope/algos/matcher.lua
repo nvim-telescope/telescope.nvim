@@ -283,8 +283,12 @@ function fzy.positions(needle, haystack, case_sensitive)
   if n == 0 or m == 0 or m > MATCH_MAX_LENGTH or n > MATCH_MAX_LENGTH then
     return {}
   elseif n == m then
+    -- with equal lengths, a match is equality (up to case); no match, no positions
     local consecutive = {}
     for i = 1, n do
+      if lower[byte(haystack, i)] ~= nb[i] then
+        return {}
+      end
       consecutive[i] = i
     end
     return consecutive
