@@ -208,6 +208,37 @@ local make_cached_uppers = function()
   })
 end
 
+-- the overlapping n-grams of a string
+local make_cached_ngrams = function(n)
+  return setmetatable({}, {
+    __index = function(t, k)
+      local ngrams = {}
+      for i = 1, #k - n + 1 do
+        ngrams[i] = k:sub(i, i + n - 1)
+      end
+
+      rawset(t, k, ngrams)
+      return ngrams
+    end,
+  })
+end
+
+-- how many of `ngrams` occur in `line`, and how many of those occur after the previous match
+local match_ngrams = function(ngrams, line)
+  local match_count, consecutive_matches, previous_match_index = 0, 0, 0
+  for i = 1, #ngrams do
+    local match_start = line:find(ngrams[i], 1, true)
+    if match_start then
+      match_count = match_count + 1
+      if match_start > previous_match_index then
+        consecutive_matches = consecutive_matches + 1
+      end
+      previous_match_index = match_start
+    end
+  end
+  return match_count, consecutive_matches
+end
+
 -- TODO: Match on upper case words
 -- TODO: Match on last match
 sorters.get_fuzzy_file = function(opts)
@@ -215,26 +246,7 @@ sorters.get_fuzzy_file = function(opts)
 
   local ngram_len = opts.ngram_len or 2
 
-  local cached_ngrams = {}
-
-  local function overlapping_ngrams(s, n)
-    if cached_ngrams[s] and cached_ngrams[s][n] then
-      return cached_ngrams[s][n]
-    end
-
-    local R = {}
-    for i = 1, s:len() - n + 1 do
-      R[#R + 1] = s:sub(i, i + n - 1)
-    end
-
-    if not cached_ngrams[s] then
-      cached_ngrams[s] = {}
-    end
-
-    cached_ngrams[s][n] = R
-
-    return R
-  end
+  local cached_ngrams = make_cached_ngrams(ngram_len)
 
   local cached_tails = make_cached_tail()
   local cached_uppers = make_cached_uppers()
@@ -252,7 +264,7 @@ sorters.get_fuzzy_file = function(opts)
       local prompt_lower = prompt:lower()
       local line_lower = line:lower()
 
-      local prompt_lower_ngrams = overlapping_ngrams(prompt_lower, ngram_len)
+      local prompt_lower_ngrams = cached_ngrams[prompt_lower]
 
       -- Contains the original string
       local contains_string = line_lower:find(prompt_lower, 1, true)
@@ -271,21 +283,7 @@ sorters.get_fuzzy_file = function(opts)
       local tail = cached_tails[line_lower]
       local contains_tail = tail:find(prompt, 1, true)
 
-      local consecutive_matches = 0
-      local previous_match_index = 0
-      local match_count = 0
-
-      for i = 1, #prompt_lower_ngrams do
-        local match_start = line_lower:find(prompt_lower_ngrams[i], 1, true)
-        if match_start then
-          match_count = match_count + 1
-          if match_start > previous_match_index then
-            consecutive_matches = consecutive_matches + 1
-          end
-
-          previous_match_index = match_start
-        end
-      end
+      local match_count, consecutive_matches = match_ngrams(prompt_lower_ngrams, line_lower)
 
       local tail_modifier = 1
       if contains_tail then
@@ -327,25 +325,7 @@ sorters.get_generic_fuzzy_sorter = function(opts)
 
   local ngram_len = opts.ngram_len or 2
 
-  local cached_ngrams = {}
-  local function overlapping_ngrams(s, n)
-    if cached_ngrams[s] and cached_ngrams[s][n] then
-      return cached_ngrams[s][n]
-    end
-
-    local R = {}
-    for i = 1, s:len() - n + 1 do
-      R[#R + 1] = s:sub(i, i + n - 1)
-    end
-
-    if not cached_ngrams[s] then
-      cached_ngrams[s] = {}
-    end
-
-    cached_ngrams[s][n] = R
-
-    return R
-  end
+  local cached_ngrams = make_cached_ngrams(ngram_len)
 
   return Sorter:new {
     -- self
@@ -353,41 +333,27 @@ sorters.get_generic_fuzzy_sorter = function(opts)
     -- line (entry.ordinal)
     -- entry (the whole entry)
     scoring_function = function(_, prompt, line, _)
-      if prompt == 0 or #prompt < ngram_len then
+      if #prompt < ngram_len then
         return 1
       end
 
       local prompt_lower = prompt:lower()
       local line_lower = line:lower()
 
-      local prompt_ngrams = overlapping_ngrams(prompt_lower, ngram_len)
+      local prompt_ngrams = cached_ngrams[prompt_lower]
 
       local N = #prompt
 
       local contains_string = line_lower:find(prompt_lower, 1, true)
 
-      local consecutive_matches = 0
-      local previous_match_index = 0
-      local match_count = 0
-
-      for i = 1, #prompt_ngrams do
-        local match_start = line_lower:find(prompt_ngrams[i], 1, true)
-        if match_start then
-          match_count = match_count + 1
-          if match_start > previous_match_index then
-            consecutive_matches = consecutive_matches + 1
-          end
-
-          previous_match_index = match_start
-        end
-      end
+      local match_count, consecutive_matches = match_ngrams(prompt_ngrams, line_lower)
 
       -- TODO: Copied from ashkan.
       local denominator = (
         (10 * match_count / #prompt_ngrams)
         -- biases for shorter strings
         -- TODO(ashkan): this can bias towards repeated finds of the same
-        -- subpattern with overlapping_ngrams
+        -- subpattern with overlapping n-grams
         + 3 * match_count * ngram_len / #line
         + consecutive_matches
         + N / (contains_string or (2 * #line)) -- + 30/(c1 or 2*N)
