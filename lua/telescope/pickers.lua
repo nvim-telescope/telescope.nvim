@@ -1271,12 +1271,6 @@ function Picker:_increment(key)
   self.stats[key] = (self.stats[key] or 0) + 1
 end
 
---- Decrement the count of the tracked info at `self.stats[key]`
----@param key string
-function Picker:_decrement(key)
-  self.stats[key] = (self.stats[key] or 0) - 1
-end
-
 function Picker:register_completion_callback(cb)
   table.insert(self._completion_callbacks, cb)
 end
@@ -1337,6 +1331,12 @@ end
 function Picker:get_result_processor(find_id, prompt, status_updater)
   local running = { completed = false } -- no table per result
   local ignore_patterns = self.file_ignore_patterns or {}
+  local ignored -- entry -> whether a pattern matches it
+  if ignore_patterns[1] then
+    -- entries of static and oneshot finders come again with every prompt: check each only once
+    self._ignored = self._ignored or setmetatable({}, { __mode = "k" })
+    ignored = self._ignored
+  end
   local matches = self._matches or { n = 0 }
   local list = matches.list
 
@@ -1364,17 +1364,28 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
       return
     end
 
-    self:_increment "processed"
-
-    for _, v in ipairs(ignore_patterns) do
-      local file = utils.if_nil(entry.filename, type(entry.value) == "string" and entry.value) -- false if none is true
-      if file then
-        if string.find(file, v) then
-          self:_decrement "processed"
-          return
+    if ignored then
+      local skip = ignored[entry]
+      if skip == nil then
+        skip = false
+        -- the file name, or false if there is none
+        local file = utils.if_nil(entry.filename, type(entry.value) == "string" and entry.value)
+        if file then
+          for _, v in ipairs(ignore_patterns) do
+            if string.find(file, v) then
+              skip = true
+              break
+            end
+          end
         end
+        ignored[entry] = skip
+      end
+      if skip then
+        return
       end
     end
+
+    self:_increment "processed"
 
     self.sorter:score(prompt, entry, cb_add, cb_filter)
   end
