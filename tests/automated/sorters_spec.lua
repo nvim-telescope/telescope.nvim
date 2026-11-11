@@ -93,3 +93,12 @@ describe("prefilter", function()
     assert.eq({ 14, 15, 16 }, sorter:highlighter(":function: par", "a:fun ction: parse"))
   end)
 end)
+
+describe("Sorter:score", function()
+  it("scores an entry on its own without callbacks", function()
+    local sorter = sorters.get_fzy_sorter()
+    local entry = { ordinal = "telescope/init.lua" }
+    assert.eq(-1, sorter:score("xyz", entry))
+    assert.is_true(sorter:score("init", entry) > 0)
+  end)
+end)
