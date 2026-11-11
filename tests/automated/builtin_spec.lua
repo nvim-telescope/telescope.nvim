@@ -1,6 +1,6 @@
 local builtin = require "telescope.builtin"
 
-local eq = assert.are.same
+local eq = assert.eq
 
 describe("builtin.buffers", function()
   local function listed_buffer(name)
@@ -9,13 +9,15 @@ describe("builtin.buffers", function()
     return bufnr
   end
 
-  after_each(function()
+  local function delete_named_buffers()
     for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
       if vim.api.nvim_buf_get_name(bufnr) ~= "" then
         vim.api.nvim_buf_delete(bufnr, { force = true })
       end
     end
-  end)
+  end
+  before_each(delete_named_buffers)
+  after_each(delete_named_buffers)
 
   it("filters buffers outside of cwd with cwd_only", function()
     listed_buffer(vim.fs.joinpath(vim.fs.dirname(vim.uv.cwd()), "outside.txt"))

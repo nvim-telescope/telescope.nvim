@@ -1,6 +1,6 @@
 local utils = require "telescope.utils"
 
-local eq = assert.are.equal
+local eq = assert.eq
 
 describe("path_expand()", function()
   it("removes trailing os_sep", function()
@@ -77,7 +77,7 @@ describe("is_uri", function()
 
     for _, uri in ipairs(uris) do
       it(uri, function()
-        assert.True(utils.is_uri(uri))
+        assert.is_true(utils.is_uri(uri))
       end)
     end
   end)
@@ -97,8 +97,8 @@ describe("is_uri", function()
       [[foo-://bar]],
     }
     for _, input in ipairs(inputs) do
-      it(input, function()
-        assert.False(utils.is_uri(input))
+      it(vim.inspect(input), function()
+        assert.is_false(utils.is_uri(input))
       end)
     end
   end)
@@ -115,7 +115,7 @@ describe("is_uri", function()
 
     for _, uri in ipairs(paths) do
       it(uri, function()
-        assert.False(utils.is_uri(uri))
+        assert.is_false(utils.is_uri(uri))
       end)
     end
   end)
@@ -129,7 +129,7 @@ describe("is_uri", function()
 
     for _, path in ipairs(paths) do
       it(path, function()
-        assert.False(utils.is_uri(path))
+        assert.is_false(utils.is_uri(path))
       end)
     end
   end)
@@ -143,7 +143,7 @@ describe("is_uri", function()
 
     for _, path in ipairs(paths) do
       it(path, function()
-        assert.False(utils.is_uri(path))
+        assert.is_false(utils.is_uri(path))
       end)
     end
   end)
@@ -465,16 +465,16 @@ describe("split_lines", function()
   if utils.iswin then
     describe("handles files on Windows", function()
       it("reads file with newline only", function()
-        assert.are.same(expect, utils.split_lines(newline_file))
+        assert.eq(expect, utils.split_lines(newline_file))
       end)
       it("reads file with carriage return and newline", function()
-        assert.are.same(expect, utils.split_lines(carriage_newline_file))
+        assert.eq(expect, utils.split_lines(carriage_newline_file))
       end)
     end)
   else
     describe("handles files on non Windows environment", function()
       it("reads file with newline only", function()
-        assert.are.same(expect, utils.split_lines(newline_file))
+        assert.eq(expect, utils.split_lines(newline_file))
       end)
     end)
   end

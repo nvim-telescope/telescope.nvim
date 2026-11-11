@@ -26,29 +26,29 @@ describe("timed_split_lines", function()
     describe("handles files on Windows", function()
       it("reads file ending with \\r\\n (standard Windows line terminator)", function()
         local file = table.concat(expect, "\r\n") .. "\r\n"
-        assert.are.same(expect, split_lines(file))
+        assert.eq(expect, split_lines(file))
       end)
 
       it("reads file ending with \\n only", function()
         local file = table.concat(expect, "\n") .. "\n"
-        assert.are.same(expect, split_lines(file))
+        assert.eq(expect, split_lines(file))
       end)
 
       it("reads file with no trailing newline", function()
         local file = table.concat(expect, "\r\n")
-        assert.are.same(expect, split_lines(file))
+        assert.eq(expect, split_lines(file))
       end)
     end)
   else
     describe("handles files on non Windows environment", function()
       it("reads file ending with \\n (standard Unix line terminator)", function()
         local file = table.concat(expect, "\n") .. "\n"
-        assert.are.same(expect, split_lines(file))
+        assert.eq(expect, split_lines(file))
       end)
 
       it("reads file with no trailing newline", function()
         local file = table.concat(expect, "\n")
-        assert.are.same(expect, split_lines(file))
+        assert.eq(expect, split_lines(file))
       end)
     end)
   end
