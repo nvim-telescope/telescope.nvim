@@ -10,126 +10,68 @@ local M = {}
 local AsyncJob = {}
 AsyncJob.__index = AsyncJob
 
-function AsyncJob.new(opts)
-  local self = setmetatable({}, AsyncJob)
-
-  self.command, self.uv_opts = M.convert_opts(opts)
-
-  self.stdin = opts.stdin or M.NullPipe()
-  self.stdout = opts.stdout or M.NullPipe()
-  self.stderr = opts.stderr or M.NullPipe()
-
-  if opts.cwd and opts.cwd ~= "" then
-    self.uv_opts.cwd = utils.path_expand(opts.cwd)
+--- Stop the process and its output pipe (if the process still runs, it gets SIGTERM).
+function AsyncJob:close()
+  if self.stdout then
+    self.stdout:close()
   end
-
-  self.uv_opts.stdio = {
-    self.stdin.handle,
-    self.stdout.handle,
-    self.stderr.handle,
-  }
-
-  return self
-end
-
-function AsyncJob:close(force)
-  if force == nil then
-    force = true
+  if not self.handle:is_closing() then
+    uv.process_kill(self.handle, "sigterm")
   end
-
-  for _, pipe in ipairs { self.stdin, self.stdout, self.stderr } do
-    pipe:close(force)
-  end
-
-  uv.process_kill(self.handle, "sigterm")
-
   log.debug "[async_job] closed"
 end
 
+--- Start a process. Its stdin is empty and its stderr discarded; read its output through `stdout`, a
+--- `LinesPipe()`, which closes itself at the end of the output.
+---@param opts { command: string, args: string[]?, cwd: string?, env: table?, stdout: telescope.async_job.Pipe? }
 M.spawn = function(opts)
-  local self = AsyncJob.new(opts)
-  self.handle, self.pid = uv.spawn(
-    self.command,
-    self.uv_opts,
-    async.void(function()
-      self:close(false)
-      if not self.handle:is_closing() then
-        self.handle:close()
-      end
-    end)
-  )
-
-  if not self.handle then
-    error(debug.traceback("Failed to spawn process: " .. vim.inspect(self)))
+  local self = setmetatable({ stdout = opts.stdout }, AsyncJob)
+  local command, uv_opts = M.convert_opts(opts)
+  if opts.cwd and opts.cwd ~= "" then
+    uv_opts.cwd = utils.path_expand(opts.cwd)
   end
+  uv_opts.stdio = { nil, self.stdout and self.stdout.handle, nil }
 
+  self.handle, self.pid = uv.spawn(command, uv_opts, function()
+    self.handle:close()
+  end)
+  if not self.handle then
+    if self.stdout then
+      self.stdout:close()
+    end
+    error(debug.traceback("Failed to spawn process: " .. vim.inspect(opts)))
+  end
   return self
 end
 
 ---@class telescope.async_job.Pipe
----@field handle uv.uv_pipe_t? libuv pipe (nil for `NullPipe`)
----@field eof_tx fun() signals end of file
----@field eof_rx async fun() waits for end of file
+---@field handle uv.uv_pipe_t libuv pipe
 local Pipe = {}
 Pipe.__index = Pipe
-
----@param handle uv.uv_pipe_t?
----@return telescope.async_job.Pipe
-local function new_pipe(handle)
-  local self = setmetatable({ handle = handle }, Pipe)
-  -- must be per instance: a oneshot channel can only be used once
-  self.eof_tx, self.eof_rx = channel.oneshot()
-  return self
-end
 
 --- Pipe for reading process output line by line (see `Pipe:iter()`)
 ---@return telescope.async_job.Pipe
 function M.LinesPipe()
-  return new_pipe(uv.new_pipe(false))
+  return setmetatable({ handle = uv.new_pipe(false) }, Pipe)
 end
 
---- Placeholder for an unused stdio stream: no handle, already at end of file
----@return telescope.async_job.Pipe
-function M.NullPipe()
-  local self = new_pipe(nil)
-  self.eof_tx()
-  return self
-end
-
----@param force boolean? if false, wait for end of file first (default: true)
-function Pipe:close(force)
-  if force == nil then
-    force = true
-  end
-
-  -- `NullPipe` has nothing to close
-  if not self.handle or self.handle:is_closing() then
-    return
-  end
-
-  -- If we're not forcing the stop, allow waiting for eof
-  -- This ensures that we don't end up with weird race conditions
-  if not force then
-    self.eof_rx()
-  end
-
-  self.handle:read_stop()
+function Pipe:close()
   if not self.handle:is_closing() then
     self.handle:close()
   end
 end
 
+--- The next chunk of output, or nil at the end of the output (the pipe is closed then).
 function Pipe:read()
   local read_tx, read_rx = channel.oneshot()
 
   self.handle:read_start(function(err, data)
     assert(not err, err)
     self.handle:read_stop()
-
-    read_tx(data)
     if data == nil then
-      self.eof_tx()
+      self:close()
     end
+    read_tx(data)
   end)
 
   return read_rx()
