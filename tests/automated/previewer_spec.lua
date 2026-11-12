@@ -1,3 +1,7 @@
+local t = require "test.harness"
+local assert = require "test.assert"
+local describe, it = t.describe, t.it
+
 local putils = require "telescope.previewers.utils"
 local utils = require "telescope.utils"
 

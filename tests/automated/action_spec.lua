@@ -1,3 +1,7 @@
+local t = require "test.harness"
+local assert = require "test.assert"
+local describe, it = t.describe, t.it
+
 local actions = require "telescope.actions"
 local action_set = require "telescope.actions.set"
 

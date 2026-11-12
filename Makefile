@@ -4,18 +4,20 @@ DOCGEN_TAG := v1.1.0
 
 NVIM ?= nvim
 TEST_FILE ?= tests/automated
-NVIM_TEST_VERSION := v0.12.6
+# TODO: v0.13.0 once released
+NVIM_TEST_VERSION := nightly
 TEST_DEPS := $(DEPDIR)/neovim/$(NVIM_TEST_VERSION)
-TEST_MODULES := $(addprefix $(TEST_DEPS)/test/,harness.lua assert.lua reporter.lua)
+TEST_URL := https://raw.githubusercontent.com/neovim/neovim/$(NVIM_TEST_VERSION)/test
 
-$(TEST_MODULES):
-	mkdir -p "$(@D)"
-	curl --fail --location --silent --show-error --output "$@.tmp" \
-		https://raw.githubusercontent.com/neovim/neovim/$(NVIM_TEST_VERSION)/test/$(notdir $@)
+$(TEST_DEPS):
+	rm -rf "$@.tmp"
+	mkdir -p "$@.tmp/test"
+	curl --fail --location --silent --show-error --parallel --remote-name-all --output-dir "$@.tmp/test" \
+		$(addprefix $(TEST_URL)/,harness.lua assert.lua reporter.lua)
 	mv "$@.tmp" "$@"
 
 .PHONY: test lint docgen
-test: $(TEST_MODULES)
+test: $(TEST_DEPS)
 	NVIM_LOG_FILE="$(abspath $(DEPDIR)/nvim.log)" "$(NVIM)" --clean \
 		-l tests/runner.lua "$(TEST_DEPS)" "$(TEST_FILE)"
 

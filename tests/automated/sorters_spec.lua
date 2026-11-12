@@ -1,3 +1,7 @@
+local t = require "test.harness"
+local assert = require "test.assert"
+local describe, it, before_each, after_each = t.describe, t.it, t.before_each, t.after_each
+
 local sorters = require "telescope.sorters"
 
 describe("get_substr_matcher", function()
@@ -99,6 +103,6 @@ describe("Sorter:score", function()
     local sorter = sorters.get_fzy_sorter()
     local entry = { ordinal = "telescope/init.lua" }
     assert.eq(-1, sorter:score("xyz", entry))
-    assert.is_true(sorter:score("init", entry) > 0)
+    assert(sorter:score("init", entry) > 0)
   end)
 end)

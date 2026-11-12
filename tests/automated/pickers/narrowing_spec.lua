@@ -1,3 +1,7 @@
+local t = require "test.harness"
+local assert = require "test.assert"
+local describe, it, after_each = t.describe, t.it, t.after_each
+
 local h = require "tests.helpers"
 local eq = assert.eq
 
