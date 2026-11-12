@@ -135,7 +135,6 @@ end
 utils.filter_symbols = function(results, opts, post_filter)
   local has_ignore = opts.ignore_symbols ~= nil
   local has_symbols = opts.symbols ~= nil
-  local filtered_symbols
 
   if has_symbols and has_ignore then
     utils.notify("filter_symbols", {
@@ -145,39 +144,25 @@ utils.filter_symbols = function(results, opts, post_filter)
     return {}
   elseif not (has_ignore or has_symbols) then
     return results
-  elseif has_ignore then
-    if type(opts.ignore_symbols) == "string" then
-      opts.ignore_symbols = { opts.ignore_symbols }
-    end
-    if type(opts.ignore_symbols) ~= "table" then
-      utils.notify("filter_symbols", {
-        msg = "Please pass ignore_symbols as either a string or a list of strings",
-        level = "ERROR",
-      })
-      return {}
-    end
-
-    opts.ignore_symbols = vim.tbl_map(string.lower, opts.ignore_symbols)
-    filtered_symbols = vim.tbl_filter(function(item)
-      return not vim.tbl_contains(opts.ignore_symbols, string.lower(item.kind))
-    end, results)
-  elseif has_symbols then
-    if type(opts.symbols) == "string" then
-      opts.symbols = { opts.symbols }
-    end
-    if type(opts.symbols) ~= "table" then
-      utils.notify("filter_symbols", {
-        msg = "Please pass filtering symbols as either a string or a list of strings",
-        level = "ERROR",
-      })
-      return {}
-    end
-
-    opts.symbols = vim.tbl_map(string.lower, opts.symbols)
-    filtered_symbols = vim.tbl_filter(function(item)
-      return vim.tbl_contains(opts.symbols, string.lower(item.kind))
-    end, results)
   end
+
+  local key = has_ignore and "ignore_symbols" or "symbols"
+  if type(opts[key]) == "string" then
+    opts[key] = { opts[key] }
+  end
+  if type(opts[key]) ~= "table" then
+    utils.notify("filter_symbols", {
+      msg = has_ignore and "Please pass ignore_symbols as either a string or a list of strings"
+        or "Please pass filtering symbols as either a string or a list of strings",
+      level = "ERROR",
+    })
+    return {}
+  end
+
+  opts[key] = vim.tbl_map(string.lower, opts[key])
+  local filtered_symbols = vim.tbl_filter(function(item)
+    return vim.tbl_contains(opts[key], string.lower(item.kind)) ~= has_ignore
+  end, results)
 
   if type(post_filter) == "function" then
     filtered_symbols = post_filter(filtered_symbols)
@@ -187,20 +172,14 @@ utils.filter_symbols = function(results, opts, post_filter)
     return filtered_symbols
   end
 
-  -- print message that filtered_symbols is now empty
-  if has_symbols then
-    local symbols = table.concat(opts.symbols, ", ")
-    utils.notify("filter_symbols", {
-      msg = string.format("%s symbol(s) were not part of the query results", symbols),
-      level = "WARN",
-    })
-  elseif has_ignore then
-    local symbols = table.concat(opts.ignore_symbols, ", ")
-    utils.notify("filter_symbols", {
-      msg = string.format("%s ignore_symbol(s) have removed everything from the query result", symbols),
-      level = "WARN",
-    })
-  end
+  utils.notify("filter_symbols", {
+    msg = string.format(
+      has_ignore and "%s ignore_symbol(s) have removed everything from the query result"
+        or "%s symbol(s) were not part of the query results",
+      table.concat(opts[key], ", ")
+    ),
+    level = "WARN",
+  })
   return {}
 end
 
@@ -622,40 +601,14 @@ utils.file_extension = function(filename)
   end
 end
 
-utils.transform_devicons = load_once(function()
-  local has_devicons, devicons = pcall(require, "nvim-web-devicons")
-
-  if has_devicons then
-    if not devicons.has_loaded() then
-      devicons.setup()
-    end
-
-    return function(filename, display, disable_devicons)
-      local conf = require("telescope.config").values
-      if disable_devicons or not filename then
-        return display
-      end
-
-      local basename = utils.path_tail(filename)
-      local icon, icon_highlight = devicons.get_icon(basename, utils.file_extension(basename), { default = false })
-      if not icon then
-        icon, icon_highlight = devicons.get_icon(basename, nil, { default = true })
-        icon = icon or " "
-      end
-      local icon_display = icon .. " " .. (display or "")
-
-      if conf.color_devicons then
-        return icon_display, icon_highlight, icon
-      else
-        return icon_display, nil, icon
-      end
-    end
-  else
-    return function(_, display, _)
-      return display
-    end
+utils.transform_devicons = function(filename, display, disable_devicons)
+  local icon, icon_highlight = utils.get_devicons(filename, disable_devicons)
+  if icon == "" then -- no devicons, disabled, or no file name
+    return display
   end
-end)
+  icon = icon or " "
+  return icon .. " " .. (display or ""), icon_highlight, icon
+end
 
 utils.get_devicons = load_once(function()
   local has_devicons, devicons = pcall(require, "nvim-web-devicons")
@@ -715,6 +668,20 @@ end
 ---@param args string[]
 ---@param opts? table
 ---@return string[]
+-- Run `command` (e.g. "edit", "tab drop", "leftabove vnew") on `filename`, without expanding special
+-- characters (`%`, `#`, `$VAR`, `~`, wildcards): `fnameescape()` does not escape all of them on
+-- Windows. `:drop` takes a file list and expands it regardless, so it still needs `fnameescape()`.
+utils.edit_file = function(command, filename)
+  local cmd = api.nvim_parse_cmd(command, {})
+  if cmd.cmd == "drop" then
+    vim.cmd(string.format("%s %s", command, vim.fn.fnameescape(filename)))
+    return
+  end
+  cmd.args = { filename }
+  cmd.magic = { file = false, bar = false }
+  api.nvim_cmd(cmd, {})
+end
+
 utils.__git_command = function(args, opts)
   opts = opts or {}
 
@@ -744,36 +711,15 @@ end
 ---@return integer? lnum
 ---@return integer? col
 utils.__separate_file_path_location = function(path)
-  local location_numbers = {}
-  for i = #path, 1, -1 do
-    if path:sub(i, i) == ":" then
-      if i == #path then
-        path = path:sub(1, i - 1)
-      else
-        local location_value = tonumber(path:sub(i + 1))
-        if location_value then
-          table.insert(location_numbers, location_value)
-          path = path:sub(1, i - 1)
-
-          if #location_numbers == 2 then
-            -- There couldn't be more than 2 : separated number
-            break
-          end
-        end
-      end
-    end
+  local file, lnum, col = path:match "^(.-):%s*(%d+)%s*:%s*(%d+)%s*:*$"
+  if file then
+    return file, tonumber(lnum), tonumber(col)
   end
-
-  if #location_numbers == 2 then
-    -- because of the reverse the line number will be second
-    return path, location_numbers[2], location_numbers[1]
+  file, lnum = path:match "^(.-):%s*(%d+)%s*:*$"
+  if file then
+    return file, tonumber(lnum), 0
   end
-
-  if #location_numbers == 1 then
-    return path, location_numbers[1], 0
-  end
-
-  return path, nil, nil
+  return (path:gsub(":+$", "")), nil, nil
 end
 
 local function add_offset(offset, obj)

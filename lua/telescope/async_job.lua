@@ -21,12 +21,6 @@ function AsyncJob.new(opts)
 
   if opts.cwd and opts.cwd ~= "" then
     self.uv_opts.cwd = utils.path_expand(opts.cwd)
-    -- this is a "illegal" hack for windows. E.g. If the git command returns `/` rather than `\` as delimiter,
-    -- vim.fn.expand might just end up returning an empty string. Weird
-    -- Because empty string is not allowed in libuv the job will not spawn. Solution is we just set it to opts.cwd
-    if self.uv_opts.cwd == "" then
-      self.uv_opts.cwd = opts.cwd
-    end
   end
 
   self.uv_opts.stdio = {
@@ -38,20 +32,14 @@ function AsyncJob.new(opts)
   return self
 end
 
-function AsyncJob:_for_each_pipe(f, ...)
-  for _, pipe in ipairs { self.stdin, self.stdout, self.stderr } do
-    f(pipe, ...)
-  end
-end
-
 function AsyncJob:close(force)
   if force == nil then
     force = true
   end
 
-  self:_for_each_pipe(function(p)
-    p:close(force)
-  end)
+  for _, pipe in ipairs { self.stdin, self.stdout, self.stderr } do
+    pipe:close(force)
+  end
 
   uv.process_kill(self.handle, "sigterm")
 
@@ -129,8 +117,6 @@ function Pipe:close(force)
   if not self.handle:is_closing() then
     self.handle:close()
   end
-
-  self._closed = true
 end
 
 function Pipe:read()
@@ -149,59 +135,49 @@ function Pipe:read()
   return read_rx()
 end
 
-function Pipe:iter(schedule, opts)
-  schedule = utils.if_nil(schedule, true)
-  local split_char = utils.if_nil(opts and opts.split_char, "\n")
+--- Iterate over the lines of the output, without line endings and `\r` (split at `opts.split_char`,
+--- one character, default "\n"). Yields to the main loop once per chunk read: `read()` resumes from
+--- the libuv read callback (a fast event), and the consumer may use the API.
+---@param opts? { split_char: string? }
+---@return fun(): string?
+function Pipe:iter(opts)
+  local split_char = opts and opts.split_char or "\n"
+  local text, pos, eof = "", 1, false
 
-  local text = nil
-  local index = nil
+  -- no loop: a loop here, inside the consumer's loop over the lines, keeps LuaJIT from compiling
+  -- the consumer's loop well; the next chunk is read with a tail call instead
+  local function next_line()
+    local found = string.find(text, split_char, pos, true)
+    if found then
+      local line = string.sub(text, pos, found - 1)
+      pos = found + 1 -- `split_char` is one character
+      return line
+    end
+    if eof then
+      if pos > #text then
+        return nil
+      end
+      -- the last line has no line ending
+      local line = string.sub(text, pos)
+      pos = #text + 1
+      return line
+    end
 
-  local get_next_text = function(previous)
-    index = nil
-
-    local read = self:read()
-    -- `read()` resumes us from the libuv read callback (a fast event): get back to the main loop
-    -- once per chunk, so that the consumer can use the API
+    local chunk = self:read()
     async.util.scheduler()
-    if previous == nil and read == nil then
-      return
+    if chunk == nil then
+      eof = true
+    else
+      -- `gsub` tries the pattern at every byte; most tools print no `\r` at all
+      if string.find(chunk, "\r", 1, true) then
+        chunk = string.gsub(chunk, "\r", "")
+      end
+      text, pos = string.sub(text, pos) .. chunk, 1
     end
-
-    read = read or ""
-    -- `gsub` tries the pattern at every byte; most tools print no `\r` at all
-    if string.find(read, "\r", 1, true) then
-      read = string.gsub(read, "\r", "")
-    end
-    return (previous or "") .. read
+    return next_line()
   end
 
-  local function next_value()
-    if schedule then
-      async.util.scheduler()
-    end
-
-    if text == nil or (text == "" and index == nil) then
-      return nil
-    end
-
-    local start = index
-    index = string.find(text, split_char, index, true)
-
-    if index == nil then
-      text = get_next_text(string.sub(text, start or 1))
-      return next_value()
-    end
-
-    index = index + 1
-
-    return string.sub(text, start or 1, index - 2)
-  end
-
-  text = get_next_text()
-
-  return function()
-    return next_value()
-  end
+  return next_line
 end
 
 M.convert_opts = function(o)

@@ -534,26 +534,20 @@ internal.oldfiles = function(opts)
 end
 
 ---@param opts telescope.builtin.commands_history.opts: options to pass to the picker
-internal.command_history = function(opts)
-  local history_string = fn.execute "history cmd"
-  local history_list = utils.split_lines(history_string)
-
-  local results = {}
-  local filter_fn = opts.filter_fn
-
-  for i = #history_list, 3, -1 do
-    local item = history_list[i]
-    local _, finish = string.find(item, "%d+ +")
-    local cmd = string.sub(item, finish + 1)
-
-    if filter_fn then
-      if filter_fn(cmd) then
-        table.insert(results, cmd)
-      end
-    else
-      table.insert(results, cmd)
+-- The entries of history `name` ("cmd", "search"), newest first (`:history` would truncate long ones).
+local function history_entries(name, filter_fn)
+  local entries = {}
+  for i = fn.histnr(name), 1, -1 do
+    local entry = fn.histget(name, i)
+    if entry ~= "" and (not filter_fn or filter_fn(entry)) then
+      entries[#entries + 1] = entry
     end
   end
+  return entries
+end
+
+internal.command_history = function(opts)
+  local results = history_entries("cmd", opts.filter_fn)
 
   pickers
     .new(opts, {
@@ -576,15 +570,7 @@ end
 
 ---@param opts telescope.builtin.search_history.opts: options to pass to the picker
 internal.search_history = function(opts)
-  local search_string = fn.execute "history search"
-  local search_list = utils.split_lines(search_string)
-
-  local results = {}
-  for i = #search_list, 3, -1 do
-    local item = search_list[i]
-    local _, finish = string.find(item, "%d+ +")
-    table.insert(results, string.sub(item, finish + 1))
-  end
+  local results = history_entries "search"
 
   pickers
     .new(opts, {
@@ -706,25 +692,19 @@ internal.help_tags = function(opts)
 
   local tags = {}
   local tags_map = {}
-  local delimiter = string.char(9)
   for _, lang in ipairs(langs) do
     for _, file in ipairs(tag_files[lang] or {}) do
-      local lines = utils.split_lines(utils.read_file(file), { trimempty = true })
-      for _, line in ipairs(lines) do
-        -- TODO: also ignore tagComment starting with ';'
-        if not line:match "^!_TAG_" then
-          local fields = vim.split(line, delimiter, { trimempty = true })
-          if #fields == 3 and not tags_map[fields[1]] then
-            if fields[1] ~= "help-tags" or fields[2] ~= "tags" then
-              table.insert(tags, {
-                name = fields[1],
-                filename = help_files[fields[2]],
-                cmd = fields[3],
-                lang = lang,
-              })
-              tags_map[fields[1]] = true
-            end
-          end
+      for line in utils.read_file(file):gmatch "[^\r\n]+" do
+        -- name, file and search command; skips the `!_TAG_` header lines
+        local name, file_name, cmd = line:match "^([^\t]+)\t([^\t]+)\t([^\t]+)$"
+        if
+          name
+          and not tags_map[name]
+          and name:sub(1, 6) ~= "!_TAG_"
+          and (name ~= "help-tags" or file_name ~= "tags")
+        then
+          tags[#tags + 1] = { name = name, filename = help_files[file_name], cmd = cmd, lang = lang }
+          tags_map[name] = true
         end
       end
     end
@@ -876,8 +856,14 @@ end
 internal.buffers = function(opts)
   opts = apply_cwd_only_aliases(opts)
 
+  -- in one call: `getbufinfo(bufnr)` takes time proportional to the number of buffers
+  local infos = {} ---@type table<integer, vim.fn.getbufinfo.ret.item>
+  for _, info in ipairs(fn.getbufinfo { buflisted = 1 }) do
+    infos[info.bufnr] = info
+  end
+
   local bufnrs = vim.tbl_filter(function(bufnr)
-    if 1 ~= fn.buflisted(bufnr) then
+    if not infos[bufnr] then
       return false
     end
     -- only hide unloaded buffers if opts.show_all_buffers is false, keep them listed if true or nil
@@ -906,7 +892,7 @@ internal.buffers = function(opts)
 
   if opts.sort_mru then
     table.sort(bufnrs, function(a, b)
-      return fn.getbufinfo(a)[1].lastused > fn.getbufinfo(b)[1].lastused
+      return infos[a].lastused > infos[b].lastused
     end)
   end
 
@@ -928,7 +914,7 @@ internal.buffers = function(opts)
     local element = {
       bufnr = bufnr,
       flag = flag,
-      info = fn.getbufinfo(bufnr)[1],
+      info = infos[bufnr],
     }
 
     if opts.sort_lastused and (flag == "#" or flag == "%") then

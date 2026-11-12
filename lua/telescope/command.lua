@@ -214,11 +214,7 @@ function command.get_extensions_subcommand()
   local complete_ext_table = {}
   for cmd, value in pairs(exts) do
     if type(value) == "table" then
-      local subcmds = {}
-      for key, _ in pairs(value) do
-        table.insert(subcmds, key)
-      end
-      complete_ext_table[cmd] = subcmds
+      complete_ext_table[cmd] = vim.tbl_keys(value)
     end
   end
   return complete_ext_table

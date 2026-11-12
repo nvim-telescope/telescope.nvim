@@ -228,7 +228,7 @@ local function list_or_jump(action, title, funname, params, opts)
         end
 
         if cmd then
-          vim.cmd(string.format("%s %s", cmd, item.filename))
+          utils.edit_file(cmd, item.filename)
         end
       end
 

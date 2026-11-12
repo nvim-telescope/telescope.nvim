@@ -58,7 +58,7 @@ return function(opts)
             process_result(v)
           end
         end
-        for line in stdout:iter(false, { split_char = opts.split_char }) do
+        for line in stdout:iter { split_char = opts.split_char } do
           num_results = num_results + 1
 
           if num_results % await_count == 0 then
