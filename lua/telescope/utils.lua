@@ -571,8 +571,11 @@ end
 function utils.win_set_buf_noautocmd(win, buf)
   local save_ei = vim.o.eventignore
   vim.o.eventignore = "all"
-  api.nvim_win_set_buf(win, buf)
+  local ok, err = pcall(api.nvim_win_set_buf, win, buf)
   vim.o.eventignore = save_ei
+  if not ok then
+    error(err, 0)
+  end
 end
 
 local load_once = function(f)
