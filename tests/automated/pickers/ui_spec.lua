@@ -1,3 +1,7 @@
+local t = require "test.harness"
+local assert = require "test.assert"
+local describe, it, before_each, after_each = t.describe, t.it, t.before_each, t.after_each
+
 local ui = require "telescope.pickers.ui"
 
 local eq = assert.eq
