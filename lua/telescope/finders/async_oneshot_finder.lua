@@ -1,10 +1,9 @@
-local async = require "neoplen.async"
+local _async = require "telescope._async"
 
 local async_job = require "telescope.async_job"
 local make_entry = require "telescope.make_entry"
 
 local LinesPipe = async_job.LinesPipe
-local await_count = 1000
 
 return function(opts)
   opts = opts or {}
@@ -60,8 +59,8 @@ return function(opts)
         for line in stdout:iter { split_char = opts.split_char } do
           num_results = num_results + 1
 
-          if num_results % await_count == 0 then
-            async.util.scheduler()
+          if num_results % 1000 == 0 then -- as `_async.process_list`
+            _async.yield()
           end
 
           local entry = entry_maker(line)
@@ -78,20 +77,8 @@ return function(opts)
         return
       end
 
-      local current_count = num_results
-      for index = 1, current_count do
-        if index % await_count == 0 then
-          async.util.scheduler()
-        end
-
-        if process_result(results[index]) then
-          break
-        end
-      end
-
-      if job_completed then
-        process_complete()
-      end
+      _async.process_list(results, num_results, process_result)
+      process_complete()
     end,
   })
 end

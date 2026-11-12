@@ -1,4 +1,4 @@
-local scheduler = require("neoplen.async").util.scheduler
+local _async = require "telescope._async"
 
 local make_entry = require "telescope.make_entry"
 
@@ -30,16 +30,7 @@ return function(opts)
     close = function() end,
   }, {
     __call = function(_, _, process_result, process_complete)
-      for i, v in ipairs(results) do
-        if process_result(v) then
-          break
-        end
-
-        if i % 1000 == 0 then
-          scheduler()
-        end
-      end
-
+      _async.process_list(results, #results, process_result)
       process_complete()
     end,
   })
