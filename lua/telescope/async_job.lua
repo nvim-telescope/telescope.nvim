@@ -23,14 +23,31 @@ end
 --- `LinesPipe()`, which closes itself at the end of the output.
 ---@param opts { command: string, args: string[]?, cwd: string?, env: table?, stdout: telescope.async_job.Pipe? }
 M.spawn = function(opts)
-  local self = setmetatable({ stdout = opts.stdout }, AsyncJob)
-  local command, uv_opts = M.convert_opts(opts)
-  if opts.cwd and opts.cwd ~= "" then
-    uv_opts.cwd = utils.path_expand(opts.cwd)
+  local command = assert(opts.command, "`command` is required")
+  -- `executable()` can't be called from a libuv callback; let `uv.spawn` fail then
+  local ok, is_exe = pcall(vim.fn.executable, command)
+  if ok and is_exe ~= 1 then
+    error(debug.traceback(command .. ": Executable not found"))
   end
-  uv_opts.stdio = { nil, self.stdout and self.stdout.handle, nil }
+  local env -- `{ "NAME=value", ... }` from `{ NAME = value }` (and "NAME=value" list items)
+  if opts.env then
+    env = {}
+    for k, v in pairs(opts.env) do
+      if type(k) == "number" then
+        env[#env + 1] = v
+      elseif type(k) == "string" then
+        env[#env + 1] = k .. "=" .. tostring(v)
+      end
+    end
+  end
 
-  self.handle, self.pid = uv.spawn(command, uv_opts, function()
+  local self = setmetatable({ stdout = opts.stdout }, AsyncJob)
+  self.handle, self.pid = uv.spawn(command, {
+    args = opts.args,
+    cwd = opts.cwd and opts.cwd ~= "" and utils.path_expand(opts.cwd) or nil,
+    env = env,
+    stdio = { nil, self.stdout and self.stdout.handle, nil },
+  }, function()
     self.handle:close()
   end)
   if not self.handle then
@@ -137,57 +154,6 @@ function Pipe:iter(opts)
   end
 
   return next_line
-end
-
-M.convert_opts = function(o)
-  if not o then
-    error(debug.traceback "Options are required for Job:new")
-  end
-
-  local command = o.command
-  if not command then
-    if o[1] then
-      command = o[1]
-    else
-      error(debug.traceback "'command' is required for Job:new")
-    end
-  elseif o[1] then
-    error(debug.traceback "Cannot pass both 'command' and array args")
-  end
-
-  local args = o.args
-  if not args then
-    if #o > 1 then
-      args = { select(2, unpack(o)) }
-    end
-  end
-
-  local ok, is_exe = pcall(vim.fn.executable, command)
-  if not o.skip_validation and ok and 1 ~= is_exe then
-    error(debug.traceback(command .. ": Executable not found"))
-  end
-
-  local obj = {}
-
-  obj.args = args
-
-  if o.env then
-    if type(o.env) ~= "table" then
-      error(debug.traceback "'env' has to be a table")
-    end
-
-    local transform = {}
-    for k, v in pairs(o.env) do
-      if type(k) == "number" then
-        table.insert(transform, v)
-      elseif type(k) == "string" then
-        table.insert(transform, k .. "=" .. tostring(v))
-      end
-    end
-    obj.env = transform
-  end
-
-  return command, obj
 end
 
 return M

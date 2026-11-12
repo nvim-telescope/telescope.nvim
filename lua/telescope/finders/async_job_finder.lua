@@ -9,22 +9,6 @@ return function(opts)
   assert(not opts.writer, "async_job_finder: `writer` is not implemented")
   local entry_maker = opts.entry_maker or make_entry.gen_from_string(opts)
 
-  local fn_command = function(prompt)
-    local command_list = opts.command_generator(prompt)
-    if command_list == nil then
-      return nil
-    end
-
-    local command = table.remove(command_list, 1)
-
-    local res = {
-      command = command,
-      args = command_list,
-    }
-
-    return res
-  end
-
   local job
 
   local callable = function(_, prompt, process_result, process_complete)
@@ -32,20 +16,18 @@ return function(opts)
       job:close()
     end
 
-    local job_opts = fn_command(prompt)
-    if not job_opts then
+    local args = opts.command_generator(prompt)
+    if not args then
       process_complete()
       return
     end
 
     local stdout = LinesPipe()
-
     job = async_job.spawn {
-      command = job_opts.command,
-      args = job_opts.args,
-      cwd = job_opts.cwd or opts.cwd,
-      env = job_opts.env or opts.env,
-
+      command = table.remove(args, 1),
+      args = args,
+      cwd = opts.cwd,
+      env = opts.env,
       stdout = stdout,
     }
 
