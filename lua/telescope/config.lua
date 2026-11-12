@@ -5,7 +5,7 @@ local utils = require "telescope.utils"
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
 _TelescopeConfigurationPickers = _TelescopeConfigurationPickers or {}
 
-local first_non_null = utils.if_nil
+local nonnil = vim.nonnil
 
 -- A function that creates an amended copy of the `base` table,
 -- by replacing keys at "level 2" that match keys in "level 1" in `priority`,
@@ -16,17 +16,17 @@ local smarter_depth_2_extend = function(priority, base)
   local result = {}
   for key, val in pairs(base) do
     if type(val) ~= "table" then
-      result[key] = first_non_null(priority[key], val)
+      result[key] = nonnil(priority[key], val)
     else
       result[key] = {}
       for k, v in pairs(val) do
-        result[key][k] = first_non_null(priority[k], v)
+        result[key][k] = nonnil(priority[k], v)
       end
     end
   end
   for key, val in pairs(priority) do
     if type(val) ~= "table" then
-      result[key] = first_non_null(val, result[key])
+      result[key] = nonnil(val, result[key])
     else
       result[key] = vim.tbl_extend("keep", val, result[key] or {})
     end
@@ -56,7 +56,7 @@ config.descriptions = {}
 config.pickers = _TelescopeConfigurationPickers
 
 function config.set_pickers(pickers)
-  pickers = utils.if_nil(pickers, {})
+  pickers = nonnil(pickers, {})
 
   for k, v in pairs(pickers) do
     config.pickers[k] = v
@@ -934,14 +934,14 @@ append(
 -- @param tele_defaults table: (optional) a table containing all of the defaults
 --    for telescope [defaults to `telescope_defaults`]
 function config.set_defaults(user_defaults, tele_defaults)
-  user_defaults = utils.if_nil(user_defaults, {})
-  tele_defaults = utils.if_nil(tele_defaults, telescope_defaults)
+  user_defaults = nonnil(user_defaults, {})
+  tele_defaults = nonnil(tele_defaults, telescope_defaults)
 
   local function get(name, default_val)
     if name == "layout_config" then
       return smarter_depth_2_extend(
-        utils.if_nil(user_defaults[name], {}),
-        vim.tbl_deep_extend("keep", utils.if_nil(config.values[name], {}), utils.if_nil(default_val, {}))
+        nonnil(user_defaults[name], {}),
+        vim.tbl_deep_extend("keep", nonnil(config.values[name], {}), nonnil(default_val, {}))
       )
     end
     if name == "history" or name == "cache_picker" or name == "preview" then
@@ -949,15 +949,15 @@ function config.set_defaults(user_defaults, tele_defaults)
         return false
       end
       if user_defaults[name] == true then
-        return utils.if_nil(config.values[name], {})
+        return nonnil(config.values[name], {})
       end
 
       return smarter_depth_2_extend(
-        utils.if_nil(user_defaults[name], {}),
-        vim.tbl_deep_extend("keep", utils.if_nil(config.values[name], {}), utils.if_nil(default_val, {}))
+        nonnil(user_defaults[name], {}),
+        vim.tbl_deep_extend("keep", nonnil(config.values[name], {}), nonnil(default_val, {}))
       )
     end
-    return first_non_null(user_defaults[name], config.values[name], default_val)
+    return nonnil(user_defaults[name], config.values[name], default_val)
   end
 
   local function set(name, default_val, description)

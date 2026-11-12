@@ -1,7 +1,6 @@
 local async = require "neoplen.async"
 
 local async_job = require "telescope.async_job"
-local utils = require "telescope.utils"
 local make_entry = require "telescope.make_entry"
 
 local LinesPipe = async_job.LinesPipe
@@ -15,7 +14,7 @@ return function(opts)
   local env = opts.env
   local fn_command = assert(opts.fn_command, "Must pass `fn_command`")
 
-  local results = utils.if_nil(opts.results, {})
+  local results = vim.nonnil(opts.results, {})
   local num_results = #results
 
   local job_started = false
