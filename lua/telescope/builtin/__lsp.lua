@@ -3,8 +3,6 @@
 local api = vim.api
 local lsp = vim.lsp
 
-local channel = require("neoplen.async.control").channel
-
 local actions = require "telescope.actions"
 local conf = require("telescope.config").values
 local finders = require "telescope.finders"
@@ -420,11 +418,11 @@ local function get_workspace_symbols_requester(bufnr, opts)
   local cancel = function() end
 
   return function(prompt)
-    local tx, rx = channel.oneshot()
     cancel()
-    cancel = lsp.buf_request_all(bufnr, "workspace/symbol", { query = prompt }, tx)
-
-    local results = rx() ---@type table<integer, {error: lsp.ResponseError?, result: lsp.WorkspaceSymbol?}>
+    ---@type table<integer, {error: lsp.ResponseError?, result: lsp.WorkspaceSymbol?}>
+    local results = vim.async.await(1, function(callback)
+      cancel = lsp.buf_request_all(bufnr, "workspace/symbol", { query = prompt }, callback)
+    end)
     local locations = {} ---@type vim.quickfix.entry[]
 
     for client_id, client_res in pairs(results) do
