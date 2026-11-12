@@ -32,7 +32,7 @@ local function defaulter(f)
       opts.preview = type(opts.preview) ~= "table" and {} or opts.preview
       if type(conf.preview) == "table" then
         for k, v in pairs(conf.preview) do
-          opts.preview[k] = utils.if_nil(opts.preview[k], v)
+          opts.preview[k] = vim.nonnil(opts.preview[k], v)
         end
       end
       return f(opts)
@@ -157,13 +157,13 @@ local PREVIEW_FILESIZE_MB = 25
 local PREVIEW_HIGHLIGHT_MB = 1
 
 previewers.file_maker = function(filepath, bufnr, opts)
-  opts = utils.if_nil(opts, {})
-  opts.preview = utils.if_nil(opts.preview, {})
-  opts.preview.timeout = utils.if_nil(opts.preview.timeout, PREVIEW_TIMEOUT_MS)
-  opts.preview.filesize_limit = utils.if_nil(opts.preview.filesize_limit, PREVIEW_FILESIZE_MB)
-  opts.preview.highlight_limit = utils.if_nil(opts.preview.highlight_limit, PREVIEW_HIGHLIGHT_MB)
-  opts.preview.msg_bg_fillchar = utils.if_nil(opts.preview.msg_bg_fillchar, "╱")
-  opts.preview.treesitter = utils.if_nil(opts.preview.treesitter, true)
+  opts = vim.nonnil(opts, {})
+  opts.preview = vim.nonnil(opts.preview, {})
+  opts.preview.timeout = vim.nonnil(opts.preview.timeout, PREVIEW_TIMEOUT_MS)
+  opts.preview.filesize_limit = vim.nonnil(opts.preview.filesize_limit, PREVIEW_FILESIZE_MB)
+  opts.preview.highlight_limit = vim.nonnil(opts.preview.highlight_limit, PREVIEW_HIGHLIGHT_MB)
+  opts.preview.msg_bg_fillchar = vim.nonnil(opts.preview.msg_bg_fillchar, "╱")
+  opts.preview.treesitter = vim.nonnil(opts.preview.treesitter, true)
   if opts.use_ft_detect == nil then
     opts.use_ft_detect = true
   end

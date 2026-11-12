@@ -2,7 +2,6 @@ local api = vim.api
 local hl = vim.hl
 local log = require "telescope.log"
 local conf = require("telescope.config").values
-local utils = require "telescope.utils"
 
 local M = {}
 
@@ -67,7 +66,7 @@ function Highlighter:hi_sorter(row, prompt, display)
 end
 
 function Highlighter:hi_selection(row, caret)
-  caret = utils.if_nil(caret, "")
+  caret = vim.nonnil(caret, "")
   local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
 
   api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)

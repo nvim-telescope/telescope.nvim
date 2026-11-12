@@ -1,8 +1,3 @@
-if 1 ~= vim.fn.has "nvim-0.11" then
-  error "Telescope.nvim requires at least nvim-0.11."
-  return
-end
-
 if vim.g.loaded_telescope == 1 then
   return
 end

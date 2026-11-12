@@ -83,8 +83,6 @@ That's the next step to scrolling.
 }
 ]]
 
-local utils = require "telescope.utils"
-
 local resolver = {}
 local _resolve_map = {}
 
@@ -317,9 +315,9 @@ resolver.win_option = function(val, default)
     end
 
     return {
-      preview = utils.if_nil(val.preview, val_to_set),
-      results = utils.if_nil(val.results, val_to_set),
-      prompt = utils.if_nil(val.prompt, val_to_set),
+      preview = vim.nonnil(val.preview, val_to_set),
+      results = vim.nonnil(val.results, val_to_set),
+      prompt = vim.nonnil(val.prompt, val_to_set),
     }
   end
 end
