@@ -11,7 +11,6 @@ local previewers = require "telescope.previewers"
 local sorters = require "telescope.sorters"
 local utils = require "telescope.utils"
 local conf = require("telescope.config").values
-local log = require "telescope.log"
 
 local flatten = utils.flatten
 
@@ -69,6 +68,13 @@ local get_additional_args = function(opts)
     args = args(opts)
   end
   return type(args) == "table" and vim.list_extend({}, args) or {}
+end
+
+local warn_unavailable = function(key, command)
+  utils.notify("builtin.find_files", {
+    msg = ("The `%s` key is not available for the `%s` command."):format(key, command),
+    level = "WARN",
+  })
 end
 
 local opts_contain_invert = function(args)
@@ -332,10 +338,10 @@ files.find_files = function(opts)
       find_command = flatten(find_command)
     end
     if no_ignore ~= nil then
-      log.warn "The `no_ignore` key is not available for the `find` command in `find_files`."
+      warn_unavailable("no_ignore", "find")
     end
     if no_ignore_parent ~= nil then
-      log.warn "The `no_ignore_parent` key is not available for the `find` command in `find_files`."
+      warn_unavailable("no_ignore_parent", "find")
     end
     if follow then
       table.insert(find_command, 2, "-L")
@@ -352,22 +358,22 @@ files.find_files = function(opts)
     end
   elseif command == "where" then
     if hidden ~= nil then
-      log.warn "The `hidden` key is not available for the Windows `where` command in `find_files`."
+      warn_unavailable("hidden", "where")
     end
     if no_ignore ~= nil then
-      log.warn "The `no_ignore` key is not available for the Windows `where` command in `find_files`."
+      warn_unavailable("no_ignore", "where")
     end
     if no_ignore_parent ~= nil then
-      log.warn "The `no_ignore_parent` key is not available for the Windows `where` command in `find_files`."
+      warn_unavailable("no_ignore_parent", "where")
     end
     if follow ~= nil then
-      log.warn "The `follow` key is not available for the Windows `where` command in `find_files`."
+      warn_unavailable("follow", "where")
     end
     if search_dirs ~= nil then
-      log.warn "The `search_dirs` key is not available for the Windows `where` command in `find_files`."
+      warn_unavailable("search_dirs", "where")
     end
     if search_file ~= nil then
-      log.warn "The `search_file` key is not available for the Windows `where` command in `find_files`."
+      warn_unavailable("search_file", "where")
     end
   end
 

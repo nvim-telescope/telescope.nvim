@@ -1,4 +1,1 @@
-return require("neoplen.log").new {
-  plugin = "telescope",
-  level = "info",
-}
+return vim.log.new { name = "telescope", level = vim.log.levels.INFO }

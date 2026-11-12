@@ -4,9 +4,6 @@ local describe, it = t.describe, t.it
 
 local p_scroller = require "telescope.pickers.scroller"
 
-local log = require "telescope.log"
-log.use_console = false
-
 local eq = assert.eq
 
 describe("scroller", function()
