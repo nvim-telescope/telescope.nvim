@@ -856,8 +856,14 @@ end
 internal.buffers = function(opts)
   opts = apply_cwd_only_aliases(opts)
 
+  -- in one call: `getbufinfo(bufnr)` takes time proportional to the number of buffers
+  local infos = {} ---@type table<integer, vim.fn.getbufinfo.ret.item>
+  for _, info in ipairs(fn.getbufinfo { buflisted = 1 }) do
+    infos[info.bufnr] = info
+  end
+
   local bufnrs = vim.tbl_filter(function(bufnr)
-    if 1 ~= fn.buflisted(bufnr) then
+    if not infos[bufnr] then
       return false
     end
     -- only hide unloaded buffers if opts.show_all_buffers is false, keep them listed if true or nil
@@ -886,7 +892,7 @@ internal.buffers = function(opts)
 
   if opts.sort_mru then
     table.sort(bufnrs, function(a, b)
-      return fn.getbufinfo(a)[1].lastused > fn.getbufinfo(b)[1].lastused
+      return infos[a].lastused > infos[b].lastused
     end)
   end
 
@@ -908,7 +914,7 @@ internal.buffers = function(opts)
     local element = {
       bufnr = bufnr,
       flag = flag,
-      info = fn.getbufinfo(bufnr)[1],
+      info = infos[bufnr],
     }
 
     if opts.sort_lastused and (flag == "#" or flag == "%") then
