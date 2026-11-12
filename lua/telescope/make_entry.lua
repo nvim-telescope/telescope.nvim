@@ -847,7 +847,7 @@ function make_entry.gen_from_keymaps(opts)
     return ret
   end
 
-  local displayer = require("telescope.pickers.entry_display").create {
+  local displayer = entry_display.create {
     separator = "▏",
     items = {
       { width = 3 },

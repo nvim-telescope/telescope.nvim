@@ -1379,7 +1379,7 @@ actions.which_key = function(prompt_bufnr, opts)
     once = true,
     callback = function()
       pcall(api.nvim_win_close, km_win_id, true)
-      require("telescope.utils").buf_delete(km_buf)
+      utils.buf_delete(km_buf)
     end,
   })
 

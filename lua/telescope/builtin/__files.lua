@@ -529,7 +529,7 @@ files.current_buffer_fuzzy_find = function(opts)
             return
           end
           local current_picker = action_state.get_current_picker(prompt_bufnr)
-          local searched_for = require("telescope.actions.state").get_current_line()
+          local searched_for = action_state.get_current_line()
 
           ---@type number[] | {start:number, end:number?, highlight:string?}[]
           local highlights = current_picker.sorter:highlighter(searched_for, selection.ordinal) or {}
