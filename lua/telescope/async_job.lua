@@ -1,7 +1,5 @@
 local uv = vim.uv
 
-local async = require "neoplen.async"
-local channel = async.control.channel
 local log = require "telescope.log"
 local utils = require "telescope.utils"
 
@@ -10,134 +8,113 @@ local M = {}
 local AsyncJob = {}
 AsyncJob.__index = AsyncJob
 
-function AsyncJob.new(opts)
-  local self = setmetatable({}, AsyncJob)
-
-  self.command, self.uv_opts = M.convert_opts(opts)
-
-  self.stdin = opts.stdin or M.NullPipe()
-  self.stdout = opts.stdout or M.NullPipe()
-  self.stderr = opts.stderr or M.NullPipe()
-
-  if opts.cwd and opts.cwd ~= "" then
-    self.uv_opts.cwd = utils.path_expand(opts.cwd)
+--- Stop the process and its output pipe (if the process still runs, it gets SIGTERM).
+function AsyncJob:close()
+  if self.stdout then
+    self.stdout:close()
   end
-
-  self.uv_opts.stdio = {
-    self.stdin.handle,
-    self.stdout.handle,
-    self.stderr.handle,
-  }
-
-  return self
-end
-
-function AsyncJob:close(force)
-  if force == nil then
-    force = true
+  if not self.handle:is_closing() then
+    uv.process_kill(self.handle, "sigterm")
   end
-
-  for _, pipe in ipairs { self.stdin, self.stdout, self.stderr } do
-    pipe:close(force)
-  end
-
-  uv.process_kill(self.handle, "sigterm")
-
   log.debug "[async_job] closed"
 end
 
+--- Start a process. Its stdin is empty and its stderr discarded; read its output through `stdout`, a
+--- `LinesPipe()`, which closes itself at the end of the output.
+---@param opts { command: string, args: string[]?, cwd: string?, env: table?, stdout: telescope.async_job.Pipe? }
 M.spawn = function(opts)
-  local self = AsyncJob.new(opts)
-  self.handle, self.pid = uv.spawn(
-    self.command,
-    self.uv_opts,
-    async.void(function()
-      self:close(false)
-      if not self.handle:is_closing() then
-        self.handle:close()
+  local command = assert(opts.command, "`command` is required")
+  -- `executable()` can't be called from a libuv callback; let `uv.spawn` fail then
+  local ok, is_exe = pcall(vim.fn.executable, command)
+  if ok and is_exe ~= 1 then
+    error(debug.traceback(command .. ": Executable not found"))
+  end
+  local env -- `{ "NAME=value", ... }` from `{ NAME = value }` (and "NAME=value" list items)
+  if opts.env then
+    env = {}
+    for k, v in pairs(opts.env) do
+      if type(k) == "number" then
+        env[#env + 1] = v
+      elseif type(k) == "string" then
+        env[#env + 1] = k .. "=" .. tostring(v)
       end
-    end)
-  )
-
-  if not self.handle then
-    error(debug.traceback("Failed to spawn process: " .. vim.inspect(self)))
+    end
   end
 
+  local self = setmetatable({ stdout = opts.stdout }, AsyncJob)
+  self.handle, self.pid = uv.spawn(command, {
+    args = opts.args,
+    cwd = opts.cwd and opts.cwd ~= "" and utils.path_expand(opts.cwd) or nil,
+    env = env,
+    stdio = { nil, self.stdout and self.stdout.handle, nil },
+  }, function()
+    self.handle:close()
+  end)
+  if not self.handle then
+    if self.stdout then
+      self.stdout:close()
+    end
+    error(debug.traceback("Failed to spawn process: " .. vim.inspect(opts)))
+  end
   return self
 end
 
 ---@class telescope.async_job.Pipe
----@field handle uv.uv_pipe_t? libuv pipe (nil for `NullPipe`)
----@field eof_tx fun() signals end of file
----@field eof_rx async fun() waits for end of file
+---@field handle uv.uv_pipe_t libuv pipe
+---@field package reading boolean? a read is pending
+---@field package ready boolean? `err` and `data` hold a chunk not yet returned by `read()`
+---@field package err string?
+---@field package data string?
+---@field package wake fun()? resumes the current reader
 local Pipe = {}
 Pipe.__index = Pipe
-
----@param handle uv.uv_pipe_t?
----@return telescope.async_job.Pipe
-local function new_pipe(handle)
-  local self = setmetatable({ handle = handle }, Pipe)
-  -- must be per instance: a oneshot channel can only be used once
-  self.eof_tx, self.eof_rx = channel.oneshot()
-  return self
-end
 
 --- Pipe for reading process output line by line (see `Pipe:iter()`)
 ---@return telescope.async_job.Pipe
 function M.LinesPipe()
-  return new_pipe(uv.new_pipe(false))
+  return setmetatable({ handle = uv.new_pipe(false) }, Pipe)
 end
 
---- Placeholder for an unused stdio stream: no handle, already at end of file
----@return telescope.async_job.Pipe
-function M.NullPipe()
-  local self = new_pipe(nil)
-  self.eof_tx()
-  return self
-end
-
----@param force boolean? if false, wait for end of file first (default: true)
-function Pipe:close(force)
-  if force == nil then
-    force = true
-  end
-
-  -- `NullPipe` has nothing to close
-  if not self.handle or self.handle:is_closing() then
-    return
-  end
-
-  -- If we're not forcing the stop, allow waiting for eof
-  -- This ensures that we don't end up with weird race conditions
-  if not force then
-    self.eof_rx()
-  end
-
-  self.handle:read_stop()
+function Pipe:close()
   if not self.handle:is_closing() then
     self.handle:close()
   end
 end
 
+--- The next chunk of output, or nil at the end of the output (the pipe is closed then). Waits inside
+--- a `vim.async` task and resumes from the main loop, where the API can be used. The chunk is kept in
+--- the pipe until it is returned, so a read whose task is closed loses nothing: the next read gets it.
 function Pipe:read()
-  local read_tx, read_rx = channel.oneshot()
-
-  self.handle:read_start(function(err, data)
-    assert(not err, err)
-    self.handle:read_stop()
-
-    read_tx(data)
-    if data == nil then
-      self.eof_tx()
-    end
-  end)
-
-  return read_rx()
+  if not self.ready then
+    vim.async.await(1, function(wake)
+      self.wake = wake -- the reader of a closed task never wakes: wake the current one
+      if self.reading then
+        return
+      end
+      self.reading = true
+      self.handle:read_start(function(err, data)
+        self.handle:read_stop()
+        if err or data == nil then
+          self:close()
+        end
+        vim.schedule(function()
+          self.reading, self.ready, self.err, self.data = false, true, err, data
+          self.wake()
+        end)
+      end)
+    end)
+  end
+  self.ready = false
+  if self.err then
+    error(self.err)
+  end
+  return self.data
 end
 
 --- Iterate over the lines of the output, without line endings and `\r` (split at `opts.split_char`,
---- one character, default "\n"). Yields to the main loop once per chunk read: `read()` resumes from
---- the libuv read callback (a fast event), and the consumer may use the API.
+--- one character, default "\n"). Yields to the main loop once per chunk read (`read()`), so the
+--- consumer may use the API. If the consumer's task is closed while it waits, a later call (from
+--- another task) continues where it stopped.
 ---@param opts? { split_char: string? }
 ---@return fun(): string?
 function Pipe:iter(opts)
@@ -164,7 +141,6 @@ function Pipe:iter(opts)
     end
 
     local chunk = self:read()
-    async.util.scheduler()
     if chunk == nil then
       eof = true
     else
@@ -178,57 +154,6 @@ function Pipe:iter(opts)
   end
 
   return next_line
-end
-
-M.convert_opts = function(o)
-  if not o then
-    error(debug.traceback "Options are required for Job:new")
-  end
-
-  local command = o.command
-  if not command then
-    if o[1] then
-      command = o[1]
-    else
-      error(debug.traceback "'command' is required for Job:new")
-    end
-  elseif o[1] then
-    error(debug.traceback "Cannot pass both 'command' and array args")
-  end
-
-  local args = o.args
-  if not args then
-    if #o > 1 then
-      args = { select(2, unpack(o)) }
-    end
-  end
-
-  local ok, is_exe = pcall(vim.fn.executable, command)
-  if not o.skip_validation and ok and 1 ~= is_exe then
-    error(debug.traceback(command .. ": Executable not found"))
-  end
-
-  local obj = {}
-
-  obj.args = args
-
-  if o.env then
-    if type(o.env) ~= "table" then
-      error(debug.traceback "'env' has to be a table")
-    end
-
-    local transform = {}
-    for k, v in pairs(o.env) do
-      if type(k) == "number" then
-        table.insert(transform, v)
-      elseif type(k) == "string" then
-        table.insert(transform, k .. "=" .. tostring(v))
-      end
-    end
-    obj.env = transform
-  end
-
-  return command, obj
 end
 
 return M

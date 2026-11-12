@@ -1,26 +1,21 @@
-local async = require "neoplen.async"
+local _async = require "telescope._async"
 
 local async_job = require "telescope.async_job"
 local make_entry = require "telescope.make_entry"
 
 local LinesPipe = async_job.LinesPipe
-local await_count = 1000
 
 return function(opts)
   opts = opts or {}
 
   local entry_maker = opts.entry_maker or make_entry.gen_from_string(opts)
-  local cwd = opts.cwd
-  local env = opts.env
   local fn_command = assert(opts.fn_command, "Must pass `fn_command`")
 
   local results = vim.nonnil(opts.results, {})
   local num_results = #results
 
-  local job_started = false
-  local job_completed = false
-  local stdout = nil
-
+  local lines -- the lines of the command's output, once it has been started
+  local loaded = false
   local job
 
   return setmetatable({
@@ -34,64 +29,40 @@ return function(opts)
     -- results don't depend on the prompt (allows narrowing, see `Picker:_narrowed_candidates`)
     prompt_independent = true,
   }, {
-    __call = function(_, prompt, process_result, process_complete)
-      if not job_started then
+    -- Each find processes the results loaded so far and then loads the rest. A find is cancelled
+    -- (its task closed) only while it waits, so `results` stays consistent and the next find
+    -- continues loading where the cancelled one stopped.
+    __call = function(_, _, process_result, process_complete)
+      if not lines then
         local job_opts = fn_command()
-
-        stdout = LinesPipe()
+        local stdout = LinesPipe()
         job = async_job.spawn {
           command = job_opts.command,
           args = job_opts.args,
-          cwd = cwd,
-          env = env,
-
+          cwd = opts.cwd,
+          env = opts.env,
           stdout = stdout,
         }
-
-        job_started = true
+        lines = stdout:iter { split_char = opts.split_char }
       end
 
-      if not job_completed then
-        if not vim.tbl_isempty(results) then
-          for _, v in ipairs(results) do
-            process_result(v)
-          end
-        end
-        for line in stdout:iter { split_char = opts.split_char } do
-          num_results = num_results + 1
-
-          if num_results % await_count == 0 then
-            async.util.scheduler()
-          end
-
+      _async.process_list(results, num_results, process_result)
+      if not loaded then
+        for line in lines do
+          local n = num_results + 1
           local entry = entry_maker(line)
           if entry then
-            entry.index = num_results
+            entry.index = n
           end
-          results[num_results] = entry
+          results[n], num_results = entry, n
           process_result(entry)
+          if n % 1000 == 0 then -- as `_async.process_list`
+            _async.yield()
+          end
         end
-
-        process_complete()
-        job_completed = true
-
-        return
+        loaded = true
       end
-
-      local current_count = num_results
-      for index = 1, current_count do
-        if index % await_count == 0 then
-          async.util.scheduler()
-        end
-
-        if process_result(results[index]) then
-          break
-        end
-      end
-
-      if job_completed then
-        process_complete()
-      end
+      process_complete()
     end,
   })
 end
