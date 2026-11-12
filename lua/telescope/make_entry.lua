@@ -183,7 +183,7 @@ do
 
       if k == "path" then
         local retpath = utils.is_absolute(t.value) and t.value
-          or fs.normalize(fs.joinpath(t.cwd, t.value), { expand_env = false })
+          or fs.normalize(fs.joinpath(t.cwd, t.value), { plain = true })
         if not vim.uv.fs_access(retpath, "R") then
           retpath = t.value
         end
@@ -271,7 +271,7 @@ do
         if utils.is_absolute(t.filename) then
           return t.filename, false
         else
-          return fs.normalize(fs.joinpath(t.cwd, t.filename), { expand_env = false }), false
+          return fs.normalize(fs.joinpath(t.cwd, t.filename), { plain = true }), false
         end
       end,
 

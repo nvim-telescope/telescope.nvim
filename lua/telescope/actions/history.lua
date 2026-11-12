@@ -175,7 +175,7 @@ M.get_simple_history = function()
   return M.new {
     init = function(obj)
       if not uv.fs_stat(obj.path) then
-        vim.fn.mkdir(vim.fs.dirname(obj.path), "p")
+        vim.fs.mkdir(vim.fs.dirname(obj.path), { parents = true })
         local file = assert(io.open(obj.path, "a"))
         file:close()
       end
