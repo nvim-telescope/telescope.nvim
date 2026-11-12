@@ -15,7 +15,7 @@ function from_entry.path(entry, validate, escape)
   escape = vim.nonnil(escape, true)
   local path = entry.path or entry.filename or entry.value
   if path == nil then
-    require("telescope.log").error(string.format("Invalid Entry: '%s'", vim.inspect(entry)))
+    utils.notify("from_entry.path", { msg = ("Invalid entry: '%s'"):format(vim.inspect(entry)), level = "ERROR" })
     return
   end
 

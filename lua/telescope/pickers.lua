@@ -607,7 +607,7 @@ function Picker:find()
         end)
 
         if not ok then
-          log.warn("Finder failed with msg: ", msg)
+          utils.notify("pickers.find", { msg = "Finder failed: " .. tostring(msg), level = "WARN" })
         end
 
         local diff_time = (vim.uv.hrtime() - start_time) / 1e6
