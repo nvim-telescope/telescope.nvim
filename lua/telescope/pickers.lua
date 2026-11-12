@@ -3,9 +3,7 @@ require "telescope"
 local fn = vim.fn
 local api = vim.api
 
-local async = require "neoplen.async"
 local _async = require "telescope._async"
-local channel = require("neoplen.async.control").channel
 local ui = require "telescope.pickers.ui"
 
 local actions = require "telescope.actions"
@@ -495,8 +493,8 @@ function Picker:find()
   local status_updater = self:get_status_updater(self.prompt_win, self.prompt_bufnr)
   local debounced_status = debounce.throttle_leading(status_updater, 50)
 
-  local tx, rx = channel.mpsc()
-  self._on_lines = tx.send
+  local send, wait = _async.signal()
+  self._on_lines = send
 
   local find_id = self:_next_find_id()
 
@@ -522,7 +520,7 @@ function Picker:find()
     })
   end
 
-  local main_loop = async.void(function()
+  local main_loop = function()
     self.sorter:_init()
 
     -- Do filetype last, so that users can register at the last second.
@@ -533,7 +531,7 @@ function Picker:find()
 
     while true do
       -- Wait for the next input
-      rx.last()
+      wait()
       _async.yield()
 
       self:_reset_track()
@@ -605,6 +603,7 @@ function Picker:find()
             self.finder(prompt, process_result, process_complete)
           end
         end)
+        vim.async.checkpoint() -- the picker was closed during the find
 
         if not ok then
           utils.notify("pickers.find", { msg = "Finder failed: " .. tostring(msg), level = "WARN" })
@@ -612,13 +611,13 @@ function Picker:find()
 
         local diff_time = (vim.uv.hrtime() - start_time) / 1e6
         if self.debounce and diff_time < self.debounce then
-          async.util.sleep(self.debounce - diff_time)
+          vim.async.sleep(self.debounce - diff_time)
         end
       else
         self:_resume_picker()
       end
     end
-  end)
+  end
 
   -- Register attach
   api.nvim_buf_attach(self.prompt_bufnr, false, {
@@ -677,8 +676,14 @@ function Picker:find()
 
   mappings.apply_keymap(self.prompt_bufnr, self.attach_mappings, config.values.mappings)
 
-  tx.send()
-  main_loop()
+  send()
+  -- closed in `_detach`; report other errors
+  self._main_task = vim.async.run(main_loop)
+  self._main_task:on_complete(function(err)
+    if err ~= nil and err ~= "closed" then
+      error(err, 0)
+    end
+  end)
 end
 
 --- A helper function to update picker windows when layout options are changed
@@ -1656,6 +1661,9 @@ function Picker:_toggle_finder_attach()
 end
 
 function Picker:_detach()
+  if self._main_task then
+    self._main_task:close()
+  end
   self.finder:close()
 
   self.closed = true

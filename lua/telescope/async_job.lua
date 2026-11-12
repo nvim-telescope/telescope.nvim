@@ -1,7 +1,5 @@
 local uv = vim.uv
 
-local async = require "neoplen.async"
-local channel = async.control.channel
 local log = require "telescope.log"
 local utils = require "telescope.utils"
 
@@ -61,25 +59,29 @@ function Pipe:close()
   end
 end
 
---- The next chunk of output, or nil at the end of the output (the pipe is closed then).
+--- The next chunk of output, or nil at the end of the output (the pipe is closed then). Waits inside
+--- a `vim.async` task and resumes from the main loop, where the API can be used.
 function Pipe:read()
-  local read_tx, read_rx = channel.oneshot()
-
-  self.handle:read_start(function(err, data)
-    assert(not err, err)
-    self.handle:read_stop()
-    if data == nil then
-      self:close()
-    end
-    read_tx(data)
+  local err, data = vim.async.await(1, function(callback)
+    self.handle:read_start(function(err, data)
+      self.handle:read_stop()
+      if err or data == nil then
+        self:close()
+      end
+      vim.schedule(function()
+        callback(err, data)
+      end)
+    end)
   end)
-
-  return read_rx()
+  if err then
+    error(err)
+  end
+  return data
 end
 
 --- Iterate over the lines of the output, without line endings and `\r` (split at `opts.split_char`,
---- one character, default "\n"). Yields to the main loop once per chunk read: `read()` resumes from
---- the libuv read callback (a fast event), and the consumer may use the API.
+--- one character, default "\n"). Yields to the main loop once per chunk read (`read()`), so the
+--- consumer may use the API.
 ---@param opts? { split_char: string? }
 ---@return fun(): string?
 function Pipe:iter(opts)
@@ -106,7 +108,6 @@ function Pipe:iter(opts)
     end
 
     local chunk = self:read()
-    async.util.scheduler()
     if chunk == nil then
       eof = true
     else

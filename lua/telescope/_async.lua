@@ -1,11 +1,12 @@
--- Coroutine helpers for pickers and finders. They wait only through this module, so the async runtime
--- is used in one place.
-local async = require "neoplen.async"
+-- Helpers for the picker's `vim.async` task: its main loop and the finds (calls of the finder) run
+-- inside it.
 
 local M = {}
 
 --- Yield to the main loop; resumes from `vim.schedule`, where the API can be used.
-M.yield = async.util.scheduler
+function M.yield()
+  vim.async.await(1, vim.schedule)
+end
 
 --- Pass `list[1..n]` (which may have holes) to `process_result` until it returns true (the find is
 --- stale), yielding to the main loop every 1000 entries.
@@ -21,6 +22,33 @@ function M.process_list(list, n, process_result)
       M.yield()
     end
   end
+end
+
+--- A wake-up signal: `send()` (from anywhere) resumes a `vim.async` task waiting in `wait()`; sends
+--- while nobody waits are merged into one.
+---@return fun() send
+---@return async fun() wait
+function M.signal()
+  local pending, waiting = false, nil
+  local function send()
+    local cb = waiting
+    if cb then
+      waiting = nil
+      cb()
+    else
+      pending = true
+    end
+  end
+  local function wait()
+    if pending then
+      pending = false
+      return
+    end
+    vim.async.await(function(cb)
+      waiting = cb
+    end)
+  end
+  return send, wait
 end
 
 return M
