@@ -4,7 +4,7 @@ local fn = vim.fn
 local api = vim.api
 
 local async = require "neoplen.async"
-local await_schedule = async.util.scheduler
+local _async = require "telescope._async"
 local channel = require("neoplen.async.control").channel
 local ui = require "telescope.pickers.ui"
 
@@ -529,12 +529,12 @@ function Picker:find()
     pcall(api.nvim_set_option_value, "filetype", "TelescopePrompt", { buf = self.prompt_bufnr })
     pcall(api.nvim_set_option_value, "filetype", "TelescopeResults", { buf = self.results_bufnr })
 
-    await_schedule()
+    _async.yield()
 
     while true do
       -- Wait for the next input
       rx.last()
-      await_schedule()
+      _async.yield()
 
       self:_reset_track()
 
@@ -1423,15 +1423,7 @@ function Picker:_process_candidates(candidates, process_result, process_complete
   -- count the skipped entries as processed and filtered, as the finder would have
   local skipped = candidates.processed - candidates.n
   self.stats.processed, self.stats.filtered = skipped, skipped
-  local list = candidates.list
-  for i = 1, candidates.n do
-    if process_result(list[i]) then
-      break
-    end
-    if i % 1000 == 0 then
-      await_schedule()
-    end
-  end
+  _async.process_list(candidates.list, candidates.n, process_result)
   process_complete()
 end
 
@@ -1705,7 +1697,7 @@ function Picker:_resume_picker()
     on_resume_complete()
   else
     -- scheduling required to apply highlighting and selection appropriately
-    await_schedule(function()
+    vim.schedule(function()
       if self.cache_picker.selection_row ~= nil then
         self:set_selection(self.cache_picker.selection_row)
       end
