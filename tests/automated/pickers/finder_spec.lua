@@ -26,4 +26,24 @@ describe("finders", function()
     end, 1)
     assert.eq("waited", picker.manager:get_entry(1).value)
   end)
+
+  it("notifies a finder error", function()
+    local notified
+    local notify = vim.notify
+    vim.notify = function(msg)
+      notified = msg
+    end
+    local finder = setmetatable({ close = function() end }, {
+      __call = function()
+        vim.async.sleep(1)
+        error "broken"
+      end,
+    })
+    require("telescope.pickers").new({}, { finder = finder }):find()
+    vim.wait(1000, function()
+      return notified ~= nil
+    end, 1)
+    vim.notify = notify
+    assert(notified and notified:find "Finder failed: .*broken")
+  end)
 end)

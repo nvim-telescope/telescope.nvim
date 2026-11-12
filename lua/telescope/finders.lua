@@ -78,9 +78,7 @@ finders.new_dynamic = function(opts)
         if entry then
           entry.index = i
         end
-        if process_result(entry) then
-          return
-        end
+        process_result(entry)
       end
       process_complete()
     end,

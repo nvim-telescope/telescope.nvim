@@ -44,6 +44,11 @@ end
 
 ---@class telescope.async_job.Pipe
 ---@field handle uv.uv_pipe_t libuv pipe
+---@field package reading boolean? a read is pending
+---@field package ready boolean? `err` and `data` hold a chunk not yet returned by `read()`
+---@field package err string?
+---@field package data string?
+---@field package wake fun()? resumes the current reader
 local Pipe = {}
 Pipe.__index = Pipe
 
@@ -60,28 +65,39 @@ function Pipe:close()
 end
 
 --- The next chunk of output, or nil at the end of the output (the pipe is closed then). Waits inside
---- a `vim.async` task and resumes from the main loop, where the API can be used.
+--- a `vim.async` task and resumes from the main loop, where the API can be used. The chunk is kept in
+--- the pipe until it is returned, so a read whose task is closed loses nothing: the next read gets it.
 function Pipe:read()
-  local err, data = vim.async.await(1, function(callback)
-    self.handle:read_start(function(err, data)
-      self.handle:read_stop()
-      if err or data == nil then
-        self:close()
+  if not self.ready then
+    vim.async.await(1, function(wake)
+      self.wake = wake -- the reader of a closed task never wakes: wake the current one
+      if self.reading then
+        return
       end
-      vim.schedule(function()
-        callback(err, data)
+      self.reading = true
+      self.handle:read_start(function(err, data)
+        self.handle:read_stop()
+        if err or data == nil then
+          self:close()
+        end
+        vim.schedule(function()
+          self.reading, self.ready, self.err, self.data = false, true, err, data
+          self.wake()
+        end)
       end)
     end)
-  end)
-  if err then
-    error(err)
   end
-  return data
+  self.ready = false
+  if self.err then
+    error(self.err)
+  end
+  return self.data
 end
 
 --- Iterate over the lines of the output, without line endings and `\r` (split at `opts.split_char`,
 --- one character, default "\n"). Yields to the main loop once per chunk read (`read()`), so the
---- consumer may use the API.
+--- consumer may use the API. If the consumer's task is closed while it waits, a later call (from
+--- another task) continues where it stopped.
 ---@param opts? { split_char: string? }
 ---@return fun(): string?
 function Pipe:iter(opts)

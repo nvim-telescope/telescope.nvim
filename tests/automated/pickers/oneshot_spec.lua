@@ -30,4 +30,22 @@ describe("finders.new_oneshot_job", function()
       end, picker.finder.results)
     )
   end)
+
+  it("gives results for a new prompt while the command still runs", function()
+    require("telescope.pickers")
+      .new({}, {
+        finder = require("telescope.finders").new_oneshot_job { "sh", "-c", "printf 'alpha\\nbeta\\n'; exec sleep 5" },
+        sorter = require("telescope.sorters").get_fzy_sorter(),
+      })
+      :find()
+    local picker = require("telescope.actions.state").get_current_picker(vim.api.nvim_get_current_buf())
+    vim.wait(2000, function()
+      return #picker.finder.results >= 2
+    end, 10)
+    picker:set_prompt "bet"
+    vim.wait(2000, function()
+      return picker.manager:num_results() == 1
+    end, 10)
+    eq({ 1, "beta" }, { picker.manager:num_results(), picker.manager:get_entry(1).value })
+  end)
 end)

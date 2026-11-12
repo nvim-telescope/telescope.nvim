@@ -16,10 +16,8 @@ return function(opts)
   local results = vim.nonnil(opts.results, {})
   local num_results = #results
 
-  local job_started = false
-  local job_completed = false
-  local stdout = nil
-
+  local lines -- the lines of the command's output, once it has been started
+  local loaded = false
   local job
 
   return setmetatable({
@@ -33,11 +31,13 @@ return function(opts)
     -- results don't depend on the prompt (allows narrowing, see `Picker:_narrowed_candidates`)
     prompt_independent = true,
   }, {
-    __call = function(_, prompt, process_result, process_complete)
-      if not job_started then
+    -- Each find processes the results loaded so far and then loads the rest. A find is cancelled
+    -- (its task closed) only while it waits, so `results` stays consistent and the next find
+    -- continues loading where the cancelled one stopped.
+    __call = function(_, _, process_result, process_complete)
+      if not lines then
         local job_opts = fn_command()
-
-        stdout = LinesPipe()
+        local stdout = LinesPipe()
         job = async_job.spawn {
           command = job_opts.command,
           args = job_opts.args,
@@ -46,38 +46,25 @@ return function(opts)
 
           stdout = stdout,
         }
-
-        job_started = true
-      end
-
-      if not job_completed then
-        if not vim.tbl_isempty(results) then
-          for _, v in ipairs(results) do
-            process_result(v)
-          end
-        end
-        for line in stdout:iter { split_char = opts.split_char } do
-          num_results = num_results + 1
-
-          if num_results % 1000 == 0 then -- as `_async.process_list`
-            _async.yield()
-          end
-
-          local entry = entry_maker(line)
-          if entry then
-            entry.index = num_results
-          end
-          results[num_results] = entry
-          process_result(entry)
-        end
-
-        process_complete()
-        job_completed = true
-
-        return
+        lines = stdout:iter { split_char = opts.split_char }
       end
 
       _async.process_list(results, num_results, process_result)
+      if not loaded then
+        for line in lines do
+          local n = num_results + 1
+          local entry = entry_maker(line)
+          if entry then
+            entry.index = n
+          end
+          results[n], num_results = entry, n
+          process_result(entry)
+          if n % 1000 == 0 then -- as `_async.process_list`
+            _async.yield()
+          end
+        end
+        loaded = true
+      end
       process_complete()
     end,
   })

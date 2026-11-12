@@ -8,16 +8,14 @@ function M.yield()
   vim.async.await(1, vim.schedule)
 end
 
---- Pass `list[1..n]` (which may have holes) to `process_result` until it returns true (the find is
---- stale), yielding to the main loop every 1000 entries.
+--- Pass `list[1..n]` (which may have holes) to `process_result`, yielding to the main loop every 1000
+--- entries.
 ---@param list table
 ---@param n integer
----@param process_result fun(entry: table?): boolean?
+---@param process_result fun(entry: table?)
 function M.process_list(list, n, process_result)
   for i = 1, n do
-    if process_result(list[i]) then
-      return
-    end
+    process_result(list[i])
     if i % 1000 == 0 then
       M.yield()
     end
