@@ -200,7 +200,6 @@ function Picker:new(opts)
 
     cwd = opts.cwd,
 
-    _find_id = 0,
     _completion_callbacks = type(opts._completion_callbacks) == "table" and opts._completion_callbacks or {},
     manager = (type(opts.manager) == "table" and getmetatable(opts.manager) == EntryManager) and opts.manager,
     _multi = (type(opts._multi) == "table" and getmetatable(opts._multi) == getmetatable(MultiSelect:new()))
@@ -415,15 +414,6 @@ function Picker:can_select_row(row)
   end
 end
 
--- Every prompt change starts a new find; the result processor of an older find sees that its
--- `find_id` is stale and stops.
-function Picker:_next_find_id()
-  local find_id = self._find_id + 1
-  self._find_id = find_id
-
-  return find_id
-end
-
 --- A helper function for creating each of the windows in a picker
 ---@param bufnr integer?: the buffer to show in the window (nil: a new scratch buffer)
 ---@param popup_opts table: options to pass to `ui.create`
@@ -493,10 +483,17 @@ function Picker:find()
   local status_updater = self:get_status_updater(self.prompt_win, self.prompt_bufnr)
   local debounced_status = debounce.throttle_leading(status_updater, 50)
 
+  -- a prompt change (or a refresh) cancels the running find and wakes the main loop
   local send, wait = _async.signal()
-  self._on_lines = send
-
-  local find_id = self:_next_find_id()
+  self._on_lines = function()
+    local find = self._find
+    if find then
+      self._find = nil
+      find.matches.stale = true -- for finders that process results outside the find's task
+      find.task:close()
+    end
+    send()
+  end
 
   if self.default_text then
     self:set_prompt(self.default_text)
@@ -587,25 +584,28 @@ function Picker:find()
         end
         self._matches = matches
         self:_reset_highlights()
-        local process_result = self:get_result_processor(find_id, prompt, debounced_status)
-        local completor = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
+        local process_result = self:get_result_processor(prompt, debounced_status)
+        local completor = self:get_result_completor(self.results_bufnr, prompt, status_updater)
         local process_complete = function()
-          if not matches.interrupted then
+          if not matches.stale then
             matches.complete, matches.processed = true, self.stats.processed
+            completor()
           end
-          completor()
         end
 
-        local ok, msg = pcall(function()
+        -- the find is a child task, closed by the next prompt change (see `self._on_lines`)
+        local task = vim.async.run(function()
           if candidates then
             self:_process_candidates(candidates, process_result, process_complete)
           else
             self.finder(prompt, process_result, process_complete)
           end
         end)
-        vim.async.checkpoint() -- the picker was closed during the find
+        self._find = { task = task, matches = matches }
+        local ok, msg = vim.async.pawait(task)
+        self._find = nil
 
-        if not ok then
+        if not ok and msg ~= "closed" then
           utils.notify("pickers.find", { msg = "Finder failed: " .. tostring(msg), level = "WARN" })
         end
 
@@ -621,12 +621,10 @@ function Picker:find()
 
   -- Register attach
   api.nvim_buf_attach(self.prompt_bufnr, false, {
-    on_lines = function(...)
+    on_lines = function()
       if self._finder_attached then
-        find_id = self:_next_find_id()
-
         status_updater { completed = false }
-        self._on_lines(...)
+        self._on_lines()
       end
     end,
 
@@ -984,7 +982,7 @@ function Picker:refresh(finder, opts)
   if opts.reset_prompt then
     self:reset_prompt()
   else
-    self._on_lines(nil, nil, nil, 0, 1)
+    self._on_lines()
   end
 end
 
@@ -1328,12 +1326,11 @@ end
 
 --- Returns a function that will process an element.
 --- Returned function handles updating the "filtered" and "processed" counts
---- as appropriate and runs the sorters score function
----@param find_id number
+--- as appropriate and runs the sorters score function. It returns true once the find is stale.
 ---@param prompt string
 ---@param status_updater function
 ---@return function
-function Picker:get_result_processor(find_id, prompt, status_updater)
+function Picker:get_result_processor(prompt, status_updater)
   local running = { completed = false } -- no table per result
   local ignore_patterns = self.file_ignore_patterns or {}
   local ignored -- entry -> whether a pattern matches it
@@ -1360,8 +1357,7 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
   end
 
   return function(entry)
-    if find_id ~= self._find_id then
-      matches.interrupted = true
+    if matches.stale then
       return true
     end
 
@@ -1434,10 +1430,9 @@ end
 
 --- Handles updating the picker after all the entries are scored/processed.
 ---@param results_bufnr number
----@param _ number
 ---@param prompt string
 ---@param status_updater function
-function Picker:get_result_completor(results_bufnr, _, prompt, status_updater)
+function Picker:get_result_completor(results_bufnr, prompt, status_updater)
   return vim.schedule_wrap(function()
     if self.closed == true or self:is_done() then
       return
