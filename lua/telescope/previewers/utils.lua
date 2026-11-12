@@ -97,7 +97,7 @@ M.ts_highlighter = function(bufnr, ft)
 end
 
 M.set_preview_message = function(bufnr, winid, message, fillchar)
-  fillchar = utils.if_nil(fillchar, "╱")
+  fillchar = vim.nonnil(fillchar, "╱")
   local height = api.nvim_win_get_height(winid)
   local width = api.nvim_win_get_width(winid)
   api.nvim_buf_set_lines(bufnr, 0, -1, false, utils.repeated_table(height, string.rep(fillchar, width)))

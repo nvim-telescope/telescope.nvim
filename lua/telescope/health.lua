@@ -1,8 +1,5 @@
 local health = vim.health
 
-local extension_module = require "telescope._extensions"
-local extension_info = require("telescope").extensions
-
 local optional_dependencies = {
   {
     finder_name = "live-grep",
@@ -39,6 +36,19 @@ end
 local M = {}
 
 M.check = function()
+  health.start "Checking Neovim version"
+  if vim.fn.has "nvim-0.13" == 1 then
+    health.ok(("Nvim %s"):format(tostring(vim.version())))
+  else
+    health.error(("Nvim %s: telescope requires Nvim 0.13 or later"):format(tostring(vim.version())))
+    return
+  end
+  if jit then
+    health.ok(("Built with %s"):format(jit.version))
+  else
+    health.warn("Not built with LuaJIT: sorting and filtering will be much slower", "Use a build with LuaJIT")
+  end
+
   -- external dependencies
   -- TODO: only perform checks if user has enabled dependency in their config
   health.start "Checking external dependencies"
@@ -69,8 +79,9 @@ M.check = function()
   -- Extensions
   health.start "===== Installed extensions ====="
 
+  local extension_module = require "telescope._extensions"
   local installed = {}
-  for extension_name, _ in pairs(extension_info) do
+  for extension_name, _ in pairs(require("telescope").extensions) do
     installed[#installed + 1] = extension_name
   end
   table.sort(installed)

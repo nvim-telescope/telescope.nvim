@@ -32,7 +32,7 @@ local function defaulter(f)
       opts.preview = type(opts.preview) ~= "table" and {} or opts.preview
       if type(conf.preview) == "table" then
         for k, v in pairs(conf.preview) do
-          opts.preview[k] = utils.if_nil(opts.preview[k], v)
+          opts.preview[k] = vim.nonnil(opts.preview[k], v)
         end
       end
       return f(opts)
@@ -152,18 +152,47 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
   end)
 end
 
+-- List a directory like Nvim's directory listing (`:h dir`): directories first, marked by a trailing
+-- "/", highlighted as filetype "directory".
+local handle_directory_preview = function(dirpath, bufnr, opts)
+  vim.schedule(function()
+    if not api.nvim_buf_is_valid(bufnr) then
+      return
+    end
+    local dirs, files = {}, {}
+    for name, type, err in vim.fs.dir(dirpath, { err = true, plain = true }) do
+      if err then
+        putils.set_preview_message(bufnr, opts.winid, err, opts.preview.msg_bg_fillchar)
+        return
+      end
+      local is_dir = type == "directory" or type == "link" and fn.isdirectory(vim.fs.joinpath(dirpath, name)) == 1
+      table.insert(is_dir and dirs or files, (name:gsub("\n", "\0")))
+    end
+    table.sort(dirs)
+    table.sort(files)
+    for i, name in ipairs(dirs) do
+      dirs[i] = name .. "/"
+    end
+    api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.list_extend(dirs, files))
+    if opts.callback then
+      opts.callback(bufnr)
+    end
+    putils.highlighter(bufnr, "directory", opts)
+  end)
+end
+
 local PREVIEW_TIMEOUT_MS = 250
 local PREVIEW_FILESIZE_MB = 25
 local PREVIEW_HIGHLIGHT_MB = 1
 
 previewers.file_maker = function(filepath, bufnr, opts)
-  opts = utils.if_nil(opts, {})
-  opts.preview = utils.if_nil(opts.preview, {})
-  opts.preview.timeout = utils.if_nil(opts.preview.timeout, PREVIEW_TIMEOUT_MS)
-  opts.preview.filesize_limit = utils.if_nil(opts.preview.filesize_limit, PREVIEW_FILESIZE_MB)
-  opts.preview.highlight_limit = utils.if_nil(opts.preview.highlight_limit, PREVIEW_HIGHLIGHT_MB)
-  opts.preview.msg_bg_fillchar = utils.if_nil(opts.preview.msg_bg_fillchar, "╱")
-  opts.preview.treesitter = utils.if_nil(opts.preview.treesitter, true)
+  opts = vim.nonnil(opts, {})
+  opts.preview = vim.nonnil(opts.preview, {})
+  opts.preview.timeout = vim.nonnil(opts.preview.timeout, PREVIEW_TIMEOUT_MS)
+  opts.preview.filesize_limit = vim.nonnil(opts.preview.filesize_limit, PREVIEW_FILESIZE_MB)
+  opts.preview.highlight_limit = vim.nonnil(opts.preview.highlight_limit, PREVIEW_HIGHLIGHT_MB)
+  opts.preview.msg_bg_fillchar = vim.nonnil(opts.preview.msg_bg_fillchar, "╱")
+  opts.preview.treesitter = vim.nonnil(opts.preview.treesitter, true)
   if opts.use_ft_detect == nil then
     opts.use_ft_detect = true
   end
@@ -175,7 +204,9 @@ previewers.file_maker = function(filepath, bufnr, opts)
       if not stat then
         return
       end
-      if stat.type ~= "directory" then
+      if stat.type == "directory" then
+        handle_directory_preview(filepath, bufnr, opts)
+      else
         handle_file_preview(filepath, bufnr, stat, opts)
       end
     end)

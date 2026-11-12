@@ -158,7 +158,7 @@ end
 
 --- Use telescope.extensions to reference any extensions within your configuration. <br>
 --- While the docs currently generate this as a function, it's actually a table. Sorry.
-telescope.extensions = require("telescope._extensions").manager
+telescope.extensions = _extensions.manager
 
 telescope.__format_setup_keys = function()
   local names = require("telescope.config").descriptions_order

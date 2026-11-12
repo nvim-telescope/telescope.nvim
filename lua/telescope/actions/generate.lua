@@ -23,7 +23,6 @@ local actions = require "telescope.actions"
 local config = require "telescope.config"
 local action_state = require "telescope.actions.state"
 local finders = require "telescope.finders"
-local utils = require "telescope.utils"
 
 local M = {}
 
@@ -62,13 +61,13 @@ end
 
 M.refine = function(prompt_bufnr, opts)
   opts = opts or {}
-  opts.prompt_to_prefix = utils.if_nil(opts.prompt_to_prefix, false)
-  opts.prefix_hl_group = utils.if_nil(opts.prompt_hl_group, "TelescopePromptPrefix")
-  opts.prompt_prefix = utils.if_nil(opts.prompt_prefix, config.values.prompt_prefix)
-  opts.reset_multi_selection = utils.if_nil(opts.reset_multi_selection, false)
-  opts.reset_prompt = utils.if_nil(opts.reset_prompt, true)
-  opts.sorter = utils.if_nil(opts.sorter, config.values.generic_sorter {})
-  local push_history = utils.if_nil(opts.push_history, true)
+  opts.prompt_to_prefix = vim.nonnil(opts.prompt_to_prefix, false)
+  opts.prefix_hl_group = vim.nonnil(opts.prompt_hl_group, "TelescopePromptPrefix")
+  opts.prompt_prefix = vim.nonnil(opts.prompt_prefix, config.values.prompt_prefix)
+  opts.reset_multi_selection = vim.nonnil(opts.reset_multi_selection, false)
+  opts.reset_prompt = vim.nonnil(opts.reset_prompt, true)
+  opts.sorter = vim.nonnil(opts.sorter, config.values.generic_sorter {})
+  local push_history = vim.nonnil(opts.push_history, true)
 
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local current_line = action_state.get_current_line()

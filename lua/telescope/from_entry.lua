@@ -12,7 +12,7 @@ local utils = require "telescope.utils"
 local from_entry = {}
 
 function from_entry.path(entry, validate, escape)
-  escape = utils.if_nil(escape, true)
+  escape = vim.nonnil(escape, true)
   local path = entry.path or entry.filename or entry.value
   if path == nil then
     require("telescope.log").error(string.format("Invalid Entry: '%s'", vim.inspect(entry)))

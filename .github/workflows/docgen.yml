@@ -12,7 +12,7 @@ jobs:
     name: Check docs
     runs-on: ubuntu-latest
     env:
-      NVIM_URL: https://github.com/neovim/neovim/releases/download/stable/nvim-linux-x86_64.tar.gz
+      NVIM_URL: https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.tar.gz #TODO: back to stable when 0.13 is released
 
     steps:
       - uses: actions/checkout@v7
