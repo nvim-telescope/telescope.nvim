@@ -30,7 +30,7 @@ local function call_hierarchy(opts, method, title, direction, item)
       local ch_item = ch_call[direction]
       for _, rng in pairs(ch_call.fromRanges) do
         table.insert(locations, {
-          filename = vim.uri_to_fname(ch_item.uri),
+          filename = vim.uri.to_fname(ch_item.uri),
           text = ch_item.name,
           lnum = rng.start.line + 1,
           col = rng.start.character + 1,
@@ -295,7 +295,7 @@ local symbols_sorter = function(symbols)
   local filename_to_bufnr = {}
   for _, symbol in ipairs(symbols) do
     if filename_to_bufnr[symbol.filename] == nil then
-      filename_to_bufnr[symbol.filename] = vim.uri_to_bufnr(vim.uri_from_fname(symbol.filename))
+      filename_to_bufnr[symbol.filename] = vim.fn.bufadd(symbol.filename)
     end
     symbol.bufnr = filename_to_bufnr[symbol.filename]
   end

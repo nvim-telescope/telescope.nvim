@@ -155,7 +155,7 @@ local bcommits_picker = function(opts, title, finder)
         vim.cmd "diffthis"
 
         api.nvim_create_autocmd("WinClosed", {
-          buffer = bufnr,
+          buf = bufnr,
           nested = true,
           once = true,
           callback = function()

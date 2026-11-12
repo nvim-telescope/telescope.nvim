@@ -640,7 +640,7 @@ function Picker:find()
   -- also fires when the prompt window is left or closed (the prompt buffer is shown in no other
   -- window), so no WinLeave needed
   api.nvim_create_autocmd("BufLeave", {
-    buffer = self.prompt_bufnr,
+    buf = self.prompt_bufnr,
     group = "PickerInsert",
     nested = true,
     once = true,
@@ -649,7 +649,7 @@ function Picker:find()
     end,
   })
   api.nvim_create_autocmd("VimResized", {
-    buffer = self.prompt_bufnr,
+    buf = self.prompt_bufnr,
     group = "PickerInsert",
     nested = true,
     callback = function()
@@ -1629,7 +1629,7 @@ function pickers.on_close_prompt(prompt_bufnr)
   api.nvim_clear_autocmds {
     group = "PickerInsert",
     event = "BufLeave",
-    buffer = prompt_bufnr,
+    buf = prompt_bufnr,
   }
   picker.close_windows(status)
 

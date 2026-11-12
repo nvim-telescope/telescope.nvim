@@ -1375,7 +1375,7 @@ actions.which_key = function(prompt_bufnr, opts)
   vim.wo[km_win_id].foldenable = false
 
   api.nvim_create_autocmd("BufLeave", {
-    buffer = km_buf,
+    buf = km_buf,
     once = true,
     callback = function()
       pcall(api.nvim_win_close, km_win_id, true)
@@ -1435,7 +1435,7 @@ actions.which_key = function(prompt_bufnr, opts)
   vim.schedule(function()
     api.nvim_create_autocmd(close_event, {
       pattern = close_pattern,
-      buffer = close_buffer,
+      buf = close_buffer,
       once = true,
       callback = function()
         vim.schedule(function()
