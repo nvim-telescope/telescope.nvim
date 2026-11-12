@@ -35,7 +35,7 @@ function Highlighter:hi_display(row, prefix, display_highlights)
     api.nvim_buf_set_extmark(results_bufnr, ns_telescope_entry, row, len_prefix + hl_block[1][1], {
       end_col = len_prefix + hl_block[1][2],
       hl_group = hl_block[2],
-      priority = vim.hl.priorities.user,
+      priority = hl.priorities.user,
       strict = false,
     })
   end

@@ -1,7 +1,7 @@
 local uv = vim.uv
 
 local async = require "neoplen.async"
-local channel = require("neoplen.async").control.channel
+local channel = async.control.channel
 local log = require "telescope.log"
 local utils = require "telescope.utils"
 
