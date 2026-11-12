@@ -29,7 +29,7 @@ return function(opts)
 
   local callable = function(_, prompt, process_result, process_complete)
     if job then
-      job:close(true)
+      job:close()
     end
 
     local job_opts = fn_command(prompt)
@@ -67,7 +67,7 @@ return function(opts)
   return setmetatable({
     close = function()
       if job then
-        job:close(true)
+        job:close()
       end
     end,
   }, {
