@@ -1,19 +1,19 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it, after_each = t.describe, t.it, t.after_each
 
 if require("telescope.utils").iswin then
   return
 end
 
-local actions = require "telescope.actions"
-local h = require "tests.helpers"
+local actions = require("telescope.actions")
+local h = require("tests.helpers")
 local eq = assert.eq
 
 describe("builtin.find_files", function()
   after_each(h.cleanup)
 
-  for _, sorting_strategy in ipairs { "descending", "ascending" } do
+  for _, sorting_strategy in ipairs({ "descending", "ascending" }) do
     it("finds the readme without devicons, sorting " .. sorting_strategy, function()
       local picker = h.picker("find_files", {
         disable_devicons = true,
@@ -30,13 +30,13 @@ describe("builtin.find_files", function()
   end
 
   it("finds the readme, using lowercase", function()
-    local picker = h.picker "find_files"
+    local picker = h.picker("find_files")
     h.type(picker, "readme.md")
     eq("README.md", h.select(picker))
   end)
 
   it("finds pickers.lua", function()
-    local picker = h.picker "find_files"
+    local picker = h.picker("find_files")
     h.type(picker, "pickers.lua")
     eq("pickers.lua", h.select(picker))
   end)
@@ -71,7 +71,7 @@ describe("builtin.find_files", function()
   end)
 
   it("gets the current selection", function()
-    local picker = h.picker "find_files"
+    local picker = h.picker("find_files")
     h.type(picker, "fixtures/find_files/file_abc")
     eq("tests/fixtures/find_files/file_abc.txt", require("telescope.actions.state").get_selected_entry().value)
   end)

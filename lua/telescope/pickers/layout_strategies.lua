@@ -48,8 +48,8 @@
 
 local api = vim.api
 
-local resolve = require "telescope.config.resolve"
-local p_window = require "telescope.pickers.window"
+local resolve = require("telescope.config.resolve")
+local p_window = require("telescope.pickers.window")
 
 ---@return integer
 local get_border_size = function(opts)
@@ -108,7 +108,7 @@ local get_valid_configuration_keys = function(strategy_config)
 end
 
 local adjust_pos = function(pos, ...)
-  for _, opts in ipairs { ... } do
+  for _, opts in ipairs({ ... }) do
     opts.col = opts.col and opts.col + pos[1]
     opts.line = opts.line and opts.line + pos[2]
   end
@@ -505,9 +505,9 @@ layout_strategies.center = make_documented_layout(
     -- Vertical anchoring (S or N variations) ignores layout_config.mirror
     anchor = anchor:upper()
     local mirror
-    if anchor:find "S" then
+    if anchor:find("S") then
       mirror = false
-    elseif anchor:find "N" then
+    elseif anchor:find("N") then
       mirror = true
     else
       mirror = layout_config.mirror

@@ -2,7 +2,7 @@
 -- layout strategies produce (see `telescope_popup_options` in `telescope.pickers`).
 
 local api = vim.api
-local utils = require "telescope.utils"
+local utils = require("telescope.utils")
 
 local M = {}
 
@@ -15,7 +15,7 @@ local function expand_borderchars(chars)
   elseif #chars == 2 then
     chars = { chars[1], chars[1], chars[1], chars[1], chars[2], chars[2], chars[2], chars[2] }
   elseif #chars ~= 8 then
-    error "borderchars: expected 1, 2 or 8 characters"
+    error("borderchars: expected 1, 2 or 8 characters")
   end
   return vim.tbl_map(function(c)
     return vim.fn.strcharpart(c, 0, 1)
@@ -54,7 +54,7 @@ local function find_title(titles, side, width)
       if vim.fn.strdisplaywidth(text) > width - 2 then
         text = utils.truncate(text, width - 2)
       end
-      local align = title.pos:find "W" and "left" or title.pos:find "E" and "right" or "center"
+      local align = title.pos:find("W") and "left" or title.pos:find("E") and "right" or "center"
       return " " .. text .. " ", align
     end
   end

@@ -1,13 +1,13 @@
 local api = vim.api
 local hl = vim.hl
-local log = require "telescope.log"
+local log = require("telescope.log")
 local conf = require("telescope.config").values
 
 local M = {}
 
-local ns_telescope_selection = api.nvim_create_namespace "telescope_selection"
-local ns_telescope_multiselection = api.nvim_create_namespace "telescope_multiselection"
-local ns_telescope_entry = api.nvim_create_namespace "telescope_entry"
+local ns_telescope_selection = api.nvim_create_namespace("telescope_selection")
+local ns_telescope_multiselection = api.nvim_create_namespace("telescope_multiselection")
+local ns_telescope_entry = api.nvim_create_namespace("telescope_entry")
 
 ---@class telescope.pickers.Highlighter
 local Highlighter = {}

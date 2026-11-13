@@ -1,9 +1,9 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it, before_each, after_each = t.describe, t.it, t.before_each, t.after_each
 
-local diagnostics = require "telescope.builtin.__diagnostics"
-local pickers = require "telescope.pickers"
+local diagnostics = require("telescope.builtin.__diagnostics")
+local pickers = require("telescope.pickers")
 
 local eq = assert.eq
 
@@ -16,7 +16,7 @@ describe("builtin diagnostics", function()
   before_each(function()
     old_pickers_new = pickers.new
     previous_bufnr = vim.api.nvim_get_current_buf()
-    ns = vim.api.nvim_create_namespace "telescope-test-diagnostics"
+    ns = vim.api.nvim_create_namespace("telescope-test-diagnostics")
     bufnr = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_name(bufnr, vim.fn.tempname() .. ".py")
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "def example(a, b): pass" })
@@ -52,7 +52,7 @@ describe("builtin diagnostics", function()
       return { find = function() end }
     end
 
-    diagnostics.get {
+    diagnostics.get({
       bufnr = 0,
       entry_maker = function(entry)
         captured_entry = entry
@@ -62,7 +62,7 @@ describe("builtin diagnostics", function()
           display = entry.text,
         }
       end,
-    }
+    })
 
     assert.neq(nil, captured_entry)
     eq("PLR0913", captured_entry.code)

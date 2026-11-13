@@ -1,12 +1,12 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it = t.describe, t.it
 
-local entry_display = require "telescope.pickers.entry_display"
+local entry_display = require("telescope.pickers.entry_display")
 
 describe("truncate", function()
-  for _, ambiwidth in ipairs { "single", "double" } do
-    for _, case in ipairs {
+  for _, ambiwidth in ipairs({ "single", "double" }) do
+    for _, case in ipairs({
       { args = { "abcde", 6 }, expected = { single = "abcde", double = "abcde" } },
       { args = { "abcde", 5 }, expected = { single = "abcde", double = "abcde" } },
       { args = { "abcde", 4 }, expected = { single = "abc…", double = "ab…" } },
@@ -20,7 +20,7 @@ describe("truncate", function()
       { args = { "├─┤", 4 }, expected = { single = "├─┤", double = "├…" } },
       { args = { "├─┤", 3 }, expected = { single = "├─┤", double = "…" } },
       { args = { "├─┤", 2 }, expected = { single = "├…", double = "…" } },
-    } do
+    }) do
       local msg = ("can truncate: ambiwidth = %s, [%s, %d] -> %s"):format(
         ambiwidth,
         case.args[1],

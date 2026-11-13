@@ -1,9 +1,9 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it = t.describe, t.it
 
-local actions = require "telescope.actions"
-local action_set = require "telescope.actions.set"
+local actions = require("telescope.actions")
+local action_set = require("telescope.actions.set")
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 
@@ -11,24 +11,24 @@ local eq = assert.eq
 
 describe("actions", function()
   it("should allow creating custom actions", function()
-    local a = transform_mod {
+    local a = transform_mod({
       x = function()
         return 5
       end,
-    }
+    })
 
     eq(5, a.x())
   end)
 
   it("allows adding actions", function()
-    local a = transform_mod {
+    local a = transform_mod({
       x = function()
         return "x"
       end,
       y = function()
         return "y"
       end,
-    }
+    })
 
     local x_plus_y = a.x + a.y
 
@@ -36,7 +36,7 @@ describe("actions", function()
   end)
 
   it("ignores nils from added actions", function()
-    local a = transform_mod {
+    local a = transform_mod({
       x = function()
         return "x"
       end,
@@ -46,7 +46,7 @@ describe("actions", function()
       nil_maker = function()
         return nil
       end,
-    }
+    })
 
     local x_plus_y = a.x + a.nil_maker + a.y
 
@@ -54,14 +54,14 @@ describe("actions", function()
   end)
 
   it("allows overriding an action", function()
-    local a = transform_mod {
+    local a = transform_mod({
       x = function()
         return "x"
       end,
       y = function()
         return "y"
       end,
-    }
+    })
 
     -- actions.file_goto_selection_edit:replace(...)
     a.x:replace(function()
@@ -74,14 +74,14 @@ describe("actions", function()
   end)
 
   it("allows overriding an action only in specific cases with if", function()
-    local a = transform_mod {
+    local a = transform_mod({
       x = function(e)
         return e * 10
       end,
       y = function()
         return "y"
       end,
-    }
+    })
 
     -- actions.file_goto_selection_edit:replace(...)
     a.x:replace_if(function(e)
@@ -98,17 +98,17 @@ describe("actions", function()
   end)
 
   it("allows overriding an action only in specific cases with mod", function()
-    local a = transform_mod {
+    local a = transform_mod({
       x = function(e)
         return e * 10
       end,
       y = function()
         return "y"
       end,
-    }
+    })
 
     -- actions.file_goto_selection_edit:replace(...)
-    a.x:replace_map {
+    a.x:replace_map({
       [function(e)
         return e > 0
       end] = function(e)
@@ -119,7 +119,7 @@ describe("actions", function()
       end] = function(e)
         return (e + 10)
       end,
-    }
+    })
 
     eq(-100, a.x(-10))
     eq(10, a.x(100))
@@ -131,14 +131,14 @@ describe("actions", function()
   end)
 
   it("continuous replacement", function()
-    local a = transform_mod {
+    local a = transform_mod({
       x = function()
         return "cleared"
       end,
       y = function()
         return "y"
       end,
-    }
+    })
 
     -- Replace original, which becomes new fallback
     a.x:replace(function()
@@ -146,7 +146,7 @@ describe("actions", function()
     end)
 
     -- actions.file_goto_selection_edit:replace(...)
-    a.x:replace_map {
+    a.x:replace_map({
       [function(e)
         return e > 0
       end] = function(e)
@@ -157,7 +157,7 @@ describe("actions", function()
       end] = function(e)
         return "zero"
       end,
-    }
+    })
 
     eq("positive", a.x(10))
     eq("zero", a.x(0))
@@ -168,43 +168,43 @@ describe("actions", function()
   end)
 
   it("enhance.pre", function()
-    local a = transform_mod {
+    local a = transform_mod({
       x = function()
         return "x"
       end,
       y = function()
         return "y"
       end,
-    }
+    })
 
     local called_pre = false
 
-    a.y:enhance {
+    a.y:enhance({
       pre = function()
         called_pre = true
       end,
-    }
+    })
     eq("y", a.y())
     eq(true, called_pre)
   end)
 
   it("enhance.post", function()
-    local a = transform_mod {
+    local a = transform_mod({
       x = function()
         return "x"
       end,
       y = function()
         return "y"
       end,
-    }
+    })
 
     local called_post = false
 
-    a.y:enhance {
+    a.y:enhance({
       post = function()
         called_post = true
       end,
-    }
+    })
     eq("y", a.y())
     eq(true, called_post)
   end)
@@ -213,7 +213,7 @@ describe("actions", function()
     local called_pre = false
     local called_post = false
     local static_post = 0
-    local a = transform_mod {
+    local a = transform_mod({
       x = {
         pre = function()
           called_pre = true
@@ -225,7 +225,7 @@ describe("actions", function()
           called_post = true
         end,
       },
-    }
+    })
 
     eq("x", a.x())
     eq(true, called_pre)
@@ -233,52 +233,52 @@ describe("actions", function()
   end)
 
   it("can call both", function()
-    local a = transform_mod {
+    local a = transform_mod({
       x = function()
         return "x"
       end,
       y = function()
         return "y"
       end,
-    }
+    })
 
     local called_count = 0
     local count_inc = function()
       called_count = called_count + 1
     end
 
-    a.y:enhance {
+    a.y:enhance({
       pre = count_inc,
       post = count_inc,
-    }
+    })
 
     eq("y", a.y())
     eq(2, called_count)
   end)
 
   it("can call both even when combined", function()
-    local a = transform_mod {
+    local a = transform_mod({
       x = function()
         return "x"
       end,
       y = function()
         return "y"
       end,
-    }
+    })
 
     local called_count = 0
     local count_inc = function()
       called_count = called_count + 1
     end
 
-    a.y:enhance {
+    a.y:enhance({
       pre = count_inc,
       post = count_inc,
-    }
+    })
 
-    a.x:enhance {
+    a.x:enhance({
       post = count_inc,
-    }
+    })
 
     local x_plus_y = a.x + a.y
     x_plus_y()
@@ -289,14 +289,14 @@ describe("actions", function()
   it(
     "can call replace fn even when combined before replace registered the fn (because that happens with mappings)",
     function()
-      local a = transform_mod {
+      local a = transform_mod({
         x = function()
           return "x"
         end,
         y = function()
           return "y"
         end,
-      }
+      })
 
       local called_count = 0
       local count_inc = function()
@@ -320,14 +320,14 @@ describe("actions", function()
   it(
     "can call enhance fn even when combined before enhance registed fns (because that happens with mappings)",
     function()
-      local a = transform_mod {
+      local a = transform_mod({
         x = function()
           return "x"
         end,
         y = function()
           return "y"
         end,
-      }
+      })
 
       local called_count = 0
       local count_inc = function()
@@ -335,14 +335,14 @@ describe("actions", function()
       end
 
       local x_plus_y = a.x + a.y
-      a.y:enhance {
+      a.y:enhance({
         pre = count_inc,
         post = count_inc,
-      }
+      })
 
-      a.x:enhance {
+      a.x:enhance({
         post = count_inc,
-      }
+      })
 
       x_plus_y()
 
@@ -351,22 +351,22 @@ describe("actions", function()
   )
 
   it("clears enhance", function()
-    local a = transform_mod {
+    local a = transform_mod({
       x = function()
         return "x"
       end,
       y = function()
         return "y"
       end,
-    }
+    })
 
     local called_post = false
 
-    a.y:enhance {
+    a.y:enhance({
       post = function()
         called_post = true
       end,
-    }
+    })
 
     a._clear()
 
@@ -375,11 +375,11 @@ describe("actions", function()
   end)
 
   it("handles passing arguments", function()
-    local a = transform_mod {
+    local a = transform_mod({
       x = function(bufnr)
-        return string.format "bufnr: %s"
+        return string.format("bufnr: %s")
       end,
-    }
+    })
 
     a.x:replace(function(bufnr)
       return string.format("modified: %s", bufnr)
@@ -390,28 +390,28 @@ describe("actions", function()
   it("handles add with two different tables", function()
     local count_a = 0
     local count_b = 0
-    local a = transform_mod {
+    local a = transform_mod({
       x = function()
         count_a = count_a + 1
       end,
-    }
-    local b = transform_mod {
+    })
+    local b = transform_mod({
       y = function()
         count_b = count_b + 1
       end,
-    }
+    })
 
     local called_count = 0
     local count_inc = function()
       called_count = called_count + 1
     end
 
-    a.x:enhance {
+    a.x:enhance({
       post = count_inc,
-    }
-    b.y:enhance {
+    })
+    b.y:enhance({
       post = count_inc,
-    }
+    })
 
     local x_plus_y = a.x + b.y
     x_plus_y()
@@ -427,7 +427,7 @@ describe("actions", function()
     local count_c = 0
     local static_pre = 0
     local static_post = 0
-    local a = transform_mod {
+    local a = transform_mod({
       x = {
         pre = function()
           static_pre = static_pre + 1
@@ -439,8 +439,8 @@ describe("actions", function()
           static_post = static_post + 1
         end,
       },
-    }
-    local b = transform_mod {
+    })
+    local b = transform_mod({
       y = {
         pre = function()
           static_pre = static_pre + 1
@@ -452,8 +452,8 @@ describe("actions", function()
           static_post = static_post + 1
         end,
       },
-    }
-    local c = transform_mod {
+    })
+    local c = transform_mod({
       z = {
         pre = function()
           static_pre = static_pre + 1
@@ -465,7 +465,7 @@ describe("actions", function()
           static_post = static_post + 1
         end,
       },
-    }
+    })
 
     local replace_count = 0
     a.x:replace(function()
@@ -515,16 +515,16 @@ end)
 
 describe("action_set.edit", function()
   local function select(filename)
-    local pickers, finders = require "telescope.pickers", require "telescope.finders"
+    local pickers, finders = require("telescope.pickers"), require("telescope.finders")
     pickers
       .new({}, {
-        finder = finders.new_table {
+        finder = finders.new_table({
           results = { filename },
           entry_maker = function(v)
             return { value = v, display = v, ordinal = v, filename = v }
           end,
-        },
-        sorter = require("telescope.config").values.generic_sorter {},
+        }),
+        sorter = require("telescope.config").values.generic_sorter({}),
       })
       :find()
     local prompt_bufnr = vim.api.nvim_get_current_buf()
@@ -547,7 +547,7 @@ describe("action_set.edit", function()
     vim.fn.mkdir(dir, "p")
     vim.fn.writefile({ "lock" }, vim.fs.joinpath(dir, "~$doc.docx"))
     vim.uv.chdir(dir)
-    local name = select "~$doc.docx"
+    local name = select("~$doc.docx")
     vim.uv.chdir(cwd)
     eq("~$doc.docx", vim.fs.basename(name))
     eq(vim.uv.fs_realpath(dir), vim.uv.fs_realpath(vim.fs.dirname(name)))
@@ -555,6 +555,6 @@ describe("action_set.edit", function()
 
   it("does not expand environment variables in file names", function()
     vim.env.TELESCOPE_TEST_VAR = "expanded"
-    eq("$TELESCOPE_TEST_VAR.lua", vim.fs.basename(select "lua/$TELESCOPE_TEST_VAR.lua"))
+    eq("$TELESCOPE_TEST_VAR.lua", vim.fs.basename(select("lua/$TELESCOPE_TEST_VAR.lua")))
   end)
 end)

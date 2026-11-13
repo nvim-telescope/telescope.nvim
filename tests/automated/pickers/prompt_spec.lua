@@ -1,8 +1,8 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it, after_each = t.describe, t.it, t.after_each
 
-local h = require "tests.helpers"
+local h = require("tests.helpers")
 local eq = assert.eq
 
 describe("pickers prompt", function()
@@ -10,7 +10,7 @@ describe("pickers prompt", function()
 
   it("keeps the prefix highlight of refresh{ new_prefix } while typing", function()
     require("telescope.pickers")
-      .new({}, { finder = require("telescope.finders").new_table { results = { "ab", "b" } } })
+      .new({}, { finder = require("telescope.finders").new_table({ results = { "ab", "b" } }) })
       :find()
     local picker = require("telescope.actions.state").get_current_picker(vim.api.nvim_get_current_buf())
     picker.__completed = 0

@@ -1,8 +1,8 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it, before_each, after_each = t.describe, t.it, t.before_each, t.after_each
 
-local builtin = require "telescope.builtin"
+local builtin = require("telescope.builtin")
 
 local eq = assert.eq
 
@@ -70,7 +70,7 @@ describe("builtin.grep_string", function()
     local expand = vim.fn.expand
     vim.fn.expand = function(expr, ...)
       if expr == "<cword>" then
-        error "Vim:E348: No string under cursor"
+        error("Vim:E348: No string under cursor")
       end
       return expand(expr, ...)
     end
@@ -84,8 +84,8 @@ describe("builtin.grep_string", function()
 end)
 
 describe("telescope.ui_select", function()
-  local actions = require "telescope.actions"
-  local action_state = require "telescope.actions.state"
+  local actions = require("telescope.actions")
+  local action_state = require("telescope.actions.state")
 
   local function select(steps)
     local got
@@ -110,7 +110,7 @@ describe("telescope.ui_select", function()
 
   it("passes the chosen item and its index", function()
     local got = select(function(prompt_bufnr, picker)
-      picker:set_prompt "banana"
+      picker:set_prompt("banana")
       vim.wait(1000, function()
         local entry = action_state.get_selected_entry()
         return entry ~= nil and entry.value.name == "banana"
@@ -155,7 +155,7 @@ describe("pickers.new on_close", function()
           table.insert(calls, "caller")
         end,
       }, {
-        finder = require("telescope.finders").new_table { results = { "a" } },
+        finder = require("telescope.finders").new_table({ results = { "a" } }),
         on_close = function()
           table.insert(calls, "picker")
         end,

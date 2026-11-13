@@ -1,7 +1,7 @@
 local uv = vim.uv
 
-local log = require "telescope.log"
-local utils = require "telescope.utils"
+local log = require("telescope.log")
+local utils = require("telescope.utils")
 
 local M = {}
 
@@ -16,7 +16,7 @@ function AsyncJob:close()
   if not self.handle:is_closing() then
     uv.process_kill(self.handle, "sigterm")
   end
-  log.debug "[async_job] closed"
+  log.debug("[async_job] closed")
 end
 
 --- Start a process. Its stdin is empty and its stderr discarded; read its output through `stdout`, a

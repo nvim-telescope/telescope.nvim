@@ -1,8 +1,8 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it = t.describe, t.it
 
-local picker = require "telescope.pickers"
+local picker = require("telescope.pickers")
 
 local eq = assert.eq
 
@@ -201,7 +201,7 @@ describe("telescope", function()
           assert(score_with("smart_case", "Al", "\\bfAlpha") >= 0)
         end)
         it("highlights with the same case_mode", function()
-          local sorters = require "telescope.sorters"
+          local sorters = require("telescope.sorters")
           assert.eq({ 1, 2 }, sorters.get_fzy_sorter():highlighter("ab", "aBab"))
           assert.eq({ 3, 4 }, sorters.get_fzy_sorter({ case_mode = "respect_case" }):highlighter("ab", "aBab"))
         end)

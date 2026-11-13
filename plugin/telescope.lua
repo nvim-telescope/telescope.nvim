@@ -104,7 +104,7 @@ vim.api.nvim_create_user_command("Telescope", function(opts)
 end, {
   nargs = "*",
   complete = function(_, line)
-    local builtin_list = vim.tbl_keys(require "telescope.builtin")
+    local builtin_list = vim.tbl_keys(require("telescope.builtin"))
     local extensions_list = vim.tbl_keys(require("telescope._extensions").manager)
 
     local l = vim.split(line, "%s+")

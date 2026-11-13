@@ -22,9 +22,9 @@
 --- <br>
 --- `:Telescope find_files previewer=false`
 
-local Previewer = require "telescope.previewers.previewer"
-local term_previewer = require "telescope.previewers.term_previewer"
-local buffer_previewer = require "telescope.previewers.buffer_previewer"
+local Previewer = require("telescope.previewers.previewer")
+local term_previewer = require("telescope.previewers.term_previewer")
+local buffer_previewer = require("telescope.previewers.buffer_previewer")
 
 local previewers = {}
 

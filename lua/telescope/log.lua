@@ -1,1 +1,1 @@
-return vim.log.new { name = "telescope", level = vim.log.levels.INFO }
+return vim.log.new({ name = "telescope", level = vim.log.levels.INFO })

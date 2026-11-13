@@ -1,12 +1,12 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it, after_each = t.describe, t.it, t.after_each
 
 if require("telescope.utils").iswin then
   return
 end
 
-local h = require "tests.helpers"
+local h = require("tests.helpers")
 local eq = assert.eq
 
 describe("finders.new_oneshot_job", function()
@@ -15,7 +15,7 @@ describe("finders.new_oneshot_job", function()
   it("returns a last line without trailing newline", function()
     require("telescope.pickers")
       .new({}, {
-        finder = require("telescope.finders").new_oneshot_job { "printf", "a\\nb\\nlast" },
+        finder = require("telescope.finders").new_oneshot_job({ "printf", "a\\nb\\nlast" }),
         sorter = require("telescope.sorters").get_fzy_sorter(),
       })
       :find()
@@ -34,7 +34,7 @@ describe("finders.new_oneshot_job", function()
   it("gives results for a new prompt while the command still runs", function()
     require("telescope.pickers")
       .new({}, {
-        finder = require("telescope.finders").new_oneshot_job { "sh", "-c", "printf 'alpha\\nbeta\\n'; exec sleep 5" },
+        finder = require("telescope.finders").new_oneshot_job({ "sh", "-c", "printf 'alpha\\nbeta\\n'; exec sleep 5" }),
         sorter = require("telescope.sorters").get_fzy_sorter(),
       })
       :find()
@@ -42,7 +42,7 @@ describe("finders.new_oneshot_job", function()
     vim.wait(2000, function()
       return #picker.finder.results >= 2
     end, 10)
-    picker:set_prompt "bet"
+    picker:set_prompt("bet")
     vim.wait(2000, function()
       return picker.manager:num_results() == 1
     end, 10)

@@ -1,4 +1,4 @@
-local action_state = require "telescope.actions.state"
+local action_state = require("telescope.actions.state")
 
 local M = {}
 
@@ -15,7 +15,7 @@ end
 
 --- Type `text` into the prompt, one character at a time, waiting for the results after each one.
 function M.type(picker, text)
-  for char in text:gmatch "." do
+  for char in text:gmatch(".") do
     local completed = picker.__completed
     picker:set_prompt(char, false)
     vim.wait(5000, function()
@@ -55,7 +55,7 @@ function M.cleanup()
       pcall(require("telescope.actions").close, bufnr)
     end
   end
-  vim.cmd "silent! %bwipeout!"
+  vim.cmd("silent! %bwipeout!")
 end
 
 return M

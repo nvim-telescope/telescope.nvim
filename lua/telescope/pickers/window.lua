@@ -1,4 +1,4 @@
-local resolve = require "telescope.config.resolve"
+local resolve = require("telescope.config.resolve")
 
 local M = {}
 

@@ -19,10 +19,10 @@
 --- }
 --- ```
 
-local actions = require "telescope.actions"
-local config = require "telescope.config"
-local action_state = require "telescope.actions.state"
-local finders = require "telescope.finders"
+local actions = require("telescope.actions")
+local config = require("telescope.config")
+local action_state = require("telescope.actions.state")
+local finders = require("telescope.finders")
 
 local M = {}
 
@@ -66,7 +66,7 @@ M.refine = function(prompt_bufnr, opts)
   opts.prompt_prefix = vim.nonnil(opts.prompt_prefix, config.values.prompt_prefix)
   opts.reset_multi_selection = vim.nonnil(opts.reset_multi_selection, false)
   opts.reset_prompt = vim.nonnil(opts.reset_prompt, true)
-  opts.sorter = vim.nonnil(opts.sorter, config.values.generic_sorter {})
+  opts.sorter = vim.nonnil(opts.sorter, config.values.generic_sorter({}))
   local push_history = vim.nonnil(opts.push_history, true)
 
   local current_picker = action_state.get_current_picker(prompt_bufnr)
@@ -96,12 +96,12 @@ M.refine = function(prompt_bufnr, opts)
     current_picker.sorter:_init()
   end
 
-  local new_finder = finders.new_table {
+  local new_finder = finders.new_table({
     results = results,
     entry_maker = function(x)
       return x
     end,
-  }
+  })
 
   if not opts.reset_multi_selection and current_line ~= "" then
     opts.multi = current_picker._multi

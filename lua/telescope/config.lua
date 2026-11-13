@@ -1,5 +1,5 @@
-local sorters = require "telescope.sorters"
-local utils = require "telescope.utils"
+local sorters = require("telescope.sorters")
+local utils = require("telescope.utils")
 
 -- Keep the values around between reloads
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
@@ -508,7 +508,7 @@ append(
 append(
   "history",
   {
-    path = vim.fs.joinpath(vim.fn.stdpath "data", "telescope_history"),
+    path = vim.fs.joinpath(vim.fn.stdpath("data"), "telescope_history"),
     limit = 100,
     handler = function(...)
       return require("telescope.actions.history").get_simple_history(...)

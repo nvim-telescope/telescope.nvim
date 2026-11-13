@@ -3,12 +3,12 @@
 local api = vim.api
 local lsp = vim.lsp
 
-local actions = require "telescope.actions"
+local actions = require("telescope.actions")
 local conf = require("telescope.config").values
-local finders = require "telescope.finders"
-local make_entry = require "telescope.make_entry"
-local pickers = require "telescope.pickers"
-local utils = require "telescope.utils"
+local finders = require("telescope.finders")
+local make_entry = require("telescope.make_entry")
+local pickers = require("telescope.pickers")
+local utils = require("telescope.utils")
 
 local M = {}
 
@@ -39,10 +39,10 @@ local function call_hierarchy(opts, method, title, direction, item)
     pickers
       .new(opts, {
         prompt_title = title,
-        finder = finders.new_table {
+        finder = finders.new_table({
           results = locations,
           entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
-        },
+        }),
         previewer = conf.qflist_previewer(opts),
         sorter = conf.generic_sorter(opts),
         push_cursor_on_edit = true,
@@ -241,10 +241,10 @@ local function list_or_jump(action, title, funname, params, opts)
       pickers
         .new(opts, {
           prompt_title = title,
-          finder = finders.new_table {
+          finder = finders.new_table({
             results = items,
             entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
-          },
+          }),
           previewer = conf.qflist_previewer(opts),
           sorter = conf.generic_sorter(opts),
           push_cursor_on_edit = true,
@@ -357,15 +357,15 @@ M.document_symbols = function(opts)
     pickers
       .new(opts, {
         prompt_title = "LSP Document Symbols",
-        finder = finders.new_table {
+        finder = finders.new_table({
           results = locations,
           entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
-        },
+        }),
         previewer = conf.qflist_previewer(opts),
-        sorter = conf.prefilter_sorter {
+        sorter = conf.prefilter_sorter({
           tag = "symbol_type",
           sorter = conf.generic_sorter(opts),
-        },
+        }),
         push_cursor_on_edit = true,
         push_tagstack_on_edit = true,
       })
@@ -404,15 +404,15 @@ M.workspace_symbols = function(opts)
     pickers
       .new(opts, {
         prompt_title = "LSP Workspace Symbols",
-        finder = finders.new_table {
+        finder = finders.new_table({
           results = locations,
           entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
-        },
+        }),
         previewer = conf.qflist_previewer(opts),
-        sorter = conf.prefilter_sorter {
+        sorter = conf.prefilter_sorter({
           tag = "symbol_type",
           sorter = conf.generic_sorter(opts),
-        },
+        }),
       })
       :find()
   end)
@@ -452,10 +452,10 @@ M.dynamic_workspace_symbols = function(opts)
   pickers
     .new(opts, {
       prompt_title = "LSP Dynamic Workspace Symbols",
-      finder = finders.new_dynamic {
+      finder = finders.new_dynamic({
         entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
         fn = get_workspace_symbols_requester(opts.bufnr, opts),
-      },
+      }),
       previewer = conf.qflist_previewer(opts),
       sorter = conf.generic_sorter(opts),
       attach_mappings = function(_, map)
@@ -467,7 +467,7 @@ M.dynamic_workspace_symbols = function(opts)
 end
 
 local function check_capabilities(method, bufnr)
-  local clients = lsp.get_clients { bufnr = bufnr }
+  local clients = lsp.get_clients({ bufnr = bufnr })
 
   for _, client in pairs(clients) do
     if client:supports_method(method, bufnr) then

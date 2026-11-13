@@ -1,7 +1,7 @@
 local uv = vim.uv
 
 local conf = require("telescope.config").values
-local utils = require "telescope.utils"
+local utils = require("telescope.utils")
 
 ---@brief
 --- A base implementation of a prompt history that provides a simple history
@@ -173,7 +173,7 @@ end
 ---
 --- It will keep one unified history across all pickers.
 M.get_simple_history = function()
-  return M.new {
+  return M.new({
     init = function(obj)
       if not uv.fs_stat(obj.path) then
         vim.fs.mkdir(vim.fs.dirname(obj.path), { parents = true })
@@ -209,7 +209,7 @@ M.get_simple_history = function()
         self:reset()
       end
     end,
-  }
+  })
 end
 
 return M
