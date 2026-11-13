@@ -9,7 +9,8 @@ return function(opts)
   opts = opts or {}
 
   local entry_maker = opts.entry_maker or make_entry.gen_from_string(opts)
-  local fn_command = assert(opts.fn_command, "Must pass `fn_command`")
+  local fn_command = opts.fn_command
+  assert(fn_command, "Must pass `fn_command`")
 
   local results = vim.nonnil(opts.results, {})
   local num_results = #results

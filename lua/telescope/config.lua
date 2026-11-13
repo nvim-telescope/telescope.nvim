@@ -51,8 +51,8 @@ local config = {}
 config.smarter_depth_2_extend = smarter_depth_2_extend
 config.resolve_table_opts = resolve_table_opts
 
-config.values = _TelescopeConfigurationValues
-config.descriptions = {}
+config.values = _TelescopeConfigurationValues --[[@as table<string, any>]]
+config.descriptions = {} ---@type table<string, string>
 config.pickers = _TelescopeConfigurationPickers
 
 function config.set_pickers(pickers)

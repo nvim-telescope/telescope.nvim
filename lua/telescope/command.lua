@@ -96,13 +96,12 @@ command.convert_user_opts = function(user_opts)
       if ok then
         user_opts[key] = eval
       else
-        local err
-        eval, err = loadstring("return " .. val)
+        local f, err = loadstring("return " .. val)
         if err ~= nil then
           -- discard invalid lua expression
           user_opts[key] = nil
-        elseif eval ~= nil then
-          ok, eval = pcall(eval)
+        elseif f ~= nil then
+          ok, eval = pcall(f)
           if ok and type(eval) == "table" then
             -- allow if return a table only
             user_opts[key] = eval
@@ -241,11 +240,11 @@ function command.load_command(cmd, ...)
     else
       local param = vim.split(arg, "=")
       local key = table.remove(param, 1)
-      param = table.concat(param, "=")
+      local value = table.concat(param, "=")
       if key == "theme" then
-        user_opts["theme"] = param
+        user_opts["theme"] = value
       else
-        user_opts.opts[key] = param
+        user_opts.opts[key] = value
       end
     end
   end

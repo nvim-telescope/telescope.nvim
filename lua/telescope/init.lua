@@ -171,7 +171,7 @@ telescope.__format_setup_keys = function()
     table.insert(result, "")
     table.insert(result, string.format("%s*telescope.defaults.%s*", string.rep(" ", 70 - 20 - #name), name))
     table.insert(result, string.format("%s: ~", name))
-    table.insert(result, (vim.text.indent(4, desc)))
+    table.insert(result, (vim.text.indent(4, desc or "")))
   end
 
   table.insert(result, "</pre>")
