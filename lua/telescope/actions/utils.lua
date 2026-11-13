@@ -117,8 +117,8 @@ function utils._get_anon_function_name(info)
     end
   end
 
-  -- test if assignment or named function, otherwise anon
-  if (fname:match "=" == nil) and (fname:match "function %S+%(" == nil) then
+  -- test if assignment or named function, otherwise anon (or the file changed since it was loaded)
+  if not fname or ((fname:match "=" == nil) and (fname:match "function %S+%(" == nil)) then
     return "<anonymous>"
   else
     local patterns = {
