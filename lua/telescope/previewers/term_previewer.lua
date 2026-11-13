@@ -160,7 +160,7 @@ M.new_termopen_previewer = function(opts)
   function opts.setup(self)
     local state = {}
     if opt_setup then
-      state = vim.tbl_deep_extend("force", state, opt_setup(self))
+      state = vim.tbl_deep_extend("force", state, opt_setup(self)) --[[@as table]]
     end
     return state
   end

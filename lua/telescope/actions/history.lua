@@ -24,6 +24,7 @@ local utils = require "telescope.utils"
 local write_async = function(path, txt, flag)
   uv.fs_open(path, flag, 438, function(open_err, fd)
     assert(not open_err, open_err)
+    ---@cast fd integer
     uv.fs_write(fd, txt, -1, function(write_err)
       assert(not write_err, write_err)
       uv.fs_close(fd, function(close_err)
@@ -109,7 +110,7 @@ end
 --- Will return the next history item. Can be nil if there are no next items
 ---@param line string: the current line
 ---@param picker table: the current picker object
----@return string: the next history item
+---@return string|false|nil: the next history item
 function M.History:get_next(line, picker)
   if not self.enabled then
     utils.notify("History:get_next", {
@@ -138,7 +139,7 @@ end
 --- Will return the previous history item. Can be nil if there are no previous items
 ---@param line string: the current line
 ---@param picker table: the current picker object
----@return string: the previous history item
+---@return string|false|nil: the previous history item
 function M.History:get_prev(line, picker)
   if not self.enabled then
     utils.notify("History:get_prev", {

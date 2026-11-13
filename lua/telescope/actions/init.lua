@@ -525,8 +525,8 @@ end
 
 --- Ask user to confirm an action
 ---@param prompt string: The prompt for confirmation
----@param default_value string: The default value of user input
----@param yes_values table: List of positive user confirmations ({"y", "yes"} by default)
+---@param default_value? string: The default value of user input
+---@param yes_values? string[]: List of positive user confirmations ({"y", "yes"} by default)
 ---@return boolean: Whether user confirmed the prompt
 local function ask_to_confirm(prompt, default_value, yes_values)
   yes_values = yes_values or { "y", "yes" }
@@ -1430,13 +1430,13 @@ actions.which_key = function(prompt_bufnr, opts)
     local row_ = highlight_tbl.row
     local col = highlight_tbl.col
     for _, hl_block in ipairs(highlight) do
-      vim.hl.range(
-        km_buf,
-        keymap_highlights,
-        hl_block[2],
-        { row_, col + hl_block[1][1] },
-        { row_, col + hl_block[1][2] }
-      )
+      vim.hl.range(km_buf, keymap_highlights, hl_block[2], {
+        row_,
+        col + hl_block[1][1] --[[@as integer]],
+      }, {
+        row_,
+        col + hl_block[1][2] --[[@as integer]],
+      })
     end
   end
 
@@ -1555,7 +1555,8 @@ actions.mouse_click = function(prompt_bufnr)
     end)
   elseif pos.winid == picker.preview_win then
     vim.schedule(function()
-      actions.select_default(prompt_bufnr)
+      local select_default = actions.select_default --[[@as Action]] -- callable after `transform_mod`
+      select_default(prompt_bufnr)
     end)
   end
   return ""
@@ -1568,7 +1569,8 @@ actions.double_mouse_click = function(prompt_bufnr)
   if pos.winid == picker.results_win then
     vim.schedule(function()
       picker:set_selection(pos.line - 1)
-      actions.select_default(prompt_bufnr)
+      local select_default = actions.select_default --[[@as Action]] -- callable after `transform_mod`
+      select_default(prompt_bufnr)
     end)
   end
   return ""

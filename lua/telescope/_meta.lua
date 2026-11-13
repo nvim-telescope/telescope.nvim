@@ -183,3 +183,6 @@
 ---@field col integer
 ---@field width integer
 ---@field height integer
+
+---@class (partial) TelescopeWindowBorder
+---@overload fun(config?: TelescopeWindowBorder.config): TelescopeWindowBorder

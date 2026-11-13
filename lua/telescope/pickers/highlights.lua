@@ -82,6 +82,8 @@ function Highlighter:hi_selection(row, caret)
   )
 end
 
+---@param row integer
+---@param is_selected any
 function Highlighter:hi_multiselect(row, is_selected)
   local results_bufnr = self.picker.results_bufnr
 

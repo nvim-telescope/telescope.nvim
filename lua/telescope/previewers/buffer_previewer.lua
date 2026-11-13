@@ -55,6 +55,7 @@ local read_file_async = function(filepath, stat, callback)
       log.debug("Could not open file for preview:", err_open)
       return
     end
+    ---@cast fd integer
     uv.fs_read(fd, stat.size, 0, function(err_read, data)
       uv.fs_close(fd)
       if err_read then
@@ -317,7 +318,7 @@ previewers.new_buffer_previewer = function(opts)
   function opts.setup(self)
     local state = {}
     if opt_setup then
-      state = vim.tbl_deep_extend("force", state, opt_setup(self))
+      state = vim.tbl_deep_extend("force", state, opt_setup(self)) --[[@as table]]
     end
     return state
   end
@@ -562,7 +563,8 @@ previewers.ctags = defaulter(function(opts)
         if self.state.last_set_bufnr then
           pcall(api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
         end
-        pcall(hl.range, bufnr, ns_previewer, "TelescopePreviewMatch", { entry.lnum - 1, 0 }, { entry.lnum - 1, -1 })
+        local row = (entry.lnum - 1) --[[@as integer]]
+        pcall(hl.range, bufnr, ns_previewer, "TelescopePreviewMatch", { row, 0 }, { row, -1 })
         pcall(api.nvim_win_set_cursor, self.state.winid, { entry.lnum, 0 })
         self.state.last_set_bufnr = bufnr
       end
@@ -679,12 +681,14 @@ previewers.man = defaulter(function(opts)
 end)
 
 previewers.git_branch_log = defaulter(function(opts)
+  ---@param bufnr integer
+  ---@param content string[]
   local highlight_buffer = function(bufnr, content)
     for i = 1, #content do
       local line = content[i]
       local hstart, hend = line:find "[0-9a-fA-F]+"
       if hstart then
-        if hend < #line then
+        if hend and hend < #line then
           pcall(hl.range, bufnr, ns_previewer, "TelescopeResultsIdentifier", { i - 1, hstart - 1 }, { i - 1, hend })
         end
       end
@@ -1025,7 +1029,7 @@ previewers.highlights = defaulter(function(_)
         for k, v in ipairs(hl_groups) do
           local startPos = string.find(v, "xxx", 1, true) --[[@as integer]] - 1
           local endPos = startPos + 3
-          local hlgroup = string.match(v, "([^ ]*)%s+.*")
+          local hlgroup = string.match(v, "([^ ]*)%s+.*") --[[@as string]]
           pcall(hl.range, self.state.bufnr, 0, hlgroup, { k - 1, startPos }, { k - 1, endPos })
         end
       end
@@ -1092,7 +1096,7 @@ previewers.pickers = defaulter(function(_)
           local row = get_row(picker, preview_height, index)
           local e = picker.manager:get_entry(index)
 
-          local display, display_highlight
+          local display, display_highlight ---@type string, table?
           -- if-clause as otherwise function return values improperly unpacked
           if type(e.display) == "function" then
             display, display_highlight = e:display()

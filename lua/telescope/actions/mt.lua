@@ -190,6 +190,7 @@ action_mt.transform_mod = function(mod)
   redirect._clear = function()
     for k, v in pairs(redirect) do
       if k ~= "_clear" then
+        ---@cast v Action
         pcall(v.clear)
       end
     end
