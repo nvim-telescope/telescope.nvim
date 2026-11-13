@@ -157,10 +157,10 @@ files.live_grep = function(opts)
       return nil
     end
 
-    local search_list = {}
+    local search_list ---@type string[]? `filelist` is nil without listed buffers
 
     if grep_open_files then
-      search_list = filelist --[[@as string[] ]]
+      search_list = filelist
     elseif search_dirs then
       search_list = search_dirs
     end
