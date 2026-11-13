@@ -517,6 +517,7 @@ function Picker:find()
     })
   end
 
+  ---@async
   local main_loop = function()
     self.sorter:_init()
 
@@ -1427,6 +1428,7 @@ function Picker:_narrowed_candidates(discarded)
 end
 
 --- Process the narrowed `candidates` like a static finder would process its results.
+---@async
 ---@param candidates { list: table[], n: integer, processed: integer }
 ---@param process_result fun(entry: table): boolean?
 ---@param process_complete fun()

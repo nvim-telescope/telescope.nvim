@@ -419,6 +419,7 @@ end
 local function get_workspace_symbols_requester(bufnr, opts)
   local cancel = function() end
 
+  ---@async
   return function(prompt)
     cancel()
     ---@type table<integer, {error: lsp.ResponseError?, result: lsp.WorkspaceSymbol?}>

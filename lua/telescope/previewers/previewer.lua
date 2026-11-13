@@ -30,7 +30,7 @@ function Previewer:new(opts)
     _scroll_horizontal_fn = opts.scroll_horizontal_fn,
     preview_fn = opts.preview_fn,
     _empty_bufnr = nil,
-  }, Previewer)
+  }, self)
 end
 
 function Previewer:preview(entry, status)
