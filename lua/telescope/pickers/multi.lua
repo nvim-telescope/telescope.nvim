@@ -1,10 +1,11 @@
+---@class MultiSelect
 local MultiSelect = {}
 MultiSelect.__index = MultiSelect
 
 function MultiSelect:new()
   return setmetatable({
     _entries = {},
-  }, MultiSelect)
+  }, self)
 end
 
 function MultiSelect:get()

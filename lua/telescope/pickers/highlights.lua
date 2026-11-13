@@ -9,6 +9,7 @@ local ns_telescope_selection = api.nvim_create_namespace "telescope_selection"
 local ns_telescope_multiselection = api.nvim_create_namespace "telescope_multiselection"
 local ns_telescope_entry = api.nvim_create_namespace "telescope_entry"
 
+---@class telescope.pickers.Highlighter
 local Highlighter = {}
 Highlighter.__index = Highlighter
 
@@ -25,7 +26,7 @@ function Highlighter:hi_display(row, prefix, display_highlights)
     return
   end
 
-  local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
+  local results_bufnr = self.picker.results_bufnr
 
   api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_entry, row, row + 1)
   local len_prefix = #prefix
@@ -61,13 +62,13 @@ function Highlighter:hi_sorter(row, prompt, display)
     return
   end
 
-  local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
+  local results_bufnr = picker.results_bufnr
   picker:highlight_one_row(results_bufnr, prompt, display, row)
 end
 
 function Highlighter:hi_selection(row, caret)
   caret = vim.nonnil(caret, "")
-  local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
+  local results_bufnr = self.picker.results_bufnr
 
   api.nvim_buf_clear_namespace(results_bufnr, ns_telescope_selection, 0, -1)
   hl.range(results_bufnr, ns_telescope_selection, "TelescopeSelectionCaret", { row, 0 }, { row, #caret })
@@ -82,7 +83,7 @@ function Highlighter:hi_selection(row, caret)
 end
 
 function Highlighter:hi_multiselect(row, is_selected)
-  local results_bufnr = assert(self.picker.results_bufnr, "Must have a results bufnr")
+  local results_bufnr = self.picker.results_bufnr
 
   if is_selected then
     hl.range(results_bufnr, ns_telescope_multiselection, "TelescopeMultiSelection", { row, 0 }, { row, -1 })

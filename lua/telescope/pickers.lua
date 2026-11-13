@@ -364,7 +364,7 @@ end
 
 --- Highlight the entry corresponding to the given row
 ---@param results_bufnr number: the buffer number of the results buffer
----@param prompt table: table with information about the prompt buffer
+---@param prompt string: the prompt
 ---@param display string: the text corresponding to the given row
 ---@param row number: the number of the chosen row
 function Picker:highlight_one_row(results_bufnr, prompt, display, row)
@@ -794,7 +794,7 @@ function Picker:delete_selection(delete_cb)
   end, 50)
 end
 
----@param text string text to set as prompt
+---@param text? string text to set as prompt
 ---@param reset boolean? whether to replace prompt with text entirely or just append
 function Picker:set_prompt(text, reset)
   reset = vim.nonnil(reset, true)
@@ -814,7 +814,7 @@ function Picker.close_windows(status)
 end
 
 --- Get the entry table of the current selection
----@return table
+---@return table?
 function Picker:get_selection()
   return self._selection_entry
 end
@@ -944,7 +944,7 @@ function Picker:change_prompt_prefix(new_prefix, hl_group)
 end
 
 --- Reset the prompt to the provided `text`
----@param text string
+---@param text? string
 function Picker:reset_prompt(text)
   local prompt_text = self.prompt_prefix .. (text or "")
   api.nvim_buf_set_lines(self.prompt_bufnr, 0, -1, false, { prompt_text })
@@ -961,7 +961,7 @@ end
 ---@field reset_prompt? boolean whether to reset the prompt
 ---@field multi? MultiSelect multi-selection to persist upon renewing finder (see telescope/pickers/multi.lua)
 
----@param finder finder: telescope finder (see telescope/finders.lua)
+---@param finder? telescope.Finder: telescope finder (see telescope/finders.lua)
 ---@param opts? telescope.picker.refresh.opts: options to pass when refreshing the picker
 function Picker:refresh(finder, opts)
   opts = opts or {}
@@ -1292,7 +1292,7 @@ function Picker:_on_complete()
 end
 
 --- Close all open Telescope pickers
-function Picker:close_existing_pickers()
+function Picker.close_existing_pickers(_)
   for _, prompt_bufnr in ipairs(state.get_existing_prompt_bufnrs()) do
     pcall(actions.close, prompt_bufnr)
   end
@@ -1332,7 +1332,7 @@ end
 --- as appropriate and runs the sorters score function. It returns true once the find is stale.
 ---@param prompt string
 ---@param status_updater function
----@return function
+---@return fun(entry: table): boolean?
 function Picker:get_result_processor(prompt, status_updater)
   local running = { completed = false } -- no table per result
   local ignore_patterns = self.file_ignore_patterns or {}

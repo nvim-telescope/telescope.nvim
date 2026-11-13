@@ -30,3 +30,63 @@
 ---@field format_item? fun(item: any): string ui_select
 ---@field on_choice? fun(item: any?, idx: integer?) ui_select
 ---@field prompt? string ui_select
+
+---@class (partial) Picker
+---@field prompt_title string
+---@field results_title string
+---@field preview_title? string
+---@field prompt_prefix string
+---@field wrap_results boolean
+---@field selection_caret string
+---@field entry_prefix string
+---@field multi_icon string
+---@field initial_mode "insert"|"normal"
+---@field debounce? number
+---@field default_text? string
+---@field get_status_text fun(self: Picker, opts?: table): string
+---@field _on_input_filter_cb fun(prompt: string): { prompt?: string, updated_finder?: telescope.Finder }?
+---@field finder telescope.Finder
+---@field sorter Sorter
+---@field all_previewers? table[]|false
+---@field previewer? table|false
+---@field current_previewer_index integer
+---@field fix_preview_title? boolean
+---@field default_selection_index? integer
+---@field stats { processed: integer, filtered: integer }
+---@field attach_mappings? fun(prompt_bufnr: integer, map: function): boolean?
+---@field file_ignore_patterns? string[]
+---@field sorting_strategy "descending"|"ascending"
+---@field window { winblend: integer, border: boolean|table, borderchars: table }
+---@field cache_picker table|false
+---@field __scrolling_limit integer
+---@field __locations_input boolean
+---@field create_layout fun(picker: Picker): TelescopeLayout
+---@field get_window_options fun(self: Picker, max_columns: integer, max_lines: integer): table
+---@field scroller fun(max_results: integer, num_results: integer, row: integer): integer
+---@field highlighter telescope.pickers.Highlighter
+---@field max_results integer
+---@field layout TelescopeLayout
+---@field prompt_bufnr integer
+---@field prompt_win integer
+---@field results_bufnr integer
+---@field results_win integer
+---@field preview_bufnr? integer
+---@field preview_win? integer
+---@field manager EntryManager
+---@field _multi MultiSelect
+---@field original_win_id integer
+---@field original_bufnr integer
+
+-- A finder is called with the prompt, `process_result(entry)` and `process_complete()`.
+---@class telescope.Finder
+---@overload fun(prompt: string, process_result: (fun(entry: table): boolean?), process_complete: fun())
+---@field results? table[] static finders: the entries
+---@field prompt_independent? boolean results don't depend on the prompt (narrowing applies)
+---@field entry_maker? fun(line: any): table?
+---@field close fun(self: telescope.Finder)
+
+---@class (partial) telescope.pickers.Highlighter
+---@field picker Picker
+
+---@class (partial) MultiSelect
+---@field _entries table<table, integer> selection order of each entry

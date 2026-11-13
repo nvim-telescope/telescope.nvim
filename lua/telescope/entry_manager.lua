@@ -7,6 +7,7 @@ local log = require "telescope.log"
 --- in a "rest": entries pushed out of the top go to its front, entries rejected right away to its
 --- back. Everything is stored in plain arrays (no table per entry), with their lengths in fields
 --- (`#t` is a binary search in LuaJIT unless the array part is full).
+---@class EntryManager
 local EntryManager = {}
 EntryManager.__index = EntryManager
 
