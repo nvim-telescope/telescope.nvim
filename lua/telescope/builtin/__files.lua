@@ -537,7 +537,7 @@ files.current_buffer_fuzzy_find = function(opts)
           local current_picker = action_state.get_current_picker(prompt_bufnr)
           local searched_for = action_state.get_current_line()
 
-          ---@type number[] | {start:number, end:number?, highlight:string?}[]
+          ---@type integer[] | {start:integer, end:integer?, highlight:string?}[]
           local highlights = current_picker.sorter:highlighter(searched_for, selection.ordinal) or {}
           highlights = vim.tbl_map(function(hl)
             if type(hl) == "table" and hl.start then
@@ -550,7 +550,7 @@ files.current_buffer_fuzzy_find = function(opts)
 
           local first_col = 0
           if #highlights > 0 then
-            first_col = math.min(unpack(highlights)) - 1
+            first_col = math.min(unpack(highlights)) --[[@as integer]] - 1
           end
 
           actions.close(prompt_bufnr)

@@ -32,6 +32,7 @@ function EntryManager:new(max_results, set_entry)
   }, self)
 end
 
+---@return integer
 function EntryManager:num_results()
   return self.ntop + self.nfront + self.nback
 end

@@ -130,6 +130,10 @@ end
 local hay, bonus, hcont, hidx = {}, {}, {}, {}
 
 -- Only bytes `first` to `last` are prepared (the window in which the needle can match, see `score`).
+---@param haystack string
+---@param first integer
+---@param last integer
+---@param m integer
 local function prepare(haystack, first, last, m)
   -- the whole haystack decides the ASCII fast path (it counts the leading gap in bytes)
   local ascii = needle_ascii

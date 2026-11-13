@@ -467,7 +467,8 @@ previewers.vimgrep = defaulter(function(opts)
       -- This is to ensure that column range highlighting was opted in, as `col`
       -- is already used to determine the buffer jump position elsewhere.
       if entry.col and entry.colend then
-        col, colend = entry.col - 1, entry.colend - 1
+        col = (entry.col - 1) --[[@as integer]]
+        colend = (entry.colend - 1) --[[@as integer]]
       end
 
       for i = lnum, lnend do

@@ -110,6 +110,10 @@ utils.path_expand = function(path)
   return vim.fs.normalize(path, { win = utils.iswin })
 end
 
+---@nodoc
+---@param i integer
+---@param n integer
+---@return integer
 utils.cycle = function(i, n)
   return i % n == 0 and n or i % n
 end
@@ -714,11 +718,16 @@ end
 utils.__separate_file_path_location = function(path)
   local file, lnum, col = path:match "^(.-):%s*(%d+)%s*:%s*(%d+)%s*:*$"
   if file then
-    return file, tonumber(lnum), tonumber(col)
+    local l, c = tonumber(lnum), tonumber(col)
+    ---@cast l integer
+    ---@cast c integer
+    return file, l, c
   end
   file, lnum = path:match "^(.-):%s*(%d+)%s*:*$"
   if file then
-    return file, tonumber(lnum), 0
+    local l = tonumber(lnum)
+    ---@cast l integer
+    return file, l, 0
   end
   return (path:gsub(":+$", "")), nil, nil
 end

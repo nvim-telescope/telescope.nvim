@@ -109,6 +109,7 @@ M.bottom = function(sorting_strategy, max_results, num_results)
   return max_results - 1
 end
 
+---@return integer
 M.better = function(sorting_strategy)
   if sorting_strategy == "ascending" then
     return -1
@@ -117,6 +118,7 @@ M.better = function(sorting_strategy)
   end
 end
 
+---@return integer
 M.worse = function(sorting_strategy)
   return -(M.better(sorting_strategy))
 end

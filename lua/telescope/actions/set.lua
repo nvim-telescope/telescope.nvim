@@ -25,8 +25,8 @@ local action_set = setmetatable({}, {
 
 --- Move the current selection of a picker {change} rows.
 --- Handles not overflowing / underflowing the list.
----@param prompt_bufnr number: The prompt bufnr
----@param change number: The amount to shift the selection by
+---@param prompt_bufnr integer: The prompt bufnr
+---@param change integer: The amount to shift the selection by
 action_set.shift_selection = function(prompt_bufnr, change)
   local count = vim.v.count
   count = count == 0 and 1 or count
@@ -38,7 +38,7 @@ end
 --- actions by the user.
 ---
 --- By default maps to editing a file.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 ---@param type string: The type of selection to make
 --          Valid types include: "default", "horizontal", "vertical", "tabedit"
 action_set.select = function(prompt_bufnr, type)
@@ -104,7 +104,7 @@ do
 end
 
 --- Edit a file based on the current selection.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 ---@param command string: The command to use to open the file.
 --      Valid commands are:
 --      - "edit"
@@ -159,8 +159,8 @@ action_set.edit = function(prompt_bufnr, command)
     local sections = vim.split(value, ":")
 
     filename = sections[1]
-    row = tonumber(sections[2])
-    col = tonumber(sections[3])
+    row = tonumber(sections[2]) --[[@as integer?]]
+    col = tonumber(sections[3]) --[[@as integer?]]
   end
 
   local entry_bufnr = entry.bufnr
@@ -249,8 +249,8 @@ end
 --- Scrolls the previewer up or down.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
 --- option in `layout_config`. See |telescope.layout| for more details.
----@param prompt_bufnr number: The prompt bufnr
----@param direction number: The direction of the scrolling
+---@param prompt_bufnr integer: The prompt bufnr
+---@param direction integer: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_previewer = function(prompt_bufnr, direction)
   local previewer, speed = __scroll_previewer(prompt_bufnr)
@@ -262,8 +262,8 @@ end
 --- Scrolls the previewer to the left or right.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
 --- option in `layout_config`. See |telescope.layout| for more details.
----@param prompt_bufnr number: The prompt bufnr
----@param direction number: The direction of the scrolling
+---@param prompt_bufnr integer: The prompt bufnr
+---@param direction integer: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_horizontal_previewer = function(prompt_bufnr, direction)
   local previewer, speed = __scroll_previewer(prompt_bufnr)
@@ -275,8 +275,8 @@ end
 --- Scrolls the results up or down.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
 --- option in `layout_config`. See |telescope.layout| for more details.
----@param prompt_bufnr number: The prompt bufnr
----@param direction number: The direction of the scrolling
+---@param prompt_bufnr integer: The prompt bufnr
+---@param direction integer: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_results = function(prompt_bufnr, direction)
   local status = state.get_status(prompt_bufnr)
@@ -295,8 +295,8 @@ end
 --- Scrolls the results to the left or right.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
 --- option in `layout_config`. See |telescope.layout| for more details.
----@param prompt_bufnr number: The prompt bufnr
----@param direction number: The direction of the scrolling
+---@param prompt_bufnr integer: The prompt bufnr
+---@param direction integer: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_horizontal_results = function(prompt_bufnr, direction)
   local status = state.get_status(prompt_bufnr)

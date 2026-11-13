@@ -493,7 +493,7 @@ internal.oldfiles = function(opts)
 
   if opts.include_current_session then
     for _, buffer in ipairs(utils.split_lines(fn.execute ":buffers! t")) do
-      local match = tonumber(string.match(buffer, "%s*(%d+)"))
+      local match = tonumber(string.match(buffer, "%s*(%d+)")) --[[@as integer?]]
       local open_by_lsp = string.match(buffer, "line 0$")
       if match and not open_by_lsp then
         local file = utils.normalize_sep(api.nvim_buf_get_name(match))
@@ -1445,7 +1445,7 @@ internal.tagstack = function(opts)
     if api.nvim_buf_is_valid(tag.bufnr) then
       tags[#tags + 1] = tag
       tag.filename = fn.bufname(tag.bufnr)
-      tag.lnum = tag.from[2]
+      tag.lnum = tag.from[2] --[[@as integer]]
       tag.col = tag.from[3]
 
       tag.text = api.nvim_buf_get_lines(tag.bufnr, tag.lnum - 1, tag.lnum, false)[1] or ""

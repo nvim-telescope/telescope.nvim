@@ -19,7 +19,7 @@ local action_layout = setmetatable({}, {
 --- Toggle preview window.
 ---@note preview window can be toggled even if preview is set to false.
 ---@note this action is not mapped by default.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 action_layout.toggle_preview = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local status = state.get_status(picker.prompt_bufnr)
@@ -41,7 +41,7 @@ end
 --- Checks if `prompt_position` is an option for the current layout.
 ---
 ---@note this action is not mapped by default.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 action_layout.toggle_prompt_position = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
   picker.layout_config = picker.layout_config or {}
@@ -74,7 +74,7 @@ end
 --- Checks if `mirror` is an option for the current layout.
 ---
 ---@note this action is not mapped by default.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 action_layout.toggle_mirror = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
   -- flex layout is weird and needs handling separately
@@ -125,13 +125,13 @@ end
 --- Cycles to the next layout in `cycle_layout_list`.
 ---
 ---@note this action is not mapped by default.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 action_layout.cycle_layout_next = get_cycle_layout(1)
 
 --- Cycles to the previous layout in `cycle_layout_list`.
 ---
 ---@note this action is not mapped by default.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 action_layout.cycle_layout_prev = get_cycle_layout(-1)
 
 action_layout = transform_mod(action_layout)
