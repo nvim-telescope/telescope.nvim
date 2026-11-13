@@ -701,7 +701,7 @@ previewers.git_branch_log = defaulter(function(opts)
       end
       local dstart, _ = line:find " %(%d"
       if dstart then
-        pcall(hl.range, bufnr, ns_previewer, "TelescopeResultsSpecialComment", { i - 1, dstart }, { #line })
+        pcall(hl.range, bufnr, ns_previewer, "TelescopeResultsSpecialComment", { i - 1, dstart }, { i - 1, #line })
       end
     end
   end
