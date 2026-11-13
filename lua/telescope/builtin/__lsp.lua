@@ -176,7 +176,9 @@ local function list_or_jump(action, title, funname, params, opts)
       if error then
         errors[client_id] = error
       else
-        if result ~= nil then
+        -- skip the results of a client that stopped after the request (its encoding is unknown)
+        local client = result ~= nil and lsp.get_client_by_id(client_id)
+        if client then
           local locations = {}
 
           if not vim.islist(result) then
@@ -185,7 +187,7 @@ local function list_or_jump(action, title, funname, params, opts)
             vim.list_extend(locations, result)
           end
 
-          local offset_encoding = lsp.get_client_by_id(client_id).offset_encoding
+          local offset_encoding = client.offset_encoding
 
           if not vim.tbl_isempty(result) then
             first_encoding = offset_encoding
