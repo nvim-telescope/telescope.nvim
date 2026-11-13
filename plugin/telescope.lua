@@ -113,7 +113,7 @@ end, {
     local extensions_list = vim.tbl_keys(require("telescope._extensions").manager)
 
     local l = vim.split(line, "%s+")
-    local n = #l - 2
+    local n = #l - 2 -- `l[n + 2]` is the argument being completed
 
     if n == 0 then
       local commands = { builtin_list, extensions_list }
@@ -121,7 +121,7 @@ end, {
       table.sort(commands)
 
       return vim.tbl_filter(function(val)
-        return vim.startswith(val, l[2])
+        return vim.startswith(val, l[2] --[[@as string]])
       end, commands)
     end
 
@@ -132,11 +132,11 @@ end, {
 
       if #is_extension > 0 then
         local extensions_subcommand_dict = require("telescope.command").get_extensions_subcommand()
-        local commands = extensions_subcommand_dict[l[2]]
+        local commands = extensions_subcommand_dict[l[2]] --[[@as string[] ]]
         table.sort(commands)
 
         return vim.tbl_filter(function(val)
-          return vim.startswith(val, l[3])
+          return vim.startswith(val, l[3] --[[@as string]])
         end, commands)
       end
     end
