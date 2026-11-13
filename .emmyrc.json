@@ -1,0 +1,55 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EmmyLuaLs/emmylua-analyzer-rust/0.25.1/crates/emmylua_code_analysis/resources/schema.json",
+  "runtime": {
+    "version": "LuaJIT"
+  },
+  "workspace": {
+    "library": [
+      "$VIMRUNTIME"
+    ],
+    "ignoreDir": [
+      ".deps",
+      "scripts",
+      "tests"
+    ]
+  },
+  "format": {
+    "externalTool": {
+      "program": "stylua",
+      "args": [
+        "-",
+        "--stdin-filepath",
+        "${file}"
+      ]
+    }
+  },
+  "diagnostics": {
+    "disable": [
+      "unnecessary-if"
+    ],
+    "severity": {
+      "unused": "warning"
+    },
+    "enables": [
+      "code-style-check",
+      "non-literal-expressions-in-assert",
+      "unknown-doc-tag"
+    ]
+  },
+  "codeAction": {
+    "insertSpace": true
+  },
+  "strict": {
+    "typeCall": true,
+    "arrayIndex": true
+  },
+  "doc": {
+    "knownTags": [
+      "brief",
+      "eval",
+      "inlinedoc",
+      "nodoc",
+      "note"
+    ]
+  }
+}
