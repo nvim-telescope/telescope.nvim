@@ -197,7 +197,7 @@ files.grep_string = function(opts)
   if visual == true then
     local saved_reg = fn.getreg "v"
     vim.cmd [[noautocmd sil norm! "vy]]
-    local sele = fn.getreg "v" --[[@as string]]
+    local sele = (fn.getreg "v") --[[@as string]]
     fn.setreg("v", saved_reg)
     word = vim.nonnil(opts.search, sele)
   else

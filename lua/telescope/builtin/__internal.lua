@@ -388,7 +388,8 @@ internal.quickfixhistory = function(opts)
   local qflists = {}
   for i = 1, 10 do -- (n)vim keeps at most 10 quickfix lists in full
     -- qf weirdness: id = 0 gets id of quickfix list nr
-    local qflist = fn.getqflist { nr = i, id = 0, title = 1, items = 1 } --[[@as { id: integer, title: string, items: table[] }]]
+    local qflist = fn.getqflist { nr = i, id = 0, title = 1, items = 1 }
+    ---@cast qflist { id: integer, title: string, items: table[] }
     if not vim.tbl_isempty(qflist.items) then
       table.insert(qflists, qflist)
     end

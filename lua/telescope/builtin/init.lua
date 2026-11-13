@@ -685,7 +685,8 @@ local apply_config = function(mod)
       local pconf = pickers_conf[k] or {}
       local defaults = (function()
         if pconf.theme then
-          return require("telescope.themes")["get_" .. pconf.theme](pconf)
+          local get_theme = "get_" .. pconf.theme
+          return require("telescope.themes")[get_theme](pconf)
         end
         return vim.deepcopy(pconf)
       end)()
