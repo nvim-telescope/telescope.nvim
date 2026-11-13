@@ -22,9 +22,6 @@ end
 
 local FILTERED = -1
 
-local Sorter = {}
-Sorter.__index = Sorter
-
 ---@class Sorter
 --- Sorter sorts a list of results by return a single integer for a line,
 --- given a prompt
@@ -32,15 +29,22 @@ Sorter.__index = Sorter
 --- Lower number is better (because it's like a closer match)
 --- But, any number below 0 means you want that line filtered out.
 ---@field scoring_function function: Function that has the interface: (sorter, prompt, line): number
----@field tags table: Unique tags collected at filtering for tag completion
----@field filter_function function: Function that can filter results
----@field highlighter function: Highlights results to display them pretty
----@field discard boolean: Whether this is a discardable style sorter or not.
+---@field tags? table: Unique tags collected at filtering for tag completion
+---@field filter_function? function: Function that can filter results
+---@field highlighter? (fun(self: Sorter, prompt: string, display: string): table?) Highlights results to display them pretty
+---@field discard? boolean: Whether this is a discardable style sorter or not.
 ---@field score function: Override the score function if desired.
----@field init function: Function to run when creating sorter
----@field start function: Function to run on every new prompt
----@field finish function: Function to run after every new prompt
----@field destroy function: Functo to run when destroying sorter
+---@field init? function: Function to run when creating sorter
+---@field start? function: Function to run on every new prompt
+---@field finish? function: Function to run after every new prompt
+---@field destroy? function: Functo to run when destroying sorter
+---@field state table: state of the sorter, e.g. the parsed prompt
+---@field _status? "init"|"start"|"finish"|"destroy"
+---@field _discard_state { filtered: table<string, true>, prompt: string }: ordinals discarded for the prompt
+---@field _delimiter? string: tag delimiter (`prefilter_sorter`)
+local Sorter = {}
+Sorter.__index = Sorter
+
 function Sorter:new(opts)
   opts = opts or {}
 

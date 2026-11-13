@@ -1,5 +1,6 @@
 local utils = require "telescope.utils"
 
+---@class telescope.Previewer
 local Previewer = {}
 Previewer.__index = Previewer
 

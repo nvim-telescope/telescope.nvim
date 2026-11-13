@@ -137,3 +137,36 @@
 ---@class telescope.pickers.layout.module
 ---@overload fun(config: TelescopeLayout.config): TelescopeLayout
 ---@field Window TelescopeWindow.constructor
+
+---@class (partial) telescope.Previewer
+---@field state? table
+---@field preview_fn fun(self: telescope.Previewer, entry: table, status: table)
+---@field _title_fn? fun(self: telescope.Previewer): string
+---@field _dyn_title_fn? fun(self: telescope.Previewer, entry: table): string
+---@field _setup_func? fun(self: telescope.Previewer, status: table): table
+---@field _teardown_func? fun(self: telescope.Previewer)
+---@field _send_input? fun(self: telescope.Previewer, input: string)
+---@field _scroll_fn? fun(self: telescope.Previewer, direction: integer)
+---@field _scroll_horizontal_fn? fun(self: telescope.Previewer, direction: integer)
+---@field _empty_bufnr? integer
+
+---@class (partial) History
+---@field _reset fun(self: History)
+---@field _append fun(self: History, line: string, picker: Picker, no_reset?: boolean)
+---@field _pre_get? fun(self: History, line: string, picker: Picker)
+
+-- An action: callable with the prompt buffer; its functions can be replaced or enhanced temporarily.
+---@class Action
+---@overload fun(prompt_bufnr: integer, ...): ...
+---@field [integer] string the names of the combined actions
+---@field _func table<string, function> the original action function
+---@field _static_pre table<string, function> will always run before the function even if it's replaced
+---@field _pre table<string, function> the functions that will run before the action
+---@field _replacements table<string, function> the function that replaces this action
+---@field _static_post table<string, function> will always run after the function even if it's replaced
+---@field _post table<string, function> the functions that will run after the action
+---@field clear fun()
+---@field replace fun(self: Action, v: function|Action): Action
+---@field replace_if fun(self: Action, condition: (fun(): boolean), replacement: function|Action): Action
+---@field replace_map fun(self: Action, tbl: table<any, function|Action>): Action
+---@field enhance fun(self: Action, opts: { pre?: function|Action, post?: function|Action }): Action
