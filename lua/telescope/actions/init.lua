@@ -1469,30 +1469,21 @@ end
 ---@param prompt_bufnr integer: The prompt bufnr
 actions.to_fuzzy_refine = function(prompt_bufnr)
   local line = action_state.get_current_line()
-  local opts = (function()
-    local opts = {
-      sorter = conf.generic_sorter({}),
-    }
-
-    local title = action_state.get_current_picker(prompt_bufnr).prompt_title
-    if title == "Live Grep" then
-      opts.prefix = "Find Word"
-    elseif title == "LSP Dynamic Workspace Symbols" then
-      opts.prefix = "LSP Workspace Symbols"
-      opts.sorter = conf.prefilter_sorter({
-        tag = "symbol_type",
-        sorter = opts.sorter,
-      })
-    else
-      opts.prefix = "Fuzzy over"
-    end
-
-    return opts
-  end)()
+  local sorter = conf.generic_sorter({})
+  local prefix
+  local title = action_state.get_current_picker(prompt_bufnr).prompt_title
+  if title == "Live Grep" then
+    prefix = "Find Word"
+  elseif title == "LSP Dynamic Workspace Symbols" then
+    prefix = "LSP Workspace Symbols"
+    sorter = conf.prefilter_sorter({ tag = "symbol_type", sorter = sorter })
+  else
+    prefix = "Fuzzy over"
+  end
 
   require("telescope.actions.generate").refine(prompt_bufnr, {
-    prompt_title = string.format("%s (%s)", opts.prefix, line),
-    sorter = opts.sorter,
+    prompt_title = string.format("%s (%s)", prefix, line),
+    sorter = sorter,
   })
 end
 

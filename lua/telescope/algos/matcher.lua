@@ -36,7 +36,7 @@ local SCORE_MATCH_WORD = 0.8
 local SCORE_MATCH_CAPITAL = 0.7
 local SCORE_MATCH_DOT = 0.9
 local SCORE_MAX = math.huge
-local SCORE_MIN = -math.huge
+local SCORE_MIN = -SCORE_MAX
 local MATCH_MAX_LENGTH = 1024
 
 -- bonus for a match, indexed by the previous byte: start of a word after any ASCII character that

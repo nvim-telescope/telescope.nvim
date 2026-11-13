@@ -1136,16 +1136,13 @@ function make_entry.gen_from_diagnostics(opts)
   end
 
   local type_diagnostic = vim.diagnostic.severity
-  local signs = (function()
-    if opts.no_sign then
-      return
-    end
-    local signs = {}
+  local signs
+  if not opts.no_sign then
+    signs = {}
     for num, severity in ipairs(type_diagnostic) do
       signs[severity] = diagnostic_signs[num] or severity:sub(1, 1)
     end
-    return signs
-  end)()
+  end
 
   local sign_width
   if opts.disable_coordinates then
