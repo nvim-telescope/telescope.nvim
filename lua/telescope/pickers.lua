@@ -181,7 +181,7 @@ function Picker:new(opts)
 
     initial_mode = vim.nonnil(opts.initial_mode, config.values.initial_mode),
     _original_mode = api.nvim_get_mode().mode,
-    debounce = vim.nonnil(tonumber(opts.debounce), nil),
+    debounce = opts.debounce,
 
     _finder_attached = true,
     default_text = opts.default_text,
@@ -237,7 +237,7 @@ function Picker:new(opts)
 
     cache_picker = config.resolve_table_opts(opts.cache_picker, vim.deepcopy(config.values.cache_picker)),
 
-    __scrolling_limit = tonumber(vim.nonnil(opts.temp__scrolling_limit, 250)),
+    __scrolling_limit = vim.nonnil(opts.temp__scrolling_limit, 250),
 
     __locations_input = vim.nonnil(opts.__locations_input, false),
   }, self)

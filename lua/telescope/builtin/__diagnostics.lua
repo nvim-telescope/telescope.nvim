@@ -133,9 +133,6 @@ diagnostics.get = function(opts)
   if opts.bufnr ~= 0 then
     opts.bufnr = nil
   end
-  if type(opts.bufnr) == "string" then
-    opts.bufnr = tonumber(opts.bufnr)
-  end
   if opts.bufnr ~= nil then
     opts.path_display = vim.nonnil(opts.path_display, "hidden")
   end
