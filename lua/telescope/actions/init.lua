@@ -1343,7 +1343,7 @@ actions.which_key = function(prompt_bufnr, opts)
     + (3 * #opts.separator)
   local num_total_columns = math.floor((vim.o.columns - #column_indent) / entry_width)
   opts.num_rows =
-    math.min(math.ceil(#mappings / num_total_columns), resolver.resolve_height(opts.max_height)(_, _, vim.o.lines)) --[[@as integer]]
+    math.min(math.ceil(#mappings / num_total_columns), resolver.resolve_height(opts.max_height)(_, _, vim.o.lines))
   local total_available_entries = opts.num_rows * num_total_columns
   local winheight = opts.num_rows + 2 * opts.line_padding --[[@as integer]]
 

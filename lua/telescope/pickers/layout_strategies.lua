@@ -85,7 +85,7 @@ local calc_size_and_spacing = function(cur_size, max_size, bs, w_num, b_num, s_n
 end
 
 local layout_strategies = {}
-layout_strategies._configurations = {}
+layout_strategies._configurations = {} ---@type table<string, table>
 
 --@param strategy_config table: table with keys for each option for a strategy
 --@return table: table with keys for each option (for this strategy) and with keys for each layout_strategy
@@ -200,7 +200,7 @@ local shared_options = {
 
 -- Used for generating vim help documentation.
 layout_strategies._format = function(name)
-  local strategy_config = layout_strategies._configurations[name] --[[@as table]]
+  local strategy_config = layout_strategies._configurations[name]
   if vim.tbl_isempty(strategy_config) then
     return {}
   end

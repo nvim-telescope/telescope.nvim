@@ -31,7 +31,7 @@ local FILTERED = -1
 ---@field scoring_function function: Function that has the interface: (sorter, prompt, line): number
 ---@field tags? table: Unique tags collected at filtering for tag completion
 ---@field filter_function? function: Function that can filter results
----@field highlighter? (fun(self: Sorter, prompt: string, display: string): table?) Highlights results to display them pretty
+---@field highlighter? (fun(self: Sorter, prompt: string, display: string): telescope.Highlights?) Highlights results to display them pretty
 ---@field discard? boolean: Whether this is a discardable style sorter or not.
 ---@field score function: Override the score function if desired.
 ---@field init? function: Function to run when creating sorter
@@ -447,7 +447,7 @@ sorters.get_fzy_sorter = function(opts)
       local score ---@type number
       if q.single then
         -- a single fuzzy term: check for a match before running the scoring algorithm
-        local term = q[1][1] --[[@as telescope.algos.query.Term]]
+        local term = q[1][1]
         if not matcher.has_match(term.text, line, term.cs) then
           return -1
         end
@@ -478,7 +478,7 @@ sorters.get_fzy_sorter = function(opts)
     highlighter = function(_, prompt, display)
       local q = parse(prompt)
       if q.single then
-        local term = q[1][1] --[[@as telescope.algos.query.Term]]
+        local term = q[1][1]
         return matcher.positions(term.text, display, term.cs)
       end
       return query.positions(q, display)

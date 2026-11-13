@@ -159,8 +159,8 @@ action_set.edit = function(prompt_bufnr, command)
     local sections = vim.split(value, ":")
 
     filename = sections[1]
-    row = tonumber(sections[2]) --[[@as integer?]]
-    col = tonumber(sections[3]) --[[@as integer?]]
+    row = tonumber(sections[2])
+    col = tonumber(sections[3])
   end
 
   local entry_bufnr = entry.bufnr

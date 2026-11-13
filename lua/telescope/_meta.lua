@@ -73,7 +73,7 @@
 ---@field __layout_index? integer index in `__cycle_layout_list`
 ---@field get_selection_window fun(picker: Picker, entry: table): integer
 ---@field window { winblend: integer, border: boolean|table, borderchars: table }
----@field cache_picker table|false
+---@field cache_picker telescope.picker.CachePicker|false
 ---@field __scrolling_limit integer
 ---@field __locations_input boolean
 ---@field create_layout fun(picker: Picker): TelescopeLayout
@@ -95,7 +95,7 @@
 
 -- A finder is called with the prompt, `process_result(entry)` and `process_complete()`.
 ---@class telescope.Finder
----@overload fun(prompt: string, process_result: (fun(entry: table): boolean?), process_complete: fun())
+---@overload fun(prompt: string, process_result: (fun(entry: table?): boolean?), process_complete: fun())
 ---@field results? table[] static finders: the entries
 ---@field prompt_independent? boolean results don't depend on the prompt (narrowing applies)
 ---@field entry_maker? fun(line: any): table?
@@ -123,7 +123,7 @@
 
 -- A query of `telescope.algos.query`: a list of sets (all must match) of terms (alternatives).
 ---@class telescope.algos.query.Query
----@field [integer] telescope.algos.query.Term[]
+---@field [integer] table<integer, telescope.algos.query.Term>
 ---@field single boolean a single fuzzy term
 
 ---@class telescope.algos.query.Term
@@ -186,3 +186,21 @@
 
 ---@class (partial) TelescopeWindowBorder
 ---@overload fun(config?: TelescopeWindowBorder.config): TelescopeWindowBorder
+
+---@class (partial) telescope.AsyncJob
+---@field handle uv.uv_process_t
+---@field stdout? telescope.async_job.Pipe
+
+-- The cache state of a picker (`cache_picker` option, see `builtin.resume`).
+---@class telescope.picker.CachePicker
+---@field num_pickers integer
+---@field limit_entries integer
+---@field ignore_empty_prompt boolean
+---@field index? integer position in the cached pickers
+---@field disabled? boolean
+---@field is_cached? boolean
+---@field cached_prompt? string
+---@field selection_row? integer
+
+-- What a sorter's highlighter returns: byte positions, or ranges with an optional highlight group.
+---@alias telescope.Highlights (integer|{ start: integer, finish?: integer, highlight?: string })[]
