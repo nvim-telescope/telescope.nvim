@@ -1167,11 +1167,11 @@ function Picker:refresh_previewer()
 end
 
 function Picker:cycle_previewers(next)
-  local all_previewers = self.all_previewers --[[@as table[] ]]
-  local size = #all_previewers
-  if size == 1 then
+  local all_previewers = self.all_previewers
+  if not all_previewers or #all_previewers <= 1 then
     return
   end
+  local size = #all_previewers
 
   self.current_previewer_index = self.current_previewer_index + next
   if self.current_previewer_index > size then
