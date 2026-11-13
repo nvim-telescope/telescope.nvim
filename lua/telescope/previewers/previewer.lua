@@ -1,4 +1,4 @@
-local utils = require "telescope.utils"
+local utils = require("telescope.utils")
 
 ---@class telescope.Previewer
 local Previewer = {}

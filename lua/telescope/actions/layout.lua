@@ -4,9 +4,9 @@
 ---@brief
 --- The layout actions are actions to be used to change the layout of a picker.
 
-local action_state = require "telescope.actions.state"
-local state = require "telescope.state"
-local layout_strats = require "telescope.pickers.layout_strategies"
+local action_state = require("telescope.actions.state")
+local state = require("telescope.state")
+local layout_strats = require("telescope.pickers.layout_strategies")
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 

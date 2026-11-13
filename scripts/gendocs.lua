@@ -1,7 +1,7 @@
-vim.opt.rtp:prepend "."
-vim.opt.rtp:prepend ".deps/docgen.nvim"
+vim.opt.rtp:prepend(".")
+vim.opt.rtp:prepend(".deps/docgen.nvim")
 
-require("docgen").run {
+require("docgen").run({
   name = "telescope",
   description = "Find, Filter, Preview, Pick. All lua, all the time.",
   files = {
@@ -37,4 +37,4 @@ require("docgen").run {
     { "./lua/telescope/actions/history.lua", fn_prefix = "histories" },
     "./lua/telescope/previewers/init.lua",
   },
-}
+})

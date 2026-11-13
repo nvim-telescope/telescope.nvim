@@ -1,12 +1,12 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it = t.describe, t.it
 
 local eq = function(a, b)
   assert.eq(a, b)
 end
 
-local resolve = require "telescope.config.resolve"
+local resolve = require("telescope.config.resolve")
 
 describe("telescope.config.resolve", function()
   describe("win_option", function()
@@ -80,11 +80,11 @@ describe("telescope.config.resolve", function()
     end)
 
     it("should handle percentages with min/max boundary", function()
-      eq(20, resolve.resolve_width { 0.1, min = 20 }(nil, 40, 120))
-      eq(30, resolve.resolve_height { 0.1, min = 20 }(nil, 40, 300))
+      eq(20, resolve.resolve_width({ 0.1, min = 20 })(nil, 40, 120))
+      eq(30, resolve.resolve_height({ 0.1, min = 20 })(nil, 40, 300))
 
-      eq(24, resolve.resolve_width { 0.4, max = 80 }(nil, 60, 60))
-      eq(80, resolve.resolve_height { 0.4, max = 80 }(nil, 60, 300))
+      eq(24, resolve.resolve_width({ 0.4, max = 80 })(nil, 60, 60))
+      eq(80, resolve.resolve_height({ 0.4, max = 80 })(nil, 60, 300))
     end)
 
     it("should handle fixed size", function()
@@ -119,10 +119,13 @@ describe("telescope.config.resolve", function()
       local pads = { 0.1, 5, func }
       for _, s in ipairs(test_sizes) do
         for _, p in ipairs(pads) do
-          eq(s[1] - 2 * resolve.resolve_width(p)(nil, unpack(s)), resolve.resolve_width { padding = p }(nil, unpack(s)))
+          eq(
+            s[1] - 2 * resolve.resolve_width(p)(nil, unpack(s)),
+            resolve.resolve_width({ padding = p })(nil, unpack(s))
+          )
           eq(
             s[2] - 2 * resolve.resolve_height(p)(nil, unpack(s)),
-            resolve.resolve_height { padding = p }(nil, unpack(s))
+            resolve.resolve_height({ padding = p })(nil, unpack(s))
           )
         end
       end

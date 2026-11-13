@@ -1,15 +1,15 @@
 local fn = vim.fn
 local api = vim.api
 
-local actions = require "telescope.actions"
-local action_state = require "telescope.actions.state"
-local finders = require "telescope.finders"
-local make_entry = require "telescope.make_entry"
-local operators = require "telescope.operators"
-local pickers = require "telescope.pickers"
-local previewers = require "telescope.previewers"
-local utils = require "telescope.utils"
-local entry_display = require "telescope.pickers.entry_display"
+local actions = require("telescope.actions")
+local action_state = require("telescope.actions.state")
+local finders = require("telescope.finders")
+local make_entry = require("telescope.make_entry")
+local operators = require("telescope.operators")
+local pickers = require("telescope.pickers")
+local previewers = require("telescope.previewers")
+local utils = require("telescope.utils")
+local entry_display = require("telescope.pickers.entry_display")
 
 local conf = require("telescope.config").values
 local git_command = utils.__git_command
@@ -53,11 +53,11 @@ git.files = function(opts)
       prompt_title = "Git Files",
       __locations_input = true,
       finder = finders.new_oneshot_job(
-        utils.flatten {
+        utils.flatten({
           opts.git_command,
           show_untracked and "--others" or nil,
           recurse_submodules and "--recurse-submodules" or nil,
-        },
+        }),
         opts
       ),
       previewer = conf.grep_previewer(opts),
@@ -147,12 +147,12 @@ local bcommits_picker = function(opts, title, finder)
 
       local vimdiff = function(selection, command)
         local ft = vim.bo.filetype
-        vim.cmd "diffthis"
+        vim.cmd("diffthis")
 
         local bufnr = get_buffer_of_orig(selection)
         vim.cmd(string.format("%s %s", command, bufnr))
         vim.bo.filetype = ft
-        vim.cmd "diffthis"
+        vim.cmd("diffthis")
 
         api.nvim_create_autocmd("WinClosed", {
           buf = bufnr,
@@ -197,10 +197,10 @@ git.bcommits = function(opts)
 
   local title = "Git BCommits"
   local finder = finders.new_oneshot_job(
-    utils.flatten {
+    utils.flatten({
       opts.git_command,
       opts.current_file,
-    },
+    }),
     opts
   )
   bcommits_picker(opts, title, finder):find()
@@ -220,29 +220,29 @@ git.bcommits_range = function(opts)
   local line_number_first = opts.from
   local line_number_last = vim.nonnil(opts.to, line_number_first)
   if visual then
-    line_number_first = vim.nonnil(line_number_first, fn.line "v")
-    line_number_last = vim.nonnil(line_number_last, fn.line ".")
+    line_number_first = vim.nonnil(line_number_first, fn.line("v"))
+    line_number_last = vim.nonnil(line_number_last, fn.line("."))
   elseif opts.operator then
     opts.operator = false
     opts.operator_callback = true
     operators.run_operator(git.bcommits_range, opts)
     return
   elseif opts.operator_callback then
-    line_number_first = fn.line "'["
-    line_number_last = fn.line "']"
+    line_number_first = fn.line("'[")
+    line_number_last = fn.line("']")
   elseif line_number_first == nil then
-    line_number_first = fn.line "."
-    line_number_last = vim.nonnil(line_number_last, fn.line ".")
+    line_number_first = fn.line(".")
+    line_number_last = vim.nonnil(line_number_last, fn.line("."))
   end
   local line_range =
     string.format("%d,%d:%s", line_number_first, line_number_last, utils.make_relative(opts.current_file, opts.cwd))
 
   local title = "Git BCommits in range"
   local finder = finders.new_oneshot_job(
-    utils.flatten {
+    utils.flatten({
       opts.git_command,
       line_range,
-    },
+    }),
     opts
   )
   bcommits_picker(opts, title, finder):find()
@@ -315,7 +315,7 @@ git.branches = function(opts)
     return
   end
 
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = " ",
     items = {
       { width = 1 },
@@ -325,23 +325,23 @@ git.branches = function(opts)
       { width = widths.upstream },
       { width = widths.committerdate },
     },
-  }
+  })
 
   local make_display = function(entry)
-    return displayer {
+    return displayer({
       { entry.head },
       { entry.name, "TelescopeResultsIdentifier" },
       { entry.authorname },
       { string.len(entry.upstream) > 0 and "=>" or "" },
       { entry.upstream, "TelescopeResultsIdentifier" },
       { entry.committerdate },
-    }
+    })
   end
 
   pickers
     .new(opts, {
       prompt_title = "Git Branches",
-      finder = finders.new_table {
+      finder = finders.new_table({
         results = results,
         entry_maker = function(entry)
           entry.value = entry.name
@@ -349,7 +349,7 @@ git.branches = function(opts)
           entry.display = make_display
           return make_entry.set_default_entry_mt(entry, opts)
         end,
-      },
+      }),
       previewer = previewers.git_branch_log.new(opts),
       sorter = conf.file_sorter(opts),
       attach_mappings = function(_, map)
@@ -421,7 +421,7 @@ git.status = function(opts)
         end,
       },
       attach_mappings = function(prompt_bufnr, map)
-        actions.git_staging_toggle:enhance {
+        actions.git_staging_toggle:enhance({
           post = function()
             local picker = action_state.get_current_picker(prompt_bufnr)
 
@@ -436,7 +436,7 @@ git.status = function(opts)
             -- refresh
             picker:refresh(gen_new_finder(), { reset_prompt = false })
           end,
-        }
+        })
 
         map({ "i", "n" }, "<tab>", actions.git_staging_toggle)
         return true
@@ -471,7 +471,7 @@ local set_opts_cwd = function(opts)
   elseif opts.use_file_path then
     opts.cwd = vim.fs.root(0, ".git")
     if not opts.cwd then
-      opts.cwd = fn.expand "%:p:h"
+      opts.cwd = fn.expand("%:p:h")
       try_worktrees(opts)
       return
     end

@@ -122,8 +122,8 @@
 
 local api = vim.api
 
-local actions = require "telescope.actions"
-local config = require "telescope.config"
+local actions = require("telescope.actions")
+local config = require("telescope.config")
 
 local mappings = {}
 
@@ -249,7 +249,7 @@ local get_desc_for_keyfunc = function(key_func, opts)
     return "telescope|" .. name
   elseif type(key_func) == "function" then
     local info = debug.getinfo(key_func) --[[@as debuglib.DebugInfo]]
-    return "telescopej|" .. vim.json.encode { source = info.source, linedefined = info.linedefined }
+    return "telescopej|" .. vim.json.encode({ source = info.source, linedefined = info.linedefined })
   end
 end
 

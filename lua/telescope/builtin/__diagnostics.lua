@@ -1,8 +1,8 @@
 local conf = require("telescope.config").values
-local finders = require "telescope.finders"
-local make_entry = require "telescope.make_entry"
-local pickers = require "telescope.pickers"
-local utils = require "telescope.utils"
+local finders = require("telescope.finders")
+local make_entry = require("telescope.make_entry")
+local pickers = require("telescope.pickers")
+local utils = require("telescope.utils")
 
 local diagnostics = {}
 
@@ -138,7 +138,7 @@ diagnostics.get = function(opts)
   end
 
   -- call `workspace/diagnostic` request and wait for response before proceeding
-  if opts.workspace and next(vim.lsp.get_clients { method = "workspace/diagnostic" }) then
+  if opts.workspace and next(vim.lsp.get_clients({ method = "workspace/diagnostic" })) then
     local got_response = false
     vim.api.nvim_create_autocmd("LspRequest", {
       callback = function(ev)
@@ -176,15 +176,15 @@ diagnostics.get = function(opts)
   pickers
     .new(opts, {
       prompt_title = opts.bufnr == nil and "Workspace Diagnostics" or "Document Diagnostics",
-      finder = finders.new_table {
+      finder = finders.new_table({
         results = locations,
         entry_maker = opts.entry_maker or make_entry.gen_from_diagnostics(opts),
-      },
+      }),
       previewer = conf.qflist_previewer(opts),
-      sorter = conf.prefilter_sorter {
+      sorter = conf.prefilter_sorter({
         tag = "type",
         sorter = conf.generic_sorter(opts),
-      },
+      }),
     })
     :find()
 end

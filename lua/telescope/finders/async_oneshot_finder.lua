@@ -1,7 +1,7 @@
-local _async = require "telescope._async"
+local _async = require("telescope._async")
 
-local async_job = require "telescope.async_job"
-local make_entry = require "telescope.make_entry"
+local async_job = require("telescope.async_job")
+local make_entry = require("telescope.make_entry")
 
 local LinesPipe = async_job.LinesPipe
 
@@ -27,14 +27,14 @@ return function(opts)
     if not lines then
       local job_opts = fn_command()
       local stdout = LinesPipe()
-      job = async_job.spawn {
+      job = async_job.spawn({
         command = job_opts.command,
         args = job_opts.args,
         cwd = opts.cwd,
         env = opts.env,
         stdout = stdout,
-      }
-      lines = stdout:iter { split_char = opts.split_char }
+      })
+      lines = stdout:iter({ split_char = opts.split_char })
     end
 
     _async.process_list(results, num_results, process_result)

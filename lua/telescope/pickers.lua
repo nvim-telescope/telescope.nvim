@@ -1,31 +1,31 @@
-require "telescope"
+require("telescope")
 
 local fn = vim.fn
 local api = vim.api
 
-local _async = require "telescope._async"
-local ui = require "telescope.pickers.ui"
+local _async = require("telescope._async")
+local ui = require("telescope.pickers.ui")
 
-local actions = require "telescope.actions"
-local config = require "telescope.config"
-local debounce = require "telescope.debounce"
-local log = require "telescope.log"
-local mappings = require "telescope.mappings"
-local state = require "telescope.state"
-local utils = require "telescope.utils"
+local actions = require("telescope.actions")
+local config = require("telescope.config")
+local debounce = require("telescope.debounce")
+local log = require("telescope.log")
+local mappings = require("telescope.mappings")
+local state = require("telescope.state")
+local utils = require("telescope.utils")
 
-local entry_display = require "telescope.pickers.entry_display"
-local p_highlighter = require "telescope.pickers.highlights"
-local p_scroller = require "telescope.pickers.scroller"
-local p_window = require "telescope.pickers.window"
-local Layout = require "telescope.pickers.layout"
+local entry_display = require("telescope.pickers.entry_display")
+local p_highlighter = require("telescope.pickers.highlights")
+local p_scroller = require("telescope.pickers.scroller")
+local p_window = require("telescope.pickers.window")
+local Layout = require("telescope.pickers.layout")
 
-local EntryManager = require "telescope.entry_manager"
-local MultiSelect = require "telescope.pickers.multi"
+local EntryManager = require("telescope.entry_manager")
+local MultiSelect = require("telescope.pickers.multi")
 
-local ns_telescope_matching = api.nvim_create_namespace "telescope_matching"
-local ns_telescope_prompt = api.nvim_create_namespace "telescope_prompt"
-local ns_telescope_prompt_prefix = api.nvim_create_namespace "telescope_prompt_prefix"
+local ns_telescope_matching = api.nvim_create_namespace("telescope_matching")
+local ns_telescope_prompt = api.nvim_create_namespace("telescope_prompt")
+local ns_telescope_prompt_prefix = api.nvim_create_namespace("telescope_prompt_prefix")
 
 -- while results come in, draw them at most this often (ms)
 local DRAW_INTERVAL = 50
@@ -83,17 +83,17 @@ local function default_create_layout(picker)
     opts.borderhighlight = role.hl .. "Border"
     opts.titlehighlight = role.hl .. "Title"
     local win, border = picker:_create_window(nil, opts)
-    self[name] = Layout.Window { winid = win, bufnr = api.nvim_win_get_buf(win), border = border }
+    self[name] = Layout.Window({ winid = win, bufnr = api.nvim_win_get_buf(win), border = border })
     return win
   end
 
-  local layout = Layout {
+  local layout = Layout({
     picker = picker,
     ---@param self TelescopeLayout
     mount = function(self)
       local popup_opts = window_options()
       -- the prompt comes last: it is entered
-      for _, name in ipairs { "results", "preview", "prompt" } do
+      for _, name in ipairs({ "results", "preview", "prompt" }) do
         if popup_opts[name] then
           create_window(self, name, popup_opts[name])
         end
@@ -132,7 +132,7 @@ local function default_create_layout(picker)
       ui.move(self.prompt.winid, popup_opts.prompt)
       ui.move(self.results.winid, popup_opts.results)
     end,
-  }
+  })
 
   return layout
 end
@@ -150,11 +150,11 @@ function Picker:new(opts)
   opts = opts or {}
 
   if opts.layout_strategy and opts.get_window_options then
-    error "layout_strategy and get_window_options are not compatible keys"
+    error("layout_strategy and get_window_options are not compatible keys")
   end
 
   if fn.win_gettype() == "command" then
-    error "Can't open telescope from command-line window. See E11"
+    error("Can't open telescope from command-line window. See E11")
   end
 
   -- We need to clear at the beginning not on close because after close we can still have select:post
@@ -332,7 +332,7 @@ end
 ---@param results_bufnr integer: the buffer number of the results buffer
 function Picker:clear_extra_rows(results_bufnr)
   if self:is_done() then
-    log.trace "Not clearing due to being already complete"
+    log.trace("Not clearing due to being already complete")
     return
   end
 
@@ -387,7 +387,7 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
         start = hl --[[@as integer]]
         finish = hl
       else
-        error "Invalid higlighter fn"
+        error("Invalid higlighter fn")
       end
 
       -- extmark instead of `vim.hl.range()`, which is much slower (runs for every displayed row)
@@ -554,13 +554,13 @@ function Picker:find()
 
         if line_number or column_number then
           state.set_global_key("prompt_location", { row = line_number, col = column_number })
-        elseif state.get_global_key "prompt_location" then
+        elseif state.get_global_key("prompt_location") then
           state.set_global_key("prompt_location", nil)
         end
 
         -- it is important to continue behaving as if there is no location in prompt
         prompt = filename
-      elseif state.get_global_key "prompt_location" then
+      elseif state.get_global_key("prompt_location") then
         -- in case new picker that does not support locations is opened clear the location
         state.set_global_key("prompt_location", nil)
       end
@@ -625,7 +625,7 @@ function Picker:find()
   api.nvim_buf_attach(self.prompt_bufnr, false, {
     on_lines = function()
       if self._finder_attached then
-        status_updater { completed = false }
+        status_updater({ completed = false })
         self._on_lines()
       end
     end,
@@ -1027,7 +1027,7 @@ function Picker:set_selection(row)
 
   local entry = self.manager:get_entry(self:get_index(row))
 
-  local prompt_location = state.get_global_key "prompt_location"
+  local prompt_location = state.get_global_key("prompt_location")
   if entry and prompt_location then
     entry.lnum = prompt_location.row or 0
     if prompt_location.col and prompt_location.col > 0 then
@@ -1077,12 +1077,12 @@ function Picker:set_selection(row)
     display = caret .. display
 
     if not api.nvim_buf_is_valid(results_bufnr) then
-      log.debug "Invalid buf somehow..."
+      log.debug("Invalid buf somehow...")
       return
     end
 
     -- don't highlight any whitespace at the end of caret
-    self.highlighter:hi_selection(row, caret:match "(.*%S)")
+    self.highlighter:hi_selection(row, caret:match("(.*%S)"))
     self.highlighter:hi_sorter(row, prompt, display)
 
     self.highlighter:hi_multiselect(row, self:is_multi_selected(entry))
@@ -1363,7 +1363,7 @@ function Picker:get_result_processor(prompt, status_updater)
   end
 
   local cb_filter = function(_)
-    self:_increment "filtered"
+    self:_increment("filtered")
   end
 
   return function(entry)
@@ -1396,7 +1396,7 @@ function Picker:get_result_processor(prompt, status_updater)
       end
     end
 
-    self:_increment "processed"
+    self:_increment("processed")
 
     self.sorter:score(prompt, entry, cb_add, cb_filter)
   end
@@ -1455,7 +1455,7 @@ function Picker:get_result_completor(results_bufnr, prompt, status_updater)
     self:_draw_results()
     self:_do_selection(prompt)
 
-    status_updater { completed = true }
+    status_updater({ completed = true })
 
     self:clear_extra_rows(results_bufnr)
     self.sorter:_finish(prompt)
@@ -1578,7 +1578,7 @@ function pickers.on_close_prompt(prompt_bufnr)
   require("telescope.actions.state").get_current_history():reset()
 
   if type(picker.cache_picker) == "table" then
-    local cached_pickers = state.get_global_key "cached_pickers" or {}
+    local cached_pickers = state.get_global_key("cached_pickers") or {}
 
     if type(picker.cache_picker.index) == "number" then
       if not vim.tbl_isempty(cached_pickers) then
@@ -1632,11 +1632,11 @@ function pickers.on_close_prompt(prompt_bufnr)
   end
 
   -- so we dont call close_windows multiple times we clear that autocmd
-  api.nvim_clear_autocmds {
+  api.nvim_clear_autocmds({
     group = "PickerInsert",
     event = "BufLeave",
     buf = prompt_bufnr,
-  }
+  })
   picker.close_windows(status)
 
   vim.o.mousemoveevent = picker.__original_mousemoveevent
@@ -1705,7 +1705,7 @@ function Picker:_resume_picker()
   local on_resume_complete = function()
     if api.nvim_buf_is_valid(self.prompt_bufnr) then
       api.nvim_buf_call(self.prompt_bufnr, function()
-        vim.cmd "do User TelescopeResumePost"
+        vim.cmd("do User TelescopeResumePost")
       end)
     end
   end

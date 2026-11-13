@@ -3,7 +3,7 @@
 ---
 --- Generally used from within other |telescope.actions|
 
-local action_state = require "telescope.actions.state"
+local action_state = require("telescope.actions.state")
 
 local utils = {}
 
@@ -79,7 +79,7 @@ end
 ---@param prompt_bufnr integer: The prompt bufnr
 function utils.get_registered_mappings(prompt_bufnr)
   local ret = {}
-  for _, mode in ipairs { "n", "i" } do
+  for _, mode in ipairs({ "n", "i" }) do
     for _, mapping in ipairs(vim.api.nvim_buf_get_keymap(prompt_bufnr, mode)) do
       -- ensure only telescope mappings
       if mapping.desc then
@@ -109,7 +109,7 @@ function utils._get_anon_function_name(info)
   if not vim.uv.fs_stat(path) then
     return "<anonymous>"
   end
-  local tutils = require "telescope.utils"
+  local tutils = require("telescope.utils")
   for i, line in ipairs(tutils.split_lines(tutils.read_file(path))) do
     if i == info.linedefined then
       fname = line
@@ -118,7 +118,7 @@ function utils._get_anon_function_name(info)
   end
 
   -- test if assignment or named function, otherwise anon (or the file changed since it was loaded)
-  if not fname or ((fname:match "=" == nil) and (fname:match "function %S+%(" == nil)) then
+  if not fname or ((fname:match("=") == nil) and (fname:match("function %S+%(") == nil)) then
     return "<anonymous>"
   else
     local patterns = {

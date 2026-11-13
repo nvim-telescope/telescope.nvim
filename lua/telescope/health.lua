@@ -36,8 +36,8 @@ end
 local M = {}
 
 M.check = function()
-  health.start "Checking Neovim version"
-  if vim.fn.has "nvim-0.13" == 1 then
+  health.start("Checking Neovim version")
+  if vim.fn.has("nvim-0.13") == 1 then
     health.ok(("Nvim %s"):format(tostring(vim.version())))
   else
     health.error(("Nvim %s: telescope requires Nvim 0.13 or later"):format(tostring(vim.version())))
@@ -51,7 +51,7 @@ M.check = function()
 
   -- external dependencies
   -- TODO: only perform checks if user has enabled dependency in their config
-  health.start "Checking external dependencies"
+  health.start("Checking external dependencies")
 
   for _, opt_dep in pairs(optional_dependencies) do
     for _, package in ipairs(opt_dep.package) do
@@ -69,16 +69,16 @@ M.check = function()
           )
         end
       else
-        local ver = version and version:match "^(.-)\n" or "(unknown version)"
+        local ver = version and version:match("^(.-)\n") or "(unknown version)"
         health.ok(("%s: found %s"):format(package.name, ver))
       end
     end
   end
 
   -- Extensions
-  health.start "===== Installed extensions ====="
+  health.start("===== Installed extensions =====")
 
-  local extension_module = require "telescope._extensions"
+  local extension_module = require("telescope._extensions")
   local installed = {}
   for extension_name, _ in pairs(require("telescope").extensions) do
     installed[#installed + 1] = extension_name
@@ -92,7 +92,7 @@ M.check = function()
     if extension_healthcheck then
       extension_healthcheck()
     else
-      health.info "No healthcheck provided"
+      health.info("No healthcheck provided")
     end
   end
 end

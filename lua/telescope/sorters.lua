@@ -1,5 +1,5 @@
-local log = require "telescope.log"
-local utils = require "telescope.utils"
+local log = require("telescope.log")
+local utils = require("telescope.utils")
 
 local sorters = {}
 
@@ -102,10 +102,10 @@ function Sorter:_start(prompt)
   local len_previous = #previous
 
   if #prompt < len_previous then
-    log.trace "Reset discard because shorter prompt"
+    log.trace("Reset discard because shorter prompt")
     self._discard_state.filtered = {}
   elseif string.sub(prompt, 1, len_previous) ~= previous then
-    log.trace "Reset discard no match"
+    log.trace("Reset discard no match")
     self._discard_state.filtered = {}
   end
 
@@ -264,7 +264,7 @@ sorters.get_fuzzy_file = function(opts)
   local cached_tails = make_cached_tail()
   local cached_uppers = make_cached_uppers()
 
-  return Sorter:new {
+  return Sorter:new({
     scoring_function = function(_, prompt, line)
       local N = #prompt
 
@@ -324,7 +324,7 @@ sorters.get_fuzzy_file = function(opts)
     highlighter = opts.highlighter or function(_, prompt, display)
       return ngram_highlighter(ngram_len, prompt, display)
     end,
-  }
+  })
 end
 
 sorters.get_generic_fuzzy_sorter = function(opts)
@@ -334,7 +334,7 @@ sorters.get_generic_fuzzy_sorter = function(opts)
 
   local cached_ngrams = make_cached_ngrams(ngram_len)
 
-  return Sorter:new {
+  return Sorter:new({
     -- self
     -- prompt (which is the text on the line)
     -- line (entry.ordinal)
@@ -380,7 +380,7 @@ sorters.get_generic_fuzzy_sorter = function(opts)
     highlighter = opts.highlighter or function(_, prompt, display)
       return ngram_highlighter(ngram_len, prompt, display)
     end,
-  }
+  })
 end
 
 sorters.fuzzy_with_index_bias = function(opts)
@@ -389,7 +389,7 @@ sorters.fuzzy_with_index_bias = function(opts)
 
   local fuzzy_sorter = sorters.get_generic_fuzzy_sorter(opts)
 
-  return Sorter:new {
+  return Sorter:new({
     scoring_function = function(_, prompt, line, entry, cb_add, cb_filter)
       local base_score = fuzzy_sorter:scoring_function(prompt, line, entry, cb_add, cb_filter)
 
@@ -400,7 +400,7 @@ sorters.fuzzy_with_index_bias = function(opts)
       return math.min(entry.index ^ 0.25, 2) * base_score
     end,
     highlighter = fuzzy_sorter.highlighter,
-  }
+  })
 end
 
 local fzy_case_modes = { ignore_case = true, respect_case = true, smart_case = true }
@@ -412,8 +412,8 @@ local fzy_case_modes = { ignore_case = true, respect_case = true, smart_case = t
 -- "smart_case" (per term: respect case if it contains an uppercase letter); only for ASCII letters.
 sorters.get_fzy_sorter = function(opts)
   opts = opts or {}
-  local matcher = require "telescope.algos.matcher"
-  local query = require "telescope.algos.query"
+  local matcher = require("telescope.algos.matcher")
+  local query = require("telescope.algos.query")
   local OFFSET = -matcher.get_score_floor()
   local SCORE_MIN = matcher.get_score_min()
   local case_mode = opts.case_mode or "ignore_case"
@@ -428,7 +428,7 @@ sorters.get_fzy_sorter = function(opts)
     return last_query
   end
 
-  return sorters.Sorter:new {
+  return sorters.Sorter:new({
     discard = true,
 
     -- Discarding (and narrowing to the previous matches) needs a query that can only match fewer
@@ -483,12 +483,12 @@ sorters.get_fzy_sorter = function(opts)
       end
       return query.positions(q, display)
     end,
-  }
+  })
 end
 
 sorters.highlighter_only = function()
-  local matcher = require "telescope.algos.matcher"
-  return Sorter:new {
+  local matcher = require("telescope.algos.matcher")
+  return Sorter:new({
     scoring_function = function()
       return 1
     end,
@@ -496,24 +496,24 @@ sorters.highlighter_only = function()
     highlighter = function(_, prompt, display)
       return matcher.positions(prompt, display)
     end,
-  }
+  })
 end
 
 sorters.empty = function()
-  return Sorter:new {
+  return Sorter:new({
     scoring_function = function()
       return 1
     end,
-  }
+  })
 end
 
 -- Bad & Dumb Sorter
 sorters.get_levenshtein_sorter = function()
-  return Sorter:new {
+  return Sorter:new({
     scoring_function = function(_, prompt, line)
-      return require "telescope.algos.string_distance"(prompt, line)
+      return require("telescope.algos.string_distance")(prompt, line)
     end,
-  }
+  })
 end
 
 local substr_highlighter = function(make_display)
@@ -539,14 +539,14 @@ sorters.get_substr_matcher = function()
   ---@type fun(prompt: string, display: string): string
   local make_display = vim.o.smartcase
       and function(prompt, display)
-        local has_upper_case = not not prompt:match "%u"
+        local has_upper_case = not not prompt:match("%u")
         return has_upper_case and display or display:lower()
       end
     or function(_, display)
       return display:lower()
     end
 
-  return Sorter:new {
+  return Sorter:new({
     highlighter = substr_highlighter(make_display),
     scoring_function = function(_, prompt, _, entry)
       if #prompt == 0 then
@@ -564,7 +564,7 @@ sorters.get_substr_matcher = function()
 
       return entry.index
     end,
-  }
+  })
 end
 
 local substr_matcher = function(_, prompt, line, _)

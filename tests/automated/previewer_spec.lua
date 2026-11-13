@@ -1,9 +1,9 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it = t.describe, t.it
 
-local putils = require "telescope.previewers.utils"
-local utils = require "telescope.utils"
+local putils = require("telescope.previewers.utils")
+local utils = require("telescope.utils")
 
 describe("timed_split_lines", function()
   local expect = {
@@ -61,10 +61,10 @@ end)
 describe("buffer_previewer_maker", function()
   it("lists a directory like Nvim's directory listing", function()
     local dir = vim.fn.tempname()
-    for _, d in ipairs { "z", "a-b", "a" } do
+    for _, d in ipairs({ "z", "a-b", "a" }) do
       vim.fs.mkdir(vim.fs.joinpath(dir, d), { parents = true })
     end
-    for _, f in ipairs { "c", "b" } do
+    for _, f in ipairs({ "c", "b" }) do
       vim.fn.writefile({}, vim.fs.joinpath(dir, f))
     end
     local bufnr = vim.api.nvim_create_buf(false, true)

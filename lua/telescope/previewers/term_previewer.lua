@@ -1,10 +1,10 @@
 local api = vim.api
 
 local conf = require("telescope.config").values
-local utils = require "telescope.utils"
-local from_entry = require "telescope.from_entry"
-local Previewer = require "telescope.previewers.previewer"
-local putil = require "telescope.previewers.utils"
+local utils = require("telescope.utils")
+local from_entry = require("telescope.from_entry")
+local Previewer = require("telescope.previewers.previewer")
+local putil = require("telescope.previewers.utils")
 
 local defaulter = utils.make_default_callable
 
@@ -12,14 +12,14 @@ local M = {}
 
 -- TODO: Should play with these some more, ty @clason
 local bat_options = { "--style=plain", "--color=always", "--paging=always" }
-local has_less = (vim.fn.executable "less" == 1) and conf.use_less
+local has_less = (vim.fn.executable("less") == 1) and conf.use_less
 
 local get_file_stat = function(filename)
   return vim.uv.fs_stat(utils.path_expand(filename)) or {}
 end
 
 local list_dir = (function()
-  if vim.fn.has "win32" == 1 then
+  if vim.fn.has("win32") == 1 then
     return function(dirname)
       -- cmd.exe treats `/` as an option prefix
       return { "cmd.exe", "/c", "dir", (utils.path_expand(dirname):gsub("/", "\\")) }
@@ -54,12 +54,12 @@ local bat_maker = function(filename, lnum, start, finish)
     end
   end
 
-  return utils.flatten {
+  return utils.flatten({
     command,
     bat_options,
     "--",
     utils.path_expand(filename),
-  }
+  })
 end
 
 local cat_maker = function(filename, _, start, _)
@@ -67,7 +67,7 @@ local cat_maker = function(filename, _, start, _)
     return list_dir(filename)
   end
 
-  if 1 == vim.fn.executable "file" then
+  if 1 == vim.fn.executable("file") then
     local mime_type = utils.get_os_command_output({ "file", "--mime-type", "-b", filename })[1]
     if putil.binary_mime_type(mime_type) then
       return { "echo", "Binary file found. These files cannot be displayed!" }
@@ -91,14 +91,14 @@ end
 
 local get_maker = function(opts)
   local maker = opts.maker
-  if not maker and 1 == vim.fn.executable "bat" then
+  if not maker and 1 == vim.fn.executable("bat") then
     maker = bat_maker
-  elseif not maker and 1 == vim.fn.executable "cat" then
+  elseif not maker and 1 == vim.fn.executable("cat") then
     maker = cat_maker
   end
 
   if not maker then
-    error "Needs maker"
+    error("Needs maker")
   end
 
   return maker
@@ -251,7 +251,7 @@ M.cat = defaulter(function(opts)
 
   local maker = get_maker(opts)
 
-  return M.new_termopen_previewer {
+  return M.new_termopen_previewer({
     title = "File Preview",
     dyn_title = function(_, entry)
       return vim.fs.normalize(from_entry.path(entry, false, false))
@@ -265,7 +265,7 @@ M.cat = defaulter(function(opts)
 
       return maker(p)
     end,
-  }
+  })
 end, {})
 
 M.vimgrep = defaulter(function(opts)
@@ -273,7 +273,7 @@ M.vimgrep = defaulter(function(opts)
 
   local maker = get_maker(opts)
 
-  return M.new_termopen_previewer {
+  return M.new_termopen_previewer({
     title = "Grep Preview",
     dyn_title = function(_, entry)
       return vim.fs.normalize(from_entry.path(entry, false, false))
@@ -299,7 +299,7 @@ M.vimgrep = defaulter(function(opts)
 
       return maker(p, lnum, start, finish)
     end,
-  }
+  })
 end, {})
 
 M.qflist = defaulter(function(opts)
@@ -307,7 +307,7 @@ M.qflist = defaulter(function(opts)
 
   local maker = get_maker(opts)
 
-  return M.new_termopen_previewer {
+  return M.new_termopen_previewer({
     title = "Grep Preview",
     dyn_title = function(_, entry)
       return vim.fs.normalize(from_entry.path(entry, false, false))
@@ -335,7 +335,7 @@ M.qflist = defaulter(function(opts)
 
       return maker(p, lnum, start, finish)
     end,
-  }
+  })
 end, {})
 
 return M

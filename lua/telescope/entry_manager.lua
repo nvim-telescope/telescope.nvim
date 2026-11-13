@@ -1,4 +1,4 @@
-local log = require "telescope.log"
+local log = require("telescope.log")
 
 --- Holds the results of a picker, best first.
 ---
@@ -12,7 +12,7 @@ local EntryManager = {}
 EntryManager.__index = EntryManager
 
 function EntryManager:new(max_results, set_entry)
-  log.trace "Creating entry_manager..."
+  log.trace("Creating entry_manager...")
 
   return setmetatable({
     max_results = max_results,

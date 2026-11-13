@@ -3,22 +3,22 @@ local uv = vim.uv
 local api = vim.api
 local hl = vim.hl
 
-local from_entry = require "telescope.from_entry"
-local log = require "telescope.log"
-local utils = require "telescope.utils"
-local putils = require "telescope.previewers.utils"
-local Previewer = require "telescope.previewers.previewer"
+local from_entry = require("telescope.from_entry")
+local log = require("telescope.log")
+local utils = require("telescope.utils")
+local putils = require("telescope.previewers.utils")
+local Previewer = require("telescope.previewers.previewer")
 local conf = require("telescope.config").values
-local global_state = require "telescope.state"
+local global_state = require("telescope.state")
 
 local buf_delete = utils.buf_delete
 local git_command = utils.__git_command
 
 local previewers = {}
 
-local ns_previewer = api.nvim_create_namespace "telescope.previewers"
+local ns_previewer = api.nvim_create_namespace("telescope.previewers")
 
-local has_file = 1 == fn.executable "file"
+local has_file = 1 == fn.executable("file")
 
 local function defaulter(f)
   return {
@@ -48,7 +48,7 @@ local bytes_to_megabytes = math.pow(1024, 2)
 local read_file_async = function(filepath, stat, callback)
   callback = vim.schedule_wrap(callback)
   if stat.type ~= "file" then
-    return callback ""
+    return callback("")
   end
   uv.fs_open(filepath, "r", 438, function(err_open, fd)
     if err_open then
@@ -118,7 +118,7 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
         -- last resort, if ft is still empty at this point in time,
         -- we need to determine the filetype using the buffer contents
         if opts.ft == nil or opts.ft == "" then
-          opts.ft = vim.filetype.match { filename = filepath, buf = bufnr }
+          opts.ft = vim.filetype.match({ filename = filepath, buf = bufnr })
         end
         -- we need to attempt to call filetype hook at this point "again"
         -- previously only if we had a valid filetype, now every time
@@ -230,9 +230,9 @@ local search_cb_jump = function(self, bufnr, query)
   end
   api.nvim_buf_call(bufnr, function()
     pcall(fn.matchdelete, self.state.hl_id, self.state.winid)
-    vim.cmd "keepjumps norm! gg"
+    vim.cmd("keepjumps norm! gg")
     fn.search(query, "W")
-    vim.cmd "norm! zz"
+    vim.cmd("norm! zz")
 
     self.state.hl_id = fn.matchadd("TelescopePreviewMatch", query)
   end)
@@ -330,7 +330,7 @@ previewers.new_buffer_previewer = function(opts)
 
     local last_nr
     if opts.keep_last_buf then
-      last_nr = global_state.get_global_key "last_preview_bufnr"
+      last_nr = global_state.get_global_key("last_preview_bufnr")
       -- Push in another buffer so the last one will not be cleaned up
       if preview_window_id then
         local bufnr = api.nvim_create_buf(false, true)
@@ -374,7 +374,7 @@ previewers.new_buffer_previewer = function(opts)
 
       -- keep the border and title highlights of the window
       local winhl = vim.wo[preview_winid].winhl
-      if not winhl:find "%f[%w]Normal:" then
+      if not winhl:find("%f[%w]Normal:") then
         vim.wo[preview_winid].winhl = "Normal:TelescopePreviewNormal" .. (winhl ~= "" and "," .. winhl or "")
       end
       vim.wo[preview_winid].signcolumn = "no"
@@ -429,7 +429,7 @@ end
 
 previewers.cat = defaulter(function(opts)
   opts = opts or {}
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "File Preview",
     dyn_title = function(_, entry)
       return utils.display_path(from_entry.path(entry, false, false), opts.cwd)
@@ -451,7 +451,7 @@ previewers.cat = defaulter(function(opts)
         file_encoding = opts.file_encoding,
       })
     end,
-  }
+  })
 end)
 
 previewers.vimgrep = defaulter(function(opts)
@@ -487,13 +487,13 @@ previewers.vimgrep = defaulter(function(opts)
       pcall(api.nvim_win_set_cursor, self.state.winid, { middle_ln + 1, 0 })
       if bufnr ~= nil then
         api.nvim_buf_call(bufnr, function()
-          vim.cmd "norm! zz"
+          vim.cmd("norm! zz")
         end)
       end
     end
   end
 
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Grep Preview",
     dyn_title = function(_, entry)
       return utils.display_path(from_entry.path(entry, false, false), opts.cwd)
@@ -535,7 +535,7 @@ previewers.vimgrep = defaulter(function(opts)
         })
       end
     end,
-  }
+  })
 end)
 
 previewers.qflist = previewers.vimgrep
@@ -552,9 +552,9 @@ previewers.ctags = defaulter(function(opts)
         end)
 
         pcall(fn.matchdelete, self.state.hl_id, self.state.winid)
-        vim.cmd "keepjumps norm! gg"
+        vim.cmd("keepjumps norm! gg")
         fn.search(scode, "W")
-        vim.cmd "norm! zz"
+        vim.cmd("norm! zz")
 
         self.state.hl_id = fn.matchadd("TelescopePreviewMatch", scode)
       end
@@ -571,7 +571,7 @@ previewers.ctags = defaulter(function(opts)
     end
   end
 
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Tags Preview",
     teardown = function(self)
       if self.state and self.state.hl_id then
@@ -599,11 +599,11 @@ previewers.ctags = defaulter(function(opts)
         file_encoding = opts.file_encoding,
       })
     end,
-  }
+  })
 end)
 
 previewers.builtin = defaulter(function(opts)
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Grep Preview",
     teardown = search_teardown,
 
@@ -630,11 +630,11 @@ previewers.builtin = defaulter(function(opts)
         file_encoding = opts.file_encoding,
       })
     end,
-  }
+  })
 end)
 
 previewers.help = defaulter(function(opts)
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Help Preview",
     teardown = search_teardown,
 
@@ -658,11 +658,11 @@ previewers.help = defaulter(function(opts)
         file_encoding = opts.file_encoding,
       })
     end,
-  }
+  })
 end)
 
 previewers.man = defaulter(function(opts)
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Man Preview",
     get_buffer_by_name = function(_, entry)
       return entry.value .. "/" .. entry.section
@@ -677,7 +677,7 @@ previewers.man = defaulter(function(opts)
       })
       putils.highlighter(self.state.bufnr, "man", opts)
     end,
-  }
+  })
 end)
 
 previewers.git_branch_log = defaulter(function(opts)
@@ -686,27 +686,27 @@ previewers.git_branch_log = defaulter(function(opts)
   local highlight_buffer = function(bufnr, content)
     for i = 1, #content do
       local line = content[i]
-      local hstart, hend = line:find "[0-9a-fA-F]+"
+      local hstart, hend = line:find("[0-9a-fA-F]+")
       if hstart then
         if hend and hend < #line then
           pcall(hl.range, bufnr, ns_previewer, "TelescopeResultsIdentifier", { i - 1, hstart - 1 }, { i - 1, hend })
         end
       end
-      local _, cstart = line:find "- %("
+      local _, cstart = line:find("- %(")
       if cstart then
         local cend = string.find(line, "%) ")
         if cend then
           pcall(hl.range, bufnr, ns_previewer, "TelescopeResultsConstant", { i - 1, cstart - 1 }, { i - 1, cend })
         end
       end
-      local dstart, _ = line:find " %(%d"
+      local dstart, _ = line:find(" %(%d")
       if dstart then
         pcall(hl.range, bufnr, ns_previewer, "TelescopeResultsSpecialComment", { i - 1, dstart }, { i - 1, #line })
       end
     end
   end
 
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Git Branch Preview",
     get_buffer_by_name = function(_, entry)
       return entry.value
@@ -736,11 +736,11 @@ previewers.git_branch_log = defaulter(function(opts)
         end,
       })
     end,
-  }
+  })
 end)
 
 previewers.git_stash_diff = defaulter(function(opts)
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Git Stash Preview",
     get_buffer_by_name = function(_, entry)
       return entry.value
@@ -759,11 +759,11 @@ previewers.git_stash_diff = defaulter(function(opts)
         end,
       })
     end,
-  }
+  })
 end)
 
 previewers.git_commit_diff_to_parent = defaulter(function(opts)
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Git Diff to Parent Preview",
     teardown = search_teardown,
     get_buffer_by_name = function(_, entry)
@@ -789,11 +789,11 @@ previewers.git_commit_diff_to_parent = defaulter(function(opts)
         end,
       })
     end,
-  }
+  })
 end)
 
 previewers.git_commit_diff_to_head = defaulter(function(opts)
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Git Diff to Head Preview",
     teardown = search_teardown,
 
@@ -820,11 +820,11 @@ previewers.git_commit_diff_to_head = defaulter(function(opts)
         end,
       })
     end,
-  }
+  })
 end)
 
 previewers.git_commit_diff_as_was = defaulter(function(opts)
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Git Show Preview",
     teardown = search_teardown,
 
@@ -851,7 +851,7 @@ previewers.git_commit_diff_as_was = defaulter(function(opts)
         end,
       })
     end,
-  }
+  })
 end)
 
 previewers.git_commit_message = defaulter(function(opts)
@@ -860,7 +860,7 @@ previewers.git_commit_message = defaulter(function(opts)
     "TelescopePreviewUser",
     "TelescopePreviewDate",
   }
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Git Message",
     get_buffer_by_name = function(_, entry)
       return entry.value
@@ -878,7 +878,7 @@ previewers.git_commit_message = defaulter(function(opts)
             return
           end
           for k, v in ipairs(hl_map) do
-            local _, s = content[k]:find "%s"
+            local _, s = content[k]:find("%s")
             if s then
               hl.range(bufnr, ns_previewer, v, { k - 1, s }, { k - 1, #content[k] })
             end
@@ -886,11 +886,11 @@ previewers.git_commit_message = defaulter(function(opts)
         end,
       })
     end,
-  }
+  })
 end)
 
 previewers.git_file_diff = defaulter(function(opts)
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Git File Diff Preview",
     get_buffer_by_name = function(_, entry)
       return entry.value
@@ -922,11 +922,11 @@ previewers.git_file_diff = defaulter(function(opts)
         })
       end
     end,
-  }
+  })
 end)
 
 previewers.autocommands = defaulter(function(_)
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Autocommands Preview",
     teardown = function(self)
       if self.state and self.state.last_set_bufnr and api.nvim_buf_is_valid(self.state.last_set_bufnr) then
@@ -994,11 +994,11 @@ previewers.autocommands = defaulter(function(_)
 
       self.state.last_set_bufnr = self.state.bufnr
     end,
-  }
+  })
 end)
 
 previewers.highlights = defaulter(function(_)
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     title = "Highlights Preview",
     teardown = function(self)
       if self.state and self.state.last_set_bufnr and api.nvim_buf_is_valid(self.state.last_set_bufnr) then
@@ -1012,12 +1012,12 @@ previewers.highlights = defaulter(function(_)
 
     define_preview = function(self, entry)
       if not self.state.bufname then
-        local output = utils.split_lines(fn.execute "highlight")
+        local output = utils.split_lines(fn.execute("highlight"))
         local hl_groups = {}
         for _, v in ipairs(output) do
           if v ~= "" then
             if v:sub(1, 1) == " " then
-              local part_of_old = v:match "%s+(.*)"
+              local part_of_old = v:match("%s+(.*)")
               hl_groups[#hl_groups] = hl_groups[#hl_groups] .. part_of_old
             else
               table.insert(hl_groups, v)
@@ -1036,22 +1036,22 @@ previewers.highlights = defaulter(function(_)
 
       vim.schedule(function()
         api.nvim_buf_call(self.state.bufnr, function()
-          vim.cmd "keepjumps norm! gg"
+          vim.cmd("keepjumps norm! gg")
           fn.search("^" .. entry.value .. " ")
           local lnum = api.nvim_win_get_cursor(self.state.winid)[1]
           -- That one is actually a match but its better to use it like that then matchadd
           pcall(api.nvim_buf_clear_namespace, self.state.bufnr, ns_previewer, 0, -1)
           hl.range(self.state.bufnr, ns_previewer, "TelescopePreviewMatch", { lnum - 1, 0 }, { lnum - 1, #entry.value })
           -- we need to zz after the highlighting otherwise highlighting doesnt work
-          vim.cmd "norm! zz"
+          vim.cmd("norm! zz")
         end)
       end)
     end,
-  }
+  })
 end)
 
 previewers.pickers = defaulter(function(_)
-  local ns_telescope_multiselection = api.nvim_create_namespace "telescope_mulitselection"
+  local ns_telescope_multiselection = api.nvim_create_namespace("telescope_mulitselection")
   local get_row = function(picker, preview_height, index)
     if picker.sorting_strategy == "ascending" then
       return index - 1
@@ -1059,7 +1059,7 @@ previewers.pickers = defaulter(function(_)
       return preview_height - index
     end
   end
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
 
     dyn_title = function(_, entry)
       if entry.value.default_text and entry.value.default_text ~= "" then
@@ -1080,7 +1080,7 @@ previewers.pickers = defaulter(function(_)
 
     define_preview = function(self, entry)
       api.nvim_buf_call(self.state.bufnr, function()
-        local ns_telescope_entry = api.nvim_create_namespace "telescope_entry"
+        local ns_telescope_entry = api.nvim_create_namespace("telescope_entry")
         local preview_height = api.nvim_win_get_height(self.state.winid)
 
         if self.state.bufname then
@@ -1123,11 +1123,11 @@ previewers.pickers = defaulter(function(_)
         end
       end)
     end,
-  }
+  })
 end)
 
 previewers.display_content = defaulter(function(_)
-  return previewers.new_buffer_previewer {
+  return previewers.new_buffer_previewer({
     define_preview = function(self, entry)
       assert(
         type(entry.preview_command) == "function",
@@ -1137,7 +1137,7 @@ previewers.display_content = defaulter(function(_)
         entry.preview_command(entry, self.state.bufnr)
       end)
     end,
-  }
+  })
 end)
 
 return previewers

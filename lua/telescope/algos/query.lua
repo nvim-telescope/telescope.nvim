@@ -16,7 +16,7 @@
 -- counts). The score is the sum of the matcher's scores of the matched terms; inverse terms add no
 -- score and no highlights.
 
-local matcher = require "telescope.algos.matcher"
+local matcher = require("telescope.algos.matcher")
 
 local byte = string.byte
 
@@ -31,12 +31,12 @@ local FUZZY, EXACT, BOUNDARY, PREFIX, SUFFIX, EQUAL = "fuzzy", "exact", "boundar
 function M.parse(prompt, case_mode)
   local str = prompt:gsub("\\ ", "\t"):gsub("^ +", ""):gsub(" +$", "")
   local query, set, after_bar = {}, nil, false
-  for token in str:gmatch "[^ ]+" do
+  for token in str:gmatch("[^ ]+") do
     local text = token:gsub("\t", " ")
     if set and not after_bar and text == "|" then
       after_bar = true
     else
-      local cs = case_mode == "respect_case" or (case_mode == "smart_case" and text:find "[A-Z]" ~= nil)
+      local cs = case_mode == "respect_case" or (case_mode == "smart_case" and text:find("[A-Z]") ~= nil)
       local typ, inv = FUZZY, false
       if text:sub(1, 1) == "!" then
         typ, inv, text = EXACT, true, text:sub(2)
@@ -53,7 +53,7 @@ function M.parse(prompt, case_mode)
       end
       if #text > 0 then
         -- `plain`: no letters, so case doesn't matter (and the matcher's search is faster)
-        local term = { type = typ, inv = inv, text = text, cs = cs, plain = cs or not text:find "[A-Za-z]" }
+        local term = { type = typ, inv = inv, text = text, cs = cs, plain = cs or not text:find("[A-Za-z]") }
         if set and after_bar then
           set[#set + 1] = term
         else

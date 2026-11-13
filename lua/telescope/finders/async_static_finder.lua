@@ -1,6 +1,6 @@
-local _async = require "telescope._async"
+local _async = require("telescope._async")
 
-local make_entry = require "telescope.make_entry"
+local make_entry = require("telescope.make_entry")
 
 return function(opts)
   local input_results

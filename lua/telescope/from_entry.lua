@@ -7,7 +7,7 @@ This file is still WIP, so expect some changes if you're trying to consume these
 This will provide standard mechanism for accessing information from an entry.
 
 --============================================================================= ]]
-local utils = require "telescope.utils"
+local utils = require("telescope.utils")
 
 local from_entry = {}
 

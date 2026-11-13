@@ -260,14 +260,14 @@ resolver.resolve_anchor_pos = function(anchor, p_width, p_height, max_columns, m
   if dir == "CENTER" then
     return pos
   end
-  if dir:find "W" then
+  if dir:find("W") then
     pos[1] = math.ceil((p_width - max_columns) / 2) + anchor_padding
-  elseif dir:find "E" then
+  elseif dir:find("E") then
     pos[1] = math.ceil((max_columns - p_width) / 2) - anchor_padding
   end
-  if dir:find "N" then
+  if dir:find("N") then
     pos[2] = math.ceil((p_height - max_lines) / 2) + anchor_padding
-  elseif dir:find "S" then
+  elseif dir:find("S") then
     pos[2] = math.ceil((max_lines - p_height) / 2) - anchor_padding
   end
   return pos

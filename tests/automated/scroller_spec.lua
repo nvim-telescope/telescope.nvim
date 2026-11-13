@@ -1,8 +1,8 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it = t.describe, t.it
 
-local p_scroller = require "telescope.pickers.scroller"
+local p_scroller = require("telescope.pickers.scroller")
 
 local eq = assert.eq
 

@@ -111,13 +111,13 @@ action_mt.create = function()
   function mt:replace(v)
     assert(#self == 1, "Cannot replace an already combined action")
 
-    return self:replace_map { [true] = v }
+    return self:replace_map({ [true] = v })
   end
 
   function mt:replace_if(condition, replacement)
     assert(#self == 1, "Cannot replace an already combined action")
 
-    return self:replace_map { [condition] = replacement }
+    return self:replace_map({ [condition] = replacement })
   end
 
   --- Replace table with

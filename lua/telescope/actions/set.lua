@@ -9,11 +9,11 @@
 
 local api = vim.api
 
-local log = require "telescope.log"
-local state = require "telescope.state"
-local utils = require "telescope.utils"
+local log = require("telescope.log")
+local state = require("telescope.state")
+local utils = require("telescope.utils")
 
-local action_state = require "telescope.actions.state"
+local action_state = require("telescope.actions.state")
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 
@@ -171,12 +171,12 @@ action_set.edit = function(prompt_bufnr, command)
   local win_id = picker.get_selection_window(picker, entry)
 
   if picker.push_cursor_on_edit then
-    vim.cmd "normal! m'"
+    vim.cmd("normal! m'")
   end
 
   if picker.push_tagstack_on_edit then
-    local from = { vim.fn.bufnr "%", vim.fn.line ".", vim.fn.col ".", 0 }
-    local items = { { tagname = vim.fn.expand "<cword>", from = from } }
+    local from = { vim.fn.bufnr("%"), vim.fn.line("."), vim.fn.col("."), 0 }
+    local items = { { tagname = vim.fn.expand("<cword>"), from = from } }
     vim.fn.settagstack(vim.fn.win_getid(), { items = items }, "t")
   end
 
@@ -219,7 +219,7 @@ action_set.edit = function(prompt_bufnr, command)
 
   if row and col then
     if api.nvim_buf_get_name(0) == filename then
-      vim.cmd [[normal! m']]
+      vim.cmd([[normal! m']])
     end
     local ok, err_msg = pcall(api.nvim_win_set_cursor, 0, { row, col })
     if not ok then
