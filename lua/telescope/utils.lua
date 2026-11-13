@@ -414,8 +414,8 @@ utils.transform_path = function(opts, path)
       local length
       local exclude = nil
 
-      if type(path_display["shorten"]) == "table" then
-        local shorten = path_display["shorten"]
+      local shorten = path_display["shorten"]
+      if type(shorten) == "table" then
         length = shorten.len
         exclude = shorten.exclude
       else
@@ -432,9 +432,8 @@ utils.transform_path = function(opts, path)
     if vim.tbl_contains(path_display, "filename_first") or path_display["filename_first"] ~= nil then
       local reverse_directories = false
 
-      if type(path_display["filename_first"]) == "table" then
-        local filename_first_opts = path_display["filename_first"]
-
+      local filename_first_opts = path_display["filename_first"]
+      if type(filename_first_opts) == "table" then
         if filename_first_opts.reverse_directories == nil or filename_first_opts.reverse_directories == false then
           reverse_directories = false
         else
@@ -531,7 +530,7 @@ function utils.max_split(s, pattern, maxsplit)
         table.insert(t, val)
       end
 
-      curpos = final + 1
+      curpos = final --[[@as integer]] + 1
     else
       table.insert(t, string.sub(s, curpos))
       break

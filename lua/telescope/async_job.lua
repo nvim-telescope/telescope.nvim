@@ -48,7 +48,7 @@ M.spawn = function(opts)
     env = env,
     stdio = { nil, self.stdout and self.stdout.handle, nil },
   }, function()
-    self.handle:close()
+    (self.handle --[[@as uv.uv_process_t]]):close()
   end)
   if not self.handle then
     if self.stdout then

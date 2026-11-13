@@ -3099,7 +3099,7 @@ actions_state.get_current_picker({prompt_bufnr})
       • {prompt_bufnr}  (`integer`) The prompt bufnr
 
     Return: ~
-        (`table`) the current picker
+        (`Picker`) the current picker
 
 
 ==============================================================================

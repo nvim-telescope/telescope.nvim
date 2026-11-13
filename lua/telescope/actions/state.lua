@@ -22,7 +22,7 @@ end
 
 --- Gets the current picker
 ---@param prompt_bufnr integer: The prompt bufnr
----@return table # the current picker
+---@return Picker # the current picker
 function action_state.get_current_picker(prompt_bufnr)
   return global_state.get_status(prompt_bufnr).picker
 end

@@ -131,7 +131,7 @@ function Border:change_title(title, pos)
   state.titles = { { pos = pos, text = title } }
   vim.w[win].telescope_border = state
 
-  local border = api.nvim_win_get_config(win).border
+  local border = api.nvim_win_get_config(win).border --[[@as string[] ]] -- a window with a title has a border
   local config = set_titles({}, state.titles, border[2] ~= "", border[6] ~= "", api.nvim_win_get_width(win))
   api.nvim_win_set_config(win, config)
 end

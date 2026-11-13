@@ -254,7 +254,7 @@ end
 --      Valid directions include: "1", "-1"
 action_set.scroll_previewer = function(prompt_bufnr, direction)
   local previewer, speed = __scroll_previewer(prompt_bufnr)
-  if previewer and previewer.scroll_fn then
+  if previewer and speed and previewer.scroll_fn then
     previewer:scroll_fn(math.floor(speed * direction))
   end
 end
@@ -267,7 +267,7 @@ end
 --      Valid directions include: "1", "-1"
 action_set.scroll_horizontal_previewer = function(prompt_bufnr, direction)
   local previewer, speed = __scroll_previewer(prompt_bufnr)
-  if previewer and previewer.scroll_horizontal_fn then
+  if previewer and speed and previewer.scroll_horizontal_fn then
     previewer:scroll_horizontal_fn(math.floor(speed * direction))
   end
 end

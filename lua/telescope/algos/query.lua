@@ -27,7 +27,7 @@ local FUZZY, EXACT, BOUNDARY, PREFIX, SUFFIX, EQUAL = "fuzzy", "exact", "boundar
 --- Parse `prompt` (see above) into a query. `query.single` is set if it is a single fuzzy term.
 ---@param prompt string
 ---@param case_mode? string: "ignore_case" (default), "respect_case", or "smart_case"
----@return table
+---@return telescope.algos.query.Query
 function M.parse(prompt, case_mode)
   local str = prompt:gsub("\\ ", "\t"):gsub("^ +", ""):gsub(" +$", "")
   local query, set, after_bar = {}, nil, false
@@ -131,9 +131,12 @@ end
 
 -- the matched term of each set (reused): `score` first checks that all sets match (cheap), and
 -- only then scores the matched terms (the expensive part)
-local matched = {}
+local matched = {} ---@type telescope.algos.query.Term[]
 
 --- The score of `line` for `query` (sum over the sets, see above), or nil if it doesn't match.
+---@param query telescope.algos.query.Query
+---@param line string
+---@return number?
 function M.score(query, line)
   for i = 1, #query do
     matched[i] = match_set(query[i], line)
@@ -141,9 +144,9 @@ function M.score(query, line)
       return nil
     end
   end
-  local total = 0
+  local total = 0 ---@type number
   for i = 1, #query do
-    local term = matched[i]
+    local term = matched[i] --[[@as telescope.algos.query.Term]]
     if not term.inv then
       total = total + matcher.score(term.text, line, term.cs)
     end

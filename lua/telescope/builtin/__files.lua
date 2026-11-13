@@ -112,7 +112,7 @@ end
 --  opts.grep_open_files -- boolean to restrict search to open files
 ---@param opts telescope.builtin.live_grep.opts
 files.live_grep = function(opts)
-  local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
+  local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments --[[@as string[] ]]
   if not has_rg_program("live_grep", vimgrep_arguments[1]) then
     return
   end
@@ -187,7 +187,7 @@ end
 
 ---@param opts telescope.builtin.grep_string.opts
 files.grep_string = function(opts)
-  local vimgrep_arguments = vim.nonnil(opts.vimgrep_arguments, conf.vimgrep_arguments)
+  local vimgrep_arguments = vim.nonnil(opts.vimgrep_arguments, conf.vimgrep_arguments) --[[@as string[] ]]
   if not has_rg_program("grep_string", vimgrep_arguments[1]) then
     return
   end
@@ -425,7 +425,7 @@ files.treesitter = function(opts)
   for id, node, _ in query:iter_captures(root, opts.bufnr) do
     local kind = query.captures[id]
 
-    if node and vim.startswith(kind, "local.definition") then
+    if node and kind and vim.startswith(kind, "local.definition") then
       table.insert(results, { kind = kind:gsub("^local%.definition", ""):gsub("^%.", ""), node = node })
     end
   end

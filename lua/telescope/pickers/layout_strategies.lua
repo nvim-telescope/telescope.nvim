@@ -123,7 +123,7 @@ local function validate_layout_config(strategy_name, configuration, values, defa
   local valid_configuration_keys = get_valid_configuration_keys(configuration)
 
   -- If no default_layout_config provided, check Telescope's config values
-  default_layout_config = vim.nonnil(default_layout_config, require("telescope.config").values.layout_config)
+  default_layout_config = vim.nonnil(default_layout_config, require("telescope.config").values.layout_config) --[[@as table]]
 
   local result = {}
   local get_value = function(k)
@@ -200,7 +200,7 @@ local shared_options = {
 
 -- Used for generating vim help documentation.
 layout_strategies._format = function(name)
-  local strategy_config = layout_strategies._configurations[name]
+  local strategy_config = layout_strategies._configurations[name] --[[@as table]]
   if vim.tbl_isempty(strategy_config) then
     return {}
   end

@@ -248,7 +248,7 @@ local get_desc_for_keyfunc = function(key_func, opts)
     end
     return "telescope|" .. name
   elseif type(key_func) == "function" then
-    local info = debug.getinfo(key_func)
+    local info = debug.getinfo(key_func) --[[@as debuglib.DebugInfo]]
     return "telescopej|" .. vim.json.encode { source = info.source, linedefined = info.linedefined }
   end
 end

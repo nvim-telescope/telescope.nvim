@@ -49,6 +49,7 @@
 ---@field sorter Sorter
 ---@field all_previewers? table[]|false
 ---@field previewer? table|false
+---@field hidden_previewer? table|false the previewer while it is hidden
 ---@field current_previewer_index integer
 ---@field fix_preview_title? boolean
 ---@field default_selection_index? integer
@@ -62,12 +63,15 @@
 ---@field layout_strategy string
 ---@field layout_config table
 ---@field __flex_strategy? string the strategy chosen by the flex layout
----@field __cycle_layout_list? table
+---@field __cycle_layout_list table
 ---@field push_cursor_on_edit boolean
 ---@field push_tagstack_on_edit boolean
 ---@field track boolean
 ---@field on_close? fun(picker: Picker)
 ---@field cwd? string
+---@field _original_mode string the mode before the picker opened
+---@field __layout_index? integer index in `__cycle_layout_list`
+---@field get_selection_window fun(picker: Picker, entry: table): integer
 ---@field window { winblend: integer, border: boolean|table, borderchars: table }
 ---@field cache_picker table|false
 ---@field __scrolling_limit integer
@@ -116,3 +120,20 @@
 ---@field back_entries table[]
 ---@field back_scores number[]
 ---@field nback integer
+
+-- A query of `telescope.algos.query`: a list of sets (all must match) of terms (alternatives).
+---@class telescope.algos.query.Query
+---@field [integer] telescope.algos.query.Term[]
+---@field single boolean a single fuzzy term
+
+---@class telescope.algos.query.Term
+---@field type "fuzzy"|"exact"|"boundary"|"prefix"|"suffix"|"equal"
+---@field inv boolean inverse: matches if the text isn't found
+---@field text string
+---@field cs boolean case sensitive
+---@field plain boolean case sensitive or without letters
+
+-- The module `telescope.pickers.layout`: creates a layout, and windows with `Window`.
+---@class telescope.pickers.layout.module
+---@overload fun(config: TelescopeLayout.config): TelescopeLayout
+---@field Window TelescopeWindow.constructor

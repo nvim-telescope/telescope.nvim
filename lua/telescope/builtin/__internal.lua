@@ -39,7 +39,7 @@ internal.builtin = function(opts)
   local objs = {}
 
   for k, v in pairs(require "telescope.builtin") do
-    local debug_info = debug.getinfo(v)
+    local debug_info = debug.getinfo(v) --[[@as debuglib.DebugInfo]]
     table.insert(objs, {
       filename = string.sub(debug_info.source, 2),
       text = k,
@@ -54,7 +54,7 @@ internal.builtin = function(opts)
       for func_name, func_obj in pairs(funcs) do
         -- Only include exported functions whose name doesn't begin with an underscore
         if type(func_obj) == "function" and string.sub(func_name, 0, 1) ~= "_" then
-          local debug_info = debug.getinfo(func_obj)
+          local debug_info = debug.getinfo(func_obj) --[[@as debuglib.DebugInfo]]
           table.insert(objs, {
             filename = string.sub(debug_info.source, 2),
             text = string.format("%s : %s", ext, func_name),
@@ -756,7 +756,7 @@ internal.man_pages = function(opts)
   opts.sections = vim.nonnil(opts.sections, { "1" })
   assert(vim.islist(opts.sections), "sections should be a list")
   opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
-    local uname = uv.os_uname()
+    local uname = uv.os_uname() --[[@as uv.os_uname.info]]
     local sysname = string.lower(uname.sysname)
     if sysname == "darwin" then
       local major_version = tonumber(fn.matchlist(uname.release, [[^\(\d\+\)\..*]])[2]) or 0
@@ -1368,7 +1368,7 @@ internal.autocommands = function(opts)
           if vim.is_callable(cb) then
             if type(cb) ~= "string" then
               local f = type(cb) == "function" and cb or rawget(getmetatable(cb), "__call")
-              local info = debug.getinfo(f, "S")
+              local info = debug.getinfo(f, "S") --[[@as debuglib.DebugInfo]]
               local file = info.source:match "^@(.+)"
               local lnum = info.linedefined
               if file and (lnum or 0) > 0 then
