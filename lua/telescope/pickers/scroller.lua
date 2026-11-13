@@ -83,6 +83,9 @@ M.create = function(scroll_strategy, sorting_strategy)
   end
 end
 
+---@param max_results integer
+---@param num_results integer
+---@return integer
 M.top = function(sorting_strategy, max_results, num_results)
   if sorting_strategy == "ascending" then
     return 0
@@ -90,6 +93,9 @@ M.top = function(sorting_strategy, max_results, num_results)
   return (num_results > max_results) and 0 or (max_results - num_results)
 end
 
+---@param max_results integer
+---@param num_results integer
+---@return integer
 M.middle = function(sorting_strategy, max_results, num_results)
   local mid_pos
 
@@ -102,6 +108,9 @@ M.middle = function(sorting_strategy, max_results, num_results)
   return (num_results < max_results) and mid_pos or math.floor(max_results / 2)
 end
 
+---@param max_results integer
+---@param num_results integer
+---@return integer
 M.bottom = function(sorting_strategy, max_results, num_results)
   if sorting_strategy == "ascending" then
     return math.min(max_results, num_results) - 1

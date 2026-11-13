@@ -240,7 +240,7 @@ function Picker:new(opts)
     __scrolling_limit = vim.nonnil(opts.temp__scrolling_limit, 250),
 
     __locations_input = vim.nonnil(opts.__locations_input, false),
-  }, self)
+  }, self) --[[@as Picker]]
 
   obj.create_layout = opts.create_layout or config.values.create_layout or default_create_layout
   obj.get_window_options = opts.get_window_options or p_window.get_window_options
@@ -249,7 +249,7 @@ function Picker:new(opts)
     if obj.all_previewers[1] == nil then
       obj.all_previewers = { obj.all_previewers }
     end
-    obj.previewer = obj.all_previewers[obj.current_previewer_index]
+    obj.previewer = obj.all_previewers[obj.current_previewer_index] --[[@as table]]
     if
       obj.preview_title == nil
       or #obj.all_previewers > 1
@@ -265,7 +265,7 @@ function Picker:new(opts)
 
   local __hide_previewer = opts.__hide_previewer
   if __hide_previewer then
-    obj.hidden_previewer = obj.previewer
+    obj.hidden_previewer = obj.previewer --[[@as table|false]]
     obj.previewer = nil
   else
     obj.hidden_previewer = nil
@@ -390,7 +390,7 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
       end
 
       -- extmark instead of `vim.hl.range()`, which is much slower (runs for every displayed row)
-      api.nvim_buf_set_extmark(results_bufnr, ns_telescope_matching, row, (start - 1) --[[@as integer]], {
+      api.nvim_buf_set_extmark(results_bufnr, ns_telescope_matching, row, start --[[@as integer]] - 1, {
         end_col = finish,
         hl_group = highlight,
         priority = vim.hl.priorities.user,
@@ -765,8 +765,9 @@ function Picker:delete_selection(delete_cb)
     used_multi_select = false
   end
 
+  local results = assert(self.finder.results, "delete_selection needs a finder with static results")
   local selection_index = {}
-  for result_index, result_entry in pairs(self.finder.results) do
+  for result_index, result_entry in pairs(results) do
     if vim.tbl_contains(delete_selections, result_entry) then
       table.insert(selection_index, result_index)
     end
@@ -778,9 +779,9 @@ function Picker:delete_selection(delete_cb)
     return x > y
   end)
   for _, index in ipairs(selection_index) do
-    local delete_cb_return = delete_cb(self.finder.results[index])
+    local delete_cb_return = delete_cb(results[index])
     if delete_cb_return == nil or delete_cb_return == true then
-      table.remove(self.finder.results, index)
+      table.remove(results, index)
     end
   end
 
@@ -1154,14 +1155,17 @@ function Picker:refresh_previewer()
       local new_title = self.previewer:title(self._selection_entry, config.values.dynamic_preview_title)
       if new_title ~= nil and new_title ~= self.preview_title then
         self.preview_title = new_title
-        self.layout.preview.border:change_title(new_title)
+        if self.layout.preview then
+          self.layout.preview.border:change_title(new_title)
+        end
       end
     end
   end
 end
 
 function Picker:cycle_previewers(next)
-  local size = #self.all_previewers
+  local all_previewers = self.all_previewers --[[@as table[] ]]
+  local size = #all_previewers
   if size == 1 then
     return
   end
@@ -1174,10 +1178,10 @@ function Picker:cycle_previewers(next)
   end
 
   if self.previewer then
-    self.previewer = self.all_previewers[self.current_previewer_index]
+    self.previewer = all_previewers[self.current_previewer_index]
     self:refresh_previewer()
   elseif self.hidden_previewer then
-    self.hidden_previewer = self.all_previewers[self.current_previewer_index]
+    self.hidden_previewer = all_previewers[self.current_previewer_index]
   end
 end
 
@@ -1648,7 +1652,8 @@ end
 --- Get the prompt text without the prompt prefix.
 function Picker:_get_prompt()
   local cursor_line = api.nvim_win_get_cursor(self.prompt_win)[1] - 1
-  return api.nvim_buf_get_lines(self.prompt_bufnr, cursor_line, cursor_line + 1, false)[1]:sub(#self.prompt_prefix + 1)
+  local line = api.nvim_buf_get_lines(self.prompt_bufnr, cursor_line, cursor_line + 1, false)[1] --[[@as string]]
+  return line:sub(#self.prompt_prefix + 1)
 end
 
 function Picker:_reset_highlights()

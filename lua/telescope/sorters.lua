@@ -188,6 +188,7 @@ end
 
 sorters.Sorter = Sorter
 
+---@return table<string, string>
 local make_cached_tail = function()
   local match_string = "[^/]*$"
   return setmetatable({}, {
@@ -200,6 +201,7 @@ local make_cached_tail = function()
   })
 end
 
+---@return table<string, table<integer, true>>
 local make_cached_uppers = function()
   return setmetatable({}, {
     __index = function(t, k)
@@ -413,7 +415,8 @@ sorters.get_fzy_sorter = function(opts)
   local case_mode = opts.case_mode or "ignore_case"
   assert(fzy_case_modes[case_mode], "invalid case_mode: " .. tostring(case_mode))
 
-  local last_prompt, last_query
+  local last_prompt ---@type string?
+  local last_query ---@type telescope.algos.query.Query
   local function parse(prompt)
     if prompt ~= last_prompt then
       last_prompt, last_query = prompt, query.parse(prompt, case_mode)
@@ -437,10 +440,10 @@ sorters.get_fzy_sorter = function(opts)
 
     scoring_function = function(_, prompt, line)
       local q = parse(prompt)
-      local score
+      local score ---@type number
       if q.single then
         -- a single fuzzy term: check for a match before running the scoring algorithm
-        local term = q[1][1]
+        local term = q[1][1] --[[@as telescope.algos.query.Term]]
         if not matcher.has_match(term.text, line, term.cs) then
           return -1
         end
@@ -448,10 +451,11 @@ sorters.get_fzy_sorter = function(opts)
       elseif #q == 0 then
         return 1
       else
-        score = query.score(q, line)
-        if not score then
+        local s = query.score(q, line)
+        if not s then
           return -1
         end
+        score = s
       end
 
       -- The score is -inf for empty queries and overlong strings. Since this function converts
@@ -470,7 +474,7 @@ sorters.get_fzy_sorter = function(opts)
     highlighter = function(_, prompt, display)
       local q = parse(prompt)
       if q.single then
-        local term = q[1][1]
+        local term = q[1][1] --[[@as telescope.algos.query.Term]]
         return matcher.positions(term.text, display, term.cs)
       end
       return query.positions(q, display)
@@ -528,6 +532,7 @@ local substr_highlighter = function(make_display)
 end
 
 sorters.get_substr_matcher = function()
+  ---@type fun(prompt: string, display: string): string
   local make_display = vim.o.smartcase
       and function(prompt, display)
         local has_upper_case = not not prompt:match "%u"

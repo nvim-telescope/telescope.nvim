@@ -89,7 +89,7 @@ function Highlighter:hi_multiselect(row, is_selected)
     hl.range(results_bufnr, ns_telescope_multiselection, "TelescopeMultiSelection", { row, 0 }, { row, -1 })
     if self.picker.multi_icon then
       local line = api.nvim_buf_get_lines(results_bufnr, row, row + 1, false)[1]
-      local pos = line:find(self.picker.multi_icon)
+      local pos = line and line:find(self.picker.multi_icon)
       if pos and pos <= math.max(#self.picker.selection_caret, #self.picker.entry_prefix) then
         hl.range(
           results_bufnr,

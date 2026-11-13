@@ -87,7 +87,7 @@ function utils.get_registered_mappings(prompt_bufnr)
           table.insert(ret, { mode = mode, keybind = mapping.lhs, desc = mapping.desc:sub(11) })
         elseif mapping.desc:sub(1, 11) == "telescopej|" then
           local fname = utils._get_anon_function_name(vim.json.decode(mapping.desc:sub(12)))
-          fname = fname:lower() == mapping.lhs:lower() and "<anonymous>" or fname
+          fname = fname:lower() == (mapping.lhs or ""):lower() and "<anonymous>" or fname
           table.insert(ret, {
             mode = mode,
             keybind = mapping.lhs,

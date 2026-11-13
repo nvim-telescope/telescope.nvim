@@ -69,8 +69,7 @@ M.check = function()
           )
         end
       else
-        local eol = version:find "\n"
-        local ver = eol and version:sub(0, eol - 1) or "(unknown version)"
+        local ver = version and version:match "^(.-)\n" or "(unknown version)"
         health.ok(("%s: found %s"):format(package.name, ver))
       end
     end

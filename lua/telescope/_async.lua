@@ -10,12 +10,12 @@ end
 
 --- Pass `list[1..n]` (which may have holes) to `process_result`, yielding to the main loop every 1000
 --- entries.
----@param list table
+---@param list table[]
 ---@param n integer
----@param process_result fun(entry: table?)
+---@param process_result fun(entry: table): boolean?
 function M.process_list(list, n, process_result)
   for i = 1, n do
-    process_result(list[i])
+    process_result(list[i] --[[@as table]])
     if i % 1000 == 0 then
       M.yield()
     end

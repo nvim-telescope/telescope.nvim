@@ -951,7 +951,8 @@ previewers.autocommands = defaulter(function(_)
         table.insert(display, string.format(" augroup: %s - [ %d entries ]", entry.value.group_name, #results))
         -- TODO: calculate banner width/string in setup()
         -- TODO: get column characters to be the same HL group as border
-        table.insert(display, string.rep("─", fn.getwininfo(preview_winid)[1].width))
+        local wininfo = fn.getwininfo(preview_winid)[1] --[[@as vim.fn.getwininfo.ret.item]]
+        table.insert(display, string.rep("─", wininfo.width))
 
         for idx, item in ipairs(results) do
           if item == entry then
@@ -1022,7 +1023,7 @@ previewers.highlights = defaulter(function(_)
 
         api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, hl_groups)
         for k, v in ipairs(hl_groups) do
-          local startPos = string.find(v, "xxx", 1, true) - 1
+          local startPos = string.find(v, "xxx", 1, true) --[[@as integer]] - 1
           local endPos = startPos + 3
           local hlgroup = string.match(v, "([^ ]*)%s+.*")
           pcall(hl.range, self.state.bufnr, 0, hlgroup, { k - 1, startPos }, { k - 1, endPos })

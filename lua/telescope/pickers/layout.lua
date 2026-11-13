@@ -188,4 +188,4 @@ function Layout:update() end
 ---@alias TelescopeWindow.constructor fun(config: TelescopeWindow.config): TelescopeWindow
 ---@alias TelescopeLayout.constructor fun(config: TelescopeLayout.config): TelescopeLayout
 
-return Layout --[[@as TelescopeLayout.constructor|{ Window: TelescopeWindow.constructor }]]
+return Layout --[[@as telescope.pickers.layout.module]]

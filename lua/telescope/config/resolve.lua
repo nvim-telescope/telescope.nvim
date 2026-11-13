@@ -86,6 +86,7 @@ That's the next step to scrolling.
 local resolver = {}
 local _resolve_map = {}
 
+---@return never
 local throw_invalid_config_option = function(key, value)
   error(string.format("Invalid configuration option for '%s': '%s'", key, tostring(value)), 2)
 end
@@ -169,7 +170,7 @@ end] = function(selector, val)
 
   return function(...)
     local selected = select(selector, ...)
-    local padding = resolve_pad(val["padding"])
+    local padding = resolve_pad(val["padding"]) --[[@as function]]
     return math.floor(selected - 2 * padding(...))
   end
 end
@@ -295,6 +296,8 @@ end
 --   {...}
 --   prompt = {...},
 -- }
+---@nodoc
+---@return { preview: any, results: any, prompt: any }
 resolver.win_option = function(val, default)
   if type(val) ~= "table" or vim.islist(val) then
     if val == nil then
