@@ -955,11 +955,14 @@ function Picker:reset_prompt(text)
   end
 end
 
+---@class telescope.picker.refresh.opts
+---@field new_prefix? string|table either as string or { new_string, hl_group }
+---@field prefix_hl_group? string highlight group of a string `new_prefix`
+---@field reset_prompt? boolean whether to reset the prompt
+---@field multi? MultiSelect multi-selection to persist upon renewing finder (see telescope/pickers/multi.lua)
+
 ---@param finder finder: telescope finder (see telescope/finders.lua)
----@param opts table: options to pass when refreshing the picker
----@field new_prefix string|table: either as string or { new_string, hl_group }
----@field reset_prompt bool: whether to reset the prompt
----@field multi MultiSelect: multi-selection to persist upon renewing finder (see telescope/pickers/multi.lua)
+---@param opts? telescope.picker.refresh.opts: options to pass when refreshing the picker
 function Picker:refresh(finder, opts)
   opts = opts or {}
   if opts.new_prefix then

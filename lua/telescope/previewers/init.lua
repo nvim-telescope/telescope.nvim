@@ -1,3 +1,6 @@
+-- docgen needs `@param` on assignments that aren't function definitions
+---@diagnostic disable: annotation-usage-error, undefined-doc-param
+
 ---@brief
 --- Provides a Previewer table that has to be implemented by each previewer.
 --- To achieve this, this module also provides two wrappers that abstract most
