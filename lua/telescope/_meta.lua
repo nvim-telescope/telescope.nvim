@@ -1,0 +1,32 @@
+---@meta
+-- Type annotations for emmylua that stay out of the generated docs (docgen doesn't read this file).
+
+-- Picker options that every builtin accepts (and passes on to `pickers.new`), and state that builtins
+-- keep in their options.
+---@class (partial) telescope.builtin.base_opts
+---@field entry_maker? fun(line: any): table?
+---@field previewer? table|false
+---@field path_display? table|fun(opts: table, path: string): string, table?
+---@field file_ignore_patterns? string[]
+---@field initial_mode? "insert"|"normal"
+---@field vimgrep_arguments? string[]
+---@field cache_picker? table|false
+---@field cache_index? integer
+---@field _cache_picker? table|false
+---@field resumed_picker? boolean
+---@field hidden? boolean grep pickers: search hidden files
+---@field __inverted? boolean grep pickers: the arguments invert the matches
+---@field __matches? boolean grep pickers: the arguments list files (with or without matches)
+---@field line_highlights? table<integer, table<integer, string>> current_buffer_fuzzy_find
+---@field current_line? string git_bcommits: the line under the cursor
+---@field operator_callback? boolean git_bcommits_range
+---@field split_char? string git_status
+---@field width_lhs? integer keymaps
+---@field env? table<string, string?> man_pages
+---@field ignore_filename? boolean lsp_workspace_symbols
+---@field id? integer quickfix: id of the list (instead of `nr`)
+---@field make_entry? fun(line: any): table? quickfix
+---@field items? any[] ui_select
+---@field format_item? fun(item: any): string ui_select
+---@field on_choice? fun(item: any?, idx: integer?) ui_select
+---@field prompt? string ui_select
