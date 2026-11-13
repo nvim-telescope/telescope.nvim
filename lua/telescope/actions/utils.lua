@@ -28,7 +28,7 @@ local utils = {}
 ---   return results
 --- end
 --- ```
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 ---@param f function: Function to map onto entries of picker that takes (entry, index, row) as viable arguments
 function utils.map_entries(prompt_bufnr, f)
   vim.validate("f", f, "function")
@@ -64,7 +64,7 @@ end
 ---   return results
 --- end
 --- ```
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 ---@param f function: Function to map onto selection of picker that takes (selection) as a viable argument
 function utils.map_selections(prompt_bufnr, f)
   vim.validate("f", f, "function")
@@ -76,7 +76,7 @@ function utils.map_selections(prompt_bufnr, f)
 end
 
 --- Utility to collect mappings of prompt buffer in array of `{mode, keybind, name}`.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 function utils.get_registered_mappings(prompt_bufnr)
   local ret = {}
   for _, mode in ipairs { "n", "i" } do

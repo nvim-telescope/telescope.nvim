@@ -1,4 +1,4 @@
----@alias TextDocumentFunction fun(client: lsp.Client): lsp.TextDocumentPositionParams
+---@alias TextDocumentFunction fun(client: vim.lsp.Client, bufnr: integer): lsp.TextDocumentPositionParams
 
 local api = vim.api
 local lsp = vim.lsp
@@ -71,7 +71,7 @@ local function pick_call_hierarchy_item(call_hierarchy_items)
   return call_hierarchy_items[choice]
 end
 
----@param win number|nil: Window handler
+---@param win integer|nil: Window handler
 ---@param extra lsp.TextDocumentPositionParams|nil: Extra fields in params
 ---@return lsp.TextDocumentPositionParams|TextDocumentFunction: Params to send to the server
 local function client_position_params(win, extra)
@@ -160,7 +160,7 @@ end
 ---@param action telescope.lsp.list_or_jump_action
 ---@param title string prompt title
 ---@param funname string: name of the calling function
----@param params lsp.TextDocumentPositionParams|(fun(client: lsp.Client, bufnr: integer): table?)
+---@param params lsp.TextDocumentPositionParams|(fun(client: vim.lsp.Client, bufnr: integer): table?)
 ---@param opts table
 local function list_or_jump(action, title, funname, params, opts)
   opts.reuse_win = vim.nonnil(opts.reuse_win, false)

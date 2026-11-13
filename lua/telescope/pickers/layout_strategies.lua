@@ -59,6 +59,8 @@ local get_border_size = function(opts)
   return 1
 end
 
+---@param max_lines integer
+---@return integer max_lines, boolean tabline
 local calc_tabline = function(max_lines)
   local tbln = (vim.o.showtabline == 2) or (vim.o.showtabline == 1 and #api.nvim_list_tabpages() > 1)
   if tbln then
@@ -68,12 +70,12 @@ local calc_tabline = function(max_lines)
 end
 
 -- Helper function for capping over/undersized width/height, and calculating spacing
----@param cur_size number: size to be capped
+---@param cur_size integer: size to be capped
 ---@param max_size any: the maximum size, e.g. max_lines or max_columns
----@param bs number: the size of the border
----@param w_num number: the maximum number of windows of the picker in the given direction
----@param b_num number: the number of border rows/column in the given direction (when border enabled)
----@param s_num number: the number of gaps in the given direction (when border disabled)
+---@param bs integer: the size of the border
+---@param w_num integer: the maximum number of windows of the picker in the given direction
+---@param b_num integer: the number of border rows/column in the given direction (when border enabled)
+---@param s_num integer: the number of gaps in the given direction (when border disabled)
 local calc_size_and_spacing = function(cur_size, max_size, bs, w_num, b_num, s_num)
   local spacing = s_num * (1 - bs) + b_num * bs
   cur_size = math.min(cur_size, max_size)
@@ -244,7 +246,7 @@ end
 
 ---@param name string: the name to be assigned to the layout
 ---@param layout_config table: table where keys are the available options for the layout
----@param layout function: function with signature
+---@param layout (fun(self: Picker, max_columns: integer, max_lines: integer, layout_config: table): table) function with signature
 ---          function(self, max_columns, max_lines, layout_config): table
 ---        the returned table is the sizing and location information for the parts of the picker
 ---@return function: wrapped function that inputs a validated layout_config into the `layout` function
@@ -512,7 +514,7 @@ layout_strategies.center = make_documented_layout(
     end
 
     -- Set preview position
-    local block_line = math.min(results.line, prompt.line)
+    local block_line = math.min(results.line, prompt.line) --[[@as integer]]
     if not mirror then -- Preview at top
       preview.line = 1 + bs
       preview.height = block_line - (2 + 2 * bs)

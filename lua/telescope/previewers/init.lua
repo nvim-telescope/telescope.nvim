@@ -243,7 +243,7 @@ previewers.new_buffer_previewer = buffer_previewer.new_buffer_previewer
 --- It handles async reading, cache, highlighting, displaying directories
 --- and provides a callback which can be used, to jump to a line in the buffer.
 ---@param filepath string: String to the filepath, will be expanded
----@param bufnr number: Where the content will be written
+---@param bufnr integer: Where the content will be written
 ---@param opts table: keys: `use_ft_detect`, `bufname` and `callback`
 previewers.buffer_previewer_maker = buffer_previewer.file_maker
 

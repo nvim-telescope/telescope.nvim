@@ -45,7 +45,7 @@ local M = {}
 ---@field path string: Will point to the location of the history file
 ---@field limit string: Will have the limit of the history. Can be nil, if limit is disabled.
 ---@field content table: History table. Needs to be filled by your own History implementation
----@field index number: Used to keep track of the next or previous index. Default is #content + 1
+---@field index integer: Used to keep track of the next or previous index. Default is #content + 1
 ---@field cycle_wrap boolean: Controls if history will wrap on reaching beginning or end
 M.History = {}
 M.History.__index = M.History

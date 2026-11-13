@@ -195,7 +195,7 @@ end
 --- The returned function will have signature:
 ---     function(self, max_columns, max_lines): number
 ---@param val any see description above
----@return fun(self, max_columns: number, max_lines: number): number
+---@return fun(self, max_columns: integer, max_lines: integer): integer
 resolver.resolve_height = function(val)
   for k, v in pairs(_resolve_map) do
     if k(val) then
@@ -226,7 +226,7 @@ end
 --- The returned function will have signature:
 ---     function(self, max_columns, max_lines): number
 ---@param val any see description above
----@return fun(self, max_columns: number, max_lines: number): number
+---@return fun(self, max_columns: integer, max_lines: integer): integer
 resolver.resolve_width = function(val)
   for k, v in pairs(_resolve_map) do
     if k(val) then
@@ -248,12 +248,12 @@ end
 ---   the picker will move to the corresponding edge/corner
 ---   e.g. "NW" -> "top left corner", "E" -> "right edge", "S" -> "bottom edge"
 ---@param anchor ""|"CENTER"|"NW"|"N"|"NE"|"E"|"SE"|"S"|"SW"|"W
----@param p_width number window width
----@param p_height number window height
----@param max_columns number max number of columns
----@param max_lines number max number of lines
----@param anchor_padding number padding to add to the anchor
----@return number[] # row and col
+---@param p_width integer window width
+---@param p_height integer window height
+---@param max_columns integer max number of columns
+---@param max_lines integer max number of lines
+---@param anchor_padding integer padding to add to the anchor
+---@return integer[] # row and col
 resolver.resolve_anchor_pos = function(anchor, p_width, p_height, max_columns, max_lines, anchor_padding)
   anchor = anchor:upper()
   local pos = { 0, 0 }

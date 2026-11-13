@@ -1441,7 +1441,7 @@ internal.tagstack = function(opts)
     if api.nvim_buf_is_valid(tag.bufnr) then
       tags[#tags + 1] = tag
       tag.filename = fn.bufname(tag.bufnr)
-      tag.lnum = tag.from[2]
+      tag.lnum = tag.from[2] --[[@as integer]]
       tag.col = tag.from[3]
 
       tag.text = api.nvim_buf_get_lines(tag.bufnr, tag.lnum - 1, tag.lnum, false)[1] or ""

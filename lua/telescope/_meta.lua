@@ -56,6 +56,18 @@
 ---@field attach_mappings? fun(prompt_bufnr: integer, map: function): boolean?
 ---@field file_ignore_patterns? string[]
 ---@field sorting_strategy "descending"|"ascending"
+---@field scroll_strategy "cycle"|"limit"
+---@field selection_strategy "reset"|"follow"|"row"|"closest"|"none"
+---@field tiebreak fun(current_entry: table, existing_entry: table, prompt: string): boolean
+---@field layout_strategy string
+---@field layout_config table
+---@field __flex_strategy? string the strategy chosen by the flex layout
+---@field __cycle_layout_list? table
+---@field push_cursor_on_edit boolean
+---@field push_tagstack_on_edit boolean
+---@field track boolean
+---@field on_close? fun(picker: Picker)
+---@field cwd? string
 ---@field window { winblend: integer, border: boolean|table, borderchars: table }
 ---@field cache_picker table|false
 ---@field __scrolling_limit integer
@@ -90,3 +102,17 @@
 
 ---@class (partial) MultiSelect
 ---@field _entries table<table, integer> selection order of each entry
+
+---@class (partial) EntryManager
+---@field max_results integer
+---@field set_entry fun(picker: Picker, index: integer, entry: table, score: number, insert?: boolean)
+---@field worst_acceptable_score number
+---@field top_entries table[]
+---@field top_scores number[]
+---@field ntop integer
+---@field front_entries table[]
+---@field front_scores number[]
+---@field nfront integer
+---@field back_entries table[]
+---@field back_scores number[]
+---@field nback integer

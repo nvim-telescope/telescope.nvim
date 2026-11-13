@@ -286,8 +286,8 @@ end
 
 --- Take an index and get a row.
 ---@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
----@param index number: the index in line_manager
----@return number: the row for the picker to display in
+---@param index integer: the index in line_manager
+---@return integer: the row for the picker to display in
 function Picker:get_row(index)
   if self.sorting_strategy == "ascending" then
     return index - 1
@@ -298,8 +298,8 @@ end
 
 --- Take a row and get an index
 ---@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
----@param row number: The row being displayed
----@return number: The index in line_manager
+---@param row integer: The row being displayed
+---@return integer: The index in line_manager
 function Picker:get_index(row)
   if self.sorting_strategy == "ascending" then
     return row + 1
@@ -309,7 +309,7 @@ function Picker:get_index(row)
 end
 
 --- Get the row number of the "best" entry
----@return number: the number of the "reset" row
+---@return integer: the number of the "reset" row
 function Picker:get_reset_row()
   if self.sorting_strategy == "ascending" then
     return 0
@@ -328,7 +328,7 @@ end
 
 --- Clear rows that are after the final remaining entry
 ---@note: useful when number of remaining results is narrowed down
----@param results_bufnr number: the buffer number of the results buffer
+---@param results_bufnr integer: the buffer number of the results buffer
 function Picker:clear_extra_rows(results_bufnr)
   if self:is_done() then
     log.trace "Not clearing due to being already complete"
@@ -363,10 +363,10 @@ function Picker:clear_extra_rows(results_bufnr)
 end
 
 --- Highlight the entry corresponding to the given row
----@param results_bufnr number: the buffer number of the results buffer
+---@param results_bufnr integer: the buffer number of the results buffer
 ---@param prompt string: the prompt
 ---@param display string: the text corresponding to the given row
----@param row number: the number of the chosen row
+---@param row integer: the number of the chosen row
 function Picker:highlight_one_row(results_bufnr, prompt, display, row)
   if not self.sorter.highlighter then
     return
@@ -383,14 +383,14 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
         finish = hl.finish or hl.start
       elseif type(hl) == "number" then
         highlight = "TelescopeMatching"
-        start = hl
+        start = hl --[[@as integer]]
         finish = hl
       else
         error "Invalid higlighter fn"
       end
 
       -- extmark instead of `vim.hl.range()`, which is much slower (runs for every displayed row)
-      api.nvim_buf_set_extmark(results_bufnr, ns_telescope_matching, row, start - 1, {
+      api.nvim_buf_set_extmark(results_bufnr, ns_telescope_matching, row, (start - 1) --[[@as integer]], {
         end_col = finish,
         hl_group = highlight,
         priority = vim.hl.priorities.user,
@@ -404,7 +404,7 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
 end
 
 --- Check if the given row number can be selected
----@param row number: the number of the chosen row in the results buffer
+---@param row integer: the number of the chosen row in the results buffer
 ---@return boolean
 function Picker:can_select_row(row)
   if self.sorting_strategy == "ascending" then
@@ -611,7 +611,7 @@ function Picker:find()
 
         local diff_time = (vim.uv.hrtime() - start_time) / 1e6
         if self.debounce and diff_time < self.debounce then
-          vim.async.sleep(self.debounce - diff_time)
+          vim.async.sleep(math.floor(self.debounce - diff_time))
         end
       else
         self:_resume_picker()
@@ -820,7 +820,7 @@ function Picker:get_selection()
 end
 
 --- Get the row number of the current selection
----@return number
+---@return integer
 function Picker:get_selection_row()
   if self._selection_row then
     -- If the current row is no longer selectable than reduce it to num_results - 1, so the next selectable row.
@@ -844,13 +844,13 @@ function Picker:get_selection_row()
 end
 
 --- Move the current selection by `change` steps
----@param change number
+---@param change integer
 function Picker:move_selection(change)
   self:set_selection(self:get_selection_row() + change)
 end
 
 --- Add the entry of the given row to the multi-select object
----@param row number: the number of the chosen row
+---@param row integer: the number of the chosen row
 function Picker:add_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:add(entry)
@@ -861,7 +861,7 @@ function Picker:add_selection(row)
 end
 
 --- Remove the entry of the given row to the multi-select object
----@param row number: the number of the chosen row
+---@param row integer: the number of the chosen row
 function Picker:remove_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:drop(entry)
@@ -873,7 +873,7 @@ end
 
 --- Check if the given row is in the multi-select object
 ---@param entry table: table with information about the chosen entry
----@return number: the "count" associated to the entry in the multi-select
+---@return integer: the "count" associated to the entry in the multi-select
 --- object (if present), `nil` otherwise
 function Picker:is_multi_selected(entry)
   return self._multi:is_selected(entry)
@@ -887,7 +887,7 @@ end
 
 --- Toggle the given row in and out of the multi-select object.
 --- Also updates the highlighting for the given entry
----@param row number: the number of the chosen row
+---@param row integer: the number of the chosen row
 function Picker:toggle_selection(row)
   local entry = self.manager and self.manager:get_entry(self:get_index(row))
   if entry == nil then
@@ -990,7 +990,7 @@ function Picker:refresh(finder, opts)
 end
 
 ---Set the selection to the provided `row`
----@param row number
+---@param row integer
 function Picker:set_selection(row)
   if not self.manager then
     return
@@ -1185,7 +1185,7 @@ end
 --- results after it). They are drawn by `_draw_results`: right away if the last draw is at least
 --- `DRAW_INTERVAL` ago, else after that delay. So results still fill in while a finder streams them,
 --- but each row is drawn once per batch instead of on every insertion; the completor draws the rest.
----@param index number
+---@param index integer
 function Picker:_results_changed(index)
   if not self._dirty_from or index < self._dirty_from then
     self._dirty_from = index
@@ -1300,8 +1300,8 @@ end
 
 --- Returns a function that sets virtual text for the count indicator
 --- e.g. "10/50" as "filtered"/"processed"
----@param prompt_win number
----@param prompt_bufnr number
+---@param prompt_win integer
+---@param prompt_bufnr integer
 ---@return function
 function Picker:get_status_updater(prompt_win, prompt_bufnr)
   return function(opts)
@@ -1423,6 +1423,9 @@ function Picker:_narrowed_candidates(discarded)
 end
 
 --- Process the narrowed `candidates` like a static finder would process its results.
+---@param candidates { list: table[], n: integer, processed: integer }
+---@param process_result fun(entry: table): boolean?
+---@param process_complete fun()
 function Picker:_process_candidates(candidates, process_result, process_complete)
   -- count the skipped entries as processed and filtered, as the finder would have
   local skipped = candidates.processed - candidates.n
@@ -1432,7 +1435,7 @@ function Picker:_process_candidates(candidates, process_result, process_complete
 end
 
 --- Handles updating the picker after all the entries are scored/processed.
----@param results_bufnr number
+---@param results_bufnr integer
 ---@param prompt string
 ---@param status_updater function
 function Picker:get_result_completor(results_bufnr, prompt, status_updater)
@@ -1560,7 +1563,7 @@ pickers.new = function(opts, defaults)
 end
 
 --- Close the picker which has prompt with buffer number `prompt_bufnr`
----@param prompt_bufnr number
+---@param prompt_bufnr integer
 function pickers.on_close_prompt(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
@@ -1571,7 +1574,7 @@ function pickers.on_close_prompt(prompt_bufnr)
 
     if type(picker.cache_picker.index) == "number" then
       if not vim.tbl_isempty(cached_pickers) then
-        table.remove(cached_pickers, picker.cache_picker.index)
+        table.remove(cached_pickers, picker.cache_picker.index --[[@as integer]])
       end
     end
 
