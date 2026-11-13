@@ -28,7 +28,7 @@ local function border_state(opts)
   if opts.border == false or not opts.borderchars then
     return nil
   end
-  local thickness = { 1, 1, 1, 1 }
+  local thickness = { 1, 1, 1, 1 } ---@type integer[]
   if type(opts.border) == "table" and not vim.tbl_isempty(opts.border) then
     assert(#opts.border == 4, "border: expected a list of 4 numbers")
     thickness = vim.tbl_map(function(t)

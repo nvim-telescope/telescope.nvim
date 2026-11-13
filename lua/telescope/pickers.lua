@@ -37,6 +37,7 @@ if not ok_new_tab then
     return {}
   end
 end
+---@cast new_tab fun(narray: integer, nhash: integer): table
 
 -- Window options produced by layout strategies and passed to `telescope.pickers.ui`.
 ---@class telescope_popup_options
@@ -123,7 +124,7 @@ local function default_create_layout(picker)
           picker.previewer.state.winid = preview_win
         end
       elseif popup_opts.preview then
-        ui.move(preview_win, popup_opts.preview)
+        ui.move(preview_win --[[@as integer]], popup_opts.preview)
       elseif preview_win then
         utils.win_delete("preview_win", preview_win, true)
         self.preview = nil
@@ -874,8 +875,8 @@ function Picker:remove_selection(row)
 end
 
 --- Check if the given row is in the multi-select object
----@param entry table: table with information about the chosen entry
----@return integer: the "count" associated to the entry in the multi-select
+---@param entry table?: table with information about the chosen entry
+---@return integer?: the "count" associated to the entry in the multi-select
 --- object (if present), `nil` otherwise
 function Picker:is_multi_selected(entry)
   return self._multi:is_selected(entry)
@@ -1047,17 +1048,18 @@ function Picker:set_selection(row)
     return
   end
 
-  local old_entry
+  local old_entry ---@type table?
 
   -- entry displays and sorter highlighters are user code: don't let their errors break selection
   local set_ok, set_errmsg = pcall(function()
     local prompt = self:_get_prompt()
 
     -- Check if previous selection is still visible
-    if self._selection_entry and self.manager:find_entry(self._selection_entry) then
+    local old_index = self._selection_entry and self.manager:find_entry(self._selection_entry)
+    if old_index then
       -- Find old selection, and update prefix and highlights
       old_entry = self._selection_entry
-      local old_row = self:get_row(self.manager:find_entry(old_entry))
+      local old_row = self:get_row(old_index)
 
       self._selection_entry = entry
 
@@ -1506,7 +1508,7 @@ function Picker:_do_selection(prompt)
     if self._selection_entry then
       local old_entry, old_row = self._selection_entry, self._selection_row
       self:reset_selection() -- required to reset selection before updating prefix
-      if old_row >= 0 then
+      if old_row and old_row >= 0 then
         self:update_prefix(old_entry, old_row)
         self.highlighter:hi_multiselect(old_row, self:is_multi_selected(old_entry))
       end

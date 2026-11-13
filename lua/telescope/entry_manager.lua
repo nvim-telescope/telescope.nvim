@@ -62,6 +62,7 @@ function EntryManager:get_score(index)
   return score
 end
 
+---@return integer? index
 function EntryManager:find_entry(entry)
   local found
   local ntop, nfront, nback = self.ntop, self.nfront, self.nback
