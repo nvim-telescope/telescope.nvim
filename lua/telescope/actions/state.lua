@@ -9,7 +9,7 @@ local conf = require("telescope.config").values
 local action_state = {}
 
 --- Get the current entry
----@return table # the selected entry
+---@return table? # the selected entry
 function action_state.get_selected_entry()
   return global_state.get_global_key "selected_entry"
 end

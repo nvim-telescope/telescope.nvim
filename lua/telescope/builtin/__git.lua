@@ -75,7 +75,7 @@ git.commits = function(opts)
   pickers
     .new(opts, {
       prompt_title = "Git Commits",
-      finder = finders.new_oneshot_job(opts.git_command, opts),
+      finder = finders.new_oneshot_job(opts.git_command --[[@as string[] ]], opts),
       previewer = {
         previewers.git_commit_diff_to_parent.new(opts),
         previewers.git_commit_diff_to_head.new(opts),
@@ -102,7 +102,7 @@ git.stash = function(opts)
   pickers
     .new(opts, {
       prompt_title = "Git Stash",
-      finder = finders.new_oneshot_job(opts.git_command, opts),
+      finder = finders.new_oneshot_job(opts.git_command --[[@as string[] ]], opts),
       previewer = previewers.git_stash_diff.new(opts),
       sorter = conf.file_sorter(opts),
       attach_mappings = function()
@@ -115,7 +115,7 @@ end
 
 local get_current_buf_line = function(winnr)
   local lnum = api.nvim_win_get_cursor(winnr)[1]
-  return vim.trim(api.nvim_buf_get_lines(api.nvim_win_get_buf(winnr), lnum - 1, lnum, false)[1])
+  return vim.trim(api.nvim_buf_get_lines(api.nvim_win_get_buf(winnr), lnum - 1, lnum, false)[1] or "")
 end
 
 local bcommits_picker = function(opts, title, finder)
@@ -231,7 +231,7 @@ git.bcommits_range = function(opts)
     line_number_first = fn.line "'["
     line_number_last = fn.line "']"
   elseif line_number_first == nil then
-    line_number_first = vim.nonnil(line_number_first, fn.line ".")
+    line_number_first = fn.line "."
     line_number_last = vim.nonnil(line_number_last, fn.line ".")
   end
   local line_range =

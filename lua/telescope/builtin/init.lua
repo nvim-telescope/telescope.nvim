@@ -421,7 +421,7 @@ builtin.reloader = require_on_exported_call("telescope.builtin.__internal").relo
 ---@field items any[]: items to choose from
 ---@field on_choice fun(item: any?, idx: integer?) called with the chosen item and its index, or with `nil` if the picker was closed
 ---@field prompt? string: prompt title (default: "Select one of")
----@field format_item? fun(item: any): string: text shown and filtered for an item (default: `tostring`)
+---@field format_item? (fun(item: any): string) text shown and filtered for an item (default: `tostring`)
 
 --- Lets the user choose one of `opts.items`, like |vim.ui.select()|. Use |telescope.ui_select()| to replace
 --- `vim.ui.select`.

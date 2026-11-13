@@ -72,7 +72,7 @@ local function pick_call_hierarchy_item(call_hierarchy_items)
 end
 
 ---@param win integer|nil: Window handler
----@param extra lsp.TextDocumentPositionParams|nil: Extra fields in params
+---@param extra table|nil: Extra fields in params
 ---@return lsp.TextDocumentPositionParams|TextDocumentFunction: Params to send to the server
 local function client_position_params(win, extra)
   win = win or api.nvim_get_current_win()
@@ -149,7 +149,7 @@ local function filter_file_ignore_patterns(items, opts)
 
   return vim.tbl_filter(function(item)
     for _, patt in ipairs(file_ignore_patterns) do
-      if string.match(item.filename, patt) then
+      if item.filename and string.match(item.filename, patt) then
         return false
       end
     end
@@ -232,7 +232,11 @@ local function list_or_jump(action, title, funname, params, opts)
         end
       end
 
-      lsp.util.show_document(item.user_data, first_encoding, { reuse_win = opts.reuse_win })
+      lsp.util.show_document(
+        item.user_data,
+        first_encoding --[[@as "utf-8"|"utf-16"|"utf-32"]],
+        { reuse_win = opts.reuse_win }
+      )
     else
       pickers
         .new(opts, {
@@ -333,9 +337,8 @@ M.document_symbols = function(opts)
       return
     end
 
-    local locations
     local client = assert(lsp.get_client_by_id(ctx.client_id))
-    locations = lsp.util.symbols_to_items(result or {}, opts.bufnr, client.offset_encoding) or {}
+    local locations = lsp.util.symbols_to_items(result or {}, opts.bufnr, client.offset_encoding) or {}
     if vim.tbl_isempty(locations) then
       utils.notify("builtin.lsp_document_symbols", {
         msg = "No document_symbol locations found",
@@ -379,9 +382,8 @@ M.workspace_symbols = function(opts)
       return
     end
 
-    local locations
     local client = assert(lsp.get_client_by_id(ctx.client_id))
-    locations = lsp.util.symbols_to_items(server_result or {}, opts.bufnr, client.offset_encoding) or {}
+    local locations = lsp.util.symbols_to_items(server_result or {}, opts.bufnr, client.offset_encoding) or {}
     if vim.tbl_isempty(locations) then
       utils.notify("builtin.lsp_workspace_symbols", {
         msg = "No results from workspace/symbol. Maybe try a different query: "
@@ -433,7 +435,8 @@ local function get_workspace_symbols_requester(bufnr, opts)
         utils.notify("lsp.workspace_symbols", { msg = client_res.error.message, level = "ERROR" })
       elseif client_res.result ~= nil then
         local client = assert(lsp.get_client_by_id(client_id))
-        vim.list_extend(locations, lsp.util.symbols_to_items(client_res.result, bufnr, client.offset_encoding))
+        local result = client_res.result --[[@as lsp.SymbolInformation[] ]]
+        vim.list_extend(locations, lsp.util.symbols_to_items(result, bufnr, client.offset_encoding))
       end
     end
 

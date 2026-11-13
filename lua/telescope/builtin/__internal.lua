@@ -229,7 +229,7 @@ internal.pickers = function(opts)
           opts.cache_picker = opts._cache_picker
           opts["cache_index"] = selection_index
           opts["initial_mode"] = cached_pickers[selection_index].initial_mode
-          internal.resume(opts)
+          internal.resume(opts --[[@as telescope.builtin.resume.opts]])
         end)
         map({ "i", "n" }, "<C-x>", actions.remove_selected_picker)
         return true
@@ -332,7 +332,7 @@ internal.commands = function(opts)
           local need_buf_command = vim.nonnil(opts.show_buf_command, true)
 
           if need_buf_command then
-            local buf_command_iter = api.nvim_buf_get_commands(0, {})
+            local buf_command_iter = api.nvim_buf_get_commands(0, {}) --[[@as table]]
             buf_command_iter[true] = nil -- remove the redundant entry
             for _, cmd in pairs(buf_command_iter) do
               table.insert(commands, cmd)
@@ -373,7 +373,7 @@ end
 ---@param opts telescope.builtin.quickfix.opts: options to pass to the picker
 internal.quickfix = function(opts)
   local qf_identifier = opts.id or vim.nonnil(opts.nr, 0)
-  local locations = fn.getqflist({ [opts.id and "id" or "nr"] = qf_identifier, items = true }).items
+  local locations = fn.getqflist({ [opts.id and "id" or "nr"] = qf_identifier, items = 1 }).items --[[@as table[] ]]
 
   if vim.tbl_isempty(locations) then
     utils.notify("builtin.quickfix", { msg = "No quickfix items", level = "INFO" })
@@ -398,7 +398,7 @@ internal.quickfixhistory = function(opts)
   local qflists = {}
   for i = 1, 10 do -- (n)vim keeps at most 10 quickfix lists in full
     -- qf weirdness: id = 0 gets id of quickfix list nr
-    local qflist = fn.getqflist { nr = i, id = 0, title = true, items = true }
+    local qflist = fn.getqflist { nr = i, id = 0, title = 1, items = 1 } --[[@as { id: integer, title: string, items: table[] }]]
     if not vim.tbl_isempty(qflist.items) then
       table.insert(qflists, qflist)
     end
@@ -445,13 +445,23 @@ internal.quickfixhistory = function(opts)
       sorter = conf.generic_sorter(opts),
       attach_mappings = function(_, map)
         action_set.select:replace(function(prompt_bufnr)
-          local nr = action_state.get_selected_entry().nr
+          local selection = action_state.get_selected_entry()
+          if selection == nil then
+            utils.__warn_no_selection "builtin.quickfixhistory"
+            return
+          end
+          local nr = selection.nr
           actions.close(prompt_bufnr)
-          internal.quickfix { nr = nr }
+          internal.quickfix { nr = nr, bufnr = opts.bufnr, winnr = opts.winnr }
         end)
 
         map({ "i", "n" }, "<C-q>", function(prompt_bufnr)
-          local nr = action_state.get_selected_entry().nr
+          local selection = action_state.get_selected_entry()
+          if selection == nil then
+            utils.__warn_no_selection "builtin.quickfixhistory"
+            return
+          end
+          local nr = selection.nr
           actions.close(prompt_bufnr)
           vim.cmd.chistory { count = nr }
           vim.cmd.copen { mods = { split = "botright" } }
@@ -659,7 +669,7 @@ internal.help_tags = function(opts)
   opts.fallback = vim.nonnil(opts.fallback, true)
   opts.file_ignore_patterns = {}
 
-  local langs = vim.split(opts.lang, ",", { trimempty = true })
+  local langs = vim.split(opts.lang --[[@as string]], ",", { trimempty = true })
   if opts.fallback and not vim.tbl_contains(langs, "en") then
     table.insert(langs, "en")
   end
@@ -690,7 +700,7 @@ internal.help_tags = function(opts)
       rtp = rtp .. "," .. table.concat(paths, ",")
     end
   end
-  local all_files = fn.globpath(rtp, "doc/*", 1, 1)
+  local all_files = fn.globpath(rtp, "doc/*", true, true)
   for _, fullpath in ipairs(all_files) do
     local file = utils.path_tail(fullpath)
     if file == "tags" then
@@ -929,7 +939,7 @@ internal.buffers = function(opts)
   end
 
   if not opts.bufnr_width then
-    local max_bufnr = math.max(unpack(bufnrs))
+    local max_bufnr = math.max(unpack(bufnrs) --[[@as integer]])
     opts.bufnr_width = #tostring(max_bufnr)
   end
 
@@ -1011,7 +1021,7 @@ internal.colorscheme = function(opts)
   local lazy = package.loaded["lazy.core.util"]
   if lazy and lazy.get_unloaded_rtp then
     local paths = lazy.get_unloaded_rtp ""
-    local all_files = fn.globpath(table.concat(paths, ","), "colors/*", 1, 1)
+    local all_files = fn.globpath(table.concat(paths, ","), "colors/*", true, true)
     for _, f in ipairs(all_files) do
       table.insert(colors, fn.fnamemodify(f, ":t:r"))
     end
@@ -1099,7 +1109,7 @@ internal.colorscheme = function(opts)
     -- rewrite picker.set_selection so that color schemes can be previewed when the current
     -- selection is shifted using the keyboard or if an item is clicked with the mouse
     local set_selection = picker.set_selection
-    picker.set_selection = function(self, row)
+    function picker:set_selection(row)
       set_selection(self, row)
       local selection = action_state.get_selected_entry()
       if selection == nil then
@@ -1155,7 +1165,7 @@ internal.marks = function(opts)
         line = line,
         lnum = lnum,
         col = col,
-        filename = utils.path_expand(v.file or bufname),
+        filename = utils.path_expand((v.file or bufname) --[[@as string]]),
       }
       -- non alphanumeric marks goes to last
       if mark:match "%w" then
@@ -1242,7 +1252,9 @@ internal.keymaps = function(opts)
     end
   end
 
-  for _, mode in pairs(opts.modes) do
+  for _, mode in
+    pairs(opts.modes --[[@as string[] ]])
+  do
     local global = api.nvim_get_keymap(mode)
     local buf_local = api.nvim_buf_get_keymap(0, mode)
     if not opts.only_buf then
@@ -1388,6 +1400,10 @@ internal.autocommands = function(opts)
           return true
         end, function()
           local selection = action_state.get_selected_entry()
+          if selection == nil then
+            utils.__warn_no_selection "builtin.autocommands"
+            return
+          end
           actions.close(prompt_bufnr)
           print("You selected autocmd: " .. vim.inspect(selection.value))
         end)
@@ -1472,7 +1488,7 @@ end
 ---@param opts telescope.builtin.jumplist.opts: options to pass to the picker
 internal.jumplist = function(opts)
   opts = opts or {}
-  local jumplist = fn.getjumplist()[1]
+  local jumplist = fn.getjumplist()[1] --[[@as { bufnr: integer, lnum: integer, col: integer, text?: string }[] ]]
 
   -- reverse the list
   local sorted_jumplist = {}
