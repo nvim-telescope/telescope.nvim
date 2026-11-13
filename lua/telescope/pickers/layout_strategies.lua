@@ -374,7 +374,7 @@ layout_strategies.horizontal = make_documented_layout(
       results.line = preview.line
       prompt.line = results.line + results.height + 1 + bs
     else
-      error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+      error(string.format("Unknown prompt_position: %s\n%s", layout_config.prompt_position, vim.inspect(layout_config)))
     end
 
     local anchor = layout_config.anchor or ""
@@ -490,7 +490,7 @@ layout_strategies.center = make_documented_layout(
         prompt.title = { { pos = "S", text = prompt.title } }
       end
     else
-      error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+      error(string.format("Unknown prompt_position: %s\n%s", layout_config.prompt_position, vim.inspect(layout_config)))
     end
 
     local width_padding = math.floor((max_columns - width) / 2) + bs + 1
@@ -731,7 +731,9 @@ layout_strategies.vertical = make_documented_layout(
         results.line = (preview.height == 0) and preview.line or preview.line + preview.height + (1 + bs)
         prompt.line = results.line + results.height + (1 + bs)
       else
-        error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+        error(
+          string.format("Unknown prompt_position: %s\n%s", layout_config.prompt_position, vim.inspect(layout_config))
+        )
       end
     else
       if layout_config.prompt_position == "top" then
@@ -743,7 +745,9 @@ layout_strategies.vertical = make_documented_layout(
         prompt.line = results.line + results.height + (1 + bs)
         preview.line = prompt.line + prompt.height + (1 + bs)
       else
-        error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+        error(
+          string.format("Unknown prompt_position: %s\n%s", layout_config.prompt_position, vim.inspect(layout_config))
+        )
       end
     end
 
@@ -927,7 +931,7 @@ layout_strategies.bottom_pane = make_documented_layout(
         results.border = { 1, 1, 0, 1 }
       end
     else
-      error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+      error(string.format("Unknown prompt_position: %s\n%s", layout_config.prompt_position, vim.inspect(layout_config)))
     end
 
     -- Col
