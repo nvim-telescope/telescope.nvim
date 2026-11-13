@@ -160,7 +160,7 @@ files.live_grep = function(opts)
     local search_list = {}
 
     if grep_open_files then
-      search_list = filelist
+      search_list = filelist --[[@as string[] ]]
     elseif search_dirs then
       search_list = search_dirs
     end
@@ -175,7 +175,7 @@ files.live_grep = function(opts)
       previewer = conf.grep_previewer(opts),
       -- TODO: It would be cool to use `--json` output for this
       -- and then we could get the highlight positions directly.
-      sorter = sorters.highlighter_only(opts),
+      sorter = sorters.highlighter_only(),
       attach_mappings = function(_, map)
         map("i", "<c-space>", actions.to_fuzzy_refine)
         return true
@@ -197,7 +197,7 @@ files.grep_string = function(opts)
   if visual == true then
     local saved_reg = fn.getreg "v"
     vim.cmd [[noautocmd sil norm! "vy]]
-    local sele = fn.getreg "v"
+    local sele = fn.getreg "v" --[[@as string]]
     fn.setreg("v", saved_reg)
     word = vim.nonnil(opts.search, sele)
   else
@@ -264,6 +264,7 @@ end
 
 ---@param opts telescope.builtin.find_files.opts
 files.find_files = function(opts)
+  ---@type string[]?
   local find_command = (function()
     if opts.find_command then
       if type(opts.find_command) == "function" then
@@ -398,7 +399,8 @@ end
 files.treesitter = function(opts)
   opts.show_line = vim.nonnil(opts.show_line, true)
   local ts = vim.treesitter
-  local ft = vim.bo[opts.bufnr].filetype
+  local bufnr = opts.bufnr --[[@as integer]] -- set by `apply_config`
+  local ft = vim.bo[bufnr].filetype
   local lang = ts.language.get_lang(ft)
 
   if not (lang and ts.language.add(lang)) then
@@ -417,12 +419,12 @@ files.treesitter = function(opts)
     return
   end
 
-  local parser = assert(ts.get_parser(opts.bufnr))
+  local parser = assert(ts.get_parser(bufnr))
   parser:parse()
   local root = parser:trees()[1]:root()
 
   local results = {}
-  for id, node, _ in query:iter_captures(root, opts.bufnr) do
+  for id, node, _ in query:iter_captures(root, bufnr) do
     local kind = query.captures[id]
 
     if node and kind and vim.startswith(kind, "local.definition") then
@@ -538,20 +540,20 @@ files.current_buffer_fuzzy_find = function(opts)
           local searched_for = action_state.get_current_line()
 
           local sorter = current_picker.sorter
-          ---@type integer[] | {start:integer, end:integer?, highlight:string?}[]
-          local highlights = sorter.highlighter and sorter:highlighter(searched_for, selection.ordinal) or {}
-          highlights = vim.tbl_map(function(hl)
+          ---@type (integer|{start:integer, end:integer?, highlight:string?})[]
+          local sorter_highlights = sorter.highlighter and sorter:highlighter(searched_for, selection.ordinal) or {}
+          local highlights = vim.tbl_map(function(hl)
             if type(hl) == "table" and hl.start then
               return hl.start
             elseif type(hl) == "number" then
               return hl
             end
             error "Invalid higlighter fn"
-          end, highlights)
+          end, sorter_highlights) --[[@as table<integer, integer>]]
 
           local first_col = 0
           if #highlights > 0 then
-            first_col = math.min(unpack(highlights)) --[[@as integer]] - 1
+            first_col = math.min(unpack(highlights) --[[@as integer]]) --[[@as integer]] - 1
           end
 
           actions.close(prompt_bufnr)
@@ -624,7 +626,7 @@ files.current_buffer_tags = function(opts)
     prompt_title = "Current Buffer Tags",
     only_current_file = true,
     path_display = "hidden",
-  }, opts))
+  }, opts) --[[@as telescope.builtin.tags.opts]])
 end
 
 local function apply_checks(mod)

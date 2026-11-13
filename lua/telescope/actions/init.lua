@@ -444,6 +444,10 @@ end
 ---@param prompt_bufnr integer: The prompt bufnr
 actions.edit_register = function(_prompt_bufnr)
   local selection = action_state.get_selected_entry()
+  if selection == nil then
+    utils.__warn_no_selection "actions.edit_register"
+    return
+  end
 
   fn.inputsave()
   local updated_value = fn.input("Edit [" .. selection.value .. "] ❯ ", selection.content)
@@ -476,7 +480,12 @@ end
 --- Insert a symbol into the current buffer (while switching to normal mode)
 ---@param prompt_bufnr integer: The prompt bufnr
 actions.insert_symbol = function(prompt_bufnr)
-  local symbol = action_state.get_selected_entry().value[1]
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    utils.__warn_no_selection "actions.insert_symbol"
+    return
+  end
+  local symbol = selection.value[1]
   actions.close(prompt_bufnr)
   vim.schedule(function()
     api.nvim_put({ symbol }, "", true, true)
@@ -486,7 +495,12 @@ end
 --- Insert a symbol into the current buffer and keeping the insert mode.
 ---@param prompt_bufnr integer: The prompt bufnr
 actions.insert_symbol_i = function(prompt_bufnr)
-  local symbol = action_state.get_selected_entry().value[1]
+  local selection = action_state.get_selected_entry()
+  if selection == nil then
+    utils.__warn_no_selection "actions.insert_symbol_i"
+    return
+  end
+  local symbol = selection.value[1]
   actions.close(prompt_bufnr)
   vim.schedule(function()
     vim.cmd [[startinsert]]

@@ -3082,7 +3082,7 @@ actions_state.get_selected_entry()
     Get the current entry
 
     Return: ~
-        (`table`) the selected entry
+        (`table?`) the selected entry
 
                                   *telescope.actions_state.get_current_line()*
 actions_state.get_current_line()

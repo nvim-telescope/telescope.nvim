@@ -9,7 +9,7 @@
 --- They are helpful for managing the several different UI aspects for telescope and provide
 --- a simple interface for users to get a particular "style" of picker.
 
-local themes = {}
+local themes = {} ---@type table<string, function>
 
 --- Dropdown style theme.
 ---
