@@ -102,7 +102,7 @@ git.stash = function(opts)
   pickers
     .new(opts, {
       prompt_title = "Git Stash",
-      finder = finders.new_oneshot_job(opts.git_command --[[@as string[] ]], opts),
+      finder = finders.new_oneshot_job(opts.git_command, opts),
       previewer = previewers.git_stash_diff.new(opts),
       sorter = conf.file_sorter(opts),
       attach_mappings = function()

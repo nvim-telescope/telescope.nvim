@@ -169,7 +169,7 @@ end] = function(selector, val)
 
   return function(...)
     local selected = select(selector, ...)
-    local padding = resolve_pad(val["padding"]) --[[@as function]]
+    local padding = resolve_pad(val["padding"])
     return math.floor(selected - 2 * padding(...))
   end
 end

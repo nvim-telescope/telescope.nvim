@@ -5,6 +5,7 @@ local utils = require("telescope.utils")
 
 local M = {}
 
+---@class telescope.AsyncJob
 local AsyncJob = {}
 AsyncJob.__index = AsyncJob
 
@@ -48,8 +49,7 @@ M.spawn = function(opts)
     env = env,
     stdio = { nil, self.stdout and self.stdout.handle, nil },
   }, function()
-    local handle = self.handle --[[@as uv.uv_process_t]]
-    handle:close()
+    self.handle:close()
   end)
   if not self.handle then
     if self.stdout then

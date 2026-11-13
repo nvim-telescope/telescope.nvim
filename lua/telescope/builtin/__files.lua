@@ -112,7 +112,7 @@ end
 --  opts.grep_open_files -- boolean to restrict search to open files
 ---@param opts telescope.builtin.live_grep.opts
 files.live_grep = function(opts)
-  local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments --[[@as string[] ]]
+  local vimgrep_arguments = opts.vimgrep_arguments or conf.vimgrep_arguments
   if not has_rg_program("live_grep", vimgrep_arguments[1]) then
     return
   end
@@ -540,7 +540,7 @@ files.current_buffer_fuzzy_find = function(opts)
           local searched_for = action_state.get_current_line()
 
           local sorter = current_picker.sorter
-          ---@type (integer|{start:integer, end:integer?, highlight:string?})[]
+          ---@type telescope.Highlights
           local sorter_highlights = sorter.highlighter and sorter:highlighter(searched_for, selection.ordinal) or {}
           local highlights = vim.tbl_map(function(hl)
             if type(hl) == "table" and hl.start then
@@ -549,7 +549,7 @@ files.current_buffer_fuzzy_find = function(opts)
               return hl
             end
             error("Invalid higlighter fn")
-          end, sorter_highlights) --[[@as table<integer, integer>]]
+          end, sorter_highlights)
 
           local first_col = 0
           if #highlights > 0 then

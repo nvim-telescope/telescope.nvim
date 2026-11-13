@@ -131,7 +131,7 @@ end
 
 -- the matched term of each set (reused): `score` first checks that all sets match (cheap), and
 -- only then scores the matched terms (the expensive part)
-local matched = {} ---@type telescope.algos.query.Term[]
+local matched = {} ---@type table<integer, telescope.algos.query.Term>
 
 --- The score of `line` for `query` (sum over the sets, see above), or nil if it doesn't match.
 ---@param query telescope.algos.query.Query
@@ -146,7 +146,7 @@ function M.score(query, line)
   end
   local total = 0 ---@type number
   for i = 1, #query do
-    local term = matched[i] --[[@as telescope.algos.query.Term]]
+    local term = matched[i]
     if not term.inv then
       total = total + matcher.score(term.text, line, term.cs)
     end

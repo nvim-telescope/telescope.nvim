@@ -384,14 +384,14 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
         finish = hl.finish or hl.start
       elseif type(hl) == "number" then
         highlight = "TelescopeMatching"
-        start = hl --[[@as integer]]
+        start = hl
         finish = hl
       else
         error("Invalid higlighter fn")
       end
 
       -- extmark instead of `vim.hl.range()`, which is much slower (runs for every displayed row)
-      api.nvim_buf_set_extmark(results_bufnr, ns_telescope_matching, row, start --[[@as integer]] - 1, {
+      api.nvim_buf_set_extmark(results_bufnr, ns_telescope_matching, row, start - 1, {
         end_col = finish,
         hl_group = highlight,
         priority = vim.hl.priorities.user,
@@ -1339,7 +1339,7 @@ end
 --- as appropriate and runs the sorters score function. It returns true once the find is stale.
 ---@param prompt string
 ---@param status_updater function
----@return fun(entry: table): boolean?
+---@return fun(entry: table?): boolean?
 function Picker:get_result_processor(prompt, status_updater)
   local running = { completed = false } -- no table per result
   local ignore_patterns = self.file_ignore_patterns or {}
@@ -1432,7 +1432,7 @@ end
 --- Process the narrowed `candidates` like a static finder would process its results.
 ---@async
 ---@param candidates { list: table[], n: integer, processed: integer }
----@param process_result fun(entry: table): boolean?
+---@param process_result fun(entry: table?): boolean?
 ---@param process_complete fun()
 function Picker:_process_candidates(candidates, process_result, process_complete)
   -- count the skipped entries as processed and filtered, as the finder would have
@@ -1580,9 +1580,10 @@ function pickers.on_close_prompt(prompt_bufnr)
   if type(picker.cache_picker) == "table" then
     local cached_pickers = state.get_global_key("cached_pickers") or {}
 
-    if type(picker.cache_picker.index) == "number" then
+    local index = picker.cache_picker.index
+    if index then
       if not vim.tbl_isempty(cached_pickers) then
-        table.remove(cached_pickers, picker.cache_picker.index --[[@as integer]])
+        table.remove(cached_pickers, index)
       end
     end
 
