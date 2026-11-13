@@ -260,7 +260,7 @@ end
 --- Center the cursor in the window, can be used after selecting a file to edit
 --- You can just map `actions.select_default + actions.center`
 ---@param prompt_bufnr integer: The prompt bufnr
-actions.center = function(prompt_bufnr)
+actions.center = function(_prompt_bufnr)
   vim.cmd ":normal! zz"
 end
 
@@ -442,7 +442,7 @@ end
 
 --- Edit a register
 ---@param prompt_bufnr integer: The prompt bufnr
-actions.edit_register = function(prompt_bufnr)
+actions.edit_register = function(_prompt_bufnr)
   local selection = action_state.get_selected_entry()
 
   fn.inputsave()
@@ -1143,14 +1143,14 @@ end
 --- Open the quickfix list. It makes sense to use this in combination with one of the send_to_qflist actions
 --- `actions.smart_send_to_qflist + actions.open_qflist`
 ---@param prompt_bufnr integer: The prompt bufnr
-actions.open_qflist = function(prompt_bufnr)
+actions.open_qflist = function(_prompt_bufnr)
   vim.cmd [[botright copen]]
 end
 
 --- Open the location list. It makes sense to use this in combination with one of the send_to_loclist actions
 --- `actions.smart_send_to_qflist + actions.open_qflist`
 ---@param prompt_bufnr integer: The prompt bufnr
-actions.open_loclist = function(prompt_bufnr)
+actions.open_loclist = function(_prompt_bufnr)
   vim.cmd [[lopen]]
 end
 

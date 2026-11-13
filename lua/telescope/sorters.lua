@@ -68,7 +68,7 @@ function Sorter:new(opts)
       filtered = {},
       prompt = "",
     },
-  }, Sorter)
+  }, self)
 end
 
 function Sorter:_init()

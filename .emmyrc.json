@@ -25,6 +25,7 @@
   },
   "diagnostics": {
     "disable": [
+      "unnecessary-assert",
       "unnecessary-if"
     ],
     "severity": {
