@@ -468,8 +468,7 @@ previewers.vimgrep = defaulter(function(opts)
       -- This is to ensure that column range highlighting was opted in, as `col`
       -- is already used to determine the buffer jump position elsewhere.
       if entry.col and entry.colend then
-        col = (entry.col - 1) --[[@as integer]]
-        colend = (entry.colend - 1) --[[@as integer]]
+        col, colend = entry.col --[[@as integer]] - 1, entry.colend --[[@as integer]] - 1
       end
 
       for i = lnum, lnend do
@@ -563,7 +562,7 @@ previewers.ctags = defaulter(function(opts)
         if self.state.last_set_bufnr then
           pcall(api.nvim_buf_clear_namespace, self.state.last_set_bufnr, ns_previewer, 0, -1)
         end
-        local row = (entry.lnum - 1) --[[@as integer]]
+        local row = entry.lnum --[[@as integer]] - 1
         pcall(hl.range, bufnr, ns_previewer, "TelescopePreviewMatch", { row, 0 }, { row, -1 })
         pcall(api.nvim_win_set_cursor, self.state.winid, { entry.lnum, 0 })
         self.state.last_set_bufnr = bufnr
