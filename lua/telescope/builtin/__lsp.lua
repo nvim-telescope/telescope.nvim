@@ -435,7 +435,7 @@ local function get_workspace_symbols_requester(bufnr, opts)
         utils.notify("lsp.workspace_symbols", { msg = client_res.error.message, level = "ERROR" })
       elseif client_res.result ~= nil then
         local client = assert(lsp.get_client_by_id(client_id))
-        local result = client_res.result --[[@as lsp.SymbolInformation[] ]]
+        local result = client_res.result --[[@as lsp.SymbolInformation[]|lsp.WorkspaceSymbol[] ]]
         vim.list_extend(locations, lsp.util.symbols_to_items(result, bufnr, client.offset_encoding))
       end
     end
