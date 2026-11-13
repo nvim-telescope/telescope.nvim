@@ -170,3 +170,16 @@
 ---@field replace_if fun(self: Action, condition: (fun(): boolean), replacement: function|Action): Action
 ---@field replace_map fun(self: Action, tbl: table<any, function|Action>): Action
 ---@field enhance fun(self: Action, opts: { pre?: function|Action, post?: function|Action }): Action
+
+-- Options of a picker window: `pickers.window.get_initial_window_options` sets the title and border,
+-- the layout strategy the position and size.
+---@class telescope.pickers.WindowOptions
+---@field title? string|table|false
+---@field border? boolean|table
+---@field borderchars? table
+---@field enter boolean
+---@field highlight? boolean
+---@field line integer
+---@field col integer
+---@field width integer
+---@field height integer
