@@ -214,9 +214,8 @@ do
 
   -- Gets called only once to parse everything out for the vimgrep, after that looks up directly.
   local parse_with_col = function(t)
-    local _, _, filename, lnum, col, text = string.find(t.value, [[(..-):(%d+):(%d+):(.*)]])
-
-    lnum, col = tonumber(lnum), tonumber(col)
+    local _, _, filename, lnum_s, col_s, text = string.find(t.value, [[(..-):(%d+):(%d+):(.*)]])
+    local lnum, col = tonumber(lnum_s), tonumber(col_s)
 
     filename = filename and utils.normalize_sep(filename)
     t.filename = filename
@@ -228,9 +227,8 @@ do
   end
 
   local parse_without_col = function(t)
-    local _, _, filename, lnum, text = string.find(t.value, [[(..-):(%d+):(.*)]])
-
-    lnum = tonumber(lnum)
+    local _, _, filename, lnum_s, text = string.find(t.value, [[(..-):(%d+):(.*)]])
+    local lnum = tonumber(lnum_s)
 
     filename = filename and utils.normalize_sep(filename)
     t.filename = filename
@@ -520,7 +518,7 @@ function make_entry.gen_from_lsp_symbols(opts)
     local msg
 
     if opts.show_line then
-      msg = vim.trim(vim.nonnil(api.nvim_buf_get_lines(bufnr, entry.lnum - 1, entry.lnum, false)[1], ""))
+      msg = vim.trim(api.nvim_buf_get_lines(bufnr, entry.lnum - 1, entry.lnum, false)[1] or "")
     end
 
     if hidden then

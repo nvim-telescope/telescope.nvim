@@ -86,9 +86,8 @@ That's the next step to scrolling.
 local resolver = {}
 local _resolve_map = {}
 
----@return never
-local throw_invalid_config_option = function(key, value)
-  error(string.format("Invalid configuration option for '%s': '%s'", key, tostring(value)), 2)
+local invalid_config_option = function(key, value)
+  return string.format("Invalid configuration option for '%s': '%s'", key, tostring(value))
 end
 
 -- Booleans
@@ -165,7 +164,7 @@ end] = function(selector, val)
         return v(selector, value)
       end
     end
-    throw_invalid_config_option("padding", value)
+    error(invalid_config_option("padding", value))
   end
 
   return function(...)
@@ -203,7 +202,7 @@ resolver.resolve_height = function(val)
       return v(3, val)
     end
   end
-  throw_invalid_config_option("height", val)
+  error(invalid_config_option("height", val))
 end
 
 --- Converts input to a function that returns the width.
@@ -235,7 +234,7 @@ resolver.resolve_width = function(val)
     end
   end
 
-  throw_invalid_config_option("width", val)
+  error(invalid_config_option("width", val))
 end
 
 --- Calculates the adjustment required to move the picker from the middle of the screen to
@@ -256,19 +255,19 @@ end
 ---@param anchor_padding integer padding to add to the anchor
 ---@return integer[] # row and col
 resolver.resolve_anchor_pos = function(anchor, p_width, p_height, max_columns, max_lines, anchor_padding)
-  anchor = anchor:upper()
+  local dir = anchor:upper()
   local pos = { 0, 0 }
-  if anchor == "CENTER" then
+  if dir == "CENTER" then
     return pos
   end
-  if anchor:find "W" then
+  if dir:find "W" then
     pos[1] = math.ceil((p_width - max_columns) / 2) + anchor_padding
-  elseif anchor:find "E" then
+  elseif dir:find "E" then
     pos[1] = math.ceil((max_columns - p_width) / 2) - anchor_padding
   end
-  if anchor:find "N" then
+  if dir:find "N" then
     pos[2] = math.ceil((p_height - max_lines) / 2) + anchor_padding
-  elseif anchor:find "S" then
+  elseif dir:find "S" then
     pos[2] = math.ceil((max_lines - p_height) / 2) - anchor_padding
   end
   return pos
@@ -309,7 +308,7 @@ resolver.win_option = function(val, default)
       results = val,
       prompt = val,
     }
-  elseif type(val) == "table" then
+  else
     assert(not vim.islist(val))
 
     local val_to_set = val[1]

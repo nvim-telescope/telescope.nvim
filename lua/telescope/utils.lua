@@ -386,7 +386,7 @@ utils.transform_path = function(opts, path)
   end
   path = utils.normalize_sep(path)
 
-  ---@type fun(opts:table, path: string): string, table?
+  ---@type table<any, any>|fun(opts:table, path: string): string, table?
   local path_display = vim.nonnil(opts.path_display, require("telescope.config").values.path_display)
 
   local transformed_path = path
