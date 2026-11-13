@@ -35,8 +35,8 @@ local fs = vim.fs
 local fn = vim.fn
 local api = vim.api
 
-local entry_display = require "telescope.pickers.entry_display"
-local utils = require "telescope.utils"
+local entry_display = require("telescope.pickers.entry_display")
+local utils = require("telescope.utils")
 
 local treesitter_type_highlight = {
   ["associated"] = "TSConstant",
@@ -214,9 +214,8 @@ do
 
   -- Gets called only once to parse everything out for the vimgrep, after that looks up directly.
   local parse_with_col = function(t)
-    local _, _, filename, lnum, col, text = string.find(t.value, [[(..-):(%d+):(%d+):(.*)]])
-
-    lnum, col = tonumber(lnum), tonumber(col)
+    local _, _, filename, lnum_s, col_s, text = string.find(t.value, [[(..-):(%d+):(%d+):(.*)]])
+    local lnum, col = tonumber(lnum_s), tonumber(col_s)
 
     filename = filename and utils.normalize_sep(filename)
     t.filename = filename
@@ -228,9 +227,8 @@ do
   end
 
   local parse_without_col = function(t)
-    local _, _, filename, lnum, text = string.find(t.value, [[(..-):(%d+):(.*)]])
-
-    lnum = tonumber(lnum)
+    local _, _, filename, lnum_s, text = string.find(t.value, [[(..-):(%d+):(.*)]])
+    local lnum = tonumber(lnum_s)
 
     filename = filename and utils.normalize_sep(filename)
     t.filename = filename
@@ -364,21 +362,21 @@ do
 end
 
 function make_entry.gen_from_git_stash(opts)
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = " ",
     items = {
       { width = 10 },
       opts.show_branch and { width = 15 } or "",
       { remaining = true },
     },
-  }
+  })
 
   local make_display = function(entry)
-    return displayer {
+    return displayer({
       { entry.value, "TelescopeResultsLineNr" },
       opts.show_branch and { entry.branch_name, "TelescopeResultsIdentifier" } or "",
       entry.commit_info,
-    }
+    })
   end
 
   return function(entry)
@@ -404,19 +402,19 @@ end
 function make_entry.gen_from_git_commits(opts)
   opts = opts or {}
 
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = " ",
     items = {
       { width = 8 },
       { remaining = true },
     },
-  }
+  })
 
   local make_display = function(entry)
-    return displayer {
+    return displayer({
       { entry.value, "TelescopeResultsIdentifier" },
       entry.msg,
-    }
+    })
   end
 
   return function(entry)
@@ -509,29 +507,29 @@ function make_entry.gen_from_lsp_symbols(opts)
     table.insert(display_items, #display_items, { width = opts.symbol_type_width or 8 })
   end
 
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = " ",
     hl_chars = { ["["] = "TelescopeBorder", ["]"] = "TelescopeBorder" },
     items = display_items,
-  }
+  })
   local type_highlight = vim.nonnil(opts.symbol_highlights or lsp_type_highlight)
 
   local make_display = function(entry)
     local msg
 
     if opts.show_line then
-      msg = vim.trim(vim.nonnil(api.nvim_buf_get_lines(bufnr, entry.lnum - 1, entry.lnum, false)[1], ""))
+      msg = vim.trim(api.nvim_buf_get_lines(bufnr, entry.lnum - 1, entry.lnum, false)[1] or "")
     end
 
     if hidden then
-      return displayer {
+      return displayer({
         entry.symbol_name,
         { entry.symbol_type:lower(), type_highlight[entry.symbol_type] },
         msg,
-      }
+      })
     else
       local display_path, path_style = utils.transform_path(opts, entry.filename)
-      return displayer {
+      return displayer({
         {
           display_path,
           function()
@@ -541,7 +539,7 @@ function make_entry.gen_from_lsp_symbols(opts)
         entry.symbol_name,
         { entry.symbol_type:lower(), type_highlight[entry.symbol_type] },
         msg,
-      }
+      })
     end
   end
 
@@ -549,7 +547,7 @@ function make_entry.gen_from_lsp_symbols(opts)
   return function(entry)
     local filename = vim.nonnil(entry.filename, get_filename(entry.bufnr))
     local symbol_msg = entry.text
-    local symbol_type, symbol_name = symbol_msg:match "%[(.+)%]%s+(.*)"
+    local symbol_type, symbol_name = symbol_msg:match("%[(.+)%]%s+(.*)")
     local ordinal = ""
     if not hidden and filename then
       ordinal = filename .. " "
@@ -582,7 +580,7 @@ function make_entry.gen_from_buffer(opts)
     icon_width = fn.strdisplaywidth(icon)
   end
 
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = " ",
     items = {
       { width = opts.bufnr_width },
@@ -590,7 +588,7 @@ function make_entry.gen_from_buffer(opts)
       { width = icon_width },
       { remaining = true },
     },
-  }
+  })
 
   local cwd = utils.path_expand(opts.cwd or vim.uv.cwd())
 
@@ -603,7 +601,7 @@ function make_entry.gen_from_buffer(opts)
     end
     local icon, hl_group = utils.get_devicons(entry.filename, disable_devicons)
 
-    return displayer {
+    return displayer({
       { entry.bufnr, "TelescopeResultsNumber" },
       { entry.indicator, "TelescopeResultsComment" },
       { icon, hl_group },
@@ -613,7 +611,7 @@ function make_entry.gen_from_buffer(opts)
           return path_style
         end,
       },
-    }
+    })
   end
 
   return function(entry)
@@ -665,10 +663,10 @@ function make_entry.gen_from_treesitter(opts)
     table.insert(display_items, 2, { width = 6 })
   end
 
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = " ",
     items = display_items,
-  }
+  })
 
   local type_highlight = opts.symbol_highlights or treesitter_type_highlight
 
@@ -745,23 +743,23 @@ function make_entry.gen_from_apropos(opts)
     end
   end
 
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = " ",
     items = {
       { width = 30 },
       { remaining = true },
     },
-  }
+  })
 
   local make_display = function(entry)
-    return displayer {
+    return displayer({
       { entry.keyword, "TelescopeResultsFunction" },
       entry.description,
-    }
+    })
   end
 
   return function(line)
-    local keyword, cmd, section, desc = line:match "^((.-)%s*%(([^)]+)%).-)%s+%-%s+(.*)$"
+    local keyword, cmd, section, desc = line:match("^((.-)%s*%(([^)]+)%).-)%s+%-%s+(.*)$")
     -- apropos might return alternatives for the cmd which are split on `,` and breaks everything else
     -- for example on void linux it will return `alacritty, Alacritty` which will later result in
     -- `man 1 alacritty, Alacritty`. So we just take the first one.
@@ -796,21 +794,21 @@ function make_entry.gen_from_marks(opts)
 end
 
 function make_entry.gen_from_registers(opts)
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = " ",
     hl_chars = { ["["] = "TelescopeBorder", ["]"] = "TelescopeBorder" },
     items = {
       { width = 3 },
       { remaining = true },
     },
-  }
+  })
 
   local make_display = function(entry)
     local content = entry.content
-    return displayer {
+    return displayer({
       { "[" .. entry.value .. "]", "TelescopeResultsNumber" },
       type(content) == "string" and content:gsub("\n", "\\n") or content,
-    }
+    })
   end
 
   return function(entry)
@@ -847,7 +845,7 @@ function make_entry.gen_from_keymaps(opts)
     return ret
   end
 
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = "▏",
     items = {
       { width = 3 },
@@ -855,14 +853,14 @@ function make_entry.gen_from_keymaps(opts)
       { width = 2 },
       { remaining = true },
     },
-  }
+  })
   local make_display = function(entry)
-    return displayer {
+    return displayer({
       entry.mode,
       get_lhs(entry),
       get_attr(entry),
       get_desc(entry),
-    }
+    })
   end
 
   return function(entry)
@@ -896,19 +894,19 @@ function make_entry.gen_from_highlights(opts)
 end
 
 function make_entry.gen_from_picker(opts)
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = " │ ",
     items = {
       { width = 0.5 },
       { remaining = true },
     },
-  }
+  })
 
   local make_display = function(entry)
-    return displayer {
+    return displayer({
       entry.value.prompt_title,
       entry.value.default_text,
-    }
+    })
   end
 
   return function(entry)
@@ -922,16 +920,16 @@ function make_entry.gen_from_picker(opts)
 end
 
 function make_entry.gen_from_buffer_lines(opts)
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = " │ ",
     items = {
       { width = 5 },
       { remaining = true },
     },
-  }
+  })
 
   local make_display = function(entry)
-    return displayer {
+    return displayer({
       { entry.lnum, opts.lnum_highlight_group or "TelescopeResultsSpecialComment" },
       {
         entry.text,
@@ -952,7 +950,7 @@ function make_entry.gen_from_buffer_lines(opts)
           return result
         end,
       },
-    }
+    })
   end
 
   return function(entry)
@@ -971,7 +969,7 @@ function make_entry.gen_from_buffer_lines(opts)
 end
 
 function make_entry.gen_from_vimoptions(opts)
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = "",
     hl_chars = { ["["] = "TelescopeBorder", ["]"] = "TelescopeBorder" },
     items = {
@@ -980,15 +978,15 @@ function make_entry.gen_from_vimoptions(opts)
       { width = 11 },
       { remaining = true },
     },
-  }
+  })
 
   local make_display = function(entry)
-    return displayer {
+    return displayer({
       { entry.value.name, "Keyword" },
       { "[" .. entry.value.type .. "]", "Type" },
       { "[" .. entry.value.scope .. "]", "Identifier" },
       utils.display_termcodes(tostring(entry.value.value)),
-    }
+    })
   end
 
   return function(o)
@@ -1031,10 +1029,10 @@ function make_entry.gen_from_ctags(opts)
     table.insert(display_items, idx, { width = 30 })
   end
 
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = " │ ",
     items = display_items,
-  }
+  })
 
   local make_display = function(entry)
     local display_path, path_style = utils.transform_path(opts, entry.filename)
@@ -1045,12 +1043,12 @@ function make_entry.gen_from_ctags(opts)
     end
 
     if hidden then
-      return displayer {
+      return displayer({
         entry.tag,
         scode,
-      }
+      })
     else
-      return displayer {
+      return displayer({
         {
           display_path,
           function()
@@ -1060,7 +1058,7 @@ function make_entry.gen_from_ctags(opts)
         entry.kind,
         entry.tag,
         scode,
-      }
+      })
     end
   end
 
@@ -1138,16 +1136,13 @@ function make_entry.gen_from_diagnostics(opts)
   end
 
   local type_diagnostic = vim.diagnostic.severity
-  local signs = (function()
-    if opts.no_sign then
-      return
-    end
-    local signs = {}
+  local signs
+  if not opts.no_sign then
+    signs = {}
     for num, severity in ipairs(type_diagnostic) do
       signs[severity] = diagnostic_signs[num] or severity:sub(1, 1)
     end
-    return signs
-  end)()
+  end
 
   local sign_width
   if opts.disable_coordinates then
@@ -1169,10 +1164,10 @@ function make_entry.gen_from_diagnostics(opts)
   if not hidden then
     table.insert(display_items, 2, line_width_opts)
   end
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = "▏",
     items = display_items,
-  }
+  })
 
   local make_display = function(entry)
     local display_path, path_style = utils.transform_path(opts, entry.filename)
@@ -1185,7 +1180,7 @@ function make_entry.gen_from_diagnostics(opts)
       "DiagnosticSign" .. entry.type,
     }
 
-    return displayer {
+    return displayer({
       line_info,
       entry.text,
       {
@@ -1194,7 +1189,7 @@ function make_entry.gen_from_diagnostics(opts)
           return path_style
         end,
       },
-    }
+    })
   end
 
   local errlist_type_map = {
@@ -1220,7 +1215,7 @@ function make_entry.gen_from_diagnostics(opts)
 end
 
 function make_entry.gen_from_autocommands(opts)
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = "▏",
     items = {
       { width = 14 },
@@ -1228,15 +1223,15 @@ function make_entry.gen_from_autocommands(opts)
       { width = 16 },
       { remaining = true },
     },
-  }
+  })
 
   local make_display = function(entry)
-    return displayer {
+    return displayer({
       { entry.value.event, "vimAutoEvent" },
       { entry.value.group_name, "vimAugroup" },
       { entry.value.pattern, "vimAutoCmdSfxList" },
       entry.value.command,
-    }
+    })
   end
 
   return function(entry)
@@ -1264,7 +1259,7 @@ function make_entry.gen_from_autocommands(opts)
 end
 
 function make_entry.gen_from_commands(opts)
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = "▏",
     items = {
       { width = 0.2 },
@@ -1273,7 +1268,7 @@ function make_entry.gen_from_commands(opts)
       { width = 11 },
       { remaining = true },
     },
-  }
+  })
 
   local make_display = function(entry)
     local attrs = ""
@@ -1286,13 +1281,13 @@ function make_entry.gen_from_commands(opts)
     if entry.register then
       attrs = attrs .. '"'
     end
-    return displayer {
+    return displayer({
       { entry.name, "TelescopeResultsIdentifier" },
       attrs,
       entry.nargs,
       entry.complete or "",
       entry.definition:gsub("\n", " "),
-    }
+    })
   end
 
   return function(entry)
@@ -1324,14 +1319,14 @@ function make_entry.gen_from_git_status(opts)
   opts = opts or {}
 
   local col_width = ((opts.git_icons and opts.git_icons.added) and opts.git_icons.added:len() + 2) or 2
-  local displayer = entry_display.create {
+  local displayer = entry_display.create({
     separator = "",
     items = {
       { width = col_width },
       { width = col_width },
       { remaining = true },
     },
-  }
+  })
 
   local icons = vim.tbl_extend("keep", opts.git_icons or {}, git_icon_defaults)
 
@@ -1354,7 +1349,7 @@ function make_entry.gen_from_git_status(opts)
     local display_path, path_style = utils.transform_path(opts, entry.path)
 
     local empty_space = " "
-    return displayer {
+    return displayer({
       { status_x.icon or empty_space, status_x.hl },
       { status_y.icon or empty_space, status_y.hl },
       {
@@ -1363,7 +1358,7 @@ function make_entry.gen_from_git_status(opts)
           return path_style
         end,
       },
-    }
+    })
   end
 
   return function(entry)
@@ -1371,7 +1366,7 @@ function make_entry.gen_from_git_status(opts)
       return nil
     end
 
-    local mod, file = entry:match "^(..) (.+)$"
+    local mod, file = entry:match("^(..) (.+)$")
     -- Ignore entries that are the PATH in XY ORIG_PATH PATH
     -- (renamed or copied files)
     if not mod then

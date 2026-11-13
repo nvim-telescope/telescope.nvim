@@ -1,8 +1,8 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it = t.describe, t.it
 
-local query = require "telescope.algos.query"
+local query = require("telescope.algos.query")
 local eq = assert.eq
 
 local function matches(prompt, line, case_mode)
@@ -43,7 +43,7 @@ describe("query syntax", function()
   end)
 
   it("treats lone operators like fzf", function()
-    eq(0, #query.parse "! ^ '")
+    eq(0, #query.parse("! ^ '"))
     assert(matches("|", "a|b")) -- no term before it: literal
     assert(matches("$", "a$b"))
   end)

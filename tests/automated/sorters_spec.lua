@@ -1,8 +1,8 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it, before_each, after_each = t.describe, t.it, t.before_each, t.after_each
 
-local sorters = require "telescope.sorters"
+local sorters = require("telescope.sorters")
 
 describe("get_substr_matcher", function()
   local function with_smartcase(smartcase, case)
@@ -35,7 +35,7 @@ describe("get_substr_matcher", function()
   end
 
   describe("when smartcase=OFF", function()
-    for _, case in ipairs {
+    for _, case in ipairs({
       {
         msg = "doesn't match",
         prompt = "abc def",
@@ -57,13 +57,13 @@ describe("get_substr_matcher", function()
         expected_score = -1,
         expected_highlights = { { start = 5, finish = 7 } },
       },
-    } do
+    }) do
       with_smartcase(false, case)
     end
   end)
 
   describe("when smartcase=ON", function()
-    for _, case in ipairs {
+    for _, case in ipairs({
       {
         msg = "doesn't match",
         prompt = "abc def",
@@ -85,7 +85,7 @@ describe("get_substr_matcher", function()
         expected_score = 3,
         expected_highlights = { { start = 1, finish = 3 }, { start = 5, finish = 7 } },
       },
-    } do
+    }) do
       with_smartcase(true, case)
     end
   end)
@@ -93,7 +93,7 @@ end)
 
 describe("prefilter", function()
   it("highlights the prompt without the tag", function()
-    local sorter = sorters.prefilter { sorter = sorters.get_fzy_sorter(), tag = "symbol_type" }
+    local sorter = sorters.prefilter({ sorter = sorters.get_fzy_sorter(), tag = "symbol_type" })
     assert.eq({ 14, 15, 16 }, sorter:highlighter(":function: par", "a:fun ction: parse"))
   end)
 end)

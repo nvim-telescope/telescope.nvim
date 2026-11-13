@@ -1,7 +1,7 @@
 -- Don't have scrolloff, it makes things weird.
-vim.opt_local.scrolloff = 0
-vim.opt_local.scrollbind = false
+vim.wo[0][0].scrolloff = 0
+vim.wo[0][0].scrollbind = false
 
-vim.opt_local.signcolumn = "no"
+vim.wo[0][0].signcolumn = "no"
 
-vim.opt_local.foldenable = false
+vim.wo[0][0].foldenable = false

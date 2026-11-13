@@ -1,7 +1,7 @@
 local uv = vim.uv
 
 local conf = require("telescope.config").values
-local utils = require "telescope.utils"
+local utils = require("telescope.utils")
 
 ---@brief
 --- A base implementation of a prompt history that provides a simple history
@@ -24,6 +24,7 @@ local utils = require "telescope.utils"
 local write_async = function(path, txt, flag)
   uv.fs_open(path, flag, 438, function(open_err, fd)
     assert(not open_err, open_err)
+    ---@cast fd integer
     uv.fs_write(fd, txt, -1, function(write_err)
       assert(not write_err, write_err)
       uv.fs_close(fd, function(close_err)
@@ -45,7 +46,7 @@ local M = {}
 ---@field path string: Will point to the location of the history file
 ---@field limit string: Will have the limit of the history. Can be nil, if limit is disabled.
 ---@field content table: History table. Needs to be filled by your own History implementation
----@field index number: Used to keep track of the next or previous index. Default is #content + 1
+---@field index integer: Used to keep track of the next or previous index. Default is #content + 1
 ---@field cycle_wrap boolean: Controls if history will wrap on reaching beginning or end
 M.History = {}
 M.History.__index = M.History
@@ -109,7 +110,7 @@ end
 --- Will return the next history item. Can be nil if there are no next items
 ---@param line string: the current line
 ---@param picker table: the current picker object
----@return string: the next history item
+---@return string|false|nil: the next history item
 function M.History:get_next(line, picker)
   if not self.enabled then
     utils.notify("History:get_next", {
@@ -138,7 +139,7 @@ end
 --- Will return the previous history item. Can be nil if there are no previous items
 ---@param line string: the current line
 ---@param picker table: the current picker object
----@return string: the previous history item
+---@return string|false|nil: the previous history item
 function M.History:get_prev(line, picker)
   if not self.enabled then
     utils.notify("History:get_prev", {
@@ -172,7 +173,7 @@ end
 ---
 --- It will keep one unified history across all pickers.
 M.get_simple_history = function()
-  return M.new {
+  return M.new({
     init = function(obj)
       if not uv.fs_stat(obj.path) then
         vim.fs.mkdir(vim.fs.dirname(obj.path), { parents = true })
@@ -208,7 +209,7 @@ M.get_simple_history = function()
         self:reset()
       end
     end,
-  }
+  })
 end
 
 return M

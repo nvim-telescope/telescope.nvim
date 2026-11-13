@@ -1,31 +1,31 @@
-require "telescope"
+require("telescope")
 
 local fn = vim.fn
 local api = vim.api
 
-local _async = require "telescope._async"
-local ui = require "telescope.pickers.ui"
+local _async = require("telescope._async")
+local ui = require("telescope.pickers.ui")
 
-local actions = require "telescope.actions"
-local config = require "telescope.config"
-local debounce = require "telescope.debounce"
-local log = require "telescope.log"
-local mappings = require "telescope.mappings"
-local state = require "telescope.state"
-local utils = require "telescope.utils"
+local actions = require("telescope.actions")
+local config = require("telescope.config")
+local debounce = require("telescope.debounce")
+local log = require("telescope.log")
+local mappings = require("telescope.mappings")
+local state = require("telescope.state")
+local utils = require("telescope.utils")
 
-local entry_display = require "telescope.pickers.entry_display"
-local p_highlighter = require "telescope.pickers.highlights"
-local p_scroller = require "telescope.pickers.scroller"
-local p_window = require "telescope.pickers.window"
-local Layout = require "telescope.pickers.layout"
+local entry_display = require("telescope.pickers.entry_display")
+local p_highlighter = require("telescope.pickers.highlights")
+local p_scroller = require("telescope.pickers.scroller")
+local p_window = require("telescope.pickers.window")
+local Layout = require("telescope.pickers.layout")
 
-local EntryManager = require "telescope.entry_manager"
-local MultiSelect = require "telescope.pickers.multi"
+local EntryManager = require("telescope.entry_manager")
+local MultiSelect = require("telescope.pickers.multi")
 
-local ns_telescope_matching = api.nvim_create_namespace "telescope_matching"
-local ns_telescope_prompt = api.nvim_create_namespace "telescope_prompt"
-local ns_telescope_prompt_prefix = api.nvim_create_namespace "telescope_prompt_prefix"
+local ns_telescope_matching = api.nvim_create_namespace("telescope_matching")
+local ns_telescope_prompt = api.nvim_create_namespace("telescope_prompt")
+local ns_telescope_prompt_prefix = api.nvim_create_namespace("telescope_prompt_prefix")
 
 -- while results come in, draw them at most this often (ms)
 local DRAW_INTERVAL = 50
@@ -37,6 +37,7 @@ if not ok_new_tab then
     return {}
   end
 end
+---@cast new_tab fun(narray: integer, nhash: integer): table
 
 -- Window options produced by layout strategies and passed to `telescope.pickers.ui`.
 ---@class telescope_popup_options
@@ -82,17 +83,17 @@ local function default_create_layout(picker)
     opts.borderhighlight = role.hl .. "Border"
     opts.titlehighlight = role.hl .. "Title"
     local win, border = picker:_create_window(nil, opts)
-    self[name] = Layout.Window { winid = win, bufnr = api.nvim_win_get_buf(win), border = border }
+    self[name] = Layout.Window({ winid = win, bufnr = api.nvim_win_get_buf(win), border = border })
     return win
   end
 
-  local layout = Layout {
+  local layout = Layout({
     picker = picker,
     ---@param self TelescopeLayout
     mount = function(self)
       local popup_opts = window_options()
       -- the prompt comes last: it is entered
-      for _, name in ipairs { "results", "preview", "prompt" } do
+      for _, name in ipairs({ "results", "preview", "prompt" }) do
         if popup_opts[name] then
           create_window(self, name, popup_opts[name])
         end
@@ -123,7 +124,7 @@ local function default_create_layout(picker)
           picker.previewer.state.winid = preview_win
         end
       elseif popup_opts.preview then
-        ui.move(preview_win, popup_opts.preview)
+        ui.move(preview_win --[[@as integer]], popup_opts.preview)
       elseif preview_win then
         utils.win_delete("preview_win", preview_win, true)
         self.preview = nil
@@ -131,7 +132,7 @@ local function default_create_layout(picker)
       ui.move(self.prompt.winid, popup_opts.prompt)
       ui.move(self.results.winid, popup_opts.results)
     end,
-  }
+  })
 
   return layout
 end
@@ -149,11 +150,11 @@ function Picker:new(opts)
   opts = opts or {}
 
   if opts.layout_strategy and opts.get_window_options then
-    error "layout_strategy and get_window_options are not compatible keys"
+    error("layout_strategy and get_window_options are not compatible keys")
   end
 
   if fn.win_gettype() == "command" then
-    error "Can't open telescope from command-line window. See E11"
+    error("Can't open telescope from command-line window. See E11")
   end
 
   -- We need to clear at the beginning not on close because after close we can still have select:post
@@ -181,7 +182,7 @@ function Picker:new(opts)
 
     initial_mode = vim.nonnil(opts.initial_mode, config.values.initial_mode),
     _original_mode = api.nvim_get_mode().mode,
-    debounce = vim.nonnil(tonumber(opts.debounce), nil),
+    debounce = opts.debounce,
 
     _finder_attached = true,
     default_text = opts.default_text,
@@ -237,10 +238,10 @@ function Picker:new(opts)
 
     cache_picker = config.resolve_table_opts(opts.cache_picker, vim.deepcopy(config.values.cache_picker)),
 
-    __scrolling_limit = tonumber(vim.nonnil(opts.temp__scrolling_limit, 250)),
+    __scrolling_limit = vim.nonnil(opts.temp__scrolling_limit, 250),
 
     __locations_input = vim.nonnil(opts.__locations_input, false),
-  }, self)
+  }, self) --[[@as Picker]]
 
   obj.create_layout = opts.create_layout or config.values.create_layout or default_create_layout
   obj.get_window_options = opts.get_window_options or p_window.get_window_options
@@ -249,7 +250,7 @@ function Picker:new(opts)
     if obj.all_previewers[1] == nil then
       obj.all_previewers = { obj.all_previewers }
     end
-    obj.previewer = obj.all_previewers[obj.current_previewer_index]
+    obj.previewer = obj.all_previewers[obj.current_previewer_index] --[[@as table]]
     if
       obj.preview_title == nil
       or #obj.all_previewers > 1
@@ -265,7 +266,7 @@ function Picker:new(opts)
 
   local __hide_previewer = opts.__hide_previewer
   if __hide_previewer then
-    obj.hidden_previewer = obj.previewer
+    obj.hidden_previewer = obj.previewer --[[@as table|false]]
     obj.previewer = nil
   else
     obj.hidden_previewer = nil
@@ -286,8 +287,8 @@ end
 
 --- Take an index and get a row.
 ---@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
----@param index number: the index in line_manager
----@return number: the row for the picker to display in
+---@param index integer: the index in line_manager
+---@return integer: the row for the picker to display in
 function Picker:get_row(index)
   if self.sorting_strategy == "ascending" then
     return index - 1
@@ -298,8 +299,8 @@ end
 
 --- Take a row and get an index
 ---@note: Rows are 0-indexed, and `index` is 1 indexed (table index)
----@param row number: The row being displayed
----@return number: The index in line_manager
+---@param row integer: The row being displayed
+---@return integer: The index in line_manager
 function Picker:get_index(row)
   if self.sorting_strategy == "ascending" then
     return row + 1
@@ -309,7 +310,7 @@ function Picker:get_index(row)
 end
 
 --- Get the row number of the "best" entry
----@return number: the number of the "reset" row
+---@return integer: the number of the "reset" row
 function Picker:get_reset_row()
   if self.sorting_strategy == "ascending" then
     return 0
@@ -328,10 +329,10 @@ end
 
 --- Clear rows that are after the final remaining entry
 ---@note: useful when number of remaining results is narrowed down
----@param results_bufnr number: the buffer number of the results buffer
+---@param results_bufnr integer: the buffer number of the results buffer
 function Picker:clear_extra_rows(results_bufnr)
   if self:is_done() then
-    log.trace "Not clearing due to being already complete"
+    log.trace("Not clearing due to being already complete")
     return
   end
 
@@ -363,10 +364,10 @@ function Picker:clear_extra_rows(results_bufnr)
 end
 
 --- Highlight the entry corresponding to the given row
----@param results_bufnr number: the buffer number of the results buffer
----@param prompt table: table with information about the prompt buffer
+---@param results_bufnr integer: the buffer number of the results buffer
+---@param prompt string: the prompt
 ---@param display string: the text corresponding to the given row
----@param row number: the number of the chosen row
+---@param row integer: the number of the chosen row
 function Picker:highlight_one_row(results_bufnr, prompt, display, row)
   if not self.sorter.highlighter then
     return
@@ -386,7 +387,7 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
         start = hl
         finish = hl
       else
-        error "Invalid higlighter fn"
+        error("Invalid higlighter fn")
       end
 
       -- extmark instead of `vim.hl.range()`, which is much slower (runs for every displayed row)
@@ -404,7 +405,7 @@ function Picker:highlight_one_row(results_bufnr, prompt, display, row)
 end
 
 --- Check if the given row number can be selected
----@param row number: the number of the chosen row in the results buffer
+---@param row integer: the number of the chosen row in the results buffer
 ---@return boolean
 function Picker:can_select_row(row)
   if self.sorting_strategy == "ascending" then
@@ -517,6 +518,7 @@ function Picker:find()
     })
   end
 
+  ---@async
   local main_loop = function()
     self.sorter:_init()
 
@@ -552,13 +554,13 @@ function Picker:find()
 
         if line_number or column_number then
           state.set_global_key("prompt_location", { row = line_number, col = column_number })
-        elseif state.get_global_key "prompt_location" then
+        elseif state.get_global_key("prompt_location") then
           state.set_global_key("prompt_location", nil)
         end
 
         -- it is important to continue behaving as if there is no location in prompt
         prompt = filename
-      elseif state.get_global_key "prompt_location" then
+      elseif state.get_global_key("prompt_location") then
         -- in case new picker that does not support locations is opened clear the location
         state.set_global_key("prompt_location", nil)
       end
@@ -611,7 +613,7 @@ function Picker:find()
 
         local diff_time = (vim.uv.hrtime() - start_time) / 1e6
         if self.debounce and diff_time < self.debounce then
-          vim.async.sleep(self.debounce - diff_time)
+          vim.async.sleep(math.floor(self.debounce - diff_time))
         end
       else
         self:_resume_picker()
@@ -623,7 +625,7 @@ function Picker:find()
   api.nvim_buf_attach(self.prompt_bufnr, false, {
     on_lines = function()
       if self._finder_attached then
-        status_updater { completed = false }
+        status_updater({ completed = false })
         self._on_lines()
       end
     end,
@@ -765,8 +767,9 @@ function Picker:delete_selection(delete_cb)
     used_multi_select = false
   end
 
+  local results = assert(self.finder.results, "delete_selection needs a finder with static results")
   local selection_index = {}
-  for result_index, result_entry in pairs(self.finder.results) do
+  for result_index, result_entry in pairs(results) do
     if vim.tbl_contains(delete_selections, result_entry) then
       table.insert(selection_index, result_index)
     end
@@ -778,9 +781,9 @@ function Picker:delete_selection(delete_cb)
     return x > y
   end)
   for _, index in ipairs(selection_index) do
-    local delete_cb_return = delete_cb(self.finder.results[index])
+    local delete_cb_return = delete_cb(results[index])
     if delete_cb_return == nil or delete_cb_return == true then
-      table.remove(self.finder.results, index)
+      table.remove(results, index)
     end
   end
 
@@ -794,7 +797,7 @@ function Picker:delete_selection(delete_cb)
   end, 50)
 end
 
----@param text string text to set as prompt
+---@param text? string text to set as prompt
 ---@param reset boolean? whether to replace prompt with text entirely or just append
 function Picker:set_prompt(text, reset)
   reset = vim.nonnil(reset, true)
@@ -814,13 +817,13 @@ function Picker.close_windows(status)
 end
 
 --- Get the entry table of the current selection
----@return table
+---@return table?
 function Picker:get_selection()
   return self._selection_entry
 end
 
 --- Get the row number of the current selection
----@return number
+---@return integer
 function Picker:get_selection_row()
   if self._selection_row then
     -- If the current row is no longer selectable than reduce it to num_results - 1, so the next selectable row.
@@ -844,13 +847,13 @@ function Picker:get_selection_row()
 end
 
 --- Move the current selection by `change` steps
----@param change number
+---@param change integer
 function Picker:move_selection(change)
   self:set_selection(self:get_selection_row() + change)
 end
 
 --- Add the entry of the given row to the multi-select object
----@param row number: the number of the chosen row
+---@param row integer: the number of the chosen row
 function Picker:add_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:add(entry)
@@ -861,7 +864,7 @@ function Picker:add_selection(row)
 end
 
 --- Remove the entry of the given row to the multi-select object
----@param row number: the number of the chosen row
+---@param row integer: the number of the chosen row
 function Picker:remove_selection(row)
   local entry = self.manager:get_entry(self:get_index(row))
   self._multi:drop(entry)
@@ -872,8 +875,8 @@ function Picker:remove_selection(row)
 end
 
 --- Check if the given row is in the multi-select object
----@param entry table: table with information about the chosen entry
----@return number: the "count" associated to the entry in the multi-select
+---@param entry table?: table with information about the chosen entry
+---@return integer?: the "count" associated to the entry in the multi-select
 --- object (if present), `nil` otherwise
 function Picker:is_multi_selected(entry)
   return self._multi:is_selected(entry)
@@ -887,7 +890,7 @@ end
 
 --- Toggle the given row in and out of the multi-select object.
 --- Also updates the highlighting for the given entry
----@param row number: the number of the chosen row
+---@param row integer: the number of the chosen row
 function Picker:toggle_selection(row)
   local entry = self.manager and self.manager:get_entry(self:get_index(row))
   if entry == nil then
@@ -944,7 +947,7 @@ function Picker:change_prompt_prefix(new_prefix, hl_group)
 end
 
 --- Reset the prompt to the provided `text`
----@param text string
+---@param text? string
 function Picker:reset_prompt(text)
   local prompt_text = self.prompt_prefix .. (text or "")
   api.nvim_buf_set_lines(self.prompt_bufnr, 0, -1, false, { prompt_text })
@@ -955,11 +958,14 @@ function Picker:reset_prompt(text)
   end
 end
 
----@param finder finder: telescope finder (see telescope/finders.lua)
----@param opts table: options to pass when refreshing the picker
----@field new_prefix string|table: either as string or { new_string, hl_group }
----@field reset_prompt bool: whether to reset the prompt
----@field multi MultiSelect: multi-selection to persist upon renewing finder (see telescope/pickers/multi.lua)
+---@class telescope.picker.refresh.opts
+---@field new_prefix? string|table either as string or { new_string, hl_group }
+---@field prefix_hl_group? string highlight group of a string `new_prefix`
+---@field reset_prompt? boolean whether to reset the prompt
+---@field multi? MultiSelect multi-selection to persist upon renewing finder (see telescope/pickers/multi.lua)
+
+---@param finder? telescope.Finder: telescope finder (see telescope/finders.lua)
+---@param opts? telescope.picker.refresh.opts: options to pass when refreshing the picker
 function Picker:refresh(finder, opts)
   opts = opts or {}
   if opts.new_prefix then
@@ -987,7 +993,7 @@ function Picker:refresh(finder, opts)
 end
 
 ---Set the selection to the provided `row`
----@param row number
+---@param row integer
 function Picker:set_selection(row)
   if not self.manager then
     return
@@ -1021,7 +1027,7 @@ function Picker:set_selection(row)
 
   local entry = self.manager:get_entry(self:get_index(row))
 
-  local prompt_location = state.get_global_key "prompt_location"
+  local prompt_location = state.get_global_key("prompt_location")
   if entry and prompt_location then
     entry.lnum = prompt_location.row or 0
     if prompt_location.col and prompt_location.col > 0 then
@@ -1042,17 +1048,18 @@ function Picker:set_selection(row)
     return
   end
 
-  local old_entry
+  local old_entry ---@type table?
 
   -- entry displays and sorter highlighters are user code: don't let their errors break selection
   local set_ok, set_errmsg = pcall(function()
     local prompt = self:_get_prompt()
 
     -- Check if previous selection is still visible
-    if self._selection_entry and self.manager:find_entry(self._selection_entry) then
+    local old_index = self._selection_entry and self.manager:find_entry(self._selection_entry)
+    if old_index then
       -- Find old selection, and update prefix and highlights
       old_entry = self._selection_entry
-      local old_row = self:get_row(self.manager:find_entry(old_entry))
+      local old_row = self:get_row(old_index)
 
       self._selection_entry = entry
 
@@ -1070,12 +1077,12 @@ function Picker:set_selection(row)
     display = caret .. display
 
     if not api.nvim_buf_is_valid(results_bufnr) then
-      log.debug "Invalid buf somehow..."
+      log.debug("Invalid buf somehow...")
       return
     end
 
     -- don't highlight any whitespace at the end of caret
-    self.highlighter:hi_selection(row, caret:match "(.*%S)")
+    self.highlighter:hi_selection(row, caret:match("(.*%S)"))
     self.highlighter:hi_sorter(row, prompt, display)
 
     self.highlighter:hi_multiselect(row, self:is_multi_selected(entry))
@@ -1151,17 +1158,20 @@ function Picker:refresh_previewer()
       local new_title = self.previewer:title(self._selection_entry, config.values.dynamic_preview_title)
       if new_title ~= nil and new_title ~= self.preview_title then
         self.preview_title = new_title
-        self.layout.preview.border:change_title(new_title)
+        if self.layout.preview then
+          self.layout.preview.border:change_title(new_title)
+        end
       end
     end
   end
 end
 
 function Picker:cycle_previewers(next)
-  local size = #self.all_previewers
-  if size == 1 then
+  local all_previewers = self.all_previewers
+  if not all_previewers or #all_previewers <= 1 then
     return
   end
+  local size = #all_previewers
 
   self.current_previewer_index = self.current_previewer_index + next
   if self.current_previewer_index > size then
@@ -1171,10 +1181,10 @@ function Picker:cycle_previewers(next)
   end
 
   if self.previewer then
-    self.previewer = self.all_previewers[self.current_previewer_index]
+    self.previewer = all_previewers[self.current_previewer_index]
     self:refresh_previewer()
   elseif self.hidden_previewer then
-    self.hidden_previewer = self.all_previewers[self.current_previewer_index]
+    self.hidden_previewer = all_previewers[self.current_previewer_index]
   end
 end
 
@@ -1182,7 +1192,7 @@ end
 --- results after it). They are drawn by `_draw_results`: right away if the last draw is at least
 --- `DRAW_INTERVAL` ago, else after that delay. So results still fill in while a finder streams them,
 --- but each row is drawn once per batch instead of on every insertion; the completor draws the rest.
----@param index number
+---@param index integer
 function Picker:_results_changed(index)
   if not self._dirty_from or index < self._dirty_from then
     self._dirty_from = index
@@ -1289,7 +1299,7 @@ function Picker:_on_complete()
 end
 
 --- Close all open Telescope pickers
-function Picker:close_existing_pickers()
+function Picker.close_existing_pickers(_)
   for _, prompt_bufnr in ipairs(state.get_existing_prompt_bufnrs()) do
     pcall(actions.close, prompt_bufnr)
   end
@@ -1297,8 +1307,8 @@ end
 
 --- Returns a function that sets virtual text for the count indicator
 --- e.g. "10/50" as "filtered"/"processed"
----@param prompt_win number
----@param prompt_bufnr number
+---@param prompt_win integer
+---@param prompt_bufnr integer
 ---@return function
 function Picker:get_status_updater(prompt_win, prompt_bufnr)
   return function(opts)
@@ -1329,7 +1339,7 @@ end
 --- as appropriate and runs the sorters score function. It returns true once the find is stale.
 ---@param prompt string
 ---@param status_updater function
----@return function
+---@return fun(entry: table?): boolean?
 function Picker:get_result_processor(prompt, status_updater)
   local running = { completed = false } -- no table per result
   local ignore_patterns = self.file_ignore_patterns or {}
@@ -1353,7 +1363,7 @@ function Picker:get_result_processor(prompt, status_updater)
   end
 
   local cb_filter = function(_)
-    self:_increment "filtered"
+    self:_increment("filtered")
   end
 
   return function(entry)
@@ -1386,7 +1396,7 @@ function Picker:get_result_processor(prompt, status_updater)
       end
     end
 
-    self:_increment "processed"
+    self:_increment("processed")
 
     self.sorter:score(prompt, entry, cb_add, cb_filter)
   end
@@ -1420,6 +1430,10 @@ function Picker:_narrowed_candidates(discarded)
 end
 
 --- Process the narrowed `candidates` like a static finder would process its results.
+---@async
+---@param candidates { list: table[], n: integer, processed: integer }
+---@param process_result fun(entry: table?): boolean?
+---@param process_complete fun()
 function Picker:_process_candidates(candidates, process_result, process_complete)
   -- count the skipped entries as processed and filtered, as the finder would have
   local skipped = candidates.processed - candidates.n
@@ -1429,7 +1443,7 @@ function Picker:_process_candidates(candidates, process_result, process_complete
 end
 
 --- Handles updating the picker after all the entries are scored/processed.
----@param results_bufnr number
+---@param results_bufnr integer
 ---@param prompt string
 ---@param status_updater function
 function Picker:get_result_completor(results_bufnr, prompt, status_updater)
@@ -1441,7 +1455,7 @@ function Picker:get_result_completor(results_bufnr, prompt, status_updater)
     self:_draw_results()
     self:_do_selection(prompt)
 
-    status_updater { completed = true }
+    status_updater({ completed = true })
 
     self:clear_extra_rows(results_bufnr)
     self.sorter:_finish(prompt)
@@ -1494,7 +1508,7 @@ function Picker:_do_selection(prompt)
     if self._selection_entry then
       local old_entry, old_row = self._selection_entry, self._selection_row
       self:reset_selection() -- required to reset selection before updating prefix
-      if old_row >= 0 then
+      if old_row and old_row >= 0 then
         self:update_prefix(old_entry, old_row)
         self.highlighter:hi_multiselect(old_row, self:is_multi_selected(old_entry))
       end
@@ -1557,18 +1571,19 @@ pickers.new = function(opts, defaults)
 end
 
 --- Close the picker which has prompt with buffer number `prompt_bufnr`
----@param prompt_bufnr number
+---@param prompt_bufnr integer
 function pickers.on_close_prompt(prompt_bufnr)
   local status = state.get_status(prompt_bufnr)
   local picker = status.picker
   require("telescope.actions.state").get_current_history():reset()
 
   if type(picker.cache_picker) == "table" then
-    local cached_pickers = state.get_global_key "cached_pickers" or {}
+    local cached_pickers = state.get_global_key("cached_pickers") or {}
 
-    if type(picker.cache_picker.index) == "number" then
+    local index = picker.cache_picker.index
+    if index then
       if not vim.tbl_isempty(cached_pickers) then
-        table.remove(cached_pickers, picker.cache_picker.index)
+        table.remove(cached_pickers, index)
       end
     end
 
@@ -1618,11 +1633,11 @@ function pickers.on_close_prompt(prompt_bufnr)
   end
 
   -- so we dont call close_windows multiple times we clear that autocmd
-  api.nvim_clear_autocmds {
+  api.nvim_clear_autocmds({
     group = "PickerInsert",
     event = "BufLeave",
     buf = prompt_bufnr,
-  }
+  })
   picker.close_windows(status)
 
   vim.o.mousemoveevent = picker.__original_mousemoveevent
@@ -1642,7 +1657,8 @@ end
 --- Get the prompt text without the prompt prefix.
 function Picker:_get_prompt()
   local cursor_line = api.nvim_win_get_cursor(self.prompt_win)[1] - 1
-  return api.nvim_buf_get_lines(self.prompt_bufnr, cursor_line, cursor_line + 1, false)[1]:sub(#self.prompt_prefix + 1)
+  local line = api.nvim_buf_get_lines(self.prompt_bufnr, cursor_line, cursor_line + 1, false)[1] --[[@as string]]
+  return line:sub(#self.prompt_prefix + 1)
 end
 
 function Picker:_reset_highlights()
@@ -1690,7 +1706,7 @@ function Picker:_resume_picker()
   local on_resume_complete = function()
     if api.nvim_buf_is_valid(self.prompt_bufnr) then
       api.nvim_buf_call(self.prompt_bufnr, function()
-        vim.cmd "do User TelescopeResumePost"
+        vim.cmd("do User TelescopeResumePost")
       end)
     end
   end

@@ -9,11 +9,11 @@
 
 local api = vim.api
 
-local log = require "telescope.log"
-local state = require "telescope.state"
-local utils = require "telescope.utils"
+local log = require("telescope.log")
+local state = require("telescope.state")
+local utils = require("telescope.utils")
 
-local action_state = require "telescope.actions.state"
+local action_state = require("telescope.actions.state")
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 
@@ -25,8 +25,8 @@ local action_set = setmetatable({}, {
 
 --- Move the current selection of a picker {change} rows.
 --- Handles not overflowing / underflowing the list.
----@param prompt_bufnr number: The prompt bufnr
----@param change number: The amount to shift the selection by
+---@param prompt_bufnr integer: The prompt bufnr
+---@param change integer: The amount to shift the selection by
 action_set.shift_selection = function(prompt_bufnr, change)
   local count = vim.v.count
   count = count == 0 and 1 or count
@@ -38,7 +38,7 @@ end
 --- actions by the user.
 ---
 --- By default maps to editing a file.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 ---@param type string: The type of selection to make
 --          Valid types include: "default", "horizontal", "vertical", "tabedit"
 action_set.select = function(prompt_bufnr, type)
@@ -104,7 +104,7 @@ do
 end
 
 --- Edit a file based on the current selection.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 ---@param command string: The command to use to open the file.
 --      Valid commands are:
 --      - "edit"
@@ -171,12 +171,12 @@ action_set.edit = function(prompt_bufnr, command)
   local win_id = picker.get_selection_window(picker, entry)
 
   if picker.push_cursor_on_edit then
-    vim.cmd "normal! m'"
+    vim.cmd("normal! m'")
   end
 
   if picker.push_tagstack_on_edit then
-    local from = { vim.fn.bufnr "%", vim.fn.line ".", vim.fn.col ".", 0 }
-    local items = { { tagname = vim.fn.expand "<cword>", from = from } }
+    local from = { vim.fn.bufnr("%"), vim.fn.line("."), vim.fn.col("."), 0 }
+    local items = { { tagname = vim.fn.expand("<cword>"), from = from } }
     vim.fn.settagstack(vim.fn.win_getid(), { items = items }, "t")
   end
 
@@ -219,7 +219,7 @@ action_set.edit = function(prompt_bufnr, command)
 
   if row and col then
     if api.nvim_buf_get_name(0) == filename then
-      vim.cmd [[normal! m']]
+      vim.cmd([[normal! m']])
     end
     local ok, err_msg = pcall(api.nvim_win_set_cursor, 0, { row, col })
     if not ok then
@@ -249,12 +249,12 @@ end
 --- Scrolls the previewer up or down.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
 --- option in `layout_config`. See |telescope.layout| for more details.
----@param prompt_bufnr number: The prompt bufnr
----@param direction number: The direction of the scrolling
+---@param prompt_bufnr integer: The prompt bufnr
+---@param direction integer: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_previewer = function(prompt_bufnr, direction)
   local previewer, speed = __scroll_previewer(prompt_bufnr)
-  if previewer and previewer.scroll_fn then
+  if previewer and speed and previewer.scroll_fn then
     previewer:scroll_fn(math.floor(speed * direction))
   end
 end
@@ -262,12 +262,12 @@ end
 --- Scrolls the previewer to the left or right.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
 --- option in `layout_config`. See |telescope.layout| for more details.
----@param prompt_bufnr number: The prompt bufnr
----@param direction number: The direction of the scrolling
+---@param prompt_bufnr integer: The prompt bufnr
+---@param direction integer: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_horizontal_previewer = function(prompt_bufnr, direction)
   local previewer, speed = __scroll_previewer(prompt_bufnr)
-  if previewer and previewer.scroll_horizontal_fn then
+  if previewer and speed and previewer.scroll_horizontal_fn then
     previewer:scroll_horizontal_fn(math.floor(speed * direction))
   end
 end
@@ -275,8 +275,8 @@ end
 --- Scrolls the results up or down.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
 --- option in `layout_config`. See |telescope.layout| for more details.
----@param prompt_bufnr number: The prompt bufnr
----@param direction number: The direction of the scrolling
+---@param prompt_bufnr integer: The prompt bufnr
+---@param direction integer: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_results = function(prompt_bufnr, direction)
   local status = state.get_status(prompt_bufnr)
@@ -295,8 +295,8 @@ end
 --- Scrolls the results to the left or right.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
 --- option in `layout_config`. See |telescope.layout| for more details.
----@param prompt_bufnr number: The prompt bufnr
----@param direction number: The direction of the scrolling
+---@param prompt_bufnr integer: The prompt bufnr
+---@param direction integer: The direction of the scrolling
 --      Valid directions include: "1", "-1"
 action_set.scroll_horizontal_results = function(prompt_bufnr, direction)
   local status = state.get_status(prompt_bufnr)

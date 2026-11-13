@@ -104,6 +104,7 @@ local Border = setmetatable({}, {
 
 ---@param title string
 ---@param pos "NW"|"N"|"NE"|"SW"|"S"|"SE"|nil
+---@diagnostic disable-next-line: unused
 function Border:change_title(title, pos) end
 
 ---@nodoc
@@ -172,6 +173,7 @@ local Layout = setmetatable({
 
 --- Create the layout.
 --- This needs to ensure the required properties are populated.
+---@diagnostic disable-next-line: unused
 function Layout:mount() end
 
 --- Destroy the layout.
@@ -179,13 +181,15 @@ function Layout:mount() end
 ---  - deleting buffers
 ---  - closing windows
 ---  - clearing autocmds
+---@diagnostic disable-next-line: unused
 function Layout:unmount() end
 
 --- Refresh the layout.
 --- This is called when, for example, vim is resized.
+---@diagnostic disable-next-line: unused
 function Layout:update() end
 
 ---@alias TelescopeWindow.constructor fun(config: TelescopeWindow.config): TelescopeWindow
 ---@alias TelescopeLayout.constructor fun(config: TelescopeLayout.config): TelescopeLayout
 
-return Layout --[[@as TelescopeLayout.constructor|{ Window: TelescopeWindow.constructor }]]
+return Layout --[[@as telescope.pickers.layout.module]]

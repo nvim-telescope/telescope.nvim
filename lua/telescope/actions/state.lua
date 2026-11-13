@@ -3,26 +3,26 @@
 ---
 --- Generally used from within other |telescope.actions|
 
-local global_state = require "telescope.state"
+local global_state = require("telescope.state")
 local conf = require("telescope.config").values
 
 local action_state = {}
 
 --- Get the current entry
----@return table # the selected entry
+---@return table? # the selected entry
 function action_state.get_selected_entry()
-  return global_state.get_global_key "selected_entry"
+  return global_state.get_global_key("selected_entry")
 end
 
 --- Gets the current line in the search prompt
 ---@return string # the current line in the search prompt
 function action_state.get_current_line()
-  return global_state.get_global_key "current_line" or ""
+  return global_state.get_global_key("current_line") or ""
 end
 
 --- Gets the current picker
----@param prompt_bufnr number: The prompt bufnr
----@return table # the current picker
+---@param prompt_bufnr integer: The prompt bufnr
+---@return Picker # the current picker
 function action_state.get_current_picker(prompt_bufnr)
   return global_state.get_status(prompt_bufnr).picker
 end
@@ -40,7 +40,7 @@ function action_state.select_key_to_edit_key(type)
 end
 
 function action_state.get_current_history()
-  local history = global_state.get_global_key "history"
+  local history = global_state.get_global_key("history")
   if not history then
     if conf.history == false or type(conf.history) ~= "table" then
       history = require("telescope.actions.history").get_simple_history()

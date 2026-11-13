@@ -1,4 +1,5 @@
----@diagnostic disable: undefined-doc-param
+-- docgen needs `@param` on assignments that aren't function definitions
+---@diagnostic disable: annotation-usage-error, undefined-doc-param
 
 ---@brief
 --- Telescope Builtins is a collection of community maintained pickers to support common workflows. It can be used as
@@ -42,7 +43,7 @@ end
 --
 --
 
----@inlinedocdoc
+---@inlinedoc
 ---@class telescope.builtin.live_grep.opts : telescope.builtin.base_opts
 ---@field cwd? string root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field grep_open_files? boolean if true, restrict search to open files only, mutually exclusive with `search_dirs`
@@ -60,7 +61,7 @@ end
 ---@param opts? telescope.builtin.live_grep.opts table: options to pass to the picker
 builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_grep
 
----@inlinedocdoc
+---@inlinedoc
 ---@class telescope.builtin.grep_string.opts : telescope.builtin.base_opts
 ---@field cwd? string root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field search? string the query to search
@@ -100,8 +101,8 @@ builtin.fd = builtin.find_files
 ---@inlinedoc
 ---@class telescope.builtin.treesitter.opts : telescope.builtin.base_opts
 ---@field show_line? boolean if true, shows the row:column that the result is found at (default: `true`)
----@field bufnr? number specify the buffer number where treesitter should run. (default: current buffer)
----@field symbol_width? number defines the width of the symbol section (default: `25`)
+---@field bufnr? integer specify the buffer number where treesitter should run. (default: current buffer)
+---@field symbol_width? integer defines the width of the symbol section (default: `25`)
 ---@field symbols? (string|table) filter results by symbol kind(s)
 ---@field ignore_symbols? (string|table) list of symbols to ignore
 ---@field symbol_highlights? table string -> string. Matches symbol with hl_group
@@ -131,7 +132,7 @@ builtin.current_buffer_fuzzy_find = require_on_exported_call("telescope.builtin.
 ---@field show_line? boolean if true, shows the content of the line the tag is found on in the picker (default: `true`)
 ---@field show_kind? boolean if true and kind info is available, show the kind of the tag (default: `true`)
 ---@field only_sort_tags? boolean if true we will only sort tags (default: `false`)
----@field fname_width? number defines the width of the filename section (default: `30`)
+---@field fname_width? integer defines the width of the filename section (default: `30`)
 
 --- Lists tags in current directory with tag location file preview (users are required to run ctags -R to generate tags
 --- or update when introducing new changes)
@@ -145,7 +146,7 @@ builtin.tags = require_on_exported_call("telescope.builtin.__files").tags
 ---@field show_line? boolean if true, shows the content of the line the tag is found on in the picker (default: `true`)
 ---@field show_kind? boolean if true and kind info is available, show the kind of the tag (default: `true`)
 ---@field only_sort_tags? boolean if true we will only sort tags (default: `false`)
----@field fname_width? number defines the width of the filename section (default: `30`)
+---@field fname_width? integer defines the width of the filename section (default: `30`)
 
 --- Lists all of the tags for the currently open buffer, with a preview
 ---@param opts? telescope.builtin.current_buffer_tags.opts: options to pass to the picker
@@ -210,8 +211,8 @@ builtin.git_bcommits = require_on_exported_call("telescope.builtin.__git").bcomm
 
 ---@inlinedoc
 ---@class telescope.builtin.git_bcommits_range.opts : telescope.builtin.git_bcommits.opts
----@field from? number the first line number in the range (default: current line)
----@field to? number the last line number in the range (default: the value of `from`)
+---@field from? integer the first line number in the range (default: current line)
+---@field to? integer the last line number in the range (default: the value of `from`)
 ---@field operator? boolean select lines in operator-pending mode (default: `false`)
 
 --- Lists commits for a range of lines in the current buffer with diff preview
@@ -284,7 +285,7 @@ builtin.builtin = require_on_exported_call("telescope.builtin.__internal").built
 
 ---@inlinedoc
 ---@class telescope.builtin.resume.opts : telescope.builtin.base_opts
----@field cache_index? number what picker to resume, where 1 denotes most recent (default: `1`)
+---@field cache_index? integer what picker to resume, where 1 denotes most recent (default: `1`)
 
 --- Opens the previous picker in the identical state (incl. multi selections)
 ---@note Requires `cache_picker` in setup or when having invoked pickers, see |telescope.defaults.cache_picker|
@@ -327,7 +328,7 @@ builtin.commands = require_on_exported_call("telescope.builtin.__internal").comm
 ---@class telescope.builtin.quickfix.opts : telescope.builtin.base_opts
 ---@field show_line? boolean show results text (default: `true`)
 ---@field trim_text? boolean trim results text (default: `false`)
----@field nr? number specify the quickfix list number
+---@field nr? integer specify the quickfix list number
 
 --- Lists items in the quickfix list, jumps to location on `<cr>`
 ---@param opts? telescope.builtin.quickfix.opts: options to pass to the picker
@@ -409,7 +410,7 @@ builtin.man_pages = require_on_exported_call("telescope.builtin.__internal").man
 
 ---@inlinedoc
 ---@class telescope.builtin.reload.opts : telescope.builtin.base_opts
----@field column_len? number define the max column len for the module name (default: dynamic, longest module name)
+---@field column_len? integer define the max column len for the module name (default: dynamic, longest module name)
 
 --- Lists lua modules and reloads them on `<cr>`
 ---@param opts? telescope.builtin.reload.opts: options to pass to the picker
@@ -420,7 +421,7 @@ builtin.reloader = require_on_exported_call("telescope.builtin.__internal").relo
 ---@field items any[]: items to choose from
 ---@field on_choice fun(item: any?, idx: integer?) called with the chosen item and its index, or with `nil` if the picker was closed
 ---@field prompt? string: prompt title (default: "Select one of")
----@field format_item? fun(item: any): string: text shown and filtered for an item (default: `tostring`)
+---@field format_item? (fun(item: any): string) text shown and filtered for an item (default: `tostring`)
 
 --- Lets the user choose one of `opts.items`, like |vim.ui.select()|. Use |telescope.ui_select()| to replace
 --- `vim.ui.select`.
@@ -436,11 +437,11 @@ builtin.ui_select = require_on_exported_call("telescope.builtin.__internal").ui_
 ---@field cwd_only? boolean alias for only_cwd
 ---@field sort_lastused? boolean Sorts current and last buffer to the top and selects the lastused (default: `false`)
 ---@field sort_mru? boolean Sorts all buffers after most recent used. Not just the current and last one (default: `false`)
----@field bufnr_width? number Defines the width of the buffer numbers in front of the filenames  (default: dynamic)
+---@field bufnr_width? integer Defines the width of the buffer numbers in front of the filenames  (default: dynamic)
 ---@field file_encoding? string file encoding for the previewer
 ---
 ---  sort fn(bufnr_a, bufnr_b). true if bufnr_a should go first. Runs after sorting by most recent (if specified)
----@field sort_buffers? (fun(buf_a: number, buf_b: number): boolean)?
+---@field sort_buffers? (fun(buf_a: integer, buf_b: integer): boolean)?
 ---@field select_current? boolean select current buffer (default: `false`)
 
 --- Lists open buffers in current neovim instance, opens selected buffer on `<cr>`
@@ -590,9 +591,9 @@ builtin.lsp_implementations = require_on_exported_call("telescope.builtin.__lsp"
 
 ---@inlinedoc
 ---@class telescope.builtin.lsp_document_symbols.opts : telescope.builtin.lsp_opts
----@field fname_width? number defines the width of the filename section (default: `30`)
----@field symbol_width? number defines the width of the symbol section (default: `25`)
----@field symbol_type_width? number defines the width of the symbol type section (default: `8`)
+---@field fname_width? integer defines the width of the filename section (default: `30`)
+---@field symbol_width? integer defines the width of the symbol section (default: `25`)
+---@field symbol_type_width? integer defines the width of the symbol type section (default: `8`)
 ---@field symbols? (string|table) filter results by symbol kind(s)
 ---@field ignore_symbols? (string|table) list of symbols to ignore
 ---@field symbol_highlights? table string -> string. Matches symbol with hl_group
@@ -607,9 +608,9 @@ builtin.lsp_document_symbols = require_on_exported_call("telescope.builtin.__lsp
 ---@inlinedoc
 ---@class telescope.builtin.lsp_workspace_symbols.opts : telescope.builtin.lsp_opts
 ---@field query? string for what to query the workspace (default: `""`)
----@field fname_width? number defines the width of the filename section (default: `30`)
----@field symbol_width? number defines the width of the symbol section (default: `25`)
----@field symbol_type_width? number defines the width of the symbol type section (default: `8`)
+---@field fname_width? integer defines the width of the filename section (default: `30`)
+---@field symbol_width? integer defines the width of the symbol section (default: `25`)
+---@field symbol_type_width? integer defines the width of the symbol type section (default: `8`)
 ---@field symbols? (string|table) filter results by symbol kind(s)
 ---@field ignore_symbols? (string|table) list of symbols to ignore
 ---@field symbol_highlights? table string -> string. Matches symbol with hl_group
@@ -623,7 +624,7 @@ builtin.lsp_workspace_symbols = require_on_exported_call("telescope.builtin.__ls
 
 ---@inlinedoc
 ---@class telescope.builtin.lsp_dynamic_workspace_symbols.opts : telescope.builtin.lsp_opts
----@field fname_width? number defines the width of the filename section (default: `30`)
+---@field fname_width? integer defines the width of the filename section (default: `30`)
 ---@field symbols? (string|table) filter results by symbol kind(s)
 ---@field ignore_symbols? (string|table) list of symbols to ignore
 ---@field symbol_highlights? table string -> string. Matches symbol with hl_group
@@ -643,14 +644,14 @@ builtin.lsp_dynamic_workspace_symbols = require_on_exported_call("telescope.buil
 
 ---@inlinedoc
 ---@class telescope.builtin.diagnostics.opts : telescope.builtin.base_opts
----@field bufnr? number Buffer number to get diagnostics from. Use 0 for current buffer or nil for all buffers
+---@field bufnr? integer Buffer number to get diagnostics from. Use 0 for current buffer or nil for all buffers
 ---@field severity? (string|number) filter diagnostics by severity name (string) or id (number)
 ---@field severity_limit? (string|number) keep diagnostics equal or more severe wrt severity name (string) or id (number)
 ---@field severity_bound? (string|number) keep diagnostics equal or less severe wrt severity name (string) or id (number)
 ---@field root_dir? (string|boolean) if set to string, get diagnostics only for buffers under this dir otherwise cwd
 ---@field no_unlisted? boolean if true, get diagnostics only for listed buffers
 ---@field workspace? boolean if true, call workspace/diagnostic before collecting diagnostics
----@field namespace? number limit your diagnostics to a specific namespace
+---@field namespace? integer limit your diagnostics to a specific namespace
 ---@field no_sign? boolean hide DiagnosticSigns from Results (default: `false`)
 ---@field line_width? (string|number) set length of diagnostic entry text in Results. Use 'full' for full untruncated text
 ---@field disable_coordinates? boolean don't show the line & row numbers (default: `false`)
@@ -670,8 +671,8 @@ builtin.diagnostics = require_on_exported_call("telescope.builtin.__diagnostics"
 
 ---@nodoc
 ---@class telescope.builtin.base_opts
----@field bufnr number: buffer number to use for the picker (default: current buffer)
----@field winnr number: window number to use for the picker (default: current window)
+---@field bufnr integer: buffer number to use for the picker (default: current buffer)
+---@field winnr integer: window number to use for the picker (default: current window)
 
 local apply_config = function(mod)
   for k, v in pairs(mod) do
@@ -684,7 +685,8 @@ local apply_config = function(mod)
       local pconf = pickers_conf[k] or {}
       local defaults = (function()
         if pconf.theme then
-          return require("telescope.themes")["get_" .. pconf.theme](pconf)
+          local get_theme = "get_" .. pconf.theme
+          return require("telescope.themes")[get_theme](pconf)
         end
         return vim.deepcopy(pconf)
       end)()

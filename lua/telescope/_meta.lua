@@ -1,0 +1,206 @@
+---@meta
+-- Type annotations for emmylua that stay out of the generated docs (docgen doesn't read this file).
+
+-- Picker options that every builtin accepts (and passes on to `pickers.new`), and state that builtins
+-- keep in their options.
+---@class (partial) telescope.builtin.base_opts
+---@field entry_maker? fun(line: any): table?
+---@field previewer? table|false
+---@field path_display? table|fun(opts: table, path: string): string, table?
+---@field file_ignore_patterns? string[]
+---@field initial_mode? "insert"|"normal"
+---@field vimgrep_arguments? string[]
+---@field cache_picker? table|false
+---@field cache_index? integer
+---@field _cache_picker? table|false
+---@field resumed_picker? boolean
+---@field hidden? boolean grep pickers: search hidden files
+---@field __inverted? boolean grep pickers: the arguments invert the matches
+---@field __matches? boolean grep pickers: the arguments list files (with or without matches)
+---@field line_highlights? table<integer, table<integer, string>> current_buffer_fuzzy_find
+---@field current_line? string git_bcommits: the line under the cursor
+---@field operator_callback? boolean git_bcommits_range
+---@field split_char? string git_status
+---@field width_lhs? integer keymaps
+---@field env? table<string, string?> man_pages
+---@field ignore_filename? boolean lsp_workspace_symbols
+---@field id? integer quickfix: id of the list (instead of `nr`)
+---@field make_entry? fun(line: any): table? quickfix
+---@field items? any[] ui_select
+---@field format_item? fun(item: any): string ui_select
+---@field on_choice? fun(item: any?, idx: integer?) ui_select
+---@field prompt? string ui_select
+
+---@class (partial) Picker
+---@field prompt_title string
+---@field results_title string
+---@field preview_title? string
+---@field prompt_prefix string
+---@field wrap_results boolean
+---@field selection_caret string
+---@field entry_prefix string
+---@field multi_icon string
+---@field initial_mode "insert"|"normal"
+---@field debounce? number
+---@field default_text? string
+---@field get_status_text fun(self: Picker, opts?: table): string
+---@field _on_input_filter_cb fun(prompt: string): { prompt?: string, updated_finder?: telescope.Finder }?
+---@field finder telescope.Finder
+---@field sorter Sorter
+---@field all_previewers? table[]|false
+---@field previewer? table|false
+---@field hidden_previewer? table|false the previewer while it is hidden
+---@field current_previewer_index integer
+---@field fix_preview_title? boolean
+---@field default_selection_index? integer
+---@field stats { processed: integer, filtered: integer }
+---@field attach_mappings? fun(prompt_bufnr: integer, map: function): boolean?
+---@field file_ignore_patterns? string[]
+---@field sorting_strategy "descending"|"ascending"
+---@field scroll_strategy "cycle"|"limit"
+---@field selection_strategy "reset"|"follow"|"row"|"closest"|"none"
+---@field tiebreak fun(current_entry: table, existing_entry: table, prompt: string): boolean
+---@field layout_strategy string
+---@field layout_config table
+---@field __flex_strategy? string the strategy chosen by the flex layout
+---@field __cycle_layout_list table
+---@field push_cursor_on_edit boolean
+---@field push_tagstack_on_edit boolean
+---@field track boolean
+---@field on_close? fun(picker: Picker)
+---@field cwd? string
+---@field _original_mode string the mode before the picker opened
+---@field __layout_index? integer index in `__cycle_layout_list`
+---@field get_selection_window fun(picker: Picker, entry: table): integer
+---@field window { winblend: integer, border: boolean|table, borderchars: table }
+---@field cache_picker telescope.picker.CachePicker|false
+---@field __scrolling_limit integer
+---@field __locations_input boolean
+---@field create_layout fun(picker: Picker): TelescopeLayout
+---@field get_window_options fun(self: Picker, max_columns: integer, max_lines: integer): table
+---@field scroller fun(max_results: integer, num_results: integer, row: integer): integer
+---@field highlighter telescope.pickers.Highlighter
+---@field max_results integer
+---@field layout TelescopeLayout
+---@field prompt_bufnr integer
+---@field prompt_win integer
+---@field results_bufnr integer
+---@field results_win integer
+---@field preview_bufnr? integer
+---@field preview_win? integer
+---@field manager EntryManager
+---@field _multi MultiSelect
+---@field original_win_id integer
+---@field original_bufnr integer
+
+-- A finder is called with the prompt, `process_result(entry)` and `process_complete()`.
+---@class telescope.Finder
+---@overload fun(prompt: string, process_result: (fun(entry: table?): boolean?), process_complete: fun())
+---@field results? table[] static finders: the entries
+---@field prompt_independent? boolean results don't depend on the prompt (narrowing applies)
+---@field entry_maker? fun(line: any): table?
+---@field close fun(self: telescope.Finder)
+
+---@class (partial) telescope.pickers.Highlighter
+---@field picker Picker
+
+---@class (partial) MultiSelect
+---@field _entries table<table, integer> selection order of each entry
+
+---@class (partial) EntryManager
+---@field max_results integer
+---@field set_entry fun(picker: Picker, index: integer, entry: table, score: number, insert?: boolean)
+---@field worst_acceptable_score number
+---@field top_entries table[]
+---@field top_scores number[]
+---@field ntop integer
+---@field front_entries table[]
+---@field front_scores number[]
+---@field nfront integer
+---@field back_entries table[]
+---@field back_scores number[]
+---@field nback integer
+
+-- A query of `telescope.algos.query`: a list of sets (all must match) of terms (alternatives).
+---@class telescope.algos.query.Query
+---@field [integer] table<integer, telescope.algos.query.Term>
+---@field single boolean a single fuzzy term
+
+---@class telescope.algos.query.Term
+---@field type "fuzzy"|"exact"|"boundary"|"prefix"|"suffix"|"equal"
+---@field inv boolean inverse: matches if the text isn't found
+---@field text string
+---@field cs boolean case sensitive
+---@field plain boolean case sensitive or without letters
+
+-- The module `telescope.pickers.layout`: creates a layout, and windows with `Window`.
+---@class telescope.pickers.layout.module
+---@overload fun(config: TelescopeLayout.config): TelescopeLayout
+---@field Window TelescopeWindow.constructor
+
+---@class (partial) telescope.Previewer
+---@field state? table
+---@field preview_fn fun(self: telescope.Previewer, entry: table, status: table)
+---@field _title_fn? fun(self: telescope.Previewer): string
+---@field _dyn_title_fn? fun(self: telescope.Previewer, entry: table): string
+---@field _setup_func? fun(self: telescope.Previewer, status: table): table
+---@field _teardown_func? fun(self: telescope.Previewer)
+---@field _send_input? fun(self: telescope.Previewer, input: string)
+---@field _scroll_fn? fun(self: telescope.Previewer, direction: integer)
+---@field _scroll_horizontal_fn? fun(self: telescope.Previewer, direction: integer)
+---@field _empty_bufnr? integer
+
+---@class (partial) History
+---@field _reset fun(self: History)
+---@field _append fun(self: History, line: string, picker: Picker, no_reset?: boolean)
+---@field _pre_get? fun(self: History, line: string, picker: Picker)
+
+-- An action: callable with the prompt buffer; its functions can be replaced or enhanced temporarily.
+---@class Action
+---@overload fun(prompt_bufnr: integer, ...): ...
+---@field [integer] string the names of the combined actions
+---@field _func table<string, function> the original action function
+---@field _static_pre table<string, function> will always run before the function even if it's replaced
+---@field _pre table<string, function> the functions that will run before the action
+---@field _replacements table<string, function> the function that replaces this action
+---@field _static_post table<string, function> will always run after the function even if it's replaced
+---@field _post table<string, function> the functions that will run after the action
+---@field clear fun()
+---@field replace fun(self: Action, v: function|Action): Action
+---@field replace_if fun(self: Action, condition: (fun(): boolean), replacement: function|Action): Action
+---@field replace_map fun(self: Action, tbl: table<any, function|Action>): Action
+---@field enhance fun(self: Action, opts: { pre?: function|Action, post?: function|Action }): Action
+
+-- Options of a picker window: `pickers.window.get_initial_window_options` sets the title and border,
+-- the layout strategy the position and size.
+---@class telescope.pickers.WindowOptions
+---@field title? string|table|false
+---@field border? boolean|table
+---@field borderchars? table
+---@field enter boolean
+---@field highlight? boolean
+---@field line integer
+---@field col integer
+---@field width integer
+---@field height integer
+
+---@class (partial) TelescopeWindowBorder
+---@overload fun(config?: TelescopeWindowBorder.config): TelescopeWindowBorder
+
+---@class (partial) telescope.AsyncJob
+---@field handle uv.uv_process_t
+---@field stdout? telescope.async_job.Pipe
+
+-- The cache state of a picker (`cache_picker` option, see `builtin.resume`).
+---@class telescope.picker.CachePicker
+---@field num_pickers integer
+---@field limit_entries integer
+---@field ignore_empty_prompt boolean
+---@field index? integer position in the cached pickers
+---@field disabled? boolean
+---@field is_cached? boolean
+---@field cached_prompt? string
+---@field selection_row? integer
+
+-- What a sorter's highlighter returns: byte positions, or ranges with an optional highlight group.
+---@alias telescope.Highlights (integer|{ start: integer, finish?: integer, highlight?: string })[]

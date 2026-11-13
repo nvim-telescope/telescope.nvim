@@ -12,17 +12,17 @@ on:
   workflow_dispatch:
 
 jobs:
-  luacheck:
-    name: Luacheck
+  emmylua:
+    name: emmylua_check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
-      - name: Prepare
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y luarocks
-          sudo luarocks install luacheck
+      # only for the runtime files (`$VIMRUNTIME`) used as library
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: nightly # TODO: stable once Nvim 0.13 is released
 
       - name: Lint
         run: make lint

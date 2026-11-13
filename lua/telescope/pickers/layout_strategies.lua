@@ -48,9 +48,10 @@
 
 local api = vim.api
 
-local resolve = require "telescope.config.resolve"
-local p_window = require "telescope.pickers.window"
+local resolve = require("telescope.config.resolve")
+local p_window = require("telescope.pickers.window")
 
+---@return integer
 local get_border_size = function(opts)
   if opts.window.border == false then
     return 0
@@ -59,6 +60,8 @@ local get_border_size = function(opts)
   return 1
 end
 
+---@param max_lines integer
+---@return integer max_lines, boolean tabline
 local calc_tabline = function(max_lines)
   local tbln = (vim.o.showtabline == 2) or (vim.o.showtabline == 1 and #api.nvim_list_tabpages() > 1)
   if tbln then
@@ -68,12 +71,12 @@ local calc_tabline = function(max_lines)
 end
 
 -- Helper function for capping over/undersized width/height, and calculating spacing
----@param cur_size number: size to be capped
+---@param cur_size integer: size to be capped
 ---@param max_size any: the maximum size, e.g. max_lines or max_columns
----@param bs number: the size of the border
----@param w_num number: the maximum number of windows of the picker in the given direction
----@param b_num number: the number of border rows/column in the given direction (when border enabled)
----@param s_num number: the number of gaps in the given direction (when border disabled)
+---@param bs integer: the size of the border
+---@param w_num integer: the maximum number of windows of the picker in the given direction
+---@param b_num integer: the number of border rows/column in the given direction (when border enabled)
+---@param s_num integer: the number of gaps in the given direction (when border disabled)
 local calc_size_and_spacing = function(cur_size, max_size, bs, w_num, b_num, s_num)
   local spacing = s_num * (1 - bs) + b_num * bs
   cur_size = math.min(cur_size, max_size)
@@ -82,7 +85,7 @@ local calc_size_and_spacing = function(cur_size, max_size, bs, w_num, b_num, s_n
 end
 
 local layout_strategies = {}
-layout_strategies._configurations = {}
+layout_strategies._configurations = {} ---@type table<string, table>
 
 --@param strategy_config table: table with keys for each option for a strategy
 --@return table: table with keys for each option (for this strategy) and with keys for each layout_strategy
@@ -105,7 +108,7 @@ local get_valid_configuration_keys = function(strategy_config)
 end
 
 local adjust_pos = function(pos, ...)
-  for _, opts in ipairs { ... } do
+  for _, opts in ipairs({ ... }) do
     opts.col = opts.col and opts.col + pos[1]
     opts.line = opts.line and opts.line + pos[2]
   end
@@ -117,11 +120,10 @@ end
 ---@param default_layout_config table?: table with the default values to configure layouts
 ---@return table: table containing the combined options (defaults and non-defaults)
 local function validate_layout_config(strategy_name, configuration, values, default_layout_config)
-  assert(strategy_name, "It is required to have a strategy name for validation.")
   local valid_configuration_keys = get_valid_configuration_keys(configuration)
 
   -- If no default_layout_config provided, check Telescope's config values
-  default_layout_config = vim.nonnil(default_layout_config, require("telescope.config").values.layout_config)
+  default_layout_config = vim.nonnil(default_layout_config, require("telescope.config").values.layout_config) --[[@as table]]
 
   local result = {}
   local get_value = function(k)
@@ -244,10 +246,10 @@ end
 
 ---@param name string: the name to be assigned to the layout
 ---@param layout_config table: table where keys are the available options for the layout
----@param layout function: function with signature
+---@param layout (fun(self: Picker, max_columns: integer, max_lines: integer, layout_config: table): table) function with signature
 ---          function(self, max_columns, max_lines, layout_config): table
 ---        the returned table is the sizing and location information for the parts of the picker
----@retun function: wrapped function that inputs a validated layout_config into the `layout` function
+---@return function: wrapped function that inputs a validated layout_config into the `layout` function
 local function make_documented_layout(name, layout_config, layout)
   -- Save configuration data to be used by documentation
   layout_strategies._configurations[name] = layout_config
@@ -372,7 +374,7 @@ layout_strategies.horizontal = make_documented_layout(
       results.line = preview.line
       prompt.line = results.line + results.height + 1 + bs
     else
-      error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+      error(string.format("Unknown prompt_position: %s\n%s", layout_config.prompt_position, vim.inspect(layout_config)))
     end
 
     local anchor = layout_config.anchor or ""
@@ -488,7 +490,7 @@ layout_strategies.center = make_documented_layout(
         prompt.title = { { pos = "S", text = prompt.title } }
       end
     else
-      error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+      error(string.format("Unknown prompt_position: %s\n%s", layout_config.prompt_position, vim.inspect(layout_config)))
     end
 
     local width_padding = math.floor((max_columns - width) / 2) + bs + 1
@@ -503,16 +505,16 @@ layout_strategies.center = make_documented_layout(
     -- Vertical anchoring (S or N variations) ignores layout_config.mirror
     anchor = anchor:upper()
     local mirror
-    if anchor:find "S" then
+    if anchor:find("S") then
       mirror = false
-    elseif anchor:find "N" then
+    elseif anchor:find("N") then
       mirror = true
     else
       mirror = layout_config.mirror
     end
 
     -- Set preview position
-    local block_line = math.min(results.line, prompt.line)
+    local block_line = math.min(results.line, prompt.line) --[[@as integer]]
     if not mirror then -- Preview at top
       preview.line = 1 + bs
       preview.height = block_line - (2 + 2 * bs)
@@ -613,7 +615,7 @@ layout_strategies.cursor = make_documented_layout(
 
     local position = api.nvim_win_get_position(winid)
     local winbar = (function()
-      if vim.fn.exists "&winbar" == 1 then
+      if vim.fn.exists("&winbar") == 1 then
         return vim.wo[winid].winbar == "" and 0 or 1
       end
       return 0
@@ -734,7 +736,9 @@ layout_strategies.vertical = make_documented_layout(
         results.line = (preview.height == 0) and preview.line or preview.line + preview.height + (1 + bs)
         prompt.line = results.line + results.height + (1 + bs)
       else
-        error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+        error(
+          string.format("Unknown prompt_position: %s\n%s", layout_config.prompt_position, vim.inspect(layout_config))
+        )
       end
     else
       if layout_config.prompt_position == "top" then
@@ -746,7 +750,9 @@ layout_strategies.vertical = make_documented_layout(
         prompt.line = results.line + results.height + (1 + bs)
         preview.line = prompt.line + prompt.height + (1 + bs)
       else
-        error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+        error(
+          string.format("Unknown prompt_position: %s\n%s", layout_config.prompt_position, vim.inspect(layout_config))
+        )
       end
     end
 
@@ -930,7 +936,7 @@ layout_strategies.bottom_pane = make_documented_layout(
         results.border = { 1, 1, 0, 1 }
       end
     else
-      error(string.format("Unknown prompt_position: %s\n%s", self.window.prompt_position, vim.inspect(layout_config)))
+      error(string.format("Unknown prompt_position: %s\n%s", layout_config.prompt_position, vim.inspect(layout_config)))
     end
 
     -- Col

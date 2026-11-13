@@ -1,12 +1,12 @@
 local api = vim.api
 
-local utils = require "telescope.utils"
+local utils = require("telescope.utils")
 local conf = require("telescope.config").values
 
 local M = {}
 
 M.filetype_detect = function(filepath)
-  return vim.filetype.match { filename = filepath }
+  return vim.filetype.match({ filename = filepath })
 end
 
 -- API helper functions for buffer previewer
@@ -101,7 +101,7 @@ M.set_preview_message = function(bufnr, winid, message, fillchar)
   local height = api.nvim_win_get_height(winid)
   local width = api.nvim_win_get_width(winid)
   api.nvim_buf_set_lines(bufnr, 0, -1, false, utils.repeated_table(height, string.rep(fillchar, width)))
-  local ns = api.nvim_create_namespace "telescope_preview_message"
+  local ns = api.nvim_create_namespace("telescope_preview_message")
   api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
   local padding = string.rep(" ", #message + 4)
   local formatted_message = "  " .. message .. "  "

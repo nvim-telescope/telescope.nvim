@@ -1,37 +1,37 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it, before_each, after_each = t.describe, t.it, t.before_each, t.after_each
 
-local utils = require "telescope.utils"
+local utils = require("telescope.utils")
 
 local eq = assert.eq
 
 describe("path_expand()", function()
   it("removes trailing os_sep", function()
     if utils.iswin then
-      eq("C:/Users/a/b", utils.path_expand [[C:\Users\a\b\]])
+      eq("C:/Users/a/b", utils.path_expand([[C:\Users\a\b\]]))
     else
-      eq("/home/user", utils.path_expand "/home/user/")
+      eq("/home/user", utils.path_expand("/home/user/"))
     end
   end)
 
   it("works with root dir", function()
     if utils.iswin then
-      eq("C:/", utils.path_expand [[C:\]])
+      eq("C:/", utils.path_expand([[C:\]]))
     else
-      eq("/", utils.path_expand "/")
+      eq("/", utils.path_expand("/"))
     end
   end)
 
   it("works with ~", function()
-    eq(utils.normalize_sep(vim.uv.os_homedir()) .. "/src/foo", utils.path_expand "~/src/foo")
+    eq(utils.normalize_sep(vim.uv.os_homedir()) .. "/src/foo", utils.path_expand("~/src/foo"))
   end)
 
   it("handles duplicate os_sep", function()
     if utils.iswin then
-      eq("C:/Users/a", utils.path_expand [[C:\\\Users\\a]])
+      eq("C:/Users/a", utils.path_expand([[C:\\\Users\\a]]))
     else
-      eq("/home/user", utils.path_expand "/home///user")
+      eq("/home/user", utils.path_expand("/home///user"))
     end
   end)
 
@@ -215,14 +215,14 @@ describe("Windows paths (simulated)", function()
   end)
 
   it("path_expand uses forward slashes", function()
-    eq("C:/Users/a/b", utils.path_expand [[C:\Users\a\b\]])
-    eq("C:/", utils.path_expand [[C:\]])
-    eq("//server/share/dir", utils.path_expand [[\\server\share\dir]])
+    eq("C:/Users/a/b", utils.path_expand([[C:\Users\a\b\]]))
+    eq("C:/", utils.path_expand([[C:\]]))
+    eq("//server/share/dir", utils.path_expand([[\\server\share\dir]]))
   end)
 
   it("path_tail accepts backslashes", function()
-    eq("init.lua", utils.path_tail [[lua\telescope\init.lua]])
-    eq("init.lua", utils.path_tail "lua/telescope/init.lua")
+    eq("init.lua", utils.path_tail([[lua\telescope\init.lua]]))
+    eq("init.lua", utils.path_tail("lua/telescope/init.lua"))
   end)
 
   it("transform_path normalizes native paths", function()
@@ -463,8 +463,8 @@ describe("split_lines", function()
     return table.concat(expect, line_ending)
   end
 
-  local newline_file = get_fake_file "\n"
-  local carriage_newline_file = get_fake_file "\r\n"
+  local newline_file = get_fake_file("\n")
+  local carriage_newline_file = get_fake_file("\r\n")
 
   if utils.iswin then
     describe("handles files on Windows", function()

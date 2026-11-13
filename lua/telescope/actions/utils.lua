@@ -3,7 +3,7 @@
 ---
 --- Generally used from within other |telescope.actions|
 
-local action_state = require "telescope.actions.state"
+local action_state = require("telescope.actions.state")
 
 local utils = {}
 
@@ -28,7 +28,7 @@ local utils = {}
 ---   return results
 --- end
 --- ```
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 ---@param f function: Function to map onto entries of picker that takes (entry, index, row) as viable arguments
 function utils.map_entries(prompt_bufnr, f)
   vim.validate("f", f, "function")
@@ -64,7 +64,7 @@ end
 ---   return results
 --- end
 --- ```
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 ---@param f function: Function to map onto selection of picker that takes (selection) as a viable argument
 function utils.map_selections(prompt_bufnr, f)
   vim.validate("f", f, "function")
@@ -76,10 +76,10 @@ function utils.map_selections(prompt_bufnr, f)
 end
 
 --- Utility to collect mappings of prompt buffer in array of `{mode, keybind, name}`.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 function utils.get_registered_mappings(prompt_bufnr)
   local ret = {}
-  for _, mode in ipairs { "n", "i" } do
+  for _, mode in ipairs({ "n", "i" }) do
     for _, mapping in ipairs(vim.api.nvim_buf_get_keymap(prompt_bufnr, mode)) do
       -- ensure only telescope mappings
       if mapping.desc then
@@ -87,7 +87,7 @@ function utils.get_registered_mappings(prompt_bufnr)
           table.insert(ret, { mode = mode, keybind = mapping.lhs, desc = mapping.desc:sub(11) })
         elseif mapping.desc:sub(1, 11) == "telescopej|" then
           local fname = utils._get_anon_function_name(vim.json.decode(mapping.desc:sub(12)))
-          fname = fname:lower() == mapping.lhs:lower() and "<anonymous>" or fname
+          fname = fname:lower() == (mapping.lhs or ""):lower() and "<anonymous>" or fname
           table.insert(ret, {
             mode = mode,
             keybind = mapping.lhs,
@@ -109,7 +109,7 @@ function utils._get_anon_function_name(info)
   if not vim.uv.fs_stat(path) then
     return "<anonymous>"
   end
-  local tutils = require "telescope.utils"
+  local tutils = require("telescope.utils")
   for i, line in ipairs(tutils.split_lines(tutils.read_file(path))) do
     if i == info.linedefined then
       fname = line
@@ -117,8 +117,8 @@ function utils._get_anon_function_name(info)
     end
   end
 
-  -- test if assignment or named function, otherwise anon
-  if (fname:match "=" == nil) and (fname:match "function %S+%(" == nil) then
+  -- test if assignment or named function, otherwise anon (or the file changed since it was loaded)
+  if not fname or ((fname:match("=") == nil) and (fname:match("function %S+%(") == nil)) then
     return "<anonymous>"
   else
     local patterns = {

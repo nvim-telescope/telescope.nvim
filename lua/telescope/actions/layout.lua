@@ -1,9 +1,12 @@
+-- docgen needs `@param` on assignments that aren't function definitions
+---@diagnostic disable: annotation-usage-error, undefined-doc-param
+
 ---@brief
 --- The layout actions are actions to be used to change the layout of a picker.
 
-local action_state = require "telescope.actions.state"
-local state = require "telescope.state"
-local layout_strats = require "telescope.pickers.layout_strategies"
+local action_state = require("telescope.actions.state")
+local state = require("telescope.state")
+local layout_strats = require("telescope.pickers.layout_strategies")
 
 local transform_mod = require("telescope.actions.mt").transform_mod
 
@@ -16,7 +19,7 @@ local action_layout = setmetatable({}, {
 --- Toggle preview window.
 ---@note preview window can be toggled even if preview is set to false.
 ---@note this action is not mapped by default.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 action_layout.toggle_preview = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
   local status = state.get_status(picker.prompt_bufnr)
@@ -38,7 +41,7 @@ end
 --- Checks if `prompt_position` is an option for the current layout.
 ---
 ---@note this action is not mapped by default.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 action_layout.toggle_prompt_position = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
   picker.layout_config = picker.layout_config or {}
@@ -71,7 +74,7 @@ end
 --- Checks if `mirror` is an option for the current layout.
 ---
 ---@note this action is not mapped by default.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 action_layout.toggle_mirror = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
   -- flex layout is weird and needs handling separately
@@ -109,8 +112,11 @@ local get_cycle_layout = function(dir)
     elseif type(new_layout) == "table" then
       picker.layout_strategy = new_layout.layout_strategy
       picker.layout_config = new_layout.layout_config or {}
-      picker.previewer = (new_layout.previewer == nil and picker.all_previewers[picker.current_previewer_index])
-        or new_layout.previewer
+      picker.previewer = (
+        new_layout.previewer == nil
+        and picker.all_previewers
+        and picker.all_previewers[picker.current_previewer_index]
+      ) or new_layout.previewer
     else
       error("Not a valid layout setup: " .. vim.inspect(new_layout) .. "\nShould be a string or a table")
     end
@@ -122,13 +128,13 @@ end
 --- Cycles to the next layout in `cycle_layout_list`.
 ---
 ---@note this action is not mapped by default.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 action_layout.cycle_layout_next = get_cycle_layout(1)
 
 --- Cycles to the previous layout in `cycle_layout_list`.
 ---
 ---@note this action is not mapped by default.
----@param prompt_bufnr number: The prompt bufnr
+---@param prompt_bufnr integer: The prompt bufnr
 action_layout.cycle_layout_prev = get_cycle_layout(-1)
 
 action_layout = transform_mod(action_layout)

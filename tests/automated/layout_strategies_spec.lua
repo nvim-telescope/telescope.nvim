@@ -1,10 +1,10 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it = t.describe, t.it
 
-local config = require "telescope.config"
-local resolve = require "telescope.config.resolve"
-local layout_strats = require "telescope.pickers.layout_strategies"
+local config = require("telescope.config")
+local resolve = require("telescope.config.resolve")
+local layout_strats = require("telescope.pickers.layout_strategies")
 
 local validate_layout_config = layout_strats._validate_layout_config
 

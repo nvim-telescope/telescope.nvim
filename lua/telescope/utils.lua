@@ -3,13 +3,13 @@
 
 local api = vim.api
 
-local log = require "telescope.log"
+local log = require("telescope.log")
 
 local get_status = require("telescope.state").get_status
 
 local utils = {}
 
-utils.iswin = vim.fn.has "win32" == 1
+utils.iswin = vim.fn.has("win32") == 1
 -- Paths are normalized to forward slashes where they enter telescope (see `utils.normalize_sep`), so
 -- this is "/" on every platform. Kept for extensions.
 utils.pathsep = "/"
@@ -103,13 +103,17 @@ utils.path_expand = function(path)
     return path
   end
 
-  if path:match "^[%%#<]" then
+  if path:match("^[%%#<]") then
     path = vim.fn.expand(path)
   end
 
   return vim.fs.normalize(path, { win = utils.iswin })
 end
 
+---@nodoc
+---@param i integer
+---@param n integer
+---@return integer
 utils.cycle = function(i, n)
   return i % n == 0 and n or i % n
 end
@@ -253,7 +257,7 @@ utils.is_absolute = function(path)
   if path:sub(1, 1) == "/" then
     return true
   end
-  return utils.iswin and (path:match "^%a:[/\\]" ~= nil or path:sub(1, 2) == "\\\\") or false
+  return utils.iswin and (path:match("^%a:[/\\]") ~= nil or path:sub(1, 2) == "\\\\") or false
 end
 
 -- Make an absolute `path` relative to `cwd` (default: current working directory).
@@ -358,8 +362,8 @@ end
 -- Whether `filename` is a URI, as in Neovim's `path_with_url()`: an RFC 3986 scheme followed by `:/`
 -- ("fugitive:///a", "deno:/a", "term://…"), but not a drive letter ("C:/a") and not "mailto:a".
 utils.is_uri = function(filename)
-  local scheme = filename:match "^(%a[%w+.-]*):/"
-  return scheme ~= nil and #scheme > 1 and not scheme:match "[+.-]$"
+  local scheme = filename:match("^(%a[%w+.-]*):/")
+  return scheme ~= nil and #scheme > 1 and not scheme:match("[+.-]$")
 end
 
 --- Transform path is a util function that formats a path based on path_display
@@ -382,7 +386,7 @@ utils.transform_path = function(opts, path)
   end
   path = utils.normalize_sep(path)
 
-  ---@type fun(opts:table, path: string): string, table?
+  ---@type table<any, any>|fun(opts:table, path: string): string, table?
   local path_display = vim.nonnil(opts.path_display, require("telescope.config").values.path_display)
 
   local transformed_path = path
@@ -410,8 +414,8 @@ utils.transform_path = function(opts, path)
       local length
       local exclude = nil
 
-      if type(path_display["shorten"]) == "table" then
-        local shorten = path_display["shorten"]
+      local shorten = path_display["shorten"]
+      if type(shorten) == "table" then
         length = shorten.len
         exclude = shorten.exclude
       else
@@ -428,9 +432,8 @@ utils.transform_path = function(opts, path)
     if vim.tbl_contains(path_display, "filename_first") or path_display["filename_first"] ~= nil then
       local reverse_directories = false
 
-      if type(path_display["filename_first"]) == "table" then
-        local filename_first_opts = path_display["filename_first"]
-
+      local filename_first_opts = path_display["filename_first"]
+      if type(filename_first_opts) == "table" then
         if filename_first_opts.reverse_directories == nil or filename_first_opts.reverse_directories == false then
           reverse_directories = false
         else
@@ -527,7 +530,7 @@ function utils.max_split(s, pattern, maxsplit)
         table.insert(t, val)
       end
 
-      curpos = final + 1
+      curpos = final --[[@as integer]] + 1
     else
       table.insert(t, string.sub(s, curpos))
       break
@@ -543,7 +546,7 @@ function utils.max_split(s, pattern, maxsplit)
 end
 
 function utils.buffer_dir()
-  return vim.fn.expand "%:p:h"
+  return vim.fn.expand("%:p:h")
 end
 
 function utils.display_termcodes(str)
@@ -669,10 +672,6 @@ utils.__warn_no_selection = function(name)
   })
 end
 
---- Generate git command optionally with git env variables
----@param args string[]
----@param opts? table
----@return string[]
 -- Run `command` (e.g. "edit", "tab drop", "leftabove vnew") on `filename`, without expanding special
 -- characters (`%`, `#`, `$VAR`, `~`, wildcards): `fnameescape()` does not escape all of them on
 -- Windows. `:drop` takes a file list and expands it regardless, so it still needs `fnameescape()`.
@@ -716,13 +715,18 @@ end
 ---@return integer? lnum
 ---@return integer? col
 utils.__separate_file_path_location = function(path)
-  local file, lnum, col = path:match "^(.-):%s*(%d+)%s*:%s*(%d+)%s*:*$"
+  local file, lnum, col = path:match("^(.-):%s*(%d+)%s*:%s*(%d+)%s*:*$")
   if file then
-    return file, tonumber(lnum), tonumber(col)
+    local l, c = tonumber(lnum), tonumber(col)
+    ---@cast l integer
+    ---@cast c integer
+    return file, l, c
   end
-  file, lnum = path:match "^(.-):%s*(%d+)%s*:*$"
+  file, lnum = path:match("^(.-):%s*(%d+)%s*:*$")
   if file then
-    return file, tonumber(lnum), 0
+    local l = tonumber(lnum)
+    ---@cast l integer
+    return file, l, 0
   end
   return (path:gsub(":+$", "")), nil, nil
 end
@@ -758,7 +762,7 @@ end
 -- Contents of the file `filename` (errors if it can't be read).
 function utils.read_file(filename)
   local file = assert(io.open(filename, "r"))
-  local data = file:read "*a"
+  local data = file:read("*a")
   file:close()
   return data
 end

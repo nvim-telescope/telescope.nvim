@@ -2,7 +2,7 @@
 -- layout strategies produce (see `telescope_popup_options` in `telescope.pickers`).
 
 local api = vim.api
-local utils = require "telescope.utils"
+local utils = require("telescope.utils")
 
 local M = {}
 
@@ -15,7 +15,7 @@ local function expand_borderchars(chars)
   elseif #chars == 2 then
     chars = { chars[1], chars[1], chars[1], chars[1], chars[2], chars[2], chars[2], chars[2] }
   elseif #chars ~= 8 then
-    error "borderchars: expected 1, 2 or 8 characters"
+    error("borderchars: expected 1, 2 or 8 characters")
   end
   return vim.tbl_map(function(c)
     return vim.fn.strcharpart(c, 0, 1)
@@ -28,7 +28,7 @@ local function border_state(opts)
   if opts.border == false or not opts.borderchars then
     return nil
   end
-  local thickness = { 1, 1, 1, 1 }
+  local thickness = { 1, 1, 1, 1 } ---@type integer[]
   if type(opts.border) == "table" and not vim.tbl_isempty(opts.border) then
     assert(#opts.border == 4, "border: expected a list of 4 numbers")
     thickness = vim.tbl_map(function(t)
@@ -54,7 +54,7 @@ local function find_title(titles, side, width)
       if vim.fn.strdisplaywidth(text) > width - 2 then
         text = utils.truncate(text, width - 2)
       end
-      local align = title.pos:find "W" and "left" or title.pos:find "E" and "right" or "center"
+      local align = title.pos:find("W") and "left" or title.pos:find("E") and "right" or "center"
       return " " .. text .. " ", align
     end
   end
@@ -131,7 +131,7 @@ function Border:change_title(title, pos)
   state.titles = { { pos = pos, text = title } }
   vim.w[win].telescope_border = state
 
-  local border = api.nvim_win_get_config(win).border
+  local border = api.nvim_win_get_config(win).border --[[@as string[] ]] -- a window with a title has a border
   local config = set_titles({}, state.titles, border[2] ~= "", border[6] ~= "", api.nvim_win_get_width(win))
   api.nvim_win_set_config(win, config)
 end

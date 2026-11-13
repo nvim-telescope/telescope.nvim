@@ -55,9 +55,9 @@
 --- For a better understanding of how create() and displayer are used it's best to look
 --- at the code in make_entry.lua.
 
-local state = require "telescope.state"
-local resolve = require "telescope.config.resolve"
-local utils = require "telescope.utils"
+local state = require("telescope.state")
+local resolve = require("telescope.config.resolve")
+local utils = require("telescope.utils")
 
 local entry_display = {}
 entry_display.truncate = utils.truncate

@@ -1,8 +1,8 @@
-local make_entry = require "telescope.make_entry"
+local make_entry = require("telescope.make_entry")
 
-local async_static_finder = require "telescope.finders.async_static_finder"
-local async_oneshot_finder = require "telescope.finders.async_oneshot_finder"
-local async_job_finder = require "telescope.finders.async_job_finder"
+local async_static_finder = require("telescope.finders.async_static_finder")
+local async_oneshot_finder = require("telescope.finders.async_oneshot_finder")
+local async_job_finder = require("telescope.finders.async_job_finder")
 
 local finders = {}
 
@@ -11,11 +11,11 @@ finders.new_async_job = function(opts)
 end
 
 finders.new_job = function(command_generator, entry_maker, _, cwd)
-  return async_job_finder {
+  return async_job_finder({
     command_generator = command_generator,
     entry_maker = entry_maker,
     cwd = cwd,
-  }
+  })
 end
 
 --- One shot job
@@ -31,7 +31,7 @@ finders.new_oneshot_job = function(command_list, opts)
   command_list = vim.deepcopy(command_list)
   local command = table.remove(command_list, 1)
 
-  return async_oneshot_finder {
+  return async_oneshot_finder({
     entry_maker = opts.entry_maker or make_entry.gen_from_string(opts),
 
     cwd = opts.cwd,
@@ -43,7 +43,7 @@ finders.new_oneshot_job = function(command_list, opts)
         args = command_list,
       }
     end,
-  }
+  })
 end
 
 --- Used to create a finder for a Lua table.

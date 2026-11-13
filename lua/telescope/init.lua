@@ -1,4 +1,4 @@
-local _extensions = require "telescope._extensions"
+local _extensions = require("telescope._extensions")
 
 local telescope = {}
 
@@ -123,7 +123,7 @@ function telescope.setup(opts)
   opts = opts or {}
 
   if opts.default then
-    error "'default' is not a valid value for setup. See 'defaults'"
+    error("'default' is not a valid value for setup. See 'defaults'")
   end
 
   require("telescope.config").set_defaults(opts.defaults)
@@ -171,7 +171,7 @@ telescope.__format_setup_keys = function()
     table.insert(result, "")
     table.insert(result, string.format("%s*telescope.defaults.%s*", string.rep(" ", 70 - 20 - #name), name))
     table.insert(result, string.format("%s: ~", name))
-    table.insert(result, (vim.text.indent(4, desc)))
+    table.insert(result, (vim.text.indent(4, desc or "")))
   end
 
   table.insert(result, "</pre>")

@@ -1,8 +1,8 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it, before_each, after_each = t.describe, t.it, t.before_each, t.after_each
 
-local ui = require "telescope.pickers.ui"
+local ui = require("telescope.pickers.ui")
 
 local eq = assert.eq
 
@@ -28,7 +28,7 @@ describe("telescope.pickers.ui", function()
   end)
 
   it("draws the border natively around the content at line/col", function()
-    local win, _, cfg = create { line = 3, col = 5, borderchars = chars }
+    local win, _, cfg = create({ line = 3, col = 5, borderchars = chars })
     eq({ "1", "t", "2", "r", "3", "b", "4", "l" }, cfg.border)
     -- the native position is the border's corner, the content starts at line 3, col 5
     eq({ 1, 3 }, { cfg.row, cfg.col })
@@ -36,38 +36,38 @@ describe("telescope.pickers.ui", function()
   end)
 
   it("hides sides with thickness 0 and at the screen edge", function()
-    local _, _, cfg = create { line = 3, col = 5, borderchars = chars, border = { 0, 1, 1, 1 } }
+    local _, _, cfg = create({ line = 3, col = 5, borderchars = chars, border = { 0, 1, 1, 1 } })
     eq({ "", "", "", "r", "3", "b", "4", "l" }, cfg.border)
-    _, _, cfg = create { line = 1, col = 1, width = 80, borderchars = chars }
+    _, _, cfg = create({ line = 1, col = 1, width = 80, borderchars = chars })
     eq({ "", "", "", "", "", "b", "", "" }, cfg.border)
   end)
 
   it("has no border without borderchars or with border = false", function()
-    local _, border, cfg = create { line = 3, col = 5, borderchars = chars, border = false }
+    local _, border, cfg = create({ line = 3, col = 5, borderchars = chars, border = false })
     eq({ nil, "none" }, { border, cfg.border == "none" and "none" or cfg.border })
-    _, border = create { line = 3, col = 5 }
+    _, border = create({ line = 3, col = 5 })
     eq(nil, border)
   end)
 
   it("puts N titles on top and S titles at the bottom", function()
-    local _, _, cfg = create {
+    local _, _, cfg = create({
       line = 3,
       col = 5,
       borderchars = chars,
       title = { { pos = "SE", text = "foot" }, { pos = "NW", text = "head" } },
-    }
+    })
     eq({ { { " head " } }, "left" }, { cfg.title, cfg.title_pos })
     eq({ { { " foot " } }, "right" }, { cfg.footer, cfg.footer_pos })
   end)
 
   it("keeps the title position on change_title and the title on move", function()
-    local win, border = create {
+    local win, border = create({
       line = 3,
       col = 5,
       borderchars = chars,
       title = { { pos = "S", text = "old" } },
-    }
-    border:change_title "new"
+    })
+    border:change_title("new")
     local cfg = vim.api.nvim_win_get_config(win)
     eq({ nil, { { " new " } } }, { cfg.title, cfg.footer })
     ui.move(win, { line = 10, col = 10, width = 30, height = 4 })

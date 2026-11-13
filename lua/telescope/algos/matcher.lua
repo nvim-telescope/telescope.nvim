@@ -36,13 +36,13 @@ local SCORE_MATCH_WORD = 0.8
 local SCORE_MATCH_CAPITAL = 0.7
 local SCORE_MATCH_DOT = 0.9
 local SCORE_MAX = math.huge
-local SCORE_MIN = -math.huge
+local SCORE_MIN = -SCORE_MAX
 local MATCH_MAX_LENGTH = 1024
 
 -- bonus for a match, indexed by the previous byte: start of a word after any ASCII character that
 -- is not a letter or digit, higher after `/` (paths are normalized to `/`, see `utils.normalize_sep`)
 -- and `.` (file extensions); the camelCase bonus is handled in `prepare`
-local BONUS = {}
+local BONUS = {} ---@type table<integer, number>
 for b = 0, 255 do
   local alnum = (b >= 48 and b <= 57) or (b >= 65 and b <= 90) or (b >= 97 and b <= 122)
   BONUS[b] = (b < 128 and not alnum) and SCORE_MATCH_WORD or 0
@@ -53,7 +53,7 @@ BONUS[46] = SCORE_MATCH_DOT
 -- Byte maps for case folding: `FOLD` lowers A-Z, `SAME` is the identity (case sensitive). The mode
 -- only picks the table, so the hot loops have no branch on it (which LuaJIT would compile for
 -- whichever mode came first, slowing down the other one).
-local FOLD, SAME = {}, {}
+local FOLD, SAME = {}, {} ---@type table<integer, integer>, table<integer, integer>
 for b = 0, 255 do
   FOLD[b] = (b >= 65 and b <= 90) and b + 32 or b
   SAME[b] = b
@@ -67,8 +67,8 @@ end
 -- sensitive), continuation flags, and its characters (for `has_match`: a byte for ASCII, else the
 -- character's bytes). `lower`: the byte map for the haystack (`FOLD` or `SAME`).
 local last_needle, last_case_sensitive, n, needle_ascii, lower = nil, false, 0, true, FOLD
-local nb, ncont = {}, {}
-local chars, nchars = {}, 0
+local nb, ncont = {}, {} ---@type table<integer, integer>, table<integer, boolean>
+local chars, nchars = {}, 0 ---@type table<integer, integer|string>, integer
 
 local function set_needle(needle, case_sensitive)
   case_sensitive = case_sensitive == true
@@ -127,9 +127,13 @@ end
 
 -- The haystack: bytes (lowered unless case sensitive), match bonuses, continuation flags and the
 -- number of characters up to each byte (for the leading gap). Reused across calls.
-local hay, bonus, hcont, hidx = {}, {}, {}, {}
+local hay, bonus, hcont, hidx = {}, {}, {}, {} ---@type table<integer, integer>, table<integer, number>, table<integer, boolean>, table<integer, integer>
 
 -- Only bytes `first` to `last` are prepared (the window in which the needle can match, see `score`).
+---@param haystack string
+---@param first integer
+---@param last integer
+---@param m integer
 local function prepare(haystack, first, last, m)
   -- the whole haystack decides the ASCII fast path (it counts the leading gap in bytes)
   local ascii = needle_ascii
@@ -175,6 +179,10 @@ end
 -- `D[j]` is the best score with needle byte i matched at haystack byte j, `M[j]` the best score up
 -- to j. A continuation byte only continues the previous byte's match at j - 1, without a bonus;
 -- gaps over continuation bytes are free, so that scores count characters.
+---@param pD table<integer, number>
+---@param pM table<integer, number>
+---@param cD table<integer, number>
+---@param cM table<integer, number>
 local function row(i, first, last, pD, pM, cD, cM, ascii)
   local prev_score = SCORE_MIN
   local gap_score = i == n and SCORE_GAP_TRAILING or SCORE_GAP_INNER
@@ -232,8 +240,12 @@ local function row(i, first, last, pD, pM, cD, cM, ascii)
   end
 end
 
-local D1, M1, D2, M2 = {}, {}, {}, {}
+local D1, M1, D2, M2 = {}, {}, {}, {} ---@type table<integer, number>, table<integer, number>, table<integer, number>, table<integer, number>
 
+---@param needle string
+---@param haystack string
+---@param case_sensitive? boolean
+---@return number
 function fzy.score(needle, haystack, case_sensitive)
   set_needle(needle, case_sensitive)
   local m = #haystack

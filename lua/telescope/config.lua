@@ -1,7 +1,8 @@
-local sorters = require "telescope.sorters"
-local utils = require "telescope.utils"
+local sorters = require("telescope.sorters")
+local utils = require("telescope.utils")
 
 -- Keep the values around between reloads
+---@type table<string, any>
 _TelescopeConfigurationValues = _TelescopeConfigurationValues or {}
 _TelescopeConfigurationPickers = _TelescopeConfigurationPickers or {}
 
@@ -52,7 +53,7 @@ config.smarter_depth_2_extend = smarter_depth_2_extend
 config.resolve_table_opts = resolve_table_opts
 
 config.values = _TelescopeConfigurationValues
-config.descriptions = {}
+config.descriptions = {} ---@type table<string, string>
 config.pickers = _TelescopeConfigurationPickers
 
 function config.set_pickers(pickers)
@@ -418,7 +419,7 @@ append(
     -- https://github.com/nvim-telescope/telescope.nvim/issues/2929
     local prompt_width = vim.api.nvim_win_get_width(self.prompt_win)
     local cursor_col = vim.api.nvim_win_get_cursor(self.prompt_win)[2]
-    local prefix_display_width = vim.fn.strdisplaywidth(self.prompt_prefix) --[[@as integer]]
+    local prefix_display_width = vim.fn.strdisplaywidth(self.prompt_prefix)
     local prefix_width = #self.prompt_prefix
     local prefix_shift = 0
     if prefix_display_width ~= prefix_width then
@@ -508,7 +509,7 @@ append(
 append(
   "history",
   {
-    path = vim.fs.joinpath(vim.fn.stdpath "data", "telescope_history"),
+    path = vim.fs.joinpath(vim.fn.stdpath("data"), "telescope_history"),
     limit = 100,
     handler = function(...)
       return require("telescope.actions.history").get_simple_history(...)

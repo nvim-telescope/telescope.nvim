@@ -1,10 +1,11 @@
 local uv = vim.uv
 
-local log = require "telescope.log"
-local utils = require "telescope.utils"
+local log = require("telescope.log")
+local utils = require("telescope.utils")
 
 local M = {}
 
+---@class telescope.AsyncJob
 local AsyncJob = {}
 AsyncJob.__index = AsyncJob
 
@@ -16,7 +17,7 @@ function AsyncJob:close()
   if not self.handle:is_closing() then
     uv.process_kill(self.handle, "sigterm")
   end
-  log.debug "[async_job] closed"
+  log.debug("[async_job] closed")
 end
 
 --- Start a process. Its stdin is empty and its stderr discarded; read its output through `stdout`, a
@@ -84,6 +85,7 @@ end
 --- The next chunk of output, or nil at the end of the output (the pipe is closed then). Waits inside
 --- a `vim.async` task and resumes from the main loop, where the API can be used. The chunk is kept in
 --- the pipe until it is returned, so a read whose task is closed loses nothing: the next read gets it.
+---@async
 function Pipe:read()
   if not self.ready then
     vim.async.await(1, function(wake)
@@ -123,6 +125,7 @@ function Pipe:iter(opts)
 
   -- no loop: a loop here, inside the consumer's loop over the lines, keeps LuaJIT from compiling
   -- the consumer's loop well; the next chunk is read with a tail call instead
+  ---@async
   local function next_line()
     local found = string.find(text, split_char, pos, true)
     if found then

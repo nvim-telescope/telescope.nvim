@@ -1,4 +1,4 @@
-local log = require "telescope.log"
+local log = require("telescope.log")
 
 --- Holds the results of a picker, best first.
 ---
@@ -7,11 +7,12 @@ local log = require "telescope.log"
 --- in a "rest": entries pushed out of the top go to its front, entries rejected right away to its
 --- back. Everything is stored in plain arrays (no table per entry), with their lengths in fields
 --- (`#t` is a binary search in LuaJIT unless the array part is full).
+---@class EntryManager
 local EntryManager = {}
 EntryManager.__index = EntryManager
 
 function EntryManager:new(max_results, set_entry)
-  log.trace "Creating entry_manager..."
+  log.trace("Creating entry_manager...")
 
   return setmetatable({
     max_results = max_results,
@@ -31,6 +32,7 @@ function EntryManager:new(max_results, set_entry)
   }, self)
 end
 
+---@return integer
 function EntryManager:num_results()
   return self.ntop + self.nfront + self.nback
 end
@@ -60,6 +62,7 @@ function EntryManager:get_score(index)
   return score
 end
 
+---@return integer? index
 function EntryManager:find_entry(entry)
   local found
   local ntop, nfront, nback = self.ntop, self.nfront, self.nback

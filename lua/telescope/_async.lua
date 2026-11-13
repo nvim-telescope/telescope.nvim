@@ -4,15 +4,17 @@
 local M = {}
 
 --- Yield to the main loop; resumes from `vim.schedule`, where the API can be used.
+---@async
 function M.yield()
   vim.async.await(1, vim.schedule)
 end
 
 --- Pass `list[1..n]` (which may have holes) to `process_result`, yielding to the main loop every 1000
 --- entries.
----@param list table
+---@param list table<integer, table?> entries (nil for lines without an entry)
 ---@param n integer
----@param process_result fun(entry: table?)
+---@param process_result fun(entry: table?): boolean?
+---@async
 function M.process_list(list, n, process_result)
   for i = 1, n do
     process_result(list[i])
@@ -37,6 +39,7 @@ function M.signal()
       pending = true
     end
   end
+  ---@async
   local function wait()
     if pending then
       pending = false

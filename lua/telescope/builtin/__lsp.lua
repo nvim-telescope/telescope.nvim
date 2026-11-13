@@ -1,14 +1,14 @@
----@alias TextDocumentFunction fun(client: lsp.Client): lsp.TextDocumentPositionParams
+---@alias TextDocumentFunction fun(client: vim.lsp.Client, bufnr: integer): lsp.TextDocumentPositionParams
 
 local api = vim.api
 local lsp = vim.lsp
 
-local actions = require "telescope.actions"
+local actions = require("telescope.actions")
 local conf = require("telescope.config").values
-local finders = require "telescope.finders"
-local make_entry = require "telescope.make_entry"
-local pickers = require "telescope.pickers"
-local utils = require "telescope.utils"
+local finders = require("telescope.finders")
+local make_entry = require("telescope.make_entry")
+local pickers = require("telescope.pickers")
+local utils = require("telescope.utils")
 
 local M = {}
 
@@ -39,10 +39,10 @@ local function call_hierarchy(opts, method, title, direction, item)
     pickers
       .new(opts, {
         prompt_title = title,
-        finder = finders.new_table {
+        finder = finders.new_table({
           results = locations,
           entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
-        },
+        }),
         previewer = conf.qflist_previewer(opts),
         sorter = conf.generic_sorter(opts),
         push_cursor_on_edit = true,
@@ -71,8 +71,8 @@ local function pick_call_hierarchy_item(call_hierarchy_items)
   return call_hierarchy_items[choice]
 end
 
----@param win number|nil: Window handler
----@param extra lsp.TextDocumentPositionParams|nil: Extra fields in params
+---@param win integer|nil: Window handler
+---@param extra table|nil: Extra fields in params
 ---@return lsp.TextDocumentPositionParams|TextDocumentFunction: Params to send to the server
 local function client_position_params(win, extra)
   win = win or api.nvim_get_current_win()
@@ -149,7 +149,7 @@ local function filter_file_ignore_patterns(items, opts)
 
   return vim.tbl_filter(function(item)
     for _, patt in ipairs(file_ignore_patterns) do
-      if string.match(item.filename, patt) then
+      if item.filename and string.match(item.filename, patt) then
         return false
       end
     end
@@ -160,7 +160,7 @@ end
 ---@param action telescope.lsp.list_or_jump_action
 ---@param title string prompt title
 ---@param funname string: name of the calling function
----@param params lsp.TextDocumentPositionParams|(fun(client: lsp.Client, bufnr: integer): table?)
+---@param params lsp.TextDocumentPositionParams|(fun(client: vim.lsp.Client, bufnr: integer): table?)
 ---@param opts table
 local function list_or_jump(action, title, funname, params, opts)
   opts.reuse_win = vim.nonnil(opts.reuse_win, false)
@@ -176,7 +176,9 @@ local function list_or_jump(action, title, funname, params, opts)
       if error then
         errors[client_id] = error
       else
-        if result ~= nil then
+        -- skip the results of a client that stopped after the request (its encoding is unknown)
+        local client = result ~= nil and lsp.get_client_by_id(client_id)
+        if client then
           local locations = {}
 
           if not vim.islist(result) then
@@ -185,7 +187,7 @@ local function list_or_jump(action, title, funname, params, opts)
             vim.list_extend(locations, result)
           end
 
-          local offset_encoding = lsp.get_client_by_id(client_id).offset_encoding
+          local offset_encoding = client.offset_encoding
 
           if not vim.tbl_isempty(result) then
             first_encoding = offset_encoding
@@ -230,15 +232,19 @@ local function list_or_jump(action, title, funname, params, opts)
         end
       end
 
-      lsp.util.show_document(item.user_data, first_encoding, { reuse_win = opts.reuse_win })
+      lsp.util.show_document(
+        item.user_data,
+        first_encoding --[[@as "utf-8"|"utf-16"|"utf-32"]],
+        { reuse_win = opts.reuse_win }
+      )
     else
       pickers
         .new(opts, {
           prompt_title = title,
-          finder = finders.new_table {
+          finder = finders.new_table({
             results = items,
             entry_maker = opts.entry_maker or make_entry.gen_from_quickfix(opts),
-          },
+          }),
           previewer = conf.qflist_previewer(opts),
           sorter = conf.generic_sorter(opts),
           push_cursor_on_edit = true,
@@ -331,9 +337,8 @@ M.document_symbols = function(opts)
       return
     end
 
-    local locations
     local client = assert(lsp.get_client_by_id(ctx.client_id))
-    locations = lsp.util.symbols_to_items(result or {}, opts.bufnr, client.offset_encoding) or {}
+    local locations = lsp.util.symbols_to_items(result or {}, opts.bufnr, client.offset_encoding) or {}
     if vim.tbl_isempty(locations) then
       utils.notify("builtin.lsp_document_symbols", {
         msg = "No document_symbol locations found",
@@ -352,15 +357,15 @@ M.document_symbols = function(opts)
     pickers
       .new(opts, {
         prompt_title = "LSP Document Symbols",
-        finder = finders.new_table {
+        finder = finders.new_table({
           results = locations,
           entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
-        },
+        }),
         previewer = conf.qflist_previewer(opts),
-        sorter = conf.prefilter_sorter {
+        sorter = conf.prefilter_sorter({
           tag = "symbol_type",
           sorter = conf.generic_sorter(opts),
-        },
+        }),
         push_cursor_on_edit = true,
         push_tagstack_on_edit = true,
       })
@@ -377,9 +382,8 @@ M.workspace_symbols = function(opts)
       return
     end
 
-    local locations
     local client = assert(lsp.get_client_by_id(ctx.client_id))
-    locations = lsp.util.symbols_to_items(server_result or {}, opts.bufnr, client.offset_encoding) or {}
+    local locations = lsp.util.symbols_to_items(server_result or {}, opts.bufnr, client.offset_encoding) or {}
     if vim.tbl_isempty(locations) then
       utils.notify("builtin.lsp_workspace_symbols", {
         msg = "No results from workspace/symbol. Maybe try a different query: "
@@ -400,15 +404,15 @@ M.workspace_symbols = function(opts)
     pickers
       .new(opts, {
         prompt_title = "LSP Workspace Symbols",
-        finder = finders.new_table {
+        finder = finders.new_table({
           results = locations,
           entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
-        },
+        }),
         previewer = conf.qflist_previewer(opts),
-        sorter = conf.prefilter_sorter {
+        sorter = conf.prefilter_sorter({
           tag = "symbol_type",
           sorter = conf.generic_sorter(opts),
-        },
+        }),
       })
       :find()
   end)
@@ -417,6 +421,7 @@ end
 local function get_workspace_symbols_requester(bufnr, opts)
   local cancel = function() end
 
+  ---@async
   return function(prompt)
     cancel()
     ---@type table<integer, {error: lsp.ResponseError?, result: lsp.WorkspaceSymbol?}>
@@ -430,7 +435,8 @@ local function get_workspace_symbols_requester(bufnr, opts)
         utils.notify("lsp.workspace_symbols", { msg = client_res.error.message, level = "ERROR" })
       elseif client_res.result ~= nil then
         local client = assert(lsp.get_client_by_id(client_id))
-        vim.list_extend(locations, lsp.util.symbols_to_items(client_res.result, bufnr, client.offset_encoding))
+        local result = client_res.result --[[@as lsp.SymbolInformation[]|lsp.WorkspaceSymbol[] ]]
+        vim.list_extend(locations, lsp.util.symbols_to_items(result, bufnr, client.offset_encoding))
       end
     end
 
@@ -446,10 +452,10 @@ M.dynamic_workspace_symbols = function(opts)
   pickers
     .new(opts, {
       prompt_title = "LSP Dynamic Workspace Symbols",
-      finder = finders.new_dynamic {
+      finder = finders.new_dynamic({
         entry_maker = opts.entry_maker or make_entry.gen_from_lsp_symbols(opts),
         fn = get_workspace_symbols_requester(opts.bufnr, opts),
-      },
+      }),
       previewer = conf.qflist_previewer(opts),
       sorter = conf.generic_sorter(opts),
       attach_mappings = function(_, map)
@@ -461,7 +467,7 @@ M.dynamic_workspace_symbols = function(opts)
 end
 
 local function check_capabilities(method, bufnr)
-  local clients = lsp.get_clients { bufnr = bufnr }
+  local clients = lsp.get_clients({ bufnr = bufnr })
 
   for _, client in pairs(clients) do
     if client:supports_method(method, bufnr) then

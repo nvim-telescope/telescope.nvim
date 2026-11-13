@@ -122,8 +122,8 @@
 
 local api = vim.api
 
-local actions = require "telescope.actions"
-local config = require "telescope.config"
+local actions = require("telescope.actions")
+local config = require("telescope.config")
 
 local mappings = {}
 
@@ -248,8 +248,8 @@ local get_desc_for_keyfunc = function(key_func, opts)
     end
     return "telescope|" .. name
   elseif type(key_func) == "function" then
-    local info = debug.getinfo(key_func)
-    return "telescopej|" .. vim.json.encode { source = info.source, linedefined = info.linedefined }
+    local info = debug.getinfo(key_func) --[[@as debuglib.DebugInfo]]
+    return "telescopej|" .. vim.json.encode({ source = info.source, linedefined = info.linedefined })
   end
 end
 
@@ -304,7 +304,10 @@ local extract_keymap_opts = function(key_func)
 end
 
 mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
-  local applied_mappings = { n = {}, i = {} }
+  -- mode -> lhs (with replaced termcodes) -> true
+  local applied_mappings = vim.defaulttable(function()
+    return {}
+  end)
 
   local map = function(modes, key_bind, key_func, opts)
     if type(modes) == "string" then

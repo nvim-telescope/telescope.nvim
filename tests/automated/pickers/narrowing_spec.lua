@@ -1,8 +1,8 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it, after_each = t.describe, t.it, t.after_each
 
-local h = require "tests.helpers"
+local h = require("tests.helpers")
 local eq = assert.eq
 
 describe("pickers narrowing", function()
@@ -11,7 +11,7 @@ describe("pickers narrowing", function()
   it("doesn't bring back entries deleted from the finder", function()
     require("telescope.pickers")
       .new({}, {
-        finder = require("telescope.finders").new_table { results = { "ab", "ac", "bc" } },
+        finder = require("telescope.finders").new_table({ results = { "ab", "ac", "bc" } }),
         sorter = require("telescope.sorters").get_fzy_sorter(),
       })
       :find()
@@ -37,7 +37,7 @@ describe("pickers narrowing", function()
   it("keeps entries matching file_ignore_patterns out", function()
     require("telescope.pickers")
       .new({ file_ignore_patterns = { "^x" } }, {
-        finder = require("telescope.finders").new_table { results = { "ab", "xab", "abc" } },
+        finder = require("telescope.finders").new_table({ results = { "ab", "xab", "abc" } }),
         sorter = require("telescope.sorters").get_fzy_sorter(),
       })
       :find()
@@ -50,7 +50,7 @@ describe("pickers narrowing", function()
     eq({ 2, 2 }, { picker.manager:num_results(), picker.stats.processed })
     -- deleting a character scores all entries again
     local completed = picker.__completed
-    picker:set_prompt "a"
+    picker:set_prompt("a")
     vim.wait(5000, function()
       return picker.__completed > completed
     end, 10)
