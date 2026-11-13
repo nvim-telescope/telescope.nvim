@@ -669,10 +669,6 @@ utils.__warn_no_selection = function(name)
   })
 end
 
---- Generate git command optionally with git env variables
----@param args string[]
----@param opts? table
----@return string[]
 -- Run `command` (e.g. "edit", "tab drop", "leftabove vnew") on `filename`, without expanding special
 -- characters (`%`, `#`, `$VAR`, `~`, wildcards): `fnameescape()` does not escape all of them on
 -- Windows. `:drop` takes a file list and expands it regardless, so it still needs `fnameescape()`.

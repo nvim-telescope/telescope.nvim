@@ -1,4 +1,5 @@
----@diagnostic disable: undefined-doc-param
+-- docgen needs `@param` on assignments that aren't function definitions
+---@diagnostic disable: annotation-usage-error, undefined-doc-param
 
 ---@brief
 --- Telescope Builtins is a collection of community maintained pickers to support common workflows. It can be used as
@@ -42,7 +43,7 @@ end
 --
 --
 
----@inlinedocdoc
+---@inlinedoc
 ---@class telescope.builtin.live_grep.opts : telescope.builtin.base_opts
 ---@field cwd? string root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field grep_open_files? boolean if true, restrict search to open files only, mutually exclusive with `search_dirs`
@@ -60,7 +61,7 @@ end
 ---@param opts? telescope.builtin.live_grep.opts table: options to pass to the picker
 builtin.live_grep = require_on_exported_call("telescope.builtin.__files").live_grep
 
----@inlinedocdoc
+---@inlinedoc
 ---@class telescope.builtin.grep_string.opts : telescope.builtin.base_opts
 ---@field cwd? string root dir to search from (default: cwd, use utils.buffer_dir() to search relative to open buffer)
 ---@field search? string the query to search

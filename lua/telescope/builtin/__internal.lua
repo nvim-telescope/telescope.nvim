@@ -533,7 +533,6 @@ internal.oldfiles = function(opts)
     :find()
 end
 
----@param opts telescope.builtin.commands_history.opts: options to pass to the picker
 -- The entries of history `name` ("cmd", "search"), newest first (`:history` would truncate long ones).
 local function history_entries(name, filter_fn)
   local entries = {}
@@ -546,6 +545,7 @@ local function history_entries(name, filter_fn)
   return entries
 end
 
+---@param opts telescope.builtin.commands_history.opts: options to pass to the picker
 internal.command_history = function(opts)
   local results = history_entries("cmd", opts.filter_fn)
 

@@ -1,3 +1,6 @@
+-- docgen needs `@param` on assignments that aren't function definitions
+---@diagnostic disable: annotation-usage-error, undefined-doc-param
+
 ---@brief
 --- These functions are useful for people creating their own mappings.
 ---

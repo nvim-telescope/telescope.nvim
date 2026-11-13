@@ -247,7 +247,7 @@ end
 ---@param layout function: function with signature
 ---          function(self, max_columns, max_lines, layout_config): table
 ---        the returned table is the sizing and location information for the parts of the picker
----@retun function: wrapped function that inputs a validated layout_config into the `layout` function
+---@return function: wrapped function that inputs a validated layout_config into the `layout` function
 local function make_documented_layout(name, layout_config, layout)
   -- Save configuration data to be used by documentation
   layout_strategies._configurations[name] = layout_config
