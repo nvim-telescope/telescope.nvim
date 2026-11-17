@@ -608,8 +608,8 @@ end
 internal.vim_options = function(opts)
   local res = {}
   for _, v in pairs(api.nvim_get_all_options_info()) do
-    local ok, value = pcall(api.nvim_get_option_value, v.name, {})
-    if ok then
+    local value = vim.npcall(api.nvim_get_option_value, v.name, {})
+    if value ~= nil then
       v.value = value
       table.insert(res, v)
     end
@@ -1005,12 +1005,7 @@ internal.colorscheme = function(opts)
     table.insert(colors, 1, before_color)
   end
 
-  colors = vim.list_extend(
-    colors,
-    vim.tbl_filter(function(color)
-      return not vim.tbl_contains(colors, color)
-    end, fn.getcompletion("", "color"))
-  )
+  vim.list_extend(colors, fn.getcompletion("", "color"))
 
   -- if lazy is available, extend the colors list with unloaded colorschemes
   local lazy = package.loaded["lazy.core.util"]
@@ -1018,12 +1013,10 @@ internal.colorscheme = function(opts)
     local paths = lazy.get_unloaded_rtp ""
     local all_files = fn.globpath(table.concat(paths, ","), "colors/*", 1, 1)
     for _, f in ipairs(all_files) do
-      local color = fn.fnamemodify(f, ":t:r")
-      if not vim.tbl_contains(colors, color) then
-        table.insert(colors, color)
-      end
+      table.insert(colors, fn.fnamemodify(f, ":t:r"))
     end
   end
+  colors = vim.list.unique(colors)
 
   if opts.ignore_builtins then
     -- stylua: ignore
