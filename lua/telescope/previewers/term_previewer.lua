@@ -19,7 +19,7 @@ local get_file_stat = function(filename)
 end
 
 local list_dir = (function()
-  if vim.fn.has "win32" == 1 then
+  if utils.iswin then
     return function(dirname)
       -- cmd.exe treats `/` as an option prefix
       return { "cmd.exe", "/c", "dir", (utils.path_expand(dirname):gsub("/", "\\")) }
@@ -217,7 +217,7 @@ M.new_termopen_previewer = function(opts)
 
   if not opts.send_input then
     function opts.send_input(self, input)
-      local termcode = api.nvim_replace_termcodes(input, true, false, true)
+      local termcode = vim.keycode(input)
 
       local term_id = get_term_id(self)
       if term_id then
@@ -225,7 +225,7 @@ M.new_termopen_previewer = function(opts)
           return
         end
 
-        vim.fn.chansend(term_id, termcode)
+        api.nvim_chan_send(term_id, termcode)
       end
     end
   end

@@ -1,3 +1,7 @@
+local t = require "test.harness"
+local assert = require "test.assert"
+local describe, it = t.describe, t.it
+
 local entry_display = require "telescope.pickers.entry_display"
 
 describe("truncate", function()

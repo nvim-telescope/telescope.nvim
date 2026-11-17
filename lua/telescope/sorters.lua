@@ -579,8 +579,8 @@ local function tag_pattern(delimiter)
 end
 
 local filter_function = function(opts)
-  local scoring_function = utils.if_nil(opts.filter_function, substr_matcher)
-  local tag = utils.if_nil(opts.tag, "ordinal")
+  local scoring_function = vim.nonnil(opts.filter_function, substr_matcher)
+  local tag = vim.nonnil(opts.tag, "ordinal")
   local filter = tag_pattern(opts.delimiter)
 
   return function(_, prompt, entry)
@@ -597,7 +597,7 @@ local filter_function = function(opts)
 end
 
 local function create_tag_set(tag)
-  tag = utils.if_nil(tag, "ordinal")
+  tag = vim.nonnil(tag, "ordinal")
   local set = {}
   return setmetatable(set, {
     __index = {
@@ -613,7 +613,7 @@ end
 
 sorters.prefilter = function(opts)
   local sorter = opts.sorter
-  opts.delimiter = utils.if_nil(opts.delimiter, ":")
+  opts.delimiter = vim.nonnil(opts.delimiter, ":")
   sorter._delimiter = opts.delimiter
   sorter.tags = create_tag_set(opts.tag)
   sorter.filter_function = filter_function(opts)

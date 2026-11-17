@@ -171,7 +171,7 @@ action_set.edit = function(prompt_bufnr, command)
   local win_id = picker.get_selection_window(picker, entry)
 
   if picker.push_cursor_on_edit then
-    vim.cmd "normal! m'"
+    vim.cmd.normal { "m'", bang = true }
   end
 
   if picker.push_tagstack_on_edit then
@@ -219,7 +219,7 @@ action_set.edit = function(prompt_bufnr, command)
 
   if row and col then
     if api.nvim_buf_get_name(0) == filename then
-      vim.cmd [[normal! m']]
+      vim.cmd.normal { "m'", bang = true }
     end
     local ok, err_msg = pcall(api.nvim_win_set_cursor, 0, { row, col })
     if not ok then
@@ -283,10 +283,10 @@ action_set.scroll_results = function(prompt_bufnr, direction)
   local default_speed = api.nvim_win_get_height(status.layout.results.winid) / 2
   local speed = status.picker.layout_config.scroll_speed or default_speed
 
-  local input = direction > 0 and [[]] or [[]]
+  local input = vim.keycode(direction > 0 and "<C-e>" or "<C-y>")
 
   api.nvim_win_call(status.layout.results.winid, function()
-    vim.cmd([[normal! ]] .. math.floor(speed) .. input)
+    vim.cmd.normal { math.floor(speed) .. input, bang = true }
   end)
 
   action_set.shift_selection(prompt_bufnr, math.floor(speed) * direction)
@@ -303,10 +303,10 @@ action_set.scroll_horizontal_results = function(prompt_bufnr, direction)
   local default_speed = api.nvim_win_get_height(status.results_win) / 2
   local speed = status.picker.layout_config.scroll_speed or default_speed
 
-  local input = direction > 0 and [[zl]] or [[zh]]
+  local input = direction > 0 and "zl" or "zh"
 
   api.nvim_win_call(status.results_win, function()
-    vim.cmd([[normal! ]] .. math.floor(speed) .. input)
+    vim.cmd.normal { math.floor(speed) .. input, bang = true }
   end)
 end
 

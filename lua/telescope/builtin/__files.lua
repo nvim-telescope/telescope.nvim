@@ -45,7 +45,7 @@ local get_open_filelist = function(grep_open_files, cwd)
   end
 
   local bufnrs = vim.tbl_filter(function(b)
-    if 1 ~= fn.buflisted(b) then
+    if not vim.bo[b].buflisted then
       return false
     end
     return true
@@ -181,19 +181,17 @@ end
 
 ---@param opts telescope.builtin.grep_string.opts
 files.grep_string = function(opts)
-  local vimgrep_arguments = utils.if_nil(opts.vimgrep_arguments, conf.vimgrep_arguments)
+  local vimgrep_arguments = vim.nonnil(opts.vimgrep_arguments, conf.vimgrep_arguments)
   if not has_rg_program("grep_string", vimgrep_arguments[1]) then
     return
   end
   local word
-  local visual = fn.mode() == "v"
+  local mode = fn.mode()
+  local visual = mode == "v" or mode == "V" or mode == "\22"
 
-  if visual == true then
-    local saved_reg = fn.getreg "v"
-    vim.cmd [[noautocmd sil norm! "vy]]
-    local sele = fn.getreg "v"
-    fn.setreg("v", saved_reg)
-    word = utils.if_nil(opts.search, sele)
+  if visual then
+    local selection = fn.getregion(fn.getpos "v", fn.getpos ".", { type = mode })
+    word = vim.nonnil(opts.search, table.concat(selection, "\n"))
   else
     -- only expand when needed: errors if the cursor is not on a word
     word = opts.search
@@ -270,7 +268,7 @@ files.find_files = function(opts)
       return { "fd", "--type", "f", "--color", "never" }
     elseif 1 == fn.executable "fdfind" then
       return { "fdfind", "--type", "f", "--color", "never" }
-    elseif 1 == fn.executable "find" and fn.has "win32" == 0 then
+    elseif 1 == fn.executable "find" and not utils.iswin then
       return { "find", ".", "-type", "f" }
     elseif 1 == fn.executable "where" then
       return { "where", "/r", ".", "*" }
@@ -390,7 +388,7 @@ end
 
 ---@param opts telescope.builtin.treesitter.opts
 files.treesitter = function(opts)
-  opts.show_line = utils.if_nil(opts.show_line, true)
+  opts.show_line = vim.nonnil(opts.show_line, true)
   local ts = vim.treesitter
   local ft = vim.bo[opts.bufnr].filetype
   local lang = ts.language.get_lang(ft)
@@ -529,7 +527,7 @@ files.current_buffer_fuzzy_find = function(opts)
             return
           end
           local current_picker = action_state.get_current_picker(prompt_bufnr)
-          local searched_for = require("telescope.actions.state").get_current_line()
+          local searched_for = action_state.get_current_line()
 
           ---@type number[] | {start:number, end:number?, highlight:string?}[]
           local highlights = current_picker.sorter:highlighter(searched_for, selection.ordinal) or {}
@@ -549,7 +547,7 @@ files.current_buffer_fuzzy_find = function(opts)
 
           actions.close(prompt_bufnr)
           vim.schedule(function()
-            vim.cmd "normal! m'"
+            vim.cmd.normal { "m'", bang = true }
             api.nvim_win_set_cursor(0, { selection.lnum, first_col })
           end)
         end)
@@ -573,7 +571,7 @@ files.tags = function(opts)
     })
     return
   end
-  opts.entry_maker = utils.if_nil(opts.entry_maker, make_entry.gen_from_ctags(opts))
+  opts.entry_maker = vim.nonnil(opts.entry_maker, make_entry.gen_from_ctags(opts))
 
   pickers
     .new(opts, {
@@ -597,9 +595,9 @@ files.tags = function(opts)
                 return "\\" .. x
               end)
 
-              vim.cmd "keepjumps norm! gg"
+              vim.cmd.normal { "gg", bang = true, mods = { keepjumps = true } }
               fn.search(scode)
-              vim.cmd "norm! zz"
+              vim.cmd.normal { "zz", bang = true }
             else
               api.nvim_win_set_cursor(0, { selection.lnum, 0 })
             end

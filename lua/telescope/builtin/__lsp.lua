@@ -30,7 +30,7 @@ local function call_hierarchy(opts, method, title, direction, item)
       local ch_item = ch_call[direction]
       for _, rng in pairs(ch_call.fromRanges) do
         table.insert(locations, {
-          filename = vim.uri_to_fname(ch_item.uri),
+          filename = vim.uri.to_fname(ch_item.uri),
           text = ch_item.name,
           lnum = rng.start.line + 1,
           col = rng.start.character + 1,
@@ -143,7 +143,7 @@ end
 ---@param opts table
 ---@return vim.quickfix.entry[]
 local function filter_file_ignore_patterns(items, opts)
-  local file_ignore_patterns = utils.if_nil(opts.file_ignore_patterns, conf.file_ignore_patterns)
+  local file_ignore_patterns = vim.nonnil(opts.file_ignore_patterns, conf.file_ignore_patterns)
   file_ignore_patterns = file_ignore_patterns or {}
   if vim.tbl_isempty(file_ignore_patterns) then
     return items
@@ -165,7 +165,7 @@ end
 ---@param params lsp.TextDocumentPositionParams|(fun(client: lsp.Client, bufnr: integer): table?)
 ---@param opts table
 local function list_or_jump(action, title, funname, params, opts)
-  opts.reuse_win = utils.if_nil(opts.reuse_win, false)
+  opts.reuse_win = vim.nonnil(opts.reuse_win, false)
   opts.curr_filepath = api.nvim_buf_get_name(opts.bufnr)
 
   lsp.buf_request_all(opts.bufnr, action, params, function(results_per_client)
@@ -253,9 +253,9 @@ end
 
 ---@param opts telescope.builtin.lsp_references.opts: options to pass to the picker (default: false)
 M.references = function(opts)
-  opts.include_current_line = utils.if_nil(opts.include_current_line, false)
+  opts.include_current_line = vim.nonnil(opts.include_current_line, false)
   local params = client_position_params(opts.winnr, {
-    context = { includeDeclaration = utils.if_nil(opts.include_declaration, true) },
+    context = { includeDeclaration = vim.nonnil(opts.include_declaration, true) },
   })
   return list_or_jump("textDocument/references", "LSP References", "builtin.lsp_references", params, opts)
 end
@@ -295,7 +295,7 @@ local symbols_sorter = function(symbols)
   local filename_to_bufnr = {}
   for _, symbol in ipairs(symbols) do
     if filename_to_bufnr[symbol.filename] == nil then
-      filename_to_bufnr[symbol.filename] = vim.uri_to_bufnr(vim.uri_from_fname(symbol.filename))
+      filename_to_bufnr[symbol.filename] = vim.fn.bufadd(symbol.filename)
     end
     symbol.bufnr = filename_to_bufnr[symbol.filename]
   end
@@ -397,7 +397,7 @@ M.workspace_symbols = function(opts)
       return
     end
 
-    opts.ignore_filename = utils.if_nil(opts.ignore_filename, false)
+    opts.ignore_filename = vim.nonnil(opts.ignore_filename, false)
 
     pickers
       .new(opts, {

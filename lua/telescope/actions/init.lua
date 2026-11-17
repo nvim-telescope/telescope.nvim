@@ -258,7 +258,7 @@ end
 --- You can just map `actions.select_default + actions.center`
 ---@param prompt_bufnr number: The prompt bufnr
 actions.center = function(prompt_bufnr)
-  vim.cmd ":normal! zz"
+  vim.cmd.normal { "zz", bang = true }
 end
 
 --- Perform default action on selection, usually something like<br>
@@ -366,7 +366,7 @@ end
 
 actions.close_pum = function(_)
   if 0 ~= fn.pumvisible() then
-    api.nvim_feedkeys(api.nvim_replace_termcodes("<c-y>", true, true, true), "n", true)
+    api.nvim_feedkeys(vim.keycode "<C-y>", "n", true)
   end
 end
 
@@ -395,8 +395,8 @@ actions._close = function(prompt_bufnr)
 end
 
 local set_edit_line = function(prompt_bufnr, fname, prefix, postfix)
-  postfix = utils.if_nil(postfix, "")
-  postfix = api.nvim_replace_termcodes(postfix, true, false, true)
+  postfix = vim.nonnil(postfix, "")
+  postfix = vim.keycode(postfix)
   local selection = action_state.get_selected_entry()
   if selection == nil then
     utils.__warn_no_selection(fname)
@@ -486,7 +486,7 @@ actions.insert_symbol_i = function(prompt_bufnr)
   local symbol = action_state.get_selected_entry().value[1]
   actions.close(prompt_bufnr)
   vim.schedule(function()
-    vim.cmd [[startinsert]]
+    vim.cmd.startinsert()
     api.nvim_put({ symbol }, "", true, true)
   end)
 end
@@ -599,7 +599,7 @@ actions.git_checkout = function(prompt_bufnr)
       msg = string.format("Checked out: %s", selection.value),
       level = "INFO",
     })
-    vim.cmd "checktime"
+    vim.cmd.checktime()
   else
     utils.notify("actions.git_checkout", {
       msg = string.format(
@@ -855,7 +855,7 @@ actions.git_checkout_current_buffer = function(prompt_bufnr)
   end
   actions.close(prompt_bufnr)
   utils.get_os_command_output({ "git", "checkout", selection.value, "--", selection.current_file }, cwd)
-  vim.cmd "checktime"
+  vim.cmd.checktime()
 end
 
 --- Stage/unstage selected file
@@ -888,8 +888,8 @@ local entry_to_qf = function(entry)
   return {
     bufnr = entry.bufnr,
     filename = from_entry.path(entry, false, false),
-    lnum = utils.if_nil(entry.lnum, 1),
-    col = utils.if_nil(entry.col, 1),
+    lnum = vim.nonnil(entry.lnum, 1),
+    col = vim.nonnil(entry.col, 1),
     text = text,
     type = entry.qf_type,
   }
@@ -1141,14 +1141,14 @@ end
 --- `actions.smart_send_to_qflist + actions.open_qflist`
 ---@param prompt_bufnr number: The prompt bufnr
 actions.open_qflist = function(prompt_bufnr)
-  vim.cmd [[botright copen]]
+  vim.cmd.copen { mods = { split = "botright" } }
 end
 
 --- Open the location list. It makes sense to use this in combination with one of the send_to_loclist actions
 --- `actions.smart_send_to_qflist + actions.open_qflist`
 ---@param prompt_bufnr number: The prompt bufnr
 actions.open_loclist = function(prompt_bufnr)
-  vim.cmd [[lopen]]
+  vim.cmd.lopen()
 end
 
 --- Delete the selected buffer or all the buffers selected using multi selection.
@@ -1166,7 +1166,7 @@ actions.delete_buffer = function(prompt_bufnr)
       if api.nvim_win_is_valid(current_picker.original_win_id) then
         local jumplist = fn.getjumplist(current_picker.original_win_id)[1]
         for i = #jumplist, 1, -1 do
-          if jumplist[i].bufnr ~= selection.bufnr and fn.bufloaded(jumplist[i].bufnr) == 1 then
+          if jumplist[i].bufnr ~= selection.bufnr and api.nvim_buf_is_loaded(jumplist[i].bufnr) then
             api.nvim_win_set_buf(current_picker.original_win_id, jumplist[i].bufnr)
             current_picker.original_bufnr = jumplist[i].bufnr
             return ok
@@ -1237,26 +1237,26 @@ end
 ---@param prompt_bufnr number: The prompt bufnr
 actions.which_key = function(prompt_bufnr, opts)
   opts = opts or {}
-  opts.max_height = utils.if_nil(opts.max_height, 0.4)
-  opts.only_show_current_mode = utils.if_nil(opts.only_show_current_mode, true)
-  opts.mode_width = utils.if_nil(opts.mode_width, 1)
-  opts.keybind_width = utils.if_nil(opts.keybind_width, 7)
-  opts.name_width = utils.if_nil(opts.name_width, 30)
-  opts.line_padding = utils.if_nil(opts.line_padding, 1)
-  opts.separator = utils.if_nil(opts.separator, " -> ")
-  opts.close_with_action = utils.if_nil(opts.close_with_action, true)
-  opts.normal_hl = utils.if_nil(opts.normal_hl, "TelescopePrompt")
-  opts.border_hl = utils.if_nil(opts.border_hl, "TelescopePromptBorder")
-  opts.winblend = utils.if_nil(opts.winblend, conf.winblend)
+  opts.max_height = vim.nonnil(opts.max_height, 0.4)
+  opts.only_show_current_mode = vim.nonnil(opts.only_show_current_mode, true)
+  opts.mode_width = vim.nonnil(opts.mode_width, 1)
+  opts.keybind_width = vim.nonnil(opts.keybind_width, 7)
+  opts.name_width = vim.nonnil(opts.name_width, 30)
+  opts.line_padding = vim.nonnil(opts.line_padding, 1)
+  opts.separator = vim.nonnil(opts.separator, " -> ")
+  opts.close_with_action = vim.nonnil(opts.close_with_action, true)
+  opts.normal_hl = vim.nonnil(opts.normal_hl, "TelescopePrompt")
+  opts.border_hl = vim.nonnil(opts.border_hl, "TelescopePromptBorder")
+  opts.winblend = vim.nonnil(opts.winblend, conf.winblend)
   if type(opts.winblend) == "function" then
     opts.winblend = opts.winblend()
   end
-  opts.zindex = utils.if_nil(opts.zindex, 100)
-  opts.column_padding = utils.if_nil(opts.column_padding, "  ")
+  opts.zindex = vim.nonnil(opts.zindex, 100)
+  opts.column_padding = vim.nonnil(opts.column_padding, "  ")
 
   -- Assigning into 'opts.column_indent' would override a number with a string and
   -- cause issues with subsequent calls, keep a local copy of the string instead
-  local column_indent = string.rep(" ", utils.if_nil(opts.column_indent, 4))
+  local column_indent = string.rep(" ", vim.nonnil(opts.column_indent, 4))
 
   -- close on repeated keypress
   local km_bufs = (function()
@@ -1291,9 +1291,9 @@ actions.which_key = function(prompt_bufnr, opts)
 
   local make_display = function(mapping)
     return displayer {
-      { mapping.mode, utils.if_nil(opts.mode_hl, "TelescopeResultsConstant") },
-      { mapping.keybind, utils.if_nil(opts.keybind_hl, "TelescopeResultsVariable") },
-      { mapping.name, utils.if_nil(opts.name_hl, "TelescopeResultsFunction") },
+      { mapping.mode, vim.nonnil(opts.mode_hl, "TelescopeResultsConstant") },
+      { mapping.keybind, vim.nonnil(opts.keybind_hl, "TelescopeResultsVariable") },
+      { mapping.name, vim.nonnil(opts.name_hl, "TelescopeResultsFunction") },
     }
   end
 
@@ -1375,11 +1375,11 @@ actions.which_key = function(prompt_bufnr, opts)
   vim.wo[km_win_id].foldenable = false
 
   api.nvim_create_autocmd("BufLeave", {
-    buffer = km_buf,
+    buf = km_buf,
     once = true,
     callback = function()
       pcall(api.nvim_win_close, km_win_id, true)
-      require("telescope.utils").buf_delete(km_buf)
+      utils.buf_delete(km_buf)
     end,
   })
 
@@ -1435,7 +1435,7 @@ actions.which_key = function(prompt_bufnr, opts)
   vim.schedule(function()
     api.nvim_create_autocmd(close_event, {
       pattern = close_pattern,
-      buffer = close_buffer,
+      buf = close_buffer,
       once = true,
       callback = function()
         vim.schedule(function()

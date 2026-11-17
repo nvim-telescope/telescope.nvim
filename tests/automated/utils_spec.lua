@@ -1,3 +1,7 @@
+local t = require "test.harness"
+local assert = require "test.assert"
+local describe, it, before_each, after_each = t.describe, t.it, t.before_each, t.after_each
+
 local utils = require "telescope.utils"
 
 local eq = assert.eq
@@ -77,7 +81,7 @@ describe("is_uri", function()
 
     for _, uri in ipairs(uris) do
       it(uri, function()
-        assert.is_true(utils.is_uri(uri))
+        assert(utils.is_uri(uri))
       end)
     end
   end)
@@ -98,7 +102,7 @@ describe("is_uri", function()
     }
     for _, input in ipairs(inputs) do
       it(vim.inspect(input), function()
-        assert.is_false(utils.is_uri(input))
+        assert(not utils.is_uri(input))
       end)
     end
   end)
@@ -115,7 +119,7 @@ describe("is_uri", function()
 
     for _, uri in ipairs(paths) do
       it(uri, function()
-        assert.is_false(utils.is_uri(uri))
+        assert(not utils.is_uri(uri))
       end)
     end
   end)
@@ -129,7 +133,7 @@ describe("is_uri", function()
 
     for _, path in ipairs(paths) do
       it(path, function()
-        assert.is_false(utils.is_uri(path))
+        assert(not utils.is_uri(path))
       end)
     end
   end)
@@ -143,7 +147,7 @@ describe("is_uri", function()
 
     for _, path in ipairs(paths) do
       it(path, function()
-        assert.is_false(utils.is_uri(path))
+        assert(not utils.is_uri(path))
       end)
     end
   end)

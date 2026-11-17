@@ -29,12 +29,22 @@ local function apply_cwd_only_aliases(opts)
   return opts
 end
 
+-- Command modifiers for the `cmd` of `action_set.select` ("default", "horizontal", "vertical", "tab")
+local function split_mods(cmd)
+  if cmd == "vertical" then
+    return { vertical = true }
+  elseif cmd == "tab" then
+    return { tab = api.nvim_tabpage_get_number(0) } -- like `:tab`: after the current tab page
+  end
+  return {}
+end
+
 local internal = {}
 
 ---@param opts telescope.builtin.builtin.opts
 internal.builtin = function(opts)
-  opts.include_extensions = utils.if_nil(opts.include_extensions, false)
-  opts.use_default_opts = utils.if_nil(opts.use_default_opts, false)
+  opts.include_extensions = vim.nonnil(opts.include_extensions, false)
+  opts.use_default_opts = vim.nonnil(opts.use_default_opts, false)
 
   local objs = {}
 
@@ -126,7 +136,7 @@ end
 ---@param opts telescope.builtin.resume.opts: options to pass to the picker
 internal.resume = function(opts)
   opts = opts or {}
-  opts.cache_index = utils.if_nil(opts.cache_index, 1)
+  opts.cache_index = vim.nonnil(opts.cache_index, 1)
 
   local cached_pickers = state.get_global_key "cached_pickers"
   if cached_pickers == nil or vim.tbl_isempty(cached_pickers) then
@@ -164,7 +174,7 @@ internal.resume = function(opts)
   picker.previewer = picker.all_previewers
   if picker.hidden_previewer then
     picker.hidden_previewer = nil
-    opts.previewer = utils.if_nil(opts.previewer, false)
+    opts.previewer = vim.nonnil(opts.previewer, false)
   end
   opts.resumed_picker = true
   pickers.new(opts, picker):find()
@@ -319,7 +329,7 @@ internal.commands = function(opts)
             table.insert(commands, cmd)
           end
 
-          local need_buf_command = utils.if_nil(opts.show_buf_command, true)
+          local need_buf_command = vim.nonnil(opts.show_buf_command, true)
 
           if need_buf_command then
             local buf_command_iter = api.nvim_buf_get_commands(0, {})
@@ -347,10 +357,10 @@ internal.commands = function(opts)
           local cmd = string.format([[:%s ]], val.name)
 
           if val.nargs == "0" then
-            local cr = api.nvim_replace_termcodes("<cr>", true, false, true)
+            local cr = vim.keycode "<CR>"
             cmd = cmd .. cr
           end
-          vim.cmd [[stopinsert]]
+          vim.cmd.stopinsert()
           api.nvim_feedkeys(cmd, "nt", false)
         end)
 
@@ -362,7 +372,7 @@ end
 
 ---@param opts telescope.builtin.quickfix.opts: options to pass to the picker
 internal.quickfix = function(opts)
-  local qf_identifier = opts.id or utils.if_nil(opts.nr, 0)
+  local qf_identifier = opts.id or vim.nonnil(opts.nr, 0)
   local locations = fn.getqflist({ [opts.id and "id" or "nr"] = qf_identifier, items = true }).items
 
   if vim.tbl_isempty(locations) then
@@ -443,8 +453,8 @@ internal.quickfixhistory = function(opts)
         map({ "i", "n" }, "<C-q>", function(prompt_bufnr)
           local nr = action_state.get_selected_entry().nr
           actions.close(prompt_bufnr)
-          vim.cmd(nr .. "chistory")
-          vim.cmd "botright copen"
+          vim.cmd.chistory { count = nr }
+          vim.cmd.copen { mods = { split = "botright" } }
         end)
         return true
       end,
@@ -485,19 +495,22 @@ end
 ---@param opts telescope.builtin.oldfiles.opts: options to pass to the picker
 internal.oldfiles = function(opts)
   opts = apply_cwd_only_aliases(opts)
-  opts.include_current_session = utils.if_nil(opts.include_current_session, true)
+  opts.include_current_session = vim.nonnil(opts.include_current_session, true)
 
   local current_buffer = api.nvim_get_current_buf()
   local current_file = utils.normalize_sep(api.nvim_buf_get_name(current_buffer))
   local results = {}
 
   if opts.include_current_session then
-    for _, buffer in ipairs(utils.split_lines(fn.execute ":buffers! t")) do
-      local match = tonumber(string.match(buffer, "%s*(%d+)"))
-      local open_by_lsp = string.match(buffer, "line 0$")
-      if match and not open_by_lsp then
-        local file = utils.normalize_sep(api.nvim_buf_get_name(match))
-        if uv.fs_stat(file) and match ~= current_buffer then
+    local buffers = fn.getbufinfo()
+    table.sort(buffers, function(a, b) -- most recently used first, like `:ls t`
+      return a.lastused > b.lastused or (a.lastused == b.lastused and a.bufnr > b.bufnr)
+    end)
+    for _, info in ipairs(buffers) do
+      -- `lnum` 0: never shown in a window (e.g. loaded by an LSP client)
+      if info.lnum > 0 and info.bufnr ~= current_buffer then
+        local file = utils.normalize_sep(info.name)
+        if uv.fs_stat(file) then
           table.insert(results, file)
         end
       end
@@ -595,8 +608,8 @@ end
 internal.vim_options = function(opts)
   local res = {}
   for _, v in pairs(api.nvim_get_all_options_info()) do
-    local ok, value = pcall(api.nvim_get_option_value, v.name, {})
-    if ok then
+    local value = vim.npcall(api.nvim_get_option_value, v.name, {})
+    if value ~= nil then
       v.value = value
       table.insert(res, v)
     end
@@ -623,7 +636,7 @@ internal.vim_options = function(opts)
 
           local esc = ""
           if fn.mode() == "i" then
-            esc = api.nvim_replace_termcodes("<esc>", true, false, true)
+            esc = vim.keycode "<Esc>"
           end
 
           api.nvim_feedkeys(
@@ -642,8 +655,8 @@ end
 
 ---@param opts telescope.builtin.help_tags.opts: options to pass to the picker
 internal.help_tags = function(opts)
-  opts.lang = utils.if_nil(opts.lang, vim.o.helplang)
-  opts.fallback = utils.if_nil(opts.fallback, true)
+  opts.lang = vim.nonnil(opts.lang, vim.o.helplang)
+  opts.fallback = vim.nonnil(opts.fallback, true)
   opts.file_ignore_patterns = {}
 
   local langs = vim.split(opts.lang, ",", { trimempty = true })
@@ -736,13 +749,7 @@ internal.help_tags = function(opts)
           end
 
           actions.close(prompt_bufnr)
-          if cmd == "default" or cmd == "horizontal" then
-            vim.cmd("help " .. selection.value)
-          elseif cmd == "vertical" then
-            vim.cmd("vert help " .. selection.value)
-          elseif cmd == "tab" then
-            vim.cmd("tab help " .. selection.value)
-          end
+          vim.cmd.help { selection.value, mods = split_mods(cmd) }
         end)
 
         return true
@@ -753,7 +760,7 @@ end
 
 ---@param opts telescope.builtin.man_pages.opts: options to pass to the picker
 internal.man_pages = function(opts)
-  opts.sections = utils.if_nil(opts.sections, { "1" })
+  opts.sections = vim.nonnil(opts.sections, { "1" })
   assert(vim.islist(opts.sections), "sections should be a list")
   opts.man_cmd = utils.get_lazy_default(opts.man_cmd, function()
     local uname = uv.os_uname()
@@ -784,15 +791,8 @@ internal.man_pages = function(opts)
             return
           end
 
-          local args = selection.section .. " " .. selection.value
           actions.close(prompt_bufnr)
-          if cmd == "default" or cmd == "horizontal" then
-            vim.cmd("Man " .. args)
-          elseif cmd == "vertical" then
-            vim.cmd("vert Man " .. args)
-          elseif cmd == "tab" then
-            vim.cmd("tab Man " .. args)
-          end
+          vim.cmd.Man { selection.section, selection.value, mods = split_mods(cmd) }
         end)
 
         return true
@@ -814,7 +814,7 @@ internal.reloader = function(opts)
   for _, module_name in ipairs(package_list) do
     column_len = math.max(column_len, #module_name)
   end
-  opts.column_len = utils.if_nil(opts.column_len, column_len)
+  opts.column_len = vim.nonnil(opts.column_len, column_len)
 
   pickers
     .new(opts, {
@@ -1005,12 +1005,7 @@ internal.colorscheme = function(opts)
     table.insert(colors, 1, before_color)
   end
 
-  colors = vim.list_extend(
-    colors,
-    vim.tbl_filter(function(color)
-      return not vim.tbl_contains(colors, color)
-    end, fn.getcompletion("", "color"))
-  )
+  vim.list_extend(colors, fn.getcompletion("", "color"))
 
   -- if lazy is available, extend the colors list with unloaded colorschemes
   local lazy = package.loaded["lazy.core.util"]
@@ -1018,12 +1013,10 @@ internal.colorscheme = function(opts)
     local paths = lazy.get_unloaded_rtp ""
     local all_files = fn.globpath(table.concat(paths, ","), "colors/*", 1, 1)
     for _, f in ipairs(all_files) do
-      local color = fn.fnamemodify(f, ":t:r")
-      if not vim.tbl_contains(colors, color) then
-        table.insert(colors, color)
-      end
+      table.insert(colors, fn.fnamemodify(f, ":t:r"))
     end
   end
+  colors = vim.list.unique(colors)
 
   if opts.ignore_builtins then
     -- stylua: ignore
@@ -1141,7 +1134,7 @@ internal.marks = function(opts)
   local marks_others = {}
   local bufname = api.nvim_buf_get_name(opts.bufnr)
   local all_marks = {}
-  opts.mark_type = utils.if_nil(opts.mark_type, "all")
+  opts.mark_type = vim.nonnil(opts.mark_type, "all")
   if opts.mark_type == "all" then
     all_marks = { local_marks, global_marks }
   elseif opts.mark_type == "local" then
@@ -1172,7 +1165,7 @@ internal.marks = function(opts)
       end
     end
   end
-  marks_table = fn.extend(marks_table, marks_others)
+  vim.list_extend(marks_table, marks_others)
 
   pickers
     .new(opts, {
@@ -1223,9 +1216,9 @@ end
 
 ---@param opts telescope.builtin.keymaps.opts: options to pass to the picker
 internal.keymaps = function(opts)
-  opts.modes = utils.if_nil(opts.modes, { "n", "i", "c", "x" })
-  opts.show_plug = utils.if_nil(opts.show_plug, true)
-  opts.only_buf = utils.if_nil(opts.only_buf, false)
+  opts.modes = vim.nonnil(opts.modes, { "n", "i", "c", "x" })
+  opts.show_plug = vim.nonnil(opts.show_plug, true)
+  opts.only_buf = vim.nonnil(opts.only_buf, false)
 
   local keymap_encountered = {} -- used to make sure no duplicates are inserted into keymaps_table
   local keymaps_table = {}
@@ -1275,7 +1268,7 @@ internal.keymaps = function(opts)
             return
           end
 
-          api.nvim_feedkeys(api.nvim_replace_termcodes(selection.value.lhs, true, false, true), "t", true)
+          api.nvim_feedkeys(vim.keycode(selection.value.lhs), "t", true)
           return actions.close(prompt_bufnr)
         end)
         return true
@@ -1304,7 +1297,7 @@ internal.filetypes = function(opts)
           end
 
           actions.close(prompt_bufnr)
-          vim.cmd("setfiletype " .. selection[1])
+          vim.cmd.setfiletype(selection[1])
         end)
         return true
       end,
@@ -1333,7 +1326,7 @@ internal.highlights = function(opts)
           end
 
           actions.close(prompt_bufnr)
-          vim.cmd("hi " .. selection.value)
+          vim.cmd.highlight(selection.value)
         end)
         return true
       end,
@@ -1378,7 +1371,10 @@ internal.autocommands = function(opts)
             end
           end
           local group_name = val.group_name ~= "<anonymous>" and val.group_name or ""
-          local output = fn.execute("verb autocmd " .. group_name .. " " .. val.event .. " " .. val.pattern, "silent")
+          local output = api.nvim_exec2(
+            "verb autocmd " .. group_name .. " " .. val.event .. " " .. val.pattern,
+            { output = true }
+          ).output
           for line in output:gmatch "[^\r\n]+" do
             local source_file = line:match "Last set from (.*) line %d*$" or line:match "Last set from (.*)$"
             if source_file and source_file ~= "Lua" then
@@ -1424,8 +1420,8 @@ internal.spell_suggest = function(opts)
 
           action_state.get_current_picker(prompt_bufnr)._original_mode = "i"
           actions.close(prompt_bufnr)
-          vim.cmd('normal! "_ciw' .. selection[1])
-          vim.cmd "stopinsert"
+          vim.cmd.normal { '"_ciw' .. selection[1], bang = true }
+          vim.cmd.stopinsert()
         end)
         return true
       end,

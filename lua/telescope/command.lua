@@ -210,9 +210,8 @@ end
 -- input in command line `Telescope gh <TAB>`
 -- Returns a list for each extension.
 function command.get_extensions_subcommand()
-  local exts = require("telescope._extensions").manager
   local complete_ext_table = {}
-  for cmd, value in pairs(exts) do
+  for cmd, value in pairs(extensions) do
     if type(value) == "table" then
       complete_ext_table[cmd] = vim.tbl_keys(value)
     end

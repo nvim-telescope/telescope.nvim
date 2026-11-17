@@ -32,7 +32,7 @@ local function defaulter(f)
       opts.preview = type(opts.preview) ~= "table" and {} or opts.preview
       if type(conf.preview) == "table" then
         for k, v in pairs(conf.preview) do
-          opts.preview[k] = utils.if_nil(opts.preview[k], v)
+          opts.preview[k] = vim.nonnil(opts.preview[k], v)
         end
       end
       return f(opts)
@@ -152,18 +152,47 @@ local handle_file_preview = function(filepath, bufnr, stat, opts)
   end)
 end
 
+-- List a directory like Nvim's directory listing (`:h dir`): directories first, marked by a trailing
+-- "/", highlighted as filetype "directory".
+local handle_directory_preview = function(dirpath, bufnr, opts)
+  vim.schedule(function()
+    if not api.nvim_buf_is_valid(bufnr) then
+      return
+    end
+    local dirs, files = {}, {}
+    for name, type, err in vim.fs.dir(dirpath, { err = true, plain = true }) do
+      if err then
+        putils.set_preview_message(bufnr, opts.winid, err, opts.preview.msg_bg_fillchar)
+        return
+      end
+      local is_dir = type == "directory" or type == "link" and fn.isdirectory(vim.fs.joinpath(dirpath, name)) == 1
+      table.insert(is_dir and dirs or files, (name:gsub("\n", "\0")))
+    end
+    table.sort(dirs)
+    table.sort(files)
+    for i, name in ipairs(dirs) do
+      dirs[i] = name .. "/"
+    end
+    api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.list_extend(dirs, files))
+    if opts.callback then
+      opts.callback(bufnr)
+    end
+    putils.highlighter(bufnr, "directory", opts)
+  end)
+end
+
 local PREVIEW_TIMEOUT_MS = 250
 local PREVIEW_FILESIZE_MB = 25
 local PREVIEW_HIGHLIGHT_MB = 1
 
 previewers.file_maker = function(filepath, bufnr, opts)
-  opts = utils.if_nil(opts, {})
-  opts.preview = utils.if_nil(opts.preview, {})
-  opts.preview.timeout = utils.if_nil(opts.preview.timeout, PREVIEW_TIMEOUT_MS)
-  opts.preview.filesize_limit = utils.if_nil(opts.preview.filesize_limit, PREVIEW_FILESIZE_MB)
-  opts.preview.highlight_limit = utils.if_nil(opts.preview.highlight_limit, PREVIEW_HIGHLIGHT_MB)
-  opts.preview.msg_bg_fillchar = utils.if_nil(opts.preview.msg_bg_fillchar, "╱")
-  opts.preview.treesitter = utils.if_nil(opts.preview.treesitter, true)
+  opts = vim.nonnil(opts, {})
+  opts.preview = vim.nonnil(opts.preview, {})
+  opts.preview.timeout = vim.nonnil(opts.preview.timeout, PREVIEW_TIMEOUT_MS)
+  opts.preview.filesize_limit = vim.nonnil(opts.preview.filesize_limit, PREVIEW_FILESIZE_MB)
+  opts.preview.highlight_limit = vim.nonnil(opts.preview.highlight_limit, PREVIEW_HIGHLIGHT_MB)
+  opts.preview.msg_bg_fillchar = vim.nonnil(opts.preview.msg_bg_fillchar, "╱")
+  opts.preview.treesitter = vim.nonnil(opts.preview.treesitter, true)
   if opts.use_ft_detect == nil then
     opts.use_ft_detect = true
   end
@@ -175,7 +204,9 @@ previewers.file_maker = function(filepath, bufnr, opts)
       if not stat then
         return
       end
-      if stat.type ~= "directory" then
+      if stat.type == "directory" then
+        handle_directory_preview(filepath, bufnr, opts)
+      else
         handle_file_preview(filepath, bufnr, stat, opts)
       end
     end)
@@ -198,9 +229,9 @@ local search_cb_jump = function(self, bufnr, query)
   end
   api.nvim_buf_call(bufnr, function()
     pcall(fn.matchdelete, self.state.hl_id, self.state.winid)
-    vim.cmd "keepjumps norm! gg"
+    vim.cmd.normal { "gg", bang = true, mods = { keepjumps = true } }
     fn.search(query, "W")
-    vim.cmd "norm! zz"
+    vim.cmd.normal { "zz", bang = true }
 
     self.state.hl_id = fn.matchadd("TelescopePreviewMatch", query)
   end)
@@ -218,11 +249,11 @@ local scroll_fn = function(self, direction)
     return
   end
 
-  local input = direction > 0 and [[]] or [[]]
+  local input = vim.keycode(direction > 0 and "<C-e>" or "<C-y>")
   local count = math.abs(direction)
 
   api.nvim_win_call(self.state.winid, function()
-    vim.cmd([[normal! ]] .. count .. input)
+    vim.cmd.normal { count .. input, bang = true }
   end)
 end
 
@@ -231,12 +262,12 @@ local scroll_horizontal_fn = function(self, direction)
     return
   end
 
-  local input = direction > 0 and [[zl]] or [[zh]]
+  local input = direction > 0 and "zl" or "zh"
   local count = math.abs(direction)
 
   api.nvim_win_call(self.state.winid, function()
     vim.wo[self.state.winid].virtualedit = "all"
-    vim.cmd([[normal! ]] .. count .. input)
+    vim.cmd.normal { count .. input, bang = true }
   end)
 end
 
@@ -454,7 +485,7 @@ previewers.vimgrep = defaulter(function(opts)
       pcall(api.nvim_win_set_cursor, self.state.winid, { middle_ln + 1, 0 })
       if bufnr ~= nil then
         api.nvim_buf_call(bufnr, function()
-          vim.cmd "norm! zz"
+          vim.cmd.normal { "zz", bang = true }
         end)
       end
     end
@@ -519,9 +550,9 @@ previewers.ctags = defaulter(function(opts)
         end)
 
         pcall(fn.matchdelete, self.state.hl_id, self.state.winid)
-        vim.cmd "keepjumps norm! gg"
+        vim.cmd.normal { "gg", bang = true, mods = { keepjumps = true } }
         fn.search(scode, "W")
-        vim.cmd "norm! zz"
+        vim.cmd.normal { "zz", bang = true }
 
         self.state.hl_id = fn.matchadd("TelescopePreviewMatch", scode)
       end
@@ -578,7 +609,7 @@ previewers.builtin = defaulter(function(opts)
     end,
 
     define_preview = function(self, entry)
-      local module_name = fn.fnamemodify(fn.fnamemodify(entry.filename, ":h"), ":t")
+      local module_name = vim.fs.basename(vim.fs.dirname(entry.filename))
       local text
       if entry.text:sub(1, #module_name) ~= module_name then
         text = module_name .. "." .. entry.text
@@ -975,7 +1006,7 @@ previewers.highlights = defaulter(function(_)
 
     define_preview = function(self, entry)
       if not self.state.bufname then
-        local output = utils.split_lines(fn.execute "highlight")
+        local output = utils.split_lines(api.nvim_exec2("highlight", { output = true }).output)
         local hl_groups = {}
         for _, v in ipairs(output) do
           if v ~= "" then
@@ -999,14 +1030,14 @@ previewers.highlights = defaulter(function(_)
 
       vim.schedule(function()
         api.nvim_buf_call(self.state.bufnr, function()
-          vim.cmd "keepjumps norm! gg"
+          vim.cmd.normal { "gg", bang = true, mods = { keepjumps = true } }
           fn.search("^" .. entry.value .. " ")
           local lnum = api.nvim_win_get_cursor(self.state.winid)[1]
           -- That one is actually a match but its better to use it like that then matchadd
           pcall(api.nvim_buf_clear_namespace, self.state.bufnr, ns_previewer, 0, -1)
           hl.range(self.state.bufnr, ns_previewer, "TelescopePreviewMatch", { lnum - 1, 0 }, { lnum - 1, #entry.value })
           -- we need to zz after the highlighting otherwise highlighting doesnt work
-          vim.cmd "norm! zz"
+          vim.cmd.normal { "zz", bang = true }
         end)
       end)
     end,
