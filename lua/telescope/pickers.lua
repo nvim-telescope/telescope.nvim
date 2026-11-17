@@ -3,9 +3,7 @@ require "telescope"
 local fn = vim.fn
 local api = vim.api
 
-local async = require "neoplen.async"
-local await_schedule = async.util.scheduler
-local channel = require("neoplen.async.control").channel
+local _async = require "telescope._async"
 local ui = require "telescope.pickers.ui"
 
 local actions = require "telescope.actions"
@@ -202,7 +200,6 @@ function Picker:new(opts)
 
     cwd = opts.cwd,
 
-    _find_id = 0,
     _completion_callbacks = type(opts._completion_callbacks) == "table" and opts._completion_callbacks or {},
     manager = (type(opts.manager) == "table" and getmetatable(opts.manager) == EntryManager) and opts.manager,
     _multi = (type(opts._multi) == "table" and getmetatable(opts._multi) == getmetatable(MultiSelect:new()))
@@ -417,15 +414,6 @@ function Picker:can_select_row(row)
   end
 end
 
--- Every prompt change starts a new find; the result processor of an older find sees that its
--- `find_id` is stale and stops.
-function Picker:_next_find_id()
-  local find_id = self._find_id + 1
-  self._find_id = find_id
-
-  return find_id
-end
-
 --- A helper function for creating each of the windows in a picker
 ---@param bufnr integer?: the buffer to show in the window (nil: a new scratch buffer)
 ---@param popup_opts table: options to pass to `ui.create`
@@ -495,10 +483,17 @@ function Picker:find()
   local status_updater = self:get_status_updater(self.prompt_win, self.prompt_bufnr)
   local debounced_status = debounce.throttle_leading(status_updater, 50)
 
-  local tx, rx = channel.mpsc()
-  self._on_lines = tx.send
-
-  local find_id = self:_next_find_id()
+  -- a prompt change (or a refresh) cancels the running find and wakes the main loop
+  local send, wait = _async.signal()
+  self._on_lines = function()
+    local find = self._find
+    if find then
+      self._find = nil
+      find.matches.stale = true -- for finders that process results outside the find's task
+      find.task:close()
+    end
+    send()
+  end
 
   if self.default_text then
     self:set_prompt(self.default_text)
@@ -522,19 +517,19 @@ function Picker:find()
     })
   end
 
-  local main_loop = async.void(function()
+  local main_loop = function()
     self.sorter:_init()
 
     -- Do filetype last, so that users can register at the last second.
     pcall(api.nvim_set_option_value, "filetype", "TelescopePrompt", { buf = self.prompt_bufnr })
     pcall(api.nvim_set_option_value, "filetype", "TelescopeResults", { buf = self.results_bufnr })
 
-    await_schedule()
+    _async.yield()
 
     while true do
       -- Wait for the next input
-      rx.last()
-      await_schedule()
+      wait()
+      _async.yield()
 
       self:_reset_track()
 
@@ -589,45 +584,47 @@ function Picker:find()
         end
         self._matches = matches
         self:_reset_highlights()
-        local process_result = self:get_result_processor(find_id, prompt, debounced_status)
-        local completor = self:get_result_completor(self.results_bufnr, find_id, prompt, status_updater)
+        local process_result = self:get_result_processor(prompt, debounced_status)
+        local completor = self:get_result_completor(self.results_bufnr, prompt, status_updater)
         local process_complete = function()
-          if not matches.interrupted then
+          if not matches.stale then
             matches.complete, matches.processed = true, self.stats.processed
+            completor()
           end
-          completor()
         end
 
-        local ok, msg = pcall(function()
+        -- the find is a child task, closed by the next prompt change (see `self._on_lines`)
+        local task = vim.async.run(function()
           if candidates then
             self:_process_candidates(candidates, process_result, process_complete)
           else
             self.finder(prompt, process_result, process_complete)
           end
         end)
+        self._find = { task = task, matches = matches }
+        local ok, msg = vim.async.pawait(task)
+        self._find = nil
 
-        if not ok then
+        if not ok and msg ~= "closed" then
           utils.notify("pickers.find", { msg = "Finder failed: " .. tostring(msg), level = "WARN" })
         end
 
         local diff_time = (vim.uv.hrtime() - start_time) / 1e6
         if self.debounce and diff_time < self.debounce then
-          async.util.sleep(self.debounce - diff_time)
+          vim.async.sleep(self.debounce - diff_time)
         end
       else
         self:_resume_picker()
       end
     end
-  end)
+  end
 
   -- Register attach
   api.nvim_buf_attach(self.prompt_bufnr, false, {
-    on_lines = function(...)
+    on_lines = function()
       if self._finder_attached then
-        find_id = self:_next_find_id()
-
         status_updater { completed = false }
-        self._on_lines(...)
+        self._on_lines()
       end
     end,
 
@@ -677,8 +674,14 @@ function Picker:find()
 
   mappings.apply_keymap(self.prompt_bufnr, self.attach_mappings, config.values.mappings)
 
-  tx.send()
-  main_loop()
+  send()
+  -- closed in `_detach`; report other errors
+  self._main_task = vim.async.run(main_loop)
+  self._main_task:on_complete(function(err)
+    if err ~= nil and err ~= "closed" then
+      error(err, 0)
+    end
+  end)
 end
 
 --- A helper function to update picker windows when layout options are changed
@@ -979,7 +982,7 @@ function Picker:refresh(finder, opts)
   if opts.reset_prompt then
     self:reset_prompt()
   else
-    self._on_lines(nil, nil, nil, 0, 1)
+    self._on_lines()
   end
 end
 
@@ -1323,12 +1326,11 @@ end
 
 --- Returns a function that will process an element.
 --- Returned function handles updating the "filtered" and "processed" counts
---- as appropriate and runs the sorters score function
----@param find_id number
+--- as appropriate and runs the sorters score function. It returns true once the find is stale.
 ---@param prompt string
 ---@param status_updater function
 ---@return function
-function Picker:get_result_processor(find_id, prompt, status_updater)
+function Picker:get_result_processor(prompt, status_updater)
   local running = { completed = false } -- no table per result
   local ignore_patterns = self.file_ignore_patterns or {}
   local ignored -- entry -> whether a pattern matches it
@@ -1355,8 +1357,7 @@ function Picker:get_result_processor(find_id, prompt, status_updater)
   end
 
   return function(entry)
-    if find_id ~= self._find_id then
-      matches.interrupted = true
+    if matches.stale then
       return true
     end
 
@@ -1423,24 +1424,15 @@ function Picker:_process_candidates(candidates, process_result, process_complete
   -- count the skipped entries as processed and filtered, as the finder would have
   local skipped = candidates.processed - candidates.n
   self.stats.processed, self.stats.filtered = skipped, skipped
-  local list = candidates.list
-  for i = 1, candidates.n do
-    if process_result(list[i]) then
-      break
-    end
-    if i % 1000 == 0 then
-      await_schedule()
-    end
-  end
+  _async.process_list(candidates.list, candidates.n, process_result)
   process_complete()
 end
 
 --- Handles updating the picker after all the entries are scored/processed.
 ---@param results_bufnr number
----@param _ number
 ---@param prompt string
 ---@param status_updater function
-function Picker:get_result_completor(results_bufnr, _, prompt, status_updater)
+function Picker:get_result_completor(results_bufnr, prompt, status_updater)
   return vim.schedule_wrap(function()
     if self.closed == true or self:is_done() then
       return
@@ -1664,6 +1656,9 @@ function Picker:_toggle_finder_attach()
 end
 
 function Picker:_detach()
+  if self._main_task then
+    self._main_task:close()
+  end
   self.finder:close()
 
   self.closed = true
@@ -1705,7 +1700,7 @@ function Picker:_resume_picker()
     on_resume_complete()
   else
     -- scheduling required to apply highlighting and selection appropriately
-    await_schedule(function()
+    vim.schedule(function()
       if self.cache_picker.selection_row ~= nil then
         self:set_selection(self.cache_picker.selection_row)
       end
