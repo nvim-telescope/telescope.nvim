@@ -19,7 +19,7 @@ local get_file_stat = function(filename)
 end
 
 local list_dir = (function()
-  if vim.fn.has "win32" == 1 then
+  if utils.iswin then
     return function(dirname)
       -- cmd.exe treats `/` as an option prefix
       return { "cmd.exe", "/c", "dir", (utils.path_expand(dirname):gsub("/", "\\")) }

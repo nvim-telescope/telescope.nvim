@@ -270,7 +270,7 @@ files.find_files = function(opts)
       return { "fd", "--type", "f", "--color", "never" }
     elseif 1 == fn.executable "fdfind" then
       return { "fdfind", "--type", "f", "--color", "never" }
-    elseif 1 == fn.executable "find" and fn.has "win32" == 0 then
+    elseif 1 == fn.executable "find" and not utils.iswin then
       return { "find", ".", "-type", "f" }
     elseif 1 == fn.executable "where" then
       return { "where", "/r", ".", "*" }

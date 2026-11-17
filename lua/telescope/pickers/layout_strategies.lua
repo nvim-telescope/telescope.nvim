@@ -612,12 +612,7 @@ layout_strategies.cursor = make_documented_layout(
     end
 
     local position = api.nvim_win_get_position(winid)
-    local winbar = (function()
-      if vim.fn.exists "&winbar" == 1 then
-        return vim.wo[winid].winbar == "" and 0 or 1
-      end
-      return 0
-    end)()
+    local winbar = vim.wo[winid].winbar == "" and 0 or 1
     local top_left = {
       line = api.nvim_win_call(winid, vim.fn.winline) + position[1] + bs + winbar,
       col = api.nvim_win_call(winid, vim.fn.wincol) + position[2],
