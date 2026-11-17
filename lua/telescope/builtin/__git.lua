@@ -179,7 +179,7 @@ local bcommits_picker = function(opts, title, finder)
       actions.select_tab:replace(function(prompt_bufnr)
         actions.close(prompt_bufnr)
         local selection = action_state.get_selected_entry()
-        vim.cmd("tabedit " .. transfrom_file())
+        utils.edit_file("tabedit", transfrom_file())
         vimdiff(selection, "leftabove vert sbuffer")
       end)
       return true

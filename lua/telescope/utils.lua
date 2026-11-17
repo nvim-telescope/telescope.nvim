@@ -678,7 +678,7 @@ utils.edit_file = function(command, filename)
     vim.cmd(string.format("%s %s", command, vim.fn.fnameescape(filename)))
     return
   end
-  cmd.args = { filename }
+  cmd.args = filename ~= "" and { filename } or {}
   cmd.magic = { file = false, bar = false }
   api.nvim_cmd(cmd, {})
 end
