@@ -502,12 +502,15 @@ internal.oldfiles = function(opts)
   local results = {}
 
   if opts.include_current_session then
-    for _, buffer in ipairs(utils.split_lines(fn.execute ":buffers! t")) do
-      local match = tonumber(string.match(buffer, "%s*(%d+)"))
-      local open_by_lsp = string.match(buffer, "line 0$")
-      if match and not open_by_lsp then
-        local file = utils.normalize_sep(api.nvim_buf_get_name(match))
-        if uv.fs_stat(file) and match ~= current_buffer then
+    local buffers = fn.getbufinfo()
+    table.sort(buffers, function(a, b) -- most recently used first, like `:ls t`
+      return a.lastused > b.lastused or (a.lastused == b.lastused and a.bufnr > b.bufnr)
+    end)
+    for _, info in ipairs(buffers) do
+      -- `lnum` 0: never shown in a window (e.g. loaded by an LSP client)
+      if info.lnum > 0 and info.bufnr ~= current_buffer then
+        local file = utils.normalize_sep(info.name)
+        if uv.fs_stat(file) then
           table.insert(results, file)
         end
       end
