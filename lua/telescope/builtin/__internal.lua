@@ -1172,7 +1172,7 @@ internal.marks = function(opts)
       end
     end
   end
-  marks_table = fn.extend(marks_table, marks_others)
+  vim.list_extend(marks_table, marks_others)
 
   pickers
     .new(opts, {
@@ -1378,7 +1378,10 @@ internal.autocommands = function(opts)
             end
           end
           local group_name = val.group_name ~= "<anonymous>" and val.group_name or ""
-          local output = fn.execute("verb autocmd " .. group_name .. " " .. val.event .. " " .. val.pattern, "silent")
+          local output = api.nvim_exec2(
+            "verb autocmd " .. group_name .. " " .. val.event .. " " .. val.pattern,
+            { output = true }
+          ).output
           for line in output:gmatch "[^\r\n]+" do
             local source_file = line:match "Last set from (.*) line %d*$" or line:match "Last set from (.*)$"
             if source_file and source_file ~= "Lua" then

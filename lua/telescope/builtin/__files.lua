@@ -45,7 +45,7 @@ local get_open_filelist = function(grep_open_files, cwd)
   end
 
   local bufnrs = vim.tbl_filter(function(b)
-    if 1 ~= fn.buflisted(b) then
+    if not vim.bo[b].buflisted then
       return false
     end
     return true

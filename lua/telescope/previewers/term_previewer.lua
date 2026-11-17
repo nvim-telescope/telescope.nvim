@@ -225,7 +225,7 @@ M.new_termopen_previewer = function(opts)
           return
         end
 
-        vim.fn.chansend(term_id, termcode)
+        api.nvim_chan_send(term_id, termcode)
       end
     end
   end

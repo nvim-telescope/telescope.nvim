@@ -1166,7 +1166,7 @@ actions.delete_buffer = function(prompt_bufnr)
       if api.nvim_win_is_valid(current_picker.original_win_id) then
         local jumplist = fn.getjumplist(current_picker.original_win_id)[1]
         for i = #jumplist, 1, -1 do
-          if jumplist[i].bufnr ~= selection.bufnr and fn.bufloaded(jumplist[i].bufnr) == 1 then
+          if jumplist[i].bufnr ~= selection.bufnr and api.nvim_buf_is_loaded(jumplist[i].bufnr) then
             api.nvim_win_set_buf(current_picker.original_win_id, jumplist[i].bufnr)
             current_picker.original_bufnr = jumplist[i].bufnr
             return ok

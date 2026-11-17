@@ -609,7 +609,7 @@ previewers.builtin = defaulter(function(opts)
     end,
 
     define_preview = function(self, entry)
-      local module_name = fn.fnamemodify(fn.fnamemodify(entry.filename, ":h"), ":t")
+      local module_name = vim.fs.basename(vim.fs.dirname(entry.filename))
       local text
       if entry.text:sub(1, #module_name) ~= module_name then
         text = module_name .. "." .. entry.text
@@ -1006,7 +1006,7 @@ previewers.highlights = defaulter(function(_)
 
     define_preview = function(self, entry)
       if not self.state.bufname then
-        local output = utils.split_lines(fn.execute "highlight")
+        local output = utils.split_lines(api.nvim_exec2("highlight", { output = true }).output)
         local hl_groups = {}
         for _, v in ipairs(output) do
           if v ~= "" then
