@@ -186,14 +186,12 @@ files.grep_string = function(opts)
     return
   end
   local word
-  local visual = fn.mode() == "v"
+  local mode = fn.mode()
+  local visual = mode == "v" or mode == "V" or mode == "\22"
 
-  if visual == true then
-    local saved_reg = fn.getreg "v"
-    vim.cmd [[noautocmd sil norm! "vy]]
-    local sele = fn.getreg "v"
-    fn.setreg("v", saved_reg)
-    word = vim.nonnil(opts.search, sele)
+  if visual then
+    local selection = fn.getregion(fn.getpos "v", fn.getpos ".", { type = mode })
+    word = vim.nonnil(opts.search, table.concat(selection, "\n"))
   else
     -- only expand when needed: errors if the cursor is not on a word
     word = opts.search
