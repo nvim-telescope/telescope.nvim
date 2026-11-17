@@ -1695,7 +1695,7 @@ function Picker:_resume_picker()
   local on_resume_complete = function()
     if api.nvim_buf_is_valid(self.prompt_bufnr) then
       api.nvim_buf_call(self.prompt_bufnr, function()
-        vim.cmd "do User TelescopeResumePost"
+        api.nvim_exec_autocmds("User", { pattern = "TelescopeResumePost" })
       end)
     end
   end

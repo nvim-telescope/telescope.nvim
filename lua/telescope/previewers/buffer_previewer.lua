@@ -229,9 +229,9 @@ local search_cb_jump = function(self, bufnr, query)
   end
   api.nvim_buf_call(bufnr, function()
     pcall(fn.matchdelete, self.state.hl_id, self.state.winid)
-    vim.cmd "keepjumps norm! gg"
+    vim.cmd.normal { "gg", bang = true, mods = { keepjumps = true } }
     fn.search(query, "W")
-    vim.cmd "norm! zz"
+    vim.cmd.normal { "zz", bang = true }
 
     self.state.hl_id = fn.matchadd("TelescopePreviewMatch", query)
   end)
@@ -253,7 +253,7 @@ local scroll_fn = function(self, direction)
   local count = math.abs(direction)
 
   api.nvim_win_call(self.state.winid, function()
-    vim.cmd([[normal! ]] .. count .. input)
+    vim.cmd.normal { count .. input, bang = true }
   end)
 end
 
@@ -267,7 +267,7 @@ local scroll_horizontal_fn = function(self, direction)
 
   api.nvim_win_call(self.state.winid, function()
     vim.wo[self.state.winid].virtualedit = "all"
-    vim.cmd([[normal! ]] .. count .. input)
+    vim.cmd.normal { count .. input, bang = true }
   end)
 end
 
@@ -485,7 +485,7 @@ previewers.vimgrep = defaulter(function(opts)
       pcall(api.nvim_win_set_cursor, self.state.winid, { middle_ln + 1, 0 })
       if bufnr ~= nil then
         api.nvim_buf_call(bufnr, function()
-          vim.cmd "norm! zz"
+          vim.cmd.normal { "zz", bang = true }
         end)
       end
     end
@@ -550,9 +550,9 @@ previewers.ctags = defaulter(function(opts)
         end)
 
         pcall(fn.matchdelete, self.state.hl_id, self.state.winid)
-        vim.cmd "keepjumps norm! gg"
+        vim.cmd.normal { "gg", bang = true, mods = { keepjumps = true } }
         fn.search(scode, "W")
-        vim.cmd "norm! zz"
+        vim.cmd.normal { "zz", bang = true }
 
         self.state.hl_id = fn.matchadd("TelescopePreviewMatch", scode)
       end
@@ -1030,14 +1030,14 @@ previewers.highlights = defaulter(function(_)
 
       vim.schedule(function()
         api.nvim_buf_call(self.state.bufnr, function()
-          vim.cmd "keepjumps norm! gg"
+          vim.cmd.normal { "gg", bang = true, mods = { keepjumps = true } }
           fn.search("^" .. entry.value .. " ")
           local lnum = api.nvim_win_get_cursor(self.state.winid)[1]
           -- That one is actually a match but its better to use it like that then matchadd
           pcall(api.nvim_buf_clear_namespace, self.state.bufnr, ns_previewer, 0, -1)
           hl.range(self.state.bufnr, ns_previewer, "TelescopePreviewMatch", { lnum - 1, 0 }, { lnum - 1, #entry.value })
           -- we need to zz after the highlighting otherwise highlighting doesnt work
-          vim.cmd "norm! zz"
+          vim.cmd.normal { "zz", bang = true }
         end)
       end)
     end,

@@ -258,7 +258,7 @@ end
 --- You can just map `actions.select_default + actions.center`
 ---@param prompt_bufnr number: The prompt bufnr
 actions.center = function(prompt_bufnr)
-  vim.cmd ":normal! zz"
+  vim.cmd.normal { "zz", bang = true }
 end
 
 --- Perform default action on selection, usually something like<br>
@@ -486,7 +486,7 @@ actions.insert_symbol_i = function(prompt_bufnr)
   local symbol = action_state.get_selected_entry().value[1]
   actions.close(prompt_bufnr)
   vim.schedule(function()
-    vim.cmd [[startinsert]]
+    vim.cmd.startinsert()
     api.nvim_put({ symbol }, "", true, true)
   end)
 end
@@ -599,7 +599,7 @@ actions.git_checkout = function(prompt_bufnr)
       msg = string.format("Checked out: %s", selection.value),
       level = "INFO",
     })
-    vim.cmd "checktime"
+    vim.cmd.checktime()
   else
     utils.notify("actions.git_checkout", {
       msg = string.format(
@@ -855,7 +855,7 @@ actions.git_checkout_current_buffer = function(prompt_bufnr)
   end
   actions.close(prompt_bufnr)
   utils.get_os_command_output({ "git", "checkout", selection.value, "--", selection.current_file }, cwd)
-  vim.cmd "checktime"
+  vim.cmd.checktime()
 end
 
 --- Stage/unstage selected file
@@ -1141,14 +1141,14 @@ end
 --- `actions.smart_send_to_qflist + actions.open_qflist`
 ---@param prompt_bufnr number: The prompt bufnr
 actions.open_qflist = function(prompt_bufnr)
-  vim.cmd [[botright copen]]
+  vim.cmd.copen { mods = { split = "botright" } }
 end
 
 --- Open the location list. It makes sense to use this in combination with one of the send_to_loclist actions
 --- `actions.smart_send_to_qflist + actions.open_qflist`
 ---@param prompt_bufnr number: The prompt bufnr
 actions.open_loclist = function(prompt_bufnr)
-  vim.cmd [[lopen]]
+  vim.cmd.lopen()
 end
 
 --- Delete the selected buffer or all the buffers selected using multi selection.

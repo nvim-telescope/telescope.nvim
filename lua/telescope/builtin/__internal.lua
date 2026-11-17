@@ -29,6 +29,16 @@ local function apply_cwd_only_aliases(opts)
   return opts
 end
 
+-- Command modifiers for the `cmd` of `action_set.select` ("default", "horizontal", "vertical", "tab")
+local function split_mods(cmd)
+  if cmd == "vertical" then
+    return { vertical = true }
+  elseif cmd == "tab" then
+    return { tab = api.nvim_tabpage_get_number(0) } -- like `:tab`: after the current tab page
+  end
+  return {}
+end
+
 local internal = {}
 
 ---@param opts telescope.builtin.builtin.opts
@@ -350,7 +360,7 @@ internal.commands = function(opts)
             local cr = api.nvim_replace_termcodes("<cr>", true, false, true)
             cmd = cmd .. cr
           end
-          vim.cmd [[stopinsert]]
+          vim.cmd.stopinsert()
           api.nvim_feedkeys(cmd, "nt", false)
         end)
 
@@ -443,8 +453,8 @@ internal.quickfixhistory = function(opts)
         map({ "i", "n" }, "<C-q>", function(prompt_bufnr)
           local nr = action_state.get_selected_entry().nr
           actions.close(prompt_bufnr)
-          vim.cmd(nr .. "chistory")
-          vim.cmd "botright copen"
+          vim.cmd.chistory { count = nr }
+          vim.cmd.copen { mods = { split = "botright" } }
         end)
         return true
       end,
@@ -736,13 +746,7 @@ internal.help_tags = function(opts)
           end
 
           actions.close(prompt_bufnr)
-          if cmd == "default" or cmd == "horizontal" then
-            vim.cmd("help " .. selection.value)
-          elseif cmd == "vertical" then
-            vim.cmd("vert help " .. selection.value)
-          elseif cmd == "tab" then
-            vim.cmd("tab help " .. selection.value)
-          end
+          vim.cmd.help { selection.value, mods = split_mods(cmd) }
         end)
 
         return true
@@ -784,15 +788,8 @@ internal.man_pages = function(opts)
             return
           end
 
-          local args = selection.section .. " " .. selection.value
           actions.close(prompt_bufnr)
-          if cmd == "default" or cmd == "horizontal" then
-            vim.cmd("Man " .. args)
-          elseif cmd == "vertical" then
-            vim.cmd("vert Man " .. args)
-          elseif cmd == "tab" then
-            vim.cmd("tab Man " .. args)
-          end
+          vim.cmd.Man { selection.section, selection.value, mods = split_mods(cmd) }
         end)
 
         return true
@@ -1304,7 +1301,7 @@ internal.filetypes = function(opts)
           end
 
           actions.close(prompt_bufnr)
-          vim.cmd("setfiletype " .. selection[1])
+          vim.cmd.setfiletype(selection[1])
         end)
         return true
       end,
@@ -1333,7 +1330,7 @@ internal.highlights = function(opts)
           end
 
           actions.close(prompt_bufnr)
-          vim.cmd("hi " .. selection.value)
+          vim.cmd.highlight(selection.value)
         end)
         return true
       end,
@@ -1424,8 +1421,8 @@ internal.spell_suggest = function(opts)
 
           action_state.get_current_picker(prompt_bufnr)._original_mode = "i"
           actions.close(prompt_bufnr)
-          vim.cmd('normal! "_ciw' .. selection[1])
-          vim.cmd "stopinsert"
+          vim.cmd.normal { '"_ciw' .. selection[1], bang = true }
+          vim.cmd.stopinsert()
         end)
         return true
       end,

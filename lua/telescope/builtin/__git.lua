@@ -145,14 +145,14 @@ local bcommits_picker = function(opts, title, finder)
         return bufnr
       end
 
-      local vimdiff = function(selection, command)
+      local vimdiff = function(selection, split)
         local ft = vim.bo.filetype
-        vim.cmd "diffthis"
+        vim.cmd.diffthis()
 
         local bufnr = get_buffer_of_orig(selection)
-        vim.cmd(string.format("%s %s", command, bufnr))
+        vim.cmd.sbuffer { count = bufnr, mods = { split = split, vertical = split == "aboveleft" } }
         vim.bo.filetype = ft
-        vim.cmd "diffthis"
+        vim.cmd.diffthis()
 
         api.nvim_create_autocmd("WinClosed", {
           buf = bufnr,
@@ -167,20 +167,20 @@ local bcommits_picker = function(opts, title, finder)
       actions.select_vertical:replace(function(prompt_bufnr)
         actions.close(prompt_bufnr)
         local selection = action_state.get_selected_entry()
-        vimdiff(selection, "leftabove vert sbuffer")
+        vimdiff(selection, "aboveleft")
       end)
 
       actions.select_horizontal:replace(function(prompt_bufnr)
         actions.close(prompt_bufnr)
         local selection = action_state.get_selected_entry()
-        vimdiff(selection, "belowright sbuffer")
+        vimdiff(selection, "belowright")
       end)
 
       actions.select_tab:replace(function(prompt_bufnr)
         actions.close(prompt_bufnr)
         local selection = action_state.get_selected_entry()
         utils.edit_file("tabedit", transfrom_file())
-        vimdiff(selection, "leftabove vert sbuffer")
+        vimdiff(selection, "aboveleft")
       end)
       return true
     end,

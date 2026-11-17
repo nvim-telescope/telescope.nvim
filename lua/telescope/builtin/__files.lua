@@ -549,7 +549,7 @@ files.current_buffer_fuzzy_find = function(opts)
 
           actions.close(prompt_bufnr)
           vim.schedule(function()
-            vim.cmd "normal! m'"
+            vim.cmd.normal { "m'", bang = true }
             api.nvim_win_set_cursor(0, { selection.lnum, first_col })
           end)
         end)
@@ -597,9 +597,9 @@ files.tags = function(opts)
                 return "\\" .. x
               end)
 
-              vim.cmd "keepjumps norm! gg"
+              vim.cmd.normal { "gg", bang = true, mods = { keepjumps = true } }
               fn.search(scode)
-              vim.cmd "norm! zz"
+              vim.cmd.normal { "zz", bang = true }
             else
               api.nvim_win_set_cursor(0, { selection.lnum, 0 })
             end
