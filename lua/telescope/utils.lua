@@ -443,7 +443,11 @@ utils.transform_path = function(opts, path)
 
     return transformed_path, path_style
   else
-    log.warn("`path_display` must be either a function or a table.", "See `:help telescope.defaults.path_display.")
+    utils.notify("transform_path", {
+      msg = "`path_display` must be either a function or a table. See `:help telescope.defaults.path_display`.",
+      level = "WARN",
+      once = true,
+    })
     return transformed_path, path_style
   end
 end
