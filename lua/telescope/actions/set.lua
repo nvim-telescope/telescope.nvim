@@ -283,7 +283,7 @@ action_set.scroll_results = function(prompt_bufnr, direction)
   local default_speed = api.nvim_win_get_height(status.layout.results.winid) / 2
   local speed = status.picker.layout_config.scroll_speed or default_speed
 
-  local input = direction > 0 and [[]] or [[]]
+  local input = vim.keycode(direction > 0 and "<C-e>" or "<C-y>")
 
   api.nvim_win_call(status.layout.results.winid, function()
     vim.cmd.normal { math.floor(speed) .. input, bang = true }
@@ -303,7 +303,7 @@ action_set.scroll_horizontal_results = function(prompt_bufnr, direction)
   local default_speed = api.nvim_win_get_height(status.results_win) / 2
   local speed = status.picker.layout_config.scroll_speed or default_speed
 
-  local input = direction > 0 and [[zl]] or [[zh]]
+  local input = direction > 0 and "zl" or "zh"
 
   api.nvim_win_call(status.results_win, function()
     vim.cmd.normal { math.floor(speed) .. input, bang = true }

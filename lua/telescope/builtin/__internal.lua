@@ -357,7 +357,7 @@ internal.commands = function(opts)
           local cmd = string.format([[:%s ]], val.name)
 
           if val.nargs == "0" then
-            local cr = api.nvim_replace_termcodes("<cr>", true, false, true)
+            local cr = vim.keycode "<CR>"
             cmd = cmd .. cr
           end
           vim.cmd.stopinsert()
@@ -633,7 +633,7 @@ internal.vim_options = function(opts)
 
           local esc = ""
           if fn.mode() == "i" then
-            esc = api.nvim_replace_termcodes("<esc>", true, false, true)
+            esc = vim.keycode "<Esc>"
           end
 
           api.nvim_feedkeys(
@@ -1272,7 +1272,7 @@ internal.keymaps = function(opts)
             return
           end
 
-          api.nvim_feedkeys(api.nvim_replace_termcodes(selection.value.lhs, true, false, true), "t", true)
+          api.nvim_feedkeys(vim.keycode(selection.value.lhs), "t", true)
           return actions.close(prompt_bufnr)
         end)
         return true

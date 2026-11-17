@@ -514,7 +514,7 @@ function Picker:find()
       -- always fully retrigger insert mode: required for going from one picker to next
       keys = mode ~= "n" and "<ESC>A" or "A"
     end
-    api.nvim_feedkeys(api.nvim_replace_termcodes(keys, true, false, true), "ni", true)
+    api.nvim_feedkeys(vim.keycode(keys), "ni", true)
   else
     utils.notify("pickers.find", {
       msg = "`initial_mode` should be one of ['normal', 'insert'] but passed " .. self.initial_mode,

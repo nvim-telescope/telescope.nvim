@@ -217,7 +217,7 @@ M.new_termopen_previewer = function(opts)
 
   if not opts.send_input then
     function opts.send_input(self, input)
-      local termcode = api.nvim_replace_termcodes(input, true, false, true)
+      local termcode = vim.keycode(input)
 
       local term_id = get_term_id(self)
       if term_id then

@@ -366,7 +366,7 @@ end
 
 actions.close_pum = function(_)
   if 0 ~= fn.pumvisible() then
-    api.nvim_feedkeys(api.nvim_replace_termcodes("<c-y>", true, true, true), "n", true)
+    api.nvim_feedkeys(vim.keycode "<C-y>", "n", true)
   end
 end
 
@@ -396,7 +396,7 @@ end
 
 local set_edit_line = function(prompt_bufnr, fname, prefix, postfix)
   postfix = vim.nonnil(postfix, "")
-  postfix = api.nvim_replace_termcodes(postfix, true, false, true)
+  postfix = vim.keycode(postfix)
   local selection = action_state.get_selected_entry()
   if selection == nil then
     utils.__warn_no_selection(fname)

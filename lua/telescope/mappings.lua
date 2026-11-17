@@ -313,7 +313,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
 
     for _, mode in pairs(modes) do
       mode = string.lower(mode)
-      local key_bind_internal = api.nvim_replace_termcodes(key_bind, true, true, true)
+      local key_bind_internal = vim.keycode(key_bind)
       applied_mappings[mode][key_bind_internal] = true
 
       telescope_map(prompt_bufnr, mode, key_bind, key_func, opts)
@@ -340,7 +340,7 @@ mappings.apply_keymap = function(prompt_bufnr, attach_mappings, buffer_keymap)
     for mode, mode_map in pairs(keymap or {}) do
       mode = string.lower(mode)
       for key_bind, key_func in pairs(mode_map) do
-        local key_bind_internal = api.nvim_replace_termcodes(key_bind, true, true, true)
+        local key_bind_internal = vim.keycode(key_bind)
         if not applied_mappings[mode][key_bind_internal] then
           applied_mappings[mode][key_bind_internal] = true
           telescope_map(prompt_bufnr, mode, key_bind, key_func, extract_keymap_opts(key_func))

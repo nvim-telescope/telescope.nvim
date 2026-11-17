@@ -249,7 +249,7 @@ local scroll_fn = function(self, direction)
     return
   end
 
-  local input = direction > 0 and [[]] or [[]]
+  local input = vim.keycode(direction > 0 and "<C-e>" or "<C-y>")
   local count = math.abs(direction)
 
   api.nvim_win_call(self.state.winid, function()
@@ -262,7 +262,7 @@ local scroll_horizontal_fn = function(self, direction)
     return
   end
 
-  local input = direction > 0 and [[zl]] or [[zh]]
+  local input = direction > 0 and "zl" or "zh"
   local count = math.abs(direction)
 
   api.nvim_win_call(self.state.winid, function()
