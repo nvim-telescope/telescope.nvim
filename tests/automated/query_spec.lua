@@ -1,88 +1,104 @@
-local t = require("test.harness")
-local assert = require("test.assert")
-local describe, it = t.describe, t.it
+local t = require("test.testutil")
+local sut = require("tests.sut")
+local describe, it, eq = t.describe, t.it, t.eq
+local n = require("test.functional.testnvim")()
+local exec_lua = n.exec_lua
 
-local query = require("telescope.algos.query")
-local eq = assert.eq
+sut.setup()
 
 local function matches(prompt, line, case_mode)
-  return query.score(query.parse(prompt, case_mode), line) ~= nil
+  return exec_lua(function()
+    local query = require("telescope.algos.query")
+    return query.score(query.parse(prompt, case_mode), line) ~= nil
+  end)
 end
 
 describe("query syntax", function()
   it("matches all space-separated terms, in any order", function()
-    assert(matches("picker lua", "lua/telescope/pickers.lua"))
-    assert(matches("lua picker", "lua/telescope/pickers.lua"))
-    assert(not matches("picker go", "lua/telescope/pickers.lua"))
-    assert(matches("foo\\ bar", "foo = bar")) -- escaped space: one term
-    assert(not matches("foo\\ bar", "foo_bar"))
+    t.ok(matches("picker lua", "lua/telescope/pickers.lua"))
+    t.ok(matches("lua picker", "lua/telescope/pickers.lua"))
+    t.ok(not matches("picker go", "lua/telescope/pickers.lua"))
+    t.ok(matches("foo\\ bar", "foo = bar")) -- escaped space: one term
+    t.ok(not matches("foo\\ bar", "foo_bar"))
   end)
 
   it("supports exact, boundary, prefix, suffix and equal terms", function()
-    assert(matches("'tele", "lua/telescope"))
-    assert(not matches("'tlsc", "lua/telescope"))
-    assert(matches("'wild'", "a wild cat"))
-    assert(not matches("'wild'", "wildcat"))
-    assert(matches("^lua", "  lua/x")) -- leading whitespace of the line is ignored
-    assert(not matches("^tele", "lua/telescope"))
-    assert(matches(".lua$", "init.lua "))
-    assert(not matches(".lua$", "init.luac"))
-    assert(matches("^init.lua$", "init.lua"))
-    assert(not matches("^init$", "init.lua"))
+    t.ok(matches("'tele", "lua/telescope"))
+    t.ok(not matches("'tlsc", "lua/telescope"))
+    t.ok(matches("'wild'", "a wild cat"))
+    t.ok(not matches("'wild'", "wildcat"))
+    t.ok(matches("^lua", "  lua/x")) -- leading whitespace of the line is ignored
+    t.ok(not matches("^tele", "lua/telescope"))
+    t.ok(matches(".lua$", "init.lua "))
+    t.ok(not matches(".lua$", "init.luac"))
+    t.ok(matches("^init.lua$", "init.lua"))
+    t.ok(not matches("^init$", "init.lua"))
   end)
 
   it("supports inverse terms and alternatives", function()
-    assert(not matches("!test", "tests/x.lua"))
-    assert(matches("lua !test", "lua/x.lua"))
-    assert(not matches("!^lua", "lua/x.lua"))
-    assert(not matches("!.lua$", "x.lua"))
-    assert(not matches("!'tst", "test")) -- inverse fuzzy
-    assert(matches("!'tst", "tea"))
-    assert(matches("^core go$ | rb$ | py$", "core/x.rb"))
-    assert(not matches("^core go$ | rb$ | py$", "core/x.lua"))
+    t.ok(not matches("!test", "tests/x.lua"))
+    t.ok(matches("lua !test", "lua/x.lua"))
+    t.ok(not matches("!^lua", "lua/x.lua"))
+    t.ok(not matches("!.lua$", "x.lua"))
+    t.ok(not matches("!'tst", "test")) -- inverse fuzzy
+    t.ok(matches("!'tst", "tea"))
+    t.ok(matches("^core go$ | rb$ | py$", "core/x.rb"))
+    t.ok(not matches("^core go$ | rb$ | py$", "core/x.lua"))
   end)
 
   it("treats lone operators like fzf", function()
-    eq(0, #query.parse("! ^ '"))
-    assert(matches("|", "a|b")) -- no term before it: literal
-    assert(matches("$", "a$b"))
+    eq(
+      0,
+      exec_lua(function()
+        return #require("telescope.algos.query").parse("! ^ '")
+      end)
+    )
+    t.ok(matches("|", "a|b")) -- no term before it: literal
+    t.ok(matches("$", "a$b"))
   end)
 
   it("decides smart case per term", function()
-    assert(matches("Tele lua", "Telescope/lua", "smart_case"))
-    assert(not matches("Tele lua", "telescope/lua", "smart_case"))
+    t.ok(matches("Tele lua", "Telescope/lua", "smart_case"))
+    t.ok(not matches("Tele lua", "telescope/lua", "smart_case"))
   end)
 
   it("knows which edits can only narrow the results", function()
     local function restricts(new, old)
-      return query.restricts(query.parse(new), query.parse(old))
+      return exec_lua(function()
+        local query = require("telescope.algos.query")
+        return query.restricts(query.parse(new), query.parse(old))
+      end)
     end
-    assert(restricts("tele", "tel"))
-    assert(restricts("tel pick", "tel"))
-    assert(restricts("tel$", "tel"))
-    assert(restricts("'wild'", "'wild"))
-    assert(restricts("lua !test", "lua"))
-    assert(not restricts("!test", "!tes"))
-    assert(not restricts("lua | rs", "lua"))
-    assert(not restricts("lua$x", "lua$"))
-    assert(not restricts("tel", "tele"))
+    t.ok(restricts("tele", "tel"))
+    t.ok(restricts("tel pick", "tel"))
+    t.ok(restricts("tel$", "tel"))
+    t.ok(restricts("'wild'", "'wild"))
+    t.ok(restricts("lua !test", "lua"))
+    t.ok(not restricts("!test", "!tes"))
+    t.ok(not restricts("lua | rs", "lua"))
+    t.ok(not restricts("lua$x", "lua$"))
+    t.ok(not restricts("tel", "tele"))
   end)
 end)
 
 describe("fzy sorter with query syntax", function()
   it("scores and highlights all terms", function()
-    local sorter = require("telescope.sorters").get_fzy_sorter()
-    local function score(prompt, line)
-      return sorter:score(prompt, { ordinal = line }, function(val)
-        return val
-      end, function()
-        return -1
-      end)
-    end
-    assert(score("pick lua", "lua/telescope/pickers.lua") >= 0)
-    assert(score("pick lua", "lua/telescope/init.lua") < 0)
-    -- a contiguous term and a file extension beat a scattered term and a match at the start
-    assert(score("log txt", "docs/LoggingGuide/intro.txt") < score("log txt", "txt/tools/loader/g_tests/notes.txt"))
-    eq({ 1, 2, 3, 15, 16, 17, 18 }, sorter:highlighter("lua pick", "lua/telescope/pickers.lua"))
+    exec_lua(function()
+      local assert = require("test.assert")
+      local eq = assert.eq
+      local sorter = require("telescope.sorters").get_fzy_sorter()
+      local function score(prompt, line)
+        return sorter:score(prompt, { ordinal = line }, function(val)
+          return val
+        end, function()
+          return -1
+        end)
+      end
+      assert(score("pick lua", "lua/telescope/pickers.lua") >= 0)
+      assert(score("pick lua", "lua/telescope/init.lua") < 0)
+      -- a contiguous term and a file extension beat a scattered term and a match at the start
+      assert(score("log txt", "docs/LoggingGuide/intro.txt") < score("log txt", "txt/tools/loader/g_tests/notes.txt"))
+      eq({ 1, 2, 3, 15, 16, 17, 18 }, sorter:highlighter("lua pick", "lua/telescope/pickers.lua"))
+    end)
   end)
 end)

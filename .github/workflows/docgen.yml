@@ -11,25 +11,10 @@ jobs:
   build-sources:
     name: Check docs
     runs-on: ubuntu-latest
-    env:
-      NVIM_URL: https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.tar.gz #TODO: back to stable when 0.13 is released
-
     steps:
       - uses: actions/checkout@v7
 
-      - name: Prepare
-        run: |
-          test -d _neovim || {
-            mkdir -p _neovim
-            curl -sL ${{ env.NVIM_URL }} | tar xzf - --strip-components=1 -C "${PWD}/_neovim"
-          }
-          mkdir -p ~/.local/share/nvim/site/pack/vendor/start
-          ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
-
       - name: Check docs
         run: |
-          export PATH="${PWD}/_neovim/bin:${PATH}"
-          export VIM="${PWD}/_neovim/share/nvim/runtime"
-          nvim --version
           make docs
           git diff --exit-code

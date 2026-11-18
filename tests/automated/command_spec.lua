@@ -1,16 +1,23 @@
-local t = require("test.harness")
-local assert = require("test.assert")
-local describe, it = t.describe, t.it
+local t = require("test.testutil")
+local sut = require("tests.sut")
+local describe, it, eq = t.describe, t.it, t.eq
+local n = require("test.functional.testnvim")()
+local exec_lua = n.exec_lua
 
-local command = require("telescope.command")
+sut.setup()
 
-local eq = assert.eq
+--- `user_opts` after `command.convert_user_opts(user_opts)`.
+local function convert_user_opts(user_opts)
+  return exec_lua(function()
+    require("telescope.command").convert_user_opts(user_opts)
+    return user_opts
+  end)
+end
 
 describe("command_parser", function()
   local test_parse = function(should, input, output)
     it(should, function()
-      command.convert_user_opts(input)
-      eq(output, input)
+      eq(output, convert_user_opts(input))
     end)
   end
 

@@ -1,8 +1,21 @@
-local t = require("test.harness")
-local assert = require("test.assert")
-local describe, it = t.describe, t.it
+local t = require("test.testutil")
+local sut = require("tests.sut")
+local describe, it, eq = t.describe, t.it, t.eq
+local n = require("test.functional.testnvim")()
+local exec_lua = n.exec_lua
 
-local entry_display = require("telescope.pickers.entry_display")
+sut.setup()
+
+--- `entry_display.truncate(str, len)` with 'ambiwidth' set to `ambiwidth`.
+local function truncate(ambiwidth, str, len)
+  return exec_lua(function()
+    local original = vim.o.ambiwidth
+    vim.o.ambiwidth = ambiwidth
+    local truncated = require("telescope.pickers.entry_display").truncate(str, len)
+    vim.o.ambiwidth = original
+    return truncated
+  end)
+end
 
 describe("truncate", function()
   for _, ambiwidth in ipairs({ "single", "double" }) do
@@ -28,10 +41,7 @@ describe("truncate", function()
         case.expected[ambiwidth]
       )
       it(msg, function()
-        local original = vim.o.ambiwidth
-        vim.o.ambiwidth = ambiwidth
-        assert.eq(case.expected[ambiwidth], entry_display.truncate(case.args[1], case.args[2]))
-        vim.o.ambiwidth = original
+        eq(case.expected[ambiwidth], truncate(ambiwidth, case.args[1], case.args[2]))
       end)
     end
   end

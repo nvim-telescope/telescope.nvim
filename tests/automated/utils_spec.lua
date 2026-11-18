@@ -1,46 +1,101 @@
-local t = require("test.harness")
-local assert = require("test.assert")
-local describe, it, before_each, after_each = t.describe, t.it, t.before_each, t.after_each
+local t = require("test.testutil")
+local sut = require("tests.sut")
+local describe, it, before_each, after_each, eq = t.describe, t.it, t.before_each, t.after_each, t.eq
+local n = require("test.functional.testnvim")()
+local exec_lua = n.exec_lua
 
-local utils = require("telescope.utils")
+sut.setup()
 
-local eq = assert.eq
+local function path_expand(path)
+  return exec_lua(function()
+    return require("telescope.utils").path_expand(path)
+  end)
+end
+
+local function is_uri(path)
+  return exec_lua(function()
+    return require("telescope.utils").is_uri(path)
+  end)
+end
+
+local function separate_file_path_location(input)
+  return exec_lua(function()
+    return require("telescope.utils").__separate_file_path_location(input)
+  end)
+end
+
+local function normalize_sep(path, win)
+  return exec_lua(function()
+    return require("telescope.utils").normalize_sep(path, win)
+  end)
+end
+
+local function path_tail(path)
+  return exec_lua(function()
+    return require("telescope.utils").path_tail(path)
+  end)
+end
+
+--- `utils.transform_path(opts, path)`, only the path.
+local function transform_path(opts, path)
+  return exec_lua(function()
+    return (require("telescope.utils").transform_path(opts, path))
+  end)
+end
+
+local function make_relative(path, cwd)
+  return exec_lua(function()
+    return require("telescope.utils").make_relative(path, cwd)
+  end)
+end
+
+local function display_path(path, cwd)
+  return exec_lua(function()
+    return require("telescope.utils").display_path(path, cwd)
+  end)
+end
+
+local function split_lines(str)
+  return exec_lua(function()
+    return require("telescope.utils").split_lines(str)
+  end)
+end
 
 describe("path_expand()", function()
   it("removes trailing os_sep", function()
-    if utils.iswin then
-      eq("C:/Users/a/b", utils.path_expand([[C:\Users\a\b\]]))
+    if t.is_os("win") then
+      eq("C:/Users/a/b", path_expand([[C:\Users\a\b\]]))
     else
-      eq("/home/user", utils.path_expand("/home/user/"))
+      eq("/home/user", path_expand("/home/user/"))
     end
   end)
 
   it("works with root dir", function()
-    if utils.iswin then
-      eq("C:/", utils.path_expand([[C:\]]))
+    if t.is_os("win") then
+      eq("C:/", path_expand([[C:\]]))
     else
-      eq("/", utils.path_expand("/"))
+      eq("/", path_expand("/"))
     end
   end)
 
   it("works with ~", function()
-    eq(utils.normalize_sep(vim.uv.os_homedir()) .. "/src/foo", utils.path_expand("~/src/foo"))
+    eq(normalize_sep(vim.uv.os_homedir()) .. "/src/foo", path_expand("~/src/foo"))
   end)
 
   it("handles duplicate os_sep", function()
-    if utils.iswin then
-      eq("C:/Users/a", utils.path_expand([[C:\\\Users\\a]]))
+    if t.is_os("win") then
+      eq("C:/Users/a", path_expand([[C:\\\Users\\a]]))
     else
-      eq("/home/user", utils.path_expand("/home///user"))
+      eq("/home/user", path_expand("/home///user"))
     end
   end)
 
   it("preserves fake whitespace characters and whitespace", function()
     local path_space = "/home/user/hello world"
-    eq(path_space, utils.path_expand(path_space))
+    eq(path_space, path_expand(path_space))
     -- a literal backslash is part of the name, except on Windows where it is a separator
     local path_newline = [[/home/user/hello\nworld]]
-    eq(utils.iswin and "/home/user/hello/nworld" or path_newline, utils.path_expand(path_newline))
+    eq(t.is_os("win") and "/home/user/hello/nworld" or path_newline, path_expand(path_newline))
   end)
   describe("early return for uri", function()
     local uris = {
@@ -58,7 +113,7 @@ describe("path_expand()", function()
 
     for _, uri in ipairs(uris) do
       it(uri, function()
-        eq(uri, utils.path_expand(uri))
+        eq(uri, path_expand(uri))
       end)
     end
   end)
@@ -81,7 +136,7 @@ describe("is_uri", function()
 
     for _, uri in ipairs(uris) do
       it(uri, function()
-        assert(utils.is_uri(uri))
+        t.ok(is_uri(uri))
       end)
     end
   end)
@@ -102,7 +157,7 @@ describe("is_uri", function()
     }
     for _, input in ipairs(inputs) do
       it(vim.inspect(input), function()
-        assert(not utils.is_uri(input))
+        t.ok(not is_uri(input))
       end)
     end
   end)
@@ -119,7 +174,7 @@ describe("is_uri", function()
 
     for _, uri in ipairs(paths) do
       it(uri, function()
-        assert(not utils.is_uri(uri))
+        t.ok(not is_uri(uri))
       end)
     end
   end)
@@ -133,7 +188,7 @@ describe("is_uri", function()
 
     for _, path in ipairs(paths) do
       it(path, function()
-        assert(not utils.is_uri(path))
+        t.ok(not is_uri(path))
       end)
     end
   end)
@@ -147,7 +202,7 @@ describe("is_uri", function()
 
     for _, path in ipairs(paths) do
       it(path, function()
-        assert(not utils.is_uri(path))
+        t.ok(not is_uri(path))
       end)
     end
   end)
@@ -187,7 +242,7 @@ describe("__separates_file_path_location", function()
 
   for _, suite in ipairs(suites) do
     it("separtates file path for " .. suite.input, function()
-      local file, row, col = utils.__separate_file_path_location(suite.input)
+      local file, row, col = separate_file_path_location(suite.input)
 
       eq(file, suite.file)
       eq(row, suite.row)
@@ -198,53 +253,56 @@ end)
 
 describe("normalize_sep", function()
   it("converts backslashes only on Windows", function()
-    eq("C:/Users/a/b.lua", utils.normalize_sep([[C:\Users\a\b.lua]], true))
-    eq("C:/Users/a/b.lua", utils.normalize_sep([[c:\Users\a\b.lua]], true))
-    eq(vim.fs.normalize([[c:\Users\a\b.lua]], { win = true }), utils.normalize_sep([[c:\Users\a\b.lua]], true))
-    eq([[a\b.lua]], utils.normalize_sep([[a\b.lua]], false))
+    eq("C:/Users/a/b.lua", normalize_sep([[C:\Users\a\b.lua]], true))
+    eq("C:/Users/a/b.lua", normalize_sep([[c:\Users\a\b.lua]], true))
+    eq(vim.fs.normalize([[c:\Users\a\b.lua]], { win = true }), normalize_sep([[c:\Users\a\b.lua]], true))
+    eq([[a\b.lua]], normalize_sep([[a\b.lua]], false))
   end)
 end)
 
 describe("Windows paths (simulated)", function()
-  local iswin = utils.iswin
   before_each(function()
-    utils.iswin = true
+    exec_lua(function()
+      require("telescope.utils").iswin = true
+    end)
   end)
   after_each(function()
-    utils.iswin = iswin
+    exec_lua(function()
+      require("telescope.utils").iswin = vim.fn.has("win32") == 1
+    end)
   end)
 
   it("path_expand uses forward slashes", function()
-    eq("C:/Users/a/b", utils.path_expand([[C:\Users\a\b\]]))
-    eq("C:/", utils.path_expand([[C:\]]))
-    eq("//server/share/dir", utils.path_expand([[\\server\share\dir]]))
+    eq("C:/Users/a/b", path_expand([[C:\Users\a\b\]]))
+    eq("C:/", path_expand([[C:\]]))
+    eq("//server/share/dir", path_expand([[\\server\share\dir]]))
   end)
 
   it("path_tail accepts backslashes", function()
-    eq("init.lua", utils.path_tail([[lua\telescope\init.lua]]))
-    eq("init.lua", utils.path_tail("lua/telescope/init.lua"))
+    eq("init.lua", path_tail([[lua\telescope\init.lua]]))
+    eq("init.lua", path_tail("lua/telescope/init.lua"))
   end)
 
   it("transform_path normalizes native paths", function()
     local path = [[lua\telescope\init.lua]]
-    eq("lua/telescope/init.lua", (utils.transform_path({ path_display = {} }, path)))
-    eq("l/t/init.lua", (utils.transform_path({ path_display = { "shorten" } }, path)))
-    eq("init.lua lua/telescope", (utils.transform_path({ path_display = { "filename_first" } }, path)))
+    eq("lua/telescope/init.lua", (transform_path({ path_display = {} }, path)))
+    eq("l/t/init.lua", (transform_path({ path_display = { "shorten" } }, path)))
+    eq("init.lua lua/telescope", (transform_path({ path_display = { "filename_first" } }, path)))
   end)
 end)
 
 describe("make_relative", function()
-  local cwd = utils.iswin and [[C:\Users\user\project]] or "/home/user/project"
+  local cwd = t.is_os("win") and [[C:\Users\user\project]] or "/home/user/project"
 
   it("makes absolute paths under cwd relative", function()
-    eq("lua/init.lua", utils.make_relative(vim.fs.joinpath(cwd, "lua/init.lua"), cwd))
+    eq("lua/init.lua", make_relative(vim.fs.joinpath(cwd, "lua/init.lua"), cwd))
   end)
 
   it("keeps relative paths, paths outside cwd, and URIs", function()
-    local outside = utils.iswin and [[D:\elsewhere\init.lua]] or "/elsewhere/init.lua"
-    eq("lua/init.lua", utils.make_relative("lua/init.lua", cwd))
-    eq(utils.normalize_sep(outside), utils.make_relative(outside, cwd))
-    eq("term://~/foo//1:sh", utils.make_relative("term://~/foo//1:sh", cwd))
+    local outside = t.is_os("win") and [[D:\elsewhere\init.lua]] or "/elsewhere/init.lua"
+    eq("lua/init.lua", make_relative("lua/init.lua", cwd))
+    eq(normalize_sep(outside), make_relative(outside, cwd))
+    eq("term://~/foo//1:sh", make_relative("term://~/foo//1:sh", cwd))
   end)
 end)
 
@@ -252,15 +310,15 @@ describe("display_path", function()
   it("is relative to cwd, abbreviates home, and keeps URIs", function()
     local root = vim.uv.cwd()
     local home = vim.uv.os_homedir()
-    eq("README.md", utils.display_path(vim.fs.joinpath(root, "README.md"), root))
-    eq("~" .. utils.pathsep .. "x.txt", utils.display_path(home .. utils.pathsep .. "x.txt", root))
-    eq("term://~/foo//1:sh", utils.display_path("term://~/foo//1:sh", root))
+    eq("README.md", display_path(vim.fs.joinpath(root, "README.md"), root))
+    eq("~/x.txt", display_path(home .. "/x.txt", root))
+    eq("term://~/foo//1:sh", display_path("term://~/foo//1:sh", root))
   end)
 end)
 
 describe("transform_path", function()
   local cwd = (function()
-    if utils.iswin then
+    if t.is_os("win") then
       return [[C:\Users\user\projects\telescope.nvim]]
     else
       return "/home/user/projects/telescope.nvim"
@@ -271,17 +329,14 @@ describe("transform_path", function()
     local opts = { cwd = cwd, __length = 15 }
     if type(path_display) == "string" then
       opts.path_display = { path_display }
-      eq(expect, utils.transform_path(opts, path))
+      eq(expect, transform_path(opts, path))
       opts.path_display = { [path_display] = true }
-      eq(expect, utils.transform_path(opts, path))
+      eq(expect, transform_path(opts, path))
     elseif type(path_display) == "table" then
       opts.path_display = path_display
-      eq(expect, utils.transform_path(opts, path))
-    elseif type(path_display) == "function" then
-      opts.path_display = path_display
-      eq(expect, utils.transform_path(opts, path))
+      eq(expect, transform_path(opts, path))
     elseif path_display == nil then
-      eq(expect, utils.transform_path(opts, path))
+      eq(expect, transform_path(opts, path))
     end
   end
 
@@ -295,7 +350,7 @@ describe("transform_path", function()
   end)
 
   it("handles 'hidden' path_display", function()
-    eq("", utils.transform_path({ cwd = cwd, path_display = "hidden" }, "foobar"))
+    eq("", transform_path({ cwd = cwd, path_display = "hidden" }, "foobar"))
     assert_path("hidden", "foobar", "")
   end)
 
@@ -307,21 +362,21 @@ describe("transform_path", function()
   end)
 
   it("keeps paths outside of cwd", function()
-    local outside = utils.iswin and [[D:\elsewhere\init.lua]] or "/elsewhere/init.lua"
-    assert_path(nil, outside, utils.normalize_sep(outside))
+    local outside = t.is_os("win") and [[D:\elsewhere\init.lua]] or "/elsewhere/init.lua"
+    assert_path(nil, outside, normalize_sep(outside))
   end)
 
   describe("with process cwd inside opts.cwd", function()
     local root = vim.uv.cwd()
 
     after_each(function()
-      vim.uv.chdir(root)
+      n.fn.chdir(root)
     end)
 
     it("keeps relative paths", function()
-      vim.uv.chdir(vim.fs.joinpath(root, "lua"))
+      n.fn.chdir(vim.fs.joinpath(root, "lua"))
       local relative = "lua/telescope/init.lua"
-      eq(relative, utils.transform_path({ cwd = root, path_display = {} }, relative))
+      eq(relative, transform_path({ cwd = root, path_display = {} }, relative))
     end)
   end)
 
@@ -348,7 +403,7 @@ describe("transform_path", function()
 
     -- TODO: feels like 'absolute' should turn relative paths to absolute
     -- assert_path("absolute", relative.filename, absolute.filename)
-    assert_path("absolute", absolute, utils.normalize_sep(absolute))
+    assert_path("absolute", absolute, normalize_sep(absolute))
   end)
 
   it("handles default 'shorten' path_display", function()
@@ -394,9 +449,16 @@ describe("transform_path", function()
   end)
 
   it("handles function passed to path_display", function()
-    assert_path(function(_, path)
-      return string.gsub(path, "^doc", "d")
-    end, "doc/mydoc.md", "d/mydoc.md")
+    eq(
+      "d/mydoc.md",
+      exec_lua(function()
+        local opts = { cwd = cwd, __length = 15 }
+        opts.path_display = function(_, path)
+          return string.gsub(path, "^doc", "d")
+        end
+        return (require("telescope.utils").transform_path(opts, "doc/mydoc.md"))
+      end)
+    )
   end)
 end)
 
@@ -405,7 +467,7 @@ describe("path_tail", function()
     for _, path in ipairs(paths) do
       it("gets the tail of " .. path, function()
         local tail = vim.fn.fnamemodify(path, ":p:t")
-        eq(tail, utils.path_tail(path))
+        eq(tail, path_tail(path))
       end)
     end
   end
@@ -466,19 +528,19 @@ describe("split_lines", function()
   local newline_file = get_fake_file("\n")
   local carriage_newline_file = get_fake_file("\r\n")
 
-  if utils.iswin then
+  if t.is_os("win") then
     describe("handles files on Windows", function()
       it("reads file with newline only", function()
-        assert.eq(expect, utils.split_lines(newline_file))
+        eq(expect, split_lines(newline_file))
       end)
       it("reads file with carriage return and newline", function()
-        assert.eq(expect, utils.split_lines(carriage_newline_file))
+        eq(expect, split_lines(carriage_newline_file))
       end)
     end)
   else
     describe("handles files on non Windows environment", function()
       it("reads file with newline only", function()
-        assert.eq(expect, utils.split_lines(newline_file))
+        eq(expect, split_lines(newline_file))
       end)
     end)
   end

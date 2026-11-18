@@ -1,294 +1,281 @@
-local t = require("test.harness")
-local assert = require("test.assert")
-local describe, it = t.describe, t.it
+local t = require("test.testutil")
+local sut = require("tests.sut")
+local describe, it, eq = t.describe, t.it, t.eq
+local n = require("test.functional.testnvim")()
+local exec_lua = n.exec_lua
 
-local actions = require("telescope.actions")
-local action_set = require("telescope.actions.set")
-
-local transform_mod = require("telescope.actions.mt").transform_mod
-
-local eq = assert.eq
+sut.setup()
 
 describe("actions", function()
   it("should allow creating custom actions", function()
-    local a = transform_mod({
-      x = function()
-        return 5
-      end,
-    })
+    eq(
+      5,
+      exec_lua(function()
+        local a = require("telescope.actions.mt").transform_mod({
+          x = function()
+            return 5
+          end,
+        })
 
-    eq(5, a.x())
+        return a.x()
+      end)
+    )
   end)
 
   it("allows adding actions", function()
-    local a = transform_mod({
-      x = function()
-        return "x"
-      end,
-      y = function()
-        return "y"
-      end,
-    })
+    eq(
+      { "x", "y" },
+      exec_lua(function()
+        local a = require("telescope.actions.mt").transform_mod({
+          x = function()
+            return "x"
+          end,
+          y = function()
+            return "y"
+          end,
+        })
 
-    local x_plus_y = a.x + a.y
+        local x_plus_y = a.x + a.y
 
-    eq({ "x", "y" }, { x_plus_y() })
+        return { x_plus_y() }
+      end)
+    )
   end)
 
   it("ignores nils from added actions", function()
-    local a = transform_mod({
-      x = function()
-        return "x"
-      end,
-      y = function()
-        return "y"
-      end,
-      nil_maker = function()
-        return nil
-      end,
-    })
+    eq(
+      { "x", "y" },
+      exec_lua(function()
+        local a = require("telescope.actions.mt").transform_mod({
+          x = function()
+            return "x"
+          end,
+          y = function()
+            return "y"
+          end,
+          nil_maker = function()
+            return nil
+          end,
+        })
 
-    local x_plus_y = a.x + a.nil_maker + a.y
+        local x_plus_y = a.x + a.nil_maker + a.y
 
-    eq({ "x", "y" }, { x_plus_y() })
+        return { x_plus_y() }
+      end)
+    )
   end)
 
   it("allows overriding an action", function()
-    local a = transform_mod({
-      x = function()
-        return "x"
-      end,
-      y = function()
-        return "y"
-      end,
-    })
+    exec_lua(function()
+      local transform_mod = require("telescope.actions.mt").transform_mod
+      local eq = require("test.assert").eq
+      local a = transform_mod({
+        x = function()
+          return "x"
+        end,
+        y = function()
+          return "y"
+        end,
+      })
 
-    -- actions.file_goto_selection_edit:replace(...)
-    a.x:replace(function()
-      return "foo"
+      -- actions.file_goto_selection_edit:replace(...)
+      a.x:replace(function()
+        return "foo"
+      end)
+      eq("foo", a.x())
+
+      a._clear()
+      eq("x", a.x())
     end)
-    eq("foo", a.x())
-
-    a._clear()
-    eq("x", a.x())
   end)
 
   it("allows overriding an action only in specific cases with if", function()
-    local a = transform_mod({
-      x = function(e)
-        return e * 10
-      end,
-      y = function()
-        return "y"
-      end,
-    })
+    exec_lua(function()
+      local transform_mod = require("telescope.actions.mt").transform_mod
+      local eq = require("test.assert").eq
+      local a = transform_mod({
+        x = function(e)
+          return e * 10
+        end,
+        y = function()
+          return "y"
+        end,
+      })
 
-    -- actions.file_goto_selection_edit:replace(...)
-    a.x:replace_if(function(e)
-      return e > 0
-    end, function(e)
-      return (e / 10)
+      -- actions.file_goto_selection_edit:replace(...)
+      a.x:replace_if(function(e)
+        return e > 0
+      end, function(e)
+        return (e / 10)
+      end)
+      eq(-100, a.x(-10))
+      eq(10, a.x(100))
+      eq(1, a.x(10))
+
+      a._clear()
+      eq(100, a.x(10))
     end)
-    eq(-100, a.x(-10))
-    eq(10, a.x(100))
-    eq(1, a.x(10))
-
-    a._clear()
-    eq(100, a.x(10))
   end)
 
   it("allows overriding an action only in specific cases with mod", function()
-    local a = transform_mod({
-      x = function(e)
-        return e * 10
-      end,
-      y = function()
-        return "y"
-      end,
-    })
+    exec_lua(function()
+      local transform_mod = require("telescope.actions.mt").transform_mod
+      local eq = require("test.assert").eq
+      local a = transform_mod({
+        x = function(e)
+          return e * 10
+        end,
+        y = function()
+          return "y"
+        end,
+      })
 
-    -- actions.file_goto_selection_edit:replace(...)
-    a.x:replace_map({
-      [function(e)
-        return e > 0
-      end] = function(e)
-        return (e / 10)
-      end,
-      [function(e)
-        return e == 0
-      end] = function(e)
-        return (e + 10)
-      end,
-    })
+      -- actions.file_goto_selection_edit:replace(...)
+      a.x:replace_map({
+        [function(e)
+          return e > 0
+        end] = function(e)
+          return (e / 10)
+        end,
+        [function(e)
+          return e == 0
+        end] = function(e)
+          return (e + 10)
+        end,
+      })
 
-    eq(-100, a.x(-10))
-    eq(10, a.x(100))
-    eq(1, a.x(10))
-    eq(10, a.x(0))
+      eq(-100, a.x(-10))
+      eq(10, a.x(100))
+      eq(1, a.x(10))
+      eq(10, a.x(0))
 
-    a._clear()
-    eq(100, a.x(10))
+      a._clear()
+      eq(100, a.x(10))
+    end)
   end)
 
   it("continuous replacement", function()
-    local a = transform_mod({
-      x = function()
-        return "cleared"
-      end,
-      y = function()
-        return "y"
-      end,
-    })
+    exec_lua(function()
+      local transform_mod = require("telescope.actions.mt").transform_mod
+      local eq = require("test.assert").eq
+      local a = transform_mod({
+        x = function()
+          return "cleared"
+        end,
+        y = function()
+          return "y"
+        end,
+      })
 
-    -- Replace original, which becomes new fallback
-    a.x:replace(function()
-      return "negative"
+      -- Replace original, which becomes new fallback
+      a.x:replace(function()
+        return "negative"
+      end)
+
+      -- actions.file_goto_selection_edit:replace(...)
+      a.x:replace_map({
+        [function(e)
+          return e > 0
+        end] = function(e)
+          return "positive"
+        end,
+        [function(e)
+          return e == 0
+        end] = function(e)
+          return "zero"
+        end,
+      })
+
+      eq("positive", a.x(10))
+      eq("zero", a.x(0))
+      eq("negative", a.x(-10))
+
+      a._clear()
+      eq("cleared", a.x(10))
     end)
-
-    -- actions.file_goto_selection_edit:replace(...)
-    a.x:replace_map({
-      [function(e)
-        return e > 0
-      end] = function(e)
-        return "positive"
-      end,
-      [function(e)
-        return e == 0
-      end] = function(e)
-        return "zero"
-      end,
-    })
-
-    eq("positive", a.x(10))
-    eq("zero", a.x(0))
-    eq("negative", a.x(-10))
-
-    a._clear()
-    eq("cleared", a.x(10))
   end)
 
   it("enhance.pre", function()
-    local a = transform_mod({
-      x = function()
-        return "x"
-      end,
-      y = function()
-        return "y"
-      end,
-    })
+    exec_lua(function()
+      local transform_mod = require("telescope.actions.mt").transform_mod
+      local eq = require("test.assert").eq
+      local a = transform_mod({
+        x = function()
+          return "x"
+        end,
+        y = function()
+          return "y"
+        end,
+      })
 
-    local called_pre = false
+      local called_pre = false
 
-    a.y:enhance({
-      pre = function()
-        called_pre = true
-      end,
-    })
-    eq("y", a.y())
-    eq(true, called_pre)
-  end)
-
-  it("enhance.post", function()
-    local a = transform_mod({
-      x = function()
-        return "x"
-      end,
-      y = function()
-        return "y"
-      end,
-    })
-
-    local called_post = false
-
-    a.y:enhance({
-      post = function()
-        called_post = true
-      end,
-    })
-    eq("y", a.y())
-    eq(true, called_post)
-  end)
-
-  it("static_pre static_post", function()
-    local called_pre = false
-    local called_post = false
-    local static_post = 0
-    local a = transform_mod({
-      x = {
+      a.y:enhance({
         pre = function()
           called_pre = true
         end,
-        action = function()
+      })
+      eq("y", a.y())
+      eq(true, called_pre)
+    end)
+  end)
+
+  it("enhance.post", function()
+    exec_lua(function()
+      local transform_mod = require("telescope.actions.mt").transform_mod
+      local eq = require("test.assert").eq
+      local a = transform_mod({
+        x = function()
           return "x"
         end,
+        y = function()
+          return "y"
+        end,
+      })
+
+      local called_post = false
+
+      a.y:enhance({
         post = function()
           called_post = true
         end,
-      },
-    })
+      })
+      eq("y", a.y())
+      eq(true, called_post)
+    end)
+  end)
 
-    eq("x", a.x())
-    eq(true, called_pre)
-    eq(true, called_post)
+  it("static_pre static_post", function()
+    exec_lua(function()
+      local transform_mod = require("telescope.actions.mt").transform_mod
+      local eq = require("test.assert").eq
+      local called_pre = false
+      local called_post = false
+      local static_post = 0
+      local a = transform_mod({
+        x = {
+          pre = function()
+            called_pre = true
+          end,
+          action = function()
+            return "x"
+          end,
+          post = function()
+            called_post = true
+          end,
+        },
+      })
+
+      eq("x", a.x())
+      eq(true, called_pre)
+      eq(true, called_post)
+    end)
   end)
 
   it("can call both", function()
-    local a = transform_mod({
-      x = function()
-        return "x"
-      end,
-      y = function()
-        return "y"
-      end,
-    })
-
-    local called_count = 0
-    local count_inc = function()
-      called_count = called_count + 1
-    end
-
-    a.y:enhance({
-      pre = count_inc,
-      post = count_inc,
-    })
-
-    eq("y", a.y())
-    eq(2, called_count)
-  end)
-
-  it("can call both even when combined", function()
-    local a = transform_mod({
-      x = function()
-        return "x"
-      end,
-      y = function()
-        return "y"
-      end,
-    })
-
-    local called_count = 0
-    local count_inc = function()
-      called_count = called_count + 1
-    end
-
-    a.y:enhance({
-      pre = count_inc,
-      post = count_inc,
-    })
-
-    a.x:enhance({
-      post = count_inc,
-    })
-
-    local x_plus_y = a.x + a.y
-    x_plus_y()
-
-    eq(3, called_count)
-  end)
-
-  it(
-    "can call replace fn even when combined before replace registered the fn (because that happens with mappings)",
-    function()
+    exec_lua(function()
+      local transform_mod = require("telescope.actions.mt").transform_mod
+      local eq = require("test.assert").eq
       local a = transform_mod({
         x = function()
           return "x"
@@ -303,23 +290,129 @@ describe("actions", function()
         called_count = called_count + 1
       end
 
-      local x_plus_y = a.x + a.y
-      a.x:replace(function()
-        count_inc()
-      end)
-      a.y:replace(function()
-        count_inc()
-      end)
+      a.y:enhance({
+        pre = count_inc,
+        post = count_inc,
+      })
 
-      x_plus_y()
-
+      eq("y", a.y())
       eq(2, called_count)
+    end)
+  end)
+
+  it("can call both even when combined", function()
+    eq(
+      3,
+      exec_lua(function()
+        local a = require("telescope.actions.mt").transform_mod({
+          x = function()
+            return "x"
+          end,
+          y = function()
+            return "y"
+          end,
+        })
+
+        local called_count = 0
+        local count_inc = function()
+          called_count = called_count + 1
+        end
+
+        a.y:enhance({
+          pre = count_inc,
+          post = count_inc,
+        })
+
+        a.x:enhance({
+          post = count_inc,
+        })
+
+        local x_plus_y = a.x + a.y
+        x_plus_y()
+
+        return called_count
+      end)
+    )
+  end)
+
+  it(
+    "can call replace fn even when combined before replace registered the fn (because that happens with mappings)",
+    function()
+      eq(
+        2,
+        exec_lua(function()
+          local a = require("telescope.actions.mt").transform_mod({
+            x = function()
+              return "x"
+            end,
+            y = function()
+              return "y"
+            end,
+          })
+
+          local called_count = 0
+          local count_inc = function()
+            called_count = called_count + 1
+          end
+
+          local x_plus_y = a.x + a.y
+          a.x:replace(function()
+            count_inc()
+          end)
+          a.y:replace(function()
+            count_inc()
+          end)
+
+          x_plus_y()
+
+          return called_count
+        end)
+      )
     end
   )
 
   it(
     "can call enhance fn even when combined before enhance registed fns (because that happens with mappings)",
     function()
+      eq(
+        3,
+        exec_lua(function()
+          local a = require("telescope.actions.mt").transform_mod({
+            x = function()
+              return "x"
+            end,
+            y = function()
+              return "y"
+            end,
+          })
+
+          local called_count = 0
+          local count_inc = function()
+            called_count = called_count + 1
+          end
+
+          local x_plus_y = a.x + a.y
+          a.y:enhance({
+            pre = count_inc,
+            post = count_inc,
+          })
+
+          a.x:enhance({
+            post = count_inc,
+          })
+
+          x_plus_y()
+
+          return called_count
+        end)
+      )
+    end
+  )
+
+  it("clears enhance", function()
+    exec_lua(function()
+      local transform_mod = require("telescope.actions.mt").transform_mod
+      local eq = require("test.assert").eq
       local a = transform_mod({
         x = function()
           return "x"
@@ -329,211 +422,207 @@ describe("actions", function()
         end,
       })
 
+      local called_post = false
+
+      a.y:enhance({
+        post = function()
+          called_post = true
+        end,
+      })
+
+      a._clear()
+
+      eq("y", a.y())
+      eq(false, called_post)
+    end)
+  end)
+
+  it("handles passing arguments", function()
+    eq(
+      "modified: 5",
+      exec_lua(function()
+        local a = require("telescope.actions.mt").transform_mod({
+          x = function(bufnr)
+            return string.format("bufnr: %s")
+          end,
+        })
+
+        a.x:replace(function(bufnr)
+          return string.format("modified: %s", bufnr)
+        end)
+        return a.x(5)
+      end)
+    )
+  end)
+
+  it("handles add with two different tables", function()
+    exec_lua(function()
+      local transform_mod = require("telescope.actions.mt").transform_mod
+      local eq = require("test.assert").eq
+      local count_a = 0
+      local count_b = 0
+      local a = transform_mod({
+        x = function()
+          count_a = count_a + 1
+        end,
+      })
+      local b = transform_mod({
+        y = function()
+          count_b = count_b + 1
+        end,
+      })
+
       local called_count = 0
       local count_inc = function()
         called_count = called_count + 1
       end
 
-      local x_plus_y = a.x + a.y
-      a.y:enhance({
-        pre = count_inc,
-        post = count_inc,
-      })
-
       a.x:enhance({
         post = count_inc,
       })
+      b.y:enhance({
+        post = count_inc,
+      })
 
+      local x_plus_y = a.x + b.y
       x_plus_y()
 
-      eq(3, called_count)
-    end
-  )
-
-  it("clears enhance", function()
-    local a = transform_mod({
-      x = function()
-        return "x"
-      end,
-      y = function()
-        return "y"
-      end,
-    })
-
-    local called_post = false
-
-    a.y:enhance({
-      post = function()
-        called_post = true
-      end,
-    })
-
-    a._clear()
-
-    eq("y", a.y())
-    eq(false, called_post)
-  end)
-
-  it("handles passing arguments", function()
-    local a = transform_mod({
-      x = function(bufnr)
-        return string.format("bufnr: %s")
-      end,
-    })
-
-    a.x:replace(function(bufnr)
-      return string.format("modified: %s", bufnr)
+      eq(2, called_count)
+      eq(1, count_a)
+      eq(1, count_b)
     end)
-    eq("modified: 5", a.x(5))
-  end)
-
-  it("handles add with two different tables", function()
-    local count_a = 0
-    local count_b = 0
-    local a = transform_mod({
-      x = function()
-        count_a = count_a + 1
-      end,
-    })
-    local b = transform_mod({
-      y = function()
-        count_b = count_b + 1
-      end,
-    })
-
-    local called_count = 0
-    local count_inc = function()
-      called_count = called_count + 1
-    end
-
-    a.x:enhance({
-      post = count_inc,
-    })
-    b.y:enhance({
-      post = count_inc,
-    })
-
-    local x_plus_y = a.x + b.y
-    x_plus_y()
-
-    eq(2, called_count)
-    eq(1, count_a)
-    eq(1, count_b)
   end)
 
   it("handles tripple concat with static pre post", function()
-    local count_a = 0
-    local count_b = 0
-    local count_c = 0
-    local static_pre = 0
-    local static_post = 0
-    local a = transform_mod({
-      x = {
-        pre = function()
-          static_pre = static_pre + 1
-        end,
-        action = function()
-          count_a = count_a + 1
-        end,
-        post = function()
-          static_post = static_post + 1
-        end,
-      },
-    })
-    local b = transform_mod({
-      y = {
-        pre = function()
-          static_pre = static_pre + 1
-        end,
-        action = function()
-          count_b = count_b + 1
-        end,
-        post = function()
-          static_post = static_post + 1
-        end,
-      },
-    })
-    local c = transform_mod({
-      z = {
-        pre = function()
-          static_pre = static_pre + 1
-        end,
-        action = function()
-          count_c = count_c + 1
-        end,
-        post = function()
-          static_post = static_post + 1
-        end,
-      },
-    })
+    exec_lua(function()
+      local transform_mod = require("telescope.actions.mt").transform_mod
+      local eq = require("test.assert").eq
+      local count_a = 0
+      local count_b = 0
+      local count_c = 0
+      local static_pre = 0
+      local static_post = 0
+      local a = transform_mod({
+        x = {
+          pre = function()
+            static_pre = static_pre + 1
+          end,
+          action = function()
+            count_a = count_a + 1
+          end,
+          post = function()
+            static_post = static_post + 1
+          end,
+        },
+      })
+      local b = transform_mod({
+        y = {
+          pre = function()
+            static_pre = static_pre + 1
+          end,
+          action = function()
+            count_b = count_b + 1
+          end,
+          post = function()
+            static_post = static_post + 1
+          end,
+        },
+      })
+      local c = transform_mod({
+        z = {
+          pre = function()
+            static_pre = static_pre + 1
+          end,
+          action = function()
+            count_c = count_c + 1
+          end,
+          post = function()
+            static_post = static_post + 1
+          end,
+        },
+      })
 
-    local replace_count = 0
-    a.x:replace(function()
-      replace_count = replace_count + 1
+      local replace_count = 0
+      a.x:replace(function()
+        replace_count = replace_count + 1
+      end)
+
+      local x_plus_y_plus_z = a.x + b.y + c.z
+      x_plus_y_plus_z()
+
+      eq(0, count_a)
+      eq(1, count_b)
+      eq(1, count_c)
+      eq(1, replace_count)
+      eq(3, static_pre)
+      eq(3, static_post)
     end)
-
-    local x_plus_y_plus_z = a.x + b.y + c.z
-    x_plus_y_plus_z()
-
-    eq(0, count_a)
-    eq(1, count_b)
-    eq(1, count_c)
-    eq(1, replace_count)
-    eq(3, static_pre)
-    eq(3, static_post)
   end)
 
   describe("action_set", function()
     it("can replace `action_set.edit`", function()
-      action_set.edit:replace(function(_, arg)
-        return "replaced:" .. arg
+      exec_lua(function()
+        local actions = require("telescope.actions")
+        local action_set = require("telescope.actions.set")
+        local eq = require("test.assert").eq
+        action_set.edit:replace(function(_, arg)
+          return "replaced:" .. arg
+        end)
+        eq("replaced:edit", actions.file_edit())
+        eq("replaced:vnew", actions.file_vsplit())
       end)
-      eq("replaced:edit", actions.file_edit())
-      eq("replaced:vnew", actions.file_vsplit())
     end)
 
     it("handles backwards compat with select and edit files", function()
-      -- Reproduce steps:
-      --  In config, we have { ["<CR>"] = actions.select, ... }
-      --  In caller, we have actions._goto:replace(...)
-      --  Person calls `select`, does not see update
-      action_set.edit:replace(function(_, arg)
-        return "default_to_edit:" .. arg
-      end)
-      eq("default_to_edit:edit", actions.select_default())
+      exec_lua(function()
+        local actions = require("telescope.actions")
+        local action_set = require("telescope.actions.set")
+        local eq = require("test.assert").eq
+        -- Reproduce steps:
+        --  In config, we have { ["<CR>"] = actions.select, ... }
+        --  In caller, we have actions._goto:replace(...)
+        --  Person calls `select`, does not see update
+        action_set.edit:replace(function(_, arg)
+          return "default_to_edit:" .. arg
+        end)
+        eq("default_to_edit:edit", actions.select_default())
 
-      action_set.select:replace(function(_, arg)
-        return "override_with_select:" .. arg
-      end)
-      eq("override_with_select:default", actions.select_default())
+        action_set.select:replace(function(_, arg)
+          return "override_with_select:" .. arg
+        end)
+        eq("override_with_select:default", actions.select_default())
 
-      -- Sometimes you might want to change the default selection...
-      --  but you don't want to prohibit the ability to edit the code...
+        -- Sometimes you might want to change the default selection...
+        --  but you don't want to prohibit the ability to edit the code...
+      end)
     end)
   end)
 end)
 
 describe("action_set.edit", function()
+  --- The name of the buffer opened by selecting `filename` in a picker.
   local function select(filename)
-    local pickers, finders = require("telescope.pickers"), require("telescope.finders")
-    pickers
-      .new({}, {
-        finder = finders.new_table({
-          results = { filename },
-          entry_maker = function(v)
-            return { value = v, display = v, ordinal = v, filename = v }
-          end,
-        }),
-        sorter = require("telescope.config").values.generic_sorter({}),
-      })
-      :find()
-    local prompt_bufnr = vim.api.nvim_get_current_buf()
-    local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
-    vim.wait(1000, function()
-      return picker.manager and picker.manager:num_results() > 0
+    return exec_lua(function()
+      local pickers, finders = require("telescope.pickers"), require("telescope.finders")
+      pickers
+        .new({}, {
+          finder = finders.new_table({
+            results = { filename },
+            entry_maker = function(v)
+              return { value = v, display = v, ordinal = v, filename = v }
+            end,
+          }),
+          sorter = require("telescope.config").values.generic_sorter({}),
+        })
+        :find()
+      local prompt_bufnr = vim.api.nvim_get_current_buf()
+      local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
+      vim.wait(1000, function()
+        return picker.manager and picker.manager:num_results() > 0
+      end)
+      require("telescope.actions").select_default(prompt_bufnr)
+      return vim.api.nvim_buf_get_name(0)
     end)
-    actions.select_default(prompt_bufnr)
-    return vim.api.nvim_buf_get_name(0)
   end
 
   it("opens URIs unchanged", function()
@@ -546,15 +635,15 @@ describe("action_set.edit", function()
     local dir = vim.fn.tempname()
     vim.fn.mkdir(dir, "p")
     vim.fn.writefile({ "lock" }, vim.fs.joinpath(dir, "~$doc.docx"))
-    vim.uv.chdir(dir)
+    n.fn.chdir(dir)
     local name = select("~$doc.docx")
-    vim.uv.chdir(cwd)
+    n.fn.chdir(cwd)
     eq("~$doc.docx", vim.fs.basename(name))
     eq(vim.uv.fs_realpath(dir), vim.uv.fs_realpath(vim.fs.dirname(name)))
   end)
 
   it("does not expand environment variables in file names", function()
-    vim.env.TELESCOPE_TEST_VAR = "expanded"
+    n.fn.setenv("TELESCOPE_TEST_VAR", "expanded")
     eq("$TELESCOPE_TEST_VAR.lua", vim.fs.basename(select("lua/$TELESCOPE_TEST_VAR.lua")))
   end)
 end)
