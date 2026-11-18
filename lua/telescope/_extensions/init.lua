@@ -3,6 +3,7 @@ local extensions = {}
 extensions._loaded = {}
 extensions._config = {}
 extensions._health = {}
+extensions._has_setup = {}
 
 local load_extension = function(name)
   local ok, ext = pcall(require, "telescope._extensions." .. name)
@@ -16,8 +17,9 @@ extensions.manager = setmetatable({}, {
   __index = function(t, k)
     local ext = load_extension(k)
     t[k] = ext.exports or {}
-    if ext.setup then
+    if ext.setup and not extensions._has_setup[k] then
       ext.setup(extensions._config[k] or {}, require("telescope.config").values)
+      extensions._has_setup[k] = true
     end
     extensions._health[k] = ext.health
 
@@ -60,8 +62,9 @@ end
 
 extensions.load = function(name)
   local ext = load_extension(name)
-  if ext.setup then
+  if ext.setup and not extensions._has_setup[name] then
     ext.setup(extensions._config[name] or {}, require("telescope.config").values)
+    extensions._has_setup[name] = true
   end
   return extensions.manager[name]
 end
