@@ -4,10 +4,6 @@ local describe, it, after_each, eq = t.describe, t.it, t.after_each, t.eq
 local n = require("test.functional.testnvim")()
 local exec_lua = n.exec_lua
 
-if t.is_os("win") then
-  return
-end
-
 sut.setup()
 
 describe("builtin.find_files", function()
