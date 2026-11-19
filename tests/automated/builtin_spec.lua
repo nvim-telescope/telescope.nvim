@@ -83,6 +83,24 @@ describe("builtin.grep_string", function()
   end)
 end)
 
+describe("builtin.commands", function()
+  after_each(require("tests.helpers").cleanup)
+
+  it("shows commands with Lua completion", function()
+    local h = require("tests.helpers")
+    vim.api.nvim_create_user_command("TstLuaCmp", "", {
+      nargs = 1,
+      complete = function()
+        return {}
+      end,
+    })
+    local picker = h.picker("commands")
+    h.type(picker, "TstLuaCmp")
+    vim.api.nvim_del_user_command("TstLuaCmp")
+    assert(h.best_result(picker):find("TstLuaCmp.*▏lua "))
+  end)
+end)
+
 describe("telescope.ui_select", function()
   local actions = require("telescope.actions")
   local action_state = require("telescope.actions.state")

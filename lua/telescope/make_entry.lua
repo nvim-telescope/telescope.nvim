@@ -1285,7 +1285,8 @@ function make_entry.gen_from_commands(opts)
       { entry.name, "TelescopeResultsIdentifier" },
       attrs,
       entry.nargs,
-      entry.complete or "",
+      -- a Lua function for commands defined with a Lua `complete` callback (`:command` shows "<Lua function>")
+      type(entry.complete) == "function" and "lua" or entry.complete or "",
       entry.definition:gsub("\n", " "),
     })
   end
