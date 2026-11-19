@@ -332,9 +332,7 @@ internal.commands = function(opts)
           local need_buf_command = vim.nonnil(opts.show_buf_command, true)
 
           if need_buf_command then
-            local buf_command_iter = api.nvim_buf_get_commands(0, {}) --[[@as table]]
-            buf_command_iter[true] = nil -- remove the redundant entry
-            for _, cmd in pairs(buf_command_iter) do
+            for _, cmd in pairs(api.nvim_buf_get_commands(0, {})) do
               table.insert(commands, cmd)
             end
           end
