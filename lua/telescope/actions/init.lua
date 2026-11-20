@@ -508,21 +508,6 @@ actions.insert_symbol_i = function(prompt_bufnr)
   end)
 end
 
--- TODO: Think about how to do this.
-actions.insert_value = function(prompt_bufnr)
-  local selection = action_state.get_selected_entry()
-  if selection == nil then
-    utils.__warn_no_selection("actions.insert_value")
-    return
-  end
-
-  vim.schedule(function()
-    actions.close(prompt_bufnr)
-  end)
-
-  return selection.value
-end
-
 --- Ask user to confirm an action
 ---@param prompt string: The prompt for confirmation
 ---@param default_value? string: The default value of user input

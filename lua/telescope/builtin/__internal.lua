@@ -580,9 +580,6 @@ internal.command_history = function(opts)
         actions.select_default:replace(actions.set_command_line)
         map({ "i", "n" }, "<C-e>", actions.edit_command_line)
 
-        -- TODO: Find a way to insert the text... it seems hard.
-        -- map('i', '<C-i>', actions.insert_value, { expr = true })
-
         return true
       end,
     })
@@ -602,9 +599,6 @@ internal.search_history = function(opts)
       attach_mappings = function(_, map)
         actions.select_default:replace(actions.set_search_line)
         map({ "i", "n" }, "<C-e>", actions.edit_search_line)
-
-        -- TODO: Find a way to insert the text... it seems hard.
-        -- map('i', '<C-i>', actions.insert_value, { expr = true })
 
         return true
       end,
