@@ -727,4 +727,6 @@ end
 
 -- We can't do this in one statement because docgen gets confused if we do
 builtin = apply_config(builtin)
+-- after `apply_config`, so that `fd` uses the `find_files` picker config
+builtin.fd = builtin.find_files
 return builtin
