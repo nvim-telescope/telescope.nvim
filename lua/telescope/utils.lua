@@ -455,28 +455,19 @@ utils.transform_path = function(opts, path)
   end
 end
 
--- local x = utils.make_default_callable(function(opts)
---   return function()
---     print(opts.example, opts.another)
---   end
--- end, { example = 7, another = 5 })
-
--- x()
--- x.new { example = 3 }()
+-- A table `x` with `x.new(opts)` (and `x(opts)`) that calls `f` with `opts` merged over
+-- `default_opts`.
 function utils.make_default_callable(f, default_opts)
   default_opts = default_opts or {}
 
   return setmetatable({
     new = function(opts)
-      opts = vim.tbl_extend("keep", opts, default_opts)
+      opts = vim.tbl_extend("keep", opts or {}, default_opts)
       return f(opts)
     end,
   }, {
-    __call = function()
-      local ok, err = pcall(f(default_opts))
-      if not ok then
-        error(debug.traceback(err))
-      end
+    __call = function(self, opts)
+      return self.new(opts)
     end,
   })
 end

@@ -20,9 +20,11 @@ local ns_previewer = api.nvim_create_namespace("telescope.previewers")
 
 local has_file = 1 == fn.executable("file")
 
+-- `previewers.X.new(opts)`, also callable as `previewers.X(opts)`
 local function defaulter(f)
-  return {
+  return setmetatable({
     new = function(opts)
+      opts = opts or {}
       if opts.preview == false then
         return false
       end
@@ -37,7 +39,11 @@ local function defaulter(f)
       end
       return f(opts)
     end,
-  }
+  }, {
+    __call = function(self, opts)
+      return self.new(opts)
+    end,
+  })
 end
 
 local bytes_to_megabytes = math.pow(1024, 2)
