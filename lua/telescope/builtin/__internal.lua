@@ -401,7 +401,7 @@ internal.quickfixhistory = function(opts)
       table.insert(qflists, qflist)
     end
   end
-  local entry_maker = opts.make_entry
+  local entry_maker = opts.entry_maker
     or function(entry)
       return make_entry.set_default_entry_mt({
         value = entry.title or "Untitled",

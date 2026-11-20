@@ -25,7 +25,6 @@
 ---@field env? table<string, string?> man_pages
 ---@field ignore_filename? boolean lsp_workspace_symbols
 ---@field id? integer quickfix: id of the list (instead of `nr`)
----@field make_entry? fun(line: any): table? quickfix
 ---@field items? any[] ui_select
 ---@field format_item? fun(item: any): string ui_select
 ---@field on_choice? fun(item: any?, idx: integer?) ui_select
