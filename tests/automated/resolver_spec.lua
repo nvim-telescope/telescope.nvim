@@ -1,12 +1,42 @@
-local t = require("test.harness")
-local assert = require("test.assert")
-local describe, it = t.describe, t.it
+local t = require("test.testutil")
+local sut = require("tests.sut")
+local describe, it, eq = t.describe, t.it, t.eq
+local n = require("test.functional.testnvim")()
+local exec_lua = n.exec_lua
 
-local eq = function(a, b)
-  assert.eq(a, b)
+sut.setup()
+
+--- `telescope.config.resolve`, called in the Nvim under test (for plain values: no functions or mixed tables).
+local resolve = {}
+
+function resolve.win_option(val, default)
+  return exec_lua(function()
+    return require("telescope.config.resolve").win_option(val, default)
+  end)
 end
 
-local resolve = require("telescope.config.resolve")
+for _, name in ipairs({ "resolve_width", "resolve_height" }) do
+  resolve[name] = function(val)
+    return function(_, max_columns, max_lines)
+      return exec_lua(function()
+        return require("telescope.config.resolve")[name](val)(nil, max_columns, max_lines)
+      end)
+    end
+  end
+end
+
+function resolve.resolve_anchor_pos(anchor, p_width, p_height, max_columns, max_lines, offset)
+  return exec_lua(function()
+    return require("telescope.config.resolve").resolve_anchor_pos(
+      anchor,
+      p_width,
+      p_height,
+      max_columns,
+      max_lines,
+      offset
+    )
+  end)
+end
 
 describe("telescope.config.resolve", function()
   describe("win_option", function()
@@ -38,11 +68,15 @@ describe("telescope.config.resolve", function()
     end)
 
     it("should allow overrides for different wins", function()
-      local prompt_override = { "a", prompt = "b" }
-      local opt = resolve.win_option(prompt_override)
-      eq("a", opt.preview)
-      eq("a", opt.results)
-      eq("b", opt.prompt)
+      exec_lua(function()
+        local eq = require("test.assert").eq
+        local resolve = require("telescope.config.resolve")
+        local prompt_override = { "a", prompt = "b" }
+        local opt = resolve.win_option(prompt_override)
+        eq("a", opt.preview)
+        eq("a", opt.results)
+        eq("b", opt.prompt)
+      end)
     end)
 
     it("should allow overrides for all wins", function()
@@ -80,11 +114,15 @@ describe("telescope.config.resolve", function()
     end)
 
     it("should handle percentages with min/max boundary", function()
-      eq(20, resolve.resolve_width({ 0.1, min = 20 })(nil, 40, 120))
-      eq(30, resolve.resolve_height({ 0.1, min = 20 })(nil, 40, 300))
+      exec_lua(function()
+        local eq = require("test.assert").eq
+        local resolve = require("telescope.config.resolve")
+        eq(20, resolve.resolve_width({ 0.1, min = 20 })(nil, 40, 120))
+        eq(30, resolve.resolve_height({ 0.1, min = 20 })(nil, 40, 300))
 
-      eq(24, resolve.resolve_width({ 0.4, max = 80 })(nil, 60, 60))
-      eq(80, resolve.resolve_height({ 0.4, max = 80 })(nil, 60, 300))
+        eq(24, resolve.resolve_width({ 0.4, max = 80 })(nil, 60, 60))
+        eq(80, resolve.resolve_height({ 0.4, max = 80 })(nil, 60, 300))
+      end)
     end)
 
     it("should handle fixed size", function()
@@ -98,37 +136,45 @@ describe("telescope.config.resolve", function()
     end)
 
     it("should handle functions", function()
-      local func = function(_, max_columns, max_lines)
-        if max_columns < 45 then
-          return math.min(max_columns, max_lines)
-        elseif max_columns < max_lines then
-          return max_columns * 0.8
-        else
-          return math.min(max_columns, max_lines) * 0.5
+      exec_lua(function()
+        local eq = require("test.assert").eq
+        local resolve = require("telescope.config.resolve")
+        local func = function(_, max_columns, max_lines)
+          if max_columns < 45 then
+            return math.min(max_columns, max_lines)
+          elseif max_columns < max_lines then
+            return max_columns * 0.8
+          else
+            return math.min(max_columns, max_lines) * 0.5
+          end
         end
-      end
-      for _, s in ipairs(test_sizes) do
-        eq(func(nil, unpack(s)), resolve.resolve_height(func)(nil, unpack(s)))
-      end
+        for _, s in ipairs(test_sizes) do
+          eq(func(nil, unpack(s)), resolve.resolve_height(func)(nil, unpack(s)))
+        end
+      end)
     end)
 
     it("should handle padding", function()
-      local func = function(_, max_columns, max_lines)
-        return math.floor(math.min(max_columns * 0.6, max_lines * 0.8))
-      end
-      local pads = { 0.1, 5, func }
-      for _, s in ipairs(test_sizes) do
-        for _, p in ipairs(pads) do
-          eq(
-            s[1] - 2 * resolve.resolve_width(p)(nil, unpack(s)),
-            resolve.resolve_width({ padding = p })(nil, unpack(s))
-          )
-          eq(
-            s[2] - 2 * resolve.resolve_height(p)(nil, unpack(s)),
-            resolve.resolve_height({ padding = p })(nil, unpack(s))
-          )
+      exec_lua(function()
+        local eq = require("test.assert").eq
+        local resolve = require("telescope.config.resolve")
+        local func = function(_, max_columns, max_lines)
+          return math.floor(math.min(max_columns * 0.6, max_lines * 0.8))
         end
-      end
+        local pads = { 0.1, 5, func }
+        for _, s in ipairs(test_sizes) do
+          for _, p in ipairs(pads) do
+            eq(
+              s[1] - 2 * resolve.resolve_width(p)(nil, unpack(s)),
+              resolve.resolve_width({ padding = p })(nil, unpack(s))
+            )
+            eq(
+              s[2] - 2 * resolve.resolve_height(p)(nil, unpack(s)),
+              resolve.resolve_height({ padding = p })(nil, unpack(s))
+            )
+          end
+        end
+      end)
     end)
   end)
 

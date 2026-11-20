@@ -1,18 +1,16 @@
-local t = require("test.harness")
-local assert = require("test.assert")
-local describe, it = t.describe, t.it
+local t = require("test.testutil")
+local sut = require("tests.sut")
+local describe, it, eq = t.describe, t.it, t.eq
+local n = require("test.functional.testnvim")()
+local exec_lua = n.exec_lua
 
-local config = require("telescope.config")
-local resolve = require("telescope.config.resolve")
-local layout_strats = require("telescope.pickers.layout_strategies")
-
-local validate_layout_config = layout_strats._validate_layout_config
-
-local eq = assert.eq
+sut.setup()
 
 describe("layout_strategies", function()
   it("should have validator", function()
-    assert(validate_layout_config, "Has validator")
+    t.ok(exec_lua(function()
+      return require("telescope.pickers.layout_strategies")._validate_layout_config ~= nil
+    end))
   end)
 
   local test_height = function(should, output, input, opts)
@@ -20,9 +18,14 @@ describe("layout_strategies", function()
 
     local max_columns, max_lines = opts.max_columns or 100, opts.max_lines or 100
     it(should, function()
-      local layout_config = validate_layout_config("horizontal", { height = true }, { height = input })
+      local height = exec_lua(function()
+        local resolve = require("telescope.config.resolve")
+        local validate_layout_config = require("telescope.pickers.layout_strategies")._validate_layout_config
+        local layout_config = validate_layout_config("horizontal", { height = true }, { height = input })
 
-      eq(output, resolve.resolve_height(layout_config.height)({}, max_columns, max_lines))
+        return resolve.resolve_height(layout_config.height)({}, max_columns, max_lines)
+      end)
+      eq(output, height)
     end)
   end
 
@@ -31,14 +34,36 @@ describe("layout_strategies", function()
   test_height("should handle percentage: 100", 10, 0.1, { max_lines = 100 })
   test_height("should handle percentage: 110", 11, 0.1, { max_lines = 110 })
 
-  test_height("should call functions: simple", 5, function()
-    return 5
+  it("should call functions: simple", function()
+    eq(
+      5,
+      exec_lua(function()
+        local resolve = require("telescope.config.resolve")
+        local validate_layout_config = require("telescope.pickers.layout_strategies")._validate_layout_config
+        local layout_config = validate_layout_config("horizontal", { height = true }, {
+          height = function()
+            return 5
+          end,
+        })
+        return resolve.resolve_height(layout_config.height)({}, 100, 100)
+      end)
+    )
   end)
-  test_height("should call functions: percentage", 15, function(_, _, lines)
-    return 0.1 * lines
-  end, {
-    max_lines = 150,
-  })
+  it("should call functions: percentage", function()
+    eq(
+      15,
+      exec_lua(function()
+        local resolve = require("telescope.config.resolve")
+        local validate_layout_config = require("telescope.pickers.layout_strategies")._validate_layout_config
+        local layout_config = validate_layout_config("horizontal", { height = true }, {
+          height = function(_, _, lines)
+            return 0.1 * lines
+          end,
+        })
+        return resolve.resolve_height(layout_config.height)({}, 100, 150)
+      end)
+    )
+  end)
 
   local test_defaults_key = function(should, key, strat, output, ours, theirs, override)
     ours = ours or {}
@@ -46,10 +71,16 @@ describe("layout_strategies", function()
     override = override or {}
 
     it(should, function()
-      config.clear_defaults()
-      config.set_defaults({ layout_config = theirs }, { layout_config = { ours, "description" } })
-      local layout_config = validate_layout_config(strat, layout_strats._configurations[strat], override)
-      eq(output, layout_config[key])
+      local value = exec_lua(function()
+        local config = require("telescope.config")
+        local layout_strats = require("telescope.pickers.layout_strategies")
+        config.clear_defaults()
+        config.set_defaults({ layout_config = theirs }, { layout_config = { ours, "description" } })
+        local layout_config =
+          layout_strats._validate_layout_config(strat, layout_strats._configurations[strat], override)
+        return layout_config[key]
+      end)
+      eq(output, value)
     end)
   end
 

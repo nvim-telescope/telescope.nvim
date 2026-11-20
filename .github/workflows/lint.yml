@@ -18,12 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # only for the runtime files (`$VIMRUNTIME`) used as library
-      - uses: rhysd/action-setup-vim@v1
-        with:
-          neovim: true
-          version: nightly # TODO: stable once Nvim 0.13 is released
-
       - name: Lint
         run: make lint
 

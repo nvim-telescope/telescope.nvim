@@ -11,6 +11,10 @@ on:
       - "next"
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   unit_tests:
     name: unit tests
@@ -31,19 +35,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: rhysd/action-setup-vim@v1
-        with:
-          neovim: true
-          version: ${{ matrix.rev }}
-
       - name: Prepare
         run: |
           ${{ matrix.install-rg }}
           rg --version
 
-          git clone --depth 1 https://github.com/nvim-tree/nvim-web-devicons ../nvim-web-devicons
-
       - name: Run tests
-        run: |
-          nvim --version
-          make test
+        run: make test NVIM_VERSION=${{ matrix.rev }}

@@ -1,3 +1,4 @@
+-- Helpers for picker tests, loaded in the Nvim under test (from `exec_lua()` chunks of the specs).
 local action_state = require("telescope.actions.state")
 
 local M = {}
@@ -46,6 +47,29 @@ end
 function M.select(picker)
   require("telescope.actions").select_default(picker.prompt_bufnr)
   return vim.fs.basename(vim.api.nvim_buf_get_name(0))
+end
+
+--- Open `telescope.ui_select()` with the items "apple" and "banana", run `step(prompt_bufnr, picker)`
+--- once both are shown, and return the item and index passed to `on_choice`.
+function M.ui_select(step)
+  local got
+  require("telescope").ui_select({ { name = "apple" }, { name = "banana" } }, {
+    format_item = function(item)
+      return item.name
+    end,
+  }, function(item, idx)
+    got = { item = item, idx = idx }
+  end)
+  local prompt_bufnr = vim.api.nvim_get_current_buf()
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  vim.wait(1000, function()
+    return picker.manager and picker.manager:num_results() == 2
+  end)
+  step(prompt_bufnr, picker)
+  vim.wait(1000, function()
+    return got ~= nil
+  end)
+  return got
 end
 
 --- Close all pickers and wipe all buffers.

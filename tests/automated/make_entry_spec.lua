@@ -1,10 +1,27 @@
-local t = require("test.harness")
-local assert = require("test.assert")
-local describe, it = t.describe, t.it
+local t = require("test.testutil")
+local sut = require("tests.sut")
+local describe, it, eq = t.describe, t.it, t.eq
+local n = require("test.functional.testnvim")()
+local exec_lua = n.exec_lua
 
-local make_entry = require("telescope.make_entry")
+sut.setup()
 
-local eq = assert.eq
+--- Entry maker `make_entry[gen](opts)` that returns the `fields` of the entry (or nil).
+local function entry_maker(gen, opts, fields)
+  return function(line)
+    return exec_lua(function()
+      local entry = require("telescope.make_entry")[gen](opts)(line)
+      if not entry then
+        return nil
+      end
+      local values = {}
+      for _, field in ipairs(fields) do
+        values[field] = entry[field]
+      end
+      return values
+    end)
+  end
+end
 
 describe("gen_from_ctags", function()
   local root = vim.uv.cwd()
@@ -14,8 +31,8 @@ describe("gen_from_ctags", function()
   end
 
   local function current_file_maker(file, cwd)
-    local bufnr = vim.fn.bufadd(vim.fs.joinpath(root, file))
-    return make_entry.gen_from_ctags({ bufnr = bufnr, cwd = cwd, only_current_file = true })
+    local bufnr = n.fn.bufadd(vim.fs.joinpath(root, file))
+    return entry_maker("gen_from_ctags", { bufnr = bufnr, cwd = cwd, only_current_file = true }, { "filename" })
   end
 
   it("keeps tags of the current file with only_current_file", function()
@@ -39,14 +56,15 @@ end)
 
 describe("gen_from_buffer", function()
   local root = vim.uv.cwd()
-  local maker = make_entry.gen_from_buffer({ bufnr_width = 1 })
-  local bufnr = vim.api.nvim_get_current_buf()
+  local maker = entry_maker("gen_from_buffer", { bufnr_width = 1 }, { "filename", "ordinal", "path" })
 
   local function entry(name)
+    local bufnr = n.api.nvim_get_current_buf()
     return maker({ bufnr = bufnr, flag = " ", info = { name = name, hidden = 0, changed = 0, lnum = 0 } })
   end
 
   it("uses names relative to cwd", function()
+    local bufnr = n.api.nvim_get_current_buf()
     local e = entry(vim.fs.joinpath(root, "README.md"))
     eq("README.md", e.filename)
     eq(bufnr .. " : README.md", e.ordinal)
@@ -54,8 +72,7 @@ describe("gen_from_buffer", function()
   end)
 
   it("abbreviates the home directory outside of cwd", function()
-    local sep = require("telescope.utils").pathsep
-    eq("~" .. sep .. "outside.txt", entry(vim.uv.os_homedir() .. sep .. "outside.txt").filename)
+    eq("~/outside.txt", entry(vim.uv.os_homedir() .. "/outside.txt").filename)
   end)
 
   it("keeps URIs", function()
@@ -69,20 +86,20 @@ describe("entry paths", function()
   local readme = vim.fs.joinpath(root, "README.md")
 
   it("gen_from_file resolves relative values and keeps absolute ones", function()
-    local maker = make_entry.gen_from_file({ cwd = vim.fs.joinpath(root, "lua") })
+    local maker = entry_maker("gen_from_file", { cwd = vim.fs.joinpath(root, "lua") }, { "path" })
     eq(readme, maker("../README.md").path)
     eq(readme, maker(readme).path)
   end)
 
   it("gen_from_vimgrep resolves relative values and keeps absolute ones", function()
-    local maker = make_entry.gen_from_vimgrep({ cwd = vim.fs.joinpath(root, "lua") })
+    local maker = entry_maker("gen_from_vimgrep", { cwd = vim.fs.joinpath(root, "lua") }, { "path" })
     eq(readme, maker("../README.md:1:1:text").path)
     eq(readme, maker(readme .. ":1:1:text").path)
   end)
 
   it("does not expand environment variables in file names", function()
-    vim.env.TELESCOPE_TEST_VAR = "expanded"
-    local maker = make_entry.gen_from_vimgrep({ cwd = root })
+    n.fn.setenv("TELESCOPE_TEST_VAR", "expanded")
+    local maker = entry_maker("gen_from_vimgrep", { cwd = root }, { "path" })
     eq(vim.fs.joinpath(root, "$TELESCOPE_TEST_VAR.lua"), maker("$TELESCOPE_TEST_VAR.lua:1:1:text").path)
   end)
 end)

@@ -1,10 +1,30 @@
-local t = require("test.harness")
-local assert = require("test.assert")
-local describe, it = t.describe, t.it
+local t = require("test.testutil")
+local sut = require("tests.sut")
+local describe, it, eq = t.describe, t.it, t.eq
+local n = require("test.functional.testnvim")()
+local exec_lua = n.exec_lua
 
-local p_scroller = require("telescope.pickers.scroller")
+sut.setup()
 
-local eq = assert.eq
+--- `telescope.pickers.scroller`, called in the Nvim under test.
+local p_scroller = {}
+
+function p_scroller.create(scroll_strategy, sorting_strategy)
+  return function(max_results, num_results, row)
+    return exec_lua(function()
+      local scroller = require("telescope.pickers.scroller").create(scroll_strategy, sorting_strategy)
+      return scroller(max_results, num_results, row)
+    end)
+  end
+end
+
+for _, name in ipairs({ "top", "middle", "bottom" }) do
+  p_scroller[name] = function(sorting_strategy, max_results, num_results)
+    return exec_lua(function()
+      return require("telescope.pickers.scroller")[name](sorting_strategy, max_results, num_results)
+    end)
+  end
+end
 
 describe("scroller", function()
   local max_results = 10
