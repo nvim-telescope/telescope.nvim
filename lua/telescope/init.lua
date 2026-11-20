@@ -16,7 +16,7 @@ local telescope = {}
 ---    `:Telescope find_files` or
 ---    `:lua require("telescope.builtin").find_files()`
 --- 3. Put a `require("telescope").setup()` call somewhere in your neovim config.
---- 4. Read |telescope.setup| to check what config keys are available and what you can put inside the setup call
+--- 4. Read |telescope.setup()| to check what config keys are available and what you can put inside the setup call
 --- 5. Read |telescope.builtin| to check which builtin pickers are offered and what options these implement
 --- 6. Profit
 ---
@@ -132,7 +132,7 @@ function telescope.setup(opts)
 end
 
 --- Load an extension.
----@note Loading triggers ext setup via the config passed in |telescope.setup|
+---@note Loading triggers ext setup via the config passed in |telescope.setup()|
 ---@param name string: Name of the extension
 function telescope.load_extension(name)
   return _extensions.load(name)

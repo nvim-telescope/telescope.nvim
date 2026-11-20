@@ -27,7 +27,7 @@
 --- - col number (optional): col value which will be interpreted by the default `<cr>`
 ---   action as a jump to this column
 ---
---- For more information on easier displaying, see |telescope.pickers.entry_display|
+--- For more information on easier displaying, see |telescope.pickers_entry_display|
 ---
 --- TODO: Document something we call `entry_index`
 

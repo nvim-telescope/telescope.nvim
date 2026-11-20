@@ -28,7 +28,7 @@ local M = {}
 
 ---@inlinedoc
 ---@class telescope.actions.generate.which_key.opts
----@field max_height number: % of max. height or no. of rows for hints (default: 0.4), see |resolver.resolve_height()|
+---@field max_height number: % of max. height or no. of rows for hints (default: 0.4), see |telescope.resolve.resolve_height()|
 ---@field only_show_current_mode boolean: only show keymaps for the current mode (default: true)
 ---@field mode_width integer: fixed width of mode to be shown (default: 1)
 ---@field keybind_width integer: fixed width of keybind to be shown (default: 7)

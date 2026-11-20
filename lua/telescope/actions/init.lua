@@ -21,7 +21,7 @@
 --- end
 --- ```
 ---
---- See |telescope.actions.state| for more information.
+--- See |telescope.actions_state| for more information.
 ---
 --- (2) To transform a module of functions into a module of "action"s, you need
 --- to do the following:
@@ -1205,8 +1205,8 @@ actions.cycle_previewers_prev = function(prompt_bufnr)
   action_state.get_current_picker(prompt_bufnr):cycle_previewers(-1)
 end
 
---- Removes the selected picker in |builtin.pickers|.<br>
---- This action is not mapped by default and only intended for |builtin.pickers|.
+--- Removes the selected picker in |telescope.builtin.pickers()|.<br>
+--- This action is not mapped by default and only intended for |telescope.builtin.pickers()|.
 ---@param prompt_bufnr integer: The prompt bufnr
 actions.remove_selected_picker = function(prompt_bufnr)
   local curr_picker = action_state.get_current_picker(prompt_bufnr)
@@ -1234,7 +1234,7 @@ actions.remove_selected_picker = function(prompt_bufnr)
 end
 
 --- Display the keymaps of registered actions similar to which-key.nvim.<br>
----@note The defaults can be overridden via |action_generate.which_key|.
+---@note The defaults can be overridden via |telescope.actions_generate.which_key()|.
 ---@param prompt_bufnr integer: The prompt bufnr
 actions.which_key = function(prompt_bufnr, opts)
   opts = opts or {}

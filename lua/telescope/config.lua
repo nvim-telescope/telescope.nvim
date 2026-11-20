@@ -103,7 +103,7 @@ local layout_config_defaults = {
 local layout_config_description = string.format(
   [[
     Determines the default configuration values for layout strategies.
-    See |telescope.layout| for details of the configurations options for
+    See |telescope.layout_strategies| for details of the configurations options for
     each strategy.
 
     Allows setting defaults for all strategies as top level options and
@@ -172,7 +172,7 @@ append(
   "horizontal",
   [[
   Determines the default layout of Telescope pickers.
-  See |telescope.layout| for details of the available strategies.
+  See |telescope.layout_strategies| for details of the available strategies.
 
   Default: 'horizontal']]
 )
@@ -182,7 +182,7 @@ append(
   nil,
   [[
   Configure the layout of Telescope pickers.
-  See |telescope.pickers.layout| for details.
+  See |telescope.layout| for details.
 
   Default: 'nil']]
 )
@@ -212,7 +212,7 @@ append(
     return vim.o.winblend
   end,
   [[
-  Configure winblend for telescope floating windows. See |winblend| for
+  Configure winblend for telescope floating windows. See |'winblend'| for
   more information. Type can be a number or a function returning a
   number
 
@@ -731,7 +731,7 @@ append(
   [[
   Boolean if devicons should be enabled or not. If set to false, the
   text highlight group is used.
-  Hint: Coloring only works if |termguicolors| is enabled.
+  Hint: Coloring only works if |'termguicolors'| is enabled.
 
   Default: true]]
 )

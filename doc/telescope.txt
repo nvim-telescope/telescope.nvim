@@ -11,8 +11,8 @@ Getting started with telescope:
 2. Evaluate it is working with `:Telescope find_files` or
    `:lua require("telescope.builtin").find_files()`
 3. Put a `require("telescope").setup()` call somewhere in your neovim config.
-4. Read |telescope.setup| to check what config keys are available and what you
-   can put inside the setup call
+4. Read |telescope.setup()| to check what config keys are available and what
+   you can put inside the setup call
 5. Read |telescope.builtin| to check which builtin pickers are offered and
    what options these implement
 6. Profit
@@ -142,21 +142,21 @@ telescope.setup({opts})                                    *telescope.setup()*
                                        *telescope.defaults.layout_strategy*
     layout_strategy: ~
         Determines the default layout of Telescope pickers.
-        See |telescope.layout| for details of the available strategies.
+        See |telescope.layout_strategies| for details of the available strategies.
 
         Default: 'horizontal'
 
                                          *telescope.defaults.create_layout*
     create_layout: ~
         Configure the layout of Telescope pickers.
-        See |telescope.pickers.layout| for details.
+        See |telescope.layout| for details.
 
         Default: 'nil'
 
                                          *telescope.defaults.layout_config*
     layout_config: ~
         Determines the default configuration values for layout strategies.
-        See |telescope.layout| for details of the configurations options for
+        See |telescope.layout_strategies| for details of the configurations options for
         each strategy.
 
         Allows setting defaults for all strategies as top level options and
@@ -213,7 +213,7 @@ telescope.setup({opts})                                    *telescope.setup()*
 
                                               *telescope.defaults.winblend*
     winblend: ~
-        Configure winblend for telescope floating windows. See |winblend| for
+        Configure winblend for telescope floating windows. See |'winblend'| for
         more information. Type can be a number or a function returning a
         number
 
@@ -608,7 +608,7 @@ telescope.setup({opts})                                    *telescope.setup()*
     color_devicons: ~
         Boolean if devicons should be enabled or not. If set to false, the
         text highlight group is used.
-        Hint: Coloring only works if |termguicolors| is enabled.
+        Hint: Coloring only works if |'termguicolors'| is enabled.
 
         Default: true
 
@@ -764,7 +764,7 @@ telescope.load_extension({name})                  *telescope.load_extension()*
     Load an extension.
 
     Note: ~
-      • Loading triggers ext setup via the config passed in |telescope.setup|
+      • Loading triggers ext setup via the config passed in |telescope.setup()|
 
     Parameters: ~
       • {name}  (`string`) Name of the extension
@@ -1977,13 +1977,13 @@ layout_strategies.horizontal          *telescope.layout_strategies.horizontal*
     `picker.layout_config` shared options:
       • anchor:
         • Which edge/corner to pin the picker to
-        • See |resolver.resolve_anchor_pos()|
+        • See |telescope.resolve.resolve_anchor_pos()|
       • anchor_padding:
         • Specifies an amount of additional padding around the anchor
         • Values should be a positive integer
       • height:
         • How tall to make Telescope's entire layout
-        • See |resolver.resolve_height()|
+        • See |telescope.resolve.resolve_height()|
       • mirror: Flip the location of the results/prompt and preview windows
       • prompt_position:
         • Where to place prompt window.
@@ -1991,20 +1991,20 @@ layout_strategies.horizontal          *telescope.layout_strategies.horizontal*
       • scroll_speed: The number of lines to scroll through the previewer
       • width:
         • How wide to make Telescope's entire layout
-        • See |resolver.resolve_width()|
+        • See |telescope.resolve.resolve_width()|
 
     `picker.layout_config` unique options:
       • preview_cutoff: When columns are less than this value, the preview will be disabled
       • preview_width:
         • Change the width of Telescope's preview window
-        • See |resolver.resolve_width()|
+        • See |telescope.resolve.resolve_width()|
 
 layout_strategies.center                  *telescope.layout_strategies.center*
     Centered layout with a combined block of the prompt and results aligned to
     the middle of the screen. The preview window is then placed in the
     remaining space above or below, according to `anchor` or `mirror`.
     Particularly useful for creating dropdown menus (see |telescope.themes|
-    and |themes.get_dropdown()|).
+    and |telescope.themes.get_dropdown()|).
 
     Note that vertical anchoring, i.e. `anchor` containing `"N"` or `"S"`,
     will override `mirror` config. For `"N"` anchoring preview will be placed
@@ -2032,14 +2032,14 @@ layout_strategies.center                  *telescope.layout_strategies.center*
     `picker.layout_config` shared options:
       • anchor:
         • Which edge/corner to pin the picker to
-        • See |resolver.resolve_anchor_pos()|
+        • See |telescope.resolve.resolve_anchor_pos()|
       • anchor_padding:
         • Specifies an amount of additional padding around the anchor
         • Values should be a positive integer
       • height:
         • Controls the height of the results window in the center layout.
         • Does not control the entire layout height — setting this too high can shrink or obscure the preview window.
-        • See |resolver.resolve_height()|
+        • See |telescope.resolve.resolve_height()|
       • mirror: Flip the location of the results/prompt and preview windows
       • prompt_position:
         • Where to place prompt window.
@@ -2047,7 +2047,7 @@ layout_strategies.center                  *telescope.layout_strategies.center*
       • scroll_speed: The number of lines to scroll through the previewer
       • width:
         • How wide to make Telescope's entire layout
-        • See |resolver.resolve_width()|
+        • See |telescope.resolve.resolve_width()|
 
     `picker.layout_config` unique options:
       • preview_cutoff: When lines are less than this value, the preview will be disabled
@@ -2075,17 +2075,17 @@ layout_strategies.cursor                  *telescope.layout_strategies.cursor*
     `picker.layout_config` shared options:
       • height:
         • How tall to make Telescope's entire layout
-        • See |resolver.resolve_height()|
+        • See |telescope.resolve.resolve_height()|
       • scroll_speed: The number of lines to scroll through the previewer
       • width:
         • How wide to make Telescope's entire layout
-        • See |resolver.resolve_width()|
+        • See |telescope.resolve.resolve_width()|
 
     `picker.layout_config` unique options:
       • preview_cutoff: When columns are less than this value, the preview will be disabled
       • preview_width:
         • Change the width of Telescope's preview window
-        • See |resolver.resolve_width()|
+        • See |telescope.resolve.resolve_width()|
 
 layout_strategies.vertical              *telescope.layout_strategies.vertical*
     Vertical layout stacks the items on top of each other. Particularly useful
@@ -2110,13 +2110,13 @@ layout_strategies.vertical              *telescope.layout_strategies.vertical*
     `picker.layout_config` shared options:
       • anchor:
         • Which edge/corner to pin the picker to
-        • See |resolver.resolve_anchor_pos()|
+        • See |telescope.resolve.resolve_anchor_pos()|
       • anchor_padding:
         • Specifies an amount of additional padding around the anchor
         • Values should be a positive integer
       • height:
         • How tall to make Telescope's entire layout
-        • See |resolver.resolve_height()|
+        • See |telescope.resolve.resolve_height()|
       • mirror: Flip the location of the results/prompt and preview windows
       • prompt_position:
         • Where to place prompt window.
@@ -2124,30 +2124,30 @@ layout_strategies.vertical              *telescope.layout_strategies.vertical*
       • scroll_speed: The number of lines to scroll through the previewer
       • width:
         • How wide to make Telescope's entire layout
-        • See |resolver.resolve_width()|
+        • See |telescope.resolve.resolve_width()|
 
     `picker.layout_config` unique options:
       • preview_cutoff: When lines are less than this value, the preview will be disabled
       • preview_height:
         • Change the height of Telescope's preview window
-        • See |resolver.resolve_height()|
+        • See |telescope.resolve.resolve_height()|
 
 layout_strategies.flex                      *telescope.layout_strategies.flex*
     Flex layout swaps between `horizontal` and `vertical` strategies based on
     the window width
-    • Supports |layout_strategies.vertical| or |layout_strategies.horizontal|
-      features
+    • Supports |telescope.layout_strategies.vertical| or
+      |telescope.layout_strategies.horizontal| features
 
     `picker.layout_config` shared options:
       • anchor:
         • Which edge/corner to pin the picker to
-        • See |resolver.resolve_anchor_pos()|
+        • See |telescope.resolve.resolve_anchor_pos()|
       • anchor_padding:
         • Specifies an amount of additional padding around the anchor
         • Values should be a positive integer
       • height:
         • How tall to make Telescope's entire layout
-        • See |resolver.resolve_height()|
+        • See |telescope.resolve.resolve_height()|
       • mirror: Flip the location of the results/prompt and preview windows
       • prompt_position:
         • Where to place prompt window.
@@ -2155,7 +2155,7 @@ layout_strategies.flex                      *telescope.layout_strategies.flex*
       • scroll_speed: The number of lines to scroll through the previewer
       • width:
         • How wide to make Telescope's entire layout
-        • See |resolver.resolve_width()|
+        • See |telescope.resolve.resolve_width()|
 
     `picker.layout_config` unique options:
       • flip_columns: The number of columns required to move to horizontal mode
@@ -2166,7 +2166,7 @@ layout_strategies.flex                      *telescope.layout_strategies.flex*
 layout_strategies.bottom_pane        *telescope.layout_strategies.bottom_pane*
     Bottom pane can be used to create layouts similar to "ivy".
 
-    For an easy ivy configuration, see |themes.get_ivy()|
+    For an easy ivy configuration, see |telescope.themes.get_ivy()|
 
 
 ==============================================================================
@@ -2284,7 +2284,7 @@ entry) which contains the following important keys:
   `<cr>` action as a jump to this column
 
 For more information on easier displaying, see
-|telescope.pickers.entry_display|
+|telescope.pickers_entry_display|
 
 TODO: Document something we call `entry_index`
 
@@ -2422,7 +2422,7 @@ commonly access from both picker and global state via the following: >lua
       local entry = action_state.get_selected_entry()
     end
 <
-See |telescope.actions.state| for more information.
+See |telescope.actions_state| for more information.
 
 (2) To transform a module of functions into a module of "action"s, you need to
 do the following: >lua
@@ -3010,9 +3010,9 @@ actions.cycle_previewers_prev({prompt_bufnr})
 
                                   *telescope.actions.remove_selected_picker()*
 actions.remove_selected_picker({prompt_bufnr})
-    Removes the selected picker in |builtin.pickers|.
+    Removes the selected picker in |telescope.builtin.pickers()|.
     This action is not mapped by default and only intended for
-    |builtin.pickers|.
+    |telescope.builtin.pickers()|.
 
     Parameters: ~
       • {prompt_bufnr}  (`integer`) The prompt bufnr
@@ -3021,7 +3021,7 @@ actions.which_key({prompt_bufnr})              *telescope.actions.which_key()*
     Display the keymaps of registered actions similar to which-key.nvim.
 
     Note: ~
-      • The defaults can be overridden via |action_generate.which_key|.
+      • The defaults can be overridden via |telescope.actions_generate.which_key()|.
 
     Parameters: ~
       • {prompt_bufnr}  (`integer`) The prompt bufnr

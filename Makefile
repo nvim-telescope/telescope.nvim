@@ -91,6 +91,7 @@ $(DOCGEN):
 # Generated with the host Nvim (fixed version, so the output doesn't depend on the matrix).
 docs: $(DOCGEN) $(NVIM_HOST_BIN)
 	VIMRUNTIME="$(NVIM_HOST)/share/nvim/runtime" "$(NVIM_HOST_BIN)" --clean -l scripts/gendocs.lua
+	VIMRUNTIME="$(NVIM_HOST)/share/nvim/runtime" "$(NVIM_HOST_BIN)" --clean -l scripts/check_doc_tags.lua
 
 .PHONY: clean
 clean:
