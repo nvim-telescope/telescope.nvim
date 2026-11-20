@@ -587,10 +587,8 @@ local load_once = function(f)
   end
 end
 
--- IMPORTANT: This function should have been a local function as it's only used
--- in this file, but the code was already exported a long time ago. By making it
--- local we would potential break consumers of this method.
-utils.file_extension = function(filename)
+-- the extension for devicons, including a two-part one like `test.js`
+local function file_extension(filename)
   local parts = vim.split(filename, "%.")
   -- this check enables us to get multi-part extensions, like *.test.js for example
   if #parts > 2 then
@@ -624,7 +622,7 @@ utils.get_devicons = load_once(function()
       end
 
       local basename = utils.path_tail(filename)
-      local icon, icon_highlight = devicons.get_icon(basename, utils.file_extension(basename), { default = false })
+      local icon, icon_highlight = devicons.get_icon(basename, file_extension(basename), { default = false })
       if not icon then
         icon, icon_highlight = devicons.get_icon(basename, nil, { default = true })
       end
