@@ -671,7 +671,8 @@ function make_entry.gen_from_treesitter(opts)
   local type_highlight = opts.symbol_highlights or treesitter_type_highlight
 
   local make_display = function(entry)
-    local msg = api.nvim_buf_get_lines(bufnr, entry.lnum, entry.lnum, false)[1] or ""
+    local lnum = entry.lnum ---@type integer
+    local msg = api.nvim_buf_get_lines(bufnr, lnum - 1, lnum, false)[1] or ""
     msg = vim.trim(msg)
 
     local display_columns = {
