@@ -1,10 +1,7 @@
 -- Checks that every |tag| reference in doc/*.txt points to a tag defined in doc/*.txt or in Nvim's
--- help (run with `nvim -l`, see `make docs`). The changelog keeps its old entries as they are.
+-- help (run with `nvim -l`, see `make docs`).
 
 local docs = vim.fn.glob("doc/*.txt", false, true)
-local checked = vim.tbl_filter(function(file)
-  return not file:find("changelog")
-end, docs)
 
 local tags = {} ---@type table<string, true>
 for _, file in ipairs(docs) do
@@ -19,7 +16,7 @@ for _, line in ipairs(vim.fn.readfile(vim.fs.joinpath(vim.env.VIMRUNTIME, "doc",
 end
 
 local broken = 0
-for _, file in ipairs(checked) do
+for _, file in ipairs(docs) do
   local in_code = false
   for lnum, line in ipairs(vim.fn.readfile(file)) do
     if in_code then

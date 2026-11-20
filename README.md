@@ -35,7 +35,7 @@ Telescope Wiki</sub>
 - [API](#api)
 - [Media](#media)
 - [Contributing](#contributing)
-- [Changelog](https://github.com/nvim-telescope/telescope.nvim/blob/master/doc/telescope_changelog.txt)
+- [Changelog](CHANGELOG.md)
 
 ## Getting Started
 
