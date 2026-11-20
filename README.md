@@ -551,7 +551,7 @@ require('telescope').extensions.dap.configurations()
 ## API
 
 For writing your own picker and for information about the API, please read
-[developers.md](developers.md).
+[DEVELOPERS.md](DEVELOPERS.md).
 
 ## Media
 

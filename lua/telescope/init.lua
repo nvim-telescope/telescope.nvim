@@ -65,7 +65,7 @@ local telescope = {}
 --- </pre>
 ---
 ---  A practical introduction into telescope customization is our
----  `developers.md` (top-level of repo) and `:h telescope.actions` that
+---  `DEVELOPERS.md` (top-level of repo) and `:h telescope.actions` that
 ---  showcase how to access information about the state of the picker (current
 ---  selection, etc.).
 --- <pre>

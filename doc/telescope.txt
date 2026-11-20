@@ -59,7 +59,7 @@ The below flow chart illustrates a simplified telescope architecture:
   5 Previewer: preview of context of selected entry
                see :h telescope.previewers
 
-A practical introduction into telescope customization is our `developers.md`
+A practical introduction into telescope customization is our `DEVELOPERS.md`
 (top-level of repo) and `:h telescope.actions` that showcase how to access
 information about the state of the picker (current selection, etc.).
 To find out more:
@@ -2600,7 +2600,7 @@ do the following: >lua
 Another interesting thing to do is that these actions now have functions you
 can call. These functions include `:replace(f)`, `:replace_if(c, f)`,
 `replace_map(tbl)` and `enhance(tbl)`. More information on these functions can
-be found in the `developers.md` and `tests/automated/action_spec.lua` file.
+be found in the `DEVELOPERS.md` and `tests/automated/action_spec.lua` file.
 
                                      *telescope.actions.move_selection_next()*
 actions.move_selection_next({prompt_bufnr})

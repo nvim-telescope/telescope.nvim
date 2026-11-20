@@ -6,7 +6,7 @@ in with Telescope and so we are currently not accepting new pickers
 
 We are also conservative with integrating picker specific actions and features.
 If you're still interested in filling a particular picker need, we encourage packaging it up as its own Telescope extension.
-Read our [Bundling as extension](https://github.com/nvim-telescope/telescope.nvim/blob/master/developers.md#bundling-as-extension) guide here for more info on this.
+Read our [Bundling as extension](DEVELOPERS.md#bundling-as-extension) guide here for more info on this.
 See other Telescope extensions (and add yours) [here](https://github.com/nvim-telescope/telescope.nvim/wiki/Extensions).
 
 That said, we welcome bug fixes, documentation improvements and non-picker specific features.
