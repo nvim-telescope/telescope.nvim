@@ -102,7 +102,8 @@ local get_cycle_layout = function(dir)
     if picker.__layout_index then
       picker.__layout_index = ((picker.__layout_index + dir - 1) % #picker.__cycle_layout_list) + 1
     else
-      picker.__layout_index = 1
+      -- the initial layout need not be in the list: start at its first (next) or last (prev) entry
+      picker.__layout_index = dir > 0 and 1 or #picker.__cycle_layout_list
     end
     local new_layout = picker.__cycle_layout_list[picker.__layout_index]
     if type(new_layout) == "string" then
