@@ -861,6 +861,8 @@ end)
 --- Bottom pane can be used to create layouts similar to "ivy".
 ---
 --- For an easy ivy configuration, see |telescope.themes.get_ivy()|
+---
+---@eval return require("telescope.pickers.layout_strategies")._format("bottom_pane")
 layout_strategies.bottom_pane = make_documented_layout(
   "bottom_pane",
   vim.tbl_extend("error", shared_options, {

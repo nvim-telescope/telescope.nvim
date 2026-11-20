@@ -20,6 +20,7 @@ local themes = {} ---@type table<string, function>
 --- local themes = require('telescope.themes')
 --- builtin.find_files(themes.get_dropdown(opts))
 --- ```
+---@param opts? table: picker options, take precedence over the theme
 function themes.get_dropdown(opts)
   opts = opts or {}
 
@@ -69,6 +70,7 @@ end
 --- local themes = require('telescope.themes')
 --- builtin.find_files(themes.get_cursor(opts))
 --- ```
+---@param opts? table: picker options, take precedence over the theme
 function themes.get_cursor(opts)
   opts = opts or {}
 
@@ -101,6 +103,7 @@ end
 --- local themes = require('telescope.themes')
 --- builtin.find_files(themes.get_ivy(opts))
 --- ```
+---@param opts? table: picker options, take precedence over the theme
 function themes.get_ivy(opts)
   opts = opts or {}
 

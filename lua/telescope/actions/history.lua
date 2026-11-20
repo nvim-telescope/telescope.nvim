@@ -7,7 +7,7 @@ local utils = require("telescope.utils")
 --- A base implementation of a prompt history that provides a simple history
 --- and can be replaced with a custom implementation.
 ---
---- For example: We provide an extension for a smart history that uses sql.nvim
+--- For example: We provide an extension for a smart history that uses sqlite.lua
 --- to map histories to metadata, like the calling picker or cwd.
 ---
 --- So you have a history for:
@@ -44,23 +44,24 @@ local M = {}
 ---@class History @Manages prompt history
 ---@field enabled boolean: Will indicate if History is enabled or disabled
 ---@field path string: Will point to the location of the history file
----@field limit string: Will have the limit of the history. Can be nil, if limit is disabled.
+---@field limit integer|false: Maximum number of history entries; `false` if the history is unbounded
 ---@field content table: History table. Needs to be filled by your own History implementation
 ---@field index integer: Used to keep track of the next or previous index. Default is #content + 1
 ---@field cycle_wrap boolean: Controls if history will wrap on reaching beginning or end
-M.History = {}
-M.History.__index = M.History
+local History = {}
+History.__index = History
+M.History = History
 
 ---@inlinedoc
 ---@class telescope.actions.history.opts
 ---@field init function: Will be called after handling configuration (required)
 ---@field append function: How to append a new prompt item (required)
 ---@field reset function: What happens on reset. Will be called when telescope closes (required)
----@field pre_get function: Will be called before a next or previous item will be returned (optional)
+---@field pre_get? function: Will be called before a next or previous item will be returned
 
 --- Create a new History
----@param opts table: Defines the behavior of History
-function M.History:new(opts)
+---@param opts telescope.actions.history.opts: Defines the behavior of History
+function History:new(opts)
   local obj = {}
   if conf.history == false or type(conf.history) ~= "table" then
     obj.enabled = false
@@ -83,13 +84,15 @@ function M.History:new(opts)
   return setmetatable(obj, self)
 end
 
---- Shorthand to create a new history
-function M.new(...)
-  return M.History:new(...)
+--- Shorthand to create a new history, see |History:new()|
+---@param opts telescope.actions.history.opts: Defines the behavior of History
+---@return History
+function M.new(opts)
+  return History:new(opts)
 end
 
 --- Will reset the history index to the default initial state. Will happen after the picker closed
-function M.History:reset()
+function History:reset()
   if not self.enabled then
     return
   end
@@ -100,7 +103,7 @@ end
 ---@param line string: current line that will be appended
 ---@param picker table: the current picker object
 ---@param no_reset boolean: On default it will reset the state at the end. If you don't want to do this set to true
-function M.History:append(line, picker, no_reset)
+function History:append(line, picker, no_reset)
   if not self.enabled then
     return
   end
@@ -111,7 +114,7 @@ end
 ---@param line string: the current line
 ---@param picker table: the current picker object
 ---@return string|false|nil: the next history item
-function M.History:get_next(line, picker)
+function History:get_next(line, picker)
   if not self.enabled then
     utils.notify("History:get_next", {
       msg = "You are cycling to next the history item but history is disabled. Read ':help telescope.defaults.history'",
@@ -140,7 +143,7 @@ end
 ---@param line string: the current line
 ---@param picker table: the current picker object
 ---@return string|false|nil: the previous history item
-function M.History:get_prev(line, picker)
+function History:get_prev(line, picker)
   if not self.enabled then
     utils.notify("History:get_prev", {
       msg = "You are cycling to next the history item but history is disabled. Read ':help telescope.defaults.history'",

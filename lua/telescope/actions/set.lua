@@ -39,8 +39,7 @@ end
 ---
 --- By default maps to editing a file.
 ---@param prompt_bufnr integer: The prompt bufnr
----@param type string: The type of selection to make
---          Valid types include: "default", "horizontal", "vertical", "tabedit"
+---@param type "default"|"horizontal"|"vertical"|"tab"|"drop"|"tab drop": The type of selection to make
 action_set.select = function(prompt_bufnr, type)
   return action_set.edit(prompt_bufnr, action_state.select_key_to_edit_key(type))
 end
@@ -105,22 +104,9 @@ end
 
 --- Edit a file based on the current selection.
 ---@param prompt_bufnr integer: The prompt bufnr
----@param command string: The command to use to open the file.
---      Valid commands are:
---      - "edit"
---      - "new"
---      - "vedit"
---      - "tabedit"
---      - "drop"
---      - "tab drop"
---      - "leftabove new"
---      - "leftabove vnew"
---      - "rightbelow new"
---      - "rightbelow vnew"
---      - "topleft new"
---      - "topleft vnew"
---      - "botright new"
---      - "botright vnew"
+---@param command string: The command to use to open the file: "edit", "new", "vnew", "tabedit",
+--- "drop", "tab drop", or "new"/"vnew" with a "leftabove", "rightbelow", "topleft" or "botright"
+--- modifier (e.g. "botright vnew")
 action_set.edit = function(prompt_bufnr, command)
   local entry = action_state.get_selected_entry()
 
@@ -248,10 +234,9 @@ end
 
 --- Scrolls the previewer up or down.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
---- option in `layout_config`. See |telescope.layout| for more details.
+--- option in `layout_config`. See |telescope.layout_strategies| for more details.
 ---@param prompt_bufnr integer: The prompt bufnr
----@param direction integer: The direction of the scrolling
---      Valid directions include: "1", "-1"
+---@param direction 1|-1: The direction of the scrolling
 action_set.scroll_previewer = function(prompt_bufnr, direction)
   local previewer, speed = __scroll_previewer(prompt_bufnr)
   if previewer and speed and previewer.scroll_fn then
@@ -261,10 +246,9 @@ end
 
 --- Scrolls the previewer to the left or right.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
---- option in `layout_config`. See |telescope.layout| for more details.
+--- option in `layout_config`. See |telescope.layout_strategies| for more details.
 ---@param prompt_bufnr integer: The prompt bufnr
----@param direction integer: The direction of the scrolling
---      Valid directions include: "1", "-1"
+---@param direction 1|-1: The direction of the scrolling
 action_set.scroll_horizontal_previewer = function(prompt_bufnr, direction)
   local previewer, speed = __scroll_previewer(prompt_bufnr)
   if previewer and speed and previewer.scroll_horizontal_fn then
@@ -274,10 +258,9 @@ end
 
 --- Scrolls the results up or down.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
---- option in `layout_config`. See |telescope.layout| for more details.
+--- option in `layout_config`. See |telescope.layout_strategies| for more details.
 ---@param prompt_bufnr integer: The prompt bufnr
----@param direction integer: The direction of the scrolling
---      Valid directions include: "1", "-1"
+---@param direction 1|-1: The direction of the scrolling
 action_set.scroll_results = function(prompt_bufnr, direction)
   local status = state.get_status(prompt_bufnr)
   local default_speed = api.nvim_win_get_height(status.layout.results.winid) / 2
@@ -294,10 +277,9 @@ end
 
 --- Scrolls the results to the left or right.
 --- Defaults to a half page scroll, but can be overridden using the `scroll_speed`
---- option in `layout_config`. See |telescope.layout| for more details.
+--- option in `layout_config`. See |telescope.layout_strategies| for more details.
 ---@param prompt_bufnr integer: The prompt bufnr
----@param direction integer: The direction of the scrolling
---      Valid directions include: "1", "-1"
+---@param direction 1|-1: The direction of the scrolling
 action_set.scroll_horizontal_results = function(prompt_bufnr, direction)
   local status = state.get_status(prompt_bufnr)
   local default_speed = api.nvim_win_get_height(status.results_win) / 2

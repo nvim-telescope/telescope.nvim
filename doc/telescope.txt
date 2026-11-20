@@ -1152,10 +1152,20 @@ builtin.git_stash({opts})                      *telescope.builtin.git_stash()*
     Lists stash items in current repository
 
     Default keymaps:
-    • `<cr>`: runs `git apply` for currently selected stash
+    • `<cr>`: runs `git stash apply --index` for currently selected stash
 
     Parameters: ~
-      • {opts}  (`table?`) options to pass to the picker
+      • {opts}  (`table?`)
+                • {show_branch}? (`boolean`, default: `true`) if we should
+                  display the branch name for git stash entries
+                • {git_command}? (`string[]`, default:
+                  `{"git","--no-pager","stash","list"}`) command for git stash
+                  list
+                • {cwd}? (`string`) the path of the repo
+                • {use_file_path}? (`boolean`, default: `false`) if we should
+                  use the current buffer git root
+                • {use_git_root}? (`boolean`, default: `true`) if we should
+                  use git root as cwd or the cwd (important for submodule)
 
 builtin.builtin({opts})                          *telescope.builtin.builtin()*
     Lists all of the community maintained pickers built into Telescope
@@ -1656,7 +1666,7 @@ They are helpful for managing the several different UI aspects for telescope
 and provide a simple interface for users to get a particular "style" of
 picker.
 
-themes.get_dropdown()                        *telescope.themes.get_dropdown()*
+themes.get_dropdown({opts})                  *telescope.themes.get_dropdown()*
     Dropdown style theme.
 
     Usage: >lua
@@ -1666,7 +1676,10 @@ themes.get_dropdown()                        *telescope.themes.get_dropdown()*
     builtin.find_files(themes.get_dropdown(opts))
 <
 
-themes.get_cursor()                            *telescope.themes.get_cursor()*
+    Parameters: ~
+      • {opts}  (`table?`) picker options, take precedence over the theme
+
+themes.get_cursor({opts})                      *telescope.themes.get_cursor()*
     Cursor style theme.
 
     Usage: >lua
@@ -1676,7 +1689,10 @@ themes.get_cursor()                            *telescope.themes.get_cursor()*
     builtin.find_files(themes.get_cursor(opts))
 <
 
-themes.get_ivy()                                  *telescope.themes.get_ivy()*
+    Parameters: ~
+      • {opts}  (`table?`) picker options, take precedence over the theme
+
+themes.get_ivy({opts})                            *telescope.themes.get_ivy()*
     Ivy style theme.
 
     Usage: >lua
@@ -1685,6 +1701,9 @@ themes.get_ivy()                                  *telescope.themes.get_ivy()*
     local themes = require('telescope.themes')
     builtin.find_files(themes.get_ivy(opts))
 <
+
+    Parameters: ~
+      • {opts}  (`table?`) picker options, take precedence over the theme
 
 
 ==============================================================================
@@ -2167,6 +2186,30 @@ layout_strategies.bottom_pane        *telescope.layout_strategies.bottom_pane*
     Bottom pane can be used to create layouts similar to "ivy".
 
     For an easy ivy configuration, see |telescope.themes.get_ivy()|
+    `picker.layout_config` shared options:
+      • anchor:
+        • Which edge/corner to pin the picker to
+        • See |telescope.resolve.resolve_anchor_pos()|
+      • anchor_padding:
+        • Specifies an amount of additional padding around the anchor
+        • Values should be a positive integer
+      • height:
+        • How tall to make Telescope's entire layout
+        • See |telescope.resolve.resolve_height()|
+      • mirror: Flip the location of the results/prompt and preview windows
+      • prompt_position:
+        • Where to place prompt window.
+        • Available Values: 'bottom', 'top'
+      • scroll_speed: The number of lines to scroll through the previewer
+      • width:
+        • How wide to make Telescope's entire layout
+        • See |telescope.resolve.resolve_width()|
+
+    `picker.layout_config` unique options:
+      • preview_cutoff: When columns are less than this value, the preview will be disabled
+      • preview_width:
+        • Change the width of Telescope's preview window
+        • See |telescope.resolve.resolve_width()|
 
 
 ==============================================================================
@@ -3122,6 +3165,70 @@ actions_set.shift_selection({prompt_bufnr}, {change})
       • {prompt_bufnr}  (`integer`) The prompt bufnr
       • {change}        (`integer`) The amount to shift the selection by
 
+                                              *telescope.actions_set.select()*
+actions_set.select({prompt_bufnr}, {type})
+    Select the current entry. This is the action set to overwrite common
+    actions by the user.
+
+    By default maps to editing a file.
+
+    Parameters: ~
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
+      • {type}          (`"default"|"horizontal"|"vertical"|"tab"|"drop"|"tab
+                        drop"`) The type of selection to make
+
+                                                *telescope.actions_set.edit()*
+actions_set.edit({prompt_bufnr}, {command})
+    Edit a file based on the current selection.
+
+    Parameters: ~
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
+      • {command}       (`string`) The command to use to open the file:
+                        "edit", "new", "vnew", "tabedit", "drop", "tab drop",
+                        or "new"/"vnew" with a "leftabove", "rightbelow",
+                        "topleft" or "botright" modifier (e.g. "botright
+                        vnew")
+
+                                    *telescope.actions_set.scroll_previewer()*
+actions_set.scroll_previewer({prompt_bufnr}, {direction})
+    Scrolls the previewer up or down. Defaults to a half page scroll, but can
+    be overridden using the `scroll_speed` option in `layout_config`. See
+    |telescope.layout_strategies| for more details.
+
+    Parameters: ~
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
+      • {direction}     (`1|-1`) The direction of the scrolling
+
+                         *telescope.actions_set.scroll_horizontal_previewer()*
+actions_set.scroll_horizontal_previewer({prompt_bufnr}, {direction})
+    Scrolls the previewer to the left or right. Defaults to a half page
+    scroll, but can be overridden using the `scroll_speed` option in
+    `layout_config`. See |telescope.layout_strategies| for more details.
+
+    Parameters: ~
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
+      • {direction}     (`1|-1`) The direction of the scrolling
+
+                                      *telescope.actions_set.scroll_results()*
+actions_set.scroll_results({prompt_bufnr}, {direction})
+    Scrolls the results up or down. Defaults to a half page scroll, but can be
+    overridden using the `scroll_speed` option in `layout_config`. See
+    |telescope.layout_strategies| for more details.
+
+    Parameters: ~
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
+      • {direction}     (`1|-1`) The direction of the scrolling
+
+                           *telescope.actions_set.scroll_horizontal_results()*
+actions_set.scroll_horizontal_results({prompt_bufnr}, {direction})
+    Scrolls the results to the left or right. Defaults to a half page scroll,
+    but can be overridden using the `scroll_speed` option in `layout_config`.
+    See |telescope.layout_strategies| for more details.
+
+    Parameters: ~
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
+      • {direction}     (`1|-1`) The direction of the scrolling
+
 
 ==============================================================================
 ACTIONS_LAYOUT                                      *telescope.actions_layout*
@@ -3264,6 +3371,7 @@ Module for convenience to override defaults of corresponding
 |telescope.actions| at |telescope.setup()|.
 
 General usage: >lua
+    local action_generate = require("telescope.actions.generate")
     require("telescope").setup {
       defaults = {
         mappings = {
@@ -3291,7 +3399,43 @@ actions_generate.which_key({opts})
         setting `close_with_action` to false.
 
     Parameters: ~
-      • {opts}  (`table`) options to pass to toggling registered actions
+      • {opts}  (`table?`)
+                • {max_height}? (`number`, default: 0.4) % of max. height or
+                  no. of rows for hints , see
+                  |telescope.resolve.resolve_height()|
+                • {only_show_current_mode}? (`boolean`, default: true) only
+                  show keymaps for the current mode
+                • {mode_width}? (`integer`, default: 1) fixed width of mode to
+                  be shown
+                • {keybind_width}? (`integer`, default: 7) fixed width of
+                  keybind to be shown
+                • {name_width}? (`integer`, default: 30) fixed width of action
+                  name to be shown
+                • {column_padding}? (`string`, default: " ") string to split;
+                  can be used for vertical separator
+                • {mode_hl}? (`string`, default: TelescopeResultsConstant) hl
+                  group of mode
+                • {keybind_hl}? (`string`, default: TelescopeResultsVariable)
+                  hl group of keybind
+                • {name_hl}? (`string`, default: TelescopeResultsFunction) hl
+                  group of action name
+                • {column_indent}? (`integer`, default: 4) number of left-most
+                  spaces before keybinds are shown
+                • {line_padding}? (`integer`, default: 1) row padding in top
+                  and bottom of float
+                • {separator}? (`string`, default: " -> ") separator string
+                  between mode, key bindings, and action
+                • {close_with_action}? (`boolean`, default: true) registered
+                  action will close keymap float
+                • {normal_hl}? (`string`, default: "TelescopePrompt") winhl of
+                  "Normal" for keymap hints floating window
+                • {border_hl}? (`string`, default: "TelescopePromptBorder")
+                  winhl of "Normal" for keymap borders
+                • {winblend}? (`integer`, default:
+                  |telescope.defaults.winblend|) pseudo-transparency of keymap
+                  hints floating window
+                • {zindex}? (`integer`, default: 100) z-index of keymap hints
+                  floating window
 
 
 ==============================================================================
@@ -3300,8 +3444,8 @@ ACTIONS_HISTORY                                    *telescope.actions_history*
 A base implementation of a prompt history that provides a simple history and
 can be replaced with a custom implementation.
 
-For example: We provide an extension for a smart history that uses sql.nvim to
-map histories to metadata, like the calling picker or cwd.
+For example: We provide an extension for a smart history that uses sqlite.lua
+to map histories to metadata, like the calling picker or cwd.
 
 So you have a history for:
 • find_files project_1
@@ -3322,18 +3466,89 @@ See https://github.com/nvim-telescope/telescope-smart-history.nvim
                       disabled
       • {path}        (`string`) Will point to the location of the history
                       file
-      • {limit}       (`string`) Will have the limit of the history. Can be
-                      nil, if limit is disabled.
+      • {limit}       (`integer|false`) Maximum number of history entries;
+                      `false` if the history is unbounded
       • {content}     (`table`) History table. Needs to be filled by your own
                       History implementation
       • {index}       (`integer`) Used to keep track of the next or previous
                       index. Default is #content + 1
       • {cycle_wrap}  (`boolean`) Controls if history will wrap on reaching
                       beginning or end
+      • {new}         (`fun(self: History, opts:
+                      telescope.actions.history.opts)`) See |History:new()|.
+      • {reset}       (`fun(self: History)`) See |History:reset()|.
+      • {append}      (`fun(self: History, line: string, picker: table, no_reset: boolean)`)
+                      See |History:append()|.
+      • {get_next}    (`fun(self: History, line: string, picker: table): string|false?`)
+                      See |History:get_next()|.
+      • {get_prev}    (`fun(self: History, line: string, picker: table): string|false?`)
+                      See |History:get_prev()|.
 
 
-histories.new()                              *telescope.actions_history.new()*
-    Shorthand to create a new history
+History:new({opts})                                            *History:new()*
+    Create a new History
+
+    Parameters: ~
+      • {opts}  (`table`)
+                • {init} (`function`) Will be called after handling
+                  configuration (required)
+                • {append} (`function`) How to append a new prompt item
+                  (required)
+                • {reset} (`function`) What happens on reset. Will be called
+                  when telescope closes (required)
+                • {pre_get}? (`function`) Will be called before a next or
+                  previous item will be returned
+
+histories.new({opts})                        *telescope.actions_history.new()*
+    Shorthand to create a new history, see |History:new()|
+
+    Parameters: ~
+      • {opts}  (`table`)
+                • {init} (`function`) Will be called after handling
+                  configuration (required)
+                • {append} (`function`) How to append a new prompt item
+                  (required)
+                • {reset} (`function`) What happens on reset. Will be called
+                  when telescope closes (required)
+                • {pre_get}? (`function`) Will be called before a next or
+                  previous item will be returned
+
+    Return: ~
+        (`History`) See |History|
+
+History:reset()                                              *History:reset()*
+    Will reset the history index to the default initial state. Will happen
+    after the picker closed
+
+History:append({line}, {picker}, {no_reset})                *History:append()*
+    Append a new line to the history
+
+    Parameters: ~
+      • {line}      (`string`) current line that will be appended
+      • {picker}    (`table`) the current picker object
+      • {no_reset}  (`boolean`) On default it will reset the state at the
+                    end. If you don't want to do this set to true
+
+History:get_next({line}, {picker})                        *History:get_next()*
+    Will return the next history item. Can be nil if there are no next items
+
+    Parameters: ~
+      • {line}    (`string`) the current line
+      • {picker}  (`table`) the current picker object
+
+    Return: ~
+        (`string|false?`) the next history item
+
+History:get_prev({line}, {picker})                        *History:get_prev()*
+    Will return the previous history item. Can be nil if there are no previous
+    items
+
+    Parameters: ~
+      • {line}    (`string`) the current line
+      • {picker}  (`table`) the current picker object
+
+    Return: ~
+        (`string|false?`) the previous history item
 
                               *telescope.actions_history.get_simple_history()*
 histories.get_simple_history()

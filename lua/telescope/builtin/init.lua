@@ -260,12 +260,13 @@ builtin.git_status = require_on_exported_call("telescope.builtin.__git").status
 ---@inlinedoc
 ---@class telescope.builtin.git_stash.opts : telescope.builtin.git_opts
 ---@field show_branch? boolean if we should display the branch name for git stash entries (default: `true`)
+---@field git_command? string[] command for git stash list (default: `{"git","--no-pager","stash","list"}`)
 
 --- Lists stash items in current repository
 ---
 --- Default keymaps:
----   - `<cr>`: runs `git apply` for currently selected stash
----@param opts? table: options to pass to the picker
+---   - `<cr>`: runs `git stash apply --index` for currently selected stash
+---@param opts? telescope.builtin.git_stash.opts: options to pass to the picker
 builtin.git_stash = require_on_exported_call("telescope.builtin.__git").stash
 
 --
