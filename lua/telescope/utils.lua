@@ -340,7 +340,9 @@ utils.path_smart = (function()
   end
 end)()
 
--- Also accepts backslashes on Windows (extensions may pass native paths)
+--- Returns the last component of `path` (the part after the last `/`; also `\` on Windows).
+---@param path string
+---@return string
 utils.path_tail = function(path)
   for i = #path, 1, -1 do
     local c = path:byte(i)

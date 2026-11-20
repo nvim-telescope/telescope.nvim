@@ -10,9 +10,19 @@
 --- for the best performance.
 ---
 --- The create function will use the column widths passed to it in
---- configuration.items. Each item in that table is the number of characters in
---- the column. It's also possible for the final column to not have a fixed
---- width, this will be shown in the configuration as 'remaining = true'.
+--- configuration.items. Each item in that table is the width of the column,
+--- in any form of |telescope.resolve.resolve_width()| relative to the results
+--- window (e.g. a number of characters); `right_justify = true` aligns the
+--- text to the right. It's also possible for the final column to not have a
+--- fixed width, this will be shown in the configuration as 'remaining = true'.
+---
+--- Further keys of the configuration:
+--- - `separator`: string between the columns (default: "│")
+--- - `separator_hl`: highlight group of the separator
+--- - `hl_chars`: table that maps characters to highlight groups, applied to
+---   every occurrence in the displayed line
+--- - `prompt_bufnr`: prompt buffer of the picker (default: current buffer),
+---   used to resolve the widths
 ---
 --- An example of this configuration is shown for the buffers picker:
 --- ```lua
@@ -45,7 +55,8 @@
 --- ```
 ---
 --- There are two types of values each column can have. Either a simple String
---- or a table containing the String as well as the hl_group.
+--- or a table containing the String as well as the hl_group (a highlight group
+--- name, or a function returning a highlights table for the column).
 ---
 --- The displayer can return values, string and an optional highlights. The string
 --- is all the text to be displayed for this entry as a single string. If parts of

@@ -96,8 +96,12 @@ end
 --- - `dyn_title(self, entry)` a dynamic title function which gets called
 --- when config value `dynamic_preview_title = true`
 --- - `env` table: define environment variables to forward to the terminal
----    process. Example:
+---    process (default: |telescope.defaults.set_env|). Example:
 ---   - `{ ['PAGER'] = '', ['MANWIDTH'] = 50 }`
+--- - `cwd` string: working directory of the command (default: the cwd)
+--- - `send_input(self, input)`: send keys to the terminal (default: to the job)
+--- - `scroll_fn(self, direction)`: scroll the preview (default: sends `d`/`u`
+---   with a count, as for `less`)
 ---
 --- It's an easy way to get your first previewer going and it integrates well
 --- with `bat` and `less`. Providing out of the box scrolling if the command

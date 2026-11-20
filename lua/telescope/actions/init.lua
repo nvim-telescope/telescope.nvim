@@ -367,6 +367,8 @@ actions.file_tab = function(prompt_bufnr)
   return action_set.edit(prompt_bufnr, "tabedit")
 end
 
+--- Accept the completion of the popup menu if it is visible (`<C-y>`)
+---@param _ integer: The prompt bufnr
 actions.close_pum = function(_)
   if 0 ~= fn.pumvisible() then
     api.nvim_feedkeys(vim.keycode("<C-y>"), "n", true)
@@ -1518,8 +1520,13 @@ actions.insert_original_cline = function(prompt_bufnr)
   current_picker:set_prompt(current_picker.original_cline, false)
 end
 
+--- Do nothing; map a key to this to disable it (e.g. `<C-j>` in normal mode by default)
+---@param _ integer: The prompt bufnr
 actions.nop = function(_) end
 
+--- Select the clicked result, or run |telescope.actions.select_default()| for a click into the previewer
+--- (mapped to `<LeftMouse>` by default)
+---@param prompt_bufnr integer: The prompt bufnr
 actions.mouse_click = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
 
@@ -1537,6 +1544,9 @@ actions.mouse_click = function(prompt_bufnr)
   return ""
 end
 
+--- Select the double-clicked result and run |telescope.actions.select_default()| (mapped to
+--- `<2-LeftMouse>` by default)
+---@param prompt_bufnr integer: The prompt bufnr
 actions.double_mouse_click = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
 

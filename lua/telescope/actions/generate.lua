@@ -60,8 +60,26 @@ M.which_key = function(opts)
   return which_key
 end
 
+---@inlinedoc
+---@class telescope.actions.generate.refine.opts
+---@field prompt_title? string: new title of the prompt window
+---@field results_title? string: new title of the results window
+---@field sorter? table|false: new sorter (default: |telescope.defaults.generic_sorter|; `false` keeps the current one)
+---@field prompt_to_prefix? boolean: move the current prompt into the prompt prefix (default: false)
+---@field prompt_prefix? string: prompt prefix (default: |telescope.defaults.prompt_prefix|)
+---@field prompt_hl_group? string: highlight group of the prompt prefix (default: "TelescopePromptPrefix")
+---@field reset_multi_selection? boolean: drop the multi selection (default: false)
+---@field reset_prompt? boolean: clear the prompt (default: true)
+---@field push_history? boolean: add the current prompt to the history (default: true)
+
+--- Refine the current results: continue with the entries the picker has now as a static list (and optionally
+--- another sorter), e.g. for a fuzzy search over the results of a live grep, see
+--- |telescope.actions.to_fuzzy_refine()|.
+---@param prompt_bufnr integer: The prompt bufnr
+---@param opts? telescope.actions.generate.refine.opts
 M.refine = function(prompt_bufnr, opts)
   opts = opts or {}
+  ---@cast opts table -- also carries the options of `Picker:refresh()`
   opts.prompt_to_prefix = vim.nonnil(opts.prompt_to_prefix, false)
   opts.prefix_hl_group = vim.nonnil(opts.prompt_hl_group, "TelescopePromptPrefix")
   opts.prompt_prefix = vim.nonnil(opts.prompt_prefix, config.values.prompt_prefix)

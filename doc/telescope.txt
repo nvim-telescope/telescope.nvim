@@ -65,19 +65,40 @@ information about the state of the picker (current selection, etc.).
 To find out more:
 https://github.com/nvim-telescope/telescope.nvim
 
-  :h telescope.setup
+  :h telescope.setup()
   :h telescope.command
   :h telescope.builtin
   :h telescope.themes
-  :h telescope.layout
+  :h telescope.mappings
+  :h telescope.layout_strategies
   :h telescope.resolve
   :h telescope.actions
-  :h telescope.actions.state
-  :h telescope.actions.set
-  :h telescope.actions.utils
-  :h telescope.actions.generate
-  :h telescope.actions.history
+  :h telescope.actions_state
+  :h telescope.actions_set
+  :h telescope.actions_utils
+  :h telescope.actions_generate
+  :h telescope.actions_history
   :h telescope.previewers
+
+Telescope triggers these |User| autocommands:
+• `TelescopeFindPre`: before a picker creates its windows
+• `TelescopeResumePost`: after |telescope.builtin.resume()| has restored a
+  picker
+• `TelescopeKeymap`: after an action mapped in the prompt buffer has run
+• `TelescopePreviewerLoaded`: after a buffer previewer has shown an entry,
+  with the preview buffer as the current buffer; `data` contains the `title`,
+  `bufname` and `filetype` of the preview
+
+For example, to show line numbers in the previewer: >lua
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "TelescopePreviewerLoaded",
+      callback = function(args)
+        if args.data.filetype ~= "help" then
+          vim.wo.number = true
+        end
+      end,
+    })
+<
 
 telescope.setup({opts})                                    *telescope.setup()*
     Setup function to be run by user. Configures the defaults, pickers and
@@ -97,7 +118,9 @@ telescope.setup({opts})                                    *telescope.setup()*
         --   ...
         -- }
         -- Now the picker_config_key will be applied every time you call this
-        -- builtin picker
+        -- builtin picker. `theme = "dropdown"` (or "cursor", "ivy") applies a
+        -- theme (see |telescope.themes|), `mappings` adds mappings to the
+        -- picker (like |telescope.defaults.mappings|).
       },
       extensions = {
         -- Your extension configuration goes here:
@@ -845,6 +868,14 @@ following command: >vim
     :Telescope find_files layout_config={ "prompt_position" : "top" }
 <
 as there are spaces in the option.
+
+The values of `find_command`, `vimgrep_arguments`, `sections`, `search_dirs`,
+`symbols` and `ignore_symbols` can be given as comma-separated lists: >vim
+    :Telescope find_files find_command=rg,--files,--hidden
+<
+`theme=dropdown` (or `cursor`, `ivy`) applies a theme, see |telescope.themes|.
+`:Telescope` without arguments opens |telescope.builtin.builtin()|; pickers of
+extensions are called as `:Telescope <extension> <picker> ...`.
 
 ==============================================================================
 BUILTIN                                                    *telescope.builtin*
@@ -2402,9 +2433,19 @@ every single entry. So it is suggested to do this outside of `make_display`
 for the best performance.
 
 The create function will use the column widths passed to it in
-configuration.items. Each item in that table is the number of characters in
-the column. It's also possible for the final column to not have a fixed width,
-this will be shown in the configuration as 'remaining = true'.
+configuration.items. Each item in that table is the width of the column, in
+any form of |telescope.resolve.resolve_width()| relative to the results window
+(e.g. a number of characters); `right_justify = true` aligns the text to the
+right. It's also possible for the final column to not have a fixed width, this
+will be shown in the configuration as 'remaining = true'.
+
+Further keys of the configuration:
+• `separator`: string between the columns (default: "│")
+• `separator_hl`: highlight group of the separator
+• `hl_chars`: table that maps characters to highlight groups, applied to every
+  occurrence in the displayed line
+• `prompt_bufnr`: prompt buffer of the picker (default: current buffer), used
+  to resolve the widths
 
 An example of this configuration is shown for the buffers picker: >lua
     local displayer = entry_display.create {
@@ -2433,7 +2474,8 @@ buffers picker: >lua
     }
 <
 There are two types of values each column can have. Either a simple String or
-a table containing the String as well as the hl_group.
+a table containing the String as well as the hl_group (a highlight group name,
+or a function returning a highlights table for the column).
 
 The displayer can return values, string and an optional highlights. The string
 is all the text to be displayed for this entry as a single string. If parts of
@@ -2468,6 +2510,16 @@ utils.path_expand({path})                      *telescope.utils.path_expand()*
     slashes are removed (except for root paths, e.g. `/` or `C:/`), and on
     Windows backslashes are converted to forward slashes. URIs are returned
     unchanged.
+
+    Parameters: ~
+      • {path}  (`string`)
+
+    Return: ~
+        (`string`)
+
+utils.path_tail({path})                          *telescope.utils.path_tail()*
+    Returns the last component of `path` (the part after the last `/`; also
+    `\` on Windows).
 
     Parameters: ~
       • {path}  (`string`)
@@ -2791,6 +2843,9 @@ actions.file_tab({prompt_bufnr})                *telescope.actions.file_tab()*
 
     Parameters: ~
       • {prompt_bufnr}  (`integer`) The prompt bufnr
+
+actions.close_pum({_})                         *telescope.actions.close_pum()*
+    Accept the completion of the popup menu if it is visible (`<C-y>`)
 
 actions.close({prompt_bufnr})                      *telescope.actions.close()*
     Close the Telescope window, usually used within an action
@@ -3170,6 +3225,26 @@ actions.insert_original_cline({prompt_bufnr})
     Parameters: ~
       • {prompt_bufnr}  (`integer`) The prompt bufnr
 
+actions.nop({_})                                     *telescope.actions.nop()*
+    Do nothing; map a key to this to disable it (e.g. `<C-j>` in normal mode
+    by default)
+
+actions.mouse_click({prompt_bufnr})          *telescope.actions.mouse_click()*
+    Select the clicked result, or run |telescope.actions.select_default()| for
+    a click into the previewer (mapped to `<LeftMouse>` by default)
+
+    Parameters: ~
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
+
+                                      *telescope.actions.double_mouse_click()*
+actions.double_mouse_click({prompt_bufnr})
+    Select the double-clicked result and run
+    |telescope.actions.select_default()| (mapped to `<2-LeftMouse>` by
+    default)
+
+    Parameters: ~
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
+
 
 ==============================================================================
 ACTIONS_STATE                                        *telescope.actions_state*
@@ -3497,6 +3572,37 @@ actions_generate.which_key({opts})
                 • {zindex}? (`integer`, default: 100) z-index of keymap hints
                   floating window
 
+                                         *telescope.actions_generate.refine()*
+actions_generate.refine({prompt_bufnr}, {opts})
+    Refine the current results: continue with the entries the picker has now
+    as a static list (and optionally another sorter), e.g. for a fuzzy search
+    over the results of a live grep, see
+    |telescope.actions.to_fuzzy_refine()|.
+
+    Parameters: ~
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
+      • {opts}          (`table?`) A table with the following fields:
+                        • {prompt_title}? (`string`) new title of the prompt
+                          window
+                        • {results_title}? (`string`) new title of the results
+                          window
+                        • {sorter}? (`table|false`, default:
+                          |telescope.defaults.generic_sorter|; `false` keeps
+                          the current one) new sorter
+                        • {prompt_to_prefix}? (`boolean`, default: false) move
+                          the current prompt into the prompt prefix
+                        • {prompt_prefix}? (`string`, default:
+                          |telescope.defaults.prompt_prefix|) prompt prefix
+                        • {prompt_hl_group}? (`string`, default:
+                          "TelescopePromptPrefix") highlight group of the
+                          prompt prefix
+                        • {reset_multi_selection}? (`boolean`, default: false)
+                          drop the multi selection
+                        • {reset_prompt}? (`boolean`, default: true) clear the
+                          prompt
+                        • {push_history}? (`boolean`, default: true) add the
+                          current prompt to the history
+
 
 ==============================================================================
 ACTIONS_HISTORY                                    *telescope.actions_history*
@@ -3702,8 +3808,13 @@ previewers.new_termopen_previewer({opts})
     • `dyn_title(self, entry)` a dynamic title function which gets called when
       config value `dynamic_preview_title = true`
     • `env` table: define environment variables to forward to the terminal
-      process. Example:
+      process (default: |telescope.defaults.set_env|). Example:
       • `{ ['PAGER'] = '', ['MANWIDTH'] = 50 }`
+    • `cwd` string: working directory of the command (default: the cwd)
+    • `send_input(self, input)`: send keys to the terminal (default: to the
+      job)
+    • `scroll_fn(self, direction)`: scroll the preview (default: sends `d`/`u`
+      with a count, as for `less`)
 
     It's an easy way to get your first previewer going and it integrates well
     with `bat` and `less`. Providing out of the box scrolling if the command
