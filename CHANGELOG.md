@@ -2,6 +2,183 @@
 
 Breaking changes and other notable changes.
 
+## Rewrite for modern Nvim API (unreleased)
+
+Telescope no longer depends on plenary.nvim: it now uses Neovim's own APIs
+(`vim.fs`, `vim.system`, `vim.async`, `vim.log`, native float borders) and
+requires Nvim 0.13. Along the way it got a much faster built-in sorter with
+fzf's query syntax, a `vim.ui.select` replacement, and many fixes.
+
+### Major changes
+
+- **No plenary.nvim** ([#3703](https://github.com/nvim-telescope/telescope.nvim/pull/3703),
+  [#3704](https://github.com/nvim-telescope/telescope.nvim/pull/3704),
+  [#3716](https://github.com/nvim-telescope/telescope.nvim/pull/3716),
+  [#3717](https://github.com/nvim-telescope/telescope.nvim/pull/3717)): paths
+  use `vim.fs`/`vim.uv`, external commands `vim.system()`, logging `vim.log`,
+  and pickers and finders run in `vim.async` tasks (a find is cancelled as soon
+  as the prompt changes). Pickers use native float borders and titles: three
+  windows per picker instead of six.
+- **Nvim 0.13 required** ([#3715](https://github.com/nvim-telescope/telescope.nvim/pull/3715)),
+  checked by `:checkhealth telescope` (which also warns without LuaJIT).
+- **New default sorter** ([#3710](https://github.com/nvim-telescope/telescope.nvim/pull/3710),
+  [#3711](https://github.com/nvim-telescope/telescope.nvim/pull/3711)): the
+  built-in Lua fzy sorter is about as fast as telescope-fzf-native, so no native
+  build is needed. It understands fzf's query syntax (`'exact`, `^prefix`,
+  `suffix$`, `!inverse`, `a | b`, space-separated terms that must all match),
+  takes `case_mode` (`ignore_case`, `respect_case`, `smart_case`) and ranks
+  file extensions and word boundaries like fzf.
+- **Faster pickers** ([#3705](https://github.com/nvim-telescope/telescope.nvim/pull/3705),
+  [#3710](https://github.com/nvim-telescope/telescope.nvim/pull/3710),
+  [#3713](https://github.com/nvim-telescope/telescope.nvim/pull/3713),
+  [#3717](https://github.com/nvim-telescope/telescope.nvim/pull/3717)):
+  results are drawn in batches and highlighted with extmarks, an extended
+  prompt only rescores the previous matches, `file_ignore_patterns` are checked
+  once per entry, and command output is read per chunk; e.g. `buffers` with
+  thousands of buffers opens in about 0.1 s instead of 3 s.
+- **`vim.ui.select` replacement** ([#3707](https://github.com/nvim-telescope/telescope.nvim/pull/3707)):
+  `vim.ui.select = require("telescope").ui_select` (configured as
+  `pickers.ui_select`); this replaces telescope-ui-select. `pickers.new` takes
+  an `on_close` callback.
+- **Bug fixes** ([#3714](https://github.com/nvim-telescope/telescope.nvim/pull/3714),
+  [#3719](https://github.com/nvim-telescope/telescope.nvim/pull/3719)), e.g.
+  full entries in `command_history`/`search_history`, `additional_args` no
+  longer growing with every `live_grep` call, mappings for modes other than
+  normal and insert, and file names with special characters in LSP jumps and
+  the bcommits diff. The documentation was checked against the code and
+  corrected throughout.
+
+### Breaking changes
+
+- **Nvim 0.13 is required.** On older versions, telescope fails when it is
+  loaded (e.g. `telescope/log.lua:1: attempt to call field 'new' (a nil
+  value)`). Update Nvim, or pin telescope to the previous release.
+- **plenary.nvim is no longer a dependency.** Configurations that use plenary
+  themselves fail with `module 'plenary.path' not found` once it is no longer
+  installed.
+  - Plugin spec: `dependencies = { 'nvim-lua/plenary.nvim' }` → no dependency
+    (keep plenary only if other plugins need it).
+  - Config: e.g. a `preview.filesize_hook` that read the head of a file with
+    `require("plenary.path"):new(filepath):head(height)` →
+    `vim.fn.readfile(filepath, "", height)`.
+- **The default sorter parses the prompt.** A space separates terms that must
+  all match (in any order), and `'`, `^`, `$`, `!` and ` | ` are operators. No
+  error, but some prompts match differently: `!ls` in `command_history` now
+  lists commands *without* `ls`. To match these characters literally, start the
+  term with `'`: `!ls` → `'!ls`, `^foo` → `'^foo`.
+- **telescope-fzy-native is ignored** (its C module lacks the query syntax);
+  the built-in sorter is used instead. telescope-fzf-native still works.
+  Remove `load_extension("fzy_native")` and the plugin.
+- **`utils.if_nil` is removed.** Error: `attempt to call field 'if_nil' (a nil
+  value)`. `require("telescope.utils").if_nil(a, b)` → `vim.nonnil(a, b)`.
+- **`pickers.fd` in the setup has no effect**: `builtin.fd` is an alias of
+  `find_files` and uses its configuration. `pickers = { fd = {...} }` →
+  `pickers = { find_files = {...} }`.
+- **`quickfixhistory` takes `entry_maker`** like every other picker.
+  `quickfixhistory({ make_entry = f })` → `quickfixhistory({ entry_maker = f })`.
+- **`builtin.planets` is removed.** `:Telescope planets` reports "Unknown
+  command".
+- **Log messages are not shown in `:messages`**; warnings meant for users use
+  `vim.notify`. Read the log file (`stdpath("log")/telescope.log`) instead; the
+  level is set with
+  `vim.log.set_level(require("telescope.log"), vim.log.levels.DEBUG)`.
+- **Border characters must be single cells**: longer strings in
+  `borderchars` are cut to their first character. `borderchars` takes 1, 2 or 8
+  characters; other counts raise "borderchars: expected 1, 2 or 8 characters".
+- **Directory previews show names only** (directories first with a trailing
+  `/`), not `ls -la` lines; `preview.ls_short` is removed (ignored if set).
+- **Previews detect the filetype from the file name only** (no shebang or
+  modeline). Add patterns for files that are not detected by name with
+  `vim.filetype.add()`.
+- **`grep_string` in linewise or blockwise visual mode** searches the selection
+  instead of the word under the cursor.
+- **On Windows, paths use `/`** in results, `cwd` and displayed paths. Neovim
+  and external tools accept both; mappings or configs that match `\` in paths
+  should match `/`.
+
+### Migration guide for extension authors
+
+**plenary.** Telescope no longer installs plenary.nvim. If your extension uses
+it, depend on it yourself.
+
+**Async.** Finders (including the `fn` of `finders.new_dynamic`) run inside the
+picker's `vim.async` task and must wait with `vim.async`; waiting with
+plenary.async inside a finder fails with "Unexpected coroutine.yield()". A task
+your extension starts on its own (outside a finder) may keep using plenary.
+Conversion table (the callback position counts the callback itself):
+
+| before (plenary.async) | after (`vim.async`, `:help lua-async`) |
+| --- | --- |
+| `async.wrap(f, 2)(x)` | `vim.async.await(2, f, x)` |
+| `local g = async.wrap(f, n)` | `local g = vim.async.wrap(n, f)` |
+| `async.util.scheduler()` | `vim.async.await(1, vim.schedule)` |
+| `async.util.sleep(ms)` | `vim.async.sleep(ms)` |
+| `async.uv.fs_stat(p)` (other `fs_*` alike) | `vim.async.await(2, vim.uv.fs_stat, p)` |
+| `async.run(f)`, `async.void(f)` | `vim.async.run(f)` |
+
+A oneshot channel around a callback API becomes one `await`:
+
+```lua
+-- before
+local tx, rx = require("plenary.async.control").channel.oneshot()
+cancel = vim.lsp.buf_request_all(bufnr, "workspace/symbol", { query = prompt }, tx)
+local results = rx()
+-- after
+local results = vim.async.await(1, function(callback)
+  cancel = vim.lsp.buf_request_all(bufnr, "workspace/symbol", { query = prompt }, callback)
+end)
+```
+
+A find is closed by the next prompt change: the finder stops at its next wait,
+and `process_result` still returns `true` for a stale find. See "Finders" in
+[DEVELOPERS.md](DEVELOPERS.md) for the finder interface.
+
+**Logging.** ` is a `vim.log` logger with `trace`/`debug`/`info`/`warn`/`error`
+(no `use_console`, `fmt_*`); create your own with `vim.log.new({ name =
+"my_extension" })`. Messages for users belong in `vim.notify`.
+
+**Paths.**
+
+| before | after |
+| --- | --- |
+| `require("plenary.path"):new(p):make_relative(cwd)` | `utils.make_relative(p, cwd)` |
+| `require("plenary.path"):new(p):normalize(cwd)` | `utils.display_path(p, cwd)` |
+| `require("plenary.path"):new(p):is_absolute()` | `utils.is_absolute(p)` |
+| `require("plenary.path"):new(p):read()` | `vim.fn.readfile(p)` (or `vim.uv.fs_*`) |
+| `require("plenary.path").path.sep`, `utils.get_separator()` | `"/"` (`utils.pathsep` is always `"/"`) |
+| `require("plenary.strings").strdisplaywidth(s)` | `vim.fn.strdisplaywidth(s)` |
+
+(`utils` is `require("telescope.utils")`.) Paths entering telescope are
+normalized to `/` on Windows; `utils.path_tail()` still accepts `\`.
+`utils.is_uri()` follows Neovim (`scheme:/…`; drive letters and `mailto:` are
+not URIs).
+
+**Removed functions and fields.**
+
+- `utils.if_nil` → `vim.nonnil`; `utils.file_extension` → none (it was only
+  used for devicons); `actions.insert_value` → none (it was unfinished).
+- `require("telescope.algos.fzy")` → `require("telescope.algos.matcher")`
+  (`has_match`, `score` and `positions` take an optional `case_sensitive`;
+  scores differ for non-ASCII text and around punctuation). The `fzy_mod` option
+  of `sorters.get_fzy_sorter` and `sorters.highlighter_only` is removed.
+- `telescope.algos.linked_list` and the entry manager's `linked_states`,
+  `get_container(i)` and `get_ordinal(i)` → `manager:num_results()`,
+  `get_entry(i)` (`.ordinal`), `iter()`, `truncate(n)`.
+- `Picker:entry_adder`, `Picker:_decrement` and `Picker:_next_find_id` are
+  removed; `Picker:get_result_processor` and `get_result_completor` no longer
+  take a find id. `picker.stats` keeps only `processed` and `filtered`.
+- Border windows: `picker.layout.*.border.winid`/`bufnr` and the
+  `{prompt,results,preview}_border_win` status entries are gone (the borders
+  are part of the windows; `border:change_title()` still works).
+- Jobs: `finders._new` is removed; `writer` in `finders.new_async_job` and
+  `previewers.utils.job_maker` is removed, and `job_maker`'s `env` is added to
+  the environment instead of replacing it. `telescope.async_job`: `NullPipe`,
+  `convert_opts`, the `stdin`/`stderr` options and the `force` argument of
+  `close` are removed; `spawn` takes only `command` and `args`.
+- `previewers.utils.filetype_detect()` only uses the file name.
+- `telescope.testharness` is removed; test with Neovim's test harness, as
+  described in [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Use `vim.filetype` in previewers ([#2529](https://github.com/nvim-telescope/telescope.nvim/pull/2529), June 09, 2023)
 
 We finally removed usage of `plenary.filetype` to determine filetypes for
