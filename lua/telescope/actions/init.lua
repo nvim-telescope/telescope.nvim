@@ -46,7 +46,7 @@
 --- ```
 ---
 --- Another interesting thing to do is that these actions now have functions you
---- can call. These functions include `:replace(f)`, `:replace_if(f, c)`,
+--- can call. These functions include `:replace(f)`, `:replace_if(c, f)`,
 --- `replace_map(tbl)` and `enhance(tbl)`. More information on these functions
 --- can be found in the `developers.md` and `tests/automated/action_spec.lua`
 --- file.
@@ -1146,7 +1146,7 @@ actions.open_qflist = function(_prompt_bufnr)
 end
 
 --- Open the location list. It makes sense to use this in combination with one of the send_to_loclist actions
---- `actions.smart_send_to_qflist + actions.open_qflist`
+--- `actions.smart_send_to_loclist + actions.open_loclist`
 ---@param prompt_bufnr integer: The prompt bufnr
 actions.open_loclist = function(_prompt_bufnr)
   vim.cmd.lopen()
@@ -1206,7 +1206,7 @@ actions.cycle_previewers_prev = function(prompt_bufnr)
 end
 
 --- Removes the selected picker in |telescope.builtin.pickers()|.<br>
---- This action is not mapped by default and only intended for |telescope.builtin.pickers()|.
+--- It is mapped to `<C-x>` in |telescope.builtin.pickers()| and only intended for that picker.
 ---@param prompt_bufnr integer: The prompt bufnr
 actions.remove_selected_picker = function(prompt_bufnr)
   local curr_picker = action_state.get_current_picker(prompt_bufnr)

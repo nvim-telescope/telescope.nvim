@@ -189,7 +189,7 @@ local shared_options = {
   width = { "How wide to make Telescope's entire layout", "See |telescope.resolve.resolve_width()|" },
   height = { "How tall to make Telescope's entire layout", "See |telescope.resolve.resolve_height()|" },
   mirror = "Flip the location of the results/prompt and preview windows",
-  scroll_speed = "The number of lines to scroll through the previewer",
+  scroll_speed = "The number of lines to scroll through the previewer and the results (default: half the window height)",
   prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
   anchor = { "Which edge/corner to pin the picker to", "See |telescope.resolve.resolve_anchor_pos()|" },
   anchor_padding = {
@@ -771,7 +771,8 @@ layout_strategies.vertical = make_documented_layout(
   end
 )
 
---- Flex layout swaps between `horizontal` and `vertical` strategies based on the window width
+--- Flex layout swaps between `horizontal` and `vertical` strategies based on the window size: vertical if there
+--- are fewer than `flip_columns` columns and at least `flip_lines` lines, horizontal otherwise
 ---  -  Supports |telescope.layout_strategies.vertical| or |telescope.layout_strategies.horizontal| features
 ---
 ---@eval return require("telescope.pickers.layout_strategies")._format("flex")
@@ -780,7 +781,7 @@ layout_strategies.flex = make_documented_layout(
   "flex",
   vim.tbl_extend("error", shared_options, {
     flip_columns = "The number of columns required to move to horizontal mode",
-    flip_lines = "The number of lines required to move to horizontal mode",
+    flip_lines = "The number of lines required to move to vertical mode",
     vertical = "Options to pass when switching to vertical layout",
     horizontal = "Options to pass when switching to horizontal layout",
   }),

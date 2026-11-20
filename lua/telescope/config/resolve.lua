@@ -179,7 +179,7 @@ end
 --- 1. 0 <= number < 1 <br>
 ---     This means total height as a percentage.
 --- 2. 1 <= number <br>
----     This means total height as a fixed number.
+---     This means total height as a fixed number (at most the available space).
 --- 3. function <br>
 ---     Must have signature:
 ---       function(self, max_columns, max_lines): number
@@ -187,7 +187,7 @@ end
 ---     val has to be in the first form 0 <= val < 1 and only one is given,
 ---     `min` or `max` as fixed number
 --- 5. table of the form: {padding = `foo`} <br>
----     where `foo` has one of the previous three forms. <br>
+---     where `foo` has one of the previous forms. <br>
 ---     The height is then set to be the remaining space after padding.
 ---     For example, if the window has height 50, and the input is {padding = 5},
 ---     the height returned will be `40 = 50 - 2*5`
@@ -210,7 +210,7 @@ end
 --- 1. 0 <= number < 1 <br>
 ---     This means total width as a percentage.
 --- 2. 1 <= number <br>
----     This means total width as a fixed number.
+---     This means total width as a fixed number (at most the available space).
 --- 3. function <br>
 ---     Must have signature:
 ---       function(self, max_columns, max_lines): number
@@ -218,7 +218,7 @@ end
 ---     val has to be in the first form 0 <= val < 1 and only one is given,
 ---     `min` or `max` as fixed number
 --- 5. table of the form: {padding = `foo`} <br>
----     where `foo` has one of the previous three forms. <br>
+---     where `foo` has one of the previous forms. <br>
 ---     The width is then set to be the remaining space after padding.
 ---     For example, if the window has width 100, and the input is {padding = 5},
 ---     the width returned will be `90 = 100 - 2*5`
@@ -247,13 +247,13 @@ end
 --- - Compass directions:<br>
 ---   the picker will move to the corresponding edge/corner
 ---   e.g. "NW" -> "top left corner", "E" -> "right edge", "S" -> "bottom edge"
----@param anchor ""|"CENTER"|"NW"|"N"|"NE"|"E"|"SE"|"S"|"SW"|"W
+---@param anchor ""|"CENTER"|"NW"|"N"|"NE"|"E"|"SE"|"S"|"SW"|"W"
 ---@param p_width integer window width
 ---@param p_height integer window height
 ---@param max_columns integer max number of columns
 ---@param max_lines integer max number of lines
 ---@param anchor_padding integer padding to add to the anchor
----@return integer[] # row and col
+---@return integer[] # column and line offsets
 resolver.resolve_anchor_pos = function(anchor, p_width, p_height, max_columns, max_lines, anchor_padding)
   local dir = anchor:upper()
   local pos = { 0, 0 }

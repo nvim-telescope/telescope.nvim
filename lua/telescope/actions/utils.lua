@@ -43,10 +43,10 @@ function utils.map_entries(prompt_bufnr, f)
   end
 end
 
---- Apply `f` to the multi selections of the current picker and return a table of mapped selections.
+--- Apply `f` to the multi selections of the current picker.
 --- - Notes:
 ---   - Mapped selections may include results not visible in the results pop up.
----   - Selected entries are returned in order of their selection.
+---   - Selected entries are passed in order of their selection.
 --- - Warning: `map_selections` has no return value.
 ---   - The below example showcases how to collect results
 ---
@@ -58,8 +58,8 @@ end
 ---   local prompt_bufnr = vim.api.nvim_get_current_buf()
 ---   local current_picker = action_state.get_current_picker(prompt_bufnr)
 ---   local results = {}
----   action_utils.map_selections(prompt_bufnr, function(entry, index)
----     results[index] = entry.value
+---   action_utils.map_selections(prompt_bufnr, function(entry)
+---     table.insert(results, entry.value)
 ---   end)
 ---   return results
 --- end
@@ -75,8 +75,9 @@ function utils.map_selections(prompt_bufnr, f)
   end
 end
 
---- Utility to collect mappings of prompt buffer in array of `{mode, keybind, name}`.
+--- Utility to collect mappings of prompt buffer in array of `{mode, keybind, desc}`.
 ---@param prompt_bufnr integer: The prompt bufnr
+---@return { mode: string, keybind: string, desc: string }[]
 function utils.get_registered_mappings(prompt_bufnr)
   local ret = {}
   for _, mode in ipairs({ "n", "i" }) do

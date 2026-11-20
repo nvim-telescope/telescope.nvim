@@ -150,14 +150,13 @@ end
 --- vim.ui.select = require("telescope").ui_select
 --- ```
 ---@param items any[]: items to choose from
----@param opts table: options of |vim.ui.select()| (`prompt`, `format_item`, `kind`)
+---@param opts table: options of |vim.ui.select()| (`prompt`, `format_item`; `kind` is ignored)
 ---@param on_choice fun(item: any?, idx: integer?) called with the chosen item and its index, or `nil`
 function telescope.ui_select(items, opts, on_choice)
   require("telescope.builtin").ui_select(vim.tbl_extend("force", opts or {}, { items = items, on_choice = on_choice }))
 end
 
---- Use telescope.extensions to reference any extensions within your configuration. <br>
---- While the docs currently generate this as a function, it's actually a table. Sorry.
+--- Use telescope.extensions to reference any extensions within your configuration.
 telescope.extensions = _extensions.manager
 
 telescope.__format_setup_keys = function()

@@ -640,7 +640,7 @@ utils.get_devicons = load_once(function()
 end)
 
 --- Telescope Wrapper around vim.notify
----@param funname string: name of the function that will be
+---@param funname string: name of the function, shown as the message prefix `[telescope.<funname>]`
 ---@param opts table: opts.level string, opts.msg string, opts.once bool
 utils.notify = function(funname, opts)
   opts.once = vim.nonnil(opts.once, false)

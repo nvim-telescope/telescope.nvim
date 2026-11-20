@@ -113,8 +113,8 @@
 ---           print "You typed <C-r>"
 ---         end, { desc = "desc for which key"})
 ---
----         -- needs to return true if you want to map default_mappings and
----         -- false if not
+---         -- needs to return true if you want to map the default mappings and
+---         -- `defaults.mappings` as well, and false if not
 ---         return true
 ---       end,
 ---     }
