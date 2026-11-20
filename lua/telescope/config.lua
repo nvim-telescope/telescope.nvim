@@ -103,7 +103,7 @@ local layout_config_defaults = {
 local layout_config_description = string.format(
   [[
     Determines the default configuration values for layout strategies.
-    See |telescope.layout| for details of the configurations options for
+    See |telescope.layout_strategies| for details of the configurations options for
     each strategy.
 
     Allows setting defaults for all strategies as top level options and
@@ -172,7 +172,7 @@ append(
   "horizontal",
   [[
   Determines the default layout of Telescope pickers.
-  See |telescope.layout| for details of the available strategies.
+  See |telescope.layout_strategies| for details of the available strategies.
 
   Default: 'horizontal']]
 )
@@ -182,7 +182,7 @@ append(
   nil,
   [[
   Configure the layout of Telescope pickers.
-  See |telescope.pickers.layout| for details.
+  See |telescope.layout| for details.
 
   Default: 'nil']]
 )
@@ -212,7 +212,7 @@ append(
     return vim.o.winblend
   end,
   [[
-  Configure winblend for telescope floating windows. See |winblend| for
+  Configure winblend for telescope floating windows. See |'winblend'| for
   more information. Type can be a number or a function returning a
   number
 
@@ -281,7 +281,10 @@ append(
   "border",
   true,
   [[
-  Boolean defining if borders are added to Telescope windows.
+  Boolean defining if borders are added to Telescope windows, or a list of
+  4 numbers (top, right, bottom, left; 0 for no border on that side).
+  Can also be a table with the keys "prompt", "results" and "preview" to
+  set the border per window.
 
   Default: true]]
 )
@@ -388,8 +391,13 @@ append(
   "borderchars",
   { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
   [[
-  Set the borderchars of telescope floating windows. It has to be a
-  table of 8 string values.
+  Set the borderchars of telescope floating windows: a list of 8
+  characters (top, right, bottom, left, topleft, topright, botright,
+  botleft), 2 characters (edges and corners) or 1 character (for all).
+  Each must be a single-cell character (longer strings are cut to their
+  first character).
+  Can also be a table with the keys "prompt", "results" and "preview" to
+  set the characters per window (with `[1]` as fallback).
 
   Default: { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }]]
 )
@@ -435,7 +443,8 @@ append(
   end,
   [[
   A function that determines what the virtual text looks like.
-  Signature: function(picker) -> str
+  Signature: function(picker, opts) -> string, where `opts.completed` is
+  false while the finder is still running.
 
   Default: function that shows current count / all]]
 )
@@ -534,7 +543,7 @@ append(
                   Default: stdpath("data")/telescope_history
     - limit:      The amount of entries that will be written in the
                   history.
-                  Warning: If limit is set to nil it will grow unbound.
+                  Warning: If limit is set to false it will grow unbound.
                   Default: 100
     - handler:    A lua function that implements the history.
                   This is meant as a developer setting for extensions to
@@ -729,9 +738,10 @@ append(
   "color_devicons",
   true,
   [[
-  Boolean if devicons should be enabled or not. If set to false, the
-  text highlight group is used.
-  Hint: Coloring only works if |termguicolors| is enabled.
+  Boolean if devicons should be colored. If set to false, the icons are
+  shown with the text highlight group (use the picker option
+  `disable_devicons` to hide them).
+  Hint: Coloring only works if |'termguicolors'| is enabled.
 
   Default: true]]
 )
@@ -786,7 +796,8 @@ append(
   [[
   This points to a wrapper sorter around the generic_sorter that is able
   to do prefiltering.
-  It's usually used for lsp_*_symbols and lsp_*_diagnostics
+  It's used for lsp_document_symbols, lsp_workspace_symbols, diagnostics
+  and treesitter.
 
   Default: require("telescope.sorters").prefilter]]
 )
@@ -873,8 +884,10 @@ append(
     return require("telescope.previewers").vim_buffer_cat.new(...)
   end,
   [[
-    Function pointer to the default file_previewer. It is mostly used
-    for find_files, git_files and similar.
+    Function pointer to the default file_previewer, for extensions that
+    preview files. The builtin file pickers (find_files, git_files,
+    oldfiles, ...) use the grep_previewer, since their entries can
+    contain a line and column.
     You can change this function pointer to either use your own
     previewer or use the command-line program bat as the previewer:
       require("telescope.previewers").cat.new
@@ -888,8 +901,9 @@ append(
     return require("telescope.previewers").vim_buffer_vimgrep.new(...)
   end,
   [[
-    Function pointer to the default vim_grep previewer. It is mostly
-    used for live_grep, grep_string and similar.
+    Function pointer to the default vim_grep previewer. It is used for
+    live_grep, grep_string and similar, and for the file pickers
+    (find_files, git_files, oldfiles, ...).
     You can change this function pointer to either use your own
     previewer or use the command-line program bat as the previewer:
       require("telescope.previewers").vimgrep.new

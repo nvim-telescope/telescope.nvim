@@ -15,9 +15,9 @@
 --- - display string|function: is either a string of the text that is being
 ---   displayed or a function receiving the entry at a later stage, when the entry
 ---   is actually being displayed. A function can be useful here if a complex
----   calculation has to be done. `make_entry` can also return a second value -
----   a highlight array which will then apply to the line. Highlight entry in
----   this array has the following signature `{ { start_col, end_col }, hl_group }`
+---   calculation has to be done. The `display` function can also return a second
+---   value - a highlight array which will then apply to the line. Highlight entry
+---   in this array has the following signature `{ { start_col, end_col }, hl_group }`
 --- - filename string (optional): will be interpreted by the default `<cr>` action as
 ---   open this file
 --- - bufnr number (optional): will be interpreted by the default `<cr>` action as open
@@ -27,9 +27,11 @@
 --- - col number (optional): col value which will be interpreted by the default `<cr>`
 ---   action as a jump to this column
 ---
---- For more information on easier displaying, see |telescope.pickers.entry_display|
+--- For more information on easier displaying, see |telescope.pickers_entry_display|
 ---
---- TODO: Document something we call `entry_index`
+--- The entry makers take an `entry_index` option: a table that maps entry keys to
+--- functions `function(entry, opts) -> value, save`, which compute the value of a
+--- key the entry doesn't have (and store it in the entry if `save` is true).
 
 local fs = vim.fs
 local fn = vim.fn

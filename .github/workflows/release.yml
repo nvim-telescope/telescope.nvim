@@ -25,5 +25,3 @@ jobs:
             ftplugin
             plugin
             scripts
-            autoload
-            data

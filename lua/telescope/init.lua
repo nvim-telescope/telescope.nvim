@@ -16,7 +16,7 @@ local telescope = {}
 ---    `:Telescope find_files` or
 ---    `:lua require("telescope.builtin").find_files()`
 --- 3. Put a `require("telescope").setup()` call somewhere in your neovim config.
---- 4. Read |telescope.setup| to check what config keys are available and what you can put inside the setup call
+--- 4. Read |telescope.setup()| to check what config keys are available and what you can put inside the setup call
 --- 5. Read |telescope.builtin| to check which builtin pickers are offered and what options these implement
 --- 6. Profit
 ---
@@ -65,27 +65,48 @@ local telescope = {}
 --- </pre>
 ---
 ---  A practical introduction into telescope customization is our
----  `developers.md` (top-level of repo) and `:h telescope.actions` that
+---  `DEVELOPERS.md` (top-level of repo) and `:h telescope.actions` that
 ---  showcase how to access information about the state of the picker (current
 ---  selection, etc.).
 --- <pre>
 --- To find out more:
 --- https://github.com/nvim-telescope/telescope.nvim
 ---
----   :h telescope.setup
+---   :h telescope.setup()
 ---   :h telescope.command
 ---   :h telescope.builtin
 ---   :h telescope.themes
----   :h telescope.layout
+---   :h telescope.mappings
+---   :h telescope.layout_strategies
 ---   :h telescope.resolve
 ---   :h telescope.actions
----   :h telescope.actions.state
----   :h telescope.actions.set
----   :h telescope.actions.utils
----   :h telescope.actions.generate
----   :h telescope.actions.history
+---   :h telescope.actions_state
+---   :h telescope.actions_set
+---   :h telescope.actions_utils
+---   :h telescope.actions_generate
+---   :h telescope.actions_history
 ---   :h telescope.previewers
 --- </pre>
+---
+--- Telescope triggers these |User| autocommands:
+--- - `TelescopeFindPre`: before a picker creates its windows
+--- - `TelescopeResumePost`: after |telescope.builtin.resume()| has restored a picker
+--- - `TelescopeKeymap`: after an action mapped in the prompt buffer has run
+--- - `TelescopePreviewerLoaded`: after a buffer previewer has shown an entry, with the preview
+---   buffer as the current buffer; `data` contains the `title`, `bufname` and `filetype` of the
+---   preview
+---
+--- For example, to show line numbers in the previewer:
+--- ```lua
+--- vim.api.nvim_create_autocmd("User", {
+---   pattern = "TelescopePreviewerLoaded",
+---   callback = function(args)
+---     if args.data.filetype ~= "help" then
+---       vim.wo.number = true
+---     end
+---   end,
+--- })
+--- ```
 
 --- Setup function to be run by user. Configures the defaults, pickers and
 --- extensions of telescope.
@@ -105,7 +126,9 @@ local telescope = {}
 ---     --   ...
 ---     -- }
 ---     -- Now the picker_config_key will be applied every time you call this
----     -- builtin picker
+---     -- builtin picker. `theme = "dropdown"` (or "cursor", "ivy") applies a
+---     -- theme (see |telescope.themes|), `mappings` adds mappings to the
+---     -- picker (like |telescope.defaults.mappings|).
 ---   },
 ---   extensions = {
 ---     -- Your extension configuration goes here:
@@ -132,7 +155,7 @@ function telescope.setup(opts)
 end
 
 --- Load an extension.
----@note Loading triggers ext setup via the config passed in |telescope.setup|
+---@note Loading triggers ext setup via the config passed in |telescope.setup()|
 ---@param name string: Name of the extension
 function telescope.load_extension(name)
   return _extensions.load(name)
@@ -150,14 +173,13 @@ end
 --- vim.ui.select = require("telescope").ui_select
 --- ```
 ---@param items any[]: items to choose from
----@param opts table: options of |vim.ui.select()| (`prompt`, `format_item`, `kind`)
+---@param opts table: options of |vim.ui.select()| (`prompt`, `format_item`; `kind` is ignored)
 ---@param on_choice fun(item: any?, idx: integer?) called with the chosen item and its index, or `nil`
 function telescope.ui_select(items, opts, on_choice)
   require("telescope.builtin").ui_select(vim.tbl_extend("force", opts or {}, { items = items, on_choice = on_choice }))
 end
 
---- Use telescope.extensions to reference any extensions within your configuration. <br>
---- While the docs currently generate this as a function, it's actually a table. Sorry.
+--- Use telescope.extensions to reference any extensions within your configuration.
 telescope.extensions = _extensions.manager
 
 telescope.__format_setup_keys = function()

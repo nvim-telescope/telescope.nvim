@@ -10,7 +10,7 @@ Gaze deeply into unknown regions using the power of the moon.
 latest awesome features from `neovim` core. Telescope is centered around
 modularity, allowing for easy customization.
 
-Community driven builtin [pickers](#pickers), [sorters](#sorters) and
+Community-driven builtin [pickers](#pickers), [sorters](#sorters) and
 [previewers](#previewers).
 
 ![Preview](https://i.imgur.com/TTTja6t.gif)
@@ -35,7 +35,7 @@ Telescope Wiki</sub>
 - [API](#api)
 - [Media](#media)
 - [Contributing](#contributing)
-- [Changelog](https://github.com/nvim-telescope/telescope.nvim/blob/master/doc/telescope_changelog.txt)
+- [Changelog](CHANGELOG.md)
 
 ## Getting Started
 
@@ -43,7 +43,7 @@ This section should guide you to run your first builtin pickers.
 
 ### Requirements
 
-* [Neovim >=v0.13.0](https://github.com/neovim/neovim/releases/tag/v0.13.0) built **with LuaJIT** (check `:version`).
+* [Neovim >=v0.13.0](https://github.com/neovim/neovim/releases/tag/v0.13.0), preferably built **with LuaJIT** (check `:version`); without it, sorting and filtering are much slower.
 
 >[!IMPORTANT]
 > Only the **latest version** ([`stable`](https://github.com/neovim/neovim/releases/tag/stable)) and the **latest commit of `HEAD`** ([`nightly`](https://github.com/neovim/neovim/releases/tag/nightly)) are tested and supported; before opening an issue, download the latest available release and confirm that the problem persists.
@@ -142,18 +142,6 @@ To look at what default configuration options exist please read: `:help
 telescope.setup()`. For picker specific `opts` please read: `:help
 telescope.builtin`.
 
-To embed the above code snippet in a `.vim` file
-(for example in `after/plugin/telescope.nvim.vim`),
-wrap it in `lua << EOF code-snippet EOF`:
-
-```lua
-lua << EOF
-require('telescope').setup{
-  -- ...
-}
-EOF
-```
-
 ## Default Mappings
 
 Mappings are fully customizable.
@@ -170,6 +158,8 @@ Many familiar mapping patterns are set up as defaults.
 | `<C-x>`        | Go to file selection as a split                           |
 | `<C-v>`        | Go to file selection as a vsplit                          |
 | `<C-t>`        | Go to a file in a new tab                                 |
+| `<PageUp>`     | Scroll up in results window                               |
+| `<PageDown>`   | Scroll down in results window                             |
 | `<C-u>`        | Scroll up in preview window                               |
 | `<C-d>`        | Scroll down in preview window                             |
 | `<C-f>`        | Scroll left in preview window                             |
@@ -182,12 +172,15 @@ Many familiar mapping patterns are set up as defaults.
 | `<Esc>`        | Close telescope (in normal mode)                          |
 | `<Tab>`        | Toggle selection and move to next selection               |
 | `<S-Tab>`      | Toggle selection and move to prev selection               |
-| `<C-q>`        | Send all items not filtered to quickfixlist (qflist)      |
-| `<M-q>`        | Send all selected items to qflist                         |
+| `<C-q>`        | Send all items not filtered to the quickfix list (qflist), open it |
+| `<M-q>`        | Send all selected items to qflist, open it                |
+| `<C-l>`        | Complete a tag to prefilter by (insert mode, e.g. in `lsp_document_symbols`) |
 | `<C-r><C-w>`   | Insert cword in original window into prompt (insert mode) |
 | `<C-r><C-a>`   | Insert cWORD in original window into prompt (insert mode) |
 | `<C-r><C-f>`   | Insert cfile in original window into prompt (insert mode) |
 | `<C-r><C-l>`   | Insert cline in original window into prompt (insert mode) |
+| `<LeftMouse>`  | Select the clicked item (open it when clicking into the preview) |
+| `<2-LeftMouse>`| Open the double-clicked item                              |
 
 To see the full list of mappings, check out `lua/telescope/mappings.lua` and the
 `default_mappings` table.
@@ -200,22 +193,30 @@ you can pick from to remap your telescope buffer mappings, or create a new
 custom action:
 
 ```lua
--- Built-in actions
+local actions = require('telescope.actions')
 local transform_mod = require('telescope.actions.mt').transform_mod
 
--- or create your custom action
-local my_cool_custom_action = transform_mod({
-  x = function(prompt_bufnr)
-    print("This function ran after another action. Prompt_bufnr: " .. prompt_bufnr)
-    -- Enter your function logic here. You can take inspiration from lua/telescope/actions.lua
+-- custom actions, which can be combined with other actions like the built-in ones
+local my_actions = transform_mod({
+  print_bufnr = function(prompt_bufnr)
+    print("Prompt_bufnr: " .. prompt_bufnr)
+    -- Enter your function logic here. You can take inspiration from lua/telescope/actions/init.lua
   end,
 })
+
+require('telescope').setup{
+  defaults = {
+    mappings = {
+      i = { ["<C-o>"] = my_actions.print_bufnr + actions.close },
+    },
+  },
+}
 ```
 
 To remap telescope mappings, please read `:help telescope.defaults.mappings`.
-To do picker specific mappings, its suggested to do this with the `pickers`
-table in `telescope.setup`. Each picker accepts a `mappings` table like its
-explained in `:help telescope.defaults.mappings`.
+To do picker specific mappings, it is suggested to do this with the `pickers`
+table in `telescope.setup`. Each picker accepts a `mappings` table as explained
+in `:help telescope.defaults.mappings`.
 
 ## Pickers
 
@@ -225,7 +226,7 @@ Built-in functions. Ready to be bound to any key you like.
 
 | Functions             | Description                                                                                                                                                              |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `builtin.find_files`  | Lists files in your current working directory, respects .gitignore                                                                                                       |
+| `builtin.find_files`  | Lists files in your current working directory, respects .gitignore (alias: `builtin.fd`)                                                                                 |
 | `builtin.git_files`   | Fuzzy search through the output of `git ls-files` command, respects .gitignore                                                                                           |
 | `builtin.grep_string` | Searches for the string under your cursor or selection in your current working directory                                                                                 |
 | `builtin.live_grep`   | Search for a string in your current working directory and get results live as you type, respects .gitignore. (Requires [ripgrep](https://github.com/BurntSushi/ripgrep)) |
@@ -235,7 +236,7 @@ Built-in functions. Ready to be bound to any key you like.
 | Functions                           | Description                                                                                                                                                 |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `builtin.buffers`                   | Lists open buffers in current neovim instance                                                                                                               |
-| `builtin.oldfiles`                  | Lists previously open files                                                                                                                                 |
+| `builtin.oldfiles`                  | Lists previously opened files                                                                                                                                 |
 | `builtin.commands`                  | Lists available plugin/user commands and runs them on `<cr>`                                                                                                |
 | `builtin.tags`                      | Lists tags in current directory with tag location file preview (users are required to run ctags -R to generate tags or update when introducing new changes) |
 | `builtin.command_history`           | Lists commands that were executed recently, and reruns them on `<cr>`                                                                                       |
@@ -245,14 +246,15 @@ Built-in functions. Ready to be bound to any key you like.
 | `builtin.marks`                     | Lists vim marks and their value                                                                                                                             |
 | `builtin.colorscheme`               | Lists available colorschemes and applies them on `<cr>`                                                                                                     |
 | `builtin.quickfix`                  | Lists items in the quickfix list                                                                                                                            |
-| `builtin.quickfixhistory`           | Lists all quickfix lists in your history and open them with `builtin.quickfix` or quickfix window                                                           |
+| `builtin.quickfixhistory`           | Lists all quickfix lists in your history and opens them with `builtin.quickfix` or in the quickfix window (`<C-q>`)                                         |
 | `builtin.loclist`                   | Lists items from the current window's location list                                                                                                         |
-| `builtin.jumplist`                  | Lists Jump List entries                                                                                                                                     |
+| `builtin.jumplist`                  | Lists jump list entries                                                                                                                                     |
+| `builtin.tagstack`                  | Lists the tag stack of the current window                                                                                                                   |
 | `builtin.vim_options`               | Lists vim options, allows you to edit the current value on `<cr>`                                                                                           |
 | `builtin.registers`                 | Lists vim registers, pastes the contents of the register on `<cr>`                                                                                          |
 | `builtin.autocommands`              | Lists vim autocommands and goes to their declaration on `<cr>`                                                                                              |
 | `builtin.spell_suggest`             | Lists spelling suggestions for the current word under the cursor, replaces word with selected suggestion on `<cr>`                                          |
-| `builtin.keymaps`                   | Lists normal mode keymappings                                                                                                                               |
+| `builtin.keymaps`                   | Lists keymappings (normal, insert, command-line and visual mode by default)                                                                                 |
 | `builtin.filetypes`                 | Lists all available filetypes                                                                                                                               |
 | `builtin.highlights`                | Lists all available highlights                                                                                                                              |
 | `builtin.current_buffer_fuzzy_find` | Live fuzzy search inside of the currently open buffer                                                                                                       |
@@ -268,12 +270,12 @@ Built-in functions. Ready to be bound to any key you like.
 | `builtin.lsp_incoming_calls`            | Lists LSP incoming calls for word under the cursor                                                                         |
 | `builtin.lsp_outgoing_calls`            | Lists LSP outgoing calls for word under the cursor                                                                         |
 | `builtin.lsp_document_symbols`          | Lists LSP document symbols in the current buffer                                                                           |
-| `builtin.lsp_workspace_symbols`         | Lists LSP document symbols in the current workspace                                                                        |
-| `builtin.lsp_dynamic_workspace_symbols` | Dynamically Lists LSP for all workspace symbols                                                                            |
-| `builtin.diagnostics`                   | Lists Diagnostics for all open buffers or a specific buffer. Use option `bufnr=0` for current buffer.                      |
-| `builtin.lsp_implementations`           | Goto the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope          |
-| `builtin.lsp_definitions`               | Goto the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope             |
-| `builtin.lsp_type_definitions`          | Goto the definition of the type of the word under the cursor, if there's only one, otherwise show all options in Telescope |
+| `builtin.lsp_workspace_symbols`         | Lists LSP workspace symbols in the current workspace                                                                        |
+| `builtin.lsp_dynamic_workspace_symbols` | Dynamically lists LSP workspace symbols                                                                            |
+| `builtin.diagnostics`                   | Lists diagnostics for all open buffers or a specific buffer. Use option `bufnr=0` for current buffer.                      |
+| `builtin.lsp_implementations`           | Go to the implementation of the word under the cursor if there's only one, otherwise show all options in Telescope          |
+| `builtin.lsp_definitions`               | Go to the definition of the word under the cursor, if there's only one, otherwise show all options in Telescope             |
+| `builtin.lsp_type_definitions`          | Go to the definition of the type of the word under the cursor, if there's only one, otherwise show all options in Telescope |
 
 ### Git Pickers
 
@@ -282,23 +284,31 @@ Built-in functions. Ready to be bound to any key you like.
 | `builtin.git_commits`        | Lists git commits with diff preview, checkout action `<cr>`, reset mixed `<C-r>m`, reset soft `<C-r>s` and reset hard `<C-r>h`                                                                        |
 | `builtin.git_bcommits`       | Lists buffer's git commits with diff preview and checks them out on `<cr>`                                                                                                                            |
 | `builtin.git_bcommits_range` | Lists buffer's git commits in a range of lines. Use options `from` and `to` to specify the range. In visual mode, lists commits for the selected lines                                                |
-| `builtin.git_branches`       | Lists all branches with log preview, checkout action `<cr>`, track action `<C-t>`, rebase action`<C-r>`, create action `<C-a>`, switch action `<C-s>`, delete action `<C-d>` and merge action `<C-y>` |
-| `builtin.git_status`         | Lists current changes per file with diff preview and add action. (Multi-selection still WIP)                                                                                                          |
+| `builtin.git_branches`       | Lists all branches with log preview, checkout action `<cr>`, track action `<C-t>`, rebase action `<C-r>`, create action `<C-a>`, switch action `<C-s>`, delete action `<C-d>` and merge action `<C-y>` |
+| `builtin.git_status`         | Lists current changes per file with diff preview, stage/unstage action `<Tab>`                                                                                                                         |
 | `builtin.git_stash`          | Lists stash items in current repository with ability to apply them on `<cr>`                                                                                                                          |
 
 ### Treesitter Picker
 
 | Functions            | Description                                       |
 | -------------------- | ------------------------------------------------- |
-| `builtin.treesitter` | Lists Function names, variables, ... using treesitter [`locals` queries](https://github.com/nvim-treesitter/nvim-treesitter/blob/main/CONTRIBUTING.md#locals) |
+| `builtin.treesitter` | Lists function names, variables, ... using treesitter [`locals` queries](https://github.com/nvim-treesitter/nvim-treesitter/blob/main/CONTRIBUTING.md#locals) |
 
 ### Lists Picker
 
 | Functions          | Description                                                                                                                                                                               |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `builtin.builtin`  | Lists Built-in pickers and run them on `<cr>`.                                                                                                                                            |
-| `builtin.reloader` | Lists Lua modules and reload them on `<cr>`.                                                                                                                                              |
+| `builtin.builtin`  | Lists built-in pickers and runs them on `<cr>`.                                                                                                                                            |
+| `builtin.reloader` | Lists Lua modules and reloads them on `<cr>`.                                                                                                                                              |
 | `builtin.symbols`  | Lists symbols inside a file `data/telescope-sources/*.json` found in your rtp. More info and symbol sources can be found [here](https://github.com/nvim-telescope/telescope-symbols.nvim) |
+| `builtin.ui_select` | Lets the user choose one of a list of items, like `vim.ui.select()` (see below)                                                                                                         |
+
+To use telescope for `vim.ui.select()` (e.g. for LSP code actions), configured
+like the other pickers under `pickers.ui_select`:
+
+```lua
+vim.ui.select = require('telescope').ui_select
+```
 
 ## Previewers
 
@@ -311,20 +321,22 @@ Built-in functions. Ready to be bound to any key you like.
 | `previewers.vimgrep.new`            | Terminal previewer for grep and similar. Uses `cat`/`bat` |
 | `previewers.qflist.new`             | Terminal previewer for qflist. Uses `cat`/`bat`           |
 
-The default previewers are from now on `vim_buffer_` previewers. They use vim
-buffers for displaying files and use tree-sitter or regex for file highlighting.
+The default previewers are the `vim_buffer_` previewers. They use vim buffers
+for displaying files and use tree-sitter or regex for file highlighting.
 
 These previewers are using `vim.filetype` to guess the filetype for the
-selected file. The guessing is done by inspecting the filename, the head of the
-file(shebang) and the tail of the file (modeline). If you have trouble with
-filetype detection you should read `:help vim.filetype`.
+selected file from its name (not from its content, such as a shebang or a
+modeline). If you have trouble with filetype detection, add patterns with
+`vim.filetype.add()` (see `:help vim.filetype`).
 
 We need to do it manually because we can't determine the filetype in the
 traditional way: We don't do `bufload` and instead read the file asynchronously
 with `vim.uv.fs_` and attach only a highlighter; otherwise the speed of the
 previewer would slow down considerably.
 
-If you want to configure the `vim_buffer_` previewer (e.g. you want the line to wrap), do this:
+If you want to configure the `vim_buffer_` previewer (e.g. you want line
+numbers, or lines to wrap), use the `TelescopePreviewerLoaded` autocmd; it runs
+in the preview window after an entry is shown:
 
 ```lua
 vim.api.nvim_create_autocmd("User", {
@@ -332,32 +344,33 @@ vim.api.nvim_create_autocmd("User", {
   callback = function(args)
     if args.data.filetype ~= "help" then
       vim.wo.number = true
-    elseif args.data.bufname:match("*.csv") then
-      vim.wo.wrap = false
+    end
+    if args.data.bufname:match("%.csv$") then
+      vim.wo.wrap = true
     end
   end,
 })
 ```
 
-A data field is passed to the callback, which contains the filetype and the buffer name.
-
-```lua
-{
-  title: string, # preview window title
-  filetype: string,
-  bufname: string,
-}
-```
+`args.data` contains `title` (the preview window title), `filetype` and
+`bufname` of the preview.
 
 ## Sorters
 
-| Sorters                            | Description                                                     |
-| ---------------------------------- | --------------------------------------------------------------- |
-| `sorters.get_fuzzy_file`           | Telescope's default sorter for files                            |
-| `sorters.get_generic_fuzzy_sorter` | Telescope's default sorter for everything else                  |
-| `sorters.get_levenshtein_sorter`   | Using Levenshtein distance algorithm (don't use :D)             |
-| `sorters.get_fzy_sorter`           | Using fzy algorithm                                             |
-| `sorters.fuzzy_with_index_bias`    | Used to list stuff with consideration to when the item is added |
+| Sorters                            | Description                                                                    |
+| ---------------------------------- | ------------------------------------------------------------------------------ |
+| `sorters.get_fzy_sorter`           | Telescope's default sorter (files and everything else), fzy algorithm         |
+| `sorters.get_fuzzy_file`           | n-gram based fuzzy sorter for files                                            |
+| `sorters.get_generic_fuzzy_sorter` | n-gram based fuzzy sorter                                                      |
+| `sorters.fuzzy_with_index_bias`    | Used to list stuff with consideration to when the item is added                |
+| `sorters.get_levenshtein_sorter`   | Using Levenshtein distance algorithm (don't use :D)                            |
+
+The default sorter understands [fzf's query syntax](https://github.com/junegunn/fzf#search-syntax):
+space-separated terms must all match, `'wild` matches exactly, `^music` and
+`.mp3$` match prefixes and suffixes, `!fire` excludes, and `|` separates
+alternatives. The picker option `case_mode` (`"ignore_case"` (default),
+`"respect_case"`, `"smart_case"`) controls case sensitivity. See `:help
+telescope.defaults.generic_sorter`.
 
 A `Sorter` is called by the `Picker` on each item returned by the `Finder`. It
 returns a number, which is equivalent to the "distance" between the current
@@ -368,7 +381,7 @@ returns a number, which is equivalent to the "distance" between the current
 Layout can be configured by choosing a specific `layout_strategy` and
 specifying a particular `layout_config` for that strategy.
 For more details on available strategies and configuration options,
-see `:help telescope.layout`.
+see `:help telescope.layout_strategies`.
 
 Some options for configuring sizes in layouts are "resolvable". This means that
 they can take different forms, and will be interpreted differently according to
@@ -404,23 +417,26 @@ require('telescope').setup({
 
 ## Themes
 
-Common groups of settings can be set up to allow for themes.
-We have some built in themes but are looking for more cool options.
+Common groups of settings can be set up to allow for themes. Several alternative themes are provided:
 
 ![dropdown](https://i.imgur.com/SorAcXv.png)
 
 | Themes                | Description                                                                                 |
 | --------------------- | ------------------------------------------------------------------------------------------- |
-| `themes.get_dropdown` | A list like centered list. [dropdown](https://i.imgur.com/SorAcXv.png)                      |
+| `themes.get_dropdown` | A centered, list-like layout. [dropdown](https://i.imgur.com/SorAcXv.png)                      |
 | `themes.get_cursor`   | [A cursor relative list.](https://github.com/nvim-telescope/telescope.nvim/pull/878)        |
 | `themes.get_ivy`      | Bottom panel overlay. [Ivy #771](https://github.com/nvim-telescope/telescope.nvim/pull/771) |
 
 To use a theme, simply append it to a builtin function:
 
-```vim
-nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({}))<cr>
-" Change an option
-nnoremap <Leader>f :lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({ winblend = 10 }))<cr>
+```lua
+vim.keymap.set('n', '<Leader>f', function()
+  require('telescope.builtin').find_files(require('telescope.themes').get_dropdown({}))
+end)
+-- Change an option
+vim.keymap.set('n', '<Leader>f', function()
+  require('telescope.builtin').find_files(require('telescope.themes').get_dropdown({ winblend = 10 }))
+end)
 ```
 
 Or use with a command:
@@ -466,30 +482,33 @@ tab completions and setting options.
 " Setting options
 :Telescope find_files prompt_prefix=🔍
 
-" If the option accepts a Lua table as its value, you can use, to connect each
+" If the option accepts a Lua table as its value, you can use `,` to connect each
 " command string, e.g.: find_command, vimgrep_arguments are both options that
 " accept a Lua table as a value. So, you can configure them on the command line
-"like so:
+" like so:
 :Telescope find_files find_command=rg,--ignore,--hidden,--files prompt_prefix=🔍
 ```
 
-for more information and how to realize more complex commands please read
+For more information and how to realize more complex commands please read
 `:help telescope.command`.
 
 ## Autocmds
 
-Telescope user autocmds:
+Telescope triggers the following `User` autocommands:
 
-| Event                           | Description                                             |
-| ------------------------------- | ------------------------------------------------------- |
-| `User TelescopeFindPre`         | Do it before Telescope creates all the floating windows |
-| `User TelescopePreviewerLoaded` | Do it after Telescope previewer window is created       |
-| `User TelescopeResumePost`      | Do it after Telescope resume action is fully completed  |
+| Event                           | Description                                                                   |
+| ------------------------------- | ----------------------------------------------------------------------------- |
+| `User TelescopeFindPre`         | Before Telescope creates all the floating windows                             |
+| `User TelescopePreviewerLoaded` | After a buffer previewer has shown an entry (see [Previewers](#previewers))  |
+| `User TelescopeResumePost`      | After `builtin.resume` has restored a picker                                  |
+| `User TelescopeKeymap`          | After an action mapped in the prompt buffer has run                           |
+
+All are `User` events; use the name (e.g. `TelescopePreviewerLoaded`) as the `pattern`.
 
 ## Extensions
 
-Telescope provides the capabilities to create & register extensions, which
-improves telescope in a variety of ways.
+Telescope provides the capabilities to create and register extensions, which
+improve telescope in a variety of ways.
 
 Some extensions provide integration with external tools, outside of the scope of
 `builtins`. Others add new pickers or change how results are sorted.
@@ -531,8 +550,8 @@ require('telescope').extensions.dap.configurations()
 
 ## API
 
-For writing your own picker and for information about the API please read the
-[Developers Documentation](developers.md).
+For writing your own picker and for information about the API, please read
+[DEVELOPERS.md](DEVELOPERS.md).
 
 ## Media
 
@@ -545,7 +564,7 @@ For writing your own picker and for information about the API please read the
 ## Contributing
 
 All contributions are welcome! Just open a pull request.
-Please read [CONTRIBUTING.md](./CONTRIBUTING.md)
+Please read [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Related Projects
 

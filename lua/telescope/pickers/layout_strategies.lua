@@ -186,12 +186,12 @@ end
 
 -- List of options that are shared by more than one layout.
 local shared_options = {
-  width = { "How wide to make Telescope's entire layout", "See |resolver.resolve_width()|" },
-  height = { "How tall to make Telescope's entire layout", "See |resolver.resolve_height()|" },
+  width = { "How wide to make Telescope's entire layout", "See |telescope.resolve.resolve_width()|" },
+  height = { "How tall to make Telescope's entire layout", "See |telescope.resolve.resolve_height()|" },
   mirror = "Flip the location of the results/prompt and preview windows",
-  scroll_speed = "The number of lines to scroll through the previewer",
+  scroll_speed = "The number of lines to scroll through the previewer and the results (default: half the window height)",
   prompt_position = { "Where to place prompt window.", "Available Values: 'bottom', 'top'" },
-  anchor = { "Which edge/corner to pin the picker to", "See |resolver.resolve_anchor_pos()|" },
+  anchor = { "Which edge/corner to pin the picker to", "See |telescope.resolve.resolve_anchor_pos()|" },
   anchor_padding = {
     "Specifies an amount of additional padding around the anchor",
     "Values should be a positive integer",
@@ -295,7 +295,7 @@ end
 layout_strategies.horizontal = make_documented_layout(
   "horizontal",
   vim.tbl_extend("error", shared_options, {
-    preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|" },
+    preview_width = { "Change the width of Telescope's preview window", "See |telescope.resolve.resolve_width()|" },
     preview_cutoff = "When columns are less than this value, the preview will be disabled",
   }),
   function(self, max_columns, max_lines, layout_config)
@@ -402,7 +402,7 @@ layout_strategies.horizontal = make_documented_layout(
 --- The preview window is then placed in the remaining
 --- space above or below, according to `anchor` or `mirror`.
 --- Particularly useful for creating dropdown menus
---- (see |telescope.themes| and |themes.get_dropdown()|).
+--- (see |telescope.themes| and |telescope.themes.get_dropdown()|).
 ---
 --- Note that vertical anchoring, i.e. `anchor` containing
 --- `"N"` or `"S"`, will override `mirror` config. For `"N"`
@@ -439,7 +439,7 @@ layout_strategies.center = make_documented_layout(
     height = {
       "Controls the height of the results window in the center layout.",
       "Does not control the entire layout height — setting this too high can shrink or obscure the preview window.",
-      "See |resolver.resolve_height()|",
+      "See |telescope.resolve.resolve_height()|",
     },
   }),
   function(self, max_columns, max_lines, layout_config)
@@ -570,7 +570,7 @@ layout_strategies.cursor = make_documented_layout(
     height = shared_options.height,
     scroll_speed = shared_options.scroll_speed,
   }, {
-    preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|" },
+    preview_width = { "Change the width of Telescope's preview window", "See |telescope.resolve.resolve_width()|" },
     preview_cutoff = "When columns are less than this value, the preview will be disabled",
   }),
   function(self, max_columns, max_lines, layout_config)
@@ -676,7 +676,7 @@ layout_strategies.vertical = make_documented_layout(
   "vertical",
   vim.tbl_extend("error", shared_options, {
     preview_cutoff = "When lines are less than this value, the preview will be disabled",
-    preview_height = { "Change the height of Telescope's preview window", "See |resolver.resolve_height()|" },
+    preview_height = { "Change the height of Telescope's preview window", "See |telescope.resolve.resolve_height()|" },
   }),
   function(self, max_columns, max_lines, layout_config)
     local initial_options = p_window.get_initial_window_options(self)
@@ -771,8 +771,9 @@ layout_strategies.vertical = make_documented_layout(
   end
 )
 
---- Flex layout swaps between `horizontal` and `vertical` strategies based on the window width
----  -  Supports |layout_strategies.vertical| or |layout_strategies.horizontal| features
+--- Flex layout swaps between `horizontal` and `vertical` strategies based on the window size: vertical if there
+--- are fewer than `flip_columns` columns and at least `flip_lines` lines, horizontal otherwise
+---  -  Supports |telescope.layout_strategies.vertical| or |telescope.layout_strategies.horizontal| features
 ---
 ---@eval return require("telescope.pickers.layout_strategies")._format("flex")
 ---
@@ -780,7 +781,7 @@ layout_strategies.flex = make_documented_layout(
   "flex",
   vim.tbl_extend("error", shared_options, {
     flip_columns = "The number of columns required to move to horizontal mode",
-    flip_lines = "The number of lines required to move to horizontal mode",
+    flip_lines = "The number of lines required to move to vertical mode",
     vertical = "Options to pass when switching to vertical layout",
     horizontal = "Options to pass when switching to horizontal layout",
   }),
@@ -860,11 +861,13 @@ end)
 
 --- Bottom pane can be used to create layouts similar to "ivy".
 ---
---- For an easy ivy configuration, see |themes.get_ivy()|
+--- For an easy ivy configuration, see |telescope.themes.get_ivy()|
+---
+---@eval return require("telescope.pickers.layout_strategies")._format("bottom_pane")
 layout_strategies.bottom_pane = make_documented_layout(
   "bottom_pane",
   vim.tbl_extend("error", shared_options, {
-    preview_width = { "Change the width of Telescope's preview window", "See |resolver.resolve_width()|" },
+    preview_width = { "Change the width of Telescope's preview window", "See |telescope.resolve.resolve_width()|" },
     preview_cutoff = "When columns are less than this value, the preview will be disabled",
   }),
   function(self, max_columns, max_lines, layout_config)

@@ -37,6 +37,16 @@
 --- :Telescope find_files layout_config={ "prompt_position" : "top" }
 --- ```
 --- as there are spaces in the option.
+---
+--- The values of `find_command`, `vimgrep_arguments`, `sections`, `search_dirs`, `symbols` and
+--- `ignore_symbols` can be given as comma-separated lists:
+--- ```vim
+--- :Telescope find_files find_command=rg,--files,--hidden
+--- ```
+---
+--- `theme=dropdown` (or `cursor`, `ivy`) applies a theme, see |telescope.themes|. `:Telescope`
+--- without arguments opens |telescope.builtin.builtin()|; pickers of extensions are called as
+--- `:Telescope <extension> <picker> ...`.
 
 local themes = require("telescope.themes")
 local builtin = require("telescope.builtin")

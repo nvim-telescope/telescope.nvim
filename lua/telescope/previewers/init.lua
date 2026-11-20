@@ -18,6 +18,10 @@
 --- - `previewers.vim_buffer_vimgrep`
 --- - `previewers.vim_buffer_qflist`
 ---
+--- These are tables with a constructor: create a previewer with
+--- `previewers.vim_buffer_cat.new(opts)` (or `previewers.vim_buffer_cat(opts)`).
+--- The constructors return `false` if previews are disabled (`preview = false`).
+---
 --- Previewers can be disabled for any builtin or custom picker by doing
 --- <br>
 --- `:Telescope find_files previewer=false`
@@ -50,12 +54,13 @@ local previewers = {}
 --- - `:scroll_horizontal_fn(direction)`
 ---
 --- `Previewer:new()` expects a table as input with following keys:
---- - `setup` function(self): Will be called the first time preview will be called.
+--- - `setup` function(self, status): Will be called the first time preview will be called.
+---                                   Its return value becomes `self.state`.
 --- - `teardown` function(self): Will be called on clean up.
 --- - `preview_fn` function(self, entry, status): Will be called each time
 ---                                               a new entry was selected.
---- - `title` function(self): Will return the static title of the previewer.
---- - `dynamic_title` function(self, entry): Will return the dynamic title of
+--- - `title` string|function(self): The static title of the previewer.
+--- - `dyn_title` function(self, entry): Will return the dynamic title of
 ---                                          the previewer. Will only be called
 ---                                          when config value dynamic_preview_title
 ---                                          is true.
@@ -91,8 +96,12 @@ end
 --- - `dyn_title(self, entry)` a dynamic title function which gets called
 --- when config value `dynamic_preview_title = true`
 --- - `env` table: define environment variables to forward to the terminal
----    process. Example:
+---    process (default: |telescope.defaults.set_env|). Example:
 ---   - `{ ['PAGER'] = '', ['MANWIDTH'] = 50 }`
+--- - `cwd` string: working directory of the command (default: the cwd)
+--- - `send_input(self, input)`: send keys to the terminal (default: to the job)
+--- - `scroll_fn(self, direction)`: scroll the preview (default: sends `d`/`u`
+---   with a count, as for `less`)
 ---
 --- It's an easy way to get your first previewer going and it integrates well
 --- with `bat` and `less`. Providing out of the box scrolling if the command
@@ -109,7 +118,7 @@ previewers.new_termopen_previewer = term_previewer.new_termopen_previewer
 --- `path` or `filename` in order to make this previewer work.
 ---
 --- The preferred way of using this previewer is like this
---- `require('telescope.config').values.cat_previewer`
+--- `require('telescope.config').values.file_previewer`
 --- This will respect user configuration and will use `buffer_previewers` in
 --- case it's configured that way.
 ---@param opts table options
@@ -129,9 +138,9 @@ previewers.vimgrep = term_previewer.vimgrep
 
 --- Provides a `termopen_previewer` which has the ability to display files at
 --- the provided line or range. It has support for `bat`(prioritized) and
---- `cat`. Each entry has to provide either the field `path` or `filename`,
---- `lnum` and a `start` and `finish` range in order to make this previewer
---- work.
+--- `cat`. Each entry has to provide either the field `path` or `filename`
+--- and `lnum`, and can provide a `start` and `finish` range (default: half
+--- the preview height around `lnum`).
 ---
 --- The preferred way of using this previewer is like this
 --- `require('telescope.config').values.qflist_previewer`
@@ -244,7 +253,8 @@ previewers.new_buffer_previewer = buffer_previewer.new_buffer_previewer
 --- and provides a callback which can be used, to jump to a line in the buffer.
 ---@param filepath string: String to the filepath, will be expanded
 ---@param bufnr integer: Where the content will be written
----@param opts table: keys: `use_ft_detect`, `bufname` and `callback`
+---@param opts table: keys: `use_ft_detect`, `bufname`, `callback`, `winid` (for messages in the preview
+--- window), `ft`, `file_encoding` and `preview` (the |telescope.defaults.preview| options)
 previewers.buffer_previewer_maker = buffer_previewer.file_maker
 
 --- A previewer that is used to display a file. It uses the `buffer_previewer`
@@ -314,7 +324,7 @@ previewers.git_commit_diff_as_was = buffer_previewer.git_commit_diff_as_was
 previewers.git_commit_message = buffer_previewer.git_commit_message
 
 --- A previewer that shows the current diff of a file. Used in git_status.<br>
---- The run command is `git --no-pager diff $FILE`
+--- The run command is `git --no-pager diff HEAD -- $FILE`; untracked and added files are shown as they are
 ---@param opts table options
 previewers.git_file_diff = buffer_previewer.git_file_diff
 

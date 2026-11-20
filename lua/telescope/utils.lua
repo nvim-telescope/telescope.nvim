@@ -340,7 +340,9 @@ utils.path_smart = (function()
   end
 end)()
 
--- Also accepts backslashes on Windows (extensions may pass native paths)
+--- Returns the last component of `path` (the part after the last `/`; also `\` on Windows).
+---@param path string
+---@return string
 utils.path_tail = function(path)
   for i = #path, 1, -1 do
     local c = path:byte(i)
@@ -640,7 +642,7 @@ utils.get_devicons = load_once(function()
 end)
 
 --- Telescope Wrapper around vim.notify
----@param funname string: name of the function that will be
+---@param funname string: name of the function, shown as the message prefix `[telescope.<funname>]`
 ---@param opts table: opts.level string, opts.msg string, opts.once bool
 utils.notify = function(funname, opts)
   opts.once = vim.nonnil(opts.once, false)

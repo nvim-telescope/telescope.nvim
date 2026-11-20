@@ -21,7 +21,7 @@
 --- end
 --- ```
 ---
---- See |telescope.actions.state| for more information.
+--- See |telescope.actions_state| for more information.
 ---
 --- (2) To transform a module of functions into a module of "action"s, you need
 --- to do the following:
@@ -46,9 +46,9 @@
 --- ```
 ---
 --- Another interesting thing to do is that these actions now have functions you
---- can call. These functions include `:replace(f)`, `:replace_if(f, c)`,
+--- can call. These functions include `:replace(f)`, `:replace_if(c, f)`,
 --- `replace_map(tbl)` and `enhance(tbl)`. More information on these functions
---- can be found in the `developers.md` and `tests/automated/action_spec.lua`
+--- can be found in the `DEVELOPERS.md` and `tests/automated/action_spec.lua`
 --- file.
 
 local fn = vim.fn
@@ -367,6 +367,8 @@ actions.file_tab = function(prompt_bufnr)
   return action_set.edit(prompt_bufnr, "tabedit")
 end
 
+--- Accept the completion of the popup menu if it is visible (`<C-y>`)
+---@param _ integer: The prompt bufnr
 actions.close_pum = function(_)
   if 0 ~= fn.pumvisible() then
     api.nvim_feedkeys(vim.keycode("<C-y>"), "n", true)
@@ -1146,7 +1148,7 @@ actions.open_qflist = function(_prompt_bufnr)
 end
 
 --- Open the location list. It makes sense to use this in combination with one of the send_to_loclist actions
---- `actions.smart_send_to_qflist + actions.open_qflist`
+--- `actions.smart_send_to_loclist + actions.open_loclist`
 ---@param prompt_bufnr integer: The prompt bufnr
 actions.open_loclist = function(_prompt_bufnr)
   vim.cmd.lopen()
@@ -1205,8 +1207,8 @@ actions.cycle_previewers_prev = function(prompt_bufnr)
   action_state.get_current_picker(prompt_bufnr):cycle_previewers(-1)
 end
 
---- Removes the selected picker in |builtin.pickers|.<br>
---- This action is not mapped by default and only intended for |builtin.pickers|.
+--- Removes the selected picker in |telescope.builtin.pickers()|.<br>
+--- It is mapped to `<C-x>` in |telescope.builtin.pickers()| and only intended for that picker.
 ---@param prompt_bufnr integer: The prompt bufnr
 actions.remove_selected_picker = function(prompt_bufnr)
   local curr_picker = action_state.get_current_picker(prompt_bufnr)
@@ -1234,7 +1236,7 @@ actions.remove_selected_picker = function(prompt_bufnr)
 end
 
 --- Display the keymaps of registered actions similar to which-key.nvim.<br>
----@note The defaults can be overridden via |action_generate.which_key|.
+---@note The defaults can be overridden via |telescope.actions_generate.which_key()|.
 ---@param prompt_bufnr integer: The prompt bufnr
 actions.which_key = function(prompt_bufnr, opts)
   opts = opts or {}
@@ -1518,8 +1520,13 @@ actions.insert_original_cline = function(prompt_bufnr)
   current_picker:set_prompt(current_picker.original_cline, false)
 end
 
+--- Do nothing; map a key to this to disable it (e.g. `<C-j>` in normal mode by default)
+---@param _ integer: The prompt bufnr
 actions.nop = function(_) end
 
+--- Select the clicked result, or run |telescope.actions.select_default()| for a click into the previewer
+--- (mapped to `<LeftMouse>` by default)
+---@param prompt_bufnr integer: The prompt bufnr
 actions.mouse_click = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
 
@@ -1537,6 +1544,9 @@ actions.mouse_click = function(prompt_bufnr)
   return ""
 end
 
+--- Select the double-clicked result and run |telescope.actions.select_default()| (mapped to
+--- `<2-LeftMouse>` by default)
+---@param prompt_bufnr integer: The prompt bufnr
 actions.double_mouse_click = function(prompt_bufnr)
   local picker = action_state.get_current_picker(prompt_bufnr)
 

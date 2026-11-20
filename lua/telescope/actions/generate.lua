@@ -3,6 +3,7 @@
 ---
 --- General usage:
 --- ```lua
+--- local action_generate = require("telescope.actions.generate")
 --- require("telescope").setup {
 ---   defaults = {
 ---     mappings = {
@@ -28,30 +29,30 @@ local M = {}
 
 ---@inlinedoc
 ---@class telescope.actions.generate.which_key.opts
----@field max_height number: % of max. height or no. of rows for hints (default: 0.4), see |resolver.resolve_height()|
----@field only_show_current_mode boolean: only show keymaps for the current mode (default: true)
----@field mode_width integer: fixed width of mode to be shown (default: 1)
----@field keybind_width integer: fixed width of keybind to be shown (default: 7)
----@field name_width integer: fixed width of action name to be shown (default: 30)
----@field column_padding string: string to split; can be used for vertical separator (default: "  ")
----@field mode_hl string: hl group of mode (default: TelescopeResultsConstant)
----@field keybind_hl string: hl group of keybind (default: TelescopeResultsVariable)
----@field name_hl string: hl group of action name (default: TelescopeResultsFunction)
----@field column_indent integer: number of left-most spaces before keybinds are shown (default: 4)
----@field line_padding integer: row padding in top and bottom of float (default: 1)
----@field separator string: separator string between mode, key bindings, and action (default: " -> ")
----@field close_with_action boolean: registered action will close keymap float (default: true)
----@field normal_hl string: winhl of "Normal" for keymap hints floating window (default: "TelescopePrompt")
----@field border_hl string: winhl of "Normal" for keymap borders (default: "TelescopePromptBorder")
----@field winblend integer: pseudo-transparency of keymap hints floating window
----@field zindex integer: z-index of keymap hints floating window (default: 100)
+---@field max_height? number: % of max. height or no. of rows for hints (default: 0.4), see |telescope.resolve.resolve_height()|
+---@field only_show_current_mode? boolean: only show keymaps for the current mode (default: true)
+---@field mode_width? integer: fixed width of mode to be shown (default: 1)
+---@field keybind_width? integer: fixed width of keybind to be shown (default: 7)
+---@field name_width? integer: fixed width of action name to be shown (default: 30)
+---@field column_padding? string: string to split; can be used for vertical separator (default: "  ")
+---@field mode_hl? string: hl group of mode (default: TelescopeResultsConstant)
+---@field keybind_hl? string: hl group of keybind (default: TelescopeResultsVariable)
+---@field name_hl? string: hl group of action name (default: TelescopeResultsFunction)
+---@field column_indent? integer: number of left-most spaces before keybinds are shown (default: 4)
+---@field line_padding? integer: row padding in top and bottom of float (default: 1)
+---@field separator? string: separator string between mode, key bindings, and action (default: " -> ")
+---@field close_with_action? boolean: registered action will close keymap float (default: true)
+---@field normal_hl? string: winhl of "Normal" for keymap hints floating window (default: "TelescopePrompt")
+---@field border_hl? string: winhl of "Normal" for keymap borders (default: "TelescopePromptBorder")
+---@field winblend? integer: pseudo-transparency of keymap hints floating window (default: |telescope.defaults.winblend|)
+---@field zindex? integer: z-index of keymap hints floating window (default: 100)
 
 --- Display the keymaps of registered actions similar to which-key.nvim.
 --- - Floating window:
 ---   - Appears on the opposite side of the prompt.
 ---   - Resolves to minimum required number of lines to show hints with `opts` or truncates entries at `max_height`.
 ---   - Closes automatically on action call and can be disabled with by setting `close_with_action` to false.
----@param opts table: options to pass to toggling registered actions
+---@param opts? telescope.actions.generate.which_key.opts: options to pass to toggling registered actions
 M.which_key = function(opts)
   local which_key = function(prompt_bufnr)
     actions.which_key(prompt_bufnr, opts)
@@ -59,8 +60,26 @@ M.which_key = function(opts)
   return which_key
 end
 
+---@inlinedoc
+---@class telescope.actions.generate.refine.opts
+---@field prompt_title? string: new title of the prompt window
+---@field results_title? string: new title of the results window
+---@field sorter? table|false: new sorter (default: |telescope.defaults.generic_sorter|; `false` keeps the current one)
+---@field prompt_to_prefix? boolean: move the current prompt into the prompt prefix (default: false)
+---@field prompt_prefix? string: prompt prefix (default: |telescope.defaults.prompt_prefix|)
+---@field prompt_hl_group? string: highlight group of the prompt prefix (default: "TelescopePromptPrefix")
+---@field reset_multi_selection? boolean: drop the multi selection (default: false)
+---@field reset_prompt? boolean: clear the prompt (default: true)
+---@field push_history? boolean: add the current prompt to the history (default: true)
+
+--- Refine the current results: continue with the entries the picker has now as a static list (and optionally
+--- another sorter), e.g. for a fuzzy search over the results of a live grep, see
+--- |telescope.actions.to_fuzzy_refine()|.
+---@param prompt_bufnr integer: The prompt bufnr
+---@param opts? telescope.actions.generate.refine.opts
 M.refine = function(prompt_bufnr, opts)
   opts = opts or {}
+  ---@cast opts table -- also carries the options of `Picker:refresh()`
   opts.prompt_to_prefix = vim.nonnil(opts.prompt_to_prefix, false)
   opts.prefix_hl_group = vim.nonnil(opts.prompt_hl_group, "TelescopePromptPrefix")
   opts.prompt_prefix = vim.nonnil(opts.prompt_prefix, config.values.prompt_prefix)
