@@ -1,8 +1,8 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it = t.describe, t.it
 
-local command = require "telescope.command"
+local command = require("telescope.command")
 
 local eq = assert.eq
 

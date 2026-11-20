@@ -1,5 +1,3 @@
 .deps
 build/
 doc/tags
-
-.luacheckcache

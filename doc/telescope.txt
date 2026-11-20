@@ -947,9 +947,9 @@ builtin.treesitter({opts})                    *telescope.builtin.treesitter()*
       • {opts}  (`table?`)
                 • {show_line}? (`boolean`, default: `true`) if true, shows the
                   row:column that the result is found at
-                • {bufnr}? (`number`, default: current buffer) specify the
+                • {bufnr}? (`integer`, default: current buffer) specify the
                   buffer number where treesitter should run.
-                • {symbol_width}? (`number`, default: `25`) defines the width
+                • {symbol_width}? (`integer`, default: `25`) defines the width
                   of the symbol section
                 • {symbols}? (`string|table`) filter results by symbol kind(s)
                 • {ignore_symbols}? (`string|table`) list of symbols to ignore
@@ -986,7 +986,7 @@ builtin.tags({opts})                                *telescope.builtin.tags()*
                   info is available, show the kind of the tag
                 • {only_sort_tags}? (`boolean`, default: `false`) if true we
                   will only sort tags
-                • {fname_width}? (`number`, default: `30`) defines the width
+                • {fname_width}? (`integer`, default: `30`) defines the width
                   of the filename section
 
                                      *telescope.builtin.current_buffer_tags()*
@@ -1005,7 +1005,7 @@ builtin.current_buffer_tags({opts})
                   info is available, show the kind of the tag
                 • {only_sort_tags}? (`boolean`, default: `false`) if true we
                   will only sort tags
-                • {fname_width}? (`number`, default: `30`) defines the width
+                • {fname_width}? (`integer`, default: `30`) defines the width
                   of the filename section
 
 builtin.git_files({opts})                      *telescope.builtin.git_files()*
@@ -1087,10 +1087,10 @@ builtin.git_bcommits_range({opts})
 
     Parameters: ~
       • {opts}  (`table?`)
-                • {from}? (`number`, default: current line) the first line
+                • {from}? (`integer`, default: current line) the first line
                   number in the range
-                • {to}? (`number`, default: the value of `from`) the last line
-                  number in the range
+                • {to}? (`integer`, default: the value of `from`) the last
+                  line number in the range
                 • {operator}? (`boolean`, default: `false`) select lines in
                   operator-pending mode
                 • {current_file}? (`string`, default: current buffer) specify
@@ -1176,7 +1176,7 @@ builtin.resume({opts})                            *telescope.builtin.resume()*
 
     Parameters: ~
       • {opts}  (`table?`)
-                • {cache_index}? (`number`, default: `1`) what picker to
+                • {cache_index}? (`integer`, default: `1`) what picker to
                   resume, where 1 denotes most recent
 
 builtin.pickers({opts})                          *telescope.builtin.pickers()*
@@ -1224,7 +1224,7 @@ builtin.quickfix({opts})                        *telescope.builtin.quickfix()*
       • {opts}  (`table?`)
                 • {show_line}? (`boolean`, default: `true`) show results text
                 • {trim_text}? (`boolean`, default: `false`) trim results text
-                • {nr}? (`number`) specify the quickfix list number
+                • {nr}? (`integer`) specify the quickfix list number
 
 builtin.quickfixhistory({opts})          *telescope.builtin.quickfixhistory()*
     Lists all quickfix lists in your history and open them with
@@ -1310,7 +1310,7 @@ builtin.reloader({opts})                        *telescope.builtin.reloader()*
 
     Parameters: ~
       • {opts}  (`table?`)
-                • {column_len}? (`number`, default: dynamic, longest module
+                • {column_len}? (`integer`, default: dynamic, longest module
                   name) define the max column len for the module name
 
 builtin.ui_select({opts})                      *telescope.builtin.ui_select()*
@@ -1349,10 +1349,10 @@ builtin.buffers({opts})                          *telescope.builtin.buffers()*
                   and last buffer to the top and selects the lastused
                 • {sort_mru}? (`boolean`, default: `false`) Sorts all buffers
                   after most recent used. Not just the current and last one
-                • {bufnr_width}? (`number`, default: dynamic) Defines the
+                • {bufnr_width}? (`integer`, default: dynamic) Defines the
                   width of the buffer numbers in front of the filenames
                 • {file_encoding}? (`string`) file encoding for the previewer
-                • {sort_buffers}? (`(fun(buf_a: number, buf_b: number):
+                • {sort_buffers}? (`(fun(buf_a: integer, buf_b: integer):
                   boolean)?`) sort fn(bufnr_a, bufnr_b). true if bufnr_a
                   should go first. Runs after sorting by most recent (if
                   specified)
@@ -1549,11 +1549,11 @@ builtin.lsp_document_symbols({opts})
 
     Parameters: ~
       • {opts}  (`table?`)
-                • {fname_width}? (`number`, default: `30`) defines the width
+                • {fname_width}? (`integer`, default: `30`) defines the width
                   of the filename section
-                • {symbol_width}? (`number`, default: `25`) defines the width
+                • {symbol_width}? (`integer`, default: `25`) defines the width
                   of the symbol section
-                • {symbol_type_width}? (`number`, default: `8`) defines the
+                • {symbol_type_width}? (`integer`, default: `8`) defines the
                   width of the symbol type section
                 • {symbols}? (`string|table`) filter results by symbol kind(s)
                 • {ignore_symbols}? (`string|table`) list of symbols to ignore
@@ -1574,11 +1574,11 @@ builtin.lsp_workspace_symbols({opts})
       • {opts}  (`table?`)
                 • {query}? (`string`, default: `""`) for what to query the
                   workspace
-                • {fname_width}? (`number`, default: `30`) defines the width
+                • {fname_width}? (`integer`, default: `30`) defines the width
                   of the filename section
-                • {symbol_width}? (`number`, default: `25`) defines the width
+                • {symbol_width}? (`integer`, default: `25`) defines the width
                   of the symbol section
-                • {symbol_type_width}? (`number`, default: `8`) defines the
+                • {symbol_type_width}? (`integer`, default: `8`) defines the
                   width of the symbol type section
                 • {symbols}? (`string|table`) filter results by symbol kind(s)
                 • {ignore_symbols}? (`string|table`) list of symbols to ignore
@@ -1596,7 +1596,7 @@ builtin.lsp_dynamic_workspace_symbols({opts})
 
     Parameters: ~
       • {opts}  (`table?`)
-                • {fname_width}? (`number`, default: `30`) defines the width
+                • {fname_width}? (`integer`, default: `30`) defines the width
                   of the filename section
                 • {symbols}? (`string|table`) filter results by symbol kind(s)
                 • {ignore_symbols}? (`string|table`) list of symbols to ignore
@@ -1617,7 +1617,7 @@ builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
 
     Parameters: ~
       • {opts}  (`table?`)
-                • {bufnr}? (`number`) Buffer number to get diagnostics from.
+                • {bufnr}? (`integer`) Buffer number to get diagnostics from.
                   Use 0 for current buffer or nil for all buffers
                 • {severity}? (`string|number`) filter diagnostics by severity
                   name (string) or id (number)
@@ -1631,8 +1631,8 @@ builtin.diagnostics({opts})                  *telescope.builtin.diagnostics()*
                   listed buffers
                 • {workspace}? (`boolean`) if true, call workspace/diagnostic
                   before collecting diagnostics
-                • {namespace}? (`number`) limit your diagnostics to a specific
-                  namespace
+                • {namespace}? (`integer`) limit your diagnostics to a
+                  specific namespace
                 • {no_sign}? (`boolean`, default: `false`) hide
                   DiagnosticSigns from Results
                 • {line_width}? (`string|number`) set length of diagnostic
@@ -2199,7 +2199,7 @@ resolver.resolve_height({val})            *telescope.resolve.resolve_height()*
       • {val}  (`any`) see description above
 
     Return: ~
-        (`fun(self, max_columns: number, max_lines: number): number`)
+        (`fun(self, max_columns: integer, max_lines: integer): integer`)
 
 resolver.resolve_width({val})              *telescope.resolve.resolve_width()*
     Converts input to a function that returns the width. The input must take
@@ -2226,7 +2226,7 @@ resolver.resolve_width({val})              *telescope.resolve.resolve_width()*
       • {val}  (`any`) see description above
 
     Return: ~
-        (`fun(self, max_columns: number, max_lines: number): number`)
+        (`fun(self, max_columns: integer, max_lines: integer): integer`)
 
                                       *telescope.resolve.resolve_anchor_pos()*
 resolver.resolve_anchor_pos({anchor}, {p_width}, {p_height}, {max_columns}, {max_lines}, {anchor_padding})
@@ -2243,14 +2243,14 @@ resolver.resolve_anchor_pos({anchor}, {p_width}, {p_height}, {max_columns}, {max
 
     Parameters: ~
       • {anchor}          (`""|"CENTER"|"NW"|"N"|"NE"|"E"|"SE"|"S"|"SW"`)
-      • {p_width}         (`number`) window width
-      • {p_height}        (`number`) window height
-      • {max_columns}     (`number`) max number of columns
-      • {max_lines}       (`number`) max number of lines
-      • {anchor_padding}  (`number`) padding to add to the anchor
+      • {p_width}         (`integer`) window width
+      • {p_height}        (`integer`) window height
+      • {max_columns}     (`integer`) max number of columns
+      • {max_lines}       (`integer`) max number of lines
+      • {anchor_padding}  (`integer`) padding to add to the anchor
 
     Return: ~
-        (`number[]`) row and col
+        (`integer[]`) row and col
 
 
 ==============================================================================
@@ -2454,69 +2454,69 @@ actions.move_selection_next({prompt_bufnr})
     Move the selection to the next entry
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                  *telescope.actions.move_selection_previous()*
 actions.move_selection_previous({prompt_bufnr})
     Move the selection to the previous entry
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                     *telescope.actions.move_selection_worse()*
 actions.move_selection_worse({prompt_bufnr})
     Move the selection to the entry that has a worse score
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                    *telescope.actions.move_selection_better()*
 actions.move_selection_better({prompt_bufnr})
     Move the selection to the entry that has a better score
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.move_to_top({prompt_bufnr})          *telescope.actions.move_to_top()*
     Move to the top of the picker
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                           *telescope.actions.move_to_middle()*
 actions.move_to_middle({prompt_bufnr})
     Move to the middle of the picker
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                           *telescope.actions.move_to_bottom()*
 actions.move_to_bottom({prompt_bufnr})
     Move to the bottom of the picker
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                            *telescope.actions.add_selection()*
 actions.add_selection({prompt_bufnr})
     Add current entry to multi select
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                         *telescope.actions.remove_selection()*
 actions.remove_selection({prompt_bufnr})
     Remove current entry from multi select
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                         *telescope.actions.toggle_selection()*
 actions.toggle_selection({prompt_bufnr})
     Toggle current entry status for multi select
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.select_all({prompt_bufnr})            *telescope.actions.select_all()*
     Multi select all entries.
@@ -2525,13 +2525,13 @@ actions.select_all({prompt_bufnr})            *telescope.actions.select_all()*
       • selected entries may include results not visible in the results pop up.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.drop_all({prompt_bufnr})                *telescope.actions.drop_all()*
     Drop all entries from the current multi selection.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.toggle_all({prompt_bufnr})            *telescope.actions.toggle_all()*
     Toggle multi selection for all entries.
@@ -2540,70 +2540,70 @@ actions.toggle_all({prompt_bufnr})            *telescope.actions.toggle_all()*
       • toggled entries may include results not visible in the results pop up.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                     *telescope.actions.preview_scrolling_up()*
 actions.preview_scrolling_up({prompt_bufnr})
     Scroll the preview window up
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                   *telescope.actions.preview_scrolling_down()*
 actions.preview_scrolling_down({prompt_bufnr})
     Scroll the preview window down
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                   *telescope.actions.preview_scrolling_left()*
 actions.preview_scrolling_left({prompt_bufnr})
     Scroll the preview window to the left
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                  *telescope.actions.preview_scrolling_right()*
 actions.preview_scrolling_right({prompt_bufnr})
     Scroll the preview window to the right
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                     *telescope.actions.results_scrolling_up()*
 actions.results_scrolling_up({prompt_bufnr})
     Scroll the results window up
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                   *telescope.actions.results_scrolling_down()*
 actions.results_scrolling_down({prompt_bufnr})
     Scroll the results window down
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                   *telescope.actions.results_scrolling_left()*
 actions.results_scrolling_left({prompt_bufnr})
     Scroll the results window to the left
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                  *telescope.actions.results_scrolling_right()*
 actions.results_scrolling_right({prompt_bufnr})
     Scroll the results window to the right
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.center({prompt_bufnr})                    *telescope.actions.center()*
     Center the cursor in the window, can be used after selecting a file to
     edit You can just map `actions.select_default + actions.center`
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                           *telescope.actions.select_default()*
 actions.select_default({prompt_bufnr})
@@ -2613,7 +2613,7 @@ actions.select_default({prompt_bufnr})
     i.e. open the selection in the current buffer
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                        *telescope.actions.select_horizontal()*
 actions.select_horizontal({prompt_bufnr})
@@ -2623,7 +2623,7 @@ actions.select_horizontal({prompt_bufnr})
     i.e. open the selection in a new horizontal split
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                          *telescope.actions.select_vertical()*
 actions.select_vertical({prompt_bufnr})
@@ -2633,7 +2633,7 @@ actions.select_vertical({prompt_bufnr})
     i.e. open the selection in a new vertical split
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.select_tab({prompt_bufnr})            *telescope.actions.select_tab()*
     Perform 'tab' action on selection, usually something like
@@ -2642,7 +2642,7 @@ actions.select_tab({prompt_bufnr})            *telescope.actions.select_tab()*
     i.e. open the selection in a new tab
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.select_drop({prompt_bufnr})          *telescope.actions.select_drop()*
     Perform 'drop' action on selection, usually something like
@@ -2651,7 +2651,7 @@ actions.select_drop({prompt_bufnr})          *telescope.actions.select_drop()*
     i.e. open the selection in a window
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                          *telescope.actions.select_tab_drop()*
 actions.select_tab_drop({prompt_bufnr})
@@ -2661,55 +2661,55 @@ actions.select_tab_drop({prompt_bufnr})
     i.e. open the selection in a new tab
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.file_edit({prompt_bufnr})              *telescope.actions.file_edit()*
     Perform file edit on selection, usually something like
     `:edit <selection>`
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.file_split({prompt_bufnr})            *telescope.actions.file_split()*
     Perform file split on selection, usually something like
     `:new <selection>`
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.file_vsplit({prompt_bufnr})          *telescope.actions.file_vsplit()*
     Perform file vsplit on selection, usually something like
     `:vnew <selection>`
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.file_tab({prompt_bufnr})                *telescope.actions.file_tab()*
     Perform file tab on selection, usually something like
     `:tabedit <selection>`
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.close({prompt_bufnr})                      *telescope.actions.close()*
     Close the Telescope window, usually used within an action
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                        *telescope.actions.edit_command_line()*
 actions.edit_command_line({prompt_bufnr})
     Set a value in the command line and don't run it, making it editable.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                         *telescope.actions.set_command_line()*
 actions.set_command_line({prompt_bufnr})
     Set a value in the command line and run it
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                         *telescope.actions.edit_search_line()*
 actions.edit_search_line({prompt_bufnr})
@@ -2717,21 +2717,21 @@ actions.edit_search_line({prompt_bufnr})
     editable.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                          *telescope.actions.set_search_line()*
 actions.set_search_line({prompt_bufnr})
     Set a value in the search line and search for it
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                            *telescope.actions.edit_register()*
 actions.edit_register({prompt_bufnr})
     Edit a register
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                           *telescope.actions.paste_register()*
 actions.paste_register({prompt_bufnr})
@@ -2740,41 +2740,41 @@ actions.paste_register({prompt_bufnr})
     Note: only meant to be used inside builtin.registers
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                            *telescope.actions.insert_symbol()*
 actions.insert_symbol({prompt_bufnr})
     Insert a symbol into the current buffer (while switching to normal mode)
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                          *telescope.actions.insert_symbol_i()*
 actions.insert_symbol_i({prompt_bufnr})
     Insert a symbol into the current buffer and keeping the insert mode.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                        *telescope.actions.git_create_branch()*
 actions.git_create_branch({prompt_bufnr})
     Create and checkout a new git branch if it doesn't already exist
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                          *telescope.actions.git_apply_stash()*
 actions.git_apply_stash({prompt_bufnr})
     Applies an existing git stash
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.git_checkout({prompt_bufnr})        *telescope.actions.git_checkout()*
     Checkout an existing git branch
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                        *telescope.actions.git_switch_branch()*
 actions.git_switch_branch({prompt_bufnr})
@@ -2783,77 +2783,77 @@ actions.git_switch_branch({prompt_bufnr})
     only in remote, create new branch tracking remote and switch to new one.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                        *telescope.actions.git_rename_branch()*
 actions.git_rename_branch({prompt_bufnr})
     Action to rename selected git branch
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                         *telescope.actions.git_track_branch()*
 actions.git_track_branch({prompt_bufnr})
     Tell git to track the currently selected remote branch in Telescope
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                        *telescope.actions.git_delete_branch()*
 actions.git_delete_branch({prompt_bufnr})
     Delete all currently selected branches
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                         *telescope.actions.git_merge_branch()*
 actions.git_merge_branch({prompt_bufnr})
     Merge the currently selected branch
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                        *telescope.actions.git_rebase_branch()*
 actions.git_rebase_branch({prompt_bufnr})
     Rebase to selected git branch
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                          *telescope.actions.git_reset_mixed()*
 actions.git_reset_mixed({prompt_bufnr})
     Reset to selected git commit using mixed mode
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                           *telescope.actions.git_reset_soft()*
 actions.git_reset_soft({prompt_bufnr})
     Reset to selected git commit using soft mode
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                           *telescope.actions.git_reset_hard()*
 actions.git_reset_hard({prompt_bufnr})
     Reset to selected git commit using hard mode
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                              *telescope.actions.git_checkout_current_buffer()*
 actions.git_checkout_current_buffer({prompt_bufnr})
     Checkout a specific file for a given sha
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                       *telescope.actions.git_staging_toggle()*
 actions.git_staging_toggle({prompt_bufnr})
     Stage/unstage selected file
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                  *telescope.actions.send_selected_to_qflist()*
 actions.send_selected_to_qflist({prompt_bufnr})
@@ -2861,7 +2861,7 @@ actions.send_selected_to_qflist({prompt_bufnr})
     entries.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                   *telescope.actions.add_selected_to_qflist()*
 actions.add_selected_to_qflist({prompt_bufnr})
@@ -2869,21 +2869,21 @@ actions.add_selected_to_qflist({prompt_bufnr})
     entries.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                           *telescope.actions.send_to_qflist()*
 actions.send_to_qflist({prompt_bufnr})
     Sends all entries to the quickfix list, replacing the previous entries.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                            *telescope.actions.add_to_qflist()*
 actions.add_to_qflist({prompt_bufnr})
     Adds all entries to the quickfix list, keeping the previous entries.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                 *telescope.actions.send_selected_to_loclist()*
 actions.send_selected_to_loclist({prompt_bufnr})
@@ -2891,7 +2891,7 @@ actions.send_selected_to_loclist({prompt_bufnr})
     entries.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                  *telescope.actions.add_selected_to_loclist()*
 actions.add_selected_to_loclist({prompt_bufnr})
@@ -2899,21 +2899,21 @@ actions.add_selected_to_loclist({prompt_bufnr})
     entries.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                          *telescope.actions.send_to_loclist()*
 actions.send_to_loclist({prompt_bufnr})
     Sends all entries to the location list, replacing the previous entries.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                           *telescope.actions.add_to_loclist()*
 actions.add_to_loclist({prompt_bufnr})
     Adds all entries to the location list, keeping the previous entries.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                     *telescope.actions.smart_send_to_qflist()*
 actions.smart_send_to_qflist({prompt_bufnr})
@@ -2921,7 +2921,7 @@ actions.smart_send_to_qflist({prompt_bufnr})
     entries. If no entry was selected, sends all entries.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                      *telescope.actions.smart_add_to_qflist()*
 actions.smart_add_to_qflist({prompt_bufnr})
@@ -2929,7 +2929,7 @@ actions.smart_add_to_qflist({prompt_bufnr})
     entries. If no entry was selected, adds all entries.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                    *telescope.actions.smart_send_to_loclist()*
 actions.smart_send_to_loclist({prompt_bufnr})
@@ -2937,7 +2937,7 @@ actions.smart_send_to_loclist({prompt_bufnr})
     entries. If no entry was selected, sends all entries.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                     *telescope.actions.smart_add_to_loclist()*
 actions.smart_add_to_loclist({prompt_bufnr})
@@ -2945,28 +2945,28 @@ actions.smart_add_to_loclist({prompt_bufnr})
     entries. If no entry was selected, adds all entries.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.complete_tag({prompt_bufnr})        *telescope.actions.complete_tag()*
     Open completion menu containing the tags which can be used to filter the
     results in a faster way
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                       *telescope.actions.cycle_history_next()*
 actions.cycle_history_next({prompt_bufnr})
     Cycle to the next search prompt in the history
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                       *telescope.actions.cycle_history_prev()*
 actions.cycle_history_prev({prompt_bufnr})
     Cycle to the previous search prompt in the history
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.open_qflist({prompt_bufnr})          *telescope.actions.open_qflist()*
     Open the quickfix list. It makes sense to use this in combination with one
@@ -2974,7 +2974,7 @@ actions.open_qflist({prompt_bufnr})          *telescope.actions.open_qflist()*
     `actions.smart_send_to_qflist + actions.open_qflist`
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.open_loclist({prompt_bufnr})        *telescope.actions.open_loclist()*
     Open the location list. It makes sense to use this in combination with one
@@ -2982,7 +2982,7 @@ actions.open_loclist({prompt_bufnr})        *telescope.actions.open_loclist()*
     `actions.smart_send_to_qflist + actions.open_qflist`
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                            *telescope.actions.delete_buffer()*
 actions.delete_buffer({prompt_bufnr})
@@ -2990,7 +2990,7 @@ actions.delete_buffer({prompt_bufnr})
     selection.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                    *telescope.actions.cycle_previewers_next()*
 actions.cycle_previewers_next({prompt_bufnr})
@@ -2998,7 +2998,7 @@ actions.cycle_previewers_next({prompt_bufnr})
     This action is not mapped on default.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                    *telescope.actions.cycle_previewers_prev()*
 actions.cycle_previewers_prev({prompt_bufnr})
@@ -3006,7 +3006,7 @@ actions.cycle_previewers_prev({prompt_bufnr})
     This action is not mapped on default.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                   *telescope.actions.remove_selected_picker()*
 actions.remove_selected_picker({prompt_bufnr})
@@ -3015,7 +3015,7 @@ actions.remove_selected_picker({prompt_bufnr})
     |builtin.pickers|.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.which_key({prompt_bufnr})              *telescope.actions.which_key()*
     Display the keymaps of registered actions similar to which-key.nvim.
@@ -3024,7 +3024,7 @@ actions.which_key({prompt_bufnr})              *telescope.actions.which_key()*
       • The defaults can be overridden via |action_generate.which_key|.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                          *telescope.actions.to_fuzzy_refine()*
 actions.to_fuzzy_refine({prompt_bufnr})
@@ -3033,41 +3033,41 @@ actions.to_fuzzy_refine({prompt_bufnr})
     lsp_dynamic_workspace_symbols
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 actions.delete_mark({prompt_bufnr})          *telescope.actions.delete_mark()*
     Delete the selected mark or all the marks selected using multi selection.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                    *telescope.actions.insert_original_cword()*
 actions.insert_original_cword({prompt_bufnr})
     Insert the word under the cursor of the original (pre-Telescope) window
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                    *telescope.actions.insert_original_cWORD()*
 actions.insert_original_cWORD({prompt_bufnr})
     Insert the WORD under the cursor of the original (pre-Telescope) window
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                    *telescope.actions.insert_original_cfile()*
 actions.insert_original_cfile({prompt_bufnr})
     Insert the file under the cursor of the original (pre-Telescope) window
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                    *telescope.actions.insert_original_cline()*
 actions.insert_original_cline({prompt_bufnr})
     Insert the line under the cursor of the original (pre-Telescope) window
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 
 ==============================================================================
@@ -3082,7 +3082,7 @@ actions_state.get_selected_entry()
     Get the current entry
 
     Return: ~
-        (`table`) the selected entry
+        (`table?`) the selected entry
 
                                   *telescope.actions_state.get_current_line()*
 actions_state.get_current_line()
@@ -3096,10 +3096,10 @@ actions_state.get_current_picker({prompt_bufnr})
     Gets the current picker
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
     Return: ~
-        (`table`) the current picker
+        (`Picker`) the current picker
 
 
 ==============================================================================
@@ -3119,8 +3119,8 @@ actions_set.shift_selection({prompt_bufnr}, {change})
     overflowing / underflowing the list.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
-      • {change}        (`number`) The amount to shift the selection by
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
+      • {change}        (`integer`) The amount to shift the selection by
 
 
 ==============================================================================
@@ -3137,7 +3137,7 @@ actions_layout.toggle_preview({prompt_bufnr})
       • this action is not mapped by default.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                            *telescope.actions_layout.toggle_prompt_position()*
 actions_layout.toggle_prompt_position({prompt_bufnr})
@@ -3148,7 +3148,7 @@ actions_layout.toggle_prompt_position({prompt_bufnr})
       • this action is not mapped by default.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                     *telescope.actions_layout.toggle_mirror()*
 actions_layout.toggle_mirror({prompt_bufnr})
@@ -3159,7 +3159,7 @@ actions_layout.toggle_mirror({prompt_bufnr})
       • this action is not mapped by default.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                 *telescope.actions_layout.cycle_layout_next()*
 actions_layout.cycle_layout_next({prompt_bufnr})
@@ -3169,7 +3169,7 @@ actions_layout.cycle_layout_next({prompt_bufnr})
       • this action is not mapped by default.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
                                 *telescope.actions_layout.cycle_layout_prev()*
 actions_layout.cycle_layout_prev({prompt_bufnr})
@@ -3179,7 +3179,7 @@ actions_layout.cycle_layout_prev({prompt_bufnr})
       • this action is not mapped by default.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 
 ==============================================================================
@@ -3214,7 +3214,7 @@ actions_utils.map_entries({prompt_bufnr}, {f})
 <
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
       • {f}             (`function`) Function to map onto entries of picker
                         that takes (entry, index, row) as viable arguments
 
@@ -3244,7 +3244,7 @@ actions_utils.map_selections({prompt_bufnr}, {f})
 <
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
       • {f}             (`function`) Function to map onto selection of picker
                         that takes (selection) as a viable argument
 
@@ -3254,7 +3254,7 @@ actions_utils.get_registered_mappings({prompt_bufnr})
     `{mode, keybind, name}`.
 
     Parameters: ~
-      • {prompt_bufnr}  (`number`) The prompt bufnr
+      • {prompt_bufnr}  (`integer`) The prompt bufnr
 
 
 ==============================================================================
@@ -3326,7 +3326,7 @@ See https://github.com/nvim-telescope/telescope-smart-history.nvim
                       nil, if limit is disabled.
       • {content}     (`table`) History table. Needs to be filled by your own
                       History implementation
-      • {index}       (`number`) Used to keep track of the next or previous
+      • {index}       (`integer`) Used to keep track of the next or previous
                       index. Default is #content + 1
       • {cycle_wrap}  (`boolean`) Controls if history will wrap on reaching
                       beginning or end
@@ -3580,7 +3580,7 @@ previewers.buffer_previewer_maker({filepath}, {bufnr}, {opts})
 
     Parameters: ~
       • {filepath}  (`string`) String to the filepath, will be expanded
-      • {bufnr}     (`number`) Where the content will be written
+      • {bufnr}     (`integer`) Where the content will be written
       • {opts}      (`table`) keys: `use_ft_detect`, `bufname` and `callback`
 
                                        *telescope.previewers.vim_buffer_cat()*

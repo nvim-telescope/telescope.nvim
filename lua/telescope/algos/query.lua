@@ -16,7 +16,7 @@
 -- counts). The score is the sum of the matcher's scores of the matched terms; inverse terms add no
 -- score and no highlights.
 
-local matcher = require "telescope.algos.matcher"
+local matcher = require("telescope.algos.matcher")
 
 local byte = string.byte
 
@@ -27,16 +27,16 @@ local FUZZY, EXACT, BOUNDARY, PREFIX, SUFFIX, EQUAL = "fuzzy", "exact", "boundar
 --- Parse `prompt` (see above) into a query. `query.single` is set if it is a single fuzzy term.
 ---@param prompt string
 ---@param case_mode? string: "ignore_case" (default), "respect_case", or "smart_case"
----@return table
+---@return telescope.algos.query.Query
 function M.parse(prompt, case_mode)
   local str = prompt:gsub("\\ ", "\t"):gsub("^ +", ""):gsub(" +$", "")
   local query, set, after_bar = {}, nil, false
-  for token in str:gmatch "[^ ]+" do
+  for token in str:gmatch("[^ ]+") do
     local text = token:gsub("\t", " ")
     if set and not after_bar and text == "|" then
       after_bar = true
     else
-      local cs = case_mode == "respect_case" or (case_mode == "smart_case" and text:find "[A-Z]" ~= nil)
+      local cs = case_mode == "respect_case" or (case_mode == "smart_case" and text:find("[A-Z]") ~= nil)
       local typ, inv = FUZZY, false
       if text:sub(1, 1) == "!" then
         typ, inv, text = EXACT, true, text:sub(2)
@@ -53,7 +53,7 @@ function M.parse(prompt, case_mode)
       end
       if #text > 0 then
         -- `plain`: no letters, so case doesn't matter (and the matcher's search is faster)
-        local term = { type = typ, inv = inv, text = text, cs = cs, plain = cs or not text:find "[A-Za-z]" }
+        local term = { type = typ, inv = inv, text = text, cs = cs, plain = cs or not text:find("[A-Za-z]") }
         if set and after_bar then
           set[#set + 1] = term
         else
@@ -131,9 +131,12 @@ end
 
 -- the matched term of each set (reused): `score` first checks that all sets match (cheap), and
 -- only then scores the matched terms (the expensive part)
-local matched = {}
+local matched = {} ---@type table<integer, telescope.algos.query.Term>
 
 --- The score of `line` for `query` (sum over the sets, see above), or nil if it doesn't match.
+---@param query telescope.algos.query.Query
+---@param line string
+---@return number?
 function M.score(query, line)
   for i = 1, #query do
     matched[i] = match_set(query[i], line)
@@ -141,7 +144,7 @@ function M.score(query, line)
       return nil
     end
   end
-  local total = 0
+  local total = 0 ---@type number
   for i = 1, #query do
     local term = matched[i]
     if not term.inv then

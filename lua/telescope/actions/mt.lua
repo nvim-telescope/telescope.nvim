@@ -41,14 +41,9 @@ local find_all_relevant_mts = function(action_name, f)
   end
 end
 
---- an action is metatable which allows replacement(prepend or append) of the function
----@class Action
----@field _func table<string, function>: the original action function
----@field _static_pre table<string, function>: will allways run before the function even if its replaced
----@field _pre table<string, function>: the functions that will run before the action
----@field _replacements table<string, function>: the function that replaces this action
----@field _static_post table<string, function>: will allways run after the function even if its replaced
----@field _post table<string, function>: the functions that will run after the action
+-- The metatable of an action (see `Action`): calling it runs the action; `replace`/`enhance` change it
+-- temporarily.
+---@return table
 action_mt.create = function()
   local mt = {
     __call = function(t, ...)
@@ -116,13 +111,13 @@ action_mt.create = function()
   function mt:replace(v)
     assert(#self == 1, "Cannot replace an already combined action")
 
-    return self:replace_map { [true] = v }
+    return self:replace_map({ [true] = v })
   end
 
   function mt:replace_if(condition, replacement)
     assert(#self == 1, "Cannot replace an already combined action")
 
-    return self:replace_map { [condition] = replacement }
+    return self:replace_map({ [condition] = replacement })
   end
 
   --- Replace table with
@@ -168,6 +163,7 @@ action_mt.create = function()
   return mt
 end
 
+---@return Action
 action_mt.transform = function(k, mt, _, v)
   local res = setmetatable({ k }, mt)
   if type(v) == "table" then
@@ -180,6 +176,7 @@ action_mt.transform = function(k, mt, _, v)
   return res
 end
 
+---@return table<string, Action>
 action_mt.transform_mod = function(mod)
   -- Pass the metatable of the module if applicable.
   --    This allows for custom errors, lookups, etc.
@@ -193,6 +190,7 @@ action_mt.transform_mod = function(mod)
   redirect._clear = function()
     for k, v in pairs(redirect) do
       if k ~= "_clear" then
+        ---@cast v Action
         pcall(v.clear)
       end
     end

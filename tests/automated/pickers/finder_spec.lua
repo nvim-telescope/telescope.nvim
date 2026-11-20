@@ -1,8 +1,8 @@
-local t = require "test.harness"
-local assert = require "test.assert"
+local t = require("test.harness")
+local assert = require("test.assert")
 local describe, it, after_each = t.describe, t.it, t.after_each
 
-local h = require "tests.helpers"
+local h = require("tests.helpers")
 
 describe("finders", function()
   after_each(h.cleanup)
@@ -11,7 +11,7 @@ describe("finders", function()
     local finder = setmetatable({ close = function() end }, {
       __call = function(_, _, process_result, process_complete)
         vim.async.sleep(1)
-        process_result { value = "waited", ordinal = "waited", display = "waited" }
+        process_result({ value = "waited", ordinal = "waited", display = "waited" })
         process_complete()
       end,
     })
@@ -36,7 +36,7 @@ describe("finders", function()
     local finder = setmetatable({ close = function() end }, {
       __call = function()
         vim.async.sleep(1)
-        error "broken"
+        error("broken")
       end,
     })
     require("telescope.pickers").new({}, { finder = finder }):find()
@@ -44,6 +44,6 @@ describe("finders", function()
       return notified ~= nil
     end, 1)
     vim.notify = notify
-    assert(notified and notified:find "Finder failed: .*broken")
+    assert(notified and notified:find("Finder failed: .*broken"))
   end)
 end)

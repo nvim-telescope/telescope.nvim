@@ -1,8 +1,8 @@
-local async_job = require "telescope.async_job"
+local async_job = require("telescope.async_job")
 local LinesPipe = async_job.LinesPipe
 
-local make_entry = require "telescope.make_entry"
-local log = require "telescope.log"
+local make_entry = require("telescope.make_entry")
+local log = require("telescope.log")
 
 return function(opts)
   log.trace("Creating async_job:", opts)
@@ -23,13 +23,13 @@ return function(opts)
     end
 
     local stdout = LinesPipe()
-    job = async_job.spawn {
+    job = async_job.spawn({
       command = table.remove(args, 1),
       args = args,
       cwd = opts.cwd,
       env = opts.env,
       stdout = stdout,
-    }
+    })
 
     local line_num = 0
     for line in stdout:iter() do

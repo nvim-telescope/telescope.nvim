@@ -1,6 +1,6 @@
-local _async = require "telescope._async"
+local _async = require("telescope._async")
 
-local make_entry = require "telescope.make_entry"
+local make_entry = require("telescope.make_entry")
 
 return function(opts)
   local input_results
@@ -22,6 +22,12 @@ return function(opts)
     end
   end
 
+  ---@async
+  local function find(_, _, process_result, process_complete)
+    _async.process_list(results, #results, process_result)
+    process_complete()
+  end
+
   return setmetatable({
     results = results,
     entry_maker = entry_maker,
@@ -29,9 +35,6 @@ return function(opts)
     prompt_independent = true,
     close = function() end,
   }, {
-    __call = function(_, _, process_result, process_complete)
-      _async.process_list(results, #results, process_result)
-      process_complete()
-    end,
+    __call = find,
   })
 end

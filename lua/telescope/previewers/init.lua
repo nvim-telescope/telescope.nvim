@@ -1,3 +1,6 @@
+-- docgen needs `@param` on assignments that aren't function definitions
+---@diagnostic disable: annotation-usage-error, undefined-doc-param
+
 ---@brief
 --- Provides a Previewer table that has to be implemented by each previewer.
 --- To achieve this, this module also provides two wrappers that abstract most
@@ -19,9 +22,9 @@
 --- <br>
 --- `:Telescope find_files previewer=false`
 
-local Previewer = require "telescope.previewers.previewer"
-local term_previewer = require "telescope.previewers.term_previewer"
-local buffer_previewer = require "telescope.previewers.buffer_previewer"
+local Previewer = require("telescope.previewers.previewer")
+local term_previewer = require("telescope.previewers.term_previewer")
+local buffer_previewer = require("telescope.previewers.buffer_previewer")
 
 local previewers = {}
 
@@ -240,7 +243,7 @@ previewers.new_buffer_previewer = buffer_previewer.new_buffer_previewer
 --- It handles async reading, cache, highlighting, displaying directories
 --- and provides a callback which can be used, to jump to a line in the buffer.
 ---@param filepath string: String to the filepath, will be expanded
----@param bufnr number: Where the content will be written
+---@param bufnr integer: Where the content will be written
 ---@param opts table: keys: `use_ft_detect`, `bufname` and `callback`
 previewers.buffer_previewer_maker = buffer_previewer.file_maker
 
