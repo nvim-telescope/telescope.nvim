@@ -22,8 +22,6 @@
 ---@field operator_callback? boolean git_bcommits_range
 ---@field split_char? string git_status
 ---@field width_lhs? integer keymaps
----@field env? table<string, string?> man_pages
----@field ignore_filename? boolean lsp_workspace_symbols
 ---@field id? integer quickfix: id of the list (instead of `nr`)
 ---@field items? any[] ui_select
 ---@field format_item? fun(item: any): string ui_select

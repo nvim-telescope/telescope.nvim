@@ -783,7 +783,6 @@ internal.man_pages = function(opts)
     end
   end)
   opts.entry_maker = opts.entry_maker or make_entry.gen_from_apropos(opts)
-  opts.env = { PATH = vim.env.PATH, MANPATH = vim.env.MANPATH }
 
   pickers
     .new(opts, {
