@@ -56,10 +56,15 @@ end
 --- Attach default highlighter which will choose between regex and ts
 M.highlighter = function(bufnr, ft, opts)
   local preview = opts and opts.preview
-  local treesitter = type(preview) == "table" and preview.treesitter
-    or type(conf.preview) == "table" and conf.preview.treesitter
-    or type(conf.preview) == "boolean" and conf.preview
-    or false
+  -- `false` is a valid value, so no `a and b or c` chain
+  local treesitter ---@type boolean|table
+  if type(preview) == "table" and preview.treesitter ~= nil then
+    treesitter = preview.treesitter
+  elseif type(conf.preview) == "table" and conf.preview.treesitter ~= nil then
+    treesitter = conf.preview.treesitter
+  else
+    treesitter = conf.preview == true
+  end
   if type(treesitter) == "boolean" then
     treesitter = { enable = treesitter }
   end
