@@ -571,7 +571,7 @@ actions.git_create_branch = function(prompt_bufnr)
           new_branch,
           table.concat(stderr, " ")
         ),
-        level = "INFO",
+        level = "ERROR",
       })
     end
   end
@@ -766,7 +766,6 @@ actions.git_delete_branch = function(prompt_bufnr)
   local action_name = "actions.git_delete_branch"
   picker:delete_selection(function(selection)
     local branch = selection.value
-    print("Deleting branch " .. branch)
     local _, ret, stderr = utils.get_os_command_output({ "git", "branch", "-D", branch }, picker.cwd)
     if ret == 0 then
       utils.notify(action_name, {
